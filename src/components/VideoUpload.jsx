@@ -9,6 +9,7 @@ import VideoReplay from './VideoReplay';
 
 const exerciseKeys = Object.keys(EXERCISES);
 const MAX_FRAMES = 250; // hard cap for very long videos
+const MAX_FRAMES_LARGE = 100; // tighter cap for files >100MB to prevent mobile OOM
 const MIN_FPS = 2; // floor: below this, rep counting breaks (Nyquist on ~2s reps)
 
 function gradeFromScore(score) {
@@ -110,15 +111,20 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const duration = video.duration;
         if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
 
+        // Large files need aggressive memory management to avoid mobile OOM.
+        const isLargeFile = queueItem.file.size > 100 * 1024 * 1024;
+        const frameCap = isLargeFile ? MAX_FRAMES_LARGE : MAX_FRAMES;
+
         // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
         // MIN_FPS ensures rep counting works (need ~2 samples per rep cycle).
-        const analysisFps = Math.max(MIN_FPS, Math.min(3, MAX_FRAMES / duration));
-        const totalFrames = Math.ceil(duration * analysisFps);
+        // For large files, allow MIN_FPS=1 to stay within frame cap.
+        const minFps = isLargeFile ? 1 : MIN_FPS;
+        const analysisFps = Math.max(minFps, Math.min(3, frameCap / duration));
+        const totalFrames = Math.min(frameCap, Math.ceil(duration * analysisFps));
         const interval = duration / totalFrames;
 
-        // Scale canvas down to save memory on mobile.
-        // Large files (>100MB) get 360px max; others get 480px.
-        const maxW = queueItem.file.size > 100 * 1024 * 1024 ? 360 : 480;
+        // Scale canvas: large files get 320px to minimize decoded frame memory.
+        const maxW = isLargeFile ? 320 : 480;
         const scale = Math.min(1, maxW / video.videoWidth);
         canvas.width = Math.round(video.videoWidth * scale);
         canvas.height = Math.round(video.videoHeight * scale);
@@ -164,11 +170,17 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 }
 
                 const angles = extractJointAngles(landmarks);
-                frames.push({ landmarks, timestamp: time, angles });
+                // For large files, don't store angles per frame (saves memory; re-derived at end if needed)
+                if (isLargeFile) {
+                  frames.push({ landmarks, timestamp: time });
+                } else {
+                  frames.push({ landmarks, timestamp: time, angles });
+                }
                 repCounter.update(landmarks);
 
-                // Sample every 3rd frame for replay (saves memory)
-                if (frameIdx % 3 === 0) {
+                // Sample frames for replay: every 5th for large files, every 3rd otherwise
+                const replaySampleRate = isLargeFile ? 5 : 3;
+                if (frameIdx % replaySampleRate === 0) {
                   replayFrames.push({ landmarks, timestamp: time });
                 }
               }
@@ -197,8 +209,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             const cont = await processFrame(frameIdx);
             if (!cont) break;
             frameIdx++;
-            // Yield to UI every 5 frames so progress bar updates
-            if (frameIdx % 5 === 0) {
+            // Yield to UI and let browser GC decoded video frames.
+            // Large files yield every frame with a longer delay to reduce memory pressure.
+            if (isLargeFile) {
+              await new Promise(r => setTimeout(r, 50));
+            } else if (frameIdx % 5 === 0) {
               await new Promise(r => setTimeout(r, 0));
             }
           }
