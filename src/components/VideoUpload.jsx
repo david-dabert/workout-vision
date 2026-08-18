@@ -108,20 +108,21 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         video.removeEventListener('loadeddata', onReady);
         video.onloadedmetadata = null;
 
-        const duration = video.duration;
+        let duration = video.duration;
         if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
 
-        // Large files need aggressive memory management to avoid mobile OOM.
+        // Large files crash mobile Safari's memory limit.
+        // Fix: only analyze the first 60 seconds. The user gets results
+        // instead of a crash. They can trim the video for full analysis.
         const isLargeFile = queueItem.file.size > 100 * 1024 * 1024;
-        const frameCap = isLargeFile ? MAX_FRAMES_LARGE : MAX_FRAMES;
+        const maxDuration = isLargeFile ? 60 : duration;
+        const effectiveDuration = Math.min(duration, maxDuration);
 
-        // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
-        // MIN_FPS ensures rep counting works (need ~2 samples per rep cycle).
-        // For large files, allow MIN_FPS=1 to stay within frame cap.
-        const minFps = isLargeFile ? 1 : MIN_FPS;
-        const analysisFps = Math.max(minFps, Math.min(3, frameCap / duration));
-        const totalFrames = Math.min(frameCap, Math.ceil(duration * analysisFps));
-        const interval = duration / totalFrames;
+        // Adaptive FPS with tighter caps for large files
+        const frameCap = isLargeFile ? 120 : MAX_FRAMES;
+        const analysisFps = Math.max(MIN_FPS, Math.min(3, frameCap / effectiveDuration));
+        const totalFrames = Math.min(frameCap, Math.ceil(effectiveDuration * analysisFps));
+        const interval = effectiveDuration / totalFrames;
 
         // Scale canvas: large files get 320px to minimize decoded frame memory.
         const maxW = isLargeFile ? 320 : 480;
@@ -261,14 +262,18 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           catch (err) { console.error('Save error:', err); }
 
           setProgress(100);
+
+          // For large files, revoke the blob URL now to free memory.
+          // Replay won't work but the user gets results instead of a crash.
+          if (isLargeFile) safeRevoke();
+
           resolve({
             fileName: queueItem.name, exercise: detectedExercise,
             exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
             reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
             bioAnalysis, report, repHistory,
-            // Sampled subset for replay overlay (every 3rd frame)
-            videoUrl: url,
-            frames: replayFrames,
+            videoUrl: isLargeFile ? null : url,
+            frames: isLargeFile ? [] : replayFrames,
           });
         };
 
