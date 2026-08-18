@@ -937,8 +937,8 @@ select {
 .rep-num { font-size: 0.65rem; color: var(--dim); margin-top: 2px; }
 
 .form-notes { margin-top: 10px; }
-.note-item { font-size: 0.8rem; color: var(--yellow); padding: 2px 0; }
-.note-item::before { content: '!  '; font-weight: 800; }
+.note-item { font-size: 0.8rem; color: var(--muted); padding: 4px 0; }
+.note-item::before { content: '\26A0\FE0F  '; }
 
 
 /* ══════════════════════════════════════════

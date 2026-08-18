@@ -589,7 +589,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Full contraction',
-        check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 45,
+        check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 55,
         good: 'Full bicep squeeze at top',
         bad: 'Curl higher -- full contraction',
         severity: 'minor',
@@ -597,7 +597,7 @@ export const EXERCISES = {
       },
       {
         name: 'Full extension',
-        check: (angles) => Math.max(angles.leftElbow, angles.rightElbow) > 155,
+        check: (angles) => Math.max(angles.leftElbow, angles.rightElbow) > 145,
         good: 'Full extension at bottom',
         bad: 'Extend arms fully at bottom',
         severity: 'minor',
@@ -1941,12 +1941,13 @@ export class RepCounter {
             const swing = Math.abs(newExtremum.val - this._lastExtremum.val);
             this._observedSwings.push(swing);
 
-            // Update minimum prominence: use 40% of the median top-third swing
+            // Update minimum prominence: use 25% of the median top-third swing.
+            // Lower floor (8) and multiplier (0.25) prevents rejecting fatigued reps.
             if (this._observedSwings.length >= 2) {
               const sorted = [...this._observedSwings].sort((a, b) => b - a);
               const topThirdIdx = Math.floor(sorted.length / 3);
               const referenceSwing = sorted[topThirdIdx];
-              this._minProminence = Math.max(12, referenceSwing * 0.4);
+              this._minProminence = Math.max(8, referenceSwing * 0.25);
             }
 
             // Minimum time between extrema: ~1 second at any FPS
@@ -1954,13 +1955,12 @@ export class RepCounter {
             const frameGap = extremumIdx - this._lastExtremum.idx;
 
             if (swing >= this._minProminence && frameGap >= minFramesBetween) {
-              // Full cycle check: same type at start and end
-              if (this._prevExtremum &&
-                  this._prevExtremum.type === newExtremum.type &&
-                  Math.abs(this._lastExtremum.val - this._prevExtremum.val) >= this._minProminence) {
+              // Count a rep on every completed half-cycle pair (valley-peak or peak-valley).
+              // Previous logic required 3 extrema (missed first rep and lost reps at low FPS).
+              if (this._prevExtremum) {
                 repCompleted = true;
                 this._peakAngle = this._lastExtremum.val;
-                this._completeRep(angles);
+                this._completeRep(angles, landmarks);
                 this._phase = newExtremum.type === 'peak' ? 'up' : 'down';
               }
               this._prevExtremum = this._lastExtremum;
@@ -2020,7 +2020,7 @@ export class RepCounter {
     };
   }
 
-  _completeRep(angles) {
+  _completeRep(angles, landmarks) {
     this._reps++;
     const totalChecks = this._exercise.formChecks.length;
     const failedMajor = this._currentRepIssues.filter((name) => {
@@ -2032,12 +2032,19 @@ export class RepCounter {
       return fc && fc.severity !== 'major';
     }).length;
 
-    // Score: start at 100, -20 per major issue, -8 per minor issue
-    const score = Math.max(0, 100 - failedMajor * 20 - failedMinor * 8);
+    // Score: start at 100, -15 per major issue, -5 per minor issue
+    const score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
+
+    // Map check names to their failure text so form notes show actionable feedback
+    // ("Curl higher -- full contraction") instead of the check name ("Full contraction")
+    const issueTexts = this._currentRepIssues.map(name => {
+      const fc = this._exercise.formChecks.find(c => c.name === name);
+      return fc ? fc.bad : name;
+    });
 
     this._repHistory.push({
       score,
-      issues: [...this._currentRepIssues],
+      issues: issueTexts,
       ts: Date.now(),
       peakAngle: this._peakAngle,
     });
