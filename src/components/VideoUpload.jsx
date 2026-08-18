@@ -4,9 +4,11 @@ import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
 import { getProfile, saveWorkout } from '../lib/storage';
+import { shareCard } from '../lib/shareCard';
 
 const exerciseKeys = Object.keys(EXERCISES);
-const MAX_FRAMES = 120; // hard cap: never analyze more than this many frames
+const MAX_FRAMES = 250; // hard cap for very long videos
+const MIN_FPS = 2; // floor: below this, rep counting breaks (Nyquist on ~2s reps)
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -98,9 +100,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
 
         // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
-        // Cap total frames so a 2:30 video doesn't produce 450 seeks.
-        const analysisFps = Math.min(3, MAX_FRAMES / duration);
-        const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
+        // MIN_FPS ensures rep counting works (need ~2 samples per rep cycle).
+        const analysisFps = Math.max(MIN_FPS, Math.min(3, MAX_FRAMES / duration));
+        const totalFrames = Math.ceil(duration * analysisFps);
         const interval = duration / totalFrames;
 
         canvas.width = video.videoWidth;
@@ -733,6 +735,15 @@ function ResultCard({ result }) {
           </div>
         </div>
       )}
+
+      {/* Share button */}
+      <button
+        className="btn btn-primary"
+        style={{ width: '100%', marginTop: 16, padding: '14px 0', fontSize: '1rem', fontWeight: 700 }}
+        onClick={() => shareCard(result)}
+      >
+        Share Result
+      </button>
     </div>
   );
 }
