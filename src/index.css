@@ -10,7 +10,7 @@
   --card-elevated: #161622;
   --border: #1e1e2e;
   --text: #d0d0d0;
-  --muted: #6b6b80;
+  --muted: #8a8a9a;
   --dim: #3a3a4a;
   --accent: #00e676;
   --accent-glow: rgba(0,230,118,0.12);
@@ -145,7 +145,7 @@ h5 { font-size: 0.78rem; font-weight: 600; color: #888; margin: 10px 0 4px; }
 }
 
 .tab-label {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -212,8 +212,9 @@ h5 { font-size: 0.78rem; font-weight: 600; color: #888; margin: 10px 0 4px; }
 }
 
 .btn-sm {
-  padding: 5px 12px;
+  padding: 8px 16px;
   font-size: 0.78rem;
+  min-height: 44px;
 }
 
 .btn-lg {
@@ -410,7 +411,7 @@ select {
 }
 
 .chart-label {
-  font-size: 0.55rem;
+  font-size: 0.65rem;
   color: var(--dim);
   margin-top: 2px;
 }
@@ -657,7 +658,7 @@ select {
 }
 
 .cam-reps-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--muted);
   letter-spacing: 3px;
   font-weight: 700;
@@ -933,7 +934,7 @@ select {
 .rep-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
 .rep-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
 .rep-bar { width: 100%; border-radius: 2px 2px 0 0; min-height: 3px; transition: height 0.2s; }
-.rep-num { font-size: 0.58rem; color: var(--dim); margin-top: 2px; }
+.rep-num { font-size: 0.65rem; color: var(--dim); margin-top: 2px; }
 
 .form-notes { margin-top: 10px; }
 .note-item { font-size: 0.8rem; color: var(--yellow); padding: 2px 0; }
@@ -1847,4 +1848,28 @@ button:active, a:active { opacity: 0.8; }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
+}
+
+/* ══════════════════════════════════════════
+   PWA INSTALL BANNER
+   ══════════════════════════════════════════ */
+
+.install-banner {
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.install-banner p {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+.install-banner .text-xs {
+  margin-top: 2px;
 }

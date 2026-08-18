@@ -52,6 +52,28 @@ export const EXERCISES = {
         severity: 'minor',
         citation: 'Fry AC et al, 2003, J Strength Cond Res',
       },
+      {
+        name: 'Knee valgus',
+        // landmarks[25]=LEFT_KNEE, landmarks[26]=RIGHT_KNEE,
+        // landmarks[27]=LEFT_ANKLE, landmarks[28]=RIGHT_ANKLE.
+        // Valgus: knee x drifts inward past ankle x.
+        // Left side: knee x should be >= ankle x (or not more than 0.02 inward).
+        // Right side: ankle x should be >= knee x (or not more than 0.02 inward).
+        check: (angles, landmarks) => {
+          if (!landmarks) return true; // skip if landmarks not available
+          const lk = landmarks[25];
+          const la = landmarks[27];
+          const rk = landmarks[26];
+          const ra = landmarks[28];
+          const leftValgus = lk.x - la.x;   // negative = knee inside ankle (valgus)
+          const rightValgus = ra.x - rk.x;  // negative = knee inside ankle (valgus)
+          return leftValgus > -0.02 && rightValgus > -0.02;
+        },
+        good: 'Knees tracking over toes',
+        bad: 'Knee cave detected -- push knees out',
+        severity: 'major',
+        citation: 'Hewett TE et al, 2005, Am J Sports Med',
+      },
     ],
     scienceNotes: 'Full ROM squats produce greater quad and glute activation than partial squats (Schoenfeld 2010). Knee valgus >10 deg increases ACL strain (Hewett 2005). Forward lean >55 deg shifts load to erectors and increases spinal shear (Fry 2003).',
   },
@@ -133,7 +155,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Hip hinge depth',
-        check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 90,
+        check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 100,
         good: 'Full hip hinge range',
         bad: 'Incomplete hinge -- push hips further back',
         severity: 'minor',
@@ -170,7 +192,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Knee soft lock',
-        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 150,
+        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 163,
         good: 'Knees slightly bent -- not locked',
         bad: 'Knees too bent -- this is becoming a squat',
         severity: 'minor',
@@ -221,6 +243,20 @@ export const EXERCISES = {
         },
         good: 'Knee angle ~90 deg at top',
         bad: 'Reposition feet -- knees should be ~90 deg at lockout',
+        severity: 'minor',
+        citation: 'Contreras B et al, 2015, J Appl Biomech',
+      },
+      {
+        name: 'Anterior pelvic tilt',
+        // At lockout (hip angle > 160), trunk should remain nearly horizontal (< 15 deg)
+        // to avoid hyperextending the lumbar spine via anterior pelvic tilt.
+        check: (angles) => {
+          const hipAngle = Math.min(angles.leftHip, angles.rightHip);
+          if (hipAngle <= 160) return true; // only check near lockout
+          return angles.trunk < 15;
+        },
+        good: 'Neutral spine at lockout',
+        bad: 'Anterior pelvic tilt detected -- tuck pelvis and brace abs at the top',
         severity: 'minor',
         citation: 'Contreras B et al, 2015, J Appl Biomech',
       },
@@ -313,12 +349,21 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Gastrocnemius', 'Soleus'], secondary: [] },
     joint: 'knee',
-    // Calf raise detection via ankle vertical displacement relative to hip
-    // We approximate by tracking the trunk/hip angle change (small)
-    // and knee staying nearly straight
-    getValue: (angles) => angles.trunk,
-    downThreshold: 3,
-    upThreshold: 8,
+    // Calf raise detection via ankle (heel) vertical displacement.
+    // landmarks[29] = LEFT_HEEL, landmarks[30] = RIGHT_HEEL.
+    // y-coordinates: 0=top of frame, 1=bottom. Rising heels = decreasing y = increasing (1-y).
+    // getValue returns the inverted average heel y so upward heel movement = increasing value.
+    getValue: (angles, landmarks) => {
+      if (landmarks && landmarks[29] && landmarks[30]) {
+        const leftHeel = landmarks[29].y;
+        const rightHeel = landmarks[30].y;
+        return (1 - (leftHeel + rightHeel) / 2) * 100; // scale to 0-100 range
+      }
+      // Fallback to trunk if landmarks unavailable
+      return angles.trunk;
+    },
+    downThreshold: 45,
+    upThreshold: 55,
     formChecks: [
       {
         name: 'Knee straight',
@@ -1359,27 +1404,6 @@ export const EXERCISES = {
   },
 
   // ===== HANGING / BAR =====
-  hanging_leg_raise: {
-    name: 'Hanging Leg Raise',
-    category: 'bodyweight',
-    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Obliques', 'Grip'] },
-    joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
-    downThreshold: 100,
-    upThreshold: 155,
-    formChecks: [
-      {
-        name: 'Leg height',
-        check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 90,
-        good: 'Legs at or above parallel',
-        bad: 'Raise legs higher -- aim for parallel or above',
-        severity: 'minor',
-        citation: 'Escamilla RF et al, 2006, Med Sci Sports Exerc',
-      },
-    ],
-    scienceNotes: 'Hanging leg raises produce peak lower rectus abdominis activation. Full ROM above parallel significantly increases oblique and transverse abdominis demand (Escamilla 2006).',
-  },
-
   muscle_up: {
     name: 'Muscle-Up',
     category: 'bodyweight',
@@ -1544,6 +1568,192 @@ export const EXERCISES = {
     scienceNotes: 'Commando pull-ups add rotational core demand to standard pull-up pattern by alternating head side on each rep (Youdas 2010).',
   },
 
+  // ===== CABLE / MACHINE ISOLATION =====
+  face_pull: {
+    name: 'Face Pull',
+    category: 'isolation',
+    muscles: { primary: ['Rear Deltoid', 'Rotator Cuff'], secondary: ['Rhomboids', 'Traps', 'Biceps'] },
+    joint: 'shoulder',
+    getValue: (angles) => Math.min(angles.leftShoulder, angles.rightShoulder),
+    downThreshold: 60,
+    upThreshold: 120,
+    formChecks: [
+      {
+        name: 'Full pull',
+        check: (angles) => Math.min(angles.leftShoulder, angles.rightShoulder) > 80,
+        good: 'Elbows high and flared -- rear delts engaged',
+        bad: 'Pull higher -- elbows should be at or above shoulder level',
+        severity: 'minor',
+        citation: 'Reinold MM et al, 2009, Am J Sports Med',
+      },
+      {
+        name: 'Trunk stable',
+        check: (angles) => angles.trunk < 15,
+        good: 'Upright torso -- no leaning back',
+        bad: 'Leaning back -- reduce weight and stay upright',
+        severity: 'major',
+        citation: 'Reinold MM et al, 2009, Am J Sports Med',
+      },
+    ],
+    scienceNotes: 'Face pulls are a primary exercise for posterior shoulder health, targeting rear delts and external rotators. High elbow position is critical for full rear delt activation (Reinold 2009).',
+  },
+
+  incline_bench_press: {
+    name: 'Incline Bench Press',
+    category: 'compound',
+    muscles: { primary: ['Upper Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
+    joint: 'elbow',
+    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    downThreshold: 70,
+    upThreshold: 155,
+    formChecks: [
+      {
+        name: 'Depth',
+        check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 75,
+        good: 'Bar touching upper chest',
+        bad: 'Lower the bar further -- touch upper chest',
+        severity: 'major',
+        citation: 'Trebs AA et al, 2010, J Strength Cond Res',
+      },
+      {
+        name: 'Lockout',
+        check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        good: 'Full lockout at top',
+        bad: 'Extend arms fully at top',
+        severity: 'minor',
+        citation: 'Trebs AA et al, 2010, J Strength Cond Res',
+      },
+    ],
+    scienceNotes: 'Incline bench press shifts emphasis to the upper (clavicular) head of the pectoralis major. A 30-45 deg incline maximizes upper pec activation (Trebs 2010).',
+  },
+
+  sumo_deadlift: {
+    name: 'Sumo Deadlift',
+    category: 'compound',
+    muscles: { primary: ['Glutes', 'Adductors', 'Quadriceps'], secondary: ['Hamstrings', 'Erectors', 'Traps'] },
+    joint: 'hip',
+    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    downThreshold: 100,
+    upThreshold: 165,
+    formChecks: [
+      {
+        name: 'Hip hinge depth',
+        check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 100,
+        good: 'Full hip hinge at setup',
+        bad: 'Push hips further back and down',
+        severity: 'minor',
+        citation: 'Escamilla RF et al, 2000, Med Sci Sports Exerc',
+      },
+      {
+        name: 'Trunk neutral',
+        check: (angles) => angles.trunk > 20 && angles.trunk < 80,
+        good: 'Back angle within safe range',
+        bad: 'Excessive trunk rounding -- maintain neutral spine',
+        severity: 'major',
+        citation: 'Escamilla RF et al, 2000, Med Sci Sports Exerc',
+      },
+    ],
+    scienceNotes: 'Sumo deadlift reduces spinal extension moment compared to conventional, increasing adductor and quad demand due to wider stance and more vertical torso (Escamilla 2000).',
+  },
+
+  nordic_curl: {
+    name: 'Nordic Curl',
+    category: 'bodyweight',
+    muscles: { primary: ['Hamstrings'], secondary: ['Glutes', 'Core'] },
+    joint: 'knee',
+    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    downThreshold: 50,
+    upThreshold: 150,
+    formChecks: [
+      {
+        name: 'Controlled descent',
+        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 60,
+        good: 'Controlled eccentric descent',
+        bad: 'Collapsing too fast -- slow the descent',
+        severity: 'major',
+        citation: 'Bourne MN et al, 2017, Br J Sports Med',
+      },
+      {
+        name: 'Trunk alignment',
+        check: (angles) => angles.trunk < 25,
+        good: 'Body in straight line from knee to shoulder',
+        bad: 'Hips breaking -- maintain a rigid torso',
+        severity: 'minor',
+        citation: 'Bourne MN et al, 2017, Br J Sports Med',
+      },
+    ],
+    scienceNotes: 'Nordic curls produce very high eccentric hamstring loading and are one of the most effective injury-prevention exercises for hamstring strains (Bourne 2017, Petersen 2011).',
+  },
+
+  seated_calf_raise: {
+    name: 'Seated Calf Raise',
+    category: 'isolation',
+    muscles: { primary: ['Soleus'], secondary: ['Gastrocnemius'] },
+    joint: 'knee',
+    // Same heel-displacement tracking as calf_raise but targets soleus (knee bent).
+    getValue: (angles, landmarks) => {
+      if (landmarks && landmarks[29] && landmarks[30]) {
+        const leftHeel = landmarks[29].y;
+        const rightHeel = landmarks[30].y;
+        return (1 - (leftHeel + rightHeel) / 2) * 100;
+      }
+      return angles.trunk;
+    },
+    downThreshold: 45,
+    upThreshold: 55,
+    formChecks: [
+      {
+        name: 'Knee bent',
+        check: (angles) => {
+          const avg = (angles.leftKnee + angles.rightKnee) / 2;
+          return avg > 80 && avg < 110;
+        },
+        good: 'Knees at ~90 deg -- soleus targeted',
+        bad: 'Maintain knee flexion to isolate soleus',
+        severity: 'major',
+        citation: 'Riemann BL et al, 2011, J Strength Cond Res',
+      },
+      {
+        name: 'Full ROM',
+        check: (angles) => angles.trunk < 15,
+        good: 'Upright seated posture',
+        bad: 'Sit upright -- avoid leaning forward',
+        severity: 'minor',
+        citation: 'Riemann BL et al, 2011, J Strength Cond Res',
+      },
+    ],
+    scienceNotes: 'Seated calf raises preferentially target the soleus due to gastrocnemius slack at the bent knee. Both heads require training for complete calf development (Riemann 2011).',
+  },
+
+  hanging_leg_raise: {
+    name: 'Hanging Leg Raise',
+    category: 'bodyweight',
+    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Obliques', 'Grip'] },
+    joint: 'hip',
+    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    downThreshold: 60,
+    upThreshold: 140,
+    formChecks: [
+      {
+        name: 'Leg height',
+        check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 90,
+        good: 'Legs at or above parallel',
+        bad: 'Raise legs higher -- aim for parallel or above',
+        severity: 'minor',
+        citation: 'Escamilla RF et al, 2006, Med Sci Sports Exerc',
+      },
+      {
+        name: 'No swinging',
+        check: (angles) => Math.abs(angles.leftHip - angles.rightHip) < 15,
+        good: 'Controlled movement -- no momentum',
+        bad: 'Swinging detected -- slow down and use control',
+        severity: 'major',
+        citation: 'Escamilla RF et al, 2006, Med Sci Sports Exerc',
+      },
+    ],
+    scienceNotes: 'Hanging leg raises produce peak lower rectus abdominis and hip flexor activation. Full ROM above parallel increases oblique and transverse abdominis demand (Escamilla 2006).',
+  },
+
   // ===== SUPERSET / COMBO =====
   superset: {
     name: 'Superset',
@@ -1697,10 +1907,10 @@ export class RepCounter {
 
     // Isometric exercises (plank) don't count reps
     if (ex.isIsometric) {
-      return this._handleIsometric(angles);
+      return this._handleIsometric(angles, landmarks);
     }
 
-    const value = ex.getValue(angles);
+    const value = ex.getValue(angles, landmarks);
     this._frameIdx++;
     this._valueHistory.push(value);
 
@@ -1769,7 +1979,7 @@ export class RepCounter {
     else if (this._direction === 'up') this._phase = 'up';
 
     // Collect form feedback every frame during active rep
-    const formFeedback = this._evaluateForm(angles);
+    const formFeedback = this._evaluateForm(angles, landmarks);
 
     // Track issues during rep — require multiple frames of failure to count
     // (prevents single-frame MediaPipe noise from penalizing form score)
@@ -1797,8 +2007,8 @@ export class RepCounter {
     };
   }
 
-  _handleIsometric(angles) {
-    const formFeedback = this._evaluateForm(angles);
+  _handleIsometric(angles, landmarks) {
+    const formFeedback = this._evaluateForm(angles, landmarks);
     return {
       reps: 0,
       phase: 'hold',
@@ -1837,9 +2047,11 @@ export class RepCounter {
     this._issueFrameCounts = {};
   }
 
-  _evaluateForm(angles) {
+  _evaluateForm(angles, landmarks) {
     return this._exercise.formChecks.map((fc) => {
-      const passed = fc.check(angles);
+      // Pass landmarks as optional second argument; existing checks that only
+      // use angles will simply ignore it.
+      const passed = fc.check(angles, landmarks);
       return {
         name: fc.name,
         passed,

@@ -2,6 +2,24 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { drawPose } from '../lib/poseAnalysis';
 
 /**
+ * Binary search for the closest frame to a given timestamp.
+ * Assumes frames is sorted by timestamp (ascending).
+ */
+function findClosestFrame(frames, time) {
+  let lo = 0, hi = frames.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (frames[mid].timestamp < time) lo = mid + 1;
+    else hi = mid;
+  }
+  // Check if lo-1 is closer
+  if (lo > 0 && Math.abs(frames[lo - 1].timestamp - time) < Math.abs(frames[lo].timestamp - time)) {
+    return frames[lo - 1];
+  }
+  return frames[lo];
+}
+
+/**
  * Replays a video with skeleton overlay drawn from stored landmark frames.
  * Includes recording capability to export as shareable video.
  */
@@ -30,14 +48,9 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     // Draw video frame
     ctx.drawImage(video, 0, 0, w, h);
 
-    // Find the closest landmark frame to current video time
+    // Find the closest landmark frame to current video time using binary search
     const t = video.currentTime;
-    let closest = null;
-    let minDist = Infinity;
-    for (const f of frames) {
-      const d = Math.abs(f.timestamp - t);
-      if (d < minDist) { minDist = d; closest = f; }
-    }
+    const closest = frames.length > 0 ? findClosestFrame(frames, t) : null;
 
     // Draw skeleton overlay
     if (closest && closest.landmarks) {

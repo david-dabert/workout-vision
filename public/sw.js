@@ -2,12 +2,12 @@ const CACHE_NAME = 'workoutvision-v1';
 const MEDIAPIPE_CACHE = 'workoutvision-mediapipe-v1';
 
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/workout-vision/',
+  '/workout-vision/index.html',
+  '/workout-vision/manifest.json',
+  '/workout-vision/favicon.svg',
+  '/workout-vision/icon-192.png',
+  '/workout-vision/icon-512.png',
 ];
 
 const MEDIAPIPE_URLS = [

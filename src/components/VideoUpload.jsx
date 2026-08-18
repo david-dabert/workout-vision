@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles } from '../lib/poseAnalysis';
 import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
@@ -49,6 +49,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const abortRef = useRef(false);
+  const videoUrlsRef = useRef([]);
+
+  // Revoke all created video URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      videoUrlsRef.current.forEach(u => URL.revokeObjectURL(u));
+    };
+  }, []);
 
   const handleFiles = (e) => {
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/'));
@@ -78,6 +86,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     if (!landmarker) return null;
 
     const url = URL.createObjectURL(queueItem.file);
+    videoUrlsRef.current.push(url);
     let urlRevoked = false;
     const safeRevoke = () => {
       if (!urlRevoked) { urlRevoked = true; URL.revokeObjectURL(url); }
@@ -246,7 +255,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           });
         };
 
-        processLoop();
+        processLoop().catch(err => {
+          console.error('Analysis failed:', err);
+          safeRevoke();
+          resolve(null);
+        });
       };
 
       video.addEventListener('loadeddata', onReady);
