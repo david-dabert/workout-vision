@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, resetTimestamp } from '../lib/poseAnalysis';
 import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
@@ -118,10 +118,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const maxDuration = isLargeFile ? 60 : duration;
         const effectiveDuration = Math.min(duration, maxDuration);
 
-        // Adaptive FPS: 3 FPS target for both regular and large files.
-        // Large files are capped to 60s so 180 frames at 3 FPS is safe.
-        const frameCap = isLargeFile ? 180 : MAX_FRAMES;
-        const analysisFps = Math.max(MIN_FPS, Math.min(3, frameCap / effectiveDuration));
+        // 8 FPS target: Nyquist-safe for ~2s rep cycles. At 8 FPS a 3-second
+        // bicep curl gets 24 frames — the bottom position (0.3s) gets 2-3 frames
+        // instead of being missed entirely at 3 FPS.
+        const TARGET_FPS = 8;
+        const frameCap = isLargeFile ? MAX_FRAMES_LARGE : MAX_FRAMES;
+        const analysisFps = Math.max(MIN_FPS, Math.min(TARGET_FPS, frameCap / effectiveDuration));
         const totalFrames = Math.min(frameCap, Math.ceil(effectiveDuration * analysisFps));
         const interval = effectiveDuration / totalFrames;
 
@@ -131,6 +133,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         canvas.width = Math.round(video.videoWidth * scale);
         canvas.height = Math.round(video.videoHeight * scale);
         const ctx = canvas.getContext('2d');
+
+        // Reset timestamp tracking for VIDEO mode (must be strictly increasing)
+        resetTimestamp();
 
         const frames = [];
         const replayFrames = []; // sampled subset for replay (every 3rd)
@@ -155,7 +160,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
             const onSeeked = () => {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const result = detectPoseImage(landmarker, canvas);
+              const timestampMs = Math.round(time * 1000);
+              const result = detectPoseImage(landmarker, canvas, timestampMs);
 
               if (result && result.landmarks && result.landmarks.length > 0) {
                 const landmarks = result.landmarks[0];
@@ -220,10 +226,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             }
           }
 
-          // Done — finalize (keep URL alive for replay)
+          // Done — run two-pass finalize to count reps with locked thresholds
           const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
           if (frames.length === 0) { safeRevoke(); resolve(null); return; }
+
+          // Pass 2: count reps with thresholds locked from full observed range
+          repCounter.finalize();
 
           console.log(`[VideoUpload] ${frames.length}/${totalFrames} frames in ${analysisTime}s (${analysisFps.toFixed(1)} FPS)`);
 
