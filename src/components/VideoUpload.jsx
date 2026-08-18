@@ -6,7 +6,7 @@ import { generateWorkoutReport } from '../lib/coach';
 import { getProfile, saveWorkout } from '../lib/storage';
 
 const exerciseKeys = Object.keys(EXERCISES);
-const ANALYSIS_FPS = 3;
+const MAX_FRAMES = 120; // hard cap: never analyze more than this many frames
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -89,7 +89,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       video.src = url;
       video.load();
 
-      // Guard against double-fire from multiple event paths
       let readyFired = false;
 
       const onReady = async () => {
@@ -105,166 +104,188 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           return;
         }
 
+        // Adaptive FPS: cap total frames at MAX_FRAMES so a 2:30 video
+        // doesn't produce 450 slow seeks. For rep counting, 1-2 FPS is fine.
+        const analysisFps = Math.min(3, MAX_FRAMES / duration);
+        const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
+        const interval = duration / totalFrames;
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
 
         const frames = [];
         let detectedExercise = exercise;
-        let repCounter = new RepCounter(exercise, { fps: ANALYSIS_FPS });
+        let repCounter = new RepCounter(exercise, { fps: analysisFps });
         const skipAutoDetect = userChangedExercise.current;
-        const autoDetector = (autoDetect && !skipAutoDetect) ? new ExerciseAutoDetector({ fps: ANALYSIS_FPS }) : null;
+        const autoDetector = (autoDetect && !skipAutoDetect) ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
         let autoDetectDone = false;
-        const interval = 1 / ANALYSIS_FPS;
-        const totalFrames = Math.floor(duration * ANALYSIS_FPS);
         let frameIndex = 0;
         const analysisStart = Date.now();
 
-        const processNextFrame = () => {
-          return new Promise((res) => {
-            const time = frameIndex * interval;
-            if (time >= duration || abortRef.current) {
-              res(false);
-              return;
+        // Use playback at high speed instead of seeking frame-by-frame.
+        // Seeking is extremely slow on mobile (each seek decodes from nearest
+        // keyframe). Playing avoids this entirely.
+        const playbackRate = Math.min(16, Math.max(2, duration / 8));
+        video.playbackRate = playbackRate;
+        video.currentTime = 0;
+
+        let nextSampleTime = 0;
+        let processingFrame = false;
+
+        const onFrame = () => {
+          if (abortRef.current || video.ended || video.paused) return;
+          if (processingFrame) { requestAnimationFrame(onFrame); return; }
+
+          const currentTime = video.currentTime;
+          if (currentTime < nextSampleTime) {
+            requestAnimationFrame(onFrame);
+            return;
+          }
+
+          processingFrame = true;
+          nextSampleTime = currentTime + interval;
+
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const result = detectPoseImage(landmarker, canvas);
+
+          if (result && result.landmarks && result.landmarks.length > 0) {
+            const landmarks = result.landmarks[0];
+            drawPose(ctx, landmarks, canvas.width, canvas.height);
+
+            if (autoDetector && !autoDetectDone && !userChangedExercise.current) {
+              const detected = autoDetector.update(landmarks);
+              if (detected) {
+                detectedExercise = detected;
+                repCounter = new RepCounter(detected, { fps: analysisFps });
+                for (const f of frames) repCounter.update(f.landmarks);
+                autoDetectDone = true;
+              }
             }
+
+            const angles = extractJointAngles(landmarks);
+            frames.push({ landmarks, timestamp: currentTime, angles });
+            repCounter.update(landmarks);
+          }
+
+          frameIndex++;
+          const pct = Math.min(99, Math.round((currentTime / duration) * 100));
+          setProgress(pct);
+          setQueue(prev => prev.map(q =>
+            q.id === queueItem.id ? { ...q, progress: pct } : q
+          ));
+
+          processingFrame = false;
+          requestAnimationFrame(onFrame);
+        };
+
+        const finalize = async () => {
+          video.pause();
+          video.playbackRate = 1;
+          safeRevoke();
+          const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
+
+          if (frames.length === 0) { resolve(null); return; }
+
+          console.log(`[VideoUpload] ${frames.length} frames in ${analysisTime}s (${analysisFps.toFixed(1)} target FPS, ${playbackRate.toFixed(1)}x playback)`);
+
+          const landmarkFrames = frames.map(f => f.landmarks);
+          const repHistory = repCounter.repHistory || [];
+          const repBoundaries = repHistory.map((r, i) => i);
+          const reps = repHistory.length;
+
+          let bioAnalysis = null;
+          try {
+            bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repBoundaries);
+          } catch (err) { console.error('Bio analysis error:', err); }
+
+          const profile = await getProfile();
+          let report = null;
+          try {
+            report = generateWorkoutReport(profile, [{
+              exerciseKey: detectedExercise, exercise: detectedExercise,
+              reps, analysis: bioAnalysis, bioAnalysis, repHistory,
+            }]);
+          } catch (err) { console.error('Report error:', err); }
+
+          const avgScore = repHistory.length > 0
+            ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
+            : bioAnalysis?.movementQuality || 0;
+
+          const w = parseFloat(weight) || 0;
+          const workout = {
+            id: Date.now().toString(), date: new Date().toISOString(),
+            exercise: detectedExercise,
+            exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
+            reps, duration: Math.round(duration), formScore: avgScore,
+            repHistory, weight: w, volume: w * reps, source: 'upload',
+          };
+
+          try { await saveWorkout(workout); }
+          catch (err) { console.error('Save error:', err); }
+
+          setProgress(100);
+          resolve({
+            fileName: queueItem.name, exercise: detectedExercise,
+            exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
+            reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
+            bioAnalysis, report, repHistory,
+          });
+        };
+
+        video.onended = finalize;
+        // Fallback: if playback stalls or ends without firing onended
+        video.addEventListener('pause', () => {
+          if (video.currentTime >= duration - 0.5) finalize();
+        }, { once: true });
+
+        video.play().then(() => {
+          requestAnimationFrame(onFrame);
+        }).catch(err => {
+          console.error('Playback failed, falling back to seek mode:', err);
+          // Seek fallback for browsers that block autoplay
+          video.playbackRate = 1;
+          let seekIdx = 0;
+          const seekNext = () => {
+            const time = seekIdx * interval;
+            if (time >= duration || abortRef.current) { finalize(); return; }
             video.currentTime = time;
-            // Use addEventListener+once to avoid stale handler buildup
-            const onSeeked = () => {
+            video.addEventListener('seeked', () => {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
               const result = detectPoseImage(landmarker, canvas);
-
-              if (result && result.landmarks && result.landmarks.length > 0) {
+              if (result?.landmarks?.length > 0) {
                 const landmarks = result.landmarks[0];
                 drawPose(ctx, landmarks, canvas.width, canvas.height);
-
                 if (autoDetector && !autoDetectDone && !userChangedExercise.current) {
                   const detected = autoDetector.update(landmarks);
                   if (detected) {
                     detectedExercise = detected;
-                    repCounter = new RepCounter(detected, { fps: ANALYSIS_FPS });
-                    for (const f of frames) {
-                      repCounter.update(f.landmarks);
-                    }
+                    repCounter = new RepCounter(detected, { fps: analysisFps });
+                    for (const f of frames) repCounter.update(f.landmarks);
                     autoDetectDone = true;
                   }
                 }
-
                 const angles = extractJointAngles(landmarks);
                 frames.push({ landmarks, timestamp: time, angles });
                 repCounter.update(landmarks);
               }
-
-              frameIndex++;
-              const pct = Math.round((frameIndex / totalFrames) * 100);
+              seekIdx++;
+              const pct = Math.min(99, Math.round((seekIdx / totalFrames) * 100));
               setProgress(pct);
               setQueue(prev => prev.map(q =>
                 q.id === queueItem.id ? { ...q, progress: pct } : q
               ));
-              res(true);
-            };
-            video.addEventListener('seeked', onSeeked, { once: true });
-          });
-        };
-
-        while (await processNextFrame()) {
-          // continue
-        }
-
-        safeRevoke();
-        const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
-
-        if (frames.length === 0) {
-          resolve(null);
-          return;
-        }
-
-        // Summary: min/max angles across all frames
-        if (frames.length > 0) {
-          const allAngles = frames.map(f => f.angles).filter(Boolean);
-          if (allAngles.length > 0) {
-            const fields = ['leftElbow', 'rightElbow', 'leftKnee', 'rightKnee', 'leftHip', 'rightHip', 'leftShoulder', 'rightShoulder', 'trunk'];
-            const summary = fields.map(f => {
-              const vals = allAngles.map(a => a[f]);
-              return `${f}: ${Math.min(...vals).toFixed(0)}-${Math.max(...vals).toFixed(0)}`;
-            }).join(', ');
-            console.log(`[VideoUpload] ANGLE RANGES: ${summary}`);
-          }
-        }
-        console.log(`[VideoUpload] Auto-detect result: detectedExercise=${detectedExercise}, autoDetectDone=${autoDetectDone}, userChanged=${userChangedExercise.current}, frames=${frames.length}, reps=${repCounter.reps}`);
-
-        const landmarkFrames = frames.map(f => f.landmarks);
-        const repHistory = repCounter.repHistory || [];
-        const repBoundaries = repHistory.map((r, i) => i);
-        const reps = repHistory.length;
-
-        let bioAnalysis = null;
-        try {
-          bioAnalysis = analyzeSet(landmarkFrames, ANALYSIS_FPS, detectedExercise, repBoundaries);
-        } catch (err) {
-          console.error('Bio analysis error:', err);
-        }
-
-        const profile = await getProfile();
-        let report = null;
-        try {
-          report = generateWorkoutReport(profile, [{
-            exerciseKey: detectedExercise,
-            exercise: detectedExercise,
-            reps,
-            analysis: bioAnalysis,
-            bioAnalysis,
-            repHistory,
-          }]);
-        } catch (err) {
-          console.error('Report error:', err);
-        }
-
-        const avgScore = repHistory.length > 0
-          ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
-          : bioAnalysis?.movementQuality || 0;
-
-        const w = parseFloat(weight) || 0;
-        const workout = {
-          id: Date.now().toString(),
-          date: new Date().toISOString(),
-          exercise: detectedExercise,
-          exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-          reps,
-          duration: Math.round(duration),
-          formScore: avgScore,
-          repHistory,
-          weight: w,
-          volume: w * reps,
-          source: 'upload',
-        };
-
-        try {
-          await saveWorkout(workout);
-        } catch (err) {
-          console.error('Save error:', err);
-        }
-
-        resolve({
-          fileName: queueItem.name,
-          exercise: detectedExercise,
-          exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-          reps,
-          duration: Math.round(duration),
-          analysisTime,
-          formScore: avgScore,
-          bioAnalysis,
-          report,
-          repHistory,
+              seekNext();
+            }, { once: true });
+          };
+          seekNext();
         });
       };
 
-      // Use loadeddata (frame available, more reliable than loadedmetadata on iOS)
       video.addEventListener('loadeddata', onReady);
-      // Fallback via loadedmetadata with buffer delay
       video.onloadedmetadata = () => {
         setTimeout(() => { if (video.readyState >= 2) onReady(); }, 300);
       };
-
       video.onerror = (e) => {
         console.error('Video load error:', e, video.error);
         video.removeEventListener('loadeddata', onReady);
@@ -272,19 +293,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         safeRevoke();
         resolve(null);
       };
-
-      // 15-second timeout fallback
       setTimeout(() => {
         if (readyFired) return;
-        if (video.readyState >= 2) {
-          onReady();
-        } else {
-          console.error('Video load timeout — readyState:', video.readyState);
-          video.removeEventListener('loadeddata', onReady);
-          video.onloadedmetadata = null;
-          safeRevoke();
-          resolve(null);
-        }
+        if (video.readyState >= 2) onReady();
+        else { safeRevoke(); resolve(null); }
       }, 15000);
     });
   }, [exercise, autoDetect]);
