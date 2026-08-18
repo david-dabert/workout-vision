@@ -1869,16 +1869,11 @@ export class RepCounter {
     this._issueFrameCounts = {};
     this._peakAngle = null;
     this._smoother.reset();
-    // Peak-valley streaming state
-    this._valueHistory = [];
-    this._direction = null; // 'up' or 'down'
-    this._lastExtremum = null; // { val, idx, type: 'peak'|'valley' }
-    this._prevExtremum = null;
+    // Threshold-crossing state: simple and robust at any FPS
+    this._atBottom = false; // true when value went below downThreshold
     this._frameIdx = 0;
     this._phase = 'up';
-    // Minimum prominence: learned after first few direction changes
-    this._observedSwings = [];
-    this._minProminence = 8;
+    this._lastValue = null;
   }
 
   /**
@@ -1912,71 +1907,32 @@ export class RepCounter {
 
     const value = ex.getValue(angles, landmarks);
     this._frameIdx++;
-    this._valueHistory.push(value);
 
     let repCompleted = false;
 
-    // Streaming peak-valley detection
-    // Use a 3-frame lookback to confirm direction (reduces jitter false triggers)
-    const histLen = this._valueHistory.length;
-    if (histLen >= 3) {
-      // Compare current to 2 frames ago for more stable direction
-      const prev2 = this._valueHistory[histLen - 3];
-      const diff = value - prev2;
-
-      if (Math.abs(diff) > 2) { // ignore small noise
-        const newDir = diff > 0 ? 'up' : 'down';
-
-        if (this._direction && newDir !== this._direction) {
-          // Direction changed — find the actual extremum in the last few frames
-          const recentVals = this._valueHistory.slice(-3);
-          const extremumVal = this._direction === 'up'
-            ? Math.max(...recentVals)
-            : Math.min(...recentVals);
-          const extremumType = this._direction === 'up' ? 'peak' : 'valley';
-          const extremumIdx = this._frameIdx - 1;
-          const newExtremum = { val: extremumVal, idx: extremumIdx, type: extremumType };
-
-          if (this._lastExtremum) {
-            const swing = Math.abs(newExtremum.val - this._lastExtremum.val);
-            this._observedSwings.push(swing);
-
-            // Update minimum prominence: use 25% of the median top-third swing.
-            // Lower floor (8) and multiplier (0.25) prevents rejecting fatigued reps.
-            if (this._observedSwings.length >= 2) {
-              const sorted = [...this._observedSwings].sort((a, b) => b - a);
-              const topThirdIdx = Math.floor(sorted.length / 3);
-              const referenceSwing = sorted[topThirdIdx];
-              this._minProminence = Math.max(8, referenceSwing * 0.25);
-            }
-
-            // Minimum time between extrema: ~1 second at any FPS
-            const minFramesBetween = Math.max(3, Math.round(this._fps * 0.8));
-            const frameGap = extremumIdx - this._lastExtremum.idx;
-
-            if (swing >= this._minProminence && frameGap >= minFramesBetween) {
-              // Count a rep on every completed half-cycle pair (valley-peak or peak-valley).
-              // Previous logic required 3 extrema (missed first rep and lost reps at low FPS).
-              if (this._prevExtremum) {
-                repCompleted = true;
-                this._peakAngle = this._lastExtremum.val;
-                this._completeRep(angles, landmarks);
-                this._phase = newExtremum.type === 'peak' ? 'up' : 'down';
-              }
-              this._prevExtremum = this._lastExtremum;
-              this._lastExtremum = newExtremum;
-            }
-          } else {
-            this._lastExtremum = newExtremum;
-          }
-        }
-        this._direction = newDir;
+    // Threshold-crossing rep detection: simple, robust at any FPS.
+    // Uses the downThreshold and upThreshold defined per exercise.
+    // 1. Value drops below downThreshold → mark "at bottom"
+    // 2. Value rises above upThreshold while "at bottom" → count rep
+    if (value <= ex.downThreshold) {
+      if (!this._atBottom) {
+        this._atBottom = true;
+        this._phase = 'down';
       }
+    } else if (value >= ex.upThreshold && this._atBottom) {
+      this._atBottom = false;
+      this._phase = 'up';
+      this._peakAngle = value;
+      repCompleted = true;
+      this._completeRep(angles, landmarks);
     }
 
-    // Update phase for display
-    if (this._direction === 'down') this._phase = 'down';
-    else if (this._direction === 'up') this._phase = 'up';
+    // Track direction for phase display
+    if (this._lastValue !== null) {
+      if (value < this._lastValue - 1) this._phase = 'down';
+      else if (value > this._lastValue + 1) this._phase = 'up';
+    }
+    this._lastValue = value;
 
     // Collect form feedback every frame during active rep
     const formFeedback = this._evaluateForm(angles, landmarks);
