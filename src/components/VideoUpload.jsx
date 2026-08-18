@@ -8,9 +8,9 @@ import { shareCard } from '../lib/shareCard';
 import VideoReplay from './VideoReplay';
 
 const exerciseKeys = Object.keys(EXERCISES);
-const MAX_FRAMES = 250; // hard cap for very long videos
-const MAX_FRAMES_LARGE = 100; // tighter cap for files >100MB to prevent mobile OOM
-const MIN_FPS = 2; // floor: below this, rep counting breaks (Nyquist on ~2s reps)
+const MAX_FRAMES = 500; // hard cap for very long videos
+const MAX_FRAMES_LARGE = 480; // 60s × 8fps — 320px canvas keeps memory safe
+const MIN_FPS = 4; // floor: below this, rep counting misses bottom positions
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -127,8 +127,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const totalFrames = Math.min(frameCap, Math.ceil(effectiveDuration * analysisFps));
         const interval = effectiveDuration / totalFrames;
 
-        // Scale canvas: large files get 320px to minimize decoded frame memory.
-        const maxW = isLargeFile ? 320 : 480;
+        // Scale canvas: 480px minimum for landmark accuracy on wrist/ankle.
+        const maxW = 480;
         const scale = Math.min(1, maxW / video.videoWidth);
         canvas.width = Math.round(video.videoWidth * scale);
         canvas.height = Math.round(video.videoHeight * scale);

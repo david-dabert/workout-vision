@@ -1993,10 +1993,10 @@ export class RepCounter {
     }
 
     const downTh = this._useAdaptive
-      ? this._observedMin + range * 0.25
+      ? this._observedMin + range * 0.15
       : ex.downThreshold;
     const upTh = this._useAdaptive
-      ? this._observedMax - range * 0.25
+      ? this._observedMax - range * 0.15
       : ex.upThreshold;
 
     console.log(`[RepCounter] finalize: observed ${this._observedMin.toFixed(1)}–${this._observedMax.toFixed(1)}, ` +
@@ -2095,8 +2095,8 @@ export class RepCounter {
       fixedDown: this._exercise.downThreshold,
       fixedUp: this._exercise.upThreshold,
       usedAdaptive: this._useAdaptive,
-      adaptiveDown: this._useAdaptive ? Math.round((this._observedMin + range * 0.25) * 10) / 10 : null,
-      adaptiveUp: this._useAdaptive ? Math.round((this._observedMax - range * 0.25) * 10) / 10 : null,
+      adaptiveDown: this._useAdaptive ? Math.round((this._observedMin + range * 0.15) * 10) / 10 : null,
+      adaptiveUp: this._useAdaptive ? Math.round((this._observedMax - range * 0.15) * 10) / 10 : null,
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
       twoPass: this._finalized,
