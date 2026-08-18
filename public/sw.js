@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workoutvision-v1';
+const CACHE_NAME = 'workoutvision-v2';
 const MEDIAPIPE_CACHE = 'workoutvision-mediapipe-v1';
 
 const APP_SHELL = [
