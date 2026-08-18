@@ -71,10 +71,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     if (!video || !canvas) return null;
 
     const landmarker = await getImageLandmarker();
-    if (!landmarker) {
-      console.error('Pose model not available');
-      return null;
-    }
+    if (!landmarker) return null;
 
     const url = URL.createObjectURL(queueItem.file);
     let urlRevoked = false;
@@ -98,14 +95,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         video.onloadedmetadata = null;
 
         const duration = video.duration;
-        if (!duration || !isFinite(duration)) {
-          safeRevoke();
-          resolve(null);
-          return;
-        }
+        if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
 
-        // Adaptive FPS: cap total frames at MAX_FRAMES so a 2:30 video
-        // doesn't produce 450 slow seeks. For rep counting, 1-2 FPS is fine.
+        // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
+        // Cap total frames so a 2:30 video doesn't produce 450 seeks.
         const analysisFps = Math.min(3, MAX_FRAMES / duration);
         const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
         const interval = duration / totalFrames;
@@ -120,74 +113,80 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const skipAutoDetect = userChangedExercise.current;
         const autoDetector = (autoDetect && !skipAutoDetect) ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
         let autoDetectDone = false;
-        let frameIndex = 0;
         const analysisStart = Date.now();
 
-        // Use playback at high speed instead of seeking frame-by-frame.
-        // Seeking is extremely slow on mobile (each seek decodes from nearest
-        // keyframe). Playing avoids this entirely.
-        const playbackRate = Math.min(16, Math.max(2, duration / 8));
-        video.playbackRate = playbackRate;
-        video.currentTime = 0;
+        // Seek to a timestamp, process the frame, return true to continue.
+        // Includes a per-seek timeout so it never hangs.
+        const processFrame = (frameIdx) => {
+          return new Promise((res) => {
+            const time = frameIdx * interval;
+            if (time >= duration || abortRef.current) { res(false); return; }
 
-        let nextSampleTime = 0;
-        let processingFrame = false;
+            video.currentTime = time;
 
-        const onFrame = () => {
-          if (abortRef.current || video.ended || video.paused) return;
-          if (processingFrame) { requestAnimationFrame(onFrame); return; }
+            let settled = false;
+            const settle = (cont) => { if (!settled) { settled = true; res(cont); } };
 
-          const currentTime = video.currentTime;
-          if (currentTime < nextSampleTime) {
-            requestAnimationFrame(onFrame);
-            return;
-          }
+            const onSeeked = () => {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const result = detectPoseImage(landmarker, canvas);
 
-          processingFrame = true;
-          nextSampleTime = currentTime + interval;
+              if (result && result.landmarks && result.landmarks.length > 0) {
+                const landmarks = result.landmarks[0];
+                drawPose(ctx, landmarks, canvas.width, canvas.height);
 
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const result = detectPoseImage(landmarker, canvas);
+                if (autoDetector && !autoDetectDone && !userChangedExercise.current) {
+                  const detected = autoDetector.update(landmarks);
+                  if (detected) {
+                    detectedExercise = detected;
+                    repCounter = new RepCounter(detected, { fps: analysisFps });
+                    for (const f of frames) repCounter.update(f.landmarks);
+                    autoDetectDone = true;
+                  }
+                }
 
-          if (result && result.landmarks && result.landmarks.length > 0) {
-            const landmarks = result.landmarks[0];
-            drawPose(ctx, landmarks, canvas.width, canvas.height);
-
-            if (autoDetector && !autoDetectDone && !userChangedExercise.current) {
-              const detected = autoDetector.update(landmarks);
-              if (detected) {
-                detectedExercise = detected;
-                repCounter = new RepCounter(detected, { fps: analysisFps });
-                for (const f of frames) repCounter.update(f.landmarks);
-                autoDetectDone = true;
+                const angles = extractJointAngles(landmarks);
+                frames.push({ landmarks, timestamp: time, angles });
+                repCounter.update(landmarks);
               }
-            }
 
-            const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: currentTime, angles });
-            repCounter.update(landmarks);
-          }
+              const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
+              setProgress(pct);
+              setQueue(prev => prev.map(q =>
+                q.id === queueItem.id ? { ...q, progress: pct } : q
+              ));
+              settle(true);
+            };
 
-          frameIndex++;
-          const pct = Math.min(99, Math.round((currentTime / duration) * 100));
-          setProgress(pct);
-          setQueue(prev => prev.map(q =>
-            q.id === queueItem.id ? { ...q, progress: pct } : q
-          ));
-
-          processingFrame = false;
-          requestAnimationFrame(onFrame);
+            video.addEventListener('seeked', onSeeked, { once: true });
+            // Per-seek timeout: skip this frame if seek hangs (3s)
+            setTimeout(() => {
+              video.removeEventListener('seeked', onSeeked);
+              settle(true); // skip frame, continue to next
+            }, 3000);
+          });
         };
 
-        const finalize = async () => {
-          video.pause();
-          video.playbackRate = 1;
+        // Process all frames sequentially, yielding to UI between frames
+        let frameIdx = 0;
+        const processLoop = async () => {
+          while (frameIdx < totalFrames) {
+            const cont = await processFrame(frameIdx);
+            if (!cont) break;
+            frameIdx++;
+            // Yield to UI every 5 frames so progress bar updates
+            if (frameIdx % 5 === 0) {
+              await new Promise(r => setTimeout(r, 0));
+            }
+          }
+
+          // Done — finalize
           safeRevoke();
           const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
           if (frames.length === 0) { resolve(null); return; }
 
-          console.log(`[VideoUpload] ${frames.length} frames in ${analysisTime}s (${analysisFps.toFixed(1)} target FPS, ${playbackRate.toFixed(1)}x playback)`);
+          console.log(`[VideoUpload] ${frames.length}/${totalFrames} frames in ${analysisTime}s (${analysisFps.toFixed(1)} FPS)`);
 
           const landmarkFrames = frames.map(f => f.landmarks);
           const repHistory = repCounter.repHistory || [];
@@ -233,53 +232,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           });
         };
 
-        video.onended = finalize;
-        // Fallback: if playback stalls or ends without firing onended
-        video.addEventListener('pause', () => {
-          if (video.currentTime >= duration - 0.5) finalize();
-        }, { once: true });
-
-        video.play().then(() => {
-          requestAnimationFrame(onFrame);
-        }).catch(err => {
-          console.error('Playback failed, falling back to seek mode:', err);
-          // Seek fallback for browsers that block autoplay
-          video.playbackRate = 1;
-          let seekIdx = 0;
-          const seekNext = () => {
-            const time = seekIdx * interval;
-            if (time >= duration || abortRef.current) { finalize(); return; }
-            video.currentTime = time;
-            video.addEventListener('seeked', () => {
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const result = detectPoseImage(landmarker, canvas);
-              if (result?.landmarks?.length > 0) {
-                const landmarks = result.landmarks[0];
-                drawPose(ctx, landmarks, canvas.width, canvas.height);
-                if (autoDetector && !autoDetectDone && !userChangedExercise.current) {
-                  const detected = autoDetector.update(landmarks);
-                  if (detected) {
-                    detectedExercise = detected;
-                    repCounter = new RepCounter(detected, { fps: analysisFps });
-                    for (const f of frames) repCounter.update(f.landmarks);
-                    autoDetectDone = true;
-                  }
-                }
-                const angles = extractJointAngles(landmarks);
-                frames.push({ landmarks, timestamp: time, angles });
-                repCounter.update(landmarks);
-              }
-              seekIdx++;
-              const pct = Math.min(99, Math.round((seekIdx / totalFrames) * 100));
-              setProgress(pct);
-              setQueue(prev => prev.map(q =>
-                q.id === queueItem.id ? { ...q, progress: pct } : q
-              ));
-              seekNext();
-            }, { once: true });
-          };
-          seekNext();
-        });
+        processLoop();
       };
 
       video.addEventListener('loadeddata', onReady);
