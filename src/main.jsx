@@ -19,6 +19,25 @@ createRoot(document.getElementById('root')).render(
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+      .then((reg) => {
+        // Force update check on every page load
+        reg.update().catch(() => {});
+        // If a new SW is waiting, tell it to activate immediately
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        reg.addEventListener('updatefound', () => {
+          const newSw = reg.installing;
+          if (newSw) {
+            newSw.addEventListener('statechange', () => {
+              if (newSw.state === 'activated') {
+                window.location.reload();
+              }
+            });
+          }
+        });
+      })
+      .catch(() => {});
   });
 }

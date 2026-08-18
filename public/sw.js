@@ -18,6 +18,13 @@ const MEDIAPIPE_URLS = [
   'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
 ];
 
+// Allow the main thread to force-activate a waiting service worker
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
