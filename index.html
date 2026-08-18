@@ -9,10 +9,23 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/workout-vision/manifest.json" />
     <title>WorkoutVision</title>
-    <script type="module" crossorigin src="/workout-vision/assets/index-By5VbesY.js"></script>
+    <script type="module" crossorigin src="/workout-vision/assets/index-Dv0Mnse4.js"></script>
     <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-D0AsQfK6.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Force-kill stale service workers and caches. Runs before React loads.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+        });
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+          });
+        }
+      }
+    </script>
   </body>
 </html>
