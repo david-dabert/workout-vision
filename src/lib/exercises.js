@@ -60,13 +60,13 @@ export const EXERCISES = {
         // Left side: knee x should be >= ankle x (or not more than 0.02 inward).
         // Right side: ankle x should be >= knee x (or not more than 0.02 inward).
         check: (angles, landmarks) => {
-          if (!landmarks) return true; // skip if landmarks not available
+          if (!landmarks || !landmarks[25] || !landmarks[26] || !landmarks[27] || !landmarks[28]) return true;
           const lk = landmarks[25];
           const la = landmarks[27];
           const rk = landmarks[26];
           const ra = landmarks[28];
-          const leftValgus = lk.x - la.x;   // negative = knee inside ankle (valgus)
-          const rightValgus = ra.x - rk.x;  // negative = knee inside ankle (valgus)
+          const leftValgus = lk.x - la.x;
+          const rightValgus = ra.x - rk.x;
           return leftValgus > -0.02 && rightValgus > -0.02;
         },
         good: 'Knees tracking over toes',
