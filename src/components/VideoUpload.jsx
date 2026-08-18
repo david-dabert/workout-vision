@@ -229,12 +229,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
           const landmarkFrames = frames.map(f => f.landmarks);
           const repHistory = repCounter.repHistory || [];
-          const repBoundaries = repHistory.map((r, i) => i);
           const reps = repHistory.length;
 
           let bioAnalysis = null;
           try {
-            bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repBoundaries);
+            bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory);
           } catch (err) { console.error('Bio analysis error:', err); }
 
           const profile = await getProfile();
@@ -275,6 +274,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             bioAnalysis, report, repHistory,
             videoUrl: isLargeFile ? null : url,
             frames: isLargeFile ? [] : replayFrames,
+            diagnostics: repCounter.diagnostics,
           });
         };
 
@@ -752,6 +752,20 @@ function ResultCard({ result, onReplay }) {
           </div>
         );
       })()}
+
+      {/* Angle diagnostics — shows actual vs expected range for debugging */}
+      {result.diagnostics && (
+        <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
+          <strong style={{ color: 'var(--text)' }}>Angle range</strong>
+          <div>Observed: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg;</div>
+          <div>Expected: below {result.diagnostics.fixedDown}&deg; &amp; above {result.diagnostics.fixedUp}&deg;</div>
+          {result.diagnostics.usedAdaptive && (
+            <div style={{ color: 'var(--accent)' }}>
+              Adaptive thresholds: {result.diagnostics.adaptiveDown}&deg; / {result.diagnostics.adaptiveUp}&deg;
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Report highlights */}
       {report?.highlights && report.highlights.length > 0 && (

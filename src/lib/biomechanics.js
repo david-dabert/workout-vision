@@ -25,10 +25,11 @@ const NORM_TO_METERS = 1.7;
  * @param {Array} landmarkFrames - array of raw landmark arrays OR {landmarks} objects
  * @param {number} fps - capture frame rate
  * @param {string} exerciseKey - key into EXERCISES
- * @param {Array} [repBoundaries] - optional; ignored, we detect reps ourselves
+ * @param {Array} [externalReps] - optional rep boundaries from RepCounter
+ *   Each entry: { startFrame, bottomFrame, endFrame }
  * @returns {Object} analysis results
  */
-export function analyzeSet(landmarkFrames, fps, exerciseKey) {
+export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
 
   const exercise = EXERCISES[exerciseKey];
@@ -45,8 +46,18 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey) {
   // Get tracking values
   const trackingValues = anglesPerFrame.map(a => a ? exercise.getValue(a) : null);
 
-  // Detect reps from angle data
-  const reps = detectReps(trackingValues);
+  // Use external rep boundaries from RepCounter if available and non-empty;
+  // otherwise fall back to internal peak-valley detection.
+  let reps;
+  if (externalReps && externalReps.length > 0) {
+    reps = externalReps.map(r => ({
+      start: Math.min(r.startFrame, rawFrames.length - 1),
+      bottom: Math.min(r.bottomFrame, rawFrames.length - 1),
+      end: Math.min(r.endFrame, rawFrames.length - 1),
+    })).filter(r => r.start >= 0 && r.bottom >= 0 && r.end >= 0 && r.end > r.start);
+  } else {
+    reps = detectReps(trackingValues);
+  }
 
   // Analyze each metric
   // For pulling exercises (rows, pulldowns, curls), the angle decreases during
