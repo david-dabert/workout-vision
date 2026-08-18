@@ -8,10 +8,28 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [todayStats, setTodayStats] = useState(null);
   const [progression, setProgression] = useState(null);
+  const [showInstall, setShowInstall] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    const handler = () => setShowInstall(true);
+    window.addEventListener('installpromptready', handler);
+    // Check if already available
+    if (window.getInstallPrompt && window.getInstallPrompt()) setShowInstall(true);
+    return () => window.removeEventListener('installpromptready', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    const prompt = window.getInstallPrompt?.();
+    if (prompt) {
+      prompt.prompt();
+      const result = await prompt.userChoice;
+      if (result.outcome === 'accepted') setShowInstall(false);
+    }
+  };
 
   async function loadData() {
     const allWorkouts = await getAllWorkouts();
@@ -65,6 +83,16 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           {statusText}
         </div>
       </div>
+
+      {showInstall && (
+        <div className="install-banner">
+          <div>
+            <p>Install WorkoutVision</p>
+            <span className="text-xs text-muted">Add to home screen for full app experience</span>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={handleInstall}>Install</button>
+        </div>
+      )}
 
       {/* Today's snapshot */}
       {todayStats && (todayStats.workoutCount > 0 || todayStats.caloriesEaten > 0) && (
@@ -157,22 +185,46 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
       )}
 
       <div className="nav-grid">
-        <div className="nav-card nav-accent" onClick={() => onNavigate('train')}>
+        <div
+          className="nav-card nav-accent"
+          onClick={() => onNavigate('train')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('train'); } }}
+        >
           <span className="nav-icon">LIVE</span>
           <span className="nav-title">Live Training</span>
           <span className="nav-desc">Real-time form coaching with camera</span>
         </div>
-        <div className="nav-card" onClick={() => onNavigate('analyze')}>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('analyze')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('analyze'); } }}
+        >
           <span className="nav-icon">VIDEO</span>
           <span className="nav-title">Analyze Video</span>
           <span className="nav-desc">Upload and analyze recordings</span>
         </div>
-        <div className="nav-card" onClick={() => onNavigate('identify')}>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('identify')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('identify'); } }}
+        >
           <span className="nav-icon">ID</span>
           <span className="nav-title">Identify Machine</span>
           <span className="nav-desc">Photo a machine to find the exercise</span>
         </div>
-        <div className="nav-card" onClick={() => onNavigate('nutrition')}>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('nutrition')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('nutrition'); } }}
+        >
           <span className="nav-icon">FOOD</span>
           <span className="nav-title">Log Nutrition</span>
           <span className="nav-desc">Scan barcode or photo your plate</span>

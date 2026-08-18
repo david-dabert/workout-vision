@@ -121,14 +121,34 @@ export function analyzeProgression(workouts, profile) {
   if (progCount > regCount && progCount > 0) overallTrend = 'progressing';
   if (regCount > progCount && regCount > 0) overallTrend = 'regressing';
 
-  // Deload check (every 4-6 weeks of progressive training, Pritchard 2015)
+  // Deload check (every 4-6 weeks of progressive training, Pritchard 2015).
+  // Two independent triggers:
+  //   1. Time-based: trained for 28+ days (first to last workout in history).
+  //   2. Form-based: >16 sets in 4 weeks with avg form score < 65.
   const fourWeekWorkouts = workouts.filter(w =>
     now - (w.createdAt || new Date(w.date).getTime()) < fourWeeks
   );
   const avgFormScore = fourWeekWorkouts.length > 0
     ? fourWeekWorkouts.reduce((s, w) => s + (w.formScore || 0), 0) / fourWeekWorkouts.length
     : 100;
-  const deloadNeeded = fourWeekWorkouts.length > 16 && avgFormScore < 65;
+
+  // Time-based gate: if training history spans 28+ days, flag deload consideration
+  const sortedByTime = [...workouts].sort((a, b) => {
+    const ta = a.createdAt || new Date(a.date).getTime();
+    const tb = b.createdAt || new Date(b.date).getTime();
+    return ta - tb;
+  });
+  const firstWorkoutTime = sortedByTime[0]
+    ? (sortedByTime[0].createdAt || new Date(sortedByTime[0].date).getTime())
+    : now;
+  const lastWorkoutTime = sortedByTime[sortedByTime.length - 1]
+    ? (sortedByTime[sortedByTime.length - 1].createdAt || new Date(sortedByTime[sortedByTime.length - 1].date).getTime())
+    : now;
+  const trainingSpanDays = (lastWorkoutTime - firstWorkoutTime) / (24 * 60 * 60 * 1000);
+  const timeBasedDeload = trainingSpanDays >= 28;
+
+  const formBasedDeload = fourWeekWorkouts.length > 16 && avgFormScore < 65;
+  const deloadNeeded = timeBasedDeload || formBasedDeload;
 
   return {
     overallTrend,
@@ -192,6 +212,19 @@ function analyzeExerciseProgression(exerciseKey, sessions, profile) {
   };
 }
 
+/**
+ * Returns true if the exercise is an isolation movement.
+ * Isolation exercises use 1.25kg increments; compound exercises use 2.5kg.
+ */
+function isIsolationExercise(exerciseKey) {
+  const ISOLATION_EXERCISES = new Set([
+    'bicep_curl', 'tricep_extension', 'lateral_raise', 'face_pull',
+    'leg_extension', 'leg_curl', 'standing_leg_extension', 'calf_raise',
+    'seated_calf_raise', 'crunch', 'hanging_leg_raise', 'nordic_curl',
+  ]);
+  return ISOLATION_EXERCISES.has(exerciseKey);
+}
+
 function generateNextTarget(exerciseKey, sessions, profile) {
   const latest = sessions[0];
   const w = latest.weight || 0;
@@ -214,8 +247,10 @@ function generateNextTarget(exerciseKey, sessions, profile) {
   }
 
   if (r >= 12 && form >= 75 && w > 0) {
-    // Top of hypertrophy range with good form: increase weight
-    const increment = w <= 20 ? 2.5 : 5;
+    // Top of hypertrophy range with good form: increase weight.
+    // Isolation movements use smaller plates (1.25kg); compounds use 2.5kg.
+    // No 5kg increment — that risks form breakdown and joint stress.
+    const increment = isIsolationExercise(exerciseKey) ? 1.25 : 2.5;
     return {
       recommendation: `Increase weight to ${w + increment}kg. You completed ${r} reps with good form — time to add load.`,
       nextWeight: w + increment,
@@ -227,9 +262,10 @@ function generateNextTarget(exerciseKey, sessions, profile) {
   if (r < 6 && w > 0) {
     // Strength range: small weight increase if form good
     if (form >= 80) {
+      const increment = isIsolationExercise(exerciseKey) ? 1.25 : 2.5;
       return {
-        recommendation: `Add 2.5kg. Solid form at ${r} reps in the strength range.`,
-        nextWeight: w + 2.5,
+        recommendation: `Add ${increment}kg. Solid form at ${r} reps in the strength range.`,
+        nextWeight: w + increment,
         nextReps: r,
         priority: 'weight',
       };

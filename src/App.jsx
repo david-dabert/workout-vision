@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { getProfile } from './lib/storage';
 import { preloadModel } from './lib/poseAnalysis';
 import { Home, TrendingUp, User, Apple } from 'lucide-react';
 import Dashboard from './components/Dashboard';
-import Train from './components/Train';
-import Analyze from './components/Analyze';
 import Progress from './components/Progress';
 import Profile from './components/Profile';
-import Nutrition from './components/Nutrition';
-import MachineIdentifier from './components/MachineIdentifier';
 import './index.css';
+
+const Train = lazy(() => import('./components/Train'));
+const Analyze = lazy(() => import('./components/Analyze'));
+const Nutrition = lazy(() => import('./components/Nutrition'));
+const MachineIdentifier = lazy(() => import('./components/MachineIdentifier'));
+
+const LazyFallback = (
+  <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+    <div className="spinner" />
+  </div>
+);
 
 function App() {
   const [page, setPage] = useState('dashboard');
@@ -27,23 +34,37 @@ function App() {
   const onNavigate = (p) => setPage(p);
 
   // Full-screen pages (no tab bar)
-  if (page === 'train') return <Train onClose={() => setPage('dashboard')} />;
-  if (page === 'analyze') return <Analyze onClose={() => setPage('dashboard')} preSelectedExercise={preSelectedExercise} />;
+  if (page === 'train') return (
+    <Suspense fallback={LazyFallback}>
+      <Train onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'analyze') return (
+    <Suspense fallback={LazyFallback}>
+      <Analyze onClose={() => setPage('dashboard')} preSelectedExercise={preSelectedExercise} />
+    </Suspense>
+  );
   if (page === 'identify') return (
-    <MachineIdentifier
-      onClose={() => setPage('dashboard')}
-      onSelectExercise={(key) => {
-        setPreSelectedExercise(key);
-        setPage('analyze');
-      }}
-    />
+    <Suspense fallback={LazyFallback}>
+      <MachineIdentifier
+        onClose={() => setPage('dashboard')}
+        onSelectExercise={(key) => {
+          setPreSelectedExercise(key);
+          setPage('analyze');
+        }}
+      />
+    </Suspense>
   );
 
   // Pages with tab bar
   const renderPage = () => {
     switch (page) {
       case 'nutrition':
-        return <Nutrition />;
+        return (
+          <Suspense fallback={LazyFallback}>
+            <Nutrition />
+          </Suspense>
+        );
       case 'progress':
         return <Progress onClose={() => setPage('dashboard')} />;
       case 'profile':

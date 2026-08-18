@@ -57,7 +57,6 @@ const EXERCISE_METS = {
   standing_leg_extension: 3.0,
   calf_raise: 3.0,
   crunch: 3.0,
-  hanging_leg_raise: 4.0,
 
   // Machine / cable
   lat_pulldown: 4.0,
@@ -66,6 +65,12 @@ const EXERCISE_METS = {
   bent_over_row: 5.0,
   machine_chest_press: 4.0,
   kettlebell_swing: 6.0,
+  face_pull: 3.0,
+  incline_bench_press: 5.0,
+  sumo_deadlift: 6.0,
+  nordic_curl: 4.0,
+  seated_calf_raise: 3.0,
+  hanging_leg_raise: 3.5,
 
   // Plyometric / cardio hybrid
   box_jump: 7.0,
@@ -86,14 +91,28 @@ const EXERCISE_METS = {
 /**
  * Estimate calories burned for a single set.
  * Formula: kcal = MET * weight(kg) * duration(hours)
- * Includes EPOC estimate (+15% for resistance training, Haddock & Wilkin 2006)
+ *
+ * EPOC (Excess Post-Exercise Oxygen Consumption) is NOT applied here.
+ * It applies once per session, not per set. Call applySessionEPOC() on the
+ * session total after summing all set calories.
+ * Source: Haddock & Wilkin 2006; Bahr 1992.
  */
 export function estimateCaloriesBurned(exerciseKey, bodyWeightKg, durationSeconds) {
   const met = EXERCISE_METS[exerciseKey] || 4.0;
   const hours = durationSeconds / 3600;
-  const baseCal = met * bodyWeightKg * hours;
-  const epocMultiplier = 1.15; // 15% EPOC for resistance training
-  return Math.round(baseCal * epocMultiplier);
+  return Math.round(met * bodyWeightKg * hours);
+}
+
+/**
+ * Apply EPOC (Excess Post-Exercise Oxygen Consumption) to a session calorie total.
+ * Call this ONCE per session after summing all set calories with estimateCaloriesBurned.
+ * Applying per-set inflates the estimate by the number of sets (Haddock & Wilkin 2006).
+ *
+ * @param {number} totalCalories - sum of all set calories for the session
+ * @returns {number} session total including 15% EPOC
+ */
+export function applySessionEPOC(totalCalories) {
+  return Math.round(totalCalories * 1.15);
 }
 
 /**
@@ -307,8 +326,12 @@ export function getDailyTargets(profile, goal = 'maintain') {
   }
   targetCal = Math.round(targetCal);
 
-  // Protein: 1.6-2.2g/kg (ISSN). Use 2.0 for training.
-  const protein = Math.round(weightKg * 2.0);
+  // Protein scaled by goal (Aragon et al. 2017 ISSN; Helms et al. 2014):
+  //   maintain: 2.0 g/kg (general training recommendation)
+  //   bulk:     1.8 g/kg (moderate surplus reduces marginal protein need)
+  //   cut:      2.5 g/kg (higher intake preserves LBM in deficit, Helms 2014)
+  const proteinPerKg = goal === 'cut' ? 2.5 : goal === 'bulk' ? 1.8 : 2.0;
+  const protein = Math.round(weightKg * proteinPerKg);
   // Fat: 25-30% of calories
   const fat = Math.round((targetCal * 0.27) / 9);
   // Carbs: remainder

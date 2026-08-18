@@ -23,6 +23,7 @@ function speak(text) {
 export default function LiveCamera({ onClose }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
   const landmarkerRef = useRef(null);
   const rafRef = useRef(null);
   const repCounterRef = useRef(null);
@@ -118,9 +119,17 @@ export default function LiveCamera({ onClose }) {
       return;
     }
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
+    // Set canvas dimensions only when they change (avoids resetting context every frame)
+    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      // Re-cache context after dimension change (context state is reset on resize)
+      ctxRef.current = canvas.getContext('2d');
+    }
+    if (!ctxRef.current) {
+      ctxRef.current = canvas.getContext('2d');
+    }
+    const ctx = ctxRef.current;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const ts = performance.now();
@@ -264,6 +273,13 @@ export default function LiveCamera({ onClose }) {
     await initCamera(next);
   }, [facingMode, initCamera]);
 
+  const handleClose = () => {
+    if (recording || setCount > 0) {
+      if (!window.confirm('Exit session? Your current session data is saved.')) return;
+    }
+    onClose();
+  };
+
   const handleExerciseChange = (e) => {
     const key = e.target.value;
     setExercise(key);
@@ -299,7 +315,7 @@ export default function LiveCamera({ onClose }) {
         )}
 
         <div className="cam-top">
-          <button className="cam-btn" onClick={onClose} aria-label="Close">&larr;</button>
+          <button className="cam-btn" onClick={handleClose} aria-label="Close">&larr;</button>
           <span className="cam-exercise-label">{EXERCISES[exercise]?.name || exercise}</span>
           <button className="cam-btn" onClick={flipCamera} aria-label="Flip camera">&#8634;</button>
         </div>
@@ -374,7 +390,7 @@ export default function LiveCamera({ onClose }) {
       )}
 
       <div className="cam-controls">
-        <select className="cam-select" value={exercise} onChange={handleExerciseChange} disabled={autoDetect}>
+        <select className="cam-select" value={exercise} onChange={handleExerciseChange} disabled={autoDetect} style={{ fontSize: 16 }}>
           {exerciseKeys.map(key => (
             <option key={key} value={key}>{EXERCISES[key].name}</option>
           ))}
@@ -385,7 +401,7 @@ export default function LiveCamera({ onClose }) {
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
           placeholder="kg"
-          style={{ width: 56, padding: '8px 6px', fontSize: '0.82rem', textAlign: 'center' }}
+          style={{ width: 56, padding: '8px 6px', fontSize: 16, textAlign: 'center' }}
         />
 
         {!recording ? (
