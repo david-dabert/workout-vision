@@ -1909,17 +1909,22 @@ export class RepCounter {
     this._frameIdx = 0;
     this._phase = 'up';
     this._lastValue = null;
-    // Continuous adaptive calibration: expand observed range throughout video
+    // Two-pass: collect all landmarks in pass 1, count reps in pass 2
+    this._collectedLandmarks = [];
     this._observedMin = Infinity;
     this._observedMax = -Infinity;
     this._useAdaptive = false;
+    this._finalized = false;
     // Frame tracking for biomechanics integration
     this._repStartFrame = 0;
     this._bottomFrame = 0;
   }
 
   /**
-   * Process a new frame of landmarks.
+   * Pass 1: collect landmarks frame by frame. No rep counting happens here.
+   * Call finalize() after all frames to trigger pass 2 (rep counting with
+   * locked thresholds computed from the full observed range).
+   *
    * @param {Array} landmarks - 33 MediaPipe landmarks
    * @returns {{ reps: number, phase: string, angle: number, angles: object,
    *            formFeedback: Array, repCompleted: boolean,
@@ -1929,20 +1934,14 @@ export class RepCounter {
     const rawAngles = extractJointAngles(landmarks);
     if (!rawAngles) {
       return {
-        reps: this._reps,
-        phase: this._phase,
-        angle: null,
-        angles: null,
-        formFeedback: [],
-        repCompleted: false,
-        repHistory: this._repHistory,
+        reps: this._reps, phase: this._phase, angle: null, angles: null,
+        formFeedback: [], repCompleted: false, repHistory: this._repHistory,
       };
     }
 
     const angles = this._smoother.smooth(rawAngles);
     const ex = this._exercise;
 
-    // Isometric exercises (plank) don't count reps
     if (ex.isIsometric) {
       return this._handleIsometric(angles, landmarks);
     }
@@ -1950,80 +1949,127 @@ export class RepCounter {
     const value = ex.getValue(angles, landmarks);
     this._frameIdx++;
 
-    // Track observed range continuously for adaptive thresholds
+    // Track observed range for threshold computation in finalize()
     if (value < this._observedMin) this._observedMin = value;
     if (value > this._observedMax) this._observedMax = value;
 
-    let repCompleted = false;
+    // Store for pass 2
+    this._collectedLandmarks.push(landmarks);
 
-    // Continuous adaptive calibration: on every frame, decide whether fixed
-    // thresholds fit the observed range. If not, compute adaptive thresholds
-    // from the running min/max. This handles camera angles, body types,
-    // portrait video distortion, and hallucinated landmarks gracefully.
-    const range = this._observedMax - this._observedMin;
-    const fixedWork = this._observedMin <= ex.downThreshold && this._observedMax >= ex.upThreshold;
-
-    // Switch to adaptive when we have enough motion AND fixed thresholds don't fit
-    if (!fixedWork && range >= 20) {
-      this._useAdaptive = true;
-    }
-
-    const downTh = this._useAdaptive
-      ? this._observedMin + range * 0.3
-      : ex.downThreshold;
-    const upTh = this._useAdaptive
-      ? this._observedMax - range * 0.3
-      : ex.upThreshold;
-
-    // Threshold-crossing rep detection
-    if (value <= downTh) {
-      if (!this._atBottom) {
-        this._atBottom = true;
-        this._phase = 'down';
-        this._bottomFrame = this._frameIdx;
-      }
-    } else if (value >= upTh && this._atBottom) {
-      this._atBottom = false;
-      this._phase = 'up';
-      this._peakAngle = value;
-      repCompleted = true;
-      this._completeRep(angles, landmarks);
-    }
-
-    // Track direction for phase display
+    // Track direction for live phase display
     if (this._lastValue !== null) {
       if (value < this._lastValue - 1) this._phase = 'down';
       else if (value > this._lastValue + 1) this._phase = 'up';
     }
     this._lastValue = value;
 
-    // Collect form feedback every frame during active rep
-    const formFeedback = this._evaluateForm(angles, landmarks);
+    return {
+      reps: this._reps, phase: this._phase,
+      angle: Math.round(value * 10) / 10, angles,
+      formFeedback: [], repCompleted: false,
+      repHistory: this._repHistory,
+    };
+  }
 
-    // Track issues during rep — require multiple frames of failure to count
-    // (prevents single-frame MediaPipe noise from penalizing form score)
-    if (this._phase !== 'up') {
-      for (const fb of formFeedback) {
-        if (!fb.passed) {
-          this._issueFrameCounts[fb.name] = (this._issueFrameCounts[fb.name] || 0) + 1;
-          // At 3 fps, 2 frames = ~0.7s of sustained failure; at 30 fps, 3 frames = ~0.1s
-          const minFrames = this._lowFps ? 2 : 3;
-          if (this._issueFrameCounts[fb.name] >= minFrames && !this._currentRepIssues.includes(fb.name)) {
-            this._currentRepIssues.push(fb.name);
+  /**
+   * Pass 2: replay all collected frames through the state machine with
+   * LOCKED thresholds. Thresholds are computed once from the full observed
+   * range and never change during counting. This eliminates the shifting-
+   * threshold race condition that produced 0 reps.
+   */
+  finalize() {
+    if (this._finalized) return;
+    this._finalized = true;
+
+    const ex = this._exercise;
+    if (ex.isIsometric || this._collectedLandmarks.length === 0) return;
+
+    // Compute thresholds once from full observed range
+    const range = this._observedMax - this._observedMin;
+    const fixedWork = this._observedMin <= ex.downThreshold && this._observedMax >= ex.upThreshold;
+
+    if (!fixedWork && range >= 20) {
+      this._useAdaptive = true;
+    }
+
+    const downTh = this._useAdaptive
+      ? this._observedMin + range * 0.25
+      : ex.downThreshold;
+    const upTh = this._useAdaptive
+      ? this._observedMax - range * 0.25
+      : ex.upThreshold;
+
+    console.log(`[RepCounter] finalize: observed ${this._observedMin.toFixed(1)}–${this._observedMax.toFixed(1)}, ` +
+      `range ${range.toFixed(1)}, adaptive=${this._useAdaptive}, downTh=${downTh.toFixed(1)}, upTh=${upTh.toFixed(1)}`);
+
+    // Reset state machine for clean pass 2
+    this._reps = 0;
+    this._repHistory = [];
+    this._atBottom = false;
+    this._phase = 'up';
+    this._peakAngle = null;
+    this._currentRepIssues = [];
+    this._issueFrameCounts = {};
+    this._repStartFrame = 0;
+    this._bottomFrame = 0;
+
+    // Fresh smoother for pass 2
+    const smoothWindow = this._fps <= 5 ? 1 : 3;
+    const smoother = new AngleBuffer(smoothWindow);
+
+    for (let i = 0; i < this._collectedLandmarks.length; i++) {
+      const landmarks = this._collectedLandmarks[i];
+      const rawAngles = extractJointAngles(landmarks);
+      if (!rawAngles) continue;
+
+      const angles = smoother.smooth(rawAngles);
+      const value = ex.getValue(angles, landmarks);
+      const frameIdx = i + 1;
+
+      // Threshold-crossing with LOCKED thresholds
+      if (value <= downTh) {
+        if (!this._atBottom) {
+          this._atBottom = true;
+          this._phase = 'down';
+          this._bottomFrame = frameIdx;
+        }
+      } else if (value >= upTh && this._atBottom) {
+        this._atBottom = false;
+        this._phase = 'up';
+        this._peakAngle = value;
+
+        // Evaluate form for this rep
+        const formFeedback = this._evaluateForm(angles, landmarks);
+        for (const fb of formFeedback) {
+          if (!fb.passed) {
+            this._issueFrameCounts[fb.name] = (this._issueFrameCounts[fb.name] || 0) + 1;
+            const minFrames = this._lowFps ? 2 : 3;
+            if (this._issueFrameCounts[fb.name] >= minFrames && !this._currentRepIssues.includes(fb.name)) {
+              this._currentRepIssues.push(fb.name);
+            }
+          }
+        }
+
+        this._frameIdx = frameIdx;
+        this._completeRep(angles, landmarks);
+      }
+
+      // Track form issues during descent
+      if (this._phase !== 'up') {
+        const formFeedback = this._evaluateForm(angles, landmarks);
+        for (const fb of formFeedback) {
+          if (!fb.passed) {
+            this._issueFrameCounts[fb.name] = (this._issueFrameCounts[fb.name] || 0) + 1;
+            const minFrames = this._lowFps ? 2 : 3;
+            if (this._issueFrameCounts[fb.name] >= minFrames && !this._currentRepIssues.includes(fb.name)) {
+              this._currentRepIssues.push(fb.name);
+            }
           }
         }
       }
     }
 
-    return {
-      reps: this._reps,
-      phase: this._phase,
-      angle: Math.round(value * 10) / 10,
-      angles,
-      formFeedback,
-      repCompleted,
-      repHistory: this._repHistory,
-    };
+    console.log(`[RepCounter] finalize complete: ${this._reps} reps detected`);
   }
 
   _handleIsometric(angles, landmarks) {
@@ -2049,8 +2095,11 @@ export class RepCounter {
       fixedDown: this._exercise.downThreshold,
       fixedUp: this._exercise.upThreshold,
       usedAdaptive: this._useAdaptive,
-      adaptiveDown: this._useAdaptive ? Math.round((this._observedMin + range * 0.3) * 10) / 10 : null,
-      adaptiveUp: this._useAdaptive ? Math.round((this._observedMax - range * 0.3) * 10) / 10 : null,
+      adaptiveDown: this._useAdaptive ? Math.round((this._observedMin + range * 0.25) * 10) / 10 : null,
+      adaptiveUp: this._useAdaptive ? Math.round((this._observedMax - range * 0.25) * 10) / 10 : null,
+      repsDetected: this._reps,
+      totalFrames: this._collectedLandmarks.length,
+      twoPass: this._finalized,
     };
   }
 
