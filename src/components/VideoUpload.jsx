@@ -5,6 +5,7 @@ import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
 import { getProfile, saveWorkout } from '../lib/storage';
 import { shareCard } from '../lib/shareCard';
+import VideoReplay from './VideoReplay';
 
 const exerciseKeys = Object.keys(EXERCISES);
 const MAX_FRAMES = 250; // hard cap for very long videos
@@ -43,6 +44,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [currentFile, setCurrentFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
+  const [replayResult, setReplayResult] = useState(null);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -182,11 +184,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             }
           }
 
-          // Done — finalize
-          safeRevoke();
+          // Done — finalize (keep URL alive for replay)
           const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
-          if (frames.length === 0) { resolve(null); return; }
+          if (frames.length === 0) { safeRevoke(); resolve(null); return; }
 
           console.log(`[VideoUpload] ${frames.length}/${totalFrames} frames in ${analysisTime}s (${analysisFps.toFixed(1)} FPS)`);
 
@@ -231,6 +232,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
             reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
             bioAnalysis, report, repHistory,
+            // Keep for replay overlay
+            videoUrl: url,
+            frames: frames.map(f => ({ landmarks: f.landmarks, timestamp: f.timestamp })),
           });
         };
 
@@ -290,6 +294,20 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   }, [queue, results, analyzeVideo]);
 
   const hasQueued = queue.some(q => q.status === 'queued');
+
+  // Show replay view if active
+  if (replayResult) {
+    return (
+      <VideoReplay
+        videoUrl={replayResult.videoUrl}
+        frames={replayResult.frames}
+        exerciseName={replayResult.exerciseName}
+        reps={replayResult.reps}
+        formScore={replayResult.formScore}
+        onClose={() => setReplayResult(null)}
+      />
+    );
+  }
 
   return (
     <div className="page">
@@ -414,14 +432,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
       {/* Results */}
       {results.map((r, idx) => (
-        <ResultCard key={idx} result={r} />
+        <ResultCard key={idx} result={r} onReplay={() => setReplayResult(r)} />
       ))}
     </div>
   );
 }
 
 
-function ResultCard({ result }) {
+function ResultCard({ result, onReplay }) {
   const {
     fileName, exerciseName, reps, duration, analysisTime,
     formScore, bioAnalysis, report, repHistory,
@@ -736,13 +754,22 @@ function ResultCard({ result }) {
         </div>
       )}
 
-      {/* Share button */}
+      {/* Action buttons */}
+      {result.videoUrl && result.frames && (
+        <button
+          className="btn btn-primary"
+          style={{ width: '100%', marginTop: 16, padding: '14px 0', fontSize: '1rem', fontWeight: 700 }}
+          onClick={onReplay}
+        >
+          Watch with AI Overlay
+        </button>
+      )}
       <button
-        className="btn btn-primary"
-        style={{ width: '100%', marginTop: 16, padding: '14px 0', fontSize: '1rem', fontWeight: 700 }}
+        className="btn btn-ghost"
+        style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
         onClick={() => shareCard(result)}
       >
-        Share Result
+        Share Summary Card
       </button>
     </div>
   );

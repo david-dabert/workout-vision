@@ -1751,3 +1751,100 @@ button:active, a:active { opacity: 0.8; }
 .progression-trend.progressing { color: var(--accent); }
 .progression-trend.plateau { color: var(--yellow); }
 .progression-trend.regressing { color: var(--red); }
+
+/* ── Video Replay ── */
+.replay-page {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.replay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.replay-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.replay-view {
+  position: relative;
+  width: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.replay-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+}
+
+.replay-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0, 255, 136, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.replay-play-btn span {
+  font-size: 28px;
+  color: var(--bg);
+  margin-left: 4px;
+}
+
+.replay-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.replay-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+
+.replay-actions {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.replay-btn {
+  width: 100%;
+  padding: 14px 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.replay-btn.rec-on {
+  background: var(--red);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
