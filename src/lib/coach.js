@@ -161,7 +161,8 @@ export function generateWorkoutReport(profile, exerciseResults) {
       if (!muscleMap[m.name]) {
         muscleMap[m.name] = { sets: 0, estimatedVolume: 0, isPrimary: false };
       }
-      if (m.isPrimary) {
+      // Only count sets when reps > 0 (prevents "Good volume" on 0-rep analyses)
+      if (m.isPrimary && reps > 0) {
         muscleMap[m.name].sets += sets;
         muscleMap[m.name].isPrimary = true;
       }
@@ -173,9 +174,11 @@ export function generateWorkoutReport(profile, exerciseResults) {
       totalScore += result.analysis.movementQuality;
       totalScoredSets++;
     } else if (result.repHistory && result.repHistory.length > 0) {
-      const avgRepScore = result.repHistory.reduce((s, r) => s + r.score, 0) / result.repHistory.length;
-      totalScore += avgRepScore;
-      totalScoredSets++;
+      const avgRepScore = result.repHistory.reduce((s, r) => s + (r.score || 0), 0) / result.repHistory.length;
+      if (!isNaN(avgRepScore)) {
+        totalScore += avgRepScore;
+        totalScoredSets++;
+      }
     }
 
     // Extract highlights and improvements from analysis

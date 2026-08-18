@@ -14,6 +14,41 @@
 import { extractJointAngles } from './poseAnalysis';
 
 // ---------------------------------------------------------------------------
+// Visibility-aware bilateral selection
+// ---------------------------------------------------------------------------
+// When filming from the side, MediaPipe hallucinates the occluded arm/leg.
+// Using Math.min of both sides clamps the value to the hallucinated angle,
+// preventing threshold crossing. This helper uses the side with better
+// landmark visibility, falling back to Math.min when both are well-tracked.
+const VIS_THRESHOLD = 0.5;
+
+function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+  const lv = angles[visLeftKey] || 0;
+  const rv = angles[visRightKey] || 0;
+  const left = angles[leftKey];
+  const right = angles[rightKey];
+  // Both sides well-tracked: use min (strictest for down-first exercises)
+  if (lv >= VIS_THRESHOLD && rv >= VIS_THRESHOLD) return Math.min(left, right);
+  // Only one side visible: use that side
+  if (lv >= VIS_THRESHOLD && rv < VIS_THRESHOLD) return left;
+  if (rv >= VIS_THRESHOLD && lv < VIS_THRESHOLD) return right;
+  // Neither well-tracked: use max (most likely the real moving limb)
+  return Math.max(left, right);
+}
+
+// For exercises where the tracked value goes UP during the concentric phase
+function bestSideMax(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+  const lv = angles[visLeftKey] || 0;
+  const rv = angles[visRightKey] || 0;
+  const left = angles[leftKey];
+  const right = angles[rightKey];
+  if (lv >= VIS_THRESHOLD && rv >= VIS_THRESHOLD) return Math.max(left, right);
+  if (lv >= VIS_THRESHOLD && rv < VIS_THRESHOLD) return left;
+  if (rv >= VIS_THRESHOLD && lv < VIS_THRESHOLD) return right;
+  return Math.max(left, right);
+}
+
+// ---------------------------------------------------------------------------
 // Exercise database
 // ---------------------------------------------------------------------------
 
@@ -24,7 +59,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Erectors', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 120,
     upThreshold: 155,
     formChecks: [
@@ -83,7 +118,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Core', 'Upper Back'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 120,
     upThreshold: 155,
     formChecks: [
@@ -120,7 +155,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Core', 'Upper Back', 'Biceps'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 115,
     upThreshold: 155,
     formChecks: [
@@ -149,7 +184,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Hamstrings', 'Glutes', 'Erectors'], secondary: ['Quadriceps', 'Traps', 'Forearms'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
@@ -186,7 +221,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Hamstrings', 'Glutes'], secondary: ['Erectors', 'Core'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
@@ -223,7 +258,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Glutes'], secondary: ['Hamstrings', 'Core'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
@@ -270,7 +305,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 105,
     upThreshold: 150,
     formChecks: [
@@ -299,7 +334,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Core', 'Hip Flexors'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 105,
     upThreshold: 150,
     formChecks: [
@@ -328,7 +363,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Quadriceps'], secondary: [] },
     joint: 'knee',
-    getValue: (angles) => Math.max(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 120,
     upThreshold: 160,
     formChecks: [
@@ -383,7 +418,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Core', 'Serratus Anterior'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -420,7 +455,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Anterior Deltoid', 'Medial Deltoid', 'Triceps'], secondary: ['Upper Pectorals', 'Core', 'Traps'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
@@ -457,7 +492,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 150,
     formChecks: [
@@ -486,7 +521,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Triceps', 'Anterior Deltoid', 'Pectorals'], secondary: ['Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 95,
     upThreshold: 155,
     formChecks: [
@@ -516,7 +551,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Rear Deltoid'], secondary: ['Biceps', 'Erectors', 'Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 130,
     upThreshold: 165,
     formChecks: [
@@ -553,7 +588,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoid', 'Rhomboids', 'Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
@@ -583,7 +618,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Biceps Brachii'], secondary: ['Brachialis', 'Brachioradialis'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
@@ -620,7 +655,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Triceps (long head)'], secondary: [] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 140,
     formChecks: [
@@ -657,7 +692,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Medial Deltoid'], secondary: ['Anterior Deltoid', 'Traps'] },
     joint: 'shoulder',
-    getValue: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder),
+    getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
     upThreshold: 70,
     formChecks: [
@@ -695,7 +730,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Rear Deltoid'], secondary: ['Biceps', 'Traps'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 65,
     upThreshold: 110,
     formChecks: [
@@ -724,7 +759,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Latissimus Dorsi', 'Rhomboids'], secondary: ['Biceps', 'Rear Deltoid', 'Erectors'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 65,
     upThreshold: 110,
     formChecks: [
@@ -753,7 +788,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoid', 'Rhomboids', 'Traps'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 130,
     formChecks: [
@@ -782,7 +817,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 70,
     upThreshold: 120,
     formChecks: [
@@ -811,7 +846,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Quadriceps'], secondary: [] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 70,
     upThreshold: 120,
     formChecks: [
@@ -840,7 +875,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Hamstrings'], secondary: ['Gastrocnemius'] },
     joint: 'knee',
-    getValue: (angles) => Math.max(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 120,
     upThreshold: 160,
     formChecks: [
@@ -861,7 +896,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 130,
     formChecks: [
@@ -945,7 +980,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Core', 'Hip Flexors'], secondary: ['Shoulders', 'Quadriceps', 'Glutes'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
     upThreshold: 140,
     formChecks: [
@@ -966,7 +1001,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Pectorals', 'Shoulders', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -987,7 +1022,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Full Body'], secondary: ['Deltoids', 'Calves', 'Hip Abductors'] },
     joint: 'shoulder',
-    getValue: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder),
+    getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 70,
     formChecks: [
@@ -1009,7 +1044,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Anterior Deltoid', 'Triceps'], secondary: ['Upper Pectorals', 'Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
     upThreshold: 150,
     formChecks: [
@@ -1038,7 +1073,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Triceps', 'Pectorals'], secondary: ['Anterior Deltoid', 'Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
     upThreshold: 150,
     formChecks: [
@@ -1067,7 +1102,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Rear Deltoid'], secondary: ['Biceps', 'Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
@@ -1100,7 +1135,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Calves', 'Hamstrings', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 110,
     upThreshold: 155,
     formChecks: [
@@ -1129,7 +1164,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Core', 'Hip Stabilizers'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 90,
     upThreshold: 150,
     formChecks: [
@@ -1158,7 +1193,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Glutes'], secondary: ['Hamstrings', 'Core'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -1191,7 +1226,7 @@ export const EXERCISES = {
     muscles: { primary: ['Quadriceps'], secondary: ['Glutes', 'Core'] },
     joint: 'knee',
     isIsometric: true,
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: null,
     upThreshold: null,
     formChecks: [
@@ -1220,7 +1255,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -1250,7 +1285,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Glutes', 'Hamstrings'], secondary: ['Core', 'Shoulders', 'Erectors'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
@@ -1287,7 +1322,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Quadriceps', 'Glutes', 'Shoulders', 'Triceps'], secondary: ['Core', 'Upper Back'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 110,
     upThreshold: 155,
     formChecks: [
@@ -1316,7 +1351,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Full Body'], secondary: ['Traps', 'Glutes', 'Shoulders', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 110,
     upThreshold: 155,
     formChecks: [
@@ -1345,7 +1380,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Obliques', 'Shoulders'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
     upThreshold: 150,
     formChecks: [
@@ -1366,7 +1401,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Core', 'Glutes', 'Hip Stabilizers'] },
     joint: 'shoulder',
-    getValue: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder),
+    getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
     upThreshold: 80,
     formChecks: [
@@ -1387,7 +1422,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Core', 'Shoulders'], secondary: ['Quadriceps', 'Hip Flexors', 'Triceps'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 120,
     formChecks: [
@@ -1409,7 +1444,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Latissimus Dorsi', 'Pectorals', 'Triceps'], secondary: ['Biceps', 'Core', 'Shoulders'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
@@ -1438,7 +1473,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Biceps', 'Latissimus Dorsi'], secondary: ['Rear Deltoid', 'Core'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
@@ -1468,7 +1503,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Quadriceps', 'Glutes', 'Calves'], secondary: ['Hamstrings', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -1489,7 +1524,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Glutes', 'Quadriceps'], secondary: ['Hip Abductors', 'Core', 'Calves'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 150,
     formChecks: [
@@ -1510,7 +1545,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Calves', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 150,
     formChecks: [
@@ -1531,7 +1566,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Back', 'Chest', 'Core', 'Legs'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -1552,7 +1587,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Latissimus Dorsi', 'Biceps', 'Obliques'], secondary: ['Core', 'Forearms'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
@@ -1574,7 +1609,7 @@ export const EXERCISES = {
     category: 'isolation',
     muscles: { primary: ['Rear Deltoid', 'Rotator Cuff'], secondary: ['Rhomboids', 'Traps', 'Biceps'] },
     joint: 'shoulder',
-    getValue: (angles) => Math.min(angles.leftShoulder, angles.rightShoulder),
+    getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 60,
     upThreshold: 120,
     formChecks: [
@@ -1603,7 +1638,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Upper Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
-    getValue: (angles) => Math.min(angles.leftElbow, angles.rightElbow),
+    getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 155,
     formChecks: [
@@ -1632,7 +1667,7 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Glutes', 'Adductors', 'Quadriceps'], secondary: ['Hamstrings', 'Erectors', 'Traps'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 165,
     formChecks: [
@@ -1661,7 +1696,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Hamstrings'], secondary: ['Glutes', 'Core'] },
     joint: 'knee',
-    getValue: (angles) => Math.min(angles.leftKnee, angles.rightKnee),
+    getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 50,
     upThreshold: 150,
     formChecks: [
@@ -1730,7 +1765,7 @@ export const EXERCISES = {
     category: 'bodyweight',
     muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Obliques', 'Grip'] },
     joint: 'hip',
-    getValue: (angles) => Math.min(angles.leftHip, angles.rightHip),
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 60,
     upThreshold: 140,
     formChecks: [
@@ -1869,11 +1904,18 @@ export class RepCounter {
     this._issueFrameCounts = {};
     this._peakAngle = null;
     this._smoother.reset();
-    // Threshold-crossing state: simple and robust at any FPS
-    this._atBottom = false; // true when value went below downThreshold
+    // Threshold-crossing state
+    this._atBottom = false;
     this._frameIdx = 0;
     this._phase = 'up';
     this._lastValue = null;
+    // Continuous adaptive calibration: expand observed range throughout video
+    this._observedMin = Infinity;
+    this._observedMax = -Infinity;
+    this._useAdaptive = false;
+    // Frame tracking for biomechanics integration
+    this._repStartFrame = 0;
+    this._bottomFrame = 0;
   }
 
   /**
@@ -1908,18 +1950,39 @@ export class RepCounter {
     const value = ex.getValue(angles, landmarks);
     this._frameIdx++;
 
+    // Track observed range continuously for adaptive thresholds
+    if (value < this._observedMin) this._observedMin = value;
+    if (value > this._observedMax) this._observedMax = value;
+
     let repCompleted = false;
 
-    // Threshold-crossing rep detection: simple, robust at any FPS.
-    // Uses the downThreshold and upThreshold defined per exercise.
-    // 1. Value drops below downThreshold → mark "at bottom"
-    // 2. Value rises above upThreshold while "at bottom" → count rep
-    if (value <= ex.downThreshold) {
+    // Continuous adaptive calibration: on every frame, decide whether fixed
+    // thresholds fit the observed range. If not, compute adaptive thresholds
+    // from the running min/max. This handles camera angles, body types,
+    // portrait video distortion, and hallucinated landmarks gracefully.
+    const range = this._observedMax - this._observedMin;
+    const fixedWork = this._observedMin <= ex.downThreshold && this._observedMax >= ex.upThreshold;
+
+    // Switch to adaptive when we have enough motion AND fixed thresholds don't fit
+    if (!fixedWork && range >= 20) {
+      this._useAdaptive = true;
+    }
+
+    const downTh = this._useAdaptive
+      ? this._observedMin + range * 0.3
+      : ex.downThreshold;
+    const upTh = this._useAdaptive
+      ? this._observedMax - range * 0.3
+      : ex.upThreshold;
+
+    // Threshold-crossing rep detection
+    if (value <= downTh) {
       if (!this._atBottom) {
         this._atBottom = true;
         this._phase = 'down';
+        this._bottomFrame = this._frameIdx;
       }
-    } else if (value >= ex.upThreshold && this._atBottom) {
+    } else if (value >= upTh && this._atBottom) {
       this._atBottom = false;
       this._phase = 'up';
       this._peakAngle = value;
@@ -1976,6 +2039,21 @@ export class RepCounter {
     };
   }
 
+  /** Diagnostic data for debugging on mobile */
+  get diagnostics() {
+    const range = this._observedMax - this._observedMin;
+    return {
+      observedMin: Math.round(this._observedMin * 10) / 10,
+      observedMax: Math.round(this._observedMax * 10) / 10,
+      observedRange: Math.round(range * 10) / 10,
+      fixedDown: this._exercise.downThreshold,
+      fixedUp: this._exercise.upThreshold,
+      usedAdaptive: this._useAdaptive,
+      adaptiveDown: this._useAdaptive ? Math.round((this._observedMin + range * 0.3) * 10) / 10 : null,
+      adaptiveUp: this._useAdaptive ? Math.round((this._observedMax - range * 0.3) * 10) / 10 : null,
+    };
+  }
+
   _completeRep(angles, landmarks) {
     this._reps++;
     const totalChecks = this._exercise.formChecks.length;
@@ -2003,11 +2081,17 @@ export class RepCounter {
       issues: issueTexts,
       ts: Date.now(),
       peakAngle: this._peakAngle,
+      // Frame indices for biomechanics: start of descent, bottom, end of ascent
+      startFrame: this._repStartFrame,
+      bottomFrame: this._bottomFrame,
+      endFrame: this._frameIdx,
     });
 
     this._peakAngle = null;
     this._currentRepIssues = [];
     this._issueFrameCounts = {};
+    // Next rep starts from this frame
+    this._repStartFrame = this._frameIdx;
   }
 
   _evaluateForm(angles, landmarks) {
@@ -2087,15 +2171,16 @@ export class ExerciseAutoDetector {
     // Debug: log classification data every 3 frames
     if (this._frameBuffer.length % 3 === 0) {
       const buf = this._frameBuffer;
-      const kA = this._getAvg(buf, (a) => (a.leftKnee + a.rightKnee) / 2);
-      const kR = this._getRange(buf, (a) => (a.leftKnee + a.rightKnee) / 2);
-      const hA = this._getAvg(buf, (a) => (a.leftHip + a.rightHip) / 2);
-      const hR = this._getRange(buf, (a) => (a.leftHip + a.rightHip) / 2);
-      const eR = this._getRange(buf, (a) => (a.leftElbow + a.rightElbow) / 2);
+      const vs = (a, l, r, vl, vr) => bestSide(a, l, r, vl, vr);
+      const kA = this._getAvg(buf, (a) => vs(a, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'));
+      const kR = this._getRange(buf, (a) => vs(a, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'));
+      const hA = this._getAvg(buf, (a) => vs(a, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'));
+      const hR = this._getRange(buf, (a) => vs(a, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'));
+      const eR = this._getRange(buf, (a) => vs(a, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'));
       const tA = this._getAvg(buf, (a) => a.trunk);
-      const sA = this._getAvg(buf, (a) => (a.leftShoulder + a.rightShoulder) / 2);
+      const sA = this._getAvg(buf, (a) => vs(a, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'));
       const seated = (hA < 130 && hR < 20) || (kA < 130 && kR < 25 && hA < 140);
-      console.log(`[AutoDetect] knee=${kA.toFixed(0)}±${kR.toFixed(0)} hip=${hA.toFixed(0)}±${hR.toFixed(0)} elbow±${eR.toFixed(0)} shoulder=${sA.toFixed(0)} trunk=${tA.toFixed(0)} seated=${seated} → ${detection} (conf=${this._detectionConfidence}/${this._requiredConfidence})`);
+      console.log(`[AutoDetect] knee=${kA.toFixed(0)}±${kR.toFixed(0)} hip=${hA.toFixed(0)}±${hR.toFixed(0)} elbow±=${eR.toFixed(0)} shoulder=${sA.toFixed(0)} trunk=${tA.toFixed(0)} seated=${seated} → ${detection} (conf=${this._detectionConfidence}/${this._requiredConfidence})`);
     }
 
     if (detection === this._lastDetection) {
@@ -2112,25 +2197,25 @@ export class ExerciseAutoDetector {
   }
 
   _classify(angles) {
-    const kneeAvg = (angles.leftKnee + angles.rightKnee) / 2;
-    const hipAvg = (angles.leftHip + angles.rightHip) / 2;
-    const elbowAvg = (angles.leftElbow + angles.rightElbow) / 2;
-    const shoulderAvg = (angles.leftShoulder + angles.rightShoulder) / 2;
+    // Use visibility-aware bilateral selection (same as RepCounter getValue)
+    const kneeAvg = bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee');
+    const hipAvg = bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip');
+    const elbowAvg = bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow');
+    const shoulderAvg = bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder');
     const trunk = angles.trunk;
 
-    // Use full buffer for range and average calculations
+    // Use full buffer for range and average calculations with visibility awareness
     const buf = this._frameBuffer;
-    const kneeRange = this._getRange(buf, (a) => (a.leftKnee + a.rightKnee) / 2);
-    const hipRange = this._getRange(buf, (a) => (a.leftHip + a.rightHip) / 2);
-    const elbowRange = this._getRange(buf, (a) => (a.leftElbow + a.rightElbow) / 2);
-    const shoulderRange = this._getRange(buf, (a) => (a.leftShoulder + a.rightShoulder) / 2);
+    const visSel = (a, l, r, vl, vr) => bestSide(a, l, r, vl, vr);
+    const kneeRange = this._getRange(buf, (a) => visSel(a, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'));
+    const hipRange = this._getRange(buf, (a) => visSel(a, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'));
+    const elbowRange = this._getRange(buf, (a) => visSel(a, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'));
+    const shoulderRange = this._getRange(buf, (a) => visSel(a, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'));
     const trunkRange = this._getRange(buf, (a) => a.trunk);
 
-    // Buffer averages are noise-resistant absolute-value guards.
-    // They prevent false positives from single-frame jitter.
-    const kneeBufAvg = this._getAvg(buf, (a) => (a.leftKnee + a.rightKnee) / 2);
-    const hipBufAvg = this._getAvg(buf, (a) => (a.leftHip + a.rightHip) / 2);
-    const elbowBufAvg = this._getAvg(buf, (a) => (a.leftElbow + a.rightElbow) / 2);
+    const kneeBufAvg = this._getAvg(buf, (a) => visSel(a, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'));
+    const hipBufAvg = this._getAvg(buf, (a) => visSel(a, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'));
+    const elbowBufAvg = this._getAvg(buf, (a) => visSel(a, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'));
     const trunkBufAvg = this._getAvg(buf, (a) => a.trunk);
 
     // Determine if person is seated using MULTIPLE signals (ankle occlusion
