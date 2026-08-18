@@ -1972,103 +1972,139 @@ export class RepCounter {
   }
 
   /**
-   * Pass 2: replay all collected frames through the state machine with
-   * LOCKED thresholds. Thresholds are computed once from the full observed
-   * range and never change during counting. This eliminates the shifting-
-   * threshold race condition that produced 0 reps.
+   * Pass 2: peak-valley rep detection on the full collected signal.
+   *
+   * Algorithm:
+   * 1. Extract the exercise getValue() for every frame → raw signal
+   * 2. Smooth with a wider window (5-frame moving average)
+   * 3. Find local minima (valleys) and maxima (peaks)
+   * 4. A rep = one valley followed by one peak where (peak - valley) >= minROM
+   *    minROM = 30% of the full observed range, minimum 15 degrees
+   *
+   * This replaces threshold-crossing entirely. No thresholds to tune.
+   * Works on any absolute angle range.
    */
   finalize() {
     if (this._finalized) return;
     this._finalized = true;
 
     const ex = this._exercise;
-    if (ex.isIsometric || this._collectedLandmarks.length === 0) return;
+    if (ex.isIsometric || this._collectedLandmarks.length < 6) return;
 
-    // Compute thresholds once from full observed range
-    const range = this._observedMax - this._observedMin;
-    const fixedWork = this._observedMin <= ex.downThreshold && this._observedMax >= ex.upThreshold;
-
-    if (!fixedWork && range >= 20) {
-      this._useAdaptive = true;
-    }
-
-    const downTh = this._useAdaptive
-      ? this._observedMin + range * 0.15
-      : ex.downThreshold;
-    const upTh = this._useAdaptive
-      ? this._observedMax - range * 0.15
-      : ex.upThreshold;
-
-    console.log(`[RepCounter] finalize: observed ${this._observedMin.toFixed(1)}–${this._observedMax.toFixed(1)}, ` +
-      `range ${range.toFixed(1)}, adaptive=${this._useAdaptive}, downTh=${downTh.toFixed(1)}, upTh=${upTh.toFixed(1)}`);
-
-    // Reset state machine for clean pass 2
-    this._reps = 0;
-    this._repHistory = [];
-    this._atBottom = false;
-    this._phase = 'up';
-    this._peakAngle = null;
-    this._currentRepIssues = [];
-    this._issueFrameCounts = {};
-    this._repStartFrame = 0;
-    this._bottomFrame = 0;
-
-    // Fresh smoother for pass 2
-    const smoothWindow = this._fps <= 5 ? 1 : 3;
-    const smoother = new AngleBuffer(smoothWindow);
+    // Step 1: extract raw signal and per-frame angles/landmarks
+    const rawSignal = [];
+    const frameData = []; // { angles, landmarks } per frame
+    const smoother = new AngleBuffer(this._fps <= 5 ? 1 : 3);
 
     for (let i = 0; i < this._collectedLandmarks.length; i++) {
       const landmarks = this._collectedLandmarks[i];
       const rawAngles = extractJointAngles(landmarks);
-      if (!rawAngles) continue;
-
+      if (!rawAngles) {
+        rawSignal.push(null);
+        frameData.push(null);
+        continue;
+      }
       const angles = smoother.smooth(rawAngles);
       const value = ex.getValue(angles, landmarks);
-      const frameIdx = i + 1;
+      rawSignal.push(value);
+      frameData.push({ angles, landmarks });
+    }
 
-      // Threshold-crossing with LOCKED thresholds
-      if (value <= downTh) {
-        if (!this._atBottom) {
-          this._atBottom = true;
-          this._phase = 'down';
-          this._bottomFrame = frameIdx;
-        }
-      } else if (value >= upTh && this._atBottom) {
-        this._atBottom = false;
-        this._phase = 'up';
-        this._peakAngle = value;
-
-        // Evaluate form for this rep
-        const formFeedback = this._evaluateForm(angles, landmarks);
-        for (const fb of formFeedback) {
-          if (!fb.passed) {
-            this._issueFrameCounts[fb.name] = (this._issueFrameCounts[fb.name] || 0) + 1;
-            const minFrames = this._lowFps ? 2 : 3;
-            if (this._issueFrameCounts[fb.name] >= minFrames && !this._currentRepIssues.includes(fb.name)) {
-              this._currentRepIssues.push(fb.name);
-            }
-          }
-        }
-
-        this._frameIdx = frameIdx;
-        this._completeRep(angles, landmarks);
+    // Step 2: smooth the signal with 5-frame moving average
+    const smoothed = [];
+    const halfW = 2; // window = 5 frames
+    for (let i = 0; i < rawSignal.length; i++) {
+      if (rawSignal[i] === null) { smoothed.push(null); continue; }
+      let sum = 0, count = 0;
+      for (let j = Math.max(0, i - halfW); j <= Math.min(rawSignal.length - 1, i + halfW); j++) {
+        if (rawSignal[j] !== null) { sum += rawSignal[j]; count++; }
       }
+      smoothed.push(count > 0 ? sum / count : null);
+    }
 
-      // Track form issues during descent
-      if (this._phase !== 'up') {
-        const formFeedback = this._evaluateForm(angles, landmarks);
-        for (const fb of formFeedback) {
-          if (!fb.passed) {
-            this._issueFrameCounts[fb.name] = (this._issueFrameCounts[fb.name] || 0) + 1;
-            const minFrames = this._lowFps ? 2 : 3;
-            if (this._issueFrameCounts[fb.name] >= minFrames && !this._currentRepIssues.includes(fb.name)) {
-              this._currentRepIssues.push(fb.name);
+    // Step 3: find peaks and valleys
+    // A peak is a frame where value > both neighbors
+    // A valley is a frame where value < both neighbors
+    const extrema = []; // { type: 'peak'|'valley', index, value }
+    for (let i = 1; i < smoothed.length - 1; i++) {
+      if (smoothed[i] === null || smoothed[i-1] === null || smoothed[i+1] === null) continue;
+      if (smoothed[i] > smoothed[i-1] && smoothed[i] > smoothed[i+1]) {
+        extrema.push({ type: 'peak', index: i, value: smoothed[i] });
+      } else if (smoothed[i] < smoothed[i-1] && smoothed[i] < smoothed[i+1]) {
+        extrema.push({ type: 'valley', index: i, value: smoothed[i] });
+      }
+    }
+
+    // Merge consecutive same-type extrema (keep the most extreme)
+    const merged = [];
+    for (const e of extrema) {
+      if (merged.length > 0 && merged[merged.length - 1].type === e.type) {
+        const prev = merged[merged.length - 1];
+        if (e.type === 'peak' && e.value > prev.value) merged[merged.length - 1] = e;
+        if (e.type === 'valley' && e.value < prev.value) merged[merged.length - 1] = e;
+      } else {
+        merged.push(e);
+      }
+    }
+
+    // Step 4: count reps as valley→peak pairs with sufficient ROM
+    const range = this._observedMax - this._observedMin;
+    const minROM = Math.max(15, range * 0.3);
+
+    console.log(`[RepCounter] finalize: ${this._collectedLandmarks.length} frames, ` +
+      `observed ${this._observedMin.toFixed(1)}–${this._observedMax.toFixed(1)}, ` +
+      `range ${range.toFixed(1)}, minROM ${minROM.toFixed(1)}, ` +
+      `${merged.length} extrema found`);
+
+    // Reset rep state
+    this._reps = 0;
+    this._repHistory = [];
+    this._currentRepIssues = [];
+    this._issueFrameCounts = {};
+
+    let lastValley = null;
+    let repStartFrame = 0;
+
+    for (const e of merged) {
+      if (e.type === 'valley') {
+        lastValley = e;
+        if (this._reps === 0 && repStartFrame === 0) {
+          // First valley: mark the start of descent from whichever peak preceded it
+          repStartFrame = Math.max(0, e.index - 1);
+        }
+      } else if (e.type === 'peak' && lastValley !== null) {
+        const rom = e.value - lastValley.value;
+        if (rom >= minROM) {
+          // Valid rep: valley (bottom of curl) → peak (arm extended)
+          this._peakAngle = e.value;
+          this._repStartFrame = repStartFrame;
+          this._bottomFrame = lastValley.index;
+          this._frameIdx = e.index;
+
+          // Evaluate form at the bottom of this rep
+          this._currentRepIssues = [];
+          this._issueFrameCounts = {};
+          const bottomData = frameData[lastValley.index];
+          if (bottomData) {
+            const formFeedback = this._evaluateForm(bottomData.angles, bottomData.landmarks);
+            for (const fb of formFeedback) {
+              if (!fb.passed) {
+                this._currentRepIssues.push(fb.name);
+              }
             }
           }
+
+          this._completeRep(
+            frameData[e.index]?.angles || bottomData?.angles || {},
+            frameData[e.index]?.landmarks || bottomData?.landmarks || []
+          );
+          repStartFrame = e.index;
+          lastValley = null; // consumed
         }
       }
     }
 
+    this._useAdaptive = true; // for diagnostics display
     console.log(`[RepCounter] finalize complete: ${this._reps} reps detected`);
   }
 
@@ -2088,18 +2124,15 @@ export class RepCounter {
   /** Diagnostic data for debugging on mobile */
   get diagnostics() {
     const range = this._observedMax - this._observedMin;
+    const minROM = Math.max(15, range * 0.3);
     return {
       observedMin: Math.round(this._observedMin * 10) / 10,
       observedMax: Math.round(this._observedMax * 10) / 10,
       observedRange: Math.round(range * 10) / 10,
-      fixedDown: this._exercise.downThreshold,
-      fixedUp: this._exercise.upThreshold,
-      usedAdaptive: this._useAdaptive,
-      adaptiveDown: this._useAdaptive ? Math.round((this._observedMin + range * 0.15) * 10) / 10 : null,
-      adaptiveUp: this._useAdaptive ? Math.round((this._observedMax - range * 0.15) * 10) / 10 : null,
+      minROM: Math.round(minROM * 10) / 10,
+      method: 'peak-valley',
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
-      twoPass: this._finalized,
     };
   }
 

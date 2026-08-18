@@ -762,17 +762,13 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {/* Angle diagnostics — shows actual vs expected range for debugging */}
+      {/* Angle diagnostics */}
       {result.diagnostics && (
         <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
-          <strong style={{ color: 'var(--text)' }}>Angle range</strong>
-          <div>Observed: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg;</div>
-          <div>Expected: below {result.diagnostics.fixedDown}&deg; &amp; above {result.diagnostics.fixedUp}&deg;</div>
-          {result.diagnostics.usedAdaptive && (
-            <div style={{ color: 'var(--accent)' }}>
-              Adaptive thresholds: {result.diagnostics.adaptiveDown}&deg; / {result.diagnostics.adaptiveUp}&deg;
-            </div>
-          )}
+          <strong style={{ color: 'var(--text)' }}>Engine</strong>
+          <div>Range: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
+          <div>Min ROM per rep: {result.diagnostics.minROM}&deg;</div>
+          <div>Frames: {result.diagnostics.totalFrames} | Method: {result.diagnostics.method}</div>
         </div>
       )}
 
