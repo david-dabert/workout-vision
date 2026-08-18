@@ -17,27 +17,6 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
-      .then((reg) => {
-        // Force update check on every page load
-        reg.update().catch(() => {});
-        // If a new SW is waiting, tell it to activate immediately
-        if (reg.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-        reg.addEventListener('updatefound', () => {
-          const newSw = reg.installing;
-          if (newSw) {
-            newSw.addEventListener('statechange', () => {
-              if (newSw.state === 'activated') {
-                window.location.reload();
-              }
-            });
-          }
-        });
-      })
-      .catch(() => {});
-  });
-}
+// Service worker disabled — was serving stale cached bundles.
+// MediaPipe WASM/model files are cached by the browser's HTTP cache anyway.
+// Re-enable once the core engine is stable.
