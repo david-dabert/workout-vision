@@ -107,11 +107,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const totalFrames = Math.ceil(duration * analysisFps);
         const interval = duration / totalFrames;
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Scale canvas down to max 480px width to save memory on mobile
+        const scale = Math.min(1, 480 / video.videoWidth);
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
         const ctx = canvas.getContext('2d');
 
         const frames = [];
+        const replayFrames = []; // sampled subset for replay (every 3rd)
         let detectedExercise = exercise;
         let repCounter = new RepCounter(exercise, { fps: analysisFps });
         const skipAutoDetect = userChangedExercise.current;
@@ -152,6 +155,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 const angles = extractJointAngles(landmarks);
                 frames.push({ landmarks, timestamp: time, angles });
                 repCounter.update(landmarks);
+
+                // Sample every 3rd frame for replay (saves memory)
+                if (frameIdx % 3 === 0) {
+                  replayFrames.push({ landmarks, timestamp: time });
+                }
               }
 
               const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
@@ -232,9 +240,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
             reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
             bioAnalysis, report, repHistory,
-            // Keep for replay overlay
+            // Sampled subset for replay overlay (every 3rd frame)
             videoUrl: url,
-            frames: frames.map(f => ({ landmarks: f.landmarks, timestamp: f.timestamp })),
+            frames: replayFrames,
           });
         };
 
@@ -414,20 +422,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         )}
       </div>
 
-      {/* Video and canvas for analysis — always in DOM, visually hidden when not analyzing.
-           Using opacity+position instead of display:none because iOS Safari refuses to
-           load video metadata or allow seeking on display:none elements. */}
+      {/* Video element: always in DOM for iOS Safari compatibility.
+           Hidden visually but not display:none (iOS won't seek on hidden elements).
+           Canvas shows the video frame + skeleton overlay during analysis. */}
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        preload="auto"
+        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+      />
+      {/* Canvas: shows video frame + skeleton during analysis */}
       <div
         className="analysis-card"
         style={analyzing
-          ? { display: 'block' }
-          : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
+          ? { display: 'block', padding: 8 }
+          : { display: 'none' }
         }
       >
-        <div className="analysis-view">
-          <video ref={videoRef} className="analysis-video" muted playsInline preload="auto" />
-          <canvas ref={canvasRef} className="analysis-canvas" />
-        </div>
+        <canvas ref={canvasRef} style={{ width: '100%', borderRadius: 8, display: 'block' }} />
       </div>
 
       {/* Results */}
