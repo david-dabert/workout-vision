@@ -118,8 +118,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const maxDuration = isLargeFile ? 60 : duration;
         const effectiveDuration = Math.min(duration, maxDuration);
 
-        // Adaptive FPS with tighter caps for large files
-        const frameCap = isLargeFile ? 120 : MAX_FRAMES;
+        // Adaptive FPS: 3 FPS target for both regular and large files.
+        // Large files are capped to 60s so 180 frames at 3 FPS is safe.
+        const frameCap = isLargeFile ? 180 : MAX_FRAMES;
         const analysisFps = Math.max(MIN_FPS, Math.min(3, frameCap / effectiveDuration));
         const totalFrames = Math.min(frameCap, Math.ceil(effectiveDuration * analysisFps));
         const interval = effectiveDuration / totalFrames;
