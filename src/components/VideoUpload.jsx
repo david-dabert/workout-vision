@@ -95,7 +95,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     return new Promise((resolve) => {
       video.muted = true;
       video.playsInline = true;
-      video.preload = 'auto';
+      video.preload = 'metadata';
       video.src = url;
       video.load();
 
@@ -116,8 +116,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         const totalFrames = Math.ceil(duration * analysisFps);
         const interval = duration / totalFrames;
 
-        // Scale canvas down to max 480px width to save memory on mobile
-        const scale = Math.min(1, 480 / video.videoWidth);
+        // Scale canvas down to save memory on mobile.
+        // Large files (>100MB) get 360px max; others get 480px.
+        const maxW = queueItem.file.size > 100 * 1024 * 1024 ? 360 : 480;
+        const scale = Math.min(1, maxW / video.videoWidth);
         canvas.width = Math.round(video.videoWidth * scale);
         canvas.height = Math.round(video.videoHeight * scale);
         const ctx = canvas.getContext('2d');
@@ -442,7 +444,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         ref={videoRef}
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
       />
       {/* Canvas: shows video frame + skeleton during analysis */}
