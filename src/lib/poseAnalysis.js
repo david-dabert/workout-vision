@@ -7,13 +7,15 @@
  *   on joint angles but costs 8x model size and 3x inference time.
  * - GPU delegate with automatic CPU fallback. Many mobile GPUs reject the delegate
  *   silently; we catch and retry.
- * - VIDEO mode for both upload and live camera (temporal tracking between frames
- *   gives stable, consistent landmark positions across the video).
+ * - IMAGE mode for video upload analysis (each frame independent — no stale
+ *   temporal state between different videos).
+ * - VIDEO mode for live camera (uses temporal tracking for smoother results).
  */
 
 import { PoseLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
 let poseLandmarkerVideo = null;
+let poseLandmarkerImage = null;
 let visionFiles = null;
 let lastVideoTime = -1;
 let modelLoadPromise = null;
@@ -65,15 +67,13 @@ async function createLandmarker(runningMode) {
 
 /**
  * Pre-load model. Call once at app startup.
- * Returns a promise that resolves when the model is ready.
- * Uses VIDEO mode for everything — temporal tracking between frames
- * gives stable landmarks even on uploaded video analysis.
+ * Uses IMAGE mode for video upload (stateless — no cross-video contamination).
  */
 export function preloadModel() {
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
     try {
-      poseLandmarkerVideo = await createLandmarker('VIDEO');
+      poseLandmarkerImage = await createLandmarker('IMAGE');
       return true;
     } catch (e) {
       console.error('Failed to preload pose model:', e);
@@ -84,32 +84,28 @@ export function preloadModel() {
   return modelLoadPromise;
 }
 
+export async function getImageLandmarker() {
+  if (poseLandmarkerImage) return poseLandmarkerImage;
+  await preloadModel();
+  return poseLandmarkerImage;
+}
+
 export async function getVideoLandmarker() {
   if (poseLandmarkerVideo) return poseLandmarkerVideo;
-  await preloadModel();
+  poseLandmarkerVideo = await createLandmarker('VIDEO');
   return poseLandmarkerVideo;
 }
 
-// Keep backward compat alias
-export const getImageLandmarker = getVideoLandmarker;
-
 /**
- * Detect pose on a video frame (for video upload analysis).
- * Uses VIDEO mode with timestamps for temporal tracking between frames.
- * @param {PoseLandmarker} landmarker
- * @param {HTMLCanvasElement|HTMLVideoElement} source
- * @param {number} timestampMs - frame timestamp in milliseconds
+ * Detect pose on a single frame (for video upload analysis).
+ * Uses IMAGE mode — each frame is independent, no temporal state
+ * that could contaminate results when analyzing multiple videos.
  */
-export function detectPoseImage(landmarker, source, timestampMs = 0) {
-  // Ensure strictly increasing timestamps (VIDEO mode requires this)
-  if (timestampMs <= lastVideoTime) {
-    timestampMs = lastVideoTime + 1;
-  }
-  lastVideoTime = timestampMs;
+export function detectPoseImage(landmarker, source) {
   try {
-    return landmarker.detectForVideo(source, timestampMs);
+    return landmarker.detect(source);
   } catch (e) {
-    console.warn('Pose detection error (video frame):', e);
+    console.warn('Pose detection error (image):', e);
     return null;
   }
 }
