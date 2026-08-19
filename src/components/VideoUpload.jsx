@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, resetTimestamp } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles } from '../lib/poseAnalysis';
 import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
@@ -134,9 +134,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         canvas.height = Math.round(video.videoHeight * scale);
         const ctx = canvas.getContext('2d');
 
-        // Reset timestamp tracking for VIDEO mode (must be strictly increasing)
-        resetTimestamp();
-
         const frames = [];
         const replayFrames = []; // sampled subset for replay (every 3rd)
         let detectedExercise = exercise;
@@ -160,8 +157,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
             const onSeeked = () => {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const timestampMs = Math.round(time * 1000);
-              const result = detectPoseImage(landmarker, canvas, timestampMs);
+              const result = detectPoseImage(landmarker, canvas);
 
               if (result && result.landmarks && result.landmarks.length > 0) {
                 const landmarks = result.landmarks[0];
