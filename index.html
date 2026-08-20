@@ -9,23 +9,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/workout-vision/manifest.json" />
     <title>WorkoutVision</title>
-    <script type="module" crossorigin src="/workout-vision/assets/index-Bw6YT3VO.js"></script>
+    <script type="module" crossorigin src="/workout-vision/assets/index-drzw-uQl.js"></script>
     <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-D0AsQfK6.css">
   </head>
   <body>
     <div id="root"></div>
     <script>
-      // Force-kill stale service workers and caches. Runs before React loads.
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          regs.forEach(function(r) { r.unregister(); });
-        });
-        if ('caches' in window) {
-          caches.keys().then(function(keys) {
-            keys.forEach(function(k) { caches.delete(k); });
-          });
-        }
-      }
+      // Block app rendering until stale service workers and caches are fully purged.
+      // Without this, an old SW intercepts the module fetch and serves cached JS.
+      window.__swReady = (async function() {
+        try {
+          if ('serviceWorker' in navigator) {
+            var regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(function(r) { return r.unregister(); }));
+          }
+          if ('caches' in window) {
+            var keys = await caches.keys();
+            await Promise.all(keys.map(function(k) { return caches.delete(k); }));
+          }
+        } catch(e) {}
+      })();
     </script>
   </body>
 </html>
