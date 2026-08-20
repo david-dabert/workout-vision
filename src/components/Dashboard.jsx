@@ -11,10 +11,6 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
   const [showInstall, setShowInstall] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
     const handler = () => setShowInstall(true);
     window.addEventListener('installpromptready', handler);
     // Check if already available
@@ -72,6 +68,27 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
     : modelStatus === 'error' ? 'err' : 'pulse';
   const statusText = modelStatus === 'ready' ? 'AI Engine Ready'
     : modelStatus === 'error' ? 'Engine Failed' : 'Loading AI...';
+
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    loadData().finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="home">
+      <div className="home-top">
+        <h1 className="logo">Workout<span>Vision</span></h1>
+        <p className="tagline">Your AI Gym Companion</p>
+        <div className="model-status"><span className={`dot ${statusDot}`} />{statusText}</div>
+      </div>
+      <div className="card" style={{ height: 80, background: 'var(--card)', borderRadius: 'var(--radius)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+      <div className="nav-grid">
+        {[1,2,3,4,5].map(i => (
+          <div key={i} className="nav-card" style={{ opacity: 0.4, minHeight: 90 }} />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="home">
@@ -229,6 +246,39 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           <span className="nav-title">Log Nutrition</span>
           <span className="nav-desc">Scan barcode or photo your plate</span>
         </div>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('plan')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('plan'); } }}
+        >
+          <span className="nav-icon">PLAN</span>
+          <span className="nav-title">My Plan</span>
+          <span className="nav-desc">Personalized workout plan & body analysis</span>
+        </div>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('log')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('log'); } }}
+        >
+          <span className="nav-icon">LOG</span>
+          <span className="nav-title">Manual Log</span>
+          <span className="nav-desc">Log sets without camera</span>
+        </div>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('history')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('history'); } }}
+        >
+          <span className="nav-icon">PRs</span>
+          <span className="nav-title">Exercise History</span>
+          <span className="nav-desc">All sets, PRs, and progress per exercise</span>
+        </div>
       </div>
 
       {!profile && (
@@ -286,15 +336,14 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
         </div>
 
         <div className="science">
-          <h4>Built on exercise science</h4>
+          <h4>What makes it different</h4>
           <ul>
-            <li>MediaPipe BlazePose: 33 body landmarks at 15fps</li>
-            <li>Velocity-based training (Gonzalez-Badillo 2017)</li>
-            <li>Progressive overload (Kraemer & Ratamess 2004)</li>
-            <li>Volume targets: 10-20 sets/muscle/week (Schoenfeld 2017)</li>
-            <li>MET-based calorie estimation (Ainsworth 2011)</li>
-            <li>ISSN protein targets (Aragon 2017)</li>
-            <li>55+ exercises with peer-reviewed form checks</li>
+            <li>Real-time pose detection with 33 body landmarks</li>
+            <li>Per-rep form scoring and voice coaching</li>
+            <li>Velocity tracking for fatigue detection</li>
+            <li>55+ exercises with form analysis</li>
+            <li>Personalized nutrition and macro targets</li>
+            <li>Periodized workout plans adapted to your goals</li>
           </ul>
         </div>
       </div>

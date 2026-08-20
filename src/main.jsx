@@ -11,12 +11,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 window.getInstallPrompt = () => deferredInstallPrompt;
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
-
-// Service worker disabled — was serving stale cached bundles.
-// MediaPipe WASM/model files are cached by the browser's HTTP cache anyway.
-// Re-enable once the core engine is stable.
+// Wait for stale service worker cleanup (set in index.html) before rendering.
+// This guarantees no old SW serves cached JS for this page load.
+const swReady = window.__swReady || Promise.resolve();
+swReady.then(() => {
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+});

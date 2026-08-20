@@ -1,11 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getVideoLandmarker, detectPoseVideo, drawPose, resetTimestamp } from '../lib/poseAnalysis';
+import { getVideoLandmarker, detectPoseVideo, drawPose, resetTimestamp, disposeAllLandmarkers } from '../lib/poseAnalysis';
 import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { saveWorkout, getProfile } from '../lib/storage';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
 
-const exerciseKeys = Object.keys(EXERCISES);
+// Group exercises by category for the selector
+const EXERCISE_GROUPS = (() => {
+  const groups = { compound: [], isolation: [], bodyweight: [] };
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    if (key === 'superset') continue;
+    const cat = ex.category || 'compound';
+    if (groups[cat]) groups[cat].push({ key, name: ex.name });
+    else groups.compound.push({ key, name: ex.name });
+  }
+  for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
+  return groups;
+})();
 const TARGET_FPS = 15;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const REST_PRESETS = [30, 60, 90, 120, 180];
@@ -34,9 +45,10 @@ export default function LiveCamera({ onClose }) {
   const lastVoiceCueRef = useRef(0);
 
   const [status, setStatus] = useState('loading');
-  const [exercise, setExercise] = useState('squat');
+  const [exercise, setExercise] = useState('__auto__');
   const [weight, setWeight] = useState('');
-  const [autoDetect, setAutoDetect] = useState(false);
+  const [autoDetect, setAutoDetect] = useState(true);
+  const [detectedName, setDetectedName] = useState('');
   const [voiceCoach, setVoiceCoach] = useState(false);
   const [recording, setRecording] = useState(false);
   const [facingMode, setFacingMode] = useState('environment');
@@ -84,7 +96,13 @@ export default function LiveCamera({ onClose }) {
         autoDetectorRef.current = new ExerciseAutoDetector();
         if (profile?.weight) setBodyWeight(parseFloat(profile.weight) || 70);
         await initCamera(facingMode);
-        if (!cancelled) setStatus('ready');
+        if (!cancelled) {
+          setStatus('ready');
+          // Start passive detection loop immediately so auto-detect
+          // runs before the user taps "Start Set"
+          lastFrameTimeRef.current = 0;
+          rafRef.current = requestAnimationFrame(processFrame);
+        }
       } catch (err) {
         console.error('Setup error:', err);
         if (!cancelled) setStatus('error');
@@ -98,6 +116,7 @@ export default function LiveCamera({ onClose }) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
       if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+      disposeAllLandmarkers();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -143,7 +162,10 @@ export default function LiveCamera({ onClose }) {
         const detected = autoDetectorRef.current.update(landmarks);
         if (detected && detected !== exercise) {
           setExercise(detected);
+          setDetectedName(EXERCISES[detected]?.name || detected);
           repCounterRef.current = new RepCounter(detected);
+          setReps(0);
+          setRepBars([]);
         }
       }
 
@@ -178,7 +200,15 @@ export default function LiveCamera({ onClose }) {
 
   const startSet = useCallback(() => {
     warmUpAudio();
-    repCounterRef.current = new RepCounter(exercise);
+    // If auto-detect already identified an exercise during passive mode, use it
+    const activeExercise = exercise === '__auto__'
+      ? (detectedName ? Object.keys(EXERCISES).find(k => EXERCISES[k].name === detectedName) || 'squat' : 'squat')
+      : exercise;
+    repCounterRef.current = new RepCounter(activeExercise);
+    if (exercise === '__auto__') {
+      // Don't reset auto-detector -- keep its accumulated vote history
+      // so it can refine or change detection during the set
+    }
     resetTimestamp();
     setReps(0);
     setPhase('');
@@ -188,10 +218,11 @@ export default function LiveCamera({ onClose }) {
     setRecording(true);
     startTimeRef.current = Date.now();
     lastFrameTimeRef.current = 0;
-    rafRef.current = requestAnimationFrame(processFrame);
-  }, [exercise, processFrame]);
+    // RAF loop is already running from setup; no need to restart
+  }, [exercise, detectedName, processFrame]);
 
   const startRestTimer = useCallback(() => {
+    if (restIntervalRef.current) clearInterval(restIntervalRef.current);
     setResting(true);
     setRestTimer(restDuration);
     if (voiceCoach) speak(`Rest ${restDuration} seconds`);
@@ -219,10 +250,9 @@ export default function LiveCamera({ onClose }) {
 
   const stopSet = useCallback(async () => {
     setRecording(false);
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
+    // Do NOT cancel RAF here -- keep pose detection running for passive auto-detect
+    // between sets. The processFrame callback checks `recording` state to decide
+    // whether to count reps or just detect.
 
     const counter = repCounterRef.current;
     if (counter && reps > 0) {
@@ -234,15 +264,16 @@ export default function LiveCamera({ onClose }) {
         : 0;
 
       const w = parseFloat(weight) || 0;
-      const cal = estimateCaloriesBurned(exercise, bodyWeight, duration);
+      const savedExercise = exercise === '__auto__' ? (detectedName ? Object.keys(EXERCISES).find(k => EXERCISES[k].name === detectedName) || 'squat' : 'squat') : exercise;
+      const cal = estimateCaloriesBurned(savedExercise, bodyWeight, duration);
       setTotalCalories(prev => prev + cal);
       setSetCount(prev => prev + 1);
 
       const workout = {
         id: Date.now().toString(),
         date: new Date().toISOString(),
-        exercise,
-        exerciseName: EXERCISES[exercise]?.name || exercise,
+        exercise: savedExercise,
+        exerciseName: EXERCISES[savedExercise]?.name || savedExercise,
         reps,
         duration,
         formScore: avgScore,
@@ -282,11 +313,20 @@ export default function LiveCamera({ onClose }) {
 
   const handleExerciseChange = (e) => {
     const key = e.target.value;
-    setExercise(key);
-    if (recording) {
-      repCounterRef.current = new RepCounter(key);
-      setReps(0);
-      setRepBars([]);
+    if (key === '__auto__') {
+      setExercise('__auto__');
+      setAutoDetect(true);
+      setDetectedName('');
+      autoDetectorRef.current = new ExerciseAutoDetector();
+    } else {
+      setExercise(key);
+      setAutoDetect(false);
+      setDetectedName('');
+      if (recording) {
+        repCounterRef.current = new RepCounter(key);
+        setReps(0);
+        setRepBars([]);
+      }
     }
   };
 
@@ -316,7 +356,11 @@ export default function LiveCamera({ onClose }) {
 
         <div className="cam-top">
           <button className="cam-btn" onClick={handleClose} aria-label="Close">&larr;</button>
-          <span className="cam-exercise-label">{EXERCISES[exercise]?.name || exercise}</span>
+          <span className="cam-exercise-label">
+            {exercise === '__auto__'
+              ? (detectedName || 'Detecting...')
+              : (EXERCISES[exercise]?.name || exercise)}
+          </span>
           <button className="cam-btn" onClick={flipCamera} aria-label="Flip camera">&#8634;</button>
         </div>
 
@@ -390,10 +434,26 @@ export default function LiveCamera({ onClose }) {
       )}
 
       <div className="cam-controls">
-        <select className="cam-select" value={exercise} onChange={handleExerciseChange} disabled={autoDetect} style={{ fontSize: 16 }}>
-          {exerciseKeys.map(key => (
-            <option key={key} value={key}>{EXERCISES[key].name}</option>
-          ))}
+        <select className="cam-select" value={exercise} onChange={handleExerciseChange} style={{ fontSize: 16 }}>
+          <option value="__auto__">Automatic</option>
+          <optgroup label="Compound">
+            {EXERCISE_GROUPS.compound.map(e => (
+              <option key={e.key} value={e.key}>{e.name}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Isolation">
+            {EXERCISE_GROUPS.isolation.map(e => (
+              <option key={e.key} value={e.key}>{e.name}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Bodyweight">
+            {EXERCISE_GROUPS.bodyweight.map(e => (
+              <option key={e.key} value={e.key}>{e.name}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Other">
+            <option value="superset">Superset / Other</option>
+          </optgroup>
         </select>
 
         <input
@@ -421,10 +481,6 @@ export default function LiveCamera({ onClose }) {
 
       {/* Secondary controls */}
       <div className="cam-controls-secondary">
-        <label className="cam-auto">
-          <input type="checkbox" checked={autoDetect} onChange={(e) => setAutoDetect(e.target.checked)} style={{ width: 'auto', marginRight: 4 }} />
-          Auto-detect
-        </label>
         <label className="cam-auto">
           <input type="checkbox" checked={voiceCoach} onChange={(e) => setVoiceCoach(e.target.checked)} style={{ width: 'auto', marginRight: 4 }} />
           Voice coach

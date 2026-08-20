@@ -11,6 +11,9 @@ const Train = lazy(() => import('./components/Train'));
 const Analyze = lazy(() => import('./components/Analyze'));
 const Nutrition = lazy(() => import('./components/Nutrition'));
 const MachineIdentifier = lazy(() => import('./components/MachineIdentifier'));
+const WorkoutPlan = lazy(() => import('./components/WorkoutPlan'));
+const ManualLog = lazy(() => import('./components/ManualLog'));
+const ExerciseHistory = lazy(() => import('./components/ExerciseHistory'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
@@ -55,6 +58,21 @@ function App() {
       />
     </Suspense>
   );
+  if (page === 'plan') return (
+    <Suspense fallback={LazyFallback}>
+      <WorkoutPlan onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'log') return (
+    <Suspense fallback={LazyFallback}>
+      <ManualLog onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'history') return (
+    <Suspense fallback={LazyFallback}>
+      <ExerciseHistory onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
 
   // Pages with tab bar
   const renderPage = () => {
@@ -83,10 +101,12 @@ function App() {
   return (
     <div className="app">
       {renderPage()}
-      <nav className="tab-bar">
+      <nav className="tab-bar" aria-label="Main navigation">
         <button
           className={`tab ${page === 'dashboard' ? 'active' : ''}`}
           onClick={() => setPage('dashboard')}
+          aria-label="Home"
+          aria-current={page === 'dashboard' ? 'page' : undefined}
         >
           <Home size={18} />
           <span className="tab-label">Home</span>
@@ -94,6 +114,8 @@ function App() {
         <button
           className={`tab ${page === 'nutrition' ? 'active' : ''}`}
           onClick={() => setPage('nutrition')}
+          aria-label="Nutrition"
+          aria-current={page === 'nutrition' ? 'page' : undefined}
         >
           <Apple size={18} />
           <span className="tab-label">Nutrition</span>
@@ -101,6 +123,8 @@ function App() {
         <button
           className={`tab ${page === 'progress' ? 'active' : ''}`}
           onClick={() => setPage('progress')}
+          aria-label="Progress"
+          aria-current={page === 'progress' ? 'page' : undefined}
         >
           <TrendingUp size={18} />
           <span className="tab-label">Progress</span>
@@ -108,6 +132,8 @@ function App() {
         <button
           className={`tab ${page === 'profile' ? 'active' : ''}`}
           onClick={() => setPage('profile')}
+          aria-label="Profile"
+          aria-current={page === 'profile' ? 'page' : undefined}
         >
           <User size={18} />
           <span className="tab-label">Profile</span>

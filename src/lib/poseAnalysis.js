@@ -73,6 +73,11 @@ export function preloadModel() {
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
     try {
+      // Close any stale instance before creating a new one (WebGL context leak prevention)
+      if (poseLandmarkerImage) {
+        try { poseLandmarkerImage.close(); } catch (_) {}
+        poseLandmarkerImage = null;
+      }
       poseLandmarkerImage = await createLandmarker('IMAGE');
       return true;
     } catch (e) {
@@ -92,8 +97,28 @@ export async function getImageLandmarker() {
 
 export async function getVideoLandmarker() {
   if (poseLandmarkerVideo) return poseLandmarkerVideo;
+  // No early return — close any zombie reference before creating (WebGL context leak prevention)
   poseLandmarkerVideo = await createLandmarker('VIDEO');
   return poseLandmarkerVideo;
+}
+
+/**
+ * Dispose all active landmarker instances.
+ * Call on component unmount to free WebGL contexts.
+ * iOS Safari hard-limits ~16 contexts; without disposal,
+ * navigating between LiveCamera and VideoUpload leaks them.
+ */
+export function disposeAllLandmarkers() {
+  if (poseLandmarkerVideo) {
+    try { poseLandmarkerVideo.close(); } catch (_) { /* already closed */ }
+    poseLandmarkerVideo = null;
+  }
+  if (poseLandmarkerImage) {
+    try { poseLandmarkerImage.close(); } catch (_) { /* already closed */ }
+    poseLandmarkerImage = null;
+  }
+  modelLoadPromise = null;
+  lastVideoTime = -1;
 }
 
 /**

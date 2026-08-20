@@ -7,7 +7,19 @@ import { getProfile, saveWorkout } from '../lib/storage';
 import { shareCard } from '../lib/shareCard';
 import VideoReplay from './VideoReplay';
 
-const exerciseKeys = Object.keys(EXERCISES);
+// Group exercises by category for the selector
+const EXERCISE_GROUPS = (() => {
+  const groups = { compound: [], isolation: [], bodyweight: [] };
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    if (key === 'superset') continue; // handled as "Other"
+    const cat = ex.category || 'compound';
+    if (groups[cat]) groups[cat].push({ key, name: ex.name });
+    else groups.compound.push({ key, name: ex.name });
+  }
+  // Sort each group alphabetically
+  for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
+  return groups;
+})();
 const MAX_FRAMES = 500; // hard cap for very long videos
 const MAX_FRAMES_LARGE = 480; // 60s × 8fps — 320px canvas keeps memory safe
 const MIN_FPS = 4; // floor: below this, rep counting misses bottom positions
@@ -37,7 +49,7 @@ function formatTime(seconds) {
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [queue, setQueue] = useState([]);
-  const [exercise, setExercise] = useState(preSelectedExercise || 'squat');
+  const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
   const userChangedExercise = useRef(!!preSelectedExercise);
   const [weight, setWeight] = useState('');
@@ -111,24 +123,24 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let duration = video.duration;
         if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
 
-        // Large files crash mobile Safari's memory limit.
-        // Fix: only analyze the first 60 seconds. The user gets results
-        // instead of a crash. They can trim the video for full analysis.
-        const isLargeFile = queueItem.file.size > 100 * 1024 * 1024;
-        const maxDuration = isLargeFile ? 60 : duration;
+        // Memory tiers for mobile Safari:
+        // - Normal (<100MB): full analysis, 8fps, 480px canvas
+        // - Large (100-300MB): 60s cap, 4fps, 480px canvas
+        // - Huge (>300MB): 45s cap, 3fps, 320px canvas, aggressive GC
+        const fileSize = queueItem.file.size;
+        const isHugeFile = fileSize > 300 * 1024 * 1024;
+        const isLargeFile = fileSize > 100 * 1024 * 1024;
+        const maxDuration = isHugeFile ? 45 : isLargeFile ? 60 : duration;
         const effectiveDuration = Math.min(duration, maxDuration);
 
-        // 8 FPS target: Nyquist-safe for ~2s rep cycles. At 8 FPS a 3-second
-        // bicep curl gets 24 frames — the bottom position (0.3s) gets 2-3 frames
-        // instead of being missed entirely at 3 FPS.
-        const TARGET_FPS = 8;
-        const frameCap = isLargeFile ? MAX_FRAMES_LARGE : MAX_FRAMES;
+        const TARGET_FPS = isHugeFile ? 3 : isLargeFile ? 4 : 8;
+        const frameCap = isHugeFile ? 135 : isLargeFile ? MAX_FRAMES_LARGE : MAX_FRAMES;
         const analysisFps = Math.max(MIN_FPS, Math.min(TARGET_FPS, frameCap / effectiveDuration));
         const totalFrames = Math.min(frameCap, Math.ceil(effectiveDuration * analysisFps));
         const interval = effectiveDuration / totalFrames;
 
-        // Scale canvas: 480px minimum for landmark accuracy on wrist/ankle.
-        const maxW = 480;
+        // Scale canvas: 480px for normal, 320px for huge to reduce decode memory
+        const maxW = isHugeFile ? 320 : 480;
         const scale = Math.min(1, maxW / video.videoWidth);
         canvas.width = Math.round(video.videoWidth * scale);
         canvas.height = Math.round(video.videoHeight * scale);
@@ -136,11 +148,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
         const frames = [];
         const replayFrames = []; // sampled subset for replay (every 3rd)
-        let detectedExercise = exercise;
-        let repCounter = new RepCounter(exercise, { fps: analysisFps });
-        const skipAutoDetect = userChangedExercise.current;
-        const autoDetector = (autoDetect && !skipAutoDetect) ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
+        const isAutoMode = exercise === '__auto__';
+        const initialExercise = isAutoMode ? 'squat' : exercise;
+        let detectedExercise = initialExercise;
+        let repCounter = new RepCounter(initialExercise, { fps: analysisFps });
+        const skipAutoDetect = !isAutoMode && userChangedExercise.current;
+        const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect)) ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
         let autoDetectDone = false;
+        let autoDetected = false; // tracks whether detection actually fired
         const analysisStart = Date.now();
 
         // Seek to a timestamp, process the frame, return true to continue.
@@ -163,29 +178,44 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 const landmarks = result.landmarks[0];
                 drawPose(ctx, landmarks, canvas.width, canvas.height);
 
-                if (autoDetector && !autoDetectDone && !userChangedExercise.current) {
-                  const detected = autoDetector.update(landmarks);
-                  if (detected) {
-                    detectedExercise = detected;
-                    repCounter = new RepCounter(detected, { fps: analysisFps });
-                    for (const f of frames) repCounter.update(f.landmarks);
-                    autoDetectDone = true;
+                if (autoDetector && !userChangedExercise.current) {
+                  // Allow re-detection in first 40% of frames to correct early misclassifications
+                  const earlyPhase = frameIdx < totalFrames * 0.4;
+                  if (!autoDetectDone || earlyPhase) {
+                    const detected = autoDetector.update(landmarks);
+                    if (detected && detected !== detectedExercise) {
+                      detectedExercise = detected;
+                      autoDetected = true;
+                      repCounter = new RepCounter(detected, { fps: analysisFps });
+                      for (const f of frames) repCounter.update(f.landmarks);
+                      if (!earlyPhase) autoDetectDone = true;
+                      setExercise(detected);
+                    }
                   }
                 }
 
                 const angles = extractJointAngles(landmarks);
-                // For large files, don't store angles per frame (saves memory; re-derived at end if needed)
-                if (isLargeFile) {
+                // Memory management by file size tier:
+                // Huge (>300MB): don't store landmarks at all -- just count reps
+                // Large (>100MB): store landmarks only, no angles
+                // Normal: store everything
+                if (isHugeFile) {
+                  // Minimal storage: only keep last 10 frames for auto-detect context
+                  if (frames.length >= 10) frames.shift();
+                  frames.push({ landmarks, timestamp: time });
+                } else if (isLargeFile) {
                   frames.push({ landmarks, timestamp: time });
                 } else {
                   frames.push({ landmarks, timestamp: time, angles });
                 }
                 repCounter.update(landmarks);
 
-                // Sample frames for replay: every 5th for large files, every 3rd otherwise
-                const replaySampleRate = isLargeFile ? 5 : 3;
-                if (frameIdx % replaySampleRate === 0) {
-                  replayFrames.push({ landmarks, timestamp: time });
+                // Sample frames for replay: skip for huge, every 5th for large, every 3rd for normal
+                if (!isHugeFile) {
+                  const replaySampleRate = isLargeFile ? 5 : 3;
+                  if (frameIdx % replaySampleRate === 0) {
+                    replayFrames.push({ landmarks, timestamp: time });
+                  }
                 }
               }
 
@@ -198,11 +228,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             };
 
             video.addEventListener('seeked', onSeeked, { once: true });
-            // Per-seek timeout: skip this frame if seek hangs (3s)
+            // Per-seek timeout: huge/large files need more time for mobile decoder
+            const seekTimeout = isHugeFile ? 12000 : isLargeFile ? 8000 : 3000;
             setTimeout(() => {
               video.removeEventListener('seeked', onSeeked);
               settle(true); // skip frame, continue to next
-            }, 3000);
+            }, seekTimeout);
           });
         };
 
@@ -214,8 +245,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             if (!cont) break;
             frameIdx++;
             // Yield to UI and let browser GC decoded video frames.
-            // Large files yield every frame with a longer delay to reduce memory pressure.
-            if (isLargeFile) {
+            // Huge files yield every frame with longer delay for memory pressure.
+            if (isHugeFile) {
+              await new Promise(r => setTimeout(r, 100));
+            } else if (isLargeFile) {
               await new Promise(r => setTimeout(r, 50));
             } else if (frameIdx % 5 === 0) {
               await new Promise(r => setTimeout(r, 0));
@@ -268,18 +301,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
           setProgress(100);
 
-          // For large files, revoke the blob URL now to free memory.
+          // For large/huge files, revoke the blob URL now to free memory.
           // Replay won't work but the user gets results instead of a crash.
-          if (isLargeFile) safeRevoke();
+          if (isLargeFile || isHugeFile) safeRevoke();
 
           resolve({
             fileName: queueItem.name, exercise: detectedExercise,
             exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
             reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
             bioAnalysis, report, repHistory,
-            videoUrl: isLargeFile ? null : url,
-            frames: isLargeFile ? [] : replayFrames,
+            videoUrl: (isLargeFile || isHugeFile) ? null : url,
+            frames: (isLargeFile || isHugeFile) ? [] : replayFrames,
             diagnostics: repCounter.diagnostics,
+            autoDetected,
           });
         };
 
@@ -424,12 +458,38 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           <>
             <select
               value={exercise}
-              onChange={(e) => { setExercise(e.target.value); userChangedExercise.current = true; }}
+              onChange={(e) => {
+                const val = e.target.value;
+                setExercise(val);
+                if (val === '__auto__') {
+                  setAutoDetect(true);
+                  userChangedExercise.current = false;
+                } else {
+                  setAutoDetect(false);
+                  userChangedExercise.current = true;
+                }
+              }}
               style={{ flex: 1, padding: 8, fontSize: '0.82rem' }}
             >
-              {exerciseKeys.map(key => (
-                <option key={key} value={key}>{EXERCISES[key].name}</option>
-              ))}
+              <option value="__auto__">🎯 Automatic</option>
+              <optgroup label="Compound">
+                {EXERCISE_GROUPS.compound.map(e => (
+                  <option key={e.key} value={e.key}>{e.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Isolation">
+                {EXERCISE_GROUPS.isolation.map(e => (
+                  <option key={e.key} value={e.key}>{e.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Bodyweight">
+                {EXERCISE_GROUPS.bodyweight.map(e => (
+                  <option key={e.key} value={e.key}>{e.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Other">
+                <option value="superset">Superset / Other</option>
+              </optgroup>
             </select>
             <input
               type="number"
@@ -438,15 +498,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               placeholder="kg"
               style={{ width: 56, padding: '8px 6px', fontSize: '0.82rem', textAlign: 'center' }}
             />
-            <label className="cam-auto">
-              <input
-                type="checkbox"
-                checked={autoDetect}
-                onChange={(e) => setAutoDetect(e.target.checked)}
-                style={{ width: 'auto', marginRight: 4 }}
-              />
-              Auto
-            </label>
             <button
               className="btn btn-primary"
               onClick={startAnalysis}
@@ -507,7 +558,15 @@ function ResultCard({ result, onReplay }) {
       <div className="result-header">
         <div>
           <h3 style={{ marginBottom: 2 }}>{exerciseName}</h3>
-          <span className="text-xs text-muted">{fileName}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="text-xs text-muted">{fileName}</span>
+            {result.autoDetected && (
+              <span style={{
+                fontSize: '0.65rem', padding: '1px 6px', borderRadius: 4,
+                background: 'rgba(0,255,136,0.15)', color: 'var(--accent)', fontWeight: 600,
+              }}>Auto-detected</span>
+            )}
+          </div>
         </div>
         <span className={`score-badge ${cls}`}>{grade}</span>
       </div>

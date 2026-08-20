@@ -7,6 +7,8 @@ import {
 export default function Profile({ onClose }) {
   const [profile, setProfile] = useState({
     name: '', weight: '', height: '', age: '', sex: 'male', ethnicity: '', activityLevel: 'moderate',
+    restingHR: '', experience: 'intermediate', goal: 'general',
+    injuries: [],
   });
   const [baselines, setBaselines] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -37,6 +39,13 @@ export default function Profile({ onClose }) {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_FILE_SIZE) {
+      alert('File too large. Maximum size is 10MB.');
+      e.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -131,6 +140,61 @@ export default function Profile({ onClose }) {
               <option value="active">Active (5-6x/week)</option>
               <option value="veryActive">Very Active (daily)</option>
             </select>
+          </label>
+          <label>
+            <span>Resting HR (bpm)</span>
+            <input
+              type="number"
+              value={profile.restingHR}
+              onChange={(e) => handleChange('restingHR', e.target.value)}
+              placeholder="e.g. 65"
+            />
+          </label>
+          <label>
+            <span>Experience</span>
+            <select value={profile.experience} onChange={(e) => handleChange('experience', e.target.value)}>
+              <option value="beginner">Beginner (&lt;1 year)</option>
+              <option value="intermediate">Intermediate (1-3 years)</option>
+              <option value="advanced">Advanced (3+ years)</option>
+            </select>
+          </label>
+          <label>
+            <span>Goal</span>
+            <select value={profile.goal} onChange={(e) => handleChange('goal', e.target.value)}>
+              <option value="general">General Fitness</option>
+              <option value="strength">Strength</option>
+              <option value="hypertrophy">Muscle Growth</option>
+              <option value="endurance">Endurance</option>
+              <option value="weight_loss">Weight Loss</option>
+            </select>
+          </label>
+          <label className="full-width">
+            <span>Injuries / limitations</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+              {['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'].map(area => (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() => {
+                    const current = profile.injuries || [];
+                    const next = current.includes(area)
+                      ? current.filter(i => i !== area)
+                      : [...current, area];
+                    handleChange('injuries', next);
+                  }}
+                  style={{
+                    padding: '10px 14px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
+                    border: '1px solid',
+                    borderColor: (profile.injuries || []).includes(area) ? 'var(--red)' : 'var(--border)',
+                    background: (profile.injuries || []).includes(area) ? 'rgba(255,61,87,0.15)' : 'transparent',
+                    color: (profile.injuries || []).includes(area) ? 'var(--red)' : 'var(--muted)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {area.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
           </label>
         </div>
         <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%' }}>

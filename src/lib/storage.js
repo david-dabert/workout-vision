@@ -24,7 +24,7 @@ export async function getProfile() {
 
 // Workouts
 export async function saveWorkout(workout) {
-  const id = `workout_${Date.now()}`;
+  const id = `workout_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const entry = {
     id,
     ...workout,
@@ -52,7 +52,7 @@ export async function deleteWorkout(id) {
 
 // Medical records
 export async function saveMedicalRecord(record) {
-  const id = `medical_${Date.now()}`;
+  const id = `medical_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const entry = {
     id,
     ...record,
@@ -133,8 +133,7 @@ export function calculateBaselines(profile) {
     bmr = 10 * weightKg + 6.25 * heightCm - 5 * ageYears - 161;
   }
 
-  // Body fat estimation using Navy method approximation (Hodgdon & Beckett 1984)
-  // Simplified without circumference measurements
+  // Body fat estimation (Deurenberg 1991, BMI-based; SEE 4-5%)
   let estimatedBF;
   if (sex === 'male') {
     estimatedBF = 1.2 * bmi + 0.23 * ageYears - 16.2;
@@ -146,7 +145,7 @@ export function calculateBaselines(profile) {
   const maxHR = 208 - 0.7 * ageYears;
 
   // Training zones (Karvonen method)
-  const restHR = 70; // default assumption
+  const restHR = parseFloat(profile.restingHR) || 70;
   const zones = {
     warmup: { min: Math.round(restHR + 0.5 * (maxHR - restHR)), max: Math.round(restHR + 0.6 * (maxHR - restHR)) },
     fatBurn: { min: Math.round(restHR + 0.6 * (maxHR - restHR)), max: Math.round(restHR + 0.7 * (maxHR - restHR)) },
