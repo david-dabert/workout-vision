@@ -11,6 +11,8 @@ import VideoReplay from './VideoReplay';
 const MAX_FRAMES = 500; // hard cap for very long videos
 const MAX_FRAMES_LARGE = 480; // 60s × 8fps — 320px canvas keeps memory safe
 const MIN_FPS = 4; // floor: below this, rep counting misses bottom positions
+const MOBILE_SIZE_WARN = 50 * 1024 * 1024; // 50MB: warn on mobile
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB hard limit
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -43,6 +45,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const userChangedExercise = useRef(!!preSelectedExercise);
   const [weight, setWeight] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
+  const [analysisPhase, setAnalysisPhase] = useState(''); // 'loading' | 'detecting' | 'analyzing'
   const [currentFile, setCurrentFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
@@ -63,15 +66,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const handleFiles = (e) => {
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/'));
     if (files.length === 0) return;
-    const items = files.map(f => ({
-      id: Date.now() + Math.random(),
-      file: f,
-      name: f.name,
-      size: (f.size / 1024 / 1024).toFixed(1) + ' MB',
-      status: 'queued',
-      progress: 0,
-    }));
-    setQueue(prev => [...prev, ...items]);
+    const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+    const items = [];
+    for (const f of files) {
+      if (f.size > MAX_FILE_SIZE) {
+        alert(`${f.name} is too large (${(f.size / 1024 / 1024).toFixed(0)} MB). Maximum is 500 MB.`);
+        continue;
+      }
+      const sizeWarning = isMobile && f.size > MOBILE_SIZE_WARN;
+      items.push({
+        id: Date.now() + Math.random(),
+        file: f,
+        name: f.name,
+        size: (f.size / 1024 / 1024).toFixed(1) + ' MB',
+        status: 'queued',
+        progress: 0,
+        sizeWarning,
+      });
+    }
+    if (items.length) setQueue(prev => [...prev, ...items]);
     e.target.value = '';
   };
 
@@ -97,7 +110,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     return new Promise((resolve) => {
       video.muted = true;
       video.playsInline = true;
-      video.preload = 'metadata';
+      video.preload = 'auto';
+      setAnalysisPhase('loading');
       video.src = url;
       video.load();
 
@@ -107,19 +121,21 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         if (readyFired) return;
         readyFired = true;
         video.removeEventListener('loadeddata', onReady);
+        video.removeEventListener('canplay', onReady);
         video.onloadedmetadata = null;
+        setAnalysisPhase('detecting');
 
         let duration = video.duration;
         if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
 
-        // Memory tiers for mobile Safari:
-        // - Normal (<100MB): full analysis, 8fps, 480px canvas
-        // - Large (100-300MB): 60s cap, 4fps, 480px canvas
-        // - Huge (>300MB): 45s cap, 3fps, 320px canvas, aggressive GC
+        // Memory tiers — mobile devices choke on large video seeks.
+        // iPhone Safari HEVC decode is single-threaded; each seek can take 1-3s on big files.
+        // Tier thresholds lowered from 100/300MB to 30/150MB after real-device testing.
         const fileSize = queueItem.file.size;
-        const isHugeFile = fileSize > 300 * 1024 * 1024;
-        const isLargeFile = fileSize > 100 * 1024 * 1024;
-        const maxDuration = isHugeFile ? 45 : isLargeFile ? 60 : duration;
+        const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+        const isHugeFile = fileSize > (isMobile ? 150 : 300) * 1024 * 1024;
+        const isLargeFile = fileSize > (isMobile ? 30 : 100) * 1024 * 1024;
+        const maxDuration = isHugeFile ? 45 : isLargeFile ? 60 : Math.min(duration, 120);
         const effectiveDuration = Math.min(duration, maxDuration);
 
         const TARGET_FPS = isHugeFile ? 3 : isLargeFile ? 4 : 8;
@@ -217,16 +233,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             };
 
             video.addEventListener('seeked', onSeeked, { once: true });
-            // Per-seek timeout: huge/large files need more time for mobile decoder
-            const seekTimeout = isHugeFile ? 12000 : isLargeFile ? 8000 : 3000;
+            // Per-seek timeout: mobile HEVC decode is very slow on large files.
+            // First few seeks are slowest (buffering). Use generous timeouts.
+            const baseTimeout = isHugeFile ? 15000 : isLargeFile ? 10000 : 5000;
+            const firstFrameBonus = frameIdx < 3 ? 10000 : 0; // extra 10s for initial seeks
             setTimeout(() => {
               video.removeEventListener('seeked', onSeeked);
               settle(true); // skip frame, continue to next
-            }, seekTimeout);
+            }, baseTimeout + firstFrameBonus);
           });
         };
 
         // Process all frames sequentially, yielding to UI between frames
+        setAnalysisPhase('analyzing');
         let frameIdx = 0;
         const processLoop = async () => {
           while (frameIdx < totalFrames) {
@@ -313,21 +332,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       };
 
       video.addEventListener('loadeddata', onReady);
+      video.addEventListener('canplay', onReady);
       video.onloadedmetadata = () => {
-        setTimeout(() => { if (video.readyState >= 2) onReady(); }, 300);
+        setTimeout(() => { if (video.readyState >= 2) onReady(); }, 500);
       };
       video.onerror = (e) => {
         console.error('Video load error:', e, video.error);
         video.removeEventListener('loadeddata', onReady);
+        video.removeEventListener('canplay', onReady);
         video.onloadedmetadata = null;
         safeRevoke();
         resolve(null);
       };
+      // Large files need much more time to load on mobile (HEVC decode + buffering)
+      const loadTimeout = queueItem.file.size > 50 * 1024 * 1024 ? 60000 : 15000;
       setTimeout(() => {
         if (readyFired) return;
         if (video.readyState >= 2) onReady();
         else { safeRevoke(); resolve(null); }
-      }, 15000);
+      }, loadTimeout);
     });
   }, [exercise, autoDetect]);
 
@@ -414,6 +437,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               <div className="queue-info">
                 <span className="queue-name">{q.name}</span>
                 <span className="queue-size">{q.size}</span>
+                {q.sizeWarning && q.status === 'queued' && (
+                  <span style={{ fontSize: '0.7rem', color: 'var(--yellow, #f5a623)' }}>
+                    Large file — analysis may be slow on mobile
+                  </span>
+                )}
               </div>
               <div className="queue-right">
                 {q.status === 'analyzing' && (
@@ -497,7 +525,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         ) : (
           <div className="analyzing-status">
             <div className="spinner-sm" />
-            <span>Analyzing {currentFile}... {progress}%</span>
+            <span>
+              {analysisPhase === 'loading'
+                ? `Loading ${currentFile}...`
+                : `Analyzing ${currentFile}... ${progress}%`}
+            </span>
+            {analysisPhase === 'loading' && (
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4 }}>
+                Large videos may take a moment to buffer
+              </span>
+            )}
           </div>
         )}
       </div>
