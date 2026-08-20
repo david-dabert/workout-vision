@@ -288,6 +288,46 @@ export function calculateMacros(food, grams) {
 }
 
 /**
+ * Activity level multipliers for TDEE (Harris-Benedict adapted).
+ * Single source of truth — imported by storage.js and planner.js.
+ */
+export const ACTIVITY_MULTIPLIERS = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  veryActive: 1.9,
+};
+
+/**
+ * Calculate BMR using Mifflin-St Jeor (1990).
+ * Single source of truth — used by getDailyTargets, storage.js baselines, and planner.js analysis.
+ *
+ * @param {number} weightKg
+ * @param {number} heightCm
+ * @param {number} age
+ * @param {'male'|'female'} sex
+ * @returns {number} BMR in kcal/day
+ */
+export function calculateBMR(weightKg, heightCm, age, sex) {
+  if (sex === 'male') {
+    return 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+  }
+  return 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+}
+
+/**
+ * Calculate TDEE from BMR and activity level.
+ *
+ * @param {number} bmr
+ * @param {string} activityLevel
+ * @returns {number} TDEE in kcal/day
+ */
+export function calculateTDEE(bmr, activityLevel) {
+  return bmr * (ACTIVITY_MULTIPLIERS[activityLevel] || ACTIVITY_MULTIPLIERS.moderate);
+}
+
+/**
  * Calculate daily macro targets based on profile and goal.
  * Sources: ISSN position stand (Aragon et al. 2017), Helms et al. 2014.
  *
@@ -308,22 +348,8 @@ export function getDailyTargets(profile, goal) {
   }
   if (!goal) goal = 'maintain';
 
-  // BMR (Mifflin-St Jeor)
-  let bmr;
-  if (sex === 'male') {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
-  } else {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-  }
-
-  const activityMultipliers = {
-    sedentary: 1.2,
-    light: 1.375,
-    moderate: 1.55,
-    active: 1.725,
-    veryActive: 1.9,
-  };
-  const tdee = bmr * (activityMultipliers[activity] || 1.55);
+  const bmr = calculateBMR(weightKg, heightCm, age, sex);
+  const tdee = calculateTDEE(bmr, activity);
 
   let targetCal;
   switch (goal) {

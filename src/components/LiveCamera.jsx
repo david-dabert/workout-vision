@@ -1,22 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { getVideoLandmarker, detectPoseVideo, drawPose, resetTimestamp, disposeAllLandmarkers } from '../lib/poseAnalysis';
-import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
+import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { saveWorkout, getProfile } from '../lib/storage';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
 
-// Group exercises by category for the selector
-const EXERCISE_GROUPS = (() => {
-  const groups = { compound: [], isolation: [], bodyweight: [] };
-  for (const [key, ex] of Object.entries(EXERCISES)) {
-    if (key === 'superset') continue;
-    const cat = ex.category || 'compound';
-    if (groups[cat]) groups[cat].push({ key, name: ex.name });
-    else groups.compound.push({ key, name: ex.name });
-  }
-  for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
-  return groups;
-})();
 const TARGET_FPS = 15;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const REST_PRESETS = [30, 60, 90, 120, 180];

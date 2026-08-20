@@ -312,30 +312,152 @@ function calculateStreak(workouts) {
 
 function getMusclesForExercise(exerciseKey) {
   const MUSCLE_MAP = {
+    // --- Squats & quad-dominant ---
     squat: ['Quadriceps', 'Glutes'],
     front_squat: ['Quadriceps', 'Core'],
+    goblet_squat: ['Quadriceps', 'Glutes'],
+    hack_squat: ['Quadriceps', 'Glutes'],
+    smith_squat: ['Quadriceps', 'Glutes'],
+    zercher_squat: ['Quadriceps', 'Glutes', 'Core'],
+    overhead_squat: ['Quadriceps', 'Glutes', 'Shoulders'],
+    leg_press: ['Quadriceps', 'Glutes'],
+    leg_extension: ['Quadriceps'],
+    standing_leg_extension: ['Quadriceps'],
+    wall_sit: ['Quadriceps', 'Core'],
+    pistol_squat: ['Quadriceps', 'Glutes'],
+    jump_squat: ['Quadriceps', 'Glutes', 'Calves'],
+    box_jump: ['Quadriceps', 'Glutes', 'Calves'],
+    step_up: ['Quadriceps', 'Glutes'],
+
+    // --- Lunges ---
+    lunge: ['Quadriceps', 'Glutes'],
+    bulgarian_split_squat: ['Quadriceps', 'Glutes'],
+    reverse_lunge: ['Quadriceps', 'Glutes'],
+    walking_lunge: ['Quadriceps', 'Glutes'],
+    side_lunge: ['Quadriceps', 'Glutes'],
+    squat_jump_to_lunge: ['Quadriceps', 'Glutes'],
+    skater_jump: ['Glutes', 'Quadriceps'],
+
+    // --- Hip-hinge & hamstrings ---
     deadlift: ['Hamstrings', 'Back', 'Glutes'],
     romanian_deadlift: ['Hamstrings', 'Glutes'],
+    sumo_deadlift: ['Glutes', 'Quadriceps', 'Hamstrings'],
+    single_leg_deadlift: ['Hamstrings', 'Glutes'],
+    good_morning: ['Hamstrings', 'Back'],
+    nordic_curl: ['Hamstrings'],
+    leg_curl: ['Hamstrings'],
+
+    // --- Glutes ---
+    hip_thrust: ['Glutes', 'Hamstrings'],
+    glute_bridge: ['Glutes', 'Hamstrings'],
+
+    // --- Calves ---
+    calf_raise: ['Calves'],
+    seated_calf_raise: ['Calves'],
+
+    // --- Chest: presses ---
     bench_press: ['Chest', 'Triceps'],
+    incline_bench_press: ['Chest', 'Shoulders', 'Triceps'],
+    decline_bench_press: ['Chest', 'Triceps'],
+    close_grip_bench: ['Triceps', 'Chest'],
+    floor_press: ['Chest', 'Triceps'],
+    machine_chest_press: ['Chest', 'Triceps'],
+    landmine_press: ['Chest', 'Shoulders'],
+
+    // --- Chest: flies ---
+    cable_fly: ['Chest'],
+    dumbbell_fly: ['Chest'],
+    cable_crossover: ['Chest'],
+
+    // --- Chest: push-ups ---
+    push_up: ['Chest', 'Triceps'],
+    diamond_push_up: ['Triceps', 'Chest'],
+    pike_push_up: ['Shoulders', 'Triceps'],
+    wide_push_up: ['Chest', 'Triceps'],
+    archer_push_up: ['Chest', 'Triceps'],
+    incline_push_up: ['Chest', 'Triceps'],
+    deficit_push_up: ['Chest', 'Triceps'],
+    deficit_push_down: ['Triceps', 'Chest'],
+    hand_release_push_up: ['Chest', 'Triceps'],
+    dip: ['Chest', 'Triceps'],
+
+    // --- Shoulders ---
     overhead_press: ['Shoulders', 'Triceps'],
+    arnold_press: ['Shoulders', 'Triceps'],
+    push_press: ['Shoulders', 'Triceps'],
+    lateral_raise: ['Shoulders'],
+    front_raise: ['Shoulders'],
+    rear_delt_fly: ['Shoulders', 'Back'],
+    face_pull: ['Shoulders', 'Back'],
+    shrug: ['Shoulders', 'Back'],
+    overhead_hold: ['Shoulders', 'Core'],
+
+    // --- Back: rows ---
+    bent_over_row: ['Back', 'Biceps'],
+    chest_supported_row: ['Back', 'Biceps'],
+    seated_row: ['Back', 'Biceps'],
+    t_bar_row: ['Back', 'Biceps'],
+    pendlay_row: ['Back', 'Biceps'],
+    renegade_row: ['Back', 'Core'],
+    inverted_row: ['Back', 'Biceps'],
+
+    // --- Back: pull-ups & pulldowns ---
     pull_up: ['Back', 'Biceps'],
     chin_up: ['Back', 'Biceps'],
-    push_up: ['Chest', 'Triceps'],
-    bent_over_row: ['Back', 'Biceps'],
-    hip_thrust: ['Glutes', 'Hamstrings'],
-    lunge: ['Quadriceps', 'Glutes'],
+    lat_pulldown: ['Back', 'Biceps'],
+    muscle_up: ['Back', 'Chest', 'Triceps'],
+    commando_pull_up: ['Back', 'Biceps', 'Core'],
+
+    // --- Biceps ---
     bicep_curl: ['Biceps'],
+    hammer_curl: ['Biceps'],
+    preacher_curl: ['Biceps'],
+    concentration_curl: ['Biceps'],
+    lying_bicep_curl: ['Biceps'],
+    spider_curl: ['Biceps'],
+
+    // --- Triceps ---
     tricep_extension: ['Triceps'],
-    lateral_raise: ['Shoulders'],
-    leg_extension: ['Quadriceps'],
-    leg_curl: ['Hamstrings'],
-    calf_raise: ['Calves'],
+    skull_crusher: ['Triceps'],
+    cable_tricep_pushdown: ['Triceps'],
+
+    // --- Core ---
     crunch: ['Core'],
     plank: ['Core'],
-    lat_pulldown: ['Back', 'Biceps'],
-    dip: ['Chest', 'Triceps'],
-    goblet_squat: ['Quadriceps', 'Glutes'],
+    side_plank: ['Core'],
+    hanging_leg_raise: ['Core'],
+    sit_up: ['Core'],
+    v_up: ['Core'],
+    russian_twist: ['Core'],
+    bicycle_crunch: ['Core'],
+    flutter_kick: ['Core'],
+    hollow_body_hold: ['Core'],
+    l_sit: ['Core'],
+    toes_to_bar: ['Core'],
+    superman: ['Back', 'Core'],
+    mountain_climber: ['Core', 'Shoulders'],
+
+    // --- Forearms ---
+    wrist_curl: ['Biceps'],
+    dead_hang: ['Back', 'Core'],
+
+    // --- Olympic & compound ---
     kettlebell_swing: ['Hamstrings', 'Glutes', 'Core'],
+    thruster: ['Quadriceps', 'Shoulders'],
+    clean_and_press: ['Shoulders', 'Glutes', 'Back'],
+    power_clean: ['Glutes', 'Hamstrings', 'Back'],
+    snatch: ['Glutes', 'Hamstrings', 'Shoulders'],
+    turkish_get_up: ['Shoulders', 'Core', 'Glutes'],
+    split_jerk: ['Quadriceps', 'Shoulders'],
+    wall_ball: ['Quadriceps', 'Glutes', 'Shoulders'],
+
+    // --- Full body / cardio ---
+    burpee: ['Chest', 'Quadriceps', 'Core'],
+    jumping_jack: ['Shoulders', 'Calves'],
+    bear_crawl: ['Core', 'Shoulders'],
+    man_maker: ['Chest', 'Back', 'Shoulders', 'Core'],
+    battle_rope: ['Shoulders', 'Core'],
+    superset: ['Core'],
   };
   return MUSCLE_MAP[exerciseKey] || ['Other'];
 }
