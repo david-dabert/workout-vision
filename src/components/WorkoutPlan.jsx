@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getProfile, getAllWorkouts } from '../lib/storage';
+import { getAllWorkouts } from '../lib/storage';
+import { useProfile } from '../lib/ProfileContext';
 import { generatePhysicalAnalysis, generateWorkoutPlan } from '../lib/planner';
 import { EXERCISES } from '../lib/exercises';
 
@@ -85,24 +86,22 @@ const s = {
 };
 
 export default function WorkoutPlan({ onClose }) {
-  const [profile, setProfile] = useState(null);
+  const { profile } = useProfile();
   const [analysis, setAnalysis] = useState(null);
   const [plan, setPlan] = useState(null);
   const [tab, setTab] = useState('analysis');
   const [expandedDay, setExpandedDay] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [profile]);
 
   async function loadData() {
     try {
-      const p = await getProfile();
-      setProfile(p);
-      if (!p) { setLoading(false); return; }
+      if (!profile) { setLoading(false); return; }
 
       const workouts = await getAllWorkouts();
-      setAnalysis(generatePhysicalAnalysis(p));
-      setPlan(generateWorkoutPlan(p, workouts));
+      setAnalysis(generatePhysicalAnalysis(profile));
+      setPlan(generateWorkoutPlan(profile, workouts));
     } catch (err) {
       console.error('WorkoutPlan load error:', err);
     } finally {

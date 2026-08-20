@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getProfile, saveFoodEntry, getFoodLog, deleteFoodEntry, getAllWorkouts } from '../lib/storage';
+import { saveFoodEntry, getFoodLog, deleteFoodEntry, getAllWorkouts } from '../lib/storage';
+import { useProfile } from '../lib/ProfileContext';
 import {
   searchFood, calculateMacros, getDailyTargets,
   fetchBarcodeNutrition, estimateDailyBurn, FOOD_DATABASE,
@@ -9,7 +10,7 @@ import { Camera, Search, Trash2, ChevronLeft, ScanBarcode, UtensilsCrossed, Plus
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 export default function Nutrition() {
-  const [profile, setProfile] = useState(null);
+  const { profile } = useProfile();
   const [foodLog, setFoodLog] = useState([]);
   const [todayWorkouts, setTodayWorkouts] = useState([]);
   const [targets, setTargets] = useState(null);
@@ -18,11 +19,8 @@ export default function Nutrition() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
-    getProfile().then(p => {
-      setProfile(p);
-      if (p) setTargets(getDailyTargets(p, goal));
-    });
-  }, [goal]);
+    if (profile) setTargets(getDailyTargets(profile, goal));
+  }, [profile, goal]);
 
   useEffect(() => {
     loadDayData();
