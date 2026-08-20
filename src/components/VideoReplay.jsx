@@ -12,30 +12,86 @@ function findClosestFrame(frames, time) {
     if (frames[mid].timestamp < time) lo = mid + 1;
     else hi = mid;
   }
-  // Check if lo-1 is closer
   if (lo > 0 && Math.abs(frames[lo - 1].timestamp - time) < Math.abs(frames[lo].timestamp - time)) {
     return frames[lo - 1];
   }
   return frames[lo];
 }
 
+function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore) {
+  const closest = frames.length > 0 ? findClosestFrame(frames, time) : null;
+  if (closest && closest.landmarks) {
+    drawPose(ctx, closest.landmarks, w, h);
+  }
+
+  // Stats overlay (top) - scale proportionally to resolution
+  const scale = w / 480;
+  const pad = Math.round(16 * scale);
+  const boxH = Math.round(70 * scale);
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, 0, w, boxH);
+
+  ctx.fillStyle = '#00FF88';
+  ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(exerciseName, pad, boxH / 2);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `bold ${Math.round(22 * scale)}px -apple-system, system-ui, sans-serif`;
+  ctx.fillText(`${reps} reps  Form: ${formScore}`, w - pad, boxH / 2);
+
+  // Branding (bottom)
+  const brandH = Math.round(36 * scale);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, h - brandH, w, brandH);
+  ctx.fillStyle = '#00FF88';
+  ctx.font = `bold ${Math.round(16 * scale)}px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('WorkoutVision', w / 2, h - brandH / 2);
+}
+
+function getBestMime() {
+  if (typeof MediaRecorder === 'undefined') return '';
+  const mimeTypes = [
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+    'video/mp4',
+  ];
+  for (const m of mimeTypes) {
+    if (MediaRecorder.isTypeSupported(m)) return m;
+  }
+  return '';
+}
+
+// Check if video export is supported (needs MediaRecorder + captureStream)
+function canExportVideo() {
+  if (typeof MediaRecorder === 'undefined') return false;
+  const testCanvas = document.createElement('canvas');
+  return typeof testCanvas.captureStream === 'function';
+}
+
 /**
  * Replays a video with skeleton overlay drawn from stored landmark frames.
- * Includes recording capability to export as shareable video.
+ * HD download via one-tap auto-record at original video resolution.
  */
 export default function VideoReplay({ videoUrl, frames, exerciseName, reps, formScore, onClose }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const hdCanvasRef = useRef(null);
   const rafRef = useRef(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
 
   const [playing, setPlaying] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [recordedUrl, setRecordedUrl] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // Draw composite frame: video + skeleton + stats overlay
+  // Draw composite frame on the playback canvas
   const drawFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -44,50 +100,9 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     const ctx = canvas.getContext('2d');
     const w = canvas.width;
     const h = canvas.height;
-
-    // Draw video frame
     ctx.drawImage(video, 0, 0, w, h);
-
-    // Find the closest landmark frame to current video time using binary search
-    const t = video.currentTime;
-    const closest = frames.length > 0 ? findClosestFrame(frames, t) : null;
-
-    // Draw skeleton overlay
-    if (closest && closest.landmarks) {
-      drawPose(ctx, closest.landmarks, w, h);
-    }
-
-    // Stats overlay (top-left)
-    const pad = 16;
-    const boxH = 70;
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0, 0, w, boxH);
-
-    ctx.fillStyle = '#00FF88';
-    ctx.font = `bold ${Math.round(w / 20)}px -apple-system, system-ui, sans-serif`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(exerciseName, pad, boxH / 2);
-
-    // Reps + form on right side
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `bold ${Math.round(w / 22)}px -apple-system, system-ui, sans-serif`;
-    ctx.fillText(`${reps} reps  Form: ${formScore}`, w - pad, boxH / 2);
-
-    // Branding (bottom)
-    const brandH = 36;
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(0, h - brandH, w, brandH);
-    ctx.fillStyle = '#00FF88';
-    ctx.font = `bold ${Math.round(w / 30)}px -apple-system, system-ui, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('WorkoutVision', w / 2, h - brandH / 2);
-
-    // Progress
+    drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
     setProgress(video.duration > 0 ? (video.currentTime / video.duration) * 100 : 0);
-
     rafRef.current = requestAnimationFrame(drawFrame);
   }, [frames, exerciseName, reps, formScore]);
 
@@ -98,19 +113,17 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     video.src = videoUrl;
     video.load();
 
-    // Draw first frame when metadata loads
     const onLoaded = () => {
       const canvas = canvasRef.current;
       if (canvas && video.videoWidth > 0) {
-        // Size canvas to video, capped for performance
-        const scale = Math.min(1, 720 / video.videoWidth);
-        canvas.width = Math.round(video.videoWidth * scale);
-        canvas.height = Math.round(video.videoHeight * scale);
+        // Playback canvas: cap at 720px for smooth display
+        const displayScale = Math.min(1, 720 / video.videoWidth);
+        canvas.width = Math.round(video.videoWidth * displayScale);
+        canvas.height = Math.round(video.videoHeight * displayScale);
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        // Draw first skeleton frame
         if (frames.length > 0 && frames[0].landmarks) {
-          drawPose(ctx, frames[0].landmarks, canvas.width, canvas.height);
+          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, exerciseName, reps, formScore);
         }
       }
     };
@@ -122,7 +135,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
         recorderRef.current.stop();
       }
     };
-  }, [videoUrl, frames]);
+  }, [videoUrl, frames, exerciseName, reps, formScore]);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
@@ -145,99 +158,138 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     const onEnd = () => {
       setPlaying(false);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (recording) stopRecording();
     };
     video.addEventListener('ended', onEnd);
     return () => video.removeEventListener('ended', onEnd);
-  }, [recording]);
+  }, []);
 
-  const startRecording = useCallback(() => {
-    const canvas = canvasRef.current;
+  // One-tap HD export: plays video at normal speed on a full-resolution offscreen canvas,
+  // records via MediaRecorder, then triggers download automatically.
+  const exportHD = useCallback(() => {
     const video = videoRef.current;
-    if (!canvas || !video) return;
+    if (!video || exporting) return;
 
-    // Reset video to start
+    // Create HD canvas at original video resolution
+    const hdCanvas = document.createElement('canvas');
+    hdCanvas.width = video.videoWidth;
+    hdCanvas.height = video.videoHeight;
+    hdCanvasRef.current = hdCanvas;
+    const hdCtx = hdCanvas.getContext('2d');
+
     video.currentTime = 0;
-    setRecordedUrl(null);
+    setExporting(true);
+    setExportProgress(0);
     chunksRef.current = [];
 
-    const stream = canvas.captureStream(30);
+    const mime = getBestMime();
+    const stream = hdCanvas.captureStream(30);
 
-    // Try to add audio from video if available
+    // Try to capture audio from the source video
     try {
       if (video.captureStream) {
         const videoStream = video.captureStream();
-        const audioTracks = videoStream.getAudioTracks();
-        audioTracks.forEach(t => stream.addTrack(t));
+        videoStream.getAudioTracks().forEach(t => stream.addTrack(t));
       }
-    } catch (e) { /* no audio, fine */ }
+    } catch (e) { /* no audio is fine */ }
 
-    const mimeTypes = [
-      'video/webm;codecs=vp9',
-      'video/webm;codecs=vp8',
-      'video/webm',
-      'video/mp4',
-    ];
-    let mime = '';
-    for (const m of mimeTypes) {
-      if (MediaRecorder.isTypeSupported(m)) { mime = m; break; }
-    }
-
-    const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+    const recorder = new MediaRecorder(stream, {
+      mimeType: mime || undefined,
+      videoBitsPerSecond: 8_000_000, // 8 Mbps for HD quality
+    });
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunksRef.current.push(e.data);
     };
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: mime || 'video/webm' });
-      setRecordedUrl(URL.createObjectURL(blob));
-      setRecording(false);
+      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+      const fileName = `WorkoutVision-${exerciseName.replace(/\s+/g, '-')}-${reps}reps.${ext}`;
+
+      // Try native share first (mobile), fallback to download
+      const file = new File([blob], fileName, { type: blob.type });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: `${exerciseName} - Form: ${formScore}`,
+          text: `${reps} reps analyzed by WorkoutVision`,
+        }).catch(() => {
+          // User cancelled share, download instead
+          triggerDownload(blob, fileName);
+        });
+      } else {
+        triggerDownload(blob, fileName);
+      }
+
+      setExporting(false);
+      setExportProgress(0);
+      hdCanvasRef.current = null;
     };
 
     recorderRef.current = recorder;
     recorder.start(100);
-    setRecording(true);
 
-    // Play video + draw overlay
+    // Draw loop on the HD canvas while the video plays
+    let hdRaf;
+    const drawHDFrame = () => {
+      if (video.paused || video.ended) return;
+      const w = hdCanvas.width;
+      const h = hdCanvas.height;
+      hdCtx.drawImage(video, 0, 0, w, h);
+      drawOverlay(hdCtx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
+      setExportProgress(video.duration > 0 ? Math.round((video.currentTime / video.duration) * 100) : 0);
+      hdRaf = requestAnimationFrame(drawHDFrame);
+    };
+
+    const onExportEnd = () => {
+      cancelAnimationFrame(hdRaf);
+      if (recorder.state !== 'inactive') recorder.stop();
+      video.removeEventListener('ended', onExportEnd);
+      video.muted = true;
+    };
+    video.addEventListener('ended', onExportEnd);
+
+    // Play at normal speed for proper recording
+    video.muted = true;
     video.play();
-    setPlaying(true);
-    rafRef.current = requestAnimationFrame(drawFrame);
-  }, [drawFrame]);
+    hdRaf = requestAnimationFrame(drawHDFrame);
+  }, [frames, exerciseName, reps, formScore, exporting]);
 
-  const stopRecording = useCallback(() => {
+  const cancelExport = useCallback(() => {
+    const video = videoRef.current;
+    if (video) video.pause();
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
       recorderRef.current.stop();
     }
-    const video = videoRef.current;
-    if (video) video.pause();
-    setPlaying(false);
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    setExporting(false);
+    setExportProgress(0);
+    chunksRef.current = [];
   }, []);
 
-  const shareRecording = useCallback(async () => {
-    if (!recordedUrl) return;
-    const blob = await (await fetch(recordedUrl)).blob();
-    const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-    const file = new File([blob], `workout-${exerciseName.replace(/\s+/g, '-')}.${ext}`, { type: blob.type });
+  // Fallback for iOS Safari: save current frame as HD screenshot
+  const saveScreenshot = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
 
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: `${exerciseName} - Form: ${formScore}`,
-          text: `${reps} reps analyzed by WorkoutVision`,
-        });
-        return;
-      } catch (e) {
-        if (e.name === 'AbortError') return;
+    const hdCanvas = document.createElement('canvas');
+    hdCanvas.width = video.videoWidth;
+    hdCanvas.height = video.videoHeight;
+    const ctx = hdCanvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, hdCanvas.width, hdCanvas.height);
+    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, exerciseName, reps, formScore);
+
+    hdCanvas.toBlob((blob) => {
+      if (!blob) return;
+      const fileName = `WorkoutVision-${exerciseName.replace(/\s+/g, '-')}-${reps}reps.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: `${exerciseName} - Form: ${formScore}` }).catch(() => {});
+      } else {
+        triggerDownload(blob, fileName);
       }
-    }
+    }, 'image/png');
+  }, [frames, exerciseName, reps, formScore]);
 
-    // Fallback: download
-    const a = document.createElement('a');
-    a.href = recordedUrl;
-    a.download = file.name;
-    a.click();
-  }, [recordedUrl, exerciseName, reps, formScore]);
+  const supportsVideoExport = canExportVideo();
 
   return (
     <div className="replay-page">
@@ -252,9 +304,9 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
         <canvas
           ref={canvasRef}
           className="replay-canvas"
-          onClick={togglePlay}
+          onClick={!exporting ? togglePlay : undefined}
         />
-        {!playing && (
+        {!playing && !exporting && (
           <div className="replay-play-btn" onClick={togglePlay}>
             <span>&#9654;</span>
           </div>
@@ -265,27 +317,63 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       </div>
 
       <div className="replay-actions">
-        {!recording && !recordedUrl && (
-          <button className="btn btn-primary replay-btn" onClick={startRecording}>
-            Record with AI Overlay
-          </button>
-        )}
-        {recording && (
-          <button className="btn btn-primary replay-btn rec-on" onClick={stopRecording}>
-            Stop Recording
-          </button>
-        )}
-        {recordedUrl && (
+        {!exporting ? (
           <>
-            <button className="btn btn-primary replay-btn" onClick={shareRecording}>
-              Share Video
-            </button>
-            <button className="btn btn-ghost replay-btn" onClick={startRecording}>
-              Re-record
-            </button>
+            {supportsVideoExport ? (
+              <button className="btn btn-primary replay-btn" onClick={exportHD}>
+                Download HD Video
+              </button>
+            ) : (
+              <button className="btn btn-primary replay-btn" onClick={saveScreenshot}>
+                Save HD Screenshot
+              </button>
+            )}
           </>
+        ) : (
+          <div style={{ width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
+                <div style={{
+                  width: `${exportProgress}%`, height: '100%',
+                  background: 'var(--accent)', borderRadius: 3,
+                  transition: 'width 0.3s ease',
+                }} />
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', minWidth: 40 }}>
+                {exportProgress}%
+              </span>
+            </div>
+            <button className="btn btn-ghost replay-btn" onClick={cancelExport}>
+              Cancel Export
+            </button>
+          </div>
         )}
       </div>
     </div>
   );
+}
+
+function triggerDownload(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  // iOS Safari ignores the download attribute, so try share first
+  if (navigator.share) {
+    const file = new File([blob], fileName, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).catch(() => {
+        fallbackDownload(url, fileName);
+      });
+      return;
+    }
+  }
+  fallbackDownload(url, fileName);
+}
+
+function fallbackDownload(url, fileName) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

@@ -11,7 +11,7 @@
   --border: #1e1e2e;
   --text: #d0d0d0;
   --muted: #8a8a9a;
-  --dim: #3a3a4a;
+  --dim: #6a6a7a;
   --accent: #00e676;
   --accent-glow: rgba(0,230,118,0.12);
   --red: #ff3d57;
@@ -247,8 +247,8 @@ h5 { font-size: 0.78rem; font-weight: 600; color: #888; margin: 10px 0 4px; }
 }
 
 .btn-icon {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: rgba(255,255,255,0.1);
   color: #fff;
@@ -736,8 +736,8 @@ select {
 }
 
 .cam-btn {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
   background: rgba(0,0,0,0.5);

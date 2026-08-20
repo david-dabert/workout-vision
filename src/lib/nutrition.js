@@ -293,13 +293,20 @@ export function calculateMacros(food, grams) {
  *
  * Goals: 'maintain', 'cut', 'bulk'
  */
-export function getDailyTargets(profile, goal = 'maintain') {
+export function getDailyTargets(profile, goal) {
   if (!profile) return null;
   const weightKg = parseFloat(profile.weight) || 70;
   const heightCm = parseFloat(profile.height) || 170;
   const age = parseFloat(profile.age) || 30;
   const sex = profile.sex || 'male';
   const activity = profile.activityLevel || 'moderate';
+
+  // Map profile.goal to nutrition goal if no explicit goal passed
+  if (!goal && profile.goal) {
+    const goalMap = { weight_loss: 'cut', hypertrophy: 'bulk', strength: 'bulk', endurance: 'maintain', general: 'maintain' };
+    goal = goalMap[profile.goal] || 'maintain';
+  }
+  if (!goal) goal = 'maintain';
 
   // BMR (Mifflin-St Jeor)
   let bmr;
@@ -320,16 +327,13 @@ export function getDailyTargets(profile, goal = 'maintain') {
 
   let targetCal;
   switch (goal) {
-    case 'cut': targetCal = tdee - 500; break; // ~0.5kg/week loss
-    case 'bulk': targetCal = tdee + 300; break; // lean bulk
+    case 'cut': targetCal = tdee - 500; break;
+    case 'bulk': targetCal = tdee + 300; break;
     default: targetCal = tdee;
   }
   targetCal = Math.round(targetCal);
 
-  // Protein scaled by goal (Aragon et al. 2017 ISSN; Helms et al. 2014):
-  //   maintain: 2.0 g/kg (general training recommendation)
-  //   bulk:     1.8 g/kg (moderate surplus reduces marginal protein need)
-  //   cut:      2.5 g/kg (higher intake preserves LBM in deficit, Helms 2014)
+  // Protein scaled by goal (Aragon et al. 2017 ISSN; Helms et al. 2014)
   const proteinPerKg = goal === 'cut' ? 2.5 : goal === 'bulk' ? 1.8 : 2.0;
   const protein = Math.round(weightKg * proteinPerKg);
   // Fat: 25-30% of calories

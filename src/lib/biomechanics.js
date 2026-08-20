@@ -17,7 +17,19 @@
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 
-const NORM_TO_METERS = 1.7;
+// Default height in meters for velocity normalization.
+// Overridden by user's actual height when available.
+let NORM_TO_METERS = 1.7;
+
+/**
+ * Set the user's height for accurate velocity calculations.
+ * Called once from the analysis pipeline when profile is available.
+ */
+export function setUserHeight(heightCm) {
+  if (heightCm && heightCm > 100 && heightCm < 250) {
+    NORM_TO_METERS = heightCm / 100;
+  }
+}
 
 /**
  * Analyze a complete set.
@@ -29,7 +41,11 @@ const NORM_TO_METERS = 1.7;
  *   Each entry: { startFrame, bottomFrame, endFrame }
  * @returns {Object} analysis results
  */
-export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
+export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
+  // Use passed height if available, otherwise fall back to module-level value
+  if (userHeightCm && userHeightCm > 100 && userHeightCm < 250) {
+    NORM_TO_METERS = userHeightCm / 100;
+  }
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
 
   const exercise = EXERCISES[exerciseKey];
@@ -66,7 +82,7 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
   const isPulling = ['chest_supported_row', 'seated_row', 'lat_pulldown', 'bent_over_row',
     'pull_up', 'bicep_curl', 'leg_curl'].includes(exerciseKey);
 
-  const velocity = analyzeVelocity(rawFrames, fps, reps, exercise);
+  const velocity = analyzeVelocity(rawFrames, fps, reps, exercise, isPulling);
   const timeUnderTension = analyzeTUT(reps, fps, isPulling);
   const rangeOfMotion = analyzeROM(trackingValues, reps);
   const asymmetry = analyzeAsymmetry(anglesPerFrame);
@@ -106,13 +122,19 @@ function emptyResult() {
  * Works for any exercise regardless of absolute angle values.
  */
 function detectReps(values) {
-  // Fill nulls with linear interpolation
+  // Fill nulls: find first valid value, pad leading nulls with it,
+  // then carry forward for remaining nulls. This keeps filled.length === values.length
+  // so downstream rep indices align with rawFrames.
+  const firstValid = values.find(v => v !== null);
+  if (firstValid === undefined) return [];
   const filled = [];
   for (let i = 0; i < values.length; i++) {
     if (values[i] !== null) {
       filled.push(values[i]);
     } else if (filled.length > 0) {
       filled.push(filled[filled.length - 1]);
+    } else {
+      filled.push(firstValid); // pad leading nulls
     }
   }
   if (filled.length < 6) return [];
@@ -210,14 +232,13 @@ function detectReps(values) {
     }
   }
 
-  console.log(`[detectReps] signal range: ${globalMin.toFixed(0)}-${globalMax.toFixed(0)} (${globalRange.toFixed(0)}°), minProm=${minProminence.toFixed(0)}, significant=${significant.length}, reps=${reps.length}`);
   return reps;
 }
 
 /**
  * Velocity analysis using wrist/hip displacement during concentric phase.
  */
-function analyzeVelocity(rawFrames, fps, reps, exercise) {
+function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
   if (reps.length === 0) {
     return { avg: 0, perRep: [], trend: 'insufficient data' };
   }
@@ -226,10 +247,14 @@ function analyzeVelocity(rawFrames, fps, reps, exercise) {
   const timeDelta = 1 / fps;
 
   const perRep = reps.map(rep => {
-    if (rep.bottom >= rep.end || rep.end >= rawFrames.length) return 0;
+    // For pushing exercises: concentric = bottom→end (angle increasing)
+    // For pulling exercises: concentric = start→bottom (angle decreasing)
+    const frameA = isPulling ? rep.start : rep.bottom;
+    const frameB = isPulling ? rep.bottom : rep.end;
+    if (frameA >= frameB || frameB >= rawFrames.length) return 0;
 
-    const lm1 = rawFrames[rep.bottom];
-    const lm2 = rawFrames[rep.end];
+    const lm1 = rawFrames[frameA];
+    const lm2 = rawFrames[frameB];
     if (!lm1 || !lm2) return 0;
 
     let p1, p2;
@@ -245,7 +270,7 @@ function analyzeVelocity(rawFrames, fps, reps, exercise) {
     const dy = (p2.y - p1.y) * NORM_TO_METERS;
     const dz = ((p2.z || 0) - (p1.z || 0)) * NORM_TO_METERS;
     const displacement = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const duration = (rep.end - rep.bottom) * timeDelta;
+    const duration = (frameB - frameA) * timeDelta;
 
     return duration > 0 ? round(displacement / duration, 3) : 0;
   });
@@ -311,8 +336,22 @@ function analyzeROM(values, reps) {
   }
 
   const perRep = reps.map(rep => {
-    const top = Math.max(values[rep.start] || 0, values[rep.end] || 0);
-    const bottom = values[rep.bottom] || 0;
+    // Search a small window around each boundary for the best non-null value
+    const getVal = (idx, searchUp) => {
+      if (values[idx] != null) return values[idx];
+      // Search up to 3 frames in each direction for a valid value
+      for (let d = 1; d <= 3; d++) {
+        if (searchUp && idx + d < values.length && values[idx + d] != null) return values[idx + d];
+        if (!searchUp && idx - d >= 0 && values[idx - d] != null) return values[idx - d];
+        if (idx + d < values.length && values[idx + d] != null) return values[idx + d];
+        if (idx - d >= 0 && values[idx - d] != null) return values[idx - d];
+      }
+      return 0;
+    };
+    const topStart = getVal(rep.start, true);
+    const topEnd = getVal(rep.end, false);
+    const top = Math.max(topStart, topEnd);
+    const bottom = getVal(rep.bottom, false);
     return round(Math.abs(top - bottom), 1);
   });
 
@@ -323,7 +362,8 @@ function analyzeROM(values, reps) {
   if (valid.length >= 2 && avg > 0) {
     const variance = valid.reduce((s, v) => s + (v - avg) ** 2, 0) / valid.length;
     const cv = (Math.sqrt(variance) / avg) * 100;
-    consistency = Math.max(0, Math.round(100 - cv * 2));
+    // CV under 15% is excellent form consistency; scale gently
+    consistency = Math.max(0, Math.round(100 - cv));
   }
 
   return { avgDegrees: round(avg, 1), perRep, consistency };
@@ -334,20 +374,29 @@ function analyzeROM(values, reps) {
  * Kiesel 2007: >15% indicates elevated injury risk.
  */
 function analyzeAsymmetry(anglesArray) {
+  // Visibility keys matching the _vis* fields from extractJointAngles
   const pairs = [
-    ['leftKnee', 'rightKnee', 'Knee'],
-    ['leftHip', 'rightHip', 'Hip'],
-    ['leftElbow', 'rightElbow', 'Elbow'],
-    ['leftShoulder', 'rightShoulder', 'Shoulder'],
+    ['leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee', 'Knee'],
+    ['leftHip', 'rightHip', '_visLeftHip', '_visRightHip', 'Hip'],
+    ['leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow', 'Elbow'],
+    ['leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder', 'Shoulder'],
   ];
+
+  const VIS_MIN = 0.5; // only compare sides when both are well-tracked
 
   const details = {};
   let total = 0;
   let count = 0;
 
-  for (const [left, right, name] of pairs) {
+  for (const [left, right, visLeft, visRight, name] of pairs) {
     const diffs = anglesArray
       .filter(a => a !== null)
+      .filter(a => {
+        // Only include frames where BOTH sides are visible
+        const lv = a[visLeft] || 0;
+        const rv = a[visRight] || 0;
+        return lv >= VIS_MIN && rv >= VIS_MIN;
+      })
       .map(a => {
         const dominant = Math.max(a[left], a[right]);
         return dominant > 5 ? (Math.abs(a[left] - a[right]) / dominant) * 100 : 0;
@@ -369,61 +418,97 @@ function analyzeAsymmetry(anglesArray) {
 /**
  * Fatigue detection from velocity profile.
  * Pareja-Blanco 2017: >20% velocity loss = meaningful fatigue.
+ *
+ * Uses median of first 2-3 reps as baseline (not peak) to avoid
+ * warm-up effect and single-frame tracking spikes corrupting the metric.
+ * Compares against median of last 2-3 reps for the dropoff.
  */
 function analyzeFatigue(velocity, reps) {
   if (!velocity.perRep || velocity.perRep.length < 2) {
     return { index: 0, velocityDropoff: 0, curve: [], recommendation: 'Need more reps.' };
   }
 
-  const vels = velocity.perRep;
-  const peak = Math.max(...vels);
-  const last = vels[vels.length - 1];
-  const dropoff = peak > 0 ? round(((peak - last) / peak) * 100, 0) : 0;
-  const index = Math.min(100, Math.max(0, dropoff));
-  const curve = vels.map(v => peak > 0 ? Math.round((v / peak) * 100) : 0);
+  const vels = velocity.perRep.filter(v => v > 0);
+  if (vels.length < 2) {
+    return { index: 0, velocityDropoff: 0, curve: [], recommendation: 'Need more reps.' };
+  }
+
+  // Use median of first N and last N reps to resist outliers
+  const n = Math.min(3, Math.ceil(vels.length / 3));
+  const sortedFirst = vels.slice(0, n).sort((a, b) => a - b);
+  const sortedLast = vels.slice(-n).sort((a, b) => a - b);
+  const medianFirst = sortedFirst[Math.floor(sortedFirst.length / 2)];
+  const medianLast = sortedLast[Math.floor(sortedLast.length / 2)];
+
+  // Skip first rep if it's significantly slower (warm-up effect)
+  const baseline = (vels.length >= 4 && vels[0] < medianFirst * 0.8)
+    ? vels.slice(1, n + 1).sort((a, b) => a - b)[Math.floor(n / 2)]
+    : medianFirst;
+
+  const dropoff = baseline > 0 ? round(((baseline - medianLast) / baseline) * 100, 0) : 0;
+  const clampedDropoff = Math.max(0, dropoff); // negative = got faster, not fatigue
+  const index = Math.min(100, clampedDropoff);
+  const normPeak = Math.max(...vels);
+  const curve = vels.map(v => normPeak > 0 ? Math.round((v / normPeak) * 100) : 0);
 
   let recommendation = '';
-  if (dropoff > 30) recommendation = 'Significant fatigue. Consider reducing volume or increasing rest.';
-  else if (dropoff > 20) recommendation = 'Moderate fatigue. Good for hypertrophy (Pareja-Blanco 2017).';
-  else if (dropoff > 10) recommendation = 'Low fatigue. Good for strength without excessive fatigue.';
+  if (clampedDropoff > 30) recommendation = 'Significant fatigue. Consider reducing volume or increasing rest.';
+  else if (clampedDropoff > 20) recommendation = 'Moderate fatigue. Good for hypertrophy (Pareja-Blanco 2017).';
+  else if (clampedDropoff > 10) recommendation = 'Low fatigue. Good for strength without excessive fatigue.';
+  else if (dropoff < 0) recommendation = 'Velocity increased through the set. Warm-up effect detected.';
   else recommendation = 'Minimal fatigue. Could increase intensity or volume.';
 
-  return { index, velocityDropoff: dropoff, curve, recommendation };
+  return { index, velocityDropoff: clampedDropoff, curve, recommendation };
 }
 
 /**
  * Composite movement quality score 0-100.
+ * Weighted components: ROM consistency (35%), symmetry (25%),
+ * tempo control (20%), velocity consistency (10%), fatigue management (10%).
  */
 function scoreQuality(velocity, tut, rom, asymmetry, fatigue) {
-  let score = 70;
+  // ROM consistency: 0-35 points
+  const romScore = Math.min(35, Math.max(0, (rom.consistency || 0) * 0.35));
 
-  // ROM consistency (30% weight)
-  score += (rom.consistency - 70) * 0.3;
+  // Symmetry: 0-25 points
+  let symScore = 25;
+  if (asymmetry.score > 25) symScore = 5;
+  else if (asymmetry.score > 20) symScore = 10;
+  else if (asymmetry.score > 15) symScore = 15;
+  else if (asymmetry.score > 10) symScore = 20;
 
-  // Asymmetry penalty
-  if (asymmetry.score < 5) score += 10;
-  else if (asymmetry.score < 10) score += 5;
-  else if (asymmetry.score > 20) score -= 15;
-  else if (asymmetry.score > 15) score -= 10;
-
-  // TUT ratio bonus (controlled eccentric)
+  // Tempo control: 0-20 points (controlled eccentric = better)
+  let tempoScore = 10;
   if (tut.perRep.length > 0) {
     const avgRatio = tut.eccentric / (tut.concentric || 1);
-    if (avgRatio >= 1.2 && avgRatio <= 3) score += 5;
+    if (avgRatio >= 1.5 && avgRatio <= 3) tempoScore = 20;
+    else if (avgRatio >= 1.0 && avgRatio <= 4) tempoScore = 15;
+    else if (avgRatio < 0.5 || avgRatio > 5) tempoScore = 5;
   }
 
-  // Velocity consistency
+  // Velocity consistency: 0-10 points
+  let velScore = 5;
   if (velocity.perRep && velocity.perRep.length >= 2) {
     const mean = velocity.perRep.reduce((s, v) => s + v, 0) / velocity.perRep.length;
     if (mean > 0) {
       const variance = velocity.perRep.reduce((s, v) => s + (v - mean) ** 2, 0) / velocity.perRep.length;
       const cv = (Math.sqrt(variance) / mean) * 100;
-      if (cv < 10) score += 5;
-      else if (cv > 30) score -= 10;
+      if (cv < 10) velScore = 10;
+      else if (cv < 20) velScore = 7;
+      else if (cv > 40) velScore = 2;
     }
   }
 
-  return Math.max(0, Math.min(100, Math.round(score)));
+  // Fatigue management: 0-10 points
+  let fatigueScore = 5;
+  if (fatigue && fatigue.velocityDropoff != null) {
+    if (fatigue.velocityDropoff < 10) fatigueScore = 10;
+    else if (fatigue.velocityDropoff < 20) fatigueScore = 7;
+    else if (fatigue.velocityDropoff > 35) fatigueScore = 2;
+  }
+
+  const total = romScore + symScore + tempoScore + velScore + fatigueScore;
+  return Math.max(0, Math.min(100, Math.round(total)));
 }
 
 function midpoint(a, b) {
