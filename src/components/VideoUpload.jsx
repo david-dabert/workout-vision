@@ -163,103 +163,148 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let autoDetected = false; // tracks whether detection actually fired
         const analysisStart = Date.now();
 
-        // Seek to a timestamp, process the frame, return true to continue.
-        // Includes a per-seek timeout so it never hangs.
-        const processFrame = (frameIdx) => {
-          return new Promise((res) => {
-            const time = frameIdx * interval;
-            if (time >= duration || abortRef.current) { res(false); return; }
+        // Shared frame handler: processes one captured frame
+        const handleFrame = (time, frameIdx) => {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const result = detectPoseImage(landmarker, canvas);
 
-            video.currentTime = time;
+          if (result && result.landmarks && result.landmarks.length > 0) {
+            const landmarks = result.landmarks[0];
+            drawPose(ctx, landmarks, canvas.width, canvas.height);
 
-            let settled = false;
-            const settle = (cont) => { if (!settled) { settled = true; res(cont); } };
-
-            const onSeeked = () => {
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const result = detectPoseImage(landmarker, canvas);
-
-              if (result && result.landmarks && result.landmarks.length > 0) {
-                const landmarks = result.landmarks[0];
-                drawPose(ctx, landmarks, canvas.width, canvas.height);
-
-                if (autoDetector && !userChangedExercise.current) {
-                  // Allow re-detection in first 40% of frames to correct early misclassifications
-                  const earlyPhase = frameIdx < totalFrames * 0.4;
-                  if (!autoDetectDone || earlyPhase) {
-                    const detected = autoDetector.update(landmarks);
-                    if (detected && detected !== detectedExercise) {
-                      detectedExercise = detected;
-                      autoDetected = true;
-                      repCounter = new RepCounter(detected, { fps: analysisFps });
-                      for (const f of frames) repCounter.update(f.landmarks);
-                      if (!earlyPhase) autoDetectDone = true;
-                      setExercise(detected);
-                    }
-                  }
-                }
-
-                const angles = extractJointAngles(landmarks);
-                // Memory management by file size tier:
-                // Huge (>300MB): don't store landmarks at all -- just count reps
-                // Large (>100MB): store landmarks only, no angles
-                // Normal: store everything
-                if (isHugeFile) {
-                  // Minimal storage: only keep last 10 frames for auto-detect context
-                  if (frames.length >= 10) frames.shift();
-                  frames.push({ landmarks, timestamp: time });
-                } else if (isLargeFile) {
-                  frames.push({ landmarks, timestamp: time });
-                } else {
-                  frames.push({ landmarks, timestamp: time, angles });
-                }
-                repCounter.update(landmarks);
-
-                // Sample frames for replay: skip for huge, every 5th for large, every 3rd for normal
-                if (!isHugeFile) {
-                  const replaySampleRate = isLargeFile ? 5 : 3;
-                  if (frameIdx % replaySampleRate === 0) {
-                    replayFrames.push({ landmarks, timestamp: time });
-                  }
+            if (autoDetector && !userChangedExercise.current) {
+              const earlyPhase = frameIdx < totalFrames * 0.4;
+              if (!autoDetectDone || earlyPhase) {
+                const detected = autoDetector.update(landmarks);
+                if (detected && detected !== detectedExercise) {
+                  detectedExercise = detected;
+                  autoDetected = true;
+                  repCounter = new RepCounter(detected, { fps: analysisFps });
+                  for (const f of frames) repCounter.update(f.landmarks);
+                  if (!earlyPhase) autoDetectDone = true;
+                  setExercise(detected);
                 }
               }
+            }
 
-              const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
-              setProgress(pct);
-              setQueue(prev => prev.map(q =>
-                q.id === queueItem.id ? { ...q, progress: pct } : q
-              ));
-              settle(true);
-            };
+            const angles = extractJointAngles(landmarks);
+            if (isHugeFile) {
+              if (frames.length >= 10) frames.shift();
+              frames.push({ landmarks, timestamp: time });
+            } else if (isLargeFile) {
+              frames.push({ landmarks, timestamp: time });
+            } else {
+              frames.push({ landmarks, timestamp: time, angles });
+            }
+            repCounter.update(landmarks);
 
-            video.addEventListener('seeked', onSeeked, { once: true });
-            // Per-seek timeout: mobile HEVC decode is very slow on large files.
-            // First few seeks are slowest (buffering). Use generous timeouts.
-            const baseTimeout = isHugeFile ? 15000 : isLargeFile ? 10000 : 5000;
-            const firstFrameBonus = frameIdx < 3 ? 10000 : 0; // extra 10s for initial seeks
-            setTimeout(() => {
-              video.removeEventListener('seeked', onSeeked);
-              settle(true); // skip frame, continue to next
-            }, baseTimeout + firstFrameBonus);
-          });
+            if (!isHugeFile) {
+              const replaySampleRate = isLargeFile ? 5 : 3;
+              if (frameIdx % replaySampleRate === 0) {
+                replayFrames.push({ landmarks, timestamp: time });
+              }
+            }
+          }
+
+          const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
+          setProgress(pct);
+          setQueue(prev => prev.map(q =>
+            q.id === queueItem.id ? { ...q, progress: pct } : q
+          ));
         };
 
-        // Process all frames sequentially, yielding to UI between frames
+        // Two strategies: seek-based (desktop, small files) vs play-based (mobile, large files).
+        // Mobile Safari HEVC decoder cannot seek reliably on large blob URLs.
+        // Play-based: play video at 2x speed and capture frames at intervals using timeupdate.
+        const usePlayCapture = isMobile && isLargeFile;
+
         setAnalysisPhase('analyzing');
-        let frameIdx = 0;
+
         const processLoop = async () => {
-          while (frameIdx < totalFrames) {
-            const cont = await processFrame(frameIdx);
-            if (!cont) break;
-            frameIdx++;
-            // Yield to UI and let browser GC decoded video frames.
-            // Huge files yield every frame with longer delay for memory pressure.
-            if (isHugeFile) {
-              await new Promise(r => setTimeout(r, 100));
-            } else if (isLargeFile) {
-              await new Promise(r => setTimeout(r, 50));
-            } else if (frameIdx % 5 === 0) {
-              await new Promise(r => setTimeout(r, 0));
+          if (usePlayCapture) {
+            // --- PLAY-BASED CAPTURE (mobile large files) ---
+            await new Promise((playResolve) => {
+              let frameIdx = 0;
+              let lastCaptureTime = -1;
+              const captureInterval = interval; // seconds between captures
+
+              video.playbackRate = Math.min(2, video.playbackRate || 1);
+              video.currentTime = 0;
+
+              const onTimeUpdate = () => {
+                if (abortRef.current || frameIdx >= totalFrames) {
+                  video.pause();
+                  video.removeEventListener('timeupdate', onTimeUpdate);
+                  playResolve();
+                  return;
+                }
+                const currentTime = video.currentTime;
+                if (currentTime > effectiveDuration) {
+                  video.pause();
+                  video.removeEventListener('timeupdate', onTimeUpdate);
+                  playResolve();
+                  return;
+                }
+                // Capture a frame if enough time has passed since last capture
+                if (currentTime - lastCaptureTime >= captureInterval * 0.8) {
+                  lastCaptureTime = currentTime;
+                  handleFrame(currentTime, frameIdx);
+                  frameIdx++;
+                }
+              };
+
+              const onEnded = () => {
+                video.removeEventListener('timeupdate', onTimeUpdate);
+                video.removeEventListener('ended', onEnded);
+                playResolve();
+              };
+
+              video.addEventListener('timeupdate', onTimeUpdate);
+              video.addEventListener('ended', onEnded);
+
+              // Safety timeout: 3 minutes max for play-based capture
+              setTimeout(() => {
+                video.pause();
+                video.removeEventListener('timeupdate', onTimeUpdate);
+                video.removeEventListener('ended', onEnded);
+                playResolve();
+              }, 180000);
+
+              video.play().catch(() => {
+                // Autoplay blocked — fall back to seek
+                video.removeEventListener('timeupdate', onTimeUpdate);
+                video.removeEventListener('ended', onEnded);
+                playResolve();
+              });
+            });
+          } else {
+            // --- SEEK-BASED CAPTURE (desktop, small files) ---
+            let frameIdx = 0;
+            while (frameIdx < totalFrames) {
+              const cont = await new Promise((res) => {
+                const time = frameIdx * interval;
+                if (time >= duration || abortRef.current) { res(false); return; }
+
+                video.currentTime = time;
+                let settled = false;
+                const settle = (c) => { if (!settled) { settled = true; res(c); } };
+
+                const onSeeked = () => {
+                  handleFrame(time, frameIdx);
+                  settle(true);
+                };
+
+                video.addEventListener('seeked', onSeeked, { once: true });
+                const seekTimeout = isLargeFile ? 10000 : 5000;
+                const bonus = frameIdx < 3 ? 10000 : 0;
+                setTimeout(() => {
+                  video.removeEventListener('seeked', onSeeked);
+                  settle(true);
+                }, seekTimeout + bonus);
+              });
+              if (!cont) break;
+              frameIdx++;
+              if (frameIdx % 5 === 0) await new Promise(r => setTimeout(r, 0));
             }
           }
 
