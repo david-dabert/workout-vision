@@ -1,55 +1,38 @@
-const CACHE_NAME = 'workoutvision-v10';
+const APP_CACHE = 'workoutvision-app-v1';
 const MEDIAPIPE_CACHE = 'workoutvision-mediapipe-v1';
 
-const APP_SHELL = [
-  '/workout-vision/',
-  '/workout-vision/index.html',
-  '/workout-vision/manifest.json',
-  '/workout-vision/favicon.svg',
-  '/workout-vision/icon-192.png',
-  '/workout-vision/icon-512.png',
-];
+const KNOWN_CACHES = [APP_CACHE, MEDIAPIPE_CACHE];
 
-const MEDIAPIPE_URLS = [
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm/vision_wasm_internal.js',
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm/vision_wasm_internal.wasm',
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm/vision_wasm_nosimd_internal.js',
-  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm/vision_wasm_nosimd_internal.wasm',
-  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-];
-
-// Allow the main thread to force-activate a waiting service worker
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+// Activate immediately on install, don't wait for old SW to release.
+self.addEventListener('install', () => {
+  self.skipWaiting();
 });
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    Promise.all([
-      caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)),
-      caches.open(MEDIAPIPE_CACHE).then((cache) => cache.addAll(MEDIAPIPE_URLS)),
-    ]).then(() => self.skipWaiting())
-  );
-});
-
+// Claim all clients and clean up old caches on activate.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME && key !== MEDIAPIPE_CACHE)
+          .filter((key) => !KNOWN_CACHES.includes(key))
           .map((key) => caches.delete(key))
       )
     ).then(() => self.clients.claim())
   );
 });
 
+// Also allow explicit skip-waiting from the main thread.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // MediaPipe assets: cache-first (they're versioned and immutable)
+  // MediaPipe model + WASM files: cache-first (versioned, immutable, large).
+  // Matches CDN-hosted .tflite, .wasm, .task files and the vision JS loader.
   if (
     url.hostname === 'cdn.jsdelivr.net' ||
     url.hostname === 'storage.googleapis.com'
@@ -69,14 +52,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App assets: network-first with cache fallback
+  // Same-origin app assets: network-first so deploys land immediately,
+  // with cache fallback for offline use.
   if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
           if (response.ok && event.request.method === 'GET') {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches.open(APP_CACHE).then((cache) => cache.put(event.request, clone));
           }
           return response;
         })

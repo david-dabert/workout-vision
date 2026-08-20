@@ -9,19 +9,11 @@
  */
 
 import { EXERCISES } from './exercises';
+import { calculateBMR, calculateTDEE, ACTIVITY_MULTIPLIERS } from './nutrition';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-/** Activity level multipliers for TDEE calculation (Harris-Benedict adapted). */
-const ACTIVITY_MULTIPLIERS = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  veryActive: 1.9,
-};
 
 /** BMI classification thresholds (WHO). */
 const BMI_CLASSES = [
@@ -284,14 +276,11 @@ export function generatePhysicalAnalysis(profile) {
   const bmi = weight / (heightM * heightM);
   const bmiClass = BMI_CLASSES.find((c) => bmi < c.max)?.label || 'obese_class_3';
 
-  // --- BMR (Mifflin-St Jeor 1990) ---
-  const bmr = isMale
-    ? 10 * weight + 6.25 * height - 5 * age + 5
-    : 10 * weight + 6.25 * height - 5 * age - 161;
+  // --- BMR (Mifflin-St Jeor 1990) — single source in nutrition.js ---
+  const bmr = calculateBMR(weight, height, age, sex);
 
   // --- TDEE ---
-  const activityMultiplier = ACTIVITY_MULTIPLIERS[activityLevel] || ACTIVITY_MULTIPLIERS.moderate;
-  const tdee = Math.round(bmr * activityMultiplier);
+  const tdee = Math.round(calculateTDEE(bmr, activityLevel));
 
   // --- Body fat estimate (Deurenberg 1991, BMI-based) ---
   const bodyFatPct = isMale

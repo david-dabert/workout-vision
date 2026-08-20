@@ -11,13 +11,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 window.getInstallPrompt = () => deferredInstallPrompt;
 
-// Wait for stale service worker cleanup (set in index.html) before rendering.
-// This guarantees no old SW serves cached JS for this page load.
-const swReady = window.__swReady || Promise.resolve();
-swReady.then(() => {
-  createRoot(document.getElementById('root')).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  );
-});
+// Register the service worker so MediaPipe models are cached after first load.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/workout-vision/sw.js').catch(() => {});
+  });
+}
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

@@ -4,6 +4,7 @@
  */
 
 import localforage from 'localforage';
+import { calculateBMR, ACTIVITY_MULTIPLIERS } from './nutrition';
 
 const profileStore = localforage.createInstance({ name: 'workoutVision', storeName: 'profile' });
 const workoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' });
@@ -125,13 +126,8 @@ export function calculateBaselines(profile) {
   const heightM = heightCm / 100;
   const bmi = weightKg / (heightM * heightM);
 
-  // BMR using Mifflin-St Jeor (1990), most validated equation
-  let bmr;
-  if (sex === 'male') {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * ageYears + 5;
-  } else {
-    bmr = 10 * weightKg + 6.25 * heightCm - 5 * ageYears - 161;
-  }
+  // BMR using Mifflin-St Jeor (1990) — single source in nutrition.js
+  const bmr = calculateBMR(weightKg, heightCm, ageYears, sex);
 
   // Body fat estimation (Deurenberg 1991, BMI-based; SEE 4-5%)
   let estimatedBF;
@@ -164,13 +160,9 @@ export function calculateBaselines(profile) {
     maxHR: Math.round(maxHR),
     zones,
     strengthBaselines,
-    tdeeMultipliers: {
-      sedentary: Math.round(bmr * 1.2),
-      light: Math.round(bmr * 1.375),
-      moderate: Math.round(bmr * 1.55),
-      active: Math.round(bmr * 1.725),
-      veryActive: Math.round(bmr * 1.9),
-    },
+    tdeeMultipliers: Object.fromEntries(
+      Object.entries(ACTIVITY_MULTIPLIERS).map(([k, v]) => [k, Math.round(bmr * v)])
+    ),
   };
 }
 

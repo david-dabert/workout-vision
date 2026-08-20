@@ -3464,3 +3464,20 @@ export class ExerciseAutoDetector {
     this._smoother.reset();
   }
 }
+
+// ---------------------------------------------------------------------------
+// Shared exercise grouping for UI selectors
+// ---------------------------------------------------------------------------
+// Groups exercises by category (compound / isolation / bodyweight), sorted
+// alphabetically within each group. Skips 'superset' (handled as "Other").
+export const EXERCISE_GROUPS = (() => {
+  const groups = { compound: [], isolation: [], bodyweight: [] };
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    if (key === 'superset') continue;
+    const cat = ex.category || 'compound';
+    if (groups[cat]) groups[cat].push({ key, name: ex.name });
+    else groups.compound.push({ key, name: ex.name });
+  }
+  for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
+  return groups;
+})();

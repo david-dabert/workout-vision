@@ -1,25 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles } from '../lib/poseAnalysis';
-import { EXERCISES, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
+import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
 import { getProfile, saveWorkout } from '../lib/storage';
 import { shareCard } from '../lib/shareCard';
 import VideoReplay from './VideoReplay';
 
-// Group exercises by category for the selector
-const EXERCISE_GROUPS = (() => {
-  const groups = { compound: [], isolation: [], bodyweight: [] };
-  for (const [key, ex] of Object.entries(EXERCISES)) {
-    if (key === 'superset') continue; // handled as "Other"
-    const cat = ex.category || 'compound';
-    if (groups[cat]) groups[cat].push({ key, name: ex.name });
-    else groups.compound.push({ key, name: ex.name });
-  }
-  // Sort each group alphabetically
-  for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
-  return groups;
-})();
 const MAX_FRAMES = 500; // hard cap for very long videos
 const MAX_FRAMES_LARGE = 480; // 60s × 8fps — 320px canvas keeps memory safe
 const MIN_FPS = 4; // floor: below this, rep counting misses bottom positions

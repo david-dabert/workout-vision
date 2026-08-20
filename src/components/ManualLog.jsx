@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EXERCISES } from '../lib/exercises';
+import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
 
 const categoryLabels = {
@@ -8,25 +8,10 @@ const categoryLabels = {
   bodyweight: 'Bodyweight',
 };
 
-function groupByCategory() {
-  const groups = {};
-  for (const [key, ex] of Object.entries(EXERCISES)) {
-    const cat = ex.category || 'other';
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push({ key, name: ex.name });
-  }
-  // Sort exercises alphabetically within each category
-  for (const cat of Object.keys(groups)) {
-    groups[cat].sort((a, b) => a.name.localeCompare(b.name));
-  }
-  return groups;
-}
-
-const categorized = groupByCategory();
 const categoryOrder = ['compound', 'bodyweight', 'isolation'];
-const sortedCategories = categoryOrder.filter(c => categorized[c]);
+const sortedCategories = categoryOrder.filter(c => EXERCISE_GROUPS[c]);
 // Add any categories not in the predefined order
-for (const c of Object.keys(categorized)) {
+for (const c of Object.keys(EXERCISE_GROUPS)) {
   if (!sortedCategories.includes(c)) sortedCategories.push(c);
 }
 
@@ -84,10 +69,10 @@ export default function ManualLog({ onClose }) {
   }
 
   function filteredCategories() {
-    if (!searchTerm.trim()) return sortedCategories.map(c => [c, categorized[c]]);
+    if (!searchTerm.trim()) return sortedCategories.map(c => [c, EXERCISE_GROUPS[c]]);
     const term = searchTerm.toLowerCase();
     return sortedCategories
-      .map(c => [c, categorized[c].filter(ex => ex.name.toLowerCase().includes(term))])
+      .map(c => [c, EXERCISE_GROUPS[c].filter(ex => ex.name.toLowerCase().includes(term))])
       .filter(([, exs]) => exs.length > 0);
   }
 
