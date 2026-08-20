@@ -1,5 +1,5 @@
-// mt1wyjm6 is replaced at build time by vite plugin — ensures browser detects new SW on each deploy
-const BUILD_VERSION = 'mt1wyjm6';
+// mt1zjy1v is replaced at build time by vite plugin — ensures browser detects new SW on each deploy
+const BUILD_VERSION = 'mt1zjy1v';
 const APP_CACHE = `workoutvision-app-${BUILD_VERSION}`;
 const MEDIAPIPE_CACHE = 'workoutvision-mediapipe-v1';
 
