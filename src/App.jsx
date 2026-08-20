@@ -1,10 +1,11 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { getProfile } from './lib/storage';
 import { preloadModel } from './lib/poseAnalysis';
+import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { Home, TrendingUp, User, Apple } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Progress from './components/Progress';
 import Profile from './components/Profile';
+import Onboarding from './components/Onboarding';
 import './index.css';
 
 const Train = lazy(() => import('./components/Train'));
@@ -14,6 +15,7 @@ const MachineIdentifier = lazy(() => import('./components/MachineIdentifier'));
 const WorkoutPlan = lazy(() => import('./components/WorkoutPlan'));
 const ManualLog = lazy(() => import('./components/ManualLog'));
 const ExerciseHistory = lazy(() => import('./components/ExerciseHistory'));
+const RestTimer = lazy(() => import('./components/RestTimer'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
@@ -21,20 +23,32 @@ const LazyFallback = (
   </div>
 );
 
-function App() {
+function AppInner() {
+  const { profile, saveProfile, profileLoading } = useProfile();
   const [page, setPage] = useState('dashboard');
-  const [profile, setProfile] = useState(null);
   const [modelStatus, setModelStatus] = useState('loading');
   const [preSelectedExercise, setPreSelectedExercise] = useState(null);
 
   useEffect(() => {
-    getProfile().then(setProfile);
     preloadModel()
       .then((ok) => setModelStatus(ok ? 'ready' : 'error'))
       .catch(() => setModelStatus('error'));
   }, []);
 
   const onNavigate = (p) => setPage(p);
+
+  // Wait for profile check before rendering
+  if (profileLoading) return LazyFallback;
+
+  // First-time user: show onboarding
+  if (!profile) {
+    return (
+      <Onboarding onComplete={async (p) => {
+        await saveProfile(p);
+        setPage('dashboard');
+      }} />
+    );
+  }
 
   // Full-screen pages (no tab bar)
   if (page === 'train') return (
@@ -71,6 +85,11 @@ function App() {
   if (page === 'history') return (
     <Suspense fallback={LazyFallback}>
       <ExerciseHistory onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'timer') return (
+    <Suspense fallback={LazyFallback}>
+      <RestTimer onClose={() => setPage('dashboard')} />
     </Suspense>
   );
 
@@ -140,6 +159,14 @@ function App() {
         </button>
       </nav>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ProfileProvider>
+      <AppInner />
+    </ProfileProvider>
   );
 }
 

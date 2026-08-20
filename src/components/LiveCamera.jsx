@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { getVideoLandmarker, detectPoseVideo, drawPose, resetTimestamp, disposeAllLandmarkers } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
-import { saveWorkout, getProfile } from '../lib/storage';
+import { saveWorkout } from '../lib/storage';
+import { useProfile } from '../lib/ProfileContext';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
 
@@ -20,6 +21,7 @@ function speak(text) {
 }
 
 export default function LiveCamera({ onClose }) {
+  const { profile: userProfile } = useProfile();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -78,11 +80,11 @@ export default function LiveCamera({ onClose }) {
 
     async function setup() {
       try {
-        const [lm, profile] = await Promise.all([getVideoLandmarker(), getProfile()]);
+        const lm = await getVideoLandmarker();
         if (cancelled) return;
         landmarkerRef.current = lm;
         autoDetectorRef.current = new ExerciseAutoDetector();
-        if (profile?.weight) setBodyWeight(parseFloat(profile.weight) || 70);
+        if (userProfile?.weight) setBodyWeight(parseFloat(userProfile.weight) || 70);
         await initCamera(facingMode);
         if (!cancelled) {
           setStatus('ready');

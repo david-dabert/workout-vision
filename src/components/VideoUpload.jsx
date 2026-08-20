@@ -3,7 +3,8 @@ import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles } fro
 import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
-import { getProfile, saveWorkout } from '../lib/storage';
+import { saveWorkout } from '../lib/storage';
+import { useProfile } from '../lib/ProfileContext';
 import { shareCard } from '../lib/shareCard';
 import VideoReplay from './VideoReplay';
 
@@ -35,6 +36,7 @@ function formatTime(seconds) {
 }
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
+  const { profile: userProfile } = useProfile();
   const [queue, setQueue] = useState([]);
   const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
@@ -261,10 +263,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory);
           } catch (err) { console.error('Bio analysis error:', err); }
 
-          const profile = await getProfile();
           let report = null;
           try {
-            report = generateWorkoutReport(profile, [{
+            report = generateWorkoutReport(userProfile, [{
               exerciseKey: detectedExercise, exercise: detectedExercise,
               reps, analysis: bioAnalysis, bioAnalysis, repHistory,
             }]);

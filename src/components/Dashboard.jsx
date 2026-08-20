@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllWorkouts, getFoodLog, getProfile } from '../lib/storage';
+import { getAllWorkouts, getFoodLog } from '../lib/storage';
 import { getDailyTargets, estimateDailyBurn } from '../lib/nutrition';
 import { analyzeProgression } from '../lib/progression';
 import { Flame, Dumbbell, Target, TrendingUp, AlertTriangle } from 'lucide-react';
@@ -33,7 +33,6 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
 
     const today = new Date().toISOString().split('T')[0];
     const todayFood = await getFoodLog(today);
-    const p = await getProfile();
 
     const dayStart = new Date(today);
     dayStart.setHours(0, 0, 0, 0);
@@ -44,9 +43,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
       return t >= dayStart.getTime() && t <= dayEnd.getTime();
     });
 
-    const targets = p ? getDailyTargets(p) : null;
+    const targets = profile ? getDailyTargets(profile) : null;
     const caloriesEaten = todayFood.reduce((s, e) => s + (e.calories || 0), 0);
-    const caloriesBurned = p ? estimateDailyBurn(todayWorkouts, parseFloat(p.weight) || 70) : 0;
+    const caloriesBurned = profile ? estimateDailyBurn(todayWorkouts, parseFloat(profile.weight) || 70) : 0;
     const proteinEaten = todayFood.reduce((s, e) => s + (e.protein || 0), 0);
 
     setTodayStats({
@@ -60,7 +59,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
     });
 
     if (allWorkouts.length >= 3) {
-      setProgression(analyzeProgression(allWorkouts, p));
+      setProgression(analyzeProgression(allWorkouts, profile));
     }
   }
 
@@ -278,6 +277,17 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           <span className="nav-icon">PRs</span>
           <span className="nav-title">Exercise History</span>
           <span className="nav-desc">All sets, PRs, and progress per exercise</span>
+        </div>
+        <div
+          className="nav-card"
+          onClick={() => onNavigate('timer')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('timer'); } }}
+        >
+          <span className="nav-icon">REST</span>
+          <span className="nav-title">Rest Timer</span>
+          <span className="nav-desc">Between-set countdown with audio alert</span>
         </div>
       </div>
 

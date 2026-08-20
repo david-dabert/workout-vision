@@ -1,5 +1,5 @@
 /**
- * Exercise database, rep counter, and auto-detection engine.
+ * Exercise database and shared helpers.
  *
  * Scientific references embedded per exercise. Joint angle thresholds
  * calibrated from biomechanics literature and empirical tuning on
@@ -9,9 +9,11 @@
  *   { leftKnee, rightKnee, leftHip, rightHip,
  *     leftElbow, rightElbow, leftShoulder, rightShoulder, trunk }
  *   All values in degrees.
+ *
+ * RepCounter and ExerciseAutoDetector have been split into separate modules
+ * (repCounter.js and exerciseDetector.js) but are re-exported here so that
+ * existing imports continue to work.
  */
-
-import { extractJointAngles } from './poseAnalysis';
 
 // ---------------------------------------------------------------------------
 // Visibility-aware bilateral selection
@@ -22,7 +24,7 @@ import { extractJointAngles } from './poseAnalysis';
 // landmark visibility, falling back to Math.min when both are well-tracked.
 const VIS_THRESHOLD = 0.5;
 
-function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+export function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
   const lv = angles[visLeftKey] || 0;
   const rv = angles[visRightKey] || 0;
   const left = angles[leftKey];
@@ -42,7 +44,7 @@ function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
 }
 
 // For exercises where the tracked value goes UP during the concentric phase
-function bestSideMax(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+export function bestSideMax(angles, leftKey, rightKey, visLeftKey, visRightKey) {
   const lv = angles[visLeftKey] || 0;
   const rv = angles[visRightKey] || 0;
   const left = angles[leftKey];
@@ -2639,36 +2641,6 @@ export const EXERCISES = {
     scienceNotes: 'Supersets pair two exercises back-to-back with no rest, increasing metabolic demand and training density (Robbins DW et al, 2010, J Strength Cond Res). Use this mode when alternating between exercises in a single video.',
   },
 };
-
-// ---------------------------------------------------------------------------
-// Utility: 3-frame moving average for angle smoothing
-// ---------------------------------------------------------------------------
-
-class AngleBuffer {
-  constructor(windowSize = 3) {
-    this._window = windowSize;
-    this._buffers = {};
-  }
-
-  smooth(angles) {
-    if (!angles) return null;
-    const smoothed = {};
-    for (const key of Object.keys(angles)) {
-      if (!this._buffers[key]) this._buffers[key] = [];
-      this._buffers[key].push(angles[key]);
-      if (this._buffers[key].length > this._window) {
-        this._buffers[key].shift();
-      }
-      const buf = this._buffers[key];
-      smoothed[key] = buf.reduce((s, v) => s + v, 0) / buf.length;
-    }
-    return smoothed;
-  }
-
-  reset() {
-    this._buffers = {};
-  }
-}
 
 // ---------------------------------------------------------------------------
 // RepCounter

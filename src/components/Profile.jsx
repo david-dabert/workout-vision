@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  getProfile, saveProfile, calculateBaselines,
+  calculateBaselines,
   getMedicalRecords, saveMedicalRecord, deleteMedicalRecord,
 } from '../lib/storage';
+import { useProfile } from '../lib/ProfileContext';
 
 export default function Profile({ onClose }) {
+  const { profile: savedProfile, saveProfile } = useProfile();
   const [profile, setProfile] = useState({
     name: '', weight: '', height: '', age: '', sex: 'male', ethnicity: '', activityLevel: 'moderate',
     restingHR: '', experience: 'intermediate', goal: 'general',
@@ -16,14 +18,12 @@ export default function Profile({ onClose }) {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    getProfile().then(p => {
-      if (p) {
-        setProfile(prev => ({ ...prev, ...p }));
-        setBaselines(calculateBaselines(p));
-      }
-    });
+    if (savedProfile) {
+      setProfile(prev => ({ ...prev, ...savedProfile }));
+      setBaselines(calculateBaselines(savedProfile));
+    }
     getMedicalRecords().then(setRecords);
-  }, []);
+  }, [savedProfile]);
 
   const handleSave = async () => {
     await saveProfile(profile);
