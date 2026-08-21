@@ -8,16 +8,18 @@ import { useProfile } from '../lib/ProfileContext';
 import { shareCard } from '../lib/shareCard';
 import VideoReplay from './VideoReplay';
 
-// ── Build marker: if you see this version in the UI, the deployment is fresh ──
-const BUILD_ID = '2026-08-20T' + Date.now().toString(36).slice(-4);
+// Build marker visible in UI to verify deployment is fresh
+const BUILD_ID = 'v3-seek';
 
-const MAX_FRAMES = 500;
-// Universal 50 MB limit. No mobile detection (every detection method failed on iOS).
-// 50 MB covers ~50 seconds of 1080p HEVC, which is plenty for form analysis.
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
-const MAX_ANALYSIS_SECONDS = 60;
-const WALL_CLOCK_CAP_MS = 90_000;
-const PLAY_TIMEOUT_MS = 10_000;
+// Hard cap: never process more than 120 frames. This is what the working
+// version (45cb6bb) used. A 30-second video at 3 FPS = 90 frames.
+// A 2-minute video gets adaptive FPS to stay under 120.
+const MAX_FRAMES = 120;
+
+// No file size limit. The seek-based approach handles large files fine
+// because it processes one frame at a time, never loads the whole video
+// into memory at once. The original working version had no limit.
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB generous cap
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -59,15 +61,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const abortRef = useRef(false);
-  const videoUrlsRef = useRef([]);
 
-  // Hide video on mount (managed via DOM, never via React style prop)
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.style.cssText =
-        'width:1px;height:1px;position:absolute;opacity:0.01;pointer-events:none;';
-    }
-    return () => { videoUrlsRef.current.forEach(u => URL.revokeObjectURL(u)); };
+    return () => {};
   }, []);
 
   const handleFiles = (e) => {
@@ -76,15 +72,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const items = [];
     for (const f of files) {
       if (f.size > MAX_FILE_SIZE) {
-        alert(
-          `${f.name} is ${(f.size / 1024 / 1024).toFixed(0)} MB — too large for analysis.\n\n` +
-          `Trim to under 30 seconds for best results:\n` +
-          `1. Open in Photos app\n` +
-          `2. Tap Edit > drag handles to 30 seconds\n` +
-          `3. Save as New Clip\n` +
-          `4. Upload the trimmed clip\n\n` +
-          `Or use Live Training mode for real-time analysis.`
-        );
+        alert(`${f.name} is too large (${(f.size / 1024 / 1024).toFixed(0)} MB). Maximum is 500 MB.`);
         continue;
       }
       items.push({
@@ -104,322 +92,206 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
-  // ─── Analysis engine ───
+  // ─── SEEK-BASED ANALYSIS ENGINE ───
   //
-  // Play-forward only. No seek mode (iOS HEVC blob URLs don't fire seeked events).
-  // Video element visibility is managed via direct DOM manipulation to prevent
-  // React re-renders (from setProgress) from overriding inline styles.
-  // iOS Safari skips frame decoding for invisible/tiny video elements.
+  // This is the approach that WORKED on mobile (commit 45cb6bb).
+  // It sets video.currentTime to each target timestamp, waits for the
+  // 'seeked' event, draws the frame to canvas, runs pose detection.
+  // One frame at a time, sequential, with a 3-second per-seek timeout.
+  //
+  // The play-based approach that replaced this NEVER worked on iOS Safari
+  // with HEVC blob URLs. Restored to the proven working method.
 
   const analyzeVideo = useCallback(async (queueItem) => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return null;
 
-    const url = URL.createObjectURL(queueItem.file);
-    videoUrlsRef.current.push(url);
-
-    const hideVideo = () => {
-      video.pause();
-      video.removeAttribute('src');
-      video.load(); // release resources
-      video.style.cssText =
-        'width:1px;height:1px;position:absolute;opacity:0.01;pointer-events:none;';
-    };
-
-    // ── 1. Make video VISIBLE before loading ──
-    // iOS Safari refuses to decode frames unless the element is visible and
-    // large enough. Set this BEFORE assigning src so the browser knows it
-    // needs to commit to decoding.
-    video.style.cssText =
-      'width:100%;max-height:300px;display:block;border-radius:8px;pointer-events:none;object-fit:contain;';
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = 'auto';
-
-    // ── 2. Load video + model in parallel ──
+    // Load model first
     setAnalysisPhase('model');
-
-    const videoLoaded = new Promise((resolve) => {
-      let settled = false;
-      const done = (v) => { if (!settled) { settled = true; resolve(v); } };
-      video.onloadedmetadata = () => done(true);
-      video.onerror = () => done(false);
-      setTimeout(() => done(false), 15_000);
-      video.src = url;
-      video.load();
-    });
-
-    const [landmarker, vidOk] = await Promise.all([
-      getImageLandmarker(),
-      videoLoaded,
-    ]);
-
+    const landmarker = await getImageLandmarker();
     if (!landmarker) {
-      hideVideo();
-      alert('AI model failed to load. Check your connection and try again.');
+      alert('AI model failed to load. Check your connection.');
       return null;
     }
 
-    if (!vidOk && video.readyState < 1) {
-      // Give it a final 3 seconds
-      await new Promise(r => setTimeout(r, 3000));
-      if (video.readyState < 1) {
-        hideVideo();
-        alert('Video failed to load. Try a shorter clip or MP4 format.');
-        return null;
-      }
+    // Load video
+    setAnalysisPhase('loading');
+    const url = URL.createObjectURL(queueItem.file);
+    let urlRevoked = false;
+    const safeRevoke = () => { if (!urlRevoked) { urlRevoked = true; URL.revokeObjectURL(url); } };
+
+    const loaded = await new Promise((resolve) => {
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.src = url;
+      video.load();
+
+      let settled = false;
+      const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+
+      video.addEventListener('loadeddata', () => done(true), { once: true });
+      video.onerror = () => done(false);
+      setTimeout(() => done(false), 20_000);
+    });
+
+    if (!loaded) {
+      safeRevoke();
+      alert('Video failed to load. Try a different file or shorter clip.');
+      return null;
     }
 
-    // ── 3. Get duration ──
-    setAnalysisPhase('loading');
-    let duration = video.duration;
-    if (!isFinite(duration) || duration <= 0) {
-      await new Promise((resolve) => {
-        const onDur = () => {
-          if (isFinite(video.duration) && video.duration > 0) {
-            video.removeEventListener('durationchange', onDur);
-            resolve();
-          }
-        };
-        video.addEventListener('durationchange', onDur);
-        setTimeout(() => {
-          video.removeEventListener('durationchange', onDur);
-          resolve();
-        }, 8000);
-      });
-      duration = video.duration;
-    }
-    if (!isFinite(duration) || duration <= 0) {
-      hideVideo();
+    const duration = video.duration;
+    if (!duration || !isFinite(duration)) {
+      safeRevoke();
       alert('Cannot read video duration. Try a different file.');
       return null;
     }
 
-    const effectiveDuration = Math.min(duration, MAX_ANALYSIS_SECONDS);
-    console.log(`[Upload] ${duration.toFixed(1)}s ${video.videoWidth}x${video.videoHeight} analyzing ${effectiveDuration}s [${BUILD_ID}]`);
+    // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
+    // Cap total frames at MAX_FRAMES so a long video doesn't produce hundreds of seeks.
+    const analysisFps = Math.min(3, MAX_FRAMES / duration);
+    const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
+    const interval = duration / totalFrames;
 
-    // ── 4. Start playback ──
-    setAnalysisPhase('analyzing');
-    video.currentTime = 0.01; // tiny offset avoids iOS black-frame-at-zero issue
-
-    try {
-      await video.play();
-    } catch (err) {
-      console.error('[Upload] play() rejected:', err);
-      hideVideo();
-      alert('Cannot play this video for analysis.\nTry trimming it or use Live Training.');
-      return null;
-    }
-
-    // Wait for currentTime to actually advance (confirms decoder is running)
-    const playConfirmed = await new Promise((resolve) => {
-      const start = video.currentTime;
-      let elapsed = 0;
-      const timer = setInterval(() => {
-        elapsed += 200;
-        if (video.currentTime > start + 0.05) {
-          clearInterval(timer);
-          resolve(true);
-        }
-        if (elapsed >= PLAY_TIMEOUT_MS) {
-          clearInterval(timer);
-          resolve(false);
-        }
-      }, 200);
-    });
-
-    if (!playConfirmed) {
-      video.pause();
-      hideVideo();
-      alert(
-        'Video is not playing — this happens with large or HEVC files.\n\n' +
-        'Fix: trim to under 30 seconds in Photos, or use Live Training.'
-      );
-      return null;
-    }
-
-    // ── 5. Capture frames via requestAnimationFrame ──
-    const targetFps = 8;
-    const captureInterval = 1.0 / targetFps;
-    const maxDim = 480;
-    const scale = Math.min(1, maxDim / (video.videoWidth || 320));
-    canvas.width = Math.round((video.videoWidth || 320) * scale);
-    canvas.height = Math.round((video.videoHeight || 240) * scale);
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
 
+    console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${video.videoWidth}x${video.videoHeight}, ${totalFrames} frames at ${analysisFps.toFixed(1)} FPS`);
+
+    // Analysis state
     const frames = [];
     const replayFrames = [];
     const isAutoMode = exercise === '__auto__';
     const initialExercise = isAutoMode ? 'squat' : exercise;
     let detectedExercise = initialExercise;
-    let repCounter = new RepCounter(initialExercise, { fps: targetFps });
+    let repCounter = new RepCounter(initialExercise, { fps: analysisFps });
     const skipAutoDetect = !isAutoMode && userChangedExercise.current;
     const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect))
-      ? new ExerciseAutoDetector({ fps: targetFps }) : null;
+      ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
     let autoDetectDone = false;
     let autoDetected = false;
     const analysisStart = Date.now();
 
-    // Speed up after confirming first frames are captured
-    let speedBumped = false;
+    setAnalysisPhase('analyzing');
 
-    await new Promise((resolve) => {
-      let done = false;
-      const finish = () => { if (!done) { done = true; video.pause(); resolve(); } };
+    // Process one frame at a time via seeking
+    const processFrame = (frameIdx) => {
+      return new Promise((res) => {
+        const time = frameIdx * interval;
+        if (time >= duration || abortRef.current) { res(false); return; }
 
-      let frameIdx = 0;
-      let lastCaptureVt = -Infinity;
-      // Stall tracking: wall-clock based, checks every 5 seconds
-      let stallCheckWall = performance.now();
-      let stallCheckVt = video.currentTime || 0;
+        video.currentTime = time;
 
-      const tick = () => {
-        if (done) return;
-        if (abortRef.current) { finish(); return; }
+        let settled = false;
+        const settle = (cont) => { if (!settled) { settled = true; res(cont); } };
 
-        const vt = video.currentTime;
-        const wallNow = performance.now();
-        const wallElapsed = Date.now() - analysisStart;
+        const onSeeked = () => {
+          video.removeEventListener('seeked', onSeeked);
 
-        // ── Exit conditions ──
-        if (video.ended || video.paused) { finish(); return; }
-        if (isFinite(vt) && vt >= effectiveDuration) { finish(); return; }
-        if (wallElapsed > WALL_CLOCK_CAP_MS) {
-          console.warn('[Upload] 90s wall-clock cap');
-          finish(); return;
-        }
-        if (frameIdx >= MAX_FRAMES) { finish(); return; }
-
-        // ── Stall detection (every 5 seconds) ──
-        if (wallNow - stallCheckWall > 5000) {
-          const vtDelta = (isFinite(vt) ? vt : 0) - stallCheckVt;
-          if (vtDelta < 0.2) {
-            console.warn(`[Upload] Stall: ${vtDelta.toFixed(3)}s video in 5s real`);
-            finish(); return;
-          }
-          stallCheckWall = wallNow;
-          stallCheckVt = isFinite(vt) ? vt : stallCheckVt;
-        }
-
-        // ── Frame capture ──
-        // Don't gate on readyState — just try drawImage. If the frame isn't
-        // decoded, canvas gets a black/stale frame and pose detection returns
-        // no landmarks, which is harmless. Gating on readyState>=2 caused
-        // zero captures on iOS where readyState fluctuates during HEVC decode.
-        if (isFinite(vt) && vt > 0 && vt - lastCaptureVt >= captureInterval * 0.7) {
-          lastCaptureVt = vt;
-
-          try {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          } catch (_) {
-            // drawImage can throw if video is in a bad state; skip this frame
-            requestAnimationFrame(tick);
-            return;
-          }
-
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const result = detectPoseImage(landmarker, canvas);
 
           if (result?.landmarks?.length) {
             const landmarks = result.landmarks[0];
             drawPose(ctx, landmarks, canvas.width, canvas.height);
 
-            // Auto-detect is now deferred to the end of the video
-
             const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: vt, angles });
+            frames.push({ landmarks, timestamp: time, angles });
             repCounter.update(landmarks);
-            if (frameIdx % 3 === 0) {
-              replayFrames.push({ landmarks, timestamp: vt });
-            }
-            frameIdx++;
 
-            // Speed up after 5 successful captures
-            if (!speedBumped && frameIdx >= 5) {
-              speedBumped = true;
-              try { video.playbackRate = effectiveDuration > 30 ? 2.5 : 2; } catch (_) {}
+            if (frameIdx % 3 === 0) {
+              replayFrames.push({ landmarks, timestamp: time });
             }
           }
 
-          // Update progress
-          const pct = Math.min(99, Math.round((vt / effectiveDuration) * 100));
+          const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
           setProgress(pct);
           setQueue(prev => prev.map(q =>
             q.id === queueItem.id ? { ...q, progress: pct } : q
           ));
-        }
+          settle(true);
+        };
 
-        requestAnimationFrame(tick);
-      };
+        video.addEventListener('seeked', onSeeked);
+        // Per-seek 3-second timeout: skip this frame if seek hangs
+        setTimeout(() => {
+          video.removeEventListener('seeked', onSeeked);
+          settle(true); // skip frame, continue to next
+        }, 3000);
+      });
+    };
 
-      requestAnimationFrame(tick);
-    });
+    // Sequential frame processing with UI yields
+    let frameIdx = 0;
+    while (frameIdx < totalFrames) {
+      const cont = await processFrame(frameIdx);
+      if (!cont) break;
+      frameIdx++;
+      // Yield to UI thread every 5 frames so progress bar updates
+      if (frameIdx % 5 === 0) {
+        await new Promise(r => setTimeout(r, 0));
+      }
+      // Hard wall-clock cap: 3 minutes
+      if (Date.now() - analysisStart > 180_000) {
+        console.warn('[Upload] 3-minute wall-clock cap reached');
+        break;
+      }
+    }
 
-    // ── 6. Finalize ──
-    hideVideo();
     const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
     if (frames.length === 0) {
-      console.error(`[Upload] Zero frames captured in ${analysisTime}s`);
+      safeRevoke();
       alert(
         `Could not detect any poses in ${queueItem.name}.\n\n` +
-        `This can happen with:\n` +
-        `• Very large or long videos\n` +
-        `• Uncommon video formats\n\n` +
-        `Try trimming to 30 seconds in Photos, or use Live Training.`
+        `Try a different angle or better lighting, or use Live Training mode.`
       );
       return null;
     }
 
-    // ── 6.5. Deferred Auto-Detection (Rep-based scoring) ──
+    // Deferred auto-detection: run all frames through each candidate exercise's
+    // rep counter and pick the one with the most reps
     if (autoDetector && !userChangedExercise.current) {
       const tallies = {};
-      const detector = new ExerciseAutoDetector({ fps: targetFps });
+      const detector = new ExerciseAutoDetector({ fps: analysisFps });
       for (const f of frames) {
-         const det = detector.update(f.landmarks);
-         if (det) tallies[det] = (tallies[det] || 0) + 1;
+        const det = detector.update(f.landmarks);
+        if (det) tallies[det] = (tallies[det] || 0) + 1;
       }
-      
       const candidates = Object.keys(tallies);
       if (candidates.length > 0) {
         let bestEx = initialExercise;
         let bestScore = -1;
-
         for (const ex of candidates) {
-           const rc = new RepCounter(ex, { fps: targetFps });
-           for (const f of frames) rc.update(f.landmarks);
-           rc.finalize();
-           const reps = rc.repHistory ? rc.repHistory.length : 0;
-           
-           // Score = reps * 1000 + tallies (prioritize reps, tie-break with tallies)
-           const score = reps * 1000 + tallies[ex];
-           if (score > bestScore) {
-              bestScore = score;
-              bestEx = ex;
-           }
+          const rc = new RepCounter(ex, { fps: analysisFps });
+          for (const f of frames) rc.update(f.landmarks);
+          rc.finalize();
+          const reps = rc.repHistory ? rc.repHistory.length : 0;
+          const score = reps * 1000 + tallies[ex];
+          if (score > bestScore) { bestScore = score; bestEx = ex; }
         }
-
         if (bestEx !== initialExercise || candidates.includes(initialExercise)) {
-           detectedExercise = bestEx;
-           autoDetected = true;
-           setExercise(detectedExercise); // Update UI dropdown
-           
-           // Rebuild final repCounter for the winner
-           repCounter = new RepCounter(detectedExercise, { fps: targetFps });
-           for (const f of frames) repCounter.update(f.landmarks);
+          detectedExercise = bestEx;
+          autoDetected = true;
+          setExercise(detectedExercise);
+          repCounter = new RepCounter(detectedExercise, { fps: analysisFps });
+          for (const f of frames) repCounter.update(f.landmarks);
         }
       }
     }
 
     repCounter.finalize();
-    console.log(`[Upload] ${frames.length} frames in ${analysisTime}s`);
+    console.log(`[Upload] ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
 
     const landmarkFrames = frames.map(f => f.landmarks);
     const repHistory = repCounter.repHistory || [];
     const reps = repHistory.length;
 
     let bioAnalysis = null;
-    try { bioAnalysis = analyzeSet(landmarkFrames, targetFps, detectedExercise, repHistory); }
+    try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory); }
     catch (err) { console.error('Bio analysis error:', err); }
 
     let report = null;
@@ -520,7 +392,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>
             Tap to select videos
           </p>
-          <p className="text-xs text-muted">MP4, MOV — max 50 MB (~30 sec)</p>
+          <p className="text-xs text-muted">MP4, MOV, WebM</p>
         </div>
         <input
           ref={fileInputRef}
@@ -552,7 +424,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 {q.status === 'done' && <span className="queue-done">Done</span>}
                 {q.status === 'error' && (
                   <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
-                    Failed — trim to 30s or use Live Training
+                    Failed — try a different clip or use Live Training
                   </span>
                 )}
                 {q.status === 'queued' && !analyzing && (
@@ -626,7 +498,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               {analysisPhase === 'model'
                 ? 'Loading AI engine...'
                 : analysisPhase === 'loading'
-                ? `Buffering ${currentFile}...`
+                ? `Loading ${currentFile}...`
                 : analysisPhase === 'analyzing'
                 ? `Analyzing ${currentFile}... ${progress}%`
                 : `Starting ${currentFile}...`}
@@ -640,25 +512,30 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         )}
       </div>
 
-      {/* Video element: NO React style prop. Visibility managed via DOM only.
-          React re-renders from setProgress/setQueue would override inline styles
-          if we used a React style prop, potentially hiding the video mid-analysis
-          on iOS Safari (which then stops decoding frames). */}
-      <video ref={videoRef} muted playsInline preload="auto" />
-
+      {/* Video + canvas inside a container that is visible when analyzing,
+          collapsed when not. Using opacity+position (not display:none) because
+          iOS Safari refuses to seek on display:none video elements. */}
       <div
         className="analysis-card"
-        style={analyzing ? { display: 'block', padding: 8 } : { display: 'none' }}
+        style={analyzing
+          ? { display: 'block', padding: 8 }
+          : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
+        }
       >
-        <canvas ref={canvasRef} style={{ width: '100%', borderRadius: 8, display: 'block' }} />
+        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+          <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
+            style={{ width: '100%', display: 'block' }} />
+          <canvas ref={canvasRef}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
+        </div>
       </div>
 
       {results.map((r, idx) => (
         <ResultCard key={idx} result={r} onReplay={() => setReplayResult(r)} />
       ))}
 
-      <div style={{ textAlign: 'center', padding: '8px 0', fontSize: '0.65rem', color: '#333' }}>
-        v{BUILD_ID}
+      <div style={{ textAlign: 'center', padding: '8px 0', fontSize: '0.65rem', color: '#555' }}>
+        {BUILD_ID}
       </div>
     </div>
   );
