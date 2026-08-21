@@ -324,21 +324,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             const landmarks = result.landmarks[0];
             drawPose(ctx, landmarks, canvas.width, canvas.height);
 
-            // Auto-detect exercise
-            if (autoDetector && !userChangedExercise.current) {
-              const earlyPhase = frameIdx < 30;
-              if (!autoDetectDone || earlyPhase) {
-                const detected = autoDetector.update(landmarks);
-                if (detected && detected !== detectedExercise) {
-                  detectedExercise = detected;
-                  autoDetected = true;
-                  repCounter = new RepCounter(detected, { fps: targetFps });
-                  for (const f of frames) repCounter.update(f.landmarks);
-                  if (!earlyPhase) autoDetectDone = true;
-                  setExercise(detected);
-                }
-              }
-            }
+            // Auto-detect is now deferred to the end of the video
 
             const angles = extractJointAngles(landmarks);
             frames.push({ landmarks, timestamp: vt, angles });
@@ -383,6 +369,46 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         `Try trimming to 30 seconds in Photos, or use Live Training.`
       );
       return null;
+    }
+
+    // ── 6.5. Deferred Auto-Detection (Rep-based scoring) ──
+    if (autoDetector && !userChangedExercise.current) {
+      const tallies = {};
+      const detector = new ExerciseAutoDetector({ fps: targetFps });
+      for (const f of frames) {
+         const det = detector.update(f.landmarks);
+         if (det) tallies[det] = (tallies[det] || 0) + 1;
+      }
+      
+      const candidates = Object.keys(tallies);
+      if (candidates.length > 0) {
+        let bestEx = initialExercise;
+        let bestScore = -1;
+
+        for (const ex of candidates) {
+           const rc = new RepCounter(ex, { fps: targetFps });
+           for (const f of frames) rc.update(f.landmarks);
+           rc.finalize();
+           const reps = rc.repHistory ? rc.repHistory.length : 0;
+           
+           // Score = reps * 1000 + tallies (prioritize reps, tie-break with tallies)
+           const score = reps * 1000 + tallies[ex];
+           if (score > bestScore) {
+              bestScore = score;
+              bestEx = ex;
+           }
+        }
+
+        if (bestEx !== initialExercise || candidates.includes(initialExercise)) {
+           detectedExercise = bestEx;
+           autoDetected = true;
+           setExercise(detectedExercise); // Update UI dropdown
+           
+           // Rebuild final repCounter for the winner
+           repCounter = new RepCounter(detectedExercise, { fps: targetFps });
+           for (const f of frames) repCounter.update(f.landmarks);
+        }
+      }
     }
 
     repCounter.finalize();
