@@ -11,10 +11,17 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 window.getInstallPrompt = () => deferredInstallPrompt;
 
-// Register the service worker so MediaPipe models are cached after first load.
+// NUCLEAR: Unregister ALL service workers and clear ALL caches.
+// The SW was causing stale code to persist across deploys on iOS.
+// MediaPipe models load fast enough from CDN without SW caching.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/workout-vision/sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  });
+}
+if ('caches' in window) {
+  caches.keys().then(keys => {
+    keys.forEach(k => caches.delete(k));
   });
 }
 
