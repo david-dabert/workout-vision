@@ -8,11 +8,16 @@ import { useProfile } from '../lib/ProfileContext';
 import { shareCard } from '../lib/shareCard';
 import VideoReplay from './VideoReplay';
 
-const MAX_FRAMES = 500; // hard cap for very long videos
-const MAX_FRAMES_LARGE = 480; // 60s × 8fps — 320px canvas keeps memory safe
-const MIN_FPS = 4; // floor: below this, rep counting misses bottom positions
-const MOBILE_SIZE_WARN = 50 * 1024 * 1024; // 50MB: warn on mobile
-const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB hard limit
+// ── Build marker: if you see this version in the UI, the deployment is fresh ──
+const BUILD_ID = '2026-08-20T' + Date.now().toString(36).slice(-4);
+
+const MAX_FRAMES = 500;
+// Universal 50 MB limit. No mobile detection (every detection method failed on iOS).
+// 50 MB covers ~50 seconds of 1080p HEVC, which is plenty for form analysis.
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const MAX_ANALYSIS_SECONDS = 60;
+const WALL_CLOCK_CAP_MS = 90_000;
+const PLAY_TIMEOUT_MS = 10_000;
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -45,7 +50,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const userChangedExercise = useRef(!!preSelectedExercise);
   const [weight, setWeight] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
-  const [analysisPhase, setAnalysisPhase] = useState(''); // 'loading' | 'detecting' | 'analyzing'
+  const [analysisPhase, setAnalysisPhase] = useState('');
   const [currentFile, setCurrentFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
@@ -56,24 +61,32 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const abortRef = useRef(false);
   const videoUrlsRef = useRef([]);
 
-  // Revoke all created video URLs on unmount to prevent memory leaks
+  // Hide video on mount (managed via DOM, never via React style prop)
   useEffect(() => {
-    return () => {
-      videoUrlsRef.current.forEach(u => URL.revokeObjectURL(u));
-    };
+    if (videoRef.current) {
+      videoRef.current.style.cssText =
+        'width:1px;height:1px;position:absolute;opacity:0.01;pointer-events:none;';
+    }
+    return () => { videoUrlsRef.current.forEach(u => URL.revokeObjectURL(u)); };
   }, []);
 
   const handleFiles = (e) => {
-    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/'));
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/') || f.type === '');
     if (files.length === 0) return;
-    const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
     const items = [];
     for (const f of files) {
       if (f.size > MAX_FILE_SIZE) {
-        alert(`${f.name} is too large (${(f.size / 1024 / 1024).toFixed(0)} MB). Maximum is 500 MB.`);
+        alert(
+          `${f.name} is ${(f.size / 1024 / 1024).toFixed(0)} MB — too large for analysis.\n\n` +
+          `Trim to under 30 seconds for best results:\n` +
+          `1. Open in Photos app\n` +
+          `2. Tap Edit > drag handles to 30 seconds\n` +
+          `3. Save as New Clip\n` +
+          `4. Upload the trimmed clip\n\n` +
+          `Or use Live Training mode for real-time analysis.`
+        );
         continue;
       }
-      const sizeWarning = isMobile && f.size > MOBILE_SIZE_WARN;
       items.push({
         id: Date.now() + Math.random(),
         file: f,
@@ -81,7 +94,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         size: (f.size / 1024 / 1024).toFixed(1) + ' MB',
         status: 'queued',
         progress: 0,
-        sizeWarning,
       });
     }
     if (items.length) setQueue(prev => [...prev, ...items]);
@@ -92,94 +104,235 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
+  // ─── Analysis engine ───
+  //
+  // Play-forward only. No seek mode (iOS HEVC blob URLs don't fire seeked events).
+  // Video element visibility is managed via direct DOM manipulation to prevent
+  // React re-renders (from setProgress) from overriding inline styles.
+  // iOS Safari skips frame decoding for invisible/tiny video elements.
+
   const analyzeVideo = useCallback(async (queueItem) => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return null;
 
-    const landmarker = await getImageLandmarker();
-    if (!landmarker) return null;
-
     const url = URL.createObjectURL(queueItem.file);
     videoUrlsRef.current.push(url);
-    let urlRevoked = false;
-    const safeRevoke = () => {
-      if (!urlRevoked) { urlRevoked = true; URL.revokeObjectURL(url); }
+
+    const hideVideo = () => {
+      video.pause();
+      video.removeAttribute('src');
+      video.load(); // release resources
+      video.style.cssText =
+        'width:1px;height:1px;position:absolute;opacity:0.01;pointer-events:none;';
     };
 
-    return new Promise((resolve) => {
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = 'auto';
-      setAnalysisPhase('loading');
+    // ── 1. Make video VISIBLE before loading ──
+    // iOS Safari refuses to decode frames unless the element is visible and
+    // large enough. Set this BEFORE assigning src so the browser knows it
+    // needs to commit to decoding.
+    video.style.cssText =
+      'width:100%;max-height:300px;display:block;border-radius:8px;pointer-events:none;object-fit:contain;';
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+
+    // ── 2. Load video + model in parallel ──
+    setAnalysisPhase('model');
+
+    const videoLoaded = new Promise((resolve) => {
+      let settled = false;
+      const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+      video.onloadedmetadata = () => done(true);
+      video.onerror = () => done(false);
+      setTimeout(() => done(false), 15_000);
       video.src = url;
       video.load();
+    });
 
-      let readyFired = false;
+    const [landmarker, vidOk] = await Promise.all([
+      getImageLandmarker(),
+      videoLoaded,
+    ]);
 
-      const onReady = async () => {
-        if (readyFired) return;
-        readyFired = true;
-        video.removeEventListener('loadeddata', onReady);
-        video.removeEventListener('canplay', onReady);
-        video.onloadedmetadata = null;
-        setAnalysisPhase('detecting');
+    if (!landmarker) {
+      hideVideo();
+      alert('AI model failed to load. Check your connection and try again.');
+      return null;
+    }
 
-        let duration = video.duration;
-        if (!duration || !isFinite(duration)) { safeRevoke(); resolve(null); return; }
+    if (!vidOk && video.readyState < 1) {
+      // Give it a final 3 seconds
+      await new Promise(r => setTimeout(r, 3000));
+      if (video.readyState < 1) {
+        hideVideo();
+        alert('Video failed to load. Try a shorter clip or MP4 format.');
+        return null;
+      }
+    }
 
-        // Memory tiers — mobile devices choke on large video seeks.
-        // iPhone Safari HEVC decode is single-threaded; each seek can take 1-3s on big files.
-        // Tier thresholds lowered from 100/300MB to 30/150MB after real-device testing.
-        const fileSize = queueItem.file.size;
-        const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
-        const isHugeFile = fileSize > (isMobile ? 150 : 300) * 1024 * 1024;
-        const isLargeFile = fileSize > (isMobile ? 30 : 100) * 1024 * 1024;
-        const maxDuration = isHugeFile ? 45 : isLargeFile ? 60 : Math.min(duration, 120);
-        const effectiveDuration = Math.min(duration, maxDuration);
+    // ── 3. Get duration ──
+    setAnalysisPhase('loading');
+    let duration = video.duration;
+    if (!isFinite(duration) || duration <= 0) {
+      await new Promise((resolve) => {
+        const onDur = () => {
+          if (isFinite(video.duration) && video.duration > 0) {
+            video.removeEventListener('durationchange', onDur);
+            resolve();
+          }
+        };
+        video.addEventListener('durationchange', onDur);
+        setTimeout(() => {
+          video.removeEventListener('durationchange', onDur);
+          resolve();
+        }, 8000);
+      });
+      duration = video.duration;
+    }
+    if (!isFinite(duration) || duration <= 0) {
+      hideVideo();
+      alert('Cannot read video duration. Try a different file.');
+      return null;
+    }
 
-        const TARGET_FPS = isHugeFile ? 3 : isLargeFile ? 4 : 8;
-        const frameCap = isHugeFile ? 135 : isLargeFile ? MAX_FRAMES_LARGE : MAX_FRAMES;
-        const analysisFps = Math.max(MIN_FPS, Math.min(TARGET_FPS, frameCap / effectiveDuration));
-        const totalFrames = Math.min(frameCap, Math.ceil(effectiveDuration * analysisFps));
-        const interval = effectiveDuration / totalFrames;
+    const effectiveDuration = Math.min(duration, MAX_ANALYSIS_SECONDS);
+    console.log(`[Upload] ${duration.toFixed(1)}s ${video.videoWidth}x${video.videoHeight} analyzing ${effectiveDuration}s [${BUILD_ID}]`);
 
-        // Scale canvas: 480px for normal, 320px for huge to reduce decode memory
-        const maxW = isHugeFile ? 320 : 480;
-        const scale = Math.min(1, maxW / video.videoWidth);
-        canvas.width = Math.round(video.videoWidth * scale);
-        canvas.height = Math.round(video.videoHeight * scale);
-        const ctx = canvas.getContext('2d');
+    // ── 4. Start playback ──
+    setAnalysisPhase('analyzing');
+    video.currentTime = 0.01; // tiny offset avoids iOS black-frame-at-zero issue
 
-        const frames = [];
-        const replayFrames = []; // sampled subset for replay (every 3rd)
-        const isAutoMode = exercise === '__auto__';
-        const initialExercise = isAutoMode ? 'squat' : exercise;
-        let detectedExercise = initialExercise;
-        let repCounter = new RepCounter(initialExercise, { fps: analysisFps });
-        const skipAutoDetect = !isAutoMode && userChangedExercise.current;
-        const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect)) ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
-        let autoDetectDone = false;
-        let autoDetected = false; // tracks whether detection actually fired
-        const analysisStart = Date.now();
+    try {
+      await video.play();
+    } catch (err) {
+      console.error('[Upload] play() rejected:', err);
+      hideVideo();
+      alert('Cannot play this video for analysis.\nTry trimming it or use Live Training.');
+      return null;
+    }
 
-        // Shared frame handler: processes one captured frame
-        const handleFrame = (time, frameIdx) => {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Wait for currentTime to actually advance (confirms decoder is running)
+    const playConfirmed = await new Promise((resolve) => {
+      const start = video.currentTime;
+      let elapsed = 0;
+      const timer = setInterval(() => {
+        elapsed += 200;
+        if (video.currentTime > start + 0.05) {
+          clearInterval(timer);
+          resolve(true);
+        }
+        if (elapsed >= PLAY_TIMEOUT_MS) {
+          clearInterval(timer);
+          resolve(false);
+        }
+      }, 200);
+    });
+
+    if (!playConfirmed) {
+      video.pause();
+      hideVideo();
+      alert(
+        'Video is not playing — this happens with large or HEVC files.\n\n' +
+        'Fix: trim to under 30 seconds in Photos, or use Live Training.'
+      );
+      return null;
+    }
+
+    // ── 5. Capture frames via requestAnimationFrame ──
+    const targetFps = 8;
+    const captureInterval = 1.0 / targetFps;
+    const maxDim = 480;
+    const scale = Math.min(1, maxDim / (video.videoWidth || 320));
+    canvas.width = Math.round((video.videoWidth || 320) * scale);
+    canvas.height = Math.round((video.videoHeight || 240) * scale);
+    const ctx = canvas.getContext('2d');
+
+    const frames = [];
+    const replayFrames = [];
+    const isAutoMode = exercise === '__auto__';
+    const initialExercise = isAutoMode ? 'squat' : exercise;
+    let detectedExercise = initialExercise;
+    let repCounter = new RepCounter(initialExercise, { fps: targetFps });
+    const skipAutoDetect = !isAutoMode && userChangedExercise.current;
+    const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect))
+      ? new ExerciseAutoDetector({ fps: targetFps }) : null;
+    let autoDetectDone = false;
+    let autoDetected = false;
+    const analysisStart = Date.now();
+
+    // Speed up after confirming first frames are captured
+    let speedBumped = false;
+
+    await new Promise((resolve) => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; video.pause(); resolve(); } };
+
+      let frameIdx = 0;
+      let lastCaptureVt = -Infinity;
+      // Stall tracking: wall-clock based, checks every 5 seconds
+      let stallCheckWall = performance.now();
+      let stallCheckVt = video.currentTime || 0;
+
+      const tick = () => {
+        if (done) return;
+        if (abortRef.current) { finish(); return; }
+
+        const vt = video.currentTime;
+        const wallNow = performance.now();
+        const wallElapsed = Date.now() - analysisStart;
+
+        // ── Exit conditions ──
+        if (video.ended || video.paused) { finish(); return; }
+        if (isFinite(vt) && vt >= effectiveDuration) { finish(); return; }
+        if (wallElapsed > WALL_CLOCK_CAP_MS) {
+          console.warn('[Upload] 90s wall-clock cap');
+          finish(); return;
+        }
+        if (frameIdx >= MAX_FRAMES) { finish(); return; }
+
+        // ── Stall detection (every 5 seconds) ──
+        if (wallNow - stallCheckWall > 5000) {
+          const vtDelta = (isFinite(vt) ? vt : 0) - stallCheckVt;
+          if (vtDelta < 0.2) {
+            console.warn(`[Upload] Stall: ${vtDelta.toFixed(3)}s video in 5s real`);
+            finish(); return;
+          }
+          stallCheckWall = wallNow;
+          stallCheckVt = isFinite(vt) ? vt : stallCheckVt;
+        }
+
+        // ── Frame capture ──
+        // Don't gate on readyState — just try drawImage. If the frame isn't
+        // decoded, canvas gets a black/stale frame and pose detection returns
+        // no landmarks, which is harmless. Gating on readyState>=2 caused
+        // zero captures on iOS where readyState fluctuates during HEVC decode.
+        if (isFinite(vt) && vt > 0 && vt - lastCaptureVt >= captureInterval * 0.7) {
+          lastCaptureVt = vt;
+
+          try {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          } catch (_) {
+            // drawImage can throw if video is in a bad state; skip this frame
+            requestAnimationFrame(tick);
+            return;
+          }
+
           const result = detectPoseImage(landmarker, canvas);
 
-          if (result && result.landmarks && result.landmarks.length > 0) {
+          if (result?.landmarks?.length) {
             const landmarks = result.landmarks[0];
             drawPose(ctx, landmarks, canvas.width, canvas.height);
 
+            // Auto-detect exercise
             if (autoDetector && !userChangedExercise.current) {
-              const earlyPhase = frameIdx < totalFrames * 0.4;
+              const earlyPhase = frameIdx < 30;
               if (!autoDetectDone || earlyPhase) {
                 const detected = autoDetector.update(landmarks);
                 if (detected && detected !== detectedExercise) {
                   detectedExercise = detected;
                   autoDetected = true;
-                  repCounter = new RepCounter(detected, { fps: analysisFps });
+                  repCounter = new RepCounter(detected, { fps: targetFps });
                   for (const f of frames) repCounter.update(f.landmarks);
                   if (!earlyPhase) autoDetectDone = true;
                   setExercise(detected);
@@ -188,220 +341,101 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             }
 
             const angles = extractJointAngles(landmarks);
-            if (isHugeFile) {
-              if (frames.length >= 10) frames.shift();
-              frames.push({ landmarks, timestamp: time });
-            } else if (isLargeFile) {
-              frames.push({ landmarks, timestamp: time });
-            } else {
-              frames.push({ landmarks, timestamp: time, angles });
-            }
+            frames.push({ landmarks, timestamp: vt, angles });
             repCounter.update(landmarks);
+            if (frameIdx % 3 === 0) {
+              replayFrames.push({ landmarks, timestamp: vt });
+            }
+            frameIdx++;
 
-            if (!isHugeFile) {
-              const replaySampleRate = isLargeFile ? 5 : 3;
-              if (frameIdx % replaySampleRate === 0) {
-                replayFrames.push({ landmarks, timestamp: time });
-              }
+            // Speed up after 5 successful captures
+            if (!speedBumped && frameIdx >= 5) {
+              speedBumped = true;
+              try { video.playbackRate = effectiveDuration > 30 ? 2.5 : 2; } catch (_) {}
             }
           }
 
-          const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
+          // Update progress
+          const pct = Math.min(99, Math.round((vt / effectiveDuration) * 100));
           setProgress(pct);
           setQueue(prev => prev.map(q =>
             q.id === queueItem.id ? { ...q, progress: pct } : q
           ));
-        };
+        }
 
-        // Two strategies: seek-based (desktop, small files) vs play-based (mobile, large files).
-        // Mobile Safari HEVC decoder cannot seek reliably on large blob URLs.
-        // Play-based: play video at 2x speed and capture frames at intervals using timeupdate.
-        const usePlayCapture = isMobile && isLargeFile;
-
-        setAnalysisPhase('analyzing');
-
-        const processLoop = async () => {
-          if (usePlayCapture) {
-            // --- PLAY-BASED CAPTURE (mobile large files) ---
-            await new Promise((playResolve) => {
-              let frameIdx = 0;
-              let lastCaptureTime = -1;
-              const captureInterval = interval; // seconds between captures
-
-              video.playbackRate = Math.min(2, video.playbackRate || 1);
-              video.currentTime = 0;
-
-              const onTimeUpdate = () => {
-                if (abortRef.current || frameIdx >= totalFrames) {
-                  video.pause();
-                  video.removeEventListener('timeupdate', onTimeUpdate);
-                  playResolve();
-                  return;
-                }
-                const currentTime = video.currentTime;
-                if (currentTime > effectiveDuration) {
-                  video.pause();
-                  video.removeEventListener('timeupdate', onTimeUpdate);
-                  playResolve();
-                  return;
-                }
-                // Capture a frame if enough time has passed since last capture
-                if (currentTime - lastCaptureTime >= captureInterval * 0.8) {
-                  lastCaptureTime = currentTime;
-                  handleFrame(currentTime, frameIdx);
-                  frameIdx++;
-                }
-              };
-
-              const onEnded = () => {
-                video.removeEventListener('timeupdate', onTimeUpdate);
-                video.removeEventListener('ended', onEnded);
-                playResolve();
-              };
-
-              video.addEventListener('timeupdate', onTimeUpdate);
-              video.addEventListener('ended', onEnded);
-
-              // Safety timeout: 3 minutes max for play-based capture
-              setTimeout(() => {
-                video.pause();
-                video.removeEventListener('timeupdate', onTimeUpdate);
-                video.removeEventListener('ended', onEnded);
-                playResolve();
-              }, 180000);
-
-              video.play().catch(() => {
-                // Autoplay blocked — fall back to seek
-                video.removeEventListener('timeupdate', onTimeUpdate);
-                video.removeEventListener('ended', onEnded);
-                playResolve();
-              });
-            });
-          } else {
-            // --- SEEK-BASED CAPTURE (desktop, small files) ---
-            let frameIdx = 0;
-            while (frameIdx < totalFrames) {
-              const cont = await new Promise((res) => {
-                const time = frameIdx * interval;
-                if (time >= duration || abortRef.current) { res(false); return; }
-
-                video.currentTime = time;
-                let settled = false;
-                const settle = (c) => { if (!settled) { settled = true; res(c); } };
-
-                const onSeeked = () => {
-                  handleFrame(time, frameIdx);
-                  settle(true);
-                };
-
-                video.addEventListener('seeked', onSeeked, { once: true });
-                const seekTimeout = isLargeFile ? 10000 : 5000;
-                const bonus = frameIdx < 3 ? 10000 : 0;
-                setTimeout(() => {
-                  video.removeEventListener('seeked', onSeeked);
-                  settle(true);
-                }, seekTimeout + bonus);
-              });
-              if (!cont) break;
-              frameIdx++;
-              if (frameIdx % 5 === 0) await new Promise(r => setTimeout(r, 0));
-            }
-          }
-
-          // Done — run two-pass finalize to count reps with locked thresholds
-          const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
-
-          if (frames.length === 0) { safeRevoke(); resolve(null); return; }
-
-          // Pass 2: count reps with thresholds locked from full observed range
-          repCounter.finalize();
-
-          console.log(`[VideoUpload] ${frames.length}/${totalFrames} frames in ${analysisTime}s (${analysisFps.toFixed(1)} FPS)`);
-
-          const landmarkFrames = frames.map(f => f.landmarks);
-          const repHistory = repCounter.repHistory || [];
-          const reps = repHistory.length;
-
-          let bioAnalysis = null;
-          try {
-            bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory);
-          } catch (err) { console.error('Bio analysis error:', err); }
-
-          let report = null;
-          try {
-            report = generateWorkoutReport(userProfile, [{
-              exerciseKey: detectedExercise, exercise: detectedExercise,
-              reps, analysis: bioAnalysis, bioAnalysis, repHistory,
-            }]);
-          } catch (err) { console.error('Report error:', err); }
-
-          const avgScore = repHistory.length > 0
-            ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
-            : bioAnalysis?.movementQuality || 0;
-
-          const w = parseFloat(weight) || 0;
-          const workout = {
-            id: Date.now().toString(), date: new Date().toISOString(),
-            exercise: detectedExercise,
-            exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-            reps, duration: Math.round(duration), formScore: avgScore,
-            repHistory, weight: w, volume: w * reps, source: 'upload',
-          };
-
-          try { await saveWorkout(workout); }
-          catch (err) { console.error('Save error:', err); }
-
-          setProgress(100);
-
-          // For large/huge files, revoke the blob URL now to free memory.
-          // Replay won't work but the user gets results instead of a crash.
-          if (isLargeFile || isHugeFile) safeRevoke();
-
-          resolve({
-            fileName: queueItem.name, exercise: detectedExercise,
-            exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-            reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
-            bioAnalysis, report, repHistory,
-            videoUrl: (isLargeFile || isHugeFile) ? null : url,
-            frames: (isLargeFile || isHugeFile) ? [] : replayFrames,
-            diagnostics: repCounter.diagnostics,
-            autoDetected,
-          });
-        };
-
-        processLoop().catch(err => {
-          console.error('Analysis failed:', err);
-          safeRevoke();
-          resolve(null);
-        });
+        requestAnimationFrame(tick);
       };
 
-      video.addEventListener('loadeddata', onReady);
-      video.addEventListener('canplay', onReady);
-      video.onloadedmetadata = () => {
-        setTimeout(() => { if (video.readyState >= 2) onReady(); }, 500);
-      };
-      video.onerror = (e) => {
-        console.error('Video load error:', e, video.error);
-        video.removeEventListener('loadeddata', onReady);
-        video.removeEventListener('canplay', onReady);
-        video.onloadedmetadata = null;
-        safeRevoke();
-        resolve(null);
-      };
-      // Large files need much more time to load on mobile (HEVC decode + buffering)
-      const loadTimeout = queueItem.file.size > 50 * 1024 * 1024 ? 60000 : 15000;
-      setTimeout(() => {
-        if (readyFired) return;
-        if (video.readyState >= 2) onReady();
-        else { safeRevoke(); resolve(null); }
-      }, loadTimeout);
+      requestAnimationFrame(tick);
     });
+
+    // ── 6. Finalize ──
+    hideVideo();
+    const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
+
+    if (frames.length === 0) {
+      console.error(`[Upload] Zero frames captured in ${analysisTime}s`);
+      alert(
+        `Could not detect any poses in ${queueItem.name}.\n\n` +
+        `This can happen with:\n` +
+        `• Very large or long videos\n` +
+        `• Uncommon video formats\n\n` +
+        `Try trimming to 30 seconds in Photos, or use Live Training.`
+      );
+      return null;
+    }
+
+    repCounter.finalize();
+    console.log(`[Upload] ${frames.length} frames in ${analysisTime}s`);
+
+    const landmarkFrames = frames.map(f => f.landmarks);
+    const repHistory = repCounter.repHistory || [];
+    const reps = repHistory.length;
+
+    let bioAnalysis = null;
+    try { bioAnalysis = analyzeSet(landmarkFrames, targetFps, detectedExercise, repHistory); }
+    catch (err) { console.error('Bio analysis error:', err); }
+
+    let report = null;
+    try {
+      report = generateWorkoutReport(userProfile, [{
+        exerciseKey: detectedExercise, exercise: detectedExercise,
+        reps, analysis: bioAnalysis, bioAnalysis, repHistory,
+      }]);
+    } catch (err) { console.error('Report error:', err); }
+
+    const avgScore = repHistory.length > 0
+      ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
+      : bioAnalysis?.movementQuality || 0;
+
+    const w = parseFloat(weight) || 0;
+    const workout = {
+      id: Date.now().toString(), date: new Date().toISOString(),
+      exercise: detectedExercise,
+      exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
+      reps, duration: Math.round(duration), formScore: avgScore,
+      repHistory, weight: w, volume: w * reps, source: 'upload',
+    };
+    try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
+
+    setProgress(100);
+
+    return {
+      fileName: queueItem.name, exercise: detectedExercise,
+      exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
+      reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
+      bioAnalysis, report, repHistory,
+      videoUrl: url,
+      frames: replayFrames,
+      diagnostics: repCounter.diagnostics,
+      autoDetected,
+    };
   }, [exercise, autoDetect]);
 
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);
     abortRef.current = false;
+
     const pending = queue.filter(q => q.status === 'queued');
     const allResults = [...results];
 
@@ -434,7 +468,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
   const hasQueued = queue.some(q => q.status === 'queued');
 
-  // Show replay view if active
   if (replayResult) {
     return (
       <VideoReplay
@@ -455,14 +488,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
       </div>
 
-      {/* Upload zone */}
       <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
         <div className="upload-content">
           <div className="upload-icon">+</div>
           <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>
             Tap to select videos
           </p>
-          <p className="text-xs text-muted">MP4, MOV, WebM</p>
+          <p className="text-xs text-muted">MP4, MOV — max 50 MB (~30 sec)</p>
         </div>
         <input
           ref={fileInputRef}
@@ -474,7 +506,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         />
       </div>
 
-      {/* Queue */}
       {queue.length > 0 && (
         <div style={{ marginTop: 10 }}>
           {queue.map(q => (
@@ -482,11 +513,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               <div className="queue-info">
                 <span className="queue-name">{q.name}</span>
                 <span className="queue-size">{q.size}</span>
-                {q.sizeWarning && q.status === 'queued' && (
-                  <span style={{ fontSize: '0.7rem', color: 'var(--yellow, #f5a623)' }}>
-                    Large file — analysis may be slow on mobile
-                  </span>
-                )}
               </div>
               <div className="queue-right">
                 {q.status === 'analyzing' && (
@@ -498,12 +524,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                   </div>
                 )}
                 {q.status === 'done' && <span className="queue-done">Done</span>}
-                {q.status === 'error' && <span style={{ color: 'var(--red)', fontSize: '0.78rem' }}>Failed to load</span>}
+                {q.status === 'error' && (
+                  <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
+                    Failed — trim to 30s or use Live Training
+                  </span>
+                )}
                 {q.status === 'queued' && !analyzing && (
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => removeFromQueue(q.id)}
-                  >
+                  <button className="btn btn-ghost btn-sm" onClick={() => removeFromQueue(q.id)}>
                     Remove
                   </button>
                 )}
@@ -513,7 +540,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         </div>
       )}
 
-      {/* Controls */}
       <div className="analyze-controls">
         {!analyzing ? (
           <>
@@ -532,7 +558,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               }}
               style={{ flex: 1, padding: 8, fontSize: '0.82rem' }}
             >
-              <option value="__auto__">🎯 Automatic</option>
+              <option value="__auto__">Automatic</option>
               <optgroup label="Compound">
                 {EXERCISE_GROUPS.compound.map(e => (
                   <option key={e.key} value={e.key}>{e.name}</option>
@@ -571,44 +597,43 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           <div className="analyzing-status">
             <div className="spinner-sm" />
             <span>
-              {analysisPhase === 'loading'
-                ? `Loading ${currentFile}...`
-                : `Analyzing ${currentFile}... ${progress}%`}
+              {analysisPhase === 'model'
+                ? 'Loading AI engine...'
+                : analysisPhase === 'loading'
+                ? `Buffering ${currentFile}...`
+                : analysisPhase === 'analyzing'
+                ? `Analyzing ${currentFile}... ${progress}%`
+                : `Starting ${currentFile}...`}
             </span>
-            {analysisPhase === 'loading' && (
+            {analysisPhase === 'model' && (
               <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4 }}>
-                Large videos may take a moment to buffer
+                Downloading pose detection model (~3 MB)
               </span>
             )}
           </div>
         )}
       </div>
 
-      {/* Video element: always in DOM for iOS Safari compatibility.
-           Hidden visually but not display:none (iOS won't seek on hidden elements).
-           Canvas shows the video frame + skeleton overlay during analysis. */}
-      <video
-        ref={videoRef}
-        muted
-        playsInline
-        preload="metadata"
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
-      />
-      {/* Canvas: shows video frame + skeleton during analysis */}
+      {/* Video element: NO React style prop. Visibility managed via DOM only.
+          React re-renders from setProgress/setQueue would override inline styles
+          if we used a React style prop, potentially hiding the video mid-analysis
+          on iOS Safari (which then stops decoding frames). */}
+      <video ref={videoRef} muted playsInline preload="auto" />
+
       <div
         className="analysis-card"
-        style={analyzing
-          ? { display: 'block', padding: 8 }
-          : { display: 'none' }
-        }
+        style={analyzing ? { display: 'block', padding: 8 } : { display: 'none' }}
       >
         <canvas ref={canvasRef} style={{ width: '100%', borderRadius: 8, display: 'block' }} />
       </div>
 
-      {/* Results */}
       {results.map((r, idx) => (
         <ResultCard key={idx} result={r} onReplay={() => setReplayResult(r)} />
       ))}
+
+      <div style={{ textAlign: 'center', padding: '8px 0', fontSize: '0.65rem', color: '#333' }}>
+        v{BUILD_ID}
+      </div>
     </div>
   );
 }
@@ -672,7 +697,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       </div>
 
-      {/* Velocity chart */}
       {bioAnalysis?.velocity?.perRep && bioAnalysis.velocity.perRep.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <h4>Velocity per rep</h4>
@@ -684,13 +708,10 @@ function ResultCard({ result, onReplay }) {
               return (
                 <div key={i} className="rep-bar-col">
                   <div className="rep-bar-wrap">
-                    <div
-                      className="rep-bar"
-                      style={{
-                        height: `${Math.max(pct, 5)}%`,
-                        background: declining ? 'var(--yellow)' : 'var(--accent)',
-                      }}
-                    />
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(pct, 5)}%`,
+                      background: declining ? 'var(--yellow)' : 'var(--accent)',
+                    }} />
                   </div>
                   <span className="rep-num">{i + 1}</span>
                 </div>
@@ -705,7 +726,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Time Under Tension */}
       {bioAnalysis?.timeUnderTension?.perRep && bioAnalysis.timeUnderTension.perRep.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <h4>Time under tension</h4>
@@ -730,21 +750,16 @@ function ResultCard({ result, onReplay }) {
               const total = ecc + con || 1;
               const maxTut = Math.max(
                 ...bioAnalysis.timeUnderTension.perRep.map(r =>
-                  (r.eccentric || r.down || 0) + (r.concentric || r.up || 0)
-                ),
-                1
-              );
+                  (r.eccentric || r.down || 0) + (r.concentric || r.up || 0)),
+                1);
               const pct = (total / maxTut) * 100;
               return (
                 <div key={i} className="rep-bar-col">
                   <div className="rep-bar-wrap">
-                    <div
-                      className="rep-bar"
-                      style={{
-                        height: `${Math.max(pct, 5)}%`,
-                        background: `linear-gradient(to top, var(--accent) ${(con / total) * 100}%, var(--yellow) 0%)`,
-                      }}
-                    />
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(pct, 5)}%`,
+                      background: `linear-gradient(to top, var(--accent) ${(con / total) * 100}%, var(--yellow) 0%)`,
+                    }} />
                   </div>
                   <span className="rep-num">{i + 1}</span>
                 </div>
@@ -754,7 +769,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Range of Motion */}
       {bioAnalysis?.rangeOfMotion && (
         <div style={{ marginTop: 14 }}>
           <h4>Range of motion</h4>
@@ -776,13 +790,9 @@ function ResultCard({ result, onReplay }) {
                 return (
                   <div key={i} className="rep-bar-col">
                     <div className="rep-bar-wrap">
-                      <div
-                        className="rep-bar"
-                        style={{
-                          height: `${Math.max(pct, 5)}%`,
-                          background: 'var(--accent)',
-                        }}
-                      />
+                      <div className="rep-bar" style={{
+                        height: `${Math.max(pct, 5)}%`, background: 'var(--accent)',
+                      }} />
                     </div>
                     <span className="rep-num">{i + 1}</span>
                   </div>
@@ -793,7 +803,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Asymmetry */}
       {bioAnalysis?.asymmetry && (
         <div style={{ marginTop: 14 }}>
           <h4>Asymmetry</h4>
@@ -819,7 +828,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Fatigue curve */}
       {bioAnalysis?.fatigue && (
         <div style={{ marginTop: 14 }}>
           <h4>Fatigue</h4>
@@ -843,13 +851,10 @@ function ResultCard({ result, onReplay }) {
                 return (
                   <div key={i} className="rep-bar-col">
                     <div className="rep-bar-wrap">
-                      <div
-                        className="rep-bar"
-                        style={{
-                          height: `${Math.max(pct, 5)}%`,
-                          background: pct < 60 ? 'var(--red)' : pct < 80 ? 'var(--yellow)' : 'var(--accent)',
-                        }}
-                      />
+                      <div className="rep-bar" style={{
+                        height: `${Math.max(pct, 5)}%`,
+                        background: pct < 60 ? 'var(--red)' : pct < 80 ? 'var(--yellow)' : 'var(--accent)',
+                      }} />
                     </div>
                     <span className="rep-num">{i + 1}</span>
                   </div>
@@ -865,7 +870,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Form notes */}
       {repHistory && repHistory.length > 0 && (() => {
         const allIssues = {};
         repHistory.forEach(r => {
@@ -887,7 +891,6 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {/* Angle diagnostics */}
       {result.diagnostics && (
         <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
           <strong style={{ color: 'var(--text)' }}>Engine</strong>
@@ -897,7 +900,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Report highlights */}
       {report?.highlights && report.highlights.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <h4>Highlights</h4>
@@ -909,7 +911,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Report improvements */}
       {report?.improvements && report.improvements.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <h4>Next steps</h4>
@@ -921,7 +922,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Rep quality bars */}
       {repHistory && repHistory.length > 0 && (
         <div className="rep-quality" style={{ marginTop: 14 }}>
           <h4>Per-rep quality</h4>
@@ -931,13 +931,10 @@ function ResultCard({ result, onReplay }) {
               return (
                 <div key={i} className="rep-bar-col">
                   <div className="rep-bar-wrap">
-                    <div
-                      className="rep-bar"
-                      style={{
-                        height: `${Math.max(score, 5)}%`,
-                        background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
-                      }}
-                    />
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(score, 5)}%`,
+                      background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
+                    }} />
                   </div>
                   <span className="rep-num">{i + 1}</span>
                 </div>
@@ -947,7 +944,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Action buttons */}
       {result.videoUrl && result.frames && (
         <button
           className="btn btn-primary"

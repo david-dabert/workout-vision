@@ -69,6 +69,16 @@ async function createLandmarker(runningMode) {
  * Pre-load model. Call once at app startup.
  * Uses IMAGE mode for video upload (stateless — no cross-video contamination).
  */
+// Hard timeout wrapper — prevents model loading from hanging forever on mobile
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 export function preloadModel() {
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
@@ -78,10 +88,12 @@ export function preloadModel() {
         try { poseLandmarkerImage.close(); } catch (_) {}
         poseLandmarkerImage = null;
       }
-      poseLandmarkerImage = await createLandmarker('IMAGE');
+      // 30s hard timeout: if WASM/model download stalls, fail instead of hanging forever
+      poseLandmarkerImage = await withTimeout(createLandmarker('IMAGE'), 30000, 'Model load');
+      console.log('[PoseAnalysis] Model loaded successfully');
       return true;
     } catch (e) {
-      console.error('Failed to preload pose model:', e);
+      console.error('[PoseAnalysis] Failed to preload pose model:', e);
       modelLoadPromise = null;
       return false;
     }
