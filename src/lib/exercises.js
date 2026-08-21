@@ -712,6 +712,35 @@ export const EXERCISES = {
     scienceNotes: 'Overhead tricep exercises produce greater long-head activation due to stretched position (Maeo 2023). Full ROM from deep stretch to lockout is critical for hypertrophy.',
   },
 
+  upright_row: {
+    name: 'Upright Row',
+    category: 'isolation',
+    muscles: { primary: ['Medial Deltoid', 'Traps'], secondary: ['Biceps', 'Anterior Deltoid'] },
+    joint: 'shoulder',
+    getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
+    downThreshold: 30,
+    upThreshold: 80,
+    formChecks: [
+      {
+        name: 'Elbows high',
+        check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 75,
+        good: 'Elbows pulled high',
+        bad: 'Pull elbows higher -- to shoulder level',
+        severity: 'minor',
+        citation: 'McAllister MJ et al, 2013, J Strength Cond Res',
+      },
+      {
+        name: 'Trunk stable',
+        check: (angles) => angles.trunk < 25,
+        good: 'Torso stable',
+        bad: 'Excessive leaning -- keep torso still',
+        severity: 'minor',
+        citation: 'McAllister MJ et al, 2013, J Strength Cond Res',
+      }
+    ],
+    scienceNotes: 'Upright rows effectively target the lateral deltoid and upper trapezius. A wider grip reduces shoulder internal rotation, lowering impingement risk (McAllister 2013).',
+  },
+
   lateral_raise: {
     name: 'Lateral Raise',
     category: 'isolation',
