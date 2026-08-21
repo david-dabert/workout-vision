@@ -246,7 +246,7 @@ export class RepCounter {
       else { filtered.push(e); }
     }
 
-    // Step 4: count reps as valley->peak pairs with sufficient ROM
+    // Step 4: count reps using peak/valley pairs with sufficient ROM
     const range = this._observedMax - this._observedMin;
     const minROM = Math.max(15, range * 0.3);
 
@@ -256,59 +256,90 @@ export class RepCounter {
     this._currentRepIssues = [];
     this._issueFrameCounts = {};
 
-    // Helper: find where the descent toward a valley actually begins.
-    // Scans backwards from the valley through the smoothed signal to find
-    // the local peak just before the descent. This excludes rest time
-    // between reps where the angle stays flat at the extended position.
-    const findDescentStart = (valleyIdx) => {
-      let best = valleyIdx;
-      for (let i = valleyIdx - 1; i >= 0; i--) {
+    // Determine the expected signal shape for a rep.
+    // If upThreshold < downThreshold (e.g. Squat: 90 < 140), the signal goes DOWN to a valley, then UP to a peak.
+    // If upThreshold > downThreshold (e.g. Upright Row: 80 > 30), the signal goes UP to a peak, then DOWN to a valley.
+    const isValleyFirst = ex.upThreshold < ex.downThreshold;
+
+    // Helper: find where the active phase toward the first extremum begins.
+    const findPhaseStart = (firstExtremumIdx) => {
+      let best = firstExtremumIdx;
+      for (let i = firstExtremumIdx - 1; i >= 0; i--) {
         if (smoothed[i] === null) break;
-        if (smoothed[i] >= smoothed[best]) {
-          best = i;
-        } else if (smoothed[best] - smoothed[i] > 3) {
-          // Signal started going back down -- we passed the local peak
-          break;
+        if (isValleyFirst) {
+          if (smoothed[i] >= smoothed[best]) best = i;
+          else if (smoothed[best] - smoothed[i] > 3) break;
+        } else {
+          if (smoothed[i] <= smoothed[best]) best = i;
+          else if (smoothed[i] - smoothed[best] > 3) break;
         }
       }
       return best;
     };
 
-    let lastValley = null;
+    let lastFirstExtremum = null;
 
     for (const e of filtered) {
-      if (e.type === 'valley') {
-        lastValley = e;
-      } else if (e.type === 'peak' && lastValley !== null) {
-        const rom = e.value - lastValley.value;
-        if (rom >= minROM) {
-          // Find actual start of descent for this rep (excludes rest time)
-          const descentStart = findDescentStart(lastValley.index);
+      if (isValleyFirst) {
+        if (e.type === 'valley') {
+          lastFirstExtremum = e;
+        } else if (e.type === 'peak' && lastFirstExtremum !== null) {
+          const rom = e.value - lastFirstExtremum.value;
+          if (rom >= minROM) {
+            const phaseStart = findPhaseStart(lastFirstExtremum.index);
+            this._peakAngle = e.value;
+            this._repStartFrame = phaseStart;
+            this._bottomFrame = lastFirstExtremum.index;
+            this._frameIdx = e.index;
 
-          this._peakAngle = e.value;
-          this._repStartFrame = descentStart;
-          this._bottomFrame = lastValley.index;
-          this._frameIdx = e.index;
-
-          // Evaluate form at the appropriate phase for each check
-          this._currentRepIssues = [];
-          this._issueFrameCounts = {};
-          const bottomData = frameData[lastValley.index];
-          const topData = frameData[e.index]; // peak frame = top of rep
-          if (bottomData || topData) {
-            const formFeedback = this._evaluateFormPhased(bottomData, topData);
-            for (const fb of formFeedback) {
-              if (!fb.passed) {
-                this._currentRepIssues.push(fb.name);
+            this._currentRepIssues = [];
+            this._issueFrameCounts = {};
+            const bottomData = frameData[lastFirstExtremum.index];
+            const topData = frameData[e.index];
+            if (bottomData || topData) {
+              const formFeedback = this._evaluateFormPhased(bottomData, topData);
+              for (const fb of formFeedback) {
+                if (!fb.passed) this._currentRepIssues.push(fb.name);
               }
             }
-          }
 
-          this._completeRep(
-            frameData[e.index]?.angles || bottomData?.angles || {},
-            frameData[e.index]?.landmarks || bottomData?.landmarks || []
-          );
-          lastValley = null; // consumed
+            this._completeRep(
+              frameData[e.index]?.angles || bottomData?.angles || {},
+              frameData[e.index]?.landmarks || bottomData?.landmarks || []
+            );
+            lastFirstExtremum = null;
+          }
+        }
+      } else {
+        // peak->valley (e.g. Upright Row, Lateral Raise)
+        if (e.type === 'peak') {
+          lastFirstExtremum = e;
+        } else if (e.type === 'valley' && lastFirstExtremum !== null) {
+          const rom = lastFirstExtremum.value - e.value;
+          if (rom >= minROM) {
+            const phaseStart = findPhaseStart(lastFirstExtremum.index);
+            this._peakAngle = e.value;
+            this._repStartFrame = phaseStart;
+            this._bottomFrame = lastFirstExtremum.index;
+            this._frameIdx = e.index;
+
+            this._currentRepIssues = [];
+            this._issueFrameCounts = {};
+            const bottomData = frameData[lastFirstExtremum.index];
+            const topData = frameData[e.index];
+            if (bottomData || topData) {
+              const formFeedback = this._evaluateFormPhased(bottomData, topData);
+              for (const fb of formFeedback) {
+                if (!fb.passed) this._currentRepIssues.push(fb.name);
+              }
+            }
+
+            this._completeRep(
+              frameData[e.index]?.angles || bottomData?.angles || {},
+              frameData[e.index]?.landmarks || bottomData?.landmarks || []
+            );
+            lastFirstExtremum = null;
+          }
         }
       }
     }
