@@ -217,9 +217,9 @@ export class ExerciseAutoDetector {
       return 'shrug';
     }
 
-    // Bicep curl family: elbow ROM dominates + standing upright
+    // Bicep curl family: elbow ROM dominates + standing upright + shoulders mostly still
     if (elbowRange > 15 && elbowRange > kneeRange * 1.5 && elbowRange > hipRange * 1.5
-        && kneeBufAvg > 140 && hipBufAvg > 140 && trunkBufAvg < 35) {
+        && shoulderRange < 20 && kneeBufAvg > 140 && hipBufAvg > 140 && trunkBufAvg < 35) {
       if (shoulderBufAvg < 15) return 'hammer_curl';
       return 'bicep_curl';
     }
@@ -232,6 +232,11 @@ export class ExerciseAutoDetector {
     // Rear delt fly: shoulder ROM + bent over + elbows mostly straight (check BEFORE lateral/front)
     if (shoulderRange > 15 && elbowBufAvg > 120 && trunkBufAvg > 30 && kneeBufAvg > 140) {
       return 'rear_delt_fly';
+    }
+
+    // Upright row: standing + shoulder ROM + elbow ROM + arms start low
+    if (isStanding && shoulderRange > 15 && elbowRange > 15 && shoulderBufAvg < 60 && trunkBufAvg < 40) {
+      return 'upright_row';
     }
 
     // Face pull: shoulder + elbow ROM + standing + high pull
@@ -250,7 +255,7 @@ export class ExerciseAutoDetector {
     }
 
     // Overhead press family: elbow ROM + high shoulder + standing
-    if (elbowRange > 20 && shoulderAvg > 80 && trunkBufAvg < 25 && kneeBufAvg > 140) {
+    if (elbowRange > 20 && shoulderAvg > 80 && trunkBufAvg < 45 && kneeBufAvg > 140) {
       if (kneeRange > 10) return 'push_press';
       return 'overhead_press';
     }
