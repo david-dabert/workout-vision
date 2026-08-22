@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
 import { logEvent } from '../lib/telemetry';
@@ -25,6 +25,7 @@ export default function ManualLog({ onClose }) {
   const [entries, setEntries] = useState([emptyEntry()]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const savingRef = useRef(false);
   const [pickerOpen, setPickerOpen] = useState(null); // index of entry with picker open
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -83,7 +84,8 @@ export default function ManualLog({ onClose }) {
   );
 
   async function handleSave() {
-    if (!canSave || saving) return;
+    if (!canSave || saving || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       const now = new Date().toISOString();
@@ -113,6 +115,7 @@ export default function ManualLog({ onClose }) {
       console.error('Failed to save workout:', err);
     }
     setSaving(false);
+    savingRef.current = false;
   }
 
   if (saved) {

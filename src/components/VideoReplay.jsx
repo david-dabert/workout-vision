@@ -166,10 +166,9 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       if (recorderRef.current && recorderRef.current.state !== 'inactive') {
         recorderRef.current.stop();
       }
-      // Release video decoder memory and blob URL
+      // Release video decoder memory (blob URL owned by parent VideoUpload)
       video.removeAttribute('src');
       video.load();
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
     };
   }, [videoUrl, frames, exerciseName, reps, formScore]);
 

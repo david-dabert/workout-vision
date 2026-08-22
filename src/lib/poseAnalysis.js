@@ -169,6 +169,10 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
   lastVideoTime = timestamp;
   try {
     const result = landmarker.detectForVideo(videoElement, timestamp);
+    // Free segmentation masks to prevent GPU memory leaks on mobile
+    if (result && result.segmentationMasks) {
+      result.segmentationMasks.forEach(m => { try { m.close(); } catch (_) {} });
+    }
     if (result && result.landmarks && result.landmarks.length > 0) {
       lastResult = result;
     }

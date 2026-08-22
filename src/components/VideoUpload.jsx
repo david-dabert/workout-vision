@@ -417,14 +417,21 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         q.id === item.id ? { ...q, status: 'analyzing' } : q
       ));
 
-      const result = await analyzeVideo(item);
+      try {
+        const result = await analyzeVideo(item);
 
-      if (result) {
-        setQueue(prev => prev.map(q =>
-          q.id === item.id ? { ...q, status: 'done', progress: 100 } : q
-        ));
-        allResults.push(result);
-      } else {
+        if (result) {
+          setQueue(prev => prev.map(q =>
+            q.id === item.id ? { ...q, status: 'done', progress: 100 } : q
+          ));
+          allResults.push(result);
+        } else {
+          setQueue(prev => prev.map(q =>
+            q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
+          ));
+        }
+      } catch (err) {
+        console.error('[VideoUpload] Analysis failed for', item.name, err);
         setQueue(prev => prev.map(q =>
           q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
         ));
@@ -627,6 +634,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
 
 function ResultCard({ result, onReplay }) {
+  const { t, tExercise } = useT();
   const {
     fileName, exerciseName, reps, duration, analysisTime,
     formScore, bioAnalysis, report, repHistory,

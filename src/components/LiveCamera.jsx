@@ -9,7 +9,7 @@ import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
 import { useT } from '../lib/LanguageContext';
 
-const TARGET_FPS = 15;
+const TARGET_FPS = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 15 : 30;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const REST_PRESETS = [30, 60, 90, 120, 180];
 
@@ -44,6 +44,10 @@ export default function LiveCamera({ onClose }) {
   const [errorMessage, setErrorMessage] = useState('');
   const lastValidPoseRef = useRef(null);
   const confidenceDecayRef = useRef(1.0);
+  const detectionNullFiredRef = useRef(false);
+  const wakeLockRef = useRef(null);
+  const fpsWindowRef = useRef([]);
+  const slowFpsWarnedRef = useRef(false);
   const [exercise, setExercise] = useState('__auto__');
   const [weight, setWeight] = useState('');
   const [autoDetect, setAutoDetect] = useState(true);
@@ -64,6 +68,21 @@ export default function LiveCamera({ onClose }) {
   const [totalCalories, setTotalCalories] = useState(0);
   const restIntervalRef = useRef(null);
 
+  const requestWakeLock = useCallback(async () => {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch (_) {}
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+  }, []);
+
   const setupCamera = useCallback(async (facing) => {
     try {
       stopCamera(streamRef.current);
@@ -82,7 +101,7 @@ export default function LiveCamera({ onClose }) {
     async function setup() {
       try {
         // Step 1: Load model with progress and retry
-        setLoadingMessage('Downloading pose model (~5 MB)...');
+        setLoadingMessage(t('downloading_model'));
         const startMs = performance.now();
         const lm = await loadModelWithRetry((progress, message) => {
           if (!cancelled) {
@@ -97,7 +116,7 @@ export default function LiveCamera({ onClose }) {
         if (userProfile?.weight) setBodyWeight(parseFloat(userProfile.weight) || 70);
 
         // Step 2: Init camera
-        setLoadingMessage('Starting camera...');
+        setLoadingMessage(t('starting_camera'));
         await setupCamera(facingMode);
         if (!cancelled) {
           setStatus('ready');
@@ -115,11 +134,28 @@ export default function LiveCamera({ onClose }) {
 
     setup();
 
+    // iOS background tab recovery
+    const handleVisibility = async () => {
+      if (document.visibilityState === 'visible') {
+        const stream = streamRef.current;
+        if (!stream || stream.getTracks().some(tr => tr.readyState === 'ended')) {
+          try { await setupCamera(facingMode); } catch (_) {}
+        } else if (videoRef.current && videoRef.current.paused) {
+          videoRef.current.play().catch(() => {});
+        }
+        // Re-acquire wake lock (iOS releases on background)
+        if (wakeLockRef.current === null) requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
       cancelled = true;
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       stopCamera(streamRef.current);
       if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+      releaseWakeLock();
       disposeAllLandmarkers();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,6 +168,18 @@ export default function LiveCamera({ onClose }) {
       return;
     }
     lastFrameTimeRef.current = now;
+
+    // Slow FPS detection (warn once if inference drops below 5 FPS)
+    fpsWindowRef.current.push(now);
+    if (fpsWindowRef.current.length > 10) fpsWindowRef.current.shift();
+    if (fpsWindowRef.current.length === 10 && !slowFpsWarnedRef.current) {
+      const elapsed = fpsWindowRef.current[9] - fpsWindowRef.current[0];
+      const effectiveFps = (9 / elapsed) * 1000;
+      if (effectiveFps < 5) {
+        slowFpsWarnedRef.current = true;
+        logEvent('slow_inference', { fps: Math.round(effectiveFps) });
+      }
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -205,15 +253,20 @@ export default function LiveCamera({ onClose }) {
       if (confidenceDecayRef.current > 0.1) {
         drawPose(ctx, lastValidPoseRef.current, canvas.width, canvas.height, confidenceDecayRef.current);
       } else {
-        drawOverlayMessage(ctx, 'Move into frame', 'No pose detected');
+        drawOverlayMessage(ctx, t('move_into_frame'), t('no_pose_detected'));
+        if (!detectionNullFiredRef.current) {
+          detectionNullFiredRef.current = true;
+          logEvent('detection_null', { timestamp: Date.now() });
+        }
       }
     }
 
     rafRef.current = requestAnimationFrame(processFrame);
-  }, [exercise, autoDetect]);
+  }, [exercise, autoDetect, t]);
 
   const startSet = useCallback(() => {
     warmUpAudio();
+    requestWakeLock();
     // If auto-detect already identified an exercise during passive mode, use it
     const activeExercise = exercise === '__auto__'
       ? (detectedName ? Object.keys(EXERCISES).find(k => EXERCISES[k].name === detectedName) || 'squat' : 'squat')
@@ -264,6 +317,7 @@ export default function LiveCamera({ onClose }) {
 
   const stopSet = useCallback(async () => {
     setRecording(false);
+    releaseWakeLock();
     // Do NOT cancel RAF here -- keep pose detection running for passive auto-detect
     // between sets. The processFrame callback checks `recording` state to decide
     // whether to count reps or just detect.
@@ -379,20 +433,20 @@ export default function LiveCamera({ onClose }) {
         )}
 
         <div className="cam-top">
-          <button className="cam-btn" onClick={handleClose} aria-label="Close">&larr;</button>
+          <button className="cam-btn" onClick={handleClose} aria-label={t('close')}>&larr;</button>
           <span className="cam-exercise-label">
             {exercise === '__auto__'
               ? (detectedName ? tExercise(Object.keys(EXERCISES).find(k => EXERCISES[k].name === detectedName) || '', detectedName) : t('detecting'))
               : tExercise(exercise, EXERCISES[exercise]?.name || exercise)}
           </span>
-          <button className="cam-btn" onClick={flipCamera} aria-label="Flip camera">&#8634;</button>
+          <button className="cam-btn" onClick={flipCamera} aria-label={t('flip_camera')}>&#8634;</button>
         </div>
 
         {recording && (
           <div className="cam-bottom">
             <div className="cam-reps">
               <span className="cam-reps-num">{reps}</span>
-              <span className="cam-reps-label">REPS</span>
+              <span className="cam-reps-label">{t('reps')}</span>
             </div>
             <div className="cam-angle">
               {phase && (
