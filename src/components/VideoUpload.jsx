@@ -10,17 +10,18 @@ import { t, tExercise, getLang, setLang, onLangChange } from '../lib/i18n';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v3-seek';
+const BUILD_ID = 'v4-fix';
 
-// Hard cap: never process more than 120 frames. This is what the working
-// version (45cb6bb) used. A 30-second video at 3 FPS = 90 frames.
-// A 2-minute video gets adaptive FPS to stay under 120.
-const MAX_FRAMES = 120;
+// Detect iOS Safari for platform-specific workarounds
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-// No file size limit. The seek-based approach handles large files fine
-// because it processes one frame at a time, never loads the whole video
-// into memory at once. The original working version had no limit.
-const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB generous cap
+// Hard cap on frames. iOS Safari crashes with high frame counts on large
+// videos due to accumulated WASM/WebGL memory. 60 frames on iOS is safer.
+const MAX_FRAMES = IS_IOS ? 60 : 120;
+
+// File size cap. iOS Safari can crash loading very large blob URLs.
+const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -188,14 +189,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     // Wait for the video frame to actually be decoded and ready to draw.
     // iOS Safari fires 'seeked' BEFORE the frame is decoded, so drawing
-    // immediately produces a black canvas. Double-rAF ensures the compositor
-    // has the frame ready. Falls back to a 80ms delay if rAF is unreliable.
+    // immediately produces a black canvas.
+    //
+    // Strategy: wait for video.readyState >= HAVE_CURRENT_DATA, then
+    // double-rAF to let the compositor present the frame. On iOS with
+    // HEVC, this can take 50-150ms. Timeout after 500ms and try anyway.
     const waitForFrame = () => new Promise((resolve) => {
-      if (typeof requestAnimationFrame === 'undefined') {
-        setTimeout(resolve, 80);
-        return;
-      }
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
+      const start = Date.now();
+      const check = () => {
+        if (video.readyState >= 2 || Date.now() - start > 500) {
+          if (typeof requestAnimationFrame !== 'undefined') {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          } else {
+            setTimeout(resolve, 80);
+          }
+        } else {
+          setTimeout(check, 20);
+        }
+      };
+      check();
     });
 
     // Process one frame at a time via seeking
@@ -227,8 +239,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             frames.push({ landmarks, timestamp: time, angles });
             repCounter.update(landmarks);
 
-            // Store every frame for replay (not every 3rd) to improve overlay
-            replayFrames.push({ landmarks, timestamp: time });
+            // Store frames for replay overlay. On iOS, store every other
+            // frame to save memory; on desktop, store every frame.
+            if (!IS_IOS || frameIdx % 2 === 0) {
+              replayFrames.push({ landmarks, timestamp: time });
+            }
           }
 
           const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
