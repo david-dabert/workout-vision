@@ -6,7 +6,7 @@
  * and extractJointAngles are imported as dependencies.
  */
 
-import { extractJointAngles } from './poseAnalysis';
+import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 
 // ---------------------------------------------------------------------------
@@ -344,7 +344,179 @@ export class RepCounter {
       }
     }
 
+    // ── POSITION-BASED FALLBACK ──
+    // If angle-based detection found 0 reps, try using wrist vertical
+    // displacement relative to shoulder. This works from ANY camera angle,
+    // including behind the user where elbow angles barely change.
+    if (this._reps === 0 && this._collectedLandmarks.length >= 6) {
+      const posReps = this._countRepsPositionBased(frameData);
+      if (posReps > 0) {
+        this._positionFallbackUsed = true;
+      }
+    }
+
     this._useAdaptive = true; // for diagnostics display
+  }
+
+  /**
+   * Position-based rep counting fallback.
+   * Uses the wrist-to-shoulder vertical distance as the signal.
+   * For curls: wrist moves up (y decreases) during contraction.
+   * For presses: wrist moves up during extension.
+   * Works from any camera angle since it uses absolute position, not joint angle.
+   */
+  _countRepsPositionBased(frameData) {
+    const joint = this._exercise.joint;
+    // Only use position fallback for arm exercises
+    if (joint !== 'elbow' && joint !== 'shoulder') return 0;
+
+    // Build signal: wrist Y relative to shoulder Y (normalized 0-1)
+    // Lower Y = higher on screen = arm raised
+    const signal = [];
+    for (let i = 0; i < this._collectedLandmarks.length; i++) {
+      const lm = this._collectedLandmarks[i];
+      if (!lm || lm.length < 33) { signal.push(null); continue; }
+
+      // Use the side with better visibility
+      const lVis = Math.min(lm[LANDMARKS.LEFT_WRIST].visibility || 0, lm[LANDMARKS.LEFT_SHOULDER].visibility || 0);
+      const rVis = Math.min(lm[LANDMARKS.RIGHT_WRIST].visibility || 0, lm[LANDMARKS.RIGHT_SHOULDER].visibility || 0);
+
+      let wristY, shoulderY;
+      if (lVis >= rVis && lVis > 0.3) {
+        wristY = lm[LANDMARKS.LEFT_WRIST].y;
+        shoulderY = lm[LANDMARKS.LEFT_SHOULDER].y;
+      } else if (rVis > 0.3) {
+        wristY = lm[LANDMARKS.RIGHT_WRIST].y;
+        shoulderY = lm[LANDMARKS.RIGHT_SHOULDER].y;
+      } else {
+        // Neither side visible enough, try average
+        wristY = (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2;
+        shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
+      }
+
+      // Distance: positive = wrist below shoulder, negative = wrist above
+      signal.push(wristY - shoulderY);
+    }
+
+    // Smooth
+    const smoothed = [];
+    for (let i = 0; i < signal.length; i++) {
+      if (signal[i] === null) { smoothed.push(null); continue; }
+      let sum = 0, count = 0;
+      for (let j = Math.max(0, i - 1); j <= Math.min(signal.length - 1, i + 1); j++) {
+        if (signal[j] !== null) { sum += signal[j]; count++; }
+      }
+      smoothed.push(count > 0 ? sum / count : null);
+    }
+
+    // Find range
+    let posMin = Infinity, posMax = -Infinity;
+    for (const v of smoothed) {
+      if (v === null) continue;
+      if (v < posMin) posMin = v;
+      if (v > posMax) posMax = v;
+    }
+    const posRange = posMax - posMin;
+    if (posRange < 0.03) return 0; // Less than 3% of frame height moved
+
+    // Find peaks and valleys
+    const extrema = [];
+    for (let i = 1; i < smoothed.length - 1; i++) {
+      if (smoothed[i] === null || smoothed[i-1] === null || smoothed[i+1] === null) continue;
+      if (smoothed[i] > smoothed[i-1] && smoothed[i] > smoothed[i+1]) {
+        extrema.push({ type: 'peak', index: i, value: smoothed[i] });
+      } else if (smoothed[i] < smoothed[i-1] && smoothed[i] < smoothed[i+1]) {
+        extrema.push({ type: 'valley', index: i, value: smoothed[i] });
+      }
+    }
+
+    // Merge consecutive same-type
+    const merged = [];
+    for (const e of extrema) {
+      if (merged.length > 0 && merged[merged.length - 1].type === e.type) {
+        const prev = merged[merged.length - 1];
+        if (e.type === 'peak' && e.value > prev.value) merged[merged.length - 1] = e;
+        if (e.type === 'valley' && e.value < prev.value) merged[merged.length - 1] = e;
+      } else {
+        merged.push(e);
+      }
+    }
+
+    // Filter by prominence (use 25% of range as min prominence for position)
+    const minProm = posRange * 0.2;
+    const filtered = [];
+    for (const e of merged) {
+      if (filtered.length === 0) { filtered.push(e); continue; }
+      const prev = filtered[filtered.length - 1];
+      const gap = Math.abs(e.value - prev.value);
+      if (gap >= minProm) {
+        filtered.push(e);
+      } else {
+        if (e.type === 'peak' && e.value > prev.value) filtered[filtered.length - 1] = e;
+        else if (e.type === 'valley' && e.value < prev.value) filtered[filtered.length - 1] = e;
+      }
+    }
+
+    // Count reps: for curls, wrist goes DOWN (peak in distance) then UP (valley)
+    // For presses, wrist goes UP (valley) then DOWN (peak)
+    // Use peak->valley pairs (wrist rises = curl contraction)
+    const minROM = posRange * 0.25;
+    let repCount = 0;
+    let lastPeak = null;
+
+    for (const e of filtered) {
+      if (e.type === 'peak') {
+        lastPeak = e;
+      } else if (e.type === 'valley' && lastPeak !== null) {
+        const rom = lastPeak.value - e.value;
+        if (rom >= minROM) {
+          repCount++;
+
+          // Build rep history entry
+          const bottomData = frameData[e.index];
+          const topData = frameData[lastPeak.index];
+          this._reps++;
+          this._repHistory.push({
+            score: 80, // Default score for position-detected reps
+            issues: [],
+            ts: Date.now(),
+            peakAngle: null,
+            startFrame: lastPeak.index,
+            bottomFrame: e.index,
+            endFrame: e.index,
+          });
+          lastPeak = null;
+        }
+      }
+    }
+
+    // Also try valley->peak (for exercises where wrist drops = rep)
+    if (repCount === 0) {
+      let lastValley = null;
+      for (const e of filtered) {
+        if (e.type === 'valley') {
+          lastValley = e;
+        } else if (e.type === 'peak' && lastValley !== null) {
+          const rom = e.value - lastValley.value;
+          if (rom >= minROM) {
+            repCount++;
+            this._reps++;
+            this._repHistory.push({
+              score: 80,
+              issues: [],
+              ts: Date.now(),
+              peakAngle: null,
+              startFrame: lastValley.index,
+              bottomFrame: e.index,
+              endFrame: e.index,
+            });
+            lastValley = null;
+          }
+        }
+      }
+    }
+
+    return repCount;
   }
 
   _handleIsometric(angles, landmarks) {
@@ -369,7 +541,7 @@ export class RepCounter {
       observedMax: Math.round(this._observedMax * 10) / 10,
       observedRange: Math.round(range * 10) / 10,
       minROM: Math.round(minROM * 10) / 10,
-      method: 'peak-valley',
+      method: this._positionFallbackUsed ? 'position-fallback' : 'peak-valley',
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
     };

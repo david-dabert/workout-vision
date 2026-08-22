@@ -10,7 +10,7 @@ import { t, tExercise, getLang, setLang, onLangChange } from '../lib/i18n';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v4-fix';
+const BUILD_ID = 'v5-reps';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||

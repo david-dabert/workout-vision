@@ -92,18 +92,33 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
   const [exportProgress, setExportProgress] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // Draw composite frame on the playback canvas
+  // Draw composite frame on the playback canvas.
+  // Throttled to ~15 FPS on mobile to reduce memory pressure.
+  const lastDrawRef = useRef(0);
+  const DRAW_INTERVAL = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 66 : 33; // 15fps iOS, 30fps desktop
+
   const drawFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || video.paused) return;
 
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.drawImage(video, 0, 0, w, h);
-    drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
-    setProgress(video.duration > 0 ? (video.currentTime / video.duration) * 100 : 0);
+    const now = performance.now();
+    if (now - lastDrawRef.current < DRAW_INTERVAL) {
+      rafRef.current = requestAnimationFrame(drawFrame);
+      return;
+    }
+    lastDrawRef.current = now;
+
+    try {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.drawImage(video, 0, 0, w, h);
+      drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
+      setProgress(video.duration > 0 ? (video.currentTime / video.duration) * 100 : 0);
+    } catch (e) {
+      console.warn('Draw frame error:', e);
+    }
     rafRef.current = requestAnimationFrame(drawFrame);
   }, [frames, exerciseName, reps, formScore]);
 
@@ -117,8 +132,10 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     const onLoaded = () => {
       const canvas = canvasRef.current;
       if (canvas && video.videoWidth > 0) {
-        // Playback canvas: cap at 720px for smooth display
-        const displayScale = Math.min(1, 720 / video.videoWidth);
+        // Playback canvas: cap at 480px on iOS (memory), 720px on desktop
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const maxWidth = isIOS ? 480 : 720;
+        const displayScale = Math.min(1, maxWidth / video.videoWidth);
         canvas.width = Math.round(video.videoWidth * displayScale);
         canvas.height = Math.round(video.videoHeight * displayScale);
         const ctx = canvas.getContext('2d');
