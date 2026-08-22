@@ -1,24 +1,21 @@
 /**
- * Pose analysis engine — MediaPipe Pose Landmarker.
+ * Pose analysis engine — MediaPipe Pose Landmarker (unified single instance).
  * Runs on-device (WASM + GPU with CPU fallback).
  *
- * Design decisions:
- * - Lite model (3MB) for fast load + inference. Heavy model gains <5% accuracy
- *   on joint angles but costs 8x model size and 3x inference time.
- * - GPU delegate with automatic CPU fallback. Many mobile GPUs reject the delegate
- *   silently; we catch and retry.
- * - IMAGE mode for video upload analysis (each frame independent — no stale
- *   temporal state between different videos).
- * - VIDEO mode for live camera (uses temporal tracking for smoother results).
+ * Architecture:
+ * - Single full model instance shared between live camera and video upload.
+ * - VIDEO running mode (works for both live and frame-by-frame analysis).
+ * - GPU delegate with automatic CPU fallback.
+ * - Retry with exponential backoff on load failure.
+ * - Confidence-decayed ghost pose when detection drops frames.
  */
 
 import { PoseLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
-let poseLandmarkerVideo = null;
-let poseLandmarkerImage = null;
-let visionFiles = null;
-let lastVideoTime = -1;
+let poseLandmarker = null;
 let modelLoadPromise = null;
+let lastVideoTime = -1;
+let lastResult = null;
 
 export const LANDMARKS = {
   NOSE: 0,
@@ -32,44 +29,33 @@ export const LANDMARKS = {
   LEFT_FOOT_INDEX: 31, RIGHT_FOOT_INDEX: 32,
 };
 
-const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
-const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm';
+const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
 
-async function getVisionFiles() {
-  if (!visionFiles) {
-    visionFiles = await FilesetResolver.forVisionTasks(VISION_WASM);
-  }
-  return visionFiles;
-}
+// ─── Core: single model instance ───
 
-async function createLandmarker(runningMode) {
-  const vision = await getVisionFiles();
+async function createLandmarker() {
+  const vision = await FilesetResolver.forVisionTasks(VISION_WASM);
 
-  // Try GPU first, fall back to CPU
   for (const delegate of ['GPU', 'CPU']) {
     try {
       const landmarker = await PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetPath: MODEL_URL, delegate },
-        runningMode,
+        runningMode: 'VIDEO',
         numPoses: 1,
         minPoseDetectionConfidence: 0.5,
         minPosePresenceConfidence: 0.5,
         minTrackingConfidence: 0.5,
       });
-      console.log(`Pose landmarker created with ${delegate} delegate (${runningMode})`);
+      console.log(`[PoseAnalysis] Created with ${delegate} delegate`);
       return landmarker;
     } catch (e) {
-      console.warn(`${delegate} delegate failed for ${runningMode}:`, e.message);
-      if (delegate === 'CPU') throw e; // both failed
+      console.warn(`[PoseAnalysis] ${delegate} delegate failed:`, e.message);
+      if (delegate === 'CPU') throw e;
     }
   }
 }
 
-/**
- * Pre-load model. Call once at app startup.
- * Uses IMAGE mode for video upload (stateless — no cross-video contamination).
- */
-// Hard timeout wrapper — prevents model loading from hanging forever on mobile
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
@@ -79,95 +65,127 @@ function withTimeout(promise, ms, label) {
   ]);
 }
 
-export function preloadModel() {
+function getPoseLandmarker() {
+  if (poseLandmarker) return Promise.resolve(poseLandmarker);
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
-    try {
-      // Close any stale instance before creating a new one (WebGL context leak prevention)
-      if (poseLandmarkerImage) {
-        try { poseLandmarkerImage.close(); } catch (_) {}
-        poseLandmarkerImage = null;
-      }
-      // 30s hard timeout: if WASM/model download stalls, fail instead of hanging forever
-      poseLandmarkerImage = await withTimeout(createLandmarker('IMAGE'), 30000, 'Model load');
-      console.log('[PoseAnalysis] Model loaded successfully');
-      return true;
-    } catch (e) {
-      console.error('[PoseAnalysis] Failed to preload pose model:', e);
-      modelLoadPromise = null;
-      return false;
-    }
+    poseLandmarker = await withTimeout(createLandmarker(), 120000, 'Model load');
+    return poseLandmarker;
   })();
   return modelLoadPromise;
 }
 
-export async function getImageLandmarker() {
-  if (poseLandmarkerImage) return poseLandmarkerImage;
-  await preloadModel();
-  return poseLandmarkerImage;
-}
+// ─── Public API ───
 
-export async function getVideoLandmarker() {
-  if (poseLandmarkerVideo) return poseLandmarkerVideo;
-  // No early return — close any zombie reference before creating (WebGL context leak prevention)
-  poseLandmarkerVideo = await createLandmarker('VIDEO');
-  return poseLandmarkerVideo;
+/**
+ * Preload model at app startup. Returns true on success.
+ */
+export function preloadModel() {
+  return getPoseLandmarker().then(() => true).catch((e) => {
+    console.error('[PoseAnalysis] Preload failed:', e);
+    modelLoadPromise = null;
+    return false;
+  });
 }
 
 /**
- * Dispose all active landmarker instances.
- * Call on component unmount to free WebGL contexts.
- * iOS Safari hard-limits ~16 contexts; without disposal,
- * navigating between LiveCamera and VideoUpload leaks them.
+ * Load model with retry and progress callback.
+ * @param {function} onProgress - (progress: number, message: string) => void
+ * @param {number} attempt - current attempt number
+ */
+export async function loadModelWithRetry(onProgress, attempt = 1) {
+  const MAX_ATTEMPTS = 3;
+  onProgress?.(10 + (attempt - 1) * 30, `Loading AI engine... Attempt ${attempt}/${MAX_ATTEMPTS}`);
+  try {
+    const landmarker = await getPoseLandmarker();
+    onProgress?.(100, 'AI Engine Ready');
+    return landmarker;
+  } catch (err) {
+    // Reset so next attempt can try fresh
+    modelLoadPromise = null;
+    poseLandmarker = null;
+
+    if (attempt < MAX_ATTEMPTS) {
+      const delay = Math.pow(2, attempt) * 1000;
+      onProgress?.(10 + attempt * 30, `Retrying in ${delay / 1000}s... (${err.message})`);
+      await new Promise(r => setTimeout(r, delay));
+      return loadModelWithRetry(onProgress, attempt + 1);
+    }
+    throw new Error(`Failed to load AI model after ${MAX_ATTEMPTS} attempts. Check your connection.`);
+  }
+}
+
+/**
+ * Get the unified landmarker instance (for live camera).
+ */
+export async function getVideoLandmarker() {
+  return getPoseLandmarker();
+}
+
+/**
+ * Get the unified landmarker instance (for image/video upload).
+ * Same instance — VIDEO mode handles single frames fine with unique timestamps.
+ */
+export async function getImageLandmarker() {
+  return getPoseLandmarker();
+}
+
+/**
+ * Dispose the landmarker and free WebGL context.
  */
 export function disposeAllLandmarkers() {
-  if (poseLandmarkerVideo) {
-    try { poseLandmarkerVideo.close(); } catch (_) { /* already closed */ }
-    poseLandmarkerVideo = null;
-  }
-  if (poseLandmarkerImage) {
-    try { poseLandmarkerImage.close(); } catch (_) { /* already closed */ }
-    poseLandmarkerImage = null;
+  if (poseLandmarker) {
+    try { poseLandmarker.close(); } catch (_) {}
+    poseLandmarker = null;
   }
   modelLoadPromise = null;
   lastVideoTime = -1;
+  lastResult = null;
 }
 
 /**
- * Detect pose on a single frame (for video upload analysis).
- * Uses IMAGE mode — each frame is independent, no temporal state
- * that could contaminate results when analyzing multiple videos.
+ * Detect pose on a single image/frame (video upload analysis).
+ * Uses detectForVideo with a unique timestamp for compatibility with VIDEO mode.
  */
 export function detectPoseImage(landmarker, source) {
   try {
-    return landmarker.detect(source);
+    const ts = performance.now();
+    return landmarker.detectForVideo(source, ts);
   } catch (e) {
-    console.warn('Pose detection error (image):', e);
+    console.warn('[PoseAnalysis] Detection error (image):', e);
     return null;
   }
 }
 
 /**
- * Detect pose on video frame (for live camera).
+ * Detect pose on video frame (live camera).
+ * Caches last valid result for confidence decay.
  */
 export function detectPoseVideo(landmarker, videoElement, timestamp) {
-  if (timestamp === lastVideoTime) return null;
+  const EPSILON = 0.001;
+  if (Math.abs(timestamp - lastVideoTime) < EPSILON) {
+    return lastResult;
+  }
   lastVideoTime = timestamp;
   try {
-    return landmarker.detectForVideo(videoElement, timestamp);
+    const result = landmarker.detectForVideo(videoElement, timestamp);
+    if (result && result.landmarks && result.landmarks.length > 0) {
+      lastResult = result;
+    }
+    return result;
   } catch (e) {
-    console.warn('Pose detection error (video):', e);
-    return null;
+    console.warn('[PoseAnalysis] Detection error (video):', e);
+    return lastResult;
   }
 }
 
 export function resetTimestamp() {
   lastVideoTime = -1;
+  lastResult = null;
 }
 
-/**
- * Calculate angle between three 3D points (degrees).
- */
+// ─── Geometry ───
+
 export function calculateAngle(a, b, c) {
   const ba = { x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) };
   const bc = { x: c.x - b.x, y: c.y - b.y, z: (c.z || 0) - (b.z || 0) };
@@ -179,16 +197,9 @@ export function calculateAngle(a, b, c) {
   return (Math.acos(cosAngle) * 180) / Math.PI;
 }
 
-/**
- * Extract all key joint angles from landmarks.
- * Includes per-side visibility so bilateral exercises can use the better-tracked side.
- */
 export function extractJointAngles(landmarks) {
   if (!landmarks || landmarks.length < 33) return null;
   const L = landmarks;
-
-  // Visibility: minimum visibility of the three landmarks forming each joint angle.
-  // MediaPipe visibility is 0-1; below ~0.5 the landmark is likely hallucinated.
   const vis = (a, b, c) => Math.min(L[a].visibility || 0, L[b].visibility || 0, L[c].visibility || 0);
 
   return {
@@ -201,7 +212,6 @@ export function extractJointAngles(landmarks) {
     leftShoulder: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_ELBOW]),
     rightShoulder: calculateAngle(L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_ELBOW]),
     trunk: calculateTrunkAngle(landmarks),
-    // Visibility scores for bilateral selection
     _visLeftElbow: vis(LANDMARKS.LEFT_SHOULDER, LANDMARKS.LEFT_ELBOW, LANDMARKS.LEFT_WRIST),
     _visRightElbow: vis(LANDMARKS.RIGHT_SHOULDER, LANDMARKS.RIGHT_ELBOW, LANDMARKS.RIGHT_WRIST),
     _visLeftKnee: vis(LANDMARKS.LEFT_HIP, LANDMARKS.LEFT_KNEE, LANDMARKS.LEFT_ANKLE),
@@ -228,10 +238,12 @@ function calculateTrunkAngle(landmarks) {
   return calculateAngle(midShoulder, midHip, verticalRef);
 }
 
+// ─── Drawing ───
+
 /**
- * Draw skeleton on canvas.
+ * Draw skeleton overlay with alpha (for confidence decay).
  */
-export function drawPose(ctx, landmarks, width, height) {
+export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
   if (!landmarks || landmarks.length === 0) return;
 
   const connections = [
@@ -241,6 +253,7 @@ export function drawPose(ctx, landmarks, width, height) {
     [27, 29], [29, 31], [28, 30], [30, 32],
   ];
 
+  ctx.globalAlpha = alpha;
   ctx.strokeStyle = '#00FF88';
   ctx.lineWidth = Math.max(2, width / 200);
   ctx.lineCap = 'round';
@@ -254,11 +267,27 @@ export function drawPose(ctx, landmarks, width, height) {
   }
 
   const dotSize = Math.max(3, width / 120);
+  ctx.fillStyle = '#FF3355';
   for (const lm of landmarks) {
     if ((lm.visibility || 0) < 0.3) continue;
-    ctx.fillStyle = '#FF3355';
     ctx.beginPath();
     ctx.arc(lm.x * width, lm.y * height, dotSize, 0, 2 * Math.PI);
     ctx.fill();
   }
+  ctx.globalAlpha = 1.0;
+}
+
+/**
+ * Draw overlay message when no pose detected.
+ */
+export function drawOverlayMessage(ctx, line1, line2) {
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(line1, ctx.canvas.width / 2, ctx.canvas.height / 2 - 15);
+  ctx.font = '16px sans-serif';
+  ctx.fillText(line2, ctx.canvas.width / 2, ctx.canvas.height / 2 + 15);
 }

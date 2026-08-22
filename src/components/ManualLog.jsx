@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
+import { logEvent } from '../lib/telemetry';
 import { useT } from '../lib/LanguageContext';
 
-function getCategoryLabel(key) {
+function getCategoryLabel(key, t) {
   const map = { compound: 'compound', isolation: 'isolation', bodyweight: 'bodyweight' };
   return map[key] ? t(map[key]) : key;
 }
@@ -105,6 +106,7 @@ export default function ManualLog({ onClose }) {
           });
         }
       }
+      logEvent('session_complete', { exercise: entries[0]?.exerciseKey, reps: entries.reduce((s, e) => s + e.sets.reduce((ss, set) => ss + (parseInt(set.reps) || 0), 0), 0), source: 'manual' });
       setSaved(true);
       setTimeout(() => onClose(), 1200);
     } catch (err) {
@@ -213,7 +215,7 @@ export default function ManualLog({ onClose }) {
                     color: 'var(--muted)',
                     background: 'var(--card)',
                   }}>
-                    {getCategoryLabel(cat)}
+                    {getCategoryLabel(cat, t)}
                   </div>
                   {exercises.map(ex => (
                     <button

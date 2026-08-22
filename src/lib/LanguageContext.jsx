@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 
 const translations = {
   // ─── Global / Shared ───
@@ -482,12 +482,17 @@ function detectLang() {
 const LanguageContext = createContext(null);
 
 export function LanguageProvider({ children }) {
-  const [lang, setLangState] = useState(detectLang);
+  const [lang, setLangState] = useState(() => {
+    const detected = detectLang();
+    try { document.documentElement.lang = detected; } catch (_) {}
+    return detected;
+  });
 
   const setLang = useCallback((newLang) => {
     if (newLang !== 'en' && newLang !== 'fr') return;
     setLangState(newLang);
     try { localStorage.setItem('wv_lang', newLang); } catch (_) {}
+    try { document.documentElement.lang = newLang; } catch (_) {}
   }, []);
 
   const t = useCallback((key) => {

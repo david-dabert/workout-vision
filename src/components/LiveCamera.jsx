@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getVideoLandmarker, detectPoseVideo, drawPose, resetTimestamp, disposeAllLandmarkers } from '../lib/poseAnalysis';
+import { loadModelWithRetry, detectPoseVideo, drawPose, drawOverlayMessage, resetTimestamp, disposeAllLandmarkers } from '../lib/poseAnalysis';
+import { initCamera as initCameraUtil, stopCamera } from '../lib/camera';
+import { logEvent } from '../lib/telemetry';
 import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
@@ -37,6 +39,11 @@ export default function LiveCamera({ onClose }) {
   const lastVoiceCueRef = useRef(0);
 
   const [status, setStatus] = useState('loading');
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const lastValidPoseRef = useRef(null);
+  const confidenceDecayRef = useRef(1.0);
   const [exercise, setExercise] = useState('__auto__');
   const [weight, setWeight] = useState('');
   const [autoDetect, setAutoDetect] = useState(true);
@@ -57,23 +64,15 @@ export default function LiveCamera({ onClose }) {
   const [totalCalories, setTotalCalories] = useState(0);
   const restIntervalRef = useRef(null);
 
-  const initCamera = useCallback(async (facing) => {
+  const setupCamera = useCallback(async (facing) => {
     try {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
-      });
+      stopCamera(streamRef.current);
+      const stream = await initCameraUtil(videoRef.current, facing);
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+      logEvent('camera_permission', { granted: true });
     } catch (err) {
-      console.error('Camera error:', err);
-      setStatus('error');
+      logEvent('camera_permission', { granted: false, error: err.code || err.message });
+      throw err;
     }
   }, []);
 
@@ -82,22 +81,35 @@ export default function LiveCamera({ onClose }) {
 
     async function setup() {
       try {
-        const lm = await getVideoLandmarker();
+        // Step 1: Load model with progress and retry
+        setLoadingMessage('Downloading pose model (~5 MB)...');
+        const startMs = performance.now();
+        const lm = await loadModelWithRetry((progress, message) => {
+          if (!cancelled) {
+            setLoadingProgress(progress);
+            setLoadingMessage(message);
+          }
+        });
+        logEvent('model_load_success', { durationMs: Math.round(performance.now() - startMs) });
         if (cancelled) return;
         landmarkerRef.current = lm;
         autoDetectorRef.current = new ExerciseAutoDetector();
         if (userProfile?.weight) setBodyWeight(parseFloat(userProfile.weight) || 70);
-        await initCamera(facingMode);
+
+        // Step 2: Init camera
+        setLoadingMessage('Starting camera...');
+        await setupCamera(facingMode);
         if (!cancelled) {
           setStatus('ready');
-          // Start passive detection loop immediately so auto-detect
-          // runs before the user taps "Start Set"
           lastFrameTimeRef.current = 0;
           rafRef.current = requestAnimationFrame(processFrame);
         }
       } catch (err) {
         console.error('Setup error:', err);
-        if (!cancelled) setStatus('error');
+        if (!cancelled) {
+          setErrorMessage(err.message || 'Camera or model failed to load.');
+          setStatus('error');
+        }
       }
     }
 
@@ -106,7 +118,7 @@ export default function LiveCamera({ onClose }) {
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+      stopCamera(streamRef.current);
       if (restIntervalRef.current) clearInterval(restIntervalRef.current);
       disposeAllLandmarkers();
     };
@@ -148,7 +160,9 @@ export default function LiveCamera({ onClose }) {
 
     if (result && result.landmarks && result.landmarks.length > 0) {
       const landmarks = result.landmarks[0];
-      drawPose(ctx, landmarks, canvas.width, canvas.height);
+      lastValidPoseRef.current = landmarks;
+      confidenceDecayRef.current = 1.0;
+      drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0);
 
       if (autoDetect && autoDetectorRef.current) {
         const detected = autoDetectorRef.current.update(landmarks);
@@ -184,6 +198,14 @@ export default function LiveCamera({ onClose }) {
             }
           }
         }
+      }
+    } else if (lastValidPoseRef.current) {
+      // No detection this frame — show ghost pose with decay
+      confidenceDecayRef.current *= 0.95;
+      if (confidenceDecayRef.current > 0.1) {
+        drawPose(ctx, lastValidPoseRef.current, canvas.width, canvas.height, confidenceDecayRef.current);
+      } else {
+        drawOverlayMessage(ctx, 'Move into frame', 'No pose detected');
       }
     }
 
@@ -278,6 +300,7 @@ export default function LiveCamera({ onClose }) {
 
       try {
         await saveWorkout(workout);
+        logEvent('session_complete', { exercise: savedExercise, reps, source: 'live' });
         if (voiceCoach) {
           speak(`${reps} reps. Form score ${avgScore}. ${cal} calories burned.`);
         }
@@ -293,8 +316,8 @@ export default function LiveCamera({ onClose }) {
   const flipCamera = useCallback(async () => {
     const next = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(next);
-    await initCamera(next);
-  }, [facingMode, initCamera]);
+    await setupCamera(next);
+  }, [facingMode, setupCamera]);
 
   const handleClose = () => {
     if (recording || setCount > 0) {
@@ -330,19 +353,28 @@ export default function LiveCamera({ onClose }) {
 
         {status === 'loading' && (
           <div className="cam-loading">
-            <div className="spinner" />
-            <p className="text-sm">{t('init_camera')}</p>
+            <div style={{ width: '80%', maxWidth: 260, marginBottom: 12 }}>
+              <div style={{ height: 6, borderRadius: 3, background: 'var(--border)', overflow: 'hidden' }}>
+                <div style={{ width: `${loadingProgress}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.3s' }} />
+              </div>
+            </div>
+            <p className="text-sm" style={{ textAlign: 'center' }}>{loadingMessage || t('init_camera')}</p>
           </div>
         )}
 
         {status === 'error' && (
           <div className="cam-loading">
-            <p style={{ color: 'var(--red)', marginBottom: 12 }}>
-              {t('camera_failed')}
+            <p style={{ color: 'var(--red)', marginBottom: 12, textAlign: 'center', padding: '0 16px' }}>
+              {errorMessage || t('camera_failed')}
             </p>
-            <button className="btn btn-primary" onClick={() => window.location.reload()}>
-              {t('retry')}
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={() => window.location.reload()}>
+                {t('retry')}
+              </button>
+              <button className="btn btn-ghost" onClick={onClose}>
+                {t('log_workout')}
+              </button>
+            </div>
           </div>
         )}
 
