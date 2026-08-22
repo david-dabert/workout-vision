@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getAllWorkouts, deleteWorkout } from '../lib/storage';
 import { calculateWorkloadRatio } from '../lib/coach';
-import { t, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -34,10 +34,9 @@ function workloadZoneColor(zone) {
 }
 
 export default function WorkoutHistory({ onClose }) {
+  const { t } = useT();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     loadWorkouts();

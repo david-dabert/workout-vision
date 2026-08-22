@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { t, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 const PRESETS = [30, 60, 90, 120, 180, 300];
 
@@ -44,17 +44,15 @@ function vibrate() {
 }
 
 export default function RestTimer({ onClose }) {
+  const { t } = useT();
   const [totalSeconds, setTotalSeconds] = useState(90);
   const [remaining, setRemaining] = useState(90);
   const [running, setRunning] = useState(false);
   const [completed, setCompleted] = useState(0);
   const [customInput, setCustomInput] = useState('');
   const [showCustom, setShowCustom] = useState(false);
-  const [, setLangTick] = useState(0);
   const intervalRef = useRef(null);
   const wakeLockRef = useRef(null);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   // Wake Lock
   const requestWakeLock = useCallback(async () => {

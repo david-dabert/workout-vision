@@ -2,17 +2,15 @@ import { useState, useEffect } from 'react';
 import { getAllWorkouts, getFoodLog } from '../lib/storage';
 import { getDailyTargets, estimateDailyBurn } from '../lib/nutrition';
 import { analyzeProgression } from '../lib/progression';
-import { t, getLang, setLang, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 import { Flame, Dumbbell, Target, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard({ profile, modelStatus, onNavigate }) {
+  const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [todayStats, setTodayStats] = useState(null);
   const [progression, setProgression] = useState(null);
   const [showInstall, setShowInstall] = useState(false);
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     const handler = () => setShowInstall(true);
@@ -99,12 +97,12 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           <h1 className="logo">Workout<span>Vision</span></h1>
           <div style={{ display: 'flex', gap: 4 }}>
             <button
-              className={`btn btn-sm ${getLang() === 'en' ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn btn-sm ${lang === 'en' ? 'btn-primary' : 'btn-ghost'}`}
               onClick={() => setLang('en')}
               style={{ padding: '4px 10px', fontSize: '0.75rem' }}
             >EN</button>
             <button
-              className={`btn btn-sm ${getLang() === 'fr' ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn btn-sm ${lang === 'fr' ? 'btn-primary' : 'btn-ghost'}`}
               onClick={() => setLang('fr')}
               style={{ padding: '4px 10px', fontSize: '0.75rem' }}
             >FR</button>

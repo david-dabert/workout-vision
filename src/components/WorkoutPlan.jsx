@@ -3,7 +3,7 @@ import { getAllWorkouts } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { generatePhysicalAnalysis, generateWorkoutPlan } from '../lib/planner';
 import { EXERCISES } from '../lib/exercises';
-import { t, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 const exerciseName = (key) => EXERCISES[key]?.name || key.replace(/_/g, ' ');
 
@@ -14,7 +14,7 @@ const bmiColor = (val) => {
 };
 
 const ZONE_COLORS = ['var(--blue)', 'var(--accent)', 'var(--yellow)', '#ff6d00', 'var(--red)'];
-const getZoneLabels = () => [t('recovery'), t('aerobic'), t('tempo'), t('threshold'), t('vo2max')];
+const getZoneLabels = (t) => [t('recovery'), t('aerobic'), t('tempo'), t('threshold'), t('vo2max')];
 
 const s = {
   page: { padding: 16, paddingBottom: 100, minHeight: '100vh', background: 'var(--bg)' },
@@ -87,14 +87,13 @@ const s = {
 };
 
 export default function WorkoutPlan({ onClose }) {
+  const { t } = useT();
   const { profile } = useProfile();
   const [analysis, setAnalysis] = useState(null);
   const [plan, setPlan] = useState(null);
   const [tab, setTab] = useState('analysis');
   const [expandedDay, setExpandedDay] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => { loadData(); }, [profile]);
 
@@ -146,7 +145,7 @@ export default function WorkoutPlan({ onClose }) {
   // Convert heart rate zones object to array
   const hrZonesArray = analysis?.heartRateZones
     ? Object.entries(analysis.heartRateZones).map(([key, z], i) => ({
-        name: getZoneLabels()[i] || z.label,
+        name: getZoneLabels(t)[i] || z.label,
         min: z.min,
         max: z.max,
         label: z.label,

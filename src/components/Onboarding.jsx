@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check } from 'lucide-react';
-import { t, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 const TOTAL_STEPS = 4;
 
 const INJURY_AREAS = ['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'];
 
 export default function Onboarding({ onComplete }) {
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
-
+  const { t } = useT();
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
     name: '',

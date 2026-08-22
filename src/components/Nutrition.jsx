@@ -6,11 +6,11 @@ import {
   fetchBarcodeNutrition, estimateDailyBurn, FOOD_DATABASE,
 } from '../lib/nutrition';
 import { Camera, Search, Trash2, ChevronLeft, ScanBarcode, UtensilsCrossed, Plus, X } from 'lucide-react';
-import { t, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
-function getMealName(meal) {
+function getMealName(meal, t) {
   switch (meal) {
     case 'Breakfast': return t('breakfast');
     case 'Lunch': return t('lunch');
@@ -21,6 +21,7 @@ function getMealName(meal) {
 }
 
 export default function Nutrition() {
+  const { t } = useT();
   const { profile } = useProfile();
   const [foodLog, setFoodLog] = useState([]);
   const [todayWorkouts, setTodayWorkouts] = useState([]);
@@ -28,9 +29,6 @@ export default function Nutrition() {
   const [goal, setGoal] = useState('maintain');
   const [view, setView] = useState('daily'); // daily | add | scan | photo
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     if (profile) setTargets(getDailyTargets(profile, goal));
@@ -228,7 +226,7 @@ export default function Nutrition() {
             if (items.length === 0) return null;
             return (
               <div key={meal}>
-                <h5>{getMealName(meal)}</h5>
+                <h5>{getMealName(meal, t)}</h5>
                 {items.map(e => (
                   <div key={e.id} className="food-entry">
                     <div className="food-entry-info">
@@ -345,14 +343,12 @@ function MacroBar({ label, current, target, color, unit }) {
 // ── Food Search & Add ──
 
 function FoodSearch({ onAdd, onClose }) {
+  const { t } = useT();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState(null);
   const [grams, setGrams] = useState('');
   const [mealType, setMealType] = useState('Lunch');
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     setResults(searchFood(query));
@@ -402,7 +398,7 @@ function FoodSearch({ onAdd, onClose }) {
             <label>
               <span>{t('meal')}</span>
               <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m)}</option>)}
+                {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m, t)}</option>)}
               </select>
             </label>
           </div>
@@ -427,7 +423,7 @@ function FoodSearch({ onAdd, onClose }) {
           </div>
 
           <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 16 }} onClick={handleAdd}>
-            <Plus size={18} /> {t('add_to')} {getMealName(mealType)}
+            <Plus size={18} /> {t('add_to')} {getMealName(mealType, t)}
           </button>
         </div>
 
@@ -521,6 +517,7 @@ function FoodSearch({ onAdd, onClose }) {
 // ── Barcode Scanner ──
 
 function BarcodeScanner({ onResult, onClose }) {
+  const { t } = useT();
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const scanningRef = useRef(false);
@@ -528,9 +525,6 @@ function BarcodeScanner({ onResult, onClose }) {
   const [product, setProduct] = useState(null);
   const [grams, setGrams] = useState('');
   const [mealType, setMealType] = useState('Lunch');
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -653,7 +647,7 @@ function BarcodeScanner({ onResult, onClose }) {
             <label>
               <span>{t('meal')}</span>
               <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m)}</option>)}
+                {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m, t)}</option>)}
               </select>
             </label>
           </div>
@@ -678,7 +672,7 @@ function BarcodeScanner({ onResult, onClose }) {
           </div>
 
           <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 16 }} onClick={handleAdd}>
-            <Plus size={18} /> {t('add_to')} {getMealName(mealType)}
+            <Plus size={18} /> {t('add_to')} {getMealName(mealType, t)}
           </button>
         </div>
       </div>
@@ -730,6 +724,7 @@ function BarcodeScanner({ onResult, onClose }) {
 // ── Food Photo ──
 
 function FoodPhoto({ onAdd, onClose }) {
+  const { t } = useT();
   const [photoUrl, setPhotoUrl] = useState(null);
   const [name, setName] = useState('');
   const [grams, setGrams] = useState('200');
@@ -739,9 +734,6 @@ function FoodPhoto({ onAdd, onClose }) {
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
   const fileRef = useRef(null);
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   const handleCapture = (e) => {
     const file = e.target.files?.[0];
@@ -812,7 +804,7 @@ function FoodPhoto({ onAdd, onClose }) {
               <label>
                 <span>{t('meal')}</span>
                 <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                  {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m)}</option>)}
+                  {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m, t)}</option>)}
                 </select>
               </label>
               <label>
@@ -834,7 +826,7 @@ function FoodPhoto({ onAdd, onClose }) {
             </div>
 
             <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 12 }} onClick={handleAdd} disabled={!name}>
-              <Plus size={18} /> {t('add_to')} {getMealName(mealType)}
+              <Plus size={18} /> {t('add_to')} {getMealName(mealType, t)}
             </button>
           </div>
 

@@ -5,7 +5,7 @@ import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
-import { t, tExercise, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 const TARGET_FPS = 15;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
@@ -22,9 +22,8 @@ function speak(text) {
 }
 
 export default function LiveCamera({ onClose }) {
+  const { t, tExercise } = useT();
   const { profile: userProfile } = useProfile();
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);

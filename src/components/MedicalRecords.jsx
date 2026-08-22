@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveMedicalRecord, getMedicalRecords, deleteMedicalRecord } from '../lib/storage';
-import { t, getLang, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 function getHealthMarkers() {
   return [
@@ -17,13 +17,11 @@ function getHealthMarkers() {
 }
 
 export default function MedicalRecords({ onClose }) {
+  const { t, lang } = useT();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [, setLangTick] = useState(0);
   const fileInputRef = useRef(null);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     loadRecords();
@@ -195,7 +193,7 @@ export default function MedicalRecords({ onClose }) {
               />
 
               <span className="text-xs text-muted" style={{ marginTop: 4, display: 'block' }}>
-                {t('uploaded')} {new Date(r.date).toLocaleDateString(getLang() === 'fr' ? 'fr-FR' : 'en-GB', {
+                {t('uploaded')} {new Date(r.date).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', {
                   day: 'numeric', month: 'short', year: 'numeric'
                 })}
               </span>

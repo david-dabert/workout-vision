@@ -1,13 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { getImageLandmarker, detectPoseImage } from '../lib/poseAnalysis';
 import { extractJointAngles } from '../lib/poseAnalysis';
 import { EXERCISES } from '../lib/exercises';
 import { EQUIPMENT_CATALOG, searchEquipment } from '../lib/machineIdentifier';
-import { t, tExercise, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 export default function MachineIdentifier({ onSelectExercise, onClose }) {
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
+  const { t, tExercise } = useT();
   const [mode, setMode] = useState('choose'); // 'choose' | 'photo' | 'catalog'
   const [photo, setPhoto] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);

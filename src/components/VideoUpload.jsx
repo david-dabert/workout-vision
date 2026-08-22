@@ -6,7 +6,7 @@ import { generateWorkoutReport } from '../lib/coach';
 import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { shareCard } from '../lib/shareCard';
-import { t, tExercise, getLang, setLang, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
@@ -47,6 +47,7 @@ function formatTime(seconds) {
 }
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
+  const { t, tExercise, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
   const [queue, setQueue] = useState([]);
   const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
@@ -59,7 +60,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
   const [replayResult, setReplayResult] = useState(null);
-  const [lang, setLangState] = useState(getLang());
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -67,9 +67,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const blobUrlRef = useRef(null);
 
   useEffect(() => {
-    const unsub = onLangChange((l) => setLangState(l));
     return () => {
-      unsub();
       // Abort any in-progress analysis
       abortRef.current = true;
       // Free WebGL contexts to prevent iOS Safari crash on re-mount

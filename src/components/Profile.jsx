@@ -4,7 +4,7 @@ import {
   getMedicalRecords, saveMedicalRecord, deleteMedicalRecord,
 } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
-import { t, getLang, setLang, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 export default function Profile({ onClose }) {
   const { profile: savedProfile, saveProfile } = useProfile();
@@ -17,8 +17,7 @@ export default function Profile({ onClose }) {
   const [saved, setSaved] = useState(false);
   const [records, setRecords] = useState([]);
   const fileInputRef = useRef(null);
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
+  const { t, lang, setLang } = useT();
 
   useEffect(() => {
     if (savedProfile) {
@@ -83,8 +82,8 @@ export default function Profile({ onClose }) {
         <div className="form-group">
           <label>{t('language')}</label>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className={`btn btn-sm ${getLang() === 'en' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('en')}>English</button>
-            <button className={`btn btn-sm ${getLang() === 'fr' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('fr')}>Français</button>
+            <button className={`btn btn-sm ${lang === 'en' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('en')}>English</button>
+            <button className={`btn btn-sm ${lang === 'fr' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('fr')}>Français</button>
           </div>
         </div>
         <h3>{t('your_measurements')}</h3>

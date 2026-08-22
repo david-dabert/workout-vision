@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAllWorkouts, deleteWorkout } from '../lib/storage';
-import { t, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 function getWeekLabel(dateStr) {
   const d = new Date(dateStr);
@@ -19,10 +19,9 @@ function gradeClass(score) {
 }
 
 export default function Progress({ onClose }) {
+  const { t } = useT();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   const loadWorkouts = async () => {
     const all = await getAllWorkouts();

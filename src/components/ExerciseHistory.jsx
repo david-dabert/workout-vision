@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllWorkouts } from '../lib/storage';
 import { EXERCISES } from '../lib/exercises';
-import { t, tExercise, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -55,8 +55,7 @@ function computePRs(sets) {
 }
 
 export default function ExerciseHistory({ onClose }) {
-  const [, setLangTick] = useState(0);
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
+  const { t, tExercise } = useT();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedExercise, setSelectedExercise] = useState(null);

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { drawPose } from '../lib/poseAnalysis';
-import { t, tExercise } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 /**
  * Binary search for the closest frame to a given timestamp.
@@ -80,6 +80,7 @@ function canExportVideo() {
  * HD download via one-tap auto-record at original video resolution.
  */
 export default function VideoReplay({ videoUrl, frames, exerciseName, reps, formScore, onClose }) {
+  const { t } = useT();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null); // cached 2d context

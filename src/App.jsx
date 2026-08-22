@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { preloadModel } from './lib/poseAnalysis';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
-import { t, onLangChange } from './lib/i18n';
+import { LanguageProvider, useT } from './lib/LanguageContext';
 import { Home, TrendingUp, User, Apple } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Progress from './components/Progress';
@@ -26,12 +26,10 @@ const LazyFallback = (
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
+  const { t } = useT();
   const [page, setPage] = useState('dashboard');
   const [modelStatus, setModelStatus] = useState('loading');
   const [preSelectedExercise, setPreSelectedExercise] = useState(null);
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     preloadModel()
@@ -168,9 +166,11 @@ function AppInner() {
 
 function App() {
   return (
-    <ProfileProvider>
-      <AppInner />
-    </ProfileProvider>
+    <LanguageProvider>
+      <ProfileProvider>
+        <AppInner />
+      </ProfileProvider>
+    </LanguageProvider>
   );
 }
 

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
-import { t, tExercise, onLangChange } from '../lib/i18n';
+import { useT } from '../lib/LanguageContext';
 
 function getCategoryLabel(key) {
   const map = { compound: 'compound', isolation: 'isolation', bodyweight: 'bodyweight' };
@@ -20,14 +20,12 @@ function emptyEntry() {
 }
 
 export default function ManualLog({ onClose }) {
+  const { t, tExercise } = useT();
   const [entries, setEntries] = useState([emptyEntry()]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(null); // index of entry with picker open
   const [searchTerm, setSearchTerm] = useState('');
-  const [, setLangTick] = useState(0);
-
-  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   function updateEntry(idx, field, value) {
     setEntries(prev => prev.map((e, i) => i === idx ? { ...e, [field]: value } : e));
