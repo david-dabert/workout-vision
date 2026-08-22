@@ -66,6 +66,8 @@ export default function LiveCamera({ onClose }) {
   const [restDuration, setRestDuration] = useState(90);
   const [resting, setResting] = useState(false);
   const [totalCalories, setTotalCalories] = useState(0);
+  const [liteMode, setLiteMode] = useState(false);
+  const [slowBanner, setSlowBanner] = useState(false);
   const restIntervalRef = useRef(null);
 
   const requestWakeLock = useCallback(async () => {
@@ -169,15 +171,23 @@ export default function LiveCamera({ onClose }) {
     }
     lastFrameTimeRef.current = now;
 
-    // Slow FPS detection (warn once if inference drops below 5 FPS)
+    // Three-tier slow device degradation
     fpsWindowRef.current.push(now);
     if (fpsWindowRef.current.length > 10) fpsWindowRef.current.shift();
-    if (fpsWindowRef.current.length === 10 && !slowFpsWarnedRef.current) {
+    if (fpsWindowRef.current.length === 10) {
       const elapsed = fpsWindowRef.current[9] - fpsWindowRef.current[0];
       const effectiveFps = (9 / elapsed) * 1000;
-      if (effectiveFps < 5) {
+      if (effectiveFps < 5 && !slowFpsWarnedRef.current) {
+        // Tier 3: offer Manual Log fallback
         slowFpsWarnedRef.current = true;
-        logEvent('slow_inference', { fps: Math.round(effectiveFps) });
+        setSlowBanner(true);
+        setLiteMode(true);
+        logEvent('slow_inference', { fps: Math.round(effectiveFps), tier: 3 });
+      } else if (effectiveFps < 10 && !liteMode && !slowFpsWarnedRef.current) {
+        // Tier 2: lite mode (skip skeleton drawing, keep rep counting)
+        setLiteMode(true);
+        setSlowBanner(true);
+        logEvent('slow_inference', { fps: Math.round(effectiveFps), tier: 2 });
       }
     }
 
@@ -210,7 +220,10 @@ export default function LiveCamera({ onClose }) {
       const landmarks = result.landmarks[0];
       lastValidPoseRef.current = landmarks;
       confidenceDecayRef.current = 1.0;
-      drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0);
+      // Lite mode: skip skeleton drawing to save GPU, keep rep counting
+      if (!liteMode) {
+        drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0);
+      }
 
       if (autoDetect && autoDetectorRef.current) {
         const detected = autoDetectorRef.current.update(landmarks);
@@ -262,7 +275,7 @@ export default function LiveCamera({ onClose }) {
     }
 
     rafRef.current = requestAnimationFrame(processFrame);
-  }, [exercise, autoDetect, t]);
+  }, [exercise, autoDetect, t, liteMode]);
 
   const startSet = useCallback(() => {
     warmUpAudio();
@@ -471,6 +484,25 @@ export default function LiveCamera({ onClose }) {
                 <button className="btn btn-ghost btn-sm" onClick={startSet}>{t('next_set')}</button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Slow device banner */}
+        {slowBanner && (
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            background: 'rgba(0,0,0,0.85)', padding: '10px 14px',
+            display: 'flex', alignItems: 'center', gap: 10, zIndex: 20,
+          }}>
+            <span className="text-sm" style={{ flex: 1, color: 'var(--yellow)' }}>
+              {t('slow_device_banner')}
+            </span>
+            <button className="btn btn-ghost btn-sm" onClick={() => setSlowBanner(false)} style={{ minWidth: 'auto', padding: '4px 8px' }}>
+              &times;
+            </button>
+            <button className="btn btn-primary btn-sm" onClick={onClose} style={{ minWidth: 'auto' }}>
+              {t('switch_manual')}
+            </button>
           </div>
         )}
       </div>

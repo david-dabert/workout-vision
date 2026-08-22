@@ -664,7 +664,7 @@ function ResultCard({ result, onReplay }) {
 
       {report?.summary && (
         <p className="text-sm" style={{ marginBottom: 10, lineHeight: 1.5 }}>
-          {report.summary}
+          {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
         </p>
       )}
 
@@ -901,7 +901,7 @@ function ResultCard({ result, onReplay }) {
           <h4>{t('highlights')}</h4>
           {report.highlights.map((h, i) => (
             <p key={i} className="text-sm" style={{ color: 'var(--accent)', padding: '2px 0' }}>
-              {'> '}{h}
+              {'> '}{typeof h === 'string' ? h : t(h.key, h)}
             </p>
           ))}
         </div>
@@ -912,7 +912,7 @@ function ResultCard({ result, onReplay }) {
           <h4>{t('next_steps')}</h4>
           {report.improvements.map((imp, i) => (
             <p key={i} className="text-sm text-muted" style={{ padding: '2px 0' }}>
-              {i + 1}. {imp}
+              {i + 1}. {typeof imp === 'string' ? imp : t(imp.key, imp)}
             </p>
           ))}
         </div>

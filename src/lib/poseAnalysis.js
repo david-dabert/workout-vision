@@ -11,6 +11,10 @@
  */
 
 import { PoseLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+import localforage from 'localforage';
+
+const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
+const MODEL_CACHE_KEY = 'pose-landmarker-full-v1';
 
 let poseLandmarker = null;
 let modelLoadPromise = null;
@@ -32,15 +36,37 @@ export const LANDMARKS = {
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
 
-// ─── Core: single model instance ───
+// ─── Core: single model instance with IndexedDB cache ───
+
+async function fetchModelBuffer() {
+  // Try IndexedDB cache first (instant on repeat visits, works offline)
+  try {
+    const cached = await modelCache.getItem(MODEL_CACHE_KEY);
+    if (cached) {
+      console.log('[PoseAnalysis] Model loaded from IndexedDB cache');
+      return cached;
+    }
+  } catch (_) {}
+
+  // Fetch from CDN and cache for next time
+  const response = await fetch(MODEL_URL);
+  if (!response.ok) throw new Error(`Model fetch failed: ${response.status}`);
+  const buffer = await response.arrayBuffer();
+
+  // Cache in background (don't await — don't block model init)
+  modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
+  console.log('[PoseAnalysis] Model fetched from CDN and cached');
+  return buffer;
+}
 
 async function createLandmarker() {
   const vision = await FilesetResolver.forVisionTasks(VISION_WASM);
+  const modelBuffer = await fetchModelBuffer();
 
   for (const delegate of ['GPU', 'CPU']) {
     try {
       const landmarker = await PoseLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: MODEL_URL, delegate },
+        baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
         runningMode: 'VIDEO',
         numPoses: 1,
         minPoseDetectionConfidence: 0.5,

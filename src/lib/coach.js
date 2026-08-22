@@ -124,10 +124,10 @@ const DEFAULT_RECOVERY_HOURS = 48;
 export function generateWorkoutReport(profile, exerciseResults) {
   if (!exerciseResults || exerciseResults.length === 0) {
     return {
-      summary: 'No exercises recorded in this session.',
+      summary: { key: 'coach_no_exercises' },
       grade: 'D',
       highlights: [],
-      improvements: ['Complete at least one exercise to generate a report.'],
+      improvements: [{ key: 'coach_complete_one' }],
       volumeLoad: 0,
       musclesWorked: [],
     };
@@ -161,7 +161,6 @@ export function generateWorkoutReport(profile, exerciseResults) {
       if (!muscleMap[m.name]) {
         muscleMap[m.name] = { sets: 0, estimatedVolume: 0, isPrimary: false };
       }
-      // Only count sets when reps > 0 (prevents "Good volume" on 0-rep analyses)
       if (m.isPrimary && reps > 0) {
         muscleMap[m.name].sets += sets;
         muscleMap[m.name].isPrimary = true;
@@ -181,26 +180,26 @@ export function generateWorkoutReport(profile, exerciseResults) {
       }
     }
 
-    // Extract highlights and improvements from analysis
+    // Extract structured findings from analysis
     if (result.analysis) {
       if (result.analysis.asymmetry && result.analysis.asymmetry.score <= 10) {
-        highlights.push(`Excellent bilateral symmetry on ${exercise.name}.`);
+        highlights.push({ key: 'coach_symmetry', exercise: exercise.key, exerciseName: exercise.name });
       }
       if (result.analysis.fatigue && result.analysis.fatigue.velocityDropoff > 30) {
-        improvements.push(`Velocity dropped ${Math.round(result.analysis.fatigue.velocityDropoff)}% on ${exercise.name}. Consider reducing reps or load next session.`);
+        improvements.push({ key: 'coach_velocity_drop', exercise: exercise.key, exerciseName: exercise.name, dropoff: Math.round(result.analysis.fatigue.velocityDropoff) });
       }
       if (result.analysis.rangeOfMotion && result.analysis.rangeOfMotion.consistency < 70) {
-        improvements.push(`Inconsistent range of motion on ${exercise.name} (${result.analysis.rangeOfMotion.consistency}% consistency). Focus on controlled tempo.`);
+        improvements.push({ key: 'coach_rom_inconsistent', exercise: exercise.key, exerciseName: exercise.name, consistency: result.analysis.rangeOfMotion.consistency });
       }
       if (result.analysis.compensationPatterns) {
         for (const comp of result.analysis.compensationPatterns) {
           if (comp.severity === 'major') {
-            improvements.push(`${comp.pattern} detected on ${exercise.name}: ${comp.description}`);
+            improvements.push({ key: 'coach_compensation', exercise: exercise.key, exerciseName: exercise.name, pattern: comp.pattern, description: comp.description });
           }
         }
       }
       if (result.analysis.movementQuality >= 85) {
-        highlights.push(`Strong movement quality on ${exercise.name} (${result.analysis.movementQuality}/100).`);
+        highlights.push({ key: 'coach_quality_strong', exercise: exercise.key, exerciseName: exercise.name, score: result.analysis.movementQuality });
       }
     }
   }
@@ -219,34 +218,49 @@ export function generateWorkoutReport(profile, exerciseResults) {
       estimatedVolume: data.estimatedVolume > 0 ? `${Math.round(data.estimatedVolume)} kg` : 'bodyweight',
     }));
 
-  // Volume adequacy check (Schoenfeld 2017: 10+ sets/muscle/week for hypertrophy)
+  // Volume adequacy highlights
   for (const m of musclesWorked) {
     if (m.sets >= 4) {
-      highlights.push(`Good volume on ${m.name}: ${m.sets} working sets.`);
+      highlights.push({ key: 'coach_good_volume', muscle: m.name, sets: m.sets });
     }
   }
 
-  // Ensure we have at least one highlight
+  // Fallbacks
   if (highlights.length === 0) {
-    highlights.push(`Completed ${exerciseResults.length} exercise(s) this session.`);
+    highlights.push({ key: 'coach_session_completed', count: exerciseResults.length });
   }
   if (improvements.length === 0) {
-    improvements.push('No significant issues detected. Maintain current form and consider progressive overload.');
+    improvements.push({ key: 'coach_no_issues' });
   }
 
-  // Deduplicate
-  const uniqueHighlights = [...new Set(highlights)].slice(0, 5);
-  const uniqueImprovements = [...new Set(improvements)].slice(0, 5);
+  // Deduplicate by key+exercise
+  const dedup = (arr) => {
+    const seen = new Set();
+    return arr.filter(item => {
+      const id = `${item.key}:${item.exercise || item.muscle || ''}`;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    }).slice(0, 5);
+  };
 
-  // Summary
+  // Summary structure
   const totalReps = exerciseResults.reduce((s, r) => s + (r.reps || 0) * (r.sets || 1), 0);
-  const summary = _buildSummary(exerciseResults, grade, avgScore, totalReps, totalVolumeLoad);
+  const qualityTier = avgScore >= 85 ? 'strong' : avgScore >= 70 ? 'solid' : avgScore >= 55 ? 'needs_attention' : 'significant_issues';
 
   return {
-    summary,
+    summary: {
+      key: 'coach_summary',
+      grade,
+      totalReps,
+      exerciseCount: exerciseResults.length,
+      exerciseNames: exerciseResults.map(r => EXERCISES[r.exerciseKey]?.name || r.exerciseKey).filter(Boolean),
+      volumeLoad: Math.round(totalVolumeLoad),
+      qualityTier,
+    },
     grade,
-    highlights: uniqueHighlights,
-    improvements: uniqueImprovements,
+    highlights: dedup(highlights),
+    improvements: dedup(improvements),
     volumeLoad: Math.round(totalVolumeLoad),
     musclesWorked,
   };
@@ -261,26 +275,6 @@ function _scoreToGrade(score) {
   return 'D';
 }
 
-function _buildSummary(results, grade, avgScore, totalReps, volumeLoad) {
-  const exerciseCount = results.length;
-  const exerciseNames = results
-    .map((r) => EXERCISES[r.exerciseKey]?.name || r.exerciseKey)
-    .filter(Boolean);
-
-  const volumeStr = volumeLoad > 0
-    ? ` with an estimated total volume of ${Math.round(volumeLoad)} kg`
-    : '';
-
-  const qualityStr = avgScore >= 85
-    ? 'Movement quality was strong throughout.'
-    : avgScore >= 70
-      ? 'Movement quality was solid with room for improvement on form consistency.'
-      : avgScore >= 55
-        ? 'Movement quality needs attention. Focus on controlled tempo and full range of motion.'
-        : 'Significant form issues detected. Consider reducing load to prioritize movement quality.';
-
-  return `Session grade: ${grade}. You completed ${totalReps} total reps across ${exerciseCount} exercise(s) (${exerciseNames.join(', ')})${volumeStr}. ${qualityStr}`;
-}
 
 // ---------------------------------------------------------------------------
 // Acute:Chronic Workload Ratio

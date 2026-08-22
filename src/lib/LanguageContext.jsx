@@ -150,6 +150,21 @@ const translations = {
   'downloading_model': { en: 'Downloading pose model (~5 MB)...', fr: 'Téléchargement du modèle (~5 Mo)...' },
   'starting_camera': { en: 'Starting camera...', fr: 'Démarrage de la caméra...' },
   'flip_camera': { en: 'Flip camera', fr: 'Retourner la caméra' },
+  'slow_device_banner': { en: 'AI running slowly on this device. Skeleton hidden to save power.', fr: 'IA lente sur cet appareil. Squelette masqué pour économiser.' },
+  'switch_manual': { en: 'Manual Log', fr: 'Saisie manuelle' },
+
+  // ─── Coaching report (structured findings) ───
+  'coach_no_exercises': { en: 'No exercises recorded in this session.', fr: 'Aucun exercice enregistré dans cette session.' },
+  'coach_complete_one': { en: 'Complete at least one exercise to generate a report.', fr: 'Effectuez au moins un exercice pour générer un rapport.' },
+  'coach_symmetry': { en: 'Excellent bilateral symmetry on {{exerciseName}}.', fr: 'Excellente symétrie bilatérale sur {{exerciseName}}.' },
+  'coach_velocity_drop': { en: 'Velocity dropped {{dropoff}}% on {{exerciseName}}. Consider reducing reps or load.', fr: 'Vitesse en baisse de {{dropoff}}% sur {{exerciseName}}. Réduisez les reps ou la charge.' },
+  'coach_rom_inconsistent': { en: 'Inconsistent range of motion on {{exerciseName}} ({{consistency}}%). Focus on controlled tempo.', fr: 'Amplitude irrégulière sur {{exerciseName}} ({{consistency}}%). Travaillez le tempo.' },
+  'coach_compensation': { en: '{{pattern}} detected on {{exerciseName}}: {{description}}', fr: '{{pattern}} détecté sur {{exerciseName}} : {{description}}' },
+  'coach_quality_strong': { en: 'Strong movement quality on {{exerciseName}} ({{score}}/100).', fr: 'Excellente qualité de mouvement sur {{exerciseName}} ({{score}}/100).' },
+  'coach_good_volume': { en: 'Good volume on {{muscle}}: {{sets}} working sets.', fr: 'Bon volume sur {{muscle}} : {{sets}} séries de travail.' },
+  'coach_session_completed': { en: 'Completed {{count}} exercise(s) this session.', fr: '{{count}} exercice(s) complété(s) cette session.' },
+  'coach_no_issues': { en: 'No significant issues detected. Maintain current form and consider progressive overload.', fr: 'Aucun problème significatif détecté. Maintenez votre forme et envisagez une surcharge progressive.' },
+  'coach_summary': { en: 'Session grade: {{grade}}. {{totalReps}} total reps across {{exerciseCount}} exercise(s). Volume: {{volumeLoad}} kg.', fr: 'Note de session : {{grade}}. {{totalReps}} reps au total sur {{exerciseCount}} exercice(s). Volume : {{volumeLoad}} kg.' },
   'detecting': { en: 'Detecting...', fr: 'Détection...' },
   'rest_label': { en: 'REST', fr: 'REPOS' },
   'seconds': { en: 'seconds', fr: 'secondes' },
@@ -500,10 +515,17 @@ export function LanguageProvider({ children }) {
     try { document.documentElement.lang = newLang; } catch (_) {}
   }, []);
 
-  const t = useCallback((key) => {
+  const t = useCallback((key, params) => {
     const entry = translations[key];
     if (!entry) return key;
-    return entry[lang] || entry.en || key;
+    let str = entry[lang] || entry.en || key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (k === 'key') continue;
+        str = str.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), v ?? '');
+      }
+    }
+    return str;
   }, [lang]);
 
   const tExercise = useCallback((exerciseKey, fallbackName) => {
@@ -528,7 +550,7 @@ export function useT() {
 
 // Module-level t() for non-React code (canvas overlays, utilities).
 // Reads directly from localStorage so it stays in sync.
-export function tModule(key) {
+export function tModule(key, params) {
   let lang = 'en';
   try {
     const saved = localStorage.getItem('wv_lang');
@@ -536,5 +558,12 @@ export function tModule(key) {
   } catch (_) {}
   const entry = translations[key];
   if (!entry) return key;
-  return entry[lang] || entry.en || key;
+  let str = entry[lang] || entry.en || key;
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (k === 'key') continue;
+      str = str.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), v ?? '');
+    }
+  }
+  return str;
 }

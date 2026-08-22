@@ -274,6 +274,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       const w = hdCanvas.width;
       const h = hdCanvas.height;
       hdCtx.drawImage(video, 0, 0, w, h);
+      drawOverlay(hdCtx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
       setExportProgress(video.duration > 0 ? Math.round((video.currentTime / video.duration) * 100) : 0);
       hdRafRef.current = requestAnimationFrame(drawHDFrame);
     };

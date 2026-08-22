@@ -5,6 +5,14 @@
  * Card dimensions: 1080x1350 (Instagram feed 4:5 ratio).
  */
 
+import { tModule } from './LanguageContext';
+
+function resolveText(item) {
+  if (typeof item === 'string') return item;
+  if (item && item.key) return tModule(item.key, item);
+  return String(item);
+}
+
 const W = 1080;
 const H = 1350;
 const PAD = 60;
@@ -239,7 +247,7 @@ export async function generateShareCard(result, videoEl) {
       ctx.fillStyle = ACCENT;
       ctx.font = '26px -apple-system, system-ui, sans-serif';
       const maxW = W - PAD * 2 - 20;
-      wrapText(ctx, `> ${h}`, PAD + 10, y, maxW, 36);
+      wrapText(ctx, `> ${resolveText(h)}`, PAD + 10, y, maxW, 36);
       y += 44;
     });
     y += 10;
