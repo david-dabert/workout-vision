@@ -38,6 +38,9 @@ const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest
 
 // ─── Core: single model instance with IndexedDB cache ───
 
+// Progress callback set by loadModelWithRetry, read by fetchModelBuffer
+let _downloadProgressCb = null;
+
 async function fetchModelBuffer() {
   // Try IndexedDB cache first (instant on repeat visits, works offline)
   try {
@@ -48,14 +51,47 @@ async function fetchModelBuffer() {
     }
   } catch (_) {}
 
-  // Fetch from CDN and cache for next time
+  // Fetch from CDN with progressive download reporting
   const response = await fetch(MODEL_URL);
   if (!response.ok) throw new Error(`Model fetch failed: ${response.status}`);
-  const buffer = await response.arrayBuffer();
 
-  // Cache in background (don't await — don't block model init)
+  const contentLength = parseInt(response.headers.get('Content-Length') || '0', 10);
+
+  // If streaming body is available and content-length known, use progressive download
+  if (response.body && contentLength > 0) {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let received = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (_downloadProgressCb) {
+        const percent = Math.round((received / contentLength) * 100);
+        _downloadProgressCb(percent);
+      }
+    }
+
+    // Assemble into single ArrayBuffer
+    const buffer = new ArrayBuffer(received);
+    const view = new Uint8Array(buffer);
+    let offset = 0;
+    for (const chunk of chunks) {
+      view.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
+    console.log('[PoseAnalysis] Model fetched from CDN (progressive) and cached');
+    return buffer;
+  }
+
+  // Fallback: no Content-Length or no streaming body (older browsers)
+  const buffer = await response.arrayBuffer();
   modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
-  console.log('[PoseAnalysis] Model fetched from CDN and cached');
+  console.log('[PoseAnalysis] Model fetched from CDN (fallback) and cached');
   return buffer;
 }
 
@@ -122,11 +158,21 @@ export function preloadModel() {
 export async function loadModelWithRetry(onProgress, attempt = 1) {
   const MAX_ATTEMPTS = 3;
   onProgress?.(10 + (attempt - 1) * 30, `Loading AI engine... Attempt ${attempt}/${MAX_ATTEMPTS}`);
+
+  // Wire progressive download progress into the onProgress callback
+  _downloadProgressCb = (percent) => {
+    // Map download progress (0-100%) into the 10-85 range of the overall progress bar
+    const mapped = 10 + Math.round(percent * 0.75);
+    onProgress?.(mapped, `Downloading model: ${percent}%`);
+  };
+
   try {
     const landmarker = await getPoseLandmarker();
+    _downloadProgressCb = null;
     onProgress?.(100, 'AI Engine Ready');
     return landmarker;
   } catch (err) {
+    _downloadProgressCb = null;
     // Reset so next attempt can try fresh
     modelLoadPromise = null;
     poseLandmarker = null;

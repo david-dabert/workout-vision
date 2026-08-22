@@ -7,16 +7,17 @@ import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
-import { useT } from '../lib/LanguageContext';
+import { useT, tModule } from '../lib/LanguageContext';
 
 const TARGET_FPS = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 15 : 30;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const REST_PRESETS = [30, 60, 90, 120, 180];
 
-// Voice coaching via Web Speech API
-function speak(text) {
+// Voice coaching via Web Speech API — uses session-locked language
+function speak(text, lang) {
   if (!('speechSynthesis' in window)) return;
   const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
   u.rate = 1.1;
   u.pitch = 0.9;
   u.volume = 0.8;
@@ -24,7 +25,7 @@ function speak(text) {
 }
 
 export default function LiveCamera({ onClose }) {
-  const { t, tExercise } = useT();
+  const { t, tExercise, lang } = useT();
   const { profile: userProfile } = useProfile();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -37,6 +38,8 @@ export default function LiveCamera({ onClose }) {
   const startTimeRef = useRef(null);
   const lastFrameTimeRef = useRef(0);
   const lastVoiceCueRef = useRef(0);
+  // Lock language at session mount — prevents bilingual voice cues mid-workout
+  const sessionLangRef = useRef(lang);
 
   const [status, setStatus] = useState('loading');
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -247,14 +250,15 @@ export default function LiveCamera({ onClose }) {
             repCompleteSound();
             const latest = state.repHistory[state.repHistory.length - 1];
             setRepBars(prev => [...prev, latest ? latest.score : 80]);
-            if (voiceCoach) speak(`${state.reps}`);
+            if (voiceCoach) speak(`${state.reps}`, sessionLangRef.current);
           }
 
           // Voice coaching: announce form issues (throttled to once per 5s)
           if (voiceCoach && state.formFeedback && now - lastVoiceCueRef.current > 5000) {
             const issue = state.formFeedback.find(f => !f.passed);
             if (issue) {
-              speak(issue.text);
+              const txt = issue.key ? tModule(issue.key, issue) : issue.text;
+              speak(txt, sessionLangRef.current);
               lastVoiceCueRef.current = now;
             }
           }
@@ -305,7 +309,7 @@ export default function LiveCamera({ onClose }) {
     if (restIntervalRef.current) clearInterval(restIntervalRef.current);
     setResting(true);
     setRestTimer(restDuration);
-    if (voiceCoach) speak(`Rest ${restDuration} seconds`);
+    if (voiceCoach) speak(tModule('voice_rest', { seconds: restDuration }), sessionLangRef.current);
     restIntervalRef.current = setInterval(() => {
       setRestTimer(prev => {
         if (prev <= 1) {
@@ -313,10 +317,10 @@ export default function LiveCamera({ onClose }) {
           restIntervalRef.current = null;
           setResting(false);
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          speak('Time. Next set.');
+          speak(tModule('voice_next_set'), sessionLangRef.current);
           return 0;
         }
-        if (prev === 4) speak('3, 2, 1');
+        if (prev === 4) speak('3, 2, 1', sessionLangRef.current);
         return prev - 1;
       });
     }, 1000);
@@ -369,7 +373,7 @@ export default function LiveCamera({ onClose }) {
         await saveWorkout(workout);
         logEvent('session_complete', { exercise: savedExercise, reps, source: 'live' });
         if (voiceCoach) {
-          speak(`${reps} reps. Form score ${avgScore}. ${cal} calories burned.`);
+          speak(tModule('voice_set_complete', { reps, score: avgScore, cal }), sessionLangRef.current);
         }
       } catch (err) {
         console.error('Failed to save workout:', err);

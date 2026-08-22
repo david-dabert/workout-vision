@@ -175,6 +175,12 @@ const translations = {
   'exit_session': { en: 'Exit session?', fr: 'Quitter la session ?' },
   'superset_other': { en: 'Superset / Other', fr: 'Superset / Autre' },
 
+  // ─── Voice coaching (spoken via TTS, session-locked language) ───
+  'voice_rest': { en: 'Rest {{seconds}} seconds', fr: 'Repos {{seconds}} secondes' },
+  'voice_next_set': { en: 'Time. Next set.', fr: 'Temps écoulé. Série suivante.' },
+  'voice_set_complete': { en: '{{reps}} reps. Form score {{score}}. {{cal}} calories burned.', fr: '{{reps}} reps. Score {{score}}. {{cal}} calories brûlées.' },
+  'model_download_progress': { en: 'Downloading model: {{percent}}%', fr: 'Téléchargement : {{percent}}%' },
+
   // ─── Profile ───
   'your_measurements': { en: 'Your measurements', fr: 'Vos mensurations' },
   'name': { en: 'Name', fr: 'Nom' },

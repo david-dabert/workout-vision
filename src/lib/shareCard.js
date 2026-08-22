@@ -17,12 +17,14 @@ const W = 1080;
 const H = 1350;
 const PAD = 60;
 const ACCENT = '#00FF88';
-const BG = '#0D0D0F';
-const CARD_BG = '#1A1A1E';
-const TEXT = '#FFFFFF';
-const MUTED = '#8A8A9A';
-const RED = '#FF3355';
-const YELLOW = '#FFD93D';
+const ACCENT2 = '#00D4FF';
+const BG = '#06060A';
+const CARD_BG = 'rgba(255,255,255,0.04)';
+const CARD_BORDER = 'rgba(255,255,255,0.06)';
+const TEXT = '#E8E8EF';
+const MUTED = '#6B6B82';
+const RED = '#FF3B5C';
+const YELLOW = '#FFB836';
 
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
@@ -72,8 +74,20 @@ export async function generateShareCard(result, videoEl) {
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Background
+  // Background — premium gradient mesh
   ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+  // Subtle radial accent glow top-left
+  const glow1 = ctx.createRadialGradient(W * 0.2, H * 0.15, 0, W * 0.2, H * 0.15, W * 0.5);
+  glow1.addColorStop(0, 'rgba(0,255,136,0.04)');
+  glow1.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow1;
+  ctx.fillRect(0, 0, W, H);
+  // Subtle radial accent glow bottom-right
+  const glow2 = ctx.createRadialGradient(W * 0.8, H * 0.85, 0, W * 0.8, H * 0.85, W * 0.4);
+  glow2.addColorStop(0, 'rgba(0,212,255,0.03)');
+  glow2.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow2;
   ctx.fillRect(0, 0, W, H);
 
   // Video thumbnail (top section)
@@ -147,11 +161,15 @@ export async function generateShareCard(result, videoEl) {
     stats.push({ value: `${Math.round(result.bioAnalysis.asymmetry.score)}%`, label: 'SYMMETRY' });
   }
 
-  // Stats card
+  // Stats card — glass effect with border
   const statsCardH = 160;
   roundRect(ctx, PAD, y, W - PAD * 2, statsCardH, 20);
-  ctx.fillStyle = CARD_BG;
+  ctx.fillStyle = 'rgba(255,255,255,0.035)';
   ctx.fill();
+  roundRect(ctx, PAD, y, W - PAD * 2, statsCardH, 20);
+  ctx.strokeStyle = CARD_BORDER;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 
   const statW = (W - PAD * 2) / stats.length;
   stats.forEach((s, i) => {
@@ -253,15 +271,24 @@ export async function generateShareCard(result, videoEl) {
     y += 10;
   }
 
-  // Branding footer
-  const footerY = H - 80;
+  // Branding footer — gradient text effect via overlay
+  const footerY = H - 90;
+  // Accent gradient line separator
+  const sepGrad = ctx.createLinearGradient(PAD * 3, 0, W - PAD * 3, 0);
+  sepGrad.addColorStop(0, 'transparent');
+  sepGrad.addColorStop(0.2, 'rgba(0,255,136,0.3)');
+  sepGrad.addColorStop(0.8, 'rgba(0,212,255,0.3)');
+  sepGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = sepGrad;
+  ctx.fillRect(PAD * 3, footerY - 20, W - PAD * 6, 1.5);
+  // Brand name
   ctx.fillStyle = ACCENT;
-  ctx.font = 'bold 36px -apple-system, system-ui, sans-serif';
+  ctx.font = '800 38px -apple-system, system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('WorkoutVision', W / 2, footerY);
+  ctx.fillText('WorkoutVision', W / 2, footerY + 10);
   ctx.fillStyle = MUTED;
-  ctx.font = '22px -apple-system, system-ui, sans-serif';
-  ctx.fillText('AI-Powered Form Analysis', W / 2, footerY + 42);
+  ctx.font = '500 22px -apple-system, system-ui, sans-serif';
+  ctx.fillText('AI-Powered Form Analysis', W / 2, footerY + 52);
 
   return canvas.toDataURL('image/png');
 }
