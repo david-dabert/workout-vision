@@ -14,12 +14,15 @@ const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const REST_PRESETS = [30, 60, 90, 120, 180];
 
 // Voice coaching via Web Speech API — uses session-locked language
+const prefersReducedMotion = typeof window !== 'undefined'
+  && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function speak(text, lang) {
   if (!('speechSynthesis' in window)) return;
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang === 'fr' ? 'fr-FR' : 'en-US';
-  u.rate = 1.1;
-  u.pitch = 0.9;
+  u.rate = prefersReducedMotion ? 0.9 : 1.1;
+  u.pitch = prefersReducedMotion ? 1.0 : 0.9;
   u.volume = 0.8;
   speechSynthesis.speak(u);
 }

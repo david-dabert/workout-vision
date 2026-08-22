@@ -346,3 +346,301 @@ export async function shareCard(result, videoEl) {
   // Fallback: download
   downloadShareCard(result, videoEl);
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   ANIMATED SHARE CARD — 3.5s MP4 Reel for Instagram/TikTok virality
+   Spring-animated bars, grade badge drop, staggered reveals.
+   ══════════════════════════════════════════════════════════════════════ */
+
+function springEase(t) {
+  // Attempt spring curve: overshoot then settle
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  const c4 = (2 * Math.PI) / 3;
+  return 1 + Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) * -1;
+}
+
+function easeOut(t) {
+  return 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function drawAnimatedBackground(ctx, w, h) {
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, w, h);
+  const glow1 = ctx.createRadialGradient(w * 0.2, h * 0.15, 0, w * 0.2, h * 0.15, w * 0.5);
+  glow1.addColorStop(0, 'rgba(0,255,136,0.04)');
+  glow1.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow1;
+  ctx.fillRect(0, 0, w, h);
+  const glow2 = ctx.createRadialGradient(w * 0.8, h * 0.85, 0, w * 0.8, h * 0.85, w * 0.4);
+  glow2.addColorStop(0, 'rgba(0,212,255,0.03)');
+  glow2.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow2;
+  ctx.fillRect(0, 0, w, h);
+}
+
+/**
+ * Generate an animated share card as a WebM video blob.
+ * 3.5s at 30fps with spring-animated reveals.
+ * @param {object} result - analysis result
+ * @param {function} [onProgress] - (0-100) progress callback
+ * @returns {Promise<Blob>} WebM video blob
+ */
+export async function generateAnimatedShareCard(result, onProgress) {
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const FPS = 30;
+  const DURATION = 3.5;
+  const TOTAL_FRAMES = Math.round(DURATION * FPS);
+
+  const stream = canvas.captureStream(FPS);
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : 'video/webm';
+  const recorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 4_000_000,
+  });
+
+  const chunks = [];
+  recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+  const grade = gradeFromScore(result.formScore);
+  const gc = gradeColor(result.formScore);
+  const repHistory = result.repHistory || [];
+  const stats = [
+    { value: `${result.reps}`, label: 'REPS' },
+    { value: `${result.formScore}`, label: 'FORM' },
+  ];
+  if (result.bioAnalysis?.movementQuality != null) {
+    stats.push({ value: `${Math.round(result.bioAnalysis.movementQuality)}`, label: 'QUALITY' });
+  }
+
+  recorder.start();
+
+  for (let i = 0; i < TOTAL_FRAMES; i++) {
+    const t = i / FPS; // seconds elapsed
+
+    // Clear and draw background
+    drawAnimatedBackground(ctx, W, H);
+
+    // ─── Exercise name (appears at 0.2s) ───
+    const nameProgress = easeOut((t - 0.2) / 0.4);
+    if (nameProgress > 0) {
+      const nameOffset = lerp(30, 0, nameProgress);
+      ctx.globalAlpha = nameProgress;
+      ctx.fillStyle = TEXT;
+      ctx.font = 'bold 56px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(result.exerciseName, PAD, 80 + nameOffset);
+      // Duration
+      ctx.fillStyle = MUTED;
+      ctx.font = '28px -apple-system, system-ui, sans-serif';
+      ctx.fillText(formatTime(result.duration), PAD, 148 + nameOffset);
+      ctx.globalAlpha = 1;
+    }
+
+    // ─── Rep quality bars (staggered from 0.5s) ───
+    if (repHistory.length > 0 && t > 0.5) {
+      const barsY = 220;
+      const barsH = 280;
+      // Card background
+      const cardAlpha = easeOut((t - 0.45) / 0.3);
+      ctx.globalAlpha = cardAlpha;
+      roundRect(ctx, PAD, barsY, W - PAD * 2, barsH, 20);
+      ctx.fillStyle = 'rgba(255,255,255,0.035)';
+      ctx.fill();
+      roundRect(ctx, PAD, barsY, W - PAD * 2, barsH, 20);
+      ctx.strokeStyle = CARD_BORDER;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Label
+      if (t > 0.55) {
+        const labelAlpha = easeOut((t - 0.55) / 0.3);
+        ctx.globalAlpha = labelAlpha;
+        ctx.fillStyle = TEXT;
+        ctx.font = 'bold 28px -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Rep Quality', PAD + 24, barsY + 40);
+        ctx.globalAlpha = 1;
+      }
+
+      // Bars
+      const barPad = 24;
+      const barAreaW = W - PAD * 2 - barPad * 2;
+      const barAreaH = barsH - 80;
+      const barTop = barsY + 60;
+      const gap = 8;
+      const barW = Math.max(12, (barAreaW - gap * (repHistory.length - 1)) / repHistory.length);
+
+      repHistory.forEach((r, idx) => {
+        const barStart = 0.6 + idx * 0.08;
+        const barProgress = springEase((t - barStart) / 0.5);
+        if (barProgress <= 0) return;
+
+        const score = r.score || 0;
+        const maxBarH = (score / 100) * barAreaH;
+        const barH = Math.max(4, maxBarH * barProgress);
+        const bx = PAD + barPad + idx * (barW + gap);
+        const by = barTop + barAreaH - barH;
+
+        roundRect(ctx, bx, by, barW, barH, 4);
+        ctx.fillStyle = score >= 80 ? ACCENT : score >= 50 ? YELLOW : RED;
+        ctx.fill();
+
+        // Rep number
+        if (barProgress > 0.5) {
+          ctx.globalAlpha = Math.min(1, (barProgress - 0.5) * 2);
+          ctx.fillStyle = MUTED;
+          ctx.font = '20px -apple-system, system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${idx + 1}`, bx + barW / 2, barTop + barAreaH + 24);
+          ctx.globalAlpha = 1;
+        }
+      });
+    }
+
+    // ─── Grade badge (appears at 1.4s with spring overshoot) ───
+    const badgeStart = 1.4;
+    const badgeProgress = springEase((t - badgeStart) / 0.45);
+    if (badgeProgress > 0) {
+      const badgeSize = 120;
+      const bx = W - PAD - badgeSize;
+      const by = 70;
+      const scale = badgeProgress;
+      ctx.save();
+      ctx.translate(bx + badgeSize / 2, by + badgeSize / 2);
+      ctx.scale(scale, scale);
+      roundRect(ctx, -badgeSize / 2, -badgeSize / 2, badgeSize, badgeSize, 24);
+      ctx.fillStyle = gc;
+      ctx.fill();
+      // Shadow glow
+      ctx.shadowColor = gc;
+      ctx.shadowBlur = 30 * badgeProgress;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = BG;
+      ctx.font = 'bold 52px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(grade, 0, 0);
+      ctx.restore();
+    }
+
+    // ─── Stats row (appears at 2.0s) ───
+    const statsProgress = easeOut((t - 2.0) / 0.4);
+    if (statsProgress > 0) {
+      const statsY = 560;
+      const statsCardH = 140;
+      ctx.globalAlpha = statsProgress;
+      roundRect(ctx, PAD, statsY, W - PAD * 2, statsCardH, 20);
+      ctx.fillStyle = 'rgba(255,255,255,0.035)';
+      ctx.fill();
+      roundRect(ctx, PAD, statsY, W - PAD * 2, statsCardH, 20);
+      ctx.strokeStyle = CARD_BORDER;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      const statW = (W - PAD * 2) / stats.length;
+      stats.forEach((s, i) => {
+        const cx = PAD + statW * i + statW / 2;
+        ctx.fillStyle = ACCENT;
+        ctx.font = 'bold 52px -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(s.value, cx, statsY + 25);
+        ctx.fillStyle = MUTED;
+        ctx.font = '600 22px -apple-system, system-ui, sans-serif';
+        ctx.fillText(s.label, cx, statsY + 90);
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    // ─── Footer (appears at 2.5s) ───
+    const footerProgress = easeOut((t - 2.5) / 0.4);
+    if (footerProgress > 0) {
+      const footerY = H - 100;
+      const footerOffset = lerp(20, 0, footerProgress);
+      ctx.globalAlpha = footerProgress;
+      // Gradient separator
+      const sepGrad = ctx.createLinearGradient(PAD * 3, 0, W - PAD * 3, 0);
+      sepGrad.addColorStop(0, 'transparent');
+      sepGrad.addColorStop(0.2, 'rgba(0,255,136,0.3)');
+      sepGrad.addColorStop(0.8, 'rgba(0,212,255,0.3)');
+      sepGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = sepGrad;
+      ctx.fillRect(PAD * 3, footerY - 30 + footerOffset, W - PAD * 6, 1.5);
+      // Brand
+      ctx.fillStyle = ACCENT;
+      ctx.font = '800 38px -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('WorkoutVision', W / 2, footerY + footerOffset);
+      ctx.fillStyle = MUTED;
+      ctx.font = '500 22px -apple-system, system-ui, sans-serif';
+      ctx.fillText('AI-Powered Form Analysis', W / 2, footerY + 42 + footerOffset);
+      ctx.globalAlpha = 1;
+    }
+
+    // Wait for next frame
+    await new Promise(r => requestAnimationFrame(r));
+    if (onProgress) onProgress(Math.round((i / TOTAL_FRAMES) * 100));
+  }
+
+  recorder.stop();
+
+  return new Promise((resolve) => {
+    recorder.onstop = () => {
+      resolve(new Blob(chunks, { type: mimeType }));
+    };
+  });
+}
+
+/**
+ * Share animated card as a Reel/video.
+ * Falls back to static image if MediaRecorder is unavailable.
+ */
+export async function shareAnimatedCard(result, onProgress) {
+  // Check MediaRecorder + captureStream support
+  if (typeof MediaRecorder === 'undefined' || !HTMLCanvasElement.prototype.captureStream) {
+    return shareCard(result, null);
+  }
+
+  const blob = await generateAnimatedShareCard(result, onProgress);
+  const file = new File(
+    [blob],
+    `workout-${result.exerciseName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.webm`,
+    { type: blob.type }
+  );
+
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: `${result.exerciseName} - ${gradeFromScore(result.formScore)}`,
+        text: `${result.reps} reps, Form: ${result.formScore}/100`,
+      });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  // Fallback: download the video
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = file.name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}

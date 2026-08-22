@@ -30,6 +30,18 @@
           });
         }
       })();
+      // Glass effect heuristic: disable backdrop-filter on weak devices
+      // before first paint to prevent compositing jank.
+      (function() {
+        var ua = navigator.userAgent;
+        var cores = navigator.hardwareConcurrency || 4;
+        var memory = navigator.deviceMemory || 4;
+        var isWeakAndroid = /Android/.test(ua) && cores <= 4 && memory <= 3;
+        var isOldIOS = /iPhone/.test(ua) && !/iPhone1[3-9]|iPhone2/.test(ua) && /OS (9|10|11|12|13|14)_/.test(ua);
+        if (isWeakAndroid || isOldIOS) {
+          document.documentElement.classList.add('no-glass');
+        }
+      })();
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>

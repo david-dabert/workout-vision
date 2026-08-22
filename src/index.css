@@ -2547,3 +2547,64 @@ button, a, .nav-card, .card, .upload-zone {
     bottom: max(12px, env(safe-area-inset-bottom));
   }
 }
+
+
+/* ══════════════════════════════════════════
+   NO-GLASS FALLBACK (weak Android / old iOS)
+   Applied via .no-glass on <html> set in index.html before first paint.
+   ══════════════════════════════════════════ */
+
+.no-glass .card,
+.no-glass .tab-bar,
+.no-glass .cam-reps,
+.no-glass .cam-btn,
+.no-glass .cam-exercise-label,
+.no-glass .btn-ghost,
+.no-glass .btn-icon {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255,255,255,0.04);
+}
+
+.no-glass .tab-bar {
+  background: rgba(12,12,18,0.95);
+}
+
+.no-glass .cam-reps {
+  background: rgba(6,6,10,0.8);
+}
+
+/* Kill ambient mesh gradient — pure GPU compositing work */
+.no-glass body::before {
+  display: none;
+}
+
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION — Accessibility compliance
+   EU Accessibility Act 2025. Vestibular disorder safe.
+   ══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton {
+    background: var(--surface) !important;
+    animation: none !important;
+  }
+
+  body::before {
+    display: none;
+  }
+
+  .tab.active::before {
+    animation: none !important;
+  }
+}
