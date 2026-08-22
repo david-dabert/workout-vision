@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAllWorkouts, getFoodLog } from '../lib/storage';
 import { getDailyTargets, estimateDailyBurn } from '../lib/nutrition';
 import { analyzeProgression } from '../lib/progression';
-import { t, onLangChange } from '../lib/i18n';
+import { t, getLang, setLang, onLangChange } from '../lib/i18n';
 import { Flame, Dumbbell, Target, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard({ profile, modelStatus, onNavigate }) {
@@ -95,7 +95,21 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
   return (
     <div className="home">
       <div className="home-top">
-        <h1 className="logo">Workout<span>Vision</span></h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 className="logo">Workout<span>Vision</span></h1>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button
+              className={`btn btn-sm ${getLang() === 'en' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setLang('en')}
+              style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+            >EN</button>
+            <button
+              className={`btn btn-sm ${getLang() === 'fr' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setLang('fr')}
+              style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+            >FR</button>
+          </div>
+        </div>
         <p className="tagline">{t('tagline')}</p>
         <div className="model-status">
           <span className={`dot ${statusDot}`} />

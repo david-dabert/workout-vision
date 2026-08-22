@@ -207,7 +207,7 @@ export default function WorkoutHistory({ onClose }) {
                     {workloadRatio.ratio?.toFixed(2)}
                   </div>
                   <span className="text-xs text-muted" style={{ textTransform: 'capitalize' }}>
-                    {workloadRatio.zone?.replace(/_/g, ' ') || 'Unknown'}
+                    {t(`zone_${workloadRatio.zone}`) || t('unknown')}
                   </span>
                 </div>
               </div>

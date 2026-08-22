@@ -3,11 +3,10 @@ import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
 import { t, tExercise, onLangChange } from '../lib/i18n';
 
-const categoryLabels = {
-  compound: 'Compound',
-  isolation: 'Isolation',
-  bodyweight: 'Bodyweight',
-};
+function getCategoryLabel(key) {
+  const map = { compound: 'compound', isolation: 'isolation', bodyweight: 'bodyweight' };
+  return map[key] ? t(map[key]) : key;
+}
 
 const categoryOrder = ['compound', 'bodyweight', 'isolation'];
 const sortedCategories = categoryOrder.filter(c => EXERCISE_GROUPS[c]);
@@ -216,7 +215,7 @@ export default function ManualLog({ onClose }) {
                     color: 'var(--muted)',
                     background: 'var(--card)',
                   }}>
-                    {categoryLabels[cat] || cat}
+                    {getCategoryLabel(cat)}
                   </div>
                   {exercises.map(ex => (
                     <button

@@ -404,6 +404,24 @@ const translations = {
   'english': { en: 'English', fr: 'Anglais' },
   'french': { en: 'French', fr: 'Français' },
 
+  // ─── Profile baselines ───
+  'hr_zones_title': { en: 'Heart rate zones', fr: 'Zones de fréquence cardiaque' },
+  'daily_energy': { en: 'Daily energy needs', fr: 'Besoins énergétiques journaliers' },
+  'strength_baselines': { en: 'Strength baselines (untrained est.)', fr: 'Bases de force (est. débutant)' },
+  'est_bf': { en: 'Est. BF', fr: 'MG est.' },
+  'max_hr_short': { en: 'Max HR', fr: 'FC max' },
+  'upload_medical_desc': { en: 'Upload medical files. Everything stays on your device.', fr: 'Importez vos documents médicaux. Tout reste sur votre appareil.' },
+  'pdf_images_docs': { en: 'PDF, images, documents', fr: 'PDF, images, documents' },
+  'no_records_yet': { en: 'No records uploaded yet.', fr: 'Aucun document importé.' },
+  'uploaded_on': { en: 'Uploaded', fr: 'Importé le' },
+
+  // ─── Training load zones ───
+  'zone_undertraining': { en: 'Undertraining', fr: 'Sous-entraînement' },
+  'zone_optimal': { en: 'Optimal', fr: 'Optimal' },
+  'zone_caution': { en: 'Caution', fr: 'Attention' },
+  'zone_danger': { en: 'Danger', fr: 'Danger' },
+  'unknown': { en: 'Unknown', fr: 'Inconnu' },
+
   // ─── Exercise names ───
   'ex.squat': { en: 'Squat', fr: 'Squat' },
   'ex.deadlift': { en: 'Deadlift', fr: 'Soulevé de terre' },

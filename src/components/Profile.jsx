@@ -219,24 +219,24 @@ export default function Profile({ onClose }) {
           <div className="baselines-grid">
             <div className="baseline-item">
               <span className="baseline-value">{baselines.bmi}</span>
-              <span className="baseline-label">BMI</span>
+              <span className="baseline-label">{t('bmi')}</span>
             </div>
             <div className="baseline-item">
               <span className="baseline-value">{baselines.bmr}</span>
-              <span className="baseline-label">BMR</span>
+              <span className="baseline-label">{t('bmr')}</span>
             </div>
             <div className="baseline-item">
               <span className="baseline-value">{baselines.estimatedBF}%</span>
-              <span className="baseline-label">Est. BF</span>
+              <span className="baseline-label">{t('est_bf')}</span>
             </div>
             <div className="baseline-item">
               <span className="baseline-value">{baselines.maxHR}</span>
-              <span className="baseline-label">Max HR</span>
+              <span className="baseline-label">{t('max_hr_short')}</span>
             </div>
           </div>
 
           {/* Heart rate zones */}
-          <h4>Heart rate zones</h4>
+          <h4>{t('hr_zones_title')}</h4>
           <div className="zones">
             {Object.entries(baselines.zones).map(([name, range]) => (
               <div key={name} className={`zone zone-${name}`}>
@@ -247,7 +247,7 @@ export default function Profile({ onClose }) {
           </div>
 
           {/* TDEE */}
-          <h4>Daily energy needs</h4>
+          <h4>{t('daily_energy')}</h4>
           <div className="baselines-grid">
             {Object.entries(baselines.tdeeMultipliers).map(([level, cal]) => (
               <div key={level} className="baseline-item">
@@ -260,7 +260,7 @@ export default function Profile({ onClose }) {
           {/* Strength baselines */}
           {baselines.strengthBaselines && (
             <>
-              <h4>Strength baselines (untrained est.)</h4>
+              <h4>{t('strength_baselines')}</h4>
               <div className="baselines-grid">
                 {Object.entries(baselines.strengthBaselines)
                   .filter(([k]) => k !== 'note')
@@ -281,7 +281,7 @@ export default function Profile({ onClose }) {
       <div className="card">
         <h3>{t('medical_records')}</h3>
         <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
-          Upload medical files. Everything stays on your device.
+          {t('upload_medical_desc')}
         </p>
 
         <div
@@ -292,7 +292,7 @@ export default function Profile({ onClose }) {
           <div className="upload-content">
             <div className="upload-icon">+</div>
             <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>{t('upload_file')}</p>
-            <p className="text-xs text-muted">PDF, images, documents</p>
+            <p className="text-xs text-muted">{t('pdf_images_docs')}</p>
           </div>
           <input
             ref={fileInputRef}
@@ -318,13 +318,13 @@ export default function Profile({ onClose }) {
               <img src={r.data} alt={r.name} className="record-preview" />
             )}
             <span className="text-xs text-muted">
-              Uploaded {new Date(r.uploadedAt).toLocaleDateString()}
+              {t('uploaded_on')} {new Date(r.uploadedAt).toLocaleDateString()}
             </span>
           </div>
         ))}
 
         {records.length === 0 && (
-          <p className="text-sm text-muted">No records uploaded yet.</p>
+          <p className="text-sm text-muted">{t('no_records_yet')}</p>
         )}
       </div>
     </div>
