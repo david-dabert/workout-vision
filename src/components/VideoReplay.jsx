@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { drawPose } from '../lib/poseAnalysis';
+import { t, tExercise } from '../lib/i18n';
 
 /**
  * Binary search for the closest frame to a given timestamp.
@@ -294,13 +295,15 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
   return (
     <div className="replay-page">
       <div className="replay-header">
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>&larr; Back</button>
-        <h3>AI Overlay</h3>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>&larr; {t('back')}</button>
+        <h3>{t('ai_overlay')}</h3>
         <div style={{ width: 60 }} />
       </div>
 
       <div className="replay-view">
-        <video ref={videoRef} style={{ display: 'none' }} muted playsInline preload="auto" />
+        {/* visibility:hidden instead of display:none — iOS Safari refuses
+            to decode frames from display:none videos, causing black canvas */}
+        <video ref={videoRef} style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} muted playsInline preload="auto" />
         <canvas
           ref={canvasRef}
           className="replay-canvas"
@@ -321,11 +324,11 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
           <>
             {supportsVideoExport ? (
               <button className="btn btn-primary replay-btn" onClick={exportHD}>
-                Download HD Video
+                {t('download_hd')}
               </button>
             ) : (
               <button className="btn btn-primary replay-btn" onClick={saveScreenshot}>
-                Save HD Screenshot
+                {t('save_screenshot')}
               </button>
             )}
           </>
@@ -344,7 +347,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
               </span>
             </div>
             <button className="btn btn-ghost replay-btn" onClick={cancelExport}>
-              Cancel Export
+              {t('cancel_export')}
             </button>
           </div>
         )}

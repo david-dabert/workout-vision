@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
 import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { shareCard } from '../lib/shareCard';
+import { t, tExercise, getLang, setLang, onLangChange } from '../lib/i18n';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
@@ -57,13 +58,21 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
   const [replayResult, setReplayResult] = useState(null);
+  const [lang, setLangState] = useState(getLang());
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const abortRef = useRef(false);
 
   useEffect(() => {
-    return () => {};
+    const unsub = onLangChange((l) => setLangState(l));
+    return () => {
+      unsub();
+      // Abort any in-progress analysis
+      abortRef.current = true;
+      // Free WebGL contexts to prevent iOS Safari crash on re-mount
+      disposeAllLandmarkers();
+    };
   }, []);
 
   const handleFiles = (e) => {
@@ -72,7 +81,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const items = [];
     for (const f of files) {
       if (f.size > MAX_FILE_SIZE) {
-        alert(`${f.name} is too large (${(f.size / 1024 / 1024).toFixed(0)} MB). Maximum is 500 MB.`);
+        alert(`${f.name} (${(f.size / 1024 / 1024).toFixed(0)} MB) ${t('too_large')}`);
         continue;
       }
       items.push({
@@ -111,7 +120,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setAnalysisPhase('model');
     const landmarker = await getImageLandmarker();
     if (!landmarker) {
-      alert('AI model failed to load. Check your connection.');
+      alert(t('model_failed'));
       return null;
     }
 
@@ -138,7 +147,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     if (!loaded) {
       safeRevoke();
-      alert('Video failed to load. Try a different file or shorter clip.');
+      alert(t('video_failed'));
       return null;
     }
 
@@ -177,6 +186,18 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     setAnalysisPhase('analyzing');
 
+    // Wait for the video frame to actually be decoded and ready to draw.
+    // iOS Safari fires 'seeked' BEFORE the frame is decoded, so drawing
+    // immediately produces a black canvas. Double-rAF ensures the compositor
+    // has the frame ready. Falls back to a 80ms delay if rAF is unreliable.
+    const waitForFrame = () => new Promise((resolve) => {
+      if (typeof requestAnimationFrame === 'undefined') {
+        setTimeout(resolve, 80);
+        return;
+      }
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+
     // Process one frame at a time via seeking
     const processFrame = (frameIdx) => {
       return new Promise((res) => {
@@ -188,8 +209,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let settled = false;
         const settle = (cont) => { if (!settled) { settled = true; res(cont); } };
 
-        const onSeeked = () => {
+        const onSeeked = async () => {
           video.removeEventListener('seeked', onSeeked);
+
+          // iOS Safari fix: wait for the frame to actually render.
+          // Without this, 90%+ of seeks produce black canvas frames.
+          await waitForFrame();
 
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const result = detectPoseImage(landmarker, canvas);
@@ -202,9 +227,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             frames.push({ landmarks, timestamp: time, angles });
             repCounter.update(landmarks);
 
-            if (frameIdx % 3 === 0) {
-              replayFrames.push({ landmarks, timestamp: time });
-            }
+            // Store every frame for replay (not every 3rd) to improve overlay
+            replayFrames.push({ landmarks, timestamp: time });
           }
 
           const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
@@ -216,11 +240,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         };
 
         video.addEventListener('seeked', onSeeked);
-        // Per-seek 3-second timeout: skip this frame if seek hangs
+        // Per-seek 5-second timeout: skip this frame if seek hangs
         setTimeout(() => {
           video.removeEventListener('seeked', onSeeked);
           settle(true); // skip frame, continue to next
-        }, 3000);
+        }, 5000);
       });
     };
 
@@ -245,10 +269,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     if (frames.length === 0) {
       safeRevoke();
-      alert(
-        `Could not detect any poses in ${queueItem.name}.\n\n` +
-        `Try a different angle or better lighting, or use Live Training mode.`
-      );
+      alert(`${t('no_poses')} ${queueItem.name}.\n\n${t('try_different')}`);
       return null;
     }
 
@@ -382,17 +403,29 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Analyze Video</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        <h2>{t('analyze_video')}</h2>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <button
+            className="btn btn-ghost btn-sm"
+            style={{ fontSize: '0.7rem', padding: '4px 8px', opacity: lang === 'en' ? 1 : 0.5 }}
+            onClick={() => setLang('en')}
+          >EN</button>
+          <button
+            className="btn btn-ghost btn-sm"
+            style={{ fontSize: '0.7rem', padding: '4px 8px', opacity: lang === 'fr' ? 1 : 0.5 }}
+            onClick={() => setLang('fr')}
+          >FR</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
+        </div>
       </div>
 
       <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
         <div className="upload-content">
           <div className="upload-icon">+</div>
           <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>
-            Tap to select videos
+            {t('tap_to_select')}
           </p>
-          <p className="text-xs text-muted">MP4, MOV, WebM</p>
+          <p className="text-xs text-muted">{t('file_types')}</p>
         </div>
         <input
           ref={fileInputRef}
@@ -421,15 +454,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                     <span className="progress-text">{q.progress}%</span>
                   </div>
                 )}
-                {q.status === 'done' && <span className="queue-done">Done</span>}
+                {q.status === 'done' && <span className="queue-done">{t('done')}</span>}
                 {q.status === 'error' && (
                   <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
-                    Failed — try a different clip or use Live Training
+                    {t('failed_try_different')}
                   </span>
                 )}
                 {q.status === 'queued' && !analyzing && (
                   <button className="btn btn-ghost btn-sm" onClick={() => removeFromQueue(q.id)}>
-                    Remove
+                    {t('remove')}
                   </button>
                 )}
               </div>
@@ -456,24 +489,24 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               }}
               style={{ flex: 1, padding: 8, fontSize: '0.82rem' }}
             >
-              <option value="__auto__">Automatic</option>
-              <optgroup label="Compound">
+              <option value="__auto__">{t('automatic')}</option>
+              <optgroup label={t('compound')}>
                 {EXERCISE_GROUPS.compound.map(e => (
-                  <option key={e.key} value={e.key}>{e.name}</option>
+                  <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
                 ))}
               </optgroup>
-              <optgroup label="Isolation">
+              <optgroup label={t('isolation')}>
                 {EXERCISE_GROUPS.isolation.map(e => (
-                  <option key={e.key} value={e.key}>{e.name}</option>
+                  <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
                 ))}
               </optgroup>
-              <optgroup label="Bodyweight">
+              <optgroup label={t('bodyweight')}>
                 {EXERCISE_GROUPS.bodyweight.map(e => (
-                  <option key={e.key} value={e.key}>{e.name}</option>
+                  <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
                 ))}
               </optgroup>
-              <optgroup label="Other">
-                <option value="superset">Superset / Other</option>
+              <optgroup label={t('other')}>
+                <option value="superset">{t('ex.superset')}</option>
               </optgroup>
             </select>
             <input
@@ -488,7 +521,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               onClick={startAnalysis}
               disabled={!hasQueued}
             >
-              Analyze
+              {t('analyze')}
             </button>
           </>
         ) : (
@@ -496,16 +529,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             <div className="spinner-sm" />
             <span>
               {analysisPhase === 'model'
-                ? 'Loading AI engine...'
+                ? t('loading_ai')
                 : analysisPhase === 'loading'
-                ? `Loading ${currentFile}...`
+                ? `${t('loading_file')} ${currentFile}...`
                 : analysisPhase === 'analyzing'
-                ? `Analyzing ${currentFile}... ${progress}%`
-                : `Starting ${currentFile}...`}
+                ? `${t('analyzing_file')} ${currentFile}... ${progress}%`
+                : `${t('starting_file')} ${currentFile}...`}
             </span>
             {analysisPhase === 'model' && (
               <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4 }}>
-                Downloading pose detection model (~3 MB)
+                {t('downloading_model')}
               </span>
             )}
           </div>
@@ -550,19 +583,20 @@ function ResultCard({ result, onReplay }) {
 
   const grade = gradeFromScore(formScore);
   const cls = gradeClass(formScore);
+  const displayName = tExercise(result.exercise, exerciseName);
 
   return (
     <div className="card result-card" style={{ marginTop: 14 }}>
       <div className="result-header">
         <div>
-          <h3 style={{ marginBottom: 2 }}>{exerciseName}</h3>
+          <h3 style={{ marginBottom: 2 }}>{displayName}</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="text-xs text-muted">{fileName}</span>
             {result.autoDetected && (
               <span style={{
                 fontSize: '0.65rem', padding: '1px 6px', borderRadius: 4,
                 background: 'rgba(0,255,136,0.15)', color: 'var(--accent)', fontWeight: 600,
-              }}>Auto-detected</span>
+              }}>{t('auto_detected')}</span>
             )}
           </div>
         </div>
@@ -578,31 +612,31 @@ function ResultCard({ result, onReplay }) {
       <div className="result-stats">
         <div className="stat">
           <span className="stat-value">{reps}</span>
-          <span className="stat-label">Reps</span>
+          <span className="stat-label">{t('reps')}</span>
         </div>
         <div className="stat">
           <span className="stat-value">{formatTime(duration)}</span>
-          <span className="stat-label">Duration</span>
+          <span className="stat-label">{t('duration')}</span>
         </div>
         <div className="stat">
           <span className="stat-value">{formScore}</span>
-          <span className="stat-label">Form</span>
+          <span className="stat-label">{t('form')}</span>
         </div>
         {bioAnalysis?.movementQuality != null && (
           <div className="stat">
             <span className="stat-value">{Math.round(bioAnalysis.movementQuality)}</span>
-            <span className="stat-label">Quality</span>
+            <span className="stat-label">{t('quality')}</span>
           </div>
         )}
         <div className="stat">
           <span className="stat-value">{analysisTime}s</span>
-          <span className="stat-label">Analysis</span>
+          <span className="stat-label">{t('analysis')}</span>
         </div>
       </div>
 
       {bioAnalysis?.velocity?.perRep && bioAnalysis.velocity.perRep.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <h4>Velocity per rep</h4>
+          <h4>{t('velocity_per_rep')}</h4>
           <div className="rep-bars">
             {bioAnalysis.velocity.perRep.map((v, i) => {
               const max = Math.max(...bioAnalysis.velocity.perRep, 1);
@@ -631,19 +665,19 @@ function ResultCard({ result, onReplay }) {
 
       {bioAnalysis?.timeUnderTension?.perRep && bioAnalysis.timeUnderTension.perRep.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <h4>Time under tension</h4>
+          <h4>{t('time_under_tension')}</h4>
           <div className="result-stats" style={{ marginBottom: 6 }}>
             <div className="stat">
               <span className="stat-value">{bioAnalysis.timeUnderTension.eccentric?.toFixed(1)}s</span>
-              <span className="stat-label">Eccentric</span>
+              <span className="stat-label">{t('eccentric')}</span>
             </div>
             <div className="stat">
               <span className="stat-value">{bioAnalysis.timeUnderTension.concentric?.toFixed(1)}s</span>
-              <span className="stat-label">Concentric</span>
+              <span className="stat-label">{t('concentric')}</span>
             </div>
             <div className="stat">
               <span className="stat-value">{bioAnalysis.timeUnderTension.total?.toFixed(1)}s</span>
-              <span className="stat-label">Total</span>
+              <span className="stat-label">{t('total')}</span>
             </div>
           </div>
           <div className="rep-bars">
@@ -674,15 +708,15 @@ function ResultCard({ result, onReplay }) {
 
       {bioAnalysis?.rangeOfMotion && (
         <div style={{ marginTop: 14 }}>
-          <h4>Range of motion</h4>
+          <h4>{t('range_of_motion')}</h4>
           <div className="result-stats" style={{ marginBottom: 6 }}>
             <div className="stat">
               <span className="stat-value">{Math.round(bioAnalysis.rangeOfMotion.avgDegrees)}&deg;</span>
-              <span className="stat-label">Avg ROM</span>
+              <span className="stat-label">{t('avg_rom')}</span>
             </div>
             <div className="stat">
               <span className="stat-value">{Math.round(bioAnalysis.rangeOfMotion.consistency || 0)}%</span>
-              <span className="stat-label">Consistency</span>
+              <span className="stat-label">{t('consistency')}</span>
             </div>
           </div>
           {bioAnalysis.rangeOfMotion.perRep && bioAnalysis.rangeOfMotion.perRep.length > 0 && (
@@ -708,7 +742,7 @@ function ResultCard({ result, onReplay }) {
 
       {bioAnalysis?.asymmetry && (
         <div style={{ marginTop: 14 }}>
-          <h4>Asymmetry</h4>
+          <h4>{t('asymmetry')}</h4>
           <div className="result-stats">
             <div className="stat">
               <span className="stat-value">
@@ -716,7 +750,7 @@ function ResultCard({ result, onReplay }) {
                   {Math.round(bioAnalysis.asymmetry.score)}%
                 </span>
               </span>
-              <span className="stat-label">Imbalance</span>
+              <span className="stat-label">{t('imbalance')}</span>
             </div>
           </div>
           {bioAnalysis.asymmetry.details && typeof bioAnalysis.asymmetry.details === 'object' && (
@@ -733,16 +767,16 @@ function ResultCard({ result, onReplay }) {
 
       {bioAnalysis?.fatigue && (
         <div style={{ marginTop: 14 }}>
-          <h4>Fatigue</h4>
+          <h4>{t('fatigue')}</h4>
           <div className="result-stats" style={{ marginBottom: 6 }}>
             <div className="stat">
               <span className="stat-value">{Math.round(bioAnalysis.fatigue.index || 0)}%</span>
-              <span className="stat-label">Fatigue index</span>
+              <span className="stat-label">{t('fatigue_index')}</span>
             </div>
             {bioAnalysis.fatigue.velocityDropoff != null && (
               <div className="stat">
                 <span className="stat-value">{Math.round(bioAnalysis.fatigue.velocityDropoff)}%</span>
-                <span className="stat-label">Velocity dropoff</span>
+                <span className="stat-label">{t('velocity_dropoff')}</span>
               </div>
             )}
           </div>
@@ -784,7 +818,7 @@ function ResultCard({ result, onReplay }) {
         if (sorted.length === 0) return null;
         return (
           <div className="form-notes" style={{ marginTop: 14 }}>
-            <h4>Form notes</h4>
+            <h4>{t('form_notes')}</h4>
             {sorted.map(([issue, count]) => (
               <div key={issue} className="note-item">
                 {issue} ({count}/{repHistory.length} reps)
@@ -796,7 +830,7 @@ function ResultCard({ result, onReplay }) {
 
       {result.diagnostics && (
         <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
-          <strong style={{ color: 'var(--text)' }}>Engine</strong>
+          <strong style={{ color: 'var(--text)' }}>{t('engine')}</strong>
           <div>Range: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
           <div>Min ROM per rep: {result.diagnostics.minROM}&deg;</div>
           <div>Frames: {result.diagnostics.totalFrames} | Method: {result.diagnostics.method}</div>
@@ -805,7 +839,7 @@ function ResultCard({ result, onReplay }) {
 
       {report?.highlights && report.highlights.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <h4>Highlights</h4>
+          <h4>{t('highlights')}</h4>
           {report.highlights.map((h, i) => (
             <p key={i} className="text-sm" style={{ color: 'var(--accent)', padding: '2px 0' }}>
               {'> '}{h}
@@ -816,7 +850,7 @@ function ResultCard({ result, onReplay }) {
 
       {report?.improvements && report.improvements.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <h4>Next steps</h4>
+          <h4>{t('next_steps')}</h4>
           {report.improvements.map((imp, i) => (
             <p key={i} className="text-sm text-muted" style={{ padding: '2px 0' }}>
               {i + 1}. {imp}
@@ -827,7 +861,7 @@ function ResultCard({ result, onReplay }) {
 
       {repHistory && repHistory.length > 0 && (
         <div className="rep-quality" style={{ marginTop: 14 }}>
-          <h4>Per-rep quality</h4>
+          <h4>{t('per_rep_quality')}</h4>
           <div className="rep-bars">
             {repHistory.map((r, i) => {
               const score = r.score || 0;
@@ -853,7 +887,7 @@ function ResultCard({ result, onReplay }) {
           style={{ width: '100%', marginTop: 16, padding: '14px 0', fontSize: '1rem', fontWeight: 700 }}
           onClick={onReplay}
         >
-          Watch with AI Overlay
+          {t('watch_overlay')}
         </button>
       )}
       <button
@@ -861,7 +895,7 @@ function ResultCard({ result, onReplay }) {
         style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
         onClick={() => shareCard(result)}
       >
-        Share Summary Card
+        {t('share_card')}
       </button>
     </div>
   );
