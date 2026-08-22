@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { getAllWorkouts, deleteWorkout } from '../lib/storage';
+import { t, onLangChange } from '../lib/i18n';
 
 function getWeekLabel(dateStr) {
   const d = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
-  if (diffDays < 7) return 'This week';
-  if (diffDays < 14) return 'Last week';
+  if (diffDays < 7) return t('this_week');
+  if (diffDays < 14) return t('last_week');
   const weeksAgo = Math.floor(diffDays / 7);
-  return `${weeksAgo} weeks ago`;
+  return `${weeksAgo} ${t('weeks_ago')}`;
 }
 
 function gradeClass(score) {
@@ -20,6 +21,8 @@ function gradeClass(score) {
 export default function Progress({ onClose }) {
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   const loadWorkouts = async () => {
     const all = await getAllWorkouts();
@@ -30,7 +33,7 @@ export default function Progress({ onClose }) {
   useEffect(() => { loadWorkouts(); }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this workout?')) return;
+    if (!window.confirm(t('delete_workout_confirm'))) return;
     await deleteWorkout(id);
     setWorkouts(prev => prev.filter(w => w.id !== id));
   };
@@ -56,7 +59,7 @@ export default function Progress({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Progress</h2>
+        <h2>{t('progress')}</h2>
       </div>
 
       {loading && (
@@ -67,7 +70,7 @@ export default function Progress({ onClose }) {
 
       {!loading && workouts.length === 0 && (
         <div className="card card-welcome">
-          <h3>No workouts yet</h3>
+          <h3>{t('no_workouts')}</h3>
           <p className="text-sm text-muted">
             Complete a live training session or analyze a video to start tracking.
           </p>
@@ -81,15 +84,15 @@ export default function Progress({ onClose }) {
             <div className="stats-row" style={{ justifyContent: 'space-around' }}>
               <div className="stat" style={{ alignItems: 'center' }}>
                 <span className="stat-value" style={{ fontSize: '1.5rem' }}>{totalWorkouts}</span>
-                <span className="stat-label">Sessions</span>
+                <span className="stat-label">{t('sessions')}</span>
               </div>
               <div className="stat" style={{ alignItems: 'center' }}>
                 <span className="stat-value" style={{ fontSize: '1.5rem' }}>{totalReps}</span>
-                <span className="stat-label">Total Reps</span>
+                <span className="stat-label">{t('total_reps')}</span>
               </div>
               <div className="stat" style={{ alignItems: 'center' }}>
                 <span className="stat-value" style={{ fontSize: '1.5rem' }}>{avgScore}</span>
-                <span className="stat-label">Avg Form</span>
+                <span className="stat-label">{t('avg_form')}</span>
               </div>
             </div>
           </div>
@@ -97,7 +100,7 @@ export default function Progress({ onClose }) {
           {/* Form trend chart */}
           {trendData.length >= 2 && (
             <div className="card">
-              <h4>Form score trend</h4>
+              <h4>{t('form_score_trend')}</h4>
               <div className="trend-chart">
                 {trendData.map((score, i) => (
                   <div key={i} className="trend-bar-container">
@@ -130,7 +133,7 @@ export default function Progress({ onClose }) {
                         {new Date(w.date || w.createdAt).toLocaleDateString(undefined, {
                           weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
                         })}
-                        {w.source === 'upload' ? ' (video)' : w.source === 'live' ? ' (live)' : ''}
+                        {w.source === 'upload' ? ` ${t('video_tag')}` : w.source === 'live' ? ` ${t('live_tag')}` : ''}
                       </span>
                     </div>
                     {w.formScore != null && (
@@ -140,7 +143,7 @@ export default function Progress({ onClose }) {
                     )}
                   </div>
                   <div className="workout-card-stats">
-                    <span>{w.reps || 0} reps</span>
+                    <span>{w.reps || 0} {t('reps').toLowerCase()}</span>
                     {w.duration > 0 && <span>{Math.round(w.duration)}s</span>}
                   </div>
                   <button
@@ -148,7 +151,7 @@ export default function Progress({ onClose }) {
                     style={{ marginTop: 6 }}
                     onClick={() => handleDelete(w.id)}
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               ))}

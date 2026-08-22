@@ -1,10 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { getImageLandmarker, detectPoseImage } from '../lib/poseAnalysis';
 import { extractJointAngles } from '../lib/poseAnalysis';
 import { EXERCISES } from '../lib/exercises';
 import { EQUIPMENT_CATALOG, searchEquipment } from '../lib/machineIdentifier';
+import { t, tExercise, onLangChange } from '../lib/i18n';
 
 export default function MachineIdentifier({ onSelectExercise, onClose }) {
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
   const [mode, setMode] = useState('choose'); // 'choose' | 'photo' | 'catalog'
   const [photo, setPhoto] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -92,8 +95,8 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Identify machine</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        <h2>{t('identify_machine')}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
       </div>
 
       {mode === 'choose' && (
@@ -109,14 +112,14 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
                 onClick={() => fileInputRef.current?.click()}
                 style={{ width: '100%' }}
               >
-                Take a photo
+                {t('take_photo')}
               </button>
               <button
                 className="btn btn-ghost"
                 onClick={() => setMode('catalog')}
                 style={{ width: '100%' }}
               >
-                Browse equipment catalog
+                {t('browse_catalog')}
               </button>
             </div>
 
@@ -131,19 +134,19 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
           </div>
 
           <div className="card" style={{ marginTop: 8 }}>
-            <h4 style={{ margin: '0 0 8px' }}>How it works</h4>
+            <h4 style={{ margin: '0 0 8px' }}>{t('how_it_works')}</h4>
             <div className="steps">
               <div className="step-row">
                 <span className="step-n">1</span>
-                <span className="text-sm">Point your camera at the machine or take a photo on it</span>
+                <span className="text-sm">{t('step_photo')}</span>
               </div>
               <div className="step-row">
                 <span className="step-n">2</span>
-                <span className="text-sm">The app detects your body position and identifies the exercise</span>
+                <span className="text-sm">{t('step_detect')}</span>
               </div>
               <div className="step-row">
                 <span className="step-n">3</span>
-                <span className="text-sm">The exercise is pre-selected for your video analysis</span>
+                <span className="text-sm">{t('step_start')}</span>
               </div>
             </div>
           </div>
@@ -162,30 +165,30 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
           {analyzing && (
             <div className="card" style={{ textAlign: 'center', padding: 20 }}>
               <div className="spinner" />
-              <p className="text-sm" style={{ color: '#fff' }}>Analyzing pose...</p>
+              <p className="text-sm" style={{ color: '#fff' }}>{t('analyzing_pose')}</p>
             </div>
           )}
 
           {result && result.type === 'identified' && (
             <div className="card card-accent" style={{ textAlign: 'center', padding: 20 }}>
-              <p className="text-xs text-muted" style={{ marginBottom: 4 }}>Exercise detected</p>
-              <h3 style={{ marginBottom: 8, color: 'var(--accent)' }}>{result.exerciseName}</h3>
+              <p className="text-xs text-muted" style={{ marginBottom: 4 }}>{t('exercise_detected')}</p>
+              <h3 style={{ marginBottom: 8, color: 'var(--accent)' }}>{tExercise(result.exercise, result.exerciseName)}</h3>
               <p className="text-xs text-muted" style={{ marginBottom: 14 }}>
-                Confidence: {Math.round(result.confidence * 100)}%
+                {t('confidence')} {Math.round(result.confidence * 100)}%
               </p>
               <button
                 className="btn btn-primary"
                 onClick={() => handleSelectFromCatalog(result.exercise)}
                 style={{ width: '100%', marginBottom: 8 }}
               >
-                Use this exercise
+                {t('use_this_exercise')}
               </button>
               <button
                 className="btn btn-ghost"
                 onClick={() => setMode('catalog')}
                 style={{ width: '100%' }}
               >
-                Not right? Browse catalog
+                {t('not_right_browse')}
               </button>
             </div>
           )}
@@ -194,7 +197,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
             <div className="card" style={{ textAlign: 'center', padding: 20 }}>
               <p className="text-sm" style={{ color: '#fff', marginBottom: 4 }}>
                 {result.type === 'no_person'
-                  ? "No person detected in the photo"
+                  ? t('no_person_detected')
                   : "Couldn't identify the exercise from your pose"}
               </p>
               <p className="text-xs text-muted" style={{ marginBottom: 14 }}>
@@ -205,14 +208,14 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
                 onClick={() => setMode('catalog')}
                 style={{ width: '100%', marginBottom: 8 }}
               >
-                Browse catalog
+                {t('browse_catalog')}
               </button>
               <button
                 className="btn btn-ghost"
                 onClick={() => { setMode('choose'); setPhoto(null); setResult(null); }}
                 style={{ width: '100%' }}
               >
-                Try another photo
+                {t('try_another_photo')}
               </button>
             </div>
           )}
@@ -227,7 +230,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
                 onClick={() => setMode('catalog')}
                 style={{ width: '100%', marginTop: 10 }}
               >
-                Browse catalog
+                {t('browse_catalog')}
               </button>
             </div>
           )}
@@ -255,7 +258,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search machines or exercises..."
+            placeholder={t('search_machines')}
             style={{ marginBottom: 10 }}
           />
 
@@ -275,14 +278,14 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
                       onClick={() => handleSelectFromCatalog(item.key)}
                     >
                       <div style={{ flex: 1, textAlign: 'left' }}>
-                        <span className="catalog-name">{item.name}</span>
+                        <span className="catalog-name">{tExercise(item.key, item.name)}</span>
                         {ex && (
                           <span className="catalog-muscles">
                             {ex.muscles.primary.join(', ')}
                           </span>
                         )}
                       </div>
-                      <span style={{ color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700 }}>Select</span>
+                      <span style={{ color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700 }}>{t('select')}</span>
                     </button>
                   );
                 })}
@@ -301,7 +304,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
             onClick={() => { setMode('choose'); setSearch(''); }}
             style={{ width: '100%', marginTop: 8 }}
           >
-            Back
+            {t('back')}
           </button>
         </>
       )}

@@ -6,8 +6,19 @@ import {
   fetchBarcodeNutrition, estimateDailyBurn, FOOD_DATABASE,
 } from '../lib/nutrition';
 import { Camera, Search, Trash2, ChevronLeft, ScanBarcode, UtensilsCrossed, Plus, X } from 'lucide-react';
+import { t, onLangChange } from '../lib/i18n';
 
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+
+function getMealName(meal) {
+  switch (meal) {
+    case 'Breakfast': return t('breakfast');
+    case 'Lunch': return t('lunch');
+    case 'Dinner': return t('dinner');
+    case 'Snack': return t('snack');
+    default: return meal;
+  }
+}
 
 export default function Nutrition() {
   const { profile } = useProfile();
@@ -17,6 +28,9 @@ export default function Nutrition() {
   const [goal, setGoal] = useState('maintain');
   const [view, setView] = useState('daily'); // daily | add | scan | photo
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     if (profile) setTargets(getDailyTargets(profile, goal));
@@ -41,7 +55,7 @@ export default function Nutrition() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this entry?')) return;
+    if (!window.confirm(t('delete_entry_confirm'))) return;
     await deleteFoodEntry(id);
     setFoodLog(prev => prev.filter(e => e.id !== id));
   };
@@ -104,15 +118,15 @@ export default function Nutrition() {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Nutrition</h2>
+        <h2>{t('nutrition')}</h2>
         <select
           value={goal}
           onChange={(e) => setGoal(e.target.value)}
           style={{ width: 'auto', padding: '6px 28px 6px 10px', fontSize: '0.78rem' }}
         >
-          <option value="maintain">Maintain</option>
-          <option value="cut">Cut (-500)</option>
-          <option value="bulk">Bulk (+300)</option>
+          <option value="maintain">{t('maintain')}</option>
+          <option value="cut">{t('cut')}</option>
+          <option value="bulk">{t('bulk')}</option>
         </select>
       </div>
 
@@ -126,7 +140,7 @@ export default function Nutrition() {
           <ChevronLeft size={16} />
         </button>
         <span className="date-label">
-          {isToday ? 'Today' : new Date(selectedDate).toLocaleDateString(undefined, {
+          {isToday ? t('today') : new Date(selectedDate).toLocaleDateString(undefined, {
             weekday: 'short', month: 'short', day: 'numeric'
           })}
         </span>
@@ -147,21 +161,21 @@ export default function Nutrition() {
             <div className="calorie-breakdown">
               <div className="cal-row">
                 <span className="cal-dot cal-target" />
-                <span className="text-sm">Target</span>
+                <span className="text-sm">{t('target')}</span>
                 <span className="text-sm" style={{ color: '#fff', fontWeight: 700, marginLeft: 'auto' }}>
                   {targets.calories}
                 </span>
               </div>
               <div className="cal-row">
                 <span className="cal-dot cal-eaten" />
-                <span className="text-sm">Eaten</span>
+                <span className="text-sm">{t('eaten')}</span>
                 <span className="text-sm" style={{ color: '#fff', fontWeight: 700, marginLeft: 'auto' }}>
                   {totals.calories}
                 </span>
               </div>
               <div className="cal-row">
                 <span className="cal-dot cal-burned" />
-                <span className="text-sm">Burned</span>
+                <span className="text-sm">{t('burned')}</span>
                 <span className="text-sm" style={{ color: '#fff', fontWeight: 700, marginLeft: 'auto' }}>
                   {caloriesBurned}
                 </span>
@@ -169,8 +183,8 @@ export default function Nutrition() {
               <div className="cal-row" style={{ borderTop: '1px solid var(--border)', paddingTop: 6, marginTop: 4 }}>
                 <span className="text-sm" style={{ fontWeight: 700, color: netCalories > (targets?.calories || 2000) ? 'var(--red)' : 'var(--accent)' }}>
                   {targets.calories - netCalories > 0
-                    ? `${targets.calories - netCalories} remaining`
-                    : `${Math.abs(targets.calories - netCalories)} over`
+                    ? `${targets.calories - netCalories} ${t('remaining')}`
+                    : `${Math.abs(targets.calories - netCalories)} ${t('over')}`
                   }
                 </span>
               </div>
@@ -182,10 +196,10 @@ export default function Nutrition() {
       {/* Macro bars */}
       {targets && (
         <div className="card">
-          <h4>Macros</h4>
-          <MacroBar label="Protein" current={Math.round(totals.protein)} target={targets.protein} color="var(--accent)" unit="g" />
-          <MacroBar label="Carbs" current={Math.round(totals.carbs)} target={targets.carbs} color="var(--blue)" unit="g" />
-          <MacroBar label="Fat" current={Math.round(totals.fat)} target={targets.fat} color="var(--yellow)" unit="g" />
+          <h4>{t('macros')}</h4>
+          <MacroBar label={t('protein_cap')} current={Math.round(totals.protein)} target={targets.protein} color="var(--accent)" unit="g" />
+          <MacroBar label={t('carbs')} current={Math.round(totals.carbs)} target={targets.carbs} color="var(--blue)" unit="g" />
+          <MacroBar label={t('fat')} current={Math.round(totals.fat)} target={targets.fat} color="var(--yellow)" unit="g" />
         </div>
       )}
 
@@ -193,28 +207,28 @@ export default function Nutrition() {
       <div className="add-food-grid">
         <button className="add-food-btn" onClick={() => setView('add')}>
           <Search size={18} />
-          <span>Search food</span>
+          <span>{t('search_food')}</span>
         </button>
         <button className="add-food-btn" onClick={() => setView('scan')}>
           <ScanBarcode size={18} />
-          <span>Scan barcode</span>
+          <span>{t('scan_barcode')}</span>
         </button>
         <button className="add-food-btn" onClick={() => setView('photo')}>
           <Camera size={18} />
-          <span>Photo plate</span>
+          <span>{t('photo_plate')}</span>
         </button>
       </div>
 
       {/* Food log */}
       {foodLog.length > 0 && (
         <div style={{ marginTop: 8 }}>
-          <h4>Food log</h4>
+          <h4>{t('food_log')}</h4>
           {MEAL_TYPES.map(meal => {
             const items = foodLog.filter(e => e.mealType === meal);
             if (items.length === 0) return null;
             return (
               <div key={meal}>
-                <h5>{meal}</h5>
+                <h5>{getMealName(meal)}</h5>
                 {items.map(e => (
                   <div key={e.id} className="food-entry">
                     <div className="food-entry-info">
@@ -224,7 +238,7 @@ export default function Nutrition() {
                       <div>
                         <span className="food-entry-name">{e.name}</span>
                         <span className="food-entry-detail">
-                          {e.grams}g · {e.calories} kcal
+                          {e.grams}g · {e.calories} {t('kcal')}
                         </span>
                       </div>
                     </div>
@@ -247,9 +261,9 @@ export default function Nutrition() {
       {foodLog.length === 0 && (
         <div className="card card-welcome" style={{ marginTop: 16 }}>
           <UtensilsCrossed size={28} style={{ color: 'var(--accent)', margin: '0 auto 8px', display: 'block' }} />
-          <h3>No food logged {isToday ? 'today' : 'this day'}</h3>
+          <h3>{isToday ? t('no_food_logged_today') : t('no_food_logged_day')}</h3>
           <p className="text-sm text-muted">
-            Search, scan a barcode, or photo your plate to start tracking.
+            {t('food_log_empty_desc')}
           </p>
         </div>
       )}
@@ -257,19 +271,19 @@ export default function Nutrition() {
       {/* Workout burn summary */}
       {todayWorkouts.length > 0 && (
         <div className="card" style={{ marginTop: 10 }}>
-          <h4>Workout burn</h4>
+          <h4>{t('workout_burn')}</h4>
           {todayWorkouts.map(w => (
             <div key={w.id} className="food-entry" style={{ border: 'none', padding: '6px 0' }}>
               <div className="food-entry-info">
                 <div>
                   <span className="food-entry-name">{w.exerciseName || w.exercise}</span>
                   <span className="food-entry-detail">
-                    {w.reps} reps · {w.duration ? `${Math.round(w.duration)}s` : ''}
+                    {w.reps} {t('reps').toLowerCase()} · {w.duration ? `${Math.round(w.duration)}s` : ''}
                   </span>
                 </div>
               </div>
               <span style={{ color: 'var(--red)', fontWeight: 700, fontSize: '0.82rem' }}>
-                -{profile ? estimateDailyBurn([w], parseFloat(profile.weight) || 70) : '?'} kcal
+                -{profile ? estimateDailyBurn([w], parseFloat(profile.weight) || 70) : '?'} {t('kcal')}
               </span>
             </div>
           ))}
@@ -303,7 +317,7 @@ function CalorieRing({ eaten, burned, target }) {
       </svg>
       <div className="calorie-ring-center">
         <span className="calorie-ring-value">{remaining}</span>
-        <span className="calorie-ring-label">remaining</span>
+        <span className="calorie-ring-label">{t('remaining')}</span>
       </div>
     </div>
   );
@@ -336,6 +350,9 @@ function FoodSearch({ onAdd, onClose }) {
   const [selected, setSelected] = useState(null);
   const [grams, setGrams] = useState('');
   const [mealType, setMealType] = useState('Lunch');
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     setResults(searchFood(query));
@@ -364,7 +381,7 @@ function FoodSearch({ onAdd, onClose }) {
           <button className="btn-icon" onClick={() => setSelected(null)}>
             <ChevronLeft size={18} />
           </button>
-          <h2 style={{ fontSize: '1rem' }}>Add food</h2>
+          <h2 style={{ fontSize: '1rem' }}>{t('add_food')}</h2>
           <div />
         </div>
 
@@ -374,7 +391,7 @@ function FoodSearch({ onAdd, onClose }) {
 
           <div className="form-grid">
             <label>
-              <span>Amount (g)</span>
+              <span>{t('amount_g')}</span>
               <input
                 type="number"
                 value={grams}
@@ -383,9 +400,9 @@ function FoodSearch({ onAdd, onClose }) {
               />
             </label>
             <label>
-              <span>Meal</span>
+              <span>{t('meal')}</span>
               <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                {MEAL_TYPES.map(m => <option key={m} value={m}>{m}</option>)}
+                {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m)}</option>)}
               </select>
             </label>
           </div>
@@ -393,29 +410,29 @@ function FoodSearch({ onAdd, onClose }) {
           <div className="macro-preview">
             <div className="macro-preview-item">
               <span className="macro-preview-val">{macros.calories}</span>
-              <span className="macro-preview-label">kcal</span>
+              <span className="macro-preview-label">{t('kcal')}</span>
             </div>
             <div className="macro-preview-item">
               <span className="macro-preview-val" style={{ color: 'var(--accent)' }}>{macros.protein}</span>
-              <span className="macro-preview-label">Protein</span>
+              <span className="macro-preview-label">{t('protein_cap')}</span>
             </div>
             <div className="macro-preview-item">
               <span className="macro-preview-val" style={{ color: 'var(--blue)' }}>{macros.carbs}</span>
-              <span className="macro-preview-label">Carbs</span>
+              <span className="macro-preview-label">{t('carbs')}</span>
             </div>
             <div className="macro-preview-item">
               <span className="macro-preview-val" style={{ color: 'var(--yellow)' }}>{macros.fat}</span>
-              <span className="macro-preview-label">Fat</span>
+              <span className="macro-preview-label">{t('fat')}</span>
             </div>
           </div>
 
           <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 16 }} onClick={handleAdd}>
-            <Plus size={18} /> Add to {mealType}
+            <Plus size={18} /> {t('add_to')} {getMealName(mealType)}
           </button>
         </div>
 
         <div className="card" style={{ marginTop: 8 }}>
-          <h5>Quick portions</h5>
+          <h5>{t('quick_portions')}</h5>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[
               { label: selected.servingLabel, g: selected.servingG },
@@ -449,7 +466,7 @@ function FoodSearch({ onAdd, onClose }) {
         <button className="btn-icon" onClick={onClose}>
           <ChevronLeft size={18} />
         </button>
-        <h2 style={{ fontSize: '1rem' }}>Search food</h2>
+        <h2 style={{ fontSize: '1rem' }}>{t('search_food')}</h2>
         <div />
       </div>
 
@@ -457,7 +474,7 @@ function FoodSearch({ onAdd, onClose }) {
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search foods..."
+        placeholder={t('search_foods')}
         autoFocus
         style={{ marginBottom: 12 }}
       />
@@ -469,13 +486,13 @@ function FoodSearch({ onAdd, onClose }) {
               <button key={i} className="catalog-item" onClick={() => { setSelected(f); setGrams(''); }}>
                 <div>
                   <span className="catalog-name">{f.name}</span>
-                  <span className="catalog-muscles">{f.cal} kcal/100g · P{f.protein} C{f.carbs} F{f.fat}</span>
+                  <span className="catalog-muscles">{f.cal} {t('kcal')}/100g · P{f.protein} C{f.carbs} F{f.fat}</span>
                 </div>
               </button>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted text-center" style={{ padding: 20 }}>No results found</p>
+          <p className="text-sm text-muted text-center" style={{ padding: 20 }}>{t('no_results')}</p>
         )
       ) : (
         <div>
@@ -487,7 +504,7 @@ function FoodSearch({ onAdd, onClose }) {
                   <button key={i} className="catalog-item" onClick={() => { setSelected(f); setGrams(''); }}>
                     <div>
                       <span className="catalog-name">{f.name}</span>
-                      <span className="catalog-muscles">{f.cal} kcal/100g</span>
+                      <span className="catalog-muscles">{f.cal} {t('kcal')}/100g</span>
                     </div>
                   </button>
                 ))}
@@ -511,6 +528,9 @@ function BarcodeScanner({ onResult, onClose }) {
   const [product, setProduct] = useState(null);
   const [grams, setGrams] = useState('');
   const [mealType, setMealType] = useState('Lunch');
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -608,7 +628,7 @@ function BarcodeScanner({ onResult, onClose }) {
       <div className="page">
         <div className="page-header">
           <button className="btn-icon" onClick={onClose}><ChevronLeft size={18} /></button>
-          <h2 style={{ fontSize: '1rem' }}>Scanned product</h2>
+          <h2 style={{ fontSize: '1rem' }}>{t('scanned_product')}</h2>
           <div />
         </div>
         <div className="card">
@@ -620,20 +640,20 @@ function BarcodeScanner({ onResult, onClose }) {
           {product.nutriScore && (
             <div className="text-center" style={{ margin: '6px 0' }}>
               <span className={`score-badge ${product.nutriScore === 'a' ? 'good' : product.nutriScore <= 'c' ? 'ok' : 'poor'}`}>
-                Nutri-Score {product.nutriScore.toUpperCase()}
+                {t('nutri_score')} {product.nutriScore.toUpperCase()}
               </span>
             </div>
           )}
 
           <div className="form-grid" style={{ marginTop: 12 }}>
             <label>
-              <span>Amount (g)</span>
+              <span>{t('amount_g')}</span>
               <input type="number" value={grams} onChange={(e) => setGrams(e.target.value)} placeholder="100" />
             </label>
             <label>
-              <span>Meal</span>
+              <span>{t('meal')}</span>
               <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                {MEAL_TYPES.map(m => <option key={m} value={m}>{m}</option>)}
+                {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m)}</option>)}
               </select>
             </label>
           </div>
@@ -641,24 +661,24 @@ function BarcodeScanner({ onResult, onClose }) {
           <div className="macro-preview" style={{ marginTop: 12 }}>
             <div className="macro-preview-item">
               <span className="macro-preview-val">{Math.round(n.cal * ratio)}</span>
-              <span className="macro-preview-label">kcal</span>
+              <span className="macro-preview-label">{t('kcal')}</span>
             </div>
             <div className="macro-preview-item">
               <span className="macro-preview-val" style={{ color: 'var(--accent)' }}>{(n.protein * ratio).toFixed(1)}</span>
-              <span className="macro-preview-label">Protein</span>
+              <span className="macro-preview-label">{t('protein_cap')}</span>
             </div>
             <div className="macro-preview-item">
               <span className="macro-preview-val" style={{ color: 'var(--blue)' }}>{(n.carbs * ratio).toFixed(1)}</span>
-              <span className="macro-preview-label">Carbs</span>
+              <span className="macro-preview-label">{t('carbs')}</span>
             </div>
             <div className="macro-preview-item">
               <span className="macro-preview-val" style={{ color: 'var(--yellow)' }}>{(n.fat * ratio).toFixed(1)}</span>
-              <span className="macro-preview-label">Fat</span>
+              <span className="macro-preview-label">{t('fat')}</span>
             </div>
           </div>
 
           <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 16 }} onClick={handleAdd}>
-            <Plus size={18} /> Add to {mealType}
+            <Plus size={18} /> {t('add_to')} {getMealName(mealType)}
           </button>
         </div>
       </div>
@@ -674,31 +694,31 @@ function BarcodeScanner({ onResult, onClose }) {
         </div>
         <div className="cam-top">
           <button className="cam-btn" onClick={onClose}><ChevronLeft size={18} /></button>
-          <span className="cam-exercise-label">Scan Barcode</span>
+          <span className="cam-exercise-label">{t('scan_barcode_title')}</span>
           <div style={{ width: 38 }} />
         </div>
         {status === 'scanning' && (
-          <div className="scan-hint">Point camera at a barcode</div>
+          <div className="scan-hint">{t('point_camera_barcode')}</div>
         )}
         {status === 'unsupported' && (
           <div className="cam-loading">
             <p style={{ color: 'var(--yellow)', marginBottom: 8 }}>
-              Barcode scanning not supported in this browser.
+              {t('barcode_not_supported')}
             </p>
-            <p className="text-sm text-muted">Try Chrome or Edge on Android, or Safari 17+ on iOS.</p>
-            <button className="btn btn-primary" onClick={onClose} style={{ marginTop: 12 }}>Go back</button>
+            <p className="text-sm text-muted">{t('barcode_try_other')}</p>
+            <button className="btn btn-primary" onClick={onClose} style={{ marginTop: 12 }}>{t('go_back')}</button>
           </div>
         )}
         {status === 'error' && (
           <div className="cam-loading">
-            <p style={{ color: 'var(--red)' }}>Camera access denied.</p>
-            <button className="btn btn-primary" onClick={onClose} style={{ marginTop: 12 }}>Go back</button>
+            <p style={{ color: 'var(--red)' }}>{t('camera_denied')}</p>
+            <button className="btn btn-primary" onClick={onClose} style={{ marginTop: 12 }}>{t('go_back')}</button>
           </div>
         )}
         {status === 'found' && (
           <div className="cam-loading">
             <div className="spinner" />
-            <p className="text-sm">Looking up product...</p>
+            <p className="text-sm">{t('looking_up_product')}</p>
           </div>
         )}
       </div>
@@ -719,6 +739,9 @@ function FoodPhoto({ onAdd, onClose }) {
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
   const fileRef = useRef(null);
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   const handleCapture = (e) => {
     const file = e.target.files?.[0];
@@ -746,7 +769,7 @@ function FoodPhoto({ onAdd, onClose }) {
     <div className="page">
       <div className="page-header">
         <button className="btn-icon" onClick={onClose}><ChevronLeft size={18} /></button>
-        <h2 style={{ fontSize: '1rem' }}>Photo your plate</h2>
+        <h2 style={{ fontSize: '1rem' }}>{t('photo_your_plate')}</h2>
         <div />
       </div>
 
@@ -754,8 +777,8 @@ function FoodPhoto({ onAdd, onClose }) {
         <div className="upload-zone" onClick={() => fileRef.current?.click()}>
           <div className="upload-content">
             <div className="upload-icon"><Camera size={24} /></div>
-            <span className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>Take a photo of your meal</span>
-            <span className="text-xs text-muted">Tap to open camera</span>
+            <span className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>{t('take_photo_meal')}</span>
+            <span className="text-xs text-muted">{t('tap_open_camera')}</span>
           </div>
           <input
             ref={fileRef}
@@ -774,49 +797,49 @@ function FoodPhoto({ onAdd, onClose }) {
 
           <div className="card">
             <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
-              Describe your meal and estimate the macros. Portion photos help you track consistency over time.
+              {t('photo_plate_desc')}
             </p>
 
             <div className="form-grid">
               <label className="full-width">
-                <span>What did you eat?</span>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grilled chicken with rice" />
+                <span>{t('what_did_you_eat')}</span>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('meal_placeholder')} />
               </label>
               <label>
-                <span>Portion (g)</span>
+                <span>{t('portion_g')}</span>
                 <input type="number" value={grams} onChange={(e) => setGrams(e.target.value)} placeholder="200" />
               </label>
               <label>
-                <span>Meal</span>
+                <span>{t('meal')}</span>
                 <select value={mealType} onChange={(e) => setMealType(e.target.value)}>
-                  {MEAL_TYPES.map(m => <option key={m} value={m}>{m}</option>)}
+                  {MEAL_TYPES.map(m => <option key={m} value={m}>{getMealName(m)}</option>)}
                 </select>
               </label>
               <label>
-                <span>Calories (est.)</span>
-                <input type="number" value={estimatedCal} onChange={(e) => setEstimatedCal(e.target.value)} placeholder="kcal" />
+                <span>{t('calories_est')}</span>
+                <input type="number" value={estimatedCal} onChange={(e) => setEstimatedCal(e.target.value)} placeholder={t('kcal')} />
               </label>
               <label>
-                <span>Protein (g)</span>
+                <span>{t('protein_g')}</span>
                 <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="0" />
               </label>
               <label>
-                <span>Carbs (g)</span>
+                <span>{t('carbs_g')}</span>
                 <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="0" />
               </label>
               <label>
-                <span>Fat (g)</span>
+                <span>{t('fat_g')}</span>
                 <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="0" />
               </label>
             </div>
 
             <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 12 }} onClick={handleAdd} disabled={!name}>
-              <Plus size={18} /> Add to {mealType}
+              <Plus size={18} /> {t('add_to')} {getMealName(mealType)}
             </button>
           </div>
 
           <button className="btn btn-ghost" style={{ width: '100%', marginTop: 6 }} onClick={() => { setPhotoUrl(null); setName(''); }}>
-            Retake photo
+            {t('retake_photo')}
           </button>
         </>
       )}

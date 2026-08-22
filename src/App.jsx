@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { preloadModel } from './lib/poseAnalysis';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
+import { t, onLangChange } from './lib/i18n';
 import { Home, TrendingUp, User, Apple } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Progress from './components/Progress';
@@ -28,6 +29,9 @@ function AppInner() {
   const [page, setPage] = useState('dashboard');
   const [modelStatus, setModelStatus] = useState('loading');
   const [preSelectedExercise, setPreSelectedExercise] = useState(null);
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     preloadModel()
@@ -124,38 +128,38 @@ function AppInner() {
         <button
           className={`tab ${page === 'dashboard' ? 'active' : ''}`}
           onClick={() => setPage('dashboard')}
-          aria-label="Home"
+          aria-label={t('home')}
           aria-current={page === 'dashboard' ? 'page' : undefined}
         >
           <Home size={18} />
-          <span className="tab-label">Home</span>
+          <span className="tab-label">{t('home')}</span>
         </button>
         <button
           className={`tab ${page === 'nutrition' ? 'active' : ''}`}
           onClick={() => setPage('nutrition')}
-          aria-label="Nutrition"
+          aria-label={t('nutrition')}
           aria-current={page === 'nutrition' ? 'page' : undefined}
         >
           <Apple size={18} />
-          <span className="tab-label">Nutrition</span>
+          <span className="tab-label">{t('nutrition')}</span>
         </button>
         <button
           className={`tab ${page === 'progress' ? 'active' : ''}`}
           onClick={() => setPage('progress')}
-          aria-label="Progress"
+          aria-label={t('progress')}
           aria-current={page === 'progress' ? 'page' : undefined}
         >
           <TrendingUp size={18} />
-          <span className="tab-label">Progress</span>
+          <span className="tab-label">{t('progress')}</span>
         </button>
         <button
           className={`tab ${page === 'profile' ? 'active' : ''}`}
           onClick={() => setPage('profile')}
-          aria-label="Profile"
+          aria-label={t('profile')}
           aria-current={page === 'profile' ? 'page' : undefined}
         >
           <User size={18} />
-          <span className="tab-label">Profile</span>
+          <span className="tab-label">{t('profile')}</span>
         </button>
       </nav>
     </div>

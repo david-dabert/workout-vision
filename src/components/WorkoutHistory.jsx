@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getAllWorkouts, deleteWorkout } from '../lib/storage';
 import { calculateWorkloadRatio } from '../lib/coach';
+import { t, onLangChange } from '../lib/i18n';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -16,7 +17,7 @@ function getWeekKey(iso) {
 
 function getWeekLabel(weekKey) {
   const d = new Date(weekKey);
-  return 'Week of ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return t('week_of') + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
 function scoreClass(score) {
@@ -35,6 +36,8 @@ function workloadZoneColor(zone) {
 export default function WorkoutHistory({ onClose }) {
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     loadWorkouts();
@@ -122,12 +125,12 @@ export default function WorkoutHistory({ onClose }) {
     return (
       <div className="page">
         <div className="page-header">
-          <h2>Progress</h2>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+          <h2>{t('progress')}</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
         </div>
         <div style={{ textAlign: 'center', padding: 40 }}>
           <div className="spinner" />
-          <p className="text-sm text-muted">Loading workouts...</p>
+          <p className="text-sm text-muted">{t('loading_workouts')}</p>
         </div>
       </div>
     );
@@ -136,15 +139,15 @@ export default function WorkoutHistory({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Progress</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        <h2>{t('progress')}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
       </div>
 
       {workouts.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-          <p className="text-muted">No workouts recorded yet.</p>
+          <p className="text-muted">{t('no_workouts')}</p>
           <p className="text-xs text-muted" style={{ marginTop: 6 }}>
-            Start a live session or upload a video to see your progress here.
+            {t('no_workouts_desc')}
           </p>
         </div>
       ) : (
@@ -155,19 +158,19 @@ export default function WorkoutHistory({ onClose }) {
               <div className="result-stats" style={{ justifyContent: 'space-around' }}>
                 <div className="stat" style={{ alignItems: 'center' }}>
                   <span className="stat-value">{stats.total}</span>
-                  <span className="stat-label">Workouts</span>
+                  <span className="stat-label">{t('workouts')}</span>
                 </div>
                 <div className="stat" style={{ alignItems: 'center' }}>
                   <span className="stat-value">{stats.totalReps}</span>
-                  <span className="stat-label">Total Reps</span>
+                  <span className="stat-label">{t('total_reps')}</span>
                 </div>
                 <div className="stat" style={{ alignItems: 'center' }}>
                   <span className="stat-value">{stats.avgScore}</span>
-                  <span className="stat-label">Avg Form</span>
+                  <span className="stat-label">{t('avg_form')}</span>
                 </div>
                 <div className="stat" style={{ alignItems: 'center' }}>
                   <span className="stat-value">{stats.streak}</span>
-                  <span className="stat-label">Day Streak</span>
+                  <span className="stat-label">{t('day_streak')}</span>
                 </div>
               </div>
             </div>
@@ -176,7 +179,7 @@ export default function WorkoutHistory({ onClose }) {
           {/* Workload ratio gauge */}
           {workloadRatio && (
             <div className="card">
-              <h4>Training load</h4>
+              <h4>{t('training_load')}</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{
@@ -195,7 +198,7 @@ export default function WorkoutHistory({ onClose }) {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                     <span className="text-xs text-muted">0</span>
-                    <span className="text-xs text-muted">1.0 optimal</span>
+                    <span className="text-xs text-muted">1.0 {t('optimal')}</span>
                     <span className="text-xs text-muted">2.0+</span>
                   </div>
                 </div>
@@ -214,7 +217,7 @@ export default function WorkoutHistory({ onClose }) {
           {/* Form score trend */}
           {trendData.length > 1 && (
             <div className="card">
-              <h4>Form score trend</h4>
+              <h4>{t('form_score_trend')}</h4>
               <div className="trend-chart" style={{ marginTop: 8 }}>
                 {trendData.map((w, i) => {
                   const score = w.formScore || 0;
@@ -233,8 +236,8 @@ export default function WorkoutHistory({ onClose }) {
                 })}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <span className="text-xs text-muted">Oldest</span>
-                <span className="text-xs text-muted">Latest</span>
+                <span className="text-xs text-muted">{t('oldest')}</span>
+                <span className="text-xs text-muted">{t('latest')}</span>
               </div>
             </div>
           )}
@@ -258,11 +261,11 @@ export default function WorkoutHistory({ onClose }) {
                       className="btn btn-ghost btn-sm btn-danger"
                       onClick={() => handleDelete(w.id)}
                     >
-                      Delete
+                      {t('delete')}
                     </button>
                   </div>
                   <div className="workout-card-stats">
-                    <span>{w.reps} reps</span>
+                    <span>{w.reps} {t('reps').toLowerCase()}</span>
                     {w.duration > 0 && <span>{w.duration}s</span>}
                     {w.formScore > 0 && (
                       <span className={`score-badge ${scoreClass(w.formScore)}`}>

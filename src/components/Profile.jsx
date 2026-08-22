@@ -4,6 +4,7 @@ import {
   getMedicalRecords, saveMedicalRecord, deleteMedicalRecord,
 } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
+import { t, getLang, setLang, onLangChange } from '../lib/i18n';
 
 export default function Profile({ onClose }) {
   const { profile: savedProfile, saveProfile } = useProfile();
@@ -16,6 +17,8 @@ export default function Profile({ onClose }) {
   const [saved, setSaved] = useState(false);
   const [records, setRecords] = useState([]);
   const fileInputRef = useRef(null);
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     if (savedProfile) {
@@ -42,7 +45,7 @@ export default function Profile({ onClose }) {
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_FILE_SIZE) {
-      alert('File too large. Maximum size is 10MB.');
+      alert(t('file_too_large'));
       e.target.value = '';
       return;
     }
@@ -72,15 +75,22 @@ export default function Profile({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Profile</h2>
+        <h2>{t('profile')}</h2>
       </div>
 
       {/* Profile form */}
       <div className="card">
-        <h3>Your measurements</h3>
+        <div className="form-group">
+          <label>{t('language')}</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className={`btn btn-sm ${getLang() === 'en' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('en')}>English</button>
+            <button className={`btn btn-sm ${getLang() === 'fr' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('fr')}>Français</button>
+          </div>
+        </div>
+        <h3>{t('your_measurements')}</h3>
         <div className="form-grid">
           <label>
-            <span>Name</span>
+            <span>{t('name')}</span>
             <input
               type="text"
               value={profile.name}
@@ -89,7 +99,7 @@ export default function Profile({ onClose }) {
             />
           </label>
           <label>
-            <span>Age</span>
+            <span>{t('age')}</span>
             <input
               type="number"
               value={profile.age}
@@ -98,7 +108,7 @@ export default function Profile({ onClose }) {
             />
           </label>
           <label>
-            <span>Weight (kg)</span>
+            <span>{t('weight_kg')}</span>
             <input
               type="number"
               value={profile.weight}
@@ -107,7 +117,7 @@ export default function Profile({ onClose }) {
             />
           </label>
           <label>
-            <span>Height (cm)</span>
+            <span>{t('height_cm')}</span>
             <input
               type="number"
               value={profile.height}
@@ -116,14 +126,14 @@ export default function Profile({ onClose }) {
             />
           </label>
           <label>
-            <span>Sex</span>
+            <span>{t('sex')}</span>
             <select value={profile.sex} onChange={(e) => handleChange('sex', e.target.value)}>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
+              <option value="male">{t('male')}</option>
+              <option value="female">{t('female')}</option>
             </select>
           </label>
           <label>
-            <span>Ethnicity</span>
+            <span>{t('ethnicity')}</span>
             <input
               type="text"
               value={profile.ethnicity}
@@ -132,17 +142,17 @@ export default function Profile({ onClose }) {
             />
           </label>
           <label className="full-width">
-            <span>Activity Level</span>
+            <span>{t('activity_level')}</span>
             <select value={profile.activityLevel} onChange={(e) => handleChange('activityLevel', e.target.value)}>
-              <option value="sedentary">Sedentary</option>
-              <option value="light">Light (1-2x/week)</option>
-              <option value="moderate">Moderate (3-4x/week)</option>
-              <option value="active">Active (5-6x/week)</option>
-              <option value="veryActive">Very Active (daily)</option>
+              <option value="sedentary">{t('sedentary')}</option>
+              <option value="light">{t('light_activity')}</option>
+              <option value="moderate">{t('moderate_activity')}</option>
+              <option value="active">{t('active_activity')}</option>
+              <option value="veryActive">{t('very_active_activity')}</option>
             </select>
           </label>
           <label>
-            <span>Resting HR (bpm)</span>
+            <span>{t('resting_hr')}</span>
             <input
               type="number"
               value={profile.restingHR}
@@ -151,25 +161,25 @@ export default function Profile({ onClose }) {
             />
           </label>
           <label>
-            <span>Experience</span>
+            <span>{t('experience')}</span>
             <select value={profile.experience} onChange={(e) => handleChange('experience', e.target.value)}>
-              <option value="beginner">Beginner (&lt;1 year)</option>
-              <option value="intermediate">Intermediate (1-3 years)</option>
-              <option value="advanced">Advanced (3+ years)</option>
+              <option value="beginner">{t('beginner')}</option>
+              <option value="intermediate">{t('intermediate')}</option>
+              <option value="advanced">{t('advanced')}</option>
             </select>
           </label>
           <label>
-            <span>Goal</span>
+            <span>{t('goal')}</span>
             <select value={profile.goal} onChange={(e) => handleChange('goal', e.target.value)}>
-              <option value="general">General Fitness</option>
-              <option value="strength">Strength</option>
-              <option value="hypertrophy">Muscle Growth</option>
-              <option value="endurance">Endurance</option>
-              <option value="weight_loss">Weight Loss</option>
+              <option value="general">{t('general_fitness')}</option>
+              <option value="strength">{t('strength')}</option>
+              <option value="hypertrophy">{t('muscle_growth')}</option>
+              <option value="endurance">{t('endurance')}</option>
+              <option value="weight_loss">{t('weight_loss')}</option>
             </select>
           </label>
           <label className="full-width">
-            <span>Injuries / limitations</span>
+            <span>{t('injuries')}</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
               {['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'].map(area => (
                 <button
@@ -198,14 +208,14 @@ export default function Profile({ onClose }) {
           </label>
         </div>
         <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%' }}>
-          {saved ? 'Saved!' : 'Save Profile'}
+          {saved ? t('saved') : t('save_profile')}
         </button>
       </div>
 
       {/* Baselines */}
       {baselines && (
         <div className="card">
-          <h3>Your baselines</h3>
+          <h3>{t('your_baselines')}</h3>
           <div className="baselines-grid">
             <div className="baseline-item">
               <span className="baseline-value">{baselines.bmi}</span>
@@ -269,7 +279,7 @@ export default function Profile({ onClose }) {
 
       {/* Medical records */}
       <div className="card">
-        <h3>Medical records</h3>
+        <h3>{t('medical_records')}</h3>
         <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
           Upload medical files. Everything stays on your device.
         </p>
@@ -281,7 +291,7 @@ export default function Profile({ onClose }) {
         >
           <div className="upload-content">
             <div className="upload-icon">+</div>
-            <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>Upload file</p>
+            <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>{t('upload_file')}</p>
             <p className="text-xs text-muted">PDF, images, documents</p>
           </div>
           <input
@@ -301,7 +311,7 @@ export default function Profile({ onClose }) {
                 className="btn btn-ghost btn-sm btn-danger"
                 onClick={() => handleDeleteRecord(r.id)}
               >
-                Delete
+                {t('delete')}
               </button>
             </div>
             {r.type?.startsWith('image/') && r.data && (

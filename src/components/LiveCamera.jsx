@@ -5,6 +5,7 @@ import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
 import { estimateCaloriesBurned } from '../lib/nutrition';
+import { t, tExercise, onLangChange } from '../lib/i18n';
 
 const TARGET_FPS = 15;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
@@ -22,6 +23,8 @@ function speak(text) {
 
 export default function LiveCamera({ onClose }) {
   const { profile: userProfile } = useProfile();
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -296,7 +299,7 @@ export default function LiveCamera({ onClose }) {
 
   const handleClose = () => {
     if (recording || setCount > 0) {
-      if (!window.confirm('Exit session? Your current session data is saved.')) return;
+      if (!window.confirm(t('exit_session'))) return;
     }
     onClose();
   };
@@ -329,17 +332,17 @@ export default function LiveCamera({ onClose }) {
         {status === 'loading' && (
           <div className="cam-loading">
             <div className="spinner" />
-            <p className="text-sm">Initializing camera and model...</p>
+            <p className="text-sm">{t('init_camera')}</p>
           </div>
         )}
 
         {status === 'error' && (
           <div className="cam-loading">
             <p style={{ color: 'var(--red)', marginBottom: 12 }}>
-              Camera or model failed to load.
+              {t('camera_failed')}
             </p>
             <button className="btn btn-primary" onClick={() => window.location.reload()}>
-              Retry
+              {t('retry')}
             </button>
           </div>
         )}
@@ -348,8 +351,8 @@ export default function LiveCamera({ onClose }) {
           <button className="cam-btn" onClick={handleClose} aria-label="Close">&larr;</button>
           <span className="cam-exercise-label">
             {exercise === '__auto__'
-              ? (detectedName || 'Detecting...')
-              : (EXERCISES[exercise]?.name || exercise)}
+              ? (detectedName ? tExercise(Object.keys(EXERCISES).find(k => EXERCISES[k].name === detectedName) || '', detectedName) : t('detecting'))
+              : tExercise(exercise, EXERCISES[exercise]?.name || exercise)}
           </span>
           <button className="cam-btn" onClick={flipCamera} aria-label="Flip camera">&#8634;</button>
         </div>
@@ -375,12 +378,12 @@ export default function LiveCamera({ onClose }) {
         {resting && (
           <div className="rest-overlay">
             <div className="rest-content">
-              <span className="rest-label">REST</span>
+              <span className="rest-label">{t('rest_label')}</span>
               <span className="rest-time">{restTimer}</span>
-              <span className="rest-label">seconds</span>
+              <span className="rest-label">{t('seconds')}</span>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button className="btn btn-primary btn-sm" onClick={skipRest}>Skip</button>
-                <button className="btn btn-ghost btn-sm" onClick={startSet}>Next Set</button>
+                <button className="btn btn-primary btn-sm" onClick={skipRest}>{t('skip_rest')}</button>
+                <button className="btn btn-ghost btn-sm" onClick={startSet}>{t('next_set')}</button>
               </div>
             </div>
           </div>
@@ -418,31 +421,31 @@ export default function LiveCamera({ onClose }) {
       {/* Session stats bar */}
       {setCount > 0 && !recording && (
         <div className="session-stats">
-          <span className="session-stat">Sets: <strong>{setCount}</strong></span>
-          <span className="session-stat">Burned: <strong>{totalCalories} kcal</strong></span>
+          <span className="session-stat">{t('sets_colon')} <strong>{setCount}</strong></span>
+          <span className="session-stat">{t('burned_colon')} <strong>{totalCalories} kcal</strong></span>
         </div>
       )}
 
       <div className="cam-controls">
         <select className="cam-select" value={exercise} onChange={handleExerciseChange} style={{ fontSize: 16 }}>
-          <option value="__auto__">Automatic</option>
-          <optgroup label="Compound">
+          <option value="__auto__">{t('automatic')}</option>
+          <optgroup label={t('compound')}>
             {EXERCISE_GROUPS.compound.map(e => (
-              <option key={e.key} value={e.key}>{e.name}</option>
+              <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
             ))}
           </optgroup>
-          <optgroup label="Isolation">
+          <optgroup label={t('isolation')}>
             {EXERCISE_GROUPS.isolation.map(e => (
-              <option key={e.key} value={e.key}>{e.name}</option>
+              <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
             ))}
           </optgroup>
-          <optgroup label="Bodyweight">
+          <optgroup label={t('bodyweight')}>
             {EXERCISE_GROUPS.bodyweight.map(e => (
-              <option key={e.key} value={e.key}>{e.name}</option>
+              <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
             ))}
           </optgroup>
-          <optgroup label="Other">
-            <option value="superset">Superset / Other</option>
+          <optgroup label={t('other')}>
+            <option value="superset">{t('superset_other')}</option>
           </optgroup>
         </select>
 
@@ -460,11 +463,11 @@ export default function LiveCamera({ onClose }) {
             onClick={startSet}
             disabled={status !== 'ready'}
           >
-            Start Set
+            {t('start_set')}
           </button>
         ) : (
           <button className="btn-record rec-on" onClick={stopSet}>
-            Stop & Save
+            {t('stop_set')}
           </button>
         )}
       </div>
@@ -473,7 +476,7 @@ export default function LiveCamera({ onClose }) {
       <div className="cam-controls-secondary">
         <label className="cam-auto">
           <input type="checkbox" checked={voiceCoach} onChange={(e) => setVoiceCoach(e.target.checked)} style={{ width: 'auto', marginRight: 4 }} />
-          Voice coach
+          {t('voice_coach')}
         </label>
         <select
           value={restDuration}
@@ -481,7 +484,7 @@ export default function LiveCamera({ onClose }) {
           style={{ width: 'auto', padding: '4px 24px 4px 6px', fontSize: '0.72rem' }}
         >
           {REST_PRESETS.map(s => (
-            <option key={s} value={s}>Rest {s}s</option>
+            <option key={s} value={s}>{t('rest_x_s')} {s}s</option>
           ))}
         </select>
       </div>

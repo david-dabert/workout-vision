@@ -3,6 +3,7 @@ import { getAllWorkouts } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { generatePhysicalAnalysis, generateWorkoutPlan } from '../lib/planner';
 import { EXERCISES } from '../lib/exercises';
+import { t, onLangChange } from '../lib/i18n';
 
 const exerciseName = (key) => EXERCISES[key]?.name || key.replace(/_/g, ' ');
 
@@ -13,7 +14,7 @@ const bmiColor = (val) => {
 };
 
 const ZONE_COLORS = ['var(--blue)', 'var(--accent)', 'var(--yellow)', '#ff6d00', 'var(--red)'];
-const ZONE_LABELS = ['Recovery', 'Aerobic', 'Tempo', 'Threshold', 'VO2max'];
+const getZoneLabels = () => [t('recovery'), t('aerobic'), t('tempo'), t('threshold'), t('vo2max')];
 
 const s = {
   page: { padding: 16, paddingBottom: 100, minHeight: '100vh', background: 'var(--bg)' },
@@ -92,6 +93,8 @@ export default function WorkoutPlan({ onClose }) {
   const [tab, setTab] = useState('analysis');
   const [expandedDay, setExpandedDay] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => { loadData(); }, [profile]);
 
@@ -113,11 +116,11 @@ export default function WorkoutPlan({ onClose }) {
     <div style={s.page}>
       <div style={s.header}>
         <button style={s.backBtn} onClick={onClose}>&larr;</button>
-        <h1 style={s.title}>Workout Plan</h1>
+        <h1 style={s.title}>{t('workout_plan')}</h1>
       </div>
       <div style={{ ...s.card, textAlign: 'center', padding: 40 }}>
-        <div style={{ fontSize: '1.5rem', marginBottom: 12 }}>Generating...</div>
-        <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Building your personalized plan</div>
+        <div style={{ fontSize: '1.5rem', marginBottom: 12 }}>{t('generating')}</div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{t('building_plan')}</div>
       </div>
     </div>
   );
@@ -126,13 +129,13 @@ export default function WorkoutPlan({ onClose }) {
     <div style={s.page}>
       <div style={s.header}>
         <button style={s.backBtn} onClick={onClose}>&larr;</button>
-        <h1 style={s.title}>Workout Plan</h1>
+        <h1 style={s.title}>{t('workout_plan')}</h1>
       </div>
       <div style={{ ...s.card, textAlign: 'center', padding: 60 }}>
         <div style={{ fontSize: '3rem', marginBottom: 16 }}>&#128170;</div>
-        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No Profile Found</div>
-        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 24 }}>Set up your profile first to get a personalized plan.</div>
-        <button style={s.primaryBtn} onClick={onClose}>Go to Profile</button>
+        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>{t('no_profile_found')}</div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 24 }}>{t('setup_profile_first')}</div>
+        <button style={s.primaryBtn} onClick={onClose}>{t('go_to_profile')}</button>
       </div>
     </div>
   );
@@ -143,7 +146,7 @@ export default function WorkoutPlan({ onClose }) {
   // Convert heart rate zones object to array
   const hrZonesArray = analysis?.heartRateZones
     ? Object.entries(analysis.heartRateZones).map(([key, z], i) => ({
-        name: ZONE_LABELS[i] || z.label,
+        name: getZoneLabels()[i] || z.label,
         min: z.min,
         max: z.max,
         label: z.label,
@@ -161,68 +164,68 @@ export default function WorkoutPlan({ onClose }) {
     <div style={s.page}>
       <div style={s.header}>
         <button style={s.backBtn} onClick={onClose}>&larr;</button>
-        <h1 style={s.title}>Workout Plan</h1>
+        <h1 style={s.title}>{t('workout_plan')}</h1>
       </div>
 
       {missingFields && (
         <div style={s.updatePrompt}>
           <span style={{ fontSize: '1.1rem' }}>&#9888;&#65039;</span>
           <p style={{ fontSize: '0.8rem', color: 'var(--yellow)', margin: 0 }}>
-            Add experience, goals, resting HR, and injuries in your profile for more accurate results.
+            {t('profile_incomplete_hint')}
           </p>
         </div>
       )}
 
       <div style={s.tabs}>
-        <button style={s.tab(tab === 'analysis')} onClick={() => setTab('analysis')}>My Analysis</button>
-        <button style={s.tab(tab === 'plan')} onClick={() => setTab('plan')}>Workout Plan</button>
+        <button style={s.tab(tab === 'analysis')} onClick={() => setTab('analysis')}>{t('my_analysis')}</button>
+        <button style={s.tab(tab === 'plan')} onClick={() => setTab('plan')}>{t('workout_plan')}</button>
       </div>
 
       {tab === 'analysis' && analysis && (
         <>
           {/* Key Stats */}
           <div style={s.card}>
-            <h3 style={s.cardTitle}>Key Stats</h3>
+            <h3 style={s.cardTitle}>{t('key_stats')}</h3>
             <div style={s.statsGrid}>
               <div style={s.statBox}>
                 <span style={s.statValue}>{profile.height || '--'}</span>
-                <span style={s.statLabel}>Height (cm)</span>
+                <span style={s.statLabel}>{t('height_cm')}</span>
               </div>
               <div style={s.statBox}>
                 <span style={s.statValue}>{profile.weight || '--'}</span>
-                <span style={s.statLabel}>Weight (kg)</span>
+                <span style={s.statLabel}>{t('weight_kg')}</span>
               </div>
               <div style={s.statBox}>
                 <span style={s.statValue}>{profile.age || '--'}</span>
-                <span style={s.statLabel}>Age</span>
+                <span style={s.statLabel}>{t('age')}</span>
               </div>
               <div style={s.statBox}>
                 <span style={{ ...s.statValue, color: bmiColor(bmiVal) }}>
                   {bmiVal > 0 ? bmiVal.toFixed(1) : '--'}
                 </span>
-                <span style={s.statLabel}>BMI {analysis.bmi ? `(${analysis.bmi.classification})` : ''}</span>
+                <span style={s.statLabel}>{t('bmi')} {analysis.bmi ? `(${analysis.bmi.classification})` : ''}</span>
               </div>
             </div>
           </div>
 
           {/* Body Composition */}
           <div style={s.card}>
-            <h3 style={s.cardTitle}>Body Composition</h3>
+            <h3 style={s.cardTitle}>{t('body_composition')}</h3>
             <div style={s.row}>
-              <span style={s.rowLabel}>Est. Body Fat</span>
+              <span style={s.rowLabel}>{t('est_body_fat')}</span>
               <span style={s.rowValue}>{analysis.bodyFat?.estimatedPct?.toFixed(1) || '--'}%</span>
             </div>
             <div style={s.row}>
-              <span style={s.rowLabel}>Ideal Weight</span>
+              <span style={s.rowLabel}>{t('ideal_weight')}</span>
               <span style={s.rowValue}>{analysis.idealWeightRange ? `${analysis.idealWeightRange.min}-${analysis.idealWeightRange.max} kg` : '--'}</span>
             </div>
             <div style={s.row}>
-              <span style={s.rowLabel}>BMR</span>
-              <span style={s.rowValue}>{analysis.bmr ? `${analysis.bmr} kcal` : '--'}</span>
+              <span style={s.rowLabel}>{t('bmr')}</span>
+              <span style={s.rowValue}>{analysis.bmr ? `${analysis.bmr} ${t('kcal')}` : '--'}</span>
             </div>
             <div style={s.rowLast}>
-              <span style={s.rowLabel}>TDEE</span>
-              <span style={s.rowValue}>{analysis.tdee ? `${analysis.tdee} kcal` : '--'}</span>
+              <span style={s.rowLabel}>{t('tdee')}</span>
+              <span style={s.rowValue}>{analysis.tdee ? `${analysis.tdee} ${t('kcal')}` : '--'}</span>
             </div>
             <div style={{ fontSize: '0.68rem', color: 'var(--muted)', marginTop: 8 }}>
               {analysis.bodyFat?.accuracyNote || ''}
@@ -232,9 +235,9 @@ export default function WorkoutPlan({ onClose }) {
           {/* Heart Rate Zones */}
           {hrZonesArray.length > 0 && (
             <div style={s.card}>
-              <h3 style={s.cardTitle}>Heart Rate Zones</h3>
+              <h3 style={s.cardTitle}>{t('hr_zones')}</h3>
               <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 10 }}>
-                Max HR: {analysis.maxHR} bpm | Resting: {profile.restingHR || '70'} bpm
+                {t('max_hr')} {analysis.maxHR} {t('bpm')} | {t('resting')} {profile.restingHR || '70'} {t('bpm')}
               </div>
               {hrZonesArray.map((z, i) => (
                 <div key={i} style={s.zoneRow}>
@@ -242,7 +245,7 @@ export default function WorkoutPlan({ onClose }) {
                   <div style={{ flex: 1 }}>
                     <div style={s.zoneBar(20 + i * 15, ZONE_COLORS[i])} />
                   </div>
-                  <span style={s.zoneBpm}>{z.min}-{z.max} bpm</span>
+                  <span style={s.zoneBpm}>{z.min}-{z.max} {t('bpm')}</span>
                 </div>
               ))}
             </div>
@@ -250,33 +253,33 @@ export default function WorkoutPlan({ onClose }) {
 
           {/* Daily Targets */}
           <div style={s.card}>
-            <h3 style={s.cardTitle}>Daily Targets</h3>
+            <h3 style={s.cardTitle}>{t('daily_targets')}</h3>
             <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 12 }}>
               {analysis.calories?.note || ''}
             </div>
-            <MacroBar label="Calories" value={calTarget} unit="kcal" color="var(--accent)" max={3500} />
-            <MacroBar label="Protein" value={proteinG} unit="g" color="var(--blue)" max={250} />
-            <MacroBar label="Carbs" value={carbG} unit="g" color="var(--yellow)" max={400} />
-            <MacroBar label="Fat" value={fatG} unit="g" color="var(--red)" max={150} />
+            <MacroBar label={t('calories')} value={calTarget} unit={t('kcal')} color="var(--accent)" max={3500} />
+            <MacroBar label={t('protein_cap')} value={proteinG} unit="g" color="var(--blue)" max={250} />
+            <MacroBar label={t('carbs')} value={carbG} unit="g" color="var(--yellow)" max={400} />
+            <MacroBar label={t('fat')} value={fatG} unit="g" color="var(--red)" max={150} />
           </div>
 
           {/* Strength Potential */}
           {analysis.strengthPotential && (
             <div style={s.card}>
-              <h3 style={s.cardTitle}>Estimated 1RM Potential</h3>
+              <h3 style={s.cardTitle}>{t('est_1rm')}</h3>
               <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 10 }}>
                 {analysis.strengthPotential.note}
               </div>
               <div style={s.row}>
-                <span style={s.rowLabel}>Squat</span>
+                <span style={s.rowLabel}>{t('squat')}</span>
                 <span style={s.rowValue}>{analysis.strengthPotential.squat1RM} kg</span>
               </div>
               <div style={s.row}>
-                <span style={s.rowLabel}>Bench Press</span>
+                <span style={s.rowLabel}>{t('bench_press')}</span>
                 <span style={s.rowValue}>{analysis.strengthPotential.benchPress1RM} kg</span>
               </div>
               <div style={s.rowLast}>
-                <span style={s.rowLabel}>Deadlift</span>
+                <span style={s.rowLabel}>{t('deadlift')}</span>
                 <span style={s.rowValue}>{analysis.strengthPotential.deadlift1RM} kg</span>
               </div>
             </div>
@@ -285,7 +288,7 @@ export default function WorkoutPlan({ onClose }) {
           {/* Recommendations */}
           {analysis.recommendations?.length > 0 && (
             <div style={s.card}>
-              <h3 style={s.cardTitle}>Recommendations</h3>
+              <h3 style={s.cardTitle}>{t('recommendations')}</h3>
               {analysis.recommendations.map((rec, i) => (
                 <div key={i} style={s.recommendation}>
                   <p style={s.recText}>{rec}</p>
@@ -299,14 +302,14 @@ export default function WorkoutPlan({ onClose }) {
       {tab === 'plan' && plan && (
         <>
           <div style={s.card}>
-            <h3 style={s.cardTitle}>Your Program</h3>
+            <h3 style={s.cardTitle}>{t('your_program')}</h3>
             <div style={{ marginBottom: 12 }}>
               <span style={s.splitBadge}>{plan.split}</span>
-              <span style={s.periodBadge}>{plan.daysPerWeek} days/week</span>
+              <span style={s.periodBadge}>{plan.daysPerWeek} {t('days_week')}</span>
             </div>
             {plan.periodization && (
               <div style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.5, padding: '10px 14px', background: 'var(--card-elevated)', borderRadius: 'var(--radius-sm)' }}>
-                {plan.periodization.mesocycleWeeks}-week mesocycle: {plan.periodization.structure.map(w => w.label).join(' → ')}
+                {plan.periodization.mesocycleWeeks}-{t('week_mesocycle')} {plan.periodization.structure.map(w => w.label).join(' → ')}
               </div>
             )}
           </div>
@@ -315,7 +318,7 @@ export default function WorkoutPlan({ onClose }) {
             <div key={i} style={s.dayCard(expandedDay === i)}>
               <div style={s.dayHeader} onClick={() => setExpandedDay(expandedDay === i ? null : i)}>
                 <div>
-                  <div style={s.dayTitle}>Day {i + 1}: {day.name}</div>
+                  <div style={s.dayTitle}>{t('day')} {i + 1}: {day.name}</div>
                   <div style={s.dayMuscles}>{day.muscleGroups.join(' / ')}</div>
                 </div>
                 <span style={s.chevron(expandedDay === i)}>&#9660;</span>
@@ -327,7 +330,7 @@ export default function WorkoutPlan({ onClose }) {
                       <div style={{ flex: 1 }}>
                         <div style={s.exName}>{exerciseName(ex.exerciseKey)}</div>
                         <div style={s.exDetail}>
-                          {ex.sets} x {ex.reps} | Rest: {ex.restSeconds}s
+                          {ex.sets} x {ex.reps} | {t('rest_colon')} {ex.restSeconds}s
                         </div>
                         {ex.notes && <div style={s.exNote}>{ex.notes}</div>}
                       </div>

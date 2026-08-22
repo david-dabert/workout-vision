@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
+import { t, tExercise, onLangChange } from '../lib/i18n';
 
 const categoryLabels = {
   compound: 'Compound',
@@ -25,6 +26,9 @@ export default function ManualLog({ onClose }) {
   const [saved, setSaved] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(null); // index of entry with picker open
   const [searchTerm, setSearchTerm] = useState('');
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   function updateEntry(idx, field, value) {
     setEntries(prev => prev.map((e, i) => i === idx ? { ...e, [field]: value } : e));
@@ -123,8 +127,8 @@ export default function ManualLog({ onClose }) {
           padding: '60px 20px',
           gap: 12,
         }}>
-          <div style={{ fontSize: '2rem', color: 'var(--accent)' }}>Saved</div>
-          <p className="text-sm text-muted">Workout logged successfully.</p>
+          <div style={{ fontSize: '2rem', color: 'var(--accent)' }}>{t('saved')}</div>
+          <p className="text-sm text-muted">{t('workout_saved')}</p>
         </div>
       </div>
     );
@@ -133,8 +137,8 @@ export default function ManualLog({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Log Workout</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        <h2>{t('log_workout')}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
       </div>
 
       {entries.map((entry, entryIdx) => (
@@ -159,7 +163,7 @@ export default function ManualLog({ onClose }) {
                 setSearchTerm('');
               }}
             >
-              {entry.exerciseKey ? EXERCISES[entry.exerciseKey]?.name : 'Select exercise...'}
+              {entry.exerciseKey ? tExercise(entry.exerciseKey, EXERCISES[entry.exerciseKey]?.name) : t('select_exercise')}
             </button>
             {entries.length > 1 && (
               <button
@@ -185,7 +189,7 @@ export default function ManualLog({ onClose }) {
               <div style={{ padding: '8px 10px', position: 'sticky', top: 0, background: 'var(--card-elevated)', zIndex: 1 }}>
                 <input
                   type="text"
-                  placeholder="Search exercises..."
+                  placeholder={t('search_exercises')}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   style={{
@@ -232,14 +236,14 @@ export default function ManualLog({ onClose }) {
                         minHeight: 44,
                       }}
                     >
-                      {ex.name}
+                      {tExercise(ex.key, ex.name)}
                     </button>
                   ))}
                 </div>
               ))}
               {filteredCategories().length === 0 && (
                 <p className="text-sm text-muted" style={{ padding: 16, textAlign: 'center' }}>
-                  No exercises found.
+                  {t('no_exercises_found')}
                 </p>
               )}
             </div>
@@ -255,9 +259,9 @@ export default function ManualLog({ onClose }) {
                 alignItems: 'center',
                 marginBottom: 6,
               }}>
-                <span className="text-xs text-muted" style={{ textAlign: 'center' }}>Set</span>
-                <span className="text-xs text-muted">Reps</span>
-                <span className="text-xs text-muted">Weight (kg)</span>
+                <span className="text-xs text-muted" style={{ textAlign: 'center' }}>{t('set')}</span>
+                <span className="text-xs text-muted">{t('reps')}</span>
+                <span className="text-xs text-muted">{t('weight_kg_short')}</span>
                 <span />
               </div>
               {entry.sets.map((set, setIdx) => (
@@ -326,7 +330,7 @@ export default function ManualLog({ onClose }) {
                 style={{ marginTop: 6, fontSize: '0.78rem', minHeight: 44 }}
                 onClick={() => addSet(entryIdx)}
               >
-                + Add set
+                {t('add_set')}
               </button>
             </div>
           )}
@@ -338,7 +342,7 @@ export default function ManualLog({ onClose }) {
         style={{ width: '100%', marginBottom: 16, minHeight: 44 }}
         onClick={addExercise}
       >
-        + Add exercise
+        {t('add_exercise')}
       </button>
 
       <button
@@ -347,7 +351,7 @@ export default function ManualLog({ onClose }) {
         onClick={handleSave}
         disabled={!canSave || saving}
       >
-        {saving ? 'Saving...' : 'Log Workout'}
+        {saving ? t('saving') : t('log_workout')}
       </button>
     </div>
   );

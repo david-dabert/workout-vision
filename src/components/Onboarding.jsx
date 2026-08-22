@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { t, onLangChange } from '../lib/i18n';
 
 const TOTAL_STEPS = 4;
 
 const INJURY_AREAS = ['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'];
 
 export default function Onboarding({ onComplete }) {
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
+
   const [step, setStep] = useState(1);
   const [data, setData] = useState({
     name: '',
@@ -71,7 +75,7 @@ export default function Onboarding({ onComplete }) {
         {step > 1 && (
           <button className="btn btn-ghost" onClick={back}>
             <ChevronLeft size={16} />
-            Back
+            {t('back')}
           </button>
         )}
         <div style={{ flex: 1 }} />
@@ -81,12 +85,12 @@ export default function Onboarding({ onComplete }) {
             onClick={next}
             disabled={!canAdvance()}
           >
-            {step === 1 ? 'Get Started' : 'Continue'}
+            {step === 1 ? t('get_started') : t('next')}
             <ChevronRight size={16} />
           </button>
         ) : (
           <button className="btn btn-primary btn-lg" onClick={finish}>
-            Start Training
+            {t('finish')}
             <Check size={16} />
           </button>
         )}
@@ -104,20 +108,20 @@ function StepWelcome() {
       </div>
       <h1>Workout <span style={{ color: 'var(--accent)' }}>Vision</span></h1>
       <p className="onboarding-tagline">
-        AI-powered form coaching, personalized training plans, and nutrition tracking — all on your device.
+        {t('welcome_subtitle')}
       </p>
       <div className="onboarding-features">
         <div className="onboarding-feature">
           <Activity size={20} color="var(--accent)" />
-          <span>Real-time form analysis</span>
+          <span>{t('onb_feature_live')}</span>
         </div>
         <div className="onboarding-feature">
           <Target size={20} color="var(--accent)" />
-          <span>Personalized workout plans</span>
+          <span>{t('onb_feature_progress')}</span>
         </div>
         <div className="onboarding-feature">
           <Dumbbell size={20} color="var(--accent)" />
-          <span>Track progress over time</span>
+          <span>{t('onb_feature_nutrition')}</span>
         </div>
       </div>
     </div>
@@ -128,13 +132,13 @@ function StepWelcome() {
 function StepBasicInfo({ data, update }) {
   return (
     <div className="onboarding-step">
-      <h2>About you</h2>
+      <h2>{t('onb_step1_title')}</h2>
       <p className="text-muted text-sm" style={{ marginBottom: 16 }}>
-        This helps us calculate your baselines and personalize your experience.
+        {t('onb_step1_desc')}
       </p>
       <div className="form-grid">
         <label className="full-width">
-          <span>Name</span>
+          <span>{t('name')}</span>
           <input
             type="text"
             value={data.name}
@@ -144,7 +148,7 @@ function StepBasicInfo({ data, update }) {
           />
         </label>
         <label>
-          <span>Age</span>
+          <span>{t('age')}</span>
           <input
             type="number"
             value={data.age}
@@ -153,14 +157,14 @@ function StepBasicInfo({ data, update }) {
           />
         </label>
         <label>
-          <span>Sex</span>
+          <span>{t('sex')}</span>
           <select value={data.sex} onChange={(e) => update('sex', e.target.value)}>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            <option value="male">{t('male')}</option>
+            <option value="female">{t('female')}</option>
           </select>
         </label>
         <label>
-          <span>Weight (kg)</span>
+          <span>{t('weight_kg')}</span>
           <input
             type="number"
             value={data.weight}
@@ -169,7 +173,7 @@ function StepBasicInfo({ data, update }) {
           />
         </label>
         <label>
-          <span>Height (cm)</span>
+          <span>{t('height_cm')}</span>
           <input
             type="number"
             value={data.height}
@@ -186,41 +190,41 @@ function StepBasicInfo({ data, update }) {
 function StepFitnessInfo({ data, update, toggleInjury }) {
   return (
     <div className="onboarding-step">
-      <h2>Your fitness</h2>
+      <h2>{t('onb_step2_title')}</h2>
       <p className="text-muted text-sm" style={{ marginBottom: 16 }}>
-        We use this to tailor workout plans and recommendations.
+        {t('onb_step2_desc')}
       </p>
       <div className="form-grid">
         <label className="full-width">
-          <span>Experience Level</span>
+          <span>{t('experience')}</span>
           <select value={data.experience} onChange={(e) => update('experience', e.target.value)}>
-            <option value="beginner">Beginner (&lt;1 year)</option>
-            <option value="intermediate">Intermediate (1-3 years)</option>
-            <option value="advanced">Advanced (3+ years)</option>
+            <option value="beginner">{t('beginner')}</option>
+            <option value="intermediate">{t('intermediate')}</option>
+            <option value="advanced">{t('advanced')}</option>
           </select>
         </label>
         <label className="full-width">
-          <span>Goal</span>
+          <span>{t('goal')}</span>
           <select value={data.goal} onChange={(e) => update('goal', e.target.value)}>
-            <option value="general">General Fitness</option>
-            <option value="strength">Strength</option>
-            <option value="hypertrophy">Muscle Growth</option>
-            <option value="endurance">Endurance</option>
-            <option value="weight_loss">Weight Loss</option>
+            <option value="general">{t('general_fitness')}</option>
+            <option value="strength">{t('strength')}</option>
+            <option value="hypertrophy">{t('muscle_growth')}</option>
+            <option value="endurance">{t('endurance')}</option>
+            <option value="weight_loss">{t('weight_loss')}</option>
           </select>
         </label>
         <label className="full-width">
-          <span>Activity Level</span>
+          <span>{t('activity_level')}</span>
           <select value={data.activityLevel} onChange={(e) => update('activityLevel', e.target.value)}>
-            <option value="sedentary">Sedentary</option>
-            <option value="light">Light (1-2x/week)</option>
-            <option value="moderate">Moderate (3-4x/week)</option>
-            <option value="active">Active (5-6x/week)</option>
-            <option value="veryActive">Very Active (daily)</option>
+            <option value="sedentary">{t('sedentary')}</option>
+            <option value="light">{t('light_activity')}</option>
+            <option value="moderate">{t('moderate_activity')}</option>
+            <option value="active">{t('active_activity')}</option>
+            <option value="veryActive">{t('very_active_activity')}</option>
           </select>
         </label>
         <label className="full-width">
-          <span>Injuries / limitations (tap to select)</span>
+          <span>{t('injuries')}</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
             {INJURY_AREAS.map(area => (
               <button
@@ -249,37 +253,37 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
 /* ── Step 4: Summary ── */
 function StepSummary({ data }) {
   const goalLabels = {
-    general: 'General Fitness',
-    strength: 'Strength',
-    hypertrophy: 'Muscle Growth',
-    endurance: 'Endurance',
-    weight_loss: 'Weight Loss',
+    general: t('general_fitness'),
+    strength: t('strength'),
+    hypertrophy: t('muscle_growth'),
+    endurance: t('endurance'),
+    weight_loss: t('weight_loss'),
   };
 
   return (
     <div className="onboarding-step">
-      <h2>You're all set, {data.name || 'there'}!</h2>
+      <h2>{t('done')}, {data.name || 'there'}!</h2>
       <p className="text-muted text-sm" style={{ marginBottom: 16 }}>
-        Here's what you'll get with Workout Vision.
+        {t('welcome_subtitle')}
       </p>
 
       <div className="card" style={{ marginBottom: 10 }}>
-        <h4 style={{ margin: 0 }}>Your profile</h4>
+        <h4 style={{ margin: 0 }}>{t('profile')}</h4>
         <div className="onboarding-summary-grid">
           <div className="onboarding-summary-item">
-            <span className="stat-label">Goal</span>
+            <span className="stat-label">{t('goal')}</span>
             <span className="stat-value">{goalLabels[data.goal] || data.goal}</span>
           </div>
           <div className="onboarding-summary-item">
-            <span className="stat-label">Experience</span>
+            <span className="stat-label">{t('experience')}</span>
             <span className="stat-value" style={{ textTransform: 'capitalize' }}>{data.experience}</span>
           </div>
           <div className="onboarding-summary-item">
-            <span className="stat-label">Weight</span>
+            <span className="stat-label">{t('weight_kg')}</span>
             <span className="stat-value">{data.weight} kg</span>
           </div>
           <div className="onboarding-summary-item">
-            <span className="stat-label">Height</span>
+            <span className="stat-label">{t('height_cm')}</span>
             <span className="stat-value">{data.height} cm</span>
           </div>
         </div>
@@ -291,8 +295,8 @@ function StepSummary({ data }) {
             <Target size={20} />
           </div>
           <div>
-            <strong>Personalized Plans</strong>
-            <p className="text-muted text-sm">Workout plans adapted to your goal and level.</p>
+            <strong>{t('nav_plan_title')}</strong>
+            <p className="text-muted text-sm">{t('nav_plan_desc')}</p>
           </div>
         </div>
         <div className="onboarding-benefit">
@@ -300,8 +304,8 @@ function StepSummary({ data }) {
             <Activity size={20} />
           </div>
           <div>
-            <strong>Form Coaching</strong>
-            <p className="text-muted text-sm">Real-time AI feedback on your exercise form.</p>
+            <strong>{t('onb_feature_live')}</strong>
+            <p className="text-muted text-sm">{t('nav_live_desc')}</p>
           </div>
         </div>
         <div className="onboarding-benefit">
@@ -309,8 +313,8 @@ function StepSummary({ data }) {
             <Dumbbell size={20} />
           </div>
           <div>
-            <strong>Nutrition Tracking</strong>
-            <p className="text-muted text-sm">Log meals and track macros based on your profile.</p>
+            <strong>{t('onb_feature_nutrition')}</strong>
+            <p className="text-muted text-sm">{t('nav_food_desc')}</p>
           </div>
         </div>
       </div>

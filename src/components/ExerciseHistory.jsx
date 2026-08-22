@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllWorkouts } from '../lib/storage';
 import { EXERCISES } from '../lib/exercises';
+import { t, tExercise, onLangChange } from '../lib/i18n';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -54,6 +55,8 @@ function computePRs(sets) {
 }
 
 export default function ExerciseHistory({ onClose }) {
+  const [, setLangTick] = useState(0);
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -122,12 +125,12 @@ export default function ExerciseHistory({ onClose }) {
     return (
       <div className="page">
         <div className="page-header">
-          <h2>Exercise History</h2>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+          <h2>{t('exercise_history')}</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
         </div>
         <div style={{ textAlign: 'center', padding: 40 }}>
           <div className="spinner" />
-          <p className="text-sm text-muted">Loading history...</p>
+          <p className="text-sm text-muted">{t('loading_history')}</p>
         </div>
       </div>
     );
@@ -137,19 +140,19 @@ export default function ExerciseHistory({ onClose }) {
     return (
       <div className="page">
         <div className="page-header">
-          <h2 style={{ fontSize: '1.05rem' }}>{selectedData.name}</h2>
+          <h2 style={{ fontSize: '1.05rem' }}>{tExercise(selectedData.key, selectedData.name)}</h2>
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => setSelectedExercise(null)}
           >
-            Back
+            {t('back')}
           </button>
         </div>
 
         {/* Current PRs */}
         {prInfo && prInfo.currentBest && (
           <div className="card" style={{ marginBottom: 12, padding: 14 }}>
-            <h4 style={{ marginTop: 0 }}>Personal Records</h4>
+            <h4 style={{ marginTop: 0 }}>{t('personal_records')}</h4>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
               {prInfo.currentBest.weight != null && (
                 <div style={{ textAlign: 'center' }}>
@@ -160,7 +163,7 @@ export default function ExerciseHistory({ onClose }) {
                   }}>
                     {prInfo.currentBest.weight} kg
                   </div>
-                  <span className="text-xs text-muted">Best Weight</span>
+                  <span className="text-xs text-muted">{t('best_weight')}</span>
                 </div>
               )}
               {prInfo.currentBest.reps != null && (
@@ -172,7 +175,7 @@ export default function ExerciseHistory({ onClose }) {
                   }}>
                     {prInfo.currentBest.reps}
                   </div>
-                  <span className="text-xs text-muted">Most Reps</span>
+                  <span className="text-xs text-muted">{t('most_reps')}</span>
                 </div>
               )}
               {prInfo.currentBest.formScore != null && (
@@ -184,7 +187,7 @@ export default function ExerciseHistory({ onClose }) {
                   }}>
                     {prInfo.currentBest.formScore}
                   </div>
-                  <span className="text-xs text-muted">Best Form</span>
+                  <span className="text-xs text-muted">{t('best_form')}</span>
                 </div>
               )}
             </div>
@@ -194,7 +197,7 @@ export default function ExerciseHistory({ onClose }) {
         {/* Weight progression chart (CSS-only) */}
         {progressionData.length > 1 && (
           <div className="card" style={{ marginBottom: 12, padding: 14 }}>
-            <h4 style={{ marginTop: 0 }}>Weight Progression</h4>
+            <h4 style={{ marginTop: 0 }}>{t('weight_progression')}</h4>
             <div style={{
               display: 'flex',
               alignItems: 'flex-end',
@@ -249,7 +252,7 @@ export default function ExerciseHistory({ onClose }) {
         )}
 
         {/* All sets list */}
-        <h4>All Sets ({selectedSets.length})</h4>
+        <h4>{t('all_sets')} ({selectedSets.length})</h4>
         {selectedSets.map((s, i) => {
           const flags = prInfo.prFlags.get(s.id);
           return (
@@ -280,7 +283,7 @@ export default function ExerciseHistory({ onClose }) {
                     <span className="text-sm" style={{
                       color: s.formScore >= 80 ? 'var(--accent)' : s.formScore >= 60 ? 'var(--yellow)' : 'var(--red)',
                     }}>
-                      Form: {s.formScore}
+                      {t('form_colon')} {s.formScore}
                     </span>
                   )}
                   {s.source && (
@@ -306,7 +309,7 @@ export default function ExerciseHistory({ onClose }) {
                   minHeight: 24,
                   whiteSpace: 'nowrap',
                 }}>
-                  PR
+                  {t('pr')}
                 </span>
               )}
             </div>
@@ -320,13 +323,13 @@ export default function ExerciseHistory({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Exercise History</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        <h2>{t('exercise_history')}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
       </div>
 
       {exerciseList.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-          <p className="text-muted">No exercises recorded yet.</p>
+          <p className="text-muted">{t('no_exercises_recorded')}</p>
           <p className="text-xs text-muted" style={{ marginTop: 6 }}>
             Log a workout to start tracking your history.
           </p>
@@ -351,22 +354,22 @@ export default function ExerciseHistory({ onClose }) {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ color: '#fff', fontSize: '0.88rem' }}>{ex.name}</strong>
-                <span className="text-xs text-muted">{ex.sets.length} sets</span>
+                <strong style={{ color: '#fff', fontSize: '0.88rem' }}>{tExercise(ex.key, ex.name)}</strong>
+                <span className="text-xs text-muted">{ex.sets.length} {t('sets')}</span>
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
                 {pr.currentBest.weight != null && (
                   <span className="text-xs" style={{ color: 'var(--yellow)' }}>
-                    Best: {pr.currentBest.weight} kg
+                    {t('best_colon')} {pr.currentBest.weight} kg
                   </span>
                 )}
                 {pr.currentBest.reps != null && (
                   <span className="text-xs" style={{ color: 'var(--accent)' }}>
-                    Max reps: {pr.currentBest.reps}
+                    {t('max_reps_colon')} {pr.currentBest.reps}
                   </span>
                 )}
                 <span className="text-xs text-muted">
-                  Last: {formatDateShort(ex.mostRecent.toISOString())}
+                  {t('last_colon')} {formatDateShort(ex.mostRecent.toISOString())}
                 </span>
               </div>
             </button>

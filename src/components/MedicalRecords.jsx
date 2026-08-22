@@ -1,23 +1,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveMedicalRecord, getMedicalRecords, deleteMedicalRecord } from '../lib/storage';
+import { t, getLang, onLangChange } from '../lib/i18n';
 
-const HEALTH_MARKERS = [
-  'Resting heart rate',
-  'Blood pressure (systolic/diastolic)',
-  'HbA1c',
-  'Testosterone',
-  'Vitamin D',
-  'Iron / Ferritin',
-  'CRP (inflammation)',
-  'Lipid panel (LDL, HDL, triglycerides)',
-  'Injury history / notes',
-];
+function getHealthMarkers() {
+  return [
+    t('marker_resting_hr'),
+    t('marker_blood_pressure'),
+    t('marker_hba1c'),
+    t('marker_testosterone'),
+    t('marker_vitamin_d'),
+    t('marker_iron'),
+    t('marker_crp'),
+    t('marker_lipids'),
+    t('marker_injuries'),
+  ];
+}
 
 export default function MedicalRecords({ onClose }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [, setLangTick] = useState(0);
   const fileInputRef = useRef(null);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     loadRecords();
@@ -93,8 +99,8 @@ export default function MedicalRecords({ onClose }) {
     return (
       <div className="page">
         <div className="page-header">
-          <h2>Medical Records</h2>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+          <h2>{t('medical_records_title')}</h2>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
         </div>
         <div style={{ textAlign: 'center', padding: 40 }}>
           <div className="spinner" />
@@ -106,8 +112,8 @@ export default function MedicalRecords({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h2>Medical Records</h2>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        <h2>{t('medical_records_title')}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
       </div>
 
       {/* Upload zone */}
@@ -115,9 +121,9 @@ export default function MedicalRecords({ onClose }) {
         <div className="upload-content">
           <div className="upload-icon">+</div>
           <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>
-            {uploading ? 'Uploading...' : 'Upload medical records'}
+            {uploading ? t('uploading') : t('upload_medical')}
           </p>
-          <p className="text-xs text-muted">PDF, JPG, PNG</p>
+          <p className="text-xs text-muted">{t('pdf_jpg_png')}</p>
         </div>
         <input
           ref={fileInputRef}
@@ -131,9 +137,9 @@ export default function MedicalRecords({ onClose }) {
 
       {/* Health markers checklist */}
       <div className="card" style={{ marginTop: 10 }}>
-        <h3>Key health markers to track</h3>
+        <h3>{t('key_health_markers')}</h3>
         <ul className="health-markers">
-          {HEALTH_MARKERS.map((marker, i) => (
+          {getHealthMarkers().map((marker, i) => (
             <li key={i}>{marker}</li>
           ))}
         </ul>
@@ -142,7 +148,7 @@ export default function MedicalRecords({ onClose }) {
       {/* Uploaded records */}
       {records.length > 0 && (
         <div style={{ marginTop: 10 }}>
-          <h4>Uploaded records</h4>
+          <h4>{t('uploaded_records')}</h4>
           {records.map(r => (
             <div key={r.id} className="record-item">
               <div className="record-header">
@@ -156,7 +162,7 @@ export default function MedicalRecords({ onClose }) {
                   className="btn btn-ghost btn-sm btn-danger"
                   onClick={() => handleDelete(r.id)}
                 >
-                  Delete
+                  {t('delete')}
                 </button>
               </div>
 
@@ -176,7 +182,7 @@ export default function MedicalRecords({ onClose }) {
                   textAlign: 'center',
                   marginBottom: 6,
                 }}>
-                  <span className="text-sm text-muted">PDF document</span>
+                  <span className="text-sm text-muted">{t('pdf_document')}</span>
                 </div>
               )}
 
@@ -184,12 +190,12 @@ export default function MedicalRecords({ onClose }) {
                 className="record-notes"
                 value={r.notes}
                 onChange={(e) => handleNotesChange(r.id, e.target.value)}
-                placeholder="Add notes about this record..."
+                placeholder={t('add_notes_record')}
                 rows={2}
               />
 
               <span className="text-xs text-muted" style={{ marginTop: 4, display: 'block' }}>
-                Uploaded {new Date(r.date).toLocaleDateString('en-GB', {
+                {t('uploaded')} {new Date(r.date).toLocaleDateString(getLang() === 'fr' ? 'fr-FR' : 'en-GB', {
                   day: 'numeric', month: 'short', year: 'numeric'
                 })}
               </span>

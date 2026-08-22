@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAllWorkouts, getFoodLog } from '../lib/storage';
 import { getDailyTargets, estimateDailyBurn } from '../lib/nutrition';
 import { analyzeProgression } from '../lib/progression';
+import { t, onLangChange } from '../lib/i18n';
 import { Flame, Dumbbell, Target, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard({ profile, modelStatus, onNavigate }) {
@@ -9,11 +10,13 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
   const [todayStats, setTodayStats] = useState(null);
   const [progression, setProgression] = useState(null);
   const [showInstall, setShowInstall] = useState(false);
+  const [, setLangTick] = useState(0);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   useEffect(() => {
     const handler = () => setShowInstall(true);
     window.addEventListener('installpromptready', handler);
-    // Check if already available
     if (window.getInstallPrompt && window.getInstallPrompt()) setShowInstall(true);
     return () => window.removeEventListener('installpromptready', handler);
   }, []);
@@ -65,8 +68,8 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
 
   const statusDot = modelStatus === 'ready' ? 'ready'
     : modelStatus === 'error' ? 'err' : 'pulse';
-  const statusText = modelStatus === 'ready' ? 'AI Engine Ready'
-    : modelStatus === 'error' ? 'Engine Failed' : 'Loading AI...';
+  const statusText = modelStatus === 'ready' ? t('ai_engine_ready')
+    : modelStatus === 'error' ? t('engine_failed') : t('loading_ai');
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -77,7 +80,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
     <div className="home">
       <div className="home-top">
         <h1 className="logo">Workout<span>Vision</span></h1>
-        <p className="tagline">Your AI Gym Companion</p>
+        <p className="tagline">{t('tagline')}</p>
         <div className="model-status"><span className={`dot ${statusDot}`} />{statusText}</div>
       </div>
       <div className="card" style={{ height: 80, background: 'var(--card)', borderRadius: 'var(--radius)', animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -93,7 +96,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
     <div className="home">
       <div className="home-top">
         <h1 className="logo">Workout<span>Vision</span></h1>
-        <p className="tagline">Your AI Gym Companion</p>
+        <p className="tagline">{t('tagline')}</p>
         <div className="model-status">
           <span className={`dot ${statusDot}`} />
           {statusText}
@@ -103,24 +106,24 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
       {showInstall && (
         <div className="install-banner">
           <div>
-            <p>Install WorkoutVision</p>
-            <span className="text-xs text-muted">Add to home screen for full app experience</span>
+            <p>{t('install_app')}</p>
+            <span className="text-xs text-muted">{t('install_desc')}</span>
           </div>
-          <button className="btn btn-primary btn-sm" onClick={handleInstall}>Install</button>
+          <button className="btn btn-primary btn-sm" onClick={handleInstall}>{t('install')}</button>
         </div>
       )}
 
       {/* Today's snapshot */}
       {todayStats && (todayStats.workoutCount > 0 || todayStats.caloriesEaten > 0) && (
         <div className="card">
-          <h4 style={{ marginBottom: 8 }}>Today</h4>
+          <h4 style={{ marginBottom: 8 }}>{t('today')}</h4>
           <div className="today-stats">
             {todayStats.workoutCount > 0 && (
               <div className="today-stat">
                 <Dumbbell size={16} style={{ color: 'var(--accent)' }} />
                 <div>
-                  <span className="today-stat-value">{todayStats.workoutCount} sets</span>
-                  <span className="today-stat-label">{todayStats.totalReps} reps</span>
+                  <span className="today-stat-value">{todayStats.workoutCount} {t('sets')}</span>
+                  <span className="today-stat-label">{todayStats.totalReps} {t('reps').toLowerCase()}</span>
                 </div>
               </div>
             )}
@@ -128,8 +131,8 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
               <div className="today-stat">
                 <Flame size={16} style={{ color: 'var(--red)' }} />
                 <div>
-                  <span className="today-stat-value">{todayStats.caloriesBurned} kcal</span>
-                  <span className="today-stat-label">burned</span>
+                  <span className="today-stat-value">{todayStats.caloriesBurned} {t('kcal')}</span>
+                  <span className="today-stat-label">{t('burned')}</span>
                 </div>
               </div>
             )}
@@ -138,7 +141,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                 <Target size={16} style={{ color: 'var(--blue)' }} />
                 <div>
                   <span className="today-stat-value">{todayStats.caloriesEaten}/{todayStats.calorieTarget}</span>
-                  <span className="today-stat-label">kcal eaten</span>
+                  <span className="today-stat-label">{t('kcal_eaten')}</span>
                 </div>
               </div>
             )}
@@ -147,7 +150,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                 <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '0.75rem' }}>P</span>
                 <div>
                   <span className="today-stat-value">{Math.round(todayStats.proteinEaten)}/{todayStats.proteinTarget}g</span>
-                  <span className="today-stat-label">protein</span>
+                  <span className="today-stat-label">{t('protein')}</span>
                 </div>
               </div>
             )}
@@ -161,20 +164,20 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           <div className="progression-header">
             <div>
               <span className={`progression-badge ${progression.overallTrend}`}>
-                {progression.overallTrend === 'progressing' ? 'Progressing' :
-                 progression.overallTrend === 'regressing' ? 'Needs attention' : 'Plateau'}
+                {progression.overallTrend === 'progressing' ? t('progressing') :
+                 progression.overallTrend === 'regressing' ? t('needs_attention') : t('plateau')}
               </span>
             </div>
             <div style={{ textAlign: 'right' }}>
               {progression.streakDays > 0 && (
-                <span className="streak-badge">{progression.streakDays}d streak</span>
+                <span className="streak-badge">{progression.streakDays}{t('d_streak')}</span>
               )}
             </div>
           </div>
           {progression.deloadNeeded && (
             <div className="deload-warning">
               <AlertTriangle size={14} />
-              <span>Consider a deload week. Form scores declining over 4 weeks.</span>
+              <span>{t('deload_warning')}</span>
             </div>
           )}
           {progression.exerciseProgressions.length > 0 && (
@@ -192,7 +195,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
               ))}
               {progression.exerciseProgressions.length > 2 && (
                 <button className="btn btn-ghost btn-sm" style={{ width: '100%', marginTop: 4 }} onClick={() => onNavigate('progress')}>
-                  View all progressions
+                  {t('view_all_progressions')}
                 </button>
               )}
             </div>
@@ -208,9 +211,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('train'); } }}
         >
-          <span className="nav-icon">LIVE</span>
-          <span className="nav-title">Live Training</span>
-          <span className="nav-desc">Real-time form coaching with camera</span>
+          <span className="nav-icon">{t('nav_live')}</span>
+          <span className="nav-title">{t('nav_live_title')}</span>
+          <span className="nav-desc">{t('nav_live_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -219,9 +222,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('analyze'); } }}
         >
-          <span className="nav-icon">VIDEO</span>
-          <span className="nav-title">Analyze Video</span>
-          <span className="nav-desc">Upload and analyze recordings</span>
+          <span className="nav-icon">{t('nav_video')}</span>
+          <span className="nav-title">{t('nav_video_title')}</span>
+          <span className="nav-desc">{t('nav_video_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -230,9 +233,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('identify'); } }}
         >
-          <span className="nav-icon">ID</span>
-          <span className="nav-title">Identify Machine</span>
-          <span className="nav-desc">Photo a machine to find the exercise</span>
+          <span className="nav-icon">{t('nav_id')}</span>
+          <span className="nav-title">{t('nav_id_title')}</span>
+          <span className="nav-desc">{t('nav_id_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -241,9 +244,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('nutrition'); } }}
         >
-          <span className="nav-icon">FOOD</span>
-          <span className="nav-title">Log Nutrition</span>
-          <span className="nav-desc">Scan barcode or photo your plate</span>
+          <span className="nav-icon">{t('nav_food')}</span>
+          <span className="nav-title">{t('nav_food_title')}</span>
+          <span className="nav-desc">{t('nav_food_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -252,9 +255,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('plan'); } }}
         >
-          <span className="nav-icon">PLAN</span>
-          <span className="nav-title">My Plan</span>
-          <span className="nav-desc">Personalized workout plan & body analysis</span>
+          <span className="nav-icon">{t('nav_plan')}</span>
+          <span className="nav-title">{t('nav_plan_title')}</span>
+          <span className="nav-desc">{t('nav_plan_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -263,9 +266,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('log'); } }}
         >
-          <span className="nav-icon">LOG</span>
-          <span className="nav-title">Manual Log</span>
-          <span className="nav-desc">Log sets without camera</span>
+          <span className="nav-icon">{t('nav_log')}</span>
+          <span className="nav-title">{t('nav_log_title')}</span>
+          <span className="nav-desc">{t('nav_log_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -274,9 +277,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('history'); } }}
         >
-          <span className="nav-icon">PRs</span>
-          <span className="nav-title">Exercise History</span>
-          <span className="nav-desc">All sets, PRs, and progress per exercise</span>
+          <span className="nav-icon">{t('nav_prs')}</span>
+          <span className="nav-title">{t('nav_prs_title')}</span>
+          <span className="nav-desc">{t('nav_prs_desc')}</span>
         </div>
         <div
           className="nav-card"
@@ -285,24 +288,24 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('timer'); } }}
         >
-          <span className="nav-icon">REST</span>
-          <span className="nav-title">Rest Timer</span>
-          <span className="nav-desc">Between-set countdown with audio alert</span>
+          <span className="nav-icon">{t('nav_rest')}</span>
+          <span className="nav-title">{t('nav_rest_title')}</span>
+          <span className="nav-desc">{t('nav_rest_desc')}</span>
         </div>
       </div>
 
       {!profile && (
         <div className="card card-cta card-welcome" onClick={() => onNavigate('profile')}>
-          <h3>Set up your profile</h3>
+          <h3>{t('setup_profile')}</h3>
           <p className="text-sm text-muted">
-            Add your weight, height, age for personalized calories and macro targets
+            {t('setup_profile_desc')}
           </p>
         </div>
       )}
 
       {recentWorkouts.length > 0 && (
         <div style={{ marginTop: 8 }}>
-          <h3>Recent</h3>
+          <h3>{t('recent')}</h3>
           {recentWorkouts.map(w => (
             <div key={w.id} className="card card-row">
               <div>
@@ -315,11 +318,11 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                 </span>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ color: '#fff', fontWeight: 700 }}>{w.reps} reps</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>{w.reps} {t('reps').toLowerCase()}</span>
                 {w.formScore != null && (
                   <>
                     <br />
-                    <span className="text-xs text-muted">Form: {w.formScore}</span>
+                    <span className="text-xs text-muted">{t('form_colon')} {w.formScore}</span>
                   </>
                 )}
               </div>
@@ -329,31 +332,31 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
       )}
 
       <div className="home-info">
-        <h3>Your AI Gym Companion</h3>
+        <h3>{t('tagline')}</h3>
         <div className="steps">
           <div className="step-row">
             <span className="step-n">1</span>
-            <span>Real-time pose detection with form coaching and voice cues</span>
+            <span>{t('step_1_desc')}</span>
           </div>
           <div className="step-row">
             <span className="step-n">2</span>
-            <span>Track nutrition: scan barcodes, photo plates, search 100+ foods</span>
+            <span>{t('step_2_desc')}</span>
           </div>
           <div className="step-row">
             <span className="step-n">3</span>
-            <span>Get science-backed progression and periodization recommendations</span>
+            <span>{t('step_3_desc')}</span>
           </div>
         </div>
 
         <div className="science">
-          <h4>What makes it different</h4>
+          <h4>{t('what_makes_different')}</h4>
           <ul>
-            <li>Real-time pose detection with 33 body landmarks</li>
-            <li>Per-rep form scoring and voice coaching</li>
-            <li>Velocity tracking for fatigue detection</li>
-            <li>55+ exercises with form analysis</li>
-            <li>Personalized nutrition and macro targets</li>
-            <li>Periodized workout plans adapted to your goals</li>
+            <li>{t('diff_1')}</li>
+            <li>{t('diff_2')}</li>
+            <li>{t('diff_3')}</li>
+            <li>{t('diff_4')}</li>
+            <li>{t('diff_5')}</li>
+            <li>{t('diff_6')}</li>
           </ul>
         </div>
       </div>

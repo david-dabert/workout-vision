@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { t, onLangChange } from '../lib/i18n';
 
 const PRESETS = [30, 60, 90, 120, 180, 300];
 
@@ -49,8 +50,11 @@ export default function RestTimer({ onClose }) {
   const [completed, setCompleted] = useState(0);
   const [customInput, setCustomInput] = useState('');
   const [showCustom, setShowCustom] = useState(false);
+  const [, setLangTick] = useState(0);
   const intervalRef = useRef(null);
   const wakeLockRef = useRef(null);
+
+  useEffect(() => onLangChange(() => setLangTick(n => n + 1)), []);
 
   // Wake Lock
   const requestWakeLock = useCallback(async () => {
@@ -153,10 +157,10 @@ export default function RestTimer({ onClose }) {
         <button className="btn-icon" onClick={onClose} aria-label="Close">
           &#x2715;
         </button>
-        <h2>Rest Timer</h2>
+        <h2>{t('rest_timer_title')}</h2>
         <div className="rest-timer-completed">
           <span className="rest-completed-count">{completed}</span>
-          <span className="rest-completed-label">RESTS</span>
+          <span className="rest-completed-label">{t('rests')}</span>
         </div>
       </div>
 
@@ -185,9 +189,9 @@ export default function RestTimer({ onClose }) {
           <span className={`rest-timer-digits ${isComplete ? 'rest-timer-done' : ''}`}>
             {formatTime(remaining)}
           </span>
-          {isComplete && <span className="rest-timer-done-label">DONE</span>}
+          {isComplete && <span className="rest-timer-done-label">{t('ready')}</span>}
           {!isComplete && !running && remaining === totalSeconds && (
-            <span className="rest-timer-ready-label">READY</span>
+            <span className="rest-timer-ready-label">{t('ready')}</span>
           )}
         </div>
       </div>
@@ -209,7 +213,7 @@ export default function RestTimer({ onClose }) {
           onClick={() => setShowCustom(true)}
           disabled={running}
         >
-          Custom
+          {t('custom')}
         </button>
       </div>
 
@@ -218,29 +222,29 @@ export default function RestTimer({ onClose }) {
         <div className="rest-timer-custom">
           <input
             type="number"
-            placeholder="Seconds (max 600)"
+            placeholder={t('seconds_max_600')}
             value={customInput}
             onChange={e => setCustomInput(e.target.value)}
             min="1"
             max="600"
             autoFocus
           />
-          <button className="btn btn-primary btn-sm" onClick={handleCustomSubmit}>Set</button>
+          <button className="btn btn-primary btn-sm" onClick={handleCustomSubmit}>{t('set')}</button>
         </div>
       )}
 
       {/* Controls */}
       <div className="rest-timer-controls">
         <button className="btn btn-ghost btn-lg" onClick={handleReset} disabled={remaining === totalSeconds && !running}>
-          Reset
+          {t('reset')}
         </button>
         {running ? (
           <button className="btn btn-primary btn-lg rest-timer-main-btn" onClick={handlePause}>
-            Pause
+            {t('pause')}
           </button>
         ) : (
           <button className="btn btn-primary btn-lg rest-timer-main-btn" onClick={handleStart}>
-            {isComplete ? 'Restart' : 'Start'}
+            {isComplete ? t('restart') : t('start')}
           </button>
         )}
       </div>
