@@ -5,7 +5,7 @@ import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
 import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
-import { shareCard } from '../lib/shareCard';
+import { shareCard, shareAnimatedCard } from '../lib/shareCard';
 import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
@@ -955,6 +955,13 @@ function ResultCard({ result, onReplay }) {
         onClick={() => shareCard(result)}
       >
         {t('share_card')}
+      </button>
+      <button
+        className="btn btn-ghost"
+        style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600, background: 'linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,212,255,0.08))', border: '1px solid rgba(0,255,136,0.2)' }}
+        onClick={() => shareAnimatedCard(result)}
+      >
+        {t('share_reel')}
       </button>
     </div>
   );

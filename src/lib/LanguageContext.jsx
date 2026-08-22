@@ -123,6 +123,7 @@ const translations = {
   'per_rep_quality': { en: 'Per-rep quality', fr: 'Qualité par rep' },
   'watch_overlay': { en: 'Watch with AI Overlay', fr: 'Voir avec superposition IA' },
   'share_card': { en: 'Share Summary Card', fr: 'Partager la fiche résumé' },
+  'share_reel': { en: 'Share as Reel ▶', fr: 'Partager en Reel ▶' },
   'no_poses': { en: 'Could not detect any poses', fr: 'Aucune pose détectée' },
   'try_different': { en: 'Try a different angle or better lighting, or use Live Training mode.', fr: 'Essayez un autre angle ou un meilleur éclairage, ou utilisez le mode en direct.' },
   'model_failed': { en: "AI model failed to load. Check your connection.", fr: "Le modèle IA n'a pas pu se charger. Vérifiez votre connexion." },
