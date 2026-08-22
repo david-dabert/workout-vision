@@ -82,20 +82,27 @@ function canExportVideo() {
 export default function VideoReplay({ videoUrl, frames, exerciseName, reps, formScore, onClose }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const ctxRef = useRef(null); // cached 2d context
   const hdCanvasRef = useRef(null);
+  const hdRafRef = useRef(null); // HD export RAF stored in ref for cleanup
   const rafRef = useRef(null);
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const progressFrameRef = useRef(0); // throttle setProgress
 
   const [playing, setPlaying] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [progress, setProgress] = useState(0);
 
+  // Detect iOS for resolution caps
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
   // Draw composite frame on the playback canvas.
   // Throttled to ~15 FPS on mobile to reduce memory pressure.
   const lastDrawRef = useRef(0);
-  const DRAW_INTERVAL = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 66 : 33; // 15fps iOS, 30fps desktop
+  const DRAW_INTERVAL = IS_IOS ? 66 : 33; // 15fps iOS, 30fps desktop
 
   const drawFrame = useCallback(() => {
     const video = videoRef.current;
@@ -110,12 +117,17 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     lastDrawRef.current = now;
 
     try {
-      const ctx = canvas.getContext('2d');
+      const ctx = ctxRef.current || canvas.getContext('2d');
+      ctxRef.current = ctx;
       const w = canvas.width;
       const h = canvas.height;
       ctx.drawImage(video, 0, 0, w, h);
       drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
-      setProgress(video.duration > 0 ? (video.currentTime / video.duration) * 100 : 0);
+      // Throttle setProgress to every 5th frame to reduce React re-renders
+      progressFrameRef.current++;
+      if (progressFrameRef.current % 5 === 0) {
+        setProgress(video.duration > 0 ? (video.currentTime / video.duration) * 100 : 0);
+      }
     } catch (e) {
       console.warn('Draw frame error:', e);
     }
@@ -133,12 +145,12 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       const canvas = canvasRef.current;
       if (canvas && video.videoWidth > 0) {
         // Playback canvas: cap at 480px on iOS (memory), 720px on desktop
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const maxWidth = isIOS ? 480 : 720;
+        const maxWidth = IS_IOS ? 480 : 720;
         const displayScale = Math.min(1, maxWidth / video.videoWidth);
         canvas.width = Math.round(video.videoWidth * displayScale);
         canvas.height = Math.round(video.videoHeight * displayScale);
         const ctx = canvas.getContext('2d');
+        ctxRef.current = ctx;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         if (frames.length > 0 && frames[0].landmarks) {
           drawOverlay(ctx, canvas.width, canvas.height, frames, 0, exerciseName, reps, formScore);
@@ -149,9 +161,14 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (hdRafRef.current) cancelAnimationFrame(hdRafRef.current);
       if (recorderRef.current && recorderRef.current.state !== 'inactive') {
         recorderRef.current.stop();
       }
+      // Release video decoder memory and blob URL
+      video.removeAttribute('src');
+      video.load();
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
     };
   }, [videoUrl, frames, exerciseName, reps, formScore]);
 
@@ -187,10 +204,16 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     const video = videoRef.current;
     if (!video || exporting) return;
 
-    // Create HD canvas at original video resolution
+    // Stop playback RAF before starting export to avoid double draw loops
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    setPlaying(false);
+
+    // Create HD canvas. Cap at 1080p on iOS to avoid memory crash (33MB at 4K).
+    const maxExportWidth = IS_IOS ? 1080 : video.videoWidth;
+    const exportScale = Math.min(1, maxExportWidth / video.videoWidth);
     const hdCanvas = document.createElement('canvas');
-    hdCanvas.width = video.videoWidth;
-    hdCanvas.height = video.videoHeight;
+    hdCanvas.width = Math.round(video.videoWidth * exportScale);
+    hdCanvas.height = Math.round(video.videoHeight * exportScale);
     hdCanvasRef.current = hdCanvas;
     const hdCtx = hdCanvas.getContext('2d');
 
@@ -246,19 +269,17 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     recorder.start(100);
 
     // Draw loop on the HD canvas while the video plays
-    let hdRaf;
     const drawHDFrame = () => {
       if (video.paused || video.ended) return;
       const w = hdCanvas.width;
       const h = hdCanvas.height;
       hdCtx.drawImage(video, 0, 0, w, h);
-      drawOverlay(hdCtx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
       setExportProgress(video.duration > 0 ? Math.round((video.currentTime / video.duration) * 100) : 0);
-      hdRaf = requestAnimationFrame(drawHDFrame);
+      hdRafRef.current = requestAnimationFrame(drawHDFrame);
     };
 
     const onExportEnd = () => {
-      cancelAnimationFrame(hdRaf);
+      if (hdRafRef.current) { cancelAnimationFrame(hdRafRef.current); hdRafRef.current = null; }
       if (recorder.state !== 'inactive') recorder.stop();
       video.removeEventListener('ended', onExportEnd);
       video.muted = true;
@@ -268,12 +289,13 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     // Play at normal speed for proper recording
     video.muted = true;
     video.play();
-    hdRaf = requestAnimationFrame(drawHDFrame);
+    hdRafRef.current = requestAnimationFrame(drawHDFrame);
   }, [frames, exerciseName, reps, formScore, exporting]);
 
   const cancelExport = useCallback(() => {
     const video = videoRef.current;
     if (video) video.pause();
+    if (hdRafRef.current) { cancelAnimationFrame(hdRafRef.current); hdRafRef.current = null; }
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
       recorderRef.current.stop();
     }
@@ -318,9 +340,10 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       </div>
 
       <div className="replay-view">
-        {/* visibility:hidden instead of display:none — iOS Safari refuses
-            to decode frames from display:none videos, causing black canvas */}
-        <video ref={videoRef} style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} muted playsInline preload="auto" />
+        {/* iOS Safari needs meaningful video dimensions for hardware HEVC decode.
+            1x1 or display:none forces software decode (8-10x memory). Use full
+            size but clip with overflow:hidden on parent + opacity near-zero. */}
+        <video ref={videoRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.01, pointerEvents: 'none', zIndex: -1 }} muted playsInline preload="auto" />
         <canvas
           ref={canvasRef}
           className="replay-canvas"

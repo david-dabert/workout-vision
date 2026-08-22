@@ -10,7 +10,7 @@ import { t, tExercise, getLang, setLang, onLangChange } from '../lib/i18n';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v5-reps';
+const BUILD_ID = 'v6-stable';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -64,6 +64,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const abortRef = useRef(false);
+  const blobUrlRef = useRef(null);
 
   useEffect(() => {
     const unsub = onLangChange((l) => setLangState(l));
@@ -73,6 +74,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       abortRef.current = true;
       // Free WebGL contexts to prevent iOS Safari crash on re-mount
       disposeAllLandmarkers();
+      // Free any lingering blob URL
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+      // Clear video src to release decoder memory
+      if (videoRef.current) {
+        videoRef.current.removeAttribute('src');
+        videoRef.current.load();
+      }
     };
   }, []);
 
@@ -127,9 +138,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     // Load video
     setAnalysisPhase('loading');
+    // Revoke any previous blob URL before creating a new one
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
     const url = URL.createObjectURL(queueItem.file);
+    blobUrlRef.current = url;
     let urlRevoked = false;
-    const safeRevoke = () => { if (!urlRevoked) { urlRevoked = true; URL.revokeObjectURL(url); } };
+    const safeRevoke = () => { if (!urlRevoked) { urlRevoked = true; URL.revokeObjectURL(url); blobUrlRef.current = null; } };
 
     const loaded = await new Promise((resolve) => {
       video.muted = true;
@@ -165,8 +182,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
     const interval = duration / totalFrames;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Cap analysis canvas resolution to save memory.
+    // iOS: 480p max (~1.5MB per RGBA buffer). Desktop: 720p max (~5MB).
+    // MediaPipe works fine at lower resolution; full-res is unnecessary.
+    const maxAnalysisWidth = IS_IOS ? 480 : 720;
+    const scale = Math.min(1, maxAnalysisWidth / video.videoWidth);
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
     const ctx = canvas.getContext('2d');
 
     console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${video.videoWidth}x${video.videoHeight}, ${totalFrames} frames at ${analysisFps.toFixed(1)} FPS`);
@@ -188,26 +210,35 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setAnalysisPhase('analyzing');
 
     // Wait for the video frame to actually be decoded and ready to draw.
-    // iOS Safari fires 'seeked' BEFORE the frame is decoded, so drawing
+    // iOS Safari fires 'seeked' BEFORE the HEVC frame is decoded, so drawing
     // immediately produces a black canvas.
     //
-    // Strategy: wait for video.readyState >= HAVE_CURRENT_DATA, then
-    // double-rAF to let the compositor present the frame. On iOS with
-    // HEVC, this can take 50-150ms. Timeout after 500ms and try anyway.
+    // Best: requestVideoFrameCallback (Safari 15.4+) fires only when an
+    // actual decoded frame is presented — the only reliable signal for HEVC.
+    // Fallback: readyState polling + double-rAF for older browsers.
+    const hasRVFC = typeof video.requestVideoFrameCallback === 'function';
     const waitForFrame = () => new Promise((resolve) => {
-      const start = Date.now();
-      const check = () => {
-        if (video.readyState >= 2 || Date.now() - start > 500) {
-          if (typeof requestAnimationFrame !== 'undefined') {
-            requestAnimationFrame(() => requestAnimationFrame(resolve));
+      if (hasRVFC) {
+        const timeout = setTimeout(resolve, 800); // safety cap
+        video.requestVideoFrameCallback(() => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      } else {
+        const start = Date.now();
+        const check = () => {
+          if (video.readyState >= 2 || Date.now() - start > 500) {
+            if (typeof requestAnimationFrame !== 'undefined') {
+              requestAnimationFrame(() => requestAnimationFrame(resolve));
+            } else {
+              setTimeout(resolve, 80);
+            }
           } else {
-            setTimeout(resolve, 80);
+            setTimeout(check, 20);
           }
-        } else {
-          setTimeout(check, 20);
-        }
-      };
-      check();
+        };
+        check();
+      }
     });
 
     // Process one frame at a time via seeking
@@ -284,6 +315,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     if (frames.length === 0) {
       safeRevoke();
+      // Release video decoder memory
+      video.removeAttribute('src');
+      video.load();
       alert(`${t('no_poses')} ${queueItem.name}.\n\n${t('try_different')}`);
       return null;
     }
@@ -353,6 +387,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
 
     setProgress(100);
+
+    // Release the video decoder memory — the blob URL stays alive for replay
+    video.removeAttribute('src');
+    video.load();
 
     return {
       fileName: queueItem.name, exercise: detectedExercise,

@@ -93,6 +93,7 @@ export class RepCounter {
     this._observedMax = -Infinity;
     this._useAdaptive = false;
     this._finalized = false;
+    this._positionFallbackUsed = false;
     // Frame tracking for biomechanics integration
     this._repStartFrame = 0;
     this._bottomFrame = 0;
@@ -370,8 +371,10 @@ export class RepCounter {
     // Only use position fallback for arm exercises
     if (joint !== 'elbow' && joint !== 'shoulder') return 0;
 
-    // Build signal: wrist Y relative to shoulder Y (normalized 0-1)
-    // Lower Y = higher on screen = arm raised
+    // Build signal: 3D Euclidean distance from wrist to shoulder.
+    // Uses both Y (vertical) and Z (depth) axes so it works from ANY
+    // camera angle, including behind the user where movement is primarily
+    // in the depth axis.
     const signal = [];
     for (let i = 0; i < this._collectedLandmarks.length; i++) {
       const lm = this._collectedLandmarks[i];
@@ -381,21 +384,29 @@ export class RepCounter {
       const lVis = Math.min(lm[LANDMARKS.LEFT_WRIST].visibility || 0, lm[LANDMARKS.LEFT_SHOULDER].visibility || 0);
       const rVis = Math.min(lm[LANDMARKS.RIGHT_WRIST].visibility || 0, lm[LANDMARKS.RIGHT_SHOULDER].visibility || 0);
 
-      let wristY, shoulderY;
+      let wrist, shoulder;
       if (lVis >= rVis && lVis > 0.3) {
-        wristY = lm[LANDMARKS.LEFT_WRIST].y;
-        shoulderY = lm[LANDMARKS.LEFT_SHOULDER].y;
+        wrist = lm[LANDMARKS.LEFT_WRIST];
+        shoulder = lm[LANDMARKS.LEFT_SHOULDER];
       } else if (rVis > 0.3) {
-        wristY = lm[LANDMARKS.RIGHT_WRIST].y;
-        shoulderY = lm[LANDMARKS.RIGHT_SHOULDER].y;
+        wrist = lm[LANDMARKS.RIGHT_WRIST];
+        shoulder = lm[LANDMARKS.RIGHT_SHOULDER];
       } else {
         // Neither side visible enough, try average
-        wristY = (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2;
-        shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
+        wrist = {
+          y: (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2,
+          z: ((lm[LANDMARKS.LEFT_WRIST].z || 0) + (lm[LANDMARKS.RIGHT_WRIST].z || 0)) / 2,
+        };
+        shoulder = {
+          y: (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2,
+          z: ((lm[LANDMARKS.LEFT_SHOULDER].z || 0) + (lm[LANDMARKS.RIGHT_SHOULDER].z || 0)) / 2,
+        };
       }
 
-      // Distance: positive = wrist below shoulder, negative = wrist above
-      signal.push(wristY - shoulderY);
+      // 3D Euclidean distance (Y + Z). This captures movement from any angle.
+      const dy = wrist.y - shoulder.y;
+      const dz = (wrist.z || 0) - (shoulder.z || 0);
+      signal.push(Math.sqrt(dy * dy + dz * dz));
     }
 
     // Smooth
@@ -417,7 +428,7 @@ export class RepCounter {
       if (v > posMax) posMax = v;
     }
     const posRange = posMax - posMin;
-    if (posRange < 0.03) return 0; // Less than 3% of frame height moved
+    if (posRange < 0.015) return 0; // Less than 1.5% movement threshold
 
     // Find peaks and valleys
     const extrema = [];
