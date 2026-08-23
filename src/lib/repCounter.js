@@ -1,20 +1,23 @@
 /**
- * Rep counting engine using hysteresis-based phase detection
- * on smoothed joint angles.
+ * Rep counting engine — peak/valley detection on smoothed joint angles.
  *
- * Separated from exercises.js for modularity. The EXERCISES database
- * and extractJointAngles are imported as dependencies.
+ * Architecture:
+ * - Pass 1: update() collects landmarks frame-by-frame (live counting optional)
+ * - Pass 2: finalize() runs peak/valley detection on the full signal
+ *
+ * The finalize pass is the source of truth for video analysis.
+ * Live counting is best-effort for real-time feedback.
  */
 
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 
 // ---------------------------------------------------------------------------
-// Utility: 3-frame moving average for angle smoothing
+// Utility: moving average smoother
 // ---------------------------------------------------------------------------
 
 export class AngleBuffer {
-  constructor(windowSize = 3) {
+  constructor(windowSize = 5) {
     this._window = windowSize;
     this._buffers = {};
   }
@@ -43,32 +46,14 @@ export class AngleBuffer {
 // RepCounter
 // ---------------------------------------------------------------------------
 
-/**
- * Counts repetitions for a given exercise using hysteresis-based phase detection
- * on smoothed joint angles. Prevents double-counting via explicit state machine
- * (up -> going_down -> down -> going_up -> up).
- *
- * @example
- * const counter = new RepCounter('squat');
- * // in your frame loop:
- * const result = counter.update(landmarks);
- * // result.reps, result.phase, result.formFeedback, etc.
- */
 export class RepCounter {
-  /**
-   * @param {string} exerciseKey - key from EXERCISES
-   * @param {object} [opts] - options
-   * @param {number} [opts.fps=30] - capture frame rate; adjusts smoother and state machine
-   */
   constructor(exerciseKey, opts = {}) {
     const ex = EXERCISES[exerciseKey];
     if (!ex) throw new Error(`Unknown exercise: ${exerciseKey}`);
     this._exercise = ex;
     this._exerciseKey = exerciseKey;
     this._fps = opts.fps || 30;
-    const smoothWindow = this._fps <= 5 ? 1 : 3;
-    this._smoother = new AngleBuffer(smoothWindow);
-    this._lowFps = this._fps <= 5;
+    this._smoother = new AngleBuffer(this._fps <= 5 ? 3 : 5);
     this.reset();
   }
 
@@ -78,40 +63,18 @@ export class RepCounter {
   reset() {
     this._reps = 0;
     this._repHistory = [];
-    this._currentRepIssues = [];
-    this._issueFrameCounts = {};
-    this._peakAngle = null;
     this._smoother.reset();
-    // Threshold-crossing state
-    this._atBottom = false;
-    this._frameIdx = 0;
-    this._phase = 'up';
-    this._lastValue = null;
-    // Two-pass: collect all landmarks in pass 1, count reps in pass 2
+    this._phase = 'idle';
     this._collectedLandmarks = [];
     this._observedMin = Infinity;
     this._observedMax = -Infinity;
-    this._useAdaptive = false;
     this._finalized = false;
-    this._positionFallbackUsed = false;
-    // Frame tracking for biomechanics integration
-    this._repStartFrame = 0;
-    this._bottomFrame = 0;
-    // Live hysteresis state
     this._lastRepTime = 0;
-    this._bottomAngles = null;
-    this._bottomLandmarks = null;
+    this._frameIdx = 0;
   }
 
   /**
-   * Pass 1: collect landmarks frame by frame. No rep counting happens here.
-   * Call finalize() after all frames to trigger pass 2 (rep counting with
-   * locked thresholds computed from the full observed range).
-   *
-   * @param {Array} landmarks - 33 MediaPipe landmarks
-   * @returns {{ reps: number, phase: string, angle: number, angles: object,
-   *            formFeedback: Array, repCompleted: boolean,
-   *            repHistory: Array }}
+   * Pass 1: collect landmarks and do live rep counting.
    */
   update(landmarks) {
     const rawAngles = extractJointAngles(landmarks);
@@ -126,75 +89,63 @@ export class RepCounter {
     const ex = this._exercise;
 
     if (ex.isIsometric) {
-      return this._handleIsometric(angles, landmarks);
+      return {
+        reps: 0, phase: 'hold',
+        angle: Math.round((angles.trunk || 0) * 10) / 10, angles,
+        formFeedback: this._evaluateForm(angles, landmarks),
+        repCompleted: false, repHistory: [],
+      };
     }
 
     const value = ex.getValue(angles, landmarks);
-    this._frameIdx++;
-    const now = Date.now();
+    if (value === null || value === undefined) {
+      return {
+        reps: this._reps, phase: this._phase, angle: null, angles,
+        formFeedback: [], repCompleted: false, repHistory: this._repHistory,
+      };
+    }
 
-    // Track observed range for threshold computation in finalize()
+    this._frameIdx++;
     if (value < this._observedMin) this._observedMin = value;
     if (value > this._observedMax) this._observedMax = value;
-
-    // Store for pass 2
     this._collectedLandmarks.push(landmarks);
 
-    // ── Live hysteresis rep counting ──
-    // State machine: idle -> concentric -> eccentric -> idle (rep counted)
-    // Uses exercise-defined thresholds with hysteresis gap to prevent
-    // oscillation noise from triggering phantom reps.
+    // Live hysteresis counting
     const down = ex.downThreshold;
     const up = ex.upThreshold;
     let repCompleted = false;
+    const now = Date.now();
 
     if (down > up) {
-      // Signal goes DOWN during concentric (squat, curl): value decreases then increases
-      if (this._phase === 'up' && value < down) {
-        this._phase = 'down';
-      } else if (this._phase === 'down' && value < up) {
-        this._phase = 'bottom';
-        this._bottomFrame = this._frameIdx;
-        this._bottomAngles = { ...angles };
-        this._bottomLandmarks = landmarks;
-      } else if (this._phase === 'bottom' && value > down) {
-        // Coming back up — check minimum time gate (0.8s per rep)
-        if (now - this._lastRepTime > 800) {
+      // Signal decreases during concentric (curls, squats)
+      if (this._phase === 'idle' && value < down) {
+        this._phase = 'concentric';
+      } else if (this._phase === 'concentric' && value < up) {
+        this._phase = 'contracted';
+      } else if (this._phase === 'contracted' && value > down) {
+        if (now - this._lastRepTime > 600) {
           this._lastRepTime = now;
-          this._phase = 'up';
-          // Evaluate form at bottom and current (top) frames
-          const formFeedback = this._evaluateFormLive(this._bottomAngles, angles, landmarks);
-          this._currentRepIssues = formFeedback.filter(f => !f.passed).map(f => f.name);
-          this._peakAngle = value;
-          this._completeRep(angles, landmarks);
+          this._phase = 'idle';
+          this._countLiveRep(angles, landmarks);
           repCompleted = true;
         }
       }
     } else {
-      // Signal goes UP during concentric (lateral raise, upright row): value increases then decreases
-      if (this._phase === 'up' && value > down) {
-        this._phase = 'down';
-      } else if ((this._phase === 'down' || this._phase === 'up') && value > up) {
-        this._phase = 'bottom';
-        this._bottomFrame = this._frameIdx;
-        this._bottomAngles = { ...angles };
-        this._bottomLandmarks = landmarks;
-      } else if (this._phase === 'bottom' && value < down) {
-        if (now - this._lastRepTime > 800) {
+      // Signal increases during concentric (lateral raises)
+      if (this._phase === 'idle' && value > down) {
+        this._phase = 'concentric';
+      } else if (this._phase === 'concentric' && value > up) {
+        this._phase = 'contracted';
+      } else if (this._phase === 'contracted' && value < down) {
+        if (now - this._lastRepTime > 600) {
           this._lastRepTime = now;
-          this._phase = 'up';
-          const formFeedback = this._evaluateFormLive(this._bottomAngles, angles, landmarks);
-          this._currentRepIssues = formFeedback.filter(f => !f.passed).map(f => f.name);
-          this._peakAngle = value;
-          this._completeRep(angles, landmarks);
+          this._phase = 'idle';
+          this._countLiveRep(angles, landmarks);
           repCompleted = true;
         }
       }
     }
 
-    this._lastValue = value;
-
-    // Live form feedback for display (evaluate at current frame)
     const formFeedback = this._evaluateForm(angles, landmarks);
 
     return {
@@ -206,17 +157,8 @@ export class RepCounter {
   }
 
   /**
-   * Pass 2: peak-valley rep detection on the full collected signal.
-   *
-   * Algorithm:
-   * 1. Extract the exercise getValue() for every frame -> raw signal
-   * 2. Smooth with a wider window (5-frame moving average)
-   * 3. Find local minima (valleys) and maxima (peaks)
-   * 4. A rep = one valley followed by one peak where (peak - valley) >= minROM
-   *    minROM = 30% of the full observed range, minimum 15 degrees
-   *
-   * This replaces threshold-crossing entirely. No thresholds to tune.
-   * Works on any absolute angle range.
+   * Pass 2: peak/valley rep detection on the full collected signal.
+   * This is the authoritative count for video analysis.
    */
   finalize() {
     if (this._finalized) return;
@@ -225,10 +167,10 @@ export class RepCounter {
     const ex = this._exercise;
     if (ex.isIsometric || this._collectedLandmarks.length < 6) return;
 
-    // Step 1: extract raw signal and per-frame angles/landmarks
+    // Extract the full signal
     const rawSignal = [];
-    const frameData = []; // { angles, landmarks } per frame
-    const smoother = new AngleBuffer(this._fps <= 5 ? 1 : 3);
+    const frameData = [];
+    const smoother = new AngleBuffer(5);
 
     for (let i = 0; i < this._collectedLandmarks.length; i++) {
       const landmarks = this._collectedLandmarks[i];
@@ -244,10 +186,84 @@ export class RepCounter {
       frameData.push({ angles, landmarks });
     }
 
-    // Step 2: smooth the signal with moving average
-    // Window scales with FPS: 7 frames at 8fps (0.9s), 3 frames at 4fps (0.75s)
+    // Smooth with wider window
+    const smoothed = this._smoothSignal(rawSignal);
+
+    // Debug: log signal stats
+    const validValues = smoothed.filter(v => v !== null);
+    const sigMin = Math.min(...validValues);
+    const sigMax = Math.max(...validValues);
+    console.debug(`[RepCounter] finalize: ${this._collectedLandmarks.length} frames, signal range ${Math.round(sigMin)}-${Math.round(sigMax)} (${Math.round(sigMax - sigMin)}°)`);
+
+    // Find peaks and valleys
+    const extrema = this._findExtrema(smoothed);
+    console.debug(`[RepCounter] extrema found: ${extrema.length}`, extrema.map(e => `${e.type}@${e.index}=${Math.round(e.value)}`));
+
+    // Count reps from extrema pairs
+    const range = sigMax - sigMin;
+    // Minimum ROM for a rep: 20% of observed range, floor at 10 degrees
+    const minROM = Math.max(10, range * 0.2);
+    console.debug(`[RepCounter] minROM: ${Math.round(minROM)}° (range: ${Math.round(range)}°)`);
+
+    // Reset for pass 2 count
+    this._reps = 0;
+    this._repHistory = [];
+
+    // Determine rep direction from exercise thresholds
+    const isValleyFirst = ex.upThreshold < ex.downThreshold;
+
+    let lastFirst = null;
+    for (const e of extrema) {
+      if (isValleyFirst) {
+        // Rep = valley then peak (curls, squats)
+        if (e.type === 'valley') {
+          lastFirst = e;
+        } else if (e.type === 'peak' && lastFirst !== null) {
+          const rom = e.value - lastFirst.value;
+          if (rom >= minROM) {
+            this._recordRep(frameData, lastFirst.index, e.index);
+            lastFirst = null;
+          }
+        }
+      } else {
+        // Rep = peak then valley (lateral raises)
+        if (e.type === 'peak') {
+          lastFirst = e;
+        } else if (e.type === 'valley' && lastFirst !== null) {
+          const rom = lastFirst.value - e.value;
+          if (rom >= minROM) {
+            this._recordRep(frameData, lastFirst.index, e.index);
+            lastFirst = null;
+          }
+        }
+      }
+    }
+
+    console.debug(`[RepCounter] finalize result: ${this._reps} reps`);
+
+    // Position-based fallback for 0 reps
+    if (this._reps === 0 && this._collectedLandmarks.length >= 10) {
+      const posReps = this._countRepsPositionBased(frameData);
+      console.debug(`[RepCounter] position fallback: ${posReps} reps`);
+    }
+  }
+
+  get diagnostics() {
+    const range = this._observedMax - this._observedMin;
+    return {
+      observedMin: Math.round(this._observedMin * 10) / 10,
+      observedMax: Math.round(this._observedMax * 10) / 10,
+      observedRange: Math.round(range * 10) / 10,
+      repsDetected: this._reps,
+      totalFrames: this._collectedLandmarks.length,
+    };
+  }
+
+  // ─── Private ───
+
+  _smoothSignal(rawSignal) {
     const smoothed = [];
-    const halfW = this._fps <= 5 ? 1 : 3;
+    const halfW = this._fps <= 5 ? 2 : 3;
     for (let i = 0; i < rawSignal.length; i++) {
       if (rawSignal[i] === null) { smoothed.push(null); continue; }
       let sum = 0, count = 0;
@@ -256,25 +272,24 @@ export class RepCounter {
       }
       smoothed.push(count > 0 ? sum / count : null);
     }
+    return smoothed;
+  }
 
-    // Step 3: find peaks and valleys with prominence filtering
-    // Minimum prominence = 5 degrees prevents noise extrema
-    // Minimum gap = 3 frames (~0.4s at 8fps) between extrema filters jitter
-    const MIN_PROMINENCE = 5;
-    const MIN_GAP_FRAMES = 3;
-    const extrema = [];
+  _findExtrema(smoothed) {
+    // Find all local peaks and valleys
+    const raw = [];
     for (let i = 1; i < smoothed.length - 1; i++) {
       if (smoothed[i] === null || smoothed[i-1] === null || smoothed[i+1] === null) continue;
-      if (smoothed[i] > smoothed[i-1] && smoothed[i] > smoothed[i+1]) {
-        extrema.push({ type: 'peak', index: i, value: smoothed[i] });
-      } else if (smoothed[i] < smoothed[i-1] && smoothed[i] < smoothed[i+1]) {
-        extrema.push({ type: 'valley', index: i, value: smoothed[i] });
+      if (smoothed[i] > smoothed[i-1] && smoothed[i] >= smoothed[i+1]) {
+        raw.push({ type: 'peak', index: i, value: smoothed[i] });
+      } else if (smoothed[i] < smoothed[i-1] && smoothed[i] <= smoothed[i+1]) {
+        raw.push({ type: 'valley', index: i, value: smoothed[i] });
       }
     }
 
-    // Merge consecutive same-type extrema (keep the most extreme)
+    // Merge consecutive same-type extrema (keep most extreme)
     const merged = [];
-    for (const e of extrema) {
+    for (const e of raw) {
       if (merged.length > 0 && merged[merged.length - 1].type === e.type) {
         const prev = merged[merged.length - 1];
         if (e.type === 'peak' && e.value > prev.value) merged[merged.length - 1] = e;
@@ -284,158 +299,92 @@ export class RepCounter {
       }
     }
 
-    // Filter by prominence and minimum gap between alternating extrema
+    // Filter by prominence: remove extrema that are too close in value
+    // Use 4 degrees as minimum prominence (very low — catches slow controlled reps)
+    const MIN_PROM = 4;
     const filtered = [];
     for (const e of merged) {
       if (filtered.length === 0) { filtered.push(e); continue; }
       const prev = filtered[filtered.length - 1];
-      const gap = Math.abs(e.value - prev.value);
-      const frameGap = e.index - prev.index;
-      if (gap >= MIN_PROMINENCE && frameGap >= MIN_GAP_FRAMES) {
+      const prom = Math.abs(e.value - prev.value);
+      if (prom >= MIN_PROM) {
         filtered.push(e);
-      } else if (gap < MIN_PROMINENCE) {
-        // Noise extremum: keep whichever is more extreme
+      } else {
+        // Noise: keep the more extreme one
         if (e.type === 'peak' && e.value > prev.value) filtered[filtered.length - 1] = e;
         else if (e.type === 'valley' && e.value < prev.value) filtered[filtered.length - 1] = e;
       }
-      // If frameGap too small but prominence sufficient, still keep it
-      else { filtered.push(e); }
     }
 
-    // Step 4: count reps using peak/valley pairs with sufficient ROM
-    const range = this._observedMax - this._observedMin;
-    const minROM = Math.max(15, range * 0.3);
-
-    // Reset rep state
-    this._reps = 0;
-    this._repHistory = [];
-    this._currentRepIssues = [];
-    this._issueFrameCounts = {};
-
-    // Determine the expected signal shape for a rep.
-    // If upThreshold < downThreshold (e.g. Squat: 90 < 140), the signal goes DOWN to a valley, then UP to a peak.
-    // If upThreshold > downThreshold (e.g. Upright Row: 80 > 30), the signal goes UP to a peak, then DOWN to a valley.
-    const isValleyFirst = ex.upThreshold < ex.downThreshold;
-
-    // Helper: find where the active phase toward the first extremum begins.
-    const findPhaseStart = (firstExtremumIdx) => {
-      let best = firstExtremumIdx;
-      for (let i = firstExtremumIdx - 1; i >= 0; i--) {
-        if (smoothed[i] === null) break;
-        if (isValleyFirst) {
-          if (smoothed[i] >= smoothed[best]) best = i;
-          else if (smoothed[best] - smoothed[i] > 3) break;
-        } else {
-          if (smoothed[i] <= smoothed[best]) best = i;
-          else if (smoothed[i] - smoothed[best] > 3) break;
-        }
-      }
-      return best;
-    };
-
-    let lastFirstExtremum = null;
-
-    for (const e of filtered) {
-      if (isValleyFirst) {
-        if (e.type === 'valley') {
-          lastFirstExtremum = e;
-        } else if (e.type === 'peak' && lastFirstExtremum !== null) {
-          const rom = e.value - lastFirstExtremum.value;
-          if (rom >= minROM) {
-            const phaseStart = findPhaseStart(lastFirstExtremum.index);
-            this._peakAngle = e.value;
-            this._repStartFrame = phaseStart;
-            this._bottomFrame = lastFirstExtremum.index;
-            this._frameIdx = e.index;
-
-            this._currentRepIssues = [];
-            this._issueFrameCounts = {};
-            const bottomData = frameData[lastFirstExtremum.index];
-            const topData = frameData[e.index];
-            if (bottomData || topData) {
-              const formFeedback = this._evaluateFormPhased(bottomData, topData);
-              for (const fb of formFeedback) {
-                if (!fb.passed) this._currentRepIssues.push(fb.name);
-              }
-            }
-
-            this._completeRep(
-              frameData[e.index]?.angles || bottomData?.angles || {},
-              frameData[e.index]?.landmarks || bottomData?.landmarks || []
-            );
-            lastFirstExtremum = null;
-          }
-        }
-      } else {
-        // peak->valley (e.g. Upright Row, Lateral Raise)
-        if (e.type === 'peak') {
-          lastFirstExtremum = e;
-        } else if (e.type === 'valley' && lastFirstExtremum !== null) {
-          const rom = lastFirstExtremum.value - e.value;
-          if (rom >= minROM) {
-            const phaseStart = findPhaseStart(lastFirstExtremum.index);
-            this._peakAngle = e.value;
-            this._repStartFrame = phaseStart;
-            this._bottomFrame = lastFirstExtremum.index;
-            this._frameIdx = e.index;
-
-            this._currentRepIssues = [];
-            this._issueFrameCounts = {};
-            const bottomData = frameData[lastFirstExtremum.index];
-            const topData = frameData[e.index];
-            if (bottomData || topData) {
-              const formFeedback = this._evaluateFormPhased(bottomData, topData);
-              for (const fb of formFeedback) {
-                if (!fb.passed) this._currentRepIssues.push(fb.name);
-              }
-            }
-
-            this._completeRep(
-              frameData[e.index]?.angles || bottomData?.angles || {},
-              frameData[e.index]?.landmarks || bottomData?.landmarks || []
-            );
-            lastFirstExtremum = null;
-          }
-        }
-      }
-    }
-
-    // ── POSITION-BASED FALLBACK ──
-    // If angle-based detection found 0 reps, try using wrist vertical
-    // displacement relative to shoulder. This works from ANY camera angle,
-    // including behind the user where elbow angles barely change.
-    if (this._reps === 0 && this._collectedLandmarks.length >= 6) {
-      const posReps = this._countRepsPositionBased(frameData);
-      if (posReps > 0) {
-        this._positionFallbackUsed = true;
-      }
-    }
-
-    this._useAdaptive = true; // for diagnostics display
+    return filtered;
   }
 
-  /**
-   * Position-based rep counting fallback.
-   * Uses the wrist-to-shoulder vertical distance as the signal.
-   * For curls: wrist moves up (y decreases) during contraction.
-   * For presses: wrist moves up during extension.
-   * Works from any camera angle since it uses absolute position, not joint angle.
-   */
+  _recordRep(frameData, bottomIdx, topIdx) {
+    this._reps++;
+    const bottomData = frameData[bottomIdx];
+    const topData = frameData[topIdx];
+
+    // Compute form score from form checks
+    let score = null;
+    const issues = [];
+    if (bottomData && topData) {
+      const formResults = this._exercise.formChecks.map((fc) => {
+        const isTopCheck = fc.phase === 'top';
+        const data = isTopCheck ? topData : bottomData;
+        const passed = fc.check(data.angles, data.landmarks);
+        return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
+      });
+
+      const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
+      const failedMinor = formResults.filter(f => !f.passed && f.severity !== 'major').length;
+      score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
+      for (const f of formResults) {
+        if (!f.passed) issues.push(f.bad);
+      }
+    }
+
+    this._repHistory.push({
+      score,
+      issues,
+      ts: Date.now(),
+      startFrame: bottomIdx,
+      bottomFrame: bottomIdx,
+      endFrame: topIdx,
+    });
+  }
+
+  _countLiveRep(angles, landmarks) {
+    this._reps++;
+    const formResults = this._exercise.formChecks.map((fc) => {
+      const passed = fc.check(angles, landmarks);
+      return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
+    });
+
+    const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
+    const failedMinor = formResults.filter(f => !f.passed && f.severity !== 'major').length;
+    const score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
+    const issues = formResults.filter(f => !f.passed).map(f => f.bad);
+
+    this._repHistory.push({
+      score,
+      issues,
+      ts: Date.now(),
+      startFrame: this._frameIdx,
+      bottomFrame: this._frameIdx,
+      endFrame: this._frameIdx,
+    });
+  }
+
   _countRepsPositionBased(frameData) {
     const joint = this._exercise.joint;
-    // Only use position fallback for arm exercises
     if (joint !== 'elbow' && joint !== 'shoulder') return 0;
 
-    // Build signal: 3D Euclidean distance from wrist to shoulder.
-    // Uses both Y (vertical) and Z (depth) axes so it works from ANY
-    // camera angle, including behind the user where movement is primarily
-    // in the depth axis.
+    // Build signal: wrist-to-shoulder distance
     const signal = [];
     for (let i = 0; i < this._collectedLandmarks.length; i++) {
       const lm = this._collectedLandmarks[i];
       if (!lm || lm.length < 33) { signal.push(null); continue; }
 
-      // Use the side with better visibility
       const lVis = Math.min(lm[LANDMARKS.LEFT_WRIST].visibility || 0, lm[LANDMARKS.LEFT_SHOULDER].visibility || 0);
       const rVis = Math.min(lm[LANDMARKS.RIGHT_WRIST].visibility || 0, lm[LANDMARKS.RIGHT_SHOULDER].visibility || 0);
 
@@ -447,106 +396,43 @@ export class RepCounter {
         wrist = lm[LANDMARKS.RIGHT_WRIST];
         shoulder = lm[LANDMARKS.RIGHT_SHOULDER];
       } else {
-        // Neither side visible enough, try average
-        wrist = {
-          y: (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2,
-          z: ((lm[LANDMARKS.LEFT_WRIST].z || 0) + (lm[LANDMARKS.RIGHT_WRIST].z || 0)) / 2,
-        };
-        shoulder = {
-          y: (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2,
-          z: ((lm[LANDMARKS.LEFT_SHOULDER].z || 0) + (lm[LANDMARKS.RIGHT_SHOULDER].z || 0)) / 2,
-        };
+        wrist = { y: (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2, z: 0 };
+        shoulder = { y: (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2, z: 0 };
       }
 
-      // 3D Euclidean distance (Y + Z). This captures movement from any angle.
       const dy = wrist.y - shoulder.y;
       const dz = (wrist.z || 0) - (shoulder.z || 0);
       signal.push(Math.sqrt(dy * dy + dz * dz));
     }
 
-    // Smooth
-    const smoothed = [];
-    for (let i = 0; i < signal.length; i++) {
-      if (signal[i] === null) { smoothed.push(null); continue; }
-      let sum = 0, count = 0;
-      for (let j = Math.max(0, i - 1); j <= Math.min(signal.length - 1, i + 1); j++) {
-        if (signal[j] !== null) { sum += signal[j]; count++; }
-      }
-      smoothed.push(count > 0 ? sum / count : null);
-    }
+    const smoothed = this._smoothSignal(signal);
+    const valid = smoothed.filter(v => v !== null);
+    if (valid.length < 6) return 0;
 
-    // Find range
-    let posMin = Infinity, posMax = -Infinity;
-    for (const v of smoothed) {
-      if (v === null) continue;
-      if (v < posMin) posMin = v;
-      if (v > posMax) posMax = v;
-    }
+    const posMin = Math.min(...valid);
+    const posMax = Math.max(...valid);
     const posRange = posMax - posMin;
-    if (posRange < 0.015) return 0; // Less than 1.5% movement threshold
+    if (posRange < 0.02) return 0;
 
-    // Find peaks and valleys
-    const extrema = [];
-    for (let i = 1; i < smoothed.length - 1; i++) {
-      if (smoothed[i] === null || smoothed[i-1] === null || smoothed[i+1] === null) continue;
-      if (smoothed[i] > smoothed[i-1] && smoothed[i] > smoothed[i+1]) {
-        extrema.push({ type: 'peak', index: i, value: smoothed[i] });
-      } else if (smoothed[i] < smoothed[i-1] && smoothed[i] < smoothed[i+1]) {
-        extrema.push({ type: 'valley', index: i, value: smoothed[i] });
-      }
-    }
+    // Find extrema on position signal
+    const extrema = this._findExtrema(smoothed);
+    const minROM = posRange * 0.2;
 
-    // Merge consecutive same-type
-    const merged = [];
-    for (const e of extrema) {
-      if (merged.length > 0 && merged[merged.length - 1].type === e.type) {
-        const prev = merged[merged.length - 1];
-        if (e.type === 'peak' && e.value > prev.value) merged[merged.length - 1] = e;
-        if (e.type === 'valley' && e.value < prev.value) merged[merged.length - 1] = e;
-      } else {
-        merged.push(e);
-      }
-    }
-
-    // Filter by prominence (use 25% of range as min prominence for position)
-    const minProm = posRange * 0.2;
-    const filtered = [];
-    for (const e of merged) {
-      if (filtered.length === 0) { filtered.push(e); continue; }
-      const prev = filtered[filtered.length - 1];
-      const gap = Math.abs(e.value - prev.value);
-      if (gap >= minProm) {
-        filtered.push(e);
-      } else {
-        if (e.type === 'peak' && e.value > prev.value) filtered[filtered.length - 1] = e;
-        else if (e.type === 'valley' && e.value < prev.value) filtered[filtered.length - 1] = e;
-      }
-    }
-
-    // Count reps: for curls, wrist goes DOWN (peak in distance) then UP (valley)
-    // For presses, wrist goes UP (valley) then DOWN (peak)
-    // Use peak->valley pairs (wrist rises = curl contraction)
-    const minROM = posRange * 0.25;
     let repCount = 0;
     let lastPeak = null;
 
-    for (const e of filtered) {
+    // For curls: peak distance (arm extended) → valley (arm curled) = 1 rep
+    for (const e of extrema) {
       if (e.type === 'peak') {
         lastPeak = e;
       } else if (e.type === 'valley' && lastPeak !== null) {
-        const rom = lastPeak.value - e.value;
-        if (rom >= minROM) {
+        if (lastPeak.value - e.value >= minROM) {
           repCount++;
-
-          // Build rep history entry
-          const bottomData = frameData[e.index];
-          const topData = frameData[lastPeak.index];
           this._reps++;
           this._repHistory.push({
-            score: 80, // Default score for position-detected reps
+            score: null,
             issues: [],
             ts: Date.now(),
-            peakAngle: null,
             startFrame: lastPeak.index,
             bottomFrame: e.index,
             endFrame: e.index,
@@ -556,22 +442,20 @@ export class RepCounter {
       }
     }
 
-    // Also try valley->peak (for exercises where wrist drops = rep)
+    // Try reverse direction if nothing found
     if (repCount === 0) {
       let lastValley = null;
-      for (const e of filtered) {
+      for (const e of extrema) {
         if (e.type === 'valley') {
           lastValley = e;
         } else if (e.type === 'peak' && lastValley !== null) {
-          const rom = e.value - lastValley.value;
-          if (rom >= minROM) {
+          if (e.value - lastValley.value >= minROM) {
             repCount++;
             this._reps++;
             this._repHistory.push({
-              score: 80,
+              score: null,
               issues: [],
               ts: Date.now(),
-              peakAngle: null,
               startFrame: lastValley.index,
               bottomFrame: e.index,
               endFrame: e.index,
@@ -585,122 +469,9 @@ export class RepCounter {
     return repCount;
   }
 
-  _handleIsometric(angles, landmarks) {
-    const formFeedback = this._evaluateForm(angles, landmarks);
-    return {
-      reps: 0,
-      phase: 'hold',
-      angle: Math.round(angles.trunk * 10) / 10,
-      angles,
-      formFeedback,
-      repCompleted: false,
-      repHistory: [],
-    };
-  }
-
-  /** Diagnostic data for debugging on mobile */
-  get diagnostics() {
-    const range = this._observedMax - this._observedMin;
-    const minROM = Math.max(15, range * 0.3);
-    return {
-      observedMin: Math.round(this._observedMin * 10) / 10,
-      observedMax: Math.round(this._observedMax * 10) / 10,
-      observedRange: Math.round(range * 10) / 10,
-      minROM: Math.round(minROM * 10) / 10,
-      method: this._positionFallbackUsed ? 'position-fallback' : 'peak-valley',
-      repsDetected: this._reps,
-      totalFrames: this._collectedLandmarks.length,
-    };
-  }
-
-  _completeRep(angles, landmarks) {
-    this._reps++;
-    const totalChecks = this._exercise.formChecks.length;
-    const failedMajor = this._currentRepIssues.filter((name) => {
-      const fc = this._exercise.formChecks.find((c) => c.name === name);
-      return fc && fc.severity === 'major';
-    }).length;
-    const failedMinor = this._currentRepIssues.filter((name) => {
-      const fc = this._exercise.formChecks.find((c) => c.name === name);
-      return fc && fc.severity !== 'major';
-    }).length;
-
-    // Score: start at 100, -15 per major issue, -5 per minor issue
-    const score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
-
-    // Map check names to their failure text so form notes show actionable feedback
-    // ("Curl higher -- full contraction") instead of the check name ("Full contraction")
-    const issueTexts = this._currentRepIssues.map(name => {
-      const fc = this._exercise.formChecks.find(c => c.name === name);
-      return fc ? fc.bad : name;
-    });
-
-    this._repHistory.push({
-      score,
-      issues: issueTexts,
-      ts: Date.now(),
-      peakAngle: this._peakAngle,
-      // Frame indices for biomechanics: start of descent, bottom, end of ascent
-      startFrame: this._repStartFrame,
-      bottomFrame: this._bottomFrame,
-      endFrame: this._frameIdx,
-    });
-
-    this._peakAngle = null;
-    this._currentRepIssues = [];
-    this._issueFrameCounts = {};
-    // Next rep starts from this frame
-    this._repStartFrame = this._frameIdx;
-  }
-
-  /**
-   * Live form evaluation using bottom-of-rep and top-of-rep angles.
-   * Checks tagged phase:'top' use topAngles; all others use bottomAngles.
-   */
-  _evaluateFormLive(bottomAngles, topAngles, topLandmarks) {
-    return this._exercise.formChecks.map((fc) => {
-      const isTopCheck = fc.phase === 'top';
-      const angles = isTopCheck ? topAngles : bottomAngles;
-      if (!angles) return { name: fc.name, passed: true, text: fc.good, severity: fc.severity };
-      const passed = fc.check(angles, topLandmarks);
-      return {
-        name: fc.name,
-        passed,
-        text: passed ? fc.good : fc.bad,
-        severity: fc.severity,
-      };
-    });
-  }
-
   _evaluateForm(angles, landmarks) {
     return this._exercise.formChecks.map((fc) => {
-      // Pass landmarks as optional second argument; existing checks that only
-      // use angles will simply ignore it.
       const passed = fc.check(angles, landmarks);
-      return {
-        name: fc.name,
-        passed,
-        text: passed ? fc.good : fc.bad,
-        severity: fc.severity,
-      };
-    });
-  }
-
-  /**
-   * Phase-aware form evaluation: checks tagged phase:'top' are evaluated
-   * at the peak frame (top of rep), all others at the valley frame (bottom).
-   * This fixes lockout/extension/hang checks that were previously evaluated
-   * at the wrong frame and could never pass.
-   */
-  _evaluateFormPhased(bottomData, topData) {
-    return this._exercise.formChecks.map((fc) => {
-      const isTopCheck = fc.phase === 'top';
-      const data = isTopCheck ? topData : bottomData;
-      if (!data) {
-        // If the needed frame data is missing, assume passed to avoid false negatives
-        return { name: fc.name, passed: true, text: fc.good, severity: fc.severity };
-      }
-      const passed = fc.check(data.angles, data.landmarks);
       return {
         name: fc.name,
         passed,

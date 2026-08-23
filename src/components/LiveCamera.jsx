@@ -254,7 +254,7 @@ export default function LiveCamera({ onClose }) {
           if (state.repCompleted && state.repHistory) {
             repCompleteSound();
             const latest = state.repHistory[state.repHistory.length - 1];
-            setRepBars(prev => [...prev, latest ? latest.score : 80]);
+            setRepBars(prev => [...prev, latest?.score ?? null]);
             if (voiceCoach) speak(`${state.reps}`, sessionLangRef.current);
           }
 

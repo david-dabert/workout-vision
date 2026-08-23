@@ -346,8 +346,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory); }
     catch (err) { console.error('Bio analysis error:', err); }
 
-    const avgScore = repHistory.length > 0
-      ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
+    const scoredReps = repHistory.filter(r => r.score !== null && r.score !== undefined);
+    const avgScore = scoredReps.length > 0
+      ? Math.round(scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length)
       : bioAnalysis?.movementQuality || 0;
 
     const w = parseFloat(weight) || 0;
