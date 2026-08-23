@@ -1,5 +1,4 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { preloadModel } from './lib/poseAnalysis';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider, useT } from './lib/LanguageContext';
 import { Home, TrendingUp, User, Apple } from 'lucide-react';
@@ -35,8 +34,12 @@ function AppInner() {
     let cancelled = false;
     const timeout = setTimeout(() => {
       if (!cancelled) setModelStatus('error');
-    }, 10000);
-    preloadModel()
+    }, 15000);
+    // Dynamic import: MediaPipe WASM must not execute at bundle parse time.
+    // It crashes Safari if the WASM environment isn't ready. Lazy-loading
+    // lets React mount first, then loads the AI engine in the background.
+    import('./lib/poseAnalysis')
+      .then((mod) => mod.preloadModel())
       .then((ok) => { if (!cancelled) setModelStatus(ok ? 'ready' : 'error'); })
       .catch(() => { if (!cancelled) setModelStatus('error'); });
     return () => { cancelled = true; clearTimeout(timeout); };
