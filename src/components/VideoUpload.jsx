@@ -3,7 +3,8 @@ import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disp
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
-import { saveWorkout } from '../lib/storage';
+import { analyzeSet } from '../lib/biomechanics';
+import { saveWorkout, getAllWorkouts } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
@@ -336,12 +337,18 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     repCounter.finalize();
     console.log(`[Upload] ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
 
+    const landmarkFrames = frames.map(f => f.landmarks);
     const repHistory = repCounter.repHistory || [];
     const reps = repHistory.length;
 
+    // Run biomechanical analysis for velocity, ROM, fatigue, asymmetry
+    let bioAnalysis = null;
+    try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory); }
+    catch (err) { console.error('Bio analysis error:', err); }
+
     const avgScore = repHistory.length > 0
       ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
-      : 0;
+      : bioAnalysis?.movementQuality || 0;
 
     const w = parseFloat(weight) || 0;
     const workout = {
@@ -350,8 +357,21 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
       reps, duration: Math.round(duration), formScore: avgScore,
       repHistory, weight: w, volume: w * reps, source: 'upload',
+      avgRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0,
     };
     try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
+
+    // Fetch history for progression comparison
+    let progression = null;
+    try {
+      const allWorkouts = await getAllWorkouts();
+      const prev = allWorkouts
+        .filter(s => s.exercise === detectedExercise && s.id !== workout.id)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      if (prev) {
+        progression = { prevReps: prev.reps, prevScore: prev.formScore, prevRom: prev.avgRom || 0, prevWeight: prev.weight || 0, prevDate: prev.date };
+      }
+    } catch (_) {}
 
     setProgress(100);
 
@@ -362,7 +382,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     return {
       fileName: queueItem.name, exercise: detectedExercise,
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-      reps, duration: Math.round(duration), analysisTime,
+      reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
+      bioAnalysis, repHistory, progression,
       videoUrl: url,
       frames: replayFrames,
       autoDetected,
@@ -600,10 +621,80 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 }
 
 
+// ── Coaching logic: one sentence, data-driven ──
+
+function generateCoachingInsight(repHistory, bioAnalysis) {
+  if (!repHistory || repHistory.length === 0) return null;
+
+  // Rule 1: ROM decay = fatigue
+  if (bioAnalysis?.rangeOfMotion?.perRep && bioAnalysis.rangeOfMotion.perRep.length >= 3) {
+    const roms = bioAnalysis.rangeOfMotion.perRep;
+    const firstRom = roms[0];
+    const lastRom = roms[roms.length - 1];
+    if (firstRom > 0 && lastRom < firstRom * 0.8) {
+      const drop = Math.round((1 - lastRom / firstRom) * 100);
+      return `Range of motion dropped ${drop}% across the set. Stop before form breaks down.`;
+    }
+  }
+
+  // Rule 2: Velocity slowdown = fatigue
+  if (bioAnalysis?.fatigue?.velocityDropoff > 25) {
+    return `Reps slowed ${Math.round(bioAnalysis.fatigue.velocityDropoff)}% toward the end. Fatigue detected.`;
+  }
+
+  // Rule 3: Asymmetry
+  if (bioAnalysis?.asymmetry?.score > 15) {
+    return `Left/right imbalance of ${Math.round(bioAnalysis.asymmetry.score)}% detected. Focus on equal effort from both sides.`;
+  }
+
+  // Rule 4: Tempo too fast
+  if (bioAnalysis?.velocity?.perRep) {
+    const avgVel = bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length;
+    if (avgVel > 0.8) {
+      return `Reps are fast. Slow down the lowering phase for better muscle engagement.`;
+    }
+  }
+
+  // Rule 5: Consistent quality — ready to progress
+  const scores = repHistory.map(r => r.score || 0);
+  const variance = Math.max(...scores) - Math.min(...scores);
+  if (variance < 15 && scores[0] >= 70) {
+    return `Consistent reps across the set. Ready to add weight next session.`;
+  }
+
+  // Rule 6: Identify best rep
+  const best = repHistory.reduce((a, b, i) => (b.score || 0) > (a.score || 0) ? { ...b, num: i + 1 } : a, { ...repHistory[0], num: 1 });
+  return `Rep ${best.num} was your best. Replicate that tempo and range of motion.`;
+}
+
+function generateProgressionNote(progression) {
+  if (!progression) return null;
+  const { prevReps, prevScore, prevRom, prevWeight, prevDate } = progression;
+  const daysSince = Math.round((Date.now() - new Date(prevDate).getTime()) / 86400000);
+  const dateLabel = daysSince <= 1 ? 'yesterday' : daysSince <= 7 ? `${daysSince} days ago` : new Date(prevDate).toLocaleDateString();
+
+  if (prevRom > 0 && progression.currentRom > 0) {
+    const romChange = Math.round(progression.currentRom - prevRom);
+    if (romChange > 5) return `+${romChange}° ROM improvement vs ${dateLabel}.`;
+    if (romChange < -5) return `${romChange}° ROM decrease vs ${dateLabel}. Check recovery or reduce weight.`;
+  }
+  if (progression.currentScore > prevScore + 5) return `Form improved vs ${dateLabel} (+${Math.round(progression.currentScore - prevScore)} points).`;
+  if (progression.currentScore < prevScore - 10) return `Form dropped vs ${dateLabel}. Consider reducing weight.`;
+  return `Consistent with last session (${dateLabel}).`;
+}
+
 function ResultCard({ result, onReplay }) {
   const { t, tExercise } = useT();
-  const { fileName, exerciseName, reps, duration, analysisTime } = result;
+  const {
+    fileName, exerciseName, reps, duration, analysisTime,
+    formScore, bioAnalysis, repHistory, progression,
+  } = result;
   const displayName = tExercise(result.exercise, exerciseName);
+
+  const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis);
+  const progressionNote = generateProgressionNote(
+    progression ? { ...progression, currentRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0, currentScore: formScore } : null
+  );
 
   return (
     <div className="card result-card" style={{ marginTop: 14 }}>
@@ -632,10 +723,50 @@ function ResultCard({ result, onReplay }) {
           <span className="stat-label">{t('duration')}</span>
         </div>
         <div className="stat">
+          <span className="stat-value">{formScore}</span>
+          <span className="stat-label">{t('form')}</span>
+        </div>
+        <div className="stat">
           <span className="stat-value">{analysisTime}s</span>
           <span className="stat-label">{t('analysis')}</span>
         </div>
       </div>
+
+      {/* Per-rep quality bars */}
+      {repHistory && repHistory.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <div className="rep-bars">
+            {repHistory.map((r, i) => {
+              const score = r.score || 0;
+              return (
+                <div key={i} className="rep-bar-col">
+                  <div className="rep-bar-wrap">
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(score, 5)}%`,
+                      background: score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--yellow)' : 'var(--red)',
+                    }} />
+                  </div>
+                  <span className="rep-num">{i + 1}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* One coaching insight */}
+      {coachingInsight && (
+        <p className="text-sm" style={{ marginTop: 12, lineHeight: 1.5, color: 'var(--text)', fontStyle: 'italic' }}>
+          "{coachingInsight}"
+        </p>
+      )}
+
+      {/* Progression vs last session */}
+      {progressionNote && (
+        <p className="text-xs" style={{ marginTop: 8, color: 'var(--accent)' }}>
+          {progressionNote}
+        </p>
+      )}
 
       {result.videoUrl && result.frames && (
         <button
