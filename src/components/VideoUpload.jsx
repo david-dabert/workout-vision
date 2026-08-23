@@ -18,7 +18,7 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 
 // Hard cap on frames. iOS Safari crashes with high frame counts on large
 // videos due to accumulated WASM/WebGL memory. 60 frames on iOS is safer.
-const MAX_FRAMES = IS_IOS ? 60 : 120;
+const MAX_FRAMES = IS_IOS ? 120 : 180;
 
 // File size cap. iOS Safari can crash loading very large blob URLs.
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
@@ -159,7 +159,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
     // Cap total frames at MAX_FRAMES so a long video doesn't produce hundreds of seeks.
-    const analysisFps = Math.min(3, MAX_FRAMES / duration);
+    const analysisFps = Math.min(IS_IOS ? 4 : 6, MAX_FRAMES / duration);
     const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
     const interval = duration / totalFrames;
 
@@ -222,6 +222,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       }
     });
 
+    // Person lock: select subject on first frame, keep it locked for the whole video
+    let lockedSubjectIdx = null;
+
     // Process one frame at a time via seeking
     const processFrame = (frameIdx) => {
       return new Promise((res) => {
@@ -244,7 +247,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           const result = detectPoseImage(landmarker, canvas);
 
           if (result?.landmarks?.length) {
-            const landmarks = selectSubjectPose(result.landmarks);
+            let landmarks;
+            if (result.landmarks.length === 1) {
+              landmarks = result.landmarks[0];
+            } else {
+              // Lock to first-frame subject; subsequent frames use same index
+              if (lockedSubjectIdx === null) {
+                landmarks = selectSubjectPose(result.landmarks);
+                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                console.log(`[Upload] Person lock: locked to pose index ${lockedSubjectIdx} of ${result.landmarks.length} detected`);
+              } else {
+                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+              }
+            }
             drawPose(ctx, landmarks, canvas.width, canvas.height);
 
             const angles = extractJointAngles(landmarks);
@@ -335,7 +350,18 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     }
 
     repCounter.finalize();
-    console.log(`[Upload] ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
+    console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
+    console.log(`[Upload] Reps detected: ${repCounter.reps}, diagnostics:`, repCounter.diagnostics);
+    // Log angle signal for debugging
+    if (frames.length > 0) {
+      const ex = EXERCISES[detectedExercise];
+      const sampleAngles = frames.filter((_, i) => i % 5 === 0).map(f => {
+        if (!f.angles) return null;
+        const val = ex?.getValue(f.angles, f.landmarks);
+        return val !== null ? Math.round(val) : null;
+      }).filter(v => v !== null);
+      console.log(`[Upload] Angle signal (every 5th frame):`, sampleAngles.join(', '));
+    }
 
     const landmarkFrames = frames.map(f => f.landmarks);
     const repHistory = repCounter.repHistory || [];

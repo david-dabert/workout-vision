@@ -53,7 +53,9 @@ export class RepCounter {
     this._exercise = ex;
     this._exerciseKey = exerciseKey;
     this._fps = opts.fps || 30;
-    this._smoother = new AngleBuffer(this._fps <= 5 ? 3 : 5);
+    // Smooth ~0.3s of data: at 4fps→1 frame, at 6fps→2, at 30fps→9 (capped at 5)
+    const smoothWindow = Math.min(5, Math.max(1, Math.round(this._fps * 0.3)));
+    this._smoother = new AngleBuffer(smoothWindow);
     this.reset();
   }
 
@@ -170,7 +172,8 @@ export class RepCounter {
     // Extract the full signal
     const rawSignal = [];
     const frameData = [];
-    const smoother = new AngleBuffer(5);
+    const smoothWindow = Math.min(5, Math.max(1, Math.round(this._fps * 0.3)));
+    const smoother = new AngleBuffer(smoothWindow);
 
     for (let i = 0; i < this._collectedLandmarks.length; i++) {
       const landmarks = this._collectedLandmarks[i];
@@ -263,7 +266,9 @@ export class RepCounter {
 
   _smoothSignal(rawSignal) {
     const smoothed = [];
-    const halfW = this._fps <= 5 ? 2 : 3;
+    // Scale smoothing window with FPS: ~0.5s of data
+    // At 2fps → halfW=1 (3-frame), at 4fps → halfW=2 (5-frame), at 6fps → halfW=3 (7-frame)
+    const halfW = Math.max(1, Math.round(this._fps * 0.5));
     for (let i = 0; i < rawSignal.length; i++) {
       if (rawSignal[i] === null) { smoothed.push(null); continue; }
       let sum = 0, count = 0;
