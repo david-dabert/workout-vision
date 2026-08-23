@@ -10,8 +10,15 @@
  * - Confidence-decayed ghost pose when detection drops frames.
  */
 
-import { PoseLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import localforage from 'localforage';
+
+// ─── CDN lazy loader: bypasses Vite's esbuild minifier which breaks MediaPipe WASM on iOS Safari ───
+let _mpVision = null;
+async function getMediaPipeVision() {
+  if (_mpVision) return _mpVision;
+  _mpVision = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/+esm');
+  return _mpVision;
+}
 
 const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
 const MODEL_CACHE_KEY = 'pose-landmarker-full-v1';
@@ -96,12 +103,13 @@ async function fetchModelBuffer() {
 }
 
 async function createLandmarker() {
-  const vision = await FilesetResolver.forVisionTasks(VISION_WASM);
+  const mp = await getMediaPipeVision();
+  const vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM);
   const modelBuffer = await fetchModelBuffer();
 
   for (const delegate of ['GPU', 'CPU']) {
     try {
-      const landmarker = await PoseLandmarker.createFromOptions(vision, {
+      const landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
         runningMode: 'VIDEO',
         numPoses: 3,
