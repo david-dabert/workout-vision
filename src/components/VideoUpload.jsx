@@ -17,8 +17,8 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 // Hard cap on frames. iOS Safari crashes with high frame counts on large
-// videos due to accumulated WASM/WebGL memory. 60 frames on iOS is safer.
-const MAX_FRAMES = IS_IOS ? 120 : 180;
+// videos due to accumulated WASM/WebGL memory.
+const MAX_FRAMES = IS_IOS ? 90 : 150;
 
 // File size cap. iOS Safari can crash loading very large blob URLs.
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
