@@ -32,9 +32,14 @@ function AppInner() {
   const [preSelectedExercise, setPreSelectedExercise] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) setModelStatus('error');
+    }, 10000);
     preloadModel()
-      .then((ok) => setModelStatus(ok ? 'ready' : 'error'))
-      .catch(() => setModelStatus('error'));
+      .then((ok) => { if (!cancelled) setModelStatus(ok ? 'ready' : 'error'); })
+      .catch(() => { if (!cancelled) setModelStatus('error'); });
+    return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
 
   const onNavigate = (p) => setPage(p);

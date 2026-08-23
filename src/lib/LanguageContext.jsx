@@ -13,6 +13,7 @@ const translations = {
   'search': { en: 'Search', fr: 'Rechercher' },
   'loading': { en: 'Loading...', fr: 'Chargement...' },
   'today': { en: 'Today', fr: "Aujourd'hui" },
+  'rep': { en: 'Rep', fr: 'Rép' },
   'reps': { en: 'Reps', fr: 'Reps' },
   'sets': { en: 'sets', fr: 'séries' },
   'set': { en: 'Set', fr: 'Série' },

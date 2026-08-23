@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
@@ -261,7 +261,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           const result = detectPoseImage(landmarker, canvas);
 
           if (result?.landmarks?.length) {
-            const landmarks = result.landmarks[0];
+            const landmarks = selectSubjectPose(result.landmarks);
             drawPose(ctx, landmarks, canvas.width, canvas.height);
 
             const angles = extractJointAngles(landmarks);

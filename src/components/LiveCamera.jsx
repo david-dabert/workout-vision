@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { loadModelWithRetry, detectPoseVideo, drawPose, drawOverlayMessage, resetTimestamp, disposeAllLandmarkers } from '../lib/poseAnalysis';
+import { loadModelWithRetry, detectPoseVideo, drawPose, drawOverlayMessage, resetTimestamp, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
 import { initCamera as initCameraUtil, stopCamera } from '../lib/camera';
 import { logEvent } from '../lib/telemetry';
 import { EXERCISES, EXERCISE_GROUPS, RepCounter, ExerciseAutoDetector } from '../lib/exercises';
@@ -223,7 +223,7 @@ export default function LiveCamera({ onClose }) {
     const result = detectPoseVideo(landmarker, video, ts);
 
     if (result && result.landmarks && result.landmarks.length > 0) {
-      const landmarks = result.landmarks[0];
+      const landmarks = selectSubjectPose(result.landmarks);
       lastValidPoseRef.current = landmarks;
       confidenceDecayRef.current = 1.0;
       // Lite mode: skip skeleton drawing to save GPU, keep rep counting
@@ -466,7 +466,7 @@ export default function LiveCamera({ onClose }) {
           <div className="cam-bottom">
             <div className="cam-reps">
               <span className="cam-reps-num">{reps}</span>
-              <span className="cam-reps-label">{t('reps')}</span>
+              <span className="cam-reps-label">{reps === 1 ? t('rep') : t('reps')}</span>
             </div>
             <div className="cam-angle">
               {phase && (

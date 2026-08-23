@@ -104,7 +104,7 @@ async function createLandmarker() {
       const landmarker = await PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
         runningMode: 'VIDEO',
-        numPoses: 1,
+        numPoses: 3,
         minPoseDetectionConfidence: 0.5,
         minPosePresenceConfidence: 0.5,
         minTrackingConfidence: 0.5,
@@ -258,6 +258,45 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
 export function resetTimestamp() {
   lastVideoTime = -1;
   lastResult = null;
+}
+
+// ─── Person lock: select the subject (largest + most centered) ───
+
+/**
+ * From multiple detected poses, select the one most likely to be the user.
+ * Prioritizes body area (closest to camera = largest bounding box) and
+ * penalizes distance from frame center. In a gym selfie, the user is the
+ * largest and most centered person; background people are smaller and off-center.
+ */
+export function selectSubjectPose(landmarksArray) {
+  if (!landmarksArray || landmarksArray.length === 0) return null;
+  if (landmarksArray.length === 1) return landmarksArray[0];
+
+  let bestPose = landmarksArray[0];
+  let bestScore = -Infinity;
+
+  for (const pose of landmarksArray) {
+    let minX = 1, maxX = 0, minY = 1, maxY = 0;
+    for (const lm of pose) {
+      if ((lm.visibility || 0) < 0.3) continue;
+      minX = Math.min(minX, lm.x);
+      maxX = Math.max(maxX, lm.x);
+      minY = Math.min(minY, lm.y);
+      maxY = Math.max(maxY, lm.y);
+    }
+    const area = (maxX - minX) * (maxY - minY);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    // Distance from frame center (0.5, 0.5) in normalized coords
+    const dist = Math.sqrt((cx - 0.5) ** 2 + (cy - 0.5) ** 2);
+    // Area dominates; center distance is a tiebreaker
+    const score = area * 1000 - dist * 0.5;
+    if (score > bestScore) {
+      bestScore = score;
+      bestPose = pose;
+    }
+  }
+  return bestPose;
 }
 
 // ─── Geometry ───

@@ -97,6 +97,10 @@ export class RepCounter {
     // Frame tracking for biomechanics integration
     this._repStartFrame = 0;
     this._bottomFrame = 0;
+    // Live hysteresis state
+    this._lastRepTime = 0;
+    this._bottomAngles = null;
+    this._bottomLandmarks = null;
   }
 
   /**
@@ -127,6 +131,7 @@ export class RepCounter {
 
     const value = ex.getValue(angles, landmarks);
     this._frameIdx++;
+    const now = Date.now();
 
     // Track observed range for threshold computation in finalize()
     if (value < this._observedMin) this._observedMin = value;
@@ -135,17 +140,67 @@ export class RepCounter {
     // Store for pass 2
     this._collectedLandmarks.push(landmarks);
 
-    // Track direction for live phase display
-    if (this._lastValue !== null) {
-      if (value < this._lastValue - 1) this._phase = 'down';
-      else if (value > this._lastValue + 1) this._phase = 'up';
+    // ── Live hysteresis rep counting ──
+    // State machine: idle -> concentric -> eccentric -> idle (rep counted)
+    // Uses exercise-defined thresholds with hysteresis gap to prevent
+    // oscillation noise from triggering phantom reps.
+    const down = ex.downThreshold;
+    const up = ex.upThreshold;
+    let repCompleted = false;
+
+    if (down > up) {
+      // Signal goes DOWN during concentric (squat, curl): value decreases then increases
+      if (this._phase === 'up' && value < down) {
+        this._phase = 'down';
+      } else if (this._phase === 'down' && value < up) {
+        this._phase = 'bottom';
+        this._bottomFrame = this._frameIdx;
+        this._bottomAngles = { ...angles };
+        this._bottomLandmarks = landmarks;
+      } else if (this._phase === 'bottom' && value > down) {
+        // Coming back up — check minimum time gate (0.8s per rep)
+        if (now - this._lastRepTime > 800) {
+          this._lastRepTime = now;
+          this._phase = 'up';
+          // Evaluate form at bottom and current (top) frames
+          const formFeedback = this._evaluateFormLive(this._bottomAngles, angles, landmarks);
+          this._currentRepIssues = formFeedback.filter(f => !f.passed).map(f => f.name);
+          this._peakAngle = value;
+          this._completeRep(angles, landmarks);
+          repCompleted = true;
+        }
+      }
+    } else {
+      // Signal goes UP during concentric (lateral raise, upright row): value increases then decreases
+      if (this._phase === 'up' && value > down) {
+        this._phase = 'down';
+      } else if ((this._phase === 'down' || this._phase === 'up') && value > up) {
+        this._phase = 'bottom';
+        this._bottomFrame = this._frameIdx;
+        this._bottomAngles = { ...angles };
+        this._bottomLandmarks = landmarks;
+      } else if (this._phase === 'bottom' && value < down) {
+        if (now - this._lastRepTime > 800) {
+          this._lastRepTime = now;
+          this._phase = 'up';
+          const formFeedback = this._evaluateFormLive(this._bottomAngles, angles, landmarks);
+          this._currentRepIssues = formFeedback.filter(f => !f.passed).map(f => f.name);
+          this._peakAngle = value;
+          this._completeRep(angles, landmarks);
+          repCompleted = true;
+        }
+      }
     }
+
     this._lastValue = value;
+
+    // Live form feedback for display (evaluate at current frame)
+    const formFeedback = this._evaluateForm(angles, landmarks);
 
     return {
       reps: this._reps, phase: this._phase,
       angle: Math.round(value * 10) / 10, angles,
-      formFeedback: [], repCompleted: false,
+      formFeedback, repCompleted,
       repHistory: this._repHistory,
     };
   }
@@ -596,6 +651,25 @@ export class RepCounter {
     this._issueFrameCounts = {};
     // Next rep starts from this frame
     this._repStartFrame = this._frameIdx;
+  }
+
+  /**
+   * Live form evaluation using bottom-of-rep and top-of-rep angles.
+   * Checks tagged phase:'top' use topAngles; all others use bottomAngles.
+   */
+  _evaluateFormLive(bottomAngles, topAngles, topLandmarks) {
+    return this._exercise.formChecks.map((fc) => {
+      const isTopCheck = fc.phase === 'top';
+      const angles = isTopCheck ? topAngles : bottomAngles;
+      if (!angles) return { name: fc.name, passed: true, text: fc.good, severity: fc.severity };
+      const passed = fc.check(angles, topLandmarks);
+      return {
+        name: fc.name,
+        passed,
+        text: passed ? fc.good : fc.bad,
+        severity: fc.severity,
+      };
+    });
   }
 
   _evaluateForm(angles, landmarks) {
