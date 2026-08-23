@@ -2671,11 +2671,8 @@ export const EXERCISES = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// Re-exports from split modules (backward compatibility)
-// ---------------------------------------------------------------------------
-export { RepCounter } from './repCounter';
-export { ExerciseAutoDetector } from './exerciseDetector';
+// RepCounter and ExerciseAutoDetector: import directly from './repCounter' and './exerciseDetector'
+// Re-exports removed to break circular dependency (exercises <-> repCounter/exerciseDetector).
 
 // ---------------------------------------------------------------------------
 // Shared exercise grouping for UI selectors
