@@ -26,6 +26,20 @@ const MUTED = '#6B6B82';
 const RED = '#FF3B5C';
 const YELLOW = '#FFB836';
 
+function getRecorderMimeType() {
+  if (typeof MediaRecorder === 'undefined') return null;
+  const types = [
+    'video/mp4;codecs=avc1.42E01E', // Safari iOS — Instagram-native
+    'video/webm;codecs=vp9',         // Chrome/Edge/Android
+    'video/webm;codecs=vp8',         // Firefox fallback
+    'video/webm',                    // Last resort
+  ];
+  for (const t of types) {
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return null;
+}
+
 function gradeFromScore(score) {
   if (score >= 95) return 'A+';
   if (score >= 90) return 'A';
@@ -402,12 +416,11 @@ export async function generateAnimatedShareCard(result, onProgress) {
   const TOTAL_FRAMES = Math.round(DURATION * FPS);
 
   const stream = canvas.captureStream(FPS);
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    ? 'video/webm;codecs=vp9'
-    : 'video/webm';
+  const mimeType = getRecorderMimeType();
+  if (!mimeType) return generateShareCard(result);
   const recorder = new MediaRecorder(stream, {
     mimeType,
-    videoBitsPerSecond: 4_000_000,
+    videoBitsPerSecond: mimeType.includes('mp4') ? 6_000_000 : 4_000_000,
   });
 
   const chunks = [];
@@ -592,9 +605,13 @@ export async function generateAnimatedShareCard(result, onProgress) {
       ctx.globalAlpha = 1;
     }
 
-    // Wait for next frame
-    await new Promise(r => requestAnimationFrame(r));
-    if (onProgress) onProgress(Math.round((i / TOTAL_FRAMES) * 100));
+    // Yield to browser every 5 frames so spinner repaints
+    if (i % 5 === 0) {
+      if (onProgress) onProgress(Math.round((i / TOTAL_FRAMES) * 100));
+      await new Promise(r => setTimeout(r, 0));
+    } else {
+      await new Promise(r => requestAnimationFrame(r));
+    }
   }
 
   recorder.stop();
@@ -617,9 +634,10 @@ export async function shareAnimatedCard(result, onProgress) {
   }
 
   const blob = await generateAnimatedShareCard(result, onProgress);
+  const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
   const file = new File(
     [blob],
-    `workout-${result.exerciseName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.webm`,
+    `workout-${result.exerciseName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.${ext}`,
     { type: blob.type }
   );
 

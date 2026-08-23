@@ -34,15 +34,41 @@
       // before first paint to prevent compositing jank.
       (function() {
         var ua = navigator.userAgent;
-        var cores = navigator.hardwareConcurrency || 4;
-        var memory = navigator.deviceMemory || 4;
-        var isWeakAndroid = /Android/.test(ua) && cores <= 4 && memory <= 3;
-        var isOldIOS = /iPhone/.test(ua) && !/iPhone1[3-9]|iPhone2/.test(ua) && /OS (9|10|11|12|13|14)_/.test(ua);
-        if (isWeakAndroid || isOldIOS) {
+        var disableGlass = false;
+        // Android: low-end devices only
+        if (/Android/.test(ua)) {
+          var cores = navigator.hardwareConcurrency || 4;
+          var memory = navigator.deviceMemory || 4;
+          disableGlass = cores <= 4 && memory <= 3;
+        }
+        // iOS: only iOS 14 and below (parse OS version from UA)
+        var iosMatch = ua.match(/OS (\d+)_/);
+        if (iosMatch) {
+          disableGlass = parseInt(iosMatch[1], 10) < 15;
+        }
+        if (disableGlass) {
           document.documentElement.classList.add('no-glass');
         }
       })();
     </script>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Cache-bust: detect stale HTML pointing to deleted assets.
+      // GitHub Pages serves HTML with max-age=600. If a deploy replaces
+      // assets while the old HTML is cached, the module script 404s and
+      // React never mounts. This HEAD-checks the script src and reloads
+      // with a cache-busting query if the asset is gone.
+      (function() {
+        if (sessionStorage.getItem('_cb')) return; // one attempt per tab
+        var s = document.querySelector('script[type="module"][src]');
+        if (!s) return;
+        fetch(s.src, { method: 'HEAD' }).then(function(r) {
+          if (!r.ok) {
+            sessionStorage.setItem('_cb', '1');
+            location.replace(location.pathname + '?_=' + Date.now());
+          }
+        }).catch(function() {});
+      })();
+    </script>
   </body>
 </html>
