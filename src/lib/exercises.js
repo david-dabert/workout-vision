@@ -2163,7 +2163,7 @@ export const EXERCISES = {
   },
 
   lying_bicep_curl: {
-    name: 'Incline Dumbbell Curl',
+    name: 'Lying Bicep Curl',
     category: 'isolation',
     muscles: { primary: ['Biceps'], secondary: ['Brachialis', 'Brachioradialis'] },
     joint: 'elbow',
