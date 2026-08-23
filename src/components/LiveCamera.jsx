@@ -470,14 +470,6 @@ export default function LiveCamera({ onClose }) {
               <span className="cam-reps-num">{reps}</span>
               <span className="cam-reps-label">{reps === 1 ? t('rep') : t('reps')}</span>
             </div>
-            <div className="cam-angle">
-              {phase && (
-                <span className={`cam-phase ${phase === 'up' ? 'up' : 'down'}`}>
-                  {phase.toUpperCase()}
-                </span>
-              )}
-              <span className="cam-angle-num">{angle}&deg;</span>
-            </div>
           </div>
         )}
 
@@ -516,33 +508,6 @@ export default function LiveCamera({ onClose }) {
         )}
       </div>
 
-      {recording && feedback.length > 0 && (
-        <div className="cam-feedback">
-          {feedback.map((fb, i) => (
-            <div key={i} className={`fb-item ${fb.passed ? 'fb-pass' : 'fb-fail'}`}>
-              <span className="fb-dot">{fb.passed ? '>' : '!'}</span>
-              <span>{fb.text}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {recording && repBars.length > 0 && (
-        <div className="cam-repbars">
-          {repBars.map((score, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: `${Math.max(score, 10)}%`,
-                background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
-                borderRadius: '2px 2px 0 0',
-                minWidth: 4,
-              }}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Session stats bar */}
       {setCount > 0 && !recording && (

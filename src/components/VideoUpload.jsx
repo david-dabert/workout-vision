@@ -3,11 +3,8 @@ import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disp
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
-import { analyzeSet } from '../lib/biomechanics';
-import { generateWorkoutReport } from '../lib/coach';
 import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
-import { shareCard, shareAnimatedCard } from '../lib/shareCard';
 import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
@@ -24,23 +21,6 @@ const MAX_FRAMES = IS_IOS ? 60 : 120;
 
 // File size cap. iOS Safari can crash loading very large blob URLs.
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
-
-function gradeFromScore(score) {
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'B+';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C+';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
-  return 'F';
-}
-
-function gradeClass(score) {
-  if (score >= 80) return 'good';
-  if (score >= 60) return 'ok';
-  return 'poor';
-}
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -356,25 +336,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     repCounter.finalize();
     console.log(`[Upload] ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
 
-    const landmarkFrames = frames.map(f => f.landmarks);
     const repHistory = repCounter.repHistory || [];
     const reps = repHistory.length;
 
-    let bioAnalysis = null;
-    try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory); }
-    catch (err) { console.error('Bio analysis error:', err); }
-
-    let report = null;
-    try {
-      report = generateWorkoutReport(userProfile, [{
-        exerciseKey: detectedExercise, exercise: detectedExercise,
-        reps, analysis: bioAnalysis, bioAnalysis, repHistory,
-      }]);
-    } catch (err) { console.error('Report error:', err); }
-
     const avgScore = repHistory.length > 0
       ? Math.round(repHistory.reduce((s, r) => s + (r.score || 0), 0) / repHistory.length)
-      : bioAnalysis?.movementQuality || 0;
+      : 0;
 
     const w = parseFloat(weight) || 0;
     const workout = {
@@ -395,11 +362,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     return {
       fileName: queueItem.name, exercise: detectedExercise,
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-      reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
-      bioAnalysis, report, repHistory,
+      reps, duration: Math.round(duration), analysisTime,
       videoUrl: url,
       frames: replayFrames,
-      diagnostics: repCounter.diagnostics,
       autoDetected,
     };
   }, [exercise, autoDetect]);
@@ -637,13 +602,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
 function ResultCard({ result, onReplay }) {
   const { t, tExercise } = useT();
-  const {
-    fileName, exerciseName, reps, duration, analysisTime,
-    formScore, bioAnalysis, report, repHistory,
-  } = result;
-
-  const grade = gradeFromScore(formScore);
-  const cls = gradeClass(formScore);
+  const { fileName, exerciseName, reps, duration, analysisTime } = result;
   const displayName = tExercise(result.exercise, exerciseName);
 
   return (
@@ -661,14 +620,7 @@ function ResultCard({ result, onReplay }) {
             )}
           </div>
         </div>
-        <span className={`score-badge ${cls}`}>{grade}</span>
       </div>
-
-      {report?.summary && (
-        <p className="text-sm" style={{ marginBottom: 10, lineHeight: 1.5 }}>
-          {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
-        </p>
-      )}
 
       <div className="result-stats">
         <div className="stat">
@@ -680,267 +632,10 @@ function ResultCard({ result, onReplay }) {
           <span className="stat-label">{t('duration')}</span>
         </div>
         <div className="stat">
-          <span className="stat-value">{formScore}</span>
-          <span className="stat-label">{t('form')}</span>
-        </div>
-        {bioAnalysis?.movementQuality != null && (
-          <div className="stat">
-            <span className="stat-value">{Math.round(bioAnalysis.movementQuality)}</span>
-            <span className="stat-label">{t('quality')}</span>
-          </div>
-        )}
-        <div className="stat">
           <span className="stat-value">{analysisTime}s</span>
           <span className="stat-label">{t('analysis')}</span>
         </div>
       </div>
-
-      {bioAnalysis?.velocity?.perRep && bioAnalysis.velocity.perRep.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('velocity_per_rep')}</h4>
-          <div className="rep-bars">
-            {bioAnalysis.velocity.perRep.map((v, i) => {
-              const max = Math.max(...bioAnalysis.velocity.perRep, 1);
-              const pct = (v / max) * 100;
-              const declining = i > 0 && v < bioAnalysis.velocity.perRep[i - 1];
-              return (
-                <div key={i} className="rep-bar-col">
-                  <div className="rep-bar-wrap">
-                    <div className="rep-bar" style={{
-                      height: `${Math.max(pct, 5)}%`,
-                      background: declining ? 'var(--yellow)' : 'var(--accent)',
-                    }} />
-                  </div>
-                  <span className="rep-num">{i + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-          {bioAnalysis.velocity.trend && (
-            <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              Trend: {bioAnalysis.velocity.trend}
-            </p>
-          )}
-        </div>
-      )}
-
-      {bioAnalysis?.timeUnderTension?.perRep && bioAnalysis.timeUnderTension.perRep.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('time_under_tension')}</h4>
-          <div className="result-stats" style={{ marginBottom: 6 }}>
-            <div className="stat">
-              <span className="stat-value">{bioAnalysis.timeUnderTension.eccentric?.toFixed(1)}s</span>
-              <span className="stat-label">{t('eccentric')}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-value">{bioAnalysis.timeUnderTension.concentric?.toFixed(1)}s</span>
-              <span className="stat-label">{t('concentric')}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-value">{bioAnalysis.timeUnderTension.total?.toFixed(1)}s</span>
-              <span className="stat-label">{t('total')}</span>
-            </div>
-          </div>
-          <div className="rep-bars">
-            {bioAnalysis.timeUnderTension.perRep.map((t, i) => {
-              const ecc = t.eccentric || t.down || 0;
-              const con = t.concentric || t.up || 0;
-              const total = ecc + con || 1;
-              const maxTut = Math.max(
-                ...bioAnalysis.timeUnderTension.perRep.map(r =>
-                  (r.eccentric || r.down || 0) + (r.concentric || r.up || 0)),
-                1);
-              const pct = (total / maxTut) * 100;
-              return (
-                <div key={i} className="rep-bar-col">
-                  <div className="rep-bar-wrap">
-                    <div className="rep-bar" style={{
-                      height: `${Math.max(pct, 5)}%`,
-                      background: `linear-gradient(to top, var(--accent) ${(con / total) * 100}%, var(--yellow) 0%)`,
-                    }} />
-                  </div>
-                  <span className="rep-num">{i + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {bioAnalysis?.rangeOfMotion && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('range_of_motion')}</h4>
-          <div className="result-stats" style={{ marginBottom: 6 }}>
-            <div className="stat">
-              <span className="stat-value">{Math.round(bioAnalysis.rangeOfMotion.avgDegrees)}&deg;</span>
-              <span className="stat-label">{t('avg_rom')}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-value">{Math.round(bioAnalysis.rangeOfMotion.consistency || 0)}%</span>
-              <span className="stat-label">{t('consistency')}</span>
-            </div>
-          </div>
-          {bioAnalysis.rangeOfMotion.perRep && bioAnalysis.rangeOfMotion.perRep.length > 0 && (
-            <div className="rep-bars">
-              {bioAnalysis.rangeOfMotion.perRep.map((rom, i) => {
-                const maxRom = Math.max(...bioAnalysis.rangeOfMotion.perRep, 1);
-                const pct = (rom / maxRom) * 100;
-                return (
-                  <div key={i} className="rep-bar-col">
-                    <div className="rep-bar-wrap">
-                      <div className="rep-bar" style={{
-                        height: `${Math.max(pct, 5)}%`, background: 'var(--accent)',
-                      }} />
-                    </div>
-                    <span className="rep-num">{i + 1}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {bioAnalysis?.asymmetry && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('asymmetry')}</h4>
-          <div className="result-stats">
-            <div className="stat">
-              <span className="stat-value">
-                <span className={`score-badge ${bioAnalysis.asymmetry.score <= 10 ? 'good' : bioAnalysis.asymmetry.score <= 20 ? 'ok' : 'poor'}`}>
-                  {Math.round(bioAnalysis.asymmetry.score)}%
-                </span>
-              </span>
-              <span className="stat-label">{t('imbalance')}</span>
-            </div>
-          </div>
-          {bioAnalysis.asymmetry.details && typeof bioAnalysis.asymmetry.details === 'object' && (
-            <div style={{ marginTop: 6 }}>
-              {Object.entries(bioAnalysis.asymmetry.details).map(([key, val]) => (
-                <p key={key} className="text-xs text-muted" style={{ padding: '2px 0' }}>
-                  {key}: {typeof val === 'number' ? `${Math.round(val)}%` : String(val)}
-                </p>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {bioAnalysis?.fatigue && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('fatigue')}</h4>
-          <div className="result-stats" style={{ marginBottom: 6 }}>
-            <div className="stat">
-              <span className="stat-value">{Math.round(bioAnalysis.fatigue.index || 0)}%</span>
-              <span className="stat-label">{t('fatigue_index')}</span>
-            </div>
-            {bioAnalysis.fatigue.velocityDropoff != null && (
-              <div className="stat">
-                <span className="stat-value">{Math.round(bioAnalysis.fatigue.velocityDropoff)}%</span>
-                <span className="stat-label">{t('velocity_dropoff')}</span>
-              </div>
-            )}
-          </div>
-          {bioAnalysis.fatigue.curve && bioAnalysis.fatigue.curve.length > 0 && (
-            <div className="rep-bars">
-              {bioAnalysis.fatigue.curve.map((v, i) => {
-                const max = Math.max(...bioAnalysis.fatigue.curve, 1);
-                const pct = (v / max) * 100;
-                return (
-                  <div key={i} className="rep-bar-col">
-                    <div className="rep-bar-wrap">
-                      <div className="rep-bar" style={{
-                        height: `${Math.max(pct, 5)}%`,
-                        background: pct < 60 ? 'var(--red)' : pct < 80 ? 'var(--yellow)' : 'var(--accent)',
-                      }} />
-                    </div>
-                    <span className="rep-num">{i + 1}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {bioAnalysis.fatigue.recommendation && (
-            <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              {bioAnalysis.fatigue.recommendation}
-            </p>
-          )}
-        </div>
-      )}
-
-      {repHistory && repHistory.length > 0 && (() => {
-        const allIssues = {};
-        repHistory.forEach(r => {
-          (r.issues || []).forEach(issue => {
-            allIssues[issue] = (allIssues[issue] || 0) + 1;
-          });
-        });
-        const sorted = Object.entries(allIssues).sort((a, b) => b[1] - a[1]);
-        if (sorted.length === 0) return null;
-        return (
-          <div className="form-notes" style={{ marginTop: 14 }}>
-            <h4>{t('form_notes')}</h4>
-            {sorted.map(([issue, count]) => (
-              <div key={issue} className="note-item">
-                {issue} ({count}/{repHistory.length} reps)
-              </div>
-            ))}
-          </div>
-        );
-      })()}
-
-      {result.diagnostics && (
-        <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
-          <strong style={{ color: 'var(--text)' }}>{t('engine')}</strong>
-          <div>Range: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
-          <div>Min ROM per rep: {result.diagnostics.minROM}&deg;</div>
-          <div>Frames: {result.diagnostics.totalFrames} | Method: {result.diagnostics.method}</div>
-        </div>
-      )}
-
-      {report?.highlights && report.highlights.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('highlights')}</h4>
-          {report.highlights.map((h, i) => (
-            <p key={i} className="text-sm" style={{ color: 'var(--accent)', padding: '2px 0' }}>
-              {'> '}{typeof h === 'string' ? h : t(h.key, h)}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {report?.improvements && report.improvements.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('next_steps')}</h4>
-          {report.improvements.map((imp, i) => (
-            <p key={i} className="text-sm text-muted" style={{ padding: '2px 0' }}>
-              {i + 1}. {typeof imp === 'string' ? imp : t(imp.key, imp)}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {repHistory && repHistory.length > 0 && (
-        <div className="rep-quality" style={{ marginTop: 14 }}>
-          <h4>{t('per_rep_quality')}</h4>
-          <div className="rep-bars">
-            {repHistory.map((r, i) => {
-              const score = r.score || 0;
-              return (
-                <div key={i} className="rep-bar-col">
-                  <div className="rep-bar-wrap">
-                    <div className="rep-bar" style={{
-                      height: `${Math.max(score, 5)}%`,
-                      background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
-                    }} />
-                  </div>
-                  <span className="rep-num">{i + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {result.videoUrl && result.frames && (
         <button
@@ -951,20 +646,6 @@ function ResultCard({ result, onReplay }) {
           {t('watch_overlay')}
         </button>
       )}
-      <button
-        className="btn btn-ghost"
-        style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
-        onClick={() => shareCard(result)}
-      >
-        {t('share_card')}
-      </button>
-      <button
-        className="btn btn-ghost"
-        style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600, background: 'linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,212,255,0.08))', border: '1px solid rgba(0,255,136,0.2)' }}
-        onClick={() => shareAnimatedCard(result)}
-      >
-        {t('share_reel')}
-      </button>
     </div>
   );
 }
