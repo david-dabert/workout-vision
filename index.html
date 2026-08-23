@@ -16,6 +16,35 @@
   <body>
     <div id="root"></div>
     <script>
+      // Crash reporter: show JS errors on screen instead of black void
+      window.onerror = function(msg, src, line, col, err) {
+        var d = document.getElementById('root');
+        if (d) d.innerHTML = '<div style="color:#ff3b5c;padding:20px;font:14px monospace;word-break:break-all">'
+          + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision Error</h2>'
+          + '<p>' + msg + '</p>'
+          + '<p style="color:#888">' + (src||'') + ':' + line + ':' + col + '</p>'
+          + '<p style="color:#888;margin-top:8px">' + (err && err.stack ? err.stack : '') + '</p>'
+          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
+          + '</div>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unknown promise rejection';
+        window.onerror(msg, '', 0, 0, e.reason);
+      });
+      // Watchdog: if React hasn't mounted after 8s, show diagnostic
+      setTimeout(function() {
+        var r = document.getElementById('root');
+        if (r && r.children.length === 0) {
+          r.innerHTML = '<div style="color:#ffb836;padding:20px;font:14px monospace">'
+            + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision</h2>'
+            + '<p>App did not load within 8 seconds.</p>'
+            + '<p style="color:#888;margin-top:8px">This may be a network issue or JavaScript error.</p>'
+            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
+            + '</div>';
+        }
+      }, 8000);
+    </script>
+    <script>
       // Kill any service worker. The SW caused stale cached code on iOS Safari
       // that persisted across deploys for hours. Not worth the offline benefit.
       (function() {
