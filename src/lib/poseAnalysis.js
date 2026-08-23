@@ -377,8 +377,10 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
   ];
 
   ctx.globalAlpha = alpha;
-  ctx.strokeStyle = '#00FF88';
-  ctx.lineWidth = Math.max(2, width / 200);
+
+  // Draw shadow first for contrast against bright backgrounds
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = Math.max(5, width / 80) + 2;
   ctx.lineCap = 'round';
   for (const [i, j] of connections) {
     if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
@@ -389,7 +391,19 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
     }
   }
 
-  const dotSize = Math.max(3, width / 120);
+  // Draw bright skeleton on top
+  ctx.strokeStyle = '#00FF88';
+  ctx.lineWidth = Math.max(5, width / 80);
+  for (const [i, j] of connections) {
+    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
+      ctx.beginPath();
+      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
+      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
+      ctx.stroke();
+    }
+  }
+
+  const dotSize = Math.max(5, width / 80);
   ctx.fillStyle = '#FF3355';
   for (const lm of landmarks) {
     if ((lm.visibility || 0) < 0.3) continue;

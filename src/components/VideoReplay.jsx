@@ -41,7 +41,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore) {
   ctx.textAlign = 'right';
   ctx.fillStyle = '#FFFFFF';
   ctx.font = `bold ${Math.round(22 * scale)}px -apple-system, system-ui, sans-serif`;
-  ctx.fillText(`${reps} reps  Form: ${formScore}`, w - pad, boxH / 2);
+  ctx.fillText(`${reps} reps`, w - pad, boxH / 2);
 
   // Branding (bottom)
   const brandH = Math.round(36 * scale);
@@ -361,37 +361,9 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       </div>
 
       <div className="replay-actions">
-        {!exporting ? (
-          <>
-            {supportsVideoExport ? (
-              <button className="btn btn-primary replay-btn" onClick={exportHD}>
-                {t('download_hd')}
-              </button>
-            ) : (
-              <button className="btn btn-primary replay-btn" onClick={saveScreenshot}>
-                {t('save_screenshot')}
-              </button>
-            )}
-          </>
-        ) : (
-          <div style={{ width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
-                <div style={{
-                  width: `${exportProgress}%`, height: '100%',
-                  background: 'var(--accent)', borderRadius: 3,
-                  transition: 'width 0.3s ease',
-                }} />
-              </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', minWidth: 40 }}>
-                {exportProgress}%
-              </span>
-            </div>
-            <button className="btn btn-ghost replay-btn" onClick={cancelExport}>
-              {t('cancel_export')}
-            </button>
-          </div>
-        )}
+        <button className="btn btn-ghost replay-btn" onClick={onClose}>
+          {t('back')}
+        </button>
       </div>
     </div>
   );
