@@ -19,16 +19,24 @@ function findClosestFrame(frames, time) {
   return frames[lo];
 }
 
-function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore) {
+function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, repHistory) {
+  // Find current rep for form feedback
+  let currentFeedback = null;
+  if (repHistory && repHistory.length > 0) {
+    const rep = repHistory.find(r => time >= r.startTime && time <= r.endTime);
+    if (rep) currentFeedback = rep.feedback;
+  }
+
   const closest = frames.length > 0 ? findClosestFrame(frames, time) : null;
   if (closest && closest.landmarks) {
-    drawPose(ctx, closest.landmarks, w, h);
+    drawPose(ctx, closest.landmarks, w, h, 1.0, currentFeedback);
   }
 
   // Stats overlay (top) - scale proportionally to resolution
   const scale = w / 480;
   const pad = Math.round(16 * scale);
   const boxH = Math.round(70 * scale);
+
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(0, 0, w, boxH);
 
@@ -47,6 +55,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore) {
   const brandH = Math.round(36 * scale);
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.fillRect(0, h - brandH, w, brandH);
+
   ctx.fillStyle = '#00FF88';
   ctx.font = `bold ${Math.round(16 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.textAlign = 'center';
@@ -79,7 +88,7 @@ function canExportVideo() {
  * Replays a video with skeleton overlay drawn from stored landmark frames.
  * HD download via one-tap auto-record at original video resolution.
  */
-export default function VideoReplay({ videoUrl, frames, exerciseName, reps, formScore, onClose }) {
+export default function VideoReplay({ videoUrl, frames, exerciseName, reps, formScore, repHistory, onClose }) {
   const { t } = useT();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -123,7 +132,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       const w = canvas.width;
       const h = canvas.height;
       ctx.drawImage(video, 0, 0, w, h);
-      drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
+      drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore, repHistory);
       // Throttle setProgress to every 5th frame to reduce React re-renders
       progressFrameRef.current++;
       if (progressFrameRef.current % 5 === 0) {
@@ -133,7 +142,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       console.warn('Draw frame error:', e);
     }
     rafRef.current = requestAnimationFrame(drawFrame);
-  }, [frames, exerciseName, reps, formScore]);
+  }, [frames, exerciseName, reps, formScore, repHistory]);
 
   // Setup video
   useEffect(() => {
@@ -154,7 +163,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
         ctxRef.current = ctx;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         if (frames.length > 0 && frames[0].landmarks) {
-          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, exerciseName, reps, formScore);
+          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, exerciseName, reps, formScore, repHistory);
         }
       }
     };
@@ -170,7 +179,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       video.removeAttribute('src');
       video.load();
     };
-  }, [videoUrl, frames, exerciseName, reps, formScore]);
+  }, [videoUrl, frames, exerciseName, reps, formScore, repHistory]);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
@@ -274,7 +283,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       const w = hdCanvas.width;
       const h = hdCanvas.height;
       hdCtx.drawImage(video, 0, 0, w, h);
-      drawOverlay(hdCtx, w, h, frames, video.currentTime, exerciseName, reps, formScore);
+      drawOverlay(hdCtx, w, h, frames, video.currentTime, exerciseName, reps, formScore, repHistory);
       setExportProgress(video.duration > 0 ? Math.round((video.currentTime / video.duration) * 100) : 0);
       hdRafRef.current = requestAnimationFrame(drawHDFrame);
     };
@@ -291,7 +300,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     video.muted = true;
     video.play();
     hdRafRef.current = requestAnimationFrame(drawHDFrame);
-  }, [frames, exerciseName, reps, formScore, exporting]);
+  }, [frames, exerciseName, reps, formScore, repHistory, exporting]);
 
   const cancelExport = useCallback(() => {
     const video = videoRef.current;
@@ -328,7 +337,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
         triggerDownload(blob, fileName);
       }
     }, 'image/png');
-  }, [frames, exerciseName, reps, formScore]);
+  }, [frames, exerciseName, reps, formScore, repHistory]);
 
   const supportsVideoExport = canExportVideo();
 

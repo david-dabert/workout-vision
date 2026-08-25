@@ -350,6 +350,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     }
 
     repCounter.finalize();
+    // Enrich repHistory with timestamps for replay form feedback sync
+    const enrichedRepHistory = repCounter.repHistory.map(r => ({
+      ...r,
+      startTime: (r.startFrame * interval),
+      peakTime: (r.peakFrame * interval),
+      endTime: (r.endFrame * interval),
+    }));
     console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
     console.log(`[Upload] Reps detected: ${repCounter.reps}, diagnostics:`, repCounter.diagnostics);
     // Log angle signal for debugging
@@ -364,7 +371,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     }
 
     const landmarkFrames = frames.map(f => f.landmarks);
-    const repHistory = repCounter.repHistory || [];
+    const repHistory = enrichedRepHistory;
     const reps = repHistory.length;
 
     // Run biomechanical analysis for velocity, ROM, fatigue, asymmetry
@@ -468,6 +475,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         exerciseName={replayResult.exerciseName}
         reps={replayResult.reps}
         formScore={replayResult.formScore}
+        repHistory={replayResult.repHistory}
         onClose={() => setReplayResult(null)}
       />
     );

@@ -363,12 +363,48 @@ function calculateTrunkAngle(landmarks) {
 
 // ─── Drawing ───
 
-/**
- * Draw skeleton overlay with alpha (for confidence decay).
- */
-export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
-  if (!landmarks || landmarks.length === 0) return;
+// ─── Form check → affected landmark indices ───
+const FORM_CHECK_LANDMARKS = {
+  'Knee valgus': [23, 24, 25, 26, 27, 28],
+  'Hip depth': [11, 12, 23, 24, 25, 26],
+  'Trunk angle': [11, 12, 23, 24],
+  'Bar path': [13, 14, 15, 16],
+  'Elbow flare': [11, 12, 13, 14, 15, 16],
+  'Wrist position': [13, 14, 15, 16],
+  'Scapular retraction': [11, 12],
+  'Lumbar flexion': [11, 12, 23, 24],
+  'Hip hinge': [23, 24, 25, 26, 27, 28],
+  'Knee position': [23, 24, 25, 26, 27, 28],
+  'Shoulder protraction': [11, 12, 13, 14],
+  'Tempo': [],
+};
 
+function getSegmentColor(i, j, formFeedback) {
+  if (!formFeedback || formFeedback.length === 0) return '#00FF88';
+  let hasMajor = false, hasMinor = false;
+  for (const f of formFeedback) {
+    if (f.passed) continue;
+    const affected = FORM_CHECK_LANDMARKS[f.name] || [];
+    const hit = affected.includes(i) || affected.includes(j);
+    if (hit && f.severity === 'major') hasMajor = true;
+    if (hit && f.severity === 'minor') hasMinor = true;
+  }
+  if (hasMajor) return '#FF3355';
+  if (hasMinor) return '#FFCC00';
+  return '#00FF88';
+}
+
+/**
+ * Draw skeleton overlay with alpha and optional form feedback.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Array} landmarks - MediaPipe pose landmarks
+ * @param {number} width - canvas width
+ * @param {number} height - canvas height
+ * @param {number} alpha - opacity
+ * @param {Array|null} formFeedback - array of {name, passed, severity} from RepCounter
+ */
+export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedback = null) {
+  if (!landmarks || landmarks.length === 0) return;
   const connections = [
     [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
     [11, 23], [12, 24], [23, 24],
@@ -378,10 +414,10 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
 
   ctx.globalAlpha = alpha;
 
-  // Draw shadow first for contrast against bright backgrounds
-  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-  ctx.lineWidth = Math.max(5, width / 80) + 2;
+  // Shadow/outline first
   ctx.lineCap = 'round';
+  ctx.lineWidth = Math.max(5, width / 80) + 2;
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
   for (const [i, j] of connections) {
     if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
       ctx.beginPath();
@@ -391,11 +427,11 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
     }
   }
 
-  // Draw bright skeleton on top
-  ctx.strokeStyle = '#00FF88';
+  // Skeleton segments — color-coded by form feedback
   ctx.lineWidth = Math.max(5, width / 80);
   for (const [i, j] of connections) {
     if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
+      ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
       ctx.beginPath();
       ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
       ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
@@ -403,6 +439,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
     }
   }
 
+  // Joints — always red dots
   const dotSize = Math.max(5, width / 80);
   ctx.fillStyle = '#FF3355';
   for (const lm of landmarks) {
@@ -411,6 +448,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0) {
     ctx.arc(lm.x * width, lm.y * height, dotSize, 0, 2 * Math.PI);
     ctx.fill();
   }
+
   ctx.globalAlpha = 1.0;
 }
 
