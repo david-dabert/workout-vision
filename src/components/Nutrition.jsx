@@ -295,6 +295,7 @@ export default function Nutrition() {
 // ── Calorie Ring (SVG donut) ──
 
 function CalorieRing({ eaten, burned, target }) {
+  const { t } = useT();
   const remaining = Math.max(0, target - eaten + burned);
   const pct = Math.min((eaten - burned) / target, 1.2);
   const radius = 50;

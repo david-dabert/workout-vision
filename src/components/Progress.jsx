@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAllWorkouts, deleteWorkout } from '../lib/storage';
 import { useT } from '../lib/LanguageContext';
 
-function getWeekLabel(dateStr) {
+function getWeekLabel(dateStr, t) {
   const d = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
@@ -40,7 +40,7 @@ export default function Progress({ onClose }) {
   // Group by week
   const grouped = {};
   workouts.forEach(w => {
-    const label = getWeekLabel(w.date || w.createdAt);
+    const label = getWeekLabel(w.date || w.createdAt, t);
     if (!grouped[label]) grouped[label] = [];
     grouped[label].push(w);
   });

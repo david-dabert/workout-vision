@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { saveMedicalRecord, getMedicalRecords, deleteMedicalRecord } from '../lib/storage';
 import { useT } from '../lib/LanguageContext';
 
-function getHealthMarkers() {
+function getHealthMarkers(t) {
   return [
     t('marker_resting_hr'),
     t('marker_blood_pressure'),
@@ -137,7 +137,7 @@ export default function MedicalRecords({ onClose }) {
       <div className="card" style={{ marginTop: 10 }}>
         <h3>{t('key_health_markers')}</h3>
         <ul className="health-markers">
-          {getHealthMarkers().map((marker, i) => (
+          {getHealthMarkers(t).map((marker, i) => (
             <li key={i}>{marker}</li>
           ))}
         </ul>

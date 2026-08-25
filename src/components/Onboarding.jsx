@@ -99,6 +99,7 @@ export default function Onboarding({ onComplete }) {
 
 /* ── Step 1: Welcome ── */
 function StepWelcome() {
+  const { t } = useT();
   return (
     <div className="onboarding-step text-center">
       <div className="onboarding-icon-large">
@@ -128,6 +129,7 @@ function StepWelcome() {
 
 /* ── Step 2: Basic Info ── */
 function StepBasicInfo({ data, update }) {
+  const { t } = useT();
   return (
     <div className="onboarding-step">
       <h2>{t('onb_step1_title')}</h2>
@@ -186,6 +188,7 @@ function StepBasicInfo({ data, update }) {
 
 /* ── Step 3: Fitness Info ── */
 function StepFitnessInfo({ data, update, toggleInjury }) {
+  const { t } = useT();
   return (
     <div className="onboarding-step">
       <h2>{t('onb_step2_title')}</h2>
@@ -250,6 +253,7 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
 
 /* ── Step 4: Summary ── */
 function StepSummary({ data }) {
+  const { t } = useT();
   const goalLabels = {
     general: t('general_fitness'),
     strength: t('strength'),

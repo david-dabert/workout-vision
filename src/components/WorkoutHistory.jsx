@@ -15,7 +15,7 @@ function getWeekKey(iso) {
   return start.toISOString().slice(0, 10);
 }
 
-function getWeekLabel(weekKey) {
+function getWeekLabel(weekKey, t) {
   const d = new Date(weekKey);
   return t('week_of') + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
@@ -244,7 +244,7 @@ export default function WorkoutHistory({ onClose }) {
           {/* Workout list grouped by week */}
           {grouped.map(([weekKey, weekWorkouts]) => (
             <div key={weekKey}>
-              <div className="week-header">{getWeekLabel(weekKey)}</div>
+              <div className="week-header">{getWeekLabel(weekKey, t)}</div>
               {weekWorkouts.map(w => (
                 <div key={w.id} className="card" style={{ padding: 12 }}>
                   <div className="workout-card-header">
