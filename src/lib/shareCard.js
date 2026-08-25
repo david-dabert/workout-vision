@@ -285,6 +285,44 @@ export async function generateShareCard(result, videoEl) {
     y += 10;
   }
 
+  // Stylized green skeleton icon — brand mark
+  const cx = W / 2;
+  const skY = Math.min(y + 40, H - 280);
+  const scale = W / 500;
+  ctx.strokeStyle = ACCENT;
+  ctx.lineWidth = 6 * scale;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // Head
+  ctx.beginPath();
+  ctx.arc(cx, skY, 18 * scale, 0, Math.PI * 2);
+  ctx.stroke();
+  // Torso
+  ctx.beginPath();
+  ctx.moveTo(cx, skY + 18 * scale);
+  ctx.lineTo(cx, skY + 80 * scale);
+  ctx.stroke();
+  // Arms (curl position)
+  ctx.beginPath();
+  ctx.moveTo(cx, skY + 25 * scale);
+  ctx.lineTo(cx - 35 * scale, skY + 50 * scale);
+  ctx.lineTo(cx - 25 * scale, skY + 20 * scale);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, skY + 25 * scale);
+  ctx.lineTo(cx + 35 * scale, skY + 50 * scale);
+  ctx.lineTo(cx + 25 * scale, skY + 20 * scale);
+  ctx.stroke();
+  // Legs
+  ctx.beginPath();
+  ctx.moveTo(cx, skY + 80 * scale);
+  ctx.lineTo(cx - 25 * scale, skY + 130 * scale);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, skY + 80 * scale);
+  ctx.lineTo(cx + 25 * scale, skY + 130 * scale);
+  ctx.stroke();
+
   // Branding footer — gradient text effect via overlay
   const footerY = H - 90;
   // Accent gradient line separator

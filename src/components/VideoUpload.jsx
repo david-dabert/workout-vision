@@ -283,10 +283,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             frames.push({ landmarks, timestamp: time, angles });
             const updateResult = repCounter.update(landmarks);
 
-            // Draw skeleton with form feedback so it turns red/yellow
-            // on failing segments during analysis, not just in replay
-            drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0,
-              updateResult.formFeedback || null);
+            // Draw always-green skeleton during analysis (brand moment).
+            // Form-aware red/yellow coloring is for replay mode only.
+            drawPose(ctx, landmarks, canvas.width, canvas.height, 0.9, null);
+
+            // Rep counter overlay on the analysis canvas
+            ctx.fillStyle = '#00FF88';
+            ctx.font = `bold ${Math.max(18, Math.round(canvas.width / 16))}px -apple-system, system-ui, sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`${updateResult.reps} reps`, 16, 16);
 
             // Store frames for replay overlay. On iOS, store every other
             // frame to save memory; on desktop, store every frame.
