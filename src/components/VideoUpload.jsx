@@ -306,6 +306,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           setQueue(prev => prev.map(q =>
             q.id === queueItem.id ? { ...q, progress: pct } : q
           ));
+
+          // Yield to browser paint cycle so the skeleton is visible on screen
+          // before we seek to the next frame and overwrite the canvas.
+          await new Promise(r => requestAnimationFrame(r));
           settle(true);
         };
 
@@ -678,7 +682,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
             style={{ width: '100%', display: 'block' }} />
           <canvas ref={canvasRef}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2 }} />
         </div>
       </div>
 
