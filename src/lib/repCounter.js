@@ -327,18 +327,30 @@ export class RepCounter {
       }
     }
 
-    // Filter by prominence: remove extrema that are too close in value
-    // Use 4 degrees as minimum prominence (very low — catches slow controlled reps)
-    const MIN_PROM = 4;
+    // Adaptive prominence: 15% of observed range, minimum 8 degrees.
+    // Scales with the exercise (a curl with 70 deg ROM needs ~10.5 deg,
+    // a squat with 90 deg ROM needs ~13.5 deg). Fixed 4 deg was too low.
+    const validValues = smoothed.filter(v => v !== null);
+    const range = validValues.length > 0
+      ? Math.max(...validValues) - Math.min(...validValues) : 0;
+    const MIN_PROM = Math.max(8, range * 0.15);
+
+    // Minimum frame gap: 0.4 seconds worth of frames.
+    // At 4 fps = 2 frames, at 8 fps = 3 frames. Prevents double-counting
+    // from signal noise where two extrema are 0.25s apart.
+    const MIN_GAP = Math.max(2, Math.round(this._fps * 0.4));
+
     const filtered = [];
     for (const e of merged) {
       if (filtered.length === 0) { filtered.push(e); continue; }
       const prev = filtered[filtered.length - 1];
       const prom = Math.abs(e.value - prev.value);
-      if (prom >= MIN_PROM) {
+      const gap = e.index - prev.index;
+
+      if (prom >= MIN_PROM && gap >= MIN_GAP) {
         filtered.push(e);
       } else {
-        // Noise: keep the more extreme one
+        // Too close in value or time: keep the more extreme one
         if (e.type === 'peak' && e.value > prev.value) filtered[filtered.length - 1] = e;
         else if (e.type === 'valley' && e.value < prev.value) filtered[filtered.length - 1] = e;
       }
@@ -476,11 +488,13 @@ export class RepCounter {
     let repCount = 0;
     let lastPeak = null;
 
-    // For curls: peak distance (arm extended) → valley (arm curled) = 1 rep
+    // For curls: peak distance (arm extended) -> valley (arm curled) = 1 rep
     for (const e of extrema) {
       if (e.type === 'peak') {
         lastPeak = e;
       } else if (e.type === 'valley' && lastPeak !== null) {
+        const duration = (e.index - lastPeak.index) / this._fps;
+        if (duration < 0.3) { lastPeak = null; continue; }
         if (lastPeak.value - e.value >= minROM) {
           repCount++;
           this._reps++;
@@ -504,6 +518,8 @@ export class RepCounter {
         if (e.type === 'valley') {
           lastValley = e;
         } else if (e.type === 'peak' && lastValley !== null) {
+          const duration = (e.index - lastValley.index) / this._fps;
+          if (duration < 0.3) { lastValley = null; continue; }
           if (e.value - lastValley.value >= minROM) {
             repCount++;
             this._reps++;

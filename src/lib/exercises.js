@@ -112,9 +112,14 @@ export const EXERCISES = {
           const la = landmarks[27];
           const rk = landmarks[26];
           const ra = landmarks[28];
-          const leftValgus = lk.x - la.x;
-          const rightValgus = ra.x - rk.x;
-          return leftValgus > -0.02 && rightValgus > -0.02;
+          // Only check sides where both knee and ankle are visible.
+          // When occluded, MediaPipe hallucinates positions causing false failures.
+          const leftVis = (lk.visibility || 0) > 0.3 && (la.visibility || 0) > 0.3;
+          const rightVis = (rk.visibility || 0) > 0.3 && (ra.visibility || 0) > 0.3;
+          if (!leftVis && !rightVis) return true;
+          const leftOk = !leftVis || (lk.x - la.x) > -0.02;
+          const rightOk = !rightVis || (ra.x - rk.x) > -0.02;
+          return leftOk && rightOk;
         },
         good: 'Knees tracking over toes',
         bad: 'Knee cave detected -- push knees out',

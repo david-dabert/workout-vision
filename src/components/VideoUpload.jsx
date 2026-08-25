@@ -279,11 +279,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
               }
             }
-            drawPose(ctx, landmarks, canvas.width, canvas.height);
-
             const angles = extractJointAngles(landmarks);
             frames.push({ landmarks, timestamp: time, angles });
-            repCounter.update(landmarks);
+            const updateResult = repCounter.update(landmarks);
+
+            // Draw skeleton with form feedback so it turns red/yellow
+            // on failing segments during analysis, not just in replay
+            drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0,
+              updateResult.formFeedback || null);
 
             // Store frames for replay overlay. On iOS, store every other
             // frame to save memory; on desktop, store every frame.
