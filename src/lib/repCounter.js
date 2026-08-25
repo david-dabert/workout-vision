@@ -200,44 +200,68 @@ export class RepCounter {
 
     // Find peaks and valleys
     const extrema = this._findExtrema(smoothed);
-    console.debug(`[RepCounter] extrema found: ${extrema.length}`, extrema.map(e => `${e.type}@${e.index}=${Math.round(e.value)}`));
 
     // Count reps from extrema pairs
     const range = sigMax - sigMin;
     // Minimum ROM for a rep: 20% of observed range, floor at 10 degrees
     const minROM = Math.max(10, range * 0.2);
+
+    // Add boundary extrema: if the signal starts or ends far enough from
+    // the first/last detected extremum, treat the boundary as a synthetic
+    // extremum. This catches reps that begin or end at the video edges.
+    if (extrema.length >= 2) {
+      const firstValid = smoothed.findIndex(v => v !== null);
+      const lastValid = smoothed.length - 1 - [...smoothed].reverse().findIndex(v => v !== null);
+      const first = extrema[0];
+      const last = extrema[extrema.length - 1];
+
+      // Prepend boundary if it's the opposite type of the first extremum
+      // and has enough ROM from it
+      if (firstValid >= 0 && firstValid < first.index) {
+        const bv = smoothed[firstValid];
+        const diff = Math.abs(bv - first.value);
+        if (diff >= minROM * 0.5) {
+          const bType = (first.type === 'peak') ? 'valley' : 'peak';
+          if ((bType === 'valley' && bv <= first.value) || (bType === 'peak' && bv >= first.value)) {
+            extrema.unshift({ type: bType, index: firstValid, value: bv });
+          }
+        }
+      }
+
+      // Append boundary if it's the opposite type of the last extremum
+      if (lastValid >= 0 && lastValid > last.index) {
+        const bv = smoothed[lastValid];
+        const diff = Math.abs(bv - last.value);
+        if (diff >= minROM * 0.5) {
+          const bType = (last.type === 'peak') ? 'valley' : 'peak';
+          if ((bType === 'valley' && bv <= last.value) || (bType === 'peak' && bv >= last.value)) {
+            extrema.push({ type: bType, index: lastValid, value: bv });
+          }
+        }
+      }
+    }
+
+    console.debug(`[RepCounter] extrema found: ${extrema.length}`, extrema.map(e => `${e.type}@${e.index}=${Math.round(e.value)}`));
     console.debug(`[RepCounter] minROM: ${Math.round(minROM)}° (range: ${Math.round(range)}°)`);
 
     // Reset for pass 2 count
     this._reps = 0;
     this._repHistory = [];
 
-    // Determine rep direction from exercise thresholds
-    const isValleyFirst = ex.upThreshold < ex.downThreshold;
+    // Full-cycle detection: find triplets a-b-c where a and c are the same
+    // type (both peaks or both valleys) and b is the opposite.
+    // This gives three distinct frame indices per rep: start, bottom, end.
+    // The end of one rep becomes the start of the next (shared boundary).
+    for (let i = 0; i < extrema.length - 2; i++) {
+      const a = extrema[i];
+      const b = extrema[i + 1];
+      const c = extrema[i + 2];
 
-    let lastFirst = null;
-    for (const e of extrema) {
-      if (isValleyFirst) {
-        // Rep = valley then peak (curls, squats)
-        if (e.type === 'valley') {
-          lastFirst = e;
-        } else if (e.type === 'peak' && lastFirst !== null) {
-          const rom = e.value - lastFirst.value;
-          if (rom >= minROM) {
-            this._recordRep(frameData, lastFirst.index, e.index);
-            lastFirst = null;
-          }
-        }
-      } else {
-        // Rep = peak then valley (lateral raises)
-        if (e.type === 'peak') {
-          lastFirst = e;
-        } else if (e.type === 'valley' && lastFirst !== null) {
-          const rom = lastFirst.value - e.value;
-          if (rom >= minROM) {
-            this._recordRep(frameData, lastFirst.index, e.index);
-            lastFirst = null;
-          }
+      if (a.type === c.type && a.type !== b.type) {
+        const rom = Math.abs(a.value - b.value);
+        if (rom >= minROM) {
+          this._recordRep(frameData, a.index, b.index, c.index);
+          i++; // next rep starts from c (shared boundary)
         }
       }
     }
@@ -324,10 +348,14 @@ export class RepCounter {
     return filtered;
   }
 
-  _recordRep(frameData, bottomIdx, topIdx) {
+  _recordRep(frameData, startIdx, bottomIdx, endIdx) {
     this._reps++;
+    const startData = frameData[startIdx];
     const bottomData = frameData[bottomIdx];
-    const topData = frameData[topIdx];
+    const endData = frameData[endIdx];
+
+    // Use start or end frame data for "top" form checks (whichever is available)
+    const topData = startData || endData;
 
     // Compute form score from form checks
     let score = null;
@@ -352,9 +380,9 @@ export class RepCounter {
       score,
       issues,
       ts: Date.now(),
-      startFrame: bottomIdx,
+      startFrame: startIdx,
       bottomFrame: bottomIdx,
-      endFrame: topIdx,
+      endFrame: endIdx,
     });
   }
 
