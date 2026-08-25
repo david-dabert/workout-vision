@@ -369,7 +369,39 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
         </div>
       </div>
 
+      {exporting && (
+        <div style={{ textAlign: 'center', padding: '10px 0' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 6 }}>
+            {t('exporting')}... {exportProgress}%
+          </div>
+          <div className="replay-progress" style={{ margin: '0 20px' }}>
+            <div className="replay-progress-fill" style={{ width: `${exportProgress}%` }} />
+          </div>
+          <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={cancelExport}>
+            {t('cancel')}
+          </button>
+        </div>
+      )}
+
       <div className="replay-actions">
+        {supportsVideoExport ? (
+          <button
+            className="btn btn-primary replay-btn"
+            onClick={exportHD}
+            disabled={exporting}
+            style={{ flex: 1 }}
+          >
+            {t('download_hd')}
+          </button>
+        ) : (
+          <button
+            className="btn btn-primary replay-btn"
+            onClick={saveScreenshot}
+            style={{ flex: 1 }}
+          >
+            {t('save_screenshot')}
+          </button>
+        )}
         <button className="btn btn-ghost replay-btn" onClick={onClose}>
           {t('back')}
         </button>

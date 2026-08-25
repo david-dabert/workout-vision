@@ -5,6 +5,7 @@ import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
+import { shareCard } from '../lib/shareCard';
 import { saveWorkout, getAllWorkouts } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
@@ -1062,6 +1063,13 @@ function ResultCard({ result, onReplay }) {
           {t('watch_overlay')}
         </button>
       )}
+      <button
+        className="btn btn-ghost"
+        style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
+        onClick={() => shareCard(result)}
+      >
+        {t('share_card')}
+      </button>
     </div>
   );
 }

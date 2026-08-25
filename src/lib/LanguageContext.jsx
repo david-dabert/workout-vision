@@ -136,6 +136,7 @@ const translations = {
   'ai_overlay': { en: 'AI Overlay', fr: 'Superposition IA' },
   'download_hd': { en: 'Download HD Video', fr: 'Télécharger vidéo HD' },
   'save_screenshot': { en: 'Save HD Screenshot', fr: 'Enregistrer capture HD' },
+  'exporting': { en: 'Exporting', fr: 'Export en cours' },
   'cancel_export': { en: 'Cancel Export', fr: "Annuler l'export" },
 
   // ─── Live Camera ───
