@@ -169,27 +169,26 @@ export class RepCounter {
     const ex = this._exercise;
     if (ex.isIsometric || this._collectedLandmarks.length < 6) return;
 
-    // Extract the full signal
+    // Extract the raw signal — no per-frame smoothing here.
+    // _smoothSignal() handles all smoothing in one pass, avoiding
+    // the double-smoothing that flattens peaks at low FPS.
     const rawSignal = [];
     const frameData = [];
-    const smoothWindow = Math.min(5, Math.max(1, Math.round(this._fps * 0.3)));
-    const smoother = new AngleBuffer(smoothWindow);
 
     for (let i = 0; i < this._collectedLandmarks.length; i++) {
       const landmarks = this._collectedLandmarks[i];
-      const rawAngles = extractJointAngles(landmarks);
-      if (!rawAngles) {
+      const angles = extractJointAngles(landmarks);
+      if (!angles) {
         rawSignal.push(null);
         frameData.push(null);
         continue;
       }
-      const angles = smoother.smooth(rawAngles);
       const value = ex.getValue(angles, landmarks);
       rawSignal.push(value);
       frameData.push({ angles, landmarks });
     }
 
-    // Smooth with wider window
+    // Single smoothing pass
     const smoothed = this._smoothSignal(rawSignal);
 
     // Debug: log signal stats
@@ -349,22 +348,45 @@ export class RepCounter {
   }
 
   _recordRep(frameData, startIdx, bottomIdx, endIdx) {
+    // Duration filter: reject reps shorter than 0.3s or longer than 8s
+    const repDuration = (endIdx - startIdx) / this._fps;
+    if (repDuration < 0.3 || repDuration > 8.0) {
+      console.debug(`[RepCounter] rejected rep: duration ${repDuration.toFixed(2)}s`);
+      return;
+    }
+
     this._reps++;
-    const startData = frameData[startIdx];
-    const bottomData = frameData[bottomIdx];
-    const endData = frameData[endIdx];
 
-    // Use start or end frame data for "top" form checks (whichever is available)
-    const topData = startData || endData;
-
-    // Compute form score from form checks
+    // Evaluate form across multiple frames in the rep, not just 2.
+    // Sample every Nth frame to balance accuracy vs performance.
+    const ex = this._exercise;
+    const checks = ex.formChecks || [];
     let score = null;
     const issues = [];
-    if (bottomData && topData) {
-      const formResults = this._exercise.formChecks.map((fc) => {
+
+    if (checks.length > 0 && frameData[bottomIdx]) {
+      const sampleStep = Math.max(1, Math.floor((endIdx - startIdx) / 12));
+      const topData = frameData[startIdx] || frameData[endIdx];
+
+      const formResults = checks.map((fc) => {
         const isTopCheck = fc.phase === 'top';
-        const data = isTopCheck ? topData : bottomData;
-        const passed = fc.check(data.angles, data.landmarks);
+        // Check the critical frame (bottom or top of rep)
+        const criticalData = isTopCheck ? topData : frameData[bottomIdx];
+        const criticalPassed = criticalData ? fc.check(criticalData.angles, criticalData.landmarks) : true;
+
+        // Also sample across the rep to catch mid-rep breakdown
+        let failCount = 0;
+        let sampleCount = 0;
+        for (let i = startIdx; i <= endIdx; i += sampleStep) {
+          const data = frameData[i];
+          if (!data) continue;
+          sampleCount++;
+          if (!fc.check(data.angles, data.landmarks)) failCount++;
+        }
+
+        // Fail if critical frame fails OR >30% of samples fail
+        const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
+        const passed = criticalPassed && failRate < 0.30;
         return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
       });
 

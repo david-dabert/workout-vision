@@ -247,32 +247,38 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
   const timeDelta = 1 / fps;
 
   const perRep = reps.map(rep => {
-    // For pushing exercises: concentric = bottom→end (angle increasing)
-    // For pulling exercises: concentric = start→bottom (angle decreasing)
-    const frameA = isPulling ? rep.start : rep.bottom;
-    const frameB = isPulling ? rep.bottom : rep.end;
-    if (frameA >= frameB || frameB >= rawFrames.length) return 0;
+    // For pushing exercises: concentric = bottom->end (angle increasing)
+    // For pulling exercises: concentric = start->bottom (angle decreasing)
+    const concentricStart = isPulling ? rep.start : rep.bottom;
+    const concentricEnd = isPulling ? rep.bottom : rep.end;
+    if (concentricStart >= concentricEnd || concentricEnd >= rawFrames.length) return 0;
 
-    const lm1 = rawFrames[frameA];
-    const lm2 = rawFrames[frameB];
-    if (!lm1 || !lm2) return 0;
+    // Sum frame-to-frame displacements across the entire concentric phase
+    // instead of just measuring endpoint displacement. This captures the
+    // actual path traveled and is more accurate at low FPS.
+    let totalDisplacement = 0;
+    for (let i = concentricStart; i < concentricEnd; i++) {
+      const lm1 = rawFrames[i];
+      const lm2 = rawFrames[i + 1];
+      if (!lm1 || !lm2) continue;
 
-    let p1, p2;
-    if (isLower) {
-      p1 = midpoint(lm1[LANDMARKS.LEFT_HIP], lm1[LANDMARKS.RIGHT_HIP]);
-      p2 = midpoint(lm2[LANDMARKS.LEFT_HIP], lm2[LANDMARKS.RIGHT_HIP]);
-    } else {
-      p1 = midpoint(lm1[LANDMARKS.LEFT_WRIST], lm1[LANDMARKS.RIGHT_WRIST]);
-      p2 = midpoint(lm2[LANDMARKS.LEFT_WRIST], lm2[LANDMARKS.RIGHT_WRIST]);
+      let p1, p2;
+      if (isLower) {
+        p1 = midpoint(lm1[LANDMARKS.LEFT_HIP], lm1[LANDMARKS.RIGHT_HIP]);
+        p2 = midpoint(lm2[LANDMARKS.LEFT_HIP], lm2[LANDMARKS.RIGHT_HIP]);
+      } else {
+        p1 = midpoint(lm1[LANDMARKS.LEFT_WRIST], lm1[LANDMARKS.RIGHT_WRIST]);
+        p2 = midpoint(lm2[LANDMARKS.LEFT_WRIST], lm2[LANDMARKS.RIGHT_WRIST]);
+      }
+
+      const dx = (p2.x - p1.x) * NORM_TO_METERS;
+      const dy = (p2.y - p1.y) * NORM_TO_METERS;
+      const dz = ((p2.z || 0) - (p1.z || 0)) * NORM_TO_METERS;
+      totalDisplacement += Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    const dx = (p2.x - p1.x) * NORM_TO_METERS;
-    const dy = (p2.y - p1.y) * NORM_TO_METERS;
-    const dz = ((p2.z || 0) - (p1.z || 0)) * NORM_TO_METERS;
-    const displacement = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const duration = (frameB - frameA) * timeDelta;
-
-    return duration > 0 ? round(displacement / duration, 3) : 0;
+    const duration = (concentricEnd - concentricStart) * timeDelta;
+    return duration > 0 ? round(totalDisplacement / duration, 3) : 0;
   });
 
   const valid = perRep.filter(v => v > 0);
