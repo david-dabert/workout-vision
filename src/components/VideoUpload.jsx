@@ -13,7 +13,7 @@ import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v9-ui-upgrade';
+const BUILD_ID = 'v10-single-canvas';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -264,51 +264,56 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           // Without this, 90%+ of seeks produce black canvas frames.
           await waitForFrame();
 
-          // Draw video frame to offscreen canvas for MediaPipe input only.
-          // The visible video element shows the frame natively.
+          // Draw video frame to offscreen canvas for MediaPipe input
           offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
           const result = detectPoseImage(landmarker, offscreen);
 
-          if (result?.landmarks?.length) {
-            let landmarks;
-            if (result.landmarks.length === 1) {
-              landmarks = result.landmarks[0];
-            } else {
-              if (lockedSubjectIdx === null) {
-                landmarks = selectSubjectPose(result.landmarks);
-                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                console.log(`[Upload] Person lock: locked to pose index ${lockedSubjectIdx} of ${result.landmarks.length} detected`);
+          // Draw video frame + skeleton onto the SINGLE visible canvas
+          const canvas = overlayRef.current;
+          if (canvas) {
+            const vw = video.videoWidth || 1080;
+            const vh = video.videoHeight || 1920;
+            if (canvas.width !== vw || canvas.height !== vh) {
+              canvas.width = vw;
+              canvas.height = vh;
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, vw, vh);
+            ctx.drawImage(video, 0, 0, vw, vh);
+
+            if (result?.landmarks?.length) {
+              let landmarks;
+              if (result.landmarks.length === 1) {
+                landmarks = result.landmarks[0];
               } else {
-                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                if (lockedSubjectIdx === null) {
+                  landmarks = selectSubjectPose(result.landmarks);
+                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                } else {
+                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                }
               }
-            }
-            const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: time, angles });
-            const updateResult = repCounter.update(landmarks);
-            setLiveReps(updateResult.reps);
+              const angles = extractJointAngles(landmarks);
+              frames.push({ landmarks, timestamp: time, angles });
+              const updateResult = repCounter.update(landmarks);
+              setLiveReps(updateResult.reps);
 
-            // Draw skeleton on the transparent overlay canvas (over the video).
-            // FIX: Use video.videoWidth/Height (intrinsic, available immediately)
-            // NOT getBoundingClientRect() which returns 0 before first layout pass.
-            // Pass raw normalized landmarks — drawPose does lm.x * width internally.
-            const overlay = overlayRef.current;
-            if (overlay) {
-              const videoW = video.videoWidth || 1080;
-              const videoH = video.videoHeight || 1920;
-              const dpr = window.devicePixelRatio || 1;
-              const ow = Math.round(videoW * dpr);
-              const oh = Math.round(videoH * dpr);
-              if (overlay.width !== ow || overlay.height !== oh) {
-                overlay.width = ow;
-                overlay.height = oh;
+              // Draw GREEN skeleton on top of video frame
+              drawPose(ctx, landmarks, vw, vh, 1.0, null);
+
+              // Draw rep counter directly on canvas
+              ctx.fillStyle = '#00FF88';
+              ctx.font = `bold ${Math.max(24, Math.round(vw / 12))}px -apple-system, sans-serif`;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'top';
+              ctx.shadowColor = 'rgba(0,0,0,0.8)';
+              ctx.shadowBlur = 4;
+              ctx.fillText(`${updateResult.reps} reps`, 20, 20);
+              ctx.shadowBlur = 0;
+
+              if (!IS_IOS || frameIdx % 2 === 0) {
+                replayFrames.push({ landmarks, timestamp: time });
               }
-              const oCtx = overlay.getContext('2d');
-              oCtx.clearRect(0, 0, overlay.width, overlay.height);
-              drawPose(oCtx, landmarks, videoW, videoH, 1.0, null);
-            }
-
-            if (!IS_IOS || frameIdx % 2 === 0) {
-              replayFrames.push({ landmarks, timestamp: time });
             }
           }
 
@@ -693,46 +698,34 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         )}
       </div>
 
-      {/* Video + transparent overlay canvas. Video shows the frame natively.
-          Overlay canvas draws only the skeleton on top. No drawImage conflict.
-          Using opacity+position when not analyzing because iOS Safari refuses
-          to seek on display:none video elements. */}
+      {/* Hidden video — exists only for seeking and frame extraction.
+          Never visible. iOS Safari needs it in the DOM to seek. */}
+      <video ref={videoRef} muted playsInline preload="auto"
+        style={{ position: 'absolute', opacity: 0, width: 1, height: 1, pointerEvents: 'none' }} />
+
+      {/* Single visible canvas — draws video frame + green skeleton + rep counter.
+          No overlay. No compositor conflicts. No z-index fights. */}
       <div
         className="analysis-card"
         style={analyzing
           ? { display: 'block', padding: 8 }
-          : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
+          : { display: 'none' }
         }
       >
-        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000', aspectRatio: '9/16' }}>
-          <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
-
-          {/* Transparent overlay — draws ONLY the green skeleton, no video frame */}
+        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
           <canvas ref={overlayRef}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }} />
-
-          {analyzing && analysisPhase === 'analyzing' && (
-            <>
-              {/* Live rep counter */}
-              <div style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.6)',
-                padding: '8px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', zIndex: 10 }}>
-                <span style={{ color: '#00FF88', fontSize: 24, fontWeight: 800 }}>{liveReps}</span>
-                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginLeft: 6 }}>reps</span>
-              </div>
-
-              {/* Progress bar */}
-              <div style={{ position: 'absolute', bottom: 20, left: 16, right: 16,
-                display: 'flex', alignItems: 'center', gap: 12, zIndex: 10 }}>
-                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
-                  <div style={{ width: `${progress}%`, height: '100%', background: '#00FF88',
-                    borderRadius: 2, transition: 'width 0.1s linear' }} />
-                </div>
-                <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
-              </div>
-            </>
-          )}
+            style={{ width: '100%', display: 'block' }} />
         </div>
+        {analyzing && analysisPhase === 'analyzing' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '0 4px' }}>
+            <span style={{ color: '#00FF88', fontSize: 20, fontWeight: 800 }}>{liveReps} reps</span>
+            <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
+              <div style={{ width: `${progress}%`, height: '100%', background: '#00FF88',
+                borderRadius: 2, transition: 'width 0.1s linear' }} />
+            </div>
+            <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
+          </div>
+        )}
       </div>
 
       {results.map((r, idx) => (
@@ -749,64 +742,54 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
 // ── Coaching logic: one sentence, data-driven ──
 
-function generateCoachingInsight(repHistory, bioAnalysis) {
+function generateCoachingInsight(repHistory, bioAnalysis, t) {
   if (!repHistory || repHistory.length === 0) return null;
 
-  // Rule 1: ROM decay = fatigue
   if (bioAnalysis?.rangeOfMotion?.perRep && bioAnalysis.rangeOfMotion.perRep.length >= 3) {
     const roms = bioAnalysis.rangeOfMotion.perRep;
     const firstRom = roms[0];
     const lastRom = roms[roms.length - 1];
     if (firstRom > 0 && lastRom < firstRom * 0.8) {
       const drop = Math.round((1 - lastRom / firstRom) * 100);
-      return `Range of motion dropped ${drop}% across the set. Stop before form breaks down.`;
+      return t('insight_rom_drop', { drop });
     }
   }
 
-  // Rule 2: Velocity slowdown = fatigue
   if (bioAnalysis?.fatigue?.velocityDropoff > 25) {
-    return `Reps slowed ${Math.round(bioAnalysis.fatigue.velocityDropoff)}% toward the end. Fatigue detected.`;
+    return t('insight_fatigue', { drop: Math.round(bioAnalysis.fatigue.velocityDropoff) });
   }
 
-  // Rule 3: Asymmetry
   if (bioAnalysis?.asymmetry?.score > 15) {
-    return `Left/right imbalance of ${Math.round(bioAnalysis.asymmetry.score)}% detected. Focus on equal effort from both sides.`;
+    return t('insight_asymmetry', { score: Math.round(bioAnalysis.asymmetry.score) });
   }
 
-  // Rule 4: Tempo too fast
   if (bioAnalysis?.velocity?.perRep) {
     const avgVel = bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length;
-    if (avgVel > 0.8) {
-      return `Reps are fast. Slow down the lowering phase for better muscle engagement.`;
-    }
+    if (avgVel > 0.8) return t('insight_too_fast');
   }
 
-  // Rule 5: Consistent quality — ready to progress
   const scores = repHistory.map(r => r.score || 0);
   const variance = Math.max(...scores) - Math.min(...scores);
-  if (variance < 15 && scores[0] >= 70) {
-    return `Consistent reps across the set. Ready to add weight next session.`;
-  }
+  if (variance < 15 && scores[0] >= 70) return t('insight_ready_progress');
 
-  // Rule 6: Identify best rep
   const best = repHistory.reduce((a, b, i) => (b.score || 0) > (a.score || 0) ? { ...b, num: i + 1 } : a, { ...repHistory[0], num: 1 });
-  return `Rep ${best.num} was your best. Replicate that tempo and range of motion.`;
+  return t('insight_best_rep', { num: best.num });
 }
 
-function generateProgressionNote(progression) {
+function generateProgressionNote(progression, t) {
   if (!progression) return null;
-  const { prevReps, prevScore, prevRom, prevWeight, prevDate } = progression;
+  const { prevScore, prevRom, prevDate } = progression;
   const daysSince = Math.round((Date.now() - new Date(prevDate).getTime()) / 86400000);
-  const dateLabel = daysSince <= 1 ? 'yesterday' : daysSince <= 7 ? `${daysSince} days ago` : new Date(prevDate).toLocaleDateString();
+  const dateStr = daysSince <= 1 ? t('yesterday') : daysSince <= 7 ? t('days_ago', { n: daysSince }) : new Date(prevDate).toLocaleDateString();
 
   if (prevRom > 0 && progression.currentRom > 0) {
     const romChange = Math.round(progression.currentRom - prevRom);
-    if (romChange > 5) return `+${romChange}° ROM improvement vs ${dateLabel}.`;
-    if (romChange < -5) return `${romChange}° ROM decrease vs ${dateLabel}. Check recovery or reduce weight.`;
+    if (romChange > 5) return t('prog_rom_up', { change: romChange, date: dateStr });
+    if (romChange < -5) return t('prog_rom_down', { change: romChange, date: dateStr });
   }
-  if (progression.currentScore > prevScore + 5) return `Form improved vs ${dateLabel} (+${Math.round(progression.currentScore - prevScore)} points).`;
-  if (progression.currentScore < prevScore - 10) return `Form dropped vs ${dateLabel}. Consider reducing weight.`;
-  return `Consistent with last session (${dateLabel}).`;
+  if (progression.currentScore > prevScore + 5) return t('prog_form_up', { change: Math.round(progression.currentScore - prevScore), date: dateStr });
+  if (progression.currentScore < prevScore - 10) return t('prog_form_down', { date: dateStr });
+  return t('prog_consistent', { date: dateStr });
 }
 
 function ResultCard({ result, onReplay }) {
@@ -822,8 +805,8 @@ function ResultCard({ result, onReplay }) {
   const exerciseDef = EXERCISES[result.exercise];
   const muscles = exerciseDef?.muscles;
 
-  const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis);
-  const progressionNote = generateProgressionNote(progression);
+  const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis, t);
+  const progressionNote = generateProgressionNote(progression, t);
 
   return (
     <div className="card result-card" style={{ marginTop: 14 }}>

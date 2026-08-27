@@ -492,6 +492,23 @@ const translations = {
   'ex.jumping_jack': { en: 'Jumping Jack', fr: 'Jumping jack' },
   'ex.box_jump': { en: 'Box Jump', fr: 'Box jump' },
   'ex.superset': { en: 'Superset / Other', fr: 'Superset / Autre' },
+
+  // ─── Coaching insights ───
+  'insight_rom_drop': { en: 'Range of motion dropped {{drop}}% across the set. Stop before form breaks down.', fr: 'Amplitude diminuée de {{drop}}% pendant la série. Arrêtez avant que la forme ne se dégrade.' },
+  'insight_fatigue': { en: 'Reps slowed {{drop}}% toward the end. Fatigue detected.', fr: 'Ralentissement de {{drop}}% vers la fin. Fatigue détectée.' },
+  'insight_asymmetry': { en: 'Left/right imbalance of {{score}}% detected. Focus on equal effort from both sides.', fr: 'Déséquilibre gauche/droite de {{score}}% détecté. Concentrez-vous sur un effort égal des deux côtés.' },
+  'insight_too_fast': { en: 'Reps are fast. Slow down the lowering phase for better muscle engagement.', fr: 'Répétitions trop rapides. Ralentissez la phase descendante pour mieux solliciter les muscles.' },
+  'insight_ready_progress': { en: 'Consistent reps across the set. Ready to add weight next session.', fr: 'Répétitions constantes sur toute la série. Prêt à augmenter la charge.' },
+  'insight_best_rep': { en: 'Rep {{num}} was your best. Replicate that tempo and range of motion.', fr: 'Répétition {{num}} était votre meilleure. Reproduisez ce tempo et cette amplitude.' },
+
+  // ─── Progression notes ───
+  'prog_rom_up': { en: '+{{change}}° ROM improvement vs {{date}}.', fr: "+{{change}}° d'amplitude gagnée vs {{date}}." },
+  'prog_rom_down': { en: '{{change}}° ROM decrease vs {{date}}. Check recovery or reduce weight.', fr: "{{change}}° d'amplitude perdue vs {{date}}. Vérifiez la récupération ou réduisez la charge." },
+  'prog_form_up': { en: 'Form improved vs {{date}} (+{{change}} points).', fr: 'Forme améliorée vs {{date}} (+{{change}} points).' },
+  'prog_form_down': { en: 'Form dropped vs {{date}}. Consider reducing weight.', fr: 'Forme en baisse vs {{date}}. Envisagez de réduire la charge.' },
+  'prog_consistent': { en: 'Consistent with last session ({{date}}).', fr: 'Constant par rapport à la dernière session ({{date}}).' },
+  'yesterday': { en: 'yesterday', fr: 'hier' },
+  'days_ago': { en: '{{n}} days ago', fr: 'il y a {{n}} jours' },
 };
 
 // ─── Detect initial language ───
