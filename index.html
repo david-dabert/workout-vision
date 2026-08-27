@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/workout-vision/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/workout-vision/manifest.json" />
+    <title>WorkoutVision</title>
+    <script type="module" crossorigin src="/workout-vision/assets/index-CHfJrAfb.js"></script>
+    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-BUVrTyWF.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Crash reporter: show JS errors on screen instead of black void
+      window.onerror = function(msg, src, line, col, err) {
+        var d = document.getElementById('root');
+        if (d) d.innerHTML = '<div style="color:#ff3b5c;padding:20px;font:14px monospace;word-break:break-all">'
+          + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision Error</h2>'
+          + '<p>' + msg + '</p>'
+          + '<p style="color:#888">' + (src||'') + ':' + line + ':' + col + '</p>'
+          + '<p style="color:#888;margin-top:8px">' + (err && err.stack ? err.stack : '') + '</p>'
+          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
+          + '</div>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unknown promise rejection';
+        window.onerror(msg, '', 0, 0, e.reason);
+      });
+      // Watchdog: if React hasn't mounted after 8s, show diagnostic
+      setTimeout(function() {
+        var r = document.getElementById('root');
+        if (r && r.children.length === 0) {
+          r.innerHTML = '<div style="color:#ffb836;padding:20px;font:14px monospace">'
+            + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision</h2>'
+            + '<p>App did not load within 8 seconds.</p>'
+            + '<p style="color:#888;margin-top:8px">This may be a network issue or JavaScript error.</p>'
+            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
+            + '</div>';
+        }
+      }, 8000);
+    </script>
+    <script>
+      // Kill any service worker. The SW caused stale cached code on iOS Safari
+      // that persisted across deploys for hours. Not worth the offline benefit.
+      (function() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(r) {
+            r.forEach(function(reg) { reg.unregister(); });
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(k) {
+            k.forEach(function(n) { caches.delete(n); });
+          });
+        }
+      })();
+      // Glass effect heuristic: disable backdrop-filter on weak devices
+      // before first paint to prevent compositing jank.
+      (function() {
+        var ua = navigator.userAgent;
+        var disableGlass = false;
+        // Android: low-end devices only
+        if (/Android/.test(ua)) {
+          var cores = navigator.hardwareConcurrency || 4;
+          var memory = navigator.deviceMemory || 4;
+          disableGlass = cores <= 4 && memory <= 3;
+        }
+        // iOS: only iOS 14 and below (parse OS version from UA)
+        var iosMatch = ua.match(/OS (\d+)_/);
+        if (iosMatch) {
+          disableGlass = parseInt(iosMatch[1], 10) < 15;
+        }
+        if (disableGlass) {
+          document.documentElement.classList.add('no-glass');
+        }
+      })();
+    </script>
+    <script>
+      // Cache-bust: detect stale HTML pointing to deleted assets.
+      // GitHub Pages serves HTML with max-age=600. If a deploy replaces
+      // assets while the old HTML is cached, the module script 404s and
+      // React never mounts. This HEAD-checks the script src and reloads
+      // with a cache-busting query if the asset is gone.
+      (function() {
+        if (sessionStorage.getItem('_cb')) return; // one attempt per tab
+        var s = document.querySelector('script[type="module"][src]');
+        if (!s) return;
+        fetch(s.src, { method: 'HEAD' }).then(function(r) {
+          if (!r.ok) {
+            sessionStorage.setItem('_cb', '1');
+            location.replace(location.pathname + '?_=' + Date.now());
+          }
+        }).catch(function() {});
+      })();
+    </script>
+  </body>
+</html>
