@@ -2695,3 +2695,70 @@ export const EXERCISE_GROUPS = (() => {
   for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
   return groups;
 })();
+
+// ---------------------------------------------------------------------------
+// Bryllim exercise illustration mapping (CDN-loaded, not bundled)
+// Maps our exercise keys to @bryllim/workout-guide slugs.
+// Images: 512x512 PNG, 3 frames per exercise (start, mid, end).
+// ---------------------------------------------------------------------------
+const BRYLLIM_CDN = 'https://unpkg.com/@bryllim/workout-guide@1.0.0/assets';
+
+const EXERCISE_SLUG_MAP = {
+  squat: 'squat', front_squat: 'front-squat', goblet_squat: 'goblet-squat',
+  deadlift: 'deadlift', romanian_deadlift: 'romanian-deadlift',
+  hip_thrust: 'hip-thrust', lunge: 'walking-lunge',
+  bulgarian_split_squat: 'bulgarian-split-squat',
+  standing_leg_extension: 'leg-extension', calf_raise: 'standing-calf-raise',
+  pushup: 'push-up', overhead_press: 'overhead-press',
+  bench_press: 'bench-press', dip: 'dip',
+  bent_over_row: 'barbell-row', pullup: 'pull-up',
+  bicep_curl: 'bicep-curl', tricep_extension: 'overhead-tricep-extension',
+  upright_row: 'upright-row', lateral_raise: 'lateral-raise',
+  chest_supported_row: 'chest-supported-row', seated_cable_row: 'seated-row',
+  lat_pulldown: 'lat-pulldown', leg_press: 'leg-press',
+  leg_extension_machine: 'leg-extension', leg_curl_machine: 'leg-curl',
+  machine_chest_press: 'machine-chest-press',
+  plank: 'plank', crunch: 'crunch', mountain_climber: 'mountain-climber',
+  burpee: 'burpee', jumping_jack: 'jumping-jack',
+  pike_pushup: 'pike-push-up', diamond_pushup: 'diamond-push-up',
+  inverted_row: 'inverted-row', jump_squat: 'jump-squat',
+  pistol_squat: 'pistol-squat', glute_bridge: 'glute-bridge',
+  wall_sit: 'wall-sit', dead_hang: 'dead-hang', l_sit: 'l-sit-hold',
+  hollow_body: 'hollow-body-hold', overhead_hold: 'overhead-press',
+  side_plank: 'side-plank', step_up: 'step-up',
+  kettlebell_swing: 'kettlebell-swing', thruster: 'squat',
+  clean_and_press: 'deadlift', renegade_row: 'push-up',
+  turkish_getup: 'plank', bear_crawl: 'bear-crawl',
+  muscle_up: 'pull-up', chinup: 'chin-up',
+  box_jump: 'jump-squat', skater_jump: 'skater-hop',
+  squat_jump_to_lunge: 'jump-squat', man_maker: 'push-up',
+  commando_pullup: 'commando-pull-up', face_pull: 'face-pull',
+  incline_bench_press: 'incline-bench-press', sumo_deadlift: 'sumo-deadlift',
+  nordic_curl: 'nordic-hamstring-curl', seated_calf_raise: 'seated-calf-raise',
+  hanging_leg_raise: 'hanging-leg-raise', hack_squat: 'hack-squat',
+  smith_machine_squat: 'smith-machine-squat', zercher_squat: 'squat',
+  overhead_squat: 'squat', power_clean: 'deadlift', snatch: 'deadlift',
+  tbar_row: 't-bar-row', pendlay_row: 'pendlay-row',
+  close_grip_bench: 'close-grip-bench-press', decline_bench: 'decline-bench-press',
+  floor_press: 'bench-press', landmine_press: 'landmine-press',
+  arnold_press: 'arnold-press', hammer_curl: 'hammer-curl',
+  preacher_curl: 'preacher-curl', concentration_curl: 'concentration-curl',
+  lying_bicep_curl: 'spider-curl', spider_curl: 'spider-curl',
+  skull_crusher: 'skull-crusher', cable_tricep_pushdown: 'tricep-pushdown',
+  front_raise: 'front-raise', rear_delt_fly: 'rear-delt-fly',
+  shrug: 'shrug', cable_fly: 'cable-fly', dumbbell_fly: 'dumbbell-fly',
+  cable_crossover: 'cable-fly', wrist_curl: 'wrist-curl',
+  situp: 'decline-sit-up', vup: 'v-up',
+};
+
+/**
+ * Get illustration URL for an exercise frame.
+ * @param {string} exerciseKey - Our exercise key (e.g. 'squat')
+ * @param {number} frame - Frame number (1, 2, or 3)
+ * @returns {string|null} CDN URL or null if no mapping exists
+ */
+export function getExerciseIllustration(exerciseKey, frame = 1) {
+  const slug = EXERCISE_SLUG_MAP[exerciseKey];
+  if (!slug) return null;
+  return `${BRYLLIM_CDN}/${slug}/frame-${frame}.png`;
+}

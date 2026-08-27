@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
-import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
+import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
@@ -12,7 +12,7 @@ import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v6-stable';
+const BUILD_ID = 'v7-overlay';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -62,9 +62,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
   const [replayResult, setReplayResult] = useState(null);
+  const [liveReps, setLiveReps] = useState(0);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
+  const overlayRef = useRef(null);
   const abortRef = useRef(false);
   const blobUrlRef = useRef(null);
 
@@ -125,8 +126,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
   const analyzeVideo = useCallback(async (queueItem) => {
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return null;
+    if (!video) return null;
 
     // Load model first
     setAnalysisPhase('model');
@@ -182,14 +182,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
     const interval = duration / totalFrames;
 
-    // Cap analysis canvas resolution to save memory.
-    // iOS: 480p max (~1.5MB per RGBA buffer). Desktop: 720p max (~5MB).
-    // MediaPipe works fine at lower resolution; full-res is unnecessary.
+    // Offscreen canvas for MediaPipe input only (not displayed).
+    // Cap resolution to save memory. iOS: 480p, Desktop: 720p.
     const maxAnalysisWidth = IS_IOS ? 480 : 720;
     const scale = Math.min(1, maxAnalysisWidth / video.videoWidth);
-    canvas.width = Math.round(video.videoWidth * scale);
-    canvas.height = Math.round(video.videoHeight * scale);
-    const ctx = canvas.getContext('2d');
+    const offscreen = document.createElement('canvas');
+    offscreen.width = Math.round(video.videoWidth * scale);
+    offscreen.height = Math.round(video.videoHeight * scale);
+    const offCtx = offscreen.getContext('2d');
 
     console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${video.videoWidth}x${video.videoHeight}, ${totalFrames} frames at ${analysisFps.toFixed(1)} FPS`);
 
@@ -208,6 +208,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const analysisStart = Date.now();
 
     setAnalysisPhase('analyzing');
+    setLiveReps(0);
 
     // Wait for the video frame to actually be decoded and ready to draw.
     // iOS Safari fires 'seeked' BEFORE the HEVC frame is decoded, so drawing
@@ -262,15 +263,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           // Without this, 90%+ of seeks produce black canvas frames.
           await waitForFrame();
 
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const result = detectPoseImage(landmarker, canvas);
+          // Draw video frame to offscreen canvas for MediaPipe input only.
+          // The visible video element shows the frame natively.
+          offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
+          const result = detectPoseImage(landmarker, offscreen);
 
           if (result?.landmarks?.length) {
             let landmarks;
             if (result.landmarks.length === 1) {
               landmarks = result.landmarks[0];
             } else {
-              // Lock to first-frame subject; subsequent frames use same index
               if (lockedSubjectIdx === null) {
                 landmarks = selectSubjectPose(result.landmarks);
                 lockedSubjectIdx = result.landmarks.indexOf(landmarks);
@@ -282,20 +284,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             const angles = extractJointAngles(landmarks);
             frames.push({ landmarks, timestamp: time, angles });
             const updateResult = repCounter.update(landmarks);
+            setLiveReps(updateResult.reps);
 
-            // Draw always-green skeleton during analysis (brand moment).
-            // Form-aware red/yellow coloring is for replay mode only.
-            drawPose(ctx, landmarks, canvas.width, canvas.height, 0.9, null);
+            // Draw skeleton on the transparent overlay canvas (over the video).
+            // drawPose expects normalized landmarks (0-1) and multiplies by w/h.
+            const overlay = overlayRef.current;
+            if (overlay) {
+              const rect = video.getBoundingClientRect();
+              const dpr = window.devicePixelRatio || 1;
+              const ow = Math.round(rect.width * dpr);
+              const oh = Math.round(rect.height * dpr);
+              if (overlay.width !== ow || overlay.height !== oh) {
+                overlay.width = ow;
+                overlay.height = oh;
+              }
+              const oCtx = overlay.getContext('2d');
+              oCtx.clearRect(0, 0, ow, oh);
+              drawPose(oCtx, landmarks, ow, oh, 1.0, null);
+            }
 
-            // Rep counter overlay on the analysis canvas
-            ctx.fillStyle = '#00FF88';
-            ctx.font = `bold ${Math.max(18, Math.round(canvas.width / 16))}px -apple-system, system-ui, sans-serif`;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.fillText(`${updateResult.reps} reps`, 16, 16);
-
-            // Store frames for replay overlay. On iOS, store every other
-            // frame to save memory; on desktop, store every frame.
             if (!IS_IOS || frameIdx % 2 === 0) {
               replayFrames.push({ landmarks, timestamp: time });
             }
@@ -307,8 +314,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             q.id === queueItem.id ? { ...q, progress: pct } : q
           ));
 
-          // Yield to browser paint cycle so the skeleton is visible on screen
-          // before we seek to the next frame and overwrite the canvas.
+          // Yield to browser paint cycle so the skeleton overlay is visible.
           await new Promise(r => requestAnimationFrame(r));
           settle(true);
         };
@@ -597,6 +603,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       <div className="analyze-controls">
         {!analyzing ? (
           <>
+            {exercise !== '__auto__' && getExerciseIllustration(exercise) && (
+              <img
+                src={getExerciseIllustration(exercise, 2)}
+                alt=""
+                style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 6,
+                  background: 'var(--surface-elevated)', flexShrink: 0 }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            )}
             <select
               value={exercise}
               onChange={(e) => {
@@ -668,9 +683,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         )}
       </div>
 
-      {/* Video + canvas inside a container that is visible when analyzing,
-          collapsed when not. Using opacity+position (not display:none) because
-          iOS Safari refuses to seek on display:none video elements. */}
+      {/* Video + transparent overlay canvas. Video shows the frame natively.
+          Overlay canvas draws only the skeleton on top. No drawImage conflict.
+          Using opacity+position when not analyzing because iOS Safari refuses
+          to seek on display:none video elements. */}
       <div
         className="analysis-card"
         style={analyzing
@@ -681,8 +697,31 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
           <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
             style={{ width: '100%', display: 'block' }} />
-          <canvas ref={canvasRef}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2 }} />
+
+          {/* Transparent overlay — draws ONLY the green skeleton, no video frame */}
+          <canvas ref={overlayRef}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }} />
+
+          {analyzing && analysisPhase === 'analyzing' && (
+            <>
+              {/* Live rep counter */}
+              <div style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.6)',
+                padding: '8px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', zIndex: 10 }}>
+                <span style={{ color: '#00FF88', fontSize: 24, fontWeight: 800 }}>{liveReps}</span>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginLeft: 6 }}>reps</span>
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ position: 'absolute', bottom: 20, left: 16, right: 16,
+                display: 'flex', alignItems: 'center', gap: 12, zIndex: 10 }}>
+                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
+                  <div style={{ width: `${progress}%`, height: '100%', background: '#00FF88',
+                    borderRadius: 2, transition: 'width 0.1s linear' }} />
+                </div>
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -788,6 +827,20 @@ function ResultCard({ result, onReplay }) {
         </div>
         <span className={`score-badge ${cls}`}>{grade}</span>
       </div>
+
+      {getExerciseIllustration(result.exercise) && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 4, margin: '10px 0',
+          padding: '8px 0', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+          {[1, 2, 3].map(frame => (
+            <img key={frame}
+              src={getExerciseIllustration(result.exercise, frame)}
+              alt={`${displayName} frame ${frame}`}
+              style={{ width: 64, height: 64, objectFit: 'contain', opacity: 0.85 }}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          ))}
+        </div>
+      )}
 
       {report?.summary && (
         <p className="text-sm" style={{ marginBottom: 10, lineHeight: 1.5 }}>
