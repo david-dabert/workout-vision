@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
+import MuscleMap from './MuscleMap';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
@@ -12,7 +13,7 @@ import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v8-skeleton-fix';
+const BUILD_ID = 'v9-ui-upgrade';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -553,8 +554,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
       <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
         <div className="upload-content">
-          <div className="upload-icon">+</div>
-          <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>
+          <div className="upload-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </div>
+          <p className="text-sm" style={{ color: '#fff', fontWeight: 700, marginTop: 2 }}>
             {t('tap_to_select')}
           </p>
           <p className="text-xs text-muted">{t('file_types')}</p>
@@ -812,69 +819,96 @@ function ResultCard({ result, onReplay }) {
   const grade = gradeFromScore(formScore);
   const cls = gradeClass(formScore);
   const displayName = tExercise(result.exercise, exerciseName);
+  const exerciseDef = EXERCISES[result.exercise];
+  const muscles = exerciseDef?.muscles;
+
+  const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis);
+  const progressionNote = generateProgressionNote(progression);
 
   return (
     <div className="card result-card" style={{ marginTop: 14 }}>
+      {/* Header with grade badge */}
       <div className="result-header">
-        <div>
-          <h3 style={{ marginBottom: 2 }}>{displayName}</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span className="text-xs text-muted">{fileName}</span>
-            {result.autoDetected && (
-              <span style={{
-                fontSize: '0.65rem', padding: '1px 6px', borderRadius: 4,
-                background: 'rgba(0,255,136,0.15)', color: 'var(--accent)', fontWeight: 600,
-              }}>{t('auto_detected')}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+            {getExerciseIllustration(result.exercise) && (
+              <img
+                src={getExerciseIllustration(result.exercise, 2)}
+                alt=""
+                style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6,
+                  background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
             )}
+            <div>
+              <h3 style={{ marginBottom: 0, fontSize: '1.1rem' }}>{displayName}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="text-xs text-muted">{fileName}</span>
+                {result.autoDetected && (
+                  <span style={{
+                    fontSize: '0.6rem', padding: '1px 6px', borderRadius: 4,
+                    background: 'rgba(0,255,136,0.12)', color: 'var(--accent)', fontWeight: 600,
+                  }}>{t('auto_detected')}</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        <span className={`score-badge ${cls}`}>{grade}</span>
+        <span className={`score-badge ${cls}`} style={{ fontSize: '1.1rem', padding: '8px 16px' }}>{grade}</span>
       </div>
 
-      {getExerciseIllustration(result.exercise) && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 4, margin: '10px 0',
-          padding: '8px 0', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-          {[1, 2, 3].map(frame => (
-            <img key={frame}
-              src={getExerciseIllustration(result.exercise, frame)}
-              alt={`${displayName} frame ${frame}`}
-              style={{ width: 64, height: 64, objectFit: 'contain', opacity: 0.85 }}
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-          ))}
+      {/* Muscle Map */}
+      {muscles && <MuscleMap muscles={muscles} size={90} />}
+
+      {/* Grid Stats — like the reference app */}
+      <div className="stats-grid-2x2">
+        <div className="stat-card">
+          <span className="stat-card-label">{t('reps').toUpperCase()}</span>
+          <span className="stat-card-value">{reps}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-card-label">{t('duration').toUpperCase()}</span>
+          <span className="stat-card-value">{formatTime(duration)}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-card-label">{t('form').toUpperCase()} SCORE</span>
+          <span className="stat-card-value">
+            <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
+              {formScore}
+            </span>
+            <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>/100</span>
+          </span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-card-label">{t('quality').toUpperCase()}</span>
+          <span className="stat-card-value">
+            {bioAnalysis?.movementQuality != null ? Math.round(bioAnalysis.movementQuality) : '--'}
+            <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>%</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Coaching Insight */}
+      {coachingInsight && (
+        <div className="coaching-card">
+          <div className="coaching-icon">AI</div>
+          <p className="coaching-text">{coachingInsight}</p>
+        </div>
+      )}
+
+      {/* Progression Note */}
+      {progressionNote && (
+        <div className="progression-card">
+          <span className="progression-icon">&#x2191;</span>
+          <p className="text-sm" style={{ margin: 0, color: 'var(--text-secondary)' }}>{progressionNote}</p>
         </div>
       )}
 
       {report?.summary && (
-        <p className="text-sm" style={{ marginBottom: 10, lineHeight: 1.5 }}>
+        <p className="text-sm" style={{ marginTop: 12, marginBottom: 6, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
           {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
         </p>
       )}
-
-      <div className="result-stats">
-        <div className="stat">
-          <span className="stat-value">{reps}</span>
-          <span className="stat-label">{t('reps')}</span>
-        </div>
-        <div className="stat">
-          <span className="stat-value">{formatTime(duration)}</span>
-          <span className="stat-label">{t('duration')}</span>
-        </div>
-        <div className="stat">
-          <span className="stat-value">{formScore}</span>
-          <span className="stat-label">{t('form')}</span>
-        </div>
-        {bioAnalysis?.movementQuality != null && (
-          <div className="stat">
-            <span className="stat-value">{Math.round(bioAnalysis.movementQuality)}</span>
-            <span className="stat-label">{t('quality')}</span>
-          </div>
-        )}
-        <div className="stat">
-          <span className="stat-value">{analysisTime}s</span>
-          <span className="stat-label">{t('analysis')}</span>
-        </div>
-      </div>
 
       {bioAnalysis?.velocity?.perRep && bioAnalysis.velocity.perRep.length > 0 && (
         <div style={{ marginTop: 14 }}>
