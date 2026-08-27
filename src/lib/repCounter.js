@@ -87,7 +87,10 @@ export class RepCounter {
       };
     }
 
-    const angles = this._smoother.smooth(rawAngles);
+    // Use RAW angles for getValue — no smoothing before signal extraction.
+    // Smoothing happens once in finalize() on the full signal.
+    // Live hysteresis counting uses raw values for sharper transitions.
+    const angles = rawAngles;
     const ex = this._exercise;
 
     if (ex.isIsometric) {
@@ -267,6 +270,25 @@ export class RepCounter {
 
     console.debug(`[RepCounter] finalize result: ${this._reps} reps`);
 
+    // Sanity check: reject implausible rep durations
+    const videoDuration = this._collectedLandmarks.length / this._fps;
+    if (this._reps > 0) {
+      const avgRepDuration = videoDuration / this._reps;
+      if (avgRepDuration > 8.0 || avgRepDuration < 0.5) {
+        console.warn(`[RepCounter] Sanity check: ${this._reps} reps in ${videoDuration.toFixed(1)}s = ${avgRepDuration.toFixed(1)}s/rep — trying position fallback`);
+        const savedReps = this._reps;
+        const savedHistory = [...this._repHistory];
+        const posReps = this._countRepsPositionBased(frameData);
+        if (posReps > savedReps) {
+          console.warn(`[RepCounter] Position fallback found ${posReps} reps (was ${savedReps})`);
+        } else {
+          // Restore original if fallback didn't improve
+          this._reps = savedReps;
+          this._repHistory = savedHistory;
+        }
+      }
+    }
+
     // Position-based fallback for 0 reps
     if (this._reps === 0 && this._collectedLandmarks.length >= 10) {
       const posReps = this._countRepsPositionBased(frameData);
@@ -289,9 +311,10 @@ export class RepCounter {
 
   _smoothSignal(rawSignal) {
     const smoothed = [];
-    // Scale smoothing window with FPS: ~0.5s of data
-    // At 2fps → halfW=1 (3-frame), at 4fps → halfW=2 (5-frame), at 6fps → halfW=3 (7-frame)
-    const halfW = Math.max(1, Math.round(this._fps * 0.5));
+    // Scale smoothing window with FPS: ~0.25s of data (reduced from 0.5s)
+    // At 4fps → halfW=1 (3-frame), at 6fps → halfW=2 (5-frame)
+    // Narrower window preserves peaks at low FPS instead of merging them
+    const halfW = Math.max(1, Math.round(this._fps * 0.25));
     for (let i = 0; i < rawSignal.length; i++) {
       if (rawSignal[i] === null) { smoothed.push(null); continue; }
       let sum = 0, count = 0;

@@ -509,6 +509,18 @@ const translations = {
   'prog_consistent': { en: 'Consistent with last session ({{date}}).', fr: 'Constant par rapport à la dernière session ({{date}}).' },
   'yesterday': { en: 'yesterday', fr: 'hier' },
   'days_ago': { en: '{{n}} days ago', fr: 'il y a {{n}} jours' },
+
+  // ─── Results section headers ───
+  'velocity_per_rep': { en: 'VELOCITY PER REP', fr: 'VITESSE PAR RÉP' },
+  'time_under_tension': { en: 'TIME UNDER TENSION', fr: 'TEMPS SOUS TENSION' },
+  'range_of_motion': { en: 'RANGE OF MOTION', fr: 'AMPLITUDE DE MOUVEMENT' },
+  'asymmetry_label': { en: 'ASYMMETRY', fr: 'ASYMÉTRIE' },
+  'fatigue_label': { en: 'FATIGUE', fr: 'FATIGUE' },
+  'form_notes': { en: 'FORM NOTES', fr: 'NOTES DE FORME' },
+  'highlights': { en: 'HIGHLIGHTS', fr: 'POINTS FORTS' },
+  'next_steps': { en: 'NEXT STEPS', fr: 'PROCHAINES ÉTAPES' },
+  'per_rep_quality': { en: 'PER-REP QUALITY', fr: 'QUALITÉ PAR RÉP' },
+  'reps_correct': { en: 'Correct rep count', fr: 'Corriger le nombre de reps' },
 };
 
 // ─── Detect initial language ───
