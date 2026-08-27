@@ -14,7 +14,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v10-single-canvas';
+const BUILD_ID = 'v11-overlay';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -270,52 +270,59 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
           const result = detectPoseImage(landmarker, offscreen);
 
-          // Draw video frame + skeleton onto the SINGLE visible canvas
-          const canvas = overlayRef.current;
-          if (canvas) {
-            const vw = video.videoWidth || 1080;
-            const vh = video.videoHeight || 1920;
-            if (canvas.width !== vw || canvas.height !== vh) {
-              canvas.width = vw;
-              canvas.height = vh;
-            }
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, vw, vh);
-            ctx.drawImage(video, 0, 0, vw, vh);
-
-            if (result?.landmarks?.length) {
-              let landmarks;
-              if (result.landmarks.length === 1) {
-                landmarks = result.landmarks[0];
+          if (result?.landmarks?.length) {
+            let landmarks;
+            if (result.landmarks.length === 1) {
+              landmarks = result.landmarks[0];
+            } else {
+              if (lockedSubjectIdx === null) {
+                landmarks = selectSubjectPose(result.landmarks);
+                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
               } else {
-                if (lockedSubjectIdx === null) {
-                  landmarks = selectSubjectPose(result.landmarks);
-                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                } else {
-                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-                }
+                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
               }
-              const angles = extractJointAngles(landmarks);
-              frames.push({ landmarks, timestamp: time, angles });
-              const updateResult = repCounter.update(landmarks);
-              setLiveReps(updateResult.reps);
+            }
+            const angles = extractJointAngles(landmarks);
+            frames.push({ landmarks, timestamp: time, angles });
+            const updateResult = repCounter.update(landmarks);
+            setLiveReps(updateResult.reps);
 
-              // Draw GREEN skeleton on top of video frame
+            // Draw skeleton on the TRANSPARENT overlay canvas (over the visible video).
+            // Video element is the background. Canvas draws only skeleton + text.
+            const canvas = overlayRef.current;
+            if (canvas) {
+              const rect = video.getBoundingClientRect();
+              const dpr = window.devicePixelRatio || 1;
+              const canvasW = Math.round(rect.width * dpr);
+              const canvasH = Math.round(rect.height * dpr);
+              if (canvas.width !== canvasW || canvas.height !== canvasH) {
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+              }
+              const ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, canvasW, canvasH);
+
+              // Scale from video intrinsic coords to canvas display coords
+              const vw = video.videoWidth || 1080;
+              const vh = video.videoHeight || 1920;
+              ctx.save();
+              ctx.scale(canvasW / vw, canvasH / vh);
               drawPose(ctx, landmarks, vw, vh, 1.0, null);
+              ctx.restore();
 
-              // Draw rep counter directly on canvas
+              // Rep counter text in canvas pixel coords (not scaled)
               ctx.fillStyle = '#00FF88';
-              ctx.font = `bold ${Math.max(24, Math.round(vw / 12))}px -apple-system, sans-serif`;
+              ctx.font = `bold ${Math.round(canvasW / 12)}px -apple-system, sans-serif`;
               ctx.textAlign = 'left';
               ctx.textBaseline = 'top';
               ctx.shadowColor = 'rgba(0,0,0,0.8)';
-              ctx.shadowBlur = 4;
-              ctx.fillText(`${updateResult.reps} reps`, 20, 20);
+              ctx.shadowBlur = 6;
+              ctx.fillText(`${updateResult.reps} reps`, Math.round(canvasW * 0.05), Math.round(canvasH * 0.05));
               ctx.shadowBlur = 0;
+            }
 
-              if (!IS_IOS || frameIdx % 2 === 0) {
-                replayFrames.push({ landmarks, timestamp: time });
-              }
+            if (!IS_IOS || frameIdx % 2 === 0) {
+              replayFrames.push({ landmarks, timestamp: time });
             }
           }
 
@@ -730,23 +737,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         )}
       </div>
 
-      {/* Hidden video — exists only for seeking and frame extraction.
-          Never visible. iOS Safari needs it in the DOM to seek. */}
-      <video ref={videoRef} muted playsInline preload="auto"
-        style={{ position: 'absolute', opacity: 0, width: 1, height: 1, pointerEvents: 'none' }} />
-
-      {/* Single visible canvas — draws video frame + green skeleton + rep counter.
-          No overlay. No compositor conflicts. No z-index fights. */}
+      {/* Analysis display: VISIBLE video + transparent overlay canvas.
+          Video element MUST be visible for iOS Safari to decode frames.
+          Canvas sits on top, draws only the green skeleton + rep counter.
+          This is how AR filters work — video is the background, canvas is the overlay. */}
       <div
         className="analysis-card"
         style={analyzing
           ? { display: 'block', padding: 8 }
-          : { display: 'none' }
+          : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
         }
       >
-        <div style={{ borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-          <canvas ref={overlayRef}
+        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+          {/* Visible video — shows the frame natively via seeking */}
+          <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
             style={{ width: '100%', display: 'block' }} />
+
+          {/* Transparent overlay canvas — draws ONLY the skeleton, no video frame */}
+          <canvas ref={overlayRef}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }} />
         </div>
         {analyzing && analysisPhase === 'analyzing' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '0 4px' }}>

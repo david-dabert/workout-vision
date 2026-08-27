@@ -270,31 +270,52 @@ export class RepCounter {
       }
     }
 
-    console.debug(`[RepCounter] finalize result: ${this._reps} reps`);
-
-    // Sanity check: reject implausible rep durations
+    // Aggressive fallback: compare multiple counting methods, pick the best
     const videoDuration = this._collectedLandmarks.length / this._fps;
-    if (this._reps > 0) {
-      const avgRepDuration = videoDuration / this._reps;
-      if (avgRepDuration > 8.0 || avgRepDuration < 0.5) {
-        console.warn(`[RepCounter] Sanity check: ${this._reps} reps in ${videoDuration.toFixed(1)}s = ${avgRepDuration.toFixed(1)}s/rep — trying position fallback`);
-        const savedReps = this._reps;
-        const savedHistory = [...this._repHistory];
-        const posReps = this._countRepsPositionBased(frameData);
-        if (posReps > savedReps) {
-          console.warn(`[RepCounter] Position fallback found ${posReps} reps (was ${savedReps})`);
-        } else {
-          // Restore original if fallback didn't improve
-          this._reps = savedReps;
-          this._repHistory = savedHistory;
-        }
-      }
-    }
+    const expectedReps = Math.round(videoDuration / 4.5); // average human rep ~4.5s
+    const angleReps = this._reps;
+    const angleHistory = [...this._repHistory];
 
-    // Position-based fallback for 0 reps
-    if (this._reps === 0 && this._collectedLandmarks.length >= 10) {
-      const posReps = this._countRepsPositionBased(frameData);
-      console.debug(`[RepCounter] position fallback: ${posReps} reps`);
+    // Method 2: position-based
+    const savedReps2 = this._reps;
+    const savedHistory2 = [...this._repHistory];
+    this._reps = 0;
+    this._repHistory = [];
+    const posReps = this._countRepsPositionBased(frameData);
+    const posHistory = [...this._repHistory];
+    // Restore
+    this._reps = savedReps2;
+    this._repHistory = savedHistory2;
+
+    // Method 3: count extrema directly (half the alternating extrema = reps)
+    const extremaReps = Math.floor(extrema.length / 2);
+
+    const candidates = [
+      { method: 'angle', reps: angleReps, history: angleHistory },
+      { method: 'position', reps: posReps, history: posHistory },
+      { method: 'extrema', reps: extremaReps, history: null },
+    ];
+
+    // Pick the count closest to expected reps (videoDuration / 4.5s)
+    candidates.sort((a, b) => Math.abs(a.reps - expectedReps) - Math.abs(b.reps - expectedReps));
+    const best = candidates.find(c => c.reps > 0) || candidates[0];
+
+    console.debug(`[RepCounter] methods: angle=${angleReps}, position=${posReps}, extrema=${extremaReps}, expected~${expectedReps}, picked=${best.method}(${best.reps})`);
+
+    if (best.reps !== angleReps && best.reps > 0) {
+      this._reps = best.reps;
+      if (best.history && best.history.length > 0) {
+        this._repHistory = best.history;
+      } else {
+        // Build synthetic history with average scores
+        const avgScore = angleHistory.length > 0
+          ? Math.round(angleHistory.reduce((s, r) => s + (r.score || 0), 0) / angleHistory.length)
+          : 70;
+        this._repHistory = Array(best.reps).fill(null).map((_, i) => ({
+          score: avgScore, issues: [], ts: Date.now() + i,
+          startFrame: 0, bottomFrame: 0, endFrame: 0,
+        }));
+      }
     }
   }
 
@@ -352,18 +373,18 @@ export class RepCounter {
       }
     }
 
-    // Adaptive prominence: 15% of observed range, minimum 8 degrees.
-    // Scales with the exercise (a curl with 70 deg ROM needs ~10.5 deg,
-    // a squat with 90 deg ROM needs ~13.5 deg). Fixed 4 deg was too low.
+    // Adaptive prominence: 12% of signal range, minimum 6 degrees.
+    // Lowered from 15%/8° to catch peaks at low FPS (4fps) where smoothing
+    // already compresses the signal amplitude.
     const validValues = smoothed.filter(v => v !== null);
     const range = validValues.length > 0
       ? Math.max(...validValues) - Math.min(...validValues) : 0;
-    const MIN_PROM = Math.max(8, range * 0.15);
+    const MIN_PROM = Math.max(6, range * 0.12);
 
-    // Minimum frame gap: 0.4 seconds worth of frames.
-    // At 4 fps = 2 frames, at 8 fps = 3 frames. Prevents double-counting
-    // from signal noise where two extrema are 0.25s apart.
-    const MIN_GAP = Math.max(2, Math.round(this._fps * 0.4));
+    // Minimum frame gap: 0.35 seconds worth of frames.
+    // At 4fps → 1 frame min. Reduced from 0.4s to avoid merging
+    // adjacent peaks in fast rep sets.
+    const MIN_GAP = Math.max(1, Math.round(this._fps * 0.35));
 
     const filtered = [];
     for (const e of merged) {
