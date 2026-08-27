@@ -10,6 +10,7 @@ import { shareCard } from '../lib/shareCard';
 import { saveWorkout, getAllWorkouts } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
+import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
@@ -64,6 +65,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [results, setResults] = useState([]);
   const [replayResult, setReplayResult] = useState(null);
   const [liveReps, setLiveReps] = useState(0);
+  const [userInjuries, setUserInjuries] = useState(() => loadInjuries());
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const overlayRef = useRef(null);
@@ -200,7 +202,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const isAutoMode = exercise === '__auto__';
     const initialExercise = isAutoMode ? 'squat' : exercise;
     let detectedExercise = initialExercise;
-    let repCounter = new RepCounter(initialExercise, { fps: analysisFps });
+    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries });
     const skipAutoDetect = !isAutoMode && userChangedExercise.current;
     const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect))
       ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
@@ -379,7 +381,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let bestEx = initialExercise;
         let bestScore = -1;
         for (const ex of candidates) {
-          const rc = new RepCounter(ex, { fps: analysisFps });
+          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries });
           for (const f of frames) rc.update(f.landmarks);
           rc.finalize();
           const reps = rc.repHistory ? rc.repHistory.length : 0;
@@ -390,7 +392,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           detectedExercise = bestEx;
           autoDetected = true;
           setExercise(detectedExercise);
-          repCounter = new RepCounter(detectedExercise, { fps: analysisFps });
+          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries });
           for (const f of frames) repCounter.update(f.landmarks);
         }
       }
@@ -676,6 +678,36 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             >
               {t('analyze')}
             </button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8, width: '100%' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', width: '100%', marginBottom: 2 }}>
+                {t('limitations')}:
+              </span>
+              {Object.keys(INJURY_MAP).map(key => {
+                const active = userInjuries.includes(key);
+                const label = INJURY_LABELS[key]?.[lang] || key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      const next = active
+                        ? userInjuries.filter(i => i !== key)
+                        : [...userInjuries, key];
+                      setUserInjuries(next);
+                      saveInjuries(next);
+                    }}
+                    style={{
+                      padding: '4px 10px', fontSize: '0.7rem', borderRadius: 12,
+                      border: active ? '1px solid var(--red)' : '1px solid rgba(255,255,255,0.15)',
+                      background: active ? 'rgba(255,59,92,0.15)' : 'rgba(255,255,255,0.05)',
+                      color: active ? 'var(--red)' : 'var(--muted)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </>
         ) : (
           <div className="analyzing-status">
@@ -916,7 +948,7 @@ function ResultCard({ result, onReplay }) {
           </div>
           {bioAnalysis.velocity.trend && (
             <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              Trend: {bioAnalysis.velocity.trend}
+              {t('trend')}: {bioAnalysis.velocity.trend}
             </p>
           )}
         </div>
@@ -1090,9 +1122,9 @@ function ResultCard({ result, onReplay }) {
       {result.diagnostics && (
         <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
           <strong style={{ color: 'var(--text)' }}>{t('engine')}</strong>
-          <div>Range: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
-          <div>Min ROM per rep: {result.diagnostics.minROM}&deg;</div>
-          <div>Frames: {result.diagnostics.totalFrames} | Method: {result.diagnostics.method}</div>
+          <div>{t('diag_range')}: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
+          <div>{t('diag_min_rom')}: {result.diagnostics.minROM}&deg;</div>
+          <div>{t('diag_frames')}: {result.diagnostics.totalFrames} | {t('diag_method')}: {result.diagnostics.method}</div>
         </div>
       )}
 

@@ -11,6 +11,7 @@
 
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
+import { shouldSkipCheck } from './injuries';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother
@@ -53,6 +54,7 @@ export class RepCounter {
     this._exercise = ex;
     this._exerciseKey = exerciseKey;
     this._fps = opts.fps || 30;
+    this._userInjuries = opts.userInjuries || [];
     // Smooth ~0.3s of data: at 4fps→1 frame, at 6fps→2, at 30fps→9 (capped at 5)
     const smoothWindow = Math.min(5, Math.max(1, Math.round(this._fps * 0.3)));
     this._smoother = new AngleBuffer(smoothWindow);
@@ -404,6 +406,11 @@ export class RepCounter {
       const topData = frameData[startIdx] || frameData[endIdx];
 
       const formResults = checks.map((fc) => {
+        // Skip form checks for user's injured areas
+        if (shouldSkipCheck(fc.name, this._userInjuries)) {
+          return { name: fc.name, passed: true, bad: fc.bad, severity: 'minor', skipped: true };
+        }
+
         const isTopCheck = fc.phase === 'top';
         // Check the critical frame (bottom or top of rep)
         const criticalData = isTopCheck ? topData : frameData[bottomIdx];

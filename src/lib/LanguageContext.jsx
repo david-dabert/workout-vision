@@ -521,6 +521,14 @@ const translations = {
   'next_steps': { en: 'NEXT STEPS', fr: 'PROCHAINES ÉTAPES' },
   'per_rep_quality': { en: 'PER-REP QUALITY', fr: 'QUALITÉ PAR RÉP' },
   'reps_correct': { en: 'Correct rep count', fr: 'Corriger le nombre de reps' },
+
+  // ─── Diagnostics / misc ───
+  'trend': { en: 'Trend', fr: 'Tendance' },
+  'diag_range': { en: 'Range', fr: 'Plage' },
+  'diag_min_rom': { en: 'Min ROM per rep', fr: "Amplitude min par rép" },
+  'diag_frames': { en: 'Frames', fr: 'Images' },
+  'diag_method': { en: 'Method', fr: 'Méthode' },
+  'limitations': { en: 'Limitations', fr: 'Limitations' },
 };
 
 // ─── Detect initial language ───
