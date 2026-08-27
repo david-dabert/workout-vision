@@ -1,5 +1,49 @@
-import { extractJointAngles, LANDMARKS } from "./poseAnalysis-Bd3N5Gcc.js";
-import { E as EXERCISES, d as bestSide } from "./index-ClV8Qj7m.js";
+import { extractJointAngles, LANDMARKS } from "./poseAnalysis-CIEek7Im.js";
+import { E as EXERCISES, d as bestSide } from "./index-C01m8qLM.js";
+const INJURY_MAP = {
+  "lower_back": { landmarks: [11, 12, 23, 24], checks: ["Lumbar flexion", "Trunk angle", "Hip hinge", "Back angle"] },
+  "shoulder": { landmarks: [11, 12, 13, 14], checks: ["Shoulder protraction", "Scapular retraction", "Elbow flare", "Shoulder stability"] },
+  "knee": { landmarks: [23, 24, 25, 26, 27, 28], checks: ["Knee valgus", "Knee position", "Hip depth", "Knee tracking"] },
+  "wrist": { landmarks: [15, 16], checks: ["Wrist position", "Wrist alignment"] },
+  "hip": { landmarks: [23, 24], checks: ["Hip depth", "Hip hinge", "Hip alignment"] },
+  "ankle": { landmarks: [27, 28, 29, 30, 31, 32], checks: ["Knee position", "Ankle mobility"] },
+  "neck": { landmarks: [0, 1, 2, 3, 4, 5, 6], checks: ["Head position", "Neck alignment"] },
+  "elbow": { landmarks: [13, 14], checks: ["Elbow flare", "Wrist position", "Full extension"] }
+};
+const INJURY_LABELS = {
+  "lower_back": { en: "Lower back", fr: "Bas du dos" },
+  "shoulder": { en: "Shoulder", fr: "Épaule" },
+  "knee": { en: "Knee", fr: "Genou" },
+  "wrist": { en: "Wrist", fr: "Poignet" },
+  "hip": { en: "Hip", fr: "Hanche" },
+  "ankle": { en: "Ankle", fr: "Cheville" },
+  "neck": { en: "Neck", fr: "Cou" },
+  "elbow": { en: "Elbow", fr: "Coude" }
+};
+function shouldSkipCheck(checkName, userInjuries) {
+  if (!userInjuries || userInjuries.length === 0) return false;
+  for (const injury of userInjuries) {
+    const affected = INJURY_MAP[injury]?.checks || [];
+    if (affected.some((c) => checkName.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(checkName.toLowerCase()))) {
+      return true;
+    }
+  }
+  return false;
+}
+function loadInjuries() {
+  try {
+    const saved = localStorage.getItem("wv_injuries");
+    return saved ? JSON.parse(saved) : [];
+  } catch (_) {
+    return [];
+  }
+}
+function saveInjuries(injuries) {
+  try {
+    localStorage.setItem("wv_injuries", JSON.stringify(injuries));
+  } catch (_) {
+  }
+}
 class AngleBuffer {
   constructor(windowSize = 5) {
     this._window = windowSize;
@@ -30,6 +74,7 @@ class RepCounter {
     this._exercise = ex;
     this._exerciseKey = exerciseKey;
     this._fps = opts.fps || 30;
+    this._userInjuries = opts.userInjuries || [];
     const smoothWindow = Math.min(5, Math.max(1, Math.round(this._fps * 0.3)));
     this._smoother = new AngleBuffer(smoothWindow);
     this.reset();
@@ -321,6 +366,9 @@ class RepCounter {
       const sampleStep = Math.max(1, Math.floor((endIdx - startIdx) / 12));
       const topData = frameData[startIdx] || frameData[endIdx];
       const formResults = checks.map((fc) => {
+        if (shouldSkipCheck(fc.name, this._userInjuries)) {
+          return { name: fc.name, passed: true, bad: fc.bad, severity: "minor", skipped: true };
+        }
         const isTopCheck = fc.phase === "top";
         const criticalData = isTopCheck ? topData : frameData[bottomIdx];
         const criticalPassed = criticalData ? fc.check(criticalData.angles, criticalData.landmarks) : true;
@@ -763,5 +811,9 @@ class ExerciseAutoDetector {
 }
 export {
   ExerciseAutoDetector as E,
-  RepCounter as R
+  INJURY_MAP as I,
+  RepCounter as R,
+  INJURY_LABELS as a,
+  loadInjuries as l,
+  saveInjuries as s
 };

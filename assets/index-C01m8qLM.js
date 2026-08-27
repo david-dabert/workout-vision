@@ -15195,7 +15195,14 @@ const translations = {
   "highlights": { en: "HIGHLIGHTS", fr: "POINTS FORTS" },
   "next_steps": { en: "NEXT STEPS", fr: "PROCHAINES ÉTAPES" },
   "per_rep_quality": { en: "PER-REP QUALITY", fr: "QUALITÉ PAR RÉP" },
-  "reps_correct": { en: "Correct rep count", fr: "Corriger le nombre de reps" }
+  "reps_correct": { en: "Correct rep count", fr: "Corriger le nombre de reps" },
+  // ─── Diagnostics / misc ───
+  "trend": { en: "Trend", fr: "Tendance" },
+  "diag_range": { en: "Range", fr: "Plage" },
+  "diag_min_rom": { en: "Min ROM per rep", fr: "Amplitude min par rép" },
+  "diag_frames": { en: "Frames", fr: "Images" },
+  "diag_method": { en: "Method", fr: "Méthode" },
+  "limitations": { en: "Limitations", fr: "Limitations" }
 };
 function detectLang() {
   try {
@@ -18822,9 +18829,9 @@ function StepSummary({ data }) {
     ] })
   ] });
 }
-const Train = reactExports.lazy(() => __vitePreload(() => import("./Train-SQfJS0V-.js"), true ? [] : void 0));
-const Analyze = reactExports.lazy(() => __vitePreload(() => import("./Analyze-CDULauX6.js"), true ? [] : void 0));
-const ManualLog = reactExports.lazy(() => __vitePreload(() => import("./ManualLog-C_KYcHPB.js"), true ? [] : void 0));
+const Train = reactExports.lazy(() => __vitePreload(() => import("./Train-Bx5tdlEg.js"), true ? [] : void 0));
+const Analyze = reactExports.lazy(() => __vitePreload(() => import("./Analyze-BHN5A7J6.js"), true ? [] : void 0));
+const ManualLog = reactExports.lazy(() => __vitePreload(() => import("./ManualLog-bA7nmXv7.js"), true ? [] : void 0));
 const LazyFallback = /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "page", style: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner" }) });
 function AppInner() {
   const { profile, saveProfile: saveProfile2, profileLoading } = useProfile();
@@ -18835,7 +18842,7 @@ function AppInner() {
     const timeout = setTimeout(() => {
       if (!cancelled) setModelStatus("error");
     }, 15e3);
-    __vitePreload(() => import("./poseAnalysis-Bd3N5Gcc.js"), true ? [] : void 0).then((mod) => mod.preloadModel()).then((ok) => {
+    __vitePreload(() => import("./poseAnalysis-CIEek7Im.js"), true ? [] : void 0).then((mod) => mod.preloadModel()).then((ok) => {
       if (!cancelled) setModelStatus(ok ? "ready" : "error");
     }).catch(() => {
       if (!cancelled) setModelStatus("error");

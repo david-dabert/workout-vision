@@ -1,6 +1,6 @@
-import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-ClV8Qj7m.js";
-import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-Bd3N5Gcc.js";
-import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-CpWumcCN.js";
+import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-C01m8qLM.js";
+import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-CIEek7Im.js";
+import { l as loadInjuries, R as RepCounter, E as ExerciseAutoDetector, I as INJURY_MAP, a as INJURY_LABELS, s as saveInjuries } from "./exerciseDetector-BUGR-WyK.js";
 let NORM_TO_METERS = 1.7;
 function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
@@ -1149,6 +1149,7 @@ function VideoUpload({ onClose, preSelectedExercise }) {
   const [results, setResults] = reactExports.useState([]);
   const [replayResult, setReplayResult] = reactExports.useState(null);
   const [liveReps, setLiveReps] = reactExports.useState(0);
+  const [userInjuries, setUserInjuries] = reactExports.useState(() => loadInjuries());
   const fileInputRef = reactExports.useRef(null);
   const videoRef = reactExports.useRef(null);
   const overlayRef = reactExports.useRef(null);
@@ -1259,7 +1260,7 @@ function VideoUpload({ onClose, preSelectedExercise }) {
     const isAutoMode = exercise === "__auto__";
     const initialExercise = isAutoMode ? "squat" : exercise;
     let detectedExercise = initialExercise;
-    let repCounter = new RepCounter(initialExercise, { fps: analysisFps });
+    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries });
     const skipAutoDetect = !isAutoMode && userChangedExercise.current;
     const autoDetector = isAutoMode || autoDetect && !skipAutoDetect ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
     let autoDetected = false;
@@ -1402,7 +1403,7 @@ ${t("try_different")}`);
         let bestEx = initialExercise;
         let bestScore = -1;
         for (const ex of candidates) {
-          const rc = new RepCounter(ex, { fps: analysisFps });
+          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries });
           for (const f of frames) rc.update(f.landmarks);
           rc.finalize();
           const reps2 = rc.repHistory ? rc.repHistory.length : 0;
@@ -1416,7 +1417,7 @@ ${t("try_different")}`);
           detectedExercise = bestEx;
           autoDetected = true;
           setExercise(detectedExercise);
-          repCounter = new RepCounter(detectedExercise, { fps: analysisFps });
+          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries });
           for (const f of frames) repCounter.update(f.landmarks);
         }
       }
@@ -1691,7 +1692,38 @@ ${t("try_different")}`);
           disabled: !hasQueued,
           children: t("analyze")
         }
-      )
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8, width: "100%" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { fontSize: "0.72rem", color: "var(--muted)", width: "100%", marginBottom: 2 }, children: [
+          t("limitations"),
+          ":"
+        ] }),
+        Object.keys(INJURY_MAP).map((key) => {
+          const active = userInjuries.includes(key);
+          const label = INJURY_LABELS[key]?.[lang] || key;
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              onClick: () => {
+                const next = active ? userInjuries.filter((i) => i !== key) : [...userInjuries, key];
+                setUserInjuries(next);
+                saveInjuries(next);
+              },
+              style: {
+                padding: "4px 10px",
+                fontSize: "0.7rem",
+                borderRadius: 12,
+                border: active ? "1px solid var(--red)" : "1px solid rgba(255,255,255,0.15)",
+                background: active ? "rgba(255,59,92,0.15)" : "rgba(255,255,255,0.05)",
+                color: active ? "var(--red)" : "var(--muted)",
+                cursor: "pointer"
+              },
+              children: label
+            },
+            key
+          );
+        })
+      ] })
     ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "analyzing-status", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner-sm" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: analysisPhase === "model" ? t("loading_ai") : analysisPhase === "loading" ? `${t("loading_file")} ${currentFile}...` : analysisPhase === "analyzing" ? `${t("analyzing_file")} ${currentFile}... ${progress}%` : `${t("starting_file")} ${currentFile}...` }),
@@ -1896,7 +1928,8 @@ function ResultCard({ result, onReplay }) {
         ] }, i);
       }) }),
       bioAnalysis.velocity.trend && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted", style: { marginTop: 4 }, children: [
-        "Trend: ",
+        t("trend"),
+        ": ",
         bioAnalysis.velocity.trend
       ] })
     ] }),
@@ -2043,7 +2076,8 @@ function ResultCard({ result, onReplay }) {
     result.diagnostics && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginTop: 14, padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: 8, fontSize: "0.75rem", color: "var(--muted)" }, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { style: { color: "var(--text)" }, children: t("engine") }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        "Range: ",
+        t("diag_range"),
+        ": ",
         result.diagnostics.observedMin,
         "° – ",
         result.diagnostics.observedMax,
@@ -2052,14 +2086,18 @@ function ResultCard({ result, onReplay }) {
         "°)"
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        "Min ROM per rep: ",
+        t("diag_min_rom"),
+        ": ",
         result.diagnostics.minROM,
         "°"
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        "Frames: ",
+        t("diag_frames"),
+        ": ",
         result.diagnostics.totalFrames,
-        " | Method: ",
+        " | ",
+        t("diag_method"),
+        ": ",
         result.diagnostics.method
       ] })
     ] }),
