@@ -12,7 +12,7 @@ import { useT } from '../lib/LanguageContext';
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v7-overlay';
+const BUILD_ID = 'v8-skeleton-fix';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -287,20 +287,23 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             setLiveReps(updateResult.reps);
 
             // Draw skeleton on the transparent overlay canvas (over the video).
-            // drawPose expects normalized landmarks (0-1) and multiplies by w/h.
+            // FIX: Use video.videoWidth/Height (intrinsic, available immediately)
+            // NOT getBoundingClientRect() which returns 0 before first layout pass.
+            // Pass raw normalized landmarks — drawPose does lm.x * width internally.
             const overlay = overlayRef.current;
             if (overlay) {
-              const rect = video.getBoundingClientRect();
+              const videoW = video.videoWidth || 1080;
+              const videoH = video.videoHeight || 1920;
               const dpr = window.devicePixelRatio || 1;
-              const ow = Math.round(rect.width * dpr);
-              const oh = Math.round(rect.height * dpr);
+              const ow = Math.round(videoW * dpr);
+              const oh = Math.round(videoH * dpr);
               if (overlay.width !== ow || overlay.height !== oh) {
                 overlay.width = ow;
                 overlay.height = oh;
               }
               const oCtx = overlay.getContext('2d');
-              oCtx.clearRect(0, 0, ow, oh);
-              drawPose(oCtx, landmarks, ow, oh, 1.0, null);
+              oCtx.clearRect(0, 0, overlay.width, overlay.height);
+              drawPose(oCtx, landmarks, videoW, videoH, 1.0, null);
             }
 
             if (!IS_IOS || frameIdx % 2 === 0) {
@@ -696,7 +699,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       >
         <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
           <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
-            style={{ width: '100%', display: 'block' }} />
+            style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
 
           {/* Transparent overlay — draws ONLY the green skeleton, no video frame */}
           <canvas ref={overlayRef}
