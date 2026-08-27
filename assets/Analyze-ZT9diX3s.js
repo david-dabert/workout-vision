@@ -1,6 +1,6 @@
-import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-C01m8qLM.js";
-import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-CIEek7Im.js";
-import { l as loadInjuries, R as RepCounter, E as ExerciseAutoDetector, I as INJURY_MAP, a as INJURY_LABELS, s as saveInjuries } from "./exerciseDetector-BUGR-WyK.js";
+import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-BHVlgwTm.js";
+import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-DfzrdPrK.js";
+import { l as loadInjuries, R as RepCounter, E as ExerciseAutoDetector, I as INJURY_MAP, a as INJURY_LABELS, s as saveInjuries } from "./exerciseDetector-BoXTWqLJ.js";
 let NORM_TO_METERS = 1.7;
 function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
@@ -1110,7 +1110,7 @@ function fallbackDownload(url, fileName) {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1e3);
 }
-const BUILD_ID = "v10-single-canvas";
+const BUILD_ID = "v11-overlay";
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
 const MAX_FRAMES = IS_IOS ? 90 : 150;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
@@ -1312,45 +1312,51 @@ function VideoUpload({ onClose, preSelectedExercise }) {
           await waitForFrame();
           offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
           const result = detectPoseImage(landmarker, offscreen);
-          const canvas = overlayRef.current;
-          if (canvas) {
-            const vw = video.videoWidth || 1080;
-            const vh = video.videoHeight || 1920;
-            if (canvas.width !== vw || canvas.height !== vh) {
-              canvas.width = vw;
-              canvas.height = vh;
-            }
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, vw, vh);
-            ctx.drawImage(video, 0, 0, vw, vh);
-            if (result?.landmarks?.length) {
-              let landmarks;
-              if (result.landmarks.length === 1) {
-                landmarks = result.landmarks[0];
+          if (result?.landmarks?.length) {
+            let landmarks;
+            if (result.landmarks.length === 1) {
+              landmarks = result.landmarks[0];
+            } else {
+              if (lockedSubjectIdx === null) {
+                landmarks = selectSubjectPose(result.landmarks);
+                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
               } else {
-                if (lockedSubjectIdx === null) {
-                  landmarks = selectSubjectPose(result.landmarks);
-                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                } else {
-                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-                }
+                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
               }
-              const angles = extractJointAngles(landmarks);
-              frames.push({ landmarks, timestamp: time, angles });
-              const updateResult = repCounter.update(landmarks);
-              setLiveReps(updateResult.reps);
+            }
+            const angles = extractJointAngles(landmarks);
+            frames.push({ landmarks, timestamp: time, angles });
+            const updateResult = repCounter.update(landmarks);
+            setLiveReps(updateResult.reps);
+            const canvas = overlayRef.current;
+            if (canvas) {
+              const rect = video.getBoundingClientRect();
+              const dpr = window.devicePixelRatio || 1;
+              const canvasW = Math.round(rect.width * dpr);
+              const canvasH = Math.round(rect.height * dpr);
+              if (canvas.width !== canvasW || canvas.height !== canvasH) {
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+              }
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0, 0, canvasW, canvasH);
+              const vw = video.videoWidth || 1080;
+              const vh = video.videoHeight || 1920;
+              ctx.save();
+              ctx.scale(canvasW / vw, canvasH / vh);
               drawPose(ctx, landmarks, vw, vh, 1, null);
+              ctx.restore();
               ctx.fillStyle = "#00FF88";
-              ctx.font = `bold ${Math.max(24, Math.round(vw / 12))}px -apple-system, sans-serif`;
+              ctx.font = `bold ${Math.round(canvasW / 12)}px -apple-system, sans-serif`;
               ctx.textAlign = "left";
               ctx.textBaseline = "top";
               ctx.shadowColor = "rgba(0,0,0,0.8)";
-              ctx.shadowBlur = 4;
-              ctx.fillText(`${updateResult.reps} reps`, 20, 20);
+              ctx.shadowBlur = 6;
+              ctx.fillText(`${updateResult.reps} reps`, Math.round(canvasW * 0.05), Math.round(canvasH * 0.05));
               ctx.shadowBlur = 0;
-              if (!IS_IOS || frameIdx2 % 2 === 0) {
-                replayFrames.push({ landmarks, timestamp: time });
-              }
+            }
+            if (!IS_IOS || frameIdx2 % 2 === 0) {
+              replayFrames.push({ landmarks, timestamp: time });
             }
           }
           const pct = Math.min(99, Math.round((frameIdx2 + 1) / totalFrames * 100));
@@ -1729,29 +1735,32 @@ ${t("try_different")}`);
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: analysisPhase === "model" ? t("loading_ai") : analysisPhase === "loading" ? `${t("loading_file")} ${currentFile}...` : analysisPhase === "analyzing" ? `${t("analyzing_file")} ${currentFile}... ${progress}%` : `${t("starting_file")} ${currentFile}...` }),
       analysisPhase === "model" && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontSize: "0.75rem", color: "var(--muted)", marginTop: 4 }, children: t("downloading_model") })
     ] }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "video",
-      {
-        ref: videoRef,
-        muted: true,
-        playsInline: true,
-        preload: "auto",
-        style: { position: "absolute", opacity: 0, width: 1, height: 1, pointerEvents: "none" }
-      }
-    ),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
         className: "analysis-card",
-        style: analyzing ? { display: "block", padding: 8 } : { display: "none" },
+        style: analyzing ? { display: "block", padding: 8 } : { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none" },
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { borderRadius: 8, overflow: "hidden", background: "#000" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "canvas",
-            {
-              ref: overlayRef,
-              style: { width: "100%", display: "block" }
-            }
-          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "relative", borderRadius: 8, overflow: "hidden", background: "#000" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "video",
+              {
+                ref: videoRef,
+                className: "analysis-video",
+                muted: true,
+                playsInline: true,
+                preload: "auto",
+                style: { width: "100%", display: "block" }
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "canvas",
+              {
+                ref: overlayRef,
+                style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 2, pointerEvents: "none" }
+              }
+            )
+          ] }),
           analyzing && analysisPhase === "analyzing" && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: 12, marginTop: 8, padding: "0 4px" }, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { color: "#00FF88", fontSize: 20, fontWeight: 800 }, children: [
               liveReps,

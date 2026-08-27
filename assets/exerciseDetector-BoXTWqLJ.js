@@ -1,5 +1,5 @@
-import { extractJointAngles, LANDMARKS } from "./poseAnalysis-CIEek7Im.js";
-import { E as EXERCISES, d as bestSide } from "./index-C01m8qLM.js";
+import { extractJointAngles, LANDMARKS } from "./poseAnalysis-DfzrdPrK.js";
+import { E as EXERCISES, d as bestSide } from "./index-BHVlgwTm.js";
 const INJURY_MAP = {
   "lower_back": { landmarks: [11, 12, 23, 24], checks: ["Lumbar flexion", "Trunk angle", "Hip hinge", "Back angle"] },
   "shoulder": { landmarks: [11, 12, 13, 14], checks: ["Shoulder protraction", "Scapular retraction", "Elbow flare", "Shoulder stability"] },
@@ -257,26 +257,42 @@ class RepCounter {
         }
       }
     }
-    console.debug(`[RepCounter] finalize result: ${this._reps} reps`);
     const videoDuration = this._collectedLandmarks.length / this._fps;
-    if (this._reps > 0) {
-      const avgRepDuration = videoDuration / this._reps;
-      if (avgRepDuration > 8 || avgRepDuration < 0.5) {
-        console.warn(`[RepCounter] Sanity check: ${this._reps} reps in ${videoDuration.toFixed(1)}s = ${avgRepDuration.toFixed(1)}s/rep — trying position fallback`);
-        const savedReps = this._reps;
-        const savedHistory = [...this._repHistory];
-        const posReps = this._countRepsPositionBased(frameData);
-        if (posReps > savedReps) {
-          console.warn(`[RepCounter] Position fallback found ${posReps} reps (was ${savedReps})`);
-        } else {
-          this._reps = savedReps;
-          this._repHistory = savedHistory;
-        }
+    const expectedReps = Math.round(videoDuration / 4.5);
+    const angleReps = this._reps;
+    const angleHistory = [...this._repHistory];
+    const savedReps2 = this._reps;
+    const savedHistory2 = [...this._repHistory];
+    this._reps = 0;
+    this._repHistory = [];
+    const posReps = this._countRepsPositionBased(frameData);
+    const posHistory = [...this._repHistory];
+    this._reps = savedReps2;
+    this._repHistory = savedHistory2;
+    const extremaReps = Math.floor(extrema.length / 2);
+    const candidates = [
+      { method: "angle", reps: angleReps, history: angleHistory },
+      { method: "position", reps: posReps, history: posHistory },
+      { method: "extrema", reps: extremaReps, history: null }
+    ];
+    candidates.sort((a, b) => Math.abs(a.reps - expectedReps) - Math.abs(b.reps - expectedReps));
+    const best = candidates.find((c) => c.reps > 0) || candidates[0];
+    console.debug(`[RepCounter] methods: angle=${angleReps}, position=${posReps}, extrema=${extremaReps}, expected~${expectedReps}, picked=${best.method}(${best.reps})`);
+    if (best.reps !== angleReps && best.reps > 0) {
+      this._reps = best.reps;
+      if (best.history && best.history.length > 0) {
+        this._repHistory = best.history;
+      } else {
+        const avgScore = angleHistory.length > 0 ? Math.round(angleHistory.reduce((s, r) => s + (r.score || 0), 0) / angleHistory.length) : 70;
+        this._repHistory = Array(best.reps).fill(null).map((_, i) => ({
+          score: avgScore,
+          issues: [],
+          ts: Date.now() + i,
+          startFrame: 0,
+          bottomFrame: 0,
+          endFrame: 0
+        }));
       }
-    }
-    if (this._reps === 0 && this._collectedLandmarks.length >= 10) {
-      const posReps = this._countRepsPositionBased(frameData);
-      console.debug(`[RepCounter] position fallback: ${posReps} reps`);
     }
   }
   get diagnostics() {
@@ -331,8 +347,8 @@ class RepCounter {
     }
     const validValues = smoothed.filter((v) => v !== null);
     const range = validValues.length > 0 ? Math.max(...validValues) - Math.min(...validValues) : 0;
-    const MIN_PROM = Math.max(8, range * 0.15);
-    const MIN_GAP = Math.max(2, Math.round(this._fps * 0.4));
+    const MIN_PROM = Math.max(6, range * 0.12);
+    const MIN_GAP = Math.max(1, Math.round(this._fps * 0.35));
     const filtered = [];
     for (const e of merged) {
       if (filtered.length === 0) {
