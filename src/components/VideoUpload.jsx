@@ -704,9 +704,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
         }
       >
-        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000', aspectRatio: '9/16' }}>
           <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
-            style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
 
           {/* Transparent overlay — draws ONLY the green skeleton, no video frame */}
           <canvas ref={overlayRef}
