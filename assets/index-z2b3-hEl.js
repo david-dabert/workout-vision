@@ -15169,7 +15169,22 @@ const translations = {
   "ex.burpee": { en: "Burpee", fr: "Burpee" },
   "ex.jumping_jack": { en: "Jumping Jack", fr: "Jumping jack" },
   "ex.box_jump": { en: "Box Jump", fr: "Box jump" },
-  "ex.superset": { en: "Superset / Other", fr: "Superset / Autre" }
+  "ex.superset": { en: "Superset / Other", fr: "Superset / Autre" },
+  // ─── Coaching insights ───
+  "insight_rom_drop": { en: "Range of motion dropped {{drop}}% across the set. Stop before form breaks down.", fr: "Amplitude diminuée de {{drop}}% pendant la série. Arrêtez avant que la forme ne se dégrade." },
+  "insight_fatigue": { en: "Reps slowed {{drop}}% toward the end. Fatigue detected.", fr: "Ralentissement de {{drop}}% vers la fin. Fatigue détectée." },
+  "insight_asymmetry": { en: "Left/right imbalance of {{score}}% detected. Focus on equal effort from both sides.", fr: "Déséquilibre gauche/droite de {{score}}% détecté. Concentrez-vous sur un effort égal des deux côtés." },
+  "insight_too_fast": { en: "Reps are fast. Slow down the lowering phase for better muscle engagement.", fr: "Répétitions trop rapides. Ralentissez la phase descendante pour mieux solliciter les muscles." },
+  "insight_ready_progress": { en: "Consistent reps across the set. Ready to add weight next session.", fr: "Répétitions constantes sur toute la série. Prêt à augmenter la charge." },
+  "insight_best_rep": { en: "Rep {{num}} was your best. Replicate that tempo and range of motion.", fr: "Répétition {{num}} était votre meilleure. Reproduisez ce tempo et cette amplitude." },
+  // ─── Progression notes ───
+  "prog_rom_up": { en: "+{{change}}° ROM improvement vs {{date}}.", fr: "+{{change}}° d'amplitude gagnée vs {{date}}." },
+  "prog_rom_down": { en: "{{change}}° ROM decrease vs {{date}}. Check recovery or reduce weight.", fr: "{{change}}° d'amplitude perdue vs {{date}}. Vérifiez la récupération ou réduisez la charge." },
+  "prog_form_up": { en: "Form improved vs {{date}} (+{{change}} points).", fr: "Forme améliorée vs {{date}} (+{{change}} points)." },
+  "prog_form_down": { en: "Form dropped vs {{date}}. Consider reducing weight.", fr: "Forme en baisse vs {{date}}. Envisagez de réduire la charge." },
+  "prog_consistent": { en: "Consistent with last session ({{date}}).", fr: "Constant par rapport à la dernière session ({{date}})." },
+  "yesterday": { en: "yesterday", fr: "hier" },
+  "days_ago": { en: "{{n}} days ago", fr: "il y a {{n}} jours" }
 };
 function detectLang() {
   try {
@@ -18796,9 +18811,9 @@ function StepSummary({ data }) {
     ] })
   ] });
 }
-const Train = reactExports.lazy(() => __vitePreload(() => import("./Train-CKc1Wixs.js"), true ? [] : void 0));
-const Analyze = reactExports.lazy(() => __vitePreload(() => import("./Analyze-Adfpu2mp.js"), true ? [] : void 0));
-const ManualLog = reactExports.lazy(() => __vitePreload(() => import("./ManualLog-BbvdMdGv.js"), true ? [] : void 0));
+const Train = reactExports.lazy(() => __vitePreload(() => import("./Train-FrkktFMd.js"), true ? [] : void 0));
+const Analyze = reactExports.lazy(() => __vitePreload(() => import("./Analyze-Ceg3oP-i.js"), true ? [] : void 0));
+const ManualLog = reactExports.lazy(() => __vitePreload(() => import("./ManualLog-7_hViuud.js"), true ? [] : void 0));
 const LazyFallback = /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "page", style: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner" }) });
 function AppInner() {
   const { profile, saveProfile: saveProfile2, profileLoading } = useProfile();
@@ -18809,7 +18824,7 @@ function AppInner() {
     const timeout = setTimeout(() => {
       if (!cancelled) setModelStatus("error");
     }, 15e3);
-    __vitePreload(() => import("./poseAnalysis-DJ-g-lG8.js"), true ? [] : void 0).then((mod) => mod.preloadModel()).then((ok) => {
+    __vitePreload(() => import("./poseAnalysis-BDmh421v.js"), true ? [] : void 0).then((mod) => mod.preloadModel()).then((ok) => {
       if (!cancelled) setModelStatus(ok ? "ready" : "error");
     }).catch(() => {
       if (!cancelled) setModelStatus("error");

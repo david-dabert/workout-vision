@@ -1,6 +1,6 @@
-import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-Bu0i8vYt.js";
-import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-DJ-g-lG8.js";
-import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-DyFgH6Yk.js";
+import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-z2b3-hEl.js";
+import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-BDmh421v.js";
+import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-tNBB9UYb.js";
 let NORM_TO_METERS = 1.7;
 function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
@@ -1110,7 +1110,7 @@ function fallbackDownload(url, fileName) {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1e3);
 }
-const BUILD_ID = "v9-ui-upgrade";
+const BUILD_ID = "v10-single-canvas";
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
 const MAX_FRAMES = IS_IOS ? 90 : 150;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
@@ -1311,40 +1311,45 @@ function VideoUpload({ onClose, preSelectedExercise }) {
           await waitForFrame();
           offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
           const result = detectPoseImage(landmarker, offscreen);
-          if (result?.landmarks?.length) {
-            let landmarks;
-            if (result.landmarks.length === 1) {
-              landmarks = result.landmarks[0];
-            } else {
-              if (lockedSubjectIdx === null) {
-                landmarks = selectSubjectPose(result.landmarks);
-                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                console.log(`[Upload] Person lock: locked to pose index ${lockedSubjectIdx} of ${result.landmarks.length} detected`);
+          const canvas = overlayRef.current;
+          if (canvas) {
+            const vw = video.videoWidth || 1080;
+            const vh = video.videoHeight || 1920;
+            if (canvas.width !== vw || canvas.height !== vh) {
+              canvas.width = vw;
+              canvas.height = vh;
+            }
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, vw, vh);
+            ctx.drawImage(video, 0, 0, vw, vh);
+            if (result?.landmarks?.length) {
+              let landmarks;
+              if (result.landmarks.length === 1) {
+                landmarks = result.landmarks[0];
               } else {
-                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                if (lockedSubjectIdx === null) {
+                  landmarks = selectSubjectPose(result.landmarks);
+                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                } else {
+                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                }
               }
-            }
-            const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: time, angles });
-            const updateResult = repCounter.update(landmarks);
-            setLiveReps(updateResult.reps);
-            const overlay = overlayRef.current;
-            if (overlay) {
-              const videoW = video.videoWidth || 1080;
-              const videoH = video.videoHeight || 1920;
-              const dpr = window.devicePixelRatio || 1;
-              const ow = Math.round(videoW * dpr);
-              const oh = Math.round(videoH * dpr);
-              if (overlay.width !== ow || overlay.height !== oh) {
-                overlay.width = ow;
-                overlay.height = oh;
+              const angles = extractJointAngles(landmarks);
+              frames.push({ landmarks, timestamp: time, angles });
+              const updateResult = repCounter.update(landmarks);
+              setLiveReps(updateResult.reps);
+              drawPose(ctx, landmarks, vw, vh, 1, null);
+              ctx.fillStyle = "#00FF88";
+              ctx.font = `bold ${Math.max(24, Math.round(vw / 12))}px -apple-system, sans-serif`;
+              ctx.textAlign = "left";
+              ctx.textBaseline = "top";
+              ctx.shadowColor = "rgba(0,0,0,0.8)";
+              ctx.shadowBlur = 4;
+              ctx.fillText(`${updateResult.reps} reps`, 20, 20);
+              ctx.shadowBlur = 0;
+              if (!IS_IOS || frameIdx2 % 2 === 0) {
+                replayFrames.push({ landmarks, timestamp: time });
               }
-              const oCtx = overlay.getContext("2d");
-              oCtx.clearRect(0, 0, overlay.width, overlay.height);
-              drawPose(oCtx, landmarks, videoW, videoH, 1, null);
-            }
-            if (!IS_IOS || frameIdx2 % 2 === 0) {
-              replayFrames.push({ landmarks, timestamp: time });
             }
           }
           const pct = Math.min(99, Math.round((frameIdx2 + 1) / totalFrames * 100));
@@ -1693,74 +1698,53 @@ ${t("try_different")}`);
       analysisPhase === "model" && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontSize: "0.75rem", color: "var(--muted)", marginTop: 4 }, children: t("downloading_model") })
     ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "video",
+      {
+        ref: videoRef,
+        muted: true,
+        playsInline: true,
+        preload: "auto",
+        style: { position: "absolute", opacity: 0, width: 1, height: 1, pointerEvents: "none" }
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
         className: "analysis-card",
-        style: analyzing ? { display: "block", padding: 8 } : { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none" },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "relative", borderRadius: 8, overflow: "hidden", background: "#000", aspectRatio: "9/16" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "video",
-            {
-              ref: videoRef,
-              className: "analysis-video",
-              muted: true,
-              playsInline: true,
-              preload: "auto",
-              style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "contain" }
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
+        style: analyzing ? { display: "block", padding: 8 } : { display: "none" },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { borderRadius: 8, overflow: "hidden", background: "#000" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
             "canvas",
             {
               ref: overlayRef,
-              style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 2, pointerEvents: "none" }
+              style: { width: "100%", display: "block" }
             }
-          ),
-          analyzing && analysisPhase === "analyzing" && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-              position: "absolute",
-              top: 16,
-              left: 16,
-              background: "rgba(0,0,0,0.6)",
-              padding: "8px 14px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.1)",
-              zIndex: 10
-            }, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "#00FF88", fontSize: 24, fontWeight: 800 }, children: liveReps }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "rgba(255,255,255,0.7)", fontSize: 13, marginLeft: 6 }, children: "reps" })
+          ) }),
+          analyzing && analysisPhase === "analyzing" && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: 12, marginTop: 8, padding: "0 4px" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { color: "#00FF88", fontSize: 20, fontWeight: 800 }, children: [
+              liveReps,
+              " reps"
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-              position: "absolute",
-              bottom: 20,
-              left: 16,
-              right: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              zIndex: 10
-            }, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
-                width: `${progress}%`,
-                height: "100%",
-                background: "#00FF88",
-                borderRadius: 2,
-                transition: "width 0.1s linear"
-              } }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { color: "#fff", fontSize: 13, fontWeight: 600 }, children: [
-                progress,
-                "%"
-              ] })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1, height: 4, background: "rgba(255,255,255,0.2)", borderRadius: 2 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: {
+              width: `${progress}%`,
+              height: "100%",
+              background: "#00FF88",
+              borderRadius: 2,
+              transition: "width 0.1s linear"
+            } }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { color: "#fff", fontSize: 13, fontWeight: 600 }, children: [
+              progress,
+              "%"
             ] })
           ] })
-        ] })
+        ]
       }
     ),
     results.map((r, idx) => /* @__PURE__ */ jsxRuntimeExports.jsx(ResultCard, { result: r, onReplay: () => setReplayResult(r) }, idx)),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { textAlign: "center", padding: "8px 0", fontSize: "0.65rem", color: "#555" }, children: BUILD_ID })
   ] });
 }
-function generateCoachingInsight(repHistory, bioAnalysis) {
+function generateCoachingInsight(repHistory, bioAnalysis, t) {
   if (!repHistory || repHistory.length === 0) return null;
   if (bioAnalysis?.rangeOfMotion?.perRep && bioAnalysis.rangeOfMotion.perRep.length >= 3) {
     const roms = bioAnalysis.rangeOfMotion.perRep;
@@ -1768,42 +1752,38 @@ function generateCoachingInsight(repHistory, bioAnalysis) {
     const lastRom = roms[roms.length - 1];
     if (firstRom > 0 && lastRom < firstRom * 0.8) {
       const drop = Math.round((1 - lastRom / firstRom) * 100);
-      return `Range of motion dropped ${drop}% across the set. Stop before form breaks down.`;
+      return t("insight_rom_drop", { drop });
     }
   }
   if (bioAnalysis?.fatigue?.velocityDropoff > 25) {
-    return `Reps slowed ${Math.round(bioAnalysis.fatigue.velocityDropoff)}% toward the end. Fatigue detected.`;
+    return t("insight_fatigue", { drop: Math.round(bioAnalysis.fatigue.velocityDropoff) });
   }
   if (bioAnalysis?.asymmetry?.score > 15) {
-    return `Left/right imbalance of ${Math.round(bioAnalysis.asymmetry.score)}% detected. Focus on equal effort from both sides.`;
+    return t("insight_asymmetry", { score: Math.round(bioAnalysis.asymmetry.score) });
   }
   if (bioAnalysis?.velocity?.perRep) {
     const avgVel = bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length;
-    if (avgVel > 0.8) {
-      return `Reps are fast. Slow down the lowering phase for better muscle engagement.`;
-    }
+    if (avgVel > 0.8) return t("insight_too_fast");
   }
   const scores = repHistory.map((r) => r.score || 0);
   const variance = Math.max(...scores) - Math.min(...scores);
-  if (variance < 15 && scores[0] >= 70) {
-    return `Consistent reps across the set. Ready to add weight next session.`;
-  }
+  if (variance < 15 && scores[0] >= 70) return t("insight_ready_progress");
   const best = repHistory.reduce((a, b, i) => (b.score || 0) > (a.score || 0) ? { ...b, num: i + 1 } : a, { ...repHistory[0], num: 1 });
-  return `Rep ${best.num} was your best. Replicate that tempo and range of motion.`;
+  return t("insight_best_rep", { num: best.num });
 }
-function generateProgressionNote(progression) {
+function generateProgressionNote(progression, t) {
   if (!progression) return null;
-  const { prevReps, prevScore, prevRom, prevWeight, prevDate } = progression;
+  const { prevScore, prevRom, prevDate } = progression;
   const daysSince = Math.round((Date.now() - new Date(prevDate).getTime()) / 864e5);
-  const dateLabel = daysSince <= 1 ? "yesterday" : daysSince <= 7 ? `${daysSince} days ago` : new Date(prevDate).toLocaleDateString();
+  const dateStr = daysSince <= 1 ? t("yesterday") : daysSince <= 7 ? t("days_ago", { n: daysSince }) : new Date(prevDate).toLocaleDateString();
   if (prevRom > 0 && progression.currentRom > 0) {
     const romChange = Math.round(progression.currentRom - prevRom);
-    if (romChange > 5) return `+${romChange}° ROM improvement vs ${dateLabel}.`;
-    if (romChange < -5) return `${romChange}° ROM decrease vs ${dateLabel}. Check recovery or reduce weight.`;
+    if (romChange > 5) return t("prog_rom_up", { change: romChange, date: dateStr });
+    if (romChange < -5) return t("prog_rom_down", { change: romChange, date: dateStr });
   }
-  if (progression.currentScore > prevScore + 5) return `Form improved vs ${dateLabel} (+${Math.round(progression.currentScore - prevScore)} points).`;
-  if (progression.currentScore < prevScore - 10) return `Form dropped vs ${dateLabel}. Consider reducing weight.`;
-  return `Consistent with last session (${dateLabel}).`;
+  if (progression.currentScore > prevScore + 5) return t("prog_form_up", { change: Math.round(progression.currentScore - prevScore), date: dateStr });
+  if (progression.currentScore < prevScore - 10) return t("prog_form_down", { date: dateStr });
+  return t("prog_consistent", { date: dateStr });
 }
 function ResultCard({ result, onReplay }) {
   const { t, tExercise } = useT();
@@ -1824,8 +1804,8 @@ function ResultCard({ result, onReplay }) {
   const displayName = tExercise(result.exercise, exerciseName);
   const exerciseDef = EXERCISES[result.exercise];
   const muscles = exerciseDef?.muscles;
-  const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis);
-  const progressionNote = generateProgressionNote(progression);
+  const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis, t);
+  const progressionNote = generateProgressionNote(progression, t);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card result-card", style: { marginTop: 14 }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "result-header", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }, children: [
