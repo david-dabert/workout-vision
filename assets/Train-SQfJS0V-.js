@@ -1,7 +1,7 @@
-import { u as useT, a as useProfile, r as reactExports, E as EXERCISES, t as tModule, s as saveWorkout, j as jsxRuntimeExports, b as EXERCISE_GROUPS } from "./index-z2b3-hEl.js";
-import { detectPoseVideo, selectSubjectPose, drawPose, drawOverlayMessage, loadModelWithRetry, resetTimestamp, disposeAllLandmarkers } from "./poseAnalysis-BDmh421v.js";
+import { u as useT, a as useProfile, r as reactExports, E as EXERCISES, t as tModule, s as saveWorkout, j as jsxRuntimeExports, b as EXERCISE_GROUPS } from "./index-ClV8Qj7m.js";
+import { detectPoseVideo, selectSubjectPose, drawPose, drawOverlayMessage, loadModelWithRetry, resetTimestamp, disposeAllLandmarkers } from "./poseAnalysis-Bd3N5Gcc.js";
 import { l as logEvent } from "./telemetry-DzSBVjfT.js";
-import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-tNBB9UYb.js";
+import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-CpWumcCN.js";
 const EXERCISE_METS = {
   // Compound lifts (high intensity)
   squat: 6,

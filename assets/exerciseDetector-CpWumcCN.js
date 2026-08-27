@@ -1,5 +1,5 @@
-import { extractJointAngles, LANDMARKS } from "./poseAnalysis-BDmh421v.js";
-import { E as EXERCISES, d as bestSide } from "./index-z2b3-hEl.js";
+import { extractJointAngles, LANDMARKS } from "./poseAnalysis-Bd3N5Gcc.js";
+import { E as EXERCISES, d as bestSide } from "./index-ClV8Qj7m.js";
 class AngleBuffer {
   constructor(windowSize = 5) {
     this._window = windowSize;
@@ -68,7 +68,7 @@ class RepCounter {
         repHistory: this._repHistory
       };
     }
-    const angles = this._smoother.smooth(rawAngles);
+    const angles = rawAngles;
     const ex = this._exercise;
     if (ex.isIsometric) {
       return {
@@ -213,6 +213,22 @@ class RepCounter {
       }
     }
     console.debug(`[RepCounter] finalize result: ${this._reps} reps`);
+    const videoDuration = this._collectedLandmarks.length / this._fps;
+    if (this._reps > 0) {
+      const avgRepDuration = videoDuration / this._reps;
+      if (avgRepDuration > 8 || avgRepDuration < 0.5) {
+        console.warn(`[RepCounter] Sanity check: ${this._reps} reps in ${videoDuration.toFixed(1)}s = ${avgRepDuration.toFixed(1)}s/rep — trying position fallback`);
+        const savedReps = this._reps;
+        const savedHistory = [...this._repHistory];
+        const posReps = this._countRepsPositionBased(frameData);
+        if (posReps > savedReps) {
+          console.warn(`[RepCounter] Position fallback found ${posReps} reps (was ${savedReps})`);
+        } else {
+          this._reps = savedReps;
+          this._repHistory = savedHistory;
+        }
+      }
+    }
     if (this._reps === 0 && this._collectedLandmarks.length >= 10) {
       const posReps = this._countRepsPositionBased(frameData);
       console.debug(`[RepCounter] position fallback: ${posReps} reps`);
@@ -231,7 +247,7 @@ class RepCounter {
   // ─── Private ───
   _smoothSignal(rawSignal) {
     const smoothed = [];
-    const halfW = Math.max(1, Math.round(this._fps * 0.5));
+    const halfW = Math.max(1, Math.round(this._fps * 0.25));
     for (let i = 0; i < rawSignal.length; i++) {
       if (rawSignal[i] === null) {
         smoothed.push(null);

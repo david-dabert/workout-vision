@@ -1,6 +1,6 @@
-import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-z2b3-hEl.js";
-import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-BDmh421v.js";
-import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-tNBB9UYb.js";
+import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-ClV8Qj7m.js";
+import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-Bd3N5Gcc.js";
+import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-CpWumcCN.js";
 let NORM_TO_METERS = 1.7;
 function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
