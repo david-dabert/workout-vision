@@ -1,5 +1,5 @@
-import { extractJointAngles, LANDMARKS } from "./poseAnalysis-C-iMbmma.js";
-import { E as EXERCISES, d as bestSide } from "./index-CHfJrAfb.js";
+import { extractJointAngles, LANDMARKS } from "./poseAnalysis-DJ-g-lG8.js";
+import { E as EXERCISES, d as bestSide } from "./index-Bu0i8vYt.js";
 class AngleBuffer {
   constructor(windowSize = 5) {
     this._window = windowSize;

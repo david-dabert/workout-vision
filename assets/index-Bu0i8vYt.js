@@ -18796,9 +18796,9 @@ function StepSummary({ data }) {
     ] })
   ] });
 }
-const Train = reactExports.lazy(() => __vitePreload(() => import("./Train-Ct_r7YAJ.js"), true ? [] : void 0));
-const Analyze = reactExports.lazy(() => __vitePreload(() => import("./Analyze-DUSPkVeO.js"), true ? [] : void 0));
-const ManualLog = reactExports.lazy(() => __vitePreload(() => import("./ManualLog-DDdGXPJz.js"), true ? [] : void 0));
+const Train = reactExports.lazy(() => __vitePreload(() => import("./Train-CKc1Wixs.js"), true ? [] : void 0));
+const Analyze = reactExports.lazy(() => __vitePreload(() => import("./Analyze-Adfpu2mp.js"), true ? [] : void 0));
+const ManualLog = reactExports.lazy(() => __vitePreload(() => import("./ManualLog-BbvdMdGv.js"), true ? [] : void 0));
 const LazyFallback = /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "page", style: { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "spinner" }) });
 function AppInner() {
   const { profile, saveProfile: saveProfile2, profileLoading } = useProfile();
@@ -18809,7 +18809,7 @@ function AppInner() {
     const timeout = setTimeout(() => {
       if (!cancelled) setModelStatus("error");
     }, 15e3);
-    __vitePreload(() => import("./poseAnalysis-C-iMbmma.js"), true ? [] : void 0).then((mod) => mod.preloadModel()).then((ok) => {
+    __vitePreload(() => import("./poseAnalysis-DJ-g-lG8.js"), true ? [] : void 0).then((mod) => mod.preloadModel()).then((ok) => {
       if (!cancelled) setModelStatus(ok ? "ready" : "error");
     }).catch(() => {
       if (!cancelled) setModelStatus("error");

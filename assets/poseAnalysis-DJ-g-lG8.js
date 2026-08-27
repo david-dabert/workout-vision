@@ -1,4 +1,4 @@
-import { _ as __vitePreload, l as localforage } from "./index-CHfJrAfb.js";
+import { _ as __vitePreload, l as localforage } from "./index-Bu0i8vYt.js";
 let _mpVision = null;
 async function getMediaPipeVision() {
   if (_mpVision) return _mpVision;

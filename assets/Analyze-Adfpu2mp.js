@@ -1,6 +1,6 @@
-import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-CHfJrAfb.js";
-import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-C-iMbmma.js";
-import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-DVoyIjvg.js";
+import { E as EXERCISES, t as tModule, u as useT, r as reactExports, j as jsxRuntimeExports, a as useProfile, s as saveWorkout, g as getAllWorkouts, c as getExerciseIllustration, b as EXERCISE_GROUPS, M as MuscleMap } from "./index-Bu0i8vYt.js";
+import { extractJointAngles, LANDMARKS, drawPose, getImageLandmarker, disposeAllLandmarkers, detectPoseImage, selectSubjectPose } from "./poseAnalysis-DJ-g-lG8.js";
+import { R as RepCounter, E as ExerciseAutoDetector } from "./exerciseDetector-DyFgH6Yk.js";
 let NORM_TO_METERS = 1.7;
 function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
@@ -1697,7 +1697,7 @@ ${t("try_different")}`);
       {
         className: "analysis-card",
         style: analyzing ? { display: "block", padding: 8 } : { position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none" },
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "relative", borderRadius: 8, overflow: "hidden", background: "#000" }, children: [
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "relative", borderRadius: 8, overflow: "hidden", background: "#000", aspectRatio: "9/16" }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "video",
             {
@@ -1706,7 +1706,7 @@ ${t("try_different")}`);
               muted: true,
               playsInline: true,
               preload: "auto",
-              style: { width: "100%", display: "block", objectFit: "contain" }
+              style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "contain" }
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
