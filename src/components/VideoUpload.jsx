@@ -66,6 +66,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [replayResult, setReplayResult] = useState(null);
   const [liveReps, setLiveReps] = useState(0);
   const [userInjuries, setUserInjuries] = useState(() => loadInjuries());
+  const [errorMsg, setErrorMsg] = useState(null);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const overlayRef = useRef(null);
@@ -92,12 +93,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   }, []);
 
   const handleFiles = (e) => {
+    setErrorMsg(null);
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/') || f.type === '');
     if (files.length === 0) return;
     const items = [];
     for (const f of files) {
       if (f.size > MAX_FILE_SIZE) {
-        alert(`${f.name} (${(f.size / 1024 / 1024).toFixed(0)} MB) ${t('too_large')}`);
+        setErrorMsg(`${f.name} (${(f.size / 1024 / 1024).toFixed(0)} MB) ${t('too_large')}`);
         continue;
       }
       items.push({
@@ -135,7 +137,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setAnalysisPhase('model');
     const landmarker = await getImageLandmarker();
     if (!landmarker) {
-      alert(t('model_failed'));
+      setErrorMsg(t('model_failed'));
       return null;
     }
 
@@ -168,14 +170,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     if (!loaded) {
       safeRevoke();
-      alert(t('video_failed'));
+      setErrorMsg(t('video_failed'));
       return null;
     }
 
     const duration = video.duration;
     if (!duration || !isFinite(duration)) {
       safeRevoke();
-      alert('Cannot read video duration. Try a different file.');
+      setErrorMsg(t('video_failed'));
       return null;
     }
 
@@ -368,7 +370,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       // Release video decoder memory
       video.removeAttribute('src');
       video.load();
-      alert(`${t('no_poses')} ${queueItem.name}.\n\n${t('try_different')}`);
+      setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
       return null;
     }
 
@@ -588,6 +590,26 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           style={{ display: 'none' }}
         />
       </div>
+
+      {errorMsg && (
+        <div style={{
+          margin: '10px 0', padding: '12px 14px', borderRadius: 10,
+          background: 'rgba(255,59,92,0.1)', border: '1px solid rgba(255,59,92,0.3)',
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+        }}>
+          <span style={{ color: 'var(--red)', fontSize: 18, lineHeight: 1, flexShrink: 0 }}>!</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ color: 'var(--red)', fontSize: '0.82rem', margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
+          </div>
+          <button
+            onClick={() => setErrorMsg(null)}
+            style={{
+              background: 'none', border: 'none', color: 'var(--muted)',
+              cursor: 'pointer', fontSize: 16, padding: '0 2px', flexShrink: 0,
+            }}
+          >&times;</button>
+        </div>
+      )}
 
       {queue.length > 0 && (
         <div style={{ marginTop: 10 }}>
