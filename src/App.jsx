@@ -18,8 +18,7 @@ const LazyFallback = (
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
-  const isValidateMode = new URLSearchParams(window.location.search).has('validate');
-  const [page, setPage] = useState(isValidateMode ? 'validate' : 'dashboard');
+  const [page, setPage] = useState('dashboard');
   const [modelStatus, setModelStatus] = useState('loading');
 
   useEffect(() => {
@@ -84,6 +83,15 @@ function AppInner() {
 }
 
 function App() {
+  // Validate mode: render directly, skip all providers
+  if (new URLSearchParams(window.location.search).has('validate')) {
+    return (
+      <Suspense fallback={LazyFallback}>
+        <Validate onClose={() => { window.location.search = ''; }} />
+      </Suspense>
+    );
+  }
+
   return (
     <LanguageProvider>
       <ProfileProvider>

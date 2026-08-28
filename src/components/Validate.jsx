@@ -9,6 +9,55 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const MAX_FRAMES = IS_IOS ? 90 : 150;
 
+// RepCount dataset exercise categories → app exercise keys
+const REPCOUNT_EXERCISE_MAP = {
+  'squat': 'squat',
+  'push_up': 'push_up',
+  'pushup': 'push_up',
+  'pull_up': 'pull_up',
+  'pullup': 'pull_up',
+  'bench_press': 'bench_press',
+  'benchpress': 'bench_press',
+  'front_raise': 'front_raise',
+  'frontraise': 'front_raise',
+  'situp': 'sit_up',
+  'sit_up': 'sit_up',
+  'deadlift': 'deadlift',
+  'battle_rope': 'battle_rope',
+  'battlerope': 'battle_rope',
+};
+
+function guessExerciseFromFilename(filename) {
+  const lower = filename.toLowerCase().replace(/\.\w+$/, '');
+  for (const [pattern, key] of Object.entries(REPCOUNT_EXERCISE_MAP)) {
+    if (lower.includes(pattern)) return key;
+  }
+  return '__auto__';
+}
+
+function parseRepCountCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return {};
+  const headers = lines[0].split(',').map(h => h.trim());
+  const nameIdx = headers.indexOf('name');
+  const countIdx = headers.indexOf('count');
+  if (nameIdx === -1 || countIdx === -1) return {};
+
+  const annotations = {};
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim());
+    if (cols.length <= Math.max(nameIdx, countIdx)) continue;
+    const name = cols[nameIdx];
+    const count = parseInt(cols[countIdx], 10);
+    if (name && !isNaN(count)) {
+      // Strip path prefix if present (e.g. "test/squat_001.mp4" → "squat_001.mp4")
+      const baseName = name.includes('/') ? name.split('/').pop() : name;
+      annotations[baseName] = count;
+    }
+  }
+  return annotations;
+}
+
 /**
  * Validation harness — hidden dev page for engine accuracy testing.
  *
@@ -24,18 +73,85 @@ export default function Validate({ onClose }) {
   const [results, setResults] = useState([]);
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
+  const csvInputRef = useRef(null);
+  const datasetVideoRef = useRef(null);
+  const [csvAnnotations, setCsvAnnotations] = useState(null);
+  const [csvFilename, setCsvFilename] = useState('');
 
   // Add a test case
-  const addTest = (file) => {
+  const addTest = (file, exercise, reps) => {
     setTests(prev => [...prev, {
       id: Date.now() + Math.random(),
       file,
       name: file.name,
-      expectedExercise: '__auto__',
-      expectedReps: '',
+      expectedExercise: exercise || '__auto__',
+      expectedReps: reps != null ? String(reps) : '',
       status: 'pending',
     }]);
   };
+
+  // Load RepCount CSV annotations
+  const loadCSV = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const annotations = parseRepCountCSV(e.target.result);
+      const count = Object.keys(annotations).length;
+      if (count === 0) return;
+      setCsvAnnotations(annotations);
+      setCsvFilename(`${file.name} (${count} entries)`);
+    };
+    reader.readAsText(file);
+  };
+
+  // Load dataset videos (matched against CSV annotations)
+  const loadDatasetVideos = (files) => {
+    const videoFiles = Array.from(files).filter(f => f.name.match(/\.(mp4|webm|mov|avi|mkv)$/i));
+    let matched = 0;
+    for (const file of videoFiles) {
+      const baseName = file.name;
+      const reps = csvAnnotations?.[baseName];
+      const exercise = guessExerciseFromFilename(baseName);
+      addTest(file, exercise, reps != null ? reps : undefined);
+      if (reps != null) matched++;
+    }
+  };
+
+  // Load Countix benchmark from manifest.json (auto-fetch videos from server)
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [benchmarkError, setBenchmarkError] = useState(null);
+
+  const loadBenchmark = useCallback(async () => {
+    setBenchmarkLoading(true);
+    setBenchmarkError(null);
+    try {
+      const base = import.meta.env.BASE_URL || '/';
+      const res = await fetch(`${base}benchmark/manifest.json`);
+      if (!res.ok) throw new Error(`Manifest not found (${res.status}). Run the benchmark download script first.`);
+      const manifest = await res.json();
+      if (!manifest.videos?.length) throw new Error('Empty manifest');
+
+      // Verify at least one video is accessible
+      const testUrl = `${base}benchmark/videos/${manifest.videos[0].file}`;
+      const probe = await fetch(testUrl, { method: 'HEAD' });
+      if (!probe.ok) throw new Error(`Videos not served. Ensure benchmark/videos/ is in public/ or symlinked.`);
+
+      // Add all videos as URL-based tests
+      const newTests = manifest.videos.map(v => ({
+        id: Date.now() + Math.random(),
+        file: null,
+        url: `${base}benchmark/videos/${v.file}`,
+        name: v.file,
+        expectedExercise: v.exercise,
+        expectedReps: String(v.reps),
+        status: 'pending',
+      }));
+      setTests(prev => [...prev, ...newTests]);
+      setBenchmarkLoading(false);
+    } catch (err) {
+      setBenchmarkError(err.message);
+      setBenchmarkLoading(false);
+    }
+  }, []);
 
   const updateTest = (id, field, value) => {
     setTests(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
@@ -54,7 +170,8 @@ export default function Validate({ onClose }) {
     const landmarker = await getImageLandmarker();
     if (!landmarker) return { error: 'Model failed to load' };
 
-    const url = URL.createObjectURL(test.file);
+    const url = test.url || URL.createObjectURL(test.file);
+    const isObjectUrl = !test.url;
     try {
       // Load video
       const loaded = await new Promise((resolve) => {
@@ -210,7 +327,7 @@ export default function Validate({ onClose }) {
         diagnostics: finalCounter.diagnostics || null,
       };
     } finally {
-      URL.revokeObjectURL(url);
+      if (isObjectUrl) URL.revokeObjectURL(url);
       video.removeAttribute('src');
       video.load();
     }
@@ -270,6 +387,12 @@ export default function Validate({ onClose }) {
   const exerciseMatches = results.filter(r => r.exerciseMatch && !r.error).length;
   const exerciseTotal = results.filter(r => !r.error && r.expectedExercise !== '__auto__').length;
 
+  // Standard RepCount benchmark metrics
+  const mae = scored.length > 0
+    ? (scored.reduce((s, r) => s + Math.abs(r.repError), 0) / scored.length).toFixed(2) : null;
+  const obo = scored.length > 0
+    ? Math.round((withinOne / scored.length) * 100) : null;
+
   return (
     <div className="page" style={{ padding: '16px env(safe-area-inset-right) 16px env(safe-area-inset-left)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -282,7 +405,65 @@ export default function Validate({ onClose }) {
         Compare detected reps vs ground truth to compute accuracy.
       </p>
 
-      {/* Add test videos */}
+      {/* Countix benchmark — one-click */}
+      <div style={{
+        background: 'rgba(0,255,136,0.04)', borderRadius: 10, padding: '12px 14px',
+        marginBottom: 10, border: '1px solid rgba(0,255,136,0.15)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>
+            Countix Benchmark
+          </div>
+          <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>43 videos, 9 exercises</span>
+        </div>
+        <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: 8, lineHeight: 1.4 }}>
+          Academic benchmark from Google Research (CVPR 2020). Ground truth rep counts across squats, push-ups, pull-ups, bench press, bicep curls, front raises, lunges, sit-ups, battle rope.
+        </div>
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={loadBenchmark}
+          disabled={running || benchmarkLoading}
+          style={{ fontSize: '0.75rem', fontWeight: 700, width: '100%' }}
+        >
+          {benchmarkLoading ? 'Loading manifest...' : 'Load Countix Benchmark'}
+        </button>
+        {benchmarkError && (
+          <div style={{ fontSize: '0.7rem', color: 'var(--red)', marginTop: 6, lineHeight: 1.4 }}>
+            {benchmarkError}
+          </div>
+        )}
+      </div>
+
+      {/* RepCount dataset loader (manual CSV + videos) */}
+      <details style={{ marginBottom: 10 }}>
+        <summary style={{ fontSize: '0.75rem', color: 'var(--muted)', cursor: 'pointer', padding: '6px 0' }}>
+          Or load RepCount dataset manually (CSV + videos)
+        </summary>
+        <div style={{
+          background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '12px 14px',
+          marginTop: 6, border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: 10, lineHeight: 1.4 }}>
+            Step 1: Load CSV annotation file (test.csv). Step 2: Select video files.
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn btn-ghost btn-sm" onClick={() => csvInputRef.current?.click()} style={{ fontSize: '0.72rem' }}>
+              {csvAnnotations ? 'CSV loaded' : '1. Load CSV'}
+            </button>
+            <input ref={csvInputRef} type="file" accept=".csv" style={{ display: 'none' }}
+              onChange={(e) => { if (e.target.files?.[0]) loadCSV(e.target.files[0]); e.target.value = ''; }} />
+            <button className="btn btn-ghost btn-sm" onClick={() => datasetVideoRef.current?.click()}
+              style={{ fontSize: '0.72rem', opacity: csvAnnotations ? 1 : 0.5 }}>
+              2. Load videos
+            </button>
+            <input ref={datasetVideoRef} type="file" accept="video/*" multiple style={{ display: 'none' }}
+              onChange={(e) => { if (e.target.files?.length) loadDatasetVideos(e.target.files); e.target.value = ''; }} />
+          </div>
+          {csvFilename && <div style={{ fontSize: '0.68rem', color: 'var(--accent)', marginTop: 6 }}>{csvFilename}</div>}
+        </div>
+      </details>
+
+      {/* Add test videos manually */}
       <div
         onClick={() => fileInputRef.current?.click()}
         style={{
@@ -290,7 +471,7 @@ export default function Validate({ onClose }) {
           textAlign: 'center', cursor: 'pointer', marginBottom: 12,
         }}
       >
-        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>+ Add test video(s)</span>
+        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>+ Add test video(s) manually</span>
         <input ref={fileInputRef} type="file" accept="video/*" multiple
           style={{ display: 'none' }}
           onChange={(e) => {
@@ -397,9 +578,25 @@ export default function Validate({ onClose }) {
                   <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff' }}>
                     {withinOne}/{scored.length}
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>WITHIN +/-1</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>WITHIN +/-1 (OBO)</div>
                 </div>
               </div>
+              {mae !== null && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, textAlign: 'center', marginTop: 10 }}>
+                  <div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: parseFloat(mae) <= 1 ? 'var(--accent)' : parseFloat(mae) <= 2 ? 'var(--yellow)' : 'var(--red)' }}>
+                      {mae}
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>MAE (lower = better)</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: obo >= 80 ? 'var(--accent)' : obo >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
+                      {obo}%
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>OBO ACCURACY</div>
+                  </div>
+                </div>
+              )}
               {exerciseTotal > 0 && (
                 <div style={{ marginTop: 8, textAlign: 'center', fontSize: '0.72rem', color: 'var(--muted)' }}>
                   Exercise detection: {exerciseMatches}/{exerciseTotal} correct
@@ -458,12 +655,15 @@ export default function Validate({ onClose }) {
                 const report = {
                   date: new Date().toISOString(),
                   device: navigator.userAgent,
+                  benchmark: 'RepCount-compatible',
                   summary: {
                     testsRun: results.length,
                     testsScored: scored.length,
                     avgAccuracy,
                     exactMatch,
                     withinOne,
+                    mae: mae !== null ? parseFloat(mae) : null,
+                    oboAccuracy: obo,
                     exerciseDetection: exerciseTotal > 0 ? `${exerciseMatches}/${exerciseTotal}` : 'N/A',
                   },
                   results: results.map(r => ({
