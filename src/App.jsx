@@ -8,6 +8,7 @@ import './index.css';
 const Train = lazy(() => import('./components/Train'));
 const Analyze = lazy(() => import('./components/Analyze'));
 const ManualLog = lazy(() => import('./components/ManualLog'));
+const Validate = lazy(() => import('./components/Validate'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
@@ -17,7 +18,8 @@ const LazyFallback = (
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
-  const [page, setPage] = useState('dashboard');
+  const isValidateMode = new URLSearchParams(window.location.search).has('validate');
+  const [page, setPage] = useState(isValidateMode ? 'validate' : 'dashboard');
   const [modelStatus, setModelStatus] = useState('loading');
 
   useEffect(() => {
@@ -64,6 +66,11 @@ function AppInner() {
   if (page === 'log') return (
     <Suspense fallback={LazyFallback}>
       <ManualLog onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'validate') return (
+    <Suspense fallback={LazyFallback}>
+      <Validate onClose={() => setPage('dashboard')} />
     </Suspense>
   );
 
