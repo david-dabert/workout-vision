@@ -22,7 +22,7 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 
 // Hard cap on frames. iOS Safari crashes with high frame counts on large
 // videos due to accumulated WASM/WebGL memory.
-const MAX_FRAMES = IS_IOS ? 90 : 150;
+const MAX_FRAMES = IS_IOS ? 180 : 300;
 
 // File size cap. iOS Safari can crash loading very large blob URLs.
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
@@ -183,7 +183,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
     // Cap total frames at MAX_FRAMES so a long video doesn't produce hundreds of seeks.
-    const analysisFps = Math.min(IS_IOS ? 4 : 6, MAX_FRAMES / duration);
+    const analysisFps = Math.min(IS_IOS ? 8 : 10, MAX_FRAMES / duration);
     const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
     const interval = duration / totalFrames;
 

@@ -7,7 +7,7 @@ import { analyzeSet } from '../lib/biomechanics';
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const MAX_FRAMES = IS_IOS ? 90 : 150;
+const MAX_FRAMES = IS_IOS ? 180 : 300;
 
 // RepCount dataset exercise categories → app exercise keys
 const REPCOUNT_EXERCISE_MAP = {
@@ -191,7 +191,7 @@ export default function Validate({ onClose }) {
       const duration = video.duration;
       if (!duration || !isFinite(duration)) return { error: 'Cannot read duration' };
 
-      const analysisFps = Math.min(IS_IOS ? 4 : 6, MAX_FRAMES / duration);
+      const analysisFps = Math.min(IS_IOS ? 8 : 10, MAX_FRAMES / duration);
       const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
       const interval = duration / totalFrames;
 
