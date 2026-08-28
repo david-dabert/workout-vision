@@ -752,7 +752,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               Hidden visually — the canvas draws video frame + skeleton as a single composited image,
               bypassing the iOS Safari hardware compositor that renders <video> above <canvas>. */}
           <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
-            style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01, pointerEvents: 'none' }} />
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.01, pointerEvents: 'none', zIndex: -1 }} />
 
           {/* Single canvas: drawImage(video) + drawPose(skeleton) + rep counter */}
           <canvas ref={overlayRef}
@@ -774,9 +774,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         <ResultCard key={idx} result={r} onReplay={() => setReplayResult(r)} />
       ))}
 
-      <div style={{ textAlign: 'center', padding: '8px 0', fontSize: '0.65rem', color: '#555' }}>
-        {BUILD_ID}
-      </div>
+      {/* BUILD_ID hidden from production UI — visible only in console */}
     </div>
   );
 }

@@ -7,6 +7,6 @@ export default defineConfig({
   build: {
     target: ['es2020', 'safari14'],
     modulePreload: false,
-    minify: false,
+    minify: 'esbuild',
   },
 })

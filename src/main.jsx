@@ -11,19 +11,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 window.getInstallPrompt = () => deferredInstallPrompt;
 
-// NUCLEAR: Unregister ALL service workers and clear ALL caches.
-// The SW was causing stale code to persist across deploys on iOS.
-// MediaPipe models load fast enough from CDN without SW caching.
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(r => r.unregister());
-  });
-}
-if ('caches' in window) {
-  caches.keys().then(keys => {
-    keys.forEach(k => caches.delete(k));
-  });
-}
+// Service worker registration removed. Browser HTTP caching handles
+// static assets via Cache-Control headers from GitHub Pages.
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
