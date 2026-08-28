@@ -49,7 +49,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.textAlign = 'right';
   ctx.fillStyle = '#FFFFFF';
   ctx.font = `bold ${Math.round(22 * scale)}px -apple-system, system-ui, sans-serif`;
-  ctx.fillText(`${reps} reps`, w - pad, boxH / 2);
+  ctx.fillText(`${reps} reps`, w - pad, boxH / 2); // Keep "reps" in overlay (universal sports term)
 
   // Branding (bottom)
   const brandH = Math.round(36 * scale);
@@ -88,8 +88,10 @@ function canExportVideo() {
  * Replays a video with skeleton overlay drawn from stored landmark frames.
  * HD download via one-tap auto-record at original video resolution.
  */
-export default function VideoReplay({ videoUrl, frames, exerciseName, reps, formScore, repHistory, onClose }) {
-  const { t } = useT();
+export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, onClose }) {
+  const { t, tExercise } = useT();
+  // Translate exercise name for overlay display
+  const displayExerciseName = exerciseKey ? tExercise(exerciseKey, exerciseName) : exerciseName;
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctxRef = useRef(null); // cached 2d context
@@ -132,7 +134,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       const w = canvas.width;
       const h = canvas.height;
       ctx.drawImage(video, 0, 0, w, h);
-      drawOverlay(ctx, w, h, frames, video.currentTime, exerciseName, reps, formScore, repHistory);
+      drawOverlay(ctx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
       // Throttle setProgress to every 5th frame to reduce React re-renders
       progressFrameRef.current++;
       if (progressFrameRef.current % 5 === 0) {
@@ -142,7 +144,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       console.warn('Draw frame error:', e);
     }
     rafRef.current = requestAnimationFrame(drawFrame);
-  }, [frames, exerciseName, reps, formScore, repHistory]);
+  }, [frames, displayExerciseName, reps, formScore, repHistory]);
 
   // Setup video
   useEffect(() => {
@@ -163,7 +165,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
         ctxRef.current = ctx;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         if (frames.length > 0 && frames[0].landmarks) {
-          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, exerciseName, reps, formScore, repHistory);
+          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, displayExerciseName, reps, formScore, repHistory);
         }
       }
     };
@@ -252,14 +254,14 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: mime || 'video/webm' });
       const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-      const fileName = `WorkoutVision-${exerciseName.replace(/\s+/g, '-')}-${reps}reps.${ext}`;
+      const fileName = `WorkoutVision-${displayExerciseName.replace(/\s+/g, '-')}-${reps}reps.${ext}`;
 
       // Try native share first (mobile), fallback to download
       const file = new File([blob], fileName, { type: blob.type });
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({
           files: [file],
-          title: `${exerciseName} - Form: ${formScore}`,
+          title: `${displayExerciseName} - Form: ${formScore}`,
           text: `${reps} reps analyzed by WorkoutVision`,
         }).catch(() => {
           // User cancelled share, download instead
@@ -283,7 +285,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
       const w = hdCanvas.width;
       const h = hdCanvas.height;
       hdCtx.drawImage(video, 0, 0, w, h);
-      drawOverlay(hdCtx, w, h, frames, video.currentTime, exerciseName, reps, formScore, repHistory);
+      drawOverlay(hdCtx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
       setExportProgress(video.duration > 0 ? Math.round((video.currentTime / video.duration) * 100) : 0);
       hdRafRef.current = requestAnimationFrame(drawHDFrame);
     };
@@ -324,20 +326,20 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, reps, form
     hdCanvas.height = video.videoHeight;
     const ctx = hdCanvas.getContext('2d');
     ctx.drawImage(video, 0, 0, hdCanvas.width, hdCanvas.height);
-    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, exerciseName, reps, formScore);
+    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, displayExerciseName, reps, formScore);
 
     hdCanvas.toBlob((blob) => {
       if (!blob) return;
-      const fileName = `WorkoutVision-${exerciseName.replace(/\s+/g, '-')}-${reps}reps.png`;
+      const fileName = `WorkoutVision-${displayExerciseName.replace(/\s+/g, '-')}-${reps}reps.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: `${exerciseName} - Form: ${formScore}` }).catch(() => {});
+        navigator.share({ files: [file], title: `${displayExerciseName} - Form: ${formScore}` }).catch(() => {});
       } else {
         triggerDownload(blob, fileName);
       }
     }, 'image/png');
-  }, [frames, exerciseName, reps, formScore, repHistory]);
+  }, [frames, displayExerciseName, reps, formScore, repHistory]);
 
   const supportsVideoExport = canExportVideo();
 

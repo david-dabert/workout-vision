@@ -14,7 +14,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v11-overlay';
+const BUILD_ID = 'v12-debug';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -51,7 +51,7 @@ function formatTime(seconds) {
 }
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
-  const { t, tExercise, lang, setLang } = useT();
+  const { t, tExercise, tFormCheck, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
   const [queue, setQueue] = useState([]);
   const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
@@ -291,33 +291,36 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             // Video element is the background. Canvas draws only skeleton + text.
             const canvas = overlayRef.current;
             if (canvas) {
-              const rect = video.getBoundingClientRect();
-              const dpr = window.devicePixelRatio || 1;
-              const canvasW = Math.round(rect.width * dpr);
-              const canvasH = Math.round(rect.height * dpr);
-              if (canvas.width !== canvasW || canvas.height !== canvasH) {
-                canvas.width = canvasW;
-                canvas.height = canvasH;
-              }
-              const ctx = canvas.getContext('2d');
-              ctx.clearRect(0, 0, canvasW, canvasH);
-
-              // Scale from video intrinsic coords to canvas display coords
               const vw = video.videoWidth || 1080;
               const vh = video.videoHeight || 1920;
-              ctx.save();
-              ctx.scale(canvasW / vw, canvasH / vh);
-              drawPose(ctx, landmarks, vw, vh, 1.0, null);
-              ctx.restore();
+              // Set canvas resolution to match video intrinsic size for 1:1 coord mapping
+              if (canvas.width !== vw || canvas.height !== vh) {
+                canvas.width = vw;
+                canvas.height = vh;
+              }
+              const ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, vw, vh);
 
-              // Rep counter text in canvas pixel coords (not scaled)
+              // Draw skeleton in video-native coordinates (CSS scales to fit)
+              drawPose(ctx, landmarks, vw, vh, 1.0, null);
+
+              // DEBUG: Red dot at nose to prove canvas is rendering + landmarks exist
+              if (landmarks[0]) {
+                ctx.fillStyle = '#FF0000';
+                ctx.beginPath();
+                ctx.arc(landmarks[0].x * vw, landmarks[0].y * vh, 20, 0, Math.PI * 2);
+                ctx.fill();
+              }
+
+              // Rep counter text scaled to video resolution
+              const scale = vw / 480;
               ctx.fillStyle = '#00FF88';
-              ctx.font = `bold ${Math.round(canvasW / 12)}px -apple-system, sans-serif`;
+              ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, sans-serif`;
               ctx.textAlign = 'left';
               ctx.textBaseline = 'top';
               ctx.shadowColor = 'rgba(0,0,0,0.8)';
               ctx.shadowBlur = 6;
-              ctx.fillText(`${updateResult.reps} reps`, Math.round(canvasW * 0.05), Math.round(canvasH * 0.05));
+              ctx.fillText(`${updateResult.reps} ${t('reps').toLowerCase()}`, Math.round(vw * 0.05), Math.round(vh * 0.05));
               ctx.shadowBlur = 0;
             }
 
@@ -539,6 +542,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         videoUrl={replayResult.videoUrl}
         frames={replayResult.frames}
         exerciseName={replayResult.exerciseName}
+        exerciseKey={replayResult.exercise}
         reps={replayResult.reps}
         formScore={replayResult.formScore}
         repHistory={replayResult.repHistory}
@@ -759,7 +763,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         </div>
         {analyzing && analysisPhase === 'analyzing' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '0 4px' }}>
-            <span style={{ color: '#00FF88', fontSize: 20, fontWeight: 800 }}>{liveReps} reps</span>
+            <span style={{ color: '#00FF88', fontSize: 20, fontWeight: 800 }}>{liveReps} {t('reps').toLowerCase()}</span>
             <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
               <div style={{ width: `${progress}%`, height: '100%', background: '#00FF88',
                 borderRadius: 2, transition: 'width 0.1s linear' }} />
@@ -834,7 +838,7 @@ function generateProgressionNote(progression, t) {
 }
 
 function ResultCard({ result, onReplay }) {
-  const { t, tExercise } = useT();
+  const { t, tExercise, tFormCheck } = useT();
   const {
     fileName, exerciseName, reps, duration, analysisTime,
     formScore, bioAnalysis, report, repHistory, progression,
@@ -957,7 +961,7 @@ function ResultCard({ result, onReplay }) {
           </div>
           {bioAnalysis.velocity.trend && (
             <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              {t('trend')}: {bioAnalysis.velocity.trend}
+              {t('trend')}: {t(bioAnalysis.velocity.trend)}
             </p>
           )}
         </div>
@@ -1101,7 +1105,7 @@ function ResultCard({ result, onReplay }) {
           )}
           {bioAnalysis.fatigue.recommendation && (
             <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              {bioAnalysis.fatigue.recommendation}
+              {t(bioAnalysis.fatigue.recommendation)}
             </p>
           )}
         </div>
@@ -1121,7 +1125,7 @@ function ResultCard({ result, onReplay }) {
             <h4>{t('form_notes')}</h4>
             {sorted.map(([issue, count]) => (
               <div key={issue} className="note-item">
-                {issue} ({count}/{repHistory.length} reps)
+                {tFormCheck(issue)} ({count}/{repHistory.length} reps)
               </div>
             ))}
           </div>
@@ -1140,22 +1144,28 @@ function ResultCard({ result, onReplay }) {
       {report?.highlights && report.highlights.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <h4>{t('highlights')}</h4>
-          {report.highlights.map((h, i) => (
-            <p key={i} className="text-sm" style={{ color: 'var(--accent)', padding: '2px 0' }}>
-              {'> '}{typeof h === 'string' ? h : t(h.key, h)}
-            </p>
-          ))}
+          {report.highlights.map((h, i) => {
+            const params = h.exercise ? { ...h, exerciseName: tExercise(h.exercise, h.exerciseName) } : h;
+            return (
+              <p key={i} className="text-sm" style={{ color: 'var(--accent)', padding: '2px 0' }}>
+                {'> '}{typeof h === 'string' ? h : t(params.key, params)}
+              </p>
+            );
+          })}
         </div>
       )}
 
       {report?.improvements && report.improvements.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <h4>{t('next_steps')}</h4>
-          {report.improvements.map((imp, i) => (
-            <p key={i} className="text-sm text-muted" style={{ padding: '2px 0' }}>
-              {i + 1}. {typeof imp === 'string' ? imp : t(imp.key, imp)}
-            </p>
-          ))}
+          {report.improvements.map((imp, i) => {
+            const params = imp.exercise ? { ...imp, exerciseName: tExercise(imp.exercise, imp.exerciseName) } : imp;
+            return (
+              <p key={i} className="text-sm text-muted" style={{ padding: '2px 0' }}>
+                {i + 1}. {typeof imp === 'string' ? imp : t(params.key, params)}
+              </p>
+            );
+          })}
         </div>
       )}
 

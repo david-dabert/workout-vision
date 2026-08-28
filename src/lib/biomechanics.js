@@ -101,11 +101,11 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userH
 
 function emptyResult() {
   return {
-    velocity: { avg: 0, perRep: [], trend: 'insufficient data' },
+    velocity: { avg: 0, perRep: [], trend: 'trend_insufficient' },
     timeUnderTension: { total: 0, eccentric: 0, concentric: 0, perRep: [] },
     rangeOfMotion: { avgDegrees: 0, perRep: [], consistency: 100 },
     asymmetry: { score: 0, details: {}, risk: 'low' },
-    fatigue: { index: 0, velocityDropoff: 0, curve: [], recommendation: 'Need more data.' },
+    fatigue: { index: 0, velocityDropoff: 0, curve: [], recommendation: 'fatigue_no_data' },
     movementQuality: 0,
   };
 }
@@ -240,7 +240,7 @@ function detectReps(values) {
  */
 function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
   if (reps.length === 0) {
-    return { avg: 0, perRep: [], trend: 'insufficient data' };
+    return { avg: 0, perRep: [], trend: 'trend_insufficient' };
   }
 
   const isLower = ['knee', 'hip'].includes(exercise.joint);
@@ -284,16 +284,16 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
   const valid = perRep.filter(v => v > 0);
   const avg = valid.length > 0 ? valid.reduce((s, v) => s + v, 0) / valid.length : 0;
 
-  let trend = 'stable';
+  let trend = 'trend_stable';
   if (valid.length >= 3) {
     const firstHalf = valid.slice(0, Math.floor(valid.length / 2));
     const secondHalf = valid.slice(Math.floor(valid.length / 2));
     const f = firstHalf.reduce((s, v) => s + v, 0) / firstHalf.length;
     const l = secondHalf.reduce((s, v) => s + v, 0) / secondHalf.length;
     const change = ((l - f) / (f || 1)) * 100;
-    if (change < -15) trend = 'declining (fatigue)';
-    else if (change < -5) trend = 'slightly declining';
-    else if (change > 10) trend = 'increasing (warm-up)';
+    if (change < -15) trend = 'trend_fatigue';
+    else if (change < -5) trend = 'trend_declining';
+    else if (change > 10) trend = 'trend_warmup';
   }
 
   return { avg: round(avg, 3), perRep, trend };
@@ -457,12 +457,11 @@ function analyzeFatigue(velocity, reps) {
   const normPeak = Math.max(...vels);
   const curve = vels.map(v => normPeak > 0 ? Math.round((v / normPeak) * 100) : 0);
 
-  let recommendation = '';
-  if (clampedDropoff > 30) recommendation = 'Significant fatigue. Consider reducing volume or increasing rest.';
-  else if (clampedDropoff > 20) recommendation = 'Moderate fatigue. Good for hypertrophy (Pareja-Blanco 2017).';
-  else if (clampedDropoff > 10) recommendation = 'Low fatigue. Good for strength without excessive fatigue.';
-  else if (dropoff < 0) recommendation = 'Velocity increased through the set. Warm-up effect detected.';
-  else recommendation = 'Minimal fatigue. Could increase intensity or volume.';
+  let recommendation = 'fatigue_minimal';
+  if (clampedDropoff > 30) recommendation = 'fatigue_significant';
+  else if (clampedDropoff > 20) recommendation = 'fatigue_moderate';
+  else if (clampedDropoff > 10) recommendation = 'fatigue_low';
+  else if (dropoff < 0) recommendation = 'fatigue_warmup_effect';
 
   return { index, velocityDropoff: clampedDropoff, curve, recommendation };
 }
