@@ -380,7 +380,7 @@ const FORM_CHECK_LANDMARKS = {
 };
 
 function getSegmentColor(i, j, formFeedback) {
-  if (!formFeedback || formFeedback.length === 0) return '#00FF88';
+  if (!formFeedback || formFeedback.length === 0) return '#00f5d4';
   let hasMajor = false, hasMinor = false;
   for (const f of formFeedback) {
     if (f.passed) continue;
@@ -389,9 +389,9 @@ function getSegmentColor(i, j, formFeedback) {
     if (hit && f.severity === 'major') hasMajor = true;
     if (hit && f.severity === 'minor') hasMinor = true;
   }
-  if (hasMajor) return '#FF3355';
-  if (hasMinor) return '#FFCC00';
-  return '#00FF88';
+  if (hasMajor) return '#ff3b5c';
+  if (hasMinor) return '#ffb836';
+  return '#00f5d4';
 }
 
 /**
@@ -441,7 +441,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
 
   // Joints — always red dots
   const dotSize = Math.max(5, width / 80);
-  ctx.fillStyle = '#FF3355';
+  ctx.fillStyle = '#ff3b5c';
   for (const lm of landmarks) {
     if ((lm.visibility || 0) < 0.3) continue;
     ctx.beginPath();
@@ -459,7 +459,7 @@ export function drawOverlayMessage(ctx, line1, line2) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.fillStyle = 'rgba(0,0,0,0.7)';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#f0f0f5';
   ctx.font = 'bold 24px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(line1, ctx.canvas.width / 2, ctx.canvas.height / 2 - 15);

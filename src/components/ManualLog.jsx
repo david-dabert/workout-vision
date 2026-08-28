@@ -153,7 +153,7 @@ export default function ManualLog({ onClose }) {
                 flex: 1,
                 textAlign: 'left',
                 minHeight: 44,
-                color: entry.exerciseKey ? '#fff' : 'var(--muted)',
+                color: entry.exerciseKey ? 'var(--text-primary)' : 'var(--muted)',
                 fontWeight: entry.exerciseKey ? 700 : 400,
                 fontSize: '0.88rem',
                 border: '1px solid var(--border)',

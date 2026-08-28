@@ -28,7 +28,7 @@ const s = {
   tab: (active) => ({
     flex: 1, padding: '10px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
     fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
-    background: active ? 'var(--accent)' : 'transparent', color: active ? '#000' : 'var(--muted)',
+    background: active ? 'var(--accent)' : 'transparent', color: active ? 'var(--void)' : 'var(--muted)',
   }),
   card: { background: 'var(--card)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', padding: 20, marginBottom: 14 },
   cardTitle: { fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', marginBottom: 14, marginTop: 0 },
@@ -48,7 +48,7 @@ const s = {
   recText: { fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5, margin: 0 },
   splitBadge: {
     display: 'inline-block', padding: '6px 14px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700,
-    background: 'rgba(0,230,118,0.1)', color: 'var(--accent)', border: '1px solid rgba(0,230,118,0.25)',
+    background: 'rgba(0,245,212,0.1)', color: 'var(--accent)', border: '1px solid rgba(0,245,212,0.25)',
     marginRight: 8, marginBottom: 8,
   },
   periodBadge: {
@@ -58,7 +58,7 @@ const s = {
   },
   dayCard: (exp) => ({
     background: 'var(--card-elevated)', borderRadius: 'var(--radius-sm)',
-    border: exp ? '1px solid rgba(0,230,118,0.25)' : '1px solid var(--border)',
+    border: exp ? '1px solid rgba(0,245,212,0.25)' : '1px solid var(--border)',
     marginBottom: 10, overflow: 'hidden',
   }),
   dayHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', cursor: 'pointer', userSelect: 'none' },
@@ -81,7 +81,7 @@ const s = {
     marginBottom: 16, borderLeft: '3px solid var(--yellow)', display: 'flex', alignItems: 'center', gap: 10,
   },
   primaryBtn: {
-    background: 'var(--accent)', color: '#000', border: 'none', borderRadius: 'var(--radius-sm)',
+    background: 'var(--accent)', color: 'var(--void)', border: 'none', borderRadius: 'var(--radius-sm)',
     padding: '12px 24px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
   },
 };

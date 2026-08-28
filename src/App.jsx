@@ -9,6 +9,7 @@ const Train = lazy(() => import('./components/Train'));
 const Analyze = lazy(() => import('./components/Analyze'));
 const ManualLog = lazy(() => import('./components/ManualLog'));
 const Validate = lazy(() => import('./components/Validate'));
+const DesignDemo = lazy(() => import('./components/DesignDemo'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
@@ -83,8 +84,19 @@ function AppInner() {
 }
 
 function App() {
+  const params = new URLSearchParams(window.location.search);
+
+  // Design demo mode: standalone prototype
+  if (params.has('demo')) {
+    return (
+      <Suspense fallback={LazyFallback}>
+        <DesignDemo onExit={() => { window.location.search = ''; }} />
+      </Suspense>
+    );
+  }
+
   // Validate mode: render directly, skip all providers
-  if (new URLSearchParams(window.location.search).has('validate')) {
+  if (params.has('validate')) {
     return (
       <Suspense fallback={LazyFallback}>
         <Validate onClose={() => { window.location.search = ''; }} />

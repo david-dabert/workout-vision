@@ -101,7 +101,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
       {mode === 'choose' && (
         <>
           <div className="card" style={{ textAlign: 'center', padding: 24 }}>
-            <p className="text-sm" style={{ color: '#fff', marginBottom: 16, lineHeight: 1.5 }}>
+            <p className="text-sm" style={{ color: 'var(--text-primary)', marginBottom: 16, lineHeight: 1.5 }}>
               Take a photo of the gym machine or yourself on it, and the app will identify the exercise.
             </p>
 
@@ -164,7 +164,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
           {analyzing && (
             <div className="card" style={{ textAlign: 'center', padding: 20 }}>
               <div className="spinner" />
-              <p className="text-sm" style={{ color: '#fff' }}>{t('analyzing_pose')}</p>
+              <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{t('analyzing_pose')}</p>
             </div>
           )}
 
@@ -194,7 +194,7 @@ export default function MachineIdentifier({ onSelectExercise, onClose }) {
 
           {result && (result.type === 'no_person' || result.type === 'person_no_match') && (
             <div className="card" style={{ textAlign: 'center', padding: 20 }}>
-              <p className="text-sm" style={{ color: '#fff', marginBottom: 4 }}>
+              <p className="text-sm" style={{ color: 'var(--text-primary)', marginBottom: 4 }}>
                 {result.type === 'no_person'
                   ? t('no_person_detected')
                   : "Couldn't identify the exercise from your pose"}

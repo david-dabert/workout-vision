@@ -311,7 +311,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
               // 3. Rep counter text scaled to video resolution
               const scale = vw / 480;
-              ctx.fillStyle = '#00FF88';
+              ctx.fillStyle = '#00f5d4';
               ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, sans-serif`;
               ctx.textAlign = 'left';
               ctx.textBaseline = 'top';
@@ -576,7 +576,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
           </div>
-          <p className="text-sm" style={{ color: '#fff', fontWeight: 700, marginTop: 2 }}>
+          <p className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: 2 }}>
             {t('tap_to_select')}
           </p>
           <p className="text-xs text-muted">{t('file_types')}</p>
@@ -769,7 +769,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
         }
       >
-        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
+        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: 'var(--void)' }}>
           {/* Video element: must stay in DOM for iOS Safari to decode frames via seeking.
               Hidden visually — the canvas draws video frame + skeleton as a single composited image,
               bypassing the iOS Safari hardware compositor that renders <video> above <canvas>. */}
@@ -782,12 +782,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         </div>
         {analyzing && analysisPhase === 'analyzing' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '0 4px' }}>
-            <span style={{ color: '#00FF88', fontSize: 20, fontWeight: 800 }}>{liveReps} {t('reps').toLowerCase()}</span>
+            <span style={{ color: 'var(--bio-cyan)', fontSize: 20, fontWeight: 800 }}>{liveReps} {t('reps').toLowerCase()}</span>
             <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
-              <div style={{ width: `${progress}%`, height: '100%', background: '#00FF88',
+              <div style={{ width: `${progress}%`, height: '100%', background: 'var(--bio-cyan)',
                 borderRadius: 2, transition: 'width 0.1s linear' }} />
             </div>
-            <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
+            <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
           </div>
         )}
       </div>
@@ -892,7 +892,7 @@ function ResultCard({ result, onReplay }) {
                 {result.autoDetected && (
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 6px', borderRadius: 4,
-                    background: 'rgba(0,255,136,0.12)', color: 'var(--accent)', fontWeight: 600,
+                    background: 'rgba(0,245,212,0.12)', color: 'var(--accent)', fontWeight: 600,
                   }}>{t('auto_detected')}</span>
                 )}
               </div>

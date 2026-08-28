@@ -157,7 +157,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                   width: 42, height: 42, borderRadius: 10,
                   background: score >= 80 ? 'var(--accent-glow-strong)' : score >= 60 ? 'var(--yellow-glow)' : 'var(--red-glow)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  border: `1px solid ${score >= 80 ? 'rgba(0,255,136,0.2)' : score >= 60 ? 'rgba(255,184,54,0.2)' : 'rgba(255,59,92,0.2)'}`,
+                  border: `1px solid ${score >= 80 ? 'rgba(0,245,212,0.2)' : score >= 60 ? 'rgba(255,184,54,0.2)' : 'rgba(255,59,92,0.2)'}`,
                 }}>
                   <span style={{
                     fontSize: '0.82rem', fontWeight: 800,
@@ -165,7 +165,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                   }}>{gradeFromScore(score)}</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.88rem', display: 'block' }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.88rem', display: 'block' }}>
                     {w.exerciseName || w.exercise}
                   </span>
                   <span className="text-xs text-muted">
@@ -174,7 +174,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                   </span>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem' }}>{w.reps}</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '1.1rem' }}>{w.reps}</span>
                   <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>reps</span>
                 </div>
               </div>

@@ -40,14 +40,14 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(0, 0, w, boxH);
 
-  ctx.fillStyle = '#00FF88';
+  ctx.fillStyle = '#00f5d4';
   ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText(exerciseName, pad, boxH / 2);
 
   ctx.textAlign = 'right';
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#f0f0f5';
   ctx.font = `bold ${Math.round(22 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.fillText(`${reps} reps`, w - pad, boxH / 2); // Keep "reps" in overlay (universal sports term)
 
@@ -56,7 +56,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.fillRect(0, h - brandH, w, brandH);
 
-  ctx.fillStyle = '#00FF88';
+  ctx.fillStyle = '#00f5d4';
   ctx.font = `bold ${Math.round(16 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

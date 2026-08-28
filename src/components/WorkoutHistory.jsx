@@ -249,7 +249,7 @@ export default function WorkoutHistory({ onClose }) {
                 <div key={w.id} className="card" style={{ padding: 12 }}>
                   <div className="workout-card-header">
                     <div>
-                      <strong style={{ color: '#fff', fontSize: '0.88rem' }}>
+                      <strong style={{ color: 'var(--text-primary)', fontSize: '0.88rem' }}>
                         {w.exerciseName || w.exercise}
                       </strong>
                       <span className="text-xs text-muted" style={{ marginLeft: 8 }}>

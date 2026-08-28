@@ -124,7 +124,7 @@ export default function Progress({ onClose }) {
                 <div key={w.id} className="workout-item">
                   <div className="workout-card-header">
                     <div>
-                      <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem' }}>
                         {w.exerciseName || w.exercise}
                       </span>
                       <br />

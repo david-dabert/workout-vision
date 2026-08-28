@@ -16,12 +16,12 @@ function resolveText(item) {
 const W = 1080;
 const H = 1350;
 const PAD = 60;
-const ACCENT = '#00FF88';
-const ACCENT2 = '#00D4FF';
-const BG = '#06060A';
-const CARD_BG = 'rgba(255,255,255,0.04)';
-const CARD_BORDER = 'rgba(255,255,255,0.06)';
-const TEXT = '#E8E8EF';
+const ACCENT = '#00f5d4';
+const ACCENT2 = '#00e676';
+const BG = '#000000';
+const CARD_BG = 'rgba(255,255,255,0.012)';
+const CARD_BORDER = 'rgba(255,255,255,0.05)';
+const TEXT = '#f0f0f5';
 const MUTED = '#6B6B82';
 const RED = '#FF3B5C';
 const YELLOW = '#FFB836';
@@ -93,7 +93,7 @@ export async function generateShareCard(result, videoEl) {
   ctx.fillRect(0, 0, W, H);
   // Subtle radial accent glow top-left
   const glow1 = ctx.createRadialGradient(W * 0.2, H * 0.15, 0, W * 0.2, H * 0.15, W * 0.5);
-  glow1.addColorStop(0, 'rgba(0,255,136,0.04)');
+  glow1.addColorStop(0, 'rgba(0,245,212,0.04)');
   glow1.addColorStop(1, 'transparent');
   ctx.fillStyle = glow1;
   ctx.fillRect(0, 0, W, H);
@@ -328,7 +328,7 @@ export async function generateShareCard(result, videoEl) {
   // Accent gradient line separator
   const sepGrad = ctx.createLinearGradient(PAD * 3, 0, W - PAD * 3, 0);
   sepGrad.addColorStop(0, 'transparent');
-  sepGrad.addColorStop(0.2, 'rgba(0,255,136,0.3)');
+  sepGrad.addColorStop(0.2, 'rgba(0,245,212,0.3)');
   sepGrad.addColorStop(0.8, 'rgba(0,212,255,0.3)');
   sepGrad.addColorStop(1, 'transparent');
   ctx.fillStyle = sepGrad;
@@ -425,7 +425,7 @@ function drawAnimatedBackground(ctx, w, h) {
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, w, h);
   const glow1 = ctx.createRadialGradient(w * 0.2, h * 0.15, 0, w * 0.2, h * 0.15, w * 0.5);
-  glow1.addColorStop(0, 'rgba(0,255,136,0.04)');
+  glow1.addColorStop(0, 'rgba(0,245,212,0.04)');
   glow1.addColorStop(1, 'transparent');
   ctx.fillStyle = glow1;
   ctx.fillRect(0, 0, w, h);
@@ -627,7 +627,7 @@ export async function generateAnimatedShareCard(result, onProgress) {
       // Gradient separator
       const sepGrad = ctx.createLinearGradient(PAD * 3, 0, W - PAD * 3, 0);
       sepGrad.addColorStop(0, 'transparent');
-      sepGrad.addColorStop(0.2, 'rgba(0,255,136,0.3)');
+      sepGrad.addColorStop(0.2, 'rgba(0,245,212,0.3)');
       sepGrad.addColorStop(0.8, 'rgba(0,212,255,0.3)');
       sepGrad.addColorStop(1, 'transparent');
       ctx.fillStyle = sepGrad;

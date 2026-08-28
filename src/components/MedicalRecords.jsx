@@ -118,7 +118,7 @@ export default function MedicalRecords({ onClose }) {
       <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
         <div className="upload-content">
           <div className="upload-icon">+</div>
-          <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>
+          <p className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
             {uploading ? t('uploading') : t('upload_medical')}
           </p>
           <p className="text-xs text-muted">{t('pdf_jpg_png')}</p>
@@ -151,7 +151,7 @@ export default function MedicalRecords({ onClose }) {
             <div key={r.id} className="record-item">
               <div className="record-header">
                 <div>
-                  <strong style={{ color: '#fff', fontSize: '0.85rem' }}>{r.fileName}</strong>
+                  <strong style={{ color: 'var(--text-primary)', fontSize: '0.85rem' }}>{r.fileName}</strong>
                   <span className="text-xs text-muted" style={{ marginLeft: 6 }}>
                     {r.fileSize}
                   </span>

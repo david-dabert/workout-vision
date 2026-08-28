@@ -290,7 +290,7 @@ export default function Profile({ onClose }) {
         >
           <div className="upload-content">
             <div className="upload-icon">+</div>
-            <p className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>{t('upload_file')}</p>
+            <p className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('upload_file')}</p>
             <p className="text-xs text-muted">{t('pdf_images_docs')}</p>
           </div>
           <input
@@ -305,7 +305,7 @@ export default function Profile({ onClose }) {
         {records.map(r => (
           <div key={r.id} className="record-item">
             <div className="record-header">
-              <span style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>{r.name}</span>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.85rem' }}>{r.name}</span>
               <button
                 className="btn btn-ghost btn-sm btn-danger"
                 onClick={() => handleDeleteRecord(r.id)}

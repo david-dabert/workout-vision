@@ -270,7 +270,7 @@ export default function ExerciseHistory({ onClose }) {
               <div style={{ flex: 1 }}>
                 <span className="text-xs text-muted">{formatDate(s.date)}</span>
                 <div style={{ display: 'flex', gap: 12, marginTop: 4, alignItems: 'center' }}>
-                  <span className="text-sm" style={{ color: '#fff' }}>
+                  <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
                     {s.reps} reps
                   </span>
                   {s.weight > 0 && (
@@ -353,7 +353,7 @@ export default function ExerciseHistory({ onClose }) {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <strong style={{ color: '#fff', fontSize: '0.88rem' }}>{tExercise(ex.key, ex.name)}</strong>
+                <strong style={{ color: 'var(--text-primary)', fontSize: '0.88rem' }}>{tExercise(ex.key, ex.name)}</strong>
                 <span className="text-xs text-muted">{ex.sets.length} {t('sets')}</span>
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>

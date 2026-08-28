@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="theme-color" content="#000000" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -24,7 +24,7 @@
           + '<p>' + msg + '</p>'
           + '<p style="color:#888">' + (src||'') + ':' + line + ':' + col + '</p>'
           + '<p style="color:#888;margin-top:8px">' + (err && err.stack ? err.stack : '') + '</p>'
-          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
+          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
           + '</div>';
       };
       window.addEventListener('unhandledrejection', function(e) {
@@ -39,7 +39,7 @@
             + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision</h2>'
             + '<p>App did not load within 8 seconds.</p>'
             + '<p style="color:#888;margin-top:8px">This may be a network issue or JavaScript error.</p>'
-            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
+            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
             + '</div>';
         }
       }, 8000);

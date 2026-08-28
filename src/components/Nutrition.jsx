@@ -160,21 +160,21 @@ export default function Nutrition() {
               <div className="cal-row">
                 <span className="cal-dot cal-target" />
                 <span className="text-sm">{t('target')}</span>
-                <span className="text-sm" style={{ color: '#fff', fontWeight: 700, marginLeft: 'auto' }}>
+                <span className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 700, marginLeft: 'auto' }}>
                   {targets.calories}
                 </span>
               </div>
               <div className="cal-row">
                 <span className="cal-dot cal-eaten" />
                 <span className="text-sm">{t('eaten')}</span>
-                <span className="text-sm" style={{ color: '#fff', fontWeight: 700, marginLeft: 'auto' }}>
+                <span className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 700, marginLeft: 'auto' }}>
                   {totals.calories}
                 </span>
               </div>
               <div className="cal-row">
                 <span className="cal-dot cal-burned" />
                 <span className="text-sm">{t('burned')}</span>
-                <span className="text-sm" style={{ color: '#fff', fontWeight: 700, marginLeft: 'auto' }}>
+                <span className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 700, marginLeft: 'auto' }}>
                   {caloriesBurned}
                 </span>
               </div>
@@ -330,7 +330,7 @@ function MacroBar({ label, current, target, color, unit }) {
   return (
     <div className="macro-bar-row">
       <div className="macro-bar-labels">
-        <span className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>{label}</span>
+        <span className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{label}</span>
         <span className="text-xs text-muted">{current}/{target}{unit}</span>
       </div>
       <div className="progress-bar" style={{ height: 8 }}>
@@ -770,7 +770,7 @@ function FoodPhoto({ onAdd, onClose }) {
         <div className="upload-zone" onClick={() => fileRef.current?.click()}>
           <div className="upload-content">
             <div className="upload-icon"><Camera size={24} /></div>
-            <span className="text-sm" style={{ color: '#fff', fontWeight: 600 }}>{t('take_photo_meal')}</span>
+            <span className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('take_photo_meal')}</span>
             <span className="text-xs text-muted">{t('tap_open_camera')}</span>
           </div>
           <input

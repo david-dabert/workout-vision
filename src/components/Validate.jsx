@@ -407,11 +407,11 @@ export default function Validate({ onClose }) {
 
       {/* Countix benchmark — one-click */}
       <div style={{
-        background: 'rgba(0,255,136,0.04)', borderRadius: 10, padding: '12px 14px',
-        marginBottom: 10, border: '1px solid rgba(0,255,136,0.15)',
+        background: 'rgba(0,245,212,0.04)', borderRadius: 10, padding: '12px 14px',
+        marginBottom: 10, border: '1px solid rgba(0,245,212,0.15)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             Countix Benchmark
           </div>
           <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>43 videos, 9 exercises</span>
@@ -488,7 +488,7 @@ export default function Validate({ onClose }) {
           marginBottom: 8, border: test.status === 'running' ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#fff' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>
               {test.status === 'running' && '> '}{test.name}
             </span>
             {!running && (
@@ -503,7 +503,7 @@ export default function Validate({ onClose }) {
               disabled={running}
               style={{
                 flex: 1, minWidth: 140, padding: '6px 8px', borderRadius: 6, fontSize: '0.75rem',
-                background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.12)',
               }}
             >
               <option value="__auto__">Auto-detect</option>
@@ -524,7 +524,7 @@ export default function Validate({ onClose }) {
               disabled={running}
               style={{
                 width: 60, padding: '6px 8px', borderRadius: 6, fontSize: '0.75rem',
-                background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.12)',
                 textAlign: 'center',
               }}
             />
@@ -558,7 +558,7 @@ export default function Validate({ onClose }) {
           {/* Aggregate stats */}
           {scored.length > 0 && (
             <div style={{
-              background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.2)',
+              background: 'rgba(0,245,212,0.06)', border: '1px solid rgba(0,245,212,0.2)',
               borderRadius: 10, padding: '12px 14px', marginBottom: 14,
             }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, textAlign: 'center' }}>
@@ -569,13 +569,13 @@ export default function Validate({ onClose }) {
                   <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>AVG ACCURACY</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                     {exactMatch}/{scored.length}
                   </div>
                   <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>EXACT MATCH</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                     {withinOne}/{scored.length}
                   </div>
                   <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>WITHIN +/-1 (OBO)</div>
@@ -618,7 +618,7 @@ export default function Validate({ onClose }) {
               ) : (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                    <span style={{ fontWeight: 600, color: '#fff' }}>{r.name}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.name}</span>
                     <span style={{
                       fontWeight: 700,
                       color: r.repError === 0 ? 'var(--accent)' : Math.abs(r.repError) <= 1 ? 'var(--yellow)' : 'var(--red)',
