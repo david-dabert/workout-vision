@@ -431,12 +431,12 @@ function analyzeAsymmetry(anglesArray) {
  */
 function analyzeFatigue(velocity, reps) {
   if (!velocity.perRep || velocity.perRep.length < 2) {
-    return { index: 0, velocityDropoff: 0, curve: [], recommendation: 'Need more reps.' };
+    return { index: 0, velocityDropoff: 0, curve: [], recommendation: 'need_more_reps' };
   }
 
   const vels = velocity.perRep.filter(v => v > 0);
   if (vels.length < 2) {
-    return { index: 0, velocityDropoff: 0, curve: [], recommendation: 'Need more reps.' };
+    return { index: 0, velocityDropoff: 0, curve: [], recommendation: 'need_more_reps' };
   }
 
   // Use median of first N and last N reps to resist outliers

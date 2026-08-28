@@ -131,6 +131,10 @@ const translations = {
   'video_failed': { en: 'Video failed to load. Try a different file or shorter clip.', fr: 'Échec du chargement vidéo. Essayez un autre fichier ou un clip plus court.' },
   'too_large': { en: 'is too large. Maximum is 500 MB.', fr: 'est trop volumineux. Maximum 500 Mo.' },
   'need_more_reps': { en: 'Need more reps.', fr: 'Plus de reps nécessaires.' },
+  'joint_knee': { en: 'Knee', fr: 'Genou' },
+  'joint_hip': { en: 'Hip', fr: 'Hanche' },
+  'joint_elbow': { en: 'Elbow', fr: 'Coude' },
+  'joint_shoulder': { en: 'Shoulder', fr: 'Épaule' },
 
   // ─── Video Replay ───
   'ai_overlay': { en: 'AI Overlay', fr: 'Superposition IA' },

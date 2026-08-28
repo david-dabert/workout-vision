@@ -182,24 +182,25 @@ export function generateWorkoutReport(profile, exerciseResults) {
 
     // Extract structured findings from analysis
     if (result.analysis) {
+      const exKey = result.exerciseKey || result.exercise;
       if (result.analysis.asymmetry && result.analysis.asymmetry.score <= 10) {
-        highlights.push({ key: 'coach_symmetry', exercise: exercise.key, exerciseName: exercise.name });
+        highlights.push({ key: 'coach_symmetry', exercise: exKey, exerciseName: exercise.name });
       }
       if (result.analysis.fatigue && result.analysis.fatigue.velocityDropoff > 30) {
-        improvements.push({ key: 'coach_velocity_drop', exercise: exercise.key, exerciseName: exercise.name, dropoff: Math.round(result.analysis.fatigue.velocityDropoff) });
+        improvements.push({ key: 'coach_velocity_drop', exercise: exKey, exerciseName: exercise.name, dropoff: Math.round(result.analysis.fatigue.velocityDropoff) });
       }
       if (result.analysis.rangeOfMotion && result.analysis.rangeOfMotion.consistency < 70) {
-        improvements.push({ key: 'coach_rom_inconsistent', exercise: exercise.key, exerciseName: exercise.name, consistency: result.analysis.rangeOfMotion.consistency });
+        improvements.push({ key: 'coach_rom_inconsistent', exercise: exKey, exerciseName: exercise.name, consistency: result.analysis.rangeOfMotion.consistency });
       }
       if (result.analysis.compensationPatterns) {
         for (const comp of result.analysis.compensationPatterns) {
           if (comp.severity === 'major') {
-            improvements.push({ key: 'coach_compensation', exercise: exercise.key, exerciseName: exercise.name, pattern: comp.pattern, description: comp.description });
+            improvements.push({ key: 'coach_compensation', exercise: exKey, exerciseName: exercise.name, pattern: comp.pattern, description: comp.description });
           }
         }
       }
       if (result.analysis.movementQuality >= 85) {
-        highlights.push({ key: 'coach_quality_strong', exercise: exercise.key, exerciseName: exercise.name, score: result.analysis.movementQuality });
+        highlights.push({ key: 'coach_quality_strong', exercise: exKey, exerciseName: exercise.name, score: result.analysis.movementQuality });
       }
     }
   }

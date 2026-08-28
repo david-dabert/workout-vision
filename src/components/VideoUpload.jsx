@@ -14,7 +14,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v12-debug';
+const BUILD_ID = 'v13-single-canvas';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -287,32 +287,27 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             const updateResult = repCounter.update(landmarks);
             setLiveReps(updateResult.reps);
 
-            // Draw skeleton on the TRANSPARENT overlay canvas (over the visible video).
-            // Video element is the background. Canvas draws only skeleton + text.
+            // SINGLE CANVAS approach: draw video frame + skeleton on one canvas.
+            // iOS Safari composites <video> in a hardware-accelerated layer that
+            // sits above <canvas> regardless of z-index. Drawing the video frame
+            // onto the canvas bypasses the compositor entirely.
             const canvas = overlayRef.current;
             if (canvas) {
               const vw = video.videoWidth || 1080;
               const vh = video.videoHeight || 1920;
-              // Set canvas resolution to match video intrinsic size for 1:1 coord mapping
               if (canvas.width !== vw || canvas.height !== vh) {
                 canvas.width = vw;
                 canvas.height = vh;
               }
               const ctx = canvas.getContext('2d');
-              ctx.clearRect(0, 0, vw, vh);
 
-              // Draw skeleton in video-native coordinates (CSS scales to fit)
+              // 1. Draw the video frame as background
+              ctx.drawImage(video, 0, 0, vw, vh);
+
+              // 2. Draw skeleton on top of the video frame
               drawPose(ctx, landmarks, vw, vh, 1.0, null);
 
-              // DEBUG: Red dot at nose to prove canvas is rendering + landmarks exist
-              if (landmarks[0]) {
-                ctx.fillStyle = '#FF0000';
-                ctx.beginPath();
-                ctx.arc(landmarks[0].x * vw, landmarks[0].y * vh, 20, 0, Math.PI * 2);
-                ctx.fill();
-              }
-
-              // Rep counter text scaled to video resolution
+              // 3. Rep counter text scaled to video resolution
               const scale = vw / 480;
               ctx.fillStyle = '#00FF88';
               ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, sans-serif`;
@@ -753,13 +748,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         }
       >
         <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000' }}>
-          {/* Visible video — shows the frame natively via seeking */}
+          {/* Video element: must stay in DOM for iOS Safari to decode frames via seeking.
+              Hidden visually — the canvas draws video frame + skeleton as a single composited image,
+              bypassing the iOS Safari hardware compositor that renders <video> above <canvas>. */}
           <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
-            style={{ width: '100%', display: 'block' }} />
+            style={{ position: 'absolute', width: 1, height: 1, opacity: 0.01, pointerEvents: 'none' }} />
 
-          {/* Transparent overlay canvas — draws ONLY the skeleton, no video frame */}
+          {/* Single canvas: drawImage(video) + drawPose(skeleton) + rep counter */}
           <canvas ref={overlayRef}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }} />
+            style={{ width: '100%', display: 'block' }} />
         </div>
         {analyzing && analysisPhase === 'analyzing' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '0 4px' }}>
@@ -1061,7 +1058,7 @@ function ResultCard({ result, onReplay }) {
             <div style={{ marginTop: 6 }}>
               {Object.entries(bioAnalysis.asymmetry.details).map(([key, val]) => (
                 <p key={key} className="text-xs text-muted" style={{ padding: '2px 0' }}>
-                  {key}: {typeof val === 'number' ? `${Math.round(val)}%` : String(val)}
+                  {t(`joint_${key.toLowerCase()}`) || key}: {typeof val === 'number' ? `${Math.round(val)}%` : String(val)}
                 </p>
               ))}
             </div>
