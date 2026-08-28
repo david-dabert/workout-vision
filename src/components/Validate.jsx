@@ -507,9 +507,9 @@ export default function Validate({ onClose }) {
               }}
             >
               <option value="__auto__">Auto-detect</option>
-              {EXERCISE_GROUPS.map(g => (
-                <optgroup key={g.label} label={g.label}>
-                  {g.exercises.map(ex => (
+              {Object.entries(EXERCISE_GROUPS).map(([label, exercises]) => (
+                <optgroup key={label} label={label}>
+                  {exercises.map(ex => (
                     <option key={ex.key} value={ex.key}>{ex.name}</option>
                   ))}
                 </optgroup>
