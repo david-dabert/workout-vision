@@ -706,56 +706,47 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             >
               {t('analyze')}
             </button>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8, width: '100%' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', width: '100%', marginBottom: 2 }}>
-                {t('limitations')}:
-              </span>
-              {Object.keys(INJURY_MAP).map(key => {
-                const active = userInjuries.includes(key);
-                const label = INJURY_LABELS[key]?.[lang] || key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      const next = active
-                        ? userInjuries.filter(i => i !== key)
-                        : [...userInjuries, key];
-                      setUserInjuries(next);
-                      saveInjuries(next);
-                    }}
-                    style={{
-                      padding: '4px 10px', fontSize: '0.7rem', borderRadius: 12,
-                      border: active ? '1px solid var(--red)' : '1px solid rgba(255,255,255,0.15)',
-                      background: active ? 'rgba(255,59,92,0.15)' : 'rgba(255,255,255,0.05)',
-                      color: active ? 'var(--red)' : 'var(--muted)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
           </>
         ) : (
           <div className="analyzing-status">
             <div className="spinner-sm" />
-            <span>
-              {analysisPhase === 'model'
-                ? t('loading_ai')
-                : analysisPhase === 'loading'
-                ? `${t('loading_file')} ${currentFile}...`
-                : analysisPhase === 'analyzing'
-                ? `${t('analyzing_file')} ${currentFile}... ${progress}%`
-                : `${t('starting_file')} ${currentFile}...`}
-            </span>
-            {analysisPhase === 'model' && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4 }}>
-                {t('downloading_model')}
-              </span>
-            )}
+            {currentFile && <span>{currentFile}</span>}
+            <button className="btn btn-ghost btn-sm" onClick={() => { abortRef.current = true; }}>{t('stop')}</button>
           </div>
         )}
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+          {t('limitations')}:
+        </span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {Object.keys(INJURY_MAP).map(key => {
+            const active = userInjuries.includes(key);
+            const label = INJURY_LABELS[key]?.[lang] || key;
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  const next = active
+                    ? userInjuries.filter(i => i !== key)
+                    : [...userInjuries, key];
+                  setUserInjuries(next);
+                  saveInjuries(next);
+                }}
+                style={{
+                  padding: '6px 14px', fontSize: '0.75rem', borderRadius: 20,
+                  border: active ? '1px solid var(--red)' : '1px solid rgba(255,255,255,0.12)',
+                  background: active ? 'rgba(255,59,92,0.15)' : 'rgba(255,255,255,0.04)',
+                  color: active ? 'var(--red)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Analysis display: VISIBLE video + transparent overlay canvas.

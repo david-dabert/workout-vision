@@ -192,10 +192,11 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
   return (
     <div className="onboarding-step">
       <h2>{t('onb_step2_title')}</h2>
-      <p className="text-muted text-sm" style={{ marginBottom: 16 }}>
+      <p className="text-muted text-sm" style={{ marginBottom: 12 }}>
         {t('onb_step2_desc')}
       </p>
-      <div className="form-grid">
+
+      <div className="form-grid" style={{ gap: 10 }}>
         <label className="full-width">
           <span>{t('experience')}</span>
           <select value={data.experience} onChange={(e) => update('experience', e.target.value)}>
@@ -204,7 +205,7 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
             <option value="advanced">{t('advanced')}</option>
           </select>
         </label>
-        <label className="full-width">
+        <label style={{ flex: 1 }}>
           <span>{t('goal')}</span>
           <select value={data.goal} onChange={(e) => update('goal', e.target.value)}>
             <option value="general">{t('general_fitness')}</option>
@@ -214,7 +215,7 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
             <option value="weight_loss">{t('weight_loss')}</option>
           </select>
         </label>
-        <label className="full-width">
+        <label style={{ flex: 1 }}>
           <span>{t('activity_level')}</span>
           <select value={data.activityLevel} onChange={(e) => update('activityLevel', e.target.value)}>
             <option value="sedentary">{t('sedentary')}</option>
@@ -224,28 +225,33 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
             <option value="veryActive">{t('very_active_activity')}</option>
           </select>
         </label>
-        <label className="full-width">
-          <span>{t('injuries')}</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-            {INJURY_AREAS.map(area => (
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+          {t('injuries')}:
+        </span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {INJURY_AREAS.map(area => {
+            const active = (data.injuries || []).includes(area);
+            return (
               <button
                 key={area}
                 type="button"
                 onClick={() => toggleInjury(area)}
                 style={{
-                  padding: '10px 14px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
-                  border: '1px solid',
-                  borderColor: (data.injuries || []).includes(area) ? 'var(--red)' : 'var(--border)',
-                  background: (data.injuries || []).includes(area) ? 'rgba(255,61,87,0.15)' : 'transparent',
-                  color: (data.injuries || []).includes(area) ? 'var(--red)' : 'var(--muted)',
+                  padding: '6px 14px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600,
+                  border: active ? '1px solid var(--red)' : '1px solid rgba(255,255,255,0.12)',
+                  background: active ? 'rgba(255,59,92,0.15)' : 'rgba(255,255,255,0.04)',
+                  color: active ? 'var(--red)' : 'var(--text-secondary, var(--muted))',
                   cursor: 'pointer',
                 }}
               >
                 {area.replace('_', ' ')}
               </button>
-            ))}
-          </div>
-        </label>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
