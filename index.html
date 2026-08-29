@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/workout-vision/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="theme-color" content="#000000" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -12,8 +12,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/workout-vision/manifest.json" />
     <title>WorkoutVision</title>
-    <script type="module" crossorigin src="/workout-vision/assets/index-BHVlgwTm.js"></script>
-    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-BUVrTyWF.css">
+    <script type="module" crossorigin src="/workout-vision/assets/index-uo-bkP1-.js"></script>
+    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-C-CkOR0J.css">
   </head>
   <body>
     <div id="root"></div>
@@ -26,7 +26,7 @@
           + '<p>' + msg + '</p>'
           + '<p style="color:#888">' + (src||'') + ':' + line + ':' + col + '</p>'
           + '<p style="color:#888;margin-top:8px">' + (err && err.stack ? err.stack : '') + '</p>'
-          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
+          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
           + '</div>';
       };
       window.addEventListener('unhandledrejection', function(e) {
@@ -41,7 +41,7 @@
             + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision</h2>'
             + '<p>App did not load within 8 seconds.</p>'
             + '<p style="color:#888;margin-top:8px">This may be a network issue or JavaScript error.</p>'
-            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
+            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
             + '</div>';
         }
       }, 8000);
@@ -95,7 +95,9 @@
         fetch(s.src, { method: 'HEAD' }).then(function(r) {
           if (!r.ok) {
             sessionStorage.setItem('_cb', '1');
-            location.replace(location.pathname + '?_=' + Date.now());
+            var params = new URLSearchParams(location.search);
+            params.set('_', Date.now());
+            location.replace(location.pathname + '?' + params.toString());
           }
         }).catch(function() {});
       })();
