@@ -648,64 +648,69 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       <div className="analyze-controls">
         {!analyzing ? (
           <>
-            {exercise !== '__auto__' && getExerciseIllustration(exercise) && (
-              <img
-                src={getExerciseIllustration(exercise, 2)}
-                alt=""
-                style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 6,
-                  background: 'var(--surface-elevated)', flexShrink: 0 }}
-                onError={(e) => { e.target.style.display = 'none'; }}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
+              {exercise !== '__auto__' && getExerciseIllustration(exercise) && (
+                <img
+                  src={getExerciseIllustration(exercise, 2)}
+                  alt=""
+                  style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6,
+                    background: 'var(--surface-elevated)', flexShrink: 0 }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
+              <select
+                value={exercise}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setExercise(val);
+                  if (val === '__auto__') {
+                    setAutoDetect(true);
+                    userChangedExercise.current = false;
+                  } else {
+                    setAutoDetect(false);
+                    userChangedExercise.current = true;
+                  }
+                }}
+                style={{ flex: 1, minWidth: 0, padding: 8, fontSize: '0.82rem' }}
+              >
+                <option value="__auto__">{t('automatic')}</option>
+                <optgroup label={t('compound')}>
+                  {EXERCISE_GROUPS.compound.map(e => (
+                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
+                  ))}
+                </optgroup>
+                <optgroup label={t('isolation')}>
+                  {EXERCISE_GROUPS.isolation.map(e => (
+                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
+                  ))}
+                </optgroup>
+                <optgroup label={t('bodyweight')}>
+                  {EXERCISE_GROUPS.bodyweight.map(e => (
+                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
+                  ))}
+                </optgroup>
+                <optgroup label={t('other')}>
+                  <option value="superset">{t('ex.superset')}</option>
+                </optgroup>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+              <input
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="kg"
+                style={{ width: 64, padding: '10px 8px', fontSize: '0.82rem', textAlign: 'center' }}
               />
-            )}
-            <select
-              value={exercise}
-              onChange={(e) => {
-                const val = e.target.value;
-                setExercise(val);
-                if (val === '__auto__') {
-                  setAutoDetect(true);
-                  userChangedExercise.current = false;
-                } else {
-                  setAutoDetect(false);
-                  userChangedExercise.current = true;
-                }
-              }}
-              style={{ flex: 1, padding: 8, fontSize: '0.82rem' }}
-            >
-              <option value="__auto__">{t('automatic')}</option>
-              <optgroup label={t('compound')}>
-                {EXERCISE_GROUPS.compound.map(e => (
-                  <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
-                ))}
-              </optgroup>
-              <optgroup label={t('isolation')}>
-                {EXERCISE_GROUPS.isolation.map(e => (
-                  <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
-                ))}
-              </optgroup>
-              <optgroup label={t('bodyweight')}>
-                {EXERCISE_GROUPS.bodyweight.map(e => (
-                  <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
-                ))}
-              </optgroup>
-              <optgroup label={t('other')}>
-                <option value="superset">{t('ex.superset')}</option>
-              </optgroup>
-            </select>
-            <input
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              placeholder="kg"
-              style={{ width: 56, padding: '8px 6px', fontSize: '0.82rem', textAlign: 'center' }}
-            />
-            <button
-              className="btn btn-primary"
-              onClick={startAnalysis}
-              disabled={!hasQueued}
-            >
-              {t('analyze')}
-            </button>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1 }}
+                onClick={startAnalysis}
+                disabled={!hasQueued}
+              >
+                {t('analyze')}
+              </button>
+            </div>
           </>
         ) : (
           <div className="analyzing-status">

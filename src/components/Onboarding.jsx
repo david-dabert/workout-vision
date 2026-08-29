@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import { useT } from '../lib/LanguageContext';
+import { INJURY_LABELS } from '../lib/injuries';
 
 const TOTAL_STEPS = 4;
 
@@ -188,7 +189,7 @@ function StepBasicInfo({ data, update }) {
 
 /* ── Step 3: Fitness Info ── */
 function StepFitnessInfo({ data, update, toggleInjury }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   return (
     <div className="onboarding-step">
       <h2>{t('onb_step2_title')}</h2>
@@ -196,17 +197,17 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
         {t('onb_step2_desc')}
       </p>
 
-      <div className="form-grid" style={{ gap: 10 }}>
-        <label className="full-width">
-          <span>{t('experience')}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>{t('experience')}</span>
           <select value={data.experience} onChange={(e) => update('experience', e.target.value)}>
             <option value="beginner">{t('beginner')}</option>
             <option value="intermediate">{t('intermediate')}</option>
             <option value="advanced">{t('advanced')}</option>
           </select>
         </label>
-        <label style={{ flex: 1 }}>
-          <span>{t('goal')}</span>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>{t('goal')}</span>
           <select value={data.goal} onChange={(e) => update('goal', e.target.value)}>
             <option value="general">{t('general_fitness')}</option>
             <option value="strength">{t('strength')}</option>
@@ -215,8 +216,8 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
             <option value="weight_loss">{t('weight_loss')}</option>
           </select>
         </label>
-        <label style={{ flex: 1 }}>
-          <span>{t('activity_level')}</span>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>{t('activity_level')}</span>
           <select value={data.activityLevel} onChange={(e) => update('activityLevel', e.target.value)}>
             <option value="sedentary">{t('sedentary')}</option>
             <option value="light">{t('light_activity')}</option>
@@ -227,11 +228,11 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
         </label>
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+      <div style={{ marginTop: 20 }}>
+        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block', marginBottom: 10 }}>
           {t('injuries')}:
         </span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {INJURY_AREAS.map(area => {
             const active = (data.injuries || []).includes(area);
             return (
@@ -247,7 +248,7 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
                   cursor: 'pointer',
                 }}
               >
-                {area.replace('_', ' ')}
+                {INJURY_LABELS[area]?.[lang] || area.replace('_', ' ')}
               </button>
             );
           })}
