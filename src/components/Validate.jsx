@@ -641,6 +641,35 @@ export default function Validate({ onClose }) {
                       Method: {r.diagnostics.method} | Range: {r.diagnostics.observedMin}-{r.diagnostics.observedMax} | Frames: {r.frames}
                     </div>
                   )}
+                  {r.diagnostics?.progression && r.diagnostics.progression.score > 0 && (
+                    <div style={{ marginTop: 6, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{
+                        fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                        background: r.diagnostics.progression.score >= 750 ? 'rgba(0,245,212,0.15)' : r.diagnostics.progression.score >= 500 ? 'rgba(255,200,0,0.15)' : 'rgba(255,80,80,0.15)',
+                        color: r.diagnostics.progression.score >= 750 ? 'var(--accent)' : r.diagnostics.progression.score >= 500 ? 'var(--yellow)' : 'var(--red)',
+                      }}>
+                        {r.diagnostics.progression.score} {r.diagnostics.progression.grade.label}
+                      </span>
+                      <span style={{ fontSize: '0.62rem', color: 'var(--muted)' }}>
+                        {r.diagnostics.progression.grade.title} · Top {100 - r.diagnostics.progression.percentile}%
+                      </span>
+                      {r.diagnostics.velocity?.fatigue?.detected && (
+                        <span style={{ fontSize: '0.62rem', color: 'var(--red)', fontWeight: 600 }}>
+                          ⚠ Fatigue {Math.round(r.diagnostics.velocity.fatigue.decay * 100)}%
+                        </span>
+                      )}
+                      {r.diagnostics.velocity?.power?.peakW > 0 && (
+                        <span style={{ fontSize: '0.62rem', color: 'var(--muted)' }}>
+                          Peak {r.diagnostics.velocity.power.peakW}W
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {r.diagnostics?.anthropometrics?.calibrated && (
+                    <div style={{ marginTop: 3, fontSize: '0.6rem', color: 'var(--muted)', opacity: 0.6 }}>
+                      Body: {r.diagnostics.anthropometrics.bodyType.torsoType} torso · {r.diagnostics.anthropometrics.bodyType.femurType} femurs · {r.diagnostics.anthropometrics.bodyType.armType} arms · Sym {(r.diagnostics.anthropometrics.bodyType.symmetryIndex * 100).toFixed(0)}%
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -680,6 +709,12 @@ export default function Validate({ onClose }) {
                     duration: r.duration,
                     analysisTime: r.analysisTime,
                     method: r.diagnostics?.method,
+                    progressionScore: r.diagnostics?.progression?.score || null,
+                    progressionGrade: r.diagnostics?.progression?.grade?.label || null,
+                    fatigue: r.diagnostics?.velocity?.fatigue?.detected || false,
+                    fatigueDecay: r.diagnostics?.velocity?.fatigue?.decay || 0,
+                    peakPowerW: r.diagnostics?.velocity?.power?.peakW || 0,
+                    bodyType: r.diagnostics?.anthropometrics?.calibrated ? r.diagnostics.anthropometrics.bodyType : null,
                     error: r.error,
                   })),
                 };
