@@ -471,7 +471,7 @@ export class RepCounter {
     const bounds = {
       battle_rope:      { min: 0.4,  max: 3.0 },  // Fast: 14 reps/10s = 0.71s/rep
       bench_press:      { min: 0.8,  max: 4.0 },  // 1.0-2.0s typical
-      bicep_curl:       { min: 0.8,  max: 4.0 },  // 1.5-3.0s typical
+      bicep_curl:       { min: 1.0,  max: 4.0 },  // 1.5-3.0s typical; raised min to prevent half-period detection
       hammer_curl:      { min: 0.8,  max: 4.0 },
       squat:            { min: 0.8,  max: 4.0 },  // 1.2-1.7s typical
       goblet_squat:     { min: 0.8,  max: 4.0 },
@@ -572,25 +572,32 @@ export class RepCounter {
     // YIN rule: find the first local minimum of CMNDF below threshold
     // within the exercise's valid rep-rate range. The CMNDF's structure
     // guarantees the first dip is the fundamental, not a harmonic.
-    const yinThreshold = 0.25;
+    const yinThreshold = 0.35;
     let bestLag = 0;
     let bestCmndf = Infinity;
 
-    // Primary: first dip below threshold (YIN's core rule)
-    for (let tau = minLag; tau <= W; tau++) {
-      if (cmndf[tau] < yinThreshold) {
-        // Walk to the bottom of this dip
-        while (tau + 1 <= W && cmndf[tau + 1] < cmndf[tau]) {
-          tau++;
+    // Primary: collect ALL local minima below threshold in the valid range,
+    // then pick the one with the deepest (lowest) CMNDF value.
+    // The original YIN "first dip" rule often picks harmonics at 2x the true
+    // period because the CMNDF normalization doesn't reliably suppress them
+    // at small multiples. Taking the global minimum is more robust.
+    const candidates = [];
+    for (let tau = minLag + 1; tau < W; tau++) {
+      if (cmndf[tau] <= cmndf[tau - 1] && cmndf[tau] <= cmndf[tau + 1]) {
+        if (cmndf[tau] < yinThreshold) {
+          candidates.push({ lag: tau, val: cmndf[tau] });
         }
-        bestLag = tau;
-        bestCmndf = cmndf[tau];
-        break;
       }
+    }
+    if (candidates.length > 0) {
+      // Pick deepest dip
+      candidates.sort((a, b) => a.val - b.val);
+      bestLag = candidates[0].lag;
+      bestCmndf = candidates[0].val;
     }
 
     // Fallback: if no dip below threshold (noisy signal), pick the
-    // deepest local minimum in the valid range
+    // deepest local minimum in the valid range regardless of threshold
     if (bestLag === 0) {
       for (let tau = minLag + 1; tau < W; tau++) {
         if (cmndf[tau] <= cmndf[tau - 1] && cmndf[tau] <= cmndf[tau + 1]) {
@@ -614,25 +621,32 @@ export class RepCounter {
 
     if (bestLag === 0) return { reps: 0, confidence: 0, periodFrames: 0 };
 
-    // Sub-harmonic refinement: if bestLag came from fallback (deepest min),
-    // it might be at 2x or 3x the true period. Check if bestLag/2 or
-    // bestLag/3 also has a strong CMNDF dip (below yinThreshold).
-    // Only fires when a shorter period has strong independent evidence.
-    if (bestCmndf >= yinThreshold) {
-      // bestLag was selected by fallback, not by primary YIN rule
-      for (const divisor of [2, 3]) {
+    // Sub-harmonic refinement: bestLag might be at 2x, 3x, or 4x the true
+    // period. This happens on BOTH the primary YIN path (first dip below
+    // threshold is a harmonic, not the fundamental) and the fallback path.
+    //
+    // Check bestLag/2, /3, /4 for a CMNDF dip. Accept if the sub-period
+    // has a dip below a relaxed threshold (sub-harmonics may be weaker
+    // than the harmonic that was found first).
+    {
+      // Sub-harmonic check with wider window and relaxed threshold.
+      // Z-axis signals (bench press, push-up) have lower SNR, producing
+      // CMNDF dips at 0.55-0.65 for valid sub-periods. The window must
+      // be ±10% of subLag (min 3 frames) because exact integer rounding
+      // of bestLag/divisor often misses the actual dip by 3-5 frames.
+      const subThreshold = 0.65;
+      for (const divisor of [2, 3, 4]) {
         const subLag = Math.round(bestLag / divisor);
         if (subLag < minLag || subLag > W) continue;
-        // Search ±1 frame around the expected sub-harmonic position
+        const window = Math.max(3, Math.round(subLag * 0.1));
         let subMin = Infinity, subIdx = subLag;
-        for (let t = Math.max(minLag, subLag - 1); t <= Math.min(W, subLag + 1); t++) {
+        for (let t = Math.max(minLag, subLag - window); t <= Math.min(W, subLag + window); t++) {
           if (cmndf[t] < subMin) { subMin = cmndf[t]; subIdx = t; }
         }
-        // Only switch if the sub-period has a strong dip (below YIN threshold)
-        if (subMin < yinThreshold) {
+        if (subMin < subThreshold) {
           bestLag = subIdx;
           bestCmndf = subMin;
-          break; // prefer shortest valid sub-harmonic
+          break;
         }
       }
     }
@@ -649,12 +663,66 @@ export class RepCounter {
       }
     }
 
-    const reps = Math.round(N / bestLag);
+    let reps = Math.round(N / bestLag);
     const durationSec = N / this._fps;
     const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
 
     if (reps < 1 || reps > maxReasonableReps) {
       return { reps: 0, confidence: 0, periodFrames: 0 };
+    }
+
+    // Peak-counting cross-check: when YIN finds very few reps,
+    // count actual peaks (local maxima above the signal's midpoint) and
+    // zero-crossings as independent evidence. If peak counting finds
+    // significantly more reps, YIN likely locked onto a harmonic.
+    // Fire peak-counting check when reps are low enough that period-doubling
+    // could have occurred (i.e., the true count could be 2x what YIN found)
+    if (reps <= Math.max(4, Math.floor(maxReasonableReps / 2)) && N > 20) {
+      const mean = signal.reduce((a, b) => a + b, 0) / N;
+
+      // Method 1: Zero-crossing count
+      let crossings = 0;
+      for (let i = 1; i < N; i++) {
+        if ((signal[i - 1] - mean) * (signal[i] - mean) < 0) crossings++;
+      }
+      const zcReps = Math.round(crossings / 2);
+
+      // Method 2: Peak counting (local maxima above mean + 20% of range)
+      const mid = mean + sigRange * 0.2;
+      let peakCount = 0;
+      const minPeakDist = minLag; // minimum frames between peaks
+      let lastPeakIdx = -minPeakDist;
+      for (let i = 2; i < N - 2; i++) {
+        if (signal[i] > mid &&
+            signal[i] >= signal[i - 1] && signal[i] >= signal[i + 1] &&
+            signal[i] >= signal[i - 2] && signal[i] >= signal[i + 2] &&
+            (i - lastPeakIdx) >= minPeakDist) {
+          peakCount++;
+          lastPeakIdx = i;
+        }
+      }
+
+      // Take the estimate that is closest to the other (consensus of two methods)
+      // but only if both find more than YIN
+      const peakReps = (Math.abs(zcReps - peakCount) <= 2)
+        ? Math.round((zcReps + peakCount) / 2)
+        : Math.max(zcReps, peakCount);
+
+      if (peakReps >= reps + 2 && peakReps <= maxReasonableReps) {
+        const peakLag = Math.round(N / peakReps);
+        if (peakLag >= minLag && peakLag <= W) {
+          const pw = Math.max(3, Math.round(peakLag * 0.15));
+          let peakCmndf = Infinity;
+          for (let t = Math.max(minLag, peakLag - pw); t <= Math.min(W, peakLag + pw); t++) {
+            if (cmndf[t] < peakCmndf) peakCmndf = cmndf[t];
+          }
+          if (peakCmndf < 0.92) {
+            reps = peakReps;
+            bestLag = N / peakReps;
+            bestCmndf = peakCmndf;
+          }
+        }
+      }
     }
 
     // Confidence: 1 - CMNDF value (lower CMNDF = stronger periodicity)

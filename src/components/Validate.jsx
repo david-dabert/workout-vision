@@ -332,6 +332,11 @@ export default function Validate({ onClose }) {
         repHistory,
         bioAnalysis,
         diagnostics: finalCounter.diagnostics || null,
+        // Cache landmarks for offline replay benchmarking
+        _landmarkCache: {
+          fps: analysisFps,
+          landmarks: frames.map(f => f.landmarks),
+        },
       };
     } finally {
       if (isObjectUrl) URL.revokeObjectURL(url);
@@ -374,6 +379,7 @@ export default function Validate({ onClose }) {
         analysisTime: result.analysisTime || '?',
         error: result.error || null,
         diagnostics: result.diagnostics,
+        _landmarkCache: result._landmarkCache || null,
       };
 
       allResults.push(entry);
@@ -404,6 +410,26 @@ export default function Validate({ onClose }) {
       a.download = `benchmark-${new Date().toISOString().slice(0, 16).replace(':', '')}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
+
+      // Also export landmark cache for offline replay benchmarking.
+      // This allows running the counting algorithm without MediaPipe.
+      const landmarkCache = allResults
+        .filter(r => r._landmarkCache)
+        .map(r => ({
+          video: r.name,
+          exercise: r.detectedExercise || r.expectedExercise,
+          expected: r.expectedReps,
+          fps: r._landmarkCache.fps,
+          landmarks: r._landmarkCache.landmarks,
+        }));
+      if (landmarkCache.length > 0) {
+        const cacheBlob = new Blob([JSON.stringify(landmarkCache)], { type: 'application/json' });
+        const ca = document.createElement('a');
+        ca.href = URL.createObjectURL(cacheBlob);
+        ca.download = `landmark-cache-${new Date().toISOString().slice(0, 16).replace(':', '')}.json`;
+        ca.click();
+        URL.revokeObjectURL(ca.href);
+      }
     }
   }, [tests, analyzeOne]);
 
