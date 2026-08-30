@@ -929,6 +929,77 @@ function ResultCard({ result, onReplay }) {
         </div>
       </div>
 
+      {/* Progression Score (from convergence ProgressionScore engine) */}
+      {result.diagnostics?.progression && result.diagnostics.progression.score > 0 && (() => {
+        const prog = result.diagnostics.progression;
+        const gradeColor = prog.score >= 750 ? 'var(--accent)' : prog.score >= 500 ? 'var(--yellow)' : 'var(--red)';
+        return (
+          <div style={{ marginTop: 14, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0,245,212,0.06), rgba(0,245,212,0.02))', borderRadius: 10, border: '1px solid rgba(0,245,212,0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>Progression Score</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: gradeColor }}>{prog.score}</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: gradeColor }}>{prog.grade.label}</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{prog.grade.title}</span>
+              <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>Top {100 - prog.percentile}%</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
+              {[
+                { label: 'Form', val: prog.components.form, max: 250 },
+                { label: 'Consistency', val: prog.components.consistency, max: 200 },
+                { label: 'Tempo', val: prog.components.tempo, max: 150 },
+                { label: 'Power', val: prog.components.power, max: 150 },
+              ].map(c => (
+                <div key={c.label} style={{ textAlign: 'center' }}>
+                  <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
+                    <div style={{ width: `${(c.val / c.max) * 100}%`, height: '100%', borderRadius: 2, background: gradeColor, transition: 'width 0.5s' }} />
+                  </div>
+                  <span style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>{c.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Tempo & Velocity (from convergence VelocityEngine) */}
+      {result.diagnostics?.velocity && (() => {
+        const vel = result.diagnostics.velocity;
+        return (
+          <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
+            {vel.fatigue && (
+              <div className="stat-card">
+                <span className="stat-card-label">FATIGUE</span>
+                <span className="stat-card-value" style={{ color: vel.fatigue.detected ? 'var(--red)' : 'var(--accent)' }}>
+                  {vel.fatigue.detected ? `${Math.round(vel.fatigue.decay * 100)}%` : 'OK'}
+                </span>
+              </div>
+            )}
+            {vel.power && vel.power.peakW > 0 && (
+              <div className="stat-card">
+                <span className="stat-card-label">PEAK POWER</span>
+                <span className="stat-card-value">{vel.power.peakW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
+              </div>
+            )}
+            {vel.power && vel.power.meanW > 0 && (
+              <div className="stat-card">
+                <span className="stat-card-label">AVG POWER</span>
+                <span className="stat-card-value">{vel.power.meanW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
+              </div>
+            )}
+            {vel.smoothness != null && (
+              <div className="stat-card">
+                <span className="stat-card-label">SMOOTHNESS</span>
+                <span className="stat-card-value">{Math.round(vel.smoothness * 100)}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>%</span></span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Coaching Insight */}
       {coachingInsight && (
         <div className="coaching-card">
@@ -1151,6 +1222,9 @@ function ResultCard({ result, onReplay }) {
           <div>{t('diag_range')}: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
           <div>{t('diag_min_rom')}: {result.diagnostics.minROM}&deg;</div>
           <div>{t('diag_frames')}: {result.diagnostics.totalFrames} | {t('diag_method')}: {result.diagnostics.method}</div>
+          {result.diagnostics.anthropometrics?.calibrated && result.diagnostics.anthropometrics.bodyType && (
+            <div>Body: {result.diagnostics.anthropometrics.bodyType.torsoType} torso, {result.diagnostics.anthropometrics.bodyType.femurType} femurs, {result.diagnostics.anthropometrics.bodyType.armType} arms | Symmetry: {(result.diagnostics.anthropometrics.bodyType.symmetryIndex * 100).toFixed(0)}%</div>
+          )}
         </div>
       )}
 

@@ -16,6 +16,7 @@ import { shouldSkipCheck } from './injuries';
 import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
 import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
+import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -68,6 +69,7 @@ export class RepCounter {
     this._fps = opts.fps || 30;
     this._userInjuries = opts.userInjuries || [];
     this._weightKg = opts.weightKg || 0;
+    this._anthropometricNormalizer = new AnthropometricNormalizer();
     this.reset();
   }
 
@@ -125,6 +127,11 @@ export class RepCounter {
     if (value < this._observedMin) this._observedMin = value;
     if (value > this._observedMax) this._observedMax = value;
     this._collectedLandmarks.push(landmarks);
+
+    // Anthropometric calibration from first frames
+    if (!this._anthropometricNormalizer.isCalibrated) {
+      this._anthropometricNormalizer.addFrame(landmarks);
+    }
 
     // Live hysteresis counting (unchanged — best-effort for real-time)
     const down = ex.downThreshold;
@@ -298,6 +305,9 @@ export class RepCounter {
       acf: this._acfDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,
+      anthropometrics: this._anthropometricNormalizer.isCalibrated
+        ? { calibrated: true, bodyType: this._anthropometricNormalizer.getBodyType(), profile: this._anthropometricNormalizer.profile }
+        : { calibrated: false },
     };
   }
 
@@ -475,7 +485,22 @@ export class RepCounter {
           }
 
           const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
-          return { name: fc.name, passed: failRate < 0.30, bad: fc.bad, severity: fc.severity };
+          let passed = failRate < 0.30;
+
+          // Anthropometric adjustment for finalized form history
+          if (!passed && this._anthropometricNormalizer.isCalibrated) {
+            const bodyType = this._anthropometricNormalizer.getBodyType();
+            if (bodyType) {
+              if ((fc.name === 'Depth' || fc.name === 'depth') && bodyType.femurType === 'long') {
+                passed = failRate < 0.50; // Relax threshold for long femurs
+              }
+              if ((fc.name === 'Trunk angle' || fc.name === 'trunk_angle') && bodyType.torsoType === 'short') {
+                passed = failRate < 0.50; // Relax threshold for short torsos
+              }
+            }
+          }
+
+          return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
         });
 
         const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
@@ -525,7 +550,23 @@ export class RepCounter {
 
   _evaluateForm(angles, landmarks) {
     return this._exercise.formChecks.map((fc) => {
-      const passed = fc.check(angles, landmarks);
+      let passed = fc.check(angles, landmarks);
+
+      // Anthropometric adjustment: relax certain checks for extreme body proportions
+      if (!passed && this._anthropometricNormalizer.isCalibrated) {
+        const bodyType = this._anthropometricNormalizer.getBodyType();
+        if (bodyType) {
+          // Long femurs: relax depth checks (they reach parallel at a wider knee angle)
+          if ((fc.name === 'Depth' || fc.name === 'depth') && bodyType.femurType === 'long') {
+            passed = true; // Long femurs pass depth at wider angles than the 90-degree standard
+          }
+          // Short torso: relax trunk angle checks (more forward lean is biomechanically necessary)
+          if ((fc.name === 'Trunk angle' || fc.name === 'trunk_angle') && bodyType.torsoType === 'short') {
+            passed = true; // Short torso requires more forward lean
+          }
+        }
+      }
+
       return {
         name: fc.name,
         passed,

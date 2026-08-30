@@ -8,6 +8,7 @@ import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { saveWorkout } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { repCompleteSound, setCompleteSound, warmUpAudio } from '../lib/audio';
+import { sonicEngine } from '../lib/SonicEngine';
 import { estimateCaloriesBurned } from '../lib/nutrition';
 import { useT, tModule } from '../lib/LanguageContext';
 
@@ -45,6 +46,8 @@ export default function LiveCamera({ onClose }) {
   const lastVoiceCueRef = useRef(0);
   // Lock language at session mount — prevents bilingual voice cues mid-workout
   const sessionLangRef = useRef(lang);
+  const aiLockOnFiredRef = useRef(false);
+  const prevPhaseRef = useRef('');
 
   const [status, setStatus] = useState('loading');
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -228,6 +231,11 @@ export default function LiveCamera({ onClose }) {
       const landmarks = selectSubjectPose(result.landmarks);
       lastValidPoseRef.current = landmarks;
       confidenceDecayRef.current = 1.0;
+      // AI lock-on sound: fires once when first skeleton is detected
+      if (!aiLockOnFiredRef.current) {
+        aiLockOnFiredRef.current = true;
+        sonicEngine.aiLockOn();
+      }
       // Lite mode: skip skeleton drawing to save GPU, keep rep counting
       if (!liteMode) {
         drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0);
@@ -251,10 +259,38 @@ export default function LiveCamera({ onClose }) {
           setPhase(state.phase || '');
           setAngle(Math.round(state.angle || 0));
           if (state.formFeedback) setFeedback(state.formFeedback);
+
+          // Sonic: phase transition sounds
+          if (state.phase && state.phase !== prevPhaseRef.current) {
+            if (state.phase === 'concentric' || state.phase === 'up') {
+              sonicEngine.concentricStart();
+            } else if (state.phase === 'eccentric' || state.phase === 'down') {
+              sonicEngine.eccentricStart();
+            }
+            prevPhaseRef.current = state.phase;
+          }
+
           if (state.repCompleted && state.repHistory) {
-            repCompleteSound();
+            // Sonic: rep complete with escalating pitch
+            sonicEngine.repComplete(state.reps);
+            repCompleteSound(); // Keep legacy sound as fallback
             const latest = state.repHistory[state.repHistory.length - 1];
             setRepBars(prev => [...prev, latest?.score ?? null]);
+
+            // Sonic: milestone every 5 reps
+            if (state.reps > 0 && state.reps % 5 === 0) {
+              sonicEngine.milestone(state.reps);
+            }
+
+            // Sonic: form quality feedback
+            if (latest?.score != null) {
+              if (latest.score >= 80) {
+                sonicEngine.formGood();
+              } else if (latest.score < 50) {
+                sonicEngine.formWarning();
+              }
+            }
+
             if (voiceCoach) speak(`${state.reps}`, sessionLangRef.current);
           }
 
@@ -346,6 +382,8 @@ export default function LiveCamera({ onClose }) {
 
     const counter = repCounterRef.current;
     if (counter && reps > 0) {
+      sonicEngine.setComplete();
+      sonicEngine.resetSet();
       setCompleteSound();
       const duration = startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 1000) : 0;
       const repHistory = counter.repHistory || [];
