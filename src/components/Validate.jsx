@@ -383,6 +383,28 @@ export default function Validate({ onClose }) {
 
     setCurrentIdx(-1);
     setRunning(false);
+
+    // Auto-export report on completion so user can start and walk away
+    const scored = allResults.filter(r => r.repAccuracy !== null && !r.error);
+    if (scored.length > 0) {
+      const exactMatch = scored.filter(r => r.repError === 0).length;
+      const withinOne = scored.filter(r => Math.abs(r.repError) <= 1).length;
+      const mae = (scored.reduce((s, r) => s + Math.abs(r.repError), 0) / scored.length).toFixed(2);
+      const avgAcc = Math.round(scored.reduce((s, r) => s + r.repAccuracy, 0) / scored.length);
+      const report = {
+        date: new Date().toISOString(),
+        device: navigator.userAgent,
+        benchmark: 'Countix-43',
+        summary: { testsRun: allResults.length, testsScored: scored.length, avgAccuracy: avgAcc, exactMatch, withinOne, mae: parseFloat(mae), oboAccuracy: Math.round((withinOne / scored.length) * 100) },
+        results: allResults.map(r => ({ video: r.name, expected: r.expectedReps, actual: r.actualReps, error: r.repError, method: r.diagnostics?.method, exercise: r.detectedExercise })),
+      };
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `benchmark-${new Date().toISOString().slice(0, 16).replace(':', '')}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
   }, [tests, analyzeOne]);
 
   // Aggregate stats

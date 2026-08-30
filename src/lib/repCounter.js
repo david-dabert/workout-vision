@@ -486,25 +486,24 @@ export class RepCounter {
       acf[k] = (sum / (N - k)) / (energy / N);
     }
 
-    // Step 3: Find ALL significant peaks, then pick the best
-    // Use exercise-specific minimum period to avoid harmonics
+    // Step 3: Peak detection and selection
+    // Principled approach: collect peaks, score each by ACF strength,
+    // pick the strongest among those giving reasonable rep counts.
     const minPeriodSec = RepCounter._minPeriod(this._exerciseKey);
     const minLagFrames = Math.max(2, Math.round(this._fps * minPeriodSec));
     const maxLagFrames = Math.min(maxLag - 1, Math.round(this._fps * 6.0));
+    const durationSec = N / this._fps;
+    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
 
-    // First, find where ACF drops below 0.3 (initial descent from lag-0)
-    let searchStart = minLagFrames;
-    for (let k = 1; k < minLagFrames; k++) {
-      if (acf[k] < 0.3) { searchStart = k; break; }
-    }
-    searchStart = Math.max(searchStart, minLagFrames);
-
-    // Collect ALL peaks above minimum threshold
+    // Collect local maxima above noise floor (0.15 threshold filters jitter)
     const peaks = [];
-    for (let k = searchStart; k <= maxLagFrames; k++) {
+    for (let k = minLagFrames; k <= maxLagFrames; k++) {
       if (k > 0 && k < maxLag - 1 && acf[k] > acf[k - 1] && acf[k] >= acf[k + 1]) {
-        if (acf[k] > 0.05) {
-          peaks.push({ lag: k, val: acf[k] });
+        if (acf[k] > 0.15) {
+          const reps = Math.round(N / k);
+          if (reps >= 1 && reps <= maxReasonableReps) {
+            peaks.push({ lag: k, val: acf[k], reps });
+          }
         }
       }
     }
@@ -513,63 +512,30 @@ export class RepCounter {
       return { reps: 0, confidence: 0, periodFrames: 0 };
     }
 
-    // Pick the first peak (shortest period above minPeriod).
-    // The minPeriod filter already prevents sub-cycle detection. No separate
-    // harmonic filter — it was systematically halving counts across battle rope
-    // (3/14), bench press (2/5, 3/6), and front raise (3/7, 3/6) by promoting
-    // the true period to 2x. The highest-peak fallback below handles legitimate
-    // cases where a longer period has a genuinely stronger ACF value.
-    let bestPeak = peaks[0];
-    const durationSec = N / this._fps;
+    // Pick the peak with the highest ACF value (strongest periodicity).
+    // This is more robust than picking the first/shortest peak, which
+    // catches noise sub-harmonics (caused battle_rope 20/9 overcounts).
+    const bestPeak = peaks.reduce((a, b) => b.val > a.val ? b : a, peaks[0]);
 
-    // If the highest-value peak is significantly stronger (1.5x) and gives a
-    // reasonable count, prefer it. This catches cases where the first peak is
-    // noise and a later peak is the true fundamental.
-    const highestPeak = peaks.reduce((a, b) => b.val > a.val ? b : a, peaks[0]);
-    if (highestPeak.lag !== bestPeak.lag) {
-      const bestReps = Math.round(N / bestPeak.lag);
-      const highestReps = Math.round(N / highestPeak.lag);
-      const bestReasonable = bestReps >= 1 && bestReps <= Math.ceil(durationSec / minPeriodSec);
-      const highestReasonable = highestReps >= 1 && highestReps <= Math.ceil(durationSec / minPeriodSec);
-      if (highestReasonable && !bestReasonable) {
-        bestPeak = highestPeak;
-      } else if (highestReasonable && bestReasonable && highestPeak.val > bestPeak.val * 1.5) {
-        bestPeak = highestPeak;
-      }
-    }
-
-    const bestLag = bestPeak.lag;
     let bestVal = bestPeak.val;
 
-    if (bestLag === 0 || bestVal < 0.05) {
-      return { reps: 0, confidence: 0, periodFrames: 0 };
-    }
-
-    // Step 4: Count = duration / period
-    const reps = Math.round(N / bestLag);
-
-    // Step 5: Sanity clamp — max 1 rep per minimum period
-    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
-    const clampedReps = Math.min(reps, maxReasonableReps);
-
-    // Step 6: Narrow-ROM penalty — only for angle signals (measured in degrees).
-    // Position signals (Y, Z) are in normalized 0-1 coords; distance signals are
-    // in 3D units. Their ranges are naturally small (0.05-0.3) and would be
-    // falsely penalized by degree-based thresholds.
+    // Narrow-ROM penalty — only for angle signals (measured in degrees).
+    // Position/distance signals use normalized coords; penalizing them
+    // destroyed bench_press Z-signals.
     if (RepCounter._isAngleSignal(signalName)) {
       if (sigRange < 20) {
-        bestVal *= 0.3;  // Heavy penalty for < 20° range
+        bestVal *= 0.3;
       } else if (sigRange < 40) {
-        bestVal *= 0.6;  // Moderate penalty for 20-40° range
+        bestVal *= 0.6;
       } else if (sigRange < 60) {
-        bestVal *= 0.85; // Light penalty for 40-60° range
+        bestVal *= 0.85;
       }
     }
 
     return {
-      reps: clampedReps,
+      reps: bestPeak.reps,
       confidence: Math.min(1, bestVal),
-      periodFrames: bestLag,
+      periodFrames: bestPeak.lag,
     };
   }
 
