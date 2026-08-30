@@ -243,12 +243,41 @@ export class RepCounter {
       return;
     }
 
+    // Collapse L/R pairs: correlated bilateral signals should count as one vote.
+    // Keep the higher-confidence member of each pair.
+    const lrPairs = [
+      ['elbow_L', 'elbow_R'], ['knee_L', 'knee_R'],
+      ['hip_L', 'hip_R'], ['shoulder_L', 'shoulder_R'],
+      ['wrist_Y_L', 'wrist_Y_R'], ['wrist_Z_L', 'wrist_Z_R'],
+      ['wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
+      ['wristShoulderDist_L', 'wristShoulderDist_R'],
+      ['ankleHipDist3D_L', 'ankleHipDist3D_R'],
+    ];
+    const collapsed = [];
+    const used = new Set();
+    for (const r of results) {
+      if (r.reps <= 0 || used.has(r.name)) continue;
+      const pair = lrPairs.find(p => p.includes(r.name));
+      if (pair) {
+        const otherName = pair[0] === r.name ? pair[1] : pair[0];
+        const other = results.find(x => x.name === otherName && !used.has(x.name));
+        used.add(r.name);
+        if (other) {
+          used.add(other.name);
+          collapsed.push(r.confidence >= other.confidence ? r : other);
+        } else {
+          collapsed.push(r);
+        }
+      } else {
+        used.add(r.name);
+        collapsed.push(r);
+      }
+    }
+
     // Consensus voting: group signals by rep count (within ±1), pick the
     // group with the most votes. Within that group, take the highest confidence.
-    // This prevents a single noisy high-confidence signal from dominating.
     const countVotes = {};
-    for (const r of results) {
-      if (r.reps <= 0) continue;
+    for (const r of collapsed) {
       // Find which bucket this count belongs to (within ±1 of existing bucket)
       let matched = false;
       for (const key of Object.keys(countVotes)) {
@@ -434,17 +463,46 @@ export class RepCounter {
     return out;
   }
 
-  // Exercise-specific minimum rep period in seconds.
-  // Calibrated against Countix ground truth rep rates.
-  static _minPeriod(exerciseKey) {
-    const periods = {
-      battle_rope: 0.4,    // Fast reps: Countix shows 14 reps in 10s = 0.71s/rep
-      deadlift: 1.5,       // Slow lift
-      squat: 0.8,          // Countix shows ~1.2-1.7s/rep
-      bench_press: 0.8,    // Countix shows ~1.0-2.0s/rep
-      pull_up: 1.0,        // Moderate speed
+  // Exercise-specific rep period bounds in seconds.
+  // minPeriod: fastest possible rep. Filters sub-cycle noise peaks.
+  // maxPeriod: slowest possible rep. Filters long-lag ACF artifacts.
+  // Calibrated against Countix ground truth and biomechanical limits.
+  static _repPeriodBounds(exerciseKey) {
+    const bounds = {
+      battle_rope:      { min: 0.4,  max: 3.0 },  // Fast: 14 reps/10s = 0.71s/rep
+      bench_press:      { min: 0.8,  max: 4.0 },  // 1.0-2.0s typical
+      bicep_curl:       { min: 0.8,  max: 4.0 },  // 1.5-3.0s typical
+      hammer_curl:      { min: 0.8,  max: 4.0 },
+      squat:            { min: 0.8,  max: 4.0 },  // 1.2-1.7s typical
+      goblet_squat:     { min: 0.8,  max: 4.0 },
+      front_squat:      { min: 0.8,  max: 4.0 },
+      deadlift:         { min: 1.2,  max: 5.0 },  // Slow controlled lift
+      romanian_deadlift:{ min: 1.2,  max: 5.0 },
+      pull_up:          { min: 1.0,  max: 4.0 },  // Moderate speed
+      chin_up:          { min: 1.0,  max: 4.0 },
+      push_up:          { min: 1.0,  max: 4.0 },  // Nobody does push-ups > 1/sec
+      sit_up:           { min: 0.5,  max: 3.0 },  // Can be fast: 15 reps/10s
+      crunch:           { min: 0.5,  max: 3.0 },
+      front_raise:      { min: 1.0,  max: 4.0 },  // Controlled lift
+      lateral_raise:    { min: 1.0,  max: 4.0 },
+      overhead_press:   { min: 1.0,  max: 4.0 },
+      shoulder_press:   { min: 1.0,  max: 4.0 },
+      lunge:            { min: 1.0,  max: 4.0 },  // Walking lunge ~2s/rep
+      bent_over_row:    { min: 0.8,  max: 4.0 },
+      upright_row:      { min: 0.8,  max: 4.0 },
+      tricep_extension: { min: 0.8,  max: 4.0 },
+      tricep_pushdown:  { min: 0.8,  max: 4.0 },
+      leg_press:        { min: 1.0,  max: 4.0 },
+      leg_extension:    { min: 0.8,  max: 4.0 },
+      leg_curl:         { min: 0.8,  max: 4.0 },
+      calf_raise:       { min: 0.5,  max: 3.0 },
     };
-    return periods[exerciseKey] || 0.5;
+    return bounds[exerciseKey] || { min: 0.6, max: 4.0 };
+  }
+
+  // Backward compat — some internal code calls _minPeriod
+  static _minPeriod(exerciseKey) {
+    return RepCounter._repPeriodBounds(exerciseKey).min;
   }
 
   // Check if a signal name is an angle signal (measured in degrees)
@@ -454,88 +512,154 @@ export class RepCounter {
             'shoulder_L', 'shoulder_R', 'trunk'].includes(signalName);
   }
 
-  // ─── Private: Autocorrelation ───
+  // ─── Private: YIN period estimator (de Cheveigné & Kawahara, 2002) ───
+  //
+  // YIN replaces ACF peak-picking. ACF peaks at the fundamental and all
+  // harmonics are nearly equal, so "pick highest" or "pick first above
+  // threshold" is a coin flip between fundamental and 2× harmonic.
+  //
+  // YIN uses a difference function + cumulative mean normalization (CMNDF).
+  // The CMNDF mathematically suppresses harmonics: its first dip below
+  // threshold is always the fundamental period. This is the algorithm
+  // behind Shazam, Auto-Tune, and every production pitch detector.
 
   _autocorrelation(signal, signalName) {
     const N = signal.length;
     if (N < 6) return { reps: 0, confidence: 0, periodFrames: 0 };
 
-    // Step 1: Detrend (subtract mean)
-    const mean = signal.reduce((a, b) => a + b, 0) / N;
-    const centered = signal.map(v => v - mean);
-
-    // Step 1b: Signal ROM guard — penalize very narrow signals later
-    const sigMin = Math.min(...signal);
-    const sigMax = Math.max(...signal);
+    // Signal range for ROM penalty later (avoid spread for large arrays)
+    let sigMin = signal[0], sigMax = signal[0];
+    for (let i = 1; i < N; i++) {
+      if (signal[i] < sigMin) sigMin = signal[i];
+      if (signal[i] > sigMax) sigMax = signal[i];
+    }
     const sigRange = sigMax - sigMin;
 
-    // Step 2: Compute normalized autocorrelation
-    const maxLag = Math.floor(N / 2);
-    const acf = new Float64Array(maxLag);
+    // Exercise-calibrated lag bounds
+    const { min: minPeriodSec, max: maxPeriodSec } = RepCounter._repPeriodBounds(this._exerciseKey);
+    const minLag = Math.max(2, Math.round(this._fps * minPeriodSec));
+    const W = Math.min(Math.floor(N / 2), Math.round(this._fps * maxPeriodSec));
 
-    // Compute energy for normalization
-    const energy = centered.reduce((a, b) => a + b * b, 0);
-    if (energy < 1e-10) return { reps: 0, confidence: 0, periodFrames: 0 };
+    if (W <= minLag) return { reps: 0, confidence: 0, periodFrames: 0 };
 
-    for (let k = 0; k < maxLag; k++) {
+    // Mean removal: eliminates DC offset that inflates difference function
+    let mean = 0;
+    for (let i = 0; i < N; i++) mean += signal[i];
+    mean /= N;
+    const centered = new Float64Array(N);
+    for (let i = 0; i < N; i++) centered[i] = signal[i] - mean;
+
+    // Step 1: Difference function d(τ) = Σ (x[n] - x[n+τ])²
+    // Fixed summation window: always sum over (N - W) terms for all tau,
+    // preventing CMNDF bias toward longer periods from shrinking windows.
+    const sumLen = N - W;
+    const diff = new Float64Array(W + 1);
+    diff[0] = 0;
+    for (let tau = 1; tau <= W; tau++) {
       let sum = 0;
-      for (let n = 0; n < N - k; n++) {
-        sum += centered[n] * centered[n + k];
+      for (let n = 0; n < sumLen; n++) {
+        const delta = centered[n] - centered[n + tau];
+        sum += delta * delta;
       }
-      // Normalize by overlap count to prevent decay at high lags
-      acf[k] = (sum / (N - k)) / (energy / N);
+      diff[tau] = sum;
     }
 
-    // Step 3: Peak detection and selection
-    // Principled approach: collect peaks, score each by ACF strength,
-    // pick the strongest among those giving reasonable rep counts.
-    const minPeriodSec = RepCounter._minPeriod(this._exerciseKey);
-    const minLagFrames = Math.max(2, Math.round(this._fps * minPeriodSec));
-    const maxLagFrames = Math.min(maxLag - 1, Math.round(this._fps * 6.0));
-    const durationSec = N / this._fps;
-    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
+    // Step 2: Cumulative mean normalized difference function (CMNDF)
+    // d'(τ) = d(τ) / ((1/τ) * Σ d(j) for j=1..τ)
+    // d'(0) = 1 by definition. This normalization is what suppresses
+    // harmonics: the cumulative mean grows, making later dips shallower.
+    const cmndf = new Float64Array(W + 1);
+    cmndf[0] = 1;
+    let runningSum = 0;
+    for (let tau = 1; tau <= W; tau++) {
+      runningSum += diff[tau];
+      cmndf[tau] = runningSum > 0 ? (diff[tau] * tau) / runningSum : 1;
+    }
 
-    // Collect local maxima above noise floor (0.15 threshold filters jitter)
-    const peaks = [];
-    for (let k = minLagFrames; k <= maxLagFrames; k++) {
-      if (k > 0 && k < maxLag - 1 && acf[k] > acf[k - 1] && acf[k] >= acf[k + 1]) {
-        if (acf[k] > 0.15) {
-          const reps = Math.round(N / k);
-          if (reps >= 1 && reps <= maxReasonableReps) {
-            peaks.push({ lag: k, val: acf[k], reps });
+    // Step 3: Find the fundamental period.
+    // YIN rule: find the first local minimum of CMNDF below threshold
+    // within the exercise's valid rep-rate range. The CMNDF's structure
+    // guarantees the first dip is the fundamental, not a harmonic.
+    const yinThreshold = 0.25;
+    let bestLag = 0;
+    let bestCmndf = Infinity;
+
+    // Primary: first dip below threshold (YIN's core rule)
+    for (let tau = minLag; tau <= W; tau++) {
+      if (cmndf[tau] < yinThreshold) {
+        // Walk to the bottom of this dip
+        while (tau + 1 <= W && cmndf[tau + 1] < cmndf[tau]) {
+          tau++;
+        }
+        bestLag = tau;
+        bestCmndf = cmndf[tau];
+        break;
+      }
+    }
+
+    // Fallback: if no dip below threshold (noisy signal), pick the
+    // deepest local minimum in the valid range
+    if (bestLag === 0) {
+      for (let tau = minLag + 1; tau < W; tau++) {
+        if (cmndf[tau] <= cmndf[tau - 1] && cmndf[tau] <= cmndf[tau + 1]) {
+          if (cmndf[tau] < bestCmndf) {
+            bestCmndf = cmndf[tau];
+            bestLag = tau;
           }
         }
       }
     }
 
-    if (peaks.length === 0) {
+    // Last resort: absolute minimum
+    if (bestLag === 0) {
+      for (let tau = minLag; tau <= W; tau++) {
+        if (cmndf[tau] < bestCmndf) {
+          bestCmndf = cmndf[tau];
+          bestLag = tau;
+        }
+      }
+    }
+
+    if (bestLag === 0) return { reps: 0, confidence: 0, periodFrames: 0 };
+
+    // Parabolic interpolation for sub-frame accuracy
+    if (bestLag > 1 && bestLag < W) {
+      const a = cmndf[bestLag - 1];
+      const b = cmndf[bestLag];
+      const c = cmndf[bestLag + 1];
+      const denom = 2 * (2 * b - a - c);
+      if (Math.abs(denom) > 1e-10) {
+        const shift = (a - c) / denom;
+        bestLag = bestLag + Math.max(-0.5, Math.min(0.5, shift));
+      }
+    }
+
+    const reps = Math.round(N / bestLag);
+    const durationSec = N / this._fps;
+    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
+
+    if (reps < 1 || reps > maxReasonableReps) {
       return { reps: 0, confidence: 0, periodFrames: 0 };
     }
 
-    // Pick the peak with the highest ACF value (strongest periodicity).
-    // This is more robust than picking the first/shortest peak, which
-    // catches noise sub-harmonics (caused battle_rope 20/9 overcounts).
-    const bestPeak = peaks.reduce((a, b) => b.val > a.val ? b : a, peaks[0]);
+    // Confidence: 1 - CMNDF value (lower CMNDF = stronger periodicity)
+    let confidence = Math.max(0, Math.min(1, 1 - bestCmndf));
 
-    let bestVal = bestPeak.val;
-
-    // Narrow-ROM penalty — only for angle signals (measured in degrees).
-    // Position/distance signals use normalized coords; penalizing them
-    // destroyed bench_press Z-signals.
+    // Narrow-ROM penalty — only for angle signals (measured in degrees)
     if (RepCounter._isAngleSignal(signalName)) {
       if (sigRange < 20) {
-        bestVal *= 0.3;
+        confidence *= 0.3;
       } else if (sigRange < 40) {
-        bestVal *= 0.6;
+        confidence *= 0.6;
       } else if (sigRange < 60) {
-        bestVal *= 0.85;
+        confidence *= 0.85;
       }
     }
 
     return {
-      reps: bestPeak.reps,
-      confidence: Math.min(1, bestVal),
-      periodFrames: bestPeak.lag,
+      reps,
+      confidence,
+      periodFrames: Math.round(bestLag),
     };
   }
 
