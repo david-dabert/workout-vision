@@ -516,13 +516,16 @@ export class RepCounter {
     // Step 3b: Harmonic filtering — if a peak at lag L has a peak near 2L,
     // the shorter peak may be a harmonic (half-cycle). Prefer the longer period
     // if its ACF value is at least 60% of the shorter peak's value.
-    let bestPeak = peaks[0]; // start with first peak (shortest period)
+    // IMPORTANT: Only one promotion step. Chaining (7→14→28→56) caused severe
+    // undercounting on fast exercises like battle rope (3/14 from 7→28 chain).
+    const firstPeak = peaks[0]; // shortest period found
+    let bestPeak = firstPeak;
     for (let i = 1; i < peaks.length; i++) {
-      const ratio = peaks[i].lag / bestPeak.lag;
-      // If this peak is near a harmonic (1.8-2.2x) of the current best,
-      // and it's strong enough, prefer it (it's the fundamental, not the harmonic)
-      if (ratio >= 1.8 && ratio <= 2.2 && peaks[i].val >= bestPeak.val * 0.6) {
+      const ratio = peaks[i].lag / firstPeak.lag;
+      // Compare against FIRST peak only (no chaining). One 2x promotion max.
+      if (ratio >= 1.8 && ratio <= 2.2 && peaks[i].val >= firstPeak.val * 0.6) {
         bestPeak = peaks[i];
+        break; // One promotion only
       }
     }
 

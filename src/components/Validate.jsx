@@ -135,7 +135,7 @@ export default function Validate({ onClose }) {
       const probe = await fetch(testUrl, { method: 'HEAD' });
       if (!probe.ok) throw new Error(`Videos not served. Ensure benchmark/videos/ is in public/ or symlinked.`);
 
-      // Add all videos as URL-based tests
+      // Add all videos as URL-based tests, including rep window offsets
       const newTests = manifest.videos.map(v => ({
         id: Date.now() + Math.random(),
         file: null,
@@ -143,6 +143,8 @@ export default function Validate({ onClose }) {
         name: v.file,
         expectedExercise: v.exercise,
         expectedReps: String(v.reps),
+        repStartOffset: v.rep_start_offset || 0,
+        repEndOffset: v.rep_end_offset || null,
         status: 'pending',
       }));
       setTests(prev => [...prev, ...newTests]);
@@ -188,8 +190,13 @@ export default function Validate({ onClose }) {
       });
       if (!loaded) return { error: 'Video failed to load' };
 
-      const duration = video.duration;
-      if (!duration || !isFinite(duration)) return { error: 'Cannot read duration' };
+      const fullDuration = video.duration;
+      if (!fullDuration || !isFinite(fullDuration)) return { error: 'Cannot read duration' };
+
+      // Use rep window offsets if provided (Countix benchmark specifies where reps occur)
+      const startTime = test.repStartOffset || 0;
+      const endTime = (test.repEndOffset != null && test.repEndOffset > 0) ? Math.min(test.repEndOffset, fullDuration) : fullDuration;
+      const duration = endTime - startTime;
 
       const analysisFps = Math.min(IS_IOS ? 8 : 10, MAX_FRAMES / duration);
       const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
@@ -228,8 +235,8 @@ export default function Validate({ onClose }) {
       const t0 = Date.now();
 
       for (let i = 0; i < totalFrames; i++) {
-        const time = i * interval;
-        if (time >= duration) break;
+        const time = startTime + i * interval;
+        if (time >= endTime) break;
 
         await new Promise((resolve) => {
           video.currentTime = time;
