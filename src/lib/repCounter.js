@@ -1,9 +1,10 @@
 /**
- * Rep counting engine — peak/valley detection on smoothed joint angles.
+ * Rep counting engine — autocorrelation on multi-signal fusion.
  *
  * Architecture:
- * - Pass 1: update() collects landmarks frame-by-frame (live counting optional)
- * - Pass 2: finalize() runs peak/valley detection on the full signal
+ * - Pass 1: update() collects landmarks frame-by-frame (live counting via hysteresis)
+ * - Pass 2: finalize() extracts 11 signals from landmarks, runs autocorrelation
+ *   on each, picks the signal with highest periodicity confidence.
  *
  * The finalize pass is the source of truth for video analysis.
  * Live counting is best-effort for real-time feedback.
@@ -12,9 +13,12 @@
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { shouldSkipCheck } from './injuries';
+import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
+import { VelocityEngine } from './VelocityEngine';
+import { ProgressionScore } from './ProgressionScore';
 
 // ---------------------------------------------------------------------------
-// Utility: moving average smoother
+// Utility: moving average smoother (used by ExerciseAutoDetector)
 // ---------------------------------------------------------------------------
 
 export class AngleBuffer {
@@ -44,6 +48,14 @@ export class AngleBuffer {
 }
 
 // ---------------------------------------------------------------------------
+// Signal priority per exercise — which signals are most reliable
+// Signals matching the exercise get a 30% confidence boost
+// ---------------------------------------------------------------------------
+
+// Signal priority now uses 3D-aware version from SignalExtractor3D
+const SIGNAL_PRIORITY = SIGNAL_PRIORITY_3D;
+
+// ---------------------------------------------------------------------------
 // RepCounter
 // ---------------------------------------------------------------------------
 
@@ -55,9 +67,7 @@ export class RepCounter {
     this._exerciseKey = exerciseKey;
     this._fps = opts.fps || 30;
     this._userInjuries = opts.userInjuries || [];
-    // Smooth ~0.3s of data: at 4fps→1 frame, at 6fps→2, at 30fps→9 (capped at 5)
-    const smoothWindow = Math.min(5, Math.max(1, Math.round(this._fps * 0.3)));
-    this._smoother = new AngleBuffer(smoothWindow);
+    this._weightKg = opts.weightKg || 0;
     this.reset();
   }
 
@@ -67,7 +77,6 @@ export class RepCounter {
   reset() {
     this._reps = 0;
     this._repHistory = [];
-    this._smoother.reset();
     this._phase = 'idle';
     this._collectedLandmarks = [];
     this._observedMin = Infinity;
@@ -75,6 +84,9 @@ export class RepCounter {
     this._finalized = false;
     this._lastRepTime = 0;
     this._frameIdx = 0;
+    this._acfDebug = null;
+    this._velocityAnalysis = null;
+    this._progressionScore = null;
   }
 
   /**
@@ -89,9 +101,6 @@ export class RepCounter {
       };
     }
 
-    // Use RAW angles for getValue — no smoothing before signal extraction.
-    // Smoothing happens once in finalize() on the full signal.
-    // Live hysteresis counting uses raw values for sharper transitions.
     const angles = rawAngles;
     const ex = this._exercise;
 
@@ -117,14 +126,13 @@ export class RepCounter {
     if (value > this._observedMax) this._observedMax = value;
     this._collectedLandmarks.push(landmarks);
 
-    // Live hysteresis counting
+    // Live hysteresis counting (unchanged — best-effort for real-time)
     const down = ex.downThreshold;
     const up = ex.upThreshold;
     let repCompleted = false;
     const now = Date.now();
 
     if (down > up) {
-      // Signal decreases during concentric (curls, squats)
       if (this._phase === 'idle' && value < down) {
         this._phase = 'concentric';
       } else if (this._phase === 'concentric' && value < up) {
@@ -138,7 +146,6 @@ export class RepCounter {
         }
       }
     } else {
-      // Signal increases during concentric (lateral raises)
       if (this._phase === 'idle' && value > down) {
         this._phase = 'concentric';
       } else if (this._phase === 'concentric' && value > up) {
@@ -164,158 +171,119 @@ export class RepCounter {
   }
 
   /**
-   * Pass 2: peak/valley rep detection on the full collected signal.
-   * This is the authoritative count for video analysis.
+   * Pass 2: autocorrelation-based rep counting on multi-signal fusion.
+   * Extracts 11+ signals from collected landmarks, runs autocorrelation
+   * on each, picks the signal with highest periodicity confidence.
    */
   finalize() {
     if (this._finalized) return;
     this._finalized = true;
 
     const ex = this._exercise;
-    if (ex.isIsometric || this._collectedLandmarks.length < 6) return;
+    const N = this._collectedLandmarks.length;
+    if (ex.isIsometric || N < 6) return;
 
-    // Extract the raw signal — no per-frame smoothing here.
-    // _smoothSignal() handles all smoothing in one pass, avoiding
-    // the double-smoothing that flattens peaks at low FPS.
-    const rawSignal = [];
-    const frameData = [];
+    // ── Step 1: Extract all candidate signals ──
+    const signals = this._extractSignals();
 
-    for (let i = 0; i < this._collectedLandmarks.length; i++) {
-      const landmarks = this._collectedLandmarks[i];
-      const angles = extractJointAngles(landmarks);
-      if (!angles) {
-        rawSignal.push(null);
-        frameData.push(null);
-        continue;
+    // ── Step 2: Smooth and run autocorrelation on each ──
+    const results = [];
+    const prioritySignals = SIGNAL_PRIORITY[this._exerciseKey] || [];
+
+    for (const sig of signals) {
+      const valid = sig.values.filter(v => v !== null);
+      if (valid.length < 6) continue;
+
+      // Interpolate nulls for smooth autocorrelation
+      const interpolated = this._interpolateNulls(sig.values);
+      const smoothed = this._gaussianSmooth(interpolated, Math.max(1, Math.round(this._fps * 0.1)));
+      const acf = this._autocorrelation(smoothed);
+
+      if (acf.confidence > 0) {
+        // Exercise-specific priority boost
+        let boostedConfidence = acf.confidence;
+        if (prioritySignals.includes(sig.name)) {
+          boostedConfidence *= 1.3;
+        }
+
+        results.push({
+          name: sig.name,
+          reps: acf.reps,
+          confidence: boostedConfidence,
+          rawConfidence: acf.confidence,
+          periodFrames: acf.periodFrames,
+          periodSeconds: acf.periodFrames / this._fps,
+        });
       }
-      const value = ex.getValue(angles, landmarks);
-      rawSignal.push(value);
-      frameData.push({ angles, landmarks });
     }
 
-    // Single smoothing pass
-    const smoothed = this._smoothSignal(rawSignal);
+    // ── Step 3: Pick best signal ──
+    results.sort((a, b) => b.confidence - a.confidence);
 
-    // Debug: log signal stats
-    const validValues = smoothed.filter(v => v !== null);
-    const sigMin = Math.min(...validValues);
-    const sigMax = Math.max(...validValues);
-    console.debug(`[RepCounter] finalize: ${this._collectedLandmarks.length} frames, signal range ${Math.round(sigMin)}-${Math.round(sigMax)} (${Math.round(sigMax - sigMin)}°)`);
+    const best = results[0];
+    if (!best || best.reps === 0) {
+      console.debug(`[RepCounter] ACF: no periodic signal found across ${signals.length} signals`);
+      // Keep live count as fallback
+      return;
+    }
 
-    // Find peaks and valleys
-    const extrema = this._findExtrema(smoothed);
+    console.debug(
+      `[RepCounter] ACF results:\n` +
+      results.slice(0, 5).map(r =>
+        `  ${r.name}: ${r.reps} reps, conf=${r.rawConfidence.toFixed(2)}${r.confidence !== r.rawConfidence ? ` (boosted ${r.confidence.toFixed(2)})` : ''}, period=${r.periodSeconds.toFixed(2)}s`
+      ).join('\n')
+    );
+    console.debug(`[RepCounter] ACF picked: ${best.name} → ${best.reps} reps (conf=${best.confidence.toFixed(2)}, period=${best.periodSeconds.toFixed(2)}s)`);
 
-    // Count reps from extrema pairs
-    const range = sigMax - sigMin;
-    // Minimum ROM for a rep: 20% of observed range, floor at 10 degrees
-    const minROM = Math.max(10, range * 0.2);
+    this._acfDebug = { allSignals: results, picked: best };
 
-    // Add boundary extrema: if the signal starts or ends far enough from
-    // the first/last detected extremum, treat the boundary as a synthetic
-    // extremum. This catches reps that begin or end at the video edges.
-    if (extrema.length >= 2) {
-      const firstValid = smoothed.findIndex(v => v !== null);
-      const lastValid = smoothed.length - 1 - [...smoothed].reverse().findIndex(v => v !== null);
-      const first = extrema[0];
-      const last = extrema[extrema.length - 1];
+    // ── Step 4: Build rep history with form scores ──
+    this._reps = best.reps;
+    this._repHistory = this._buildFormHistory(best.reps, best.periodFrames);
 
-      // Prepend boundary if it's the opposite type of the first extremum
-      // and has enough ROM from it
-      if (firstValid >= 0 && firstValid < first.index) {
-        const bv = smoothed[firstValid];
-        const diff = Math.abs(bv - first.value);
-        if (diff >= minROM * 0.5) {
-          const bType = (first.type === 'peak') ? 'valley' : 'peak';
-          if ((bType === 'valley' && bv <= first.value) || (bType === 'peak' && bv >= first.value)) {
-            extrema.unshift({ type: bType, index: firstValid, value: bv });
+    // ── Step 5: Velocity analysis (Convergence #2 + #6) ──
+    try {
+      const velocityEngine = new VelocityEngine(this._fps);
+      const bestSignal = signals.find(s => s.name === best.name);
+      if (bestSignal) {
+        const interpolated = this._interpolateNulls(bestSignal.values);
+        const smoothed = this._gaussianSmooth(interpolated, Math.max(1, Math.round(this._fps * 0.1)));
+
+        // Per-rep velocity analysis
+        const repBoundaries = this._repHistory.map(r => ({ startFrame: r.startFrame, endFrame: r.endFrame }));
+        const repVelocities = velocityEngine.analyzePerRep(smoothed, repBoundaries, this._weightKg || 0);
+
+        // Attach velocity data to rep history
+        for (let i = 0; i < this._repHistory.length && i < repVelocities.length; i++) {
+          if (repVelocities[i]) {
+            this._repHistory[i].velocity = repVelocities[i];
           }
         }
+
+        // Full-signal velocity analysis for fatigue detection
+        const fullAnalysis = velocityEngine.analyze(smoothed, this._weightKg || 0);
+        this._velocityAnalysis = {
+          fatigue: fullAnalysis.fatigue,
+          power: fullAnalysis.power,
+          smoothness: fullAnalysis.smoothness,
+        };
+
+        // ── Step 6: Progression score (Convergence #5) ──
+        const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
+        this._progressionScore = ProgressionScore.computeSet({
+          formScores,
+          repVelocities,
+          reps: best.reps,
+          weightKg: this._weightKg || 0,
+        });
+
+        console.debug(
+          `[RepCounter] Velocity: fatigue=${fullAnalysis.fatigue.detected ? 'YES' : 'no'} decay=${fullAnalysis.fatigue.decay}\n` +
+          `[RepCounter] Progression: ${this._progressionScore.breakdown}`
+        );
       }
-
-      // Append boundary if it's the opposite type of the last extremum
-      if (lastValid >= 0 && lastValid > last.index) {
-        const bv = smoothed[lastValid];
-        const diff = Math.abs(bv - last.value);
-        if (diff >= minROM * 0.5) {
-          const bType = (last.type === 'peak') ? 'valley' : 'peak';
-          if ((bType === 'valley' && bv <= last.value) || (bType === 'peak' && bv >= last.value)) {
-            extrema.push({ type: bType, index: lastValid, value: bv });
-          }
-        }
-      }
-    }
-
-    console.debug(`[RepCounter] extrema found: ${extrema.length}`, extrema.map(e => `${e.type}@${e.index}=${Math.round(e.value)}`));
-    console.debug(`[RepCounter] minROM: ${Math.round(minROM)}° (range: ${Math.round(range)}°)`);
-
-    // Reset for pass 2 count
-    this._reps = 0;
-    this._repHistory = [];
-
-    // Full-cycle detection: find triplets a-b-c where a and c are the same
-    // type (both peaks or both valleys) and b is the opposite.
-    // This gives three distinct frame indices per rep: start, bottom, end.
-    // The end of one rep becomes the start of the next (shared boundary).
-    for (let i = 0; i < extrema.length - 2; i++) {
-      const a = extrema[i];
-      const b = extrema[i + 1];
-      const c = extrema[i + 2];
-
-      if (a.type === c.type && a.type !== b.type) {
-        const rom = Math.abs(a.value - b.value);
-        if (rom >= minROM) {
-          this._recordRep(frameData, a.index, b.index, c.index);
-          i++; // next rep starts from c (shared boundary)
-        }
-      }
-    }
-
-    // Aggressive fallback: compare multiple counting methods, pick the best
-    const videoDuration = this._collectedLandmarks.length / this._fps;
-    const expectedReps = Math.round(videoDuration / 4.5); // average human rep ~4.5s
-    const angleReps = this._reps;
-    const angleHistory = [...this._repHistory];
-
-    // Method 2: position-based
-    const savedReps2 = this._reps;
-    const savedHistory2 = [...this._repHistory];
-    this._reps = 0;
-    this._repHistory = [];
-    const posReps = this._countRepsPositionBased(frameData);
-    const posHistory = [...this._repHistory];
-    // Restore
-    this._reps = savedReps2;
-    this._repHistory = savedHistory2;
-
-    // Method 3: count extrema directly (half the alternating extrema = reps)
-    const extremaReps = Math.floor(extrema.length / 2);
-
-    const candidates = [
-      { method: 'angle', reps: angleReps, history: angleHistory },
-      { method: 'position', reps: posReps, history: posHistory },
-      { method: 'extrema', reps: extremaReps, history: null },
-    ];
-
-    // Pick the count closest to expected reps (videoDuration / 4.5s)
-    candidates.sort((a, b) => Math.abs(a.reps - expectedReps) - Math.abs(b.reps - expectedReps));
-    const best = candidates.find(c => c.reps > 0) || candidates[0];
-
-    console.debug(`[RepCounter] methods: angle=${angleReps}, position=${posReps}, extrema=${extremaReps}, expected~${expectedReps}, picked=${best.method}(${best.reps})`);
-
-    if (best.reps !== angleReps && best.reps > 0) {
-      this._reps = best.reps;
-      if (best.history && best.history.length > 0) {
-        this._repHistory = best.history;
-      } else {
-        // Build synthetic history with average scores
-        const avgScore = angleHistory.length > 0
-          ? Math.round(angleHistory.reduce((s, r) => s + (r.score || 0), 0) / angleHistory.length)
-          : 70;
-        this._repHistory = Array(best.reps).fill(null).map((_, i) => ({
-          score: avgScore, issues: [], ts: Date.now() + i,
-          startFrame: 0, bottomFrame: 0, endFrame: 0,
-        }));
-      }
+    } catch (e) {
+      console.warn('[RepCounter] Velocity/Progression analysis failed:', e.message);
     }
   }
 
@@ -327,149 +295,211 @@ export class RepCounter {
       observedRange: Math.round(range * 10) / 10,
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
+      acf: this._acfDebug,
+      velocity: this._velocityAnalysis,
+      progression: this._progressionScore,
     };
   }
 
-  // ─── Private ───
+  // ─── Private: Signal extraction (now 3D-aware via SignalExtractor3D) ───
 
-  _smoothSignal(rawSignal) {
-    const smoothed = [];
-    // Scale smoothing window with FPS: ~0.25s of data (reduced from 0.5s)
-    // At 4fps → halfW=1 (3-frame), at 6fps → halfW=2 (5-frame)
-    // Narrower window preserves peaks at low FPS instead of merging them
-    const halfW = Math.max(1, Math.round(this._fps * 0.25));
-    for (let i = 0; i < rawSignal.length; i++) {
-      if (rawSignal[i] === null) { smoothed.push(null); continue; }
-      let sum = 0, count = 0;
-      for (let j = Math.max(0, i - halfW); j <= Math.min(rawSignal.length - 1, i + halfW); j++) {
-        if (rawSignal[j] !== null) { sum += rawSignal[j]; count++; }
-      }
-      smoothed.push(count > 0 ? sum / count : null);
-    }
-    return smoothed;
+  _extractSignals() {
+    return extractSignals3D(this._collectedLandmarks);
   }
 
-  _findExtrema(smoothed) {
-    // Find all local peaks and valleys
-    const raw = [];
-    for (let i = 1; i < smoothed.length - 1; i++) {
-      if (smoothed[i] === null || smoothed[i-1] === null || smoothed[i+1] === null) continue;
-      if (smoothed[i] > smoothed[i-1] && smoothed[i] >= smoothed[i+1]) {
-        raw.push({ type: 'peak', index: i, value: smoothed[i] });
-      } else if (smoothed[i] < smoothed[i-1] && smoothed[i] <= smoothed[i+1]) {
-        raw.push({ type: 'valley', index: i, value: smoothed[i] });
-      }
+  // ─── Private: Gaussian smoothing ───
+
+  _gaussianSmooth(signal, sigma) {
+    const N = signal.length;
+    const kernelSize = Math.min(N, Math.max(3, Math.round(sigma * 4) | 1));
+    const half = Math.floor(kernelSize / 2);
+
+    // Build Gaussian kernel
+    const kernel = [];
+    let kernelSum = 0;
+    for (let i = -half; i <= half; i++) {
+      const w = Math.exp(-(i * i) / (2 * sigma * sigma));
+      kernel.push(w);
+      kernelSum += w;
     }
+    for (let i = 0; i < kernel.length; i++) kernel[i] /= kernelSum;
 
-    // Merge consecutive same-type extrema (keep most extreme)
-    const merged = [];
-    for (const e of raw) {
-      if (merged.length > 0 && merged[merged.length - 1].type === e.type) {
-        const prev = merged[merged.length - 1];
-        if (e.type === 'peak' && e.value > prev.value) merged[merged.length - 1] = e;
-        if (e.type === 'valley' && e.value < prev.value) merged[merged.length - 1] = e;
-      } else {
-        merged.push(e);
+    // Convolve
+    const out = new Float64Array(N);
+    for (let i = 0; i < N; i++) {
+      let sum = 0, wsum = 0;
+      for (let j = 0; j < kernel.length; j++) {
+        const idx = i - half + j;
+        if (idx >= 0 && idx < N) {
+          sum += signal[idx] * kernel[j];
+          wsum += kernel[j];
+        }
       }
+      out[i] = wsum > 0 ? sum / wsum : signal[i];
     }
-
-    // Adaptive prominence: 12% of signal range, minimum 6 degrees.
-    // Lowered from 15%/8° to catch peaks at low FPS (4fps) where smoothing
-    // already compresses the signal amplitude.
-    const validValues = smoothed.filter(v => v !== null);
-    const range = validValues.length > 0
-      ? Math.max(...validValues) - Math.min(...validValues) : 0;
-    const MIN_PROM = Math.max(6, range * 0.12);
-
-    // Minimum frame gap: 0.35 seconds worth of frames.
-    // At 4fps → 1 frame min. Reduced from 0.4s to avoid merging
-    // adjacent peaks in fast rep sets.
-    const MIN_GAP = Math.max(1, Math.round(this._fps * 0.35));
-
-    const filtered = [];
-    for (const e of merged) {
-      if (filtered.length === 0) { filtered.push(e); continue; }
-      const prev = filtered[filtered.length - 1];
-      const prom = Math.abs(e.value - prev.value);
-      const gap = e.index - prev.index;
-
-      if (prom >= MIN_PROM && gap >= MIN_GAP) {
-        filtered.push(e);
-      } else {
-        // Too close in value or time: keep the more extreme one
-        if (e.type === 'peak' && e.value > prev.value) filtered[filtered.length - 1] = e;
-        else if (e.type === 'valley' && e.value < prev.value) filtered[filtered.length - 1] = e;
-      }
-    }
-
-    return filtered;
+    return Array.from(out);
   }
 
-  _recordRep(frameData, startIdx, bottomIdx, endIdx) {
-    // Duration filter: reject reps shorter than 0.3s or longer than 8s
-    const repDuration = (endIdx - startIdx) / this._fps;
-    if (repDuration < 0.3 || repDuration > 8.0) {
-      console.debug(`[RepCounter] rejected rep: duration ${repDuration.toFixed(2)}s`);
-      return;
+  // ─── Private: Interpolate null values ───
+
+  _interpolateNulls(signal) {
+    const out = [...signal];
+    const N = out.length;
+
+    // Forward fill then backward fill
+    let lastValid = null;
+    for (let i = 0; i < N; i++) {
+      if (out[i] !== null) lastValid = out[i];
+      else if (lastValid !== null) out[i] = lastValid;
+    }
+    lastValid = null;
+    for (let i = N - 1; i >= 0; i--) {
+      if (out[i] !== null) lastValid = out[i];
+      else if (lastValid !== null) out[i] = lastValid;
+    }
+    // If still null (all frames failed), fill with 0
+    for (let i = 0; i < N; i++) {
+      if (out[i] === null) out[i] = 0;
+    }
+    return out;
+  }
+
+  // ─── Private: Autocorrelation ───
+
+  _autocorrelation(signal) {
+    const N = signal.length;
+    if (N < 6) return { reps: 0, confidence: 0, periodFrames: 0 };
+
+    // Step 1: Detrend (subtract mean)
+    const mean = signal.reduce((a, b) => a + b, 0) / N;
+    const centered = signal.map(v => v - mean);
+
+    // Step 2: Compute normalized autocorrelation
+    const maxLag = Math.floor(N / 2);
+    const acf = new Float64Array(maxLag);
+
+    // Compute energy for normalization
+    const energy = centered.reduce((a, b) => a + b * b, 0);
+    if (energy < 1e-10) return { reps: 0, confidence: 0, periodFrames: 0 };
+
+    for (let k = 0; k < maxLag; k++) {
+      let sum = 0;
+      for (let n = 0; n < N - k; n++) {
+        sum += centered[n] * centered[n + k];
+      }
+      // Normalize by overlap count to prevent decay at high lags
+      acf[k] = (sum / (N - k)) / (energy / N);
     }
 
-    this._reps++;
+    // Step 3: Find first significant peak after zero-crossing
+    // Min period: 0.4s (handles battle rope ~0.7s/rep)
+    // Max period: 5.0s (handles slow exercises)
+    const minLagFrames = Math.max(2, Math.round(this._fps * 0.4));
+    const maxLagFrames = Math.min(maxLag - 1, Math.round(this._fps * 5.0));
 
-    // Evaluate form across multiple frames in the rep, not just 2.
-    // Sample every Nth frame to balance accuracy vs performance.
+    // First, find where ACF drops below 0.3 (initial descent from lag-0)
+    let searchStart = minLagFrames;
+    for (let k = 1; k < minLagFrames; k++) {
+      if (acf[k] < 0.3) { searchStart = k; break; }
+    }
+    searchStart = Math.max(searchStart, minLagFrames);
+
+    let bestLag = 0;
+    let bestVal = -Infinity;
+
+    for (let k = searchStart; k <= maxLagFrames; k++) {
+      // Local peak: higher than both neighbors
+      if (k > 0 && k < maxLag - 1 && acf[k] > acf[k - 1] && acf[k] >= acf[k + 1]) {
+        if (acf[k] > bestVal) {
+          bestVal = acf[k];
+          bestLag = k;
+          // Take the FIRST strong peak (closest to true period), not the highest
+          // But only if it's strong enough (>0.15)
+          if (bestVal > 0.15) break;
+        }
+      }
+    }
+
+    // If no peak found above 0.15, take whatever we got
+    if (bestLag === 0 || bestVal < 0.05) {
+      return { reps: 0, confidence: 0, periodFrames: 0 };
+    }
+
+    // Step 4: Count = duration / period
+    const reps = Math.round(N / bestLag);
+
+    return {
+      reps,
+      confidence: Math.min(1, bestVal),
+      periodFrames: bestLag,
+    };
+  }
+
+  // ─── Private: Build form history from ACF count ───
+
+  _buildFormHistory(repCount, periodFrames) {
+    if (repCount <= 0) return [];
+
+    const N = this._collectedLandmarks.length;
     const ex = this._exercise;
     const checks = ex.formChecks || [];
-    let score = null;
-    const issues = [];
+    const history = [];
 
-    if (checks.length > 0 && frameData[bottomIdx]) {
-      const sampleStep = Math.max(1, Math.floor((endIdx - startIdx) / 12));
-      const topData = frameData[startIdx] || frameData[endIdx];
+    for (let r = 0; r < repCount; r++) {
+      // Estimate frame range for this rep
+      const startFrame = Math.round(r * periodFrames);
+      const endFrame = Math.min(N - 1, Math.round((r + 1) * periodFrames));
+      const midFrame = Math.round((startFrame + endFrame) / 2);
 
-      const formResults = checks.map((fc) => {
-        // Skip form checks for user's injured areas
-        if (shouldSkipCheck(fc.name, this._userInjuries)) {
-          return { name: fc.name, passed: true, bad: fc.bad, severity: 'minor', skipped: true };
+      if (startFrame >= N) break;
+
+      let score = null;
+      const issues = [];
+
+      if (checks.length > 0) {
+        const sampleStep = Math.max(1, Math.floor((endFrame - startFrame) / 8));
+
+        const formResults = checks.map((fc) => {
+          if (shouldSkipCheck(fc.name, this._userInjuries)) {
+            return { name: fc.name, passed: true, bad: fc.bad, severity: 'minor', skipped: true };
+          }
+
+          let failCount = 0, sampleCount = 0;
+          for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
+            const landmarks = this._collectedLandmarks[i];
+            if (!landmarks) continue;
+            const angles = extractJointAngles(landmarks);
+            if (!angles) continue;
+            sampleCount++;
+            if (!fc.check(angles, landmarks)) failCount++;
+          }
+
+          const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
+          return { name: fc.name, passed: failRate < 0.30, bad: fc.bad, severity: fc.severity };
+        });
+
+        const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
+        const failedMinor = formResults.filter(f => !f.passed && f.severity !== 'major').length;
+        score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
+        for (const f of formResults) {
+          if (!f.passed) issues.push(f.bad);
         }
-
-        const isTopCheck = fc.phase === 'top';
-        // Check the critical frame (bottom or top of rep)
-        const criticalData = isTopCheck ? topData : frameData[bottomIdx];
-        const criticalPassed = criticalData ? fc.check(criticalData.angles, criticalData.landmarks) : true;
-
-        // Also sample across the rep to catch mid-rep breakdown
-        let failCount = 0;
-        let sampleCount = 0;
-        for (let i = startIdx; i <= endIdx; i += sampleStep) {
-          const data = frameData[i];
-          if (!data) continue;
-          sampleCount++;
-          if (!fc.check(data.angles, data.landmarks)) failCount++;
-        }
-
-        // Fail if critical frame fails OR >30% of samples fail
-        const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
-        const passed = criticalPassed && failRate < 0.30;
-        return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
-      });
-
-      const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
-      const failedMinor = formResults.filter(f => !f.passed && f.severity !== 'major').length;
-      score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
-      for (const f of formResults) {
-        if (!f.passed) issues.push(f.bad);
       }
+
+      history.push({
+        score,
+        issues,
+        ts: Date.now() + r,
+        startFrame,
+        bottomFrame: midFrame,
+        endFrame,
+      });
     }
 
-    this._repHistory.push({
-      score,
-      issues,
-      ts: Date.now(),
-      startFrame: startIdx,
-      bottomFrame: bottomIdx,
-      endFrame: endIdx,
-    });
+    return history;
   }
+
+  // ─── Private: Live counting (unchanged) ───
 
   _countLiveRep(angles, landmarks) {
     this._reps++;
@@ -493,104 +523,6 @@ export class RepCounter {
     });
   }
 
-  _countRepsPositionBased(frameData) {
-    const joint = this._exercise.joint;
-    if (joint !== 'elbow' && joint !== 'shoulder') return 0;
-
-    // Build signal: wrist-to-shoulder distance
-    const signal = [];
-    for (let i = 0; i < this._collectedLandmarks.length; i++) {
-      const lm = this._collectedLandmarks[i];
-      if (!lm || lm.length < 33) { signal.push(null); continue; }
-
-      const lVis = Math.min(lm[LANDMARKS.LEFT_WRIST].visibility || 0, lm[LANDMARKS.LEFT_SHOULDER].visibility || 0);
-      const rVis = Math.min(lm[LANDMARKS.RIGHT_WRIST].visibility || 0, lm[LANDMARKS.RIGHT_SHOULDER].visibility || 0);
-
-      let wrist, shoulder;
-      if (lVis >= rVis && lVis > 0.3) {
-        wrist = lm[LANDMARKS.LEFT_WRIST];
-        shoulder = lm[LANDMARKS.LEFT_SHOULDER];
-      } else if (rVis > 0.3) {
-        wrist = lm[LANDMARKS.RIGHT_WRIST];
-        shoulder = lm[LANDMARKS.RIGHT_SHOULDER];
-      } else {
-        wrist = { y: (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2, z: 0 };
-        shoulder = { y: (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2, z: 0 };
-      }
-
-      const dy = wrist.y - shoulder.y;
-      const dz = (wrist.z || 0) - (shoulder.z || 0);
-      signal.push(Math.sqrt(dy * dy + dz * dz));
-    }
-
-    const smoothed = this._smoothSignal(signal);
-    const valid = smoothed.filter(v => v !== null);
-    if (valid.length < 6) return 0;
-
-    const posMin = Math.min(...valid);
-    const posMax = Math.max(...valid);
-    const posRange = posMax - posMin;
-    if (posRange < 0.02) return 0;
-
-    // Find extrema on position signal
-    const extrema = this._findExtrema(smoothed);
-    const minROM = posRange * 0.2;
-
-    let repCount = 0;
-    let lastPeak = null;
-
-    // For curls: peak distance (arm extended) -> valley (arm curled) = 1 rep
-    for (const e of extrema) {
-      if (e.type === 'peak') {
-        lastPeak = e;
-      } else if (e.type === 'valley' && lastPeak !== null) {
-        const duration = (e.index - lastPeak.index) / this._fps;
-        if (duration < 0.3) { lastPeak = null; continue; }
-        if (lastPeak.value - e.value >= minROM) {
-          repCount++;
-          this._reps++;
-          this._repHistory.push({
-            score: null,
-            issues: [],
-            ts: Date.now(),
-            startFrame: lastPeak.index,
-            bottomFrame: e.index,
-            endFrame: e.index,
-          });
-          lastPeak = null;
-        }
-      }
-    }
-
-    // Try reverse direction if nothing found
-    if (repCount === 0) {
-      let lastValley = null;
-      for (const e of extrema) {
-        if (e.type === 'valley') {
-          lastValley = e;
-        } else if (e.type === 'peak' && lastValley !== null) {
-          const duration = (e.index - lastValley.index) / this._fps;
-          if (duration < 0.3) { lastValley = null; continue; }
-          if (e.value - lastValley.value >= minROM) {
-            repCount++;
-            this._reps++;
-            this._repHistory.push({
-              score: null,
-              issues: [],
-              ts: Date.now(),
-              startFrame: lastValley.index,
-              bottomFrame: e.index,
-              endFrame: e.index,
-            });
-            lastValley = null;
-          }
-        }
-      }
-    }
-
-    return repCount;
-  }
-
   _evaluateForm(angles, landmarks) {
     return this._exercise.formChecks.map((fc) => {
       const passed = fc.check(angles, landmarks);
@@ -602,4 +534,17 @@ export class RepCounter {
       };
     });
   }
+}
+
+// ─── Standalone angle calculation (avoids dependency on extractJointAngles for signals) ───
+
+function calculateAngle3(a, b, c) {
+  const ba = { x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) };
+  const bc = { x: c.x - b.x, y: c.y - b.y, z: (c.z || 0) - (b.z || 0) };
+  const dot = ba.x * bc.x + ba.y * bc.y + ba.z * bc.z;
+  const magBA = Math.sqrt(ba.x * ba.x + ba.y * ba.y + ba.z * ba.z);
+  const magBC = Math.sqrt(bc.x * bc.x + bc.y * bc.y + bc.z * bc.z);
+  if (magBA < 1e-6 || magBC < 1e-6) return 0;
+  const cosAngle = Math.max(-1, Math.min(1, dot / (magBA * magBC)));
+  return (Math.acos(cosAngle) * 180) / Math.PI;
 }
