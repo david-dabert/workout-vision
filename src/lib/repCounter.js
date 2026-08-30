@@ -194,34 +194,44 @@ export class RepCounter {
     const signals = this._extractSignals();
 
     // ── Step 2: Smooth and run autocorrelation on each ──
-    const results = [];
+    // Two-tier approach: try priority signals first. Only fall back to all signals
+    // if priority signals produce no results. This prevents noise signals from
+    // beating the biomechanically correct signal for the exercise.
     const prioritySignals = SIGNAL_PRIORITY[this._exerciseKey] || [];
 
-    for (const sig of signals) {
-      const valid = sig.values.filter(v => v !== null);
-      if (valid.length < 6) continue;
+    const runACF = (signalSubset) => {
+      const results = [];
+      for (const sig of signalSubset) {
+        const valid = sig.values.filter(v => v !== null);
+        if (valid.length < 6) continue;
 
-      // Interpolate nulls for smooth autocorrelation
-      const interpolated = this._interpolateNulls(sig.values);
-      const smoothed = this._gaussianSmooth(interpolated, Math.max(1, Math.round(this._fps * 0.1)));
-      const acf = this._autocorrelation(smoothed);
+        const interpolated = this._interpolateNulls(sig.values);
+        const smoothed = this._gaussianSmooth(interpolated, Math.max(1, Math.round(this._fps * 0.1)));
+        const acf = this._autocorrelation(smoothed, sig.name);
 
-      if (acf.confidence > 0) {
-        // Exercise-specific priority boost
-        let boostedConfidence = acf.confidence;
-        if (prioritySignals.includes(sig.name)) {
-          boostedConfidence *= 1.3;
+        if (acf.confidence > 0) {
+          results.push({
+            name: sig.name,
+            reps: acf.reps,
+            confidence: acf.confidence,
+            rawConfidence: acf.confidence,
+            periodFrames: acf.periodFrames,
+            periodSeconds: acf.periodFrames / this._fps,
+          });
         }
-
-        results.push({
-          name: sig.name,
-          reps: acf.reps,
-          confidence: boostedConfidence,
-          rawConfidence: acf.confidence,
-          periodFrames: acf.periodFrames,
-          periodSeconds: acf.periodFrames / this._fps,
-        });
       }
+      return results;
+    };
+
+    // Tier 1: only priority signals for this exercise
+    const prioritySubset = prioritySignals.length > 0
+      ? signals.filter(s => prioritySignals.includes(s.name))
+      : [];
+    let results = runACF(prioritySubset);
+
+    // Tier 2: fall back to all signals if priority signals found nothing
+    if (results.length === 0 || results.every(r => r.reps === 0)) {
+      results = runACF(signals);
     }
 
     // ── Step 3: Pick best signal via consensus + confidence ──
@@ -425,22 +435,28 @@ export class RepCounter {
   }
 
   // Exercise-specific minimum rep period in seconds.
-  // Battle rope: each full wave is ~0.8-1.2s (not 0.3s sub-cycles).
-  // Default 0.5s works for most exercises.
+  // Calibrated against Countix ground truth rep rates.
   static _minPeriod(exerciseKey) {
     const periods = {
-      battle_rope: 0.8,    // Full bilateral wave
+      battle_rope: 0.4,    // Fast reps: Countix shows 14 reps in 10s = 0.71s/rep
       deadlift: 1.5,       // Slow lift
-      squat: 1.0,          // At least 1s per rep
-      bench_press: 1.0,    // At least 1s per rep
-      pull_up: 1.2,        // Slow pull
+      squat: 0.8,          // Countix shows ~1.2-1.7s/rep
+      bench_press: 0.8,    // Countix shows ~1.0-2.0s/rep
+      pull_up: 1.0,        // Moderate speed
     };
     return periods[exerciseKey] || 0.5;
   }
 
+  // Check if a signal name is an angle signal (measured in degrees)
+  // vs a position/distance signal (measured in normalized coords or 3D units)
+  static _isAngleSignal(signalName) {
+    return ['elbow_L', 'elbow_R', 'knee_L', 'knee_R', 'hip_L', 'hip_R',
+            'shoulder_L', 'shoulder_R', 'trunk'].includes(signalName);
+  }
+
   // ─── Private: Autocorrelation ───
 
-  _autocorrelation(signal) {
+  _autocorrelation(signal, signalName) {
     const N = signal.length;
     if (N < 6) return { reps: 0, confidence: 0, periodFrames: 0 };
 
@@ -542,15 +558,18 @@ export class RepCounter {
     const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
     const clampedReps = Math.min(reps, maxReasonableReps);
 
-    // Step 6: Narrow-ROM penalty — if signal range is very small,
-    // reduce confidence. This catches noise-driven overcounts on
-    // signals with tiny oscillations (e.g. 41° range on bicep curl)
-    if (sigRange < 20) {
-      bestVal *= 0.3;  // Heavy penalty for < 20° range
-    } else if (sigRange < 40) {
-      bestVal *= 0.6;  // Moderate penalty for 20-40° range
-    } else if (sigRange < 60) {
-      bestVal *= 0.85; // Light penalty for 40-60° range
+    // Step 6: Narrow-ROM penalty — only for angle signals (measured in degrees).
+    // Position signals (Y, Z) are in normalized 0-1 coords; distance signals are
+    // in 3D units. Their ranges are naturally small (0.05-0.3) and would be
+    // falsely penalized by degree-based thresholds.
+    if (RepCounter._isAngleSignal(signalName)) {
+      if (sigRange < 20) {
+        bestVal *= 0.3;  // Heavy penalty for < 20° range
+      } else if (sigRange < 40) {
+        bestVal *= 0.6;  // Moderate penalty for 20-40° range
+      } else if (sigRange < 60) {
+        bestVal *= 0.85; // Light penalty for 40-60° range
+      }
     }
 
     return {
