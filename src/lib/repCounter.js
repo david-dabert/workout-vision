@@ -542,23 +542,15 @@ export class RepCounter {
 
     if (W <= minLag) return { reps: 0, confidence: 0, periodFrames: 0 };
 
-    // Mean removal: eliminates DC offset that inflates difference function
-    let mean = 0;
-    for (let i = 0; i < N; i++) mean += signal[i];
-    mean /= N;
-    const centered = new Float64Array(N);
-    for (let i = 0; i < N; i++) centered[i] = signal[i] - mean;
-
     // Step 1: Difference function d(τ) = Σ (x[n] - x[n+τ])²
-    // Fixed summation window: always sum over (N - W) terms for all tau,
-    // preventing CMNDF bias toward longer periods from shrinking windows.
-    const sumLen = N - W;
+    // Standard YIN variable-length summation (N-tau terms per lag).
+    // Mean removal is unnecessary: mean cancels in x[n]-x[n+tau].
     const diff = new Float64Array(W + 1);
     diff[0] = 0;
     for (let tau = 1; tau <= W; tau++) {
       let sum = 0;
-      for (let n = 0; n < sumLen; n++) {
-        const delta = centered[n] - centered[n + tau];
+      for (let n = 0; n < N - tau; n++) {
+        const delta = signal[n] - signal[n + tau];
         sum += delta * delta;
       }
       diff[tau] = sum;
@@ -621,6 +613,29 @@ export class RepCounter {
     }
 
     if (bestLag === 0) return { reps: 0, confidence: 0, periodFrames: 0 };
+
+    // Sub-harmonic refinement: if bestLag came from fallback (deepest min),
+    // it might be at 2x or 3x the true period. Check if bestLag/2 or
+    // bestLag/3 also has a strong CMNDF dip (below yinThreshold).
+    // Only fires when a shorter period has strong independent evidence.
+    if (bestCmndf >= yinThreshold) {
+      // bestLag was selected by fallback, not by primary YIN rule
+      for (const divisor of [2, 3]) {
+        const subLag = Math.round(bestLag / divisor);
+        if (subLag < minLag || subLag > W) continue;
+        // Search ±1 frame around the expected sub-harmonic position
+        let subMin = Infinity, subIdx = subLag;
+        for (let t = Math.max(minLag, subLag - 1); t <= Math.min(W, subLag + 1); t++) {
+          if (cmndf[t] < subMin) { subMin = cmndf[t]; subIdx = t; }
+        }
+        // Only switch if the sub-period has a strong dip (below YIN threshold)
+        if (subMin < yinThreshold) {
+          bestLag = subIdx;
+          bestCmndf = subMin;
+          break; // prefer shortest valid sub-harmonic
+        }
+      }
+    }
 
     // Parabolic interpolation for sub-frame accuracy
     if (bestLag > 1 && bestLag < W) {
