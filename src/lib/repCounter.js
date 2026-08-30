@@ -224,13 +224,61 @@ export class RepCounter {
       }
     }
 
-    // ── Step 3: Pick best signal ──
+    // ── Step 3: Pick best signal via consensus + confidence ──
     results.sort((a, b) => b.confidence - a.confidence);
 
-    const best = results[0];
-    if (!best || best.reps === 0) {
+    if (results.length === 0 || results[0].reps === 0) {
       console.debug(`[RepCounter] ACF: no periodic signal found across ${signals.length} signals`);
       // Keep live count as fallback
+      return;
+    }
+
+    // Consensus voting: group signals by rep count (within ±1), pick the
+    // group with the most votes. Within that group, take the highest confidence.
+    // This prevents a single noisy high-confidence signal from dominating.
+    const countVotes = {};
+    for (const r of results) {
+      if (r.reps <= 0) continue;
+      // Find which bucket this count belongs to (within ±1 of existing bucket)
+      let matched = false;
+      for (const key of Object.keys(countVotes)) {
+        if (Math.abs(r.reps - parseInt(key)) <= 1) {
+          countVotes[key].votes++;
+          countVotes[key].totalConf += r.confidence;
+          if (r.confidence > countVotes[key].bestConf) {
+            countVotes[key].bestConf = r.confidence;
+            countVotes[key].bestResult = r;
+          }
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        countVotes[r.reps] = { votes: 1, totalConf: r.confidence, bestConf: r.confidence, bestResult: r };
+      }
+    }
+
+    // Pick the consensus winner: most votes first, then highest total confidence
+    const buckets = Object.values(countVotes).sort((a, b) => {
+      if (b.votes !== a.votes) return b.votes - a.votes;
+      return b.totalConf - a.totalConf;
+    });
+
+    // Use consensus winner if it has at least 2 votes AND the top-confidence
+    // result disagrees with consensus. Otherwise use top confidence.
+    let best;
+    const topConf = results[0];
+    const consensus = buckets[0];
+    if (consensus.votes >= 2 && Math.abs(topConf.reps - consensus.bestResult.reps) > 1) {
+      // Consensus overrides single outlier
+      best = consensus.bestResult;
+      console.debug(`[RepCounter] Consensus override: ${consensus.votes} signals agree on ~${best.reps} reps vs top-conf ${topConf.reps} reps`);
+    } else {
+      best = topConf;
+    }
+
+    if (!best || best.reps === 0) {
+      console.debug(`[RepCounter] ACF: no periodic signal found across ${signals.length} signals`);
       return;
     }
 
@@ -300,8 +348,10 @@ export class RepCounter {
       observedMin: Math.round(this._observedMin * 10) / 10,
       observedMax: Math.round(this._observedMax * 10) / 10,
       observedRange: Math.round(range * 10) / 10,
+      minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
+      method: this._acfDebug?.picked?.name || '',
       acf: this._acfDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,
@@ -374,6 +424,20 @@ export class RepCounter {
     return out;
   }
 
+  // Exercise-specific minimum rep period in seconds.
+  // Battle rope: each full wave is ~0.8-1.2s (not 0.3s sub-cycles).
+  // Default 0.5s works for most exercises.
+  static _minPeriod(exerciseKey) {
+    const periods = {
+      battle_rope: 0.8,    // Full bilateral wave
+      deadlift: 1.5,       // Slow lift
+      squat: 1.0,          // At least 1s per rep
+      bench_press: 1.0,    // At least 1s per rep
+      pull_up: 1.2,        // Slow pull
+    };
+    return periods[exerciseKey] || 0.5;
+  }
+
   // ─── Private: Autocorrelation ───
 
   _autocorrelation(signal) {
@@ -383,6 +447,11 @@ export class RepCounter {
     // Step 1: Detrend (subtract mean)
     const mean = signal.reduce((a, b) => a + b, 0) / N;
     const centered = signal.map(v => v - mean);
+
+    // Step 1b: Signal ROM guard — penalize very narrow signals later
+    const sigMin = Math.min(...signal);
+    const sigMax = Math.max(...signal);
+    const sigRange = sigMax - sigMin;
 
     // Step 2: Compute normalized autocorrelation
     const maxLag = Math.floor(N / 2);
@@ -401,11 +470,11 @@ export class RepCounter {
       acf[k] = (sum / (N - k)) / (energy / N);
     }
 
-    // Step 3: Find first significant peak after zero-crossing
-    // Min period: 0.4s (handles battle rope ~0.7s/rep)
-    // Max period: 5.0s (handles slow exercises)
-    const minLagFrames = Math.max(2, Math.round(this._fps * 0.4));
-    const maxLagFrames = Math.min(maxLag - 1, Math.round(this._fps * 5.0));
+    // Step 3: Find ALL significant peaks, then pick the best
+    // Use exercise-specific minimum period to avoid harmonics
+    const minPeriodSec = RepCounter._minPeriod(this._exerciseKey);
+    const minLagFrames = Math.max(2, Math.round(this._fps * minPeriodSec));
+    const maxLagFrames = Math.min(maxLag - 1, Math.round(this._fps * 6.0));
 
     // First, find where ACF drops below 0.3 (initial descent from lag-0)
     let searchStart = minLagFrames;
@@ -414,23 +483,54 @@ export class RepCounter {
     }
     searchStart = Math.max(searchStart, minLagFrames);
 
-    let bestLag = 0;
-    let bestVal = -Infinity;
-
+    // Collect ALL peaks above minimum threshold
+    const peaks = [];
     for (let k = searchStart; k <= maxLagFrames; k++) {
-      // Local peak: higher than both neighbors
       if (k > 0 && k < maxLag - 1 && acf[k] > acf[k - 1] && acf[k] >= acf[k + 1]) {
-        if (acf[k] > bestVal) {
-          bestVal = acf[k];
-          bestLag = k;
-          // Take the FIRST strong peak (closest to true period), not the highest
-          // But only if it's strong enough (>0.15)
-          if (bestVal > 0.15) break;
+        if (acf[k] > 0.05) {
+          peaks.push({ lag: k, val: acf[k] });
         }
       }
     }
 
-    // If no peak found above 0.15, take whatever we got
+    if (peaks.length === 0) {
+      return { reps: 0, confidence: 0, periodFrames: 0 };
+    }
+
+    // Step 3b: Harmonic filtering — if a peak at lag L has a peak near 2L,
+    // the shorter peak may be a harmonic (half-cycle). Prefer the longer period
+    // if its ACF value is at least 60% of the shorter peak's value.
+    let bestPeak = peaks[0]; // start with first peak (shortest period)
+    for (let i = 1; i < peaks.length; i++) {
+      const ratio = peaks[i].lag / bestPeak.lag;
+      // If this peak is near a harmonic (1.8-2.2x) of the current best,
+      // and it's strong enough, prefer it (it's the fundamental, not the harmonic)
+      if (ratio >= 1.8 && ratio <= 2.2 && peaks[i].val >= bestPeak.val * 0.6) {
+        bestPeak = peaks[i];
+      }
+    }
+
+    // Also consider: if the highest-value peak produces a more reasonable count,
+    // prefer it. "Reasonable" means 1-30 reps for the video duration.
+    const highestPeak = peaks.reduce((a, b) => b.val > a.val ? b : a, peaks[0]);
+    const bestReps = Math.round(N / bestPeak.lag);
+    const highestReps = Math.round(N / highestPeak.lag);
+    const durationSec = N / this._fps;
+
+    // If highest peak gives a more reasonable count and is much stronger, use it
+    if (highestPeak.lag !== bestPeak.lag) {
+      const bestReasonable = bestReps >= 1 && bestReps <= Math.ceil(durationSec / minPeriodSec);
+      const highestReasonable = highestReps >= 1 && highestReps <= Math.ceil(durationSec / minPeriodSec);
+      if (highestReasonable && !bestReasonable) {
+        bestPeak = highestPeak;
+      } else if (highestReasonable && bestReasonable && highestPeak.val > bestPeak.val * 1.3) {
+        bestPeak = highestPeak;
+      }
+    }
+
+    const bestLag = bestPeak.lag;
+    let bestVal = bestPeak.val;
+
     if (bestLag === 0 || bestVal < 0.05) {
       return { reps: 0, confidence: 0, periodFrames: 0 };
     }
@@ -438,8 +538,23 @@ export class RepCounter {
     // Step 4: Count = duration / period
     const reps = Math.round(N / bestLag);
 
+    // Step 5: Sanity clamp — max 1 rep per minimum period
+    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
+    const clampedReps = Math.min(reps, maxReasonableReps);
+
+    // Step 6: Narrow-ROM penalty — if signal range is very small,
+    // reduce confidence. This catches noise-driven overcounts on
+    // signals with tiny oscillations (e.g. 41° range on bicep curl)
+    if (sigRange < 20) {
+      bestVal *= 0.3;  // Heavy penalty for < 20° range
+    } else if (sigRange < 40) {
+      bestVal *= 0.6;  // Moderate penalty for 20-40° range
+    } else if (sigRange < 60) {
+      bestVal *= 0.85; // Light penalty for 40-60° range
+    }
+
     return {
-      reps,
+      reps: clampedReps,
       confidence: Math.min(1, bestVal),
       periodFrames: bestLag,
     };
