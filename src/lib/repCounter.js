@@ -513,36 +513,27 @@ export class RepCounter {
       return { reps: 0, confidence: 0, periodFrames: 0 };
     }
 
-    // Step 3b: Harmonic filtering — if a peak at lag L has a peak near 2L,
-    // the shorter peak may be a harmonic (half-cycle). Prefer the longer period
-    // if its ACF value is at least 60% of the shorter peak's value.
-    // IMPORTANT: Only one promotion step. Chaining (7→14→28→56) caused severe
-    // undercounting on fast exercises like battle rope (3/14 from 7→28 chain).
-    const firstPeak = peaks[0]; // shortest period found
-    let bestPeak = firstPeak;
-    for (let i = 1; i < peaks.length; i++) {
-      const ratio = peaks[i].lag / firstPeak.lag;
-      // Compare against FIRST peak only (no chaining). One 2x promotion max.
-      if (ratio >= 1.8 && ratio <= 2.2 && peaks[i].val >= firstPeak.val * 0.6) {
-        bestPeak = peaks[i];
-        break; // One promotion only
-      }
-    }
-
-    // Also consider: if the highest-value peak produces a more reasonable count,
-    // prefer it. "Reasonable" means 1-30 reps for the video duration.
-    const highestPeak = peaks.reduce((a, b) => b.val > a.val ? b : a, peaks[0]);
-    const bestReps = Math.round(N / bestPeak.lag);
-    const highestReps = Math.round(N / highestPeak.lag);
+    // Pick the first peak (shortest period above minPeriod).
+    // The minPeriod filter already prevents sub-cycle detection. No separate
+    // harmonic filter — it was systematically halving counts across battle rope
+    // (3/14), bench press (2/5, 3/6), and front raise (3/7, 3/6) by promoting
+    // the true period to 2x. The highest-peak fallback below handles legitimate
+    // cases where a longer period has a genuinely stronger ACF value.
+    let bestPeak = peaks[0];
     const durationSec = N / this._fps;
 
-    // If highest peak gives a more reasonable count and is much stronger, use it
+    // If the highest-value peak is significantly stronger (1.5x) and gives a
+    // reasonable count, prefer it. This catches cases where the first peak is
+    // noise and a later peak is the true fundamental.
+    const highestPeak = peaks.reduce((a, b) => b.val > a.val ? b : a, peaks[0]);
     if (highestPeak.lag !== bestPeak.lag) {
+      const bestReps = Math.round(N / bestPeak.lag);
+      const highestReps = Math.round(N / highestPeak.lag);
       const bestReasonable = bestReps >= 1 && bestReps <= Math.ceil(durationSec / minPeriodSec);
       const highestReasonable = highestReps >= 1 && highestReps <= Math.ceil(durationSec / minPeriodSec);
       if (highestReasonable && !bestReasonable) {
         bestPeak = highestPeak;
-      } else if (highestReasonable && bestReasonable && highestPeak.val > bestPeak.val * 1.3) {
+      } else if (highestReasonable && bestReasonable && highestPeak.val > bestPeak.val * 1.5) {
         bestPeak = highestPeak;
       }
     }
