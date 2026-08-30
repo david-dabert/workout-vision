@@ -209,7 +209,7 @@ export const SIGNAL_PRIORITY_3D = {
   chin_up:       ['nose_Y', 'nose_Z', 'shoulder_Y'],
   sit_up:        ['nose_Y', 'trunk', 'nose_Z'],
   crunch:        ['nose_Y', 'trunk'],
-  front_raise:   ['shoulder_L', 'shoulder_R', 'wrist_Y_L', 'wrist_Y_R', 'wrist_Z_L', 'wrist_Z_R'],
+  front_raise:   ['wrist_Y_L', 'wrist_Y_R', 'shoulder_L', 'shoulder_R'],
   lateral_raise: ['shoulder_L', 'shoulder_R', 'wrist_Y_L', 'wrist_Y_R'],
   overhead_press:['elbow_L', 'elbow_R', 'wrist_Y_L', 'wrist_Y_R', 'wrist_Z_L', 'wrist_Z_R'],
   shoulder_press:['elbow_L', 'elbow_R', 'wrist_Y_L', 'wrist_Y_R'],

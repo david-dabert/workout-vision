@@ -316,8 +316,8 @@ export class RepCounter {
       best = topConf;
     }
 
-    if (!best || best.reps === 0) {
-      console.debug(`[RepCounter] ACF: no periodic signal found across ${signals.length} signals`);
+    if (!best || best.reps === 0 || best.confidence < 0.15) {
+      console.debug(`[RepCounter] ACF: no reliable periodic signal (best conf=${best?.confidence?.toFixed(2) || 0})`);
       return;
     }
 

@@ -19,7 +19,17 @@
  *   6. Prints a report to stdout and saves JSON to benchmark/results/
  */
 
-import { chromium } from 'playwright';
+// Use playwright from temp install to avoid polluting project node_modules
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+let chromium;
+try {
+  ({ chromium } = await import('playwright'));
+} catch {
+  // Fallback: try /tmp/pw-runner where we installed it
+  const pw = require('/tmp/pw-runner/node_modules/playwright');
+  chromium = pw.chromium;
+}
 import { mkdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -67,7 +77,9 @@ async function run() {
 
     // Click "Run All Tests"
     console.log('3. Starting benchmark (this takes 10-20 minutes)...');
-    const runBtn = page.locator('button:has-text("Run All")');
+    // Button says "Run N tests" (e.g., "Run 43 tests")
+    const runBtn = page.locator('button:has-text("Run")').first();
+    await runBtn.waitFor({ timeout: 10000 });
     await runBtn.click();
 
     // Wait for completion: poll for the running state to end
@@ -77,24 +89,21 @@ async function run() {
 
     let lastProgress = '';
     while (Date.now() - startTime < maxWait) {
-      await page.waitForTimeout(5000);
+      await page.waitForTimeout(10000);
 
-      // Check if still running
-      const runBtnDisabled = await page.locator('button:has-text("Run All")').isDisabled().catch(() => true);
-      const runningIndicator = await page.locator('button:has-text("Running")').count().catch(() => 0);
+      // Check progress: look for "Running test X of Y" text
+      const runningText = await page.locator('text=/Running test/').count().catch(() => 0);
+      const resultCount = await page.locator('text=/\\d+\\/\\d+ reps/').count().catch(() => 0);
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
 
-      // Show progress
-      const progressText = await page.locator('[class*="stat"], [style*="font-size"]').first().textContent().catch(() => '');
-      if (progressText && progressText !== lastProgress) {
-        const elapsed = Math.round((Date.now() - startTime) / 1000);
-        process.stdout.write(`   [${elapsed}s] ${progressText.substring(0, 60)}\r`);
-        lastProgress = progressText;
+      if (resultCount > 0) {
+        process.stdout.write(`   [${elapsed}s] ${resultCount} results so far...\n`);
       }
 
-      if (!runBtnDisabled && runningIndicator === 0) {
-        // Check if we have results
-        const resultCount = await page.locator('text=/\\d+\\/\\d+ reps/').count();
-        if (resultCount > 0) break;
+      // Benchmark is done when running text disappears AND we have results
+      if (runningText === 0 && resultCount >= 40) {
+        console.log(`   Completed in ${elapsed}s`);
+        break;
       }
     }
 
