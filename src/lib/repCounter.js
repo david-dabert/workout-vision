@@ -206,8 +206,23 @@ export class RepCounter {
         if (valid.length < 6) continue;
 
         const interpolated = this._interpolateNulls(sig.values);
-        const smoothed = this._gaussianSmooth(interpolated, Math.max(1, Math.round(this._fps * 0.1)));
-        const acf = this._autocorrelation(smoothed, sig.name);
+        const sigma = Math.max(1, Math.round(this._fps * 0.1));
+        const smoothed = this._gaussianSmooth(interpolated, sigma);
+        const acfSmoothed = this._autocorrelation(smoothed, sig.name);
+
+        // At low fps (≤15), also try the raw interpolated signal.
+        // Smoothing can destroy fast oscillations when period ≈ kernel width.
+        let acf = acfSmoothed;
+        if (this._fps <= 15) {
+          const acfRaw = this._autocorrelation(interpolated, sig.name);
+          // Take whichever found more reps with reasonable confidence,
+          // or whichever has higher confidence if same rep count
+          if (acfRaw.reps > acf.reps && acfRaw.confidence > 0.1) {
+            acf = acfRaw;
+          } else if (acfRaw.reps === acf.reps && acfRaw.confidence > acf.confidence) {
+            acf = acfRaw;
+          }
+        }
 
         if (acf.confidence > 0) {
           results.push({
@@ -264,7 +279,15 @@ export class RepCounter {
         used.add(r.name);
         if (other) {
           used.add(other.name);
-          collapsed.push(r.confidence >= other.confidence ? r : other);
+          // If L and R agree (within ±1 rep), collapse to higher confidence.
+          // If they disagree significantly, keep both as separate voters —
+          // the disagreement itself is information the consensus should see.
+          if (Math.abs(r.reps - other.reps) <= 1) {
+            collapsed.push(r.confidence >= other.confidence ? r : other);
+          } else {
+            collapsed.push(r);
+            collapsed.push(other);
+          }
         } else {
           collapsed.push(r);
         }
@@ -328,6 +351,84 @@ export class RepCounter {
       ).join('\n')
     );
     console.debug(`[RepCounter] ACF picked: ${best.name} → ${best.reps} reps (conf=${best.confidence.toFixed(2)}, period=${best.periodSeconds.toFixed(2)}s)`);
+
+    // ── Step 3b: Post-consensus period-doubling check ──
+    // YIN's dominant failure mode is finding 2x the true period. After
+    // consensus picks a winner, count peaks on the winning signal at half
+    // the YIN period. If peak count ≈ 2x best.reps, override.
+    {
+      const bestSignal = signals.find(s => s.name === best.name);
+      if (bestSignal && best.reps >= 2) {
+        const interpolated = this._interpolateNulls(bestSignal.values);
+        const sigma = Math.max(1, Math.round(this._fps * 0.1));
+        const smoothed = this._gaussianSmooth(interpolated, sigma);
+        // At low fps, use raw (interpolated) signal for peak counting.
+        // Full smoothing (sigma=1) destroys fast oscillations at 10fps.
+        const sigForPeaks = this._fps <= 15 ? interpolated : smoothed;
+        const sigN = sigForPeaks.length;
+        let sigMean = 0;
+        for (let i = 0; i < sigN; i++) sigMean += sigForPeaks[i];
+        sigMean /= sigN;
+        let sigMin2 = sigForPeaks[0], sigMax2 = sigForPeaks[0];
+        for (let i = 1; i < sigN; i++) {
+          if (sigForPeaks[i] < sigMin2) sigMin2 = sigForPeaks[i];
+          if (sigForPeaks[i] > sigMax2) sigMax2 = sigForPeaks[i];
+        }
+        const range2 = sigMax2 - sigMin2;
+        if (range2 > 1e-6) {
+          // Count peaks at half the YIN period, with reduced min distance
+          // to allow for rep-to-rep timing variation
+          const halfPeriod = Math.max(2, Math.round(best.periodFrames * 0.35));
+          const threshold2 = sigMean + range2 * 0.05;
+          let peaks2 = 0;
+          let lastPeak2 = -halfPeriod;
+          for (let i = 1; i < sigN - 1; i++) {
+            if (sigForPeaks[i] > threshold2 &&
+                sigForPeaks[i] >= sigForPeaks[i - 1] && sigForPeaks[i] >= sigForPeaks[i + 1] &&
+                (i - lastPeak2) >= halfPeriod) {
+              peaks2++;
+              lastPeak2 = i;
+            }
+          }
+          // Count valleys too for validation
+          const valleyThreshold = sigMean - range2 * 0.05;
+          let valleys2 = 0;
+          let lastValley2 = -halfPeriod;
+          for (let i = 1; i < sigN - 1; i++) {
+            if (sigForPeaks[i] < valleyThreshold &&
+                sigForPeaks[i] <= sigForPeaks[i - 1] && sigForPeaks[i] <= sigForPeaks[i + 1] &&
+                (i - lastValley2) >= halfPeriod) {
+              valleys2++;
+              lastValley2 = i;
+            }
+          }
+          // If peaks suggest ~2x the YIN count, check for period doubling.
+          // Require either peaks OR valleys to support the doubled count.
+          const expectedDouble = best.reps * 2;
+          const durationSec = sigN / this._fps;
+          const maxReps = Math.ceil(durationSec / RepCounter._repPeriodBounds(this._exerciseKey).min);
+          // Period doubling check: ratio should be close to 2.0 (1.45-2.5).
+          // Only apply when YIN found few reps (<=4), since period doubling
+          // is the dominant failure at low rep counts. Higher counts (5+) are
+          // more reliable and shouldn't be overridden by noisy peak counting.
+          // Ratio 1.45 catches 4→6 (1.5x) cases like bench_press.
+          if (best.reps <= 4) {
+            const peakRatio = peaks2 / best.reps;
+            const valleyRatio = valleys2 / best.reps;
+            const peaksSupport = peakRatio >= 1.45 && peakRatio <= 2.5 && peaks2 <= maxReps;
+            const valleysSupport = valleyRatio >= 1.45 && valleyRatio <= 2.5 && valleys2 <= maxReps;
+            if (peaksSupport || valleysSupport) {
+              const bestCount = peaksSupport ? peaks2 : valleys2;
+              if (bestCount >= best.reps + 2) {
+                console.debug(`[RepCounter] Period-doubling detected: YIN=${best.reps}, peaks=${peaks2}, valleys=${valleys2} → ${bestCount} reps`);
+                best = { ...best, reps: bestCount, periodFrames: Math.round(sigN / bestCount),
+                         periodSeconds: (sigN / bestCount) / this._fps };
+              }
+            }
+          }
+        }
+      }
+    }
 
     this._acfDebug = { allSignals: results, picked: best };
 
@@ -469,8 +570,8 @@ export class RepCounter {
   // Calibrated against Countix ground truth and biomechanical limits.
   static _repPeriodBounds(exerciseKey) {
     const bounds = {
-      battle_rope:      { min: 0.4,  max: 3.0 },  // Fast: 14 reps/10s = 0.71s/rep
-      bench_press:      { min: 0.8,  max: 4.0 },  // 1.0-2.0s typical
+      battle_rope:      { min: 0.3,  max: 3.0 },  // Fast: 14 reps/10s = 0.71s/rep, at 10fps need minLag=3
+      bench_press:      { min: 0.7,  max: 4.0 },  // Fast benchers: 11 reps/8.5s = 0.77s/rep
       bicep_curl:       { min: 1.0,  max: 4.0 },  // 1.5-3.0s typical; raised min to prevent half-period detection
       hammer_curl:      { min: 0.8,  max: 4.0 },
       squat:            { min: 0.8,  max: 4.0 },  // 1.2-1.7s typical
@@ -481,8 +582,8 @@ export class RepCounter {
       pull_up:          { min: 1.0,  max: 4.0 },  // Moderate speed
       chin_up:          { min: 1.0,  max: 4.0 },
       push_up:          { min: 1.0,  max: 4.0 },  // Nobody does push-ups > 1/sec
-      sit_up:           { min: 0.5,  max: 3.0 },  // Can be fast: 15 reps/10s
-      crunch:           { min: 0.5,  max: 3.0 },
+      sit_up:           { min: 0.3,  max: 3.0 },  // Can be very fast: 15 reps/7s at 10fps = 4.7 frames/rep
+      crunch:           { min: 0.3,  max: 3.0 },
       front_raise:      { min: 1.0,  max: 4.0 },  // Controlled lift
       lateral_raise:    { min: 1.0,  max: 4.0 },
       overhead_press:   { min: 1.0,  max: 4.0 },
@@ -629,21 +730,27 @@ export class RepCounter {
     // has a dip below a relaxed threshold (sub-harmonics may be weaker
     // than the harmonic that was found first).
     {
-      // Sub-harmonic check with wider window and relaxed threshold.
-      // Z-axis signals (bench press, push-up) have lower SNR, producing
-      // CMNDF dips at 0.55-0.65 for valid sub-periods. The window must
-      // be ±10% of subLag (min 3 frames) because exact integer rounding
-      // of bestLag/divisor often misses the actual dip by 3-5 frames.
-      const subThreshold = 0.65;
+      // Sub-harmonic check with tiered thresholds per divisor.
+      // Period-doubling (/2) is the dominant failure mode at 10fps and gets
+      // an aggressive threshold. Higher divisors (/3, /4) are rarer and more
+      // likely to be false positives, so they use stricter thresholds.
+      // Window ±15% of subLag (min 3 frames) because at low fps, integer
+      // rounding of bestLag/divisor often misses the actual dip by several frames.
+      const subThresholds = { 2: 0.78, 3: 0.60, 4: 0.50 };
       for (const divisor of [2, 3, 4]) {
         const subLag = Math.round(bestLag / divisor);
         if (subLag < minLag || subLag > W) continue;
-        const window = Math.max(3, Math.round(subLag * 0.1));
+        const pw = Math.max(3, Math.round(subLag * 0.15));
         let subMin = Infinity, subIdx = subLag;
-        for (let t = Math.max(minLag, subLag - window); t <= Math.min(W, subLag + window); t++) {
+        for (let t = Math.max(minLag, subLag - pw); t <= Math.min(W, subLag + pw); t++) {
           if (cmndf[t] < subMin) { subMin = cmndf[t]; subIdx = t; }
         }
-        if (subMin < subThreshold) {
+        // Validate: the found sub-lag should be close to bestLag/divisor.
+        // If the minimum drifted too far (>30% from expected), it's a spurious dip.
+        const expectedSubLag = bestLag / divisor;
+        const driftRatio = Math.abs(subIdx - expectedSubLag) / expectedSubLag;
+        if (driftRatio > 0.30) continue;
+        if (subMin < subThresholds[divisor]) {
           bestLag = subIdx;
           bestCmndf = subMin;
           break;
@@ -671,12 +778,10 @@ export class RepCounter {
       return { reps: 0, confidence: 0, periodFrames: 0 };
     }
 
-    // Peak-counting cross-check: when YIN finds very few reps,
-    // count actual peaks (local maxima above the signal's midpoint) and
-    // zero-crossings as independent evidence. If peak counting finds
-    // significantly more reps, YIN likely locked onto a harmonic.
-    // Fire peak-counting check when reps are low enough that period-doubling
-    // could have occurred (i.e., the true count could be 2x what YIN found)
+    // Peak-counting cross-check: catch period-doubling when YIN locks
+    // onto a harmonic. Counts peaks and zero-crossings, validates via CMNDF.
+    // Also catches cases where YIN fails entirely on noisy fast signals but
+    // peak/ZC counting correctly identify the periodicity.
     if (reps <= Math.max(4, Math.floor(maxReasonableReps / 2)) && N > 20) {
       const mean = signal.reduce((a, b) => a + b, 0) / N;
 
@@ -687,39 +792,51 @@ export class RepCounter {
       }
       const zcReps = Math.round(crossings / 2);
 
-      // Method 2: Peak counting (local maxima above mean + 20% of range)
-      const mid = mean + sigRange * 0.2;
+      // Method 2: Peak counting (local maxima above mean + 15% of range)
+      // Reduced from 20% to catch smaller peaks in noisy fast signals
+      const mid = mean + sigRange * 0.15;
       let peakCount = 0;
-      const minPeakDist = minLag; // minimum frames between peaks
+      const minPeakDist = Math.max(2, minLag); // minimum frames between peaks
       let lastPeakIdx = -minPeakDist;
-      for (let i = 2; i < N - 2; i++) {
+      for (let i = 1; i < N - 1; i++) {
         if (signal[i] > mid &&
             signal[i] >= signal[i - 1] && signal[i] >= signal[i + 1] &&
-            signal[i] >= signal[i - 2] && signal[i] >= signal[i + 2] &&
             (i - lastPeakIdx) >= minPeakDist) {
           peakCount++;
           lastPeakIdx = i;
         }
       }
 
-      // Take the estimate that is closest to the other (consensus of two methods)
-      // but only if both find more than YIN
       const peakReps = (Math.abs(zcReps - peakCount) <= 2)
         ? Math.round((zcReps + peakCount) / 2)
         : Math.max(zcReps, peakCount);
 
+      // Override YIN when peak counting finds significantly more reps
       if (peakReps >= reps + 2 && peakReps <= maxReasonableReps) {
         const peakLag = Math.round(N / peakReps);
-        if (peakLag >= minLag && peakLag <= W) {
+        if (peakLag >= Math.max(2, minLag) && peakLag <= W) {
           const pw = Math.max(3, Math.round(peakLag * 0.15));
           let peakCmndf = Infinity;
           for (let t = Math.max(minLag, peakLag - pw); t <= Math.min(W, peakLag + pw); t++) {
             if (cmndf[t] < peakCmndf) peakCmndf = cmndf[t];
           }
+
           if (peakCmndf < 0.92) {
+            // Standard: CMNDF validates the period
             reps = peakReps;
             bestLag = N / peakReps;
             bestCmndf = peakCmndf;
+          } else if (zcReps >= reps * 3 && peakCount >= reps * 2 && peakCount >= 4) {
+            // Both ZC and peak counting found dramatically more reps than YIN.
+            // This happens on fast noisy signals (e.g. 15 sit-ups in 7s at 10fps)
+            // where YIN fails but the oscillations are real.
+            // Take the more conservative (smaller) estimate.
+            const conservativeReps = Math.min(zcReps, peakCount);
+            if (conservativeReps >= reps + 2 && conservativeReps <= maxReasonableReps) {
+              reps = conservativeReps;
+              bestLag = N / conservativeReps;
+              bestCmndf = 0.75; // Low confidence: counting-only evidence
+            }
           }
         }
       }
