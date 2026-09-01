@@ -4,8 +4,8 @@
  * Analyzes landmark frames from a set to produce velocity, time under tension,
  * range of motion, asymmetry, fatigue, and movement quality metrics.
  *
- * Accepts raw landmark arrays (as passed by VideoUpload) and does its own
- * rep detection from joint angle data.
+ * Accepts raw landmark arrays (as passed by VideoUpload) and rep boundaries
+ * from RepCounter (single source of truth for rep detection).
  *
  * References:
  *   - Gonzalez-Badillo JJ, 2017, Int J Sports Med (velocity zones)
@@ -62,18 +62,15 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userH
   // Get tracking values
   const trackingValues = anglesPerFrame.map(a => a ? exercise.getValue(a) : null);
 
-  // Use external rep boundaries from RepCounter if available and non-empty;
-  // otherwise fall back to internal peak-valley detection.
-  let reps;
-  if (externalReps && externalReps.length > 0) {
-    reps = externalReps.map(r => ({
-      start: Math.min(r.startFrame, rawFrames.length - 1),
-      bottom: Math.min(r.bottomFrame, rawFrames.length - 1),
-      end: Math.min(r.endFrame, rawFrames.length - 1),
-    })).filter(r => r.start >= 0 && r.bottom >= 0 && r.end >= 0 && r.end > r.start);
-  } else {
-    reps = detectReps(trackingValues);
-  }
+  // Rep boundaries come from RepCounter (single source of truth).
+  // If RepCounter found 0 reps, biomechanics returns empty — no rescue algo.
+  if (!externalReps || externalReps.length === 0) return emptyResult();
+  const reps = externalReps.map(r => ({
+    start: Math.min(r.startFrame, rawFrames.length - 1),
+    bottom: Math.min(r.bottomFrame, rawFrames.length - 1),
+    end: Math.min(r.endFrame, rawFrames.length - 1),
+  })).filter(r => r.start >= 0 && r.bottom >= 0 && r.end >= 0 && r.end > r.start);
+  if (reps.length === 0) return emptyResult();
 
   // Analyze each metric
   // For pulling exercises (rows, pulldowns, curls), the angle decreases during
@@ -108,131 +105,6 @@ function emptyResult() {
     fatigue: { index: 0, velocityDropoff: 0, curve: [], recommendation: 'fatigue_no_data' },
     movementQuality: 0,
   };
-}
-
-/**
- * Detect rep boundaries from tracking values using threshold crossings
- * with a simple state machine.
- */
-/**
- * Detect reps using peak-valley detection on the angle signal.
- * No fixed thresholds needed — finds oscillation patterns by detecting
- * local maxima and minima with sufficient prominence.
- *
- * Works for any exercise regardless of absolute angle values.
- */
-function detectReps(values) {
-  // Fill nulls: find first valid value, pad leading nulls with it,
-  // then carry forward for remaining nulls. This keeps filled.length === values.length
-  // so downstream rep indices align with rawFrames.
-  const firstValid = values.find(v => v !== null);
-  if (firstValid === undefined) return [];
-  const filled = [];
-  for (let i = 0; i < values.length; i++) {
-    if (values[i] !== null) {
-      filled.push(values[i]);
-    } else if (filled.length > 0) {
-      filled.push(filled[filled.length - 1]);
-    } else {
-      filled.push(firstValid); // pad leading nulls
-    }
-  }
-  if (filled.length < 6) return [];
-
-  // At low frame counts (< 30 frames, i.e. ~10s at 3fps), skip smoothing
-  // because a 3-point average spans 1 second and flattens the signal
-  const smooth = [];
-  if (filled.length < 30) {
-    smooth.push(...filled);
-  } else {
-    for (let i = 0; i < filled.length; i++) {
-      if (i === 0 || i === filled.length - 1) {
-        smooth.push(filled[i]);
-      } else {
-        smooth.push((filled[i - 1] + filled[i] + filled[i + 1]) / 3);
-      }
-    }
-  }
-
-  // Find all peaks (local maxima) and valleys (local minima)
-  const peaks = [];
-  const valleys = [];
-  for (let i = 1; i < smooth.length - 1; i++) {
-    if (smooth[i] >= smooth[i - 1] && smooth[i] >= smooth[i + 1] && smooth[i] > smooth[i - 1]) {
-      peaks.push({ idx: i, val: smooth[i] });
-    }
-    if (smooth[i] <= smooth[i - 1] && smooth[i] <= smooth[i + 1] && smooth[i] < smooth[i - 1]) {
-      valleys.push({ idx: i, val: smooth[i] });
-    }
-  }
-
-  // Merge peaks and valleys into alternating sequence
-  const extrema = [
-    ...peaks.map(p => ({ ...p, type: 'peak' })),
-    ...valleys.map(v => ({ ...v, type: 'valley' })),
-  ].sort((a, b) => a.idx - b.idx);
-
-  // Remove consecutive same-type extrema (keep most extreme)
-  const alternating = [];
-  for (const e of extrema) {
-    if (alternating.length === 0 || alternating[alternating.length - 1].type !== e.type) {
-      alternating.push(e);
-    } else {
-      const prev = alternating[alternating.length - 1];
-      if (e.type === 'peak' && e.val > prev.val) alternating[alternating.length - 1] = e;
-      if (e.type === 'valley' && e.val < prev.val) alternating[alternating.length - 1] = e;
-    }
-  }
-
-  // Compute minimum prominence: 30% of total signal range, minimum 12 degrees
-  const globalMin = Math.min(...smooth);
-  const globalMax = Math.max(...smooth);
-  const globalRange = globalMax - globalMin;
-  const minProminence = Math.max(12, globalRange * 0.3);
-
-  // Minimum frames between extrema (~1 second)
-  const minFrameGap = 3;
-
-  // Filter: only keep extrema pairs with sufficient prominence AND time gap
-  const significant = [];
-  for (let i = 0; i < alternating.length; i++) {
-    if (significant.length === 0) {
-      significant.push(alternating[i]);
-      continue;
-    }
-    const prev = significant[significant.length - 1];
-    const diff = Math.abs(alternating[i].val - prev.val);
-    const gap = alternating[i].idx - prev.idx;
-
-    if (diff >= minProminence && gap >= minFrameGap) {
-      significant.push(alternating[i]);
-    } else if (alternating[i].type === prev.type) {
-      // Same type: keep the more extreme one
-      if ((alternating[i].type === 'peak' && alternating[i].val > prev.val) ||
-          (alternating[i].type === 'valley' && alternating[i].val < prev.val)) {
-        significant[significant.length - 1] = alternating[i];
-      }
-    }
-  }
-
-  // Build reps from full cycles: peak-valley-peak or valley-peak-valley
-  const reps = [];
-  for (let i = 0; i < significant.length - 2; i++) {
-    const a = significant[i];
-    const b = significant[i + 1];
-    const c = significant[i + 2];
-
-    if (a.type === c.type && a.type !== b.type) {
-      reps.push({
-        start: a.idx,
-        bottom: b.idx,
-        end: c.idx,
-      });
-      i++; // skip one, next rep starts from c
-    }
-  }
-
-  return reps;
 }
 
 /**
