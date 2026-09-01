@@ -1,13 +1,16 @@
 /**
- * Rep counting engine — autocorrelation on multi-signal fusion.
+ * Rep counting engine — single architecture, two modes.
  *
- * Architecture:
- * - Pass 1: update() collects landmarks frame-by-frame (live counting via hysteresis)
- * - Pass 2: finalize() extracts 11 signals from landmarks, runs autocorrelation
- *   on each, picks the signal with highest periodicity confidence.
+ * mode: 'video' (default)
+ *   update() collects landmarks and evaluates form per frame.
+ *   finalize() runs ACF/YIN autocorrelation on the full signal set,
+ *   picks the best periodic signal via consensus voting.
+ *   This is the accurate path (84% on Countix benchmark).
  *
- * The finalize pass is the source of truth for video analysis.
- * Live counting is best-effort for real-time feedback.
+ * mode: 'live'
+ *   update() collects landmarks AND runs hysteresis counting
+ *   (threshold-crossing state machine) for real-time rep feedback.
+ *   finalize() is never called. Hysteresis is best-effort.
  */
 
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
@@ -61,11 +64,18 @@ const SIGNAL_PRIORITY = SIGNAL_PRIORITY_3D;
 // ---------------------------------------------------------------------------
 
 export class RepCounter {
+  /**
+   * @param {string} exerciseKey
+   * @param {object} opts
+   * @param {'live'|'video'} opts.mode - 'video' uses ACF/YIN via finalize(),
+   *   'live' uses hysteresis in update(). Default: 'video'.
+   */
   constructor(exerciseKey, opts = {}) {
     const ex = EXERCISES[exerciseKey];
     if (!ex) throw new Error(`Unknown exercise: ${exerciseKey}`);
     this._exercise = ex;
     this._exerciseKey = exerciseKey;
+    this._mode = opts.mode || 'video';
     this._fps = opts.fps || 30;
     this._userInjuries = opts.userInjuries || [];
     this._weightKg = opts.weightKg || 0;
@@ -92,7 +102,9 @@ export class RepCounter {
   }
 
   /**
-   * Pass 1: collect landmarks and do live rep counting.
+   * Per-frame update. Collects landmarks for finalize() and evaluates form.
+   * In 'live' mode, also runs hysteresis counting for real-time rep feedback.
+   * In 'video' mode, skips hysteresis (finalize() is the source of truth).
    */
   update(landmarks) {
     const rawAngles = extractJointAngles(landmarks);
@@ -133,36 +145,40 @@ export class RepCounter {
       this._anthropometricNormalizer.addFrame(landmarks);
     }
 
-    // Live hysteresis counting (unchanged — best-effort for real-time)
-    const down = ex.downThreshold;
-    const up = ex.upThreshold;
     let repCompleted = false;
-    const now = Date.now();
 
-    if (down > up) {
-      if (this._phase === 'idle' && value < down) {
-        this._phase = 'concentric';
-      } else if (this._phase === 'concentric' && value < up) {
-        this._phase = 'contracted';
-      } else if (this._phase === 'contracted' && value > down) {
-        if (now - this._lastRepTime > 600) {
-          this._lastRepTime = now;
-          this._phase = 'idle';
-          this._countLiveRep(angles, landmarks);
-          repCompleted = true;
+    // Hysteresis counting only runs in live mode.
+    // Video mode relies on finalize() for accurate ACF/YIN counting.
+    if (this._mode === 'live') {
+      const down = ex.downThreshold;
+      const up = ex.upThreshold;
+      const now = Date.now();
+
+      if (down > up) {
+        if (this._phase === 'idle' && value < down) {
+          this._phase = 'concentric';
+        } else if (this._phase === 'concentric' && value < up) {
+          this._phase = 'contracted';
+        } else if (this._phase === 'contracted' && value > down) {
+          if (now - this._lastRepTime > 600) {
+            this._lastRepTime = now;
+            this._phase = 'idle';
+            this._countLiveRep(angles, landmarks);
+            repCompleted = true;
+          }
         }
-      }
-    } else {
-      if (this._phase === 'idle' && value > down) {
-        this._phase = 'concentric';
-      } else if (this._phase === 'concentric' && value > up) {
-        this._phase = 'contracted';
-      } else if (this._phase === 'contracted' && value < down) {
-        if (now - this._lastRepTime > 600) {
-          this._lastRepTime = now;
-          this._phase = 'idle';
-          this._countLiveRep(angles, landmarks);
-          repCompleted = true;
+      } else {
+        if (this._phase === 'idle' && value > down) {
+          this._phase = 'concentric';
+        } else if (this._phase === 'concentric' && value > up) {
+          this._phase = 'contracted';
+        } else if (this._phase === 'contracted' && value < down) {
+          if (now - this._lastRepTime > 600) {
+            this._lastRepTime = now;
+            this._phase = 'idle';
+            this._countLiveRep(angles, landmarks);
+            repCompleted = true;
+          }
         }
       }
     }
@@ -178,9 +194,9 @@ export class RepCounter {
   }
 
   /**
-   * Pass 2: autocorrelation-based rep counting on multi-signal fusion.
-   * Extracts 11+ signals from collected landmarks, runs autocorrelation
-   * on each, picks the signal with highest periodicity confidence.
+   * Run ACF/YIN autocorrelation on the full collected signal.
+   * Called once after all frames are collected in video mode.
+   * Not used in live mode (hysteresis handles counting there).
    */
   finalize() {
     if (this._finalized) return;
@@ -273,7 +289,8 @@ export class RepCounter {
 
     if (results.length === 0 || results[0].reps === 0) {
       console.debug(`[RepCounter] ACF: no periodic signal found across ${signals.length} signals`);
-      // Keep live count as fallback
+      this._reps = 0;
+      this._repHistory = [];
       return;
     }
 

@@ -208,7 +208,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const isAutoMode = exercise === '__auto__';
     const initialExercise = isAutoMode ? 'squat' : exercise;
     let detectedExercise = initialExercise;
-    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries });
+    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video' });
     const skipAutoDetect = !isAutoMode && userChangedExercise.current;
     const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect))
       ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
@@ -393,7 +393,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let bestEx = initialExercise;
         let bestScore = -1;
         for (const ex of candidates) {
-          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries });
+          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries, mode: 'video' });
           for (const f of frames) rc.update(f.landmarks);
           rc.finalize();
           const reps = rc.repHistory ? rc.repHistory.length : 0;
@@ -404,7 +404,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           detectedExercise = bestEx;
           autoDetected = true;
           setExercise(detectedExercise);
-          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries });
+          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries, mode: 'video' });
           for (const f of frames) repCounter.update(f.landmarks);
         }
       }

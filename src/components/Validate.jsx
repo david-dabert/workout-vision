@@ -228,7 +228,7 @@ export default function Validate({ onClose }) {
       const frames = [];
       let lockedSubjectIdx = null;
       const exerciseKey = test.expectedExercise === '__auto__' ? 'squat' : test.expectedExercise;
-      const repCounter = new RepCounter(exerciseKey, { fps: analysisFps });
+      const repCounter = new RepCounter(exerciseKey, { fps: analysisFps, mode: 'video' });
       const autoDetector = test.expectedExercise === '__auto__'
         ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
 
@@ -288,7 +288,7 @@ export default function Validate({ onClose }) {
         if (candidates.length > 0) {
           let bestEx = exerciseKey, bestScore = -1;
           for (const ex of candidates) {
-            const rc = new RepCounter(ex, { fps: analysisFps });
+            const rc = new RepCounter(ex, { fps: analysisFps, mode: 'video' });
             for (const f of frames) rc.update(f.landmarks);
             rc.finalize();
             const reps = rc.repHistory ? rc.repHistory.length : 0;
@@ -303,7 +303,7 @@ export default function Validate({ onClose }) {
       }
 
       // Re-run rep counter with the correct exercise
-      const finalCounter = new RepCounter(detectedExercise, { fps: analysisFps });
+      const finalCounter = new RepCounter(detectedExercise, { fps: analysisFps, mode: 'video' });
       for (const f of frames) finalCounter.update(f.landmarks);
       finalCounter.finalize();
       const repHistory = finalCounter.repHistory || [];

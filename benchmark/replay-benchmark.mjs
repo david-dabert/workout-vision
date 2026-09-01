@@ -219,7 +219,7 @@ for (const video of cache) {
   }
 
   try {
-    const counter = new RepCounter(exercise, { fps });
+    const counter = new RepCounter(exercise, { fps, mode: 'video' });
     for (const lm of landmarks) {
       counter.update(lm);
     }

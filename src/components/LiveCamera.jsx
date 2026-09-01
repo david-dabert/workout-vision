@@ -241,7 +241,7 @@ export default function LiveCamera({ onClose }) {
         if (detected && detected !== exercise) {
           setExercise(detected);
           setDetectedName(EXERCISES[detected]?.name || detected);
-          repCounterRef.current = new RepCounter(detected);
+          repCounterRef.current = new RepCounter(detected, { mode: 'live' });
           setReps(0);
           setRepBars([]);
         }
@@ -335,7 +335,7 @@ export default function LiveCamera({ onClose }) {
     const activeExercise = exercise === '__auto__'
       ? (detectedName ? Object.keys(EXERCISES).find(k => EXERCISES[k].name === detectedName) || 'squat' : 'squat')
       : exercise;
-    repCounterRef.current = new RepCounter(activeExercise);
+    repCounterRef.current = new RepCounter(activeExercise, { mode: 'live' });
     if (exercise === '__auto__') {
       // Don't reset auto-detector -- keep its accumulated vote history
       // so it can refine or change detection during the set
@@ -458,7 +458,7 @@ export default function LiveCamera({ onClose }) {
       setAutoDetect(false);
       setDetectedName('');
       if (recording) {
-        repCounterRef.current = new RepCounter(key);
+        repCounterRef.current = new RepCounter(key, { mode: 'live' });
         setReps(0);
         setRepBars([]);
       }
