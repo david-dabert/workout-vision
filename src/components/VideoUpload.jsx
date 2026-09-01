@@ -14,7 +14,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v13-single-canvas';
+const BUILD_ID = 'v14-ios-compressed';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -297,33 +297,52 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             // iOS Safari composites <video> in a hardware-accelerated layer that
             // sits above <canvas> regardless of z-index. Drawing the video frame
             // onto the canvas bypasses the compositor entirely.
+            //
+            // iOS optimization: use 480p offscreen canvas for display too (saves
+            // a full-res decode+draw per frame), and only paint every 3rd frame
+            // to reduce GPU/rAF overhead. The phone screen is ~375px wide anyway.
+            const shouldPaint = IS_IOS ? (frameIdx % 3 === 0) : true;
             const canvas = overlayRef.current;
-            if (canvas) {
-              const vw = video.videoWidth || 1080;
-              const vh = video.videoHeight || 1920;
-              if (canvas.width !== vw || canvas.height !== vh) {
-                canvas.width = vw;
-                canvas.height = vh;
+            if (canvas && shouldPaint) {
+              if (IS_IOS) {
+                // iOS: reuse the 480p offscreen canvas for display.
+                // Avoids a second full-resolution drawImage() per frame.
+                if (canvas.width !== offscreen.width || canvas.height !== offscreen.height) {
+                  canvas.width = offscreen.width;
+                  canvas.height = offscreen.height;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(offscreen, 0, 0);
+                drawPose(ctx, landmarks, offscreen.width, offscreen.height, 1.0, updateResult?.formFeedback || null);
+                ctx.fillStyle = '#00f5d4';
+                ctx.font = 'bold 24px -apple-system, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 6;
+                ctx.fillText(`${updateResult.reps} ${t('reps').toLowerCase()}`, Math.round(offscreen.width * 0.05), Math.round(offscreen.height * 0.05));
+                ctx.shadowBlur = 0;
+              } else {
+                // Desktop: draw at full video resolution for sharp overlay
+                const vw = video.videoWidth || 1080;
+                const vh = video.videoHeight || 1920;
+                if (canvas.width !== vw || canvas.height !== vh) {
+                  canvas.width = vw;
+                  canvas.height = vh;
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, vw, vh);
+                drawPose(ctx, landmarks, vw, vh, 1.0, updateResult?.formFeedback || null);
+                const dScale = vw / 480;
+                ctx.fillStyle = '#00f5d4';
+                ctx.font = `bold ${Math.round(24 * dScale)}px -apple-system, sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 6;
+                ctx.fillText(`${updateResult.reps} ${t('reps').toLowerCase()}`, Math.round(vw * 0.05), Math.round(vh * 0.05));
+                ctx.shadowBlur = 0;
               }
-              const ctx = canvas.getContext('2d');
-
-              // 1. Draw the video frame as background
-              ctx.drawImage(video, 0, 0, vw, vh);
-
-              // 2. Draw skeleton on top of the video frame.
-              // Pass form feedback so segments turn red/orange on violations.
-              drawPose(ctx, landmarks, vw, vh, 1.0, updateResult?.formFeedback || null);
-
-              // 3. Rep counter text scaled to video resolution
-              const scale = vw / 480;
-              ctx.fillStyle = '#00f5d4';
-              ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, sans-serif`;
-              ctx.textAlign = 'left';
-              ctx.textBaseline = 'top';
-              ctx.shadowColor = 'rgba(0,0,0,0.8)';
-              ctx.shadowBlur = 6;
-              ctx.fillText(`${updateResult.reps} ${t('reps').toLowerCase()}`, Math.round(vw * 0.05), Math.round(vh * 0.05));
-              ctx.shadowBlur = 0;
             }
 
             if (!IS_IOS || frameIdx % 2 === 0) {
@@ -337,8 +356,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             q.id === queueItem.id ? { ...q, progress: pct } : q
           ));
 
-          // Yield to browser paint cycle so the skeleton overlay is visible.
-          await new Promise(r => requestAnimationFrame(r));
+          // Yield to browser paint cycle. On iOS, yield less frequently
+          // to reduce per-frame overhead (~16ms per rAF yield).
+          if (!IS_IOS || shouldPaint) {
+            await new Promise(r => requestAnimationFrame(r));
+          }
           settle(true);
         };
 
