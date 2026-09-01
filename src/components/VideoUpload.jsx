@@ -310,8 +310,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               // 1. Draw the video frame as background
               ctx.drawImage(video, 0, 0, vw, vh);
 
-              // 2. Draw skeleton on top of the video frame
-              drawPose(ctx, landmarks, vw, vh, 1.0, null);
+              // 2. Draw skeleton on top of the video frame.
+              // Pass form feedback so segments turn red/orange on violations.
+              drawPose(ctx, landmarks, vw, vh, 1.0, updateResult?.formFeedback || null);
 
               // 3. Rep counter text scaled to video resolution
               const scale = vw / 480;

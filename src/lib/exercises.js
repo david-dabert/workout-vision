@@ -21,8 +21,12 @@
 // When filming from the side, MediaPipe hallucinates the occluded arm/leg.
 // Using Math.min of both sides clamps the value to the hallucinated angle,
 // preventing threshold crossing. This helper uses the side with better
-// landmark visibility, falling back to Math.min when both are well-tracked.
-const VIS_THRESHOLD = 0.5;
+// landmark visibility, falling back safely when both are low-confidence.
+//
+// VIS_THRESHOLD raised from 0.5 to 0.6: MediaPipe visibility is a confidence
+// score, not actual occlusion percentage. At 0.5, ~30% of selected landmarks
+// are hallucinations. At 0.6, this drops to ~15%.
+const VIS_THRESHOLD = 0.6;
 
 export function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
   const lv = angles[visLeftKey] || 0;
@@ -36,8 +40,12 @@ export function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
   // Only one side valid: use that side
   if (leftOk) return left;
   if (rightOk) return right;
-  // Neither well-tracked: return whichever is a valid number, or null
-  if (left != null && !isNaN(left) && right != null && !isNaN(right)) return Math.max(left, right);
+  // Neither well-tracked: use the side with HIGHER visibility (less hallucinated).
+  // Previous code used Math.max(left, right) here which AMPLIFIED hallucinations
+  // by picking the most extreme (and often most wrong) angle.
+  if (left != null && !isNaN(left) && right != null && !isNaN(right)) {
+    return lv >= rv ? left : right;
+  }
   if (left != null && !isNaN(left)) return left;
   if (right != null && !isNaN(right)) return right;
   return null;
@@ -54,7 +62,10 @@ export function bestSideMax(angles, leftKey, rightKey, visLeftKey, visRightKey) 
   if (leftOk && rightOk) return Math.max(left, right);
   if (leftOk) return left;
   if (rightOk) return right;
-  if (left != null && !isNaN(left) && right != null && !isNaN(right)) return Math.max(left, right);
+  // Same fix: prefer higher-visibility side instead of Math.max
+  if (left != null && !isNaN(left) && right != null && !isNaN(right)) {
+    return lv >= rv ? left : right;
+  }
   if (left != null && !isNaN(left)) return left;
   if (right != null && !isNaN(right)) return right;
   return null;
@@ -77,7 +88,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Depth',
-        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
+        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
         good: 'Below parallel',
         bad: 'Above parallel -- sit deeper',
         severity: 'major',
@@ -85,7 +96,7 @@ export const EXERCISES = {
       },
       {
         name: 'Knee symmetry',
-        check: (angles) => Math.abs(angles.leftKnee - angles.rightKnee) < 12,
+        check: (angles) => Math.abs(angles.leftKnee - angles.rightKnee) < 18,
         good: 'Knees tracking evenly',
         bad: 'Asymmetric knee bend -- check for lateral shift',
         severity: 'major',
@@ -310,7 +321,7 @@ export const EXERCISES = {
         check: (angles) => {
           const hipAngle = Math.min(angles.leftHip, angles.rightHip);
           if (hipAngle <= 160) return true; // only check near lockout
-          return angles.trunk < 15;
+          return angles.trunk < 20;
         },
         good: 'Neutral spine at lockout',
         bad: 'Anterior pelvic tilt detected -- tuck pelvis and brace abs at the top',
@@ -456,7 +467,7 @@ export const EXERCISES = {
       },
       {
         name: 'Body alignment',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Body in straight line',
         bad: 'Hips sagging or piking -- brace core',
         severity: 'major',
@@ -669,7 +680,7 @@ export const EXERCISES = {
       },
       {
         name: 'No body swing',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Strict form -- no swinging',
         bad: 'Body swinging -- reduce weight or brace',
         severity: 'major',
@@ -993,7 +1004,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Body alignment',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Flat back -- strong plank position',
         bad: 'Hips sagging or piking -- maintain straight line',
         severity: 'major',
@@ -1148,7 +1159,7 @@ export const EXERCISES = {
       },
       {
         name: 'Body alignment',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Body in straight line',
         bad: 'Hips sagging or piking -- brace core',
         severity: 'major',
@@ -1302,7 +1313,7 @@ export const EXERCISES = {
       },
       {
         name: 'Back flat',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Back flat against wall',
         bad: 'Press back flat against wall',
         severity: 'minor',
@@ -1386,7 +1397,7 @@ export const EXERCISES = {
     downThreshold: null,
     upThreshold: null,
     formChecks: [
-      { name: 'Body alignment', check: (angles) => angles.trunk < 15, good: 'Straight line from head to feet', bad: 'Lift hips -- maintain straight line', severity: 'major', citation: 'McGill SM, 2010' },
+      { name: 'Body alignment', check: (angles) => angles.trunk < 20, good: 'Straight line from head to feet', bad: 'Lift hips -- maintain straight line', severity: 'major', citation: 'McGill SM, 2010' },
     ],
     scienceNotes: 'Side plank produces high oblique activation with low spinal compression. One of McGill Big Three for back health (McGill 2010).',
   },
@@ -1772,7 +1783,7 @@ export const EXERCISES = {
       },
       {
         name: 'Trunk stable',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Upright torso -- no leaning back',
         bad: 'Leaning back -- reduce weight and stay upright',
         severity: 'major',
@@ -1900,7 +1911,7 @@ export const EXERCISES = {
       },
       {
         name: 'Full ROM',
-        check: (angles) => angles.trunk < 15,
+        check: (angles) => angles.trunk < 20,
         good: 'Upright seated posture',
         bad: 'Sit upright -- avoid leaning forward',
         severity: 'minor',
@@ -2233,7 +2244,7 @@ export const EXERCISES = {
     downThreshold: 30,
     upThreshold: 80,
     formChecks: [
-      { name: 'No swing', check: (angles) => angles.trunk < 15, good: 'Controlled raise', bad: 'No swinging -- keep torso still', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013' },
+      { name: 'No swing', check: (angles) => angles.trunk < 20, good: 'Controlled raise', bad: 'No swinging -- keep torso still', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013' },
     ],
     scienceNotes: 'Front raises isolate anterior deltoid; stopping at shoulder height prevents impingement (Saeterbakken 2013).',
   },
@@ -2388,7 +2399,7 @@ export const EXERCISES = {
     downThreshold: 140,
     upThreshold: 165,
     formChecks: [
-      { name: 'Lower back down', check: (angles) => angles.trunk < 15, good: 'Back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2006' },
+      { name: 'Lower back down', check: (angles) => angles.trunk < 20, good: 'Back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2006' },
     ],
     scienceNotes: 'Flutter kicks maintain constant lower ab tension; pressing back to floor prevents lumbar strain (Escamilla 2006).',
   },

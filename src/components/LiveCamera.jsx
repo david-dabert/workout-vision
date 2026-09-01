@@ -236,11 +236,6 @@ export default function LiveCamera({ onClose }) {
         aiLockOnFiredRef.current = true;
         sonicEngine.aiLockOn();
       }
-      // Lite mode: skip skeleton drawing to save GPU, keep rep counting
-      if (!liteMode) {
-        drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0);
-      }
-
       if (autoDetect && autoDetectorRef.current) {
         const detected = autoDetectorRef.current.update(landmarks);
         if (detected && detected !== exercise) {
@@ -252,13 +247,18 @@ export default function LiveCamera({ onClose }) {
         }
       }
 
+      // Run rep counter BEFORE drawing so form feedback colors the skeleton
+      let currentFormFeedback = null;
       if (repCounterRef.current) {
         const state = repCounterRef.current.update(landmarks);
         if (state) {
           setReps(state.reps);
           setPhase(state.phase || '');
           setAngle(Math.round(state.angle || 0));
-          if (state.formFeedback) setFeedback(state.formFeedback);
+          if (state.formFeedback) {
+            setFeedback(state.formFeedback);
+            currentFormFeedback = state.formFeedback;
+          }
 
           // Sonic: phase transition sounds
           if (state.phase && state.phase !== prevPhaseRef.current) {
@@ -304,6 +304,12 @@ export default function LiveCamera({ onClose }) {
             }
           }
         }
+      }
+
+      // Draw skeleton AFTER rep counting so form feedback colors the segments.
+      // Segments turn red (major violation) or orange (minor) via getSegmentColor().
+      if (!liteMode) {
+        drawPose(ctx, landmarks, canvas.width, canvas.height, 1.0, currentFormFeedback);
       }
     } else if (lastValidPoseRef.current) {
       // No detection this frame — show ghost pose with decay
