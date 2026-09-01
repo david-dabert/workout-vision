@@ -22,7 +22,9 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 
 // Hard cap on frames. iOS Safari crashes with high frame counts on large
 // videos due to accumulated WASM/WebGL memory.
-const MAX_FRAMES = IS_IOS ? 180 : 300;
+// Higher frame counts improve rep counting accuracy (10fps→20fps reduced
+// period quantization errors and Nyquist violations on fast exercises).
+const MAX_FRAMES = IS_IOS ? 300 : 600;
 
 // File size cap. iOS Safari can crash loading very large blob URLs.
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
@@ -181,9 +183,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       return null;
     }
 
-    // Adaptive FPS: short videos get 3 FPS, long videos get fewer.
-    // Cap total frames at MAX_FRAMES so a long video doesn't produce hundreds of seeks.
-    const analysisFps = Math.min(IS_IOS ? 8 : 10, MAX_FRAMES / duration);
+    // Adaptive FPS: target 15fps (iOS) or 20fps (desktop) for accurate rep counting.
+    // At 10fps, fast exercises (battle rope, sit-ups) hit Nyquist limits and period
+    // quantization errors. 20fps gives YIN enough samples for sub-frame accuracy.
+    // Cap total frames at MAX_FRAMES so a long video doesn't exhaust WASM memory.
+    const analysisFps = Math.min(IS_IOS ? 15 : 20, MAX_FRAMES / duration);
     const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
     const interval = duration / totalFrames;
 

@@ -193,6 +193,20 @@ export class RepCounter {
     // ── Step 1: Extract all candidate signals ──
     const signals = this._extractSignals();
 
+    // ── Step 1b: Shoulder stability gate ──
+    // For exercises where shoulders should be pinned (bench press, lying curls),
+    // detect shoulder vertical displacement. When shoulders move significantly,
+    // wristShoulderDist signals become unreliable because the reference frame shifts.
+    // Penalize their confidence so consensus prefers elbow-angle or Z-axis signals.
+    // Only apply to exercises where shoulders are expected to be stationary.
+    const SHOULDER_PINNED_EXERCISES = ['bench_press', 'lying_curl', 'lying_tricep_extension', 'skull_crusher'];
+    const shoulderUnstable = SHOULDER_PINNED_EXERCISES.includes(this._exerciseKey)
+      ? this._detectShoulderInstability()
+      : 0;
+    if (shoulderUnstable > 0) {
+      console.debug(`[RepCounter] Shoulder instability: ${(shoulderUnstable * 100).toFixed(0)}% — penalizing wristShoulderDist signals`);
+    }
+
     // ── Step 2: Smooth and run autocorrelation on each ──
     // Two-tier approach: try priority signals first. Only fall back to all signals
     // if priority signals produce no results. This prevents noise signals from
@@ -225,10 +239,15 @@ export class RepCounter {
         }
 
         if (acf.confidence > 0) {
+          let conf = acf.confidence;
+          // Apply shoulder instability penalty to distance-from-shoulder signals
+          if (shoulderUnstable > 0 && (sig.name.includes('wristShoulderDist') || sig.name.includes('wristShoulderDist3D'))) {
+            conf *= (1 - shoulderUnstable * 0.4); // Up to 40% penalty
+          }
           results.push({
             name: sig.name,
             reps: acf.reps,
-            confidence: acf.confidence,
+            confidence: conf,
             rawConfidence: acf.confidence,
             periodFrames: acf.periodFrames,
             periodSeconds: acf.periodFrames / this._fps,
@@ -505,6 +524,48 @@ export class RepCounter {
 
   _extractSignals() {
     return extractSignals3D(this._collectedLandmarks);
+  }
+
+  // ─── Private: Shoulder stability detector ───
+  // Measures how much the shoulders move vertically relative to torso height.
+  // Returns 0 (stable) to 1 (very unstable). Used to penalize wristShoulderDist
+  // signals when the shoulder reference frame is shifting.
+  _detectShoulderInstability() {
+    const landmarks = this._collectedLandmarks;
+    const N = landmarks.length;
+    if (N < 10) return 0;
+
+    const LS = LANDMARKS.LEFT_SHOULDER, RS = LANDMARKS.RIGHT_SHOULDER;
+    const LH = LANDMARKS.LEFT_HIP, RH = LANDMARKS.RIGHT_HIP;
+
+    // Collect shoulder Y midpoint and torso height per frame
+    const shoulderYs = [];
+    const torsoHeights = [];
+    for (let i = 0; i < N; i++) {
+      const f = landmarks[i];
+      if (!f || !f[LS] || !f[RS] || !f[LH] || !f[RH]) continue;
+      const midShoulderY = (f[LS].y + f[RS].y) / 2;
+      const midHipY = (f[LH].y + f[RH].y) / 2;
+      shoulderYs.push(midShoulderY);
+      torsoHeights.push(Math.abs(midHipY - midShoulderY));
+    }
+
+    if (shoulderYs.length < 10) return 0;
+
+    // Compute RMS of shoulder Y displacement relative to mean
+    const meanY = shoulderYs.reduce((a, b) => a + b, 0) / shoulderYs.length;
+    let sumSq = 0;
+    for (const y of shoulderYs) sumSq += (y - meanY) * (y - meanY);
+    const rmsDisplacement = Math.sqrt(sumSq / shoulderYs.length);
+
+    // Normalize by average torso height
+    const avgTorso = torsoHeights.reduce((a, b) => a + b, 0) / torsoHeights.length;
+    if (avgTorso < 0.01) return 0;
+
+    const instabilityRatio = rmsDisplacement / avgTorso;
+    // Threshold: >5% of torso height = unstable. Scale linearly to 1.0 at 15%.
+    if (instabilityRatio < 0.05) return 0;
+    return Math.min(1, (instabilityRatio - 0.05) / 0.10);
   }
 
   // ─── Private: Gaussian smoothing ───
