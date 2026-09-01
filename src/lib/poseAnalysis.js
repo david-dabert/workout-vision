@@ -42,6 +42,7 @@ export const LANDMARKS = {
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
+const VIS = 0.1; // minimum landmark visibility to draw/use
 
 // ─── Core: single model instance with IndexedDB cache ───
 
@@ -415,8 +416,6 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   ctx.globalAlpha = alpha;
 
   const baseW = Math.max(8, width / 40); // ~12px on 480p, ~27px on 1080p
-  const VIS = 0.1; // low threshold — draw skeleton even at marginal confidence
-
   // Glow layer — wide soft neon behind the skeleton
   ctx.lineCap = 'round';
   ctx.lineWidth = baseW * 3;
