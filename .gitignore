@@ -26,3 +26,4 @@ dist-ssr
 # Benchmark videos (28MB+, not for git)
 benchmark/videos/
 public/benchmark
+.certs/
