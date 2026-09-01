@@ -286,7 +286,7 @@ export function selectSubjectPose(landmarksArray) {
   for (const pose of landmarksArray) {
     let minX = 1, maxX = 0, minY = 1, maxY = 0;
     for (const lm of pose) {
-      if ((lm.visibility || 0) < 0.3) continue;
+      if ((lm.visibility || 0) < VIS) continue;
       minX = Math.min(minX, lm.x);
       maxX = Math.max(maxX, lm.x);
       minY = Math.min(minY, lm.y);
@@ -415,12 +415,13 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   ctx.globalAlpha = alpha;
 
   const baseW = Math.max(8, width / 40); // ~12px on 480p, ~27px on 1080p
+  const VIS = 0.1; // low threshold — draw skeleton even at marginal confidence
 
   // Glow layer — wide soft neon behind the skeleton
   ctx.lineCap = 'round';
   ctx.lineWidth = baseW * 3;
   for (const [i, j] of connections) {
-    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
+    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > VIS && (landmarks[j].visibility || 0) > VIS) {
       const color = getSegmentColor(i, j, formFeedback);
       ctx.strokeStyle = color === '#ff3b5c' ? 'rgba(255,59,92,0.25)'
         : color === '#ffb836' ? 'rgba(255,184,54,0.25)'
@@ -436,7 +437,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   ctx.lineWidth = baseW + 3;
   ctx.strokeStyle = 'rgba(0,0,0,0.6)';
   for (const [i, j] of connections) {
-    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
+    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > VIS && (landmarks[j].visibility || 0) > VIS) {
       ctx.beginPath();
       ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
       ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
@@ -447,7 +448,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   // Skeleton segments — color-coded by form feedback
   ctx.lineWidth = baseW;
   for (const [i, j] of connections) {
-    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
+    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > VIS && (landmarks[j].visibility || 0) > VIS) {
       ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
       ctx.beginPath();
       ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
@@ -459,7 +460,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   // Joints — bold circles with dark outline
   const dotSize = baseW * 0.8;
   for (const lm of landmarks) {
-    if ((lm.visibility || 0) < 0.3) continue;
+    if ((lm.visibility || 0) < VIS) continue;
     const x = lm.x * width, y = lm.y * height;
     // Dark outline
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
