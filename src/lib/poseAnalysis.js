@@ -413,65 +413,46 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     [27, 29], [29, 31], [28, 30], [30, 32],
   ];
 
+  ctx.save();
   ctx.globalAlpha = alpha;
-
-  const baseW = Math.max(8, width / 40); // ~12px on 480p, ~27px on 1080p
-  // Glow layer — wide soft neon behind the skeleton
   ctx.lineCap = 'round';
-  ctx.lineWidth = baseW * 3;
-  for (const [i, j] of connections) {
-    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > VIS && (landmarks[j].visibility || 0) > VIS) {
-      const color = getSegmentColor(i, j, formFeedback);
-      ctx.strokeStyle = color === '#ff3b5c' ? 'rgba(255,59,92,0.25)'
-        : color === '#ffb836' ? 'rgba(255,184,54,0.25)'
-        : 'rgba(0,245,212,0.25)';
-      ctx.beginPath();
-      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
-      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
-      ctx.stroke();
-    }
-  }
+  ctx.lineJoin = 'round';
 
-  // Shadow/outline
-  ctx.lineWidth = baseW + 3;
-  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-  for (const [i, j] of connections) {
-    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > VIS && (landmarks[j].visibility || 0) > VIS) {
-      ctx.beginPath();
-      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
-      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
-      ctx.stroke();
-    }
-  }
+  const lw = Math.max(6, Math.round(width / 50));
 
-  // Skeleton segments — color-coded by form feedback
-  ctx.lineWidth = baseW;
+  // Black outline behind skeleton for contrast
+  ctx.lineWidth = lw + 4;
+  ctx.strokeStyle = '#000000';
   for (const [i, j] of connections) {
-    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > VIS && (landmarks[j].visibility || 0) > VIS) {
-      ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
-      ctx.beginPath();
-      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
-      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
-      ctx.stroke();
-    }
-  }
-
-  // Joints — bold circles with dark outline
-  const dotSize = baseW * 0.8;
-  for (const lm of landmarks) {
-    if ((lm.visibility || 0) < VIS) continue;
-    const x = lm.x * width, y = lm.y * height;
-    // Dark outline
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    if (!landmarks[i] || !landmarks[j]) continue;
     ctx.beginPath();
-    ctx.arc(x, y, dotSize + 2, 0, 2 * Math.PI);
-    ctx.fill();
-    // Bright joint
-    ctx.fillStyle = '#ffffff';
+    ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
+    ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
+    ctx.stroke();
+  }
+
+  // Bright green skeleton lines
+  ctx.lineWidth = lw;
+  for (const [i, j] of connections) {
+    if (!landmarks[i] || !landmarks[j]) continue;
+    ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
     ctx.beginPath();
-    ctx.arc(x, y, dotSize, 0, 2 * Math.PI);
+    ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
+    ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
+    ctx.stroke();
+  }
+
+  // Red joint dots
+  const dotR = Math.max(4, Math.round(width / 80));
+  ctx.fillStyle = '#ff3b5c';
+  for (let k = 0; k < landmarks.length; k++) {
+    if (!landmarks[k]) continue;
+    ctx.beginPath();
+    ctx.arc(landmarks[k].x * width, landmarks[k].y * height, dotR, 0, 2 * Math.PI);
     ctx.fill();
   }
+
+  ctx.restore();
 
   ctx.globalAlpha = 1.0;
 }
