@@ -304,44 +304,68 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             const shouldPaint = IS_IOS ? (frameIdx % 3 === 0) : true;
             const canvas = overlayRef.current;
             if (canvas && shouldPaint) {
+              // Draw video frame + skeleton + large rep counter
+              let cw, ch;
               if (IS_IOS) {
                 // iOS: reuse the 480p offscreen canvas for display.
-                // Avoids a second full-resolution drawImage() per frame.
-                if (canvas.width !== offscreen.width || canvas.height !== offscreen.height) {
-                  canvas.width = offscreen.width;
-                  canvas.height = offscreen.height;
+                cw = offscreen.width;
+                ch = offscreen.height;
+                if (canvas.width !== cw || canvas.height !== ch) {
+                  canvas.width = cw;
+                  canvas.height = ch;
                 }
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(offscreen, 0, 0);
-                drawPose(ctx, landmarks, offscreen.width, offscreen.height, 1.0, updateResult?.formFeedback || null);
-                ctx.fillStyle = '#00f5d4';
-                ctx.font = 'bold 24px -apple-system, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'top';
-                ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                ctx.shadowBlur = 6;
-                ctx.fillText(`${updateResult.reps} ${t('reps').toLowerCase()}`, Math.round(offscreen.width * 0.05), Math.round(offscreen.height * 0.05));
-                ctx.shadowBlur = 0;
+                drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
               } else {
-                // Desktop: draw at full video resolution for sharp overlay
-                const vw = video.videoWidth || 1080;
-                const vh = video.videoHeight || 1920;
-                if (canvas.width !== vw || canvas.height !== vh) {
-                  canvas.width = vw;
-                  canvas.height = vh;
+                // Desktop: draw at full video resolution
+                cw = video.videoWidth || 1080;
+                ch = video.videoHeight || 1920;
+                if (canvas.width !== cw || canvas.height !== ch) {
+                  canvas.width = cw;
+                  canvas.height = ch;
                 }
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, vw, vh);
-                drawPose(ctx, landmarks, vw, vh, 1.0, updateResult?.formFeedback || null);
-                const dScale = vw / 480;
+                ctx.drawImage(video, 0, 0, cw, ch);
+                drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
+              }
+              // Large rep counter — prominent center-top pill
+              {
+                const ctx = canvas.getContext('2d');
+                const repText = `${updateResult.reps}`;
+                const labelText = t('reps').toLowerCase();
+                const fontSize = Math.round(cw * 0.12); // 12% of canvas width
+                const labelSize = Math.round(fontSize * 0.4);
+                ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
+                const repWidth = ctx.measureText(repText).width;
+                ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
+                const labelWidth = ctx.measureText(labelText).width;
+                const pillW = Math.max(repWidth, labelWidth) + fontSize;
+                const pillH = fontSize * 1.8;
+                const pillX = (cw - pillW) / 2;
+                const pillY = ch * 0.03;
+                // Semi-transparent black pill
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.beginPath();
+                const r = pillH / 2;
+                ctx.moveTo(pillX + r, pillY);
+                ctx.lineTo(pillX + pillW - r, pillY);
+                ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
+                ctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
+                ctx.lineTo(pillX + r, pillY + pillH);
+                ctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
+                ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
+                ctx.fill();
+                // Rep number
                 ctx.fillStyle = '#00f5d4';
-                ctx.font = `bold ${Math.round(24 * dScale)}px -apple-system, sans-serif`;
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'top';
-                ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                ctx.shadowBlur = 6;
-                ctx.fillText(`${updateResult.reps} ${t('reps').toLowerCase()}`, Math.round(vw * 0.05), Math.round(vh * 0.05));
-                ctx.shadowBlur = 0;
+                ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(repText, cw / 2, pillY + pillH * 0.42);
+                // "reps" label
+                ctx.fillStyle = 'rgba(240,240,245,0.8)';
+                ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
+                ctx.fillText(labelText, cw / 2, pillY + pillH * 0.78);
               }
             }
 

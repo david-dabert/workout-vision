@@ -961,11 +961,12 @@ export class RepCounter {
 
       let score = null;
       const issues = [];
+      let formResults = null;
 
       if (checks.length > 0) {
         const sampleStep = Math.max(1, Math.floor((endFrame - startFrame) / 8));
 
-        const formResults = checks.map((fc) => {
+        formResults = checks.map((fc) => {
           if (shouldSkipCheck(fc.name, this._userInjuries)) {
             return { name: fc.name, passed: true, bad: fc.bad, severity: 'minor', skipped: true };
           }
@@ -1010,6 +1011,9 @@ export class RepCounter {
       history.push({
         score,
         issues,
+        // Full form check results for skeleton coloring in replay.
+        // Each entry: {name, passed, severity} — matches getSegmentColor() format.
+        feedback: formResults,
         ts: Date.now() + r,
         startFrame,
         bottomFrame: midFrame,
