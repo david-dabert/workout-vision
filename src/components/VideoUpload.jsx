@@ -276,6 +276,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
           const result = detectPoseImage(landmarker, offscreen);
 
+          // iOS optimization: only paint every 3rd frame to reduce GPU overhead.
+          const shouldPaint = !IS_IOS || (frameIdx % 3 === 0);
+
           if (result?.landmarks?.length) {
             let landmarks;
             if (result.landmarks.length === 1) {
@@ -297,11 +300,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             // iOS Safari composites <video> in a hardware-accelerated layer that
             // sits above <canvas> regardless of z-index. Drawing the video frame
             // onto the canvas bypasses the compositor entirely.
-            //
-            // iOS optimization: use 480p offscreen canvas for display too (saves
-            // a full-res decode+draw per frame), and only paint every 3rd frame
-            // to reduce GPU/rAF overhead. The phone screen is ~375px wide anyway.
-            const shouldPaint = IS_IOS ? (frameIdx % 3 === 0) : true;
             const canvas = overlayRef.current;
             if (canvas && shouldPaint) {
               // Draw video frame + skeleton + large rep counter
