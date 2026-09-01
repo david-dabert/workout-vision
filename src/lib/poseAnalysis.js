@@ -414,10 +414,27 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
 
   ctx.globalAlpha = alpha;
 
-  // Shadow/outline first
+  const baseW = Math.max(8, width / 40); // ~12px on 480p, ~27px on 1080p
+
+  // Glow layer — wide soft neon behind the skeleton
   ctx.lineCap = 'round';
-  ctx.lineWidth = Math.max(5, width / 80) + 2;
-  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.lineWidth = baseW * 3;
+  for (const [i, j] of connections) {
+    if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
+      const color = getSegmentColor(i, j, formFeedback);
+      ctx.strokeStyle = color === '#ff3b5c' ? 'rgba(255,59,92,0.25)'
+        : color === '#ffb836' ? 'rgba(255,184,54,0.25)'
+        : 'rgba(0,245,212,0.25)';
+      ctx.beginPath();
+      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
+      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
+      ctx.stroke();
+    }
+  }
+
+  // Shadow/outline
+  ctx.lineWidth = baseW + 3;
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
   for (const [i, j] of connections) {
     if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
       ctx.beginPath();
@@ -428,7 +445,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   }
 
   // Skeleton segments — color-coded by form feedback
-  ctx.lineWidth = Math.max(5, width / 80);
+  ctx.lineWidth = baseW;
   for (const [i, j] of connections) {
     if (landmarks[i] && landmarks[j] && (landmarks[i].visibility || 0) > 0.3 && (landmarks[j].visibility || 0) > 0.3) {
       ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
@@ -439,13 +456,20 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     }
   }
 
-  // Joints — always red dots
-  const dotSize = Math.max(5, width / 80);
-  ctx.fillStyle = '#ff3b5c';
+  // Joints — bold circles with dark outline
+  const dotSize = baseW * 0.8;
   for (const lm of landmarks) {
     if ((lm.visibility || 0) < 0.3) continue;
+    const x = lm.x * width, y = lm.y * height;
+    // Dark outline
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.beginPath();
-    ctx.arc(lm.x * width, lm.y * height, dotSize, 0, 2 * Math.PI);
+    ctx.arc(x, y, dotSize + 2, 0, 2 * Math.PI);
+    ctx.fill();
+    // Bright joint
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x, y, dotSize, 0, 2 * Math.PI);
     ctx.fill();
   }
 
