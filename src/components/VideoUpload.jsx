@@ -14,20 +14,28 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v15-direct-count';
+const BUILD_ID = 'v16-user-correction';
 
 // ── Landmark cache (IndexedDB) ──
 // Same video + same fps = same landmarks. Skip MediaPipe entirely on re-analysis.
 const CACHE_DB = 'workoutVisionCache';
 const CACHE_STORE = 'landmarks';
+const CORRECTIONS_STORE = 'repCorrections';
+const CALIBRATION_STORE = 'calibrationOffsets';
 
 function openCacheDB() {
   return new Promise((resolve) => {
-    const req = indexedDB.open(CACHE_DB, 1);
+    const req = indexedDB.open(CACHE_DB, 2);
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains(CACHE_STORE)) {
         db.createObjectStore(CACHE_STORE);
+      }
+      if (!db.objectStoreNames.contains(CORRECTIONS_STORE)) {
+        db.createObjectStore(CORRECTIONS_STORE);
+      }
+      if (!db.objectStoreNames.contains(CALIBRATION_STORE)) {
+        db.createObjectStore(CALIBRATION_STORE);
       }
     };
     req.onsuccess = (e) => resolve(e.target.result);
@@ -56,6 +64,61 @@ async function setCachedLandmarks(key, data) {
     tx.oncomplete = () => { db.close(); resolve(); };
     tx.onerror = () => { db.close(); resolve(); };
   });
+}
+
+// ── Rep correction storage (Brick 6: User Correction as Ground Truth) ──
+
+async function saveRepCorrection(videoKey, exerciseKey, detectedReps, actualReps) {
+  const db = await openCacheDB();
+  if (!db || !db.objectStoreNames.contains(CORRECTIONS_STORE)) return;
+  const entry = { exerciseKey, detectedReps, actualReps, timestamp: Date.now() };
+  return new Promise((resolve) => {
+    const tx = db.transaction(CORRECTIONS_STORE, 'readwrite');
+    tx.objectStore(CORRECTIONS_STORE).put(entry, videoKey);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); resolve(); };
+  });
+}
+
+async function getRepCorrection(videoKey) {
+  const db = await openCacheDB();
+  if (!db || !db.objectStoreNames.contains(CORRECTIONS_STORE)) return null;
+  return new Promise((resolve) => {
+    const tx = db.transaction(CORRECTIONS_STORE, 'readonly');
+    const get = tx.objectStore(CORRECTIONS_STORE).get(videoKey);
+    get.onsuccess = () => resolve(get.result || null);
+    get.onerror = () => resolve(null);
+    tx.oncomplete = () => db.close();
+  });
+}
+
+async function getAllRepCorrections() {
+  const db = await openCacheDB();
+  if (!db || !db.objectStoreNames.contains(CORRECTIONS_STORE)) return [];
+  return new Promise((resolve) => {
+    const entries = [];
+    const tx = db.transaction(CORRECTIONS_STORE, 'readonly');
+    const store = tx.objectStore(CORRECTIONS_STORE);
+    const cursor = store.openCursor();
+    cursor.onsuccess = (e) => {
+      const c = e.target.result;
+      if (c) { entries.push(c.value); c.continue(); }
+    };
+    tx.oncomplete = () => { db.close(); resolve(entries); };
+    tx.onerror = () => { db.close(); resolve([]); };
+  });
+}
+
+// Compute calibration offset: median ratio of (actual/detected) across all corrections
+// for a given exercise. Returns a multiplier (e.g. 0.78 means algorithm over-counts by ~22%).
+async function getCalibrationOffset(exerciseKey) {
+  const corrections = await getAllRepCorrections();
+  const relevant = corrections.filter(c => c.exerciseKey === exerciseKey && c.detectedReps > 0);
+  if (relevant.length < 2) return 1.0; // Need at least 2 data points
+  const ratios = relevant.map(c => c.actualReps / c.detectedReps).sort((a, b) => a - b);
+  // Median
+  const mid = Math.floor(ratios.length / 2);
+  return ratios.length % 2 === 0 ? (ratios[mid - 1] + ratios[mid]) / 2 : ratios[mid];
 }
 
 // Detect iOS Safari for platform-specific workarounds
@@ -523,6 +586,27 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     }
 
     repCounter.finalize();
+
+    // ── Brick 6: Apply calibration offset from user corrections ──
+    // If the user has corrected rep counts on previous analyses of this exercise,
+    // apply the median correction ratio to adjust the raw count.
+    let calibrationOffset = 1.0;
+    let rawReps = repCounter.reps;
+    try {
+      calibrationOffset = await getCalibrationOffset(detectedExercise);
+      if (calibrationOffset !== 1.0) {
+        const calibratedReps = Math.round(rawReps * calibrationOffset);
+        console.log(`[Brick6] Calibration offset ${calibrationOffset.toFixed(3)} applied: ${rawReps} → ${calibratedReps} reps`);
+        // Trim or extend repHistory to match calibrated count
+        if (calibratedReps < repCounter.repHistory.length) {
+          repCounter._repHistory = repCounter.repHistory.slice(0, calibratedReps);
+          repCounter._reps = calibratedReps;
+        }
+      }
+    } catch (e) {
+      console.warn('[Brick6] Calibration lookup failed:', e.message);
+    }
+
     // Enrich repHistory with timestamps for replay form feedback sync
     const enrichedRepHistory = repCounter.repHistory.map(r => ({
       ...r,
@@ -531,7 +615,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       endTime: (r.endFrame * interval),
     }));
     console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
-    console.log(`[Upload] Reps detected: ${repCounter.reps}, diagnostics:`, repCounter.diagnostics);
+    console.log(`[Upload] Reps detected: ${repCounter.reps}${calibrationOffset !== 1.0 ? ` (raw: ${rawReps}, offset: ${calibrationOffset.toFixed(3)})` : ''}, diagnostics:`, repCounter.diagnostics);
     // Log angle signal for debugging
     if (frames.length > 0) {
       const ex = EXERCISES[detectedExercise];
@@ -982,6 +1066,27 @@ function ResultCard({ result, onReplay }) {
     formScore, bioAnalysis, report, repHistory, progression,
   } = result;
 
+  const [editingReps, setEditingReps] = useState(false);
+  const [correctedReps, setCorrectedReps] = useState(null);
+  const [correctionSaved, setCorrectionSaved] = useState(false);
+
+  const displayReps = correctedReps != null ? correctedReps : reps;
+
+  // Video identity key for corrections storage
+  const videoKey = result.fileName
+    ? `corr-${result.fileName}-${result.exercise}`
+    : null;
+
+  const handleSaveCorrection = useCallback(async () => {
+    if (!videoKey || correctedReps == null || correctedReps === reps) return;
+    await saveRepCorrection(videoKey, result.exercise, reps, correctedReps);
+    setCorrectionSaved(true);
+    setEditingReps(false);
+    console.log(`[Brick6] Correction saved: ${reps} → ${correctedReps} for ${result.exercise} (${videoKey})`);
+    // Auto-hide the saved badge after 3 seconds
+    setTimeout(() => setCorrectionSaved(false), 3000);
+  }, [videoKey, correctedReps, reps, result.exercise]);
+
   const grade = gradeFromScore(formScore);
   const cls = gradeClass(formScore);
   const displayName = tExercise(result.exercise, exerciseName);
@@ -1028,9 +1133,73 @@ function ResultCard({ result, onReplay }) {
 
       {/* Grid Stats — like the reference app */}
       <div className="stats-grid-2x2">
-        <div className="stat-card">
+        <div className="stat-card" onClick={() => { if (!editingReps) { setEditingReps(true); setCorrectedReps(correctedReps != null ? correctedReps : reps); } }}
+          style={{ cursor: 'pointer', position: 'relative' }}>
           <span className="stat-card-label">{t('reps').toUpperCase()}</span>
-          <span className="stat-card-value">{reps}</span>
+          {!editingReps ? (
+            <>
+              <span className="stat-card-value">{displayReps}</span>
+              {correctedReps != null && correctedReps !== reps && (
+                <span style={{ fontSize: '0.55rem', color: 'var(--yellow)', position: 'absolute', bottom: 4, right: 6 }}>
+                  was {reps}
+                </span>
+              )}
+              {correctionSaved && (
+                <span style={{ fontSize: '0.55rem', color: 'var(--accent)', position: 'absolute', bottom: 4, left: 6 }}>
+                  saved
+                </span>
+              )}
+              <span style={{ fontSize: '0.5rem', color: 'var(--muted)', marginTop: 2 }}>tap to correct</span>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
+              <button
+                onClick={() => setCorrectedReps(Math.max(0, correctedReps - 1))}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)',
+                  fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                }}
+              >&minus;</button>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, minWidth: 28, textAlign: 'center',
+                color: correctedReps !== reps ? 'var(--yellow)' : 'var(--text-primary)' }}>
+                {correctedReps}
+              </span>
+              <button
+                onClick={() => setCorrectedReps(correctedReps + 1)}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)',
+                  fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                }}
+              >+</button>
+            </div>
+          )}
+          {editingReps && (
+            <div style={{ display: 'flex', gap: 4, marginTop: 4 }} onClick={e => e.stopPropagation()}>
+              <button
+                onClick={handleSaveCorrection}
+                disabled={correctedReps === reps}
+                style={{
+                  fontSize: '0.6rem', padding: '2px 8px', borderRadius: 4,
+                  border: 'none', cursor: correctedReps !== reps ? 'pointer' : 'default',
+                  background: correctedReps !== reps ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
+                  color: correctedReps !== reps ? 'var(--void)' : 'var(--muted)',
+                  fontWeight: 700,
+                }}
+              >{t('save') || 'Save'}</button>
+              <button
+                onClick={() => { setEditingReps(false); setCorrectedReps(correctedReps !== reps ? correctedReps : null); }}
+                style={{
+                  fontSize: '0.6rem', padding: '2px 8px', borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.12)', background: 'none',
+                  color: 'var(--muted)', cursor: 'pointer',
+                }}
+              >{t('close') || 'Cancel'}</button>
+            </div>
+          )}
         </div>
         <div className="stat-card">
           <span className="stat-card-label">{t('duration').toUpperCase()}</span>
