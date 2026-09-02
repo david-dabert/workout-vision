@@ -413,6 +413,10 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     [27, 29], [29, 31], [28, 30], [30, 32],
   ];
 
+  // Soft visibility gate: skip truly garbage landmarks (< 0.05)
+  // but draw medium-confidence ones to keep skeleton visible on mobile
+  const ok = (lm) => lm && (lm.visibility === undefined || lm.visibility >= 0.05);
+
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.lineCap = 'round';
@@ -424,17 +428,17 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   ctx.lineWidth = lw + 4;
   ctx.strokeStyle = '#000000';
   for (const [i, j] of connections) {
-    if (!landmarks[i] || !landmarks[j]) continue;
+    if (!ok(landmarks[i]) || !ok(landmarks[j])) continue;
     ctx.beginPath();
     ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
     ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
     ctx.stroke();
   }
 
-  // Bright green skeleton lines
+  // Bright skeleton lines (color-coded by form feedback)
   ctx.lineWidth = lw;
   for (const [i, j] of connections) {
-    if (!landmarks[i] || !landmarks[j]) continue;
+    if (!ok(landmarks[i]) || !ok(landmarks[j])) continue;
     ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
     ctx.beginPath();
     ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
@@ -442,19 +446,17 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     ctx.stroke();
   }
 
-  // Red joint dots
+  // Joint dots — body landmarks only (11-32), skip face (0-10)
   const dotR = Math.max(4, Math.round(width / 80));
   ctx.fillStyle = '#ff3b5c';
-  for (let k = 0; k < landmarks.length; k++) {
-    if (!landmarks[k]) continue;
+  for (let k = 11; k < Math.min(landmarks.length, 33); k++) {
+    if (!ok(landmarks[k])) continue;
     ctx.beginPath();
     ctx.arc(landmarks[k].x * width, landmarks[k].y * height, dotR, 0, 2 * Math.PI);
     ctx.fill();
   }
 
   ctx.restore();
-
-  ctx.globalAlpha = 1.0;
 }
 
 /**
