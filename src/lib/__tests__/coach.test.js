@@ -204,10 +204,12 @@ describe('calculateWorkloadRatio', () => {
     const now = new Date();
     const history = [];
 
-    // 4 weeks of consistent training: 3 sessions/week, load 100 each
+    // 4 weeks of consistent training: 3 sessions/week, load 100 each.
+    // Place sessions at days 1, 3, 5 within each week to avoid boundary overlap.
+    // (daysAgo <= 7 is the acute window, so day 7 exactly falls in both acute and week 1)
     for (let week = 0; week < 4; week++) {
       for (let session = 0; session < 3; session++) {
-        const daysAgo = week * 7 + session * 2;
+        const daysAgo = week * 7 + session * 2 + 1; // +1 to avoid daysAgo=0 and boundary=7
         const date = new Date(now - daysAgo * 86400000);
         history.push({ date: date.toISOString(), load: 100 });
       }
@@ -215,7 +217,7 @@ describe('calculateWorkloadRatio', () => {
 
     const result = calculateWorkloadRatio(history);
     expect(result.ratio).toBeGreaterThanOrEqual(0.8);
-    expect(result.ratio).toBeLessThanOrEqual(1.5);
+    expect(result.ratio).toBeLessThanOrEqual(1.3);
     expect(result.zone).toBe('optimal');
   });
 

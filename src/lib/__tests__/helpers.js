@@ -88,9 +88,14 @@ export function fakeLandmarks(overrides = {}) {
 export function fakeSquatFrame(kneeAngleDeg, timestamp) {
   // Place hip at a fixed point, knee below it, ankle positioned
   // to create the desired angle.
+  //
+  // calculateAngle(hip, knee, ankle) measures the angle at the knee vertex
+  // between vectors (knee->hip) and (knee->ankle).
+  // For a straight leg (180 deg): hip, knee, ankle are collinear vertically.
+  // For a deep squat (90 deg): ankle is offset so the angle is acute.
   const rad = (kneeAngleDeg * Math.PI) / 180;
 
-  // Hip position (fixed)
+  // Hip position (fixed, above knee in screen coords)
   const hipY = 0.45;
   const hipX = 0.50;
 
@@ -98,23 +103,16 @@ export function fakeSquatFrame(kneeAngleDeg, timestamp) {
   const kneeY = 0.65;
   const kneeX = 0.50;
 
-  // Ankle position: angle at knee between hip-knee vector and knee-ankle vector
-  // hip-knee vector points upward: (0, hipY - kneeY) = (0, -0.20)
-  // We need ankle such that the angle between (hip-knee) and (knee-ankle) = kneeAngleDeg
-  // Place ankle at angle (rad) from the hip-knee direction
+  // knee->hip direction in screen coords
+  const kneeToHipDx = hipX - kneeX; // 0
+  const kneeToHipDy = hipY - kneeY; // -0.20
+  const kneeToHipAngle = Math.atan2(kneeToHipDy, kneeToHipDx); // -pi/2
+
+  // Rotate by kneeAngleDeg from the knee->hip direction to get knee->ankle direction
   const legLen = 0.20;
-  // The hip-knee vector direction angle (from positive x-axis) is pi/2 (pointing up in screen coords,
-  // but y increases downward, so hip is at lower y, meaning the vector hip-knee is (0, -0.20))
-  // We want the knee-ankle vector to form kneeAngleDeg with the hip-knee vector.
-  // hip-knee direction: straight up = angle pi/2 from positive x going counter-clockwise
-  // Actually in screen coords (y down): hip is above knee, so hip-knee = (0, -0.20), direction angle = -pi/2
-  // knee-ankle should form kneeAngleDeg with hip-knee.
-  // For a straight leg (180 deg), ankle is directly below knee.
-  // For 90 deg, ankle is offset horizontally.
-  const hipKneeAngle = Math.atan2(hipY - kneeY, hipX - kneeX); // angle of hip relative to knee
-  const ankleAngle = hipKneeAngle + (Math.PI - rad); // mirror: pi - desiredAngle offset
-  const ankleX = kneeX + legLen * Math.cos(ankleAngle);
-  const ankleY = kneeY + legLen * Math.sin(ankleAngle);
+  const ankleDirectionAngle = kneeToHipAngle + rad;
+  const ankleX = kneeX + legLen * Math.cos(ankleDirectionAngle);
+  const ankleY = kneeY + legLen * Math.sin(ankleDirectionAngle);
 
   // Shoulder position (upright trunk)
   const shoulderY = 0.25;
@@ -151,22 +149,34 @@ export function fakeCurlFrame(elbowAngleDeg) {
   // Elbow directly below shoulder (upper arm hangs vertically)
   const elbowX = 0.45, elbowY = 0.45;
 
-  // The shoulder-to-elbow vector: (0, 0.20) pointing downward.
-  // Direction angle in standard math coords: -pi/2 (pointing down in screen coords where y increases downward).
-  // We want the elbow-to-wrist vector to form elbowAngleDeg with the elbow-to-shoulder vector.
-  // Elbow-to-shoulder direction: (0, -0.20) => angle = pi/2 in standard math.
-  // Rotate from that direction by (pi - elbowAngleDeg) to get the wrist direction.
+  // calculateAngle(shoulder, elbow, wrist) computes the angle at elbow
+  // between vectors (elbow->shoulder) and (elbow->wrist).
+  // For a straight arm (180 deg): wrist is directly below elbow (same direction as shoulder->elbow).
+  // For a fully curled arm (40 deg): wrist is near the shoulder.
+  //
+  // In screen coords (y increases downward):
+  //   shoulder is above elbow: shoulder-elbow direction in screen = (0, -0.20)
+  //   elbow->shoulder vector: (0, -0.20)
+  //
+  // We need elbow->wrist to form elbowAngleDeg with elbow->shoulder.
+  // For 180 deg: wrist below elbow (same line), elbow->wrist = (0, 0.15) in screen.
+  // For 40 deg: wrist near shoulder level.
+  //
+  // elbow->shoulder direction angle in screen coords using atan2(dy, dx):
+  //   dy = shoulderY - elbowY = -0.20, dx = 0 => atan2(-0.20, 0) = -pi/2
+  //
+  // We place wrist at angle = elbowToShoulderScreenAngle + elbowAngleDeg from the
+  // elbow->shoulder direction, measured in screen coords.
   const forearmLen = 0.15;
-  const elbowToShoulderAngle = Math.PI / 2; // pointing upward in math coords (upward = negative y in screen)
-  // The angle between the two vectors at the elbow should be elbowAngleDeg.
-  // Wrist direction = rotate from the shoulder direction by (pi - rad) clockwise in screen coords.
-  // In screen coords (y down), a clockwise rotation subtracts the angle.
-  const wristDirAngle = elbowToShoulderAngle - (Math.PI - rad);
-  // In screen coords: x increases right, y increases down.
-  // Math coords for atan2: angle 0 = right, pi/2 = up. But y is inverted for screen.
-  // cos(angle) gives x component, -sin(angle) gives y component in screen coords.
+  const elbowToShoulderDx = shoulderX - elbowX; // 0
+  const elbowToShoulderDy = shoulderY - elbowY; // -0.20
+  const elbowToShoulderScreenAngle = Math.atan2(elbowToShoulderDy, elbowToShoulderDx); // -pi/2
+
+  // Rotate by elbowAngleDeg from the elbow->shoulder direction to get elbow->wrist direction.
+  // The sign of rotation does not matter for the angle magnitude; we choose one consistently.
+  const wristDirAngle = elbowToShoulderScreenAngle + rad;
   const wristX = elbowX + forearmLen * Math.cos(wristDirAngle);
-  const wristY = elbowY - forearmLen * Math.sin(wristDirAngle);
+  const wristY = elbowY + forearmLen * Math.sin(wristDirAngle);
 
   return fakeLandmarks({
     11: { x: shoulderX, y: shoulderY },
