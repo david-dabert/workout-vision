@@ -133,6 +133,10 @@ export class ExerciseAutoDetector {
 
     // ========== SEATED EXERCISES ==========
     if (isSeated) {
+      // Seated back extension: seated + trunk ROM + hip ROM + arms/knees static
+      if (trunkRange > 10 && hipRange > 15 && elbowRange < 15 && kneeRange < 15) {
+        return 'seated_back_extension';
+      }
       // Leg press: seated + large knee ROM + large hip ROM + no arm movement
       if (kneeRange > 20 && hipRange > 15 && elbowRange < 10) {
         return 'leg_press';

@@ -2646,6 +2646,21 @@ export const EXERCISES = {
   },
 
   // ===== SUPERSET / COMBO =====
+  seated_back_extension: {
+    name: 'Seated Back Extension',
+    category: 'machine',
+    muscles: { primary: ['Erectors', 'Glutes'], secondary: ['Hamstrings', 'Core'] },
+    joint: 'hip',
+    getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
+    downThreshold: 80,
+    upThreshold: 150,
+    formChecks: [
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 145, good: 'Full back extension', bad: 'Extend further back', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Controlled return', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, good: 'Good forward lean', bad: 'Lean further forward for full ROM', severity: 'minor', citation: 'NSCA, 2016', phase: 'bottom' },
+    ],
+    scienceNotes: 'Seated back extension machines target the erector spinae through controlled trunk extension from a seated position (NSCA 2016).',
+  },
+
   superset: {
     name: 'Superset',
     category: 'compound',

@@ -26,7 +26,7 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
-export const REP_COUNTER_BUILD = 'v22-tighter-spacing';
+export const REP_COUNTER_BUILD = 'v23-adaptive-spacing';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -317,24 +317,15 @@ export class RepCounter {
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    // Minimum 2.5 seconds between reps. A controlled rep (push-up, squat,
-    // curl) takes 3-5 seconds. 2.0s was still letting one noise valley through.
-    const minFramesBetweenReps = Math.round(this._fps * 2.5);
-
     // Amplitude threshold = 45% of signal range.
-    // For a 100° range (deficit push-up), this is ~45°.
     // Noise valleys from bestSide arm-switching are 20-40°; real valleys are 60-100°.
     const minAmplitude = Math.max(40, signalRange * 0.45);
 
-    console.debug(`[RepCounter] Valley params: minFrames=${minFramesBetweenReps}, minAmp=${minAmplitude.toFixed(1)}°, range=${signalRange.toFixed(1)}°`);
-
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
-    //    A real rep bottom dominates its neighborhood. A noise dip does not.
-    const halfWindow = Math.max(5, Math.round(this._fps * 0.8)); // ±0.8s — wider window rejects noise dips
+    const halfWindow = Math.max(5, Math.round(this._fps * 0.8));
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
-        // Check: is this the minimum in [i-halfWindow, i+halfWindow]?
         let isDeepest = true;
         const lo = Math.max(0, i - halfWindow);
         const hi = Math.min(signal.length - 1, i + halfWindow);
@@ -345,34 +336,60 @@ export class RepCounter {
       }
     }
 
-    // 2. Filter: spacing and amplitude from BOTH sides (prominence)
-    const valleyFrames = [];
-    let lastValley = -Infinity;
-
-    for (const v of allValleys) {
-      if (v - lastValley < minFramesBetweenReps) continue;
-
-      // Peak before valley
-      const searchStart = lastValley > 0 ? lastValley : Math.max(0, v - Math.round(this._fps * 3));
-      let peakBefore = signal[v];
-      for (let j = searchStart; j < v; j++) {
-        if (signal[j] > peakBefore) peakBefore = signal[j];
+    // 2. Two-pass adaptive spacing.
+    //    Pass 1: generous spacing (1.0s) to estimate natural cadence.
+    //    Pass 2: if cadence is slow (>2.5s/rep), re-filter with 2.5s spacing
+    //            to reject noise valleys on slow exercises like push-ups.
+    //            Fast exercises (back extensions, curls) keep the 1.0s spacing.
+    const filterWithSpacing = (minGap) => {
+      const frames = [];
+      let last = -Infinity;
+      for (const v of allValleys) {
+        if (v - last < minGap) continue;
+        const searchStart = last > 0 ? last : Math.max(0, v - Math.round(this._fps * 3));
+        let peakBefore = signal[v];
+        for (let j = searchStart; j < v; j++) {
+          if (signal[j] > peakBefore) peakBefore = signal[j];
+        }
+        const searchEnd = Math.min(signal.length, v + Math.round(this._fps * 3));
+        let peakAfter = signal[v];
+        for (let j = v + 1; j < searchEnd; j++) {
+          if (signal[j] > peakAfter) peakAfter = signal[j];
+        }
+        const prominence = Math.min(peakBefore - signal[v], peakAfter - signal[v]);
+        if (prominence >= minAmplitude) {
+          frames.push(v);
+          last = v;
+        }
       }
+      return frames;
+    };
 
-      // Peak after valley
-      const searchEnd = Math.min(signal.length, v + Math.round(this._fps * 3));
-      let peakAfter = signal[v];
-      for (let j = v + 1; j < searchEnd; j++) {
-        if (signal[j] > peakAfter) peakAfter = signal[j];
-      }
+    // Pass 1: generous 1.2s spacing
+    const generousGap = Math.round(this._fps * 1.2);
+    const pass1 = filterWithSpacing(generousGap);
 
-      // Prominence = minimum drop from either side
-      const prominence = Math.min(peakBefore - signal[v], peakAfter - signal[v]);
-      if (prominence >= minAmplitude) {
-        valleyFrames.push(v);
-        lastValley = v;
+    let valleyFrames;
+    if (pass1.length >= 2) {
+      // Estimate cadence from median inter-valley gap
+      const gaps = [];
+      for (let i = 1; i < pass1.length; i++) gaps.push(pass1[i] - pass1[i - 1]);
+      gaps.sort((a, b) => a - b);
+      const medianGap = gaps[Math.floor(gaps.length / 2)];
+      const medianSeconds = medianGap / this._fps;
+
+      // Slow exercises (>2.5s/rep): re-filter with tight spacing to reject noise
+      if (medianSeconds > 2.5) {
+        const tightGap = Math.round(this._fps * 2.5);
+        valleyFrames = filterWithSpacing(tightGap);
+      } else {
+        valleyFrames = pass1;
       }
+    } else {
+      valleyFrames = pass1;
     }
+
+    console.debug(`[RepCounter] Valley params: minAmp=${minAmplitude.toFixed(1)}°, range=${signalRange.toFixed(1)}°, valleys=${valleyFrames.length}`);
 
     return { reps: valleyFrames.length, allValleys: allValleys.length, valleyFrames, signalRange };
   }
