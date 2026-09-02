@@ -639,6 +639,8 @@ const translations = {
   'no_workouts_yet': { en: 'Start logging workouts to see insights.', fr: 'Commencez à enregistrer vos séances pour voir vos analyses.' },
   'novice': { en: 'Novice', fr: 'Novice' },
   'elite': { en: 'Elite', fr: 'Élite' },
+  'edit_profile': { en: 'Edit Profile', fr: 'Modifier le profil' },
+  'saved': { en: 'Saved', fr: 'Enregistré' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───

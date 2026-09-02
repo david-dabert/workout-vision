@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { getAllWorkouts, calculateBaselines } from '../lib/storage';
 import { EXERCISES } from '../lib/exercises';
 import { estimateOneRepMax, getStrengthLevel, calculateWorkloadRatio, suggestNextWorkout } from '../lib/coach';
+import { useProfile } from '../lib/ProfileContext';
 import MuscleMap from './MuscleMap';
 import { useT } from '../lib/LanguageContext';
 
@@ -345,6 +346,31 @@ function InsightsSection({ profile, workouts }) {
     return tips;
   }, [profile]);
 
+  const { saveProfile } = useProfile();
+  const [editOpen, setEditOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  const openEdit = () => {
+    setEditData({
+      weight: profile?.weight || '',
+      height: profile?.height || '',
+      age: profile?.age || '',
+      sex: profile?.sex || 'male',
+      goal: profile?.goal || 'general',
+      experience: profile?.experience || 'intermediate',
+    });
+    setEditOpen(true);
+    setSaved(false);
+  };
+
+  const handleSaveProfile = async () => {
+    const updated = { ...profile, ...editData };
+    await saveProfile(updated);
+    setSaved(true);
+    setTimeout(() => { setEditOpen(false); setSaved(false); }, 800);
+  };
+
   if (!profile) return null;
 
   const levelColors = {
@@ -367,7 +393,63 @@ function InsightsSection({ profile, workouts }) {
 
   return (
     <div className="insights-section">
-      <h3 className="section-title">{t('insights_title')}</h3>
+      <div className="insights-header">
+        <h3 className="section-title">{t('insights_title')}</h3>
+        <button className="edit-profile-btn" onClick={openEdit}>
+          {t('edit_profile')}
+        </button>
+      </div>
+
+      {/* Profile editor */}
+      {editOpen && editData && (
+        <div className="card insights-card profile-edit-card">
+          <div className="profile-edit-grid">
+            <label>
+              <span>{t('weight_kg')}</span>
+              <input type="number" value={editData.weight} onChange={e => setEditData(d => ({ ...d, weight: e.target.value }))} placeholder="116" />
+            </label>
+            <label>
+              <span>{t('height_cm')}</span>
+              <input type="number" value={editData.height} onChange={e => setEditData(d => ({ ...d, height: e.target.value }))} placeholder="189" />
+            </label>
+            <label>
+              <span>{t('age')}</span>
+              <input type="number" value={editData.age} onChange={e => setEditData(d => ({ ...d, age: e.target.value }))} placeholder="37" />
+            </label>
+            <label>
+              <span>{t('sex')}</span>
+              <select value={editData.sex} onChange={e => setEditData(d => ({ ...d, sex: e.target.value }))}>
+                <option value="male">{t('male')}</option>
+                <option value="female">{t('female')}</option>
+              </select>
+            </label>
+            <label>
+              <span>{t('goal')}</span>
+              <select value={editData.goal} onChange={e => setEditData(d => ({ ...d, goal: e.target.value }))}>
+                <option value="general">{t('general_fitness')}</option>
+                <option value="strength">{t('strength')}</option>
+                <option value="hypertrophy">{t('muscle_growth')}</option>
+                <option value="endurance">{t('endurance')}</option>
+                <option value="weight_loss">{t('weight_loss')}</option>
+              </select>
+            </label>
+            <label>
+              <span>{t('experience')}</span>
+              <select value={editData.experience} onChange={e => setEditData(d => ({ ...d, experience: e.target.value }))}>
+                <option value="beginner">{t('beginner')}</option>
+                <option value="intermediate">{t('intermediate')}</option>
+                <option value="advanced">{t('advanced')}</option>
+              </select>
+            </label>
+          </div>
+          <div className="profile-edit-actions">
+            <button className="btn btn-ghost" onClick={() => setEditOpen(false)}>{t('cancel')}</button>
+            <button className="btn btn-primary" onClick={handleSaveProfile}>
+              {saved ? t('saved') : t('save')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Body profile card */}
       {baselines && (

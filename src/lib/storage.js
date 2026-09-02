@@ -117,10 +117,14 @@ export function calculateBaselines(profile) {
 
   const { weight, height, age, sex, ethnicity } = profile;
   const weightKg = parseFloat(weight);
-  const heightCm = parseFloat(height);
+  let heightCm = parseFloat(height);
   const ageYears = parseFloat(age);
 
   if (!weightKg || !heightCm || !ageYears) return null;
+
+  // Auto-detect meters vs cm: if height < 3, user entered meters (e.g. 1.89)
+  if (heightCm > 0 && heightCm < 3) heightCm = heightCm * 100;
+
   // Sanity: reject clearly impossible values
   if (weightKg < 20 || weightKg > 300 || heightCm < 80 || heightCm > 260 || ageYears < 5 || ageYears > 120) return null;
 
