@@ -359,6 +359,8 @@ function InsightsSection({ profile, workouts }) {
       sex: profile?.sex || 'male',
       goal: profile?.goal || 'general',
       experience: profile?.experience || 'intermediate',
+      bodyFat: profile?.bodyFat || '',
+      muscleMass: profile?.muscleMass || '',
     });
     setEditOpen(true);
     setSaved(false);
@@ -441,6 +443,14 @@ function InsightsSection({ profile, workouts }) {
                 <option value="advanced">{t('advanced')}</option>
               </select>
             </label>
+            <label>
+              <span>{t('body_fat_pct')}</span>
+              <input type="number" step="0.1" value={editData.bodyFat} onChange={e => setEditData(d => ({ ...d, bodyFat: e.target.value }))} placeholder="28" />
+            </label>
+            <label>
+              <span>{t('muscle_pct')}</span>
+              <input type="number" step="0.1" value={editData.muscleMass} onChange={e => setEditData(d => ({ ...d, muscleMass: e.target.value }))} placeholder="68" />
+            </label>
           </div>
           <div className="profile-edit-actions">
             <button className="btn btn-ghost" onClick={() => setEditOpen(false)}>{t('cancel')}</button>
@@ -455,15 +465,25 @@ function InsightsSection({ profile, workouts }) {
       {baselines && (
         <div className="card insights-card">
           <h4 className="insights-card-title">{t('body_profile')}</h4>
-          <div className="insights-grid-3">
+          <div className="insights-grid-2">
             <div className="insights-stat">
               <span className="insights-stat-value">{baselines.bmi}</span>
               <span className="insights-stat-label">{t('bmi')}</span>
             </div>
             <div className="insights-stat">
-              <span className="insights-stat-value">{baselines.estimatedBF}%</span>
-              <span className="insights-stat-label">{t('body_fat_est')}</span>
+              <span className="insights-stat-value">
+                {profile.bodyFat ? `${profile.bodyFat}%` : `${baselines.estimatedBF}%`}
+              </span>
+              <span className="insights-stat-label">
+                {profile.bodyFat ? `${t('body_fat_pct')} (${t('measured')})` : t('body_fat_est')}
+              </span>
             </div>
+            {profile.muscleMass && (
+              <div className="insights-stat">
+                <span className="insights-stat-value">{profile.muscleMass}%</span>
+                <span className="insights-stat-label">{t('muscle')} ({t('measured')})</span>
+              </div>
+            )}
             <div className="insights-stat">
               <span className="insights-stat-value">{baselines.maxHR}</span>
               <span className="insights-stat-label">{t('max_hr')} ({t('bpm')})</span>

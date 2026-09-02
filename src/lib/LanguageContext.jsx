@@ -641,6 +641,10 @@ const translations = {
   'elite': { en: 'Elite', fr: 'Élite' },
   'edit_profile': { en: 'Edit Profile', fr: 'Modifier le profil' },
   'saved': { en: 'Saved', fr: 'Enregistré' },
+  'body_fat_pct': { en: 'Body Fat (%)', fr: 'Masse grasse (%)' },
+  'muscle_pct': { en: 'Muscle (%)', fr: 'Masse musculaire (%)' },
+  'measured': { en: 'measured', fr: 'mesuré' },
+  'muscle': { en: 'Muscle', fr: 'Muscle' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───
