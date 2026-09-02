@@ -945,6 +945,98 @@ export class RepCounter {
     };
   }
 
+  // ─── Private: Find actual rep boundaries from tracking signal peaks/valleys ───
+
+  _findRepBoundaries(repCount, periodFrames) {
+    const N = this._collectedLandmarks.length;
+    const ex = this._exercise;
+    if (repCount <= 0 || N < 4) return [];
+
+    // Extract and smooth the tracking signal
+    const rawValues = this._collectedLandmarks.map(lm => {
+      const a = extractJointAngles(lm);
+      return a ? ex.getValue(a, lm) : null;
+    });
+    const interpolated = this._interpolateNulls(rawValues);
+    const sigma = Math.max(1, Math.round(this._fps * 0.15));
+    const smoothed = this._gaussianSmooth(interpolated, sigma);
+
+    // Find peaks and valleys in the smoothed signal
+    const minDist = Math.max(3, Math.round(periodFrames * 0.4));
+    const peaks = [];
+    const valleys = [];
+    for (let i = 1; i < smoothed.length - 1; i++) {
+      if (smoothed[i] >= smoothed[i - 1] && smoothed[i] >= smoothed[i + 1]) {
+        if (peaks.length === 0 || i - peaks[peaks.length - 1] >= minDist) {
+          peaks.push(i);
+        } else if (smoothed[i] > smoothed[peaks[peaks.length - 1]]) {
+          peaks[peaks.length - 1] = i;
+        }
+      }
+      if (smoothed[i] <= smoothed[i - 1] && smoothed[i] <= smoothed[i + 1]) {
+        if (valleys.length === 0 || i - valleys[valleys.length - 1] >= minDist) {
+          valleys.push(i);
+        } else if (smoothed[i] < smoothed[valleys[valleys.length - 1]]) {
+          valleys[valleys.length - 1] = i;
+        }
+      }
+    }
+
+    // Determine if exercise tracking value goes DOWN during concentric
+    // (pulling exercises: angle decreases) or UP (pushing: angle increases)
+    const down = ex.downThreshold;
+    const up = ex.upThreshold;
+    const bottomIsValley = down > up; // valleys = bottom of rep
+
+    // Build rep boundaries from alternating peaks/valleys
+    const bottoms = bottomIsValley ? valleys : peaks;
+    const tops = bottomIsValley ? peaks : valleys;
+
+    // Take the best-matching count of bottoms
+    // If we have more bottoms than ACF reps, prune weakest
+    let selectedBottoms = [...bottoms];
+    if (selectedBottoms.length > repCount) {
+      // Score each bottom by its signal excursion from neighbors
+      const scored = selectedBottoms.map(b => {
+        const leftTop = tops.filter(t => t < b).pop();
+        const rightTop = tops.filter(t => t > b)[0];
+        const excursion = Math.max(
+          leftTop != null ? Math.abs(smoothed[b] - smoothed[leftTop]) : 0,
+          rightTop != null ? Math.abs(smoothed[b] - smoothed[rightTop]) : 0
+        );
+        return { idx: b, excursion };
+      });
+      scored.sort((a, b) => b.excursion - a.excursion);
+      selectedBottoms = scored.slice(0, repCount).map(s => s.idx).sort((a, b) => a - b);
+    }
+
+    // Build boundaries: each rep goes from one top to the next, with bottom in between
+    const boundaries = [];
+    for (let r = 0; r < selectedBottoms.length; r++) {
+      const bottomFrame = selectedBottoms[r];
+      // Find the nearest top before and after this bottom
+      const prevTop = tops.filter(t => t < bottomFrame).pop();
+      const nextTop = tops.filter(t => t > bottomFrame)[0];
+
+      const startFrame = prevTop != null ? prevTop : Math.max(0, bottomFrame - Math.round(periodFrames / 2));
+      const endFrame = nextTop != null ? nextTop : Math.min(N - 1, bottomFrame + Math.round(periodFrames / 2));
+
+      boundaries.push({ startFrame, bottomFrame, endFrame });
+    }
+
+    // Fallback: if peak/valley detection produced nothing usable, use uniform periods
+    if (boundaries.length === 0) {
+      for (let r = 0; r < repCount; r++) {
+        const start = Math.round(r * periodFrames);
+        const end = Math.min(N - 1, Math.round((r + 1) * periodFrames));
+        const mid = Math.round((start + end) / 2);
+        if (start < N) boundaries.push({ startFrame: start, bottomFrame: mid, endFrame: end });
+      }
+    }
+
+    return boundaries;
+  }
+
   // ─── Private: Build form history from ACF count ───
 
   _buildFormHistory(repCount, periodFrames) {
@@ -955,11 +1047,11 @@ export class RepCounter {
     const checks = ex.formChecks || [];
     const history = [];
 
-    for (let r = 0; r < repCount; r++) {
-      // Estimate frame range for this rep
-      const startFrame = Math.round(r * periodFrames);
-      const endFrame = Math.min(N - 1, Math.round((r + 1) * periodFrames));
-      const midFrame = Math.round((startFrame + endFrame) / 2);
+    // Use actual signal peak/valley detection for rep boundaries
+    const boundaries = this._findRepBoundaries(repCount, periodFrames);
+
+    for (let r = 0; r < boundaries.length; r++) {
+      const { startFrame, bottomFrame: midFrame, endFrame } = boundaries[r];
 
       if (startFrame >= N) break;
 
@@ -1012,17 +1104,41 @@ export class RepCounter {
         }
       }
 
+      // Per-rep ROM: measure tracking signal excursion for this rep
+      let repRom = null;
+      const trackingValues = [];
+      for (let i = startFrame; i <= endFrame && i < N; i++) {
+        const lm = this._collectedLandmarks[i];
+        if (!lm) continue;
+        const a = extractJointAngles(lm);
+        if (!a) continue;
+        const v = ex.getValue(a, lm);
+        if (v != null) trackingValues.push(v);
+      }
+      if (trackingValues.length >= 2) {
+        repRom = Math.abs(Math.max(...trackingValues) - Math.min(...trackingValues));
+      }
+
       history.push({
         score,
         issues,
-        // Full form check results for skeleton coloring in replay.
-        // Each entry: {name, passed, severity} — matches getSegmentColor() format.
         feedback: formResults,
         ts: Date.now() + r,
         startFrame,
         bottomFrame: midFrame,
         endFrame,
+        rom: repRom != null ? Math.round(repRom * 10) / 10 : null,
+        startTime: startFrame / this._fps,
+        endTime: endFrame / this._fps,
       });
+    }
+
+    // Compute %ROM relative to the best rep in the set
+    const maxRom = Math.max(...history.map(h => h.rom || 0));
+    if (maxRom > 0) {
+      for (const h of history) {
+        h.romPercent = h.rom != null ? Math.round((h.rom / maxRom) * 100) : null;
+      }
     }
 
     return history;

@@ -852,7 +852,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 function generateCoachingInsight(repHistory, bioAnalysis, t) {
   if (!repHistory || repHistory.length === 0) return null;
 
-  if (bioAnalysis?.rangeOfMotion?.perRep && bioAnalysis.rangeOfMotion.perRep.length >= 3) {
+  // Use per-rep ROM from repHistory (signal-based, more accurate) if available
+  const hasRepRom = repHistory.length >= 3 && repHistory[0]?.rom != null;
+  if (hasRepRom) {
+    const last = repHistory[repHistory.length - 1];
+    if (last.romPercent != null && last.romPercent < 80) {
+      const drop = 100 - last.romPercent;
+      return t('insight_rom_drop', { drop });
+    }
+  } else if (bioAnalysis?.rangeOfMotion?.perRep && bioAnalysis.rangeOfMotion.perRep.length >= 3) {
     const roms = bioAnalysis.rangeOfMotion.perRep;
     const firstRom = roms[0];
     const lastRom = roms[roms.length - 1];
@@ -1097,6 +1105,53 @@ function ResultCard({ result, onReplay }) {
               {t('trend')}: {t(bioAnalysis.velocity.trend)}
             </p>
           )}
+        </div>
+      )}
+
+      {/* Per-rep ROM with %ROM degradation — descriptive, not prescriptive */}
+      {repHistory && repHistory.length >= 2 && repHistory[0]?.rom != null && (
+        <div style={{ marginTop: 14 }}>
+          <h4>Range of Motion</h4>
+          <div className="rep-bars">
+            {repHistory.map((r, i) => {
+              const maxRom = Math.max(...repHistory.map(h => h.rom || 0), 1);
+              const pct = ((r.rom || 0) / maxRom) * 100;
+              const degraded = r.romPercent != null && r.romPercent < 85;
+              return (
+                <div key={i} className="rep-bar-col">
+                  <div className="rep-bar-wrap">
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(pct, 5)}%`,
+                      background: degraded ? 'var(--yellow)' : 'var(--accent)',
+                    }} />
+                  </div>
+                  <span className="rep-num" style={{ fontSize: '0.6rem' }}>
+                    {r.romPercent != null ? `${r.romPercent}%` : (i + 1)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {(() => {
+            const first = repHistory[0];
+            const last = repHistory[repHistory.length - 1];
+            if (first?.rom && last?.rom && last.romPercent != null && last.romPercent < 90) {
+              const drop = 100 - last.romPercent;
+              return (
+                <p className="text-xs" style={{ marginTop: 4, color: 'var(--yellow)' }}>
+                  Rep {repHistory.length} was {drop}% shallower than rep 1
+                </p>
+              );
+            }
+            if (first?.rom && last?.rom && last.romPercent != null && last.romPercent >= 95) {
+              return (
+                <p className="text-xs" style={{ marginTop: 4, color: 'var(--accent)' }}>
+                  Consistent depth maintained across the set
+                </p>
+              );
+            }
+            return null;
+          })()}
         </div>
       )}
 
