@@ -103,10 +103,12 @@ export class RepCounter {
 
   /**
    * Per-frame update. Collects landmarks for finalize() and evaluates form.
-   * In 'live' mode, also runs hysteresis counting for real-time rep feedback.
-   * In 'video' mode, skips hysteresis (finalize() is the source of truth).
+   * Hysteresis counting runs in both modes for live rep display.
+   * In video mode, finalize() overrides with accurate ACF/YIN count.
+   * @param {Array} landmarks
+   * @param {number} [videoTimestamp] - video time in seconds (for video mode cooldown)
    */
-  update(landmarks) {
+  update(landmarks, videoTimestamp) {
     const rawAngles = extractJointAngles(landmarks);
     if (!rawAngles) {
       return {
@@ -152,7 +154,9 @@ export class RepCounter {
     {
       const down = ex.downThreshold;
       const up = ex.upThreshold;
-      const now = Date.now();
+      // In video mode, use video timestamp (seconds→ms) for cooldown;
+      // Date.now() is meaningless since frames process as fast as CPU allows.
+      const now = videoTimestamp != null ? videoTimestamp * 1000 : Date.now();
 
       if (down > up) {
         if (this._phase === 'idle' && value < down) {

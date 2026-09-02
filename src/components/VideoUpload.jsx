@@ -293,7 +293,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             }
             const angles = extractJointAngles(landmarks);
             frames.push({ landmarks, timestamp: time, angles });
-            const updateResult = repCounter.update(landmarks);
+            const updateResult = repCounter.update(landmarks, time);
             setLiveReps(updateResult.reps);
 
             // SINGLE CANVAS approach: draw video frame + skeleton on one canvas.
@@ -449,7 +449,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           autoDetected = true;
           setExercise(detectedExercise);
           repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries, mode: 'video' });
-          for (const f of frames) repCounter.update(f.landmarks);
+          for (const f of frames) repCounter.update(f.landmarks, f.timestamp);
         }
       }
     }
