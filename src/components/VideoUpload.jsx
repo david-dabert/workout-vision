@@ -208,7 +208,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const isAutoMode = exercise === '__auto__';
     const initialExercise = isAutoMode ? 'squat' : exercise;
     let detectedExercise = initialExercise;
-    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video' });
+    const weightKg = parseFloat(weight) || 0;
+    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
     const skipAutoDetect = !isAutoMode && userChangedExercise.current;
     const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect))
       ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
@@ -279,8 +280,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           // iOS optimization: only paint every 3rd frame to reduce GPU overhead.
           const shouldPaint = !IS_IOS || (frameIdx % 3 === 0);
 
+          // Extract landmarks if detected
+          let landmarks = null;
+          let updateResult = null;
           if (result?.landmarks?.length) {
-            let landmarks;
             if (result.landmarks.length === 1) {
               landmarks = result.landmarks[0];
             } else {
@@ -293,82 +296,75 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             }
             const angles = extractJointAngles(landmarks);
             frames.push({ landmarks, timestamp: time, angles });
-            const updateResult = repCounter.update(landmarks, time);
+            updateResult = repCounter.update(landmarks, time);
             setLiveReps(updateResult.reps);
-
-            // SINGLE CANVAS approach: draw video frame + skeleton on one canvas.
-            // iOS Safari composites <video> in a hardware-accelerated layer that
-            // sits above <canvas> regardless of z-index. Drawing the video frame
-            // onto the canvas bypasses the compositor entirely.
-            const canvas = overlayRef.current;
-            if (canvas && shouldPaint) {
-              // Draw video frame + skeleton + large rep counter
-              let cw, ch;
-              if (IS_IOS) {
-                // iOS: reuse the 480p offscreen canvas for display.
-                cw = offscreen.width;
-                ch = offscreen.height;
-                if (canvas.width !== cw || canvas.height !== ch) {
-                  canvas.width = cw;
-                  canvas.height = ch;
-                }
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(offscreen, 0, 0);
-                drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
-              } else {
-                // Desktop: draw at full video resolution
-                cw = video.videoWidth || 1080;
-                ch = video.videoHeight || 1920;
-                if (canvas.width !== cw || canvas.height !== ch) {
-                  canvas.width = cw;
-                  canvas.height = ch;
-                }
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, cw, ch);
-                drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
-              }
-              // Large rep counter — prominent center-top pill
-              {
-                const ctx = canvas.getContext('2d');
-                const repText = `${updateResult.reps}`;
-                const labelText = t('reps').toLowerCase();
-                const fontSize = Math.round(cw * 0.12); // 12% of canvas width
-                const labelSize = Math.round(fontSize * 0.4);
-                ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
-                const repWidth = ctx.measureText(repText).width;
-                ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
-                const labelWidth = ctx.measureText(labelText).width;
-                const pillW = Math.max(repWidth, labelWidth) + fontSize;
-                const pillH = fontSize * 1.8;
-                const pillX = (cw - pillW) / 2;
-                const pillY = ch * 0.03;
-                // Semi-transparent black pill
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.beginPath();
-                const r = pillH / 2;
-                ctx.moveTo(pillX + r, pillY);
-                ctx.lineTo(pillX + pillW - r, pillY);
-                ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
-                ctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
-                ctx.lineTo(pillX + r, pillY + pillH);
-                ctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
-                ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
-                ctx.fill();
-                // Rep number
-                ctx.fillStyle = '#00f5d4';
-                ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(repText, cw / 2, pillY + pillH * 0.42);
-                // "reps" label
-                ctx.fillStyle = 'rgba(240,240,245,0.8)';
-                ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
-                ctx.fillText(labelText, cw / 2, pillY + pillH * 0.78);
-              }
-            }
 
             if (!IS_IOS || frameIdx % 2 === 0) {
               replayFrames.push({ landmarks, timestamp: time });
+            }
+          }
+
+          // ALWAYS draw the video frame to canvas so user sees the video during analysis.
+          // Skeleton overlay is added on top when landmarks are available.
+          const canvas = overlayRef.current;
+          if (canvas && shouldPaint) {
+            let cw, ch;
+            if (IS_IOS) {
+              cw = offscreen.width;
+              ch = offscreen.height;
+              if (canvas.width !== cw || canvas.height !== ch) {
+                canvas.width = cw;
+                canvas.height = ch;
+              }
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(offscreen, 0, 0);
+              if (landmarks) drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
+            } else {
+              cw = video.videoWidth || 1080;
+              ch = video.videoHeight || 1920;
+              if (canvas.width !== cw || canvas.height !== ch) {
+                canvas.width = cw;
+                canvas.height = ch;
+              }
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(video, 0, 0, cw, ch);
+              if (landmarks) drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
+            }
+            // Rep counter pill — always visible
+            {
+              const ctx = canvas.getContext('2d');
+              const currentReps = updateResult?.reps ?? repCounter.reps;
+              const repText = `${currentReps}`;
+              const labelText = t('reps').toLowerCase();
+              const fontSize = Math.round(cw * 0.12);
+              const labelSize = Math.round(fontSize * 0.4);
+              ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
+              const repWidth = ctx.measureText(repText).width;
+              ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
+              const labelWidth = ctx.measureText(labelText).width;
+              const pillW = Math.max(repWidth, labelWidth) + fontSize;
+              const pillH = fontSize * 1.8;
+              const pillX = (cw - pillW) / 2;
+              const pillY = ch * 0.03;
+              ctx.fillStyle = 'rgba(0,0,0,0.6)';
+              ctx.beginPath();
+              const r = pillH / 2;
+              ctx.moveTo(pillX + r, pillY);
+              ctx.lineTo(pillX + pillW - r, pillY);
+              ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
+              ctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
+              ctx.lineTo(pillX + r, pillY + pillH);
+              ctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
+              ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
+              ctx.fill();
+              ctx.fillStyle = '#00f5d4';
+              ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(repText, cw / 2, pillY + pillH * 0.42);
+              ctx.fillStyle = 'rgba(240,240,245,0.8)';
+              ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
+              ctx.fillText(labelText, cw / 2, pillY + pillH * 0.78);
             }
           }
 
@@ -437,8 +433,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let bestEx = initialExercise;
         let bestScore = -1;
         for (const ex of candidates) {
-          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries, mode: 'video' });
-          for (const f of frames) rc.update(f.landmarks);
+          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
+          for (const f of frames) rc.update(f.landmarks, f.timestamp);
           rc.finalize();
           const reps = rc.repHistory ? rc.repHistory.length : 0;
           const score = reps * 1000 + tallies[ex];
@@ -448,7 +444,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           detectedExercise = bestEx;
           autoDetected = true;
           setExercise(detectedExercise);
-          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries, mode: 'video' });
+          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
           for (const f of frames) repCounter.update(f.landmarks, f.timestamp);
         }
       }
@@ -481,7 +477,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     // Run biomechanical analysis for velocity, ROM, fatigue, asymmetry
     let bioAnalysis = null;
-    try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory); }
+    try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory, userProfile?.height); }
     catch (err) { console.error('Bio analysis error:', err); }
 
     let report = null;

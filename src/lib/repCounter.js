@@ -1047,8 +1047,23 @@ export class RepCounter {
     const checks = ex.formChecks || [];
     const history = [];
 
-    // Use actual signal peak/valley detection for rep boundaries
-    const boundaries = this._findRepBoundaries(repCount, periodFrames);
+    // Use actual signal peak/valley detection for rep boundaries.
+    // Fall back to uniform periods if detection fails.
+    let boundaries;
+    try {
+      boundaries = this._findRepBoundaries(repCount, periodFrames);
+    } catch (e) {
+      console.warn('[RepCounter] Peak/valley detection failed, using uniform periods:', e.message);
+      boundaries = [];
+    }
+    if (boundaries.length === 0) {
+      for (let r = 0; r < repCount; r++) {
+        const start = Math.round(r * periodFrames);
+        const end = Math.min(N - 1, Math.round((r + 1) * periodFrames));
+        const mid = Math.round((start + end) / 2);
+        if (start < N) boundaries.push({ startFrame: start, bottomFrame: mid, endFrame: end });
+      }
+    }
 
     for (let r = 0; r < boundaries.length; r++) {
       const { startFrame, bottomFrame: midFrame, endFrame } = boundaries[r];

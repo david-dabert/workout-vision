@@ -413,9 +413,9 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     [27, 29], [29, 31], [28, 30], [30, 32],
   ];
 
-  // Soft visibility gate: skip truly garbage landmarks (< 0.05)
-  // but draw medium-confidence ones to keep skeleton visible on mobile
-  const ok = (lm) => lm && (lm.visibility === undefined || lm.visibility >= 0.05);
+  // No visibility filtering — draw all landmarks that exist.
+  // Filtering caused skeleton to disappear on mobile for certain exercises.
+  const ok = (lm) => lm != null;
 
   ctx.save();
   ctx.globalAlpha = alpha;
