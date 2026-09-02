@@ -1,8 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
+import useHashRouter from './lib/useHashRouter';
 import Dashboard from './components/Dashboard';
 import Onboarding from './components/Onboarding';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
 const Analyze = lazy(() => import('./components/Analyze'));
@@ -21,7 +23,7 @@ const LazyFallback = (
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
-  const [page, setPage] = useState('dashboard');
+  const [page, setPage] = useHashRouter();
   const [modelStatus, setModelStatus] = useState('loading');
 
   useEffect(() => {
@@ -56,34 +58,46 @@ function AppInner() {
 
   // Full-screen pages (no tab bar)
   if (page === 'analyze') return (
-    <Suspense fallback={LazyFallback}>
-      <Analyze onClose={() => setPage('dashboard')} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <Analyze onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
   );
   if (page === 'log') return (
-    <Suspense fallback={LazyFallback}>
-      <ManualLog onClose={() => setPage('dashboard')} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <ManualLog onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
   );
   if (page === 'history') return (
-    <Suspense fallback={LazyFallback}>
-      <WorkoutHistory onClose={() => setPage('dashboard')} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <WorkoutHistory onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
   );
   if (page === 'rest') return (
-    <Suspense fallback={LazyFallback}>
-      <RestTimer onClose={() => setPage('dashboard')} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <RestTimer onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
   );
   if (page === 'profile') return (
-    <Suspense fallback={LazyFallback}>
-      <ProfilePage onClose={() => setPage('dashboard')} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <ProfilePage onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
   );
   if (page === 'validate') return (
-    <Suspense fallback={LazyFallback}>
-      <Validate onClose={() => setPage('dashboard')} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <Validate onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
   );
 
   return (
@@ -101,25 +115,31 @@ function App() {
   // Design demo mode: standalone prototype
   if (params.has('demo')) {
     return (
-      <Suspense fallback={LazyFallback}>
-        <DesignDemo onExit={() => { window.location.search = ''; }} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={LazyFallback}>
+          <DesignDemo onExit={() => { window.location.search = ''; }} />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
   // Validate mode: render directly, skip all providers
   if (params.has('validate')) {
     return (
-      <Suspense fallback={LazyFallback}>
-        <Validate onClose={() => { window.location.search = ''; }} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={LazyFallback}>
+          <Validate onClose={() => { window.location.search = ''; }} />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
   return (
     <LanguageProvider>
       <ProfileProvider>
-        <AppInner />
+        <ErrorBoundary>
+          <AppInner />
+        </ErrorBoundary>
       </ProfileProvider>
     </LanguageProvider>
   );

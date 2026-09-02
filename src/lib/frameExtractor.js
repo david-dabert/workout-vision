@@ -160,7 +160,6 @@ export async function extractFrames(file, targetFps, maxFrames, maxWidth, onProg
     frameHeight = Math.round(pixelCount / frameWidth);
   }
 
-  console.log(`[FrameExtractor] Probe: ${frameWidth}x${frameHeight} (${totalProbeBytes} bytes)`);
 
   // Now extract all frames at target FPS
   // Compute how many frames we'll get. We need the duration.
@@ -211,7 +210,6 @@ export async function extractFrames(file, targetFps, maxFrames, maxWidth, onProg
   // Compute actual duration from frame count and fps
   const duration = frames.length / targetFps;
 
-  console.log(`[FrameExtractor] Extracted ${frames.length} frames at ${targetFps}fps (${duration.toFixed(1)}s), ${frameWidth}x${frameHeight}`);
 
   return {
     frames,

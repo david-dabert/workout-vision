@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { getAllWorkouts, deleteWorkout } from '../lib/storage';
 import { calculateWorkloadRatio } from '../lib/coach';
 import { useT } from '../lib/LanguageContext';
+import ExerciseHistory from './ExerciseHistory';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -37,6 +38,7 @@ export default function WorkoutHistory({ onClose }) {
   const { t } = useT();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showExerciseHistory, setShowExerciseHistory] = useState(false);
 
   useEffect(() => {
     loadWorkouts();
@@ -54,6 +56,7 @@ export default function WorkoutHistory({ onClose }) {
   }
 
   async function handleDelete(id) {
+    if (!window.confirm('Delete this workout? This cannot be undone.')) return;
     try {
       await deleteWorkout(id);
       setWorkouts(prev => prev.filter(w => w.id !== id));
@@ -120,6 +123,10 @@ export default function WorkoutHistory({ onClose }) {
       .reverse();
   }, [workouts]);
 
+  if (showExerciseHistory) {
+    return <ExerciseHistory onClose={() => setShowExerciseHistory(false)} />;
+  }
+
   if (loading) {
     return (
       <div className="page">
@@ -174,6 +181,24 @@ export default function WorkoutHistory({ onClose }) {
               </div>
             </div>
           )}
+
+          {/* Exercise history link */}
+          <button
+            className="btn btn-ghost"
+            onClick={() => setShowExerciseHistory(true)}
+            style={{
+              width: '100%',
+              textAlign: 'center',
+              marginBottom: 8,
+              padding: '10px 14px',
+              fontSize: '0.85rem',
+              color: 'var(--accent)',
+              border: '1px solid var(--border)',
+              borderRadius: 10,
+            }}
+          >
+            {t('exercise_history') || 'Exercise History'} →
+          </button>
 
           {/* Workload ratio gauge */}
           {workloadRatio && (

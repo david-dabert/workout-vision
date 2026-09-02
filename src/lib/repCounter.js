@@ -396,37 +396,6 @@ export class RepCounter {
     };
   }
 
-  // ─── Private: Gaussian smoothing ───
-
-  _gaussianSmooth(signal, sigma) {
-    const N = signal.length;
-    const kernelSize = Math.min(N, Math.max(3, Math.round(sigma * 4) | 1));
-    const half = Math.floor(kernelSize / 2);
-
-    const kernel = [];
-    let kernelSum = 0;
-    for (let i = -half; i <= half; i++) {
-      const w = Math.exp(-(i * i) / (2 * sigma * sigma));
-      kernel.push(w);
-      kernelSum += w;
-    }
-    for (let i = 0; i < kernel.length; i++) kernel[i] /= kernelSum;
-
-    const out = new Float64Array(N);
-    for (let i = 0; i < N; i++) {
-      let sum = 0, wsum = 0;
-      for (let j = 0; j < kernel.length; j++) {
-        const idx = i - half + j;
-        if (idx >= 0 && idx < N) {
-          sum += signal[idx] * kernel[j];
-          wsum += kernel[j];
-        }
-      }
-      out[i] = wsum > 0 ? sum / wsum : signal[i];
-    }
-    return Array.from(out);
-  }
-
   // ─── Private: Interpolate null values ───
 
   _interpolateNulls(signal) {

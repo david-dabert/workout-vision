@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   calculateBaselines,
   getMedicalRecords, saveMedicalRecord, deleteMedicalRecord,
+  getAllWorkouts, getProfile, saveWorkout,
 } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
@@ -74,6 +75,9 @@ export default function Profile({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
+        <button className="btn-icon" onClick={onClose} aria-label="Close">
+          &#x2715;
+        </button>
         <h2>{t('profile')}</h2>
       </div>
 
@@ -326,6 +330,74 @@ export default function Profile({ onClose }) {
           <p className="text-sm text-muted">{t('no_records_yet')}</p>
         )}
       </div>
+
+      {/* Data backup */}
+      <div className="card">
+        <h3>{lang === 'fr' ? 'Sauvegarde des données' : 'Data Backup'}</h3>
+        <p className="text-xs text-muted" style={{ marginBottom: 12 }}>
+          {lang === 'fr'
+            ? 'Exportez vos données pour les sauvegarder ou les transférer vers un autre appareil.'
+            : 'Export your data to back it up or transfer to another device.'}
+        </p>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            className="btn btn-ghost"
+            style={{ flex: 1 }}
+            onClick={async () => {
+              const data = {
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                profile: await getProfile(),
+                workouts: await getAllWorkouts(),
+              };
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `workoutvision-backup-${new Date().toISOString().slice(0, 10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            {lang === 'fr' ? 'Exporter' : 'Export'}
+          </button>
+          <button
+            className="btn btn-ghost"
+            style={{ flex: 1 }}
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.json';
+              input.onchange = async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  const text = await file.text();
+                  const data = JSON.parse(text);
+                  if (!data.version || !data.profile) {
+                    alert(lang === 'fr' ? 'Fichier invalide' : 'Invalid backup file');
+                    return;
+                  }
+                  if (data.profile) await saveProfile(data.profile);
+                  if (data.workouts) {
+                    for (const w of data.workouts) await saveWorkout(w);
+                  }
+                  window.location.reload();
+                } catch (err) {
+                  alert(lang === 'fr' ? 'Erreur de lecture du fichier' : 'Failed to read backup file');
+                }
+              };
+              input.click();
+            }}
+          >
+            {lang === 'fr' ? 'Importer' : 'Import'}
+          </button>
+        </div>
+      </div>
+
+      <p className="text-xs text-muted" style={{ textAlign: 'center', padding: '16px 0 32px', opacity: 0.5 }}>
+        WorkoutVision v1.0.0
+      </p>
     </div>
   );
 }

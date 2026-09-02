@@ -819,6 +819,11 @@ select {
 .analyze-controls select { flex: 1; min-width: 0; }
 .analyze-controls .btn-primary { width: 100%; margin-top: 4px; }
 .analyzing-status { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--bio-cyan); font-weight: 600; }
+.analysis-progress-panel {
+  flex: 1; padding: 16px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+}
+.analysis-phases { display: flex; flex-direction: column; gap: 2px; }
 
 .result-card { margin-top: 4px; overflow: hidden; }
 .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }

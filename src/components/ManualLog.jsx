@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
-import { logEvent } from '../lib/telemetry';
+
 import { useT } from '../lib/LanguageContext';
 
 function getCategoryLabel(key, t) {
@@ -108,7 +108,7 @@ export default function ManualLog({ onClose }) {
           });
         }
       }
-      logEvent('session_complete', { exercise: entries[0]?.exerciseKey, reps: entries.reduce((s, e) => s + e.sets.reduce((ss, set) => ss + (parseInt(set.reps) || 0), 0), 0), source: 'manual' });
+
       setSaved(true);
       setTimeout(() => onClose(), 1200);
     } catch (err) {
@@ -283,7 +283,8 @@ export default function ManualLog({ onClose }) {
                   <input
                     type="number"
                     inputMode="numeric"
-                    min="0"
+                    min="1"
+                    step="1"
                     placeholder="0"
                     value={set.reps}
                     onChange={e => updateSet(entryIdx, setIdx, 'reps', e.target.value)}
@@ -301,7 +302,7 @@ export default function ManualLog({ onClose }) {
                   <input
                     type="number"
                     inputMode="decimal"
-                    min="0"
+                    min="0.5"
                     step="0.5"
                     placeholder="0"
                     value={set.weight}

@@ -158,7 +158,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setAnalysisPhase('hashing');
     setFfmpegStatus('Hashing video file...');
     const videoHash = await hashFile(queueItem.file);
-    console.log(`[Upload] Video hash: ${videoHash}`);
 
     // ── Phase 2: Load MediaPipe model ──
     setAnalysisPhase('model');
@@ -183,7 +182,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     const cachedLandmarks = await getCachedLandmarks(cacheKey);
     if (cachedLandmarks && cachedLandmarks.length > 0) {
-      console.log(`[Upload] Cache hit: ${cachedLandmarks.length} frames from IndexedDB (hash: ${videoHash})`);
       usedCache = true;
       frameCount = cachedLandmarks.length;
       duration = frameCount / analysisFps;
@@ -292,7 +290,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       if (frames.length > 0) {
         const toCache = frames.map(f => f.landmarks);
         setCachedLandmarks(cacheKey, toCache).catch(() => {});
-        console.log(`[Upload] Cached ${toCache.length} frames to IndexedDB (hash: ${videoHash})`);
       }
     }
 
@@ -308,10 +305,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const debug = { videoHash, frameCount: frames.length, landmarkHash: landmarkHashValue };
     setDebugInfo(debug);
 
-    // Log determinism proof to console
-    console.log(`[DETERMINISM] Video hash:    ${videoHash}`);
-    console.log(`[DETERMINISM] Frame count:   ${frames.length}`);
-    console.log(`[DETERMINISM] Landmark hash: ${landmarkHashValue}`);
 
     // ── Phase 7: Exercise detection and rep counting ──
     const isAutoMode = exercise === '__auto__';
@@ -365,18 +358,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       endTime: (r.endFrame * interval),
     }));
 
-    console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length} frames in ${analysisTime}s`);
-
-    // Log angle signal for debugging
-    if (frames.length > 0) {
-      const ex = EXERCISES[detectedExercise];
-      const sampleAngles = frames.filter((_, i) => i % 5 === 0).map(f => {
-        if (!f.angles) return null;
-        const val = ex?.getValue(f.angles, f.landmarks);
-        return val !== null ? Math.round(val) : null;
-      }).filter(v => v !== null);
-      console.log(`[Upload] Angle signal (every 5th frame):`, sampleAngles.join(', '));
-    }
 
     const landmarkFrames = frames.map(f => f.landmarks);
     const repHistory = enrichedRepHistory;
@@ -520,6 +501,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
         </div>
       </div>
+
+      {queue.length === 0 && results.length === 0 && (
+        <div style={{
+          padding: '10px 14px', marginBottom: 12, borderRadius: 10,
+          background: 'rgba(0,224,255,0.04)', border: '1px solid rgba(0,224,255,0.1)',
+        }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+            {lang === 'fr'
+              ? '📐 Pour de meilleurs résultats : filmez de côté, corps entier visible, bonne lumière. Une seule personne dans le cadre.'
+              : '📐 For best results: film from the side, full body visible, good lighting. One person in frame.'}
+          </p>
+        </div>
+      )}
 
       <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
         <div className="upload-content">
@@ -667,13 +661,64 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             </div>
           </>
         ) : (
-          <div className="analyzing-status">
-            <div className="spinner-sm" />
-            <div style={{ flex: 1 }}>
-              {currentFile && <span style={{ display: 'block' }}>{currentFile}</span>}
-              {ffmpegStatus && <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--muted)', marginTop: 2 }}>{ffmpegStatus}</span>}
+          <div className="analysis-progress-panel">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {currentFile}
+              </span>
+              <button className="btn btn-ghost btn-sm" onClick={() => { abortRef.current = true; }}>{t('stop')}</button>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => { abortRef.current = true; }}>{t('stop')}</button>
+            <div className="analysis-phases">
+              {[
+                { key: 'hashing', label: lang === 'fr' ? 'Indexation' : 'Indexing', icon: '#' },
+                { key: 'model', label: lang === 'fr' ? 'Modèle IA' : 'AI Model', icon: '◆' },
+                { key: 'extracting', label: lang === 'fr' ? 'Extraction' : 'Extracting', icon: '▦' },
+                { key: 'analyzing', label: lang === 'fr' ? 'Analyse' : 'Analyzing', icon: '◉' },
+              ].map((phase, i) => {
+                const phaseOrder = ['hashing', 'model', 'extracting', 'analyzing'];
+                const currentIdx = phaseOrder.indexOf(analysisPhase);
+                const thisIdx = phaseOrder.indexOf(phase.key);
+                const isActive = thisIdx === currentIdx;
+                const isDone = thisIdx < currentIdx;
+                return (
+                  <div key={phase.key} style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0',
+                    opacity: isDone ? 0.4 : isActive ? 1 : 0.25,
+                    transition: 'opacity 0.3s ease',
+                  }}>
+                    <span style={{
+                      width: 20, height: 20, borderRadius: '50%', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700,
+                      background: isDone ? 'var(--bio-cyan)' : isActive ? 'rgba(0,224,255,0.2)' : 'rgba(255,255,255,0.05)',
+                      color: isDone ? 'var(--void)' : isActive ? 'var(--bio-cyan)' : 'var(--text-secondary)',
+                      border: isActive ? '1.5px solid var(--bio-cyan)' : '1.5px solid transparent',
+                    }}>
+                      {isDone ? '✓' : i + 1}
+                    </span>
+                    <span style={{
+                      fontSize: '0.78rem', fontWeight: isActive ? 600 : 400,
+                      color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    }}>
+                      {phase.label}
+                    </span>
+                    {isActive && <div className="spinner-sm" style={{ width: 14, height: 14, marginLeft: 'auto' }} />}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{
+                  width: `${progress}%`, height: '100%', background: 'var(--bio-cyan)',
+                  borderRadius: 2, transition: 'width 0.15s linear',
+                }} />
+              </div>
+              {ffmpegStatus && (
+                <span style={{ display: 'block', fontSize: '0.68rem', color: 'var(--muted)', marginTop: 4 }}>
+                  {ffmpegStatus}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>
