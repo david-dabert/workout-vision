@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "deploy": "vite build && npx gh-pages -d dist"
+    "deploy": "vite build && npx gh-pages -d dist",
+    "test": "vitest run"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
@@ -25,6 +26,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
-    "vite": "^5.4.21"
+    "vite": "^5.4.21",
+    "vitest": "^4.1.11"
   }
 }
