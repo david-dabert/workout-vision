@@ -12,8 +12,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/workout-vision/manifest.json" />
     <title>WorkoutVision</title>
-    <script type="module" crossorigin src="/workout-vision/assets/index-0RI0h0ru.js"></script>
-    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-D4fbqYHz.css">
+    <meta name="description" content="AI-powered workout form analysis using computer vision. Real-time rep counting, form scoring, and personalized coaching — 100% on-device." />
+    <meta property="og:title" content="WorkoutVision — AI Gym Companion" />
+    <meta property="og:description" content="Real-time pose detection, rep counting, and form coaching powered by on-device AI. No data leaves your phone." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/workout-vision/icon-512.png" />
+    <script type="module" crossorigin src="/workout-vision/assets/index-Cv4wI8l2.js"></script>
+    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-D_TCMSyS.css">
   </head>
   <body>
     <div id="root"></div>
@@ -21,12 +26,10 @@
       // Crash reporter: show JS errors on screen instead of black void
       window.onerror = function(msg, src, line, col, err) {
         var d = document.getElementById('root');
-        if (d) d.innerHTML = '<div style="color:#ff3b5c;padding:20px;font:14px monospace;word-break:break-all">'
-          + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision Error</h2>'
-          + '<p>' + msg + '</p>'
-          + '<p style="color:#888">' + (src||'') + ':' + line + ':' + col + '</p>'
-          + '<p style="color:#888;margin-top:8px">' + (err && err.stack ? err.stack : '') + '</p>'
-          + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Reload</button>'
+        if (d) d.innerHTML = '<div style="padding:40px 20px;text-align:center">'
+          + '<h2 style="color:#fff;margin-bottom:12px;font-family:system-ui">Something went wrong</h2>'
+          + '<p style="color:#888;font-family:system-ui;margin-bottom:20px">WorkoutVision encountered an error. Please reload to try again.</p>'
+          + '<button onclick="location.reload()" style="padding:12px 24px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold;font-size:1rem;cursor:pointer">Reload App</button>'
           + '</div>';
       };
       window.addEventListener('unhandledrejection', function(e) {
