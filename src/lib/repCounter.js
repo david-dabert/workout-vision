@@ -26,7 +26,7 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
-export const REP_COUNTER_BUILD = 'v21-smooth-prominence';
+export const REP_COUNTER_BUILD = 'v22-tighter-spacing';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -317,9 +317,9 @@ export class RepCounter {
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    // Minimum 2.0 seconds between reps. A controlled rep (push-up, squat,
-    // curl) takes 2-5 seconds. 1.5s was letting noise valleys through.
-    const minFramesBetweenReps = Math.round(this._fps * 2.0);
+    // Minimum 2.5 seconds between reps. A controlled rep (push-up, squat,
+    // curl) takes 3-5 seconds. 2.0s was still letting one noise valley through.
+    const minFramesBetweenReps = Math.round(this._fps * 2.5);
 
     // Amplitude threshold = 45% of signal range.
     // For a 100° range (deficit push-up), this is ~45°.
