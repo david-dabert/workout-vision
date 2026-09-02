@@ -26,7 +26,7 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
-export const REP_COUNTER_BUILD = 'v20-valley-tuned';
+export const REP_COUNTER_BUILD = 'v21-smooth-prominence';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -212,8 +212,8 @@ export class RepCounter {
       return a ? ex.getValue(a, lm) : null;
     });
 
-    // No smoothing. Interpolate nulls only.
-    const interpolated = this._interpolateNulls(rawValues);
+    // Interpolate nulls, then smooth to eliminate bestSide oscillation noise
+    const interpolated = this._smoothSignal(this._interpolateNulls(rawValues), 5);
 
     // ── Step 2: Invert if needed ──
     const down = ex.downThreshold;
@@ -317,20 +317,20 @@ export class RepCounter {
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    // Minimum 1.5 seconds between reps — no human does a rep faster than that.
-    // At 10fps this is 15 frames. Real bicep curls are ~3s each.
-    const minFramesBetweenReps = Math.round(this._fps * 1.5);
+    // Minimum 2.0 seconds between reps. A controlled rep (push-up, squat,
+    // curl) takes 2-5 seconds. 1.5s was letting noise valleys through.
+    const minFramesBetweenReps = Math.round(this._fps * 2.0);
 
-    // Amplitude threshold = 35% of signal range.
-    // For a 122° range (typical bicep curl), this is ~43°.
-    // Noise valleys are 5-25°; real valleys are 80-120°.
-    const minAmplitude = Math.max(40, signalRange * 0.35);
+    // Amplitude threshold = 45% of signal range.
+    // For a 100° range (deficit push-up), this is ~45°.
+    // Noise valleys from bestSide arm-switching are 20-40°; real valleys are 60-100°.
+    const minAmplitude = Math.max(40, signalRange * 0.45);
 
     console.debug(`[RepCounter] Valley params: minFrames=${minFramesBetweenReps}, minAmp=${minAmplitude.toFixed(1)}°, range=${signalRange.toFixed(1)}°`);
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
     //    A real rep bottom dominates its neighborhood. A noise dip does not.
-    const halfWindow = Math.max(3, Math.round(this._fps * 0.5)); // ±0.5s at 10fps = ±5 frames
+    const halfWindow = Math.max(5, Math.round(this._fps * 0.8)); // ±0.8s — wider window rejects noise dips
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
@@ -414,6 +414,21 @@ export class RepCounter {
     }
     for (let i = 0; i < N; i++) {
       if (out[i] === null) out[i] = 0;
+    }
+    return out;
+  }
+
+  // ─── Private: Moving average smoothing ───
+
+  _smoothSignal(signal, windowSize) {
+    const half = Math.floor(windowSize / 2);
+    const out = new Array(signal.length);
+    for (let i = 0; i < signal.length; i++) {
+      const lo = Math.max(0, i - half);
+      const hi = Math.min(signal.length - 1, i + half);
+      let sum = 0;
+      for (let j = lo; j <= hi; j++) sum += signal[j];
+      out[i] = sum / (hi - lo + 1);
     }
     return out;
   }
