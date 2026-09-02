@@ -112,17 +112,6 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
       <div className="nav-grid">
         <div
           className="nav-card nav-accent"
-          onClick={() => onNavigate('train')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('train'); } }}
-        >
-          <span className="nav-icon">{t('nav_live')}</span>
-          <span className="nav-title">{t('nav_live_title')}</span>
-          <span className="nav-desc">{t('nav_live_desc')}</span>
-        </div>
-        <div
-          className="nav-card"
           onClick={() => onNavigate('analyze')}
           role="button"
           tabIndex={0}

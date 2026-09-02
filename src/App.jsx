@@ -5,7 +5,6 @@ import Dashboard from './components/Dashboard';
 import Onboarding from './components/Onboarding';
 import './index.css';
 
-const Train = lazy(() => import('./components/Train'));
 const Analyze = lazy(() => import('./components/Analyze'));
 const ManualLog = lazy(() => import('./components/ManualLog'));
 const Validate = lazy(() => import('./components/Validate'));
@@ -53,11 +52,6 @@ function AppInner() {
   }
 
   // Full-screen pages (no tab bar)
-  if (page === 'train') return (
-    <Suspense fallback={LazyFallback}>
-      <Train onClose={() => setPage('dashboard')} />
-    </Suspense>
-  );
   if (page === 'analyze') return (
     <Suspense fallback={LazyFallback}>
       <Analyze onClose={() => setPage('dashboard')} />
