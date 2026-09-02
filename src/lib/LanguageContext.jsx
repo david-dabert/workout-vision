@@ -612,6 +612,33 @@ const translations = {
   'diag_frames': { en: 'Frames', fr: 'Images' },
   'diag_method': { en: 'Method', fr: 'Méthode' },
   'limitations': { en: 'Limitations', fr: 'Limitations' },
+
+  // ─── Insights section ───
+  'insights_title': { en: 'Your Insights', fr: 'Vos analyses' },
+  'body_profile': { en: 'Body Profile', fr: 'Profil corporel' },
+  'bmi': { en: 'BMI', fr: 'IMC' },
+  'body_fat_est': { en: 'Body Fat (est.)', fr: 'Masse grasse (est.)' },
+  'max_hr': { en: 'Max HR', fr: 'FC max' },
+  'bpm': { en: 'bpm', fr: 'bpm' },
+  'strength_levels': { en: 'Strength Levels', fr: 'Niveaux de force' },
+  'no_weighted': { en: 'Log exercises with weight to see strength levels.', fr: 'Enregistrez des exercices avec poids pour voir vos niveaux.' },
+  'estimated_1rm': { en: 'Est. 1RM', fr: '1RM est.' },
+  'training_load': { en: 'Training Load', fr: 'Charge d\'entraînement' },
+  'workload_ratio': { en: 'Workload Ratio', fr: 'Ratio de charge' },
+  'zone_optimal': { en: 'Optimal', fr: 'Optimal' },
+  'zone_undertraining': { en: 'Undertraining', fr: 'Sous-entraînement' },
+  'zone_caution': { en: 'Caution', fr: 'Attention' },
+  'zone_danger': { en: 'Danger', fr: 'Danger' },
+  'recovery': { en: 'Recovery', fr: 'Récupération' },
+  'recovery_ready': { en: 'Recovered — ready to train', fr: 'Récupéré — prêt à s\'entraîner' },
+  'recovery_partial': { en: 'Mostly recovered', fr: 'Presque récupéré' },
+  'recovery_rest': { en: 'Rest needed', fr: 'Repos nécessaire' },
+  'next_workout': { en: 'Suggested Next', fr: 'Prochaine séance' },
+  'goal_tips': { en: 'Tips for Your Goal', fr: 'Conseils pour votre objectif' },
+  'weekly_sets': { en: 'Weekly Sets', fr: 'Séries/semaine' },
+  'no_workouts_yet': { en: 'Start logging workouts to see insights.', fr: 'Commencez à enregistrer vos séances pour voir vos analyses.' },
+  'novice': { en: 'Novice', fr: 'Novice' },
+  'elite': { en: 'Elite', fr: 'Élite' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───

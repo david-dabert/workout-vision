@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getAllWorkouts } from '../lib/storage';
+import { getAllWorkouts, calculateBaselines } from '../lib/storage';
 import { EXERCISES } from '../lib/exercises';
+import { estimateOneRepMax, getStrengthLevel, calculateWorkloadRatio, suggestNextWorkout } from '../lib/coach';
 import MuscleMap from './MuscleMap';
 import { useT } from '../lib/LanguageContext';
 
@@ -186,12 +187,276 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
         </div>
       )}
 
+      {/* ── Insights section ── */}
+      <InsightsSection profile={profile} workouts={recentWorkouts} />
+
       {/* ── Footer ── */}
       <div className="home-footer">
         <span className="home-footer-text">100% on-device analysis</span>
         <span className="home-footer-dot">&middot;</span>
         <span className="home-footer-text">No data leaves your phone</span>
       </div>
+    </div>
+  );
+}
+
+// ── Insights Section ──
+
+function InsightsSection({ profile, workouts }) {
+  const { t } = useT();
+
+  const baselines = useMemo(() => calculateBaselines(profile), [profile]);
+
+  // Strength levels from logged workouts with weight
+  const strengthData = useMemo(() => {
+    if (!workouts || workouts.length === 0) return [];
+    const bestByExercise = {};
+    for (const w of workouts) {
+      if (!w.weight || w.weight <= 0 || !w.reps || w.reps <= 0) continue;
+      const key = w.exercise;
+      const oneRM = estimateOneRepMax(w.weight, w.reps);
+      if (!bestByExercise[key] || oneRM > bestByExercise[key].oneRM) {
+        bestByExercise[key] = { oneRM, weight: w.weight, reps: w.reps, name: w.exerciseName || w.exercise };
+      }
+    }
+    const bw = parseFloat(profile?.weight) || 75;
+    const sex = profile?.sex || 'male';
+    return Object.entries(bestByExercise).map(([key, data]) => ({
+      key,
+      name: EXERCISES[key]?.name || data.name,
+      oneRM: data.oneRM,
+      level: getStrengthLevel(key, data.oneRM, bw, sex),
+      weight: data.weight,
+      reps: data.reps,
+    })).sort((a, b) => b.oneRM - a.oneRM);
+  }, [workouts, profile]);
+
+  // Workload ratio
+  const workloadData = useMemo(() => {
+    if (!workouts || workouts.length === 0) return null;
+    const history = workouts.map(w => ({
+      date: w.date || new Date(w.createdAt).toISOString(),
+      load: (w.reps || 0) * (w.weight || 1),
+    }));
+    return calculateWorkloadRatio(history);
+  }, [workouts]);
+
+  // Recovery and next workout
+  const nextWorkoutData = useMemo(() => {
+    if (!workouts || workouts.length === 0) return null;
+    // Group workouts by session (same day)
+    const sessions = {};
+    for (const w of workouts) {
+      const day = new Date(w.date || w.createdAt).toDateString();
+      if (!sessions[day]) sessions[day] = { date: w.date || new Date(w.createdAt).toISOString(), exercises: [] };
+      sessions[day].exercises.push({ exerciseKey: w.exercise, sets: 1, reps: w.reps || 0 });
+    }
+    return suggestNextWorkout(profile, Object.values(sessions));
+  }, [workouts, profile]);
+
+  // Weekly sets per muscle
+  const weeklyMuscleVolume = useMemo(() => {
+    if (!workouts || workouts.length === 0) return {};
+    const now = Date.now();
+    const weekMs = 7 * 24 * 3600 * 1000;
+    const volume = {};
+    for (const w of workouts) {
+      const age = now - (w.createdAt || new Date(w.date).getTime());
+      if (age > weekMs) continue;
+      const ex = EXERCISES[w.exercise];
+      if (!ex?.muscles) continue;
+      for (const m of ex.muscles.primary) {
+        volume[m] = (volume[m] || 0) + 1;
+      }
+    }
+    return volume;
+  }, [workouts]);
+
+  // Goal-specific tips
+  const goalTips = useMemo(() => {
+    const goal = profile?.goal || 'general';
+    const exp = profile?.experience || 'intermediate';
+    const tips = [];
+    if (goal === 'strength') {
+      tips.push({ en: 'Focus on 3-5 reps per set at 85%+ of your 1RM.', fr: 'Visez 3-5 reps par série à 85%+ de votre 1RM.' });
+      tips.push({ en: 'Rest 3-5 minutes between heavy sets.', fr: 'Repos de 3-5 min entre les séries lourdes.' });
+      tips.push({ en: 'Prioritize compound lifts: squat, deadlift, bench, OHP.', fr: 'Priorisez les mouvements composés : squat, soulevé, développé.' });
+    } else if (goal === 'hypertrophy') {
+      tips.push({ en: 'Aim for 8-12 reps per set with 60-80% 1RM.', fr: 'Visez 8-12 reps par série à 60-80% du 1RM.' });
+      tips.push({ en: 'Target 10-20 sets per muscle group per week.', fr: 'Visez 10-20 séries par groupe musculaire par semaine.' });
+      tips.push({ en: 'Control the eccentric (lowering) phase: 2-3 seconds.', fr: 'Contrôlez la phase excentrique : 2-3 secondes.' });
+    } else if (goal === 'endurance') {
+      tips.push({ en: 'Use 15-20+ reps with lighter loads (50-65% 1RM).', fr: 'Utilisez 15-20+ reps avec charges légères (50-65% 1RM).' });
+      tips.push({ en: 'Keep rest periods short: 30-60 seconds.', fr: 'Repos courts : 30-60 secondes.' });
+      tips.push({ en: 'Include circuit training and supersets.', fr: 'Incluez du circuit training et des supersets.' });
+    } else if (goal === 'weight_loss') {
+      tips.push({ en: 'Combine resistance training with higher rep ranges (10-15).', fr: 'Combinez musculation avec séries de 10-15 reps.' });
+      tips.push({ en: 'Maintain protein intake at 1.6-2.2g per kg bodyweight.', fr: 'Maintenez un apport de 1.6-2.2g de protéines par kg.' });
+      tips.push({ en: 'Stay in a moderate caloric deficit, not extreme.', fr: 'Déficit calorique modéré, pas extrême.' });
+    } else {
+      tips.push({ en: 'Mix compound and isolation exercises across the week.', fr: 'Alternez exercices composés et isolation dans la semaine.' });
+      tips.push({ en: 'Aim for 3-4 sessions per week with balanced muscle coverage.', fr: 'Visez 3-4 séances par semaine avec couverture musculaire équilibrée.' });
+      tips.push({ en: 'Increase weight when you can complete all reps with good form.', fr: 'Augmentez le poids quand vous complétez toutes les reps avec bonne forme.' });
+    }
+    if (exp === 'beginner') {
+      tips.push({ en: 'Focus on learning proper form before adding weight.', fr: 'Apprenez la bonne forme avant d\'ajouter du poids.' });
+    }
+    return tips;
+  }, [profile]);
+
+  if (!profile) return null;
+
+  const levelColors = {
+    beginner: 'var(--red)',
+    novice: 'var(--yellow)',
+    intermediate: 'var(--accent)',
+    advanced: '#6e8efb',
+    elite: '#a855f7',
+  };
+
+  const goalLabels = {
+    general: t('general_fitness'),
+    strength: t('strength'),
+    hypertrophy: t('muscle_growth'),
+    endurance: t('endurance'),
+    weight_loss: t('weight_loss'),
+  };
+
+  const { lang } = useT();
+
+  return (
+    <div className="insights-section">
+      <h3 className="section-title">{t('insights_title')}</h3>
+
+      {/* Body profile card */}
+      {baselines && (
+        <div className="card insights-card">
+          <h4 className="insights-card-title">{t('body_profile')}</h4>
+          <div className="insights-grid-3">
+            <div className="insights-stat">
+              <span className="insights-stat-value">{baselines.bmi}</span>
+              <span className="insights-stat-label">{t('bmi')}</span>
+            </div>
+            <div className="insights-stat">
+              <span className="insights-stat-value">{baselines.estimatedBF}%</span>
+              <span className="insights-stat-label">{t('body_fat_est')}</span>
+            </div>
+            <div className="insights-stat">
+              <span className="insights-stat-value">{baselines.maxHR}</span>
+              <span className="insights-stat-label">{t('max_hr')} ({t('bpm')})</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Strength levels */}
+      <div className="card insights-card">
+        <h4 className="insights-card-title">{t('strength_levels')}</h4>
+        {strengthData.length === 0 ? (
+          <p className="insights-empty">{t('no_weighted')}</p>
+        ) : (
+          <div className="strength-list">
+            {strengthData.slice(0, 5).map(s => (
+              <div key={s.key} className="strength-row">
+                <div className="strength-info">
+                  <span className="strength-name">{s.name}</span>
+                  <span className="strength-detail">{s.weight}kg x {s.reps} = {t('estimated_1rm')} {s.oneRM}kg</span>
+                </div>
+                <span className="strength-level" style={{ color: levelColors[s.level] || 'var(--muted)' }}>
+                  {t(s.level) || s.level}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Training load & recovery */}
+      {workloadData && (
+        <div className="card insights-card">
+          <h4 className="insights-card-title">{t('training_load')}</h4>
+          <div className="insights-grid-2">
+            <div className="insights-stat">
+              <span className="insights-stat-value">{workloadData.ratio}</span>
+              <span className="insights-stat-label">{t('workload_ratio')}</span>
+              <span className="insights-zone" style={{
+                color: workloadData.zone === 'optimal' ? 'var(--accent)'
+                  : workloadData.zone === 'undertraining' ? 'var(--yellow)'
+                  : 'var(--red)'
+              }}>
+                {t('zone_' + workloadData.zone)}
+              </span>
+            </div>
+            <div className="insights-stat">
+              {nextWorkoutData && (
+                <>
+                  <span className="insights-stat-value" style={{ fontSize: '1rem' }}>
+                    {nextWorkoutData.estimatedRecovery === 'recovered' ? '✓' : nextWorkoutData.estimatedRecovery === 'partial' ? '~' : '✗'}
+                  </span>
+                  <span className="insights-stat-label">{t('recovery')}</span>
+                  <span className="insights-zone" style={{
+                    color: nextWorkoutData.estimatedRecovery === 'recovered' ? 'var(--accent)'
+                      : nextWorkoutData.estimatedRecovery === 'partial' ? 'var(--yellow)'
+                      : 'var(--red)'
+                  }}>
+                    {nextWorkoutData.estimatedRecovery === 'recovered' ? t('recovery_ready')
+                      : nextWorkoutData.estimatedRecovery === 'partial' ? t('recovery_partial')
+                      : t('recovery_rest')}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Next workout suggestion */}
+      {nextWorkoutData && nextWorkoutData.suggestedExercises.length > 0 && (
+        <div className="card insights-card">
+          <h4 className="insights-card-title">{t('next_workout')}</h4>
+          <p className="insights-recommendation">{nextWorkoutData.recommendation}</p>
+          {/* Weekly muscle volume */}
+          {Object.keys(weeklyMuscleVolume).length > 0 && (
+            <div className="muscle-volume-section">
+              <span className="insights-stat-label" style={{ marginBottom: 6, display: 'block' }}>{t('weekly_sets')}</span>
+              <div className="muscle-volume-bars">
+                {Object.entries(weeklyMuscleVolume)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 6)
+                  .map(([muscle, sets]) => (
+                    <div key={muscle} className="muscle-volume-row">
+                      <span className="muscle-volume-name">{muscle}</span>
+                      <div className="muscle-volume-bar-bg">
+                        <div
+                          className="muscle-volume-bar-fill"
+                          style={{
+                            width: `${Math.min(100, (sets / 10) * 100)}%`,
+                            background: sets >= 10 ? 'var(--accent)' : sets >= 5 ? 'var(--yellow)' : 'var(--red)',
+                          }}
+                        />
+                      </div>
+                      <span className="muscle-volume-count">{sets}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Goal-specific tips */}
+      <div className="card insights-card">
+        <h4 className="insights-card-title">{t('goal_tips')}: {goalLabels[profile?.goal] || t('general_fitness')}</h4>
+        <ul className="goal-tips-list">
+          {goalTips.map((tip, i) => (
+            <li key={i} className="goal-tip">{tip[lang] || tip.en}</li>
+          ))}
+        </ul>
+      </div>
+
+      {workouts.length === 0 && (
+        <p className="insights-empty" style={{ textAlign: 'center', padding: 20 }}>{t('no_workouts_yet')}</p>
+      )}
     </div>
   );
 }

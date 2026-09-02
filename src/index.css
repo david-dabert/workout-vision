@@ -1383,6 +1383,195 @@ select {
   color: var(--text-tertiary);
 }
 
+/* ── Insights Section ── */
+
+.insights-section {
+  padding: 0 16px;
+  margin-top: 20px;
+}
+
+.insights-card {
+  margin-bottom: 12px;
+  padding: 16px;
+}
+
+.insights-card-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+}
+
+.insights-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.insights-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.insights-stat {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.insights-stat-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.insights-stat-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.insights-zone {
+  font-size: 0.62rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.insights-empty {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.insights-recommendation {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+/* Strength levels */
+
+.strength-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.strength-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.strength-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.strength-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.strength-detail {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+}
+
+.strength-level {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Muscle volume bars */
+
+.muscle-volume-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.muscle-volume-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.muscle-volume-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 24px;
+  align-items: center;
+  gap: 8px;
+}
+
+.muscle-volume-name {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.muscle-volume-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.muscle-volume-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.muscle-volume-count {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+/* Goal tips */
+
+.goal-tips-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style: none;
+}
+
+.goal-tip {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  position: relative;
+  padding-left: 4px;
+  margin-bottom: 6px;
+}
+
+.goal-tip::before {
+  content: '→';
+  position: absolute;
+  left: -16px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* ── Footer ── */
 
 .home-footer {
