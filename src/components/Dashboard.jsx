@@ -27,15 +27,12 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
     getAllWorkouts().then(all => setRecentWorkouts(all.slice(0, 10)));
   }, []);
 
-  // Aggregate stats from recent workouts
   const stats = useMemo(() => {
     if (recentWorkouts.length === 0) return null;
     const totalReps = recentWorkouts.reduce((s, w) => s + (w.reps || 0), 0);
     const totalSets = recentWorkouts.length;
     const avgScore = Math.round(recentWorkouts.reduce((s, w) => s + (w.formScore || 0), 0) / recentWorkouts.length);
     const totalVolume = recentWorkouts.reduce((s, w) => s + (w.volume || 0), 0);
-
-    // Aggregate muscles worked
     const primarySet = new Set();
     const secondarySet = new Set();
     for (const w of recentWorkouts) {
@@ -45,132 +42,156 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
         (ex.muscles.secondary || []).forEach(m => secondarySet.add(m));
       }
     }
-
     return { totalReps, totalSets, avgScore, totalVolume,
       muscles: { primary: [...primarySet], secondary: [...secondarySet] } };
   }, [recentWorkouts]);
 
   return (
     <div className="home">
-      <div className="home-top">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 className="logo">Workout<span>Vision</span></h1>
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            <button
-              className={`btn btn-sm ${lang === 'en' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setLang('en')}
-              style={{ padding: '4px 10px', fontSize: '0.75rem', minHeight: 32 }}
-            >EN</button>
-            <button
-              className={`btn btn-sm ${lang === 'fr' ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setLang('fr')}
-              style={{ padding: '4px 10px', fontSize: '0.75rem', minHeight: 32 }}
-            >FR</button>
+      {/* ── Hero section ── */}
+      <div className="home-hero">
+        <div className="home-hero-bg" />
+        <div className="home-hero-content">
+          <div className="home-header">
+            <h1 className="logo">
+              <span className="logo-w">W</span>orkout
+              <span className="logo-accent">Vision</span>
+            </h1>
+            <div className="lang-toggle">
+              <button
+                className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+                onClick={() => setLang('en')}
+                aria-label="English"
+              >EN</button>
+              <button
+                className={`lang-btn ${lang === 'fr' ? 'active' : ''}`}
+                onClick={() => setLang('fr')}
+                aria-label="Français"
+              >FR</button>
+            </div>
           </div>
-        </div>
-        <p className="tagline">{t('tagline')}</p>
-        <div className="model-status">
-          <span className={`dot ${statusDot}`} />
-          {statusText}
+          <p className="tagline">{t('tagline')}</p>
+          <div className={`engine-status engine-${statusDot}`}>
+            <span className={`engine-dot ${statusDot}`} />
+            <span>{statusText}</span>
+          </div>
         </div>
       </div>
 
-      {/* Muscle Map Summary — shows all muscles worked from recent workouts */}
-      {stats && stats.muscles.primary.length > 0 && (
-        <div className="card" style={{ textAlign: 'center', padding: '16px 12px' }}>
-          <MuscleMap muscles={stats.muscles} size={100} />
-          <div className="stats-grid-2x2" style={{ marginTop: 12, marginBottom: 0 }}>
-            <div className="stat-card">
-              <span className="stat-card-label">TOTAL REPS</span>
-              <span className="stat-card-value">{stats.totalReps}</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-card-label">TOTAL SETS</span>
-              <span className="stat-card-value">{stats.totalSets}</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-card-label">AVG FORM</span>
-              <span className="stat-card-value">
-                <span style={{ color: stats.avgScore >= 80 ? 'var(--accent)' : stats.avgScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
-                  {stats.avgScore}
-                </span>
-                <span style={{ fontSize: '0.6em', color: 'var(--muted)' }}>/100</span>
-              </span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-card-label">VOLUME</span>
-              <span className="stat-card-value">
-                {stats.totalVolume > 0 ? `${Math.round(stats.totalVolume)}` : '--'}
-                {stats.totalVolume > 0 && <span style={{ fontSize: '0.5em', color: 'var(--muted)', marginLeft: 2 }}>kg</span>}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Action Cards */}
-      <div className="nav-grid">
-        <div
-          className="nav-card nav-accent"
+      {/* ── Primary action: Analyze Video ── */}
+      <div className="action-cards">
+        <button
+          className="action-primary"
           onClick={() => onNavigate('analyze')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('analyze'); } }}
+          aria-label={t('nav_video_title')}
         >
-          <span className="nav-icon">{t('nav_video')}</span>
-          <span className="nav-title">{t('nav_video_title')}</span>
-          <span className="nav-desc">{t('nav_video_desc')}</span>
-        </div>
-        <div
-          className="nav-card"
+          <div className="action-primary-glow" />
+          <div className="action-primary-content">
+            <div className="action-primary-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="23 7 16 12 23 17 23 7" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+              </svg>
+            </div>
+            <div className="action-primary-text">
+              <span className="action-label">{t('nav_video_title')}</span>
+              <span className="action-desc">{t('nav_video_desc')}</span>
+            </div>
+            <svg className="action-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </button>
+
+        <button
+          className="action-secondary"
           onClick={() => onNavigate('log')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('log'); } }}
+          aria-label={t('nav_log_title')}
         >
-          <span className="nav-icon">{t('nav_log')}</span>
-          <span className="nav-title">{t('nav_log_title')}</span>
-          <span className="nav-desc">{t('nav_log_desc')}</span>
-        </div>
+          <div className="action-secondary-content">
+            <div className="action-secondary-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </div>
+            <span className="action-label">{t('nav_log_title')}</span>
+            <svg className="action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </button>
       </div>
 
-      {/* Recent Workouts */}
-      {recentWorkouts.length > 0 && (
-        <div style={{ marginTop: 8 }}>
-          <h3 style={{ marginBottom: 10 }}>{t('recent')}</h3>
-          {recentWorkouts.slice(0, 5).map(w => {
-            const score = w.formScore || 0;
-            return (
-              <div key={w.id} className="card" style={{ padding: '12px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{
-                  width: 42, height: 42, borderRadius: 10,
-                  background: score >= 80 ? 'var(--accent-glow-strong)' : score >= 60 ? 'var(--yellow-glow)' : 'var(--red-glow)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  border: `1px solid ${score >= 80 ? 'rgba(0,245,212,0.2)' : score >= 60 ? 'rgba(255,184,54,0.2)' : 'rgba(255,59,92,0.2)'}`,
-                }}>
-                  <span style={{
-                    fontSize: '0.82rem', fontWeight: 800,
-                    color: score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--yellow)' : 'var(--red)',
-                  }}>{gradeFromScore(score)}</span>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.88rem', display: 'block' }}>
-                    {w.exerciseName || w.exercise}
-                  </span>
-                  <span className="text-xs text-muted">
-                    {new Date(w.date || w.createdAt).toLocaleDateString()} &middot; {w.reps} {t('reps').toLowerCase()}
-                    {w.weight > 0 && ` &middot; ${w.weight}kg`}
-                  </span>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '1.1rem' }}>{w.reps}</span>
-                  <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>reps</span>
-                </div>
+      {/* ── Stats summary ── */}
+      {stats && stats.muscles.primary.length > 0 && (
+        <div className="stats-section">
+          <h3 className="section-title">{t('recent')}</h3>
+          <div className="stats-hero-card">
+            <MuscleMap muscles={stats.muscles} size={90} />
+            <div className="stats-numbers">
+              <div className="stat-item">
+                <span className="stat-value">{stats.totalReps}</span>
+                <span className="stat-label">REPS</span>
               </div>
-            );
-          })}
+              <div className="stat-item">
+                <span className="stat-value">{stats.totalSets}</span>
+                <span className="stat-label">SETS</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value" style={{
+                  color: stats.avgScore >= 80 ? 'var(--accent)' : stats.avgScore >= 60 ? 'var(--yellow)' : 'var(--red)'
+                }}>{stats.avgScore}</span>
+                <span className="stat-label">FORM</span>
+              </div>
+              {stats.totalVolume > 0 && (
+                <div className="stat-item">
+                  <span className="stat-value">{Math.round(stats.totalVolume)}<span className="stat-unit">kg</span></span>
+                  <span className="stat-label">VOL</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
+
+      {/* ── Recent workouts ── */}
+      {recentWorkouts.length > 0 && (
+        <div className="recent-section">
+          {!stats && <h3 className="section-title">{t('recent')}</h3>}
+          <div className="workout-list">
+            {recentWorkouts.slice(0, 5).map(w => {
+              const score = w.formScore || 0;
+              const gradeColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
+              return (
+                <div key={w.id} className="workout-row">
+                  <div className="workout-grade" style={{ '--grade-color': gradeColor }}>
+                    {gradeFromScore(score)}
+                  </div>
+                  <div className="workout-info">
+                    <span className="workout-name">{w.exerciseName || w.exercise}</span>
+                    <span className="workout-meta">
+                      {new Date(w.date || w.createdAt).toLocaleDateString()} &middot; {w.reps} {t('reps').toLowerCase()}
+                      {w.weight > 0 && ` \u00B7 ${w.weight}kg`}
+                    </span>
+                  </div>
+                  <div className="workout-reps">
+                    <span className="workout-reps-num">{w.reps}</span>
+                    <span className="workout-reps-label">reps</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Footer ── */}
+      <div className="home-footer">
+        <span className="home-footer-text">100% on-device analysis</span>
+        <span className="home-footer-dot">&middot;</span>
+        <span className="home-footer-text">No data leaves your phone</span>
+      </div>
     </div>
   );
 }
