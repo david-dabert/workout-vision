@@ -164,8 +164,8 @@ const translations = {
   'coach_no_exercises': { en: 'No exercises recorded in this session.', fr: 'Aucun exercice enregistré dans cette session.' },
   'coach_complete_one': { en: 'Complete at least one exercise to generate a report.', fr: 'Effectuez au moins un exercice pour générer un rapport.' },
   'coach_symmetry': { en: 'Excellent bilateral symmetry on {{exerciseName}}.', fr: 'Excellente symétrie bilatérale sur {{exerciseName}}.' },
-  'coach_velocity_drop': { en: 'Velocity dropped {{dropoff}}% on {{exerciseName}}. Consider reducing reps or load.', fr: 'Vitesse en baisse de {{dropoff}}% sur {{exerciseName}}. Réduisez les reps ou la charge.' },
-  'coach_rom_inconsistent': { en: 'Inconsistent range of motion on {{exerciseName}} ({{consistency}}%). Focus on controlled tempo.', fr: 'Amplitude irrégulière sur {{exerciseName}} ({{consistency}}%). Travaillez le tempo.' },
+  'coach_velocity_drop': { en: 'Velocity dropped {{dropoff}}% on {{exerciseName}}.', fr: 'Vitesse en baisse de {{dropoff}}% sur {{exerciseName}}.' },
+  'coach_rom_inconsistent': { en: 'Inconsistent range of motion on {{exerciseName}} ({{consistency}}%).', fr: 'Amplitude irrégulière sur {{exerciseName}} ({{consistency}}%).' },
   'coach_compensation': { en: '{{pattern}} detected on {{exerciseName}}: {{description}}', fr: '{{pattern}} détecté sur {{exerciseName}} : {{description}}' },
   'coach_quality_strong': { en: 'Strong movement quality on {{exerciseName}} ({{score}}/100).', fr: 'Excellente qualité de mouvement sur {{exerciseName}} ({{score}}/100).' },
   'coach_good_volume': { en: 'Good volume on {{muscle}}: {{sets}} working sets.', fr: 'Bon volume sur {{muscle}} : {{sets}} séries de travail.' },
@@ -578,7 +578,7 @@ const translations = {
   'trend_insufficient': { en: 'insufficient data', fr: 'données insuffisantes' },
 
   // ─── Fatigue recommendations ───
-  'fatigue_significant': { en: 'Significant fatigue. Consider reducing volume or increasing rest.', fr: 'Fatigue importante. Réduisez le volume ou augmentez le repos.' },
+  'fatigue_significant': { en: 'Significant fatigue detected across the set.', fr: 'Fatigue importante détectée sur la série.' },
   'fatigue_moderate': { en: 'Moderate fatigue. Good for hypertrophy (Pareja-Blanco 2017).', fr: 'Fatigue modérée. Bon pour l\'hypertrophie (Pareja-Blanco 2017).' },
   'fatigue_low': { en: 'Low fatigue. Good for strength without excessive fatigue.', fr: 'Fatigue faible. Bon pour la force sans fatigue excessive.' },
   'fatigue_warmup_effect': { en: 'Velocity increased through the set. Warm-up effect detected.', fr: 'Vitesse en hausse durant la série. Effet d\'échauffement détecté.' },
@@ -598,9 +598,9 @@ const translations = {
 
   // ─── Progression notes ───
   'prog_rom_up': { en: '+{{change}}° ROM improvement vs {{date}}.', fr: "+{{change}}° d'amplitude gagnée vs {{date}}." },
-  'prog_rom_down': { en: '{{change}}° ROM decrease vs {{date}}. Check recovery or reduce weight.', fr: "{{change}}° d'amplitude perdue vs {{date}}. Vérifiez la récupération ou réduisez la charge." },
+  'prog_rom_down': { en: '{{change}}° ROM decrease vs {{date}}.', fr: "{{change}}° d'amplitude perdue vs {{date}}." },
   'prog_form_up': { en: 'Form improved vs {{date}} (+{{change}} points).', fr: 'Forme améliorée vs {{date}} (+{{change}} points).' },
-  'prog_form_down': { en: 'Form dropped vs {{date}}. Consider reducing weight.', fr: 'Forme en baisse vs {{date}}. Envisagez de réduire la charge.' },
+  'prog_form_down': { en: 'Form dropped vs {{date}}.', fr: 'Forme en baisse vs {{date}}.' },
   'prog_consistent': { en: 'Consistent with last session ({{date}}).', fr: 'Constant par rapport à la dernière session ({{date}}).' },
   'yesterday': { en: 'yesterday', fr: 'hier' },
   'days_ago': { en: '{{n}} days ago', fr: 'il y a {{n}} jours' },

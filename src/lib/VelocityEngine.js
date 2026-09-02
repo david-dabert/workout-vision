@@ -273,7 +273,7 @@ export class VelocityEngine {
       detected: decay > 0.20, // Baker's 20% threshold
       decay: Math.round(decay * 100) / 100,
       velocities: velocities.map(v => Math.round(v * 1000) / 1000),
-      warning: decay > 0.20 ? 'Velocity loss >20% — consider ending set' : null,
+      warning: decay > 0.20 ? 'Velocity loss exceeded 20% across the set' : null,
     };
   }
 
@@ -288,9 +288,14 @@ export class VelocityEngine {
       return Math.abs(force * v);
     });
 
-    return {
-      peakW: Math.round(Math.max(...powers)),
-      meanW: Math.round(powers.reduce((a, b) => a + b, 0) / powers.length),
-    };
+    const peakW = Math.round(Math.max(...powers));
+    const meanW = Math.round(powers.reduce((a, b) => a + b, 0) / powers.length);
+
+    // Sanity check: power from angle-based signals produces nonsensical values
+    // because velocity is in deg/s not m/s. Cap at physically reasonable limits.
+    // World record power output is ~7000W (Olympic weightlifting).
+    if (peakW > 5000) return { peakW: 0, meanW: 0 };
+
+    return { peakW, meanW };
   }
 }

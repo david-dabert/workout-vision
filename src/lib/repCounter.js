@@ -206,6 +206,9 @@ export class RepCounter {
     if (this._finalized) return;
     this._finalized = true;
 
+    // Save hysteresis count as cross-check for YIN result
+    this._hysteresisReps = this._reps;
+
     const ex = this._exercise;
     const N = this._collectedLandmarks.length;
     if (ex.isIsometric || N < 6) return;
@@ -461,8 +464,12 @@ export class RepCounter {
             const valleysSupport = valleyRatio >= 1.45 && valleyRatio <= 2.5 && valleys2 <= maxReps;
             if (peaksSupport || valleysSupport) {
               const bestCount = peaksSupport ? peaks2 : valleys2;
-              if (bestCount >= best.reps + 2) {
-                console.debug(`[RepCounter] Period-doubling detected: YIN=${best.reps}, peaks=${peaks2}, valleys=${valleys2} → ${bestCount} reps`);
+              // Cross-check: the doubled count must not exceed the hysteresis
+              // count by more than 40%. Hysteresis is a reliable lower bound;
+              // if it counted 5-7, doubling to 9+ is overcounting, not correction.
+              const hystOk = !this._hysteresisReps || bestCount <= this._hysteresisReps * 1.4;
+              if (bestCount >= best.reps + 2 && hystOk) {
+                console.debug(`[RepCounter] Period-doubling detected: YIN=${best.reps}, peaks=${peaks2}, valleys=${valleys2}, hyst=${this._hysteresisReps} → ${bestCount} reps`);
                 best = { ...best, reps: bestCount, periodFrames: Math.round(sigN / bestCount),
                          periodSeconds: (sigN / bestCount) / this._fps };
               }
