@@ -147,9 +147,9 @@ export class RepCounter {
 
     let repCompleted = false;
 
-    // Hysteresis counting only runs in live mode.
-    // Video mode relies on finalize() for accurate ACF/YIN counting.
-    if (this._mode === 'live') {
+    // Hysteresis counting runs in both modes for live rep display.
+    // In video mode, finalize() overrides with accurate ACF/YIN count.
+    {
       const down = ex.downThreshold;
       const up = ex.upThreshold;
       const now = Date.now();
