@@ -1,0 +1,360 @@
+{
+  "date": "2026-08-31T19:49:49.903Z",
+  "type": "replay",
+  "cacheFile": "/Users/azeliebernard/Documents/workout-vision-edit/benchmark/landmark-cache/landmark-cache-2026-08-30T2110.json",
+  "summary": {
+    "testsRun": 43,
+    "testsScored": 43,
+    "avgAccuracy": 76,
+    "exactMatch": 16,
+    "withinOne": 28,
+    "mae": 1.42,
+    "oboAccuracy": 65
+  },
+  "results": [
+    {
+      "video": "battle_rope_bvlg9_Di1vI_14reps.mp4",
+      "expected": 14,
+      "actual": 14,
+      "error": 0,
+      "method": "wrist_Y_R",
+      "exercise": "battle_rope"
+    },
+    {
+      "video": "battle_rope_N0LntA705tY_9reps.mp4",
+      "expected": 9,
+      "actual": 9,
+      "error": 0,
+      "method": "wrist_Y_L",
+      "exercise": "battle_rope"
+    },
+    {
+      "video": "battle_rope_BuhAROfTtx8_9reps.mp4",
+      "expected": 9,
+      "actual": 10,
+      "error": 1,
+      "method": "wrist_Y_L",
+      "exercise": "battle_rope"
+    },
+    {
+      "video": "battle_rope_k3OYki3qGs0_9reps.mp4",
+      "expected": 9,
+      "actual": 9,
+      "error": 0,
+      "method": "wrist_Y_R",
+      "exercise": "battle_rope"
+    },
+    {
+      "video": "bench_press_Q8hAgtaL-5s_5reps.mp4",
+      "expected": 5,
+      "actual": 3,
+      "error": -2,
+      "method": "wrist_Z_R",
+      "exercise": "bench_press"
+    },
+    {
+      "video": "bench_press_MLLbKM7T41Y_6reps.mp4",
+      "expected": 6,
+      "actual": 4,
+      "error": -2,
+      "method": "wrist_Y_R",
+      "exercise": "bench_press"
+    },
+    {
+      "video": "bench_press_FyYRvnHdOgU_5reps.mp4",
+      "expected": 5,
+      "actual": 2,
+      "error": -3,
+      "method": "wrist_Y_L",
+      "exercise": "bench_press"
+    },
+    {
+      "video": "bench_press_E9KZOVuBRfA_11reps.mp4",
+      "expected": 11,
+      "actual": 8,
+      "error": -3,
+      "method": "wrist_Z_L",
+      "exercise": "bench_press"
+    },
+    {
+      "video": "bench_press_gWszV_R2qsk_6reps.mp4",
+      "expected": 6,
+      "actual": 0,
+      "error": -6,
+      "method": "",
+      "exercise": "bench_press"
+    },
+    {
+      "video": "bicep_curl_APTrC7Yce1A_6reps.mp4",
+      "expected": 6,
+      "actual": 5,
+      "error": -1,
+      "method": "wristShoulderDist3D_R",
+      "exercise": "bicep_curl"
+    },
+    {
+      "video": "bicep_curl_G__9za6MzoU_6reps.mp4",
+      "expected": 6,
+      "actual": 3,
+      "error": -3,
+      "method": "elbow_L",
+      "exercise": "bicep_curl"
+    },
+    {
+      "video": "bicep_curl_bl0J_8pKDVk_7reps.mp4",
+      "expected": 7,
+      "actual": 7,
+      "error": 0,
+      "method": "wristShoulderDist3D_R",
+      "exercise": "bicep_curl"
+    },
+    {
+      "video": "bicep_curl_ieps1GV1aeI_6reps.mp4",
+      "expected": 6,
+      "actual": 3,
+      "error": -3,
+      "method": "elbow_R",
+      "exercise": "bicep_curl"
+    },
+    {
+      "video": "front_raise_2h2EMB7Q4KQ_7reps.mp4",
+      "expected": 7,
+      "actual": 7,
+      "error": 0,
+      "method": "wrist_Y_L",
+      "exercise": "front_raise"
+    },
+    {
+      "video": "front_raise_N5a2yRphkcs_6reps.mp4",
+      "expected": 6,
+      "actual": 6,
+      "error": 0,
+      "method": "shoulder_R",
+      "exercise": "front_raise"
+    },
+    {
+      "video": "front_raise_JWPJRoehLxg_5reps.mp4",
+      "expected": 5,
+      "actual": 3,
+      "error": -2,
+      "method": "shoulder_L",
+      "exercise": "front_raise"
+    },
+    {
+      "video": "front_raise_6gdNjUNfctI_6reps.mp4",
+      "expected": 6,
+      "actual": 6,
+      "error": 0,
+      "method": "wrist_Y_R",
+      "exercise": "front_raise"
+    },
+    {
+      "video": "front_raise_XV3_pSSGqbA_5reps.mp4",
+      "expected": 5,
+      "actual": 2,
+      "error": -3,
+      "method": "shoulder_L",
+      "exercise": "front_raise"
+    },
+    {
+      "video": "lunge_G3HrMXGn4k0_6reps.mp4",
+      "expected": 6,
+      "actual": 6,
+      "error": 0,
+      "method": "hip_Y",
+      "exercise": "lunge"
+    },
+    {
+      "video": "lunge_-2zA7B3u1r8_6reps.mp4",
+      "expected": 6,
+      "actual": 6,
+      "error": 0,
+      "method": "hip_Y",
+      "exercise": "lunge"
+    },
+    {
+      "video": "lunge_5DHKLIb6QpI_5reps.mp4",
+      "expected": 5,
+      "actual": 4,
+      "error": -1,
+      "method": "knee_L",
+      "exercise": "lunge"
+    },
+    {
+      "video": "lunge_04s5S8V2Rx0_5reps.mp4",
+      "expected": 5,
+      "actual": 4,
+      "error": -1,
+      "method": "hip_Y",
+      "exercise": "lunge"
+    },
+    {
+      "video": "lunge_SQ_4MVrxuH8_9reps.mp4",
+      "expected": 9,
+      "actual": 9,
+      "error": 0,
+      "method": "hip_Y",
+      "exercise": "lunge"
+    },
+    {
+      "video": "pull_up_efQJ44Mk6BM_5reps.mp4",
+      "expected": 5,
+      "actual": 6,
+      "error": 1,
+      "method": "shoulder_Y",
+      "exercise": "pull_up"
+    },
+    {
+      "video": "pull_up_y2OiEe3K-8c_7reps.mp4",
+      "expected": 7,
+      "actual": 3,
+      "error": -4,
+      "method": "nose_Y",
+      "exercise": "pull_up"
+    },
+    {
+      "video": "pull_up_Uj7VQlHIltM_5reps.mp4",
+      "expected": 5,
+      "actual": 5,
+      "error": 0,
+      "method": "shoulder_Y",
+      "exercise": "pull_up"
+    },
+    {
+      "video": "pull_up_HmwfLUgHZIc_5reps.mp4",
+      "expected": 5,
+      "actual": 4,
+      "error": -1,
+      "method": "shoulder_Y",
+      "exercise": "pull_up"
+    },
+    {
+      "video": "pull_up_aiJcIGNepAM_8reps.mp4",
+      "expected": 8,
+      "actual": 7,
+      "error": -1,
+      "method": "nose_Y",
+      "exercise": "pull_up"
+    },
+    {
+      "video": "push_up_CnXUdZq7bBc_5reps.mp4",
+      "expected": 5,
+      "actual": 5,
+      "error": 0,
+      "method": "shoulder_Z",
+      "exercise": "push_up"
+    },
+    {
+      "video": "push_up_Py0A9wWkWao_5reps.mp4",
+      "expected": 5,
+      "actual": 4,
+      "error": -1,
+      "method": "shoulder_Y",
+      "exercise": "push_up"
+    },
+    {
+      "video": "push_up_E0p8QDRa0Fg_8reps.mp4",
+      "expected": 8,
+      "actual": 8,
+      "error": 0,
+      "method": "nose_Y",
+      "exercise": "push_up"
+    },
+    {
+      "video": "push_up_u9XyJmAGV0c_6reps.mp4",
+      "expected": 6,
+      "actual": 3,
+      "error": -3,
+      "method": "hip_R",
+      "exercise": "push_up"
+    },
+    {
+      "video": "push_up_miNX6dg_arc_6reps.mp4",
+      "expected": 6,
+      "actual": 5,
+      "error": -1,
+      "method": "shoulder_Y",
+      "exercise": "push_up"
+    },
+    {
+      "video": "sit_up_h_HmJ7f7C1I_15reps.mp4",
+      "expected": 15,
+      "actual": 15,
+      "error": 0,
+      "method": "nose_Y",
+      "exercise": "sit_up"
+    },
+    {
+      "video": "sit_up_TAfiVPo1vg8_5reps.mp4",
+      "expected": 5,
+      "actual": 4,
+      "error": -1,
+      "method": "nose_Y",
+      "exercise": "sit_up"
+    },
+    {
+      "video": "sit_up_c2ovcn-VOyI_5reps.mp4",
+      "expected": 5,
+      "actual": 5,
+      "error": 0,
+      "method": "trunk",
+      "exercise": "sit_up"
+    },
+    {
+      "video": "sit_up_9bIwX1vZrXg_5reps.mp4",
+      "expected": 5,
+      "actual": 0,
+      "error": -5,
+      "method": "",
+      "exercise": "sit_up"
+    },
+    {
+      "video": "sit_up_q0bQropuof0_6reps.mp4",
+      "expected": 6,
+      "actual": 4,
+      "error": -2,
+      "method": "nose_Y",
+      "exercise": "sit_up"
+    },
+    {
+      "video": "squat_VO3ts38ZCTk_5reps.mp4",
+      "expected": 5,
+      "actual": 5,
+      "error": 0,
+      "method": "knee_R",
+      "exercise": "squat"
+    },
+    {
+      "video": "squat_QQPv17nfR_E_6reps.mp4",
+      "expected": 6,
+      "actual": 3,
+      "error": -3,
+      "method": "knee_R",
+      "exercise": "squat"
+    },
+    {
+      "video": "squat_rRUaSaoVlBc_8reps.mp4",
+      "expected": 8,
+      "actual": 3,
+      "error": -5,
+      "method": "hip_Y",
+      "exercise": "squat"
+    },
+    {
+      "video": "squat_hVI6VQIS2Yo_7reps.mp4",
+      "expected": 7,
+      "actual": 6,
+      "error": -1,
+      "method": "hip_Y",
+      "exercise": "squat"
+    },
+    {
+      "video": "squat_dptApZvEt5Y_6reps.mp4",
+      "expected": 6,
+      "actual": 7,
+      "error": 1,
+      "method": "knee_L",
+      "exercise": "squat"
+    }
+  ]
+}
