@@ -14,7 +14,49 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 
 // Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v14-ios-compressed';
+const BUILD_ID = 'v15-direct-count';
+
+// ── Landmark cache (IndexedDB) ──
+// Same video + same fps = same landmarks. Skip MediaPipe entirely on re-analysis.
+const CACHE_DB = 'workoutVisionCache';
+const CACHE_STORE = 'landmarks';
+
+function openCacheDB() {
+  return new Promise((resolve) => {
+    const req = indexedDB.open(CACHE_DB, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(CACHE_STORE)) {
+        db.createObjectStore(CACHE_STORE);
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function getCachedLandmarks(key) {
+  const db = await openCacheDB();
+  if (!db || !db.objectStoreNames.contains(CACHE_STORE)) return null;
+  return new Promise((resolve) => {
+    const tx = db.transaction(CACHE_STORE, 'readonly');
+    const get = tx.objectStore(CACHE_STORE).get(key);
+    get.onsuccess = () => resolve(get.result || null);
+    get.onerror = () => resolve(null);
+    tx.oncomplete = () => db.close();
+  });
+}
+
+async function setCachedLandmarks(key, data) {
+  const db = await openCacheDB();
+  if (!db || !db.objectStoreNames.contains(CACHE_STORE)) return;
+  return new Promise((resolve) => {
+    const tx = db.transaction(CACHE_STORE, 'readwrite');
+    tx.objectStore(CACHE_STORE).put(data, key);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); resolve(); };
+  });
+}
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -202,6 +244,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${video.videoWidth}x${video.videoHeight}, ${totalFrames} frames at ${analysisFps.toFixed(1)} FPS`);
 
+    // Landmark cache key: same file + same fps = same landmarks
+    const cacheKey = `lm-${queueItem.file.name}-${queueItem.file.size}-${queueItem.file.lastModified}-${analysisFps.toFixed(1)}`;
+
     // Analysis state
     const frames = [];
     const replayFrames = [];
@@ -275,7 +320,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
           // Draw video frame to offscreen canvas for MediaPipe input
           offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
-          const result = detectPoseImage(landmarker, offscreen);
+          // Deterministic timestamp: frameIdx * (1000/fps) instead of
+          // performance.now(). This makes MediaPipe's temporal smoothing
+          // produce identical landmarks on every run of the same video.
+          const deterministicTs = frameIdx * (1000 / analysisFps);
+          const result = detectPoseImage(landmarker, offscreen, deterministicTs);
 
           // iOS optimization: only paint every 3rd frame to reduce GPU overhead.
           const shouldPaint = !IS_IOS || (frameIdx % 3 === 0);
@@ -391,20 +440,43 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       });
     };
 
-    // Sequential frame processing with UI yields
-    let frameIdx = 0;
-    while (frameIdx < totalFrames) {
-      const cont = await processFrame(frameIdx);
-      if (!cont) break;
-      frameIdx++;
-      // Yield to UI thread every 5 frames so progress bar updates
-      if (frameIdx % 5 === 0) {
-        await new Promise(r => setTimeout(r, 0));
+    // Check landmark cache: same video + same fps = skip MediaPipe entirely
+    let usedCache = false;
+    const cachedLandmarks = await getCachedLandmarks(cacheKey);
+    if (cachedLandmarks && cachedLandmarks.length > 0) {
+      console.log(`[Upload] Cache hit: ${cachedLandmarks.length} frames from IndexedDB`);
+      usedCache = true;
+      for (let i = 0; i < cachedLandmarks.length; i++) {
+        const lm = cachedLandmarks[i];
+        const time = i * interval;
+        const angles = extractJointAngles(lm);
+        frames.push({ landmarks: lm, timestamp: time, angles });
+        replayFrames.push({ landmarks: lm, timestamp: time });
       }
-      // Hard wall-clock cap: 3 minutes
-      if (Date.now() - analysisStart > 180_000) {
-        console.warn('[Upload] 3-minute wall-clock cap reached');
-        break;
+      setProgress(99);
+    }
+
+    // If no cache, run MediaPipe frame by frame
+    if (!usedCache) {
+      let frameIdx = 0;
+      while (frameIdx < totalFrames) {
+        const cont = await processFrame(frameIdx);
+        if (!cont) break;
+        frameIdx++;
+        if (frameIdx % 5 === 0) {
+          await new Promise(r => setTimeout(r, 0));
+        }
+        if (Date.now() - analysisStart > 180_000) {
+          console.warn('[Upload] 3-minute wall-clock cap reached');
+          break;
+        }
+      }
+
+      // Cache the extracted landmarks for deterministic re-analysis
+      if (frames.length > 0) {
+        const toCache = frames.map(f => f.landmarks);
+        setCachedLandmarks(cacheKey, toCache).catch(() => {});
+        console.log(`[Upload] Cached ${toCache.length} frames to IndexedDB`);
       }
     }
 

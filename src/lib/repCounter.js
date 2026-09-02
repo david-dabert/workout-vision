@@ -198,15 +198,17 @@ export class RepCounter {
   }
 
   /**
-   * Run ACF/YIN autocorrelation on the full collected signal.
+   * Direct peak counting on the full collected signal.
    * Called once after all frames are collected in video mode.
-   * Not used in live mode (hysteresis handles counting there).
+   *
+   * Replaces YIN frequency estimation with direct event counting:
+   * a rep is a discrete event (peak-to-peak or valley-to-valley),
+   * not a continuous sinusoidal frequency. Count the transitions.
    */
   finalize() {
     if (this._finalized) return;
     this._finalized = true;
 
-    // Save hysteresis count as cross-check for YIN result
     this._hysteresisReps = this._reps;
 
     const ex = this._exercise;
@@ -216,319 +218,236 @@ export class RepCounter {
     // ── Step 1: Extract all candidate signals ──
     const signals = this._extractSignals();
 
-    // ── Step 1b: Shoulder stability gate ──
-    // For exercises where shoulders should be pinned (bench press, lying curls),
-    // detect shoulder vertical displacement. When shoulders move significantly,
-    // wristShoulderDist signals become unreliable because the reference frame shifts.
-    // Penalize their confidence so consensus prefers elbow-angle or Z-axis signals.
-    // Only apply to exercises where shoulders are expected to be stationary.
-    const SHOULDER_PINNED_EXERCISES = ['bench_press', 'lying_bicep_curl', 'lying_tricep_extension', 'skull_crusher'];
-    const shoulderUnstable = SHOULDER_PINNED_EXERCISES.includes(this._exerciseKey)
-      ? this._detectShoulderInstability()
-      : 0;
-    if (shoulderUnstable > 0) {
-      console.debug(`[RepCounter] Shoulder instability: ${(shoulderUnstable * 100).toFixed(0)}% — penalizing wristShoulderDist signals`);
-    }
-
-    // ── Step 2: Smooth and run autocorrelation on each ──
-    // Two-tier approach: try priority signals first. Only fall back to all signals
-    // if priority signals produce no results. This prevents noise signals from
-    // beating the biomechanically correct signal for the exercise.
-    const prioritySignals = SIGNAL_PRIORITY[this._exerciseKey] || [];
-
-    const runACF = (signalSubset) => {
-      const results = [];
-      for (const sig of signalSubset) {
-        const valid = sig.values.filter(v => v !== null);
-        if (valid.length < 6) continue;
-
-        const interpolated = this._interpolateNulls(sig.values);
-        // Moderate smoothing to handle noisy signals while preserving
-        // the fundamental period. 0.12 * fps gives kernel ~0.5s at 30fps.
-        const sigma = Math.max(2, Math.round(this._fps * 0.12));
-        const smoothed = this._gaussianSmooth(interpolated, sigma);
-        const acfSmoothed = this._autocorrelation(smoothed, sig.name);
-
-        // At low fps (≤15), also try the raw interpolated signal.
-        // Smoothing can destroy fast oscillations when period ≈ kernel width.
-        let acf = acfSmoothed;
-        if (this._fps <= 15) {
-          const acfRaw = this._autocorrelation(interpolated, sig.name);
-          // Take whichever found more reps with reasonable confidence,
-          // or whichever has higher confidence if same rep count
-          if (acfRaw.reps > acf.reps && acfRaw.confidence > 0.1) {
-            acf = acfRaw;
-          } else if (acfRaw.reps === acf.reps && acfRaw.confidence > acf.confidence) {
-            acf = acfRaw;
-          }
-        }
-
-        if (acf.confidence > 0) {
-          let conf = acf.confidence;
-          // Apply shoulder instability penalty to distance-from-shoulder signals
-          if (shoulderUnstable > 0 && (sig.name.includes('wristShoulderDist') || sig.name.includes('wristShoulderDist3D'))) {
-            conf *= (1 - shoulderUnstable * 0.4); // Up to 40% penalty
-          }
-          results.push({
-            name: sig.name,
-            reps: acf.reps,
-            confidence: conf,
-            rawConfidence: acf.confidence,
-            periodFrames: acf.periodFrames,
-            periodSeconds: acf.periodFrames / this._fps,
-          });
-        }
-      }
-      return results;
-    };
-
-    // Tier 1: only priority signals for this exercise
-    const prioritySubset = prioritySignals.length > 0
-      ? signals.filter(s => prioritySignals.includes(s.name))
-      : [];
-    let results = runACF(prioritySubset);
-
-    // Tier 2: fall back to all signals if priority signals found nothing
-    if (results.length === 0 || results.every(r => r.reps === 0)) {
-      results = runACF(signals);
-    }
-
-    // ── Step 3: Pick best signal via consensus + confidence ──
-    results.sort((a, b) => b.confidence - a.confidence);
-
-    if (results.length === 0 || results[0].reps === 0) {
-      console.debug(`[RepCounter] ACF: no periodic signal found across ${signals.length} signals`);
+    // ── Step 2: Select the best signal for this exercise ──
+    const bestSignal = this._selectBestSignal(signals);
+    if (!bestSignal) {
+      console.debug('[RepCounter] No valid signal found for', this._exerciseKey);
       this._reps = 0;
       this._repHistory = [];
       return;
     }
 
-    // Collapse L/R pairs: correlated bilateral signals should count as one vote.
-    // Keep the higher-confidence member of each pair.
-    const lrPairs = [
-      ['elbow_L', 'elbow_R'], ['knee_L', 'knee_R'],
-      ['hip_L', 'hip_R'], ['shoulder_L', 'shoulder_R'],
-      ['wrist_Y_L', 'wrist_Y_R'], ['wrist_Z_L', 'wrist_Z_R'],
-      ['wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
-      ['wristShoulderDist_L', 'wristShoulderDist_R'],
-      ['ankleHipDist3D_L', 'ankleHipDist3D_R'],
-    ];
-    const collapsed = [];
-    const used = new Set();
-    for (const r of results) {
-      if (r.reps <= 0 || used.has(r.name)) continue;
-      const pair = lrPairs.find(p => p.includes(r.name));
-      if (pair) {
-        const otherName = pair[0] === r.name ? pair[1] : pair[0];
-        const other = results.find(x => x.name === otherName && !used.has(x.name));
-        used.add(r.name);
-        if (other) {
-          used.add(other.name);
-          // If L and R agree (within ±1 rep), collapse to higher confidence.
-          // If they disagree significantly, keep both as separate voters —
-          // the disagreement itself is information the consensus should see.
-          if (Math.abs(r.reps - other.reps) <= 1) {
-            collapsed.push(r.confidence >= other.confidence ? r : other);
-          } else {
-            collapsed.push(r);
-            collapsed.push(other);
-          }
-        } else {
-          collapsed.push(r);
-        }
-      } else {
-        used.add(r.name);
-        collapsed.push(r);
-      }
-    }
+    // ── Step 3: Prepare signal ──
+    const interpolated = this._interpolateNulls(bestSignal.values);
+    const sigma = Math.max(2, Math.round(this._fps * 0.12));
+    const smoothed = this._gaussianSmooth(interpolated, sigma);
 
-    // Consensus voting: group signals by rep count (within ±1), pick the
-    // group with the most votes. Within that group, take the highest confidence.
-    const countVotes = {};
-    for (const r of collapsed) {
-      // Find which bucket this count belongs to (within ±1 of existing bucket)
-      let matched = false;
-      for (const key of Object.keys(countVotes)) {
-        if (Math.abs(r.reps - parseInt(key)) <= 1) {
-          countVotes[key].votes++;
-          countVotes[key].totalConf += r.confidence;
-          if (r.confidence > countVotes[key].bestConf) {
-            countVotes[key].bestConf = r.confidence;
-            countVotes[key].bestResult = r;
-          }
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) {
-        countVotes[r.reps] = { votes: 1, totalConf: r.confidence, bestConf: r.confidence, bestResult: r };
-      }
-    }
+    // ── Step 4: Direct peak counting ──
+    const result = this._countRepsDirect(smoothed, bestSignal.name);
 
-    // Pick the consensus winner: most votes first, then highest total confidence
-    const buckets = Object.values(countVotes).sort((a, b) => {
-      if (b.votes !== a.votes) return b.votes - a.votes;
-      return b.totalConf - a.totalConf;
-    });
-
-    // Use consensus winner if it has at least 2 votes AND the top-confidence
-    // result disagrees with consensus. Otherwise use top confidence.
-    let best;
-    const topConf = results[0];
-    const consensus = buckets[0];
-    if (consensus.votes >= 2 && Math.abs(topConf.reps - consensus.bestResult.reps) > 1) {
-      // Consensus overrides single outlier
-      best = consensus.bestResult;
-      console.debug(`[RepCounter] Consensus override: ${consensus.votes} signals agree on ~${best.reps} reps vs top-conf ${topConf.reps} reps`);
-    } else {
-      best = topConf;
-    }
-
-    if (!best || best.reps === 0 || best.confidence < 0.15) {
-      console.debug(`[RepCounter] ACF: no reliable periodic signal (best conf=${best?.confidence?.toFixed(2) || 0})`);
+    if (!result.valid || result.reps === 0) {
+      console.debug(`[RepCounter] Direct count failed: ${result.reason || 'no reps'} (signal: ${bestSignal.name})`);
+      this._reps = 0;
+      this._repHistory = [];
       return;
     }
 
     console.debug(
-      `[RepCounter] ACF results:\n` +
-      results.slice(0, 5).map(r =>
-        `  ${r.name}: ${r.reps} reps, conf=${r.rawConfidence.toFixed(2)}${r.confidence !== r.rawConfidence ? ` (boosted ${r.confidence.toFixed(2)})` : ''}, period=${r.periodSeconds.toFixed(2)}s`
-      ).join('\n')
+      `[RepCounter] Direct count: ${bestSignal.name} → ${result.reps} reps ` +
+      `(peaks=${result.peaks.length}, valleys=${result.valleys.length}, ` +
+      `hysteresis=${this._hysteresisReps}, period=${(result.periodFrames / this._fps).toFixed(2)}s)`
     );
-    console.debug(`[RepCounter] ACF picked: ${best.name} → ${best.reps} reps (conf=${best.confidence.toFixed(2)}, period=${best.periodSeconds.toFixed(2)}s)`);
 
-    // ── Step 3b: Post-consensus period-doubling check ──
-    // YIN's dominant failure mode is finding 2x the true period. After
-    // consensus picks a winner, count peaks on the winning signal at half
-    // the YIN period. If peak count ≈ 2x best.reps, override.
-    {
-      const bestSignal = signals.find(s => s.name === best.name);
-      if (bestSignal && best.reps >= 2) {
-        const interpolated = this._interpolateNulls(bestSignal.values);
-        const sigma = Math.max(1, Math.round(this._fps * 0.1));
-        const smoothed = this._gaussianSmooth(interpolated, sigma);
-        // At low fps, use raw (interpolated) signal for peak counting.
-        // Full smoothing (sigma=1) destroys fast oscillations at 10fps.
-        const sigForPeaks = this._fps <= 15 ? interpolated : smoothed;
-        const sigN = sigForPeaks.length;
-        let sigMean = 0;
-        for (let i = 0; i < sigN; i++) sigMean += sigForPeaks[i];
-        sigMean /= sigN;
-        let sigMin2 = sigForPeaks[0], sigMax2 = sigForPeaks[0];
-        for (let i = 1; i < sigN; i++) {
-          if (sigForPeaks[i] < sigMin2) sigMin2 = sigForPeaks[i];
-          if (sigForPeaks[i] > sigMax2) sigMax2 = sigForPeaks[i];
-        }
-        const range2 = sigMax2 - sigMin2;
-        if (range2 > 1e-6) {
-          // Count peaks at half the YIN period, with reduced min distance
-          // to allow for rep-to-rep timing variation
-          const halfPeriod = Math.max(2, Math.round(best.periodFrames * 0.35));
-          const threshold2 = sigMean + range2 * 0.05;
-          let peaks2 = 0;
-          let lastPeak2 = -halfPeriod;
-          for (let i = 1; i < sigN - 1; i++) {
-            if (sigForPeaks[i] > threshold2 &&
-                sigForPeaks[i] >= sigForPeaks[i - 1] && sigForPeaks[i] >= sigForPeaks[i + 1] &&
-                (i - lastPeak2) >= halfPeriod) {
-              peaks2++;
-              lastPeak2 = i;
-            }
-          }
-          // Count valleys too for validation
-          const valleyThreshold = sigMean - range2 * 0.05;
-          let valleys2 = 0;
-          let lastValley2 = -halfPeriod;
-          for (let i = 1; i < sigN - 1; i++) {
-            if (sigForPeaks[i] < valleyThreshold &&
-                sigForPeaks[i] <= sigForPeaks[i - 1] && sigForPeaks[i] <= sigForPeaks[i + 1] &&
-                (i - lastValley2) >= halfPeriod) {
-              valleys2++;
-              lastValley2 = i;
-            }
-          }
-          // If peaks suggest ~2x the YIN count, check for period doubling.
-          // Require either peaks OR valleys to support the doubled count.
-          const expectedDouble = best.reps * 2;
-          const durationSec = sigN / this._fps;
-          const maxReps = Math.ceil(durationSec / RepCounter._repPeriodBounds(this._exerciseKey).min);
-          // Period doubling check: ratio should be close to 2.0 (1.45-2.5).
-          // Period-doubling (YIN locking onto 2x the true period) happens at
-          // any rep count, e.g. 11 real reps → YIN finds 5-6. Gate at 60%
-          // of maxReasonableReps to cover high-rep sets.
-          // Ratio 1.45 catches 4→6 (1.5x) cases like bench_press.
-          if (best.reps <= Math.max(6, Math.floor(maxReps * 0.6))) {
-            const peakRatio = peaks2 / best.reps;
-            const valleyRatio = valleys2 / best.reps;
-            const peaksSupport = peakRatio >= 1.45 && peakRatio <= 2.5 && peaks2 <= maxReps;
-            const valleysSupport = valleyRatio >= 1.45 && valleyRatio <= 2.5 && valleys2 <= maxReps;
-            if (peaksSupport || valleysSupport) {
-              const bestCount = peaksSupport ? peaks2 : valleys2;
-              // Cross-check: the doubled count must not exceed the hysteresis
-              // count by more than 40%. Hysteresis is a reliable lower bound;
-              // if it counted 5-7, doubling to 9+ is overcounting, not correction.
-              const hystOk = !this._hysteresisReps || bestCount <= this._hysteresisReps * 1.4;
-              if (bestCount >= best.reps + 2 && hystOk) {
-                console.debug(`[RepCounter] Period-doubling detected: YIN=${best.reps}, peaks=${peaks2}, valleys=${valleys2}, hyst=${this._hysteresisReps} → ${bestCount} reps`);
-                best = { ...best, reps: bestCount, periodFrames: Math.round(sigN / bestCount),
-                         periodSeconds: (sigN / bestCount) / this._fps };
-              }
-            }
-          }
-        }
-      }
-    }
+    this._acfDebug = {
+      allSignals: [{ name: bestSignal.name, reps: result.reps, confidence: 1.0,
+        periodFrames: result.periodFrames, periodSeconds: result.periodFrames / this._fps }],
+      picked: { name: bestSignal.name, reps: result.reps, confidence: 1.0,
+        periodFrames: result.periodFrames, periodSeconds: result.periodFrames / this._fps },
+    };
 
-    this._acfDebug = { allSignals: results, picked: best };
+    // ── Step 5: Build rep history with form scores ──
+    this._reps = result.reps;
+    this._repHistory = this._buildFormHistory(result.reps, result.periodFrames);
 
-    // ── Step 4: Build rep history with form scores ──
-    this._reps = best.reps;
-    this._repHistory = this._buildFormHistory(best.reps, best.periodFrames);
-
-    // ── Step 5: Velocity analysis (Convergence #2 + #6) ──
+    // ── Step 6: Velocity analysis ──
     try {
       const velocityEngine = new VelocityEngine(this._fps);
-      const bestSignal = signals.find(s => s.name === best.name);
-      if (bestSignal) {
-        const interpolated = this._interpolateNulls(bestSignal.values);
-        const smoothed = this._gaussianSmooth(interpolated, Math.max(1, Math.round(this._fps * 0.1)));
+      const repBoundaries = this._repHistory.map(r => ({ startFrame: r.startFrame, endFrame: r.endFrame }));
+      const repVelocities = velocityEngine.analyzePerRep(smoothed, repBoundaries, this._weightKg || 0);
 
-        // Per-rep velocity analysis
-        const repBoundaries = this._repHistory.map(r => ({ startFrame: r.startFrame, endFrame: r.endFrame }));
-        const repVelocities = velocityEngine.analyzePerRep(smoothed, repBoundaries, this._weightKg || 0);
-
-        // Attach velocity data to rep history
-        for (let i = 0; i < this._repHistory.length && i < repVelocities.length; i++) {
-          if (repVelocities[i]) {
-            this._repHistory[i].velocity = repVelocities[i];
-          }
-        }
-
-        // Full-signal velocity analysis for fatigue detection
-        const fullAnalysis = velocityEngine.analyze(smoothed, this._weightKg || 0);
-        this._velocityAnalysis = {
-          fatigue: fullAnalysis.fatigue,
-          power: fullAnalysis.power,
-          smoothness: fullAnalysis.smoothness,
-        };
-
-        // ── Step 6: Progression score (Convergence #5) ──
-        const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
-        this._progressionScore = ProgressionScore.computeSet({
-          formScores,
-          repVelocities,
-          reps: best.reps,
-          weightKg: this._weightKg || 0,
-        });
-
-        console.debug(
-          `[RepCounter] Velocity: fatigue=${fullAnalysis.fatigue.detected ? 'YES' : 'no'} decay=${fullAnalysis.fatigue.decay}\n` +
-          `[RepCounter] Progression: ${this._progressionScore.breakdown}`
-        );
+      for (let i = 0; i < this._repHistory.length && i < repVelocities.length; i++) {
+        if (repVelocities[i]) this._repHistory[i].velocity = repVelocities[i];
       }
+
+      const fullAnalysis = velocityEngine.analyze(smoothed, this._weightKg || 0);
+      this._velocityAnalysis = {
+        fatigue: fullAnalysis.fatigue,
+        power: fullAnalysis.power,
+        smoothness: fullAnalysis.smoothness,
+      };
+
+      // ── Step 7: Progression score ──
+      const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
+      this._progressionScore = ProgressionScore.computeSet({
+        formScores, repVelocities,
+        reps: result.reps, weightKg: this._weightKg || 0,
+      });
+
+      console.debug(
+        `[RepCounter] Velocity: fatigue=${fullAnalysis.fatigue.detected ? 'YES' : 'no'} decay=${fullAnalysis.fatigue.decay}\n` +
+        `[RepCounter] Progression: ${this._progressionScore.breakdown}`
+      );
     } catch (e) {
       console.warn('[RepCounter] Velocity/Progression analysis failed:', e.message);
     }
+  }
+
+  // ─── Private: Select best signal for this exercise ───
+
+  _selectBestSignal(signals) {
+    const priorityNames = SIGNAL_PRIORITY[this._exerciseKey] || [];
+
+    // For curl exercises, only use angle signals. wristShoulderDist is not
+    // a valid proxy for elbow flexion — it shifts when the shoulder moves.
+    // If elbow angles fail, return null (error) instead of a wrong measurement.
+    const CURL_EXERCISES = [
+      'bicep_curl', 'hammer_curl', 'lying_bicep_curl',
+      'concentration_curl', 'preacher_curl',
+    ];
+    const isCurl = CURL_EXERCISES.includes(this._exerciseKey);
+
+    // Build candidate list from priority signals
+    let candidates;
+    if (priorityNames.length > 0) {
+      candidates = signals.filter(s => {
+        if (!priorityNames.includes(s.name)) return false;
+        if (isCurl && s.name.includes('wristShoulderDist')) return false;
+        return true;
+      });
+    } else {
+      candidates = [...signals];
+    }
+
+    // Pick the signal with the largest range (most movement captured)
+    let bestSig = null;
+    let bestRange = 0;
+    for (const sig of candidates) {
+      const valid = sig.values.filter(v => v !== null);
+      if (valid.length < 6) continue;
+      let min = valid[0], max = valid[0];
+      for (let i = 1; i < valid.length; i++) {
+        if (valid[i] < min) min = valid[i];
+        if (valid[i] > max) max = valid[i];
+      }
+      const range = max - min;
+      if (range > bestRange) {
+        bestRange = range;
+        bestSig = sig;
+      }
+    }
+
+    // Signal quality gate: angle signals need at least 20 degrees of range
+    if (bestSig && RepCounter._isAngleSignal(bestSig.name) && bestRange < 20) {
+      console.debug(`[RepCounter] Signal quality gate: ${bestSig.name} range ${bestRange.toFixed(1)}° too small`);
+      return null;
+    }
+
+    // If priority signals produced nothing, fall back to all signals
+    // (but NOT for curls — if elbow angles fail, don't guess)
+    if (!bestSig && !isCurl) {
+      for (const sig of signals) {
+        const valid = sig.values.filter(v => v !== null);
+        if (valid.length < 6) continue;
+        let min = valid[0], max = valid[0];
+        for (let i = 1; i < valid.length; i++) {
+          if (valid[i] < min) min = valid[i];
+          if (valid[i] > max) max = valid[i];
+        }
+        const range = max - min;
+        if (range > bestRange) {
+          bestRange = range;
+          bestSig = sig;
+        }
+      }
+    }
+
+    return bestSig;
+  }
+
+  // ─── Private: Direct peak counting (replaces YIN) ───
+  //
+  // A rep is a discrete event, not a frequency. A bicep curl is:
+  // elbow angle goes high → low → high. Count the cycles.
+  // No period estimation, no harmonics, no consensus voting.
+
+  _countRepsDirect(smoothed, signalName) {
+    const N = smoothed.length;
+
+    // Signal stats
+    let sigMin = Infinity, sigMax = -Infinity;
+    for (let i = 0; i < N; i++) {
+      if (smoothed[i] < sigMin) sigMin = smoothed[i];
+      if (smoothed[i] > sigMax) sigMax = smoothed[i];
+    }
+    const range = sigMax - sigMin;
+
+    // Quality gate
+    if (range < 0.01) {
+      return { reps: 0, peaks: [], valleys: [], periodFrames: 0, valid: false, reason: 'No movement detected' };
+    }
+    if (RepCounter._isAngleSignal(signalName) && range < 20) {
+      return { reps: 0, peaks: [], valleys: [], periodFrames: 0, valid: false,
+        reason: `Signal range too small (${range.toFixed(0)}°)` };
+    }
+
+    const { min: minPeriodSec } = RepCounter._repPeriodBounds(this._exerciseKey);
+    // Minimum frames between peaks: 70% of exercise minimum period.
+    // Allows rep-to-rep tempo variation while preventing noise double-counting.
+    const minDist = Math.max(3, Math.round(this._fps * minPeriodSec * 0.7));
+    // Minimum amplitude for a valid peak-valley pair: 20% of total range
+    const minAmplitude = range * 0.20;
+
+    // Find all local maxima with minimum distance constraint
+    const peaks = [];
+    for (let i = 1; i < N - 1; i++) {
+      if (smoothed[i] >= smoothed[i - 1] && smoothed[i] >= smoothed[i + 1]) {
+        if (peaks.length === 0 || (i - peaks[peaks.length - 1]) >= minDist) {
+          peaks.push(i);
+        } else if (smoothed[i] > smoothed[peaks[peaks.length - 1]]) {
+          peaks[peaks.length - 1] = i; // Keep the higher peak
+        }
+      }
+    }
+
+    // Find all local minima with minimum distance constraint
+    const valleys = [];
+    for (let i = 1; i < N - 1; i++) {
+      if (smoothed[i] <= smoothed[i - 1] && smoothed[i] <= smoothed[i + 1]) {
+        if (valleys.length === 0 || (i - valleys[valleys.length - 1]) >= minDist) {
+          valleys.push(i);
+        } else if (smoothed[i] < smoothed[valleys[valleys.length - 1]]) {
+          valleys[valleys.length - 1] = i; // Keep the lower valley
+        }
+      }
+    }
+
+    // Validate each peak: must have a nearby valley with sufficient excursion
+    const maxPairDist = minDist * 4; // Peak-valley pair must be within ~4 periods
+    const validPeaks = peaks.filter(pi => {
+      return valleys.some(vi =>
+        Math.abs(pi - vi) < maxPairDist && (smoothed[pi] - smoothed[vi]) >= minAmplitude
+      );
+    });
+
+    const validValleys = valleys.filter(vi => {
+      return peaks.some(pi =>
+        Math.abs(pi - vi) < maxPairDist && (smoothed[pi] - smoothed[vi]) >= minAmplitude
+      );
+    });
+
+    // A complete rep needs both a peak and a valley
+    const reps = Math.min(validPeaks.length, validValleys.length);
+
+    // Sanity check against duration
+    const durationSec = N / this._fps;
+    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
+    if (reps > maxReasonableReps) {
+      return { reps: maxReasonableReps, peaks: validPeaks, valleys: validValleys,
+        periodFrames: Math.round(N / maxReasonableReps), valid: true };
+    }
+
+    const periodFrames = reps > 0 ? Math.round(N / reps) : 0;
+    return { reps, peaks: validPeaks, valleys: validValleys, periodFrames, valid: true };
   }
 
   get diagnostics() {

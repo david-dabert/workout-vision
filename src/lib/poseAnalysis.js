@@ -21,7 +21,7 @@ async function getMediaPipeVision() {
 }
 
 const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
-const MODEL_CACHE_KEY = 'pose-landmarker-full-v1';
+const MODEL_CACHE_KEY = 'pose-landmarker-full-v2'; // v2: pinned WASM 0.10.8
 
 let poseLandmarker = null;
 let modelLoadPromise = null;
@@ -226,11 +226,18 @@ export function disposeAllLandmarkers() {
 
 /**
  * Detect pose on a single image/frame (video upload analysis).
- * Uses detectForVideo with a unique timestamp for compatibility with VIDEO mode.
+ * Uses detectForVideo with a deterministic timestamp so that the same
+ * frame sequence always produces the same landmarks (MediaPipe's VIDEO
+ * mode applies temporal smoothing based on timestamp deltas).
+ *
+ * @param {PoseLandmarker} landmarker
+ * @param {HTMLCanvasElement} source
+ * @param {number} [timestamp] - deterministic timestamp in ms (frameIdx * 1000/fps).
+ *   Falls back to performance.now() if not provided (live mode).
  */
-export function detectPoseImage(landmarker, source) {
+export function detectPoseImage(landmarker, source, timestamp) {
   try {
-    const ts = performance.now();
+    const ts = timestamp != null ? timestamp : performance.now();
     return landmarker.detectForVideo(source, ts);
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (image):', e);
