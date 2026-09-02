@@ -4,6 +4,26 @@
  * Inspired by premium fitness apps (Hevy, Strong, etc.)
  */
 
+import { useT } from '../lib/LanguageContext';
+
+const MUSCLE_FR = {
+  'Pectorals': 'Pectoraux', 'Upper Pectorals': 'Pectoraux sup.',
+  'Anterior Deltoid': 'Deltoïde ant.', 'Medial Deltoid': 'Deltoïde moy.',
+  'Rear Deltoid': 'Deltoïde post.', 'Triceps': 'Triceps',
+  'Triceps (long head)': 'Triceps (long.)',
+  'Biceps Brachii': 'Biceps', 'Biceps': 'Biceps',
+  'Brachialis': 'Brachial', 'Brachioradialis': 'Brachio-radial',
+  'Forearms': 'Avant-bras', 'Latissimus Dorsi': 'Grand dorsal',
+  'Rhomboids': 'Rhomboïdes', 'Traps': 'Trapèzes', 'Upper Back': 'Haut du dos',
+  'Erectors': 'Érecteurs', 'Serratus Anterior': 'Dentelé ant.',
+  'Quadriceps': 'Quadriceps', 'Hamstrings': 'Ischio-jambiers',
+  'Glutes': 'Fessiers', 'Hip Flexors': 'Fléch. hanche',
+  'Gastrocnemius': 'Mollets', 'Soleus': 'Soléaire',
+  'Core': 'Gainage', 'Rectus Abdominis': 'Abdominaux',
+  'Obliques': 'Obliques', 'Transverse Abdominis': 'Transverse',
+  'Full Body': 'Corps entier',
+};
+
 // Muscle group → SVG path data for front and back body views
 // Simplified anatomical paths for mobile rendering
 const MUSCLE_PATHS = {
@@ -217,7 +237,10 @@ function BodyView({ view, primaryMuscles, secondaryMuscles, size = 120 }) {
 }
 
 export default function MuscleMap({ muscles, size = 100 }) {
+  const { lang } = useT();
   if (!muscles) return null;
+
+  const tr = (name) => (lang === 'fr' && MUSCLE_FR[name]) ? MUSCLE_FR[name] : name;
 
   const primary = resolveMuscles(muscles.primary || []);
   const secondary = resolveMuscles(muscles.secondary || []);
@@ -240,10 +263,10 @@ export default function MuscleMap({ muscles, size = 100 }) {
       </div>
       <div className="muscle-map-legend">
         {[...muscles.primary || []].map(m => (
-          <span key={m} className="muscle-dot primary">{m}</span>
+          <span key={m} className="muscle-dot primary">{tr(m)}</span>
         ))}
         {(muscles.secondary || []).slice(0, 3).map(m => (
-          <span key={m} className="muscle-dot secondary">{m}</span>
+          <span key={m} className="muscle-dot secondary">{tr(m)}</span>
         ))}
       </div>
     </div>

@@ -202,10 +202,51 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
 
 // ── Insights Section ──
 
+const MUSCLE_FR = {
+  'Pectorals': 'Pectoraux', 'Upper Pectorals': 'Pectoraux supérieurs',
+  'Anterior Deltoid': 'Deltoïde antérieur', 'Medial Deltoid': 'Deltoïde moyen',
+  'Rear Deltoid': 'Deltoïde postérieur', 'Triceps': 'Triceps',
+  'Triceps (long head)': 'Triceps (longue portion)',
+  'Biceps Brachii': 'Biceps', 'Biceps': 'Biceps',
+  'Brachialis': 'Brachial', 'Brachioradialis': 'Brachio-radial',
+  'Forearms': 'Avant-bras', 'Latissimus Dorsi': 'Grand dorsal',
+  'Rhomboids': 'Rhomboïdes', 'Traps': 'Trapèzes', 'Upper Back': 'Haut du dos',
+  'Erectors': 'Érecteurs du rachis', 'Serratus Anterior': 'Dentelé antérieur',
+  'Quadriceps': 'Quadriceps', 'Hamstrings': 'Ischio-jambiers',
+  'Glutes': 'Fessiers', 'Hip Flexors': 'Fléchisseurs de hanche',
+  'Gastrocnemius': 'Mollets', 'Soleus': 'Soléaire',
+  'Core': 'Gainage', 'Rectus Abdominis': 'Abdominaux',
+  'Obliques': 'Obliques', 'Transverse Abdominis': 'Transverse',
+};
+
+function translateMuscle(name, lang) {
+  if (lang === 'fr' && MUSCLE_FR[name]) return MUSCLE_FR[name];
+  return name;
+}
+
+function translateRecommendation(data, lang) {
+  if (lang !== 'fr') return data.recommendation;
+  const exercises = data.suggestedExercises
+    .map(key => EXERCISES[key]?.name || key)
+    .join(', ');
+  if (data.estimatedRecovery === 'rest needed') {
+    return `Certains groupes musculaires récupèrent encore. Récupération complète dans environ ${data.daysUntilRecovered} jour(s). Pour aujourd'hui, concentrez-vous sur : ${exercises}.`;
+  }
+  if (data.estimatedRecovery === 'partial') {
+    return `La plupart des muscles sont récupérés. Séance suggérée : ${exercises}.`;
+  }
+  return `Complètement récupéré et prêt à s'entraîner. Séance suggérée : ${exercises}.`;
+}
+
 function InsightsSection({ profile, workouts }) {
   const { t } = useT();
 
-  const baselines = useMemo(() => calculateBaselines(profile), [profile]);
+  const baselines = useMemo(() => {
+    const b = calculateBaselines(profile);
+    // Sanity check: if BMI is outside reasonable range, profile data is corrupt
+    if (b && (b.bmi < 10 || b.bmi > 80)) return null;
+    return b;
+  }, [profile]);
 
   // Strength levels from logged workouts with weight
   const strengthData = useMemo(() => {
@@ -414,7 +455,9 @@ function InsightsSection({ profile, workouts }) {
       {nextWorkoutData && nextWorkoutData.suggestedExercises.length > 0 && (
         <div className="card insights-card">
           <h4 className="insights-card-title">{t('next_workout')}</h4>
-          <p className="insights-recommendation">{nextWorkoutData.recommendation}</p>
+          <p className="insights-recommendation">
+            {lang === 'fr' ? translateRecommendation(nextWorkoutData, lang) : nextWorkoutData.recommendation}
+          </p>
           {/* Weekly muscle volume */}
           {Object.keys(weeklyMuscleVolume).length > 0 && (
             <div className="muscle-volume-section">
@@ -425,7 +468,7 @@ function InsightsSection({ profile, workouts }) {
                   .slice(0, 6)
                   .map(([muscle, sets]) => (
                     <div key={muscle} className="muscle-volume-row">
-                      <span className="muscle-volume-name">{muscle}</span>
+                      <span className="muscle-volume-name">{translateMuscle(muscle, lang)}</span>
                       <div className="muscle-volume-bar-bg">
                         <div
                           className="muscle-volume-bar-fill"

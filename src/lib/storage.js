@@ -121,6 +121,8 @@ export function calculateBaselines(profile) {
   const ageYears = parseFloat(age);
 
   if (!weightKg || !heightCm || !ageYears) return null;
+  // Sanity: reject clearly impossible values
+  if (weightKg < 20 || weightKg > 300 || heightCm < 80 || heightCm > 260 || ageYears < 5 || ageYears > 120) return null;
 
   // BMI
   const heightM = heightCm / 100;
