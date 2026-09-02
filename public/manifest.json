@@ -1,13 +1,13 @@
 {
   "name": "WorkoutVision",
-  "short_name": "WrkoutVision",
+  "short_name": "WorkoutVision",
   "description": "AI-powered workout form analysis using computer vision. Runs locally on your device.",
+  "categories": ["health", "fitness"],
   "start_url": "/workout-vision/",
   "scope": "/workout-vision/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "/workout-vision/favicon.svg",

@@ -5,16 +5,7 @@ import { estimateOneRepMax, getStrengthLevel, calculateWorkloadRatio, suggestNex
 import { useProfile } from '../lib/ProfileContext';
 import MuscleMap from './MuscleMap';
 import { useT } from '../lib/LanguageContext';
-
-function gradeFromScore(score) {
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'B+';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C+';
-  if (score >= 60) return 'C';
-  return 'D';
-}
+import { gradeFromScore, translateMuscle } from '../lib/utils';
 
 export default function Dashboard({ profile, modelStatus, onNavigate }) {
   const { t, lang, setLang } = useT();
@@ -125,6 +116,30 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
         </button>
       </div>
 
+      {/* ── Quick access grid ── */}
+      <div className="quick-access-grid">
+        <button className="quick-access-btn" onClick={() => onNavigate('history')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          <span>{t('nav_prs_title')}</span>
+        </button>
+        <button className="quick-access-btn" onClick={() => onNavigate('rest')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span>{t('nav_rest_title')}</span>
+        </button>
+        <button className="quick-access-btn" onClick={() => onNavigate('profile')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span>{t('profile')}</span>
+        </button>
+      </div>
+
       {/* ── Stats summary ── */}
       {stats && stats.muscles.primary.length > 0 && (
         <div className="stats-section">
@@ -193,37 +208,15 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
 
       {/* ── Footer ── */}
       <div className="home-footer">
-        <span className="home-footer-text">100% on-device analysis</span>
+        <span className="home-footer-text">{t('footer_on_device')}</span>
         <span className="home-footer-dot">&middot;</span>
-        <span className="home-footer-text">No data leaves your phone</span>
+        <span className="home-footer-text">{t('footer_privacy')}</span>
       </div>
     </div>
   );
 }
 
 // ── Insights Section ──
-
-const MUSCLE_FR = {
-  'Pectorals': 'Pectoraux', 'Upper Pectorals': 'Pectoraux supérieurs',
-  'Anterior Deltoid': 'Deltoïde antérieur', 'Medial Deltoid': 'Deltoïde moyen',
-  'Rear Deltoid': 'Deltoïde postérieur', 'Triceps': 'Triceps',
-  'Triceps (long head)': 'Triceps (longue portion)',
-  'Biceps Brachii': 'Biceps', 'Biceps': 'Biceps',
-  'Brachialis': 'Brachial', 'Brachioradialis': 'Brachio-radial',
-  'Forearms': 'Avant-bras', 'Latissimus Dorsi': 'Grand dorsal',
-  'Rhomboids': 'Rhomboïdes', 'Traps': 'Trapèzes', 'Upper Back': 'Haut du dos',
-  'Erectors': 'Érecteurs du rachis', 'Serratus Anterior': 'Dentelé antérieur',
-  'Quadriceps': 'Quadriceps', 'Hamstrings': 'Ischio-jambiers',
-  'Glutes': 'Fessiers', 'Hip Flexors': 'Fléchisseurs de hanche',
-  'Gastrocnemius': 'Mollets', 'Soleus': 'Soléaire',
-  'Core': 'Gainage', 'Rectus Abdominis': 'Abdominaux',
-  'Obliques': 'Obliques', 'Transverse Abdominis': 'Transverse',
-};
-
-function translateMuscle(name, lang) {
-  if (lang === 'fr' && MUSCLE_FR[name]) return MUSCLE_FR[name];
-  return name;
-}
 
 function translateRecommendation(data, lang) {
   if (lang !== 'fr') return data.recommendation;

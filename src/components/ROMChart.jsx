@@ -15,15 +15,8 @@ export default function ROMChart({ data, className = '' }) {
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
 
-    // Generate points if no data provided
     const points = data || [];
-    if (points.length === 0) {
-      for (let i = 0; i <= 60; i++) {
-        const t = i / 60;
-        const y = 0.5 + Math.sin(t * Math.PI * 4) * 0.25 + Math.sin(t * Math.PI * 8) * 0.08;
-        points.push({ x: t * w, y: (1 - y) * h * 0.7 + h * 0.15 });
-      }
-    }
+    if (points.length === 0) return;
 
     // Gradient fill
     const grad = ctx.createLinearGradient(0, 0, 0, h);

@@ -6,6 +6,7 @@
  */
 
 import { tModule } from './LanguageContext';
+import { gradeFromScore, getRecorderMimeType } from './utils';
 
 function resolveText(item) {
   if (typeof item === 'string') return item;
@@ -25,31 +26,6 @@ const TEXT = '#f0f0f5';
 const MUTED = '#6B6B82';
 const RED = '#FF3B5C';
 const YELLOW = '#FFB836';
-
-function getRecorderMimeType() {
-  if (typeof MediaRecorder === 'undefined') return null;
-  const types = [
-    'video/mp4;codecs=avc1.42E01E', // Safari iOS — Instagram-native
-    'video/webm;codecs=vp9',         // Chrome/Edge/Android
-    'video/webm;codecs=vp8',         // Firefox fallback
-    'video/webm',                    // Last resort
-  ];
-  for (const t of types) {
-    if (MediaRecorder.isTypeSupported(t)) return t;
-  }
-  return null;
-}
-
-function gradeFromScore(score) {
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'B+';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C+';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
-  return 'F';
-}
 
 function gradeColor(score) {
   if (score >= 80) return ACCENT;

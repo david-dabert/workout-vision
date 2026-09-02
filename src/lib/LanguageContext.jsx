@@ -18,6 +18,7 @@ const translations = {
   'sets': { en: 'sets', fr: 'séries' },
   'set': { en: 'Set', fr: 'Série' },
   'form': { en: 'Form', fr: 'Forme' },
+  'form_score_label': { en: 'FORM SCORE', fr: 'SCORE FORME' },
   'cal': { en: 'cal', fr: 'cal' },
   'kcal': { en: 'kcal', fr: 'kcal' },
 
@@ -616,20 +617,11 @@ const translations = {
   // ─── Insights section ───
   'insights_title': { en: 'Your Insights', fr: 'Vos analyses' },
   'body_profile': { en: 'Body Profile', fr: 'Profil corporel' },
-  'bmi': { en: 'BMI', fr: 'IMC' },
   'body_fat_est': { en: 'Body Fat (est.)', fr: 'Masse grasse (est.)' },
-  'max_hr': { en: 'Max HR', fr: 'FC max' },
-  'bpm': { en: 'bpm', fr: 'bpm' },
   'strength_levels': { en: 'Strength Levels', fr: 'Niveaux de force' },
   'no_weighted': { en: 'Log exercises with weight to see strength levels.', fr: 'Enregistrez des exercices avec poids pour voir vos niveaux.' },
   'estimated_1rm': { en: 'Est. 1RM', fr: '1RM est.' },
-  'training_load': { en: 'Training Load', fr: 'Charge d\'entraînement' },
   'workload_ratio': { en: 'Workload Ratio', fr: 'Ratio de charge' },
-  'zone_optimal': { en: 'Optimal', fr: 'Optimal' },
-  'zone_undertraining': { en: 'Undertraining', fr: 'Sous-entraînement' },
-  'zone_caution': { en: 'Caution', fr: 'Attention' },
-  'zone_danger': { en: 'Danger', fr: 'Danger' },
-  'recovery': { en: 'Recovery', fr: 'Récupération' },
   'recovery_ready': { en: 'Recovered — ready to train', fr: 'Récupéré — prêt à s\'entraîner' },
   'recovery_partial': { en: 'Mostly recovered', fr: 'Presque récupéré' },
   'recovery_rest': { en: 'Rest needed', fr: 'Repos nécessaire' },
@@ -640,11 +632,12 @@ const translations = {
   'novice': { en: 'Novice', fr: 'Novice' },
   'elite': { en: 'Elite', fr: 'Élite' },
   'edit_profile': { en: 'Edit Profile', fr: 'Modifier le profil' },
-  'saved': { en: 'Saved', fr: 'Enregistré' },
   'body_fat_pct': { en: 'Body Fat (%)', fr: 'Masse grasse (%)' },
   'muscle_pct': { en: 'Muscle (%)', fr: 'Masse musculaire (%)' },
   'measured': { en: 'measured', fr: 'mesuré' },
   'muscle': { en: 'Muscle', fr: 'Muscle' },
+  'footer_on_device': { en: '100% on-device analysis', fr: 'Analyse 100% sur l\'appareil' },
+  'footer_privacy': { en: 'No data leaves your phone', fr: 'Aucune donnée ne quitte votre téléphone' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───

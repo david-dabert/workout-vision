@@ -54,7 +54,6 @@ async function fetchModelBuffer() {
   try {
     const cached = await modelCache.getItem(MODEL_CACHE_KEY);
     if (cached) {
-      console.log('[PoseAnalysis] Model loaded from IndexedDB cache');
       return cached;
     }
   } catch (_) {}
@@ -92,14 +91,12 @@ async function fetchModelBuffer() {
     }
 
     modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
-    console.log('[PoseAnalysis] Model fetched from CDN (progressive) and cached');
     return buffer;
   }
 
   // Fallback: no Content-Length or no streaming body (older browsers)
   const buffer = await response.arrayBuffer();
   modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
-  console.log('[PoseAnalysis] Model fetched from CDN (fallback) and cached');
   return buffer;
 }
 
@@ -118,7 +115,6 @@ async function createLandmarker() {
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
       });
-      console.log(`[PoseAnalysis] Created with ${delegate} delegate`);
       return landmarker;
     } catch (e) {
       console.warn(`[PoseAnalysis] ${delegate} delegate failed:`, e.message);

@@ -7,6 +7,9 @@ import './index.css';
 
 const Analyze = lazy(() => import('./components/Analyze'));
 const ManualLog = lazy(() => import('./components/ManualLog'));
+const WorkoutHistory = lazy(() => import('./components/WorkoutHistory'));
+const RestTimer = lazy(() => import('./components/RestTimer'));
+const ProfilePage = lazy(() => import('./components/Profile'));
 const Validate = lazy(() => import('./components/Validate'));
 const DesignDemo = lazy(() => import('./components/DesignDemo'));
 
@@ -60,6 +63,21 @@ function AppInner() {
   if (page === 'log') return (
     <Suspense fallback={LazyFallback}>
       <ManualLog onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'history') return (
+    <Suspense fallback={LazyFallback}>
+      <WorkoutHistory onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'rest') return (
+    <Suspense fallback={LazyFallback}>
+      <RestTimer onClose={() => setPage('dashboard')} />
+    </Suspense>
+  );
+  if (page === 'profile') return (
+    <Suspense fallback={LazyFallback}>
+      <ProfilePage onClose={() => setPage('dashboard')} />
     </Suspense>
   );
   if (page === 'validate') return (

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
-import { RepCounter, REP_COUNTER_BUILD } from '../lib/repCounter';
+import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
@@ -13,8 +13,8 @@ import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
 import VideoReplay from './VideoReplay';
 import { extractFrames, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
+import { gradeFromScore, gradeClass } from '../lib/utils';
 
-const BUILD_ID = 'v20-valley-tuned';
 
 // ── Landmark cache (IndexedDB) ──
 // Keyed by SHA-256 hash of video file content + fps.
@@ -65,23 +65,6 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 
 const MAX_FRAMES = IS_IOS ? 300 : 600;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
-
-function gradeFromScore(score) {
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'B+';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C+';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
-  return 'F';
-}
-
-function gradeClass(score) {
-  if (score >= 80) return 'good';
-  if (score >= 60) return 'ok';
-  return 'poor';
-}
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -252,8 +235,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       frameCount = extracted.frameCount;
       duration = extracted.duration;
 
-      console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${extracted.width}x${extracted.height}, ${frameCount} frames at ${analysisFps}fps`);
-
       // ── Phase 5: Run MediaPipe on each extracted frame ──
       setAnalysisPhase('analyzing');
       setFfmpegStatus('Running pose detection...');
@@ -385,7 +366,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     }));
 
     console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length} frames in ${analysisTime}s`);
-    console.log(`[Upload] Reps detected: ${repCounter.reps}, method: valley-counter, build: ${REP_COUNTER_BUILD}`);
 
     // Log angle signal for debugging
     if (frames.length > 0) {
@@ -769,7 +749,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         <ResultCard key={idx} result={r} onReplay={() => setReplayResult(r)} />
       ))}
 
-      {/* BUILD_ID hidden from production UI — visible only in console */}
     </div>
   );
 }
@@ -897,7 +876,7 @@ function ResultCard({ result, onReplay }) {
           <span className="stat-card-value">{formatTime(duration)}</span>
         </div>
         <div className="stat-card">
-          <span className="stat-card-label">{t('form').toUpperCase()} SCORE</span>
+          <span className="stat-card-label">{t('form_score_label')}</span>
           <span className="stat-card-value">
             <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
               {formScore}
@@ -1248,14 +1227,6 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {result.diagnostics && (
-        <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'monospace' }}>
-          <div style={{ color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>Build: {REP_COUNTER_BUILD}</div>
-          <div>Method: {result.diagnostics.method}</div>
-          <div>Range: {result.diagnostics.observedMin}&deg; &ndash; {result.diagnostics.observedMax}&deg; ({result.diagnostics.observedRange}&deg;)</div>
-          <div>Frames: {result.diagnostics.totalFrames}</div>
-        </div>
-      )}
 
       {report?.highlights && report.highlights.length > 0 && (
         <div style={{ marginTop: 14 }}>

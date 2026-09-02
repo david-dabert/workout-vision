@@ -5,24 +5,7 @@
  */
 
 import { useT } from '../lib/LanguageContext';
-
-const MUSCLE_FR = {
-  'Pectorals': 'Pectoraux', 'Upper Pectorals': 'Pectoraux sup.',
-  'Anterior Deltoid': 'Deltoïde ant.', 'Medial Deltoid': 'Deltoïde moy.',
-  'Rear Deltoid': 'Deltoïde post.', 'Triceps': 'Triceps',
-  'Triceps (long head)': 'Triceps (long.)',
-  'Biceps Brachii': 'Biceps', 'Biceps': 'Biceps',
-  'Brachialis': 'Brachial', 'Brachioradialis': 'Brachio-radial',
-  'Forearms': 'Avant-bras', 'Latissimus Dorsi': 'Grand dorsal',
-  'Rhomboids': 'Rhomboïdes', 'Traps': 'Trapèzes', 'Upper Back': 'Haut du dos',
-  'Erectors': 'Érecteurs', 'Serratus Anterior': 'Dentelé ant.',
-  'Quadriceps': 'Quadriceps', 'Hamstrings': 'Ischio-jambiers',
-  'Glutes': 'Fessiers', 'Hip Flexors': 'Fléch. hanche',
-  'Gastrocnemius': 'Mollets', 'Soleus': 'Soléaire',
-  'Core': 'Gainage', 'Rectus Abdominis': 'Abdominaux',
-  'Obliques': 'Obliques', 'Transverse Abdominis': 'Transverse',
-  'Full Body': 'Corps entier',
-};
+import { MUSCLE_FR } from '../lib/utils';
 
 // Muscle group → SVG path data for front and back body views
 // Simplified anatomical paths for mobile rendering

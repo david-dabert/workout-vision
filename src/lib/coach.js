@@ -147,7 +147,7 @@ export function generateWorkoutReport(profile, exerciseResults) {
 
     const sets = result.sets || 1;
     const reps = result.reps || 0;
-    const weight = result.estimatedWeight || 0;
+    const weight = result.weight || result.estimatedWeight || 0;
     const repVolume = reps * sets * weight;
     totalVolumeLoad += repVolume;
 

@@ -27,7 +27,6 @@ import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
 export const REP_COUNTER_BUILD = 'v20-valley-tuned';
-console.log(`[RepCounter] BUILD_ID: ${REP_COUNTER_BUILD}`);
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -213,14 +212,6 @@ export class RepCounter {
       return a ? ex.getValue(a, lm) : null;
     });
 
-    // Diagnostic: log signal before any processing
-    const validValues = rawValues.filter(v => v !== null && !isNaN(v));
-    console.log(`[RepCounter] Signal length: ${rawValues.length}, valid: ${validValues.length}`);
-    if (validValues.length > 0) {
-      console.log(`[RepCounter] Signal range: ${(Math.max(...validValues) - Math.min(...validValues)).toFixed(1)}`);
-      console.log(`[RepCounter] First 10 values: ${validValues.slice(0, 10).map(v => v.toFixed(1)).join(', ')}`);
-    }
-
     // No smoothing. Interpolate nulls only.
     const interpolated = this._interpolateNulls(rawValues);
 
@@ -232,10 +223,6 @@ export class RepCounter {
 
     // ── Step 3: Valley counting ──
     const result = this._countValleys(signal);
-
-    console.log(`[RepCounter] Valleys detected: ${result.allValleys}`);
-    console.log(`[RepCounter] Valleys after filtering: ${result.reps}`);
-    console.log(`[RepCounter] Valley positions (frames): ${result.valleyFrames.join(', ')}`);
 
     if (result.reps === 0) {
       this._reps = 0;
@@ -304,7 +291,6 @@ export class RepCounter {
       const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
       this._progressionScore = ProgressionScore.computeSet({ formScores, repVelocities, reps: result.reps, weightKg: this._weightKg || 0 });
     } catch (e) {
-      console.warn('[RepCounter] Velocity/Progression failed:', e.message);
     }
   }
 

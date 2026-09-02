@@ -8,10 +8,14 @@ export function ProfileProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadProfile().then(p => {
-      setProfile(p);
-      setLoading(false);
-    });
+    loadProfile()
+      .then(p => {
+        setProfile(p);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const saveProfile = useCallback(async (updated) => {

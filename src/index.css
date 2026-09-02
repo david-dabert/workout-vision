@@ -154,16 +154,7 @@ body::after {
   isolation: isolate;
 }
 
-.app-universe::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  background-size: 128px;
-  pointer-events: none;
-  z-index: 1000;
-  opacity: 0.5;
-}
+/* Film grain inherited from body::before — no duplicate needed */
 
 .app-universe::after {
   content: '';
@@ -224,7 +215,7 @@ h1 {
 
 h2 {
   font-size: 1.35rem;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--text-primary);
   line-height: 1.25;
   letter-spacing: -0.015em;
@@ -1221,6 +1212,49 @@ select {
 .action-secondary:active .action-arrow {
   transform: translateX(2px);
   color: var(--text-secondary);
+}
+
+/* ── Quick access grid ── */
+
+.quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px 20px 0;
+}
+
+.quick-access-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.25s var(--ease-smooth);
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.quick-access-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(0, 245, 212, 0.15);
+  color: var(--bio-cyan);
+}
+
+.quick-access-btn svg {
+  opacity: 0.6;
+}
+
+.quick-access-btn:active svg {
+  opacity: 1;
+  color: var(--bio-cyan);
 }
 
 /* ── Stats section ── */
