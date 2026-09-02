@@ -14,7 +14,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 import { extractFrames, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 
-const BUILD_ID = 'v19-valley-only';
+const BUILD_ID = 'v20-valley-tuned';
 
 // ── Landmark cache (IndexedDB) ──
 // Keyed by SHA-256 hash of video file content + fps.

@@ -26,7 +26,7 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
-export const REP_COUNTER_BUILD = 'v19-valley-only';
+export const REP_COUNTER_BUILD = 'v20-valley-tuned';
 console.log(`[RepCounter] BUILD_ID: ${REP_COUNTER_BUILD}`);
 
 // ---------------------------------------------------------------------------
@@ -318,10 +318,7 @@ export class RepCounter {
   //   2. Amplitude from preceding peak to valley must be >= 25°
 
   _countValleys(signal) {
-    const minFramesBetweenReps = Math.round(this._fps * 0.4);
-    const minAmplitude = 25;
-
-    // Signal range
+    // Signal range first — needed for adaptive amplitude threshold
     let sigMin = Infinity, sigMax = -Infinity;
     for (let i = 0; i < signal.length; i++) {
       if (signal[i] < sigMin) sigMin = signal[i];
@@ -334,6 +331,17 @@ export class RepCounter {
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
+    // Minimum 1.5 seconds between reps — no human does a rep faster than that.
+    // At 10fps this is 15 frames. Real bicep curls are ~3s each.
+    const minFramesBetweenReps = Math.round(this._fps * 1.5);
+
+    // Amplitude threshold = 25% of signal range.
+    // For a 122° range (typical bicep curl), this is ~30°.
+    // Noise valleys are 5-15°; real valleys are 80-120°.
+    const minAmplitude = Math.max(30, signalRange * 0.25);
+
+    console.debug(`[RepCounter] Valley params: minFrames=${minFramesBetweenReps}, minAmp=${minAmplitude.toFixed(1)}°, range=${signalRange.toFixed(1)}°`);
+
     // 1. Find all local minima (valleys)
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
@@ -342,22 +350,30 @@ export class RepCounter {
       }
     }
 
-    // 2. Filter: spacing and amplitude
+    // 2. Filter: spacing and amplitude from BOTH sides (prominence)
     const valleyFrames = [];
     let lastValley = -Infinity;
 
     for (const v of allValleys) {
       if (v - lastValley < minFramesBetweenReps) continue;
 
-      // Find the highest point between this valley and the previous rep
+      // Peak before valley
       const searchStart = lastValley > 0 ? lastValley : Math.max(0, v - Math.round(this._fps * 3));
-      let peakValue = signal[v];
+      let peakBefore = signal[v];
       for (let j = searchStart; j < v; j++) {
-        if (signal[j] > peakValue) peakValue = signal[j];
+        if (signal[j] > peakBefore) peakBefore = signal[j];
       }
 
-      const amplitude = peakValue - signal[v];
-      if (amplitude >= minAmplitude) {
+      // Peak after valley
+      const searchEnd = Math.min(signal.length, v + Math.round(this._fps * 3));
+      let peakAfter = signal[v];
+      for (let j = v + 1; j < searchEnd; j++) {
+        if (signal[j] > peakAfter) peakAfter = signal[j];
+      }
+
+      // Prominence = minimum drop from either side
+      const prominence = Math.min(peakBefore - signal[v], peakAfter - signal[v]);
+      if (prominence >= minAmplitude) {
         valleyFrames.push(v);
         lastValley = v;
       }
