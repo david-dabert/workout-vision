@@ -335,18 +335,27 @@ export class RepCounter {
     // At 10fps this is 15 frames. Real bicep curls are ~3s each.
     const minFramesBetweenReps = Math.round(this._fps * 1.5);
 
-    // Amplitude threshold = 25% of signal range.
-    // For a 122° range (typical bicep curl), this is ~30°.
-    // Noise valleys are 5-15°; real valleys are 80-120°.
-    const minAmplitude = Math.max(30, signalRange * 0.25);
+    // Amplitude threshold = 35% of signal range.
+    // For a 122° range (typical bicep curl), this is ~43°.
+    // Noise valleys are 5-25°; real valleys are 80-120°.
+    const minAmplitude = Math.max(40, signalRange * 0.35);
 
     console.debug(`[RepCounter] Valley params: minFrames=${minFramesBetweenReps}, minAmp=${minAmplitude.toFixed(1)}°, range=${signalRange.toFixed(1)}°`);
 
-    // 1. Find all local minima (valleys)
+    // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
+    //    A real rep bottom dominates its neighborhood. A noise dip does not.
+    const halfWindow = Math.max(3, Math.round(this._fps * 0.5)); // ±0.5s at 10fps = ±5 frames
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
-        allValleys.push(i);
+        // Check: is this the minimum in [i-halfWindow, i+halfWindow]?
+        let isDeepest = true;
+        const lo = Math.max(0, i - halfWindow);
+        const hi = Math.min(signal.length - 1, i + halfWindow);
+        for (let k = lo; k <= hi; k++) {
+          if (signal[k] < signal[i]) { isDeepest = false; break; }
+        }
+        if (isDeepest) allValleys.push(i);
       }
     }
 
