@@ -113,15 +113,15 @@ function StepWelcome() {
       <div className="onboarding-features">
         <div className="onboarding-feature">
           <Activity size={20} color="var(--accent)" />
-          <span>{t('onb_feature_live')}</span>
+          <span>{t('nav_video_title')}</span>
         </div>
         <div className="onboarding-feature">
           <Target size={20} color="var(--accent)" />
-          <span>{t('onb_feature_progress')}</span>
+          <span>{t('nav_log_title')}</span>
         </div>
         <div className="onboarding-feature">
           <Dumbbell size={20} color="var(--accent)" />
-          <span>{t('onb_feature_nutrition')}</span>
+          <span>{t('onb_feature_progress')}</span>
         </div>
       </div>
     </div>
@@ -301,29 +301,20 @@ function StepSummary({ data }) {
       <div className="onboarding-benefits">
         <div className="onboarding-benefit">
           <div className="onboarding-benefit-icon">
-            <Target size={20} />
-          </div>
-          <div>
-            <strong>{t('nav_plan_title')}</strong>
-            <p className="text-muted text-sm">{t('nav_plan_desc')}</p>
-          </div>
-        </div>
-        <div className="onboarding-benefit">
-          <div className="onboarding-benefit-icon">
             <Activity size={20} />
           </div>
           <div>
-            <strong>{t('onb_feature_live')}</strong>
-            <p className="text-muted text-sm">{t('nav_live_desc')}</p>
+            <strong>{t('nav_video_title')}</strong>
+            <p className="text-muted text-sm">{t('nav_video_desc')}</p>
           </div>
         </div>
         <div className="onboarding-benefit">
           <div className="onboarding-benefit-icon">
-            <Dumbbell size={20} />
+            <Target size={20} />
           </div>
           <div>
-            <strong>{t('onb_feature_nutrition')}</strong>
-            <p className="text-muted text-sm">{t('nav_food_desc')}</p>
+            <strong>{t('nav_log_title')}</strong>
+            <p className="text-muted text-sm">{t('nav_log_desc')}</p>
           </div>
         </div>
       </div>

@@ -41,7 +41,7 @@ export const LANDMARKS = {
 };
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
-const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
+const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
 const VIS = 0.1; // minimum landmark visibility to draw/use
 
 // ─── Core: single model instance with IndexedDB cache ───
@@ -114,9 +114,9 @@ async function createLandmarker() {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
         runningMode: 'VIDEO',
         numPoses: 3,
-        minPoseDetectionConfidence: 0.3,
-        minPosePresenceConfidence: 0.3,
-        minTrackingConfidence: 0.3,
+        minPoseDetectionConfidence: 0.35,
+        minPosePresenceConfidence: 0.4,
+        minTrackingConfidence: 0.5,
       });
       console.log(`[PoseAnalysis] Created with ${delegate} delegate`);
       return landmarker;
@@ -413,9 +413,9 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     [27, 29], [29, 31], [28, 30], [30, 32],
   ];
 
-  // No visibility filtering — draw all landmarks that exist.
-  // Filtering caused skeleton to disappear on mobile for certain exercises.
-  const ok = (lm) => lm != null;
+  // Soft visibility filter: removes truly junk landmarks (noise, hallucinated
+  // limbs) while preserving detection on non-upright poses.
+  const ok = (lm) => lm != null && (lm.visibility == null || lm.visibility > 0.15);
 
   ctx.save();
   ctx.globalAlpha = alpha;

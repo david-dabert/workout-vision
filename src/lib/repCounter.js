@@ -219,7 +219,7 @@ export class RepCounter {
     // wristShoulderDist signals become unreliable because the reference frame shifts.
     // Penalize their confidence so consensus prefers elbow-angle or Z-axis signals.
     // Only apply to exercises where shoulders are expected to be stationary.
-    const SHOULDER_PINNED_EXERCISES = ['bench_press', 'lying_curl', 'lying_tricep_extension', 'skull_crusher'];
+    const SHOULDER_PINNED_EXERCISES = ['bench_press', 'lying_bicep_curl', 'lying_tricep_extension', 'skull_crusher'];
     const shoulderUnstable = SHOULDER_PINNED_EXERCISES.includes(this._exerciseKey)
       ? this._detectShoulderInstability()
       : 0;
@@ -240,9 +240,9 @@ export class RepCounter {
         if (valid.length < 6) continue;
 
         const interpolated = this._interpolateNulls(sig.values);
-        // Heavier smoothing (0.2s kernel) to handle noisy signals from
-        // non-standard positions (lying, seated, prone on bench)
-        const sigma = Math.max(2, Math.round(this._fps * 0.2));
+        // Moderate smoothing to handle noisy signals while preserving
+        // the fundamental period. 0.12 * fps gives kernel ~0.5s at 30fps.
+        const sigma = Math.max(2, Math.round(this._fps * 0.12));
         const smoothed = this._gaussianSmooth(interpolated, sigma);
         const acfSmoothed = this._autocorrelation(smoothed, sig.name);
 
@@ -450,11 +450,11 @@ export class RepCounter {
           const durationSec = sigN / this._fps;
           const maxReps = Math.ceil(durationSec / RepCounter._repPeriodBounds(this._exerciseKey).min);
           // Period doubling check: ratio should be close to 2.0 (1.45-2.5).
-          // Only apply when YIN found few reps (<=4), since period doubling
-          // is the dominant failure at low rep counts. Higher counts (5+) are
-          // more reliable and shouldn't be overridden by noisy peak counting.
+          // Period-doubling (YIN locking onto 2x the true period) happens at
+          // any rep count, e.g. 11 real reps → YIN finds 5-6. Gate at 60%
+          // of maxReasonableReps to cover high-rep sets.
           // Ratio 1.45 catches 4→6 (1.5x) cases like bench_press.
-          if (best.reps <= 4) {
+          if (best.reps <= Math.max(6, Math.floor(maxReps * 0.6))) {
             const peakRatio = peaks2 / best.reps;
             const valleyRatio = valleys2 / best.reps;
             const peaksSupport = peakRatio >= 1.45 && peakRatio <= 2.5 && peaks2 <= maxReps;
@@ -681,6 +681,9 @@ export class RepCounter {
       leg_extension:    { min: 0.8,  max: 4.0 },
       leg_curl:         { min: 0.8,  max: 4.0 },
       calf_raise:       { min: 0.5,  max: 3.0 },
+      lying_bicep_curl: { min: 1.0,  max: 4.0 },  // Controlled supine curl
+      lying_tricep_extension: { min: 1.0, max: 4.0 },
+      skull_crusher:    { min: 1.0,  max: 4.0 },
     };
     return bounds[exerciseKey] || { min: 0.6, max: 4.0 };
   }

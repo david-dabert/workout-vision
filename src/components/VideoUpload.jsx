@@ -533,7 +533,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       frames: replayFrames,
       autoDetected,
     };
-  }, [exercise, autoDetect]);
+  }, [exercise, autoDetect, weight, userInjuries]);
 
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);

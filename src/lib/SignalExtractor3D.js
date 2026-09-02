@@ -224,6 +224,8 @@ export const SIGNAL_PRIORITY_3D = {
   leg_extension: ['knee_L', 'knee_R'],
   leg_curl:      ['knee_L', 'knee_R'],
   calf_raise:    ['ankle_Y'],
+  lying_bicep_curl: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
+  lying_tricep_extension: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
 };
 
 export { computeDepthDominance, angle3D, dist3D };

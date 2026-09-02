@@ -94,7 +94,7 @@ const translations = {
   'bodyweight': { en: 'Bodyweight', fr: 'Poids du corps' },
   'other': { en: 'Other', fr: 'Autre' },
   'analyze': { en: 'Analyze', fr: 'Analyser' },
-  'failed_try_different': { en: 'Failed — try a different clip or use Live Training', fr: 'Échec — essayez un autre clip ou le mode en direct' },
+  'failed_try_different': { en: 'Failed — try a different clip with better lighting or angle', fr: 'Échec — essayez un autre clip avec un meilleur éclairage ou angle' },
   'loading_ai_engine': { en: 'Loading AI engine...', fr: 'Chargement du moteur IA...' },
   'downloading_model': { en: 'Downloading pose detection model (~3 MB)', fr: 'Téléchargement du modèle de détection (~3 Mo)' },
   'loading_file': { en: 'Loading', fr: 'Chargement de' },
@@ -126,7 +126,7 @@ const translations = {
   'share_card': { en: 'Share Summary Card', fr: 'Partager la fiche résumé' },
   'share_reel': { en: 'Share as Reel ▶', fr: 'Partager en Reel ▶' },
   'no_poses': { en: 'Could not detect any poses', fr: 'Aucune pose détectée' },
-  'try_different': { en: 'Try a different angle or better lighting, or use Live Training mode.', fr: 'Essayez un autre angle ou un meilleur éclairage, ou utilisez le mode en direct.' },
+  'try_different': { en: 'Try a different angle or better lighting. Ensure your full body is visible.', fr: 'Essayez un autre angle ou un meilleur éclairage. Assurez-vous que tout le corps est visible.' },
   'model_failed': { en: "AI model failed to load. Check your connection.", fr: "Le modèle IA n'a pas pu se charger. Vérifiez votre connexion." },
   'video_failed': { en: 'Video failed to load. Try a different file or shorter clip.', fr: 'Échec du chargement vidéo. Essayez un autre fichier ou un clip plus court.' },
   'too_large': { en: 'is too large. Maximum is 500 MB.', fr: 'est trop volumineux. Maximum 500 Mo.' },
@@ -589,12 +589,12 @@ const translations = {
   'session_total': { en: '{{count}} reps total across {{exercises}} exercises', fr: '{{count}} répétitions au total sur {{exercises}} exercices' },
 
   // ─── Coaching insights ───
-  'insight_rom_drop': { en: 'Range of motion dropped {{drop}}% across the set. Stop before form breaks down.', fr: 'Amplitude diminuée de {{drop}}% pendant la série. Arrêtez avant que la forme ne se dégrade.' },
+  'insight_rom_drop': { en: 'Range of motion dropped {{drop}}% across the set.', fr: 'Amplitude diminuée de {{drop}}% pendant la série.' },
   'insight_fatigue': { en: 'Reps slowed {{drop}}% toward the end. Fatigue detected.', fr: 'Ralentissement de {{drop}}% vers la fin. Fatigue détectée.' },
-  'insight_asymmetry': { en: 'Left/right imbalance of {{score}}% detected. Focus on equal effort from both sides.', fr: 'Déséquilibre gauche/droite de {{score}}% détecté. Concentrez-vous sur un effort égal des deux côtés.' },
-  'insight_too_fast': { en: 'Reps are fast. Slow down the lowering phase for better muscle engagement.', fr: 'Répétitions trop rapides. Ralentissez la phase descendante pour mieux solliciter les muscles.' },
-  'insight_ready_progress': { en: 'Consistent reps across the set. Ready to add weight next session.', fr: 'Répétitions constantes sur toute la série. Prêt à augmenter la charge.' },
-  'insight_best_rep': { en: 'Rep {{num}} was your best. Replicate that tempo and range of motion.', fr: 'Répétition {{num}} était votre meilleure. Reproduisez ce tempo et cette amplitude.' },
+  'insight_asymmetry': { en: 'Left/right imbalance of {{score}}% detected.', fr: 'Déséquilibre gauche/droite de {{score}}% détecté.' },
+  'insight_too_fast': { en: 'Eccentric phase was faster than concentric across the set.', fr: 'Phase excentrique plus rapide que la concentrique sur la série.' },
+  'insight_ready_progress': { en: 'All reps stayed within 15% of each other. Consistent set.', fr: 'Toutes les répétitions dans un écart de 15%. Série constante.' },
+  'insight_best_rep': { en: 'Rep {{num}} scored highest.', fr: 'Répétition {{num}} a obtenu le meilleur score.' },
 
   // ─── Progression notes ───
   'prog_rom_up': { en: '+{{change}}° ROM improvement vs {{date}}.', fr: "+{{change}}° d'amplitude gagnée vs {{date}}." },
