@@ -1,16 +1,18 @@
 /**
- * Rep counting engine — cycle-counting state machine.
+ * Rep counting engine — valley counting.
  *
- * A rep is a state transition, not a frequency or a peak.
- * Bicep curl: angle starts above upThreshold (extended)
- *   → drops below downThreshold (flexed)
- *   → returns above upThreshold (extended)
- * That is one rep. Pauses, wiggles, double-peaks don't count
- * because the state machine waits for the full cycle.
+ * A rep is a valley in the tracking signal. For bicep curls,
+ * every time the elbow angle hits its most flexed position
+ * (the bottom of the curl), that is one rep.
+ *
+ * Valley counting doesn't care where the video starts.
+ * It finds every local minimum that is deep enough (>=25 deg
+ * amplitude from the preceding peak) and far enough apart
+ * (>=0.4s) from the last counted rep.
  *
  * mode: 'video' (default)
  *   update() collects landmarks per frame.
- *   finalize() runs cycle counting on the full signal.
+ *   finalize() runs valley counting on the full signal.
  *
  * mode: 'live'
  *   update() runs hysteresis counting for real-time rep feedback.
@@ -181,13 +183,16 @@ export class RepCounter {
   }
 
   /**
-   * Cycle-counting state machine on the full collected signal.
+   * Valley counting on the full collected signal.
    * Called once after all frames are collected in video mode.
    *
-   * A rep = the tracking value crosses from "extended" zone through
-   * "flexed" zone and back to "extended" zone. Pauses, wiggles,
-   * and double-peaks are ignored because the state machine requires
-   * the full transition.
+   * A rep = a valley (local minimum) in the tracking signal.
+   * For bicep curls: each time the elbow angle dips to its
+   * most flexed point, that's one rep.
+   *
+   * For exercises where the signal goes UP during the rep
+   * (e.g. overhead press), we invert the signal and still
+   * count valleys.
    */
   finalize() {
     if (this._finalized) return;
@@ -209,34 +214,82 @@ export class RepCounter {
     const sigma = Math.max(2, Math.round(this._fps * 0.12));
     const smoothed = this._gaussianSmooth(interpolated, sigma);
 
-    // ── Step 2: Cycle counting state machine ──
-    const result = this._countCycles(smoothed);
+    // ── Step 2: Determine if we need to invert the signal ──
+    // If downThreshold < upThreshold (most exercises: curl, squat, etc.),
+    // the valley = the flexed position = the bottom of the rep.
+    // If downThreshold > upThreshold (inverted exercises),
+    // the peak = the flexed position, so we invert the signal to count valleys.
+    const down = ex.downThreshold;
+    const up = ex.upThreshold;
+    const invert = down > up;
+    const signal = invert ? smoothed.map(v => -v) : smoothed;
+
+    // ── Step 3: Valley counting ──
+    const result = this._countValleys(signal);
+
+    console.log(`[RepCounter] Valleys detected: ${result.allValleys}`);
+    console.log(`[RepCounter] Valleys after filtering: ${result.reps}`);
+    console.log(`[RepCounter] Valley positions (frames): ${result.valleyFrames.join(', ')}`);
 
     if (result.reps === 0) {
-      console.debug(`[RepCounter] Cycle count: 0 reps (hysteresis had ${this._hysteresisReps})`);
+      console.debug(`[RepCounter] Valley count: 0 reps (hysteresis had ${this._hysteresisReps})`);
       this._reps = 0;
       this._repHistory = [];
       return;
     }
 
-    console.debug(
-      `[RepCounter] Cycle count: ${result.reps} reps ` +
-      `(hysteresis=${this._hysteresisReps}, cycles=${result.cycles.length}, ` +
-      `period=${(result.periodFrames / this._fps).toFixed(2)}s)`
-    );
+    // Build cycles from valley positions for downstream compatibility
+    const cycles = [];
+    for (let i = 0; i < result.valleyFrames.length; i++) {
+      const vFrame = result.valleyFrames[i];
+      // Find the peak before this valley
+      const searchStart = i > 0 ? result.valleyFrames[i - 1] : 0;
+      let peakFrame = searchStart;
+      let peakVal = smoothed[searchStart];
+      for (let j = searchStart; j < vFrame; j++) {
+        if (invert ? smoothed[j] < peakVal : smoothed[j] > peakVal) {
+          peakVal = smoothed[j];
+          peakFrame = j;
+        }
+      }
+      // Find the peak after this valley (for end boundary)
+      const searchEnd = i < result.valleyFrames.length - 1 ? result.valleyFrames[i + 1] : smoothed.length - 1;
+      let endFrame = vFrame;
+      let endVal = smoothed[vFrame];
+      for (let j = vFrame; j <= searchEnd; j++) {
+        if (invert ? smoothed[j] < endVal : smoothed[j] > endVal) {
+          endVal = smoothed[j];
+          endFrame = j;
+        }
+      }
+
+      const valleyVal = smoothed[vFrame];
+      const amplitude = invert
+        ? valleyVal - Math.min(peakVal, endVal)
+        : Math.max(peakVal, endVal) - valleyVal;
+
+      cycles.push({
+        start: peakFrame,
+        end: endFrame,
+        min: invert ? peakVal : valleyVal,
+        max: invert ? valleyVal : Math.max(peakVal, endVal),
+        amplitude: Math.abs(amplitude),
+        duration: endFrame - peakFrame,
+      });
+    }
 
     this._cycleDebug = {
       reps: result.reps,
-      cycles: result.cycles,
-      periodFrames: result.periodFrames,
+      cycles,
+      periodFrames: result.reps > 0 ? Math.round(smoothed.length / result.reps) : 0,
       signalRange: result.signalRange,
     };
 
-    // ── Step 3: Build rep history with form scores ──
+    // ── Step 4: Build rep history with form scores ──
     this._reps = result.reps;
-    this._repHistory = this._buildFormHistoryFromCycles(result.cycles);
+    this._repHistory = this._buildFormHistoryFromCycles(cycles);
 
-    // ── Step 4: Velocity analysis ──
+    // ── Step 5: Velocity analysis ──
     try {
       const velocityEngine = new VelocityEngine(this._fps);
       const repBoundaries = this._repHistory.map(r => ({ startFrame: r.startFrame, endFrame: r.endFrame }));
@@ -253,7 +306,7 @@ export class RepCounter {
         smoothness: fullAnalysis.smoothness,
       };
 
-      // ── Step 5: Progression score ──
+      // ── Step 6: Progression score ──
       const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
       this._progressionScore = ProgressionScore.computeSet({
         formScores, repVelocities,
@@ -264,59 +317,20 @@ export class RepCounter {
     }
   }
 
-  // ─── Cycle counting state machine ───
+  // ─── Valley counting ───
   //
-  // A rep is a full cycle: extended → flexed → extended.
-  // Uses the exercise's own thresholds (downThreshold, upThreshold).
+  // A rep = a local minimum (valley) in the tracking signal.
+  // For bicep curls: each valley is the bottom of one curl.
   //
-  // Validation per cycle:
-  //   Duration: 0.5s to 5.0s
-  //   Amplitude: at least 30° of movement
+  // Filters:
+  //   1. Valleys must be >= 0.4s apart
+  //   2. Amplitude from preceding peak to valley must be >= 25°
 
-  _countCycles(signal) {
-    const ex = this._exercise;
-    const down = ex.downThreshold;
-    const up = ex.upThreshold;
-    const goesDown = down > up;
+  _countValleys(signal) {
+    const minFramesBetweenReps = Math.round(this._fps * 0.4);
+    const minAmplitude = 25;
 
-    // For exercises where tracking value decreases during the concentric phase
-    // (curls: angle goes from ~145° down to ~80°), "extended" = above upThreshold,
-    // "flexed" = below downThreshold.
-    // For exercises where tracking value increases (squats: angle goes from ~170° up to ~100°),
-    // "extended" = below downThreshold, "flexed" = above upThreshold.
-    const extendedThreshold = goesDown ? up : down;
-    const flexedThreshold = goesDown ? down : up;
-
-    // Wait, let me re-examine. For bicep_curl:
-    //   downThreshold: 80, upThreshold: 145
-    //   getValue returns elbow angle
-    //   Extended arm = angle ~160° (above upThreshold 145)
-    //   Flexed arm = angle ~50° (below downThreshold 80)
-    //   goesDown = false (down < up, 80 < 145)
-    //
-    // For squat:
-    //   downThreshold: 100, upThreshold: 160
-    //   getValue returns knee angle
-    //   Standing = angle ~170° (above upThreshold 160)
-    //   Squatted = angle ~80° (below downThreshold 100)
-    //   goesDown = false (down < up, 100 < 160)
-    //
-    // So for most exercises: extended = above upThreshold, flexed = below downThreshold
-    // The hysteresis code handles the case where down > up (inverted exercises)
-    // but in practice all exercises have down < up.
-
-    const minDuration = Math.round(this._fps * 0.5); // 0.5 seconds minimum per rep
-    const maxDuration = Math.round(this._fps * 5.0); // 5.0 seconds maximum per rep
-    const minAmplitude = 30; // at least 30° of movement
-
-    let state = 'seeking_start'; // wait for first extended position
-    let cycleStart = 0;
-    let cycleMin = Infinity;
-    let cycleMax = -Infinity;
-    let reps = 0;
-    const cycles = [];
-
-    // Signal range check
+    // Signal range
     let sigMin = Infinity, sigMax = -Infinity;
     for (let i = 0; i < signal.length; i++) {
       if (signal[i] < sigMin) sigMin = signal[i];
@@ -324,104 +338,41 @@ export class RepCounter {
     }
     const signalRange = sigMax - sigMin;
 
-    if (signalRange < 20) {
+    if (signalRange < 15) {
       console.debug(`[RepCounter] Signal range too small: ${signalRange.toFixed(1)}°`);
-      return { reps: 0, cycles: [], periodFrames: 0, signalRange };
+      return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    if (!goesDown) {
-      // Standard: value high when extended, low when flexed
-      for (let i = 0; i < signal.length; i++) {
-        const val = signal[i];
-
-        if (state === 'seeking_start') {
-          if (val > extendedThreshold) {
-            state = 'extended';
-          }
-        } else if (state === 'extended') {
-          if (val < extendedThreshold) {
-            state = 'flexing';
-            cycleStart = i;
-            cycleMin = val;
-            cycleMax = val;
-          }
-        } else if (state === 'flexing') {
-          cycleMin = Math.min(cycleMin, val);
-          cycleMax = Math.max(cycleMax, val);
-          if (val < flexedThreshold) {
-            state = 'flexed';
-          }
-        } else if (state === 'flexed') {
-          cycleMin = Math.min(cycleMin, val);
-          cycleMax = Math.max(cycleMax, val);
-          if (val > flexedThreshold) {
-            state = 'extending';
-          }
-        } else if (state === 'extending') {
-          cycleMin = Math.min(cycleMin, val);
-          cycleMax = Math.max(cycleMax, val);
-          if (val > extendedThreshold) {
-            // Completed one full cycle
-            const duration = i - cycleStart;
-            const amplitude = cycleMax - cycleMin;
-            if (duration >= minDuration && duration <= maxDuration && amplitude >= minAmplitude) {
-              reps++;
-              cycles.push({ start: cycleStart, end: i, min: cycleMin, max: cycleMax, amplitude, duration });
-            } else {
-              console.debug(`[RepCounter] Cycle rejected: duration=${(duration / this._fps).toFixed(2)}s, amplitude=${amplitude.toFixed(1)}°`);
-            }
-            state = 'extended';
-          }
-        }
-      }
-    } else {
-      // Inverted: value low when extended, high when flexed
-      for (let i = 0; i < signal.length; i++) {
-        const val = signal[i];
-
-        if (state === 'seeking_start') {
-          if (val < extendedThreshold) {
-            state = 'extended';
-          }
-        } else if (state === 'extended') {
-          if (val > extendedThreshold) {
-            state = 'flexing';
-            cycleStart = i;
-            cycleMin = val;
-            cycleMax = val;
-          }
-        } else if (state === 'flexing') {
-          cycleMin = Math.min(cycleMin, val);
-          cycleMax = Math.max(cycleMax, val);
-          if (val > flexedThreshold) {
-            state = 'flexed';
-          }
-        } else if (state === 'flexed') {
-          cycleMin = Math.min(cycleMin, val);
-          cycleMax = Math.max(cycleMax, val);
-          if (val < flexedThreshold) {
-            state = 'extending';
-          }
-        } else if (state === 'extending') {
-          cycleMin = Math.min(cycleMin, val);
-          cycleMax = Math.max(cycleMax, val);
-          if (val < extendedThreshold) {
-            const duration = i - cycleStart;
-            const amplitude = cycleMax - cycleMin;
-            if (duration >= minDuration && duration <= maxDuration && amplitude >= minAmplitude) {
-              reps++;
-              cycles.push({ start: cycleStart, end: i, min: cycleMin, max: cycleMax, amplitude, duration });
-            } else {
-              console.debug(`[RepCounter] Cycle rejected: duration=${(duration / this._fps).toFixed(2)}s, amplitude=${amplitude.toFixed(1)}°`);
-            }
-            state = 'extended';
-          }
-        }
+    // 1. Find all local minima (valleys)
+    const allValleys = [];
+    for (let i = 1; i < signal.length - 1; i++) {
+      if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
+        allValleys.push(i);
       }
     }
 
-    const periodFrames = reps > 0 ? Math.round(signal.length / reps) : 0;
-    return { reps, cycles, periodFrames, signalRange };
+    // 2. Filter: spacing and amplitude
+    const valleyFrames = [];
+    let lastValley = -Infinity;
+
+    for (const v of allValleys) {
+      if (v - lastValley < minFramesBetweenReps) continue;
+
+      // Find the highest point between this valley and the previous rep
+      const searchStart = lastValley > 0 ? lastValley : Math.max(0, v - Math.round(this._fps * 3));
+      let peakValue = signal[v];
+      for (let j = searchStart; j < v; j++) {
+        if (signal[j] > peakValue) peakValue = signal[j];
+      }
+
+      const amplitude = peakValue - signal[v];
+      if (amplitude >= minAmplitude) {
+        valleyFrames.push(v);
+        lastValley = v;
+      }
+    }
+
+    return { reps: valleyFrames.length, allValleys: allValleys.length, valleyFrames, signalRange };
   }
 
   get diagnostics() {
@@ -433,7 +384,7 @@ export class RepCounter {
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
-      method: 'cycle-counter',
+      method: 'valley-counter',
       cycles: this._cycleDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,

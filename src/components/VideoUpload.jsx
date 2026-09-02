@@ -1248,16 +1248,6 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {/* Determinism proof overlay */}
-      {result.debug && (
-        <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(0,245,212,0.04)', borderRadius: 8, border: '1px solid rgba(0,245,212,0.12)', fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--muted)' }}>
-          <strong style={{ color: 'var(--accent)', fontSize: '0.72rem' }}>Determinism Proof</strong>
-          <div>Video hash: <span style={{ color: 'var(--text-primary)' }}>{result.debug.videoHash}</span></div>
-          <div>Frame count: <span style={{ color: 'var(--text-primary)' }}>{result.debug.frameCount}</span></div>
-          <div>Landmark hash: <span style={{ color: 'var(--text-primary)' }}>{result.debug.landmarkHash}</span></div>
-        </div>
-      )}
-
       {result.diagnostics && (
         <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
           <strong style={{ color: 'var(--text)' }}>{t('engine')}</strong>
