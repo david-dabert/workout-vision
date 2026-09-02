@@ -94,7 +94,7 @@ export class RepCounter {
     this._observedMin = Infinity;
     this._observedMax = -Infinity;
     this._finalized = false;
-    this._lastRepTime = 0;
+    this._lastRepTime = -Infinity;
     this._frameIdx = 0;
     this._acfDebug = null;
     this._velocityAnalysis = null;
@@ -240,7 +240,9 @@ export class RepCounter {
         if (valid.length < 6) continue;
 
         const interpolated = this._interpolateNulls(sig.values);
-        const sigma = Math.max(1, Math.round(this._fps * 0.1));
+        // Heavier smoothing (0.2s kernel) to handle noisy signals from
+        // non-standard positions (lying, seated, prone on bench)
+        const sigma = Math.max(2, Math.round(this._fps * 0.2));
         const smoothed = this._gaussianSmooth(interpolated, sigma);
         const acfSmoothed = this._autocorrelation(smoothed, sig.name);
 
