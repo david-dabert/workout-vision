@@ -1,22 +1,25 @@
 /**
- * Rep counting engine — single architecture, two modes.
+ * Rep counting engine — cycle-counting state machine.
+ *
+ * A rep is a state transition, not a frequency or a peak.
+ * Bicep curl: angle starts above upThreshold (extended)
+ *   → drops below downThreshold (flexed)
+ *   → returns above upThreshold (extended)
+ * That is one rep. Pauses, wiggles, double-peaks don't count
+ * because the state machine waits for the full cycle.
  *
  * mode: 'video' (default)
- *   update() collects landmarks and evaluates form per frame.
- *   finalize() runs ACF/YIN autocorrelation on the full signal set,
- *   picks the best periodic signal via consensus voting.
- *   This is the accurate path (84% on Countix benchmark).
+ *   update() collects landmarks per frame.
+ *   finalize() runs cycle counting on the full signal.
  *
  * mode: 'live'
- *   update() collects landmarks AND runs hysteresis counting
- *   (threshold-crossing state machine) for real-time rep feedback.
- *   finalize() is never called. Hysteresis is best-effort.
+ *   update() runs hysteresis counting for real-time rep feedback.
+ *   finalize() is never called.
  */
 
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { shouldSkipCheck } from './injuries';
-import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
 import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
@@ -52,24 +55,10 @@ export class AngleBuffer {
 }
 
 // ---------------------------------------------------------------------------
-// Signal priority per exercise — which signals are most reliable
-// Signals matching the exercise get a 30% confidence boost
-// ---------------------------------------------------------------------------
-
-// Signal priority now uses 3D-aware version from SignalExtractor3D
-const SIGNAL_PRIORITY = SIGNAL_PRIORITY_3D;
-
-// ---------------------------------------------------------------------------
 // RepCounter
 // ---------------------------------------------------------------------------
 
 export class RepCounter {
-  /**
-   * @param {string} exerciseKey
-   * @param {object} opts
-   * @param {'live'|'video'} opts.mode - 'video' uses ACF/YIN via finalize(),
-   *   'live' uses hysteresis in update(). Default: 'video'.
-   */
   constructor(exerciseKey, opts = {}) {
     const ex = EXERCISES[exerciseKey];
     if (!ex) throw new Error(`Unknown exercise: ${exerciseKey}`);
@@ -96,17 +85,14 @@ export class RepCounter {
     this._finalized = false;
     this._lastRepTime = -Infinity;
     this._frameIdx = 0;
-    this._acfDebug = null;
+    this._cycleDebug = null;
     this._velocityAnalysis = null;
     this._progressionScore = null;
   }
 
   /**
-   * Per-frame update. Collects landmarks for finalize() and evaluates form.
-   * Hysteresis counting runs in both modes for live rep display.
-   * In video mode, finalize() overrides with accurate ACF/YIN count.
-   * @param {Array} landmarks
-   * @param {number} [videoTimestamp] - video time in seconds (for video mode cooldown)
+   * Per-frame update. Collects landmarks for finalize().
+   * Hysteresis counting runs for live rep display.
    */
   update(landmarks, videoTimestamp) {
     const rawAngles = extractJointAngles(landmarks);
@@ -149,13 +135,10 @@ export class RepCounter {
 
     let repCompleted = false;
 
-    // Hysteresis counting runs in both modes for live rep display.
-    // In video mode, finalize() overrides with accurate ACF/YIN count.
+    // Hysteresis counting for live rep display
     {
       const down = ex.downThreshold;
       const up = ex.upThreshold;
-      // In video mode, use video timestamp (seconds→ms) for cooldown;
-      // Date.now() is meaningless since frames process as fast as CPU allows.
       const now = videoTimestamp != null ? videoTimestamp * 1000 : Date.now();
 
       if (down > up) {
@@ -198,12 +181,13 @@ export class RepCounter {
   }
 
   /**
-   * Direct peak counting on the full collected signal.
+   * Cycle-counting state machine on the full collected signal.
    * Called once after all frames are collected in video mode.
    *
-   * Replaces YIN frequency estimation with direct event counting:
-   * a rep is a discrete event (peak-to-peak or valley-to-valley),
-   * not a continuous sinusoidal frequency. Count the transitions.
+   * A rep = the tracking value crosses from "extended" zone through
+   * "flexed" zone and back to "extended" zone. Pauses, wiggles,
+   * and double-peaks are ignored because the state machine requires
+   * the full transition.
    */
   finalize() {
     if (this._finalized) return;
@@ -215,51 +199,44 @@ export class RepCounter {
     const N = this._collectedLandmarks.length;
     if (ex.isIsometric || N < 6) return;
 
-    // ── Step 1: Extract all candidate signals ──
-    const signals = this._extractSignals();
+    // ── Step 1: Extract the tracking signal for this exercise ──
+    const rawValues = this._collectedLandmarks.map(lm => {
+      const a = extractJointAngles(lm);
+      return a ? ex.getValue(a, lm) : null;
+    });
 
-    // ── Step 2: Select the best signal for this exercise ──
-    const bestSignal = this._selectBestSignal(signals);
-    if (!bestSignal) {
-      console.debug('[RepCounter] No valid signal found for', this._exerciseKey);
-      this._reps = 0;
-      this._repHistory = [];
-      return;
-    }
-
-    // ── Step 3: Prepare signal ──
-    const interpolated = this._interpolateNulls(bestSignal.values);
+    const interpolated = this._interpolateNulls(rawValues);
     const sigma = Math.max(2, Math.round(this._fps * 0.12));
     const smoothed = this._gaussianSmooth(interpolated, sigma);
 
-    // ── Step 4: Direct peak counting ──
-    const result = this._countRepsDirect(smoothed, bestSignal.name);
+    // ── Step 2: Cycle counting state machine ──
+    const result = this._countCycles(smoothed);
 
-    if (!result.valid || result.reps === 0) {
-      console.debug(`[RepCounter] Direct count failed: ${result.reason || 'no reps'} (signal: ${bestSignal.name})`);
+    if (result.reps === 0) {
+      console.debug(`[RepCounter] Cycle count: 0 reps (hysteresis had ${this._hysteresisReps})`);
       this._reps = 0;
       this._repHistory = [];
       return;
     }
 
     console.debug(
-      `[RepCounter] Direct count: ${bestSignal.name} → ${result.reps} reps ` +
-      `(peaks=${result.peaks.length}, valleys=${result.valleys.length}, ` +
-      `hysteresis=${this._hysteresisReps}, period=${(result.periodFrames / this._fps).toFixed(2)}s)`
+      `[RepCounter] Cycle count: ${result.reps} reps ` +
+      `(hysteresis=${this._hysteresisReps}, cycles=${result.cycles.length}, ` +
+      `period=${(result.periodFrames / this._fps).toFixed(2)}s)`
     );
 
-    this._acfDebug = {
-      allSignals: [{ name: bestSignal.name, reps: result.reps, confidence: 1.0,
-        periodFrames: result.periodFrames, periodSeconds: result.periodFrames / this._fps }],
-      picked: { name: bestSignal.name, reps: result.reps, confidence: 1.0,
-        periodFrames: result.periodFrames, periodSeconds: result.periodFrames / this._fps },
+    this._cycleDebug = {
+      reps: result.reps,
+      cycles: result.cycles,
+      periodFrames: result.periodFrames,
+      signalRange: result.signalRange,
     };
 
-    // ── Step 5: Build rep history with form scores ──
+    // ── Step 3: Build rep history with form scores ──
     this._reps = result.reps;
-    this._repHistory = this._buildFormHistory(result.reps, result.periodFrames);
+    this._repHistory = this._buildFormHistoryFromCycles(result.cycles);
 
-    // ── Step 6: Velocity analysis ──
+    // ── Step 4: Velocity analysis ──
     try {
       const velocityEngine = new VelocityEngine(this._fps);
       const repBoundaries = this._repHistory.map(r => ({ startFrame: r.startFrame, endFrame: r.endFrame }));
@@ -276,178 +253,175 @@ export class RepCounter {
         smoothness: fullAnalysis.smoothness,
       };
 
-      // ── Step 7: Progression score ──
+      // ── Step 5: Progression score ──
       const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
       this._progressionScore = ProgressionScore.computeSet({
         formScores, repVelocities,
         reps: result.reps, weightKg: this._weightKg || 0,
       });
-
-      console.debug(
-        `[RepCounter] Velocity: fatigue=${fullAnalysis.fatigue.detected ? 'YES' : 'no'} decay=${fullAnalysis.fatigue.decay}\n` +
-        `[RepCounter] Progression: ${this._progressionScore.breakdown}`
-      );
     } catch (e) {
       console.warn('[RepCounter] Velocity/Progression analysis failed:', e.message);
     }
   }
 
-  // ─── Private: Select best signal for this exercise ───
-
-  _selectBestSignal(signals) {
-    const priorityNames = SIGNAL_PRIORITY[this._exerciseKey] || [];
-
-    // For curl exercises, only use angle signals. wristShoulderDist is not
-    // a valid proxy for elbow flexion — it shifts when the shoulder moves.
-    // If elbow angles fail, return null (error) instead of a wrong measurement.
-    const CURL_EXERCISES = [
-      'bicep_curl', 'hammer_curl', 'lying_bicep_curl',
-      'concentration_curl', 'preacher_curl',
-    ];
-    const isCurl = CURL_EXERCISES.includes(this._exerciseKey);
-
-    // Build candidate list from priority signals
-    let candidates;
-    if (priorityNames.length > 0) {
-      candidates = signals.filter(s => {
-        if (!priorityNames.includes(s.name)) return false;
-        if (isCurl && s.name.includes('wristShoulderDist')) return false;
-        return true;
-      });
-    } else {
-      candidates = [...signals];
-    }
-
-    // Pick the signal with the largest range (most movement captured)
-    let bestSig = null;
-    let bestRange = 0;
-    for (const sig of candidates) {
-      const valid = sig.values.filter(v => v !== null);
-      if (valid.length < 6) continue;
-      let min = valid[0], max = valid[0];
-      for (let i = 1; i < valid.length; i++) {
-        if (valid[i] < min) min = valid[i];
-        if (valid[i] > max) max = valid[i];
-      }
-      const range = max - min;
-      if (range > bestRange) {
-        bestRange = range;
-        bestSig = sig;
-      }
-    }
-
-    // Signal quality gate: angle signals need at least 20 degrees of range
-    if (bestSig && RepCounter._isAngleSignal(bestSig.name) && bestRange < 20) {
-      console.debug(`[RepCounter] Signal quality gate: ${bestSig.name} range ${bestRange.toFixed(1)}° too small`);
-      return null;
-    }
-
-    // If priority signals produced nothing, fall back to all signals
-    // (but NOT for curls — if elbow angles fail, don't guess)
-    if (!bestSig && !isCurl) {
-      for (const sig of signals) {
-        const valid = sig.values.filter(v => v !== null);
-        if (valid.length < 6) continue;
-        let min = valid[0], max = valid[0];
-        for (let i = 1; i < valid.length; i++) {
-          if (valid[i] < min) min = valid[i];
-          if (valid[i] > max) max = valid[i];
-        }
-        const range = max - min;
-        if (range > bestRange) {
-          bestRange = range;
-          bestSig = sig;
-        }
-      }
-    }
-
-    return bestSig;
-  }
-
-  // ─── Private: Direct peak counting (replaces YIN) ───
+  // ─── Cycle counting state machine ───
   //
-  // A rep is a discrete event, not a frequency. A bicep curl is:
-  // elbow angle goes high → low → high. Count the cycles.
-  // No period estimation, no harmonics, no consensus voting.
+  // A rep is a full cycle: extended → flexed → extended.
+  // Uses the exercise's own thresholds (downThreshold, upThreshold).
+  //
+  // Validation per cycle:
+  //   Duration: 0.5s to 5.0s
+  //   Amplitude: at least 30° of movement
 
-  _countRepsDirect(smoothed, signalName) {
-    const N = smoothed.length;
+  _countCycles(signal) {
+    const ex = this._exercise;
+    const down = ex.downThreshold;
+    const up = ex.upThreshold;
+    const goesDown = down > up;
 
-    // Signal stats
+    // For exercises where tracking value decreases during the concentric phase
+    // (curls: angle goes from ~145° down to ~80°), "extended" = above upThreshold,
+    // "flexed" = below downThreshold.
+    // For exercises where tracking value increases (squats: angle goes from ~170° up to ~100°),
+    // "extended" = below downThreshold, "flexed" = above upThreshold.
+    const extendedThreshold = goesDown ? up : down;
+    const flexedThreshold = goesDown ? down : up;
+
+    // Wait, let me re-examine. For bicep_curl:
+    //   downThreshold: 80, upThreshold: 145
+    //   getValue returns elbow angle
+    //   Extended arm = angle ~160° (above upThreshold 145)
+    //   Flexed arm = angle ~50° (below downThreshold 80)
+    //   goesDown = false (down < up, 80 < 145)
+    //
+    // For squat:
+    //   downThreshold: 100, upThreshold: 160
+    //   getValue returns knee angle
+    //   Standing = angle ~170° (above upThreshold 160)
+    //   Squatted = angle ~80° (below downThreshold 100)
+    //   goesDown = false (down < up, 100 < 160)
+    //
+    // So for most exercises: extended = above upThreshold, flexed = below downThreshold
+    // The hysteresis code handles the case where down > up (inverted exercises)
+    // but in practice all exercises have down < up.
+
+    const minDuration = Math.round(this._fps * 0.5); // 0.5 seconds minimum per rep
+    const maxDuration = Math.round(this._fps * 5.0); // 5.0 seconds maximum per rep
+    const minAmplitude = 30; // at least 30° of movement
+
+    let state = 'seeking_start'; // wait for first extended position
+    let cycleStart = 0;
+    let cycleMin = Infinity;
+    let cycleMax = -Infinity;
+    let reps = 0;
+    const cycles = [];
+
+    // Signal range check
     let sigMin = Infinity, sigMax = -Infinity;
-    for (let i = 0; i < N; i++) {
-      if (smoothed[i] < sigMin) sigMin = smoothed[i];
-      if (smoothed[i] > sigMax) sigMax = smoothed[i];
+    for (let i = 0; i < signal.length; i++) {
+      if (signal[i] < sigMin) sigMin = signal[i];
+      if (signal[i] > sigMax) sigMax = signal[i];
     }
-    const range = sigMax - sigMin;
+    const signalRange = sigMax - sigMin;
 
-    // Quality gate
-    if (range < 0.01) {
-      return { reps: 0, peaks: [], valleys: [], periodFrames: 0, valid: false, reason: 'No movement detected' };
-    }
-    if (RepCounter._isAngleSignal(signalName) && range < 20) {
-      return { reps: 0, peaks: [], valleys: [], periodFrames: 0, valid: false,
-        reason: `Signal range too small (${range.toFixed(0)}°)` };
+    if (signalRange < 20) {
+      console.debug(`[RepCounter] Signal range too small: ${signalRange.toFixed(1)}°`);
+      return { reps: 0, cycles: [], periodFrames: 0, signalRange };
     }
 
-    const { min: minPeriodSec } = RepCounter._repPeriodBounds(this._exerciseKey);
-    // Minimum frames between peaks: 70% of exercise minimum period.
-    // Allows rep-to-rep tempo variation while preventing noise double-counting.
-    const minDist = Math.max(3, Math.round(this._fps * minPeriodSec * 0.7));
-    // Minimum amplitude for a valid peak-valley pair: 20% of total range
-    const minAmplitude = range * 0.20;
+    if (!goesDown) {
+      // Standard: value high when extended, low when flexed
+      for (let i = 0; i < signal.length; i++) {
+        const val = signal[i];
 
-    // Find all local maxima with minimum distance constraint
-    const peaks = [];
-    for (let i = 1; i < N - 1; i++) {
-      if (smoothed[i] >= smoothed[i - 1] && smoothed[i] >= smoothed[i + 1]) {
-        if (peaks.length === 0 || (i - peaks[peaks.length - 1]) >= minDist) {
-          peaks.push(i);
-        } else if (smoothed[i] > smoothed[peaks[peaks.length - 1]]) {
-          peaks[peaks.length - 1] = i; // Keep the higher peak
+        if (state === 'seeking_start') {
+          if (val > extendedThreshold) {
+            state = 'extended';
+          }
+        } else if (state === 'extended') {
+          if (val < extendedThreshold) {
+            state = 'flexing';
+            cycleStart = i;
+            cycleMin = val;
+            cycleMax = val;
+          }
+        } else if (state === 'flexing') {
+          cycleMin = Math.min(cycleMin, val);
+          cycleMax = Math.max(cycleMax, val);
+          if (val < flexedThreshold) {
+            state = 'flexed';
+          }
+        } else if (state === 'flexed') {
+          cycleMin = Math.min(cycleMin, val);
+          cycleMax = Math.max(cycleMax, val);
+          if (val > flexedThreshold) {
+            state = 'extending';
+          }
+        } else if (state === 'extending') {
+          cycleMin = Math.min(cycleMin, val);
+          cycleMax = Math.max(cycleMax, val);
+          if (val > extendedThreshold) {
+            // Completed one full cycle
+            const duration = i - cycleStart;
+            const amplitude = cycleMax - cycleMin;
+            if (duration >= minDuration && duration <= maxDuration && amplitude >= minAmplitude) {
+              reps++;
+              cycles.push({ start: cycleStart, end: i, min: cycleMin, max: cycleMax, amplitude, duration });
+            } else {
+              console.debug(`[RepCounter] Cycle rejected: duration=${(duration / this._fps).toFixed(2)}s, amplitude=${amplitude.toFixed(1)}°`);
+            }
+            state = 'extended';
+          }
+        }
+      }
+    } else {
+      // Inverted: value low when extended, high when flexed
+      for (let i = 0; i < signal.length; i++) {
+        const val = signal[i];
+
+        if (state === 'seeking_start') {
+          if (val < extendedThreshold) {
+            state = 'extended';
+          }
+        } else if (state === 'extended') {
+          if (val > extendedThreshold) {
+            state = 'flexing';
+            cycleStart = i;
+            cycleMin = val;
+            cycleMax = val;
+          }
+        } else if (state === 'flexing') {
+          cycleMin = Math.min(cycleMin, val);
+          cycleMax = Math.max(cycleMax, val);
+          if (val > flexedThreshold) {
+            state = 'flexed';
+          }
+        } else if (state === 'flexed') {
+          cycleMin = Math.min(cycleMin, val);
+          cycleMax = Math.max(cycleMax, val);
+          if (val < flexedThreshold) {
+            state = 'extending';
+          }
+        } else if (state === 'extending') {
+          cycleMin = Math.min(cycleMin, val);
+          cycleMax = Math.max(cycleMax, val);
+          if (val < extendedThreshold) {
+            const duration = i - cycleStart;
+            const amplitude = cycleMax - cycleMin;
+            if (duration >= minDuration && duration <= maxDuration && amplitude >= minAmplitude) {
+              reps++;
+              cycles.push({ start: cycleStart, end: i, min: cycleMin, max: cycleMax, amplitude, duration });
+            } else {
+              console.debug(`[RepCounter] Cycle rejected: duration=${(duration / this._fps).toFixed(2)}s, amplitude=${amplitude.toFixed(1)}°`);
+            }
+            state = 'extended';
+          }
         }
       }
     }
 
-    // Find all local minima with minimum distance constraint
-    const valleys = [];
-    for (let i = 1; i < N - 1; i++) {
-      if (smoothed[i] <= smoothed[i - 1] && smoothed[i] <= smoothed[i + 1]) {
-        if (valleys.length === 0 || (i - valleys[valleys.length - 1]) >= minDist) {
-          valleys.push(i);
-        } else if (smoothed[i] < smoothed[valleys[valleys.length - 1]]) {
-          valleys[valleys.length - 1] = i; // Keep the lower valley
-        }
-      }
-    }
-
-    // Validate each peak: must have a nearby valley with sufficient excursion
-    const maxPairDist = minDist * 4; // Peak-valley pair must be within ~4 periods
-    const validPeaks = peaks.filter(pi => {
-      return valleys.some(vi =>
-        Math.abs(pi - vi) < maxPairDist && (smoothed[pi] - smoothed[vi]) >= minAmplitude
-      );
-    });
-
-    const validValleys = valleys.filter(vi => {
-      return peaks.some(pi =>
-        Math.abs(pi - vi) < maxPairDist && (smoothed[pi] - smoothed[vi]) >= minAmplitude
-      );
-    });
-
-    // A complete rep needs both a peak and a valley
-    const reps = Math.min(validPeaks.length, validValleys.length);
-
-    // Sanity check against duration
-    const durationSec = N / this._fps;
-    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
-    if (reps > maxReasonableReps) {
-      return { reps: maxReasonableReps, peaks: validPeaks, valleys: validValleys,
-        periodFrames: Math.round(N / maxReasonableReps), valid: true };
-    }
-
-    const periodFrames = reps > 0 ? Math.round(N / reps) : 0;
-    return { reps, peaks: validPeaks, valleys: validValleys, periodFrames, valid: true };
+    const periodFrames = reps > 0 ? Math.round(signal.length / reps) : 0;
+    return { reps, cycles, periodFrames, signalRange };
   }
 
   get diagnostics() {
@@ -459,62 +433,14 @@ export class RepCounter {
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._collectedLandmarks.length,
-      method: this._acfDebug?.picked?.name || '',
-      acf: this._acfDebug,
+      method: 'cycle-counter',
+      cycles: this._cycleDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,
       anthropometrics: this._anthropometricNormalizer.isCalibrated
         ? { calibrated: true, bodyType: this._anthropometricNormalizer.getBodyType(), profile: this._anthropometricNormalizer.profile }
         : { calibrated: false },
     };
-  }
-
-  // ─── Private: Signal extraction (now 3D-aware via SignalExtractor3D) ───
-
-  _extractSignals() {
-    return extractSignals3D(this._collectedLandmarks);
-  }
-
-  // ─── Private: Shoulder stability detector ───
-  // Measures how much the shoulders move vertically relative to torso height.
-  // Returns 0 (stable) to 1 (very unstable). Used to penalize wristShoulderDist
-  // signals when the shoulder reference frame is shifting.
-  _detectShoulderInstability() {
-    const landmarks = this._collectedLandmarks;
-    const N = landmarks.length;
-    if (N < 10) return 0;
-
-    const LS = LANDMARKS.LEFT_SHOULDER, RS = LANDMARKS.RIGHT_SHOULDER;
-    const LH = LANDMARKS.LEFT_HIP, RH = LANDMARKS.RIGHT_HIP;
-
-    // Collect shoulder Y midpoint and torso height per frame
-    const shoulderYs = [];
-    const torsoHeights = [];
-    for (let i = 0; i < N; i++) {
-      const f = landmarks[i];
-      if (!f || !f[LS] || !f[RS] || !f[LH] || !f[RH]) continue;
-      const midShoulderY = (f[LS].y + f[RS].y) / 2;
-      const midHipY = (f[LH].y + f[RH].y) / 2;
-      shoulderYs.push(midShoulderY);
-      torsoHeights.push(Math.abs(midHipY - midShoulderY));
-    }
-
-    if (shoulderYs.length < 10) return 0;
-
-    // Compute RMS of shoulder Y displacement relative to mean
-    const meanY = shoulderYs.reduce((a, b) => a + b, 0) / shoulderYs.length;
-    let sumSq = 0;
-    for (const y of shoulderYs) sumSq += (y - meanY) * (y - meanY);
-    const rmsDisplacement = Math.sqrt(sumSq / shoulderYs.length);
-
-    // Normalize by average torso height
-    const avgTorso = torsoHeights.reduce((a, b) => a + b, 0) / torsoHeights.length;
-    if (avgTorso < 0.01) return 0;
-
-    const instabilityRatio = rmsDisplacement / avgTorso;
-    // Threshold: >5% of torso height = unstable. Scale linearly to 1.0 at 15%.
-    if (instabilityRatio < 0.05) return 0;
-    return Math.min(1, (instabilityRatio - 0.05) / 0.10);
   }
 
   // ─── Private: Gaussian smoothing ───
@@ -524,7 +450,6 @@ export class RepCounter {
     const kernelSize = Math.min(N, Math.max(3, Math.round(sigma * 4) | 1));
     const half = Math.floor(kernelSize / 2);
 
-    // Build Gaussian kernel
     const kernel = [];
     let kernelSum = 0;
     for (let i = -half; i <= half; i++) {
@@ -534,7 +459,6 @@ export class RepCounter {
     }
     for (let i = 0; i < kernel.length; i++) kernel[i] /= kernelSum;
 
-    // Convolve
     const out = new Float64Array(N);
     for (let i = 0; i < N; i++) {
       let sum = 0, wsum = 0;
@@ -556,7 +480,6 @@ export class RepCounter {
     const out = [...signal];
     const N = out.length;
 
-    // Forward fill then backward fill
     let lastValid = null;
     for (let i = 0; i < N; i++) {
       if (out[i] !== null) lastValid = out[i];
@@ -567,439 +490,27 @@ export class RepCounter {
       if (out[i] !== null) lastValid = out[i];
       else if (lastValid !== null) out[i] = lastValid;
     }
-    // If still null (all frames failed), fill with 0
     for (let i = 0; i < N; i++) {
       if (out[i] === null) out[i] = 0;
     }
     return out;
   }
 
-  // Exercise-specific rep period bounds in seconds.
-  // minPeriod: fastest possible rep. Filters sub-cycle noise peaks.
-  // maxPeriod: slowest possible rep. Filters long-lag ACF artifacts.
-  // Calibrated against Countix ground truth and biomechanical limits.
-  static _repPeriodBounds(exerciseKey) {
-    const bounds = {
-      battle_rope:      { min: 0.3,  max: 3.0 },  // Fast: 14 reps/10s = 0.71s/rep, at 10fps need minLag=3
-      bench_press:      { min: 0.7,  max: 4.0 },  // Fast benchers: 11 reps/8.5s = 0.77s/rep
-      bicep_curl:       { min: 1.0,  max: 4.0 },  // 1.5-3.0s typical; raised min to prevent half-period detection
-      hammer_curl:      { min: 0.8,  max: 4.0 },
-      squat:            { min: 0.8,  max: 4.0 },  // 1.2-1.7s typical
-      goblet_squat:     { min: 0.8,  max: 4.0 },
-      front_squat:      { min: 0.8,  max: 4.0 },
-      deadlift:         { min: 1.2,  max: 5.0 },  // Slow controlled lift
-      romanian_deadlift:{ min: 1.2,  max: 5.0 },
-      pull_up:          { min: 1.0,  max: 4.0 },  // Moderate speed
-      chin_up:          { min: 1.0,  max: 4.0 },
-      push_up:          { min: 1.0,  max: 4.0 },  // Nobody does push-ups > 1/sec
-      sit_up:           { min: 0.3,  max: 3.0 },  // Can be very fast: 15 reps/7s at 10fps = 4.7 frames/rep
-      crunch:           { min: 0.3,  max: 3.0 },
-      front_raise:      { min: 1.0,  max: 4.0 },  // Controlled lift
-      lateral_raise:    { min: 1.0,  max: 4.0 },
-      overhead_press:   { min: 1.0,  max: 4.0 },
-      shoulder_press:   { min: 1.0,  max: 4.0 },
-      lunge:            { min: 1.0,  max: 4.0 },  // Walking lunge ~2s/rep
-      bent_over_row:    { min: 0.8,  max: 4.0 },
-      upright_row:      { min: 0.8,  max: 4.0 },
-      tricep_extension: { min: 0.8,  max: 4.0 },
-      tricep_pushdown:  { min: 0.8,  max: 4.0 },
-      leg_press:        { min: 1.0,  max: 4.0 },
-      leg_extension:    { min: 0.8,  max: 4.0 },
-      leg_curl:         { min: 0.8,  max: 4.0 },
-      calf_raise:       { min: 0.5,  max: 3.0 },
-      lying_bicep_curl: { min: 1.0,  max: 4.0 },  // Controlled supine curl
-      lying_tricep_extension: { min: 1.0, max: 4.0 },
-      skull_crusher:    { min: 1.0,  max: 4.0 },
-    };
-    return bounds[exerciseKey] || { min: 0.6, max: 4.0 };
-  }
+  // ─── Private: Build form history from cycle boundaries ───
 
-  // Backward compat — some internal code calls _minPeriod
-  static _minPeriod(exerciseKey) {
-    return RepCounter._repPeriodBounds(exerciseKey).min;
-  }
-
-  // Check if a signal name is an angle signal (measured in degrees)
-  // vs a position/distance signal (measured in normalized coords or 3D units)
-  static _isAngleSignal(signalName) {
-    return ['elbow_L', 'elbow_R', 'knee_L', 'knee_R', 'hip_L', 'hip_R',
-            'shoulder_L', 'shoulder_R', 'trunk'].includes(signalName);
-  }
-
-  // ─── Private: YIN period estimator (de Cheveigné & Kawahara, 2002) ───
-  //
-  // YIN replaces ACF peak-picking. ACF peaks at the fundamental and all
-  // harmonics are nearly equal, so "pick highest" or "pick first above
-  // threshold" is a coin flip between fundamental and 2× harmonic.
-  //
-  // YIN uses a difference function + cumulative mean normalization (CMNDF).
-  // The CMNDF mathematically suppresses harmonics: its first dip below
-  // threshold is always the fundamental period. This is the algorithm
-  // behind Shazam, Auto-Tune, and every production pitch detector.
-
-  _autocorrelation(signal, signalName) {
-    const N = signal.length;
-    if (N < 6) return { reps: 0, confidence: 0, periodFrames: 0 };
-
-    // Signal range for ROM penalty later (avoid spread for large arrays)
-    let sigMin = signal[0], sigMax = signal[0];
-    for (let i = 1; i < N; i++) {
-      if (signal[i] < sigMin) sigMin = signal[i];
-      if (signal[i] > sigMax) sigMax = signal[i];
-    }
-    const sigRange = sigMax - sigMin;
-
-    // Exercise-calibrated lag bounds
-    const { min: minPeriodSec, max: maxPeriodSec } = RepCounter._repPeriodBounds(this._exerciseKey);
-    const minLag = Math.max(2, Math.round(this._fps * minPeriodSec));
-    const W = Math.min(Math.floor(N / 2), Math.round(this._fps * maxPeriodSec));
-
-    if (W <= minLag) return { reps: 0, confidence: 0, periodFrames: 0 };
-
-    // Step 1: Difference function d(τ) = Σ (x[n] - x[n+τ])²
-    // Standard YIN variable-length summation (N-tau terms per lag).
-    // Mean removal is unnecessary: mean cancels in x[n]-x[n+tau].
-    const diff = new Float64Array(W + 1);
-    diff[0] = 0;
-    for (let tau = 1; tau <= W; tau++) {
-      let sum = 0;
-      for (let n = 0; n < N - tau; n++) {
-        const delta = signal[n] - signal[n + tau];
-        sum += delta * delta;
-      }
-      diff[tau] = sum;
-    }
-
-    // Step 2: Cumulative mean normalized difference function (CMNDF)
-    // d'(τ) = d(τ) / ((1/τ) * Σ d(j) for j=1..τ)
-    // d'(0) = 1 by definition. This normalization is what suppresses
-    // harmonics: the cumulative mean grows, making later dips shallower.
-    const cmndf = new Float64Array(W + 1);
-    cmndf[0] = 1;
-    let runningSum = 0;
-    for (let tau = 1; tau <= W; tau++) {
-      runningSum += diff[tau];
-      cmndf[tau] = runningSum > 0 ? (diff[tau] * tau) / runningSum : 1;
-    }
-
-    // Step 3: Find the fundamental period.
-    // YIN rule: find the first local minimum of CMNDF below threshold
-    // within the exercise's valid rep-rate range. The CMNDF's structure
-    // guarantees the first dip is the fundamental, not a harmonic.
-    const yinThreshold = 0.35;
-    let bestLag = 0;
-    let bestCmndf = Infinity;
-
-    // Primary: collect ALL local minima below threshold in the valid range,
-    // then pick the one with the deepest (lowest) CMNDF value.
-    // The original YIN "first dip" rule often picks harmonics at 2x the true
-    // period because the CMNDF normalization doesn't reliably suppress them
-    // at small multiples. Taking the global minimum is more robust.
-    const candidates = [];
-    for (let tau = minLag + 1; tau < W; tau++) {
-      if (cmndf[tau] <= cmndf[tau - 1] && cmndf[tau] <= cmndf[tau + 1]) {
-        if (cmndf[tau] < yinThreshold) {
-          candidates.push({ lag: tau, val: cmndf[tau] });
-        }
-      }
-    }
-    if (candidates.length > 0) {
-      // Pick deepest dip
-      candidates.sort((a, b) => a.val - b.val);
-      bestLag = candidates[0].lag;
-      bestCmndf = candidates[0].val;
-    }
-
-    // Fallback: if no dip below threshold (noisy signal), pick the
-    // deepest local minimum in the valid range regardless of threshold
-    if (bestLag === 0) {
-      for (let tau = minLag + 1; tau < W; tau++) {
-        if (cmndf[tau] <= cmndf[tau - 1] && cmndf[tau] <= cmndf[tau + 1]) {
-          if (cmndf[tau] < bestCmndf) {
-            bestCmndf = cmndf[tau];
-            bestLag = tau;
-          }
-        }
-      }
-    }
-
-    // Last resort: absolute minimum
-    if (bestLag === 0) {
-      for (let tau = minLag; tau <= W; tau++) {
-        if (cmndf[tau] < bestCmndf) {
-          bestCmndf = cmndf[tau];
-          bestLag = tau;
-        }
-      }
-    }
-
-    if (bestLag === 0) return { reps: 0, confidence: 0, periodFrames: 0 };
-
-    // Sub-harmonic refinement: bestLag might be at 2x, 3x, or 4x the true
-    // period. This happens on BOTH the primary YIN path (first dip below
-    // threshold is a harmonic, not the fundamental) and the fallback path.
-    //
-    // Check bestLag/2, /3, /4 for a CMNDF dip. Accept if the sub-period
-    // has a dip below a relaxed threshold (sub-harmonics may be weaker
-    // than the harmonic that was found first).
-    {
-      // Sub-harmonic check with tiered thresholds per divisor.
-      // Period-doubling (/2) is the dominant failure mode at 10fps and gets
-      // an aggressive threshold. Higher divisors (/3, /4) are rarer and more
-      // likely to be false positives, so they use stricter thresholds.
-      // Window ±15% of subLag (min 3 frames) because at low fps, integer
-      // rounding of bestLag/divisor often misses the actual dip by several frames.
-      const subThresholds = { 2: 0.78, 3: 0.60, 4: 0.50 };
-      for (const divisor of [2, 3, 4]) {
-        const subLag = Math.round(bestLag / divisor);
-        if (subLag < minLag || subLag > W) continue;
-        const pw = Math.max(3, Math.round(subLag * 0.15));
-        let subMin = Infinity, subIdx = subLag;
-        for (let t = Math.max(minLag, subLag - pw); t <= Math.min(W, subLag + pw); t++) {
-          if (cmndf[t] < subMin) { subMin = cmndf[t]; subIdx = t; }
-        }
-        // Validate: the found sub-lag should be close to bestLag/divisor.
-        // If the minimum drifted too far (>30% from expected), it's a spurious dip.
-        const expectedSubLag = bestLag / divisor;
-        const driftRatio = Math.abs(subIdx - expectedSubLag) / expectedSubLag;
-        if (driftRatio > 0.30) continue;
-        if (subMin < subThresholds[divisor]) {
-          bestLag = subIdx;
-          bestCmndf = subMin;
-          break;
-        }
-      }
-    }
-
-    // Parabolic interpolation for sub-frame accuracy
-    if (bestLag > 1 && bestLag < W) {
-      const a = cmndf[bestLag - 1];
-      const b = cmndf[bestLag];
-      const c = cmndf[bestLag + 1];
-      const denom = 2 * (2 * b - a - c);
-      if (Math.abs(denom) > 1e-10) {
-        const shift = (a - c) / denom;
-        bestLag = bestLag + Math.max(-0.5, Math.min(0.5, shift));
-      }
-    }
-
-    let reps = Math.round(N / bestLag);
-    const durationSec = N / this._fps;
-    const maxReasonableReps = Math.ceil(durationSec / minPeriodSec);
-
-    if (reps < 1 || reps > maxReasonableReps) {
-      return { reps: 0, confidence: 0, periodFrames: 0 };
-    }
-
-    // Peak-counting cross-check: catch period-doubling when YIN locks
-    // onto a harmonic. Counts peaks and zero-crossings, validates via CMNDF.
-    // Also catches cases where YIN fails entirely on noisy fast signals but
-    // peak/ZC counting correctly identify the periodicity.
-    if (reps <= Math.max(4, Math.floor(maxReasonableReps / 2)) && N > 20) {
-      const mean = signal.reduce((a, b) => a + b, 0) / N;
-
-      // Method 1: Zero-crossing count
-      let crossings = 0;
-      for (let i = 1; i < N; i++) {
-        if ((signal[i - 1] - mean) * (signal[i] - mean) < 0) crossings++;
-      }
-      const zcReps = Math.round(crossings / 2);
-
-      // Method 2: Peak counting (local maxima above mean + 15% of range)
-      // Reduced from 20% to catch smaller peaks in noisy fast signals
-      const mid = mean + sigRange * 0.15;
-      let peakCount = 0;
-      const minPeakDist = Math.max(2, minLag); // minimum frames between peaks
-      let lastPeakIdx = -minPeakDist;
-      for (let i = 1; i < N - 1; i++) {
-        if (signal[i] > mid &&
-            signal[i] >= signal[i - 1] && signal[i] >= signal[i + 1] &&
-            (i - lastPeakIdx) >= minPeakDist) {
-          peakCount++;
-          lastPeakIdx = i;
-        }
-      }
-
-      const peakReps = (Math.abs(zcReps - peakCount) <= 2)
-        ? Math.round((zcReps + peakCount) / 2)
-        : Math.max(zcReps, peakCount);
-
-      // Override YIN when peak counting finds significantly more reps
-      if (peakReps >= reps + 2 && peakReps <= maxReasonableReps) {
-        const peakLag = Math.round(N / peakReps);
-        if (peakLag >= Math.max(2, minLag) && peakLag <= W) {
-          const pw = Math.max(3, Math.round(peakLag * 0.15));
-          let peakCmndf = Infinity;
-          for (let t = Math.max(minLag, peakLag - pw); t <= Math.min(W, peakLag + pw); t++) {
-            if (cmndf[t] < peakCmndf) peakCmndf = cmndf[t];
-          }
-
-          if (peakCmndf < 0.92) {
-            // Standard: CMNDF validates the period
-            reps = peakReps;
-            bestLag = N / peakReps;
-            bestCmndf = peakCmndf;
-          } else if (zcReps >= reps * 3 && peakCount >= reps * 2 && peakCount >= 4) {
-            // Both ZC and peak counting found dramatically more reps than YIN.
-            // This happens on fast noisy signals (e.g. 15 sit-ups in 7s at 10fps)
-            // where YIN fails but the oscillations are real.
-            // Take the more conservative (smaller) estimate.
-            const conservativeReps = Math.min(zcReps, peakCount);
-            if (conservativeReps >= reps + 2 && conservativeReps <= maxReasonableReps) {
-              reps = conservativeReps;
-              bestLag = N / conservativeReps;
-              bestCmndf = 0.75; // Low confidence: counting-only evidence
-            }
-          }
-        }
-      }
-    }
-
-    // Confidence: 1 - CMNDF value (lower CMNDF = stronger periodicity)
-    let confidence = Math.max(0, Math.min(1, 1 - bestCmndf));
-
-    // Narrow-ROM penalty — only for angle signals (measured in degrees)
-    if (RepCounter._isAngleSignal(signalName)) {
-      if (sigRange < 20) {
-        confidence *= 0.3;
-      } else if (sigRange < 40) {
-        confidence *= 0.6;
-      } else if (sigRange < 60) {
-        confidence *= 0.85;
-      }
-    }
-
-    return {
-      reps,
-      confidence,
-      periodFrames: Math.round(bestLag),
-    };
-  }
-
-  // ─── Private: Find actual rep boundaries from tracking signal peaks/valleys ───
-
-  _findRepBoundaries(repCount, periodFrames) {
-    const N = this._collectedLandmarks.length;
-    const ex = this._exercise;
-    if (repCount <= 0 || N < 4) return [];
-
-    // Extract and smooth the tracking signal
-    const rawValues = this._collectedLandmarks.map(lm => {
-      const a = extractJointAngles(lm);
-      return a ? ex.getValue(a, lm) : null;
-    });
-    const interpolated = this._interpolateNulls(rawValues);
-    const sigma = Math.max(1, Math.round(this._fps * 0.15));
-    const smoothed = this._gaussianSmooth(interpolated, sigma);
-
-    // Find peaks and valleys in the smoothed signal
-    const minDist = Math.max(3, Math.round(periodFrames * 0.4));
-    const peaks = [];
-    const valleys = [];
-    for (let i = 1; i < smoothed.length - 1; i++) {
-      if (smoothed[i] >= smoothed[i - 1] && smoothed[i] >= smoothed[i + 1]) {
-        if (peaks.length === 0 || i - peaks[peaks.length - 1] >= minDist) {
-          peaks.push(i);
-        } else if (smoothed[i] > smoothed[peaks[peaks.length - 1]]) {
-          peaks[peaks.length - 1] = i;
-        }
-      }
-      if (smoothed[i] <= smoothed[i - 1] && smoothed[i] <= smoothed[i + 1]) {
-        if (valleys.length === 0 || i - valleys[valleys.length - 1] >= minDist) {
-          valleys.push(i);
-        } else if (smoothed[i] < smoothed[valleys[valleys.length - 1]]) {
-          valleys[valleys.length - 1] = i;
-        }
-      }
-    }
-
-    // Determine if exercise tracking value goes DOWN during concentric
-    // (pulling exercises: angle decreases) or UP (pushing: angle increases)
-    const down = ex.downThreshold;
-    const up = ex.upThreshold;
-    const bottomIsValley = down > up; // valleys = bottom of rep
-
-    // Build rep boundaries from alternating peaks/valleys
-    const bottoms = bottomIsValley ? valleys : peaks;
-    const tops = bottomIsValley ? peaks : valleys;
-
-    // Take the best-matching count of bottoms
-    // If we have more bottoms than ACF reps, prune weakest
-    let selectedBottoms = [...bottoms];
-    if (selectedBottoms.length > repCount) {
-      // Score each bottom by its signal excursion from neighbors
-      const scored = selectedBottoms.map(b => {
-        const leftTop = tops.filter(t => t < b).pop();
-        const rightTop = tops.filter(t => t > b)[0];
-        const excursion = Math.max(
-          leftTop != null ? Math.abs(smoothed[b] - smoothed[leftTop]) : 0,
-          rightTop != null ? Math.abs(smoothed[b] - smoothed[rightTop]) : 0
-        );
-        return { idx: b, excursion };
-      });
-      scored.sort((a, b) => b.excursion - a.excursion);
-      selectedBottoms = scored.slice(0, repCount).map(s => s.idx).sort((a, b) => a - b);
-    }
-
-    // Build boundaries: each rep goes from one top to the next, with bottom in between
-    const boundaries = [];
-    for (let r = 0; r < selectedBottoms.length; r++) {
-      const bottomFrame = selectedBottoms[r];
-      // Find the nearest top before and after this bottom
-      const prevTop = tops.filter(t => t < bottomFrame).pop();
-      const nextTop = tops.filter(t => t > bottomFrame)[0];
-
-      const startFrame = prevTop != null ? prevTop : Math.max(0, bottomFrame - Math.round(periodFrames / 2));
-      const endFrame = nextTop != null ? nextTop : Math.min(N - 1, bottomFrame + Math.round(periodFrames / 2));
-
-      boundaries.push({ startFrame, bottomFrame, endFrame });
-    }
-
-    // Fallback: if peak/valley detection produced nothing usable, use uniform periods
-    if (boundaries.length === 0) {
-      for (let r = 0; r < repCount; r++) {
-        const start = Math.round(r * periodFrames);
-        const end = Math.min(N - 1, Math.round((r + 1) * periodFrames));
-        const mid = Math.round((start + end) / 2);
-        if (start < N) boundaries.push({ startFrame: start, bottomFrame: mid, endFrame: end });
-      }
-    }
-
-    return boundaries;
-  }
-
-  // ─── Private: Build form history from ACF count ───
-
-  _buildFormHistory(repCount, periodFrames) {
-    if (repCount <= 0) return [];
+  _buildFormHistoryFromCycles(cycles) {
+    if (cycles.length === 0) return [];
 
     const N = this._collectedLandmarks.length;
     const ex = this._exercise;
     const checks = ex.formChecks || [];
     const history = [];
 
-    // Use actual signal peak/valley detection for rep boundaries.
-    // Fall back to uniform periods if detection fails.
-    let boundaries;
-    try {
-      boundaries = this._findRepBoundaries(repCount, periodFrames);
-    } catch (e) {
-      console.warn('[RepCounter] Peak/valley detection failed, using uniform periods:', e.message);
-      boundaries = [];
-    }
-    if (boundaries.length === 0) {
-      for (let r = 0; r < repCount; r++) {
-        const start = Math.round(r * periodFrames);
-        const end = Math.min(N - 1, Math.round((r + 1) * periodFrames));
-        const mid = Math.round((start + end) / 2);
-        if (start < N) boundaries.push({ startFrame: start, bottomFrame: mid, endFrame: end });
-      }
-    }
-
-    for (let r = 0; r < boundaries.length; r++) {
-      const { startFrame, bottomFrame: midFrame, endFrame } = boundaries[r];
-
-      if (startFrame >= N) break;
+    for (let r = 0; r < cycles.length; r++) {
+      const cycle = cycles[r];
+      const startFrame = cycle.start;
+      const endFrame = Math.min(cycle.end, N - 1);
+      const midFrame = Math.round((startFrame + endFrame) / 2);
 
       let score = null;
       const issues = [];
@@ -1026,15 +537,14 @@ export class RepCounter {
           const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
           let passed = failRate < 0.30;
 
-          // Anthropometric adjustment for finalized form history
           if (!passed && this._anthropometricNormalizer.isCalibrated) {
             const bodyType = this._anthropometricNormalizer.getBodyType();
             if (bodyType) {
               if ((fc.name === 'Depth' || fc.name === 'depth') && bodyType.femurType === 'long') {
-                passed = failRate < 0.50; // Relax threshold for long femurs
+                passed = failRate < 0.50;
               }
               if ((fc.name === 'Trunk angle' || fc.name === 'trunk_angle') && bodyType.torsoType === 'short') {
-                passed = failRate < 0.50; // Relax threshold for short torsos
+                passed = failRate < 0.50;
               }
             }
           }
@@ -1050,20 +560,8 @@ export class RepCounter {
         }
       }
 
-      // Per-rep ROM: measure tracking signal excursion for this rep
-      let repRom = null;
-      const trackingValues = [];
-      for (let i = startFrame; i <= endFrame && i < N; i++) {
-        const lm = this._collectedLandmarks[i];
-        if (!lm) continue;
-        const a = extractJointAngles(lm);
-        if (!a) continue;
-        const v = ex.getValue(a, lm);
-        if (v != null) trackingValues.push(v);
-      }
-      if (trackingValues.length >= 2) {
-        repRom = Math.abs(Math.max(...trackingValues) - Math.min(...trackingValues));
-      }
+      // Per-rep ROM from cycle data
+      const repRom = cycle.amplitude;
 
       history.push({
         score,
@@ -1073,6 +571,7 @@ export class RepCounter {
         startFrame,
         bottomFrame: midFrame,
         endFrame,
+        peakFrame: midFrame,
         rom: repRom != null ? Math.round(repRom * 10) / 10 : null,
         startTime: startFrame / this._fps,
         endTime: endFrame / this._fps,
@@ -1090,7 +589,7 @@ export class RepCounter {
     return history;
   }
 
-  // ─── Private: Live counting (unchanged) ───
+  // ─── Private: Live counting ───
 
   _countLiveRep(angles, landmarks) {
     this._reps++;
@@ -1118,17 +617,14 @@ export class RepCounter {
     return this._exercise.formChecks.map((fc) => {
       let passed = fc.check(angles, landmarks);
 
-      // Anthropometric adjustment: relax certain checks for extreme body proportions
       if (!passed && this._anthropometricNormalizer.isCalibrated) {
         const bodyType = this._anthropometricNormalizer.getBodyType();
         if (bodyType) {
-          // Long femurs: relax depth checks (they reach parallel at a wider knee angle)
           if ((fc.name === 'Depth' || fc.name === 'depth') && bodyType.femurType === 'long') {
-            passed = true; // Long femurs pass depth at wider angles than the 90-degree standard
+            passed = true;
           }
-          // Short torso: relax trunk angle checks (more forward lean is biomechanically necessary)
           if ((fc.name === 'Trunk angle' || fc.name === 'trunk_angle') && bodyType.torsoType === 'short') {
-            passed = true; // Short torso requires more forward lean
+            passed = true;
           }
         }
       }
@@ -1141,17 +637,4 @@ export class RepCounter {
       };
     });
   }
-}
-
-// ─── Standalone angle calculation (avoids dependency on extractJointAngles for signals) ───
-
-function calculateAngle3(a, b, c) {
-  const ba = { x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) };
-  const bc = { x: c.x - b.x, y: c.y - b.y, z: (c.z || 0) - (b.z || 0) };
-  const dot = ba.x * bc.x + ba.y * bc.y + ba.z * bc.z;
-  const magBA = Math.sqrt(ba.x * ba.x + ba.y * ba.y + ba.z * ba.z);
-  const magBC = Math.sqrt(bc.x * bc.x + bc.y * bc.y + bc.z * bc.z);
-  if (magBA < 1e-6 || magBC < 1e-6) return 0;
-  const cosAngle = Math.max(-1, Math.min(1, dot / (magBA * magBC)));
-  return (Math.acos(cosAngle) * 180) / Math.PI;
 }

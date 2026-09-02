@@ -12,30 +12,23 @@ import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
 import VideoReplay from './VideoReplay';
+import { extractFrames, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 
-// Build marker visible in UI to verify deployment is fresh
-const BUILD_ID = 'v16-user-correction';
+const BUILD_ID = 'v17-ffmpeg-cycles';
 
 // ── Landmark cache (IndexedDB) ──
-// Same video + same fps = same landmarks. Skip MediaPipe entirely on re-analysis.
+// Keyed by SHA-256 hash of video file content + fps.
+// Same file = same hash = same landmarks. Deterministic.
 const CACHE_DB = 'workoutVisionCache';
 const CACHE_STORE = 'landmarks';
-const CORRECTIONS_STORE = 'repCorrections';
-const CALIBRATION_STORE = 'calibrationOffsets';
 
 function openCacheDB() {
   return new Promise((resolve) => {
-    const req = indexedDB.open(CACHE_DB, 2);
+    const req = indexedDB.open(CACHE_DB, 3);
     req.onupgradeneeded = (e) => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains(CACHE_STORE)) {
         db.createObjectStore(CACHE_STORE);
-      }
-      if (!db.objectStoreNames.contains(CORRECTIONS_STORE)) {
-        db.createObjectStore(CORRECTIONS_STORE);
-      }
-      if (!db.objectStoreNames.contains(CALIBRATION_STORE)) {
-        db.createObjectStore(CALIBRATION_STORE);
       }
     };
     req.onsuccess = (e) => resolve(e.target.result);
@@ -66,72 +59,11 @@ async function setCachedLandmarks(key, data) {
   });
 }
 
-// ── Rep correction storage (Brick 6: User Correction as Ground Truth) ──
-
-async function saveRepCorrection(videoKey, exerciseKey, detectedReps, actualReps) {
-  const db = await openCacheDB();
-  if (!db || !db.objectStoreNames.contains(CORRECTIONS_STORE)) return;
-  const entry = { exerciseKey, detectedReps, actualReps, timestamp: Date.now() };
-  return new Promise((resolve) => {
-    const tx = db.transaction(CORRECTIONS_STORE, 'readwrite');
-    tx.objectStore(CORRECTIONS_STORE).put(entry, videoKey);
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); resolve(); };
-  });
-}
-
-async function getRepCorrection(videoKey) {
-  const db = await openCacheDB();
-  if (!db || !db.objectStoreNames.contains(CORRECTIONS_STORE)) return null;
-  return new Promise((resolve) => {
-    const tx = db.transaction(CORRECTIONS_STORE, 'readonly');
-    const get = tx.objectStore(CORRECTIONS_STORE).get(videoKey);
-    get.onsuccess = () => resolve(get.result || null);
-    get.onerror = () => resolve(null);
-    tx.oncomplete = () => db.close();
-  });
-}
-
-async function getAllRepCorrections() {
-  const db = await openCacheDB();
-  if (!db || !db.objectStoreNames.contains(CORRECTIONS_STORE)) return [];
-  return new Promise((resolve) => {
-    const entries = [];
-    const tx = db.transaction(CORRECTIONS_STORE, 'readonly');
-    const store = tx.objectStore(CORRECTIONS_STORE);
-    const cursor = store.openCursor();
-    cursor.onsuccess = (e) => {
-      const c = e.target.result;
-      if (c) { entries.push(c.value); c.continue(); }
-    };
-    tx.oncomplete = () => { db.close(); resolve(entries); };
-    tx.onerror = () => { db.close(); resolve([]); };
-  });
-}
-
-// Compute calibration offset: median ratio of (actual/detected) across all corrections
-// for a given exercise. Returns a multiplier (e.g. 0.78 means algorithm over-counts by ~22%).
-async function getCalibrationOffset(exerciseKey) {
-  const corrections = await getAllRepCorrections();
-  const relevant = corrections.filter(c => c.exerciseKey === exerciseKey && c.detectedReps > 0);
-  if (relevant.length < 2) return 1.0; // Need at least 2 data points
-  const ratios = relevant.map(c => c.actualReps / c.detectedReps).sort((a, b) => a - b);
-  // Median
-  const mid = Math.floor(ratios.length / 2);
-  return ratios.length % 2 === 0 ? (ratios[mid - 1] + ratios[mid]) / 2 : ratios[mid];
-}
-
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-// Hard cap on frames. iOS Safari crashes with high frame counts on large
-// videos due to accumulated WASM/WebGL memory.
-// Higher frame counts improve rep counting accuracy (10fps→20fps reduced
-// period quantization errors and Nyquist violations on fast exercises).
 const MAX_FRAMES = IS_IOS ? 300 : 600;
-
-// File size cap. iOS Safari can crash loading very large blob URLs.
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
 function gradeFromScore(score) {
@@ -174,6 +106,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [liveReps, setLiveReps] = useState(0);
   const [userInjuries, setUserInjuries] = useState(() => loadInjuries());
   const [errorMsg, setErrorMsg] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
+  const [ffmpegStatus, setFfmpegStatus] = useState('');
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const overlayRef = useRef(null);
@@ -226,289 +160,51 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
-  // ─── SEEK-BASED ANALYSIS ENGINE ───
+  // ─── FFMPEG.WASM DETERMINISTIC ANALYSIS ENGINE ───
   //
-  // This is the approach that WORKED on mobile (commit 45cb6bb).
-  // It sets video.currentTime to each target timestamp, waits for the
-  // 'seeked' event, draws the frame to canvas, runs pose detection.
-  // One frame at a time, sequential, with a 3-second per-seek timeout.
+  // Video → ffmpeg.wasm (deterministic frames) → MediaPipe (cached) →
+  // exercise tracking signal → cycle counter → validated reps
   //
-  // The play-based approach that replaced this NEVER worked on iOS Safari
-  // with HEVC blob URLs. Restored to the proven working method.
+  // No video element seeking. No requestVideoFrameCallback.
+  // Same input file = same frames = same landmarks = same rep count. Always.
 
   const analyzeVideo = useCallback(async (queueItem) => {
-    const video = videoRef.current;
-    if (!video) return null;
+    const analysisStart = Date.now();
 
-    // Load model first
+    // ── Phase 1: Hash the video file for deterministic cache key ──
+    setAnalysisPhase('hashing');
+    setFfmpegStatus('Hashing video file...');
+    const videoHash = await hashFile(queueItem.file);
+    console.log(`[Upload] Video hash: ${videoHash}`);
+
+    // ── Phase 2: Load MediaPipe model ──
     setAnalysisPhase('model');
+    setFfmpegStatus('Loading AI model...');
     const landmarker = await getImageLandmarker();
     if (!landmarker) {
       setErrorMsg(t('model_failed'));
       return null;
     }
 
-    // Load video
-    setAnalysisPhase('loading');
-    // Revoke any previous blob URL before creating a new one
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-    const url = URL.createObjectURL(queueItem.file);
-    blobUrlRef.current = url;
-    let urlRevoked = false;
-    const safeRevoke = () => { if (!urlRevoked) { urlRevoked = true; URL.revokeObjectURL(url); blobUrlRef.current = null; } };
+    // Target FPS and frame count
+    const analysisFps = IS_IOS ? 10 : 15;
+    const maxWidth = IS_IOS ? 480 : 720;
+    const cacheKey = `lm-${videoHash}-${analysisFps}`;
 
-    const loaded = await new Promise((resolve) => {
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = 'auto';
-      video.src = url;
-      video.load();
-
-      let settled = false;
-      const done = (v) => { if (!settled) { settled = true; resolve(v); } };
-
-      video.addEventListener('loadeddata', () => done(true), { once: true });
-      video.onerror = () => done(false);
-      setTimeout(() => done(false), 20_000);
-    });
-
-    if (!loaded) {
-      safeRevoke();
-      setErrorMsg(t('video_failed'));
-      return null;
-    }
-
-    const duration = video.duration;
-    if (!duration || !isFinite(duration)) {
-      safeRevoke();
-      setErrorMsg(t('video_failed'));
-      return null;
-    }
-
-    // Adaptive FPS: target 15fps (iOS) or 20fps (desktop) for accurate rep counting.
-    // At 10fps, fast exercises (battle rope, sit-ups) hit Nyquist limits and period
-    // quantization errors. 20fps gives YIN enough samples for sub-frame accuracy.
-    // Cap total frames at MAX_FRAMES so a long video doesn't exhaust WASM memory.
-    const analysisFps = Math.min(IS_IOS ? 15 : 20, MAX_FRAMES / duration);
-    const totalFrames = Math.min(MAX_FRAMES, Math.ceil(duration * analysisFps));
-    const interval = duration / totalFrames;
-
-    // Offscreen canvas for MediaPipe input only (not displayed).
-    // Cap resolution to save memory. iOS: 480p, Desktop: 720p.
-    const maxAnalysisWidth = IS_IOS ? 480 : 720;
-    const scale = Math.min(1, maxAnalysisWidth / video.videoWidth);
-    const offscreen = document.createElement('canvas');
-    offscreen.width = Math.round(video.videoWidth * scale);
-    offscreen.height = Math.round(video.videoHeight * scale);
-    const offCtx = offscreen.getContext('2d');
-
-    console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${video.videoWidth}x${video.videoHeight}, ${totalFrames} frames at ${analysisFps.toFixed(1)} FPS`);
-
-    // Landmark cache key: same file + same fps = same landmarks
-    const cacheKey = `lm-${queueItem.file.name}-${queueItem.file.size}-${queueItem.file.lastModified}-${analysisFps.toFixed(1)}`;
-
-    // Analysis state
+    // ── Phase 3: Check landmark cache ──
     const frames = [];
     const replayFrames = [];
-    const isAutoMode = exercise === '__auto__';
-    const initialExercise = isAutoMode ? 'squat' : exercise;
-    let detectedExercise = initialExercise;
-    const weightKg = parseFloat(weight) || 0;
-    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
-    const skipAutoDetect = !isAutoMode && userChangedExercise.current;
-    const autoDetector = (isAutoMode || (autoDetect && !skipAutoDetect))
-      ? new ExerciseAutoDetector({ fps: analysisFps }) : null;
-    let autoDetectDone = false;
-    let autoDetected = false;
-    const analysisStart = Date.now();
-
-    setAnalysisPhase('analyzing');
-    setLiveReps(0);
-
-    // Wait for the video frame to actually be decoded and ready to draw.
-    // iOS Safari fires 'seeked' BEFORE the HEVC frame is decoded, so drawing
-    // immediately produces a black canvas.
-    //
-    // Best: requestVideoFrameCallback (Safari 15.4+) fires only when an
-    // actual decoded frame is presented — the only reliable signal for HEVC.
-    // Fallback: readyState polling + double-rAF for older browsers.
-    const hasRVFC = typeof video.requestVideoFrameCallback === 'function';
-    const waitForFrame = () => new Promise((resolve) => {
-      if (hasRVFC) {
-        const timeout = setTimeout(resolve, 800); // safety cap
-        video.requestVideoFrameCallback(() => {
-          clearTimeout(timeout);
-          resolve();
-        });
-      } else {
-        const start = Date.now();
-        const check = () => {
-          if (video.readyState >= 2 || Date.now() - start > 500) {
-            if (typeof requestAnimationFrame !== 'undefined') {
-              requestAnimationFrame(() => requestAnimationFrame(resolve));
-            } else {
-              setTimeout(resolve, 80);
-            }
-          } else {
-            setTimeout(check, 20);
-          }
-        };
-        check();
-      }
-    });
-
-    // Person lock: select subject on first frame, keep it locked for the whole video
-    let lockedSubjectIdx = null;
-
-    // Process one frame at a time via seeking
-    const processFrame = (frameIdx) => {
-      return new Promise((res) => {
-        const time = frameIdx * interval;
-        if (time >= duration || abortRef.current) { res(false); return; }
-
-        video.currentTime = time;
-
-        let settled = false;
-        const settle = (cont) => { if (!settled) { settled = true; res(cont); } };
-
-        const onSeeked = async () => {
-          video.removeEventListener('seeked', onSeeked);
-
-          // iOS Safari fix: wait for the frame to actually render.
-          // Without this, 90%+ of seeks produce black canvas frames.
-          await waitForFrame();
-
-          // Draw video frame to offscreen canvas for MediaPipe input
-          offCtx.drawImage(video, 0, 0, offscreen.width, offscreen.height);
-          // Deterministic timestamp: frameIdx * (1000/fps) instead of
-          // performance.now(). This makes MediaPipe's temporal smoothing
-          // produce identical landmarks on every run of the same video.
-          const deterministicTs = frameIdx * (1000 / analysisFps);
-          const result = detectPoseImage(landmarker, offscreen, deterministicTs);
-
-          // iOS optimization: only paint every 3rd frame to reduce GPU overhead.
-          const shouldPaint = !IS_IOS || (frameIdx % 3 === 0);
-
-          // Extract landmarks if detected
-          let landmarks = null;
-          let updateResult = null;
-          if (result?.landmarks?.length) {
-            if (result.landmarks.length === 1) {
-              landmarks = result.landmarks[0];
-            } else {
-              if (lockedSubjectIdx === null) {
-                landmarks = selectSubjectPose(result.landmarks);
-                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-              } else {
-                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-              }
-            }
-            const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: time, angles });
-            updateResult = repCounter.update(landmarks, time);
-            setLiveReps(updateResult.reps);
-
-            if (!IS_IOS || frameIdx % 2 === 0) {
-              replayFrames.push({ landmarks, timestamp: time });
-            }
-          }
-
-          // ALWAYS draw the video frame to canvas so user sees the video during analysis.
-          // Skeleton overlay is added on top when landmarks are available.
-          const canvas = overlayRef.current;
-          if (canvas && shouldPaint) {
-            let cw, ch;
-            if (IS_IOS) {
-              cw = offscreen.width;
-              ch = offscreen.height;
-              if (canvas.width !== cw || canvas.height !== ch) {
-                canvas.width = cw;
-                canvas.height = ch;
-              }
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(offscreen, 0, 0);
-              if (landmarks) drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
-            } else {
-              cw = video.videoWidth || 1080;
-              ch = video.videoHeight || 1920;
-              if (canvas.width !== cw || canvas.height !== ch) {
-                canvas.width = cw;
-                canvas.height = ch;
-              }
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(video, 0, 0, cw, ch);
-              if (landmarks) drawPose(ctx, landmarks, cw, ch, 1.0, updateResult?.formFeedback || null);
-            }
-            // Rep counter pill — always visible
-            {
-              const ctx = canvas.getContext('2d');
-              const currentReps = updateResult?.reps ?? repCounter.reps;
-              const repText = `${currentReps}`;
-              const labelText = t('reps').toLowerCase();
-              const fontSize = Math.round(cw * 0.12);
-              const labelSize = Math.round(fontSize * 0.4);
-              ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
-              const repWidth = ctx.measureText(repText).width;
-              ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
-              const labelWidth = ctx.measureText(labelText).width;
-              const pillW = Math.max(repWidth, labelWidth) + fontSize;
-              const pillH = fontSize * 1.8;
-              const pillX = (cw - pillW) / 2;
-              const pillY = ch * 0.03;
-              ctx.fillStyle = 'rgba(0,0,0,0.6)';
-              ctx.beginPath();
-              const r = pillH / 2;
-              ctx.moveTo(pillX + r, pillY);
-              ctx.lineTo(pillX + pillW - r, pillY);
-              ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + r, r);
-              ctx.arcTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH, r);
-              ctx.lineTo(pillX + r, pillY + pillH);
-              ctx.arcTo(pillX, pillY + pillH, pillX, pillY + pillH - r, r);
-              ctx.arcTo(pillX, pillY, pillX + r, pillY, r);
-              ctx.fill();
-              ctx.fillStyle = '#00f5d4';
-              ctx.font = `bold ${fontSize}px -apple-system, system-ui, sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(repText, cw / 2, pillY + pillH * 0.42);
-              ctx.fillStyle = 'rgba(240,240,245,0.8)';
-              ctx.font = `${labelSize}px -apple-system, system-ui, sans-serif`;
-              ctx.fillText(labelText, cw / 2, pillY + pillH * 0.78);
-            }
-          }
-
-          const pct = Math.min(99, Math.round(((frameIdx + 1) / totalFrames) * 100));
-          setProgress(pct);
-          setQueue(prev => prev.map(q =>
-            q.id === queueItem.id ? { ...q, progress: pct } : q
-          ));
-
-          // Yield to browser paint cycle. On iOS, yield less frequently
-          // to reduce per-frame overhead (~16ms per rAF yield).
-          if (!IS_IOS || shouldPaint) {
-            await new Promise(r => requestAnimationFrame(r));
-          }
-          settle(true);
-        };
-
-        video.addEventListener('seeked', onSeeked);
-        // Per-seek 5-second timeout: skip this frame if seek hangs
-        setTimeout(() => {
-          video.removeEventListener('seeked', onSeeked);
-          settle(true); // skip frame, continue to next
-        }, 5000);
-      });
-    };
-
-    // Check landmark cache: same video + same fps = skip MediaPipe entirely
     let usedCache = false;
+    let frameCount = 0;
+    let duration = 0;
+
     const cachedLandmarks = await getCachedLandmarks(cacheKey);
     if (cachedLandmarks && cachedLandmarks.length > 0) {
-      console.log(`[Upload] Cache hit: ${cachedLandmarks.length} frames from IndexedDB`);
+      console.log(`[Upload] Cache hit: ${cachedLandmarks.length} frames from IndexedDB (hash: ${videoHash})`);
       usedCache = true;
+      frameCount = cachedLandmarks.length;
+      duration = frameCount / analysisFps;
+      const interval = 1 / analysisFps;
       for (let i = 0; i < cachedLandmarks.length; i++) {
         const lm = cachedLandmarks[i];
         const time = i * interval;
@@ -519,44 +215,137 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       setProgress(99);
     }
 
-    // If no cache, run MediaPipe frame by frame
+    // ── Phase 4: If no cache, extract frames with ffmpeg.wasm ──
     if (!usedCache) {
-      let frameIdx = 0;
-      while (frameIdx < totalFrames) {
-        const cont = await processFrame(frameIdx);
-        if (!cont) break;
-        frameIdx++;
-        if (frameIdx % 5 === 0) {
-          await new Promise(r => setTimeout(r, 0));
+      setAnalysisPhase('extracting');
+      setFfmpegStatus('Loading ffmpeg.wasm (~31MB first time)...');
+
+      try {
+        await loadFFmpeg((pct) => {
+          setFfmpegStatus(`Loading ffmpeg.wasm... ${pct}%`);
+        });
+      } catch (err) {
+        console.error('[Upload] ffmpeg.wasm load failed:', err);
+        setErrorMsg('Failed to load ffmpeg.wasm video decoder. Try refreshing the page.');
+        return null;
+      }
+
+      setFfmpegStatus('Extracting frames deterministically...');
+      let extracted;
+      try {
+        extracted = await extractFrames(
+          queueItem.file,
+          analysisFps,
+          MAX_FRAMES,
+          maxWidth,
+          (pct) => {
+            setProgress(Math.round(pct * 0.4)); // 0-40% for extraction
+            setFfmpegStatus(`Extracting frames... ${pct}%`);
+          }
+        );
+      } catch (err) {
+        console.error('[Upload] Frame extraction failed:', err);
+        setErrorMsg(`Frame extraction failed: ${err.message}`);
+        return null;
+      }
+
+      frameCount = extracted.frameCount;
+      duration = extracted.duration;
+
+      console.log(`[Upload] ${BUILD_ID}: ${duration.toFixed(1)}s, ${extracted.width}x${extracted.height}, ${frameCount} frames at ${analysisFps}fps`);
+
+      // ── Phase 5: Run MediaPipe on each extracted frame ──
+      setAnalysisPhase('analyzing');
+      setFfmpegStatus('Running pose detection...');
+      setLiveReps(0);
+
+      // Offscreen canvas for MediaPipe input
+      const offscreen = document.createElement('canvas');
+      offscreen.width = extracted.width;
+      offscreen.height = extracted.height;
+      const offCtx = offscreen.getContext('2d');
+
+      let lockedSubjectIdx = null;
+
+      for (let i = 0; i < extracted.frames.length; i++) {
+        if (abortRef.current) break;
+
+        // Draw ImageData to canvas for MediaPipe
+        offCtx.putImageData(extracted.frames[i], 0, 0);
+
+        // Deterministic timestamp
+        const deterministicTs = i * (1000 / analysisFps);
+        const result = detectPoseImage(landmarker, offscreen, deterministicTs);
+
+        let landmarks = null;
+        if (result?.landmarks?.length) {
+          if (result.landmarks.length === 1) {
+            landmarks = result.landmarks[0];
+          } else {
+            if (lockedSubjectIdx === null) {
+              landmarks = selectSubjectPose(result.landmarks);
+              lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+            } else {
+              landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+            }
+          }
+          const time = i / analysisFps;
+          const angles = extractJointAngles(landmarks);
+          frames.push({ landmarks, timestamp: time, angles });
+          replayFrames.push({ landmarks, timestamp: time });
         }
-        if (Date.now() - analysisStart > 180_000) {
-          console.warn('[Upload] 3-minute wall-clock cap reached');
-          break;
+
+        const pct = 40 + Math.round((i / extracted.frames.length) * 55); // 40-95%
+        setProgress(pct);
+        setQueue(prev => prev.map(q =>
+          q.id === queueItem.id ? { ...q, progress: pct } : q
+        ));
+
+        // Yield every 5 frames
+        if (i % 5 === 0) {
+          await new Promise(r => setTimeout(r, 0));
         }
       }
 
-      // Cache the extracted landmarks for deterministic re-analysis
+      // Cache landmarks keyed by video hash
       if (frames.length > 0) {
         const toCache = frames.map(f => f.landmarks);
         setCachedLandmarks(cacheKey, toCache).catch(() => {});
-        console.log(`[Upload] Cached ${toCache.length} frames to IndexedDB`);
+        console.log(`[Upload] Cached ${toCache.length} frames to IndexedDB (hash: ${videoHash})`);
       }
     }
 
     const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
     if (frames.length === 0) {
-      safeRevoke();
-      // Release video decoder memory
-      video.removeAttribute('src');
-      video.load();
       setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
       return null;
     }
 
-    // Deferred auto-detection: run all frames through each candidate exercise's
-    // rep counter and pick the one with the most reps
-    if (autoDetector && !userChangedExercise.current) {
+    // ── Phase 6: Compute landmark hash for determinism verification ──
+    const landmarkHashValue = await hashLandmarks(frames.map(f => f.landmarks));
+    const debug = { videoHash, frameCount: frames.length, landmarkHash: landmarkHashValue };
+    setDebugInfo(debug);
+
+    // Log determinism proof to console
+    console.log(`[DETERMINISM] Video hash:    ${videoHash}`);
+    console.log(`[DETERMINISM] Frame count:   ${frames.length}`);
+    console.log(`[DETERMINISM] Landmark hash: ${landmarkHashValue}`);
+
+    // ── Phase 7: Exercise detection and rep counting ──
+    const isAutoMode = exercise === '__auto__';
+    const initialExercise = isAutoMode ? 'squat' : exercise;
+    let detectedExercise = initialExercise;
+    const weightKg = parseFloat(weight) || 0;
+    const interval = 1 / analysisFps;
+    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
+    let autoDetected = false;
+
+    // Feed all frames to rep counter
+    for (const f of frames) repCounter.update(f.landmarks, f.timestamp);
+
+    // Auto-detection
+    if ((isAutoMode || (autoDetect && !userChangedExercise.current))) {
       const tallies = {};
       const detector = new ExerciseAutoDetector({ fps: analysisFps });
       for (const f of frames) {
@@ -587,35 +376,17 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     repCounter.finalize();
 
-    // ── Brick 6: Apply calibration offset from user corrections ──
-    // If the user has corrected rep counts on previous analyses of this exercise,
-    // apply the median correction ratio to adjust the raw count.
-    let calibrationOffset = 1.0;
-    let rawReps = repCounter.reps;
-    try {
-      calibrationOffset = await getCalibrationOffset(detectedExercise);
-      if (calibrationOffset !== 1.0) {
-        const calibratedReps = Math.round(rawReps * calibrationOffset);
-        console.log(`[Brick6] Calibration offset ${calibrationOffset.toFixed(3)} applied: ${rawReps} → ${calibratedReps} reps`);
-        // Trim or extend repHistory to match calibrated count
-        if (calibratedReps < repCounter.repHistory.length) {
-          repCounter._repHistory = repCounter.repHistory.slice(0, calibratedReps);
-          repCounter._reps = calibratedReps;
-        }
-      }
-    } catch (e) {
-      console.warn('[Brick6] Calibration lookup failed:', e.message);
-    }
-
-    // Enrich repHistory with timestamps for replay form feedback sync
+    // Enrich repHistory with timestamps
     const enrichedRepHistory = repCounter.repHistory.map(r => ({
       ...r,
       startTime: (r.startFrame * interval),
-      peakTime: (r.peakFrame * interval),
+      peakTime: ((r.peakFrame || r.bottomFrame) * interval),
       endTime: (r.endFrame * interval),
     }));
-    console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length}/${totalFrames} frames in ${analysisTime}s`);
-    console.log(`[Upload] Reps detected: ${repCounter.reps}${calibrationOffset !== 1.0 ? ` (raw: ${rawReps}, offset: ${calibrationOffset.toFixed(3)})` : ''}, diagnostics:`, repCounter.diagnostics);
+
+    console.log(`[Upload] Exercise: ${detectedExercise}, ${frames.length} frames in ${analysisTime}s`);
+    console.log(`[Upload] Reps detected: ${repCounter.reps}, method: cycle-counter`);
+
     // Log angle signal for debugging
     if (frames.length > 0) {
       const ex = EXERCISES[detectedExercise];
@@ -631,7 +402,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const repHistory = enrichedRepHistory;
     const reps = repHistory.length;
 
-    // Run biomechanical analysis for velocity, ROM, fatigue, asymmetry
+    // Biomechanical analysis
     let bioAnalysis = null;
     try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory, userProfile?.height); }
     catch (err) { console.error('Bio analysis error:', err); }
@@ -662,7 +433,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     };
     try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
 
-    // Fetch history for progression comparison
+    // Progression comparison
     let progression = null;
     try {
       const allWorkouts = await getAllWorkouts();
@@ -675,10 +446,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     } catch (_) {}
 
     setProgress(100);
+    setFfmpegStatus('');
 
-    // Release the video decoder memory — the blob URL stays alive for replay
-    video.removeAttribute('src');
-    video.load();
+    // Create blob URL for replay (still need video element for replay)
+    const url = URL.createObjectURL(queueItem.file);
+    blobUrlRef.current = url;
 
     return {
       fileName: queueItem.name, exercise: detectedExercise,
@@ -688,6 +460,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       videoUrl: url,
       frames: replayFrames,
       autoDetected,
+      debug, // Pass debug info to result card
     };
   }, [exercise, autoDetect, weight, userInjuries]);
 
@@ -916,7 +689,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         ) : (
           <div className="analyzing-status">
             <div className="spinner-sm" />
-            {currentFile && <span>{currentFile}</span>}
+            <div style={{ flex: 1 }}>
+              {currentFile && <span style={{ display: 'block' }}>{currentFile}</span>}
+              {ffmpegStatus && <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--muted)', marginTop: 2 }}>{ffmpegStatus}</span>}
+            </div>
             <button className="btn btn-ghost btn-sm" onClick={() => { abortRef.current = true; }}>{t('stop')}</button>
           </div>
         )}
@@ -1066,27 +842,6 @@ function ResultCard({ result, onReplay }) {
     formScore, bioAnalysis, report, repHistory, progression,
   } = result;
 
-  const [editingReps, setEditingReps] = useState(false);
-  const [correctedReps, setCorrectedReps] = useState(null);
-  const [correctionSaved, setCorrectionSaved] = useState(false);
-
-  const displayReps = correctedReps != null ? correctedReps : reps;
-
-  // Video identity key for corrections storage
-  const videoKey = result.fileName
-    ? `corr-${result.fileName}-${result.exercise}`
-    : null;
-
-  const handleSaveCorrection = useCallback(async () => {
-    if (!videoKey || correctedReps == null || correctedReps === reps) return;
-    await saveRepCorrection(videoKey, result.exercise, reps, correctedReps);
-    setCorrectionSaved(true);
-    setEditingReps(false);
-    console.log(`[Brick6] Correction saved: ${reps} → ${correctedReps} for ${result.exercise} (${videoKey})`);
-    // Auto-hide the saved badge after 3 seconds
-    setTimeout(() => setCorrectionSaved(false), 3000);
-  }, [videoKey, correctedReps, reps, result.exercise]);
-
   const grade = gradeFromScore(formScore);
   const cls = gradeClass(formScore);
   const displayName = tExercise(result.exercise, exerciseName);
@@ -1133,73 +888,9 @@ function ResultCard({ result, onReplay }) {
 
       {/* Grid Stats — like the reference app */}
       <div className="stats-grid-2x2">
-        <div className="stat-card" onClick={() => { if (!editingReps) { setEditingReps(true); setCorrectedReps(correctedReps != null ? correctedReps : reps); } }}
-          style={{ cursor: 'pointer', position: 'relative' }}>
+        <div className="stat-card">
           <span className="stat-card-label">{t('reps').toUpperCase()}</span>
-          {!editingReps ? (
-            <>
-              <span className="stat-card-value">{displayReps}</span>
-              {correctedReps != null && correctedReps !== reps && (
-                <span style={{ fontSize: '0.55rem', color: 'var(--yellow)', position: 'absolute', bottom: 4, right: 6 }}>
-                  was {reps}
-                </span>
-              )}
-              {correctionSaved && (
-                <span style={{ fontSize: '0.55rem', color: 'var(--accent)', position: 'absolute', bottom: 4, left: 6 }}>
-                  saved
-                </span>
-              )}
-              <span style={{ fontSize: '0.5rem', color: 'var(--muted)', marginTop: 2 }}>tap to correct</span>
-            </>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
-              <button
-                onClick={() => setCorrectedReps(Math.max(0, correctedReps - 1))}
-                style={{
-                  width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)',
-                  fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center', lineHeight: 1,
-                }}
-              >&minus;</button>
-              <span style={{ fontSize: '1.4rem', fontWeight: 800, minWidth: 28, textAlign: 'center',
-                color: correctedReps !== reps ? 'var(--yellow)' : 'var(--text-primary)' }}>
-                {correctedReps}
-              </span>
-              <button
-                onClick={() => setCorrectedReps(correctedReps + 1)}
-                style={{
-                  width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)',
-                  fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center', lineHeight: 1,
-                }}
-              >+</button>
-            </div>
-          )}
-          {editingReps && (
-            <div style={{ display: 'flex', gap: 4, marginTop: 4 }} onClick={e => e.stopPropagation()}>
-              <button
-                onClick={handleSaveCorrection}
-                disabled={correctedReps === reps}
-                style={{
-                  fontSize: '0.6rem', padding: '2px 8px', borderRadius: 4,
-                  border: 'none', cursor: correctedReps !== reps ? 'pointer' : 'default',
-                  background: correctedReps !== reps ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
-                  color: correctedReps !== reps ? 'var(--void)' : 'var(--muted)',
-                  fontWeight: 700,
-                }}
-              >{t('save') || 'Save'}</button>
-              <button
-                onClick={() => { setEditingReps(false); setCorrectedReps(correctedReps !== reps ? correctedReps : null); }}
-                style={{
-                  fontSize: '0.6rem', padding: '2px 8px', borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.12)', background: 'none',
-                  color: 'var(--muted)', cursor: 'pointer',
-                }}
-              >{t('close') || 'Cancel'}</button>
-            </div>
-          )}
+          <span className="stat-card-value">{reps}</span>
         </div>
         <div className="stat-card">
           <span className="stat-card-label">{t('duration').toUpperCase()}</span>
@@ -1556,6 +1247,16 @@ function ResultCard({ result, onReplay }) {
           </div>
         );
       })()}
+
+      {/* Determinism proof overlay */}
+      {result.debug && (
+        <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(0,245,212,0.04)', borderRadius: 8, border: '1px solid rgba(0,245,212,0.12)', fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--muted)' }}>
+          <strong style={{ color: 'var(--accent)', fontSize: '0.72rem' }}>Determinism Proof</strong>
+          <div>Video hash: <span style={{ color: 'var(--text-primary)' }}>{result.debug.videoHash}</span></div>
+          <div>Frame count: <span style={{ color: 'var(--text-primary)' }}>{result.debug.frameCount}</span></div>
+          <div>Landmark hash: <span style={{ color: 'var(--text-primary)' }}>{result.debug.landmarkHash}</span></div>
+        </div>
+      )}
 
       {result.diagnostics && (
         <div style={{ marginTop: 14, padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, fontSize: '0.75rem', color: 'var(--muted)' }}>
