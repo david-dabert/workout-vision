@@ -26,6 +26,9 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 
+export const REP_COUNTER_BUILD = 'v19-valley-only';
+console.log(`[RepCounter] BUILD_ID: ${REP_COUNTER_BUILD}`);
+
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
 // ---------------------------------------------------------------------------
@@ -204,25 +207,28 @@ export class RepCounter {
     const N = this._collectedLandmarks.length;
     if (ex.isIsometric || N < 6) return;
 
-    // ── Step 1: Extract the tracking signal for this exercise ──
+    // ── Step 1: Extract the raw tracking signal ──
     const rawValues = this._collectedLandmarks.map(lm => {
       const a = extractJointAngles(lm);
       return a ? ex.getValue(a, lm) : null;
     });
 
-    const interpolated = this._interpolateNulls(rawValues);
-    const sigma = Math.max(2, Math.round(this._fps * 0.12));
-    const smoothed = this._gaussianSmooth(interpolated, sigma);
+    // Diagnostic: log signal before any processing
+    const validValues = rawValues.filter(v => v !== null && !isNaN(v));
+    console.log(`[RepCounter] Signal length: ${rawValues.length}, valid: ${validValues.length}`);
+    if (validValues.length > 0) {
+      console.log(`[RepCounter] Signal range: ${(Math.max(...validValues) - Math.min(...validValues)).toFixed(1)}`);
+      console.log(`[RepCounter] First 10 values: ${validValues.slice(0, 10).map(v => v.toFixed(1)).join(', ')}`);
+    }
 
-    // ── Step 2: Determine if we need to invert the signal ──
-    // If downThreshold < upThreshold (most exercises: curl, squat, etc.),
-    // the valley = the flexed position = the bottom of the rep.
-    // If downThreshold > upThreshold (inverted exercises),
-    // the peak = the flexed position, so we invert the signal to count valleys.
+    // No smoothing. Interpolate nulls only.
+    const interpolated = this._interpolateNulls(rawValues);
+
+    // ── Step 2: Invert if needed ──
     const down = ex.downThreshold;
     const up = ex.upThreshold;
     const invert = down > up;
-    const signal = invert ? smoothed.map(v => -v) : smoothed;
+    const signal = invert ? interpolated.map(v => -v) : interpolated;
 
     // ── Step 3: Valley counting ──
     const result = this._countValleys(signal);
@@ -232,7 +238,6 @@ export class RepCounter {
     console.log(`[RepCounter] Valley positions (frames): ${result.valleyFrames.join(', ')}`);
 
     if (result.reps === 0) {
-      console.debug(`[RepCounter] Valley count: 0 reps (hysteresis had ${this._hysteresisReps})`);
       this._reps = 0;
       this._repHistory = [];
       return;
@@ -242,28 +247,26 @@ export class RepCounter {
     const cycles = [];
     for (let i = 0; i < result.valleyFrames.length; i++) {
       const vFrame = result.valleyFrames[i];
-      // Find the peak before this valley
       const searchStart = i > 0 ? result.valleyFrames[i - 1] : 0;
       let peakFrame = searchStart;
-      let peakVal = smoothed[searchStart];
+      let peakVal = interpolated[searchStart];
       for (let j = searchStart; j < vFrame; j++) {
-        if (invert ? smoothed[j] < peakVal : smoothed[j] > peakVal) {
-          peakVal = smoothed[j];
+        if (invert ? interpolated[j] < peakVal : interpolated[j] > peakVal) {
+          peakVal = interpolated[j];
           peakFrame = j;
         }
       }
-      // Find the peak after this valley (for end boundary)
-      const searchEnd = i < result.valleyFrames.length - 1 ? result.valleyFrames[i + 1] : smoothed.length - 1;
+      const searchEnd = i < result.valleyFrames.length - 1 ? result.valleyFrames[i + 1] : interpolated.length - 1;
       let endFrame = vFrame;
-      let endVal = smoothed[vFrame];
+      let endVal = interpolated[vFrame];
       for (let j = vFrame; j <= searchEnd; j++) {
-        if (invert ? smoothed[j] < endVal : smoothed[j] > endVal) {
-          endVal = smoothed[j];
+        if (invert ? interpolated[j] < endVal : interpolated[j] > endVal) {
+          endVal = interpolated[j];
           endFrame = j;
         }
       }
 
-      const valleyVal = smoothed[vFrame];
+      const valleyVal = interpolated[vFrame];
       const amplitude = invert
         ? valleyVal - Math.min(peakVal, endVal)
         : Math.max(peakVal, endVal) - valleyVal;
@@ -281,39 +284,27 @@ export class RepCounter {
     this._cycleDebug = {
       reps: result.reps,
       cycles,
-      periodFrames: result.reps > 0 ? Math.round(smoothed.length / result.reps) : 0,
+      periodFrames: result.reps > 0 ? Math.round(interpolated.length / result.reps) : 0,
       signalRange: result.signalRange,
     };
 
-    // ── Step 4: Build rep history with form scores ──
     this._reps = result.reps;
     this._repHistory = this._buildFormHistoryFromCycles(cycles);
 
-    // ── Step 5: Velocity analysis ──
+    // Velocity and progression (downstream features, non-critical)
     try {
       const velocityEngine = new VelocityEngine(this._fps);
       const repBoundaries = this._repHistory.map(r => ({ startFrame: r.startFrame, endFrame: r.endFrame }));
-      const repVelocities = velocityEngine.analyzePerRep(smoothed, repBoundaries, this._weightKg || 0);
-
+      const repVelocities = velocityEngine.analyzePerRep(interpolated, repBoundaries, this._weightKg || 0);
       for (let i = 0; i < this._repHistory.length && i < repVelocities.length; i++) {
         if (repVelocities[i]) this._repHistory[i].velocity = repVelocities[i];
       }
-
-      const fullAnalysis = velocityEngine.analyze(smoothed, this._weightKg || 0);
-      this._velocityAnalysis = {
-        fatigue: fullAnalysis.fatigue,
-        power: fullAnalysis.power,
-        smoothness: fullAnalysis.smoothness,
-      };
-
-      // ── Step 6: Progression score ──
+      const fullAnalysis = velocityEngine.analyze(interpolated, this._weightKg || 0);
+      this._velocityAnalysis = { fatigue: fullAnalysis.fatigue, power: fullAnalysis.power, smoothness: fullAnalysis.smoothness };
       const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
-      this._progressionScore = ProgressionScore.computeSet({
-        formScores, repVelocities,
-        reps: result.reps, weightKg: this._weightKg || 0,
-      });
+      this._progressionScore = ProgressionScore.computeSet({ formScores, repVelocities, reps: result.reps, weightKg: this._weightKg || 0 });
     } catch (e) {
-      console.warn('[RepCounter] Velocity/Progression analysis failed:', e.message);
+      console.warn('[RepCounter] Velocity/Progression failed:', e.message);
     }
   }
 
