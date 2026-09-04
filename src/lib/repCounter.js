@@ -412,6 +412,28 @@ export class RepCounter {
     this._collectedLandmarks = [];
   }
 
+  // ─── Trunk swing check detection ───
+  //
+  // Many isolation exercises (curls, laterals, raises, tricep extensions) use
+  // form checks like `angles.trunk < 20` to detect body swing / momentum.
+  // This works when standing upright but produces false failures when the user
+  // is seated, on an incline bench, or leaning on a machine pad (trunk baseline
+  // is naturally 25-45 deg from vertical).
+  //
+  // Detection: if the exercise is isolation category AND the form check name
+  // matches common swing-check patterns AND the check function tests trunk
+  // against a small absolute threshold, we flag it for relative-swing evaluation.
+
+  _isTrunkSwingCheck(fc, exercise) {
+    const swingNames = /swing|momentum|strict|upright.*torso|no.*lean|stable.*torso|body.*sway/i;
+    const isIsolation = exercise.category === 'isolation';
+    const nameMatches = swingNames.test(fc.name);
+    // Also check the "bad" text for swing-related language
+    const badMatches = fc.bad && /swing|momentum|lean|sway|upright/i.test(fc.bad);
+    // Only convert for isolation exercises where the check name or bad text indicates trunk sway
+    return isIsolation && (nameMatches || badMatches);
+  }
+
   // ─── Valley counting ───
   //
   // A rep = a local minimum (valley) in the tracking signal.
@@ -593,9 +615,40 @@ export class RepCounter {
       if (checks.length > 0) {
         const sampleStep = Math.max(1, Math.floor((endFrame - startFrame) / 8));
 
+        // Pre-collect trunk angles for this cycle to enable relative-swing detection.
+        // Isolation exercises (curls, laterals, raises) check trunk < 15-25 deg which
+        // fails when seated or leaning on a machine. The real question is: did the trunk
+        // MOVE during the rep (swing), not its absolute angle.
+        const cycleTrunkAngles = [];
+        for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
+          const lm = this._collectedLandmarks[i];
+          if (!lm) continue;
+          const a = extractJointAngles(lm);
+          if (a && a.trunk != null) cycleTrunkAngles.push(a.trunk);
+        }
+        const trunkBaseline = cycleTrunkAngles.length > 0
+          ? cycleTrunkAngles.reduce((s, v) => s + v, 0) / cycleTrunkAngles.length
+          : 0;
+        const trunkSwing = cycleTrunkAngles.length > 2
+          ? Math.max(...cycleTrunkAngles) - Math.min(...cycleTrunkAngles)
+          : 0;
+
         formResults = checks.map((fc) => {
           if (shouldSkipCheck(fc.name, this._userInjuries)) {
             return { name: fc.name, passed: true, quality: 1, bad: fc.bad, severity: 'minor', skipped: true };
+          }
+
+          // Detect trunk-swing checks on isolation exercises. These checks use
+          // angles.trunk < N where N <= 25. Convert to relative swing measurement
+          // so seated/incline positions don't produce false failures.
+          const isTrunkSwingCheck = this._isTrunkSwingCheck(fc, ex);
+          if (isTrunkSwingCheck) {
+            // Trunk swing < 15 deg within the cycle = good form
+            const swingLimit = 15;
+            const quality = trunkSwing <= swingLimit ? 1.0
+              : Math.max(0, 1 - (trunkSwing - swingLimit) / 20);
+            const passed = quality >= 0.70;
+            return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad, severity: fc.severity };
           }
 
           let failCount = 0, sampleCount = 0;
@@ -686,7 +739,26 @@ export class RepCounter {
     const cycleLandmarks = this._cycleLandmarks.length > 0 ? this._cycleLandmarks : [landmarks];
     const sampleStep = Math.max(1, Math.floor(cycleAngles.length / 8));
 
+    // Pre-collect trunk angles for relative-swing detection (same logic as video mode)
+    const liveTrunkAngles = [];
+    for (let i = 0; i < cycleAngles.length; i += sampleStep) {
+      const a = cycleAngles[i];
+      if (a && a.trunk != null) liveTrunkAngles.push(a.trunk);
+    }
+    const liveTrunkSwing = liveTrunkAngles.length > 2
+      ? Math.max(...liveTrunkAngles) - Math.min(...liveTrunkAngles)
+      : 0;
+
     const formResults = this._exercise.formChecks.map((fc) => {
+      // Relative trunk-swing check for isolation exercises (same as video mode)
+      if (this._isTrunkSwingCheck(fc, this._exercise)) {
+        const swingLimit = 15;
+        const quality = liveTrunkSwing <= swingLimit ? 1.0
+          : Math.max(0, 1 - (liveTrunkSwing - swingLimit) / 20);
+        const passed = quality >= 0.70;
+        return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad, severity: fc.severity };
+      }
+
       let failCount = 0;
       let sampleCount = 0;
       let qualitySum = 0;
