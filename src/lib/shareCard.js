@@ -7,6 +7,7 @@
 
 import { tModule } from './LanguageContext';
 import { gradeFromScore, getRecorderMimeType } from './utils';
+import { drawQRCodeOnCanvas } from './qrCode';
 
 function resolveText(item) {
   if (typeof item === 'string') return item;
@@ -261,43 +262,26 @@ export async function generateShareCard(result, videoEl) {
     y += 10;
   }
 
-  // Stylized green skeleton icon — brand mark
-  const cx = W / 2;
-  const skY = Math.min(y + 40, H - 280);
-  const scale = W / 500;
-  ctx.strokeStyle = ACCENT;
-  ctx.lineWidth = 6 * scale;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  // Head
-  ctx.beginPath();
-  ctx.arc(cx, skY, 18 * scale, 0, Math.PI * 2);
-  ctx.stroke();
-  // Torso
-  ctx.beginPath();
-  ctx.moveTo(cx, skY + 18 * scale);
-  ctx.lineTo(cx, skY + 80 * scale);
-  ctx.stroke();
-  // Arms (curl position)
-  ctx.beginPath();
-  ctx.moveTo(cx, skY + 25 * scale);
-  ctx.lineTo(cx - 35 * scale, skY + 50 * scale);
-  ctx.lineTo(cx - 25 * scale, skY + 20 * scale);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx, skY + 25 * scale);
-  ctx.lineTo(cx + 35 * scale, skY + 50 * scale);
-  ctx.lineTo(cx + 25 * scale, skY + 20 * scale);
-  ctx.stroke();
-  // Legs
-  ctx.beginPath();
-  ctx.moveTo(cx, skY + 80 * scale);
-  ctx.lineTo(cx - 25 * scale, skY + 130 * scale);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx, skY + 80 * scale);
-  ctx.lineTo(cx + 25 * scale, skY + 130 * scale);
-  ctx.stroke();
+  // QR code + challenge call-to-action
+  const qrSize = 160;
+  const qrY = Math.min(y + 20, H - 320);
+  const qrX = W / 2 - qrSize / 2;
+
+  // "Can you beat my form?" challenge text
+  ctx.fillStyle = TEXT;
+  ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('Can you beat my form? 💪', W / 2, qrY);
+
+  // QR code
+  drawQRCodeOnCanvas(ctx, qrX, qrY + 50, qrSize, { fg: ACCENT });
+
+  // Scan prompt
+  ctx.fillStyle = MUTED;
+  ctx.font = '22px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Scan to try WorkoutVision', W / 2, qrY + 50 + qrSize + 12);
 
   // Branding footer — gradient text effect via overlay
   const footerY = H - 90;
@@ -346,6 +330,49 @@ export async function downloadShareCard(result, videoEl) {
   a.href = dataUrl;
   a.download = `workout-${result.exerciseName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.png`;
   a.click();
+}
+
+/**
+ * Generate a challenge share text for virality.
+ */
+export function getChallengeText(result) {
+  const grade = gradeFromScore(result.formScore);
+  return `I just scored ${result.formScore}/100 (${grade}) on ${result.exerciseName} (${result.reps} reps). Can you beat my form? 💪 Try WorkoutVision`;
+}
+
+/**
+ * Share a challenge via Web Share API or clipboard fallback.
+ * Returns 'shared' | 'copied' | 'failed'.
+ */
+export async function challengeShare(result, videoEl) {
+  const text = getChallengeText(result);
+
+  // Try Web Share API with image
+  if (navigator.share) {
+    try {
+      const dataUrl = await generateShareCard(result, videoEl);
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `workout-challenge-${result.exerciseName.replace(/\s+/g, '-')}.png`, { type: 'image/png' });
+
+      const shareData = { text, title: `WorkoutVision Challenge: ${result.exerciseName}` };
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        shareData.files = [file];
+      }
+      await navigator.share(shareData);
+      return 'shared';
+    } catch (e) {
+      if (e.name === 'AbortError') return 'failed';
+      // Fall through to clipboard
+    }
+  }
+
+  // Clipboard fallback
+  try {
+    await navigator.clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
 }
 
 /**

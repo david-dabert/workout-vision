@@ -1,0 +1,16 @@
+{
+  "name": "@workoutvision/core",
+  "version": "0.1.0",
+  "description": "Core pose analysis and form scoring engine for WorkoutVision",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./exercises": "./src/exercises.js",
+    "./analysis": "./src/analysis.js"
+  },
+  "peerDependencies": {
+    "@mediapipe/tasks-vision": ">=0.10.0"
+  },
+  "license": "MIT"
+}

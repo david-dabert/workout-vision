@@ -10,6 +10,7 @@ const profileStore = localforage.createInstance({ name: 'workoutVision', storeNa
 const workoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' });
 const medicalStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
 const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
+const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
 
 // User profile
 export async function saveProfile(profile) {
@@ -191,4 +192,13 @@ function getStrengthBaselines(weightKg, age, sex, ethnicity) {
     overheadPress: Math.round(weightKg * baselines.overheadPress * ageMultiplier),
     note: 'Untrained baseline estimates (kg). Actual capacity varies by training history.',
   };
+}
+
+// Milestones
+export async function getMilestones() {
+  return (await milestoneStore.getItem('achieved')) || {};
+}
+
+export async function saveMilestones(milestones) {
+  await milestoneStore.setItem('achieved', milestones);
 }

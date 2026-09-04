@@ -581,10 +581,13 @@ export class RepCounter {
 
         formResults = checks.map((fc) => {
           if (shouldSkipCheck(fc.name, this._userInjuries)) {
-            return { name: fc.name, passed: true, bad: fc.bad, severity: 'minor', skipped: true };
+            return { name: fc.name, passed: true, quality: 1, bad: fc.bad, severity: 'minor', skipped: true };
           }
 
           let failCount = 0, sampleCount = 0;
+          let qualitySum = 0;
+          const hasQualityFn = typeof fc.quality === 'function';
+
           for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
             const landmarks = this._collectedLandmarks[i];
             if (!landmarks) continue;
@@ -592,29 +595,37 @@ export class RepCounter {
             if (!angles) continue;
             sampleCount++;
             if (!fc.check(angles, landmarks)) failCount++;
+            if (hasQualityFn) {
+              qualitySum += fc.quality(angles, landmarks);
+            }
           }
 
           const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
-          let passed = failRate < 0.30;
+          // Continuous quality: use explicit quality function if available, else derive from failRate
+          const quality = sampleCount > 0
+            ? (hasQualityFn ? qualitySum / sampleCount : 1 - failRate)
+            : 0;
+          let passed = quality >= 0.70;
 
           if (!passed && this._anthropometricNormalizer.isCalibrated) {
             const bodyType = this._anthropometricNormalizer.getBodyType();
             if (bodyType) {
               if ((fc.name === 'Depth' || fc.name === 'depth') && bodyType.femurType === 'long') {
-                passed = failRate < 0.50;
+                passed = quality >= 0.50;
               }
               if ((fc.name === 'Trunk angle' || fc.name === 'trunk_angle') && bodyType.torsoType === 'short') {
-                passed = failRate < 0.50;
+                passed = quality >= 0.50;
               }
             }
           }
 
-          return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
+          return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad, severity: fc.severity };
         });
 
-        const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
-        const failedMinor = formResults.filter(f => !f.passed && f.severity !== 'major').length;
-        score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
+        // Weighted quality score: major checks count 2x, minor 1x
+        const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
+        const weightedQuality = formResults.reduce((sum, f) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
+        score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : 100;
         for (const f of formResults) {
           if (!f.passed) issues.push(f.bad);
         }
@@ -655,12 +666,15 @@ export class RepCounter {
     this._reps++;
     const formResults = this._exercise.formChecks.map((fc) => {
       const passed = fc.check(angles, landmarks);
-      return { name: fc.name, passed, bad: fc.bad, severity: fc.severity };
+      const quality = typeof fc.quality === 'function'
+        ? Math.round(fc.quality(angles, landmarks) * 100) / 100
+        : (passed ? 1 : 0);
+      return { name: fc.name, passed, quality, bad: fc.bad, severity: fc.severity };
     });
 
-    const failedMajor = formResults.filter(f => !f.passed && f.severity === 'major').length;
-    const failedMinor = formResults.filter(f => !f.passed && f.severity !== 'major').length;
-    const score = Math.max(0, 100 - failedMajor * 15 - failedMinor * 5);
+    const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
+    const weightedQuality = formResults.reduce((sum, f) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
+    const score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : 100;
     const issues = formResults.filter(f => !f.passed).map(f => f.bad);
 
     this._repHistory.push({

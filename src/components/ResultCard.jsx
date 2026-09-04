@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { EXERCISES, getExerciseIllustration } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
-import { shareCard } from '../lib/shareCard';
+import { shareCard, challengeShare } from '../lib/shareCard';
 import { useT } from '../lib/LanguageContext';
 import { gradeFromScore, gradeClass } from '../lib/utils';
 
@@ -71,7 +72,7 @@ export default function ResultCard({ result, onReplay }) {
   const { t, tExercise, tFormCheck } = useT();
   const {
     fileName, exerciseName, reps, duration,
-    formScore, bioAnalysis, report, repHistory, progression,
+    formScore, bioAnalysis, report, repHistory, progression, baselineComparison,
   } = result;
 
   const grade = gradeFromScore(formScore);
@@ -82,6 +83,10 @@ export default function ResultCard({ result, onReplay }) {
 
   const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis, t);
   const progressionNote = generateProgressionNote(progression, t);
+
+  const [showDetails, setShowDetails] = useState(false);
+  const [showDeepData, setShowDeepData] = useState(false);
+  const [challengeStatus, setChallengeStatus] = useState(null);
 
   return (
     <div className="card result-card" style={{ marginTop: 14 }}>
@@ -144,75 +149,6 @@ export default function ResultCard({ result, onReplay }) {
         </div>
       </div>
 
-      {result.diagnostics?.progression && result.diagnostics.progression.score > 0 && (() => {
-        const prog = result.diagnostics.progression;
-        const gradeColor = prog.score >= 750 ? 'var(--accent)' : prog.score >= 500 ? 'var(--yellow)' : 'var(--red)';
-        return (
-          <div style={{ marginTop: 14, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0,245,212,0.06), rgba(0,245,212,0.02))', borderRadius: 10, border: '1px solid rgba(0,245,212,0.15)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>Progression Score</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: gradeColor }}>{prog.score}</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: gradeColor }}>{prog.grade.label}</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{prog.grade.title}</span>
-              <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>Top {100 - prog.percentile}%</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
-              {[
-                { label: 'Form', val: prog.components.form, max: 250 },
-                { label: 'Consistency', val: prog.components.consistency, max: 200 },
-                { label: 'Tempo', val: prog.components.tempo, max: 150 },
-                { label: 'Power', val: prog.components.power, max: 150 },
-              ].map(c => (
-                <div key={c.label} style={{ textAlign: 'center' }}>
-                  <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
-                    <div style={{ width: `${(c.val / c.max) * 100}%`, height: '100%', borderRadius: 2, background: gradeColor, transition: 'width 0.5s' }} />
-                  </div>
-                  <span style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>{c.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
-
-      {result.diagnostics?.velocity && (() => {
-        const vel = result.diagnostics.velocity;
-        return (
-          <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
-            {vel.fatigue && (
-              <div className="stat-card">
-                <span className="stat-card-label">FATIGUE</span>
-                <span className="stat-card-value" style={{ color: vel.fatigue.detected ? 'var(--red)' : 'var(--accent)' }}>
-                  {vel.fatigue.detected ? `${Math.round(vel.fatigue.decay * 100)}%` : 'OK'}
-                </span>
-              </div>
-            )}
-            {vel.power && vel.power.peakW > 0 && (
-              <div className="stat-card">
-                <span className="stat-card-label">PEAK POWER</span>
-                <span className="stat-card-value">{vel.power.peakW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
-              </div>
-            )}
-            {vel.power && vel.power.meanW > 0 && (
-              <div className="stat-card">
-                <span className="stat-card-label">AVG POWER</span>
-                <span className="stat-card-value">{vel.power.meanW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
-              </div>
-            )}
-            {vel.smoothness != null && (
-              <div className="stat-card">
-                <span className="stat-card-label">SMOOTHNESS</span>
-                <span className="stat-card-value">{Math.round(vel.smoothness * 100)}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>%</span></span>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
       {coachingInsight && (
         <div className="coaching-card">
           <div className="coaching-icon">AI</div>
@@ -227,10 +163,67 @@ export default function ResultCard({ result, onReplay }) {
         </div>
       )}
 
+      {baselineComparison && (
+        <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span className="text-xs text-muted">Personal Baseline ({baselineComparison.sessionsTracked} sessions)</span>
+            {baselineComparison.overallForm.isPersonalBest && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--bio-cyan, #22d3ee)', textTransform: 'uppercase', letterSpacing: 1 }}>New PB!</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
+            <span>Avg: <strong>{baselineComparison.overallForm.personalMean}</strong></span>
+            <span>Best: <strong>{baselineComparison.overallForm.personalBest}</strong></span>
+            <span style={{ color: baselineComparison.overallForm.deviation >= 0 ? 'var(--bio-green, #4ade80)' : 'var(--danger, #ef4444)' }}>
+              {baselineComparison.overallForm.deviation >= 0 ? '+' : ''}{baselineComparison.overallForm.deviation} vs avg
+            </span>
+          </div>
+          {baselineComparison.improvingChecks.length > 0 && (
+            <p className="text-xs" style={{ margin: '6px 0 0', color: 'var(--bio-green, #4ade80)' }}>Improving: {baselineComparison.improvingChecks.join(', ')}</p>
+          )}
+          {baselineComparison.decliningChecks.length > 0 && (
+            <p className="text-xs" style={{ margin: '4px 0 0', color: 'var(--yellow, #facc15)' }}>Watch: {baselineComparison.decliningChecks.join(', ')}</p>
+          )}
+        </div>
+      )}
+
+      {/* Layer 2: Details toggle */}
+      <button
+        className="btn btn-ghost btn-sm"
+        style={{ width: '100%', marginTop: 14, padding: '8px 0', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        onClick={() => setShowDetails(d => !d)}
+      >
+        {showDetails ? 'Hide Details' : 'Show Details'}
+        <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
+      </button>
+
+      {showDetails && (<>
       {report?.summary && (
         <p className="text-sm" style={{ marginTop: 12, marginBottom: 6, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
           {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
         </p>
+      )}
+
+      {repHistory && repHistory.length > 0 && (
+        <div className="rep-quality" style={{ marginTop: 14 }}>
+          <h4>{t('per_rep_quality')}</h4>
+          <div className="rep-bars">
+            {repHistory.map((r, i) => {
+              const score = r.score || 0;
+              return (
+                <div key={i} className="rep-bar-col">
+                  <div className="rep-bar-wrap">
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(score, 5)}%`,
+                      background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
+                    }} />
+                  </div>
+                  <span className="rep-num">{i + 1}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {bioAnalysis?.velocity?.perRep && bioAnalysis.velocity.perRep.length > 0 && (
@@ -351,6 +344,41 @@ export default function ResultCard({ result, onReplay }) {
         </div>
       )}
 
+      {/* Eccentric tempo per rep */}
+      {repHistory && repHistory.length > 0 && repHistory.some(r => r.velocity?.eccentricTime > 0) && (
+        <div style={{ marginTop: 14 }}>
+          <h4>{t('eccentric_tempo') || 'Eccentric Tempo'}</h4>
+          <div className="rep-bars">
+            {repHistory.map((rep, i) => {
+              const vel = rep.velocity;
+              if (!vel) return null;
+              const ecc = vel.eccentricTime || 0;
+              const con = vel.concentricTime || 0;
+              const ratio = vel.tempoRatio || 0;
+              const maxEcc = Math.max(...repHistory.map(r => r.velocity?.eccentricTime || 0), 0.1);
+              const pct = (ecc / maxEcc) * 100;
+              // Target: eccentric should be 2-4s for hypertrophy (Schoenfeld 2015)
+              const isGood = ecc >= 2.0 && ecc <= 4.0;
+              const isSlow = ecc > 4.0;
+              return (
+                <div key={i} className="rep-bar-col">
+                  <div className="rep-bar-wrap">
+                    <div className="rep-bar" style={{
+                      height: `${Math.max(pct, 5)}%`,
+                      background: isGood ? 'var(--accent)' : isSlow ? 'var(--yellow)' : 'var(--danger, #ef4444)',
+                    }} />
+                  </div>
+                  <span className="rep-num" title={`Ecc: ${ecc}s / Con: ${con}s / Ratio: ${ratio}`}>{i + 1}</span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted" style={{ marginTop: 4 }}>
+            {t('eccentric_tempo_target') || 'Target: 2-4s eccentric for hypertrophy (green = in range)'}
+          </p>
+        </div>
+      )}
+
       {bioAnalysis?.rangeOfMotion && (
         <div style={{ marginTop: 14 }}>
           <h4>{t('range_of_motion')}</h4>
@@ -409,6 +437,87 @@ export default function ResultCard({ result, onReplay }) {
           )}
         </div>
       )}
+      </>)}
+
+      {/* Layer 3: Deep Data toggle */}
+      <button
+        className="btn btn-ghost btn-sm"
+        style={{ width: '100%', marginTop: 10, padding: '8px 0', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        onClick={() => setShowDeepData(d => !d)}
+      >
+        {showDeepData ? 'Hide Deep Data' : 'Show Deep Data'}
+        <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showDeepData ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
+      </button>
+
+      {showDeepData && (<>
+      {result.diagnostics?.progression && result.diagnostics.progression.score > 0 && (() => {
+        const prog = result.diagnostics.progression;
+        const gradeColor = prog.score >= 750 ? 'var(--accent)' : prog.score >= 500 ? 'var(--yellow)' : 'var(--red)';
+        return (
+          <div style={{ marginTop: 14, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0,245,212,0.06), rgba(0,245,212,0.02))', borderRadius: 10, border: '1px solid rgba(0,245,212,0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>Progression Score</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: gradeColor }}>{prog.score}</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: gradeColor }}>{prog.grade.label}</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{prog.grade.title}</span>
+              <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>Top {100 - prog.percentile}%</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
+              {[
+                { label: 'Form', val: prog.components.form, max: 250 },
+                { label: 'Consistency', val: prog.components.consistency, max: 200 },
+                { label: 'Tempo', val: prog.components.tempo, max: 150 },
+                { label: 'Power', val: prog.components.power, max: 150 },
+              ].map(c => (
+                <div key={c.label} style={{ textAlign: 'center' }}>
+                  <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
+                    <div style={{ width: `${(c.val / c.max) * 100}%`, height: '100%', borderRadius: 2, background: gradeColor, transition: 'width 0.5s' }} />
+                  </div>
+                  <span style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>{c.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {result.diagnostics?.velocity && (() => {
+        const vel = result.diagnostics.velocity;
+        return (
+          <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
+            {vel.fatigue && (
+              <div className="stat-card">
+                <span className="stat-card-label">FATIGUE</span>
+                <span className="stat-card-value" style={{ color: vel.fatigue.detected ? 'var(--red)' : 'var(--accent)' }}>
+                  {vel.fatigue.detected ? `${Math.round(vel.fatigue.decay * 100)}%` : 'OK'}
+                </span>
+              </div>
+            )}
+            {vel.power && vel.power.peakW > 0 && (
+              <div className="stat-card">
+                <span className="stat-card-label">PEAK POWER</span>
+                <span className="stat-card-value">{vel.power.peakW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
+              </div>
+            )}
+            {vel.power && vel.power.meanW > 0 && (
+              <div className="stat-card">
+                <span className="stat-card-label">AVG POWER</span>
+                <span className="stat-card-value">{vel.power.meanW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
+              </div>
+            )}
+            {vel.smoothness != null && (
+              <div className="stat-card">
+                <span className="stat-card-label">SMOOTHNESS</span>
+                <span className="stat-card-value">{Math.round(vel.smoothness * 100)}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>%</span></span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {bioAnalysis?.fatigue && (
         <div style={{ marginTop: 14 }}>
@@ -500,28 +609,7 @@ export default function ResultCard({ result, onReplay }) {
           })}
         </div>
       )}
-
-      {repHistory && repHistory.length > 0 && (
-        <div className="rep-quality" style={{ marginTop: 14 }}>
-          <h4>{t('per_rep_quality')}</h4>
-          <div className="rep-bars">
-            {repHistory.map((r, i) => {
-              const score = r.score || 0;
-              return (
-                <div key={i} className="rep-bar-col">
-                  <div className="rep-bar-wrap">
-                    <div className="rep-bar" style={{
-                      height: `${Math.max(score, 5)}%`,
-                      background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
-                    }} />
-                  </div>
-                  <span className="rep-num">{i + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      </>)}
 
       {result.videoUrl && result.frames && (
         <button
@@ -532,13 +620,29 @@ export default function ResultCard({ result, onReplay }) {
           {t('watch_overlay')}
         </button>
       )}
-      <button
-        className="btn btn-ghost"
-        style={{ width: '100%', marginTop: 8, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
-        onClick={() => shareCard(result)}
-      >
-        {t('share_card')}
-      </button>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <button
+          className="btn btn-ghost"
+          style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
+          onClick={() => shareCard(result)}
+        >
+          {t('share_card')}
+        </button>
+        <button
+          className="btn btn-primary"
+          style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 700,
+            background: 'linear-gradient(135deg, #00f5d4, #00d4ff)', border: 'none', color: '#000' }}
+          onClick={async () => {
+            const outcome = await challengeShare(result);
+            if (outcome === 'copied') {
+              setChallengeStatus('copied');
+              setTimeout(() => setChallengeStatus(null), 2000);
+            }
+          }}
+        >
+          {challengeStatus === 'copied' ? (t('copied') || 'Copied!') : '💪 Challenge'}
+        </button>
+      </div>
     </div>
   );
 }

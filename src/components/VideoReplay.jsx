@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { drawPose } from '../lib/poseAnalysis';
+import { gradeClass } from '../lib/utils';
 import { useT } from '../lib/LanguageContext';
 import { AudioFeedback } from '../lib/AudioFeedback';
 
@@ -89,7 +90,7 @@ function canExportVideo() {
  * Replays a video with skeleton overlay drawn from stored landmark frames.
  * HD download via one-tap auto-record at original video resolution.
  */
-export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, onClose, audioEnabled }) {
+export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, onClose, audioEnabled, duration: durationProp }) {
   const { t, tExercise } = useT();
   // Translate exercise name for overlay display
   const displayExerciseName = exerciseKey ? tExercise(exerciseKey, exerciseName) : exerciseName;
@@ -107,6 +108,10 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(durationProp || 0);
+  const [hoverRep, setHoverRep] = useState(null); // { repIndex, score, left }
+  const scrubberRef = useRef(null);
+  const isDraggingRef = useRef(false);
 
   // Audio feedback: track which reps have already triggered sound
   const audioRef = useRef(null);
@@ -124,6 +129,82 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       }
     };
   }, [audioEnabled]);
+
+  // Seek video to a time derived from scrubber interaction
+  const seekTo = useCallback((clientX) => {
+    const video = videoRef.current;
+    const bar = scrubberRef.current;
+    if (!video || !bar) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const dur = video.duration || videoDuration;
+    if (!dur) return;
+    video.currentTime = ratio * dur;
+    setProgress(ratio * 100);
+    // Redraw the canvas at the new position
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = ctxRef.current || canvas.getContext('2d');
+      ctxRef.current = ctx;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      drawOverlay(ctx, canvas.width, canvas.height, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
+    }
+  }, [frames, displayExerciseName, reps, formScore, repHistory, videoDuration]);
+
+  const handleScrubberDown = useCallback((e) => {
+    if (exporting) return;
+    isDraggingRef.current = true;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    seekTo(clientX);
+  }, [seekTo, exporting]);
+
+  const handleScrubberMove = useCallback((e) => {
+    const bar = scrubberRef.current;
+    if (!bar) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    if (isDraggingRef.current) {
+      seekTo(clientX);
+    }
+    // Hover rep detection
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const video = videoRef.current;
+    const dur = video ? (video.duration || videoDuration) : videoDuration;
+    if (!dur || !repHistory || repHistory.length === 0) { setHoverRep(null); return; }
+    const hoverTime = ratio * dur;
+    const idx = repHistory.findIndex(r => hoverTime >= r.startTime && hoverTime <= r.endTime);
+    if (idx >= 0) {
+      setHoverRep({ repIndex: idx, score: repHistory[idx].score, left: ((clientX - rect.left) / rect.width) * 100 });
+    } else {
+      setHoverRep(null);
+    }
+  }, [seekTo, repHistory, videoDuration]);
+
+  const handleScrubberUp = useCallback(() => {
+    isDraggingRef.current = false;
+  }, []);
+
+  const handleScrubberLeave = useCallback(() => {
+    isDraggingRef.current = false;
+    setHoverRep(null);
+  }, []);
+
+  // Attach window-level mouseup/touchend so dragging outside the bar still releases
+  useEffect(() => {
+    const up = () => { isDraggingRef.current = false; };
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchend', up);
+    return () => { window.removeEventListener('mouseup', up); window.removeEventListener('touchend', up); };
+  }, []);
+
+  // Helper: get color for a rep score
+  const repColor = (score) => {
+    const gc = gradeClass(score);
+    if (gc === 'grade-a') return 'var(--bio-cyan)';
+    if (gc === 'grade-b') return 'var(--blue)';
+    if (gc === 'grade-c') return 'var(--yellow)';
+    return 'var(--red)';
+  };
 
   // Detect iOS for resolution caps
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -189,6 +270,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
     video.load();
 
     const onLoaded = () => {
+      if (video.duration && isFinite(video.duration)) setVideoDuration(video.duration);
       const canvas = canvasRef.current;
       if (canvas && video.videoWidth > 0) {
         // Playback canvas: cap at 480px on iOS (memory), 720px on desktop
@@ -402,9 +484,56 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
             <span>&#9654;</span>
           </div>
         )}
-        <div className="replay-progress">
-          <div className="replay-progress-fill" style={{ width: `${progress}%` }} />
+      </div>
+
+      {/* Timeline scrubber with per-rep form overlay */}
+      <div
+        className="timeline-scrubber"
+        ref={scrubberRef}
+        onMouseDown={handleScrubberDown}
+        onMouseMove={handleScrubberMove}
+        onMouseUp={handleScrubberUp}
+        onMouseLeave={handleScrubberLeave}
+        onTouchStart={handleScrubberDown}
+        onTouchMove={handleScrubberMove}
+        onTouchEnd={handleScrubberUp}
+      >
+        {/* Background track */}
+        <div className="timeline-track">
+          {/* Rep segments */}
+          {repHistory && videoDuration > 0 && repHistory.map((rep, i) => {
+            const left = (rep.startTime / videoDuration) * 100;
+            const width = ((rep.endTime - rep.startTime) / videoDuration) * 100;
+            return (
+              <div
+                key={i}
+                className="timeline-rep-segment"
+                style={{
+                  left: `${left}%`,
+                  width: `${width}%`,
+                  background: repColor(rep.score),
+                  opacity: 0.5,
+                }}
+              />
+            );
+          })}
+          {/* Progress fill */}
+          <div className="timeline-progress" style={{ width: `${progress}%` }} />
         </div>
+        {/* Draggable thumb */}
+        <div
+          className="timeline-thumb"
+          style={{ left: `${progress}%` }}
+        />
+        {/* Hover tooltip */}
+        {hoverRep !== null && (
+          <div
+            className="timeline-tooltip"
+            style={{ left: `${hoverRep.left}%` }}
+          >
+            Rep {hoverRep.repIndex + 1} &middot; {Math.round(hoverRep.score)}%
+          </div>
+        )}
       </div>
 
       {exporting && (

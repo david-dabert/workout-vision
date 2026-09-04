@@ -6,10 +6,12 @@ import { useProfile } from '../lib/ProfileContext';
 import MuscleMap from './MuscleMap';
 import { useT } from '../lib/LanguageContext';
 import { gradeFromScore, translateMuscle } from '../lib/utils';
+import VisionScoreHero from './VisionScoreHero';
 
 export default function Dashboard({ profile, modelStatus, onNavigate }) {
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
+  const [allWorkouts, setAllWorkouts] = useState([]);
 
   const statusDot = modelStatus === 'ready' ? 'ready'
     : modelStatus === 'error' ? 'err' : 'pulse';
@@ -17,7 +19,10 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
     : modelStatus === 'error' ? t('engine_failed') : t('loading_ai');
 
   useEffect(() => {
-    getAllWorkouts().then(all => setRecentWorkouts(all.slice(0, 10)));
+    getAllWorkouts().then(all => {
+      setAllWorkouts(all);
+      setRecentWorkouts(all.slice(0, 10));
+    });
   }, []);
 
   const stats = useMemo(() => {
@@ -70,6 +75,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           </div>
         </div>
       </div>
+
+      {/* ── VisionScore hero metric ── */}
+      <VisionScoreHero workouts={allWorkouts} />
 
       {/* ── Primary action: Analyze Video ── */}
       <div className="action-cards">

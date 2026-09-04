@@ -272,6 +272,22 @@ const translations = {
   'loading_workouts': { en: 'Loading workouts...', fr: 'Chargement des entraînements...' },
   'week_of': { en: 'Week of', fr: 'Semaine du' },
 
+  // ─── Journey / Milestones ───
+  'your_journey': { en: 'Your Journey', fr: 'Votre parcours' },
+  'milestones': { en: 'Milestones', fr: 'Jalons' },
+  'milestone_first_workout': { en: 'First workout analyzed', fr: 'Premier entraînement analysé' },
+  'milestone_10_workouts': { en: '10 workouts completed', fr: '10 entraînements complétés' },
+  'milestone_25_workouts': { en: '25 workouts completed', fr: '25 entraînements complétés' },
+  'milestone_50_workouts': { en: '50 workouts completed', fr: '50 entraînements complétés' },
+  'milestone_first_a_grade': { en: 'First A-grade form score', fr: 'Premier score de forme A' },
+  'milestone_5_day_streak': { en: '5-day streak', fr: 'Série de 5 jours' },
+  'milestone_form_improved': { en: 'Form improved 10+ pts on', fr: 'Forme améliorée de 10+ pts sur' },
+  'exercise_trends': { en: 'Exercise Trends', fr: 'Tendances par exercice' },
+  'top_exercise_form': { en: 'Top exercise form trend', fr: 'Tendance forme exercice principal' },
+  'improving': { en: 'Improving', fr: 'En hausse' },
+  'declining': { en: 'Declining', fr: 'En baisse' },
+  'stable': { en: 'Stable', fr: 'Stable' },
+
   // ─── Rest Timer ───
   'rest_timer_title': { en: 'Rest Timer', fr: 'Minuteur de repos' },
   'rests': { en: 'RESTS', fr: 'REPOS' },
@@ -638,6 +654,23 @@ const translations = {
   'muscle': { en: 'Muscle', fr: 'Muscle' },
   'footer_on_device': { en: '100% on-device analysis', fr: 'Analyse 100% sur l\'appareil' },
   'footer_privacy': { en: 'No data leaves your phone', fr: 'Aucune donnée ne quitte votre téléphone' },
+
+  // ─── Cycle Tracking (Profile) ───
+  'cycle_tracking': { en: 'Cycle Tracking', fr: 'Suivi du cycle' },
+  'cycle_tracking_desc': { en: 'Optional. Adapts training suggestions to menstrual cycle phase (Stacy Sims). Everything stays on your device.', fr: 'Optionnel. Adapte les suggestions selon la phase du cycle menstruel (Stacy Sims). Tout reste sur votre appareil.' },
+  'enable_cycle_tracking': { en: 'Enable cycle tracking', fr: 'Activer le suivi du cycle' },
+  'last_period_start': { en: 'Last period start date', fr: 'Date de début des dernières règles' },
+  'cycle_length': { en: 'Cycle length (days)', fr: 'Durée du cycle (jours)' },
+  'cycle_phase_menstrual': { en: 'Menstrual phase (days 1-5)', fr: 'Phase menstruelle (jours 1-5)' },
+  'cycle_phase_follicular': { en: 'Follicular phase (days 6-14)', fr: 'Phase folliculaire (jours 6-14)' },
+  'cycle_phase_ovulatory': { en: 'Ovulatory phase (days 14-16)', fr: 'Phase ovulatoire (jours 14-16)' },
+  'cycle_phase_luteal': { en: 'Luteal phase (days 17+)', fr: 'Phase lutéale (jours 17+)' },
+  'cycle_tip_menstrual': { en: 'Recovery phase — lighter loads recommended', fr: 'Phase de récupération — charges légères recommandées' },
+  'cycle_tip_follicular': { en: 'Peak performance window — push for PRs', fr: 'Fenêtre de performance maximale — visez vos records' },
+  'cycle_tip_ovulatory': { en: 'High energy — great for compound lifts', fr: 'Haute énergie — idéal pour les mouvements polyarticulaires' },
+  'cycle_tip_luteal': { en: 'Maintenance phase — focus on technique', fr: 'Phase de maintien — concentrez-vous sur la technique' },
+  'cycle_current_phase': { en: 'Current phase', fr: 'Phase actuelle' },
+  'cycle_day': { en: 'Day', fr: 'Jour' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───

@@ -1,15 +1,84 @@
 import { useState, useEffect } from 'react';
-import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check, Play, ClipboardCheck, SkipForward } from 'lucide-react';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_LABELS } from '../lib/injuries';
+import { getExerciseIllustration } from '../lib/exercises';
+import ResultCard from './ResultCard';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
+
+const DEMO_RESULT = {
+  fileName: 'demo_squat.mp4',
+  exerciseName: 'Barbell Back Squat',
+  exercise: 'squat',
+  reps: 8,
+  duration: 32,
+  formScore: 78,
+  repHistory: [
+    { score: 82, issues: [] },
+    { score: 85, issues: [] },
+    { score: 90, issues: [] },
+    { score: 80, issues: ['knee_cave'] },
+    { score: 78, issues: ['knee_cave'] },
+    { score: 74, issues: ['forward_lean', 'knee_cave'] },
+    { score: 70, issues: ['forward_lean'] },
+    { score: 65, issues: ['forward_lean', 'depth_short'] },
+  ],
+  bioAnalysis: {
+    movementQuality: 76,
+    timeUnderTension: {
+      eccentric: 2.1,
+      concentric: 1.4,
+      total: 28.0,
+      perRep: [
+        { eccentric: 2.2, concentric: 1.3 },
+        { eccentric: 2.3, concentric: 1.3 },
+        { eccentric: 2.1, concentric: 1.4 },
+        { eccentric: 2.0, concentric: 1.5 },
+        { eccentric: 2.0, concentric: 1.5 },
+        { eccentric: 1.9, concentric: 1.6 },
+        { eccentric: 1.8, concentric: 1.7 },
+        { eccentric: 1.7, concentric: 1.8 },
+      ],
+    },
+    velocity: {
+      perRep: [0.52, 0.50, 0.48, 0.46, 0.44, 0.41, 0.38, 0.35],
+      trend: 'declining',
+    },
+    fatigue: {
+      index: 32,
+      velocityDropoff: 33,
+      curve: [100, 96, 92, 88, 85, 79, 73, 67],
+    },
+    rangeOfMotion: {
+      avgDegrees: 112,
+      consistency: 84,
+      perRep: [118, 120, 119, 114, 112, 108, 105, 100],
+    },
+    asymmetry: {
+      score: 8,
+    },
+  },
+  report: {
+    summary: 'Good set overall. Form held well through rep 5, then fatigue caused a forward lean and slightly shortened depth on the last 3 reps. Focus on bracing through the bottom position as you tire.',
+    highlights: [
+      'Strong first 3 reps with full depth and controlled tempo',
+      'Consistent eccentric tempo in the 2-second range',
+    ],
+    improvements: [
+      'Brace harder through reps 6-8 to prevent forward lean',
+      'Maintain depth on final reps — consider reducing weight by 5%',
+      'Try a pause squat at the bottom to build confidence in the hole',
+    ],
+  },
+};
 
 const INJURY_AREAS = ['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'];
 
 export default function Onboarding({ onComplete }) {
   const { t } = useT();
   const [step, setStep] = useState(1);
+  const [showDemo, setShowDemo] = useState(false);
   const [data, setData] = useState({
     name: '',
     age: '',
@@ -25,7 +94,7 @@ export default function Onboarding({ onComplete }) {
   const update = (key, value) => setData(prev => ({ ...prev, [key]: value }));
 
   const canAdvance = () => {
-    if (step === 2) {
+    if (step === 3) {
       return data.name.trim() && data.age && data.weight && data.height;
     }
     return true;
@@ -51,6 +120,32 @@ export default function Onboarding({ onComplete }) {
     update('injuries', next);
   };
 
+  if (showDemo) {
+    return (
+      <div className="onboarding">
+        <div className="onboarding-content" style={{ paddingBottom: 80 }}>
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <h2 style={{ margin: '0 0 4px' }}>Demo Analysis</h2>
+            <p className="text-muted text-sm" style={{ margin: 0 }}>
+              This is what your analysis will look like
+            </p>
+          </div>
+          <ResultCard result={DEMO_RESULT} />
+        </div>
+        <div className="onboarding-actions">
+          <div style={{ flex: 1 }} />
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => setShowDemo(false)}
+          >
+            Continue Setup
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="onboarding">
       {/* Progress dots */}
@@ -64,42 +159,50 @@ export default function Onboarding({ onComplete }) {
       </div>
 
       <div className="onboarding-content">
-        {step === 1 && <StepWelcome />}
-        {step === 2 && <StepBasicInfo data={data} update={update} />}
-        {step === 3 && <StepFitnessInfo data={data} update={update} toggleInjury={toggleInjury} />}
-        {step === 4 && <StepSummary data={data} />}
+        {step === 1 && <StepWelcome onTryDemo={() => setShowDemo(true)} />}
+        {step === 2 && (
+          <StepMovementAssessment
+            onStartAssessment={() => { update('baselineAssessmentPending', true); next(); }}
+            onSkip={() => next()}
+          />
+        )}
+        {step === 3 && <StepBasicInfo data={data} update={update} />}
+        {step === 4 && <StepFitnessInfo data={data} update={update} toggleInjury={toggleInjury} />}
+        {step === 5 && <StepSummary data={data} />}
       </div>
 
-      <div className="onboarding-actions">
-        {step > 1 && (
-          <button className="btn btn-ghost" onClick={back}>
-            <ChevronLeft size={16} />
-            {t('back')}
-          </button>
-        )}
-        <div style={{ flex: 1 }} />
-        {step < TOTAL_STEPS ? (
-          <button
-            className="btn btn-primary btn-lg"
-            onClick={next}
-            disabled={!canAdvance()}
-          >
-            {step === 1 ? t('get_started') : t('next')}
-            <ChevronRight size={16} />
-          </button>
-        ) : (
-          <button className="btn btn-primary btn-lg" onClick={finish}>
-            {t('finish')}
-            <Check size={16} />
-          </button>
-        )}
-      </div>
+      {step !== 2 && (
+        <div className="onboarding-actions">
+          {step > 1 && (
+            <button className="btn btn-ghost" onClick={back}>
+              <ChevronLeft size={16} />
+              {t('back')}
+            </button>
+          )}
+          <div style={{ flex: 1 }} />
+          {step < TOTAL_STEPS ? (
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={next}
+              disabled={!canAdvance()}
+            >
+              {step === 1 ? t('get_started') : t('next')}
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button className="btn btn-primary btn-lg" onClick={finish}>
+              {t('finish')}
+              <Check size={16} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 /* ── Step 1: Welcome ── */
-function StepWelcome() {
+function StepWelcome({ onTryDemo }) {
   const { t } = useT();
   return (
     <div className="onboarding-step text-center">
@@ -124,11 +227,112 @@ function StepWelcome() {
           <span>{t('onb_feature_progress')}</span>
         </div>
       </div>
+      <button
+        className="btn btn-ghost"
+        onClick={onTryDemo}
+        style={{
+          marginTop: 16,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          color: 'var(--accent)',
+          border: '1px solid rgba(0,245,212,0.25)',
+        }}
+      >
+        <Play size={14} />
+        Try Demo
+      </button>
     </div>
   );
 }
 
-/* ── Step 2: Basic Info ── */
+/* ── Step 2: Movement Assessment ── */
+const BASELINE_EXERCISES = [
+  {
+    key: 'squat',
+    name: 'Squat',
+    description: 'Assesses lower body mobility, hip hinge depth, and knee tracking under bodyweight.',
+  },
+  {
+    key: 'pushup',
+    name: 'Push-up',
+    description: 'Assesses upper body pressing strength, core stability, and scapular control.',
+  },
+  {
+    key: 'plank',
+    name: 'Plank',
+    description: 'Assesses core endurance, spinal alignment, and shoulder girdle stability.',
+  },
+];
+
+function StepMovementAssessment({ onStartAssessment, onSkip }) {
+  return (
+    <div className="onboarding-step">
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
+        <div className="onboarding-icon-large" style={{ marginBottom: 8 }}>
+          <ClipboardCheck size={40} />
+        </div>
+        <h2 style={{ margin: '0 0 4px' }}>Movement Assessment</h2>
+        <p className="text-muted text-sm" style={{ margin: 0 }}>
+          Record three baseline exercises so the app can track your progress from day one.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+        {BASELINE_EXERCISES.map((ex) => {
+          const illustration = getExerciseIllustration(ex.key, 1);
+          return (
+            <div key={ex.key} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
+              {illustration && (
+                <img
+                  src={illustration}
+                  alt={ex.name}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 8,
+                    objectFit: 'cover',
+                    background: 'rgba(255,255,255,0.04)',
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+              <div style={{ minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem' }}>{ex.name}</strong>
+                <p className="text-muted text-sm" style={{ margin: '2px 0 0', lineHeight: 1.35 }}>
+                  {ex.description}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <button
+          className="btn btn-primary btn-lg"
+          onClick={onStartAssessment}
+          style={{ width: '100%', justifyContent: 'center' }}
+        >
+          <ClipboardCheck size={16} />
+          Start Assessment
+        </button>
+        <button
+          className="btn btn-ghost"
+          onClick={onSkip}
+          style={{ width: '100%', justifyContent: 'center', fontSize: '0.82rem' }}
+        >
+          <SkipForward size={14} />
+          Skip for now
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Step 3: Basic Info ── */
 function StepBasicInfo({ data, update }) {
   const { t } = useT();
   return (
@@ -187,7 +391,7 @@ function StepBasicInfo({ data, update }) {
   );
 }
 
-/* ── Step 3: Fitness Info ── */
+/* ── Step 4: Fitness Info ── */
 function StepFitnessInfo({ data, update, toggleInjury }) {
   const { t, lang } = useT();
   return (
@@ -258,7 +462,7 @@ function StepFitnessInfo({ data, update, toggleInjury }) {
   );
 }
 
-/* ── Step 4: Summary ── */
+/* ── Step 5: Summary ── */
 function StepSummary({ data }) {
   const { t } = useT();
   const goalLabels = {

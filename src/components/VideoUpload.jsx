@@ -11,9 +11,11 @@ import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
+import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import { extractFrames, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
+import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
 
 
 // ── Landmark cache (IndexedDB) ──
@@ -78,6 +80,7 @@ const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 export default function VideoUpload({ onClose, preSelectedExercise }) {
   const { t, tExercise, tFormCheck, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
+  const { accepted: privacyAccepted, accept: acceptPrivacy, showModal: showPrivacyModal } = usePrivacyGate();
   const [queue, setQueue] = useState([]);
   const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
@@ -453,6 +456,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       }
     } catch (_) {}
 
+    // Update personal form baselines and compare
+    let baselineComparison = null;
+    try {
+      await updateBaseline(detectedExercise, repHistory, avgScore);
+      baselineComparison = await compareToBaseline(detectedExercise, avgScore, repHistory);
+    } catch (_) {}
+
     setProgress(100);
     setFfmpegStatus('');
 
@@ -464,7 +474,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       fileName: queueItem.name, exercise: detectedExercise,
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
       reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
-      bioAnalysis, repHistory, progression, report, diagnostics,
+      bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics,
       videoUrl: url,
       frames: replayFrames,
       autoDetected,
@@ -533,6 +543,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
   return (
     <div className="page">
+      {showPrivacyModal && (
+        <CameraPrivacyModal
+          onAccept={acceptPrivacy}
+          onDecline={onClose || (() => window.history.back())}
+        />
+      )}
       <div className="page-header">
         <h2>{t('analyze_video')}</h2>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>

@@ -6,6 +6,7 @@ import {
 } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
+import { detectCapabilities, runMicroBenchmark } from '../lib/gpuBenchmark';
 
 export default function Profile({ onClose }) {
   const { profile: savedProfile, saveProfile } = useProfile();
@@ -17,6 +18,8 @@ export default function Profile({ onClose }) {
   const [baselines, setBaselines] = useState(null);
   const [saved, setSaved] = useState(false);
   const [records, setRecords] = useState([]);
+  const [benchmarkResult, setBenchmarkResult] = useState(null);
+  const [benchmarkRunning, setBenchmarkRunning] = useState(false);
   const fileInputRef = useRef(null);
   const { t, lang, setLang } = useT();
 
@@ -215,6 +218,104 @@ export default function Profile({ onClose }) {
         </button>
       </div>
 
+      {/* Cycle Tracking (optional) */}
+      <div className="card">
+        <h3>{t('cycle_tracking')}</h3>
+        <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
+          {t('cycle_tracking_desc')}
+        </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 12 }}>
+          <input
+            type="checkbox"
+            checked={!!profile.cycleTrackingEnabled}
+            onChange={(e) => handleChange('cycleTrackingEnabled', e.target.checked)}
+            style={{ width: 18, height: 18, accentColor: 'var(--primary)' }}
+          />
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t('enable_cycle_tracking')}</span>
+        </label>
+
+        {profile.cycleTrackingEnabled && (
+          <>
+            <div className="form-grid">
+              <label>
+                <span>{t('last_period_start')}</span>
+                <input
+                  type="date"
+                  value={profile.cycleLastPeriodStart || ''}
+                  onChange={(e) => handleChange('cycleLastPeriodStart', e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </label>
+              <label>
+                <span>{t('cycle_length')}</span>
+                <input
+                  type="number"
+                  value={profile.cycleLength || 28}
+                  onChange={(e) => {
+                    const v = Math.max(21, Math.min(35, parseInt(e.target.value) || 28));
+                    handleChange('cycleLength', v);
+                  }}
+                  min={21}
+                  max={35}
+                  placeholder="28"
+                />
+              </label>
+            </div>
+
+            {(() => {
+              if (!profile.cycleLastPeriodStart) return null;
+              const startDate = new Date(profile.cycleLastPeriodStart);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              startDate.setHours(0, 0, 0, 0);
+              const diffMs = today.getTime() - startDate.getTime();
+              if (diffMs < 0) return null;
+              const cycleLen = profile.cycleLength || 28;
+              const dayInCycle = (Math.floor(diffMs / 86400000) % cycleLen) + 1;
+
+              let phaseKey, tipKey, phaseColor;
+              if (dayInCycle <= 5) {
+                phaseKey = 'cycle_phase_menstrual';
+                tipKey = 'cycle_tip_menstrual';
+                phaseColor = '#e8575780';
+              } else if (dayInCycle <= 14) {
+                phaseKey = 'cycle_phase_follicular';
+                tipKey = 'cycle_tip_follicular';
+                phaseColor = '#4caf5080';
+              } else if (dayInCycle <= 16) {
+                phaseKey = 'cycle_phase_ovulatory';
+                tipKey = 'cycle_tip_ovulatory';
+                phaseColor = '#ff980080';
+              } else {
+                phaseKey = 'cycle_phase_luteal';
+                tipKey = 'cycle_tip_luteal';
+                phaseColor = '#7c4dff80';
+              }
+
+              return (
+                <div style={{
+                  marginTop: 12,
+                  padding: '12px 14px',
+                  borderRadius: 10,
+                  background: phaseColor,
+                  border: '1px solid var(--border)',
+                }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 4 }}>
+                    {t('cycle_current_phase')}: {t(phaseKey)}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.85, marginBottom: 4 }}>
+                    {t('cycle_day')} {dayInCycle} / {cycleLen}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', fontStyle: 'italic' }}>
+                    {t(tipKey)}
+                  </div>
+                </div>
+              );
+            })()}
+          </>
+        )}
+      </div>
+
       {/* Baselines */}
       {baselines && (
         <div className="card">
@@ -393,6 +494,91 @@ export default function Profile({ onClose }) {
             {lang === 'fr' ? 'Importer' : 'Import'}
           </button>
         </div>
+      </div>
+
+      {/* Device Capabilities Benchmark */}
+      <div className="card">
+        <h3>{lang === 'fr' ? 'Capacités de l\'appareil' : 'Device Capabilities'}</h3>
+        <p className="text-xs text-muted" style={{ marginBottom: 12 }}>
+          {lang === 'fr'
+            ? 'Détectez les backends d\'accélération matérielle disponibles pour l\'inférence ML.'
+            : 'Detect available hardware acceleration backends for ML inference.'}
+        </p>
+        <button
+          className="btn btn-ghost"
+          style={{ width: '100%', marginBottom: 12 }}
+          disabled={benchmarkRunning}
+          onClick={async () => {
+            setBenchmarkRunning(true);
+            try {
+              const [caps, bench] = await Promise.all([
+                detectCapabilities(),
+                runMicroBenchmark(),
+              ]);
+              setBenchmarkResult({ ...caps, ...bench });
+            } catch (err) {
+              console.error('Benchmark failed:', err);
+            } finally {
+              setBenchmarkRunning(false);
+            }
+          }}
+        >
+          {benchmarkRunning
+            ? (lang === 'fr' ? 'Analyse en cours...' : 'Running...')
+            : (lang === 'fr' ? 'Lancer le benchmark' : 'Run Benchmark')}
+        </button>
+
+        {benchmarkResult && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--muted)' }}>WebGPU</span>
+              <span style={{ fontWeight: 600, color: benchmarkResult.webgpu ? 'var(--green)' : 'var(--red)' }}>
+                {benchmarkResult.webgpu ? (lang === 'fr' ? 'Oui' : 'Yes') : (lang === 'fr' ? 'Non' : 'No')}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--muted)' }}>WebNN</span>
+              <span style={{ fontWeight: 600, color: benchmarkResult.webnn ? 'var(--green)' : 'var(--red)' }}>
+                {benchmarkResult.webnn ? (lang === 'fr' ? 'Oui' : 'Yes') : (lang === 'fr' ? 'Non' : 'No')}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--muted)' }}>WebGL2</span>
+              <span style={{ fontWeight: 600, color: benchmarkResult.webgl2 ? 'var(--green)' : 'var(--red)' }}>
+                {benchmarkResult.webgl2 ? (lang === 'fr' ? 'Oui' : 'Yes') : (lang === 'fr' ? 'Non' : 'No')}
+              </span>
+            </div>
+            {benchmarkResult.gpuAdapter && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'Adaptateur GPU' : 'GPU Adapter'}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {benchmarkResult.gpuAdapter.vendor}
+                  {benchmarkResult.gpuAdapter.architecture !== 'unknown' ? ` (${benchmarkResult.gpuAdapter.architecture})` : ''}
+                </span>
+              </div>
+            )}
+            {benchmarkResult.webgl2Renderer && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'Moteur WebGL2' : 'WebGL2 Renderer'}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {benchmarkResult.webgl2Renderer}
+                </span>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'Backend recommandé' : 'Recommended Backend'}</span>
+              <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                {benchmarkResult.recommendedBackend.toUpperCase()}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'CPU MatMul 256x256' : 'CPU MatMul 256x256'}</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                {benchmarkResult.matMulCpu} ms
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-muted" style={{ textAlign: 'center', padding: '16px 0 32px', opacity: 0.5 }}>

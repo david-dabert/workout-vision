@@ -28,6 +28,44 @@
 // are hallucinations. At 0.6, this drops to ~15%.
 const VIS_THRESHOLD = 0.6;
 
+// ---------------------------------------------------------------------------
+// Continuous form quality helpers (0-1 gradient scoring)
+// ---------------------------------------------------------------------------
+// These replace binary pass/fail with smooth quality curves.
+// A quality of 1.0 = perfect form. 0.0 = clearly failing.
+// The margin parameter controls the transition zone width in degrees.
+
+function clamp01(value) {
+  return Math.min(1, Math.max(0, value));
+}
+
+/** Quality for "angle should be below threshold" (e.g., depth, trunk lean) */
+export function qualityBelow(angle, threshold, margin = 15) {
+  if (angle == null || isNaN(angle)) return 0;
+  return clamp01((threshold - angle + margin) / (2 * margin));
+}
+
+/** Quality for "angle should be above threshold" (e.g., lockout, extension) */
+export function qualityAbove(angle, threshold, margin = 15) {
+  if (angle == null || isNaN(angle)) return 0;
+  return clamp01((angle - threshold + margin) / (2 * margin));
+}
+
+/** Quality for bilateral symmetry checks (lower difference = higher quality) */
+export function qualitySymmetry(left, right, threshold) {
+  if (left == null || right == null || isNaN(left) || isNaN(right)) return 0;
+  const diff = Math.abs(left - right);
+  return clamp01(1 - diff / (threshold * 1.5));
+}
+
+/** Quality for "angle within range" checks (e.g., trunk 20-80°) */
+export function qualityRange(angle, low, high, margin = 10) {
+  if (angle == null || isNaN(angle)) return 0;
+  if (angle >= low && angle <= high) return 1;
+  const distOutside = angle < low ? low - angle : angle - high;
+  return clamp01(1 - distOutside / margin);
+}
+
 /**
  * Visibility-aware bilateral selection.
  * @param {object} angles - joint angles with visibility metadata
@@ -82,6 +120,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 90, 15),
         good: 'Below parallel',
         bad: 'Above parallel — go deeper',
         severity: 'major',
@@ -90,6 +129,7 @@ export const EXERCISES = {
       {
         name: 'Knee symmetry',
         check: (angles) => Math.abs(angles.leftKnee - angles.rightKnee) < 18,
+        quality: (angles) => qualitySymmetry(angles.leftKnee, angles.rightKnee, 18),
         good: 'Knees tracking evenly',
         bad: 'Asymmetric knee bend',
         severity: 'major',
@@ -98,6 +138,7 @@ export const EXERCISES = {
       {
         name: 'Trunk angle',
         check: (angles) => angles.trunk < 55,
+        quality: (angles) => qualityBelow(angles.trunk, 55, 15),
         good: 'Upright torso maintained',
         bad: 'Excessive forward lean',
         severity: 'minor',
@@ -146,6 +187,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 85,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 85, 15),
         good: 'Below parallel',
         bad: 'Above parallel',
         severity: 'major',
@@ -154,6 +196,7 @@ export const EXERCISES = {
       {
         name: 'Trunk upright',
         check: (angles) => angles.trunk < 40,
+        quality: (angles) => qualityBelow(angles.trunk, 40, 12),
         good: 'Upright torso -- elbows high',
         bad: 'Torso collapsing forward',
         severity: 'major',
@@ -162,6 +205,7 @@ export const EXERCISES = {
       {
         name: 'Knee symmetry',
         check: (angles) => Math.abs(angles.leftKnee - angles.rightKnee) < 12,
+        quality: (angles) => qualitySymmetry(angles.leftKnee, angles.rightKnee, 12),
         good: 'Knees tracking evenly',
         bad: 'Asymmetric knee bend',
         severity: 'minor',
@@ -183,6 +227,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 90, 15),
         good: 'Full depth achieved',
         bad: 'Go deeper',
         severity: 'minor',
@@ -191,6 +236,7 @@ export const EXERCISES = {
       {
         name: 'Trunk upright',
         check: (angles) => angles.trunk < 45,
+        quality: (angles) => qualityBelow(angles.trunk, 45, 12),
         good: 'Torso upright',
         bad: 'Leaning forward',
         severity: 'minor',
@@ -212,6 +258,7 @@ export const EXERCISES = {
       {
         name: 'Hip hinge depth',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 100, 15),
         good: 'Full hip hinge range',
         bad: 'Incomplete hinge',
         severity: 'minor',
@@ -220,6 +267,7 @@ export const EXERCISES = {
       {
         name: 'Trunk neutral',
         check: (angles) => angles.trunk > 20 && angles.trunk < 80,
+        quality: (angles) => qualityRange(angles.trunk, 20, 80, 12),
         good: 'Back angle within safe range',
         bad: 'Excessive trunk rounding or hyperextension',
         severity: 'major',
@@ -247,6 +295,7 @@ export const EXERCISES = {
       {
         name: 'Lockout',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) > 165,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 165, 15),
         good: 'Full hip extension at top',
         bad: 'Incomplete lockout',
         severity: 'minor',
@@ -272,6 +321,7 @@ export const EXERCISES = {
           const knee = Math.min(angles.leftKnee, angles.rightKnee);
           return knee >= 150 && knee <= 175;
         },
+        quality: (angles) => qualityRange(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 150, 175, 10),
         good: 'Knees slightly bent -- soft lock maintained',
         bad: 'Knees too bent or too locked',
         severity: 'minor',
@@ -280,6 +330,7 @@ export const EXERCISES = {
       {
         name: 'Hip hinge',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 95,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 95, 15),
         good: 'Deep hip hinge achieved',
         bad: 'Hinge deeper',
         severity: 'major',
@@ -288,6 +339,7 @@ export const EXERCISES = {
       {
         name: 'Trunk angle',
         check: (angles) => angles.trunk > 40 && angles.trunk < 85,
+        quality: (angles) => qualityRange(angles.trunk, 40, 85, 12),
         good: 'Back flat through hinge',
         bad: 'Back rounding or insufficient hinge',
         severity: 'major',
@@ -322,6 +374,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) > 170,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 170, 15),
         good: 'Full hip extension -- peak glute contraction',
         bad: 'Incomplete extension',
         severity: 'major',
@@ -334,6 +387,7 @@ export const EXERCISES = {
           const avg = (angles.leftKnee + angles.rightKnee) / 2;
           return avg > 80 && avg < 110;
         },
+        quality: (angles) => qualityRange((angles.leftKnee + angles.rightKnee) / 2, 80, 110, 12),
         good: 'Knee angle ~90 deg at top',
         bad: 'Reposition feet',
         severity: 'minor',
@@ -341,12 +395,15 @@ export const EXERCISES = {
       },
       {
         name: 'Anterior pelvic tilt',
-        // At lockout (hip angle > 160), trunk should remain nearly horizontal (< 15 deg)
-        // to avoid hyperextending the lumbar spine via anterior pelvic tilt.
         check: (angles) => {
           const hipAngle = Math.min(angles.leftHip, angles.rightHip);
-          if (hipAngle <= 160) return true; // only check near lockout
+          if (hipAngle <= 160) return true;
           return angles.trunk < 20;
+        },
+        quality: (angles) => {
+          const hipAngle = bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip');
+          if (hipAngle == null || hipAngle <= 160) return 1;
+          return qualityBelow(angles.trunk, 20, 10);
         },
         good: 'Neutral spine at lockout',
         bad: 'Anterior pelvic tilt detected',
@@ -371,6 +428,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15),
         good: 'Rear knee approaching floor',
         bad: 'Go deeper',
         severity: 'minor',
@@ -379,6 +437,7 @@ export const EXERCISES = {
       {
         name: 'Trunk upright',
         check: (angles) => angles.trunk < 25,
+        quality: (angles) => qualityBelow(angles.trunk, 25, 10),
         good: 'Torso upright',
         bad: 'Leaning forward',
         severity: 'minor',
@@ -400,6 +459,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15),
         good: 'Deep split squat position',
         bad: 'Sit deeper into the split',
         severity: 'minor',
@@ -408,6 +468,7 @@ export const EXERCISES = {
       {
         name: 'Trunk upright',
         check: (angles) => angles.trunk < 30,
+        quality: (angles) => qualityBelow(angles.trunk, 30, 10),
         good: 'Torso vertical',
         bad: 'Excessive forward lean',
         severity: 'minor',
@@ -485,6 +546,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15),
         good: 'Full depth -- chest near floor',
         bad: 'Go deeper',
         severity: 'major',
@@ -493,6 +555,7 @@ export const EXERCISES = {
       {
         name: 'Body alignment',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
         good: 'Body in straight line',
         bad: 'Hips sagging or piking',
         severity: 'major',
@@ -501,10 +564,11 @@ export const EXERCISES = {
       {
         name: 'Elbow symmetry',
         check: (angles) => Math.abs(angles.leftElbow - angles.rightElbow) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftElbow, angles.rightElbow, 15),
         good: 'Arms working evenly',
         bad: 'One arm doing more work',
         severity: 'minor',
-        citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther',
+        citation: 'Kiesel K et al, 2007, N am J Sports Phys Ther',
       },
     ],
     scienceNotes: 'Narrow hand placement increases triceps activation; wide placement increases pectoral activation (Cogley 2005). Maintaining rigid trunk increases core demand (Freeman 2006).',
@@ -522,6 +586,7 @@ export const EXERCISES = {
       {
         name: 'Full lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 165,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 165, 15),
         good: 'Arms fully extended overhead',
         bad: 'Press to full lockout',
         severity: 'minor',
@@ -531,6 +596,7 @@ export const EXERCISES = {
       {
         name: 'Trunk stable',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
         good: 'Trunk vertical -- no excessive lean',
         bad: 'Excessive back lean',
         severity: 'major',
@@ -539,6 +605,7 @@ export const EXERCISES = {
       {
         name: 'Shoulder symmetry',
         check: (angles) => Math.abs(angles.leftShoulder - angles.rightShoulder) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftShoulder, angles.rightShoulder, 15),
         good: 'Shoulders pressing evenly',
         bad: 'Asymmetric press',
         severity: 'minor',
@@ -560,6 +627,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 75,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 75, 15),
         good: 'Bar at chest level',
         bad: 'Lower the bar further',
         severity: 'major',
@@ -568,6 +636,7 @@ export const EXERCISES = {
       {
         name: 'Lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full lockout at top',
         bad: 'Extend arms fully at top',
         severity: 'minor',
@@ -621,6 +690,7 @@ export const EXERCISES = {
       {
         name: 'Trunk angle',
         check: (angles) => angles.trunk > 35 && angles.trunk < 70,
+        quality: (angles) => qualityRange(angles.trunk, 35, 70, 12),
         good: 'Trunk hinged at proper angle',
         bad: 'Adjust torso',
         severity: 'major',
@@ -629,6 +699,7 @@ export const EXERCISES = {
       {
         name: 'Elbow drive',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 60,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15),
         good: 'Full contraction -- elbows pulled past torso',
         bad: 'Pull elbows higher',
         severity: 'minor',
@@ -637,6 +708,7 @@ export const EXERCISES = {
       {
         name: 'Arm symmetry',
         check: (angles) => Math.abs(angles.leftElbow - angles.rightElbow) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftElbow, angles.rightElbow, 15),
         good: 'Both arms pulling evenly',
         bad: 'One arm pulling harder',
         severity: 'minor',
@@ -658,6 +730,7 @@ export const EXERCISES = {
       {
         name: 'Full ROM',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 60,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15),
         good: 'Chin above bar level',
         bad: 'Pull higher',
         severity: 'major',
@@ -666,6 +739,7 @@ export const EXERCISES = {
       {
         name: 'Full hang',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full dead hang at bottom',
         bad: 'Extend fully at bottom',
         severity: 'minor',
@@ -689,6 +763,7 @@ export const EXERCISES = {
       {
         name: 'Full contraction',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 55,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 55, 15),
         good: 'Full bicep squeeze at top',
         bad: 'Curl higher',
         severity: 'minor',
@@ -697,6 +772,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.max(angles.leftElbow, angles.rightElbow) > 145,
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 145, 15),
         good: 'Full extension at bottom',
         bad: 'Extend arms fully at bottom',
         severity: 'minor',
@@ -706,6 +782,7 @@ export const EXERCISES = {
       {
         name: 'No body swing',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
         good: 'Strict form -- no swinging',
         bad: 'Body swinging',
         severity: 'major',
@@ -890,6 +967,7 @@ export const EXERCISES = {
       {
         name: 'Full pull',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 60,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15),
         good: 'Bar at chest -- full lat contraction',
         bad: 'Pull lower',
         severity: 'major',
@@ -898,6 +976,7 @@ export const EXERCISES = {
       {
         name: 'Full stretch',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full stretch at top',
         bad: 'Let the bar go fully up',
         severity: 'minor',
@@ -1031,6 +1110,7 @@ export const EXERCISES = {
       {
         name: 'Body alignment',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
         good: 'Flat back -- strong plank position',
         bad: 'Hips sagging or piking',
         severity: 'major',
@@ -1042,6 +1122,7 @@ export const EXERCISES = {
           const avgHip = (angles.leftHip + angles.rightHip) / 2;
           return avgHip > 160;
         },
+        quality: (angles) => qualityAbove((angles.leftHip + angles.rightHip) / 2, 160, 15),
         good: 'Hips level',
         bad: 'Hips dropping',
         severity: 'major',
@@ -1477,6 +1558,7 @@ export const EXERCISES = {
       {
         name: 'Hip hinge',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 85,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 85, 15),
         good: 'Deep hip hinge at bottom',
         bad: 'Hinge deeper',
         severity: 'major',
@@ -1485,6 +1567,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) > 170,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 170, 15),
         good: 'Full hip snap at top',
         bad: 'Drive hips through',
         severity: 'major',
@@ -1494,6 +1577,7 @@ export const EXERCISES = {
       {
         name: 'Knee soft',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 140,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 140, 15),
         good: 'Knees soft -- not squatting the swing',
         bad: 'Less knee bend',
         severity: 'minor',

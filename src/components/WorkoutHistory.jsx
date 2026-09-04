@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getAllWorkouts, deleteWorkout } from '../lib/storage';
+import { getAllWorkouts, deleteWorkout, getMilestones, saveMilestones } from '../lib/storage';
 import { calculateWorkloadRatio } from '../lib/coach';
+import { EXERCISES } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
 import ExerciseHistory from './ExerciseHistory';
 
@@ -116,12 +117,129 @@ export default function WorkoutHistory({ onClose }) {
     return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
   }, [workouts]);
 
+  const [milestones, setMilestones] = useState({});
+
+  // Load and compute milestones when workouts change
+  useEffect(() => {
+    if (workouts.length === 0) return;
+    (async () => {
+      const saved = await getMilestones();
+      const updated = { ...saved };
+      const now = new Date().toISOString();
+
+      // First workout
+      if (workouts.length >= 1 && !updated.first_workout) {
+        updated.first_workout = now;
+      }
+      // 10 workouts
+      if (workouts.length >= 10 && !updated.ten_workouts) {
+        updated.ten_workouts = now;
+      }
+      // 25 workouts
+      if (workouts.length >= 25 && !updated.twenty_five_workouts) {
+        updated.twenty_five_workouts = now;
+      }
+      // 50 workouts
+      if (workouts.length >= 50 && !updated.fifty_workouts) {
+        updated.fifty_workouts = now;
+      }
+      // First A-grade (80+)
+      if (!updated.first_a_grade) {
+        const aGrade = workouts.find(w => w.formScore >= 80);
+        if (aGrade) updated.first_a_grade = now;
+      }
+      // 5-day streak
+      if (!updated.five_day_streak && stats && stats.streak >= 5) {
+        updated.five_day_streak = now;
+      }
+      // Form improved 10+ points on any exercise
+      if (!updated.form_improved) {
+        const byExercise = {};
+        for (const w of workouts) {
+          if (!w.exercise || !w.formScore) continue;
+          if (!byExercise[w.exercise]) byExercise[w.exercise] = [];
+          byExercise[w.exercise].push(w);
+        }
+        for (const [exKey, sets] of Object.entries(byExercise)) {
+          if (sets.length < 2) continue;
+          const sorted = [...sets].sort((a, b) => new Date(a.date) - new Date(b.date));
+          const scores = sorted.filter(s => s.formScore > 0).map(s => s.formScore);
+          if (scores.length >= 2) {
+            const first3 = scores.slice(0, Math.min(3, scores.length));
+            const last3 = scores.slice(-Math.min(3, scores.length));
+            const earlyAvg = first3.reduce((a, b) => a + b, 0) / first3.length;
+            const lateAvg = last3.reduce((a, b) => a + b, 0) / last3.length;
+            if (lateAvg - earlyAvg >= 10) {
+              updated.form_improved = now;
+              updated.form_improved_exercise = exKey;
+              break;
+            }
+          }
+        }
+      }
+
+      if (JSON.stringify(updated) !== JSON.stringify(saved)) {
+        await saveMilestones(updated);
+      }
+      setMilestones(updated);
+    })();
+  }, [workouts, stats]);
+
   const trendData = useMemo(() => {
     return workouts
       .filter(w => w.formScore > 0)
       .slice(0, 20)
       .reverse();
   }, [workouts]);
+
+  // Per-exercise trends: for exercises done 3+ times, compute trend direction
+  const exerciseTrends = useMemo(() => {
+    const byExercise = {};
+    for (const w of workouts) {
+      if (!w.exercise || !w.formScore) continue;
+      if (!byExercise[w.exercise]) byExercise[w.exercise] = [];
+      byExercise[w.exercise].push(w);
+    }
+
+    const trends = [];
+    for (const [exKey, sets] of Object.entries(byExercise)) {
+      if (sets.length < 3) continue;
+      const sorted = [...sets].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const scores = sorted.filter(s => s.formScore > 0).map(s => s.formScore);
+      if (scores.length < 3) continue;
+
+      const half = Math.floor(scores.length / 2);
+      const firstHalf = scores.slice(0, half);
+      const secondHalf = scores.slice(half);
+      const avgFirst = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+      const avgSecond = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+      const diff = avgSecond - avgFirst;
+
+      let direction = 'stable';
+      if (diff >= 3) direction = 'improving';
+      else if (diff <= -3) direction = 'declining';
+
+      trends.push({
+        key: exKey,
+        name: EXERCISES[exKey]?.name || exKey,
+        direction,
+        count: sets.length,
+        latestScore: scores[scores.length - 1],
+      });
+    }
+    return trends.sort((a, b) => b.count - a.count);
+  }, [workouts]);
+
+  // Sparkline data: form scores for the most-trained exercise
+  const sparklineData = useMemo(() => {
+    if (exerciseTrends.length === 0) return [];
+    const topExercise = exerciseTrends[0].key;
+    return workouts
+      .filter(w => w.exercise === topExercise && w.formScore > 0)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(-20)
+      .map(w => w.formScore);
+  }, [workouts, exerciseTrends]);
 
   if (showExerciseHistory) {
     return <ExerciseHistory onClose={() => setShowExerciseHistory(false)} />;
@@ -199,6 +317,161 @@ export default function WorkoutHistory({ onClose }) {
           >
             {t('exercise_history') || 'Exercise History'} →
           </button>
+
+          {/* Journey section */}
+          {workouts.length > 0 && (
+            <div className="card" style={{ padding: 16 }}>
+              <h4 style={{ marginTop: 0, marginBottom: 12 }}>{t('your_journey')}</h4>
+
+              {/* Sparkline: form score trend for top exercise */}
+              {sparklineData.length > 1 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div className="text-xs text-muted" style={{ marginBottom: 6 }}>
+                    {t('top_exercise_form')} ({exerciseTrends[0]?.name})
+                  </div>
+                  <svg
+                    viewBox={`0 0 ${(sparklineData.length - 1) * 14} 40`}
+                    style={{ width: '100%', height: 40, display: 'block' }}
+                    preserveAspectRatio="none"
+                  >
+                    {(() => {
+                      const min = Math.min(...sparklineData);
+                      const max = Math.max(...sparklineData);
+                      const range = max - min || 1;
+                      const points = sparklineData.map((v, i) => {
+                        const x = i * 14;
+                        const y = 38 - ((v - min) / range) * 34;
+                        return `${x},${y}`;
+                      }).join(' ');
+                      return (
+                        <>
+                          <polyline
+                            points={points}
+                            fill="none"
+                            stroke="var(--accent)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          {sparklineData.map((v, i) => {
+                            const x = i * 14;
+                            const y = 38 - ((v - min) / range) * 34;
+                            return (
+                              <circle
+                                key={i}
+                                cx={x}
+                                cy={y}
+                                r="2.5"
+                                fill={v >= 80 ? 'var(--accent)' : v >= 60 ? 'var(--yellow)' : 'var(--red)'}
+                              />
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                    <span className="text-xs text-muted">{sparklineData[0]}</span>
+                    <span className="text-xs text-muted">{sparklineData[sparklineData.length - 1]}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Per-exercise mini trends */}
+              {exerciseTrends.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div className="text-xs text-muted" style={{ marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {t('exercise_trends')}
+                  </div>
+                  {exerciseTrends.map(ex => (
+                    <div
+                      key={ex.key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '6px 0',
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{
+                          fontSize: '0.95rem',
+                          color: ex.direction === 'improving' ? 'var(--accent)' : ex.direction === 'declining' ? 'var(--red)' : 'var(--yellow)',
+                        }}>
+                          {ex.direction === 'improving' ? '↑' : ex.direction === 'declining' ? '↓' : '→'}
+                        </span>
+                        <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{ex.name}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span className="text-xs text-muted">{ex.count}x</span>
+                        <span className="text-xs" style={{
+                          color: ex.direction === 'improving' ? 'var(--accent)' : ex.direction === 'declining' ? 'var(--red)' : 'var(--yellow)',
+                        }}>
+                          {t(ex.direction)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Milestones */}
+              {(() => {
+                const achieved = [];
+                if (milestones.first_workout) achieved.push({ key: 'first_workout', label: t('milestone_first_workout'), icon: '🏁' });
+                if (milestones.first_a_grade) achieved.push({ key: 'first_a_grade', label: t('milestone_first_a_grade'), icon: '⭐' });
+                if (milestones.five_day_streak) achieved.push({ key: 'five_day_streak', label: t('milestone_5_day_streak'), icon: '🔥' });
+                if (milestones.ten_workouts) achieved.push({ key: 'ten_workouts', label: t('milestone_10_workouts'), icon: '💪' });
+                if (milestones.twenty_five_workouts) achieved.push({ key: 'twenty_five_workouts', label: t('milestone_25_workouts'), icon: '🎯' });
+                if (milestones.fifty_workouts) achieved.push({ key: 'fifty_workouts', label: t('milestone_50_workouts'), icon: '🏆' });
+                if (milestones.form_improved) {
+                  const exName = EXERCISES[milestones.form_improved_exercise]?.name || milestones.form_improved_exercise;
+                  achieved.push({ key: 'form_improved', label: `${t('milestone_form_improved')} ${exName}`, icon: '📈' });
+                }
+
+                // Also show upcoming milestones (dimmed)
+                const upcoming = [];
+                if (!milestones.first_workout) upcoming.push({ label: t('milestone_first_workout'), icon: '🏁' });
+                if (!milestones.first_a_grade) upcoming.push({ label: t('milestone_first_a_grade'), icon: '⭐' });
+                if (!milestones.five_day_streak) upcoming.push({ label: t('milestone_5_day_streak'), icon: '🔥' });
+                if (!milestones.ten_workouts) upcoming.push({ label: t('milestone_10_workouts'), icon: '💪' });
+
+                if (achieved.length === 0 && upcoming.length === 0) return null;
+
+                return (
+                  <div>
+                    <div className="text-xs text-muted" style={{ marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {t('milestones')}
+                    </div>
+                    {achieved.map(m => (
+                      <div key={m.key} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '5px 0',
+                      }}>
+                        <span style={{ fontSize: '1rem' }}>{m.icon}</span>
+                        <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{m.label}</span>
+                      </div>
+                    ))}
+                    {upcoming.slice(0, 2).map((m, i) => (
+                      <div key={`upcoming-${i}`} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '5px 0',
+                        opacity: 0.35,
+                      }}>
+                        <span style={{ fontSize: '1rem' }}>{m.icon}</span>
+                        <span className="text-sm">{m.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
           {/* Workload ratio gauge */}
           {workloadRatio && (

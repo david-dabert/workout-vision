@@ -14,6 +14,7 @@ const RestTimer = lazy(() => import('./components/RestTimer'));
 const ProfilePage = lazy(() => import('./components/Profile'));
 const Validate = lazy(() => import('./components/Validate'));
 const DesignDemo = lazy(() => import('./components/DesignDemo'));
+const LandingPage = lazy(() => import('./components/LandingPage'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
@@ -96,6 +97,13 @@ function AppInner() {
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
         <Validate onClose={() => setPage('dashboard')} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+  if (page === 'landing') return (
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <LandingPage onNavigate={onNavigate} />
       </Suspense>
     </ErrorBoundary>
   );
