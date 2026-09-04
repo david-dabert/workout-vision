@@ -377,3 +377,148 @@ export async function extractFramesFallback(file, targetFps, maxFrames, maxWidth
     video.load();
   }
 }
+
+/**
+ * Streaming frame extractor for memory-constrained environments (iOS Safari).
+ *
+ * Unlike extractFramesFallback which stores ALL frames in memory at once,
+ * this function seeks one frame at a time and passes it to a callback.
+ * Only one ImageData exists in memory at any moment.
+ *
+ * Fixes from expert panel review:
+ * - Waits for 'loadeddata' not just 'loadedmetadata' (decoder readiness)
+ * - 5-second seek timeout (prevents infinite hang on corrupted segments)
+ * - Duplicate frame detection (iOS keyframe-snapping produces duplicates)
+ * - try/catch on getImageData (HEVC canvas taint on some iOS versions)
+ * - Yields to main thread every frame (prevents UI freeze)
+ *
+ * @param {File} file - Video file
+ * @param {number} targetFps - Target frames per second
+ * @param {number} maxFrames - Maximum frames to extract
+ * @param {number} maxWidth - Maximum frame width
+ * @param {function} onFrame - Called with (canvas, frameIndex, timestamp). Process the frame here.
+ * @param {function} onProgress - Progress callback (0-100)
+ * @returns {Promise<{width: number, height: number, fps: number, duration: number, frameCount: number}>}
+ */
+export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress) {
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+  video.src = url;
+
+  try {
+    // Wait for decoder readiness, not just metadata
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
+      video.onloadeddata = () => { clearTimeout(timeout); resolve(); };
+      video.onerror = () => { clearTimeout(timeout); reject(new Error('Failed to load video')); };
+    });
+
+    const duration = video.duration;
+    const nativeWidth = video.videoWidth;
+    const nativeHeight = video.videoHeight;
+
+    let frameWidth = nativeWidth;
+    let frameHeight = nativeHeight;
+    if (frameWidth > maxWidth) {
+      const scale = maxWidth / frameWidth;
+      frameWidth = Math.round(frameWidth * scale);
+      frameHeight = Math.round(frameHeight * scale);
+      frameWidth -= frameWidth % 2;
+      frameHeight -= frameHeight % 2;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = frameWidth;
+    canvas.height = frameHeight;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    const interval = 1 / targetFps;
+    const totalPossibleFrames = Math.floor(duration * targetFps);
+    const frameCount = Math.min(totalPossibleFrames, maxFrames);
+
+    // For duplicate detection: store a small fingerprint of the previous frame
+    let prevFingerprint = null;
+    let extractedCount = 0;
+
+    for (let i = 0; i < frameCount; i++) {
+      const seekTime = i * interval;
+      if (seekTime > duration) break;
+
+      // Seek with 5-second timeout
+      video.currentTime = seekTime;
+      try {
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            video.removeEventListener('seeked', onSeeked);
+            video.removeEventListener('error', onError);
+            resolve(); // skip frame rather than crash
+          }, 5000);
+          const onSeeked = () => {
+            clearTimeout(timeout);
+            video.removeEventListener('seeked', onSeeked);
+            video.removeEventListener('error', onError);
+            resolve();
+          };
+          const onError = () => {
+            clearTimeout(timeout);
+            video.removeEventListener('seeked', onSeeked);
+            video.removeEventListener('error', onError);
+            resolve(); // skip frame rather than crash
+          };
+          video.addEventListener('seeked', onSeeked);
+          video.addEventListener('error', onError);
+        });
+      } catch {
+        continue; // skip this frame
+      }
+
+      // Draw and check for duplicate (keyframe snapping)
+      try {
+        ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
+      } catch {
+        continue; // canvas taint or draw failure, skip frame
+      }
+
+      // Quick duplicate detection: sample 8 pixels and compare fingerprint
+      try {
+        const sample = ctx.getImageData(0, 0, frameWidth, 1).data;
+        const fp = `${sample[0]}-${sample[100]}-${sample[400]}-${sample[800]}-${sample[1200]}-${sample[1600]}`;
+        if (fp === prevFingerprint) {
+          // Duplicate frame from keyframe snapping, skip it
+          if (onProgress) onProgress(Math.round(((i + 1) / frameCount) * 100));
+          continue;
+        }
+        prevFingerprint = fp;
+      } catch {
+        // If sampling fails, process anyway
+      }
+
+      // Pass the canvas directly to the callback (no ImageData allocation needed
+      // if the callback can work with canvas — MediaPipe's detectForVideo takes canvas)
+      await onFrame(canvas, extractedCount, seekTime);
+      extractedCount++;
+
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / frameCount) * 100));
+      }
+
+      // Yield to main thread to prevent UI freeze
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    return {
+      width: frameWidth,
+      height: frameHeight,
+      fps: targetFps,
+      duration,
+      frameCount: extractedCount,
+    };
+  } finally {
+    URL.revokeObjectURL(url);
+    video.src = '';
+    video.load();
+  }
+}

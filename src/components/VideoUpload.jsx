@@ -12,7 +12,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
-import { extractFrames, extractFramesFallback, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
+import { extractFrames, extractFramesStreaming, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
@@ -80,7 +80,7 @@ const yieldToMain = () => new Promise(resolve => {
   ch.port2.postMessage(null);
 });
 
-const MAX_FRAMES = IS_IOS ? 150 : 600;
+const MAX_FRAMES = IS_IOS ? 80 : 600;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
@@ -140,8 +140,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     };
   }, []);
 
+  const [iosWarning, setIosWarning] = useState(null);
+
   const handleFiles = (e) => {
     setErrorMsg(null);
+    setIosWarning(null);
     const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('video/') || f.type === '');
     if (files.length === 0) return;
     const items = [];
@@ -149,6 +152,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       if (f.size > MAX_FILE_SIZE) {
         setErrorMsg(`${f.name} (${(f.size / 1024 / 1024).toFixed(0)} MB) ${t('too_large')}`);
         continue;
+      }
+      // iOS large file warning (>50MB)
+      if (IS_IOS && f.size > 50 * 1024 * 1024) {
+        setIosWarning(lang === 'fr'
+          ? `${f.name} fait ${(f.size / 1024 / 1024).toFixed(0)} MB. Pour de meilleurs résultats sur iPhone, utilisez une vidéo de moins de 30 secondes.`
+          : `${f.name} is ${(f.size / 1024 / 1024).toFixed(0)} MB. For best results on iPhone, use a video under 30 seconds.`
+        );
       }
       items.push({
         id: Date.now() + Math.random(),
@@ -220,34 +230,86 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       setProgress(99);
     }
 
-    // ── Phase 4: If no cache, extract frames ──
-    // iOS Safari: skip ffmpeg.wasm entirely (31MB WASM + video buffer exceeds
-    // mobile memory limits and causes the OS to kill the page mid-analysis).
-    // Use native <video> + canvas seeking instead — uses far less memory.
+    // ── Phase 4: If no cache, extract and process frames ──
     if (!usedCache) {
-      setAnalysisPhase('extracting');
-      let extracted;
 
       if (IS_IOS) {
-        setFfmpegStatus('Extracting frames...');
+        // ─── iOS STREAMING PATH ───
+        // Expert panel consensus: merge extraction + processing into one loop.
+        // Only one frame exists in memory at a time. No intermediate array.
+        // Skips ffmpeg.wasm entirely (31MB WASM + video buffer kills iOS tabs).
+        setAnalysisPhase('extracting');
+        setFfmpegStatus('Analyzing video...');
+        setLiveReps(0);
+
+        let lockedSubjectIdx = null;
+        let streamFrameCount = 0;
+
         try {
-          extracted = await extractFramesFallback(
+          const streamResult = await extractFramesStreaming(
             queueItem.file,
             analysisFps,
             MAX_FRAMES,
             maxWidth,
+            async (canvas, frameIndex, timestamp) => {
+              if (abortRef.current) return;
+
+              // Run MediaPipe directly on the canvas (no ImageData copy needed)
+              const deterministicTs = frameIndex * (1000 / analysisFps);
+              const result = detectPoseImage(landmarker, canvas, deterministicTs);
+
+              let landmarks = null;
+              if (result?.landmarks?.length) {
+                if (result.landmarks.length === 1) {
+                  landmarks = result.landmarks[0];
+                } else {
+                  if (lockedSubjectIdx === null) {
+                    landmarks = selectSubjectPose(result.landmarks);
+                    lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                  } else {
+                    landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                  }
+                }
+                const time = frameIndex / analysisFps;
+                const angles = extractJointAngles(landmarks);
+                frames.push({ landmarks, timestamp: time, angles });
+                replayFrames.push({ landmarks, timestamp: time });
+              }
+
+              streamFrameCount++;
+
+              // Incremental checkpoint every 20 frames
+              if (streamFrameCount > 0 && streamFrameCount % 20 === 0 && frames.length > 0) {
+                const partial = frames.map(f => f.landmarks);
+                setCachedLandmarks(`${cacheKey}-partial`, partial).catch(() => {});
+              }
+
+              const pct = Math.round((streamFrameCount / MAX_FRAMES) * 95);
+              setProgress(pct);
+              setFfmpegStatus(`Analyzing... frame ${streamFrameCount}`);
+              setQueue(prev => prev.map(q =>
+                q.id === queueItem.id ? { ...q, progress: pct } : q
+              ));
+            },
             (pct) => {
-              setProgress(Math.round(pct * 0.4));
-              setFfmpegStatus(`Extracting frames... ${pct}%`);
+              // Extraction progress (secondary indicator)
             }
           );
+
+          frameCount = streamResult.frameCount;
+          duration = streamResult.duration;
         } catch (err) {
-          console.error('[Upload] Native frame extraction failed:', err);
-          setErrorMsg(`Frame extraction failed: ${err.message}`);
+          console.error('[Upload] iOS streaming extraction failed:', err);
+          setErrorMsg(`Analysis failed: ${err.message}`);
           return null;
         }
+
       } else {
+        // ─── DESKTOP PATH: ffmpeg.wasm + batch processing ───
+        setAnalysisPhase('extracting');
         setFfmpegStatus('Loading ffmpeg.wasm (~31MB first time)...');
+        let extracted;
+
         try {
           await loadFFmpeg((pct) => {
             setFfmpegStatus(`Loading ffmpeg.wasm... ${pct}%`);
@@ -275,108 +337,99 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           setErrorMsg(`Frame extraction failed: ${err.message}`);
           return null;
         }
-      }
 
-      frameCount = extracted.frameCount;
-      duration = extracted.duration;
+        frameCount = extracted.frameCount;
+        duration = extracted.duration;
 
-      // ── Phase 5: Run MediaPipe on each extracted frame ──
-      setAnalysisPhase('analyzing');
-      setFfmpegStatus('Running pose detection...');
-      setLiveReps(0);
+        // ── Phase 5: Run MediaPipe on each extracted frame ──
+        setAnalysisPhase('analyzing');
+        setFfmpegStatus('Running pose detection...');
+        setLiveReps(0);
 
-      // Try Web Worker path (offloads MediaPipe from UI thread)
-      let useWorker = false;
-      let workerManager = null;
-      if (isWorkerSupported()) {
-        try {
-          workerManager = new PoseWorkerManager();
-          await workerManager.init();
-          useWorker = true;
-          console.log('[Upload] Using Web Worker for pose detection');
-        } catch (e) {
-          console.warn('[Upload] Worker init failed, falling back to main thread:', e.message);
-          if (workerManager) { workerManager.dispose(); workerManager = null; }
-        }
-      }
-
-      const totalExtractedFrames = extracted.frames.length;
-
-      if (useWorker && workerManager) {
-        // ─── Worker path: process frames off the main thread ───
-        for (let i = 0; i < totalExtractedFrames; i++) {
-          if (abortRef.current) break;
-
-          const deterministicTs = i * (1000 / analysisFps);
-          const resultLandmarks = await workerManager.processFrame(extracted.frames[i], deterministicTs, i);
-          // Release frame memory immediately after processing
-          extracted.frames[i] = null;
-
-          if (resultLandmarks && resultLandmarks.length > 0) {
-            const landmarks = resultLandmarks.length === 1
-              ? resultLandmarks[0]
-              : selectSubjectPose(resultLandmarks);
-            const time = i / analysisFps;
-            const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: time, angles });
-            replayFrames.push({ landmarks, timestamp: time });
+        // Try Web Worker path (offloads MediaPipe from UI thread)
+        let useWorker = false;
+        let workerManager = null;
+        if (isWorkerSupported()) {
+          try {
+            workerManager = new PoseWorkerManager();
+            await workerManager.init();
+            useWorker = true;
+          } catch (e) {
+            console.warn('[Upload] Worker init failed, falling back to main thread:', e.message);
+            if (workerManager) { workerManager.dispose(); workerManager = null; }
           }
-
-          const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
-          setProgress(pct);
-          setQueue(prev => prev.map(q =>
-            q.id === queueItem.id ? { ...q, progress: pct } : q
-          ));
         }
-        workerManager.dispose();
-      } else {
-        // ─── Main-thread fallback ───
-        const offscreen = document.createElement('canvas');
-        offscreen.width = extracted.width;
-        offscreen.height = extracted.height;
-        const offCtx = offscreen.getContext('2d');
 
-        let lockedSubjectIdx = null;
+        const totalExtractedFrames = extracted.frames.length;
 
-        for (let i = 0; i < totalExtractedFrames; i++) {
-          if (abortRef.current) break;
+        if (useWorker && workerManager) {
+          for (let i = 0; i < totalExtractedFrames; i++) {
+            if (abortRef.current) break;
+            const deterministicTs = i * (1000 / analysisFps);
+            const resultLandmarks = await workerManager.processFrame(extracted.frames[i], deterministicTs, i);
+            extracted.frames[i] = null;
 
-          offCtx.putImageData(extracted.frames[i], 0, 0);
-          // Release frame memory immediately after drawing to canvas
-          extracted.frames[i] = null;
-
-          const deterministicTs = i * (1000 / analysisFps);
-          const result = detectPoseImage(landmarker, offscreen, deterministicTs);
-
-          let landmarks = null;
-          if (result?.landmarks?.length) {
-            if (result.landmarks.length === 1) {
-              landmarks = result.landmarks[0];
-            } else {
-              if (lockedSubjectIdx === null) {
-                landmarks = selectSubjectPose(result.landmarks);
-                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-              } else {
-                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-              }
+            if (resultLandmarks && resultLandmarks.length > 0) {
+              const landmarks = resultLandmarks.length === 1
+                ? resultLandmarks[0]
+                : selectSubjectPose(resultLandmarks);
+              const time = i / analysisFps;
+              const angles = extractJointAngles(landmarks);
+              frames.push({ landmarks, timestamp: time, angles });
+              replayFrames.push({ landmarks, timestamp: time });
             }
-            const time = i / analysisFps;
-            const angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: time, angles });
-            replayFrames.push({ landmarks, timestamp: time });
+
+            const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
+            setProgress(pct);
+            setQueue(prev => prev.map(q =>
+              q.id === queueItem.id ? { ...q, progress: pct } : q
+            ));
           }
+          workerManager.dispose();
+        } else {
+          const offscreen = document.createElement('canvas');
+          offscreen.width = extracted.width;
+          offscreen.height = extracted.height;
+          const offCtx = offscreen.getContext('2d');
+          let lockedSubjectIdx = null;
 
-          const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
-          setProgress(pct);
-          setQueue(prev => prev.map(q =>
-            q.id === queueItem.id ? { ...q, progress: pct } : q
-          ));
+          for (let i = 0; i < totalExtractedFrames; i++) {
+            if (abortRef.current) break;
+            offCtx.putImageData(extracted.frames[i], 0, 0);
+            extracted.frames[i] = null;
 
-          await yieldToMain();
+            const deterministicTs = i * (1000 / analysisFps);
+            const result = detectPoseImage(landmarker, offscreen, deterministicTs);
+
+            let landmarks = null;
+            if (result?.landmarks?.length) {
+              if (result.landmarks.length === 1) {
+                landmarks = result.landmarks[0];
+              } else {
+                if (lockedSubjectIdx === null) {
+                  landmarks = selectSubjectPose(result.landmarks);
+                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                } else {
+                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                }
+              }
+              const time = i / analysisFps;
+              const angles = extractJointAngles(landmarks);
+              frames.push({ landmarks, timestamp: time, angles });
+              replayFrames.push({ landmarks, timestamp: time });
+            }
+
+            const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
+            setProgress(pct);
+            setQueue(prev => prev.map(q =>
+              q.id === queueItem.id ? { ...q, progress: pct } : q
+            ));
+
+            await yieldToMain();
+          }
         }
+        extracted.frames.length = 0;
       }
-      // Clear extracted frames array to free remaining memory
-      extracted.frames.length = 0;
 
       // Cache landmarks keyed by video hash
       if (frames.length > 0) {
@@ -617,6 +670,17 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             {lang === 'fr'
               ? '📐 Pour de meilleurs résultats : filmez de côté, corps entier visible, bonne lumière. Une seule personne dans le cadre.'
               : '📐 For best results: film from the side, full body visible, good lighting. One person in frame.'}
+          </p>
+        </div>
+      )}
+
+      {iosWarning && (
+        <div style={{
+          padding: '10px 14px', marginBottom: 12, borderRadius: 10,
+          background: 'rgba(255,170,0,0.08)', border: '1px solid rgba(255,170,0,0.2)',
+        }}>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255,200,100,0.9)', margin: 0, lineHeight: 1.5 }}>
+            {iosWarning}
           </p>
         </div>
       )}
