@@ -12,7 +12,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
-import { extractFrames, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
+import { extractFrames, extractFramesFallback, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
@@ -80,7 +80,7 @@ const yieldToMain = () => new Promise(resolve => {
   ch.port2.postMessage(null);
 });
 
-const MAX_FRAMES = IS_IOS ? 300 : 600;
+const MAX_FRAMES = IS_IOS ? 150 : 600;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
@@ -220,38 +220,61 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       setProgress(99);
     }
 
-    // ── Phase 4: If no cache, extract frames with ffmpeg.wasm ──
+    // ── Phase 4: If no cache, extract frames ──
+    // iOS Safari: skip ffmpeg.wasm entirely (31MB WASM + video buffer exceeds
+    // mobile memory limits and causes the OS to kill the page mid-analysis).
+    // Use native <video> + canvas seeking instead — uses far less memory.
     if (!usedCache) {
       setAnalysisPhase('extracting');
-      setFfmpegStatus('Loading ffmpeg.wasm (~31MB first time)...');
-
-      try {
-        await loadFFmpeg((pct) => {
-          setFfmpegStatus(`Loading ffmpeg.wasm... ${pct}%`);
-        });
-      } catch (err) {
-        console.error('[Upload] ffmpeg.wasm load failed:', err);
-        setErrorMsg('Failed to load ffmpeg.wasm video decoder. Try refreshing the page.');
-        return null;
-      }
-
-      setFfmpegStatus('Extracting frames deterministically...');
       let extracted;
-      try {
-        extracted = await extractFrames(
-          queueItem.file,
-          analysisFps,
-          MAX_FRAMES,
-          maxWidth,
-          (pct) => {
-            setProgress(Math.round(pct * 0.4)); // 0-40% for extraction
-            setFfmpegStatus(`Extracting frames... ${pct}%`);
-          }
-        );
-      } catch (err) {
-        console.error('[Upload] Frame extraction failed:', err);
-        setErrorMsg(`Frame extraction failed: ${err.message}`);
-        return null;
+
+      if (IS_IOS) {
+        setFfmpegStatus('Extracting frames...');
+        try {
+          extracted = await extractFramesFallback(
+            queueItem.file,
+            analysisFps,
+            MAX_FRAMES,
+            maxWidth,
+            (pct) => {
+              setProgress(Math.round(pct * 0.4));
+              setFfmpegStatus(`Extracting frames... ${pct}%`);
+            }
+          );
+        } catch (err) {
+          console.error('[Upload] Native frame extraction failed:', err);
+          setErrorMsg(`Frame extraction failed: ${err.message}`);
+          return null;
+        }
+      } else {
+        setFfmpegStatus('Loading ffmpeg.wasm (~31MB first time)...');
+        try {
+          await loadFFmpeg((pct) => {
+            setFfmpegStatus(`Loading ffmpeg.wasm... ${pct}%`);
+          });
+        } catch (err) {
+          console.error('[Upload] ffmpeg.wasm load failed:', err);
+          setErrorMsg('Failed to load ffmpeg.wasm video decoder. Try refreshing the page.');
+          return null;
+        }
+
+        setFfmpegStatus('Extracting frames deterministically...');
+        try {
+          extracted = await extractFrames(
+            queueItem.file,
+            analysisFps,
+            MAX_FRAMES,
+            maxWidth,
+            (pct) => {
+              setProgress(Math.round(pct * 0.4));
+              setFfmpegStatus(`Extracting frames... ${pct}%`);
+            }
+          );
+        } catch (err) {
+          console.error('[Upload] Frame extraction failed:', err);
+          setErrorMsg(`Frame extraction failed: ${err.message}`);
+          return null;
+        }
       }
 
       frameCount = extracted.frameCount;
@@ -277,13 +300,17 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         }
       }
 
+      const totalExtractedFrames = extracted.frames.length;
+
       if (useWorker && workerManager) {
         // ─── Worker path: process frames off the main thread ───
-        for (let i = 0; i < extracted.frames.length; i++) {
+        for (let i = 0; i < totalExtractedFrames; i++) {
           if (abortRef.current) break;
 
           const deterministicTs = i * (1000 / analysisFps);
           const resultLandmarks = await workerManager.processFrame(extracted.frames[i], deterministicTs, i);
+          // Release frame memory immediately after processing
+          extracted.frames[i] = null;
 
           if (resultLandmarks && resultLandmarks.length > 0) {
             const landmarks = resultLandmarks.length === 1
@@ -295,7 +322,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             replayFrames.push({ landmarks, timestamp: time });
           }
 
-          const pct = 40 + Math.round((i / extracted.frames.length) * 55);
+          const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
           setProgress(pct);
           setQueue(prev => prev.map(q =>
             q.id === queueItem.id ? { ...q, progress: pct } : q
@@ -311,10 +338,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
         let lockedSubjectIdx = null;
 
-        for (let i = 0; i < extracted.frames.length; i++) {
+        for (let i = 0; i < totalExtractedFrames; i++) {
           if (abortRef.current) break;
 
           offCtx.putImageData(extracted.frames[i], 0, 0);
+          // Release frame memory immediately after drawing to canvas
+          extracted.frames[i] = null;
 
           const deterministicTs = i * (1000 / analysisFps);
           const result = detectPoseImage(landmarker, offscreen, deterministicTs);
@@ -337,7 +366,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             replayFrames.push({ landmarks, timestamp: time });
           }
 
-          const pct = 40 + Math.round((i / extracted.frames.length) * 55);
+          const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
           setProgress(pct);
           setQueue(prev => prev.map(q =>
             q.id === queueItem.id ? { ...q, progress: pct } : q
@@ -346,6 +375,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           await yieldToMain();
         }
       }
+      // Clear extracted frames array to free remaining memory
+      extracted.frames.length = 0;
 
       // Cache landmarks keyed by video hash
       if (frames.length > 0) {
