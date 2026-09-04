@@ -82,7 +82,7 @@ export class RepCounter {
   reset() {
     this._reps = 0;
     this._repHistory = [];
-    this._phase = 'idle';
+    this._phase = 'setup'; // 5-stage FSM: setup → eccentric → isometric → concentric → lockout
     this._collectedLandmarks = [];
     this._observedMin = Infinity;
     this._observedMax = -Infinity;
@@ -92,6 +92,11 @@ export class RepCounter {
     this._cycleDebug = null;
     this._velocityAnalysis = null;
     this._progressionScore = null;
+    // Velocity tracking for FSM
+    this._prevValue = null;
+    this._prevPrevValue = null;
+    this._angularVelocity = 0;
+    this._isometricFrames = 0;
   }
 
   /**
@@ -139,38 +144,99 @@ export class RepCounter {
 
     let repCompleted = false;
 
-    // Hysteresis counting for live rep display
+    // ─── 5-Stage Biomechanical State Machine ───
+    // Phases: setup → eccentric → isometric → concentric → lockout → eccentric ...
+    // Transitions fire on angular velocity direction, not static angle thresholds.
+    // This handles tempo reps, pauses at bottom, and partial ROM correctly.
     {
-      const down = ex.downThreshold;
-      const up = ex.upThreshold;
+      const dt = 1 / this._fps;
       const now = videoTimestamp != null ? videoTimestamp * 1000 : Date.now();
 
-      if (down > up) {
-        if (this._phase === 'idle' && value < down) {
-          this._phase = 'concentric';
-        } else if (this._phase === 'concentric' && value < up) {
-          this._phase = 'contracted';
-        } else if (this._phase === 'contracted' && value > down) {
-          if (now - this._lastRepTime > 600) {
-            this._lastRepTime = now;
-            this._phase = 'idle';
-            this._countLiveRep(angles, landmarks);
-            repCompleted = true;
+      // Compute angular velocity (deg/s) with simple finite difference
+      if (this._prevValue !== null) {
+        this._angularVelocity = (value - this._prevValue) / dt;
+      }
+      this._prevPrevValue = this._prevValue;
+      this._prevValue = value;
+
+      // Normalize direction: for exercises where down < up (e.g. push-up, curl),
+      // negative velocity = eccentric (lowering). For exercises where down > up,
+      // positive velocity = eccentric.
+      const down = ex.downThreshold;
+      const up = ex.upThreshold;
+      const invert = down > up;
+      const signedVel = invert ? -this._angularVelocity : this._angularVelocity;
+
+      // Velocity thresholds (deg/s). These are intentionally low to catch slow
+      // tempo reps. The isometric zone absorbs noise at the inflection point.
+      const velThreshold = 15; // minimum angular velocity to count as moving
+      const isometricLimit = 8; // below this = isometric hold
+
+      switch (this._phase) {
+        case 'setup':
+          // Wait for initial movement in either direction
+          if (Math.abs(signedVel) > velThreshold) {
+            this._phase = signedVel > 0 ? 'eccentric' : 'concentric';
           }
-        }
-      } else {
-        if (this._phase === 'idle' && value > down) {
-          this._phase = 'concentric';
-        } else if (this._phase === 'concentric' && value > up) {
-          this._phase = 'contracted';
-        } else if (this._phase === 'contracted' && value < down) {
-          if (now - this._lastRepTime > 600) {
-            this._lastRepTime = now;
-            this._phase = 'idle';
-            this._countLiveRep(angles, landmarks);
-            repCompleted = true;
+          break;
+
+        case 'eccentric':
+          // Moving toward the bottom of the rep
+          if (Math.abs(signedVel) < isometricLimit) {
+            this._isometricFrames++;
+            // After ~0.1s of near-zero velocity at the inflection, transition
+            if (this._isometricFrames > Math.max(2, this._fps * 0.1)) {
+              this._phase = 'isometric';
+              this._isometricFrames = 0;
+            }
+          } else {
+            this._isometricFrames = 0;
+            // If velocity reverses hard during eccentric, skip to concentric
+            if (signedVel < -velThreshold) {
+              this._phase = 'concentric';
+            }
           }
-        }
+          break;
+
+        case 'isometric':
+          // Paused at inflection (bottom of rep). Wait for concentric movement.
+          if (signedVel < -velThreshold) {
+            this._phase = 'concentric';
+          } else if (signedVel > velThreshold) {
+            // False inflection — went back to eccentric
+            this._phase = 'eccentric';
+          }
+          break;
+
+        case 'concentric':
+          // Moving back toward lockout
+          if (Math.abs(signedVel) < isometricLimit) {
+            this._isometricFrames++;
+            if (this._isometricFrames > Math.max(2, this._fps * 0.1)) {
+              // Reached lockout (velocity died at the top)
+              if (now - this._lastRepTime > 600) {
+                this._lastRepTime = now;
+                this._phase = 'lockout';
+                this._isometricFrames = 0;
+                this._countLiveRep(angles, landmarks);
+                repCompleted = true;
+              }
+            }
+          } else {
+            this._isometricFrames = 0;
+            // Velocity reversed — back to eccentric without reaching lockout
+            if (signedVel > velThreshold) {
+              this._phase = 'eccentric';
+            }
+          }
+          break;
+
+        case 'lockout':
+          // At the top. Wait for next eccentric to start the next rep.
+          if (signedVel > velThreshold) {
+            this._phase = 'eccentric';
+          }
+          break;
       }
     }
 

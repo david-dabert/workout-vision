@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { drawPose } from '../lib/poseAnalysis';
 import { useT } from '../lib/LanguageContext';
+import { AudioFeedback } from '../lib/AudioFeedback';
 
 /**
  * Binary search for the closest frame to a given timestamp.
@@ -88,7 +89,7 @@ function canExportVideo() {
  * Replays a video with skeleton overlay drawn from stored landmark frames.
  * HD download via one-tap auto-record at original video resolution.
  */
-export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, onClose }) {
+export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, onClose, audioEnabled }) {
   const { t, tExercise } = useT();
   // Translate exercise name for overlay display
   const displayExerciseName = exerciseKey ? tExercise(exerciseKey, exerciseName) : exerciseName;
@@ -106,6 +107,23 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [progress, setProgress] = useState(0);
+
+  // Audio feedback: track which reps have already triggered sound
+  const audioRef = useRef(null);
+  const playedRepsRef = useRef(new Set());
+
+  useEffect(() => {
+    if (audioEnabled) {
+      audioRef.current = new AudioFeedback();
+      audioRef.current.start();
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.dispose();
+        audioRef.current = null;
+      }
+    };
+  }, [audioEnabled]);
 
   // Detect iOS for resolution caps
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -135,6 +153,23 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       const h = canvas.height;
       ctx.drawImage(video, 0, 0, w, h);
       drawOverlay(ctx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
+
+      // Audio feedback: play rep-complete sound when crossing rep boundaries
+      if (audioRef.current && repHistory) {
+        const t = video.currentTime;
+        for (let i = 0; i < repHistory.length; i++) {
+          const r = repHistory[i];
+          if (r.endTime && t >= r.endTime && !playedRepsRef.current.has(i)) {
+            playedRepsRef.current.add(i);
+            audioRef.current.playRepComplete();
+            if (r.issues && r.issues.length > 0) {
+              const hasMajor = r.feedback && r.feedback.some(f => !f.passed && f.severity === 'major');
+              audioRef.current.playFormWarning(hasMajor ? 'major' : 'minor');
+            }
+          }
+        }
+      }
+
       // Throttle setProgress to every 5th frame to reduce React re-renders
       progressFrameRef.current++;
       if (progressFrameRef.current % 5 === 0) {
@@ -187,6 +222,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
     const video = videoRef.current;
     if (!video) return;
     if (video.paused) {
+      playedRepsRef.current.clear();
       video.play();
       setPlaying(true);
       rafRef.current = requestAnimationFrame(drawFrame);

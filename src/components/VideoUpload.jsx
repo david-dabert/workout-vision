@@ -12,6 +12,8 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import { extractFrames, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
+import { AudioFeedback } from '../lib/AudioFeedback';
+import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 
 
 // ── Landmark cache (IndexedDB) ──
@@ -97,6 +99,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const overlayRef = useRef(null);
   const abortRef = useRef(false);
   const blobUrlRef = useRef(null);
+  const audioFeedbackRef = useRef(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -113,6 +117,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       if (videoRef.current) {
         videoRef.current.removeAttribute('src');
         videoRef.current.load();
+      }
+      // Dispose audio feedback
+      if (audioFeedbackRef.current) {
+        audioFeedbackRef.current.dispose();
+        audioFeedbackRef.current = null;
       }
     };
   }, []);
@@ -239,50 +248,89 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       setFfmpegStatus('Running pose detection...');
       setLiveReps(0);
 
-      // Offscreen canvas for MediaPipe input
-      const offscreen = document.createElement('canvas');
-      offscreen.width = extracted.width;
-      offscreen.height = extracted.height;
-      const offCtx = offscreen.getContext('2d');
-
-      let lockedSubjectIdx = null;
-
-      for (let i = 0; i < extracted.frames.length; i++) {
-        if (abortRef.current) break;
-
-        // Draw ImageData to canvas for MediaPipe
-        offCtx.putImageData(extracted.frames[i], 0, 0);
-
-        // Deterministic timestamp
-        const deterministicTs = i * (1000 / analysisFps);
-        const result = detectPoseImage(landmarker, offscreen, deterministicTs);
-
-        let landmarks = null;
-        if (result?.landmarks?.length) {
-          if (result.landmarks.length === 1) {
-            landmarks = result.landmarks[0];
-          } else {
-            if (lockedSubjectIdx === null) {
-              landmarks = selectSubjectPose(result.landmarks);
-              lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-            } else {
-              landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-            }
-          }
-          const time = i / analysisFps;
-          const angles = extractJointAngles(landmarks);
-          frames.push({ landmarks, timestamp: time, angles });
-          replayFrames.push({ landmarks, timestamp: time });
+      // Try Web Worker path (offloads MediaPipe from UI thread)
+      let useWorker = false;
+      let workerManager = null;
+      if (isWorkerSupported()) {
+        try {
+          workerManager = new PoseWorkerManager();
+          await workerManager.init();
+          useWorker = true;
+          console.log('[Upload] Using Web Worker for pose detection');
+        } catch (e) {
+          console.warn('[Upload] Worker init failed, falling back to main thread:', e.message);
+          if (workerManager) { workerManager.dispose(); workerManager = null; }
         }
+      }
 
-        const pct = 40 + Math.round((i / extracted.frames.length) * 55); // 40-95%
-        setProgress(pct);
-        setQueue(prev => prev.map(q =>
-          q.id === queueItem.id ? { ...q, progress: pct } : q
-        ));
+      if (useWorker && workerManager) {
+        // ─── Worker path: process frames off the main thread ───
+        for (let i = 0; i < extracted.frames.length; i++) {
+          if (abortRef.current) break;
 
-        // Yield every frame so the browser can paint progress and respond to stop button
-        await yieldToMain();
+          const deterministicTs = i * (1000 / analysisFps);
+          const resultLandmarks = await workerManager.processFrame(extracted.frames[i], deterministicTs, i);
+
+          if (resultLandmarks && resultLandmarks.length > 0) {
+            const landmarks = resultLandmarks.length === 1
+              ? resultLandmarks[0]
+              : selectSubjectPose(resultLandmarks);
+            const time = i / analysisFps;
+            const angles = extractJointAngles(landmarks);
+            frames.push({ landmarks, timestamp: time, angles });
+            replayFrames.push({ landmarks, timestamp: time });
+          }
+
+          const pct = 40 + Math.round((i / extracted.frames.length) * 55);
+          setProgress(pct);
+          setQueue(prev => prev.map(q =>
+            q.id === queueItem.id ? { ...q, progress: pct } : q
+          ));
+        }
+        workerManager.dispose();
+      } else {
+        // ─── Main-thread fallback ───
+        const offscreen = document.createElement('canvas');
+        offscreen.width = extracted.width;
+        offscreen.height = extracted.height;
+        const offCtx = offscreen.getContext('2d');
+
+        let lockedSubjectIdx = null;
+
+        for (let i = 0; i < extracted.frames.length; i++) {
+          if (abortRef.current) break;
+
+          offCtx.putImageData(extracted.frames[i], 0, 0);
+
+          const deterministicTs = i * (1000 / analysisFps);
+          const result = detectPoseImage(landmarker, offscreen, deterministicTs);
+
+          let landmarks = null;
+          if (result?.landmarks?.length) {
+            if (result.landmarks.length === 1) {
+              landmarks = result.landmarks[0];
+            } else {
+              if (lockedSubjectIdx === null) {
+                landmarks = selectSubjectPose(result.landmarks);
+                lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+              } else {
+                landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+              }
+            }
+            const time = i / analysisFps;
+            const angles = extractJointAngles(landmarks);
+            frames.push({ landmarks, timestamp: time, angles });
+            replayFrames.push({ landmarks, timestamp: time });
+          }
+
+          const pct = 40 + Math.round((i / extracted.frames.length) * 55);
+          setProgress(pct);
+          setQueue(prev => prev.map(q =>
+            q.id === queueItem.id ? { ...q, progress: pct } : q
+          ));
+
+          await yieldToMain();
+        }
       }
 
       // Cache landmarks keyed by video hash
@@ -478,6 +526,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         formScore={replayResult.formScore}
         repHistory={replayResult.repHistory}
         onClose={() => setReplayResult(null)}
+        audioEnabled={audioEnabled}
       />
     );
   }
@@ -649,6 +698,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 placeholder="kg"
                 style={{ width: 64, padding: '10px 8px', fontSize: '0.82rem', textAlign: 'center' }}
               />
+              <button
+                className={`btn btn-ghost btn-sm ${audioEnabled ? 'active' : ''}`}
+                style={{
+                  padding: '10px 12px', fontSize: '1.1rem',
+                  opacity: audioEnabled ? 1 : 0.4,
+                  background: audioEnabled ? 'rgba(0,245,212,0.15)' : 'transparent',
+                  borderRadius: 8,
+                }}
+                onClick={() => setAudioEnabled(prev => !prev)}
+                title={audioEnabled ? 'Audio feedback ON' : 'Audio feedback OFF'}
+              >
+                {audioEnabled ? '\u{1F50A}' : '\u{1F507}'}
+              </button>
               <button
                 className="btn btn-primary"
                 style={{ flex: 1 }}

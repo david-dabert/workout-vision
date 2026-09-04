@@ -11,6 +11,7 @@
  */
 
 import localforage from 'localforage';
+import { KalmanLandmarkFilter } from './KalmanLandmarkFilter';
 
 // ─── CDN lazy loader: bypasses Vite's esbuild minifier which breaks MediaPipe WASM on iOS Safari ───
 let _mpVision = null;
@@ -27,6 +28,10 @@ let poseLandmarker = null;
 let modelLoadPromise = null;
 let lastVideoTime = -1;
 let lastResult = null;
+
+// Shared Kalman filter instances (one per detection path to avoid cross-contamination)
+let _kalmanImage = new KalmanLandmarkFilter();
+let _kalmanVideo = new KalmanLandmarkFilter();
 
 export const LANDMARKS = {
   NOSE: 0,
@@ -218,6 +223,8 @@ export function disposeAllLandmarkers() {
   modelLoadPromise = null;
   lastVideoTime = -1;
   lastResult = null;
+  _kalmanImage.reset();
+  _kalmanVideo.reset();
 }
 
 /**
@@ -234,7 +241,14 @@ export function disposeAllLandmarkers() {
 export function detectPoseImage(landmarker, source, timestamp) {
   try {
     const ts = timestamp != null ? timestamp : performance.now();
-    return landmarker.detectForVideo(source, ts);
+    const result = landmarker.detectForVideo(source, ts);
+    // Apply Kalman filter to smooth landmark coordinates before downstream use
+    if (result && result.landmarks) {
+      for (let i = 0; i < result.landmarks.length; i++) {
+        result.landmarks[i] = _kalmanImage.filter(result.landmarks[i]) || result.landmarks[i];
+      }
+    }
+    return result;
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (image):', e);
     return null;
@@ -257,6 +271,12 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
     if (result && result.segmentationMasks) {
       result.segmentationMasks.forEach(m => { try { m.close(); } catch (_) {} });
     }
+    // Apply Kalman filter to smooth landmark coordinates
+    if (result && result.landmarks) {
+      for (let i = 0; i < result.landmarks.length; i++) {
+        result.landmarks[i] = _kalmanVideo.filter(result.landmarks[i]) || result.landmarks[i];
+      }
+    }
     if (result && result.landmarks && result.landmarks.length > 0) {
       lastResult = result;
     }
@@ -270,6 +290,12 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
 export function resetTimestamp() {
   lastVideoTime = -1;
   lastResult = null;
+  _kalmanVideo.reset();
+}
+
+export function resetKalmanFilters() {
+  _kalmanImage.reset();
+  _kalmanVideo.reset();
 }
 
 // ─── Person lock: select the subject (largest + most centered) ───
