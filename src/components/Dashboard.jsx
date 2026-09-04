@@ -8,6 +8,52 @@ import { useT } from '../lib/LanguageContext';
 import { gradeFromScore, translateMuscle } from '../lib/utils';
 import VisionScoreHero from './VisionScoreHero';
 
+const getGreeting = (profile) => {
+  const h = new Date().getHours();
+  if (h < 12) return profile?.name ? `Good morning, ${profile.name.split(' ')[0]}` : 'Good morning';
+  if (h < 17) return profile?.name ? `Good afternoon, ${profile.name.split(' ')[0]}` : 'Good afternoon';
+  return profile?.name ? `Good evening, ${profile.name.split(' ')[0]}` : 'Good evening';
+};
+
+const getMotivation = (count) => {
+  if (count === 0) return "Your fitness journey starts with one rep.";
+  if (count < 5) return "Building momentum. Every session counts.";
+  if (count < 15) return "You're finding your rhythm. Keep pushing.";
+  if (count < 30) return "Consistency is your superpower.";
+  return "You're in the zone. Form is everything.";
+};
+
+const calculateStreak = (workouts) => {
+  if (!workouts.length) return 0;
+  const days = new Set(workouts.map(w => new Date(w.date).toDateString()));
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    if (days.has(d.toDateString())) streak++;
+    else if (i > 0) break;
+  }
+  return streak;
+};
+
+const getLast7Days = (workouts) => {
+  const days = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toDateString();
+    const dayWorkouts = workouts.filter(w => new Date(w.date).toDateString() === dateStr);
+    days.push({
+      label: d.toLocaleDateString('en', { weekday: 'narrow' }),
+      count: dayWorkouts.length,
+      isToday: i === 0,
+    });
+  }
+  return days;
+};
+
 export default function Dashboard({ profile, modelStatus, onNavigate }) {
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
@@ -68,10 +114,26 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
               >FR</button>
             </div>
           </div>
-          <p className="tagline">{t('tagline')}</p>
-          <div className={`engine-status engine-${statusDot}`}>
-            <span className={`engine-dot ${statusDot}`} />
-            <span>{statusText}</span>
+          <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, fontFamily: 'var(--font-display, var(--font))' }}>
+            {getGreeting(profile)}
+          </p>
+          <p className="tagline">{getMotivation(allWorkouts.length)}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className={`engine-status engine-${statusDot}`}>
+              <span className={`engine-dot ${statusDot}`} />
+              <span>{statusText}</span>
+            </div>
+            {calculateStreak(allWorkouts) > 0 && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                background: 'rgba(0, 224, 150, 0.12)', color: 'var(--accent)',
+                padding: '3px 10px', borderRadius: 20, fontSize: '0.78rem',
+                fontWeight: 700, letterSpacing: '0.02em',
+                border: '1px solid rgba(0, 224, 150, 0.25)',
+              }}>
+                🔥 {calculateStreak(allWorkouts)} day{calculateStreak(allWorkouts) !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -88,7 +150,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
         >
           <div className="action-primary-glow" />
           <div className="action-primary-content">
-            <div className="action-primary-icon">
+            <div className="action-primary-icon" style={{ animation: 'pulseGlow 3s ease-in-out infinite' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7" />
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
@@ -177,6 +239,36 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Weekly mini-graph ── */}
+      {allWorkouts.length > 0 && (
+        <div style={{
+          display: 'flex', justifyContent: 'center', gap: 10,
+          padding: '12px 20px', margin: '0 16px 8px',
+          background: 'var(--card-bg, rgba(255,255,255,0.04))',
+          borderRadius: 14, border: '1px solid var(--border, rgba(255,255,255,0.06))',
+        }}>
+          {getLast7Days(allWorkouts).map((day, i) => (
+            <div key={i} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            }}>
+              <div style={{
+                width: day.isToday ? 14 : 10,
+                height: day.isToday ? 14 : 10,
+                borderRadius: '50%',
+                background: day.count > 0 ? 'var(--accent, #00e096)' : 'transparent',
+                border: day.count > 0 ? '2px solid var(--accent, #00e096)' : '2px solid var(--muted, rgba(255,255,255,0.2))',
+                transition: 'all 0.2s ease',
+                boxShadow: day.count > 0 && day.isToday ? '0 0 8px rgba(0, 224, 150, 0.4)' : 'none',
+              }} />
+              <span style={{
+                fontSize: '0.6rem', color: day.isToday ? 'var(--text-primary)' : 'var(--muted, rgba(255,255,255,0.4))',
+                fontWeight: day.isToday ? 700 : 400,
+              }}>{day.label}</span>
+            </div>
+          ))}
         </div>
       )}
 

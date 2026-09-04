@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check, Play, ClipboardCheck, SkipForward } from 'lucide-react';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_LABELS } from '../lib/injuries';
@@ -135,8 +135,26 @@ export default function Onboarding({ onComplete }) {
         <div className="onboarding-actions">
           <div style={{ flex: 1 }} />
           <button
-            className="btn btn-primary btn-lg"
             onClick={() => setShowDemo(false)}
+            style={{
+              background: 'linear-gradient(135deg, #00f5d4, #00e676)',
+              color: '#000',
+              fontWeight: 800,
+              fontSize: '1rem',
+              padding: '16px 32px',
+              borderRadius: 16,
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
+              transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              width: '100%',
+              fontFamily: 'var(--font-display, inherit)',
+              letterSpacing: '-0.01em',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
           >
             Continue Setup
             <ChevronRight size={16} />
@@ -148,33 +166,65 @@ export default function Onboarding({ onComplete }) {
 
   return (
     <div className="onboarding">
-      {/* Progress dots */}
-      <div className="onboarding-progress">
+      {/* Premium progress indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '0 40px', marginBottom: 32 }}>
         {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-          <div
-            key={i}
-            className={`onboarding-dot ${i + 1 === step ? 'active' : ''} ${i + 1 < step ? 'done' : ''}`}
-          />
+          <React.Fragment key={i}>
+            <div style={{
+              width: 10, height: 10, borderRadius: '50%',
+              background: i + 1 <= step ? 'var(--accent-gradient)' : 'rgba(255,255,255,0.1)',
+              boxShadow: i + 1 <= step ? '0 0 8px rgba(0,245,212,0.3)' : 'none',
+              transition: 'all 0.4s var(--ease-spring)',
+              transform: i + 1 === step ? 'scale(1.3)' : 'scale(1)',
+            }} />
+            {i < TOTAL_STEPS - 1 && (
+              <div style={{
+                flex: 1, height: 2,
+                background: i + 1 < step ? 'var(--accent-gradient)' : 'rgba(255,255,255,0.06)',
+                transition: 'background 0.4s',
+              }} />
+            )}
+          </React.Fragment>
         ))}
       </div>
 
       <div className="onboarding-content">
-        {step === 1 && <StepWelcome onTryDemo={() => setShowDemo(true)} />}
-        {step === 2 && (
-          <StepMovementAssessment
-            onStartAssessment={() => { update('baselineAssessmentPending', true); next(); }}
-            onSkip={() => next()}
-          />
-        )}
-        {step === 3 && <StepBasicInfo data={data} update={update} />}
-        {step === 4 && <StepFitnessInfo data={data} update={update} toggleInjury={toggleInjury} />}
-        {step === 5 && <StepSummary data={data} />}
+        <div key={step} style={{
+          animation: 'fadeInUp 0.4s cubic-bezier(0, 0, 0.2, 1) both',
+        }}>
+          {step === 1 && <StepWelcome onTryDemo={() => setShowDemo(true)} />}
+          {step === 2 && (
+            <StepMovementAssessment
+              onStartAssessment={() => { update('baselineAssessmentPending', true); next(); }}
+              onSkip={() => next()}
+            />
+          )}
+          {step === 3 && <StepBasicInfo data={data} update={update} />}
+          {step === 4 && <StepFitnessInfo data={data} update={update} toggleInjury={toggleInjury} />}
+          {step === 5 && <StepSummary data={data} />}
+        </div>
       </div>
 
       {step !== 2 && (
         <div className="onboarding-actions">
           {step > 1 && (
-            <button className="btn btn-ghost" onClick={back}>
+            <button
+              onClick={back}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(255,255,255,0.4)',
+                padding: '12px 24px',
+                borderRadius: 12,
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: 500,
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               <ChevronLeft size={16} />
               {t('back')}
             </button>
@@ -182,15 +232,55 @@ export default function Onboarding({ onComplete }) {
           <div style={{ flex: 1 }} />
           {step < TOTAL_STEPS ? (
             <button
-              className="btn btn-primary btn-lg"
               onClick={next}
               disabled={!canAdvance()}
+              style={{
+                background: 'linear-gradient(135deg, #00f5d4, #00e676)',
+                color: '#000',
+                fontWeight: 800,
+                fontSize: '1rem',
+                padding: '16px 32px',
+                borderRadius: 16,
+                border: 'none',
+                cursor: canAdvance() ? 'pointer' : 'not-allowed',
+                boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
+                transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                width: '100%',
+                fontFamily: 'var(--font-display, inherit)',
+                letterSpacing: '-0.01em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                opacity: canAdvance() ? 1 : 0.3,
+              }}
             >
               {step === 1 ? t('get_started') : t('next')}
               <ChevronRight size={16} />
             </button>
           ) : (
-            <button className="btn btn-primary btn-lg" onClick={finish}>
+            <button
+              onClick={finish}
+              style={{
+                background: 'linear-gradient(135deg, #00f5d4, #00e676)',
+                color: '#000',
+                fontWeight: 800,
+                fontSize: '1rem',
+                padding: '16px 32px',
+                borderRadius: 16,
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
+                transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                width: '100%',
+                fontFamily: 'var(--font-display, inherit)',
+                letterSpacing: '-0.01em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+            >
               {t('finish')}
               <Check size={16} />
             </button>
@@ -206,9 +296,13 @@ function StepWelcome({ onTryDemo }) {
   const { t } = useT();
   return (
     <div className="onboarding-step text-center">
-      <div className="onboarding-icon-large">
-        <Dumbbell size={48} />
-      </div>
+      {/* Breathing orb */}
+      <div style={{
+        width: 120, height: 120, borderRadius: '50%', margin: '0 auto 24px',
+        background: 'radial-gradient(circle at 40% 40%, rgba(196,181,253,0.4), rgba(0,245,212,0.2) 50%, rgba(255,107,157,0.1) 80%, transparent)',
+        boxShadow: '0 0 60px rgba(0,245,212,0.15), 0 0 120px rgba(196,181,253,0.08)',
+        animation: 'breathe 4s ease-in-out infinite, float 6s ease-in-out infinite',
+      }} />
       <h1>Workout <span style={{ color: 'var(--accent)' }}>Vision</span></h1>
       <p className="onboarding-tagline">
         {t('welcome_subtitle')}
@@ -228,7 +322,6 @@ function StepWelcome({ onTryDemo }) {
         </div>
       </div>
       <button
-        className="btn btn-ghost"
         onClick={onTryDemo}
         style={{
           marginTop: 16,
@@ -236,9 +329,14 @@ function StepWelcome({ onTryDemo }) {
           alignItems: 'center',
           gap: 6,
           fontSize: '0.85rem',
-          fontWeight: 600,
-          color: 'var(--accent)',
-          border: '1px solid rgba(0,245,212,0.25)',
+          fontWeight: 500,
+          color: 'rgba(255,255,255,0.4)',
+          background: 'transparent',
+          border: '1px solid rgba(255,255,255,0.08)',
+          padding: '12px 24px',
+          borderRadius: 12,
+          cursor: 'pointer',
+          transition: 'all 0.2s',
         }}
       >
         <Play size={14} />
@@ -312,17 +410,48 @@ function StepMovementAssessment({ onStartAssessment, onSkip }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <button
-          className="btn btn-primary btn-lg"
           onClick={onStartAssessment}
-          style={{ width: '100%', justifyContent: 'center' }}
+          style={{
+            background: 'linear-gradient(135deg, #00f5d4, #00e676)',
+            color: '#000',
+            fontWeight: 800,
+            fontSize: '1rem',
+            padding: '16px 32px',
+            borderRadius: 16,
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
+            transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            width: '100%',
+            fontFamily: 'var(--font-display, inherit)',
+            letterSpacing: '-0.01em',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
         >
           <ClipboardCheck size={16} />
           Start Assessment
         </button>
         <button
-          className="btn btn-ghost"
           onClick={onSkip}
-          style={{ width: '100%', justifyContent: 'center', fontSize: '0.82rem' }}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.4)',
+            padding: '12px 24px',
+            borderRadius: 12,
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            transition: 'all 0.2s',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+          }}
         >
           <SkipForward size={14} />
           Skip for now

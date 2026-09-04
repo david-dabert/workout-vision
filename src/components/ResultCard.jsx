@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EXERCISES, getExerciseIllustration } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
 import { shareCard, challengeShare } from '../lib/shareCard';
@@ -88,6 +88,23 @@ export default function ResultCard({ result, onReplay }) {
   const [showDeepData, setShowDeepData] = useState(false);
   const [challengeStatus, setChallengeStatus] = useState(null);
 
+  // Score reveal animation: count up from 0
+  const [displayScore, setDisplayScore] = useState(0);
+  useEffect(() => {
+    if (formScore == null) return;
+    let start = 0;
+    const duration = 800;
+    const startTime = Date.now();
+    const step = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setDisplayScore(Math.round(eased * formScore));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [formScore]);
+
   return (
     <div className="card result-card" style={{ marginTop: 14 }}>
       {/* Header with grade badge */}
@@ -117,7 +134,17 @@ export default function ResultCard({ result, onReplay }) {
             </div>
           </div>
         </div>
-        <span className={`score-badge ${cls}`} style={{ fontSize: '1.1rem', padding: '8px 16px' }}>{grade}</span>
+        <span className={`score-badge ${cls}`} style={{ fontSize: '1.1rem', padding: '8px 16px', position: 'relative', overflow: 'hidden' }}>
+          {grade}
+          {grade === 'A' && (
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: 'inherit',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 2s ease-in-out infinite',
+            }} />
+          )}
+        </span>
       </div>
 
       {muscles && <MuscleMap muscles={muscles} size={90} />}
@@ -135,7 +162,7 @@ export default function ResultCard({ result, onReplay }) {
           <span className="stat-card-label">{t('form_score_label')}</span>
           <span className="stat-card-value">
             <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
-              {formScore}
+              {displayScore}
             </span>
             <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>/100</span>
           </span>
@@ -149,8 +176,19 @@ export default function ResultCard({ result, onReplay }) {
         </div>
       </div>
 
+      {baselineComparison?.overallForm?.isPersonalBest && (
+        <div style={{
+          textAlign: 'center', padding: '12px 0', marginBottom: 8,
+          background: 'linear-gradient(135deg, rgba(255,107,157,0.08), rgba(196,181,253,0.08))',
+          borderRadius: 12, border: '1px solid rgba(255,107,157,0.15)',
+        }}>
+          <span style={{ fontSize: 24, display: 'block', marginBottom: 4 }}>&#10024;</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#ff6b9d', letterSpacing: 1, textTransform: 'uppercase' }}>New Personal Best!</span>
+        </div>
+      )}
+
       {coachingInsight && (
-        <div className="coaching-card">
+        <div className="coaching-card" style={{ background: 'linear-gradient(135deg, rgba(0,245,212,0.06) 0%, rgba(196,181,253,0.03) 100%)' }}>
           <div className="coaching-icon">AI</div>
           <p className="coaching-text">{coachingInsight}</p>
         </div>
@@ -216,6 +254,8 @@ export default function ResultCard({ result, onReplay }) {
                     <div className="rep-bar" style={{
                       height: `${Math.max(score, 5)}%`,
                       background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
+                      boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.2), 0 0 4px rgba(0,245,212,0.1)',
+                      borderRadius: '4px 4px 1px 1px',
                     }} />
                   </div>
                   <span className="rep-num">{i + 1}</span>
@@ -630,8 +670,8 @@ export default function ResultCard({ result, onReplay }) {
         </button>
         <button
           className="btn btn-primary"
-          style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 700,
-            background: 'linear-gradient(135deg, #00f5d4, #00d4ff)', border: 'none', color: '#000' }}
+          style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 800,
+            background: 'linear-gradient(135deg, #ff6b9d, #ffb088)', border: 'none', color: '#000' }}
           onClick={async () => {
             const outcome = await challengeShare(result);
             if (outcome === 'copied') {
