@@ -59,8 +59,8 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userH
   const validAngles = anglesPerFrame.filter(a => a !== null);
   if (validAngles.length < 2) return emptyResult();
 
-  // Get tracking values
-  const trackingValues = anglesPerFrame.map(a => a ? exercise.getValue(a) : null);
+  // Get tracking values (some exercises like calf_raise need landmarks too)
+  const trackingValues = anglesPerFrame.map((a, i) => a ? exercise.getValue(a, rawFrames[i]) : null);
 
   // Rep boundaries come from RepCounter (single source of truth).
   // If RepCounter found 0 reps, biomechanics returns empty — no rescue algo.

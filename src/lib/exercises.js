@@ -4731,6 +4731,7 @@ export const EXERCISES = {
   front_lever: {
     name: 'Front Lever',
     category: 'bodyweight',
+    isIsometric: true,
     muscles: { primary: ['Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Rear Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
@@ -4745,6 +4746,7 @@ export const EXERCISES = {
   back_lever: {
     name: 'Back Lever',
     category: 'bodyweight',
+    isIsometric: true,
     muscles: { primary: ['Pectorals', 'Biceps', 'Core'], secondary: ['Front Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
@@ -4759,6 +4761,7 @@ export const EXERCISES = {
   planche: {
     name: 'Planche',
     category: 'bodyweight',
+    isIsometric: true,
     muscles: { primary: ['Pectorals', 'Front Deltoids', 'Core'], secondary: ['Triceps', 'Serratus Anterior'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),

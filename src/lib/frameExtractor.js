@@ -439,8 +439,11 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     const totalPossibleFrames = Math.floor(duration * targetFps);
     const frameCount = Math.min(totalPossibleFrames, maxFrames);
 
-    // For duplicate detection: store a small fingerprint of the previous frame
-    let prevFingerprint = null;
+    // For duplicate detection: compare actual video.currentTime after seek.
+    // iOS Safari snaps to keyframes, so multiple seek requests may land on
+    // the same decoded frame. Comparing currentTime is reliable; comparing
+    // pixel data from the top row is not (gym ceiling doesn't change).
+    let prevCurrentTime = -1;
     let extractedCount = 0;
 
     for (let i = 0; i < frameCount; i++) {
@@ -475,25 +478,20 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
         continue; // skip this frame
       }
 
-      // Draw and check for duplicate (keyframe snapping)
+      // Duplicate detection via currentTime comparison (keyframe snapping)
+      const actualTime = video.currentTime;
+      if (Math.abs(actualTime - prevCurrentTime) < 0.01) {
+        // Seek landed on the same keyframe as last time, skip
+        if (onProgress) onProgress(Math.round(((i + 1) / frameCount) * 100));
+        continue;
+      }
+      prevCurrentTime = actualTime;
+
+      // Draw frame to canvas
       try {
         ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
       } catch {
         continue; // canvas taint or draw failure, skip frame
-      }
-
-      // Quick duplicate detection: sample 8 pixels and compare fingerprint
-      try {
-        const sample = ctx.getImageData(0, 0, frameWidth, 1).data;
-        const fp = `${sample[0]}-${sample[100]}-${sample[400]}-${sample[800]}-${sample[1200]}-${sample[1600]}`;
-        if (fp === prevFingerprint) {
-          // Duplicate frame from keyframe snapping, skip it
-          if (onProgress) onProgress(Math.round(((i + 1) / frameCount) * 100));
-          continue;
-        }
-        prevFingerprint = fp;
-      } catch {
-        // If sampling fails, process anyway
       }
 
       // Pass the canvas directly to the callback (no ImageData allocation needed

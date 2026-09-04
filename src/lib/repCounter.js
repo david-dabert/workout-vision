@@ -98,6 +98,9 @@ export class RepCounter {
     this._prevPrevValue = null;
     this._angularVelocity = 0;
     this._isometricFrames = 0;
+    // Live mode: track worst angles during the current rep cycle for form evaluation
+    this._cycleAngles = [];
+    this._cycleLandmarks = [];
   }
 
   /**
@@ -144,6 +147,12 @@ export class RepCounter {
     }
 
     let repCompleted = false;
+
+    // Collect angles/landmarks during rep cycle for form evaluation across the full rep
+    if (this._phase !== 'setup' && this._phase !== 'lockout') {
+      this._cycleAngles.push(angles);
+      this._cycleLandmarks.push(landmarks);
+    }
 
     // ─── 5-Stage Biomechanical State Machine ───
     // Phases: setup → eccentric → isometric → concentric → lockout → eccentric ...
@@ -236,6 +245,9 @@ export class RepCounter {
           // At the top. Wait for next eccentric to start the next rep.
           if (signedVel > velThreshold) {
             this._phase = 'eccentric';
+            // Reset cycle buffers for the new rep
+            this._cycleAngles = [];
+            this._cycleLandmarks = [];
           }
           break;
       }
@@ -418,14 +430,16 @@ export class RepCounter {
     }
     const signalRange = sigMax - sigMin;
 
-    if (signalRange < 15) {
-      console.debug(`[RepCounter] Signal range too small: ${signalRange.toFixed(1)}°`);
+    if (signalRange < 10) {
+      console.debug(`[RepCounter] Signal range too small: ${signalRange.toFixed(1)}`);
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    // Amplitude threshold = 45% of signal range.
-    // Noise valleys from bestSide arm-switching are 20-40°; real valleys are 60-100°.
-    const minAmplitude = Math.max(40, signalRange * 0.45);
+    // Amplitude threshold = 30% of signal range (prominence filter).
+    // This is proportional so it works for both angle signals (degrees)
+    // and non-angle signals (calf_raise 0-100 scale).
+    // The old floor of 40° broke non-angle exercises entirely.
+    const minAmplitude = signalRange * 0.30;
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
     const halfWindow = Math.max(5, Math.round(this._fps * 0.8));
@@ -664,12 +678,35 @@ export class RepCounter {
 
   _countLiveRep(angles, landmarks) {
     this._reps++;
+
+    // Evaluate form across ALL frames collected during this rep cycle,
+    // not just the lockout frame. This catches depth checks, trunk angle
+    // at bottom, etc. that would be missed at lockout.
+    const cycleAngles = this._cycleAngles.length > 0 ? this._cycleAngles : [angles];
+    const cycleLandmarks = this._cycleLandmarks.length > 0 ? this._cycleLandmarks : [landmarks];
+    const sampleStep = Math.max(1, Math.floor(cycleAngles.length / 8));
+
     const formResults = this._exercise.formChecks.map((fc) => {
-      const passed = fc.check(angles, landmarks);
-      const quality = typeof fc.quality === 'function'
-        ? Math.round(fc.quality(angles, landmarks) * 100) / 100
-        : (passed ? 1 : 0);
-      return { name: fc.name, passed, quality, bad: fc.bad, severity: fc.severity };
+      let failCount = 0;
+      let sampleCount = 0;
+      let qualitySum = 0;
+      const hasQualityFn = typeof fc.quality === 'function';
+
+      for (let i = 0; i < cycleAngles.length; i += sampleStep) {
+        const a = cycleAngles[i];
+        const lm = cycleLandmarks[i];
+        if (!a) continue;
+        sampleCount++;
+        if (!fc.check(a, lm)) failCount++;
+        if (hasQualityFn) qualitySum += fc.quality(a, lm);
+      }
+
+      const quality = sampleCount > 0
+        ? (hasQualityFn ? qualitySum / sampleCount : 1 - failCount / sampleCount)
+        : 0;
+      const passed = quality >= 0.70;
+
+      return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad, severity: fc.severity };
     });
 
     const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
@@ -681,10 +718,14 @@ export class RepCounter {
       score,
       issues,
       ts: Date.now(),
-      startFrame: this._frameIdx,
-      bottomFrame: this._frameIdx,
+      startFrame: this._frameIdx - cycleAngles.length,
+      bottomFrame: this._frameIdx - Math.floor(cycleAngles.length / 2),
       endFrame: this._frameIdx,
     });
+
+    // Reset cycle buffers for next rep
+    this._cycleAngles = [];
+    this._cycleLandmarks = [];
   }
 
   _evaluateForm(angles, landmarks) {
