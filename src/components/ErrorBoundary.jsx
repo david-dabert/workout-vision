@@ -13,6 +13,7 @@ class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
     console.error('[ErrorBoundary] Caught error:', error);
     console.error('[ErrorBoundary] Component stack:', errorInfo?.componentStack);
+    this._componentStack = errorInfo?.componentStack || '';
   }
 
   handleTryAgain = () => {
@@ -36,6 +37,8 @@ class ErrorBoundary extends Component {
     if (this.state.hasError) {
       const { error, detailsOpen } = this.state;
       const errorMessage = error?.message || String(error) || 'Unknown error';
+      const stack = this._componentStack || '';
+      const currentHash = typeof window !== 'undefined' ? window.location.hash : '';
 
       return (
         <div style={styles.container}>
@@ -57,14 +60,9 @@ class ErrorBoundary extends Component {
                 Go Home
               </button>
             </div>
-            <div style={styles.details}>
-              <button style={styles.detailsToggle} onClick={this.toggleDetails}>
-                {detailsOpen ? '▾' : '▸'} Details
-              </button>
-              {detailsOpen && (
-                <pre style={styles.detailsBody}>{errorMessage}</pre>
-              )}
-            </div>
+            <pre style={styles.detailsBody}>
+              {currentHash ? `Page: ${currentHash}\n` : ''}{errorMessage}{stack ? `\n\nComponent:\n${stack.slice(0, 500)}` : ''}
+            </pre>
           </div>
         </div>
       );

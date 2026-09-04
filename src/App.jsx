@@ -7,14 +7,23 @@ import Onboarding from './components/Onboarding';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
-const Analyze = lazy(() => import('./components/Analyze'));
-const ManualLog = lazy(() => import('./components/ManualLog'));
-const WorkoutHistory = lazy(() => import('./components/WorkoutHistory'));
-const RestTimer = lazy(() => import('./components/RestTimer'));
-const ProfilePage = lazy(() => import('./components/Profile'));
-const Validate = lazy(() => import('./components/Validate'));
-const DesignDemo = lazy(() => import('./components/DesignDemo'));
-const LandingPage = lazy(() => import('./components/LandingPage'));
+// Wrap lazy imports so chunk-load failures surface a readable error
+// instead of an uncatchable rejected promise.
+const safeLazy = (loader) => lazy(() =>
+  loader().catch(err => {
+    console.error('[Lazy load failed]', err);
+    return { default: () => { throw err; } };
+  })
+);
+
+const Analyze = safeLazy(() => import('./components/Analyze'));
+const ManualLog = safeLazy(() => import('./components/ManualLog'));
+const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
+const RestTimer = safeLazy(() => import('./components/RestTimer'));
+const ProfilePage = safeLazy(() => import('./components/Profile'));
+const Validate = safeLazy(() => import('./components/Validate'));
+const DesignDemo = safeLazy(() => import('./components/DesignDemo'));
+const LandingPage = safeLazy(() => import('./components/LandingPage'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
