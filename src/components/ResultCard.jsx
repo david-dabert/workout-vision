@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { EXERCISES, getExerciseIllustration } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
 import { shareCard, challengeShare } from '../lib/shareCard';
 import { useT } from '../lib/LanguageContext';
 import { gradeFromScore, gradeClass } from '../lib/utils';
+import { updateWorkout } from '../lib/storage';
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -87,6 +88,21 @@ export default function ResultCard({ result, onReplay }) {
   const [showDetails, setShowDetails] = useState(false);
   const [showDeepData, setShowDeepData] = useState(false);
   const [challengeStatus, setChallengeStatus] = useState(null);
+  const [repOverride, setRepOverride] = useState(null);
+  const [showRepEdit, setShowRepEdit] = useState(false);
+
+  const displayReps = repOverride != null ? repOverride : reps;
+  const repWasOverridden = repOverride != null && repOverride !== reps;
+
+  // Persist rep override to workout history
+  const handleRepChange = useCallback((newReps) => {
+    const clamped = Math.max(1, Math.min(99, newReps));
+    setRepOverride(clamped);
+    // Save to IndexedDB if workout has an id
+    if (result.workoutId) {
+      updateWorkout(result.workoutId, { reps: clamped, repsOverridden: true, aiDetectedReps: reps }).catch(() => {});
+    }
+  }, [result.workoutId, reps]);
 
   // Score reveal animation: count up from 0
   const [displayScore, setDisplayScore] = useState(0);
@@ -150,9 +166,46 @@ export default function ResultCard({ result, onReplay }) {
       {muscles && <MuscleMap muscles={muscles} size={90} />}
 
       <div className="stats-grid-2x2">
-        <div className="stat-card">
+        <div className="stat-card" onClick={() => setShowRepEdit(!showRepEdit)} style={{ cursor: 'pointer', position: 'relative' }}>
           <span className="stat-card-label">{t('reps').toUpperCase()}</span>
-          <span className="stat-card-value">{reps}</span>
+          {showRepEdit ? (
+            <span className="stat-card-value" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--muted)',
+                  background: 'rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: '1.1rem',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  lineHeight: 1, padding: 0,
+                }}
+              >−</button>
+              <span style={{ minWidth: 24, textAlign: 'center' }}>{displayReps}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--muted)',
+                  background: 'rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: '1.1rem',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  lineHeight: 1, padding: 0,
+                }}
+              >+</button>
+            </span>
+          ) : (
+            <span className="stat-card-value">
+              {displayReps}
+              {repWasOverridden && (
+                <span style={{ fontSize: '0.55em', color: 'var(--muted)', marginLeft: 4 }}>
+                  (AI: {reps})
+                </span>
+              )}
+            </span>
+          )}
+          {!showRepEdit && (
+            <span style={{
+              fontSize: '0.55rem', color: 'var(--accent)', position: 'absolute',
+              bottom: 4, left: '50%', transform: 'translateX(-50%)', opacity: 0.7,
+            }}>tap to edit</span>
+          )}
         </div>
         <div className="stat-card">
           <span className="stat-card-label">{t('duration').toUpperCase()}</span>

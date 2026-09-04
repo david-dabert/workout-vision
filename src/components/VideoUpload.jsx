@@ -539,7 +539,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       repHistory, weight: w, volume: w * reps, source: 'upload',
       avgRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0,
     };
-    try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
+    let workoutId = null;
+    try { workoutId = await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
 
     // Progression comparison
     let progression = null;
@@ -575,6 +576,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       videoUrl: url,
       frames: replayFrames,
       autoDetected,
+      workoutId,
       debug, // Pass debug info to result card
     };
   }, [exercise, autoDetect, weight, userInjuries]);

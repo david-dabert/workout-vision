@@ -48,6 +48,14 @@ export async function getAllWorkouts() {
   return workouts.sort((a, b) => b.createdAt - a.createdAt);
 }
 
+export async function updateWorkout(id, updates) {
+  const existing = await workoutStore.getItem(id);
+  if (!existing) return;
+  const updated = { ...existing, ...updates, updatedAt: Date.now() };
+  await workoutStore.setItem(id, updated);
+  return updated;
+}
+
 export async function deleteWorkout(id) {
   await workoutStore.removeItem(id);
 }
