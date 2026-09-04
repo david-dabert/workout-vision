@@ -99,7 +99,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [results, setResults] = useState([]);
   const [replayResult, setReplayResult] = useState(null);
   const [liveReps, setLiveReps] = useState(0);
-  const [userInjuries, setUserInjuries] = useState(() => loadInjuries());
+  const [userInjuries, setUserInjuries] = useState([]);
+
+  // loadInjuries is async — resolve it into state after mount
+  useEffect(() => {
+    loadInjuries().then(injuries => setUserInjuries(injuries || []));
+  }, []);
   const [errorMsg, setErrorMsg] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
   const [ffmpegStatus, setFfmpegStatus] = useState('');
