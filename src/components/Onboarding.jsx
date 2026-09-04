@@ -125,9 +125,9 @@ export default function Onboarding({ onComplete }) {
       <div className="onboarding">
         <div className="onboarding-content" style={{ paddingBottom: 80 }}>
           <div style={{ textAlign: 'center', marginBottom: 12 }}>
-            <h2 style={{ margin: '0 0 4px' }}>Demo Analysis</h2>
+            <h2 style={{ margin: '0 0 4px' }}>{t('demo_analysis_title')}</h2>
             <p className="text-muted text-sm" style={{ margin: 0 }}>
-              This is what your analysis will look like
+              {t('demo_analysis_desc')}
             </p>
           </div>
           <ResultCard result={DEMO_RESULT} />
@@ -156,7 +156,7 @@ export default function Onboarding({ onComplete }) {
               gap: 8,
             }}
           >
-            Continue Setup
+            {t('continue_setup')}
             <ChevronRight size={16} />
           </button>
         </div>
@@ -340,7 +340,7 @@ function StepWelcome({ onTryDemo }) {
         }}
       >
         <Play size={14} />
-        Try Demo
+        {t('try_demo')}
       </button>
     </div>
   );
@@ -348,59 +348,150 @@ function StepWelcome({ onTryDemo }) {
 
 /* ── Step 2: Movement Assessment ── */
 const BASELINE_EXERCISES = [
-  {
-    key: 'squat',
-    name: 'Squat',
-    description: 'Assesses lower body mobility, hip hinge depth, and knee tracking under bodyweight.',
-  },
-  {
-    key: 'pushup',
-    name: 'Push-up',
-    description: 'Assesses upper body pressing strength, core stability, and scapular control.',
-  },
-  {
-    key: 'plank',
-    name: 'Plank',
-    description: 'Assesses core endurance, spinal alignment, and shoulder girdle stability.',
-  },
+  { key: 'squat',  nameKey: 'onb_squat_name',  descKey: 'onb_squat_desc' },
+  { key: 'pushup', nameKey: 'onb_pushup_name', descKey: 'onb_pushup_desc' },
+  { key: 'plank',  nameKey: 'onb_plank_name',  descKey: 'onb_plank_desc' },
+];
+
+/* Accent colours for each exercise card */
+const EXERCISE_ACCENTS = [
+  { border: '#00f5d4', glow: 'rgba(0,245,212,0.18)', label: '#00f5d4' },   // squat  — bio-cyan
+  { border: '#ff6b9d', glow: 'rgba(255,107,157,0.18)', label: '#ff6b9d' }, // pushup — rose
+  { border: '#c4b5fd', glow: 'rgba(196,181,253,0.18)', label: '#c4b5fd' }, // plank  — lavender
 ];
 
 function StepMovementAssessment({ onStartAssessment, onSkip }) {
+  const { t } = useT();
   return (
     <div className="onboarding-step">
-      <div style={{ textAlign: 'center', marginBottom: 16 }}>
-        <div className="onboarding-icon-large" style={{ marginBottom: 8 }}>
-          <ClipboardCheck size={40} />
+
+      {/* ── Hero: pulsing crosshair / target orb ── */}
+      <div style={{ textAlign: 'center', marginBottom: 28 }}>
+        <div style={{ position: 'relative', width: 112, height: 112, margin: '0 auto 20px' }}>
+          {/* Outer ring — slow pulse */}
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '1.5px solid rgba(0,245,212,0.25)',
+            animation: 'pulseGlow 3s ease-in-out infinite',
+          }} />
+          {/* Middle ring */}
+          <div style={{
+            position: 'absolute', inset: 14, borderRadius: '50%',
+            border: '1.5px solid rgba(196,181,253,0.30)',
+            animation: 'pulseGlow 3s ease-in-out infinite 0.6s',
+          }} />
+          {/* Inner filled orb */}
+          <div style={{
+            position: 'absolute', inset: 28, borderRadius: '50%',
+            background: 'radial-gradient(circle at 38% 38%, rgba(196,181,253,0.55), rgba(0,245,212,0.30) 55%, rgba(255,107,157,0.15) 85%, transparent)',
+            boxShadow: '0 0 32px rgba(0,245,212,0.22), 0 0 64px rgba(196,181,253,0.10)',
+            animation: 'breathe 3.5s ease-in-out infinite, float 5s ease-in-out infinite',
+          }} />
+          {/* Centre dot */}
+          <div style={{
+            position: 'absolute',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 8, height: 8, borderRadius: '50%',
+            background: '#00f5d4',
+            boxShadow: '0 0 10px rgba(0,245,212,0.8)',
+          }} />
+          {/* Cross-hair lines */}
+          {[
+            { top: '50%', left: 0, width: 12, height: 1.5, transform: 'translateY(-50%)' },
+            { top: '50%', right: 0, width: 12, height: 1.5, transform: 'translateY(-50%)' },
+            { left: '50%', top: 0, height: 12, width: 1.5, transform: 'translateX(-50%)' },
+            { left: '50%', bottom: 0, height: 12, width: 1.5, transform: 'translateX(-50%)' },
+          ].map((s, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              background: 'rgba(0,245,212,0.6)',
+              borderRadius: 2,
+              ...s,
+            }} />
+          ))}
         </div>
-        <h2 style={{ margin: '0 0 4px' }}>Movement Assessment</h2>
-        <p className="text-muted text-sm" style={{ margin: 0 }}>
-          Record three baseline exercises so the app can track your progress from day one.
+
+        <h2 style={{ margin: '0 0 8px', fontFamily: 'var(--font-display, inherit)', letterSpacing: '-0.02em' }}>
+          {t('movement_assessment')}
+        </h2>
+        <p className="text-muted text-sm" style={{ margin: 0, lineHeight: 1.5, maxWidth: 300, marginInline: 'auto' }}>
+          {t('movement_assessment_desc')}
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-        {BASELINE_EXERCISES.map((ex) => {
+      {/* ── Exercise cards ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+        {BASELINE_EXERCISES.map((ex, idx) => {
           const illustration = getExerciseIllustration(ex.key, 1);
+          const accent = EXERCISE_ACCENTS[idx];
           return (
-            <div key={ex.key} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
-              {illustration && (
+            <div
+              key={ex.key}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                padding: '14px 16px',
+                borderRadius: 16,
+                background: 'rgba(255,255,255,0.035)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderLeft: `3px solid ${accent.border}`,
+                boxShadow: `0 2px 20px ${accent.glow}, inset 0 1px 0 rgba(255,255,255,0.04)`,
+                animation: `fadeInUp 0.45s cubic-bezier(0, 0, 0.2, 1) ${0.08 + idx * 0.1}s both`,
+              }}
+            >
+              {/* Image */}
+              {illustration ? (
                 <img
                   src={illustration}
-                  alt={ex.name}
+                  alt={t(ex.nameKey)}
                   style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 8,
+                    width: 72,
+                    height: 72,
+                    borderRadius: 12,
                     objectFit: 'cover',
-                    background: 'rgba(255,255,255,0.04)',
+                    background: 'rgba(255,255,255,0.05)',
                     flexShrink: 0,
+                    border: `1px solid ${accent.border}33`,
                   }}
                 />
+              ) : (
+                <div style={{
+                  width: 72, height: 72, borderRadius: 12, flexShrink: 0,
+                  background: `radial-gradient(circle at 40% 40%, ${accent.border}22, transparent 70%)`,
+                  border: `1px solid ${accent.border}33`,
+                }} />
               )}
-              <div style={{ minWidth: 0 }}>
-                <strong style={{ fontSize: '0.9rem' }}>{ex.name}</strong>
-                <p className="text-muted text-sm" style={{ margin: '2px 0 0', lineHeight: 1.35 }}>
-                  {ex.description}
+
+              {/* Text */}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
+                }}>
+                  <strong style={{
+                    fontSize: '0.95rem',
+                    fontFamily: 'var(--font-display, inherit)',
+                    letterSpacing: '-0.01em',
+                    color: '#fff',
+                  }}>
+                    {t(ex.nameKey)}
+                  </strong>
+                  <span style={{
+                    fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em',
+                    color: accent.label,
+                    background: `${accent.border}18`,
+                    border: `1px solid ${accent.border}30`,
+                    borderRadius: 20, padding: '1px 7px',
+                    textTransform: 'uppercase',
+                  }}>
+                    {idx === 0 ? 'Lower' : idx === 1 ? 'Upper' : 'Core'}
+                  </span>
+                </div>
+                <p className="text-muted text-sm" style={{ margin: 0, lineHeight: 1.4, fontSize: '0.78rem' }}>
+                  {t(ex.descKey)}
                 </p>
               </div>
             </div>
@@ -408,7 +499,8 @@ function StepMovementAssessment({ onStartAssessment, onSkip }) {
         })}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* ── Action buttons ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <button
           onClick={onStartAssessment}
           style={{
@@ -420,7 +512,7 @@ function StepMovementAssessment({ onStartAssessment, onSkip }) {
             borderRadius: 16,
             border: 'none',
             cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
+            boxShadow: '0 4px 24px rgba(0,245,212,0.30), 0 1px 0 rgba(255,255,255,0.2) inset',
             transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
             width: '100%',
             fontFamily: 'var(--font-display, inherit)',
@@ -431,32 +523,34 @@ function StepMovementAssessment({ onStartAssessment, onSkip }) {
             gap: 8,
           }}
         >
-          <ClipboardCheck size={16} />
-          Start Assessment
+          <Target size={17} />
+          {t('start_assessment')}
         </button>
+
         <button
           onClick={onSkip}
           style={{
             background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.4)',
-            padding: '12px 24px',
+            border: 'none',
+            color: 'rgba(255,255,255,0.28)',
+            padding: '10px 24px',
             borderRadius: 12,
             cursor: 'pointer',
-            fontSize: '0.85rem',
+            fontSize: '0.78rem',
             fontWeight: 500,
-            transition: 'all 0.2s',
+            letterSpacing: '0.02em',
+            transition: 'color 0.2s',
             width: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 6,
+            gap: 5,
           }}
         >
-          <SkipForward size={14} />
-          Skip for now
+          {t('skip_for_now')}
         </button>
       </div>
+
     </div>
   );
 }

@@ -8,19 +8,19 @@ import { useT } from '../lib/LanguageContext';
 import { gradeFromScore, translateMuscle } from '../lib/utils';
 import VisionScoreHero from './VisionScoreHero';
 
-const getGreeting = (profile) => {
+const getGreetingKey = () => {
   const h = new Date().getHours();
-  if (h < 12) return profile?.name ? `Good morning, ${profile.name.split(' ')[0]}` : 'Good morning';
-  if (h < 17) return profile?.name ? `Good afternoon, ${profile.name.split(' ')[0]}` : 'Good afternoon';
-  return profile?.name ? `Good evening, ${profile.name.split(' ')[0]}` : 'Good evening';
+  if (h < 12) return 'good_morning';
+  if (h < 17) return 'good_afternoon';
+  return 'good_evening';
 };
 
-const getMotivation = (count) => {
-  if (count === 0) return "Your fitness journey starts with one rep.";
-  if (count < 5) return "Building momentum. Every session counts.";
-  if (count < 15) return "You're finding your rhythm. Keep pushing.";
-  if (count < 30) return "Consistency is your superpower.";
-  return "You're in the zone. Form is everything.";
+const getMotivationKey = (count) => {
+  if (count === 0) return 'motivation_0';
+  if (count < 5) return 'motivation_5';
+  if (count < 15) return 'motivation_15';
+  if (count < 30) return 'motivation_30';
+  return 'motivation_max';
 };
 
 const calculateStreak = (workouts) => {
@@ -37,7 +37,7 @@ const calculateStreak = (workouts) => {
   return streak;
 };
 
-const getLast7Days = (workouts) => {
+const getLast7Days = (workouts, lang = 'en') => {
   const days = [];
   const today = new Date();
   for (let i = 6; i >= 0; i--) {
@@ -46,7 +46,7 @@ const getLast7Days = (workouts) => {
     const dateStr = d.toDateString();
     const dayWorkouts = workouts.filter(w => new Date(w.date).toDateString() === dateStr);
     days.push({
-      label: d.toLocaleDateString('en', { weekday: 'narrow' }),
+      label: d.toLocaleDateString(lang, { weekday: 'narrow' }),
       count: dayWorkouts.length,
       isToday: i === 0,
     });
@@ -115,9 +115,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
             </div>
           </div>
           <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, fontFamily: 'var(--font-display, var(--font))' }}>
-            {getGreeting(profile)}
+            {profile?.name ? `${t(getGreetingKey())}, ${profile.name.split(' ')[0]}` : t(getGreetingKey())}
           </p>
-          <p className="tagline">{getMotivation(allWorkouts.length)}</p>
+          <p className="tagline">{t(getMotivationKey(allWorkouts.length))}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
             <div className={`engine-status engine-${statusDot}`}>
               <span className={`engine-dot ${statusDot}`} />
@@ -131,7 +131,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                 fontWeight: 700, letterSpacing: '0.02em',
                 border: '1px solid rgba(0, 224, 150, 0.25)',
               }}>
-                🔥 {calculateStreak(allWorkouts)} day{calculateStreak(allWorkouts) !== 1 ? 's' : ''}
+                🔥 {calculateStreak(allWorkouts)} {t('days_streak')}
               </span>
             )}
           </div>
@@ -250,7 +250,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           background: 'var(--card-bg, rgba(255,255,255,0.04))',
           borderRadius: 14, border: '1px solid var(--border, rgba(255,255,255,0.06))',
         }}>
-          {getLast7Days(allWorkouts).map((day, i) => (
+          {getLast7Days(allWorkouts, lang).map((day, i) => (
             <div key={i} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
             }}>

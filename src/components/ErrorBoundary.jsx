@@ -3,7 +3,7 @@ import { Component } from 'react';
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, detailsOpen: false };
   }
 
   static getDerivedStateFromError(error) {
@@ -15,6 +15,10 @@ class ErrorBoundary extends Component {
     console.error('[ErrorBoundary] Component stack:', errorInfo?.componentStack);
   }
 
+  handleTryAgain = () => {
+    this.setState({ hasError: false, error: null, detailsOpen: false });
+  };
+
   handleReload = () => {
     window.location.reload();
   };
@@ -24,24 +28,42 @@ class ErrorBoundary extends Component {
     window.location.href = window.location.origin + window.location.pathname;
   };
 
+  toggleDetails = () => {
+    this.setState(prev => ({ detailsOpen: !prev.detailsOpen }));
+  };
+
   render() {
     if (this.state.hasError) {
+      const { error, detailsOpen } = this.state;
+      const errorMessage = error?.message || String(error) || 'Unknown error';
+
       return (
         <div style={styles.container}>
           <div style={styles.card}>
             <div style={styles.icon}>⚠</div>
             <h2 style={styles.title}>Something went wrong</h2>
             <p style={styles.message}>
-              An unexpected error occurred. You can try reloading the page or
-              returning to the dashboard.
+              An unexpected error occurred. You can try again or return to the
+              dashboard.
             </p>
             <div style={styles.actions}>
-              <button style={styles.primaryBtn} onClick={this.handleReload}>
+              <button style={styles.primaryBtn} onClick={this.handleTryAgain}>
+                Try again
+              </button>
+              <button style={styles.secondaryBtn} onClick={this.handleReload}>
                 Reload
               </button>
               <button style={styles.secondaryBtn} onClick={this.handleGoHome}>
                 Go Home
               </button>
+            </div>
+            <div style={styles.details}>
+              <button style={styles.detailsToggle} onClick={this.toggleDetails}>
+                {detailsOpen ? '▾' : '▸'} Details
+              </button>
+              {detailsOpen && (
+                <pre style={styles.detailsBody}>{errorMessage}</pre>
+              )}
             </div>
           </div>
         </div>
@@ -91,6 +113,34 @@ const styles = {
     display: 'flex',
     gap: '0.75rem',
     justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  details: {
+    marginTop: '1.25rem',
+    textAlign: 'left',
+  },
+  detailsToggle: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--text-secondary, rgba(240,240,245,0.5))',
+    fontSize: '0.78rem',
+    cursor: 'pointer',
+    padding: '0',
+  },
+  detailsBody: {
+    marginTop: '0.5rem',
+    padding: '0.6rem 0.75rem',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid var(--glass-border, rgba(255,255,255,0.05))',
+    borderRadius: '0.375rem',
+    fontSize: '0.72rem',
+    color: 'var(--text-secondary, rgba(240,240,245,0.5))',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowX: 'auto',
+    maxHeight: '8rem',
+    overflowY: 'auto',
+    lineHeight: 1.4,
   },
   primaryBtn: {
     background: 'var(--accent, #00f5d4)',

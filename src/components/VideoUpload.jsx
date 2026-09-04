@@ -62,8 +62,14 @@ async function setCachedLandmarks(key, data) {
 }
 
 // Detect iOS Safari for platform-specific workarounds
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_IOS = (() => {
+  try {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  } catch {
+    return false;
+  }
+})();
 
 // High-priority yield that lets the browser paint between frames.
 // MessageChannel fires before setTimeout's 4ms minimum, keeping the UI responsive

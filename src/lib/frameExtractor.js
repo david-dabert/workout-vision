@@ -10,12 +10,31 @@
  * Same input = same output, every time, on every device.
  */
 
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { toBlobURL, fetchFile } from '@ffmpeg/util';
+// @ffmpeg/ffmpeg and @ffmpeg/util are NOT statically imported here.
+// Their module-level code probes SharedArrayBuffer / WASM availability,
+// which throws on iOS Safari when those APIs are absent or restricted.
+// Dynamic import inside loadFFmpeg defers that probe to call time,
+// where the error is caught rather than crashing the module at parse time.
 
 let ffmpegInstance = null;
 let ffmpegLoading = false;
 let ffmpegLoadPromise = null;
+
+// Cached references to the dynamically-imported helpers
+let _FFmpeg = null;
+let _toBlobURL = null;
+let _fetchFile = null;
+
+async function importFFmpegModules() {
+  if (_FFmpeg && _toBlobURL && _fetchFile) return;
+  const [ffmpegMod, utilMod] = await Promise.all([
+    import('@ffmpeg/ffmpeg'),
+    import('@ffmpeg/util'),
+  ]);
+  _FFmpeg = ffmpegMod.FFmpeg;
+  _toBlobURL = utilMod.toBlobURL;
+  _fetchFile = utilMod.fetchFile;
+}
 
 /**
  * Lazy-load ffmpeg.wasm (single-threaded core, no SharedArrayBuffer needed).
@@ -27,6 +46,8 @@ export async function loadFFmpeg(onProgress) {
 
   ffmpegLoading = true;
   ffmpegLoadPromise = (async () => {
+    await importFFmpegModules();
+    const FFmpeg = _FFmpeg;
     const ffmpeg = new FFmpeg();
 
     if (onProgress) {
@@ -38,8 +59,8 @@ export async function loadFFmpeg(onProgress) {
     // Load single-threaded core from CDN (works without SharedArrayBuffer)
     const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
     await ffmpeg.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      coreURL: await _toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await _toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
     });
 
     ffmpegInstance = ffmpeg;
@@ -102,7 +123,7 @@ export async function extractFrames(file, targetFps, maxFrames, maxWidth, onProg
   const inputName = 'input' + getExtension(file.name);
 
   // Write video file to ffmpeg virtual filesystem
-  await ffmpeg.writeFile(inputName, await fetchFile(file));
+  await ffmpeg.writeFile(inputName, await _fetchFile(file));
 
   // Probe video dimensions and duration using ffmpeg
   // Extract a single frame to determine output dimensions
