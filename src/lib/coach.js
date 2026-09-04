@@ -583,6 +583,92 @@ function _selectExercises(recovered, partial, fatigued, undertrained, history) {
   return selected;
 }
 
+// ---------------------------------------------------------------------------
+// Weekly Volume Tracking vs Hypertrophy Landmarks
+// ---------------------------------------------------------------------------
+// MEV (Minimum Effective Volume): minimum sets/week to grow.
+// MAV (Maximum Adaptive Volume): optimal weekly volume.
+// MRV (Maximum Recoverable Volume): ceiling before overreaching.
+// Based on Israetel M, 2019, Scientific Principles of Hypertrophy Training.
+// ---------------------------------------------------------------------------
+
+const VOLUME_LANDMARKS = {
+  'Quadriceps':        { mev: 8,  mav: 14, mrv: 20 },
+  'Glutes':            { mev: 4,  mav: 12, mrv: 16 },
+  'Hamstrings':        { mev: 6,  mav: 10, mrv: 16 },
+  'Pectorals':         { mev: 8,  mav: 14, mrv: 22 },
+  'Upper Pectorals':   { mev: 6,  mav: 10, mrv: 16 },
+  'Latissimus Dorsi':  { mev: 8,  mav: 14, mrv: 20 },
+  'Upper Back':        { mev: 8,  mav: 14, mrv: 20 },
+  'Rhomboids':         { mev: 8,  mav: 12, mrv: 18 },
+  'Traps':             { mev: 6,  mav: 12, mrv: 20 },
+  'Anterior Deltoid':  { mev: 6,  mav: 12, mrv: 18 },
+  'Medial Deltoid':    { mev: 8,  mav: 16, mrv: 22 },
+  'Rear Deltoid':      { mev: 6,  mav: 14, mrv: 20 },
+  'Biceps Brachii':    { mev: 6,  mav: 14, mrv: 20 },
+  'Biceps':            { mev: 6,  mav: 14, mrv: 20 },
+  'Triceps':           { mev: 6,  mav: 10, mrv: 16 },
+  'Core':              { mev: 0,  mav: 8,  mrv: 16 },
+  'Erectors':          { mev: 4,  mav: 8,  mrv: 14 },
+  'Gastrocnemius':     { mev: 6,  mav: 12, mrv: 16 },
+  'Soleus':            { mev: 6,  mav: 12, mrv: 16 },
+};
+
+/**
+ * Analyze weekly volume per muscle group against hypertrophy landmarks.
+ *
+ * @param {Array<{
+ *   date: string|Date,
+ *   exercises: Array<{ exerciseKey: string, sets: number }>
+ * }>} workoutHistory - sorted newest first
+ * @returns {Array<{
+ *   muscle: string, weeklySets: number,
+ *   mev: number, mav: number, mrv: number,
+ *   status: 'below_mev'|'mev_to_mav'|'mav_to_mrv'|'above_mrv'
+ * }>}
+ */
+export function analyzeWeeklyVolume(workoutHistory) {
+  const now = new Date();
+  const msPerDay = 86400000;
+  const muscleWeeklySets = {};
+
+  for (const session of (workoutHistory || [])) {
+    const sessionDate = new Date(session.date);
+    const daysAgo = (now - sessionDate) / msPerDay;
+    if (daysAgo < 0 || daysAgo > 7) continue;
+
+    for (const ex of (session.exercises || [])) {
+      const exercise = EXERCISES[ex.exerciseKey];
+      if (!exercise) continue;
+      const sets = ex.sets || 1;
+      for (const muscle of exercise.muscles.primary) {
+        muscleWeeklySets[muscle] = (muscleWeeklySets[muscle] || 0) + sets;
+      }
+    }
+  }
+
+  const results = [];
+  for (const [muscle, landmarks] of Object.entries(VOLUME_LANDMARKS)) {
+    const weeklySets = muscleWeeklySets[muscle] || 0;
+    let status;
+    if (weeklySets < landmarks.mev) status = 'below_mev';
+    else if (weeklySets <= landmarks.mav) status = 'mev_to_mav';
+    else if (weeklySets <= landmarks.mrv) status = 'mav_to_mrv';
+    else status = 'above_mrv';
+
+    results.push({
+      muscle, weeklySets,
+      mev: landmarks.mev, mav: landmarks.mav, mrv: landmarks.mrv,
+      status,
+    });
+  }
+
+  return results.sort((a, b) => {
+    const order = { below_mev: 0, mev_to_mav: 1, mav_to_mrv: 2, above_mrv: 3 };
+    return order[a.status] - order[b.status];
+  });
+}
+
 function _buildRecommendation(recovery, daysUntil, exercises, undertrained, fatigued) {
   const exerciseNames = exercises
     .map((key) => EXERCISES[key]?.name || key)

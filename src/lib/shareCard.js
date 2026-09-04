@@ -420,6 +420,11 @@ function drawAnimatedBackground(ctx, w, h) {
  * @returns {Promise<Blob>} WebM video blob
  */
 export async function generateAnimatedShareCard(result, onProgress) {
+  // Respect prefers-reduced-motion: fall back to static card
+  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return generateShareCard(result);
+  }
+
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;

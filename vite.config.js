@@ -16,7 +16,7 @@ export default defineConfig({
     https: httpsConfig,
   },
   build: {
-    target: ['es2020', 'safari14'],
+    target: ['es2022', 'safari16'],
     modulePreload: false,
     minify: 'esbuild',
   },

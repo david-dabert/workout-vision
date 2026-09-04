@@ -114,4 +114,22 @@ export class KalmanLandmarkFilter {
 
     return state.x;
   }
+
+  /**
+   * Get confidence intervals for all landmarks based on current Kalman covariance.
+   * The covariance (p) represents the estimated error variance; sqrt(p) is the
+   * standard deviation. A 95% confidence interval is approximately ±1.96σ.
+   *
+   * @returns {Array<{x: number, y: number, z: number}|null>} Per-landmark ±95% CI widths, or null if uninitialized.
+   */
+  getConfidenceIntervals() {
+    return this._states.map(triple => {
+      if (!triple[0].initialized) return null;
+      return {
+        x: 1.96 * Math.sqrt(triple[0].p),
+        y: 1.96 * Math.sqrt(triple[1].p),
+        z: 1.96 * Math.sqrt(triple[2].p),
+      };
+    });
+  }
 }

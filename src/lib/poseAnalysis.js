@@ -22,7 +22,7 @@ async function getMediaPipeVision() {
 }
 
 const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
-const MODEL_CACHE_KEY = 'pose-landmarker-full-v2'; // v2: pinned WASM 0.10.8
+const MODEL_CACHE_KEY = 'pose-landmarker-full-v2-0.10.8'; // includes version so model updates don't serve stale cache
 
 let poseLandmarker = null;
 let modelLoadPromise = null;
@@ -32,6 +32,10 @@ let lastResult = null;
 // Shared Kalman filter instances (one per detection path to avoid cross-contamination)
 let _kalmanImage = new KalmanLandmarkFilter();
 let _kalmanVideo = new KalmanLandmarkFilter();
+
+// Last valid landmarks for anatomical plausibility fallback
+let _lastValidLandmarksImage = null;
+let _lastValidLandmarksVideo = null;
 
 export const LANDMARKS = {
   NOSE: 0,
@@ -47,7 +51,7 @@ export const LANDMARKS = {
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
-const VIS = 0.1; // minimum landmark visibility to draw/use
+const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
 // ─── Core: single model instance with IndexedDB cache ───
 
@@ -115,7 +119,7 @@ async function createLandmarker() {
       const landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
         runningMode: 'VIDEO',
-        numPoses: 3,
+        numPoses: 1,
         minPoseDetectionConfidence: 0.35,
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
@@ -141,7 +145,7 @@ function getPoseLandmarker() {
   if (poseLandmarker) return Promise.resolve(poseLandmarker);
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
-    poseLandmarker = await withTimeout(createLandmarker(), 120000, 'Model load');
+    poseLandmarker = await withTimeout(createLandmarker(), 30000, 'Model load');
     return poseLandmarker;
   })();
   return modelLoadPromise;
@@ -223,8 +227,39 @@ export function disposeAllLandmarkers() {
   modelLoadPromise = null;
   lastVideoTime = -1;
   lastResult = null;
-  _kalmanImage.reset();
-  _kalmanVideo.reset();
+  _kalmanImage = new KalmanLandmarkFilter();
+  _kalmanVideo = new KalmanLandmarkFilter();
+  _lastValidLandmarksImage = null;
+  _lastValidLandmarksVideo = null;
+}
+
+/**
+ * Check if any joint angle exceeds biomechanical limits.
+ * Returns true if landmarks are anatomically implausible.
+ */
+function _isAnatomicallyImplausible(landmarks) {
+  if (!landmarks || landmarks.length < 33) return false;
+  const L = landmarks;
+  const angles = [
+    { name: 'leftKnee', val: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE], L[LANDMARKS.LEFT_ANKLE]), max: 185 },
+    { name: 'rightKnee', val: calculateAngle(L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE], L[LANDMARKS.RIGHT_ANKLE]), max: 185 },
+    { name: 'leftElbow', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_ELBOW], L[LANDMARKS.LEFT_WRIST]), max: 180 },
+    { name: 'rightElbow', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_ELBOW], L[LANDMARKS.RIGHT_WRIST]), max: 180 },
+    { name: 'leftHip', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE]), max: 200 },
+    { name: 'rightHip', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE]), max: 200 },
+  ];
+  return angles.some(a => a.val > a.max);
+}
+
+/**
+ * Filter anatomically implausible landmarks, returning previous valid ones if current fail.
+ */
+export function filterAnatomicallyImplausible(landmarks, lastValid) {
+  if (!landmarks) return lastValid;
+  if (_isAnatomicallyImplausible(landmarks)) {
+    return lastValid || landmarks; // fall back to last valid, or keep current if no history
+  }
+  return landmarks;
 }
 
 /**
@@ -246,6 +281,11 @@ export function detectPoseImage(landmarker, source, timestamp) {
     if (result && result.landmarks) {
       for (let i = 0; i < result.landmarks.length; i++) {
         result.landmarks[i] = _kalmanImage.filter(result.landmarks[i]) || result.landmarks[i];
+        // Anatomical plausibility check
+        result.landmarks[i] = filterAnatomicallyImplausible(result.landmarks[i], _lastValidLandmarksImage);
+        if (result.landmarks[i] && !_isAnatomicallyImplausible(result.landmarks[i])) {
+          _lastValidLandmarksImage = result.landmarks[i];
+        }
       }
     }
     return result;
@@ -275,6 +315,11 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
     if (result && result.landmarks) {
       for (let i = 0; i < result.landmarks.length; i++) {
         result.landmarks[i] = _kalmanVideo.filter(result.landmarks[i]) || result.landmarks[i];
+        // Anatomical plausibility check
+        result.landmarks[i] = filterAnatomicallyImplausible(result.landmarks[i], _lastValidLandmarksVideo);
+        if (result.landmarks[i] && !_isAnatomicallyImplausible(result.landmarks[i])) {
+          _lastValidLandmarksVideo = result.landmarks[i];
+        }
       }
     }
     if (result && result.landmarks && result.landmarks.length > 0) {
@@ -290,12 +335,15 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
 export function resetTimestamp() {
   lastVideoTime = -1;
   lastResult = null;
-  _kalmanVideo.reset();
+  _kalmanVideo = new KalmanLandmarkFilter();
+  _lastValidLandmarksVideo = null;
 }
 
 export function resetKalmanFilters() {
-  _kalmanImage.reset();
-  _kalmanVideo.reset();
+  _kalmanImage = new KalmanLandmarkFilter();
+  _kalmanVideo = new KalmanLandmarkFilter();
+  _lastValidLandmarksImage = null;
+  _lastValidLandmarksVideo = null;
 }
 
 // ─── Person lock: select the subject (largest + most centered) ───
@@ -335,6 +383,71 @@ export function selectSubjectPose(landmarksArray) {
     }
   }
   return bestPose;
+}
+
+// ─── Mirror detection ───
+
+// Left-right landmark pairs for mirror comparison
+const MIRROR_PAIRS = [
+  [LANDMARKS.LEFT_SHOULDER, LANDMARKS.RIGHT_SHOULDER],
+  [LANDMARKS.LEFT_ELBOW, LANDMARKS.RIGHT_ELBOW],
+  [LANDMARKS.LEFT_WRIST, LANDMARKS.RIGHT_WRIST],
+  [LANDMARKS.LEFT_HIP, LANDMARKS.RIGHT_HIP],
+  [LANDMARKS.LEFT_KNEE, LANDMARKS.RIGHT_KNEE],
+  [LANDMARKS.LEFT_ANKLE, LANDMARKS.RIGHT_ANKLE],
+];
+
+/**
+ * Detect if two poses are mirror images of each other (e.g. gym mirror reflection).
+ * Compares pose A's left landmarks against pose B's right landmarks.
+ * If they match within threshold, selects the pose closer to the camera (lower avg z).
+ * @param {Array} landmarksArray - array of pose landmark arrays
+ * @returns {Array} filtered landmarksArray with mirror duplicates removed
+ */
+export function detectMirror(landmarksArray) {
+  if (!landmarksArray || landmarksArray.length < 2) return landmarksArray;
+
+  const THRESHOLD = 0.05; // normalized distance threshold
+  const keep = new Array(landmarksArray.length).fill(true);
+
+  for (let a = 0; a < landmarksArray.length; a++) {
+    if (!keep[a]) continue;
+    for (let b = a + 1; b < landmarksArray.length; b++) {
+      if (!keep[b]) continue;
+      const poseA = landmarksArray[a];
+      const poseB = landmarksArray[b];
+      if (!poseA || !poseB || poseA.length < 33 || poseB.length < 33) continue;
+
+      // Check if A's left matches B's right (mirror)
+      let totalDist = 0;
+      let pairCount = 0;
+      for (const [leftIdx, rightIdx] of MIRROR_PAIRS) {
+        const aLeft = poseA[leftIdx];
+        const bRight = poseB[rightIdx];
+        if (!aLeft || !bRight) continue;
+        const dx = aLeft.x - (1 - bRight.x); // mirror x: bRight.x reflected = 1 - bRight.x
+        const dy = aLeft.y - bRight.y;
+        totalDist += Math.sqrt(dx * dx + dy * dy);
+        pairCount++;
+      }
+
+      if (pairCount === 0) continue;
+      const avgDist = totalDist / pairCount;
+
+      if (avgDist < THRESHOLD) {
+        // It's a mirror; keep the pose with lower average z (closer to camera)
+        const avgZA = poseA.reduce((s, lm) => s + (lm.z || 0), 0) / poseA.length;
+        const avgZB = poseB.reduce((s, lm) => s + (lm.z || 0), 0) / poseB.length;
+        if (avgZA <= avgZB) {
+          keep[b] = false;
+        } else {
+          keep[a] = false;
+        }
+      }
+    }
+  }
+
+  return landmarksArray.filter((_, i) => keep[i]);
 }
 
 // ─── Geometry ───

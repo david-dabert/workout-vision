@@ -4,6 +4,8 @@
  * are auto-passed instead of penalizing the score.
  */
 
+import localforage from 'localforage';
+
 export const INJURY_MAP = {
   'lower_back': { landmarks: [11, 12, 23, 24], checks: ['Lumbar flexion', 'Trunk angle', 'Hip hinge', 'Back angle'] },
   'shoulder':   { landmarks: [11, 12, 13, 14], checks: ['Shoulder protraction', 'Scapular retraction', 'Elbow flare', 'Shoulder stability'] },
@@ -41,22 +43,22 @@ export function shouldSkipCheck(checkName, userInjuries) {
 }
 
 /**
- * Load saved injuries from localStorage.
+ * Load saved injuries from IndexedDB via localforage.
  */
-export function loadInjuries() {
+export async function loadInjuries() {
   try {
-    const saved = localStorage.getItem('wv_injuries');
-    return saved ? JSON.parse(saved) : [];
+    const saved = await localforage.getItem('wv_injuries');
+    return saved || [];
   } catch (_) {
     return [];
   }
 }
 
 /**
- * Save injuries to localStorage.
+ * Save injuries to IndexedDB via localforage.
  */
-export function saveInjuries(injuries) {
+export async function saveInjuries(injuries) {
   try {
-    localStorage.setItem('wv_injuries', JSON.stringify(injuries));
+    await localforage.setItem('wv_injuries', injuries);
   } catch (_) {}
 }

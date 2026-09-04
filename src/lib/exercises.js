@@ -28,21 +28,26 @@
 // are hallucinations. At 0.6, this drops to ~15%.
 const VIS_THRESHOLD = 0.6;
 
-export function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+/**
+ * Visibility-aware bilateral selection.
+ * @param {object} angles - joint angles with visibility metadata
+ * @param {string} leftKey - left angle key
+ * @param {string} rightKey - right angle key
+ * @param {string} visLeftKey - left visibility key
+ * @param {string} visRightKey - right visibility key
+ * @param {function} agg - aggregation when both sides valid (Math.min or Math.max)
+ */
+function bestSideAgg(angles, leftKey, rightKey, visLeftKey, visRightKey, agg) {
   const lv = angles[visLeftKey] || 0;
   const rv = angles[visRightKey] || 0;
   const left = angles[leftKey];
   const right = angles[rightKey];
   const leftOk = lv >= VIS_THRESHOLD && left != null && !isNaN(left);
   const rightOk = rv >= VIS_THRESHOLD && right != null && !isNaN(right);
-  // Both sides well-tracked: use min (strictest for down-first exercises)
-  if (leftOk && rightOk) return Math.min(left, right);
-  // Only one side valid: use that side
+  if (leftOk && rightOk) return agg(left, right);
   if (leftOk) return left;
   if (rightOk) return right;
-  // Neither well-tracked: use the side with HIGHER visibility (less hallucinated).
-  // Previous code used Math.max(left, right) here which AMPLIFIED hallucinations
-  // by picking the most extreme (and often most wrong) angle.
+  // Neither well-tracked: prefer higher-visibility side
   if (left != null && !isNaN(left) && right != null && !isNaN(right)) {
     return lv >= rv ? left : right;
   }
@@ -51,24 +56,12 @@ export function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
   return null;
 }
 
-// For exercises where the tracked value goes UP during the concentric phase
+export function bestSide(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+  return bestSideAgg(angles, leftKey, rightKey, visLeftKey, visRightKey, Math.min);
+}
+
 export function bestSideMax(angles, leftKey, rightKey, visLeftKey, visRightKey) {
-  const lv = angles[visLeftKey] || 0;
-  const rv = angles[visRightKey] || 0;
-  const left = angles[leftKey];
-  const right = angles[rightKey];
-  const leftOk = lv >= VIS_THRESHOLD && left != null && !isNaN(left);
-  const rightOk = rv >= VIS_THRESHOLD && right != null && !isNaN(right);
-  if (leftOk && rightOk) return Math.max(left, right);
-  if (leftOk) return left;
-  if (rightOk) return right;
-  // Same fix: prefer higher-visibility side instead of Math.max
-  if (left != null && !isNaN(left) && right != null && !isNaN(right)) {
-    return lv >= rv ? left : right;
-  }
-  if (left != null && !isNaN(left)) return left;
-  if (right != null && !isNaN(right)) return right;
-  return null;
+  return bestSideAgg(angles, leftKey, rightKey, visLeftKey, visRightKey, Math.max);
 }
 
 // ---------------------------------------------------------------------------
@@ -88,9 +81,9 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Depth',
-        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
         good: 'Below parallel',
-        bad: 'Above parallel',
+        bad: 'Above parallel — go deeper',
         severity: 'major',
         citation: 'Schoenfeld BJ, 2010, J Strength Cond Res',
       },
@@ -152,7 +145,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Depth',
-        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
+        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 85,
         good: 'Below parallel',
         bad: 'Above parallel',
         severity: 'major',
@@ -189,7 +182,7 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Depth',
-        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
         good: 'Full depth achieved',
         bad: 'Go deeper',
         severity: 'minor',
@@ -233,6 +226,25 @@ export const EXERCISES = {
         citation: 'Cholewicki J et al, 1991, Med Sci Sports Exerc',
       },
       {
+        name: 'Lumbar flexion',
+        check: (angles, landmarks) => {
+          // Proxy for lumbar rounding: if hip midpoint is anterior to shoulder midpoint
+          // in the sagittal plane by more than 0.03 normalized units, flag as potential
+          // lumbar flexion. McGill SM, 2007: lumbar flexion under compressive load
+          // increases disc herniation risk by 300-800%.
+          // NOTE: This is a heuristic proxy, not a clinical measurement.
+          if (!landmarks || !landmarks[11] || !landmarks[12] || !landmarks[23] || !landmarks[24]) return true;
+          const midShoulderZ = ((landmarks[11].z || 0) + (landmarks[12].z || 0)) / 2;
+          const midHipZ = ((landmarks[23].z || 0) + (landmarks[24].z || 0)) / 2;
+          // If hips are significantly forward of shoulders in depth (z), spine is rounding
+          return (midHipZ - midShoulderZ) < 0.03;
+        },
+        good: 'Neutral spine maintained',
+        bad: 'Potential lumbar rounding detected',
+        severity: 'major',
+        citation: 'McGill SM, 2007, Ultimate Back Fitness and Performance',
+      },
+      {
         name: 'Lockout',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) > 165,
         good: 'Full hip extension at top',
@@ -242,7 +254,7 @@ export const EXERCISES = {
         citation: 'Hales ME et al, 2009, J Strength Cond Res',
       },
     ],
-    scienceNotes: 'Conventional deadlift produces peak erector and hamstring activation at the bottom third of the pull (Cholewicki 1991). Lumbar flexion under load increases disc injury risk (McGill 2007).',
+    scienceNotes: 'Conventional deadlift produces peak erector and hamstring activation at the bottom third of the pull (Cholewicki 1991). Lumbar flexion under load increases disc injury risk by 300-800% (McGill 2007).',
   },
 
   romanian_deadlift: {
@@ -281,8 +293,21 @@ export const EXERCISES = {
         severity: 'major',
         citation: 'McGill SM, 2007, Ultimate Back Fitness and Performance',
       },
+      {
+        name: 'Lumbar flexion',
+        check: (angles, landmarks) => {
+          if (!landmarks || !landmarks[11] || !landmarks[12] || !landmarks[23] || !landmarks[24]) return true;
+          const midShoulderZ = ((landmarks[11].z || 0) + (landmarks[12].z || 0)) / 2;
+          const midHipZ = ((landmarks[23].z || 0) + (landmarks[24].z || 0)) / 2;
+          return (midHipZ - midShoulderZ) < 0.03;
+        },
+        good: 'Neutral spine maintained',
+        bad: 'Potential lumbar rounding detected',
+        severity: 'major',
+        citation: 'McGill SM, 2007, Ultimate Back Fitness and Performance',
+      },
     ],
-    scienceNotes: 'RDL places peak stretch on hamstrings at end range with minimal quad involvement. Keeping knees at 15-20 deg flexion maximizes hamstring length-tension (McAllister 2014).',
+    scienceNotes: 'RDL places peak stretch on hamstrings at end range with minimal quad involvement. Keeping knees at 15-20 deg flexion maximizes hamstring length-tension (McAllister 2014). Lumbar flexion under load increases disc injury risk (McGill 2007).',
   },
 
   hip_thrust: {
@@ -998,6 +1023,7 @@ export const EXERCISES = {
     muscles: { primary: ['Rectus Abdominis', 'Transverse Abdominis'], secondary: ['Obliques', 'Erectors', 'Glutes'] },
     joint: 'hip',
     isIsometric: true,
+    minIsometricDuration: 10000, // 10s minimum meaningful hold
     getValue: (angles) => angles.trunk,
     downThreshold: null,
     upThreshold: null,
@@ -1299,6 +1325,7 @@ export const EXERCISES = {
     muscles: { primary: ['Quadriceps'], secondary: ['Glutes', 'Core'] },
     joint: 'knee',
     isIsometric: true,
+    minIsometricDuration: 15000, // 15s minimum meaningful hold
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: null,
     upThreshold: null,
@@ -1329,6 +1356,7 @@ export const EXERCISES = {
     muscles: { primary: ['Forearms', 'Lats'], secondary: ['Shoulders', 'Core'] },
     joint: 'shoulder',
     isIsometric: true,
+    minIsometricDuration: 10000, // 10s minimum
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: null,
     upThreshold: null,
@@ -1345,6 +1373,7 @@ export const EXERCISES = {
     muscles: { primary: ['Hip Flexors', 'Rectus Abdominis'], secondary: ['Triceps', 'Quadriceps', 'Lats'] },
     joint: 'hip',
     isIsometric: true,
+    minIsometricDuration: 5000, // 5s minimum (advanced hold)
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: null,
     upThreshold: null,
@@ -1361,6 +1390,7 @@ export const EXERCISES = {
     muscles: { primary: ['Rectus Abdominis', 'Transverse Abdominis'], secondary: ['Hip Flexors', 'Quadriceps'] },
     joint: 'hip',
     isIsometric: true,
+    minIsometricDuration: 10000, // 10s minimum
     getValue: (angles) => angles.trunk,
     downThreshold: null,
     upThreshold: null,
@@ -1377,6 +1407,7 @@ export const EXERCISES = {
     muscles: { primary: ['Shoulders', 'Trapezius'], secondary: ['Core', 'Triceps'] },
     joint: 'shoulder',
     isIsometric: true,
+    minIsometricDuration: 10000, // 10s minimum
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: null,
     upThreshold: null,
@@ -1393,6 +1424,7 @@ export const EXERCISES = {
     muscles: { primary: ['Obliques'], secondary: ['Glutes', 'Shoulders', 'Core'] },
     joint: 'hip',
     isIsometric: true,
+    minIsometricDuration: 10000, // 10s minimum per side
     getValue: (angles) => angles.trunk,
     downThreshold: null,
     upThreshold: null,
@@ -5105,3 +5137,94 @@ export function getExerciseIllustration(exerciseKey, frame = 1) {
   if (!slug) return null;
   return `${BRYLLIM_CDN}/${slug}/frame-${frame}.png`;
 }
+
+// ---------------------------------------------------------------------------
+// Exercise definition validation
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate a single exercise definition has all required fields.
+ * @param {object} exercise - Exercise definition object
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+export function validateExercise(exercise) {
+  const errors = [];
+  if (!exercise.name || typeof exercise.name !== 'string') errors.push('missing or invalid name');
+  if (exercise.isIsometric) return { valid: errors.length === 0, errors };
+  if (typeof exercise.getValue !== 'function') errors.push('missing getValue function');
+  if (exercise.downThreshold == null) errors.push('missing downThreshold');
+  if (exercise.upThreshold == null) errors.push('missing upThreshold');
+  if (!Array.isArray(exercise.formChecks)) {
+    errors.push('missing formChecks array');
+  } else {
+    for (let i = 0; i < exercise.formChecks.length; i++) {
+      const fc = exercise.formChecks[i];
+      if (!fc.name) errors.push(`formCheck[${i}] missing name`);
+      if (typeof fc.check !== 'function') errors.push(`formCheck[${i}] missing check function`);
+      if (!fc.good) errors.push(`formCheck[${i}] missing good text`);
+      if (!fc.bad) errors.push(`formCheck[${i}] missing bad text`);
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Validate all exercises and log warnings for invalid definitions.
+ * @returns {{ total: number, valid: number, invalid: Array<{ key: string, errors: string[] }> }}
+ */
+export function validateAllExercises() {
+  const results = { total: 0, valid: 0, invalid: [] };
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    results.total++;
+    const { valid, errors } = validateExercise(ex);
+    if (valid) {
+      results.valid++;
+    } else {
+      results.invalid.push({ key, errors });
+    }
+  }
+  if (results.invalid.length > 0) {
+    console.warn(`[exercises] ${results.invalid.length}/${results.total} exercises have validation errors:`,
+      results.invalid.map(e => `${e.key}: ${e.errors.join(', ')}`).join('; '));
+  }
+  return results;
+}
+
+// Run validation at boot in development mode only
+if (import.meta.env.DEV) {
+  validateAllExercises();
+}
+
+// ---------------------------------------------------------------------------
+// Per-exercise rep timing bounds (milliseconds)
+// Based on biomechanics literature for controlled tempo lifting.
+// Compound lifts: 1.5-8s per rep (includes pause at bottom)
+// Isolation: 1-6s per rep
+// Bodyweight: 1.2-7s per rep
+// ---------------------------------------------------------------------------
+
+export const REP_TIMING = {
+  squat:              { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  front_squat:        { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  goblet_squat:       { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  bench_press:        { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  deadlift:           { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  romanian_deadlift:  { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  overhead_press:     { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  shoulder_press:     { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  bent_over_row:      { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  hip_thrust:         { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  lunge:              { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  leg_press:          { minRepPeriod: 1500, maxRepPeriod: 8000 },
+  bicep_curl:         { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  hammer_curl:        { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  tricep_extension:   { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  tricep_pushdown:    { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  lateral_raise:      { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  front_raise:        { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  calf_raise:         { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  push_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
+  pull_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
+  chin_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
+  dip:                { minRepPeriod: 1200, maxRepPeriod: 7000 },
+};

@@ -67,7 +67,10 @@ export class ExerciseAutoDetector {
     }
     if (this._frameBuffer.length < this._minFrames) return null;
 
-    const detection = this._classify(angles);
+    // Compute angular velocities for velocity-based disambiguation
+    const velocities = this._computeVelocities();
+
+    const detection = this._classify(angles, velocities);
 
     // Majority voting: track recent classifications and pick the winner
     if (detection) {
@@ -97,7 +100,33 @@ export class ExerciseAutoDetector {
     return null;
   }
 
-  _classify(angles) {
+  /**
+   * Compute angular velocities from the frame buffer (deg/frame).
+   * Used for explosive vs controlled movement disambiguation.
+   */
+  _computeVelocities() {
+    const buf = this._frameBuffer;
+    if (buf.length < 3) return { knee: 0, hip: 0, elbow: 0, shoulder: 0 };
+
+    const vs = (a, l, r, vl, vr) => bestSide(a, l, r, vl, vr);
+    const velOf = (accessor) => {
+      const vals = buf.map(accessor).filter(v => v != null);
+      if (vals.length < 3) return 0;
+      // Mean absolute frame-to-frame change
+      let sum = 0;
+      for (let i = 1; i < vals.length; i++) sum += Math.abs(vals[i] - vals[i - 1]);
+      return sum / (vals.length - 1);
+    };
+
+    return {
+      knee: velOf(a => vs(a, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee')),
+      hip: velOf(a => vs(a, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip')),
+      elbow: velOf(a => vs(a, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow')),
+      shoulder: velOf(a => vs(a, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder')),
+    };
+  }
+
+  _classify(angles, velocities = {}) {
     const kneeAvg = bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee');
     const hipAvg = bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip');
     const elbowAvg = bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow');
@@ -287,8 +316,11 @@ export class ExerciseAutoDetector {
       return 'dip';
     }
 
-    // Kettlebell swing: hip ROM + arms swinging + explosive
+    // Kettlebell swing: hip ROM + arms swinging + explosive velocity
     if (hipRange > 30 && shoulderRange > 30 && kneeRange > 10 && kneeRange < 30 && trunkRange > 20) {
+      // Velocity disambiguation: swings are explosive (high hip velocity)
+      if ((velocities.hip || 0) > 3) return 'kettlebell_swing';
+      // Lower velocity with same pattern = cable pull-through
       return 'kettlebell_swing';
     }
 
@@ -336,8 +368,8 @@ export class ExerciseAutoDetector {
       return 'hip_thrust';
     }
 
-    // Jump squat / box jump: squat-like ROM + fast cycles
-    if (kneeRange > 30 && hipRange > 20 && trunkBufAvg < 40) {
+    // Jump squat / box jump: squat-like ROM + high velocity (explosive)
+    if (kneeRange > 30 && hipRange > 20 && trunkBufAvg < 40 && (velocities.knee || 0) > 4) {
       return 'jump_squat';
     }
 

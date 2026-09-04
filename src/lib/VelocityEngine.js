@@ -3,7 +3,7 @@
  *
  * From position at 30fps, computes velocity, acceleration, jerk.
  * Detects concentric/eccentric phases from velocity sign changes.
- * Computes tempo, fatigue (velocity decay > 20%), power profile.
+ * Computes tempo, fatigue (linear regression on rep velocities), angular velocity metrics.
  *
  * Convergence items #2 (VBT) and #6 (concentric/eccentric detection).
  */
@@ -120,11 +120,11 @@ export class VelocityEngine {
     // Extract rep-level metrics from phase segments
     const repMetrics = this._extractRepMetrics(segments, signedVelocity, signal);
 
-    // Fatigue detection: compare first 2 reps' mean concentric velocity vs last 2
+    // Fatigue detection: linear regression on rep concentric velocities
     const fatigue = this._computeFatigue(repMetrics);
 
-    // Power estimation (simplified: P = F * v, F = mass * acceleration)
-    const power = this._computePower(signedVelocity, acceleration, weightKg);
+    // Angular velocity metrics (signal is in degrees, so velocity is deg/s)
+    const power = this._computeAngularVelocityMetrics(signedVelocity);
 
     // Smoothness: mean absolute jerk (lower = smoother)
     const meanAbsJerk = jerk.reduce((a, v) => a + Math.abs(v), 0) / N;
@@ -166,52 +166,44 @@ export class VelocityEngine {
       const slice = signal.slice(start, end + 1);
       const vel = savitzkyGolayDerivative(slice, this._dt);
 
-      // Find concentric phase (positive velocity peak region)
-      let concentricStart = -1, concentricEnd = -1;
-      let eccentricStart = -1, eccentricEnd = -1;
+      // Split eccentric and concentric phases using velocity sign.
+      // Concentric = positive velocity frames, eccentric = negative velocity frames.
+      let concentricFrames = 0;
+      let eccentricFrames = 0;
+      let concentricVelSum = 0;
+      let eccentricVelSum = 0;
+      let peakConcentricVel = 0;
+      let peakEccentricVel = 0;
 
-      // Simple approach: split rep at the velocity zero-crossing nearest to center
-      const mid = Math.floor(vel.length / 2);
-      let zeroCross = mid;
-      for (let i = 1; i < vel.length - 1; i++) {
-        if (vel[i] * vel[i + 1] <= 0) {
-          if (Math.abs(i - mid) < Math.abs(zeroCross - mid)) {
-            zeroCross = i;
-          }
+      for (let j = 0; j < vel.length; j++) {
+        if (vel[j] > 0) {
+          concentricFrames++;
+          concentricVelSum += vel[j];
+          if (vel[j] > peakConcentricVel) peakConcentricVel = vel[j];
+        } else if (vel[j] < 0) {
+          eccentricFrames++;
+          eccentricVelSum += Math.abs(vel[j]);
+          const absV = Math.abs(vel[j]);
+          if (absV > peakEccentricVel) peakEccentricVel = absV;
         }
       }
 
-      // Determine which half is concentric based on mean velocity
-      const firstHalfMeanVel = vel.slice(0, zeroCross).reduce((a, b) => a + b, 0) / Math.max(1, zeroCross);
-      const secondHalfMeanVel = vel.slice(zeroCross).reduce((a, b) => a + b, 0) / Math.max(1, vel.length - zeroCross);
+      const eccentricTime = eccentricFrames * this._dt;
+      const concentricTime = concentricFrames * this._dt;
 
-      let eccentricTime, concentricTime;
-      if (Math.abs(firstHalfMeanVel) > Math.abs(secondHalfMeanVel)) {
-        // First half has more movement — determine direction
-        eccentricTime = zeroCross * this._dt;
-        concentricTime = (vel.length - zeroCross) * this._dt;
-      } else {
-        eccentricTime = (vel.length - zeroCross) * this._dt;
-        concentricTime = zeroCross * this._dt;
-      }
-
-      // Mean concentric velocity (absolute)
+      // Angular velocity metrics (deg/s)
       const absVel = vel.map(Math.abs);
-      const peakVelocity = Math.max(...absVel);
-      const meanVelocity = absVel.reduce((a, b) => a + b, 0) / absVel.length;
-
-      // Power: P = F * v ≈ weight * g * meanVelocity (for vertical movements)
-      const peakPower = weightKg > 0 ? weightKg * 9.81 * peakVelocity : 0;
-      const meanPower = weightKg > 0 ? weightKg * 9.81 * meanVelocity : 0;
+      const peakAngularVelocity = Math.max(...absVel);
+      const meanAngularVelocity = absVel.reduce((a, b) => a + b, 0) / absVel.length;
 
       results.push({
         eccentricTime: Math.round(eccentricTime * 100) / 100,
         concentricTime: Math.round(concentricTime * 100) / 100,
         tempoRatio: concentricTime > 0 ? Math.round((eccentricTime / concentricTime) * 10) / 10 : 0,
-        peakVelocity: Math.round(peakVelocity * 1000) / 1000,
-        meanVelocity: Math.round(meanVelocity * 1000) / 1000,
-        peakPowerW: Math.round(peakPower),
-        meanPowerW: Math.round(meanPower),
+        peakVelocity: Math.round(peakAngularVelocity * 1000) / 1000,
+        meanVelocity: Math.round(meanAngularVelocity * 1000) / 1000,
+        peakAngularVelocity: Math.round(peakAngularVelocity * 1000) / 1000,
+        meanAngularVelocity: Math.round(meanAngularVelocity * 1000) / 1000,
       });
     }
 
@@ -225,7 +217,7 @@ export class VelocityEngine {
       velocity: [], acceleration: [], jerk: [],
       phases: [], segments: [], repMetrics: [],
       fatigue: { detected: false, decay: 0, velocities: [] },
-      power: { peakW: 0, meanW: 0 },
+      power: { peakAngularVelocity: 0, meanAngularVelocity: 0, unit: 'deg/s' },
       smoothness: 0,
       fps: this._fps,
     };
@@ -259,43 +251,44 @@ export class VelocityEngine {
   }
 
   _computeFatigue(repMetrics) {
-    if (repMetrics.length < 4) {
-      return { detected: false, decay: 0, velocities: repMetrics.map(r => r.meanConcentricVelocity) };
+    const velocities = repMetrics.map(r => r.meanConcentricVelocity);
+
+    if (velocities.length < 3) {
+      return { detected: false, decay: 0, slope: 0, velocities: velocities.map(v => Math.round(v * 1000) / 1000) };
     }
 
-    const velocities = repMetrics.map(r => r.meanConcentricVelocity);
-    const firstTwo = (velocities[0] + velocities[1]) / 2;
-    const lastTwo = (velocities[velocities.length - 2] + velocities[velocities.length - 1]) / 2;
-
-    const decay = firstTwo > 0 ? 1 - (lastTwo / firstTwo) : 0;
+    // Linear regression on rep velocities: y = mx + b
+    // slope m < 0 means velocity is declining (fatigue)
+    const n = velocities.length;
+    const sumX = velocities.reduce((s, _, i) => s + i, 0);
+    const sumY = velocities.reduce((s, v) => s + v, 0);
+    const sumXY = velocities.reduce((s, v, i) => s + i * v, 0);
+    const sumX2 = velocities.reduce((s, _, i) => s + i * i, 0);
+    const denom = n * sumX2 - sumX * sumX;
+    const slope = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0;
+    const meanVel = sumY / n;
+    const decay = meanVel > 0 ? -slope / meanVel : 0; // normalized decay rate per rep
 
     return {
       detected: decay > 0.20, // Baker's 20% threshold
       decay: Math.round(decay * 100) / 100,
+      slope: Math.round(slope * 10000) / 10000,
       velocities: velocities.map(v => Math.round(v * 1000) / 1000),
       warning: decay > 0.20 ? 'Velocity loss exceeded 20% across the set' : null,
     };
   }
 
-  _computePower(velocity, acceleration, weightKg) {
-    if (weightKg <= 0 || velocity.length === 0) {
-      return { peakW: 0, meanW: 0 };
+  _computeAngularVelocityMetrics(velocity) {
+    if (velocity.length === 0) {
+      return { peakAngularVelocity: 0, meanAngularVelocity: 0, unit: 'deg/s' };
     }
 
-    // P = F * v where F includes gravity and inertial component
-    const powers = velocity.map((v, i) => {
-      const force = weightKg * (9.81 + (acceleration[i] || 0));
-      return Math.abs(force * v);
-    });
+    const absVel = velocity.map(Math.abs);
+    const peakAngularVelocity = Math.round(Math.max(...absVel) * 1000) / 1000;
+    const meanAngularVelocity = Math.round(
+      (absVel.reduce((a, b) => a + b, 0) / absVel.length) * 1000
+    ) / 1000;
 
-    const peakW = Math.round(Math.max(...powers));
-    const meanW = Math.round(powers.reduce((a, b) => a + b, 0) / powers.length);
-
-    // Sanity check: power from angle-based signals produces nonsensical values
-    // because velocity is in deg/s not m/s. Cap at physically reasonable limits.
-    // World record power output is ~7000W (Olympic weightlifting).
-    if (peakW > 5000) return { peakW: 0, meanW: 0 };
-
-    return { peakW, meanW };
+    return { peakAngularVelocity, meanAngularVelocity, unit: 'deg/s' };
   }
 }

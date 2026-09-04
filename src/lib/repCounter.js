@@ -25,6 +25,7 @@ import { shouldSkipCheck } from './injuries';
 import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
+import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
 
 export const REP_COUNTER_BUILD = 'v23-adaptive-spacing';
 
@@ -279,7 +280,41 @@ export class RepCounter {
     });
 
     // Interpolate nulls, then smooth to eliminate bestSide oscillation noise
-    const interpolated = this._smoothSignal(this._interpolateNulls(rawValues), 5);
+    let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), 5);
+
+    // ── Step 1b: 3D signal override for depth-axis exercises ──
+    // When the exercise has Z-priority signals in SIGNAL_PRIORITY_3D and the
+    // 2D signal has poor range (camera facing the motion axis), switch to
+    // the best available 3D signal.
+    const priority3D = SIGNAL_PRIORITY_3D[this._exerciseKey];
+    if (priority3D) {
+      const zSignalNames = priority3D.filter(n => n.includes('_Z') || n.includes('Dist3D'));
+      if (zSignalNames.length > 0) {
+        try {
+          const signals3D = extractSignals3D(this._collectedLandmarks);
+          const range2D = Math.max(...interpolated) - Math.min(...interpolated);
+          let best3DSignal = null;
+          let best3DRange = 0;
+          for (const name of zSignalNames) {
+            const sig = signals3D.find(s => s.name === name);
+            if (!sig) continue;
+            const smoothed = this._smoothSignal(this._interpolateNulls(sig.values), 5);
+            const r = Math.max(...smoothed) - Math.min(...smoothed);
+            if (r > best3DRange) {
+              best3DRange = r;
+              best3DSignal = smoothed;
+            }
+          }
+          // Use 3D signal if it has meaningfully better range than 2D (>1.5x)
+          // and the 2D signal is weak (<30 degrees range)
+          if (best3DSignal && range2D < 30 && best3DRange > range2D * 1.5) {
+            interpolated = best3DSignal;
+          }
+        } catch (_) {
+          // 3D extraction failed; continue with 2D signal
+        }
+      }
+    }
 
     // ── Step 2: Invert if needed ──
     const down = ex.downThreshold;
@@ -358,6 +393,11 @@ export class RepCounter {
       this._progressionScore = ProgressionScore.computeSet({ formScores, repVelocities, reps: result.reps, weightKg: this._weightKg || 0 });
     } catch (e) {
     }
+
+    // Free collected landmarks after analysis is complete to prevent OOM on mobile.
+    // All data needed for downstream consumption is already in _repHistory, _cycleDebug,
+    // _velocityAnalysis, and _progressionScore.
+    this._collectedLandmarks = [];
   }
 
   // ─── Valley counting ───

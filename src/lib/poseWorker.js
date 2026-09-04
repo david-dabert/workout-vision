@@ -72,6 +72,12 @@ self.onmessage = async (e) => {
 };
 
 async function handleInit() {
+  // Prevent leaking the old landmarker if init is called twice
+  if (landmarker) {
+    landmarker.close();
+    landmarker = null;
+  }
+
   try {
     const mp = await loadMediaPipe();
 
@@ -84,17 +90,34 @@ async function handleInit() {
 
     const vision = await mp.FilesetResolver.forVisionTasks(WASM_URL);
 
-    landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetBuffer: new Uint8Array(modelBuffer),
-        delegate: 'CPU',
-      },
+    const commonOptions = {
       runningMode: 'VIDEO',
-      numPoses: 3,
+      numPoses: 1,
       minPoseDetectionConfidence: 0.35,
       minPosePresenceConfidence: 0.4,
       minTrackingConfidence: 0.5,
-    });
+    };
+
+    // Try GPU delegate first (OffscreenCanvas supports WebGL in Chromium),
+    // then fall back to CPU if GPU fails.
+    try {
+      landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetBuffer: new Uint8Array(modelBuffer),
+          delegate: 'GPU',
+        },
+        ...commonOptions,
+      });
+    } catch (gpuErr) {
+      console.warn(`GPU delegate failed, falling back to CPU: ${gpuErr.message}`);
+      landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetBuffer: new Uint8Array(modelBuffer),
+          delegate: 'CPU',
+        },
+        ...commonOptions,
+      });
+    }
 
     self.postMessage({ type: 'ready' });
   } catch (err) {

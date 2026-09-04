@@ -161,55 +161,43 @@ export async function extractFrames(file, targetFps, maxFrames, maxWidth, onProg
   }
 
 
-  // Now extract all frames at target FPS
-  // Compute how many frames we'll get. We need the duration.
-  // Use ffmpeg to extract frames as individual BMP files for reliability
-  // (raw RGBA concatenation is fragile if dimensions are wrong)
-  const outputPattern = 'frame_%05d.bmp';
-
-  // Calculate FPS to not exceed maxFrames
-  // We don't know duration yet, so extract with target FPS and cap
-  await ffmpeg.exec([
-    '-i', inputName,
-    '-vf', `fps=${targetFps},scale=${frameWidth}:${frameHeight}`,
-    '-frames:v', String(maxFrames),
-    '-f', 'image2',
-    outputPattern,
-  ]);
-
-  // Read all extracted frame files
+  // Now extract all frames at target FPS as a single raw RGBA file.
+  // This eliminates per-file overhead in the WASM virtual filesystem
+  // and removes the BMP parsing step entirely.
   const frames = [];
-  for (let i = 1; i <= maxFrames; i++) {
-    const fileName = `frame_${String(i).padStart(5, '0')}.bmp`;
-    let data;
-    try {
-      data = await ffmpeg.readFile(fileName);
-    } catch {
-      break; // No more frames
-    }
 
-    // Parse BMP to get raw RGBA pixel data
-    const imageData = parseBMP(data, frameWidth, frameHeight);
-    if (imageData) {
-      frames.push(imageData);
-    }
+  try {
+    await ffmpeg.exec([
+      '-i', inputName,
+      '-vf', `fps=${targetFps},scale=${frameWidth}:${frameHeight}`,
+      '-frames:v', String(maxFrames),
+      '-f', 'rawvideo',
+      '-pix_fmt', 'rgba',
+      'frames.raw',
+    ]);
 
-    // Clean up the file from virtual FS
-    try { await ffmpeg.deleteFile(fileName); } catch {}
-
-    if (onProgress) {
-      onProgress(Math.round((i / maxFrames) * 100));
+    // Read the single raw RGBA file and slice by known frame size
+    const frameSize = frameWidth * frameHeight * 4;
+    const rawData = await ffmpeg.readFile('frames.raw');
+    const totalFrames = Math.floor(rawData.length / frameSize);
+    for (let i = 0; i < totalFrames && i < maxFrames; i++) {
+      const offset = i * frameSize;
+      const rgba = new Uint8ClampedArray(rawData.buffer, rawData.byteOffset + offset, frameSize);
+      frames.push(new ImageData(new Uint8ClampedArray(rgba), frameWidth, frameHeight));
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / Math.min(totalFrames, maxFrames)) * 100));
+      }
     }
+  } finally {
+    // Clean up all possible files from the WASM virtual filesystem
+    try { await ffmpeg.deleteFile('frames.raw'); } catch {}
+    try { await ffmpeg.deleteFile(inputName); } catch {}
+    try { await ffmpeg.deleteFile('probe.raw'); } catch {}
+    try { await ffmpeg.deleteFile('probe2.raw'); } catch {}
   }
-
-  // Clean up input file
-  try { await ffmpeg.deleteFile(inputName); } catch {}
-  try { await ffmpeg.deleteFile('probe.raw'); } catch {}
-  try { await ffmpeg.deleteFile('probe2.raw'); } catch {}
 
   // Compute actual duration from frame count and fps
   const duration = frames.length / targetFps;
-
 
   return {
     frames,
@@ -269,4 +257,102 @@ function parseBMP(bmpData, expectedWidth, expectedHeight) {
 function getExtension(filename) {
   const dot = filename.lastIndexOf('.');
   return dot >= 0 ? filename.slice(dot) : '.mp4';
+}
+
+/**
+ * Canvas-based fallback frame extractor for when ffmpeg.wasm fails to load.
+ * Uses <video> element seeking + canvas capture. Non-deterministic but functional.
+ *
+ * @param {File} file - Video file
+ * @param {number} targetFps - Target frames per second (e.g. 10)
+ * @param {number} maxFrames - Maximum number of frames to extract
+ * @param {number} maxWidth - Maximum frame width (for memory savings)
+ * @param {function} onProgress - Progress callback (0-100)
+ * @returns {Promise<{frames: ImageData[], width: number, height: number, fps: number, duration: number}>}
+ */
+export async function extractFramesFallback(file, targetFps, maxFrames, maxWidth, onProgress) {
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+  video.src = url;
+
+  try {
+    // Wait for metadata to load
+    await new Promise((resolve, reject) => {
+      video.onloadedmetadata = resolve;
+      video.onerror = () => reject(new Error('Failed to load video metadata'));
+    });
+
+    const duration = video.duration;
+    const nativeWidth = video.videoWidth;
+    const nativeHeight = video.videoHeight;
+
+    // Compute scaled dimensions
+    let frameWidth = nativeWidth;
+    let frameHeight = nativeHeight;
+    if (frameWidth > maxWidth) {
+      const scale = maxWidth / frameWidth;
+      frameWidth = Math.round(frameWidth * scale);
+      frameHeight = Math.round(frameHeight * scale);
+      // Ensure even dimensions
+      frameWidth = frameWidth - (frameWidth % 2);
+      frameHeight = frameHeight - (frameHeight % 2);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = frameWidth;
+    canvas.height = frameHeight;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    const interval = 1 / targetFps;
+    const totalPossibleFrames = Math.floor(duration * targetFps);
+    const frameCount = Math.min(totalPossibleFrames, maxFrames);
+    const frames = [];
+
+    for (let i = 0; i < frameCount; i++) {
+      const seekTime = i * interval;
+      if (seekTime > duration) break;
+
+      // Seek to the target time
+      video.currentTime = seekTime;
+      await new Promise((resolve, reject) => {
+        const onSeeked = () => {
+          video.removeEventListener('seeked', onSeeked);
+          video.removeEventListener('error', onError);
+          resolve();
+        };
+        const onError = () => {
+          video.removeEventListener('seeked', onSeeked);
+          video.removeEventListener('error', onError);
+          reject(new Error(`Seek failed at ${seekTime}s`));
+        };
+        video.addEventListener('seeked', onSeeked);
+        video.addEventListener('error', onError);
+      });
+
+      // Draw current frame to canvas and extract ImageData
+      ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
+      const imageData = ctx.getImageData(0, 0, frameWidth, frameHeight);
+      frames.push(imageData);
+
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / frameCount) * 100));
+      }
+    }
+
+    return {
+      frames,
+      width: frameWidth,
+      height: frameHeight,
+      fps: targetFps,
+      duration,
+      frameCount: frames.length,
+    };
+  } finally {
+    URL.revokeObjectURL(url);
+    video.src = '';
+    video.load();
+  }
 }
