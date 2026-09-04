@@ -80,7 +80,9 @@ const yieldToMain = () => new Promise(resolve => {
   ch.port2.postMessage(null);
 });
 
-const MAX_FRAMES = IS_IOS ? 80 : 600;
+// Streaming extraction on iOS means only 1 frame in memory at a time,
+// so frame count is no longer a memory constraint. 300 frames at 10fps = 30s of video.
+const MAX_FRAMES = IS_IOS ? 300 : 600;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
 export default function VideoUpload({ onClose, preSelectedExercise }) {
