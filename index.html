@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://storage.googleapis.com blob:; img-src 'self' blob: data:; media-src 'self' blob:; worker-src 'self' blob:; child-src 'self' blob:" />
     <link rel="icon" type="image/svg+xml" href="/workout-vision/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
@@ -11,14 +12,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/workout-vision/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <title>WorkoutVision</title>
     <meta name="description" content="AI-powered workout form analysis using computer vision. Real-time rep counting, form scoring, and personalized coaching — 100% on-device." />
     <meta property="og:title" content="WorkoutVision — AI Gym Companion" />
     <meta property="og:description" content="Real-time pose detection, rep counting, and form coaching powered by on-device AI. No data leaves your phone." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/workout-vision/icon-512.png" />
-    <script type="module" crossorigin src="/workout-vision/assets/index-C_gpCb5w.js"></script>
-    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-fyoVAsps.css">
+    <script type="module" crossorigin src="/workout-vision/assets/index-fp8DbBU-.js"></script>
+    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-BimnMVw0.css">
   </head>
   <body>
     <div id="root"></div>
@@ -50,17 +54,15 @@
       }, 8000);
     </script>
     <script>
-      // Kill any service worker. The SW caused stale cached code on iOS Safari
-      // that persisted across deploys for hours. Not worth the offline benefit.
+      // Register service worker for offline support.
+      // Uses network-first for HTML/JS to prevent the iOS Safari stale-cache
+      // problem that the previous SW caused. WASM files use cache-first
+      // since they are immutable and required for offline pose detection.
       (function() {
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(r) {
-            r.forEach(function(reg) { reg.unregister(); });
-          });
-        }
-        if ('caches' in window) {
-          caches.keys().then(function(k) {
-            k.forEach(function(n) { caches.delete(n); });
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/workout-vision/sw.js', { scope: '/workout-vision/' })
+              .catch(function(err) { console.warn('[SW] Registration failed:', err); });
           });
         }
       })();
