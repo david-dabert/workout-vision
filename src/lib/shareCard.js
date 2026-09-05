@@ -2,12 +2,14 @@
  * Generate a shareable summary card image from workout analysis results.
  * Renders to an offscreen canvas and returns a data URL or triggers download.
  *
- * Card dimensions: 1080x1350 (Instagram feed 4:5 ratio).
+ * Card dimensions: 1080x1920 (Instagram Stories 9:16 ratio).
  */
 
 import { tModule } from './LanguageContext';
 import { gradeFromScore, getRecorderMimeType } from './utils';
 import { drawQRCodeOnCanvas } from './qrCode';
+
+const APP_URL = 'david-dabert.github.io/workout-vision';
 
 function resolveText(item) {
   if (typeof item === 'string') return item;
@@ -16,7 +18,7 @@ function resolveText(item) {
 }
 
 const W = 1080;
-const H = 1350;
+const H = 1920;
 const PAD = 60;
 const ACCENT = '#00f5d4';
 const ACCENT2 = '#00e676';
@@ -32,6 +34,16 @@ function gradeColor(score) {
   if (score >= 80) return ACCENT;
   if (score >= 60) return YELLOW;
   return RED;
+}
+
+function gradeMotivation(grade) {
+  if (grade === 'A+') return 'Perfect Form 🔥';
+  if (grade === 'A')  return 'Elite Level 🏆';
+  if (grade === 'B+') return 'Almost Perfect ⚡';
+  if (grade === 'B')  return 'Strong Set 💪';
+  if (grade === 'C+') return 'Keep Pushing 📈';
+  if (grade === 'C')  return 'Room to Grow 🎯';
+  return 'Never Stop 🔄';
 }
 
 function formatTime(seconds) {
@@ -65,100 +77,116 @@ export async function generateShareCard(result, videoEl) {
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Background — premium gradient mesh
+  // ── Background ──────────────────────────────────────────────────────────
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, W, H);
-  // Subtle radial accent glow top-left
-  const glow1 = ctx.createRadialGradient(W * 0.2, H * 0.15, 0, W * 0.2, H * 0.15, W * 0.5);
-  glow1.addColorStop(0, 'rgba(0,245,212,0.04)');
-  glow1.addColorStop(1, 'transparent');
-  ctx.fillStyle = glow1;
+
+  // Radial glow top-center (grade badge area)
+  const glowTop = ctx.createRadialGradient(W / 2, H * 0.18, 0, W / 2, H * 0.18, W * 0.55);
+  glowTop.addColorStop(0, 'rgba(0,245,212,0.07)');
+  glowTop.addColorStop(1, 'transparent');
+  ctx.fillStyle = glowTop;
   ctx.fillRect(0, 0, W, H);
-  // Subtle radial accent glow bottom-right
-  const glow2 = ctx.createRadialGradient(W * 0.8, H * 0.85, 0, W * 0.8, H * 0.85, W * 0.4);
-  glow2.addColorStop(0, 'rgba(0,212,255,0.03)');
+
+  // Radial glow bottom-right
+  const glow2 = ctx.createRadialGradient(W * 0.8, H * 0.85, 0, W * 0.8, H * 0.85, W * 0.45);
+  glow2.addColorStop(0, 'rgba(0,212,255,0.04)');
   glow2.addColorStop(1, 'transparent');
   ctx.fillStyle = glow2;
   ctx.fillRect(0, 0, W, H);
 
-  // Video thumbnail (top section)
-  let thumbH = 500;
+  const grade = gradeFromScore(result.formScore);
+  const gc = gradeColor(result.formScore);
+
+  // ── Video thumbnail strip (optional, capped at 400px) ───────────────────
+  let thumbH = 0;
   if (videoEl && videoEl.videoWidth > 0) {
     try {
-      const vw = videoEl.videoWidth;
-      const vh = videoEl.videoHeight;
-      const aspect = vw / vh;
-      const drawW = W;
-      const drawH = W / aspect;
-      thumbH = Math.min(drawH, 500);
+      const aspect = videoEl.videoWidth / videoEl.videoHeight;
+      const drawH = Math.min(W / aspect, 400);
       ctx.save();
       ctx.beginPath();
-      ctx.rect(0, 0, W, thumbH);
+      ctx.rect(0, 0, W, drawH);
       ctx.clip();
-      ctx.drawImage(videoEl, 0, 0, drawW, drawH);
-      // Dark gradient overlay
-      const grad = ctx.createLinearGradient(0, thumbH - 150, 0, thumbH);
-      grad.addColorStop(0, 'rgba(13,13,15,0)');
-      grad.addColorStop(1, 'rgba(13,13,15,1)');
+      ctx.drawImage(videoEl, 0, 0, W, drawH);
+      const grad = ctx.createLinearGradient(0, drawH - 120, 0, drawH);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,1)');
       ctx.fillStyle = grad;
-      ctx.fillRect(0, thumbH - 150, W, 150);
+      ctx.fillRect(0, drawH - 120, W, 120);
       ctx.restore();
+      thumbH = drawH;
     } catch (e) {
       thumbH = 0;
     }
-  } else {
-    thumbH = 0;
   }
 
-  let y = Math.max(thumbH, 40);
+  // ── Grade badge — large, centered, glowing ──────────────────────────────
+  const badgeSize = 200;
+  const badgeY = thumbH + 60;
+  const badgeCX = W / 2;
+  const badgeCY = badgeY + badgeSize / 2;
 
-  // Grade badge (top right)
-  const grade = gradeFromScore(result.formScore);
-  const gc = gradeColor(result.formScore);
-  const badgeSize = 100;
-  const bx = W - PAD - badgeSize;
-  const by = y + 10;
-  roundRect(ctx, bx, by, badgeSize, badgeSize, 20);
+  // Outer glow ring
+  ctx.save();
+  ctx.shadowColor = gc;
+  ctx.shadowBlur = 60;
+  roundRect(ctx, badgeCX - badgeSize / 2, badgeY, badgeSize, badgeSize, 36);
   ctx.fillStyle = gc;
   ctx.fill();
+  ctx.restore();
+
+  // Badge face
+  roundRect(ctx, badgeCX - badgeSize / 2, badgeY, badgeSize, badgeSize, 36);
+  ctx.fillStyle = gc;
+  ctx.fill();
+
+  // Grade letter
   ctx.fillStyle = BG;
-  ctx.font = 'bold 48px -apple-system, system-ui, sans-serif';
+  ctx.font = 'bold 100px -apple-system, system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(grade, bx + badgeSize / 2, by + badgeSize / 2);
+  ctx.fillText(grade, badgeCX, badgeCY);
 
-  // Exercise name
-  ctx.fillStyle = TEXT;
-  ctx.font = 'bold 56px -apple-system, system-ui, sans-serif';
-  ctx.textAlign = 'left';
+  // ── Motivational one-liner ───────────────────────────────────────────────
+  const motto = gradeMotivation(grade);
+  ctx.fillStyle = gc;
+  ctx.font = 'bold 44px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText(result.exerciseName, PAD, y + 20);
+  ctx.fillText(motto, W / 2, badgeY + badgeSize + 28);
 
-  // Duration subtitle
+  // ── Exercise name + duration ─────────────────────────────────────────────
+  let y = badgeY + badgeSize + 110;
+
+  ctx.fillStyle = TEXT;
+  ctx.font = 'bold 62px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(result.exerciseName, W / 2, y);
+  y += 80;
+
   ctx.fillStyle = MUTED;
-  ctx.font = '28px -apple-system, system-ui, sans-serif';
-  ctx.fillText(formatTime(result.duration), PAD, y + 88);
+  ctx.font = '32px -apple-system, system-ui, sans-serif';
+  ctx.fillText(formatTime(result.duration), W / 2, y);
+  y += 70;
 
-  y += 150;
-
-  // Stats row
+  // ── Stats card — big, bold ───────────────────────────────────────────────
   const stats = [
     { value: `${result.reps}`, label: 'REPS' },
     { value: `${result.formScore}`, label: 'FORM' },
     { value: result.bioAnalysis?.movementQuality != null ? `${Math.round(result.bioAnalysis.movementQuality)}` : '--', label: 'QUALITY' },
   ];
-
   if (result.bioAnalysis?.asymmetry?.score != null) {
     stats.push({ value: `${Math.round(result.bioAnalysis.asymmetry.score)}%`, label: 'SYMMETRY' });
   }
 
-  // Stats card — glass effect with border
-  const statsCardH = 160;
-  roundRect(ctx, PAD, y, W - PAD * 2, statsCardH, 20);
-  ctx.fillStyle = 'rgba(255,255,255,0.035)';
+  const statsCardH = 200;
+  roundRect(ctx, PAD, y, W - PAD * 2, statsCardH, 24);
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
   ctx.fill();
-  roundRect(ctx, PAD, y, W - PAD * 2, statsCardH, 20);
-  ctx.strokeStyle = CARD_BORDER;
+  roundRect(ctx, PAD, y, W - PAD * 2, statsCardH, 24);
+  ctx.strokeStyle = 'rgba(0,245,212,0.15)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
@@ -166,33 +194,31 @@ export async function generateShareCard(result, videoEl) {
   stats.forEach((s, i) => {
     const cx = PAD + statW * i + statW / 2;
     ctx.fillStyle = ACCENT;
-    ctx.font = 'bold 52px -apple-system, system-ui, sans-serif';
+    ctx.font = 'bold 72px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(s.value, cx, y + 30);
-
+    ctx.fillText(s.value, cx, y + 34);
     ctx.fillStyle = MUTED;
-    ctx.font = '600 22px -apple-system, system-ui, sans-serif';
-    ctx.fillText(s.label, cx, y + 100);
+    ctx.font = '600 24px -apple-system, system-ui, sans-serif';
+    ctx.fillText(s.label, cx, y + 130);
   });
+  y += statsCardH + 40;
 
-  y += statsCardH + 30;
-
-  // Per-rep quality bars
+  // ── Per-rep quality bars ─────────────────────────────────────────────────
   if (result.repHistory && result.repHistory.length > 0) {
     ctx.fillStyle = TEXT;
-    ctx.font = 'bold 32px -apple-system, system-ui, sans-serif';
+    ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText('Rep Quality', PAD, y);
-    y += 50;
+    y += 52;
 
-    const barsH = 180;
-    roundRect(ctx, PAD, y, W - PAD * 2, barsH, 16);
+    const barsH = 200;
+    roundRect(ctx, PAD, y, W - PAD * 2, barsH, 18);
     ctx.fillStyle = CARD_BG;
     ctx.fill();
 
-    const barPad = 20;
+    const barPad = 22;
     const barAreaW = W - PAD * 2 - barPad * 2;
     const barAreaH = barsH - barPad * 2 - 30;
     const gap = 6;
@@ -203,22 +229,18 @@ export async function generateShareCard(result, videoEl) {
       const barH = Math.max(4, (score / 100) * barAreaH);
       const bx = PAD + barPad + i * (barW + gap);
       const by = y + barPad + barAreaH - barH;
-
       roundRect(ctx, bx, by, barW, barH, 3);
       ctx.fillStyle = score >= 80 ? ACCENT : score >= 50 ? YELLOW : RED;
       ctx.fill();
-
-      // Rep number
       ctx.fillStyle = MUTED;
       ctx.font = '18px -apple-system, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${i + 1}`, bx + barW / 2, y + barPad + barAreaH + 6);
     });
-
-    y += barsH + 30;
+    y += barsH + 36;
   }
 
-  // Form notes (top 3 issues)
+  // ── Form notes ───────────────────────────────────────────────────────────
   if (result.repHistory && result.repHistory.length > 0) {
     const allIssues = {};
     result.repHistory.forEach(r => {
@@ -229,78 +251,79 @@ export async function generateShareCard(result, videoEl) {
     const sorted = Object.entries(allIssues).sort((a, b) => b[1] - a[1]).slice(0, 3);
     if (sorted.length > 0) {
       ctx.fillStyle = TEXT;
-      ctx.font = 'bold 32px -apple-system, system-ui, sans-serif';
+      ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
       ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
       ctx.fillText('Form Notes', PAD, y);
-      y += 50;
-
+      y += 52;
       sorted.forEach(([issue, count]) => {
         ctx.fillStyle = YELLOW;
-        ctx.font = '26px -apple-system, system-ui, sans-serif';
+        ctx.font = '28px -apple-system, system-ui, sans-serif';
         ctx.fillText(`! ${issue} (${count}/${result.repHistory.length} reps)`, PAD + 10, y);
-        y += 40;
+        y += 42;
       });
-      y += 10;
+      y += 12;
     }
   }
 
-  // Highlights
+  // ── Highlights ───────────────────────────────────────────────────────────
   if (result.report?.highlights?.length > 0) {
     ctx.fillStyle = TEXT;
-    ctx.font = 'bold 32px -apple-system, system-ui, sans-serif';
+    ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
     ctx.fillText('Highlights', PAD, y);
-    y += 50;
-
+    y += 52;
     result.report.highlights.slice(0, 2).forEach(h => {
       ctx.fillStyle = ACCENT;
-      ctx.font = '26px -apple-system, system-ui, sans-serif';
-      const maxW = W - PAD * 2 - 20;
-      wrapText(ctx, `> ${resolveText(h)}`, PAD + 10, y, maxW, 36);
-      y += 44;
+      ctx.font = '28px -apple-system, system-ui, sans-serif';
+      wrapText(ctx, `> ${resolveText(h)}`, PAD + 10, y, W - PAD * 2 - 20, 38);
+      y += 46;
     });
-    y += 10;
+    y += 12;
   }
 
-  // QR code + challenge call-to-action
-  const qrSize = 160;
-  const qrY = Math.min(y + 20, H - 320);
-  const qrX = W / 2 - qrSize / 2;
+  // ── QR + CTA ─────────────────────────────────────────────────────────────
+  // Pin the CTA block to 200px above footer, pushing up only if content hasn't reached there
+  const ctaBlockH = 280; // challenge text + qr + scan label
+  const footerH = 120;
+  const ctaY = Math.max(y + 20, H - footerH - ctaBlockH - 20);
 
-  // "Can you beat my form?" challenge text
   ctx.fillStyle = TEXT;
-  ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
+  ctx.font = 'bold 38px -apple-system, system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText('Can you beat my form? 💪', W / 2, qrY);
+  ctx.fillText('Can you beat my form? 💪', W / 2, ctaY);
 
-  // QR code
-  drawQRCodeOnCanvas(ctx, qrX, qrY + 50, qrSize, { fg: ACCENT });
+  const qrSize = 160;
+  const qrX = W / 2 - qrSize / 2;
+  const qrY = ctaY + 56;
+  drawQRCodeOnCanvas(ctx, qrX, qrY, qrSize, { fg: ACCENT });
 
-  // Scan prompt
   ctx.fillStyle = MUTED;
-  ctx.font = '22px -apple-system, system-ui, sans-serif';
+  ctx.font = '24px -apple-system, system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Scan to try WorkoutVision', W / 2, qrY + 50 + qrSize + 12);
+  ctx.fillText('Scan to try WorkoutVision', W / 2, qrY + qrSize + 14);
 
-  // Branding footer — gradient text effect via overlay
-  const footerY = H - 90;
-  // Accent gradient line separator
-  const sepGrad = ctx.createLinearGradient(PAD * 3, 0, W - PAD * 3, 0);
+  // ── Footer ────────────────────────────────────────────────────────────────
+  const footerY = H - footerH;
+  const sepGrad = ctx.createLinearGradient(PAD * 2, 0, W - PAD * 2, 0);
   sepGrad.addColorStop(0, 'transparent');
-  sepGrad.addColorStop(0.2, 'rgba(0,245,212,0.3)');
-  sepGrad.addColorStop(0.8, 'rgba(0,212,255,0.3)');
+  sepGrad.addColorStop(0.2, 'rgba(0,245,212,0.35)');
+  sepGrad.addColorStop(0.8, 'rgba(0,212,255,0.35)');
   sepGrad.addColorStop(1, 'transparent');
   ctx.fillStyle = sepGrad;
-  ctx.fillRect(PAD * 3, footerY - 20, W - PAD * 6, 1.5);
-  // Brand name
+  ctx.fillRect(PAD * 2, footerY - 2, W - PAD * 4, 1.5);
+
   ctx.fillStyle = ACCENT;
-  ctx.font = '800 38px -apple-system, system-ui, sans-serif';
+  ctx.font = '800 40px -apple-system, system-ui, sans-serif';
   ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
   ctx.fillText('WorkoutVision', W / 2, footerY + 10);
+
   ctx.fillStyle = MUTED;
-  ctx.font = '500 22px -apple-system, system-ui, sans-serif';
-  ctx.fillText('AI-Powered Form Analysis', W / 2, footerY + 52);
+  ctx.font = '500 24px -apple-system, system-ui, sans-serif';
+  ctx.fillText(APP_URL, W / 2, footerY + 60);
 
   return canvas.toDataURL('image/png');
 }
@@ -337,7 +360,7 @@ export async function downloadShareCard(result, videoEl) {
  */
 export function getChallengeText(result) {
   const grade = gradeFromScore(result.formScore);
-  return `I just scored ${result.formScore}/100 (${grade}) on ${result.exerciseName} (${result.reps} reps). Can you beat my form? 💪 Try WorkoutVision`;
+  return `I just scored ${result.formScore}/100 (${grade}) on ${result.exerciseName} (${result.reps} reps). Can you beat my form? 💪 Try WorkoutVision → ${APP_URL}`;
 }
 
 /**
@@ -642,12 +665,12 @@ export async function generateAnimatedShareCard(result, onProgress) {
       ctx.fillRect(PAD * 3, footerY - 30 + footerOffset, W - PAD * 6, 1.5);
       // Brand
       ctx.fillStyle = ACCENT;
-      ctx.font = '800 38px -apple-system, system-ui, sans-serif';
+      ctx.font = '800 40px -apple-system, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('WorkoutVision', W / 2, footerY + footerOffset);
       ctx.fillStyle = MUTED;
-      ctx.font = '500 22px -apple-system, system-ui, sans-serif';
-      ctx.fillText('AI-Powered Form Analysis', W / 2, footerY + 42 + footerOffset);
+      ctx.font = '500 24px -apple-system, system-ui, sans-serif';
+      ctx.fillText(APP_URL, W / 2, footerY + 48 + footerOffset);
       ctx.globalAlpha = 1;
     }
 

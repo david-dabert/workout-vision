@@ -24,6 +24,7 @@ const ProfilePage = safeLazy(() => import('./components/Profile'));
 const Validate = safeLazy(() => import('./components/Validate'));
 const DesignDemo = safeLazy(() => import('./components/DesignDemo'));
 const LandingPage = safeLazy(() => import('./components/LandingPage'));
+const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
@@ -113,6 +114,13 @@ function AppInner() {
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
         <LandingPage onNavigate={onNavigate} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+  if (page === 'weekly') return (
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <WeeklyReport onClose={() => setPage('dashboard')} />
       </Suspense>
     </ErrorBoundary>
   );

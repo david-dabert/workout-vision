@@ -696,6 +696,28 @@ const translations = {
   'cycle_tip_luteal': { en: 'Maintenance phase — focus on technique', fr: 'Phase de maintien — concentrez-vous sur la technique' },
   'cycle_current_phase': { en: 'Current phase', fr: 'Phase actuelle' },
   'cycle_day': { en: 'Day', fr: 'Jour' },
+
+  // ─── Weekly Report ───
+  'wr_title': { en: 'Weekly Report', fr: 'Rapport hebdomadaire' },
+  'wr_volume': { en: 'VOLUME', fr: 'VOLUME' },
+  'wr_exercises': { en: 'EXERCISES', fr: 'EXERCICES' },
+  'wr_sets': { en: 'SETS', fr: 'SÉRIES' },
+  'wr_form_trend': { en: 'Form Trend', fr: 'Tendance de forme' },
+  'wr_vs_last': { en: 'vs last week', fr: 'vs sem. dernière' },
+  'wr_form_improving': { en: 'Improving — keep it up!', fr: 'En progression — continuez !' },
+  'wr_form_declining': { en: 'Declining — focus on form this week.', fr: 'En baisse — soignez la technique cette semaine.' },
+  'wr_muscles': { en: 'Muscles Trained', fr: 'Muscles travaillés' },
+  'wr_best_callout': { en: '⭐ Best Form Score', fr: '⭐ Meilleur score de forme' },
+  'wr_active_days': { en: 'Active Days', fr: 'Jours actifs' },
+  'wr_share_btn': { en: 'Share Weekly Report', fr: 'Partager le rapport' },
+  'wr_share_title': { en: 'My Weekly Workout Report', fr: 'Mon rapport hebdomadaire' },
+  'wr_share_text': { en: 'Check out my weekly workout stats!', fr: 'Voici mes stats de la semaine !' },
+  'wr_shared': { en: 'Report shared!', fr: 'Rapport partagé !' },
+  'wr_downloaded': { en: 'Report saved to downloads.', fr: 'Rapport enregistré.' },
+  'wr_empty_title': { en: 'No workouts this week', fr: 'Aucune séance cette semaine' },
+  'wr_empty_desc': { en: 'Start logging workouts to see your weekly summary.', fr: 'Commencez à enregistrer vos séances pour voir votre résumé hebdomadaire.' },
+  'wr_streak_label': { en: 'day streak', fr: 'jours consécutifs' },
+  'weekly_report': { en: 'Weekly Report', fr: 'Rapport hebdo' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───
