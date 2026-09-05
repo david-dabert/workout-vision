@@ -7,6 +7,9 @@ import MuscleMap from './MuscleMap';
 import { useT } from '../lib/LanguageContext';
 import { gradeFromScore, translateMuscle } from '../lib/utils';
 import VisionScoreHero from './VisionScoreHero';
+import ChallengeBar from './ChallengeBar';
+import InjuryRiskCard from './InjuryRiskCard';
+import { calculateSmartStreak } from '../lib/prSystem';
 
 const getGreetingKey = () => {
   const h = new Date().getHours();
@@ -23,18 +26,10 @@ const getMotivationKey = (count) => {
   return 'motivation_max';
 };
 
-const calculateStreak = (workouts) => {
-  if (!workouts.length) return 0;
-  const days = new Set(workouts.map(w => new Date(w.date).toDateString()));
-  let streak = 0;
-  const today = new Date();
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    if (days.has(d.toDateString())) streak++;
-    else if (i > 0) break;
-  }
-  return streak;
+// Smart streak: counts consecutive scheduled training days, not calendar days.
+// Falls back to Mon/Wed/Fri if no trainingDays set in profile.
+const calculateStreak = (workouts, trainingDays) => {
+  return calculateSmartStreak(workouts, trainingDays);
 };
 
 const getLast7Days = (workouts, lang = 'en') => {
@@ -54,7 +49,7 @@ const getLast7Days = (workouts, lang = 'en') => {
   return days;
 };
 
-export default function Dashboard({ profile, modelStatus, onNavigate }) {
+export default function Dashboard({ profile, modelStatus, onNavigate, challenge }) {
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [allWorkouts, setAllWorkouts] = useState([]);
@@ -123,7 +118,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
               <span className={`engine-dot ${statusDot}`} />
               <span>{statusText}</span>
             </div>
-            {calculateStreak(allWorkouts) > 0 && (
+            {calculateStreak(allWorkouts, profile?.trainingDays) > 0 && (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 background: 'rgba(0, 224, 150, 0.12)', color: 'var(--accent)',
@@ -131,12 +126,22 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
                 fontWeight: 700, letterSpacing: '0.02em',
                 border: '1px solid rgba(0, 224, 150, 0.25)',
               }}>
-                🔥 {calculateStreak(allWorkouts)} {t('days_streak')}
+                🔥 {calculateStreak(allWorkouts, profile?.trainingDays)} {profile?.trainingDays ? t('scheduled_streak') : t('days_streak')}
               </span>
             )}
           </div>
         </div>
       </div>
+
+      {/* ── Challenge bar (when arriving via challenge URL) ── */}
+      {challenge && (
+        <div style={{ padding: '0 16px' }}>
+          <ChallengeBar
+            challenge={challenge}
+            onAccept={() => onNavigate('analyze')}
+          />
+        </div>
+      )}
 
       {/* ── VisionScore hero metric ── */}
       <VisionScoreHero workouts={allWorkouts} />
@@ -311,6 +316,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate }) {
           </div>
         </div>
       )}
+
+      {/* ── Injury Risk Prediction ── */}
+      {allWorkouts.length >= 5 && <InjuryRiskCard />}
 
       {/* ── Insights section ── */}
       <InsightsSection profile={profile} workouts={recentWorkouts} />

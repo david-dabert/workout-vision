@@ -697,6 +697,31 @@ const translations = {
   'cycle_current_phase': { en: 'Current phase', fr: 'Phase actuelle' },
   'cycle_day': { en: 'Day', fr: 'Jour' },
 
+  // ─── Data Portability ───
+  'dp_title': { en: 'Data Backup & Transfer', fr: 'Sauvegarde et transfert' },
+  'dp_description': { en: 'Export your data as a compressed .wv file. Import on any device.', fr: 'Exportez vos donnees en fichier .wv compresse. Importez sur tout appareil.' },
+  'dp_export_btn': { en: 'Export My Data', fr: 'Exporter mes donnees' },
+  'dp_import_btn': { en: 'Import Data', fr: 'Importer des donnees' },
+  'dp_exporting': { en: 'Exporting...', fr: 'Export en cours...' },
+  'dp_exported': { en: 'Downloaded!', fr: 'Telecharge !' },
+  'dp_importing': { en: 'Importing...', fr: 'Importation en cours...' },
+  'dp_import_success': { en: 'Import complete', fr: 'Importation terminee' },
+  'dp_preview_title': { en: 'File contents', fr: 'Contenu du fichier' },
+  'dp_exported_on': { en: 'Exported on', fr: 'Exporte le' },
+  'dp_merge': { en: 'Merge', fr: 'Fusionner' },
+  'dp_replace': { en: 'Replace all', fr: 'Tout remplacer' },
+  'dp_replace_warning': { en: 'This will erase all current data before importing.', fr: 'Ceci effacera toutes les donnees actuelles avant importation.' },
+  'dp_confirm_import': { en: 'Import now', fr: 'Importer maintenant' },
+  'dp_invalid_file': { en: 'Invalid file format. Use a .wv or .json backup.', fr: 'Format invalide. Utilisez un fichier .wv ou .json.' },
+  'dp_missing_version': { en: 'File is missing version info. Not a valid backup.', fr: 'Version manquante. Fichier non valide.' },
+  'dp_read_error': { en: 'Could not read the file.', fr: 'Impossible de lire le fichier.' },
+  'dp_import_error': { en: 'Import failed. Please try again.', fr: "Echec de l'importation. Veuillez reessayer." },
+  'dp_profile': { en: 'profile', fr: 'profil' },
+  'dp_workouts': { en: 'workouts', fr: 'entrainements' },
+  'dp_food_entries': { en: 'food entries', fr: 'aliments' },
+  'dp_medical_records': { en: 'medical records', fr: 'documents medicaux' },
+  'dp_milestones': { en: 'milestones', fr: 'jalons' },
+
   // ─── Weekly Report ───
   'wr_title': { en: 'Weekly Report', fr: 'Rapport hebdomadaire' },
   'wr_volume': { en: 'VOLUME', fr: 'VOLUME' },
@@ -718,6 +743,49 @@ const translations = {
   'wr_empty_desc': { en: 'Start logging workouts to see your weekly summary.', fr: 'Commencez à enregistrer vos séances pour voir votre résumé hebdomadaire.' },
   'wr_streak_label': { en: 'day streak', fr: 'jours consécutifs' },
   'weekly_report': { en: 'Weekly Report', fr: 'Rapport hebdo' },
+
+  // ─── Voice Coaching ───
+  'voice_coaching': { en: 'Voice Coaching', fr: 'Coaching vocal' },
+  'voice_coaching_desc': { en: 'Spoken cues during analysis (rep counts, form warnings)', fr: 'Indications vocales pendant l\'analyse (comptage des reps, alertes de forme)' },
+
+  // ─── PR System ───
+  'pr_banner_title': { en: 'Personal Records!', fr: 'Records personnels !' },
+  'pr_heaviest': { en: 'Heaviest Lift', fr: 'Charge la plus lourde' },
+  'pr_most_reps': { en: 'Most Reps', fr: 'Plus de reps' },
+  'pr_best_form': { en: 'Best Form', fr: 'Meilleure forme' },
+  'pr_longest_set': { en: 'Longest Set', fr: 'Série la plus longue' },
+  'pr_max_volume': { en: 'Max Volume', fr: 'Volume max' },
+  'pr_streak': { en: 'Longest Streak', fr: 'Plus longue série consécutive' },
+  'pr_value_label': { en: '{{value}} {{unit}}', fr: '{{value}} {{unit}}' },
+  'pr_prev_best': { en: 'prev: {{value}}', fr: 'préc: {{value}}' },
+
+  // ─── Form Regression Warning ───
+  'form_regression_title': { en: 'Form Alert', fr: 'Alerte forme' },
+  'form_regression_msg': { en: 'Form dropped {{drop}} points vs your average. Fatigue or weight too heavy?', fr: 'Forme en baisse de {{drop}} points par rapport à votre moyenne. Fatigue ou poids trop lourd ?' },
+
+  // ─── Training Days / Smart Streak ───
+  'training_days': { en: 'Training Days', fr: "Jours d'entraînement" },
+  'training_days_desc': { en: 'Set your weekly training schedule. Streak counts only scheduled days.', fr: 'Définissez votre planning hebdomadaire. La série ne compte que les jours programmés.' },
+  'day_mon': { en: 'Mon', fr: 'Lun' },
+  'day_tue': { en: 'Tue', fr: 'Mar' },
+  'day_wed': { en: 'Wed', fr: 'Mer' },
+  'day_thu': { en: 'Thu', fr: 'Jeu' },
+  'day_fri': { en: 'Fri', fr: 'Ven' },
+  'day_sat': { en: 'Sat', fr: 'Sam' },
+  'day_sun': { en: 'Sun', fr: 'Dim' },
+  'scheduled_streak': { en: 'scheduled days', fr: 'jours programmés' },
+
+  // ─── Challenge system ───
+  'challenge_incoming': { en: '{{name}} challenged you: {{reps}} reps of {{exercise}} with {{score}}/100 form. Beat it!', fr: '{{name}} vous d\u00e9fie : {{reps}} reps de {{exercise}} avec {{score}}/100 de forme. Relevez le d\u00e9fi !' },
+  'challenge_accept': { en: 'Accept Challenge', fr: 'Relever le d\u00e9fi' },
+  'challenge_dismiss': { en: 'Dismiss', fr: 'Ignorer' },
+  'challenge_you_win': { en: 'YOU WIN!', fr: 'VOUS AVEZ GAGN\u00c9 !' },
+  'challenge_they_win': { en: 'Challenge lost... try again!', fr: 'D\u00e9fi perdu... r\u00e9essayez !' },
+  'challenge_tie': { en: "It's a tie!", fr: '\u00c9galit\u00e9 !' },
+  'challenge_you': { en: 'You', fr: 'Vous' },
+  'challenge_friend_btn': { en: 'Challenge a Friend', fr: 'D\u00e9fier un ami' },
+  'challenge_copied': { en: 'Challenge link copied!', fr: 'Lien du d\u00e9fi copi\u00e9 !' },
+  'copied': { en: 'Copied!', fr: 'Copi\u00e9 !' },
 };
 
 // ─── Form check message translations (bad/good strings from exercises.js) ───

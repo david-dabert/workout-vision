@@ -2479,6 +2479,77 @@ button, a, .nav-card, .card, .upload-zone { transition: all 0.2s var(--ease-smoo
 
 
 /* ══════════════════════════════════════════
+   RESULT REVEAL ANIMATIONS
+   ══════════════════════════════════════════ */
+
+/* Grade badge: spring scale from 0 */
+.result-badge-reveal {
+  animation: badgeBounce 0.6s var(--ease-spring) both;
+}
+
+@keyframes badgeBounce {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  85% {
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Stat cards: staggered fade in from below */
+.result-stat-reveal {
+  animation: statReveal 0.4s var(--ease-out) both;
+}
+
+@keyframes statReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ══════════════════════════════════════════
+   PAGE TRANSITIONS
+   ══════════════════════════════════════════ */
+
+.page-transition-enter {
+  animation: pageSlideIn 0.25s var(--ease-out) both;
+}
+
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.page-transition-fade {
+  animation: pageFade 0.2s ease both;
+}
+
+@keyframes pageFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════
    LANDING PAGE
    ══════════════════════════════════════════ */
 

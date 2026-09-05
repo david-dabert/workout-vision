@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
+import { parseChallengeFromURL } from './lib/challenges';
 import Dashboard from './components/Dashboard';
 import Onboarding from './components/Onboarding';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -36,6 +37,13 @@ function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
   const [page, setPage] = useHashRouter();
   const [modelStatus, setModelStatus] = useState('loading');
+  const [challenge, setChallenge] = useState(null);
+
+  // Check for challenge URL on mount
+  useEffect(() => {
+    const parsed = parseChallengeFromURL();
+    if (parsed) setChallenge(parsed);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,60 +75,76 @@ function AppInner() {
     );
   }
 
-  // Full-screen pages (no tab bar)
+  // Full-screen pages (no tab bar) - wrapped with page transition
   if (page === 'analyze') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <Analyze onClose={() => setPage('dashboard')} />
+        <div key="analyze" className="page-transition-enter">
+          <Analyze onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'log') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <ManualLog onClose={() => setPage('dashboard')} />
+        <div key="log" className="page-transition-enter">
+          <ManualLog onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'history') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <WorkoutHistory onClose={() => setPage('dashboard')} />
+        <div key="history" className="page-transition-enter">
+          <WorkoutHistory onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'rest') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <RestTimer onClose={() => setPage('dashboard')} />
+        <div key="rest" className="page-transition-enter">
+          <RestTimer onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'profile') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <ProfilePage onClose={() => setPage('dashboard')} />
+        <div key="profile" className="page-transition-enter">
+          <ProfilePage onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'validate') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <Validate onClose={() => setPage('dashboard')} />
+        <div key="validate" className="page-transition-enter">
+          <Validate onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'landing') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <LandingPage onNavigate={onNavigate} />
+        <div key="landing" className="page-transition-fade">
+          <LandingPage onNavigate={onNavigate} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
   if (page === 'weekly') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
-        <WeeklyReport onClose={() => setPage('dashboard')} />
+        <div key="weekly" className="page-transition-enter">
+          <WeeklyReport onClose={() => setPage('dashboard')} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
@@ -131,6 +155,7 @@ function AppInner() {
         profile={profile}
         modelStatus={modelStatus}
         onNavigate={onNavigate}
+        challenge={challenge}
       />
       <nav className="tab-bar">
         <button className={`tab-item${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')}>

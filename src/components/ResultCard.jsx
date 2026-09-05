@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EXERCISES, getExerciseIllustration } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
+import Confetti from './Confetti';
 import { shareCard, challengeShare } from '../lib/shareCard';
+import { shareChallenge } from '../lib/challenges';
 import { useT } from '../lib/LanguageContext';
+import { useProfile } from '../lib/ProfileContext';
 import { gradeFromScore, gradeClass } from '../lib/utils';
 import { updateWorkout } from '../lib/storage';
+import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
+import { detectPRs, detectFormRegression } from '../lib/prSystem';
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -71,6 +76,7 @@ function generateProgressionNote(progression, t) {
 
 export default function ResultCard({ result, onReplay }) {
   const { t, tExercise, tFormCheck } = useT();
+  const { profile } = useProfile();
   const {
     fileName, exerciseName, reps, duration,
     formScore, bioAnalysis, report, repHistory, progression, baselineComparison,
@@ -93,6 +99,55 @@ export default function ResultCard({ result, onReplay }) {
 
   const displayReps = repOverride != null ? repOverride : reps;
   const repWasOverridden = repOverride != null && repOverride !== reps;
+
+  // PR detection state
+  const [achievedPRs, setAchievedPRs] = useState([]);
+  const [formRegression, setFormRegression] = useState(null);
+
+  useEffect(() => {
+    if (!result || !result.exercise) return;
+    const workoutData = {
+      id: result.workoutId,
+      exercise: result.exercise,
+      exerciseName: result.exerciseName || exerciseName,
+      weight: result.weight || 0,
+      reps: result.reps || reps,
+      formScore: result.formScore || formScore,
+      duration: result.duration || duration,
+      date: result.date || new Date().toISOString(),
+    };
+    detectPRs(workoutData).then(prs => {
+      if (prs && prs.length > 0) setAchievedPRs(prs);
+    }).catch(() => {});
+    detectFormRegression(workoutData).then(regression => {
+      if (regression) setFormRegression(regression);
+    }).catch(() => {});
+  }, [result?.workoutId]);
+
+  // Reveal animation state
+  const [revealed, setRevealed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const isPR = baselineComparison?.overallForm?.isPersonalBest;
+  const isTopGrade = grade === 'A+' || grade === 'A';
+
+  useEffect(() => {
+    // Trigger reveal after mount
+    const t1 = requestAnimationFrame(() => setRevealed(true));
+
+    // Trigger confetti + haptic for PR or top grade
+    if (isPR || isTopGrade) {
+      const t2 = setTimeout(() => {
+        setShowConfetti(true);
+        if (isPR) hapticPR();
+        else hapticTap();
+      }, 400);
+      // Auto-clean confetti
+      const t3 = setTimeout(() => setShowConfetti(false), 2600);
+      return () => { cancelAnimationFrame(t1); clearTimeout(t2); clearTimeout(t3); };
+    }
+    return () => cancelAnimationFrame(t1);
+  }, [isPR, isTopGrade]);
 
   // Persist rep override to workout history
   const handleRepChange = useCallback((newReps) => {
@@ -122,7 +177,8 @@ export default function ResultCard({ result, onReplay }) {
   }, [formScore]);
 
   return (
-    <div className="card result-card" style={{ marginTop: 14 }}>
+    <div className="card result-card" style={{ marginTop: 14, position: 'relative' }}>
+      <Confetti active={showConfetti} />
       {/* Header with grade badge */}
       <div className="result-header">
         <div style={{ flex: 1 }}>
@@ -150,9 +206,12 @@ export default function ResultCard({ result, onReplay }) {
             </div>
           </div>
         </div>
-        <span className={`score-badge ${cls}`} style={{ fontSize: '1.1rem', padding: '8px 16px', position: 'relative', overflow: 'hidden' }}>
+        <span
+          className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''}`}
+          style={{ fontSize: '1.1rem', padding: '8px 16px', position: 'relative', overflow: 'hidden' }}
+        >
           {grade}
-          {grade === 'A' && (
+          {(grade === 'A' || grade === 'A+') && (
             <div style={{
               position: 'absolute', inset: 0, borderRadius: 'inherit',
               background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
@@ -166,7 +225,7 @@ export default function ResultCard({ result, onReplay }) {
       {muscles && <MuscleMap muscles={muscles} size={90} />}
 
       <div className="stats-grid-2x2">
-        <div className="stat-card" onClick={() => setShowRepEdit(!showRepEdit)} style={{ cursor: 'pointer', position: 'relative' }}>
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ cursor: 'pointer', position: 'relative', animationDelay: '0ms' }} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }}>
           <span className="stat-card-label">{t('reps').toUpperCase()}</span>
           {showRepEdit ? (
             <span className="stat-card-value" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -207,11 +266,11 @@ export default function ResultCard({ result, onReplay }) {
             }}>tap to edit</span>
           )}
         </div>
-        <div className="stat-card">
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '100ms' }}>
           <span className="stat-card-label">{t('duration').toUpperCase()}</span>
           <span className="stat-card-value">{formatTime(duration)}</span>
         </div>
-        <div className="stat-card">
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '200ms' }}>
           <span className="stat-card-label">{t('form_score_label')}</span>
           <span className="stat-card-value">
             <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
@@ -220,7 +279,7 @@ export default function ResultCard({ result, onReplay }) {
             <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>/100</span>
           </span>
         </div>
-        <div className="stat-card">
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '300ms' }}>
           <span className="stat-card-label">{t('quality').toUpperCase()}</span>
           <span className="stat-card-value">
             {bioAnalysis?.movementQuality != null ? Math.round(bioAnalysis.movementQuality) : '--'}
@@ -237,6 +296,73 @@ export default function ResultCard({ result, onReplay }) {
         }}>
           <span style={{ fontSize: 24, display: 'block', marginBottom: 4 }}>&#10024;</span>
           <span style={{ fontSize: 13, fontWeight: 700, color: '#ff6b9d', letterSpacing: 1, textTransform: 'uppercase' }}>New Personal Best!</span>
+        </div>
+      )}
+
+      {/* PR Banner — golden accent, lists all PR types achieved */}
+      {achievedPRs.length > 0 && (
+        <div style={{
+          textAlign: 'center', padding: '14px 16px', marginBottom: 8,
+          background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.08))',
+          borderRadius: 12, border: '1px solid rgba(255,215,0,0.3)',
+        }}>
+          <span style={{ fontSize: 28, display: 'block', marginBottom: 6 }}>&#127942;</span>
+          <span style={{
+            fontSize: 14, fontWeight: 800, color: '#ffd700', letterSpacing: 1.5,
+            textTransform: 'uppercase', display: 'block', marginBottom: 8,
+          }}>{t('pr_banner_title')}</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+            {achievedPRs.map((pr, i) => {
+              const prLabels = {
+                heaviest: t('pr_heaviest'),
+                most_reps: t('pr_most_reps'),
+                best_form: t('pr_best_form'),
+                longest_set: t('pr_longest_set'),
+                max_volume: t('pr_max_volume'),
+                streak: t('pr_streak'),
+              };
+              return (
+                <span key={i} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '4px 10px', borderRadius: 8,
+                  background: 'rgba(255,215,0,0.15)', color: '#ffd700',
+                  fontSize: '0.75rem', fontWeight: 700,
+                  border: '1px solid rgba(255,215,0,0.25)',
+                }}>
+                  {prLabels[pr.type] || pr.type}
+                  <span style={{ color: 'rgba(255,215,0,0.7)', fontSize: '0.65rem' }}>
+                    {pr.value}{pr.unit !== 'pts' ? pr.unit : ''}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Form Regression Warning — loss aversion trigger */}
+      {formRegression && (
+        <div style={{
+          padding: '12px 14px', marginBottom: 8,
+          background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.06))',
+          borderRadius: 12, border: '1px solid rgba(251,191,36,0.3)',
+          display: 'flex', alignItems: 'flex-start', gap: 10,
+        }}>
+          <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>&#9888;</span>
+          <div>
+            <span style={{
+              fontSize: '0.8rem', fontWeight: 700, color: '#fbbf24',
+              textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4,
+            }}>{t('form_regression_title')}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              {t('form_regression_msg', { drop: formRegression.drop })}
+            </span>
+            <span style={{
+              display: 'block', marginTop: 6, fontSize: '0.7rem', color: 'var(--muted)',
+            }}>
+              {t('form_score_label')}: {formRegression.currentScore} (avg: {formRegression.averageScore})
+            </span>
+          </div>
         </div>
       )}
 
@@ -717,7 +843,7 @@ export default function ResultCard({ result, onReplay }) {
         <button
           className="btn btn-ghost"
           style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
-          onClick={() => shareCard(result)}
+          onClick={() => { hapticLight(); shareCard(result); }}
         >
           {t('share_card')}
         </button>
@@ -726,14 +852,15 @@ export default function ResultCard({ result, onReplay }) {
           style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 800,
             background: 'linear-gradient(135deg, #ff6b9d, #ffb088)', border: 'none', color: '#000' }}
           onClick={async () => {
-            const outcome = await challengeShare(result);
+            hapticLight();
+            const outcome = await shareChallenge(result, profile);
             if (outcome === 'copied') {
               setChallengeStatus('copied');
               setTimeout(() => setChallengeStatus(null), 2000);
             }
           }}
         >
-          {challengeStatus === 'copied' ? (t('copied') || 'Copied!') : '💪 Challenge'}
+          {challengeStatus === 'copied' ? t('challenge_copied') : t('challenge_friend_btn')}
         </button>
       </div>
     </div>

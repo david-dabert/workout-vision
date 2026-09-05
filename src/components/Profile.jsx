@@ -7,6 +7,7 @@ import {
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { detectCapabilities, runMicroBenchmark } from '../lib/gpuBenchmark';
+import DataPortability from './DataPortability';
 
 export default function Profile({ onClose }) {
   const { profile: savedProfile, saveProfile } = useProfile();
@@ -213,9 +214,75 @@ export default function Profile({ onClose }) {
             </div>
           </label>
         </div>
-        <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%' }}>
+        {/* Training Days Picker */}
+        <label className="full-width" style={{ marginTop: 8 }}>
+          <span>{t('training_days')}</span>
+          <p className="text-xs text-muted" style={{ margin: '4px 0 8px' }}>
+            {t('training_days_desc')}
+          </p>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {[
+              { day: 0, label: t('day_sun') },
+              { day: 1, label: t('day_mon') },
+              { day: 2, label: t('day_tue') },
+              { day: 3, label: t('day_wed') },
+              { day: 4, label: t('day_thu') },
+              { day: 5, label: t('day_fri') },
+              { day: 6, label: t('day_sat') },
+            ].map(({ day, label }) => {
+              const selected = (profile.trainingDays || [1, 3, 5]).includes(day);
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => {
+                    const current = profile.trainingDays || [1, 3, 5];
+                    const next = selected
+                      ? current.filter(d => d !== day)
+                      : [...current, day].sort((a, b) => a - b);
+                    handleChange('trainingDays', next);
+                  }}
+                  style={{
+                    padding: '10px 14px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
+                    minWidth: 44, textAlign: 'center',
+                    border: '1px solid',
+                    borderColor: selected ? 'var(--accent)' : 'var(--border)',
+                    background: selected ? 'rgba(0,224,150,0.15)' : 'transparent',
+                    color: selected ? 'var(--accent)' : 'var(--muted)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </label>
+
+        <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%', marginTop: 12 }}>
           {saved ? t('saved') : t('save_profile')}
         </button>
+      </div>
+
+      {/* Voice Coaching toggle */}
+      <div className="card">
+        <h3>{t('voice_coaching')}</h3>
+        <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
+          {t('voice_coaching_desc')}
+        </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={profile.voiceCoachingEnabled !== false}
+            onChange={(e) => handleChange('voiceCoachingEnabled', e.target.checked)}
+            style={{ width: 18, height: 18, accentColor: 'var(--primary)' }}
+          />
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            {profile.voiceCoachingEnabled !== false
+              ? (lang === 'fr' ? 'Activé' : 'Enabled')
+              : (lang === 'fr' ? 'Désactivé' : 'Disabled')}
+          </span>
+        </label>
       </div>
 
       {/* Cycle Tracking (optional) */}
@@ -432,69 +499,8 @@ export default function Profile({ onClose }) {
         )}
       </div>
 
-      {/* Data backup */}
-      <div className="card">
-        <h3>{lang === 'fr' ? 'Sauvegarde des données' : 'Data Backup'}</h3>
-        <p className="text-xs text-muted" style={{ marginBottom: 12 }}>
-          {lang === 'fr'
-            ? 'Exportez vos données pour les sauvegarder ou les transférer vers un autre appareil.'
-            : 'Export your data to back it up or transfer to another device.'}
-        </p>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            className="btn btn-ghost"
-            style={{ flex: 1 }}
-            onClick={async () => {
-              const data = {
-                version: 1,
-                exportedAt: new Date().toISOString(),
-                profile: await getProfile(),
-                workouts: await getAllWorkouts(),
-              };
-              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `workoutvision-backup-${new Date().toISOString().slice(0, 10)}.json`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            {lang === 'fr' ? 'Exporter' : 'Export'}
-          </button>
-          <button
-            className="btn btn-ghost"
-            style={{ flex: 1 }}
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.json';
-              input.onchange = async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                try {
-                  const text = await file.text();
-                  const data = JSON.parse(text);
-                  if (!data.version || !data.profile) {
-                    alert(lang === 'fr' ? 'Fichier invalide' : 'Invalid backup file');
-                    return;
-                  }
-                  if (data.profile) await saveProfile(data.profile);
-                  if (data.workouts) {
-                    for (const w of data.workouts) await saveWorkout(w);
-                  }
-                  window.location.reload();
-                } catch (err) {
-                  alert(lang === 'fr' ? 'Erreur de lecture du fichier' : 'Failed to read backup file');
-                }
-              };
-              input.click();
-            }}
-          >
-            {lang === 'fr' ? 'Importer' : 'Import'}
-          </button>
-        </div>
-      </div>
+      {/* Data portability (export/import .wv files) */}
+      <DataPortability />
 
       {/* Device Capabilities Benchmark */}
       <div className="card">

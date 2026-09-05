@@ -11,6 +11,7 @@ const workoutStore = localforage.createInstance({ name: 'workoutVision', storeNa
 const medicalStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
 const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
 const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
+const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
 
 // User profile
 export async function saveProfile(profile) {

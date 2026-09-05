@@ -161,9 +161,61 @@ export class AudioFeedback {
       this._playTone(220, now, 0.1, 0.4);
       this._playTone(220, now + 0.15, 0.1, 0.4);
     } else {
-      // 'minor' or any unknown value
-      this._playTone(330, now, 0.15, 0.15);
+      // 'minor' or any unknown value — single low G3 tone, 150ms
+      this._playTone(196, now, 0.15, 0.2);
     }
+  }
+
+  /**
+   * Plays a short ascending two-note chime for rep completion.
+   * C5 (523 Hz) → E5 (659 Hz), 80ms each.
+   */
+  playRepChime() {
+    if (!this._started || !this._ctx) return;
+
+    const now = this._ctx.currentTime;
+    this._playTone(523.25, now, 0.08, 0.2);        // C5
+    this._playTone(659.25, now + 0.08, 0.08, 0.2);  // E5
+  }
+
+  /**
+   * Plays a C major triad chord for set completion.
+   * C4 + E4 + G4 simultaneously, 300ms with gentle fade.
+   */
+  playSetChord() {
+    if (!this._started || !this._ctx) return;
+
+    const now = this._ctx.currentTime;
+    const duration = 0.3;
+    // Play all three notes simultaneously at lower volume for a pleasant chord
+    this._playTone(261.63, now, duration, 0.15); // C4
+    this._playTone(329.63, now, duration, 0.15); // E4
+    this._playTone(392.00, now, duration, 0.15); // G4
+  }
+
+  /**
+   * Plays an ascending arpeggio fanfare for a personal record.
+   * C4 → E4 → G4 → C5 over 500ms.
+   */
+  playPRFanfare() {
+    if (!this._started || !this._ctx) return;
+
+    const now = this._ctx.currentTime;
+    const noteLen = 0.125; // 500ms / 4 notes
+    this._playTone(261.63, now, noteLen, 0.2);                   // C4
+    this._playTone(329.63, now + noteLen, noteLen, 0.2);         // E4
+    this._playTone(392.00, now + noteLen * 2, noteLen, 0.2);     // G4
+    this._playTone(523.25, now + noteLen * 3, noteLen * 1.5, 0.25); // C5 (held slightly longer)
+  }
+
+  /**
+   * Plays a single low warning tone (G3, 150ms).
+   */
+  playFormWarningTone() {
+    if (!this._started || !this._ctx) return;
+
+    const now = this._ctx.currentTime;
+    this._playTone(196.00, now, 0.15, 0.25); // G3
   }
 
   // ---------------------------------------------------------------------------

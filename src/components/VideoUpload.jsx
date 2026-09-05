@@ -14,6 +14,8 @@ import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import { extractFrames, extractFramesStreaming, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
+import { VoiceCoach } from '../lib/VoiceCoach';
+import { cueForRep, cueForSet } from '../lib/CoachVoice';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
 
@@ -107,6 +109,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   useEffect(() => {
     loadInjuries().then(injuries => setUserInjuries(injuries || []));
   }, []);
+
+  // Load voice coaching preference from profile
+  useEffect(() => {
+    if (userProfile && userProfile.voiceCoachingEnabled === false) {
+      setVoiceEnabled(false);
+    }
+  }, [userProfile]);
   const [errorMsg, setErrorMsg] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
   const [ffmpegStatus, setFfmpegStatus] = useState('');
@@ -116,7 +125,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const abortRef = useRef(false);
   const blobUrlRef = useRef(null);
   const audioFeedbackRef = useRef(null);
+  const voiceCoachRef = useRef(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   useEffect(() => {
     return () => {
@@ -138,6 +149,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       if (audioFeedbackRef.current) {
         audioFeedbackRef.current.dispose();
         audioFeedbackRef.current = null;
+      }
+      // Dispose voice coach
+      if (voiceCoachRef.current) {
+        voiceCoachRef.current.dispose();
+        voiceCoachRef.current = null;
       }
     };
   }, []);
@@ -497,6 +513,22 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     repCounter.finalize();
 
+    // Voice coaching: announce reps and form warnings
+    if (voiceCoachRef.current && voiceEnabled) {
+      const coach = voiceCoachRef.current;
+      const history = repCounter.repHistory || [];
+      for (let i = 0; i < history.length; i++) {
+        const rep = history[i];
+        // Announce rep
+        coach.repComplete(i + 1);
+
+        // Form warning if score is low
+        if (rep.score != null && rep.score < 60 && rep.issues && rep.issues.length > 0) {
+          coach.formWarning(rep.issues[0]);
+        }
+      }
+    }
+
     // Enrich repHistory with timestamps
     const enrichedRepHistory = repCounter.repHistory.map(r => ({
       ...r,
@@ -561,6 +593,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       baselineComparison = await compareToBaseline(detectedExercise, avgScore, repHistory);
     } catch (_) {}
 
+    // Voice and audio cues for set completion
+    if (voiceCoachRef.current && voiceEnabled && reps > 0) {
+      const grade = avgScore >= 85 ? 'A' : avgScore >= 70 ? 'B' : avgScore >= 55 ? 'C' : 'D';
+      voiceCoachRef.current.setComplete(reps, grade);
+    }
+    if (audioFeedbackRef.current && audioEnabled) {
+      audioFeedbackRef.current.playSetChord();
+    }
+
     setProgress(100);
     setFfmpegStatus('');
 
@@ -584,6 +625,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);
     abortRef.current = false;
+
+    // Initialize voice coach for this analysis session
+    if (voiceEnabled && !voiceCoachRef.current) {
+      voiceCoachRef.current = new VoiceCoach();
+    }
+    if (voiceCoachRef.current) {
+      if (voiceEnabled) voiceCoachRef.current.enable();
+      else voiceCoachRef.current.disable();
+    }
 
     const pending = queue.filter(q => q.status === 'queued');
     const allResults = [...results];
@@ -836,6 +886,28 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 title={audioEnabled ? 'Audio feedback ON' : 'Audio feedback OFF'}
               >
                 {audioEnabled ? '\u{1F50A}' : '\u{1F507}'}
+              </button>
+              <button
+                className={`btn btn-ghost btn-sm ${voiceEnabled ? 'active' : ''}`}
+                style={{
+                  padding: '10px 12px', fontSize: '0.75rem', fontWeight: 700,
+                  opacity: voiceEnabled ? 1 : 0.4,
+                  background: voiceEnabled ? 'rgba(0,245,212,0.15)' : 'transparent',
+                  borderRadius: 8, letterSpacing: '-0.02em',
+                }}
+                onClick={() => {
+                  setVoiceEnabled(prev => {
+                    const next = !prev;
+                    if (voiceCoachRef.current) {
+                      if (next) voiceCoachRef.current.enable();
+                      else voiceCoachRef.current.disable();
+                    }
+                    return next;
+                  });
+                }}
+                title={voiceEnabled ? (lang === 'fr' ? 'Coaching vocal ON' : 'Voice coaching ON') : (lang === 'fr' ? 'Coaching vocal OFF' : 'Voice coaching OFF')}
+              >
+                {voiceEnabled ? 'VOX' : 'VOX'}
               </button>
               <button
                 className="btn btn-primary"
