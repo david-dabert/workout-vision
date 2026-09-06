@@ -37,6 +37,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Only split modules that have NO circular cross-references.
+          // Previous config split storage/utilities/dashboard/onboarding/analysis-engine
+          // into separate chunks, but these modules import each other (e.g. storage->nutrition,
+          // prSystem->storage, ResultCard->prSystem+storage) creating circular chunk warnings
+          // that can cause undefined exports at runtime on some browsers.
           if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
             return 'react-vendor';
           }
@@ -51,24 +56,6 @@ export default defineConfig({
           }
           if (id.includes('/src/lib/LanguageContext.jsx')) {
             return 'i18n';
-          }
-          if (id.includes('/src/lib/coach.js') || id.includes('/src/lib/repCounter.js') || id.includes('/src/lib/biomechanics.js') || id.includes('/src/lib/exerciseDetector.js')) {
-            return 'analysis-engine';
-          }
-          if (id.includes('/src/lib/shareCard.js') || id.includes('/src/lib/nutrition.js') || id.includes('/src/lib/prSystem.js') || id.includes('/src/lib/injuryRisk.js')) {
-            return 'utilities';
-          }
-          if (id.includes('/src/components/Dashboard.jsx') || id.includes('/src/components/MuscleMap.jsx') || id.includes('/src/components/VisionScoreHero.jsx') || id.includes('/src/components/ChallengeBar.jsx') || id.includes('/src/components/InjuryRiskCard.jsx')) {
-            return 'dashboard';
-          }
-          if (id.includes('/src/components/Onboarding.jsx') || id.includes('/src/components/ResultCard.jsx')) {
-            return 'onboarding';
-          }
-          if (id.includes('/src/components/VideoUpload.jsx') || id.includes('/src/components/VideoReplay.jsx')) {
-            return 'video';
-          }
-          if (id.includes('/src/lib/storage.js') || id.includes('/src/lib/dataPortability.js')) {
-            return 'storage';
           }
         },
       },

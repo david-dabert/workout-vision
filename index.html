@@ -59,15 +59,20 @@
       }, 8000);
     </script>
     <script>
-      // Register service worker for offline support.
-      // Uses network-first for HTML/JS to prevent the iOS Safari stale-cache
-      // problem that the previous SW caused. WASM files use cache-first
-      // since they are immutable and required for offline pose detection.
+      // Kill any service worker and clear all caches.
+      // The SW caused stale cached code on iOS Safari that persisted across
+      // deploys for hours. Six consecutive broken fix commits (2026-09-06)
+      // were cached by the SW and served to users even after reverting.
+      // Not worth the offline benefit until the caching strategy is proven safe.
       (function() {
         if ('serviceWorker' in navigator) {
-          window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/workout-vision/sw.js', { scope: '/workout-vision/' })
-              .catch(function(err) { console.warn('[SW] Registration failed:', err); });
+          navigator.serviceWorker.getRegistrations().then(function(r) {
+            r.forEach(function(reg) { reg.unregister(); });
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(k) {
+            k.forEach(function(n) { caches.delete(n); });
           });
         }
       })();
