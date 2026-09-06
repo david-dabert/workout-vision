@@ -244,12 +244,12 @@ function _isAnatomicallyImplausible(landmarks) {
   if (!landmarks || landmarks.length < 33) return false;
   const L = landmarks;
   const angles = [
-    { name: 'leftKnee', val: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE], L[LANDMARKS.LEFT_ANKLE]), max: 175 },
-    { name: 'rightKnee', val: calculateAngle(L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE], L[LANDMARKS.RIGHT_ANKLE]), max: 175 },
+    { name: 'leftKnee', val: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE], L[LANDMARKS.LEFT_ANKLE]), max: 185 },
+    { name: 'rightKnee', val: calculateAngle(L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE], L[LANDMARKS.RIGHT_ANKLE]), max: 185 },
     { name: 'leftElbow', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_ELBOW], L[LANDMARKS.LEFT_WRIST]), max: 180 },
     { name: 'rightElbow', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_ELBOW], L[LANDMARKS.RIGHT_WRIST]), max: 180 },
-    { name: 'leftHip', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE]), max: 190 },
-    { name: 'rightHip', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE]), max: 190 },
+    { name: 'leftHip', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE]), max: 200 },
+    { name: 'rightHip', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE]), max: 200 },
   ];
   return angles.some(a => a.val > a.max);
 }
