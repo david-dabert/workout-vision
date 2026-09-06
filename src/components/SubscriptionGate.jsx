@@ -38,9 +38,9 @@ export function SubscriptionProvider({ children }) {
 
 export function useSubscription() {
   const ctx = useContext(SubscriptionContext);
-  if (ctx) return ctx;
-  // Fallback: use the hook directly when no provider is present
-  return useSubscriptionInternal();
+  // Always call the hook (React rules) but prefer the context value if available
+  const fallback = useSubscriptionInternal();
+  return ctx || fallback;
 }
 
 function useSubscriptionInternal() {
