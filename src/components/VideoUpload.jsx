@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getFreshLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
+import { getFreshLandmarker, getImageModeLandmarker, switchToVideoMode, detectPoseImage, detectPoseStatic, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
@@ -215,10 +215,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setFfmpegStatus('Hashing video file...');
     const videoHash = await hashFile(queueItem.file);
 
-    // ── Phase 2: Load MediaPipe model (fresh instance to avoid stale state) ──
+    // ── Phase 2: Load MediaPipe model ──
+    // iOS: use IMAGE mode (each frame independent, no timestamp dependency).
+    // iOS Safari's keyframe-snapping seeks produce non-sequential frames that
+    // confuse VIDEO mode's temporal tracker, causing zero detections.
+    // Desktop: use existing VIDEO mode landmarker (fresh instance).
     setAnalysisPhase('model');
     setFfmpegStatus('Loading AI model...');
-    const landmarker = await getFreshLandmarker();
+    const landmarker = IS_IOS
+      ? await getImageModeLandmarker()
+      : await getFreshLandmarker();
     if (!landmarker) {
       setErrorMsg(t('model_failed'));
       return null;
@@ -292,10 +298,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               } catch (_) {}
 
               // Run MediaPipe directly on the canvas (no ImageData copy needed)
-              const deterministicTs = frameIndex * (1000 / analysisFps);
+              // iOS uses IMAGE mode (detectPoseStatic) — no timestamp needed,
+              // each frame processed independently. Desktop uses VIDEO mode.
               let result;
               try {
-                result = detectPoseImage(landmarker, canvas, deterministicTs);
+                result = IS_IOS
+                  ? detectPoseStatic(landmarker, canvas)
+                  : detectPoseImage(landmarker, canvas, frameIndex * (1000 / analysisFps));
                 detectionAttempts++;
               } catch (detErr) {
                 detectionErrors++;
@@ -345,8 +354,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           frameCount = streamResult.frameCount;
           duration = streamResult.duration;
           console.log(`[Upload] iOS streaming done: ${streamFrameCount} frames extracted, ${detectionAttempts} detection attempts, ${detectionSuccesses} poses found, ${detectionErrors} errors, ${blankFrames} blank frames, ${frames.length} valid frames`);
+
+          // Switch landmarker back to VIDEO mode for live camera use
+          switchToVideoMode().catch(() => {});
         } catch (err) {
           console.error('[Upload] iOS streaming extraction failed:', err);
+          switchToVideoMode().catch(() => {});
           setErrorMsg(`Analysis failed: ${err.message}`);
           return null;
         }

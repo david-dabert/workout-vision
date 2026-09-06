@@ -226,6 +226,50 @@ export async function getFreshLandmarker() {
 }
 
 /**
+ * Get landmarker ready for static image detection (IMAGE running mode).
+ * iOS Safari's keyframe-snapping seeks produce non-sequential frames that confuse
+ * VIDEO mode's temporal tracker, causing zero detections. IMAGE mode processes
+ * each frame independently — no timestamps, no temporal state.
+ *
+ * Returns the landmarker already switched to IMAGE mode.
+ */
+export async function getImageModeLandmarker() {
+  const landmarker = await getPoseLandmarker();
+  try {
+    await landmarker.setOptions({ runningMode: 'IMAGE' });
+  } catch (e) {
+    console.warn('[PoseAnalysis] Failed to switch to IMAGE mode:', e.message);
+  }
+  return landmarker;
+}
+
+/**
+ * Switch landmarker back to VIDEO running mode (for live camera).
+ */
+export async function switchToVideoMode() {
+  if (poseLandmarker) {
+    try {
+      await poseLandmarker.setOptions({ runningMode: 'VIDEO' });
+    } catch (_) {}
+  }
+}
+
+/**
+ * Detect pose on a static image/frame (IMAGE running mode).
+ * No timestamp needed. No temporal tracking. Each frame is independent.
+ * Used for iOS video analysis where keyframe-snapping breaks VIDEO mode.
+ */
+export function detectPoseStatic(landmarker, source) {
+  try {
+    const result = landmarker.detect(source);
+    return result;
+  } catch (e) {
+    console.warn('[PoseAnalysis] Detection error (static):', e);
+    return null;
+  }
+}
+
+/**
  * Dispose the landmarker and free WebGL context.
  */
 export function disposeAllLandmarkers() {
