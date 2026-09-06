@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<!--
+  WorkoutVision OG Image Generator
+  Opens in a browser, draws the 1200x630 OG image on a canvas, and
+  auto-downloads it as "og-image.png". Copy the downloaded file to
+  public/og-image.png before deploying.
+
+  Usage: open scripts/generate-og-image.html in any browser.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate OG Image — WorkoutVision</title>
+  <style>
+    body { background: #111; display: flex; flex-direction: column; align-items: center; padding: 40px; font-family: system-ui, sans-serif; color: #fff; }
+    canvas { border: 1px solid #333; border-radius: 8px; max-width: 100%; }
+    button { margin-top: 20px; padding: 12px 28px; background: #00f5d4; color: #000; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    p { color: #888; font-size: 0.9rem; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h2 style="color:#00f5d4;margin-bottom:16px">WorkoutVision OG Image Generator</h2>
+  <canvas id="c" width="1200" height="630"></canvas>
+  <button onclick="download()">Download og-image.png</button>
+  <p>After downloading, move og-image.png to <code>public/og-image.png</code> and redeploy.</p>
+  <script>
+    const W = 1200, H = 630;
+    const ACCENT = '#00f5d4';
+
+    function draw() {
+      const canvas = document.getElementById('c');
+      const ctx = canvas.getContext('2d');
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#0a0a1a');
+      grad.addColorStop(1, '#1a1a2e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Radial glow left
+      const glow1 = ctx.createRadialGradient(W * 0.15, H * 0.5, 0, W * 0.15, H * 0.5, 400);
+      glow1.addColorStop(0, 'rgba(0,245,212,0.12)');
+      glow1.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow1;
+      ctx.fillRect(0, 0, W, H);
+
+      // Radial glow right
+      const glow2 = ctx.createRadialGradient(W * 0.85, H * 0.5, 0, W * 0.85, H * 0.5, 380);
+      glow2.addColorStop(0, 'rgba(0,100,255,0.08)');
+      glow2.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow2;
+      ctx.fillRect(0, 0, W, H);
+
+      // === Left column — branding ===
+      const lx = 80;
+
+      // App name
+      ctx.fillStyle = ACCENT;
+      ctx.font = 'bold 68px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('WorkoutVision', lx, 150);
+
+      // Tagline
+      ctx.fillStyle = 'rgba(255,255,255,0.80)';
+      ctx.font = '32px system-ui, sans-serif';
+      ctx.fillText('AI Form Coaching', lx, 200);
+
+      // Accent divider
+      ctx.beginPath();
+      ctx.moveTo(lx, 225);
+      ctx.lineTo(lx + 280, 225);
+      ctx.strokeStyle = 'rgba(0,245,212,0.40)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Feature bullets
+      const features = [
+        '264 exercises supported',
+        '33 body landmarks tracked',
+        '100% on-device — no uploads',
+        'Free, no account needed',
+      ];
+      ctx.fillStyle = 'rgba(255,255,255,0.70)';
+      ctx.font = '26px system-ui, sans-serif';
+      features.forEach((f, i) => {
+        ctx.fillStyle = ACCENT;
+        ctx.fillText('✓', lx, 270 + i * 50);
+        ctx.fillStyle = 'rgba(255,255,255,0.80)';
+        ctx.fillText(f, lx + 34, 270 + i * 50);
+      });
+
+      // URL
+      ctx.fillStyle = 'rgba(255,255,255,0.40)';
+      ctx.font = '22px system-ui, sans-serif';
+      ctx.fillText('david-dabert.github.io/workout-vision', lx, 580);
+
+      // === Right column — mock score card ===
+      const rx = 720, cardW = 400, cardH = 500, cardY = 65;
+
+      // Card background
+      ctx.beginPath();
+      ctx.roundRect(rx, cardY, cardW, cardH, 24);
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,245,212,0.20)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Exercise label
+      ctx.fillStyle = 'rgba(255,255,255,0.50)';
+      ctx.font = '18px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('EXERCISE', rx + cardW / 2, cardY + 44);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px system-ui, sans-serif';
+      ctx.fillText('Bench Press', rx + cardW / 2, cardY + 86);
+
+      // Circular gauge (mock — 88 score)
+      drawGauge(ctx, rx + cardW / 2, cardY + 220, 100, 88);
+
+      // Stats row inside card
+      const statY = cardY + 360;
+      const stats = [{ v: '10', l: 'REPS' }, { v: '1m 22s', l: 'TIME' }];
+      const sw = cardW / 2;
+      stats.forEach((s, i) => {
+        const cx = rx + sw * i + sw / 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 36px system-ui, sans-serif';
+        ctx.fillText(s.v, cx, statY);
+        ctx.fillStyle = 'rgba(255,255,255,0.40)';
+        ctx.font = '18px system-ui, sans-serif';
+        ctx.fillText(s.l, cx, statY + 30);
+      });
+
+      // Rep bars inside card
+      const barY = cardY + 420;
+      const barW = (cardW - 48) / 8;
+      const mockScores = [92, 88, 85, 90, 78, 82, 88, 75];
+      mockScores.forEach((sc, i) => {
+        const bx = rx + 24 + i * barW;
+        const bh = (sc / 100) * 40;
+        const by = barY + 40 - bh;
+        const col = sc >= 80 ? ACCENT : sc >= 60 ? '#facc15' : '#ef4444';
+        ctx.beginPath();
+        ctx.roundRect(bx + 2, by, barW - 4, bh, 3);
+        ctx.fillStyle = col;
+        ctx.fill();
+      });
+    }
+
+    function drawGauge(ctx, cx, cy, r, score) {
+      const start = Math.PI * 0.75;
+      const sweep = Math.PI * 1.5;
+      const fill = start + (score / 100) * sweep;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, start, start + sweep);
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+      ctx.lineWidth = 16;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      const color = score >= 80 ? '#00f5d4' : score >= 60 ? '#facc15' : '#ef4444';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, start, fill);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 16;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = color;
+      ctx.font = `bold ${r * 0.60}px system-ui, sans-serif`;
+      ctx.fillText(String(score), cx, cy);
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.font = `${r * 0.22}px system-ui, sans-serif`;
+      ctx.fillText('/100', cx, cy + r * 0.44);
+    }
+
+    function download() {
+      const canvas = document.getElementById('c');
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'og-image.png';
+      a.click();
+    }
+
+    draw();
+  </script>
+</body>
+</html>

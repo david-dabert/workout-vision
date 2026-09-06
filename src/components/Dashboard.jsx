@@ -329,7 +329,7 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
         </div>
       )}
 
-      {/* ── Injury Risk Prediction ── */}
+      {/* ── Training Load Monitor ── */}
       {allWorkouts.length >= 5 && <InjuryRiskCard />}
 
       {/* ── Insights section ── */}

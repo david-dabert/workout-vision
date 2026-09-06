@@ -10,6 +10,13 @@ import { gradeFromScore, gradeClass } from '../lib/utils';
 import { updateWorkout } from '../lib/storage';
 import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
 import { detectPRs, detectFormRegression } from '../lib/prSystem';
+import {
+  requestNotificationPermission,
+  scheduleWeeklyReminder,
+  isNotificationEnabled,
+  hasShownNotificationPrompt,
+  markNotificationPromptShown,
+} from '../lib/notifications';
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -97,6 +104,10 @@ export default function ResultCard({ result, onReplay }) {
   const [repOverride, setRepOverride] = useState(null);
   const [showRepEdit, setShowRepEdit] = useState(false);
 
+  // Notification prompt: show once, after first successful analysis
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(isNotificationEnabled());
+
   const displayReps = repOverride != null ? repOverride : reps;
   const repWasOverridden = repOverride != null && repOverride !== reps;
 
@@ -123,6 +134,22 @@ export default function ResultCard({ result, onReplay }) {
       if (regression) setFormRegression(regression);
     }).catch(() => {});
   }, [result?.workoutId]);
+
+  // Show notification prompt once after the first successful analysis result
+  useEffect(() => {
+    if (
+      formScore != null &&
+      formScore > 0 &&
+      !isNotificationEnabled() &&
+      !hasShownNotificationPrompt() &&
+      'Notification' in window &&
+      Notification.permission !== 'denied'
+    ) {
+      // Delay slightly so the result reveal animation completes first
+      const timer = setTimeout(() => setShowNotifPrompt(true), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [formScore]);
 
   // Reveal animation state
   const [revealed, setRevealed] = useState(false);
@@ -829,6 +856,52 @@ export default function ResultCard({ result, onReplay }) {
         </div>
       )}
       </>)}
+
+      {/* Weekly reminder prompt — shown once, after first successful analysis */}
+      {showNotifPrompt && !notifGranted && (
+        <div style={{
+          marginTop: 14, padding: '12px 16px',
+          background: 'rgba(0,245,212,0.06)',
+          borderRadius: 12, border: '1px solid rgba(0,245,212,0.18)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', display: 'block', marginBottom: 2 }}>
+              Get weekly workout reminders?
+            </span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+              Stay consistent — one nudge per week.
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button
+              className="btn btn-ghost btn-sm"
+              style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+              onClick={() => {
+                markNotificationPromptShown();
+                setShowNotifPrompt(false);
+              }}
+            >
+              No thanks
+            </button>
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ fontSize: '0.75rem', padding: '6px 14px', background: '#00f5d4', color: '#000' }}
+              onClick={async () => {
+                markNotificationPromptShown();
+                setShowNotifPrompt(false);
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                  await scheduleWeeklyReminder();
+                  setNotifGranted(true);
+                }
+              }}
+            >
+              Enable
+            </button>
+          </div>
+        </div>
+      )}
 
       {result.videoUrl && result.frames && (
         <button

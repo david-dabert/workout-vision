@@ -53,7 +53,7 @@ export default function InjuryRiskCard() {
         </span>
         <div style={{ flex: 1 }}>
           <h4 className="insights-card-title" style={{ margin: 0 }}>
-            {lang === 'fr' ? 'Prédiction de risque' : 'Injury Risk'}
+            {lang === 'fr' ? 'Suivi de Charge d\'Entraînement' : 'Training Load Monitor'}
           </h4>
           <span style={{
             fontSize: '0.78rem',

@@ -98,7 +98,7 @@ const DEMO_RESULT = {
 
 const INJURY_AREAS = ['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'];
 
-export default function Onboarding({ onComplete }) {
+export default function Onboarding({ onComplete, onQuickStart }) {
   const { t } = useT();
   const [step, setStep] = useState(1);
   const [showDemo, setShowDemo] = useState(false);
@@ -116,12 +116,7 @@ export default function Onboarding({ onComplete }) {
 
   const update = (key, value) => setData(prev => ({ ...prev, [key]: value }));
 
-  const canAdvance = () => {
-    if (step === 2) {
-      return data.name.trim() && data.age && data.weight && data.height;
-    }
-    return true;
-  };
+  const canAdvance = () => true;
 
   const next = () => {
     if (step < TOTAL_STEPS) setStep(step + 1);
@@ -215,40 +210,38 @@ export default function Onboarding({ onComplete }) {
         <div key={step} style={{
           animation: 'fadeInUp 0.4s cubic-bezier(0, 0, 0.2, 1) both',
         }}>
-          {step === 1 && <StepWelcome onTryDemo={() => setShowDemo(true)} />}
+          {step === 1 && <StepWelcome onTryDemo={() => setShowDemo(true)} onQuickStart={onQuickStart} onCustomize={() => setStep(2)} />}
           {step === 2 && <StepProfileSetup data={data} update={update} toggleInjury={toggleInjury} />}
         </div>
       </div>
 
-      {(
+      {/* Action bar: hidden on step 1 (welcome screen has its own CTAs) */}
+      {step > 1 && (
         <div className="onboarding-actions">
-          {step > 1 && (
-            <button
-              onClick={back}
-              style={{
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.4)',
-                padding: '12px 24px',
-                borderRadius: 12,
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: 500,
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <ChevronLeft size={16} />
-              {t('back')}
-            </button>
-          )}
+          <button
+            onClick={back}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.4)',
+              padding: '12px 24px',
+              borderRadius: 12,
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <ChevronLeft size={16} />
+            {t('back')}
+          </button>
           <div style={{ flex: 1 }} />
           {step < TOTAL_STEPS ? (
             <button
               onClick={next}
-              disabled={!canAdvance()}
               style={{
                 background: 'linear-gradient(135deg, #00f5d4, #00e676)',
                 color: '#000',
@@ -257,20 +250,18 @@ export default function Onboarding({ onComplete }) {
                 padding: '16px 32px',
                 borderRadius: 16,
                 border: 'none',
-                cursor: canAdvance() ? 'pointer' : 'not-allowed',
+                cursor: 'pointer',
                 boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
                 transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                width: '100%',
                 fontFamily: 'var(--font-display, inherit)',
                 letterSpacing: '-0.01em',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                opacity: canAdvance() ? 1 : 0.3,
               }}
             >
-              {step === 1 ? t('get_started') : t('next')}
+              {t('next')}
               <ChevronRight size={16} />
             </button>
           ) : (
@@ -287,7 +278,6 @@ export default function Onboarding({ onComplete }) {
                 cursor: 'pointer',
                 boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
                 transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                width: '100%',
                 fontFamily: 'var(--font-display, inherit)',
                 letterSpacing: '-0.01em',
                 display: 'flex',
@@ -307,7 +297,7 @@ export default function Onboarding({ onComplete }) {
 }
 
 /* ── Step 1: Welcome ── */
-function StepWelcome({ onTryDemo }) {
+function StepWelcome({ onTryDemo, onQuickStart, onCustomize }) {
   const { t } = useT();
   return (
     <div className="onboarding-step text-center">
@@ -336,26 +326,85 @@ function StepWelcome({ onTryDemo }) {
           <span>{t('onb_feature_progress')}</span>
         </div>
       </div>
+
+      {/* Primary CTA: See AI in Action (accent gradient) */}
       <button
         onClick={onTryDemo}
         style={{
-          marginTop: 16,
-          display: 'inline-flex',
+          marginTop: 24,
+          display: 'flex',
           alignItems: 'center',
-          gap: 6,
-          fontSize: '0.85rem',
-          fontWeight: 500,
-          color: 'rgba(255,255,255,0.4)',
-          background: 'transparent',
-          border: '1px solid rgba(255,255,255,0.08)',
-          padding: '12px 24px',
-          borderRadius: 12,
+          justifyContent: 'center',
+          gap: 8,
+          width: '100%',
+          background: 'linear-gradient(135deg, #00f5d4, #00e676)',
+          color: '#000',
+          fontWeight: 800,
+          fontSize: '1rem',
+          padding: '16px 32px',
+          borderRadius: 16,
+          border: 'none',
           cursor: 'pointer',
-          transition: 'all 0.2s',
+          boxShadow: '0 4px 20px rgba(0,245,212,0.25)',
+          transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          fontFamily: 'var(--font-display, inherit)',
+          letterSpacing: '-0.01em',
         }}
       >
-        <Play size={14} />
-        {t('try_demo')}
+        <Play size={16} color="#000" />
+        See AI in Action
+      </button>
+
+      {/* Secondary CTA: Start Training Now */}
+      {onQuickStart && (
+        <button
+          onClick={onQuickStart}
+          style={{
+            marginTop: 12,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            width: '100%',
+            background: 'rgba(255,255,255,0.08)',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '0.95rem',
+            padding: '14px 32px',
+            borderRadius: 16,
+            border: '1px solid rgba(255,255,255,0.14)',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontFamily: 'var(--font-display, inherit)',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          <ChevronRight size={16} />
+          Start Training Now
+        </button>
+      )}
+
+      {/* Tertiary link: Customize profile */}
+      <button
+        onClick={onCustomize}
+        style={{
+          marginTop: 14,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          fontSize: '0.8rem',
+          fontWeight: 500,
+          color: 'rgba(255,255,255,0.35)',
+          background: 'transparent',
+          border: 'none',
+          padding: '8px 12px',
+          borderRadius: 8,
+          cursor: 'pointer',
+          transition: 'color 0.2s',
+          letterSpacing: '0.01em',
+        }}
+      >
+        Customize profile first
       </button>
     </div>
   );

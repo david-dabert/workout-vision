@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
@@ -65,18 +65,29 @@ function AppInner() {
 
   const onNavigate = (p) => setPage(p);
 
-  // Wait for profile check before rendering
-  if (profileLoading) return LazyFallback;
+  // Auto-create default profile for first-time users and skip straight to dashboard
+  const autoCreatedRef = useRef(false);
+  useEffect(() => {
+    if (!profileLoading && !profile && !autoCreatedRef.current) {
+      autoCreatedRef.current = true;
+      const defaultProfile = {
+        name: '',
+        age: '',
+        sex: 'male',
+        weight: '',
+        height: '',
+        experience: 'intermediate',
+        goal: 'general',
+        activityLevel: 'moderate',
+        injuries: [],
+        profileComplete: false,
+      };
+      saveProfile(defaultProfile).then(() => setPage('dashboard'));
+    }
+  }, [profileLoading, profile, saveProfile, setPage]);
 
-  // First-time user: show onboarding
-  if (!profile) {
-    return (
-      <Onboarding onComplete={async (p) => {
-        await saveProfile(p);
-        setPage('dashboard');
-      }} />
-    );
-  }
+  // Wait for profile check (and potential auto-create) before rendering
+  if (profileLoading || !profile) return LazyFallback;
 
   // Full-screen pages (no tab bar) - wrapped with page transition
   if (page === 'analyze') return (

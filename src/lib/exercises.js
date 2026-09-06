@@ -125,6 +125,7 @@ export const EXERCISES = {
         bad: 'Above parallel — go deeper',
         severity: 'major',
         citation: 'Schoenfeld BJ, 2010, J Strength Cond Res',
+        safetyNote: { en: 'If you have hip pain or impingement, do not force depth beyond comfort.', fr: 'En cas de douleur ou conflit de hanche, ne forcez pas la profondeur.' },
       },
       {
         name: 'Knee symmetry',
@@ -435,6 +436,7 @@ export const EXERCISES = {
         bad: 'Go deeper',
         severity: 'minor',
         citation: 'Riemann BL et al, 2012, J Athl Train',
+        safetyNote: { en: 'If you have hip pain or impingement, do not force depth beyond comfort.', fr: 'En cas de douleur ou conflit de hanche, ne forcez pas la profondeur.' },
       },
       {
         name: 'Trunk upright',
@@ -603,6 +605,7 @@ export const EXERCISES = {
         bad: 'Excessive back lean',
         severity: 'major',
         citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res',
+        safetyNote: { en: 'If you have lower back issues, reduce load before correcting trunk position.', fr: 'En cas de problème lombaire, réduisez la charge avant de corriger la position du tronc.' },
       },
       {
         name: 'Shoulder symmetry',
@@ -634,6 +637,7 @@ export const EXERCISES = {
         bad: 'Lower the bar further',
         severity: 'major',
         citation: 'Larsen S et al, 2021, Int J Environ Res Public Health',
+        safetyNote: { en: 'If you have shoulder issues, do not lower beyond a comfortable range.', fr: 'En cas de problème d\'épaule, ne descendez pas au-delà d\'une amplitude confortable.' },
       },
       {
         name: 'Lockout',

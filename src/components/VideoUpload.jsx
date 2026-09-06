@@ -18,6 +18,7 @@ import { VoiceCoach } from '../lib/VoiceCoach';
 import { cueForRep, cueForSet } from '../lib/CoachVoice';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
+import SubscriptionGate from './SubscriptionGate';
 
 
 // ── Landmark cache (IndexedDB) ──
@@ -909,14 +910,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               >
                 {voiceEnabled ? 'VOX' : 'VOX'}
               </button>
-              <button
-                className="btn btn-primary"
-                style={{ flex: 1 }}
-                onClick={startAnalysis}
-                disabled={!hasQueued}
-              >
-                {t('analyze')}
-              </button>
+              <SubscriptionGate onAllowed={startAnalysis}>
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1, pointerEvents: !hasQueued ? 'none' : 'auto', opacity: !hasQueued ? 0.5 : 1 }}
+                  disabled={!hasQueued}
+                >
+                  {t('analyze')}
+                </button>
+              </SubscriptionGate>
             </div>
           </>
         ) : (

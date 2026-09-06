@@ -311,6 +311,40 @@ function getStrengthBaselines(weightKg, age, sex, ethnicity) {
   };
 }
 
+// Data export/import helpers (thin wrappers for direct storage access)
+
+/**
+ * Export all data as a plain object for backup or transfer.
+ */
+export async function exportAllData() {
+  const [workouts, profile] = await Promise.all([
+    getAllWorkouts(),
+    getProfile(),
+  ]);
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    profile,
+    workouts,
+  };
+}
+
+/**
+ * Import data from an export object.
+ * @param {Object} data - export object with version, profile, workouts
+ * @returns {{ profileImported: boolean, workoutsImported: number }}
+ */
+export async function importData(data) {
+  if (!data || data.version !== 1) throw new Error('Invalid export format');
+  if (data.profile) await saveProfile(data.profile);
+  if (data.workouts && Array.isArray(data.workouts)) {
+    for (const w of data.workouts) {
+      await workoutStore.setItem(w.id || `workout-${Date.now()}-${Math.random()}`, w);
+    }
+  }
+  return { profileImported: !!data.profile, workoutsImported: data.workouts?.length || 0 };
+}
+
 // Milestones
 export async function getMilestones() {
   return (await milestoneStore.getItem('achieved')) || {};

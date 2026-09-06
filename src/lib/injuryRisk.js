@@ -1,5 +1,5 @@
 /**
- * Injury Risk Prediction — Longitudinal Data Analysis
+ * Training Load Monitor — Longitudinal Data Analysis
  *
  * Analyzes workout history to detect patterns that correlate with injury risk:
  * - Form degradation trends across sessions
@@ -14,7 +14,7 @@
  *   - Schoenfeld BJ, 2017 (volume dose-response)
  */
 
-import { getAllWorkouts } from './storage';
+import { getWorkoutsByDateRange } from './storage';
 import { getAllBaselines } from './formBaselines';
 
 /**
@@ -27,12 +27,16 @@ const RISK = {
 };
 
 /**
- * Run a full injury risk assessment from stored workout history.
+ * Run a full training load assessment from stored workout history.
  *
  * @returns {Object} risk report with flags and recommendations
  */
 export async function assessInjuryRisk() {
-  const workouts = await getAllWorkouts();
+  // Fetch only last 28 days — enough for ACWR, form trend, and muscle overload analysis.
+  // avoids a full-store scan on large datasets.
+  const dateFrom = new Date(Date.now() - 28 * 86400000);
+  const dateTo = new Date();
+  const workouts = await getWorkoutsByDateRange(dateFrom, dateTo);
   const baselines = await getAllBaselines();
 
   if (!workouts || workouts.length < 5) {

@@ -50,7 +50,10 @@ export const LANDMARKS = {
 };
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
-const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
+// WASM files served locally from public/mediapipe/ (copied by scripts/copy-models.js at build time).
+// Eliminates the CDN dependency for WASM loading. The JS module import above stays on CDN
+// with @vite-ignore to avoid esbuild breaking WASM resolution on iOS Safari.
+const VISION_WASM = '/workout-vision/mediapipe';
 const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
 // ─── Core: single model instance with IndexedDB cache ───
@@ -241,12 +244,12 @@ function _isAnatomicallyImplausible(landmarks) {
   if (!landmarks || landmarks.length < 33) return false;
   const L = landmarks;
   const angles = [
-    { name: 'leftKnee', val: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE], L[LANDMARKS.LEFT_ANKLE]), max: 185 },
-    { name: 'rightKnee', val: calculateAngle(L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE], L[LANDMARKS.RIGHT_ANKLE]), max: 185 },
+    { name: 'leftKnee', val: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE], L[LANDMARKS.LEFT_ANKLE]), max: 175 },
+    { name: 'rightKnee', val: calculateAngle(L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE], L[LANDMARKS.RIGHT_ANKLE]), max: 175 },
     { name: 'leftElbow', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_ELBOW], L[LANDMARKS.LEFT_WRIST]), max: 180 },
     { name: 'rightElbow', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_ELBOW], L[LANDMARKS.RIGHT_WRIST]), max: 180 },
-    { name: 'leftHip', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE]), max: 200 },
-    { name: 'rightHip', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE]), max: 200 },
+    { name: 'leftHip', val: calculateAngle(L[LANDMARKS.LEFT_SHOULDER], L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE]), max: 190 },
+    { name: 'rightHip', val: calculateAngle(L[LANDMARKS.RIGHT_SHOULDER], L[LANDMARKS.RIGHT_HIP], L[LANDMARKS.RIGHT_KNEE]), max: 190 },
   ];
   return angles.some(a => a.val > a.max);
 }

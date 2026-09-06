@@ -692,6 +692,250 @@ export async function generateAnimatedShareCard(result, onProgress) {
   });
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   FORM CARD — 1080x1920 Instagram Stories card with circular gauge.
+   Canvas-only, no external deps. Exported as the primary Change-7 API.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Draw a circular arc gauge.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} cx
+ * @param {number} cy
+ * @param {number} r
+ * @param {number} score - 0..100
+ */
+function drawFormGauge(ctx, cx, cy, r, score) {
+  const startAngle = Math.PI * 0.75;
+  const fullSweep = Math.PI * 1.5;
+  const fillAngle = startAngle + (score / 100) * fullSweep;
+  const endAngle = startAngle + fullSweep;
+
+  // Track
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 28;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Fill
+  const color = score >= 80 ? ACCENT : score >= 60 ? YELLOW : RED;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, fillAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 28;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Score text
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = color;
+  ctx.font = `bold ${r * 0.72}px -apple-system, system-ui, sans-serif`;
+  ctx.fillText(String(Math.round(score)), cx, cy);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.font = `${r * 0.25}px -apple-system, system-ui, sans-serif`;
+  ctx.fillText('/100', cx, cy + r * 0.48);
+}
+
+/**
+ * Draw per-rep quality bars.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} x
+ * @param {number} y
+ * @param {number} totalW
+ * @param {number} totalH
+ * @param {Array<{score:number}>} repHistory
+ */
+function drawFormRepBars(ctx, x, y, totalW, totalH, repHistory) {
+  if (!repHistory || repHistory.length === 0) return;
+  const slotW = totalW / repHistory.length;
+  const gap = Math.max(2, slotW * 0.12);
+  repHistory.forEach((rep, i) => {
+    const score = rep.score || 0;
+    const barColor = score >= 80 ? ACCENT : score >= 60 ? YELLOW : RED;
+    const barH = Math.max(totalH * 0.15, (score / 100) * totalH);
+    const bx = x + i * slotW + gap / 2;
+    const bw = slotW - gap;
+    const by = y + totalH - barH;
+    roundRect(ctx, bx, by, bw, barH, 4);
+    ctx.fillStyle = barColor;
+    ctx.fill();
+  });
+}
+
+/**
+ * Generate a 1080x1920 Form Card PNG and return it as a Blob.
+ * @param {object} result - workout analysis result
+ * @returns {Promise<Blob>}
+ */
+export async function generateFormCard(result) {
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#0a0a1a');
+  grad.addColorStop(1, '#1a1a2e');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial glow
+  const glow = ctx.createRadialGradient(W / 2, 900, 0, W / 2, 900, 600);
+  glow.addColorStop(0, 'rgba(0,245,212,0.06)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // App logo
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = 'bold 72px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = ACCENT;
+  ctx.fillText('WorkoutVision', W / 2, 160);
+
+  // Accent line
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 200, 185);
+  ctx.lineTo(W / 2 + 200, 185);
+  ctx.strokeStyle = 'rgba(0,245,212,0.30)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Exercise name
+  const exerciseName = result.exerciseName || result.exercise || 'Workout';
+  let nameFontSize = 100;
+  ctx.font = `bold ${nameFontSize}px -apple-system, system-ui, sans-serif`;
+  while (ctx.measureText(exerciseName).width > W - 120 && nameFontSize > 50) {
+    nameFontSize -= 4;
+    ctx.font = `bold ${nameFontSize}px -apple-system, system-ui, sans-serif`;
+  }
+  ctx.fillStyle = '#ffffff';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(exerciseName, W / 2, 340);
+
+  // Form score label
+  ctx.font = '48px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.50)';
+  ctx.fillText('FORM SCORE', W / 2, 450);
+
+  // Gauge
+  const score = result.formScore ?? 0;
+  drawFormGauge(ctx, W / 2, 720, 230, score);
+
+  // Stats row
+  const statsY = 1020;
+  const statCols = [
+    { label: 'REPS', value: String(result.reps ?? 0) },
+    { label: 'DURATION', value: (() => { const d = result.duration ?? 0; const m = Math.floor(d / 60); const s = Math.round(d % 60); return m > 0 ? `${m}m ${s}s` : `${s}s`; })() },
+  ];
+  const colW = W / statCols.length;
+  statCols.forEach((col, i) => {
+    const cx = colW * i + colW / 2;
+    roundRect(ctx, cx - 180, statsY - 20, 360, 180, 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fill();
+    roundRect(ctx, cx - 180, statsY - 20, 360, 180, 18);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = 'bold 96px -apple-system, system-ui, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(col.value, cx, statsY + 120);
+    ctx.font = '40px -apple-system, system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillText(col.label, cx, statsY + 160);
+  });
+
+  // Rep quality breakdown
+  const barSectionY = 1280;
+  ctx.font = '44px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('REP QUALITY', W / 2, barSectionY);
+
+  if (result.repHistory && result.repHistory.length > 0) {
+    drawFormRepBars(ctx, PAD, barSectionY + 20, W - PAD * 2, 240, result.repHistory);
+  } else {
+    // Solid bar for overall score
+    const bColor = score >= 80 ? ACCENT : score >= 60 ? YELLOW : RED;
+    const bW = ((W - PAD * 2) * score) / 100;
+    roundRect(ctx, PAD, barSectionY + 100, W - PAD * 2, 80, 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fill();
+    roundRect(ctx, PAD, barSectionY + 100, bW, 80, 8);
+    ctx.fillStyle = bColor;
+    ctx.fill();
+  }
+
+  // Footer
+  const footerY = 1780;
+  ctx.beginPath();
+  ctx.moveTo(PAD, footerY - 40);
+  ctx.lineTo(W - PAD, footerY - 40);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '42px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText(`Analyze your form free → ${APP_URL}`, W / 2, footerY + 20);
+
+  ctx.beginPath();
+  ctx.arc(W / 2, footerY + 60, 6, 0, Math.PI * 2);
+  ctx.fillStyle = ACCENT;
+  ctx.fill();
+
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+}
+
+/**
+ * Share or download the Form Card PNG.
+ * Uses navigator.share({ files }) when available; falls back to download.
+ * @param {object} result - workout analysis result
+ * @returns {Promise<void>}
+ */
+export async function shareFormCard(result) {
+  const blob = await generateFormCard(result);
+  if (!blob) return;
+
+  const file = new File([blob], 'form-card.png', { type: 'image/png' });
+  if (
+    navigator.canShare &&
+    navigator.canShare({ files: [file] })
+  ) {
+    try {
+      await navigator.share({
+        title: 'WorkoutVision Form Card',
+        text: `${result.exerciseName || result.exercise || 'Workout'} — ${result.formScore ?? 0}/100 form`,
+        files: [file],
+      });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  // Download fallback
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'workout-vision-form-card.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
 /**
  * Share animated card as a Reel/video.
  * Falls back to static image if MediaRecorder is unavailable.
