@@ -15,6 +15,19 @@
 import { EXERCISES } from './exercises';
 
 // ---------------------------------------------------------------------------
+// Muscle name aliases — normalize variants to canonical names so volume
+// tracking counts them together (e.g. 'Biceps Brachii' -> 'Biceps').
+// ---------------------------------------------------------------------------
+
+const MUSCLE_ALIASES = {
+  'Biceps Brachii': 'Biceps',
+};
+
+function canonicalMuscle(name) {
+  return MUSCLE_ALIASES[name] || name;
+}
+
+// ---------------------------------------------------------------------------
 // Strength standards (kg, relative to bodyweight)
 // Based on Rippetoe/Kilgore/ExRx.net compiled standards.
 // Format: { male: [beginner, novice, intermediate, advanced, elite],
@@ -448,14 +461,15 @@ export function suggestNextWorkout(profile, workoutHistory) {
       if (!exercise) continue;
 
       const allMuscles = [...exercise.muscles.primary, ...exercise.muscles.secondary];
-      for (const muscle of allMuscles) {
+      for (const rawMuscle of allMuscles) {
+        const muscle = canonicalMuscle(rawMuscle);
         // Track last trained
         if (!muscleLastTrained[muscle] || hoursAgo < muscleLastTrained[muscle].hoursAgo) {
           muscleLastTrained[muscle] = { hoursAgo, sets: ex.sets || 1 };
         }
         // Weekly volume
         if (!muscleWeeklySets[muscle]) muscleWeeklySets[muscle] = 0;
-        if (exercise.muscles.primary.includes(muscle)) {
+        if (exercise.muscles.primary.map(canonicalMuscle).includes(muscle)) {
           muscleWeeklySets[muscle] += (ex.sets || 1);
         }
       }
@@ -499,7 +513,7 @@ export function suggestNextWorkout(profile, workoutHistory) {
   // Determine which muscle groups need volume (under 10 sets/week)
   const undertrainedMuscles = new Set();
   const allMajorMuscles = ['Quadriceps', 'Glutes', 'Hamstrings', 'Pectorals',
-    'Latissimus Dorsi', 'Anterior Deltoid', 'Medial Deltoid', 'Biceps Brachii', 'Triceps'];
+    'Latissimus Dorsi', 'Anterior Deltoid', 'Medial Deltoid', 'Biceps', 'Triceps'];
 
   for (const muscle of allMajorMuscles) {
     const weeklySets = muscleWeeklySets[muscle] || 0;
@@ -641,14 +655,18 @@ export function analyzeWeeklyVolume(workoutHistory) {
       const exercise = EXERCISES[ex.exerciseKey];
       if (!exercise) continue;
       const sets = ex.sets || 1;
-      for (const muscle of exercise.muscles.primary) {
+      for (const rawMuscle of exercise.muscles.primary) {
+        const muscle = canonicalMuscle(rawMuscle);
         muscleWeeklySets[muscle] = (muscleWeeklySets[muscle] || 0) + sets;
       }
     }
   }
 
   const results = [];
-  for (const [muscle, landmarks] of Object.entries(VOLUME_LANDMARKS)) {
+  for (const [rawMuscle, landmarks] of Object.entries(VOLUME_LANDMARKS)) {
+    const muscle = canonicalMuscle(rawMuscle);
+    // Skip duplicated aliases (Biceps Brachii -> Biceps already covered)
+    if (rawMuscle !== muscle && VOLUME_LANDMARKS[muscle]) continue;
     const weeklySets = muscleWeeklySets[muscle] || 0;
     let status;
     if (weeklySets < landmarks.mev) status = 'below_mev';

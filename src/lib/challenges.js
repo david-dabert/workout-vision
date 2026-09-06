@@ -4,6 +4,9 @@
  *
  * Challenge URL format:
  * https://david-dabert.github.io/workout-vision/#challenge?ex=bench_press&reps=10&score=85&by=David&date=2026-09-04
+ *
+ * Response URL format (closes the viral loop):
+ * https://david-dabert.github.io/workout-vision/#response?ex=bench_press&c_name=David&c_reps=10&c_score=85&r_name=Alex&r_reps=12&r_score=90
  */
 
 const BASE_URL = 'https://david-dabert.github.io/workout-vision/';
@@ -22,6 +25,27 @@ export function createChallengeURL(result, profile) {
   params.set('by', profile?.name || 'Someone');
   params.set('date', new Date().toISOString().slice(0, 10));
   return `${BASE_URL}#challenge?${params.toString()}`;
+}
+
+/**
+ * Create a response URL that encodes both the original challenge AND the responder's result.
+ * This closes the viral loop: User A shares challenge, User B completes it,
+ * User B sends this response URL back, User A sees the comparison.
+ * @param {object} challenge - the original parsed challenge data
+ * @param {object} result - responder's workout result
+ * @param {object} profile - responder's profile
+ * @returns {string} full response URL
+ */
+export function createResponseURL(challenge, result, profile) {
+  const params = new URLSearchParams();
+  params.set('ex', challenge.exercise || '');
+  params.set('c_name', challenge.challengerName || 'Someone');
+  params.set('c_reps', String(challenge.reps || 0));
+  params.set('c_score', String(challenge.score || 0));
+  params.set('r_name', profile?.name || 'Someone');
+  params.set('r_reps', String(result.reps || 0));
+  params.set('r_score', String(result.formScore || 0));
+  return `${BASE_URL}#response?${params.toString()}`;
 }
 
 /**
@@ -54,11 +78,50 @@ export function parseChallengeFromURL() {
 }
 
 /**
+ * Parse a challenge response URL.
+ * Expects hash format: #response?ex=...&c_name=...&c_reps=...&c_score=...&r_name=...&r_reps=...&r_score=...
+ * @returns {object|null} parsed response data, or null if not a response URL
+ */
+export function parseResponseFromURL() {
+  const hash = window.location.hash;
+  if (!hash.startsWith('#response?')) return null;
+
+  const queryString = hash.slice('#response?'.length);
+  const params = new URLSearchParams(queryString);
+
+  const ex = params.get('ex');
+  const cReps = parseInt(params.get('c_reps'), 10);
+  const cScore = parseInt(params.get('c_score'), 10);
+  const rReps = parseInt(params.get('r_reps'), 10);
+  const rScore = parseInt(params.get('r_score'), 10);
+
+  if (!ex || isNaN(cReps) || isNaN(cScore) || isNaN(rReps) || isNaN(rScore)) return null;
+
+  return {
+    exercise: ex,
+    challengerName: decodeURIComponent(params.get('c_name') || 'Someone'),
+    challengerReps: cReps,
+    challengerScore: cScore,
+    responderName: decodeURIComponent(params.get('r_name') || 'Someone'),
+    responderReps: rReps,
+    responderScore: rScore,
+  };
+}
+
+/**
  * Check if the current URL contains a challenge.
  * @returns {boolean}
  */
 export function isChallengeActive() {
   return window.location.hash.startsWith('#challenge?');
+}
+
+/**
+ * Check if the current URL contains a challenge response.
+ * @returns {boolean}
+ */
+export function isResponseActive() {
+  return window.location.hash.startsWith('#response?');
 }
 
 /**
@@ -120,6 +183,39 @@ export async function shareChallenge(result, profile) {
   }
 
   // Clipboard fallback
+  try {
+    await navigator.clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
+}
+
+/**
+ * Share a challenge response (User B sends their result back to User A).
+ * @param {object} challenge - the original parsed challenge
+ * @param {object} result - responder's workout result
+ * @param {object} profile - responder's profile
+ * @returns {Promise<'shared'|'copied'|'failed'>}
+ */
+export async function shareChallengeResponse(challenge, result, profile) {
+  const url = createResponseURL(challenge, result, profile);
+  const exerciseName = result.exerciseName || result.exercise || challenge.exercise;
+  const text = `I responded to ${challenge.challengerName}'s ${exerciseName} challenge! My score: ${result.formScore}/100 form. See the comparison: ${url}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'WorkoutVision Challenge Response',
+        text,
+        url,
+      });
+      return 'shared';
+    } catch (e) {
+      if (e.name === 'AbortError') return 'failed';
+    }
+  }
+
   try {
     await navigator.clipboard.writeText(text);
     return 'copied';

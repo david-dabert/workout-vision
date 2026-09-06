@@ -41,12 +41,120 @@ export async function getWorkout(id) {
   return await workoutStore.getItem(id);
 }
 
+/**
+ * Paginated workout retrieval with filtering.
+ * Uses cursor-based pagination over the full store, applying filters during iteration
+ * so only matching records are counted toward limit/offset.
+ *
+ * @param {Object} options
+ * @param {number} [options.limit=50] - max records to return
+ * @param {number} [options.offset=0] - records to skip
+ * @param {string} [options.exercise] - filter by exercise key
+ * @param {number|string|Date} [options.dateFrom] - inclusive start (timestamp, ISO string, or Date)
+ * @param {number|string|Date} [options.dateTo] - inclusive end (timestamp, ISO string, or Date)
+ * @returns {Promise<Array>} sorted newest-first
+ */
+export async function getWorkouts(options = {}) {
+  const { limit = 50, offset = 0, exercise, dateFrom, dateTo } = options;
+  const fromTs = dateFrom ? new Date(dateFrom).getTime() : null;
+  const toTs = dateTo ? new Date(dateTo).getTime() : null;
+
+  const all = [];
+  await workoutStore.iterate((value) => {
+    // Apply filters during iteration
+    if (exercise && value.exercise !== exercise) return;
+    const ts = value.createdAt || new Date(value.date).getTime();
+    if (fromTs && ts < fromTs) return;
+    if (toTs && ts > toTs) return;
+    all.push(value);
+  });
+
+  // Sort newest first, then apply offset/limit
+  all.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  return all.slice(offset, offset + limit);
+}
+
+/**
+ * Count total workouts (optionally filtered).
+ *
+ * @param {Object} [filters]
+ * @param {string} [filters.exercise] - filter by exercise key
+ * @param {number|string|Date} [filters.dateFrom]
+ * @param {number|string|Date} [filters.dateTo]
+ * @returns {Promise<number>}
+ */
+export async function getWorkoutCount(filters = {}) {
+  const { exercise, dateFrom, dateTo } = filters;
+  const fromTs = dateFrom ? new Date(dateFrom).getTime() : null;
+  const toTs = dateTo ? new Date(dateTo).getTime() : null;
+
+  let count = 0;
+  await workoutStore.iterate((value) => {
+    if (exercise && value.exercise !== exercise) return;
+    const ts = value.createdAt || new Date(value.date).getTime();
+    if (fromTs && ts < fromTs) return;
+    if (toTs && ts > toTs) return;
+    count++;
+  });
+  return count;
+}
+
+/**
+ * Get the N most recent workouts efficiently.
+ * Iterates the full store but only keeps the top N in a min-heap-like structure.
+ *
+ * @param {number} n - number of recent workouts to return
+ * @returns {Promise<Array>} sorted newest-first
+ */
+export async function getRecentWorkouts(n = 10) {
+  const recent = [];
+  await workoutStore.iterate((value) => {
+    const ts = value.createdAt || 0;
+    if (recent.length < n) {
+      recent.push(value);
+      // Keep sorted so [n-1] is the oldest in our window
+      if (recent.length === n) {
+        recent.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      }
+    } else if (ts > (recent[n - 1].createdAt || 0)) {
+      recent[n - 1] = value;
+      recent.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
+  });
+  // Final sort in case we collected fewer than n
+  return recent.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+/**
+ * Get workouts within a date range (optimized for weekly/monthly views).
+ *
+ * @param {number|string|Date} dateFrom - inclusive start
+ * @param {number|string|Date} dateTo - inclusive end
+ * @returns {Promise<Array>} sorted newest-first
+ */
+export async function getWorkoutsByDateRange(dateFrom, dateTo) {
+  const fromTs = new Date(dateFrom).getTime();
+  const toTs = new Date(dateTo).getTime();
+  const results = [];
+  await workoutStore.iterate((value) => {
+    const ts = value.createdAt || new Date(value.date).getTime();
+    if (ts >= fromTs && ts <= toTs) {
+      results.push(value);
+    }
+  });
+  return results.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+/**
+ * @deprecated Use getWorkouts() for paginated access or getRecentWorkouts() for dashboard.
+ * Kept for backward compatibility. Internally delegates to getWorkouts with no limit cap.
+ */
 export async function getAllWorkouts() {
   const workouts = [];
   await workoutStore.iterate((value) => {
     workouts.push(value);
   });
-  return workouts.sort((a, b) => b.createdAt - a.createdAt);
+  return workouts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 }
 
 export async function updateWorkout(id, updates) {

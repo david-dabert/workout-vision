@@ -106,6 +106,19 @@ export async function assessInjuryRisk() {
   const muscleFlags = analyzeMuscleOverload(workouts);
   flags.push(...muscleFlags);
 
+  // 6. Detect intentional deload and suppress volume/detraining alerts
+  const deload = detectDeload(workouts);
+  if (deload.isDeload) {
+    // Remove detraining and low-volume flags during intentional deloads
+    for (let i = flags.length - 1; i >= 0; i--) {
+      if (flags[i].type === 'detraining') {
+        flags[i].en += ' (This may be an intentional deload week — safe to ignore if planned.)';
+        flags[i].fr += " (Ceci est peut-\u00eatre une semaine de d\u00e9charge intentionnelle.)";
+        flags[i].risk = RISK.LOW;
+      }
+    }
+  }
+
   // Determine overall risk
   const hasHigh = flags.some(f => f.risk === RISK.HIGH);
   const hasModerate = flags.some(f => f.risk === RISK.MODERATE);
@@ -255,6 +268,30 @@ function analyzeROMRegression(workouts) {
 }
 
 /**
+ * Normalize muscle names between exercise database format (e.g. 'Pectorals')
+ * and MRV threshold keys (e.g. 'chest'). Maps in both directions.
+ */
+const MUSCLE_NAME_MAP = {
+  // Exercise DB name -> MRV key
+  'Pectorals': 'chest', 'Upper Pectorals': 'chest',
+  'Latissimus Dorsi': 'back', 'Lats': 'back', 'Rhomboids': 'back', 'Upper Back': 'back', 'Traps': 'back',
+  'Quadriceps': 'quads',
+  'Hamstrings': 'hamstrings',
+  'Glutes': 'glutes', 'Gluteus Maximus': 'glutes',
+  'Anterior Deltoid': 'shoulders', 'Medial Deltoid': 'shoulders', 'Rear Deltoid': 'shoulders',
+  'Rear Deltoids': 'shoulders', 'Front Deltoids': 'shoulders', 'Shoulders': 'shoulders', 'Deltoids': 'shoulders',
+  'Biceps': 'biceps', 'Biceps Brachii': 'biceps', 'Brachialis': 'biceps',
+  'Triceps': 'triceps', 'Triceps (long head)': 'triceps',
+  'Core': 'abs', 'Abs': 'abs', 'Obliques': 'abs',
+  'Calves': 'calves', 'Gastrocnemius': 'calves', 'Soleus': 'calves',
+  'Erectors': 'back',
+};
+
+function normalizeMuscleKey(name) {
+  return MUSCLE_NAME_MAP[name] || name.toLowerCase();
+}
+
+/**
  * Detect overtraining of a single muscle group.
  * Flags when weekly sets for a muscle exceed evidence-based MRV (Maximum Recoverable Volume).
  */
@@ -263,10 +300,9 @@ function analyzeMuscleOverload(workouts) {
   const now = Date.now();
   const WEEK = 7 * 86400000;
 
-  // Count sets per muscle in the last 7 days
+  // Count sets per normalized muscle key in the last 7 days
   const muscleSets = {};
 
-  // Lazy import exercise data
   for (const w of workouts) {
     const ts = w.createdAt || new Date(w.date).getTime();
     if (now - ts > WEEK) continue;
@@ -274,7 +310,8 @@ function analyzeMuscleOverload(workouts) {
     // Muscles come from the workout record if available
     if (w.muscles?.primary) {
       for (const m of w.muscles.primary) {
-        muscleSets[m] = (muscleSets[m] || 0) + 1;
+        const key = normalizeMuscleKey(m);
+        muscleSets[key] = (muscleSets[key] || 0) + 1;
       }
     }
   }
@@ -341,6 +378,34 @@ function generateRecommendations(flags) {
   }
 
   return recs;
+}
+
+/**
+ * Detect intentional deload: 30-50% volume reduction after 3+ weeks of progression.
+ * Heuristic: if weeks 2-4 had consistent or increasing load, and week 1 (current)
+ * dropped 30-60% from the average, flag as probable deload.
+ */
+function detectDeload(workouts) {
+  const now = Date.now();
+  const WEEK = 7 * 86400000;
+  const getLoad = (w) => (w.reps || 1) * (w.weight || 1);
+
+  const weeklyLoads = [0, 0, 0, 0];
+  for (const w of workouts) {
+    const ts = w.createdAt || new Date(w.date).getTime();
+    const weeksAgo = Math.floor((now - ts) / WEEK);
+    if (weeksAgo < 4) weeklyLoads[weeksAgo] += getLoad(w);
+  }
+
+  const priorAvg = (weeklyLoads[1] + weeklyLoads[2] + weeklyLoads[3]) / 3;
+  if (priorAvg === 0) return { isDeload: false };
+
+  const ratio = weeklyLoads[0] / priorAvg;
+  // Deload = current week is 30-70% of prior average, and prior weeks were consistent
+  const priorConsistent = weeklyLoads[1] > 0 && weeklyLoads[2] > 0;
+  const isDeload = ratio >= 0.3 && ratio <= 0.7 && priorConsistent;
+
+  return { isDeload, ratio: Math.round(ratio * 100) / 100 };
 }
 
 /**

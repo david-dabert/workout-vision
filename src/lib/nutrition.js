@@ -360,8 +360,9 @@ export function getDailyTargets(profile, goal) {
   targetCal = Math.round(targetCal);
 
   // Protein scaled by goal (Aragon et al. 2017 ISSN; Helms et al. 2014)
+  // Capped at 200g/day to avoid excessive recommendations for high body-fat users
   const proteinPerKg = goal === 'cut' ? 2.5 : goal === 'bulk' ? 1.8 : 2.0;
-  const protein = Math.round(weightKg * proteinPerKg);
+  const protein = Math.min(200, Math.round(weightKg * proteinPerKg));
   // Fat: 25-30% of calories
   const fat = Math.round((targetCal * 0.27) / 9);
   // Carbs: remainder

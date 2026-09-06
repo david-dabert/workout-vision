@@ -53,6 +53,7 @@ export class VoiceCoach {
     this._voice = null;
     this._voiceLoaded = false;
     this._disposed = false;
+    this._heavySetMode = false; // Suppress non-critical cues for sets under 5 reps
 
     // Voices may load asynchronously
     if (this._isSupported()) {
@@ -85,6 +86,9 @@ export class VoiceCoach {
 
     const now = Date.now();
     const pri = PRIORITY[priority] ?? PRIORITY.normal;
+
+    // Heavy-set mode: only allow critical cues (safety warnings)
+    if (this._heavySetMode && pri < PRIORITY.critical) return;
 
     // Throttle: skip if same cue was spoken recently
     if (text === this.lastCue && now - this.lastCueTime < this.cooldown) return;
@@ -166,6 +170,13 @@ export class VoiceCoach {
   enable() { this.enabled = true; }
   disable() { this.enabled = false; }
   toggle() { this.enabled = !this.enabled; return this.enabled; }
+
+  /**
+   * Enable heavy-set mode: suppresses all non-critical cues.
+   * Use when target reps < 5 to avoid breaking concentration during max-effort sets.
+   * @param {boolean} active
+   */
+  setHeavySetMode(active) { this._heavySetMode = !!active; }
 
   dispose() {
     this._disposed = true;

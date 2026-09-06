@@ -457,14 +457,14 @@ export class RepCounter {
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    // Amplitude threshold = 30% of signal range (prominence filter).
-    // This is proportional so it works for both angle signals (degrees)
-    // and non-angle signals (calf_raise 0-100 scale).
-    // The old floor of 40° broke non-angle exercises entirely.
-    const minAmplitude = signalRange * 0.30;
+    // Amplitude threshold as a proportion of signal range (prominence filter).
+    // Default 30%; exercises with smaller angle ranges (lat_pulldown, lateral_raise)
+    // can override via amplitudeRatio to avoid filtering out valid reps.
+    const ampRatio = (ex.amplitudeRatio != null) ? ex.amplitudeRatio : 0.30;
+    const minAmplitude = signalRange * ampRatio;
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
-    const halfWindow = Math.max(5, Math.round(this._fps * 0.8));
+    const halfWindow = Math.max(5, Math.round(this._fps * 0.4));
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
@@ -674,15 +674,24 @@ export class RepCounter {
             : 0;
           let passed = quality >= 0.70;
 
+          // Apply anthropometric normalization: adjust quality threshold based on body proportions
           if (!passed && this._anthropometricNormalizer.isCalibrated) {
-            const bodyType = this._anthropometricNormalizer.getBodyType();
-            if (bodyType) {
-              if ((fc.name === 'Depth' || fc.name === 'depth') && bodyType.femurType === 'long') {
-                passed = quality >= 0.50;
-              }
-              if ((fc.name === 'Trunk angle' || fc.name === 'trunk_angle') && bodyType.torsoType === 'short') {
-                passed = quality >= 0.50;
-              }
+            // Map form check names to normalizer check names
+            const checkMap = {
+              'Depth': 'squat_depth', 'depth': 'squat_depth', 'knee_depth': 'knee_depth',
+              'Trunk angle': 'forward_lean', 'trunk_angle': 'forward_lean',
+              'Trunk upright': 'forward_lean',
+              'Shoulder ROM': 'shoulder_rom', 'shoulder_rom': 'shoulder_rom',
+              'Overhead lockout': 'overhead_lockout',
+              'Elbow lockout': 'elbow_lockout',
+            };
+            const normCheckName = checkMap[fc.name];
+            if (normCheckName) {
+              // Default pass threshold is 0.70; normalize it based on body proportions
+              const adjustedThreshold = this._anthropometricNormalizer.normalizeThreshold(
+                this._exerciseKey, normCheckName, 70
+              );
+              passed = quality >= (adjustedThreshold / 100);
             }
           }
 

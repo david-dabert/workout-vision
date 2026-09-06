@@ -1,11 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Target, Activity, ChevronRight, ChevronLeft, Check, Play, ClipboardCheck, SkipForward } from 'lucide-react';
 import { useT } from '../lib/LanguageContext';
+
+/* ── Inline SVG icons (replaces lucide-react dependency) ── */
+const Icon = ({ d, size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>{d}</svg>
+);
+
+const Dumbbell = (p) => <Icon {...p} d={<>
+  <path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767-1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l1.767 1.767a2 2 0 1 1 2.829 2.829z"/>
+  <path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+</>} />;
+
+const Target = (p) => <Icon {...p} d={<>
+  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+</>} />;
+
+const Activity = (p) => <Icon {...p} d={
+  <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>
+} />;
+
+const ChevronRight = (p) => <Icon {...p} d={<path d="m9 18 6-6-6-6"/>} />;
+const ChevronLeft = (p) => <Icon {...p} d={<path d="m15 18-6-6 6-6"/>} />;
+const Check = (p) => <Icon {...p} d={<path d="M20 6 9 17l-5-5"/>} />;
+const Play = (p) => <Icon {...p} d={<polygon points="6 3 20 12 6 21 6 3" fill={p.color || 'currentColor'} stroke="none"/>} />;
 import { INJURY_LABELS } from '../lib/injuries';
 import { getExerciseIllustration } from '../lib/exercises';
 import ResultCard from './ResultCard';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 2;
 
 const DEMO_RESULT = {
   fileName: 'demo_squat.mp4',
@@ -94,7 +117,7 @@ export default function Onboarding({ onComplete }) {
   const update = (key, value) => setData(prev => ({ ...prev, [key]: value }));
 
   const canAdvance = () => {
-    if (step === 3) {
+    if (step === 2) {
       return data.name.trim() && data.age && data.weight && data.height;
     }
     return true;
@@ -193,19 +216,11 @@ export default function Onboarding({ onComplete }) {
           animation: 'fadeInUp 0.4s cubic-bezier(0, 0, 0.2, 1) both',
         }}>
           {step === 1 && <StepWelcome onTryDemo={() => setShowDemo(true)} />}
-          {step === 2 && (
-            <StepMovementAssessment
-              onStartAssessment={() => { update('baselineAssessmentPending', true); next(); }}
-              onSkip={() => next()}
-            />
-          )}
-          {step === 3 && <StepBasicInfo data={data} update={update} />}
-          {step === 4 && <StepFitnessInfo data={data} update={update} toggleInjury={toggleInjury} />}
-          {step === 5 && <StepSummary data={data} />}
+          {step === 2 && <StepProfileSetup data={data} update={update} toggleInjury={toggleInjury} />}
         </div>
       </div>
 
-      {step !== 2 && (
+      {(
         <div className="onboarding-actions">
           {step > 1 && (
             <button
@@ -346,7 +361,124 @@ function StepWelcome({ onTryDemo }) {
   );
 }
 
-/* ── Step 2: Movement Assessment ── */
+/* ── Step 2: Combined Profile Setup (Basic + Fitness) ── */
+function StepProfileSetup({ data, update, toggleInjury }) {
+  const { t, lang } = useT();
+  return (
+    <div className="onboarding-step">
+      <h2>{t('onb_step1_title')}</h2>
+      <p className="text-muted text-sm" style={{ marginBottom: 16 }}>
+        {t('onb_step1_desc')}
+      </p>
+      <div className="form-grid">
+        <label className="full-width">
+          <span>{t('name')}</span>
+          <input
+            type="text"
+            value={data.name}
+            onChange={(e) => update('name', e.target.value)}
+            placeholder="Your name"
+            autoFocus
+          />
+        </label>
+        <label>
+          <span>{t('age')}</span>
+          <input
+            type="number"
+            value={data.age}
+            onChange={(e) => update('age', e.target.value)}
+            placeholder="e.g. 28"
+          />
+        </label>
+        <label>
+          <span>{t('sex')}</span>
+          <select value={data.sex} onChange={(e) => update('sex', e.target.value)}>
+            <option value="male">{t('male')}</option>
+            <option value="female">{t('female')}</option>
+          </select>
+        </label>
+        <label>
+          <span>{t('weight_kg')}</span>
+          <input
+            type="number"
+            value={data.weight}
+            onChange={(e) => update('weight', e.target.value)}
+            placeholder="e.g. 75"
+          />
+        </label>
+        <label>
+          <span>{t('height_cm')}</span>
+          <input
+            type="number"
+            value={data.height}
+            onChange={(e) => update('height', e.target.value)}
+            placeholder="e.g. 178"
+          />
+        </label>
+      </div>
+
+      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>{t('experience')}</span>
+          <select value={data.experience} onChange={(e) => update('experience', e.target.value)}>
+            <option value="beginner">{t('beginner')}</option>
+            <option value="intermediate">{t('intermediate')}</option>
+            <option value="advanced">{t('advanced')}</option>
+          </select>
+        </label>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>{t('goal')}</span>
+          <select value={data.goal} onChange={(e) => update('goal', e.target.value)}>
+            <option value="general">{t('general_fitness')}</option>
+            <option value="strength">{t('strength')}</option>
+            <option value="hypertrophy">{t('muscle_growth')}</option>
+            <option value="endurance">{t('endurance')}</option>
+            <option value="weight_loss">{t('weight_loss')}</option>
+          </select>
+        </label>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontWeight: 700 }}>{t('activity_level')}</span>
+          <select value={data.activityLevel} onChange={(e) => update('activityLevel', e.target.value)}>
+            <option value="sedentary">{t('sedentary')}</option>
+            <option value="light">{t('light_activity')}</option>
+            <option value="moderate">{t('moderate_activity')}</option>
+            <option value="active">{t('active_activity')}</option>
+            <option value="veryActive">{t('very_active_activity')}</option>
+          </select>
+        </label>
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block', marginBottom: 10 }}>
+          {t('injuries')}:
+        </span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {INJURY_AREAS.map(area => {
+            const active = (data.injuries || []).includes(area);
+            return (
+              <button
+                key={area}
+                type="button"
+                onClick={() => toggleInjury(area)}
+                style={{
+                  padding: '6px 14px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600,
+                  border: active ? '1px solid var(--red)' : '1px solid rgba(255,255,255,0.12)',
+                  background: active ? 'rgba(255,59,92,0.15)' : 'rgba(255,255,255,0.04)',
+                  color: active ? 'var(--red)' : 'var(--text-secondary, var(--muted))',
+                  cursor: 'pointer',
+                }}
+              >
+                {INJURY_LABELS[area]?.[lang] || area.replace('_', ' ')}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── (Legacy) Step: Movement Assessment — kept for future post-onboarding use ── */
 const BASELINE_EXERCISES = [
   { key: 'squat',  nameKey: 'onb_squat_name',  descKey: 'onb_squat_desc' },
   { key: 'pushup', nameKey: 'onb_pushup_name', descKey: 'onb_pushup_desc' },

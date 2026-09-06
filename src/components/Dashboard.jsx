@@ -10,6 +10,8 @@ import VisionScoreHero from './VisionScoreHero';
 import ChallengeBar from './ChallengeBar';
 import InjuryRiskCard from './InjuryRiskCard';
 import { calculateSmartStreak } from '../lib/prSystem';
+import WorkoutOfTheWeek from './WorkoutOfTheWeek';
+import { ChallengeResponseView } from './ChallengeBar';
 
 const getGreetingKey = () => {
   const h = new Date().getHours();
@@ -49,7 +51,7 @@ const getLast7Days = (workouts, lang = 'en') => {
   return days;
 };
 
-export default function Dashboard({ profile, modelStatus, onNavigate, challenge }) {
+export default function Dashboard({ profile, modelStatus, onNavigate, challenge, challengeResponse, onDismissResponse }) {
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [allWorkouts, setAllWorkouts] = useState([]);
@@ -133,6 +135,13 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge 
         </div>
       </div>
 
+      {/* ── Challenge response view (when arriving via response URL) ── */}
+      {challengeResponse && (
+        <div style={{ padding: '0 16px' }}>
+          <ChallengeResponseView response={challengeResponse} onDismiss={onDismissResponse} />
+        </div>
+      )}
+
       {/* ── Challenge bar (when arriving via challenge URL) ── */}
       {challenge && (
         <div style={{ padding: '0 16px' }}>
@@ -142,6 +151,9 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge 
           />
         </div>
       )}
+
+      {/* ── Workout of the Week ── */}
+      <WorkoutOfTheWeek onNavigate={onNavigate} />
 
       {/* ── VisionScore hero metric ── */}
       <VisionScoreHero workouts={allWorkouts} />

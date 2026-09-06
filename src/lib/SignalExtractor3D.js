@@ -216,6 +216,7 @@ export const SIGNAL_PRIORITY_3D = {
   battle_rope:   ['wrist_Y_L', 'wrist_Y_R'],
   deadlift:      ['hip_L', 'hip_R', 'hip_Y', 'hip_Z'],
   romanian_deadlift: ['hip_L', 'hip_R', 'hip_Y', 'hip_Z'],
+  lat_pulldown:  ['shoulder_L', 'shoulder_R', 'wrist_Y_L', 'wrist_Y_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
   bent_over_row: ['elbow_L', 'elbow_R', 'wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L'],
   upright_row:   ['elbow_L', 'elbow_R', 'wrist_Y_L', 'wrist_Y_R'],
   tricep_extension: ['elbow_L', 'elbow_R', 'wrist_Z_L', 'wrist_Z_R'],

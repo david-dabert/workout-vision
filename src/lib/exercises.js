@@ -173,6 +173,7 @@ export const EXERCISES = {
       },
     ],
     scienceNotes: 'Full ROM squats produce greater quad and glute activation than partial squats (Schoenfeld 2010). Knee valgus >10 deg increases ACL strain (Hewett 2005). Forward lean >55 deg shifts load to erectors and increases spinal shear (Fry 2003).',
+    limitations: ['foot pressure distribution', 'breathing technique', 'grip width', 'bar position on traps'],
   },
 
   front_squat: {
@@ -304,6 +305,7 @@ export const EXERCISES = {
       },
     ],
     scienceNotes: 'Conventional deadlift produces peak erector and hamstring activation at the bottom third of the pull (Cholewicki 1991). Lumbar flexion under load increases disc injury risk by 300-800% (McGill 2007).',
+    limitations: ['grip type', 'breathing technique', 'bar path', 'intra-abdominal pressure'],
   },
 
   romanian_deadlift: {
@@ -645,6 +647,7 @@ export const EXERCISES = {
       },
     ],
     scienceNotes: 'Full ROM bench press produces greater pec activation than partial reps (Larsen 2021). Best detected from side camera angle.',
+    limitations: ['grip width', 'bar path', 'scapular retraction', 'breathing technique', 'arch height'],
   },
 
   dip: {
@@ -867,6 +870,7 @@ export const EXERCISES = {
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
     upThreshold: 70,
+    amplitudeRatio: 0.20,
     formChecks: [
       {
         name: 'Height',
@@ -894,6 +898,7 @@ export const EXERCISES = {
       },
     ],
     scienceNotes: 'Lateral raises above 90 deg increase upper trap involvement. Stopping at shoulder height maximizes medial deltoid isolation. Slight forward lean (10-15 deg) shifts emphasis to rear deltoid (Reinold 2009).',
+    limitations: ['grip rotation', 'breathing technique', 'momentum/swing detection'],
   },
 
   // ===== MACHINE / SEATED =====
@@ -963,6 +968,7 @@ export const EXERCISES = {
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
     upThreshold: 140,
+    amplitudeRatio: 0.20,
     formChecks: [
       {
         name: 'Full pull',
@@ -984,6 +990,7 @@ export const EXERCISES = {
       },
     ],
     scienceNotes: 'Wide grip lat pulldown produces greater lat activation than narrow grip. Pulling to chest is safer and more effective than behind neck (Signorile 2002).',
+    limitations: ['grip width', 'breathing technique', 'scapular depression', 'cable path'],
   },
 
   leg_press: {
@@ -5086,6 +5093,31 @@ export const EXERCISES = {
 
 // RepCounter and ExerciseAutoDetector: import directly from './repCounter' and './exerciseDetector'
 // Re-exports removed to break circular dependency (exercises <-> repCounter/exerciseDetector).
+
+// ---------------------------------------------------------------------------
+// Default limitations for pose estimation — applied to exercises that don't
+// specify their own. Honest disclosure of what the AI cannot assess.
+// ---------------------------------------------------------------------------
+const DEFAULT_LIMITATIONS = ['breathing technique'];
+
+const CATEGORY_LIMITATIONS = {
+  compound: ['grip width', 'breathing technique', 'intra-abdominal pressure'],
+  isolation: ['grip rotation', 'breathing technique'],
+  bodyweight: ['breathing technique', 'hand placement width'],
+  machine: ['seat/pad adjustment', 'breathing technique'],
+};
+
+/**
+ * Get the limitations for an exercise (explicit or default by category).
+ * @param {string} key - exercise key
+ * @returns {string[]}
+ */
+export function getExerciseLimitations(key) {
+  const ex = EXERCISES[key];
+  if (!ex) return DEFAULT_LIMITATIONS;
+  if (ex.limitations && ex.limitations.length > 0) return ex.limitations;
+  return CATEGORY_LIMITATIONS[ex.category] || DEFAULT_LIMITATIONS;
+}
 
 // ---------------------------------------------------------------------------
 // Shared exercise grouping for UI selectors

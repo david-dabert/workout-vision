@@ -114,6 +114,21 @@ export default function InjuryRiskCard() {
               ))}
             </div>
           )}
+
+          <div style={{
+            marginTop: 14,
+            padding: '10px 12px',
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            fontSize: '0.7rem',
+            color: 'var(--text-tertiary)',
+            lineHeight: 1.5,
+          }}>
+            {lang === 'fr'
+              ? 'Cette fonctionnalité fournit des conseils généraux de remise en forme uniquement et ne constitue pas un dispositif médical. Consultez un professionnel de santé avant de modifier votre entraînement sur la base de ces alertes.'
+              : 'This feature provides general fitness guidance only and is not a medical device. Consult a healthcare provider before modifying your training based on these alerts.'}
+          </div>
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
-import { parseChallengeFromURL } from './lib/challenges';
+import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
 import Dashboard from './components/Dashboard';
 import Onboarding from './components/Onboarding';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -38,11 +38,14 @@ function AppInner() {
   const [page, setPage] = useHashRouter();
   const [modelStatus, setModelStatus] = useState('loading');
   const [challenge, setChallenge] = useState(null);
+  const [challengeResponse, setChallengeResponse] = useState(null);
 
-  // Check for challenge URL on mount
+  // Check for challenge or response URL on mount
   useEffect(() => {
     const parsed = parseChallengeFromURL();
-    if (parsed) setChallenge(parsed);
+    if (parsed) { setChallenge(parsed); return; }
+    const resp = parseResponseFromURL();
+    if (resp) setChallengeResponse(resp);
   }, []);
 
   useEffect(() => {
@@ -156,6 +159,8 @@ function AppInner() {
         modelStatus={modelStatus}
         onNavigate={onNavigate}
         challenge={challenge}
+        challengeResponse={challengeResponse}
+        onDismissResponse={() => setChallengeResponse(null)}
       />
       <nav className="tab-bar">
         <button className={`tab-item${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')}>
