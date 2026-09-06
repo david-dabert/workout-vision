@@ -58,12 +58,20 @@ const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks
 // Progress callback set by loadModelWithRetry, read by fetchModelBuffer
 let _downloadProgressCb = null;
 
+// Minimum valid model size: pose_landmarker_full.task is ~9.4MB (float16).
+// A cached buffer smaller than this was a partial download or corruption.
+const MIN_MODEL_BYTES = 5 * 1024 * 1024; // 5 MB
+
 async function fetchModelBuffer() {
   // Try IndexedDB cache first (instant on repeat visits, works offline)
   try {
     const cached = await modelCache.getItem(MODEL_CACHE_KEY);
-    if (cached) {
+    if (cached && cached.byteLength >= MIN_MODEL_BYTES) {
       return cached;
+    }
+    if (cached) {
+      console.warn(`[PoseAnalysis] Cached model too small (${(cached.byteLength / 1024 / 1024).toFixed(1)}MB), re-downloading`);
+      modelCache.removeItem(MODEL_CACHE_KEY).catch(() => {});
     }
   } catch (_) {}
 

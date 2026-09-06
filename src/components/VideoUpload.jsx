@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
@@ -198,6 +198,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     // ── Phase 2: Load MediaPipe model ──
     setAnalysisPhase('model');
     setFfmpegStatus('Loading AI model...');
+    // Reset Kalman filters and anatomical state from any previous analysis
+    resetKalmanFilters();
     const landmarker = await getImageLandmarker();
     if (!landmarker) {
       setErrorMsg(t('model_failed'));
