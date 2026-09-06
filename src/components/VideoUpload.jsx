@@ -178,13 +178,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setQueue(prev => prev.filter(q => q.id !== id));
   };
 
-  // ─── FFMPEG.WASM DETERMINISTIC ANALYSIS ENGINE ───
+  // ─── VIDEO ANALYSIS ENGINE ───
   //
-  // Video → ffmpeg.wasm (deterministic frames) → MediaPipe (cached) →
-  // exercise tracking signal → cycle counter → validated reps
-  //
-  // No video element seeking. No requestVideoFrameCallback.
-  // Same input file = same frames = same landmarks = same rep count. Always.
+  // Video → native <video> seeking → MediaPipe (cached by hash) →
+  // exercise detection → rep counting → biomechanical analysis
 
   const analyzeVideo = useCallback(async (queueItem) => {
     const analysisStart = Date.now();

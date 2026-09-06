@@ -48,10 +48,7 @@ export default defineConfig({
           if (id.includes('node_modules/localforage')) {
             return 'localforage';
           }
-          if (id.includes('node_modules/@ffmpeg')) {
-            return 'ffmpeg';
-          }
-          if (id.includes('/src/lib/exercises.js')) {
+if (id.includes('/src/lib/exercises.js')) {
             return 'exercises';
           }
           if (id.includes('/src/lib/LanguageContext.jsx')) {

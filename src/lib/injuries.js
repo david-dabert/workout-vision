@@ -6,6 +6,8 @@
 
 import localforage from 'localforage';
 
+const injuryStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
+
 export const INJURY_MAP = {
   'lower_back': { landmarks: [11, 12, 23, 24], checks: ['Lumbar flexion', 'Trunk angle', 'Hip hinge', 'Back angle'] },
   'shoulder':   { landmarks: [11, 12, 13, 14], checks: ['Shoulder protraction', 'Scapular retraction', 'Elbow flare', 'Shoulder stability'] },
@@ -47,7 +49,7 @@ export function shouldSkipCheck(checkName, userInjuries) {
  */
 export async function loadInjuries() {
   try {
-    const saved = await localforage.getItem('wv_injuries');
+    const saved = await injuryStore.getItem('wv_injuries');
     return saved || [];
   } catch (_) {
     return [];
@@ -59,6 +61,6 @@ export async function loadInjuries() {
  */
 export async function saveInjuries(injuries) {
   try {
-    await localforage.setItem('wv_injuries', injuries);
+    await injuryStore.setItem('wv_injuries', injuries);
   } catch (_) {}
 }
