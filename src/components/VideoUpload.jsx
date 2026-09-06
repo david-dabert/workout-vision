@@ -18,7 +18,7 @@ import { VoiceCoach } from '../lib/VoiceCoach';
 import { cueForRep, cueForSet } from '../lib/CoachVoice';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
-import SubscriptionGate from './SubscriptionGate';
+// SubscriptionGate removed — analysis is free and unlimited
 
 
 // ── Landmark cache (IndexedDB) ──
@@ -910,15 +910,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               >
                 {voiceEnabled ? 'VOX' : 'VOX'}
               </button>
-              <SubscriptionGate onAllowed={startAnalysis}>
-                <button
-                  className="btn btn-primary"
-                  style={{ flex: 1, pointerEvents: !hasQueued ? 'none' : 'auto', opacity: !hasQueued ? 0.5 : 1 }}
-                  disabled={!hasQueued}
-                >
-                  {t('analyze')}
-                </button>
-              </SubscriptionGate>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1 }}
+                disabled={!hasQueued}
+                onClick={startAnalysis}
+              >
+                {t('analyze')}
+              </button>
             </div>
           </>
         ) : (
