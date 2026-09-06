@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
@@ -207,6 +207,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const analyzeVideo = useCallback(async (queueItem) => {
     const analysisStart = Date.now();
 
+    // Reset detection state from any previous analysis
+    resetKalmanFilters();
+
     // ── Phase 1: Hash the video file for deterministic cache key ──
     setAnalysisPhase('hashing');
     setFfmpegStatus('Hashing video file...');
@@ -264,6 +267,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let lockedSubjectIdx = null;
         let streamFrameCount = 0;
 
+        let detectionAttempts = 0;
+        let detectionSuccesses = 0;
+        let detectionErrors = 0;
+
         try {
           const streamResult = await extractFramesStreaming(
             queueItem.file,
@@ -275,10 +282,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
               // Run MediaPipe directly on the canvas (no ImageData copy needed)
               const deterministicTs = frameIndex * (1000 / analysisFps);
-              const result = detectPoseImage(landmarker, canvas, deterministicTs);
+              let result;
+              try {
+                result = detectPoseImage(landmarker, canvas, deterministicTs);
+                detectionAttempts++;
+              } catch (detErr) {
+                detectionErrors++;
+                console.error('[Upload] MediaPipe detection error on frame', frameIndex, detErr);
+                return;
+              }
 
               let landmarks = null;
               if (result?.landmarks?.length) {
+                detectionSuccesses++;
                 if (result.landmarks.length === 1) {
                   landmarks = result.landmarks[0];
                 } else {
@@ -317,6 +333,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
           frameCount = streamResult.frameCount;
           duration = streamResult.duration;
+          console.log(`[Upload] iOS streaming done: ${streamFrameCount} frames extracted, ${detectionAttempts} detection attempts, ${detectionSuccesses} poses found, ${detectionErrors} errors, ${frames.length} valid frames`);
         } catch (err) {
           console.error('[Upload] iOS streaming extraction failed:', err);
           setErrorMsg(`Analysis failed: ${err.message}`);
@@ -460,7 +477,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
     if (frames.length === 0) {
-      setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
+      const diagParts = [`Frames extracted: ${frameCount}`, `Analysis time: ${analysisTime}s`];
+      if (typeof detectionAttempts !== 'undefined') {
+        diagParts.push(`Detection: ${detectionAttempts} tried, ${detectionSuccesses} poses, ${detectionErrors} errors`);
+      }
+      const diag = diagParts.join(' | ');
+      console.error('[Upload] Zero valid frames.', diag);
+      setErrorMsg(`No poses detected (${diag}). Ensure full body is visible.`);
       return null;
     }
 
@@ -804,7 +827,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 {q.status === 'done' && <span className="queue-done">{t('done')}</span>}
                 {q.status === 'error' && (
                   <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
-                    {t('failed_try_different')}
+                    {errorMsg || t('failed_try_different')}
                   </span>
                 )}
                 {q.status === 'queued' && !analyzing && (
