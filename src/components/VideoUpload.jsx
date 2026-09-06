@@ -12,9 +12,8 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
-import { extractFrames, extractFramesStreaming, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
+import { extractFramesStreaming, hashFile, hashLandmarks } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
-import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
 
 
@@ -235,13 +234,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     }
 
     // ── Phase 4: If no cache, extract and process frames ──
+    // Uses native <video> seeking on ALL platforms. The previous ffmpeg.wasm
+    // desktop path (31MB WASM download) hangs during initialization on many
+    // browsers/devices. Native video seeking is fast, reliable, and requires
+    // zero external downloads.
     if (!usedCache) {
 
-      if (IS_IOS) {
-        // ─── iOS STREAMING PATH ───
-        // Expert panel consensus: merge extraction + processing into one loop.
-        // Only one frame exists in memory at a time. No intermediate array.
-        // Skips ffmpeg.wasm entirely (31MB WASM + video buffer kills iOS tabs).
+      {
         setAnalysisPhase('extracting');
         setFfmpegStatus('Analyzing video...');
         setLiveReps(0);
@@ -303,136 +302,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           frameCount = streamResult.frameCount;
           duration = streamResult.duration;
         } catch (err) {
-          console.error('[Upload] iOS streaming extraction failed:', err);
+          console.error('[Upload] Streaming extraction failed:', err);
           setErrorMsg(`Analysis failed: ${err.message}`);
           return null;
         }
-
-      } else {
-        // ─── DESKTOP PATH: ffmpeg.wasm + batch processing ───
-        setAnalysisPhase('extracting');
-        setFfmpegStatus('Loading ffmpeg.wasm (~31MB first time)...');
-        let extracted;
-
-        try {
-          await loadFFmpeg((pct) => {
-            setFfmpegStatus(`Loading ffmpeg.wasm... ${pct}%`);
-          });
-        } catch (err) {
-          console.error('[Upload] ffmpeg.wasm load failed:', err);
-          setErrorMsg('Failed to load ffmpeg.wasm video decoder. Try refreshing the page.');
-          return null;
-        }
-
-        setFfmpegStatus('Extracting frames deterministically...');
-        try {
-          extracted = await extractFrames(
-            queueItem.file,
-            analysisFps,
-            MAX_FRAMES,
-            maxWidth,
-            (pct) => {
-              setProgress(Math.round(pct * 0.4));
-              setFfmpegStatus(`Extracting frames... ${pct}%`);
-            }
-          );
-        } catch (err) {
-          console.error('[Upload] Frame extraction failed:', err);
-          setErrorMsg(`Frame extraction failed: ${err.message}`);
-          return null;
-        }
-
-        frameCount = extracted.frameCount;
-        duration = extracted.duration;
-
-        // ── Phase 5: Run MediaPipe on each extracted frame ──
-        setAnalysisPhase('analyzing');
-        setFfmpegStatus('Running pose detection...');
-        setLiveReps(0);
-
-        // Try Web Worker path (offloads MediaPipe from UI thread)
-        let useWorker = false;
-        let workerManager = null;
-        if (isWorkerSupported()) {
-          try {
-            workerManager = new PoseWorkerManager();
-            await workerManager.init();
-            useWorker = true;
-          } catch (e) {
-            console.warn('[Upload] Worker init failed, falling back to main thread:', e.message);
-            if (workerManager) { workerManager.dispose(); workerManager = null; }
-          }
-        }
-
-        const totalExtractedFrames = extracted.frames.length;
-
-        if (useWorker && workerManager) {
-          for (let i = 0; i < totalExtractedFrames; i++) {
-            if (abortRef.current) break;
-            const deterministicTs = i * (1000 / analysisFps);
-            const resultLandmarks = await workerManager.processFrame(extracted.frames[i], deterministicTs, i);
-            extracted.frames[i] = null;
-
-            if (resultLandmarks && resultLandmarks.length > 0) {
-              const landmarks = resultLandmarks.length === 1
-                ? resultLandmarks[0]
-                : selectSubjectPose(resultLandmarks);
-              const time = i / analysisFps;
-              const angles = extractJointAngles(landmarks);
-              frames.push({ landmarks, timestamp: time, angles });
-              replayFrames.push({ landmarks, timestamp: time });
-            }
-
-            const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
-            setProgress(pct);
-            setQueue(prev => prev.map(q =>
-              q.id === queueItem.id ? { ...q, progress: pct } : q
-            ));
-          }
-          workerManager.dispose();
-        } else {
-          const offscreen = document.createElement('canvas');
-          offscreen.width = extracted.width;
-          offscreen.height = extracted.height;
-          const offCtx = offscreen.getContext('2d');
-          let lockedSubjectIdx = null;
-
-          for (let i = 0; i < totalExtractedFrames; i++) {
-            if (abortRef.current) break;
-            offCtx.putImageData(extracted.frames[i], 0, 0);
-            extracted.frames[i] = null;
-
-            const deterministicTs = i * (1000 / analysisFps);
-            const result = detectPoseImage(landmarker, offscreen, deterministicTs);
-
-            let landmarks = null;
-            if (result?.landmarks?.length) {
-              if (result.landmarks.length === 1) {
-                landmarks = result.landmarks[0];
-              } else {
-                if (lockedSubjectIdx === null) {
-                  landmarks = selectSubjectPose(result.landmarks);
-                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                } else {
-                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-                }
-              }
-              const time = i / analysisFps;
-              const angles = extractJointAngles(landmarks);
-              frames.push({ landmarks, timestamp: time, angles });
-              replayFrames.push({ landmarks, timestamp: time });
-            }
-
-            const pct = 40 + Math.round((i / totalExtractedFrames) * 55);
-            setProgress(pct);
-            setQueue(prev => prev.map(q =>
-              q.id === queueItem.id ? { ...q, progress: pct } : q
-            ));
-
-            await yieldToMain();
-          }
-        }
-        extracted.frames.length = 0;
       }
 
       // Cache landmarks keyed by video hash

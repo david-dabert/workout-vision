@@ -460,7 +460,7 @@ export class RepCounter {
     // Amplitude threshold as a proportion of signal range (prominence filter).
     // Default 30%; exercises with smaller angle ranges (lat_pulldown, lateral_raise)
     // can override via amplitudeRatio to avoid filtering out valid reps.
-    const ampRatio = (ex.amplitudeRatio != null) ? ex.amplitudeRatio : 0.30;
+    const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.30;
     const minAmplitude = signalRange * ampRatio;
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
