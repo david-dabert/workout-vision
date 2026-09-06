@@ -444,7 +444,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
     hdCanvas.height = video.videoHeight;
     const ctx = hdCanvas.getContext('2d');
     ctx.drawImage(video, 0, 0, hdCanvas.width, hdCanvas.height);
-    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, displayExerciseName, reps, formScore);
+    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
 
     hdCanvas.toBlob((blob) => {
       if (!blob) return;

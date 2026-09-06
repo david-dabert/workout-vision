@@ -5,7 +5,7 @@ import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
-import { saveWorkout, getAllWorkouts } from '../lib/storage';
+import { saveWorkout, getWorkout, updateWorkout, getAllWorkouts } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
@@ -247,6 +247,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
         let lockedSubjectIdx = null;
         let streamFrameCount = 0;
+        // Live rep counter for real-time feedback during extraction
+        const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
 
         try {
           const streamResult = await extractFramesStreaming(
@@ -277,6 +279,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 const angles = extractJointAngles(landmarks);
                 frames.push({ landmarks, timestamp: time, angles });
                 replayFrames.push({ landmarks, timestamp: time });
+
+                // Update live rep count for real-time feedback
+                const liveResult = liveRepCounter.update(landmarks, time);
+                if (liveResult?.repCount != null) {
+                  setLiveReps(liveResult.repCount);
+                }
               }
 
               streamFrameCount++;
@@ -322,9 +330,27 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       return null;
     }
 
-    // ── Phase 6: Compute landmark hash for determinism verification ──
+    // Transition to analyzing phase (exercise detection + rep counting + biomechanics)
+    setAnalysisPhase('analyzing');
+    setFfmpegStatus('Processing movement data...');
+
+    // ── Phase 6: Compute landmark hash and confidence ──
     const landmarkHashValue = await hashLandmarks(frames.map(f => f.landmarks));
-    const debug = { videoHash, frameCount: frames.length, landmarkHash: landmarkHashValue };
+
+    // Compute average landmark visibility as analysis confidence (0-1)
+    let totalVis = 0, visCount = 0;
+    for (const f of frames) {
+      if (!f.landmarks) continue;
+      for (const lm of f.landmarks) {
+        if (lm.visibility != null) { totalVis += lm.visibility; visCount++; }
+      }
+    }
+    const avgVisibility = visCount > 0 ? totalVis / visCount : 0;
+    // Confidence tiers: high (>0.7), medium (0.5-0.7), low (<0.5)
+    const confidenceLevel = avgVisibility > 0.7 ? 'high' : avgVisibility > 0.5 ? 'medium' : 'low';
+    const confidence = { visibility: Math.round(avgVisibility * 100) / 100, level: confidenceLevel, framesWithPose: frames.length, totalFrames: frameCount };
+
+    const debug = { videoHash, frameCount: frames.length, landmarkHash: landmarkHashValue, confidence };
     setDebugInfo(debug);
 
 
@@ -407,14 +433,24 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     const w = parseFloat(weight) || 0;
     const workout = {
-      id: Date.now().toString(), date: new Date().toISOString(),
+      date: new Date().toISOString(),
       exercise: detectedExercise,
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
       reps, duration: Math.round(duration), formScore: avgScore,
       repHistory, weight: w, volume: w * reps, source: 'upload',
       avgRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0,
+      // Machine observation layer (preserved for correction/recalculation)
+      machineReps: reps,
+      machineFormScore: avgScore,
+      bioAnalysis,
+      // Analysis provenance
+      analysisVersion: '1.0.0',
+      fps: analysisFps,
+      videoHash,
+      landmarkHash: landmarkHashValue,
     };
-    try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
+    let workoutId = null;
+    try { workoutId = await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
 
     // Progression comparison
     let progression = null;
@@ -443,14 +479,17 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     blobUrlRef.current = url;
 
     return {
+      workoutId,
       fileName: queueItem.name, exercise: detectedExercise,
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
       reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
-      bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics,
+      machineReps: reps, machineFormScore: avgScore,
+      bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics, confidence,
       videoUrl: url,
       frames: replayFrames,
       autoDetected,
-      debug, // Pass debug info to result card
+      weight: w,
+      debug,
     };
   }, [exercise, autoDetect, weight, userInjuries]);
 

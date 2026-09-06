@@ -176,15 +176,22 @@ export default function ResultCard({ result, onReplay }) {
     return () => cancelAnimationFrame(t1);
   }, [isPR, isTopGrade]);
 
-  // Persist rep override to workout history
+  // Persist rep override to workout history with recalculated metrics
   const handleRepChange = useCallback((newReps) => {
     const clamped = Math.max(1, Math.min(99, newReps));
     setRepOverride(clamped);
-    // Save to IndexedDB if workout has an id
+    // Save correction layer to IndexedDB
     if (result.workoutId) {
-      updateWorkout(result.workoutId, { reps: clamped, repsOverridden: true, aiDetectedReps: reps }).catch(() => {});
+      const w = result.weight || 0;
+      updateWorkout(result.workoutId, {
+        reps: clamped,
+        repsOverridden: true,
+        machineReps: result.machineReps ?? reps,
+        // Recalculate volume from corrected reps (no reanalysis needed)
+        volume: w * clamped,
+      }).catch(() => {});
     }
-  }, [result.workoutId, reps]);
+  }, [result.workoutId, reps, result.machineReps, result.weight]);
 
   // Score reveal animation: count up from 0
   const [displayScore, setDisplayScore] = useState(0);
@@ -290,7 +297,7 @@ export default function ResultCard({ result, onReplay }) {
             <span style={{
               fontSize: '0.55rem', color: 'var(--accent)', position: 'absolute',
               bottom: 4, left: '50%', transform: 'translateX(-50%)', opacity: 0.7,
-            }}>tap to edit</span>
+            }}>{t('tap_to_edit') || 'tap to edit'}</span>
           )}
         </div>
         <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '100ms' }}>
@@ -314,6 +321,28 @@ export default function ResultCard({ result, onReplay }) {
           </span>
         </div>
       </div>
+
+      {/* Analysis confidence indicator */}
+      {result.confidence && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          padding: '4px 0', marginBottom: 6, fontSize: '0.65rem', color: 'var(--muted)',
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: result.confidence.level === 'high' ? 'var(--accent)' :
+              result.confidence.level === 'medium' ? 'var(--yellow)' : 'var(--red)',
+          }} />
+          {result.confidence.level === 'high' ? t('confidence_high') || 'High confidence' :
+           result.confidence.level === 'medium' ? t('confidence_medium') || 'Medium confidence — some landmarks occluded' :
+           t('confidence_low') || 'Low confidence — try a clearer camera angle'}
+          {repWasOverridden && (
+            <span style={{ marginLeft: 8, color: 'var(--accent)', fontWeight: 600 }}>
+              {t('user_corrected') || 'User corrected'}
+            </span>
+          )}
+        </div>
+      )}
 
       {baselineComparison?.overallForm?.isPersonalBest && (
         <div style={{
