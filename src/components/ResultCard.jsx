@@ -466,7 +466,7 @@ export default function ResultCard({ result, onReplay }) {
         style={{ width: '100%', marginTop: 14, padding: '8px 0', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         onClick={() => setShowDetails(d => !d)}
       >
-        {showDetails ? 'Hide Details' : 'Show Details'}
+        {showDetails ? t('hide_details') : t('show_details')}
         <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
       </button>
 
@@ -720,7 +720,7 @@ export default function ResultCard({ result, onReplay }) {
         style={{ width: '100%', marginTop: 10, padding: '8px 0', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         onClick={() => setShowDeepData(d => !d)}
       >
-        {showDeepData ? 'Hide Deep Data' : 'Show Deep Data'}
+        {showDeepData ? t('hide_deep_data') : t('show_deep_data')}
         <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showDeepData ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
       </button>
 

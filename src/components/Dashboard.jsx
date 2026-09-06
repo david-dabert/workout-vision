@@ -111,23 +111,17 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
               >FR</button>
             </div>
           </div>
-          <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, fontFamily: 'var(--font-display, var(--font))' }}>
+          <p className="greeting-text">
             {profile?.name ? `${t(getGreetingKey())}, ${profile.name.split(' ')[0]}` : t(getGreetingKey())}
           </p>
           <p className="tagline">{t(getMotivationKey(allWorkouts.length))}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="hero-status-row">
             <div className={`engine-status engine-${statusDot}`}>
               <span className={`engine-dot ${statusDot}`} />
               <span>{statusText}</span>
             </div>
             {calculateStreak(allWorkouts, profile?.trainingDays) > 0 && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'rgba(0, 224, 150, 0.12)', color: 'var(--accent)',
-                padding: '3px 10px', borderRadius: 20, fontSize: '0.78rem',
-                fontWeight: 700, letterSpacing: '0.02em',
-                border: '1px solid rgba(0, 224, 150, 0.25)',
-              }}>
+              <span className="streak-badge">
                 🔥 {calculateStreak(allWorkouts, profile?.trainingDays)} {profile?.trainingDays ? t('scheduled_streak') : t('days_streak')}
               </span>
             )}
@@ -203,6 +197,20 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
         </button>
       </div>
 
+      {/* ── Welcome card for first-time users ── */}
+      {allWorkouts.length === 0 && (
+        <div className="welcome-card">
+          <h3 className="welcome-card-title">{t('welcome_first_run')}</h3>
+          <p className="welcome-card-text">{t('welcome_first_run_text')}</p>
+          <div className="welcome-card-steps">
+            <div className="welcome-step"><span className="welcome-step-num">1</span><span>{t('welcome_step_1')}</span></div>
+            <div className="welcome-step"><span className="welcome-step-num">2</span><span>{t('welcome_step_2')}</span></div>
+            <div className="welcome-step"><span className="welcome-step-num">3</span><span>{t('welcome_step_3')}</span></div>
+          </div>
+          <button className="btn btn-primary" onClick={() => onNavigate('analyze')}>{t('nav_video_title')}</button>
+        </div>
+      )}
+
       {/* ── Quick access grid ── */}
       <div className="quick-access-grid">
         <button className="quick-access-btn" onClick={() => onNavigate('history')}>
@@ -245,22 +253,22 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
             <div className="stats-numbers">
               <div className="stat-item">
                 <span className="stat-value">{stats.totalReps}</span>
-                <span className="stat-label">REPS</span>
+                <span className="stat-label">{t('reps').toUpperCase()}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-value">{stats.totalSets}</span>
-                <span className="stat-label">SETS</span>
+                <span className="stat-label">{t('sets').toUpperCase()}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-value" style={{
                   color: stats.avgScore >= 80 ? 'var(--accent)' : stats.avgScore >= 60 ? 'var(--yellow)' : 'var(--red)'
                 }}>{stats.avgScore}</span>
-                <span className="stat-label">FORM</span>
+                <span className="stat-label">{t('form').toUpperCase()}</span>
               </div>
               {stats.totalVolume > 0 && (
                 <div className="stat-item">
                   <span className="stat-value">{Math.round(stats.totalVolume)}<span className="stat-unit">kg</span></span>
-                  <span className="stat-label">VOL</span>
+                  <span className="stat-label">{t('volume').toUpperCase()}</span>
                 </div>
               )}
             </div>
@@ -270,29 +278,11 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
 
       {/* ── Weekly mini-graph ── */}
       {allWorkouts.length > 0 && (
-        <div style={{
-          display: 'flex', justifyContent: 'center', gap: 10,
-          padding: '12px 20px', margin: '0 16px 8px',
-          background: 'var(--card-bg, rgba(255,255,255,0.04))',
-          borderRadius: 14, border: '1px solid var(--border, rgba(255,255,255,0.06))',
-        }}>
+        <div className="weekly-dots">
           {getLast7Days(allWorkouts, lang).map((day, i) => (
-            <div key={i} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-            }}>
-              <div style={{
-                width: day.isToday ? 14 : 10,
-                height: day.isToday ? 14 : 10,
-                borderRadius: '50%',
-                background: day.count > 0 ? 'var(--accent, #00e096)' : 'transparent',
-                border: day.count > 0 ? '2px solid var(--accent, #00e096)' : '2px solid var(--muted, rgba(255,255,255,0.2))',
-                transition: 'all 0.2s ease',
-                boxShadow: day.count > 0 && day.isToday ? '0 0 8px rgba(0, 224, 150, 0.4)' : 'none',
-              }} />
-              <span style={{
-                fontSize: '0.6rem', color: day.isToday ? 'var(--text-primary)' : 'var(--muted, rgba(255,255,255,0.4))',
-                fontWeight: day.isToday ? 700 : 400,
-              }}>{day.label}</span>
+            <div key={i} className="weekly-dot-col">
+              <div className={`weekly-dot${day.count > 0 ? ' active' : ''}${day.isToday ? ' today' : ''}`} />
+              <span className={`weekly-dot-label${day.isToday ? ' today' : ''}`}>{day.label}</span>
             </div>
           ))}
         </div>

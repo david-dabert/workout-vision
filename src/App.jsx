@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
-import { LanguageProvider } from './lib/LanguageContext';
+import { LanguageProvider, useT } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
 import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
 import Dashboard from './components/Dashboard';
@@ -35,6 +35,7 @@ const LazyFallback = (
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
+  const { t } = useT();
   const [page, setPage] = useHashRouter();
   const [modelStatus, setModelStatus] = useState('loading');
   const [challenge, setChallenge] = useState(null);
@@ -179,34 +180,34 @@ function AppInner() {
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          <span>Home</span>
+          <span>{t('home')}</span>
         </button>
         <button className={`tab-item${page === 'analyze' ? ' active' : ''}`} onClick={() => onNavigate('analyze')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="23 7 16 12 23 17 23 7" />
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
           </svg>
-          <span>Analyze</span>
+          <span>{t('analyze')}</span>
         </button>
         <button className={`tab-item${page === 'history' ? ' active' : ''}`} onClick={() => onNavigate('history')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
-          <span>Progress</span>
+          <span>{t('progress')}</span>
         </button>
         <button className={`tab-item${page === 'rest' ? ' active' : ''}`} onClick={() => onNavigate('rest')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
-          <span>Timer</span>
+          <span>{t('timer')}</span>
         </button>
         <button className={`tab-item${page === 'profile' ? ' active' : ''}`} onClick={() => onNavigate('profile')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          <span>Profile</span>
+          <span>{t('profile')}</span>
         </button>
       </nav>
     </div>

@@ -18,6 +18,7 @@ export default function Profile({ onClose }) {
   });
   const [baselines, setBaselines] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [fileError, setFileError] = useState(null);
   const [records, setRecords] = useState([]);
   const [benchmarkResult, setBenchmarkResult] = useState(null);
   const [benchmarkRunning, setBenchmarkRunning] = useState(false);
@@ -49,10 +50,11 @@ export default function Profile({ onClose }) {
 
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_FILE_SIZE) {
-      alert(t('file_too_large'));
+      setFileError(t('file_too_large'));
       e.target.value = '';
       return;
     }
+    setFileError(null);
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -473,6 +475,12 @@ export default function Profile({ onClose }) {
             style={{ display: 'none' }}
           />
         </div>
+        {fileError && (
+          <div className="inline-error">
+            <span>{fileError}</span>
+            <button className="inline-error-dismiss" onClick={() => setFileError(null)} aria-label="Dismiss">&times;</button>
+          </div>
+        )}
 
         {records.map(r => (
           <div key={r.id} className="record-item">
