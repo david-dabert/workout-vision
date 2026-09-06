@@ -50,10 +50,7 @@ export const LANDMARKS = {
 };
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
-// WASM files served locally from public/mediapipe/ (copied by scripts/copy-models.js at build time).
-// Eliminates the CDN dependency for WASM loading. The JS module import above stays on CDN
-// with @vite-ignore to avoid esbuild breaking WASM resolution on iOS Safari.
-const VISION_WASM = '/workout-vision/mediapipe';
+const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
 const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
 // ─── Core: single model instance with IndexedDB cache ───
