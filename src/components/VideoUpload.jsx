@@ -5,7 +5,7 @@ import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
 import { generateWorkoutReport } from '../lib/coach';
-import { saveWorkout, getWorkout, updateWorkout, getAllWorkouts } from '../lib/storage';
+import { saveWorkout, getWorkout, updateWorkout, getLastWorkoutForExercise } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
@@ -452,10 +452,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     // Progression comparison
     let progression = null;
     try {
-      const allWorkouts = await getAllWorkouts();
-      const prev = allWorkouts
-        .filter(s => s.exercise === detectedExercise && s.id !== workout.id)
-        .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      const prev = await getLastWorkoutForExercise(detectedExercise, workoutId);
       if (prev) {
         progression = { prevReps: prev.reps, prevScore: prev.formScore, prevRom: prev.avgRom || 0, prevWeight: prev.weight || 0, prevDate: prev.date };
       }

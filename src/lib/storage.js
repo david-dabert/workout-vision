@@ -157,6 +157,22 @@ export async function getAllWorkouts() {
   return workouts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 }
 
+/**
+ * Get the most recent workout for a specific exercise, excluding a given ID.
+ * Avoids loading all workouts into memory.
+ */
+export async function getLastWorkoutForExercise(exerciseKey, excludeId) {
+  let best = null;
+  await workoutStore.iterate((value) => {
+    if (value.exercise !== exerciseKey) return;
+    if (excludeId && value.id === excludeId) return;
+    if (!best || (value.createdAt || 0) > (best.createdAt || 0)) {
+      best = value;
+    }
+  });
+  return best;
+}
+
 export async function updateWorkout(id, updates) {
   const existing = await workoutStore.getItem(id);
   if (!existing) return;
