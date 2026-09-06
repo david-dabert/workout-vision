@@ -30,7 +30,7 @@ const translations = {
   'train': { en: 'Train', fr: "S'entraîner" },
 
   // ─── Dashboard ───
-  'tagline': { en: 'Your AI Gym Companion', fr: 'Votre coach fitness intelligent' },
+  'tagline': { en: 'Your AI Gym Companion', fr: 'Votre compagnon de salle intelligent' },
   'ai_engine_ready': { en: 'AI Engine Ready', fr: 'Moteur IA prêt' },
   'engine_failed': { en: 'Engine Failed', fr: 'Moteur en erreur' },
   'loading_ai': { en: 'Loading AI...', fr: 'Chargement IA...' },
@@ -131,7 +131,7 @@ const translations = {
   'model_failed': { en: "AI model failed to load. Check your connection.", fr: "Le modèle IA n'a pas pu se charger. Vérifiez votre connexion." },
   'video_failed': { en: 'Video failed to load. Try a different file or shorter clip.', fr: 'Échec du chargement vidéo. Essayez un autre fichier ou un clip plus court.' },
   'too_large': { en: 'is too large. Maximum is 500 MB.', fr: 'est trop volumineux. Maximum 500 Mo.' },
-  'need_more_reps': { en: 'Need more reps.', fr: 'Plus de reps nécessaires.' },
+  'need_more_reps': { en: 'Need more reps.', fr: 'Il faut plus de répétitions.' },
   'joint_knee': { en: 'Knee', fr: 'Genou' },
   'joint_hip': { en: 'Hip', fr: 'Hanche' },
   'joint_elbow': { en: 'Elbow', fr: 'Coude' },
@@ -236,7 +236,7 @@ const translations = {
   'bmr': { en: 'BMR', fr: 'MB' },
 
   // ─── Onboarding ───
-  'welcome_subtitle': { en: 'Your AI-powered fitness companion', fr: "Votre compagnon fitness propulsé par l'IA" },
+  'welcome_subtitle': { en: 'Your AI-powered fitness companion', fr: "Votre compagnon d'entraînement intelligent" },
   'get_started': { en: 'Get Started', fr: 'Commencer' },
   'skip': { en: 'Skip', fr: 'Passer' },
   'onb_step1_title': { en: 'Tell us about you', fr: 'Parlez-nous de vous' },
@@ -271,8 +271,8 @@ const translations = {
   'motivation_0': { en: 'Your fitness journey starts with one rep.', fr: 'Votre parcours fitness commence par une répétition.' },
   'motivation_5': { en: 'Building momentum. Every session counts.', fr: 'Vous prenez de l\'élan. Chaque séance compte.' },
   'motivation_15': { en: "You're finding your rhythm. Keep pushing.", fr: 'Vous trouvez votre rythme. Continuez.' },
-  'motivation_30': { en: 'Consistency is your superpower.', fr: 'La régularité est votre super-pouvoir.' },
-  'motivation_max': { en: "You're in the zone. Form is everything.", fr: 'Vous êtes dans la zone. La forme est tout.' },
+  'motivation_30': { en: 'Consistency is your superpower.', fr: 'La régularité fait la différence.' },
+  'motivation_max': { en: "You're in the zone. Form is everything.", fr: 'Vous êtes lancé. La technique avant tout.' },
   'days_streak': { en: 'days', fr: 'j.' },
 
   // ─── Progress / Workout History ───
@@ -699,27 +699,27 @@ const translations = {
 
   // ─── Data Portability ───
   'dp_title': { en: 'Data Backup & Transfer', fr: 'Sauvegarde et transfert' },
-  'dp_description': { en: 'Export your data as a compressed .wv file. Import on any device.', fr: 'Exportez vos donnees en fichier .wv compresse. Importez sur tout appareil.' },
-  'dp_export_btn': { en: 'Export My Data', fr: 'Exporter mes donnees' },
-  'dp_import_btn': { en: 'Import Data', fr: 'Importer des donnees' },
+  'dp_description': { en: 'Export your data as a compressed .wv file. Import on any device.', fr: 'Exportez vos données en fichier .wv compressé. Importez sur tout appareil.' },
+  'dp_export_btn': { en: 'Export My Data', fr: 'Exporter mes données' },
+  'dp_import_btn': { en: 'Import Data', fr: 'Importer des données' },
   'dp_exporting': { en: 'Exporting...', fr: 'Export en cours...' },
-  'dp_exported': { en: 'Downloaded!', fr: 'Telecharge !' },
+  'dp_exported': { en: 'Downloaded!', fr: 'Téléchargé !' },
   'dp_importing': { en: 'Importing...', fr: 'Importation en cours...' },
-  'dp_import_success': { en: 'Import complete', fr: 'Importation terminee' },
+  'dp_import_success': { en: 'Import complete', fr: 'Importation terminée' },
   'dp_preview_title': { en: 'File contents', fr: 'Contenu du fichier' },
-  'dp_exported_on': { en: 'Exported on', fr: 'Exporte le' },
+  'dp_exported_on': { en: 'Exported on', fr: 'Exporté le' },
   'dp_merge': { en: 'Merge', fr: 'Fusionner' },
   'dp_replace': { en: 'Replace all', fr: 'Tout remplacer' },
-  'dp_replace_warning': { en: 'This will erase all current data before importing.', fr: 'Ceci effacera toutes les donnees actuelles avant importation.' },
+  'dp_replace_warning': { en: 'This will erase all current data before importing.', fr: 'Ceci effacera toutes les données actuelles avant importation.' },
   'dp_confirm_import': { en: 'Import now', fr: 'Importer maintenant' },
   'dp_invalid_file': { en: 'Invalid file format. Use a .wv or .json backup.', fr: 'Format invalide. Utilisez un fichier .wv ou .json.' },
   'dp_missing_version': { en: 'File is missing version info. Not a valid backup.', fr: 'Version manquante. Fichier non valide.' },
   'dp_read_error': { en: 'Could not read the file.', fr: 'Impossible de lire le fichier.' },
-  'dp_import_error': { en: 'Import failed. Please try again.', fr: "Echec de l'importation. Veuillez reessayer." },
+  'dp_import_error': { en: 'Import failed. Please try again.', fr: "Échec de l'importation. Veuillez réessayer." },
   'dp_profile': { en: 'profile', fr: 'profil' },
-  'dp_workouts': { en: 'workouts', fr: 'entrainements' },
+  'dp_workouts': { en: 'workouts', fr: 'entraînements' },
   'dp_food_entries': { en: 'food entries', fr: 'aliments' },
-  'dp_medical_records': { en: 'medical records', fr: 'documents medicaux' },
+  'dp_medical_records': { en: 'medical records', fr: 'documents médicaux' },
   'dp_milestones': { en: 'milestones', fr: 'jalons' },
 
   // ─── Weekly Report ───
@@ -846,7 +846,7 @@ const formCheckFr = {
   'Incomplete extension -- squeeze at the top': 'Extension incomplète — serrez en haut',
   'Knee angle ~90 deg at top': 'Angle du genou ~90° en haut',
   'Reposition feet -- knees should be ~90 deg at lockout': 'Repositionner les pieds — genoux à ~90° au verrouillage',
-  'Anterior pelvic tilt detected -- tuck pelvis and brace abs at the top': 'Antéversion du bassin — rentrez le bassin et gaineze en haut',
+  'Anterior pelvic tilt detected -- tuck pelvis and brace abs at the top': 'Antéversion du bassin — rentrez le bassin et gainez en haut',
   // Bench / press
   'Bar touching upper chest': 'Barre touchant le haut de la poitrine',
   'Lower the bar further -- touch upper chest': 'Descendre la barre — toucher le haut de la poitrine',
