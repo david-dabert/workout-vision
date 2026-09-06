@@ -22,7 +22,7 @@ async function getMediaPipeVision() {
 }
 
 const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
-const MODEL_CACHE_KEY = 'pose-landmarker-full-v2-0.10.8'; // includes version so model updates don't serve stale cache
+const MODEL_CACHE_KEY = 'pose-landmarker-full-v3-0.10.8'; // bumped to v3 to invalidate potentially corrupted caches
 
 let poseLandmarker = null;
 let modelLoadPromise = null;
@@ -213,6 +213,15 @@ export async function getVideoLandmarker() {
  * Same instance — VIDEO mode handles single frames fine with unique timestamps.
  */
 export async function getImageLandmarker() {
+  return getPoseLandmarker();
+}
+
+/**
+ * Force a fresh landmarker instance. Disposes any existing one and creates new.
+ * Use at start of video analysis to avoid stale model state.
+ */
+export async function getFreshLandmarker() {
+  disposeAllLandmarkers();
   return getPoseLandmarker();
 }
 

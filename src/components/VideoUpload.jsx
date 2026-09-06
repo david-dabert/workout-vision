@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
+import { getFreshLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
@@ -215,10 +215,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setFfmpegStatus('Hashing video file...');
     const videoHash = await hashFile(queueItem.file);
 
-    // ── Phase 2: Load MediaPipe model ──
+    // ── Phase 2: Load MediaPipe model (fresh instance to avoid stale state) ──
     setAnalysisPhase('model');
     setFfmpegStatus('Loading AI model...');
-    const landmarker = await getImageLandmarker();
+    const landmarker = await getFreshLandmarker();
     if (!landmarker) {
       setErrorMsg(t('model_failed'));
       return null;
@@ -270,6 +270,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let detectionAttempts = 0;
         let detectionSuccesses = 0;
         let detectionErrors = 0;
+        let blankFrames = 0;
 
         try {
           const streamResult = await extractFramesStreaming(
@@ -279,6 +280,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             maxWidth,
             async (canvas, frameIndex, timestamp) => {
               if (abortRef.current) return;
+
+              // Check if canvas frame is blank (iOS Safari may produce black frames under memory pressure)
+              try {
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                const sample = ctx.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data;
+                if (sample[0] === 0 && sample[1] === 0 && sample[2] === 0 && sample[3] === 0) {
+                  blankFrames++;
+                  return; // skip blank frame
+                }
+              } catch (_) {}
 
               // Run MediaPipe directly on the canvas (no ImageData copy needed)
               const deterministicTs = frameIndex * (1000 / analysisFps);
@@ -333,7 +344,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
           frameCount = streamResult.frameCount;
           duration = streamResult.duration;
-          console.log(`[Upload] iOS streaming done: ${streamFrameCount} frames extracted, ${detectionAttempts} detection attempts, ${detectionSuccesses} poses found, ${detectionErrors} errors, ${frames.length} valid frames`);
+          console.log(`[Upload] iOS streaming done: ${streamFrameCount} frames extracted, ${detectionAttempts} detection attempts, ${detectionSuccesses} poses found, ${detectionErrors} errors, ${blankFrames} blank frames, ${frames.length} valid frames`);
         } catch (err) {
           console.error('[Upload] iOS streaming extraction failed:', err);
           setErrorMsg(`Analysis failed: ${err.message}`);
@@ -477,13 +488,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
     if (frames.length === 0) {
-      const diagParts = [`Frames extracted: ${frameCount}`, `Analysis time: ${analysisTime}s`];
+      const diagParts = [`${frameCount} frames`];
       if (typeof detectionAttempts !== 'undefined') {
-        diagParts.push(`Detection: ${detectionAttempts} tried, ${detectionSuccesses} poses, ${detectionErrors} errors`);
+        diagParts.push(`${detectionAttempts} analyzed`);
+        if (blankFrames > 0) diagParts.push(`${blankFrames} blank`);
+        diagParts.push(`${detectionSuccesses} poses`);
+        if (detectionErrors > 0) diagParts.push(`${detectionErrors} errors`);
       }
-      const diag = diagParts.join(' | ');
+      const diag = diagParts.join(', ');
       console.error('[Upload] Zero valid frames.', diag);
-      setErrorMsg(`No poses detected (${diag}). Ensure full body is visible.`);
+      setErrorMsg(`No poses found (${diag}). Try a shorter clip with full body visible.`);
       return null;
     }
 
