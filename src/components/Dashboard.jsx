@@ -362,7 +362,7 @@ function translateRecommendation(data, lang) {
 }
 
 function InsightsSection({ profile, workouts }) {
-  const { t } = useT();
+  const { t, lang } = useT();
 
   const baselines = useMemo(() => {
     const b = calculateBaselines(profile);
@@ -512,8 +512,6 @@ function InsightsSection({ profile, workouts }) {
     endurance: t('endurance'),
     weight_loss: t('weight_loss'),
   };
-
-  const { lang } = useT();
 
   return (
     <div className="insights-section">
