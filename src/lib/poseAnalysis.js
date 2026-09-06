@@ -22,7 +22,7 @@ async function getMediaPipeVision() {
 }
 
 const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
-const MODEL_CACHE_KEY = 'pose-landmarker-full-v3-0.10.8'; // bumped to v3 to invalidate potentially corrupted caches
+const MODEL_CACHE_KEY = 'pose-landmarker-full-v2-0.10.8'; // includes version so model updates don't serve stale cache
 
 let poseLandmarker = null;
 let modelLoadPromise = null;
@@ -214,59 +214,6 @@ export async function getVideoLandmarker() {
  */
 export async function getImageLandmarker() {
   return getPoseLandmarker();
-}
-
-/**
- * Force a fresh landmarker instance. Disposes any existing one and creates new.
- * Use at start of video analysis to avoid stale model state.
- */
-export async function getFreshLandmarker() {
-  disposeAllLandmarkers();
-  return getPoseLandmarker();
-}
-
-/**
- * Get landmarker ready for static image detection (IMAGE running mode).
- * iOS Safari's keyframe-snapping seeks produce non-sequential frames that confuse
- * VIDEO mode's temporal tracker, causing zero detections. IMAGE mode processes
- * each frame independently — no timestamps, no temporal state.
- *
- * Returns the landmarker already switched to IMAGE mode.
- */
-export async function getImageModeLandmarker() {
-  const landmarker = await getPoseLandmarker();
-  try {
-    await landmarker.setOptions({ runningMode: 'IMAGE' });
-  } catch (e) {
-    console.warn('[PoseAnalysis] Failed to switch to IMAGE mode:', e.message);
-  }
-  return landmarker;
-}
-
-/**
- * Switch landmarker back to VIDEO running mode (for live camera).
- */
-export async function switchToVideoMode() {
-  if (poseLandmarker) {
-    try {
-      await poseLandmarker.setOptions({ runningMode: 'VIDEO' });
-    } catch (_) {}
-  }
-}
-
-/**
- * Detect pose on a static image/frame (IMAGE running mode).
- * No timestamp needed. No temporal tracking. Each frame is independent.
- * Used for iOS video analysis where keyframe-snapping breaks VIDEO mode.
- */
-export function detectPoseStatic(landmarker, source) {
-  try {
-    const result = landmarker.detect(source);
-    return result;
-  } catch (e) {
-    console.warn('[PoseAnalysis] Detection error (static):', e);
-    return null;
-  }
 }
 
 /**

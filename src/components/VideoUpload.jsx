@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getFreshLandmarker, getImageModeLandmarker, switchToVideoMode, detectPoseImage, detectPoseStatic, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, drawPose, extractJointAngles, disposeAllLandmarkers, selectSubjectPose } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
@@ -14,11 +14,8 @@ import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import { extractFrames, extractFramesStreaming, hashFile, hashLandmarks, loadFFmpeg } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
-import { VoiceCoach } from '../lib/VoiceCoach';
-import { cueForRep, cueForSet } from '../lib/CoachVoice';
 import { PoseWorkerManager, isWorkerSupported } from '../lib/PoseWorkerManager';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
-// SubscriptionGate removed — analysis is free and unlimited
 
 
 // ── Landmark cache (IndexedDB) ──
@@ -110,13 +107,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   useEffect(() => {
     loadInjuries().then(injuries => setUserInjuries(injuries || []));
   }, []);
-
-  // Load voice coaching preference from profile
-  useEffect(() => {
-    if (userProfile && userProfile.voiceCoachingEnabled === false) {
-      setVoiceEnabled(false);
-    }
-  }, [userProfile]);
   const [errorMsg, setErrorMsg] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
   const [ffmpegStatus, setFfmpegStatus] = useState('');
@@ -126,9 +116,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const abortRef = useRef(false);
   const blobUrlRef = useRef(null);
   const audioFeedbackRef = useRef(null);
-  const voiceCoachRef = useRef(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
 
   useEffect(() => {
     return () => {
@@ -150,11 +138,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       if (audioFeedbackRef.current) {
         audioFeedbackRef.current.dispose();
         audioFeedbackRef.current = null;
-      }
-      // Dispose voice coach
-      if (voiceCoachRef.current) {
-        voiceCoachRef.current.dispose();
-        voiceCoachRef.current = null;
       }
     };
   }, []);
@@ -207,24 +190,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const analyzeVideo = useCallback(async (queueItem) => {
     const analysisStart = Date.now();
 
-    // Reset detection state from any previous analysis
-    resetKalmanFilters();
-
     // ── Phase 1: Hash the video file for deterministic cache key ──
     setAnalysisPhase('hashing');
     setFfmpegStatus('Hashing video file...');
     const videoHash = await hashFile(queueItem.file);
 
     // ── Phase 2: Load MediaPipe model ──
-    // iOS: use IMAGE mode (each frame independent, no timestamp dependency).
-    // iOS Safari's keyframe-snapping seeks produce non-sequential frames that
-    // confuse VIDEO mode's temporal tracker, causing zero detections.
-    // Desktop: use existing VIDEO mode landmarker (fresh instance).
     setAnalysisPhase('model');
     setFfmpegStatus('Loading AI model...');
-    const landmarker = IS_IOS
-      ? await getImageModeLandmarker()
-      : await getFreshLandmarker();
+    const landmarker = await getImageLandmarker();
     if (!landmarker) {
       setErrorMsg(t('model_failed'));
       return null;
@@ -273,11 +247,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         let lockedSubjectIdx = null;
         let streamFrameCount = 0;
 
-        let detectionAttempts = 0;
-        let detectionSuccesses = 0;
-        let detectionErrors = 0;
-        let blankFrames = 0;
-
         try {
           const streamResult = await extractFramesStreaming(
             queueItem.file,
@@ -287,34 +256,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             async (canvas, frameIndex, timestamp) => {
               if (abortRef.current) return;
 
-              // Check if canvas frame is blank (iOS Safari may produce black frames under memory pressure)
-              try {
-                const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                const sample = ctx.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data;
-                if (sample[0] === 0 && sample[1] === 0 && sample[2] === 0 && sample[3] === 0) {
-                  blankFrames++;
-                  return; // skip blank frame
-                }
-              } catch (_) {}
-
               // Run MediaPipe directly on the canvas (no ImageData copy needed)
-              // iOS uses IMAGE mode (detectPoseStatic) — no timestamp needed,
-              // each frame processed independently. Desktop uses VIDEO mode.
-              let result;
-              try {
-                result = IS_IOS
-                  ? detectPoseStatic(landmarker, canvas)
-                  : detectPoseImage(landmarker, canvas, frameIndex * (1000 / analysisFps));
-                detectionAttempts++;
-              } catch (detErr) {
-                detectionErrors++;
-                console.error('[Upload] MediaPipe detection error on frame', frameIndex, detErr);
-                return;
-              }
+              const deterministicTs = frameIndex * (1000 / analysisFps);
+              const result = detectPoseImage(landmarker, canvas, deterministicTs);
 
               let landmarks = null;
               if (result?.landmarks?.length) {
-                detectionSuccesses++;
                 if (result.landmarks.length === 1) {
                   landmarks = result.landmarks[0];
                 } else {
@@ -353,13 +300,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
           frameCount = streamResult.frameCount;
           duration = streamResult.duration;
-          console.log(`[Upload] iOS streaming done: ${streamFrameCount} frames extracted, ${detectionAttempts} detection attempts, ${detectionSuccesses} poses found, ${detectionErrors} errors, ${blankFrames} blank frames, ${frames.length} valid frames`);
-
-          // Switch landmarker back to VIDEO mode for live camera use
-          switchToVideoMode().catch(() => {});
         } catch (err) {
           console.error('[Upload] iOS streaming extraction failed:', err);
-          switchToVideoMode().catch(() => {});
           setErrorMsg(`Analysis failed: ${err.message}`);
           return null;
         }
@@ -501,16 +443,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
     if (frames.length === 0) {
-      const diagParts = [`${frameCount} frames`];
-      if (typeof detectionAttempts !== 'undefined') {
-        diagParts.push(`${detectionAttempts} analyzed`);
-        if (blankFrames > 0) diagParts.push(`${blankFrames} blank`);
-        diagParts.push(`${detectionSuccesses} poses`);
-        if (detectionErrors > 0) diagParts.push(`${detectionErrors} errors`);
-      }
-      const diag = diagParts.join(', ');
-      console.error('[Upload] Zero valid frames.', diag);
-      setErrorMsg(`No poses found (${diag}). Try a shorter clip with full body visible.`);
+      setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
       return null;
     }
 
@@ -564,22 +497,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     repCounter.finalize();
 
-    // Voice coaching: announce reps and form warnings
-    if (voiceCoachRef.current && voiceEnabled) {
-      const coach = voiceCoachRef.current;
-      const history = repCounter.repHistory || [];
-      for (let i = 0; i < history.length; i++) {
-        const rep = history[i];
-        // Announce rep
-        coach.repComplete(i + 1);
-
-        // Form warning if score is low
-        if (rep.score != null && rep.score < 60 && rep.issues && rep.issues.length > 0) {
-          coach.formWarning(rep.issues[0]);
-        }
-      }
-    }
-
     // Enrich repHistory with timestamps
     const enrichedRepHistory = repCounter.repHistory.map(r => ({
       ...r,
@@ -622,8 +539,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       repHistory, weight: w, volume: w * reps, source: 'upload',
       avgRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0,
     };
-    let workoutId = null;
-    try { workoutId = await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
+    try { await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
 
     // Progression comparison
     let progression = null;
@@ -644,15 +560,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       baselineComparison = await compareToBaseline(detectedExercise, avgScore, repHistory);
     } catch (_) {}
 
-    // Voice and audio cues for set completion
-    if (voiceCoachRef.current && voiceEnabled && reps > 0) {
-      const grade = avgScore >= 85 ? 'A' : avgScore >= 70 ? 'B' : avgScore >= 55 ? 'C' : 'D';
-      voiceCoachRef.current.setComplete(reps, grade);
-    }
-    if (audioFeedbackRef.current && audioEnabled) {
-      audioFeedbackRef.current.playSetChord();
-    }
-
     setProgress(100);
     setFfmpegStatus('');
 
@@ -668,7 +575,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       videoUrl: url,
       frames: replayFrames,
       autoDetected,
-      workoutId,
       debug, // Pass debug info to result card
     };
   }, [exercise, autoDetect, weight, userInjuries]);
@@ -676,15 +582,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);
     abortRef.current = false;
-
-    // Initialize voice coach for this analysis session
-    if (voiceEnabled && !voiceCoachRef.current) {
-      voiceCoachRef.current = new VoiceCoach();
-    }
-    if (voiceCoachRef.current) {
-      if (voiceEnabled) voiceCoachRef.current.enable();
-      else voiceCoachRef.current.disable();
-    }
 
     const pending = queue.filter(q => q.status === 'queued');
     const allResults = [...results];
@@ -854,7 +751,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 {q.status === 'done' && <span className="queue-done">{t('done')}</span>}
                 {q.status === 'error' && (
                   <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
-                    {errorMsg || t('failed_try_different')}
+                    {t('failed_try_different')}
                   </span>
                 )}
                 {q.status === 'queued' && !analyzing && (
@@ -939,32 +836,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 {audioEnabled ? '\u{1F50A}' : '\u{1F507}'}
               </button>
               <button
-                className={`btn btn-ghost btn-sm ${voiceEnabled ? 'active' : ''}`}
-                style={{
-                  padding: '10px 12px', fontSize: '0.75rem', fontWeight: 700,
-                  opacity: voiceEnabled ? 1 : 0.4,
-                  background: voiceEnabled ? 'rgba(0,245,212,0.15)' : 'transparent',
-                  borderRadius: 8, letterSpacing: '-0.02em',
-                }}
-                onClick={() => {
-                  setVoiceEnabled(prev => {
-                    const next = !prev;
-                    if (voiceCoachRef.current) {
-                      if (next) voiceCoachRef.current.enable();
-                      else voiceCoachRef.current.disable();
-                    }
-                    return next;
-                  });
-                }}
-                title={voiceEnabled ? (lang === 'fr' ? 'Coaching vocal ON' : 'Voice coaching ON') : (lang === 'fr' ? 'Coaching vocal OFF' : 'Voice coaching OFF')}
-              >
-                {voiceEnabled ? 'VOX' : 'VOX'}
-              </button>
-              <button
                 className="btn btn-primary"
                 style={{ flex: 1 }}
-                disabled={!hasQueued}
                 onClick={startAnalysis}
+                disabled={!hasQueued}
               >
                 {t('analyze')}
               </button>
