@@ -418,6 +418,7 @@ h5 {
 }
 
 .card:active { transform: scale(0.985); }
+.result-card:active { transform: none; }
 .card:hover { border-color: var(--glass-border-hover); }
 
 .card-elevated {

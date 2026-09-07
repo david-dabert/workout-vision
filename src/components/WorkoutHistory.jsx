@@ -5,9 +5,10 @@ import { EXERCISES } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
 import ExerciseHistory from './ExerciseHistory';
 
-function formatDate(iso) {
+function formatDate(iso, lang = 'en') {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const locale = lang === 'fr' ? 'fr-FR' : 'en-GB';
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function getWeekKey(iso) {
@@ -17,9 +18,10 @@ function getWeekKey(iso) {
   return start.toISOString().slice(0, 10);
 }
 
-function getWeekLabel(weekKey, t) {
+function getWeekLabel(weekKey, t, lang = 'en') {
   const d = new Date(weekKey);
-  return t('week_of') + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const locale = lang === 'fr' ? 'fr-FR' : 'en-GB';
+  return t('week_of') + d.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
 
 function scoreClass(score) {
@@ -36,7 +38,7 @@ function workloadZoneColor(zone) {
 }
 
 export default function WorkoutHistory({ onClose }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
@@ -543,7 +545,7 @@ export default function WorkoutHistory({ onClose }) {
           {/* Workout list grouped by week */}
           {grouped.map(([weekKey, weekWorkouts]) => (
             <div key={weekKey}>
-              <div className="week-header">{getWeekLabel(weekKey, t)}</div>
+              <div className="week-header">{getWeekLabel(weekKey, t, lang)}</div>
               {weekWorkouts.map(w => (
                 <div key={w.id} className="card" style={{ padding: 12 }}>
                   <div className="workout-card-header">
@@ -552,7 +554,7 @@ export default function WorkoutHistory({ onClose }) {
                         {w.exerciseName || w.exercise}
                       </strong>
                       <span className="text-xs text-muted" style={{ marginLeft: 8 }}>
-                        {formatDate(w.date)}
+                        {formatDate(w.date, lang)}
                       </span>
                     </div>
                     <button
@@ -607,24 +609,24 @@ export default function WorkoutHistory({ onClose }) {
             }}
           >
             <p style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontWeight: 600, fontSize: '0.95rem' }}>
-              Delete this workout?
+              {t('delete_confirm_title')}
             </p>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 18px', fontSize: '0.8rem' }}>
-              This cannot be undone.
+              {t('delete_confirm_desc')}
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button
                 className="btn btn-ghost btn-sm"
                 onClick={() => setDeleteConfirmId(null)}
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 className="btn btn-sm"
                 style={{ background: 'var(--red)', color: '#fff', border: 'none' }}
                 onClick={() => handleDelete(deleteConfirmId)}
               >
-                Delete
+                {t('delete')}
               </button>
             </div>
           </div>

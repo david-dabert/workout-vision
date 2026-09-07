@@ -560,8 +560,8 @@ export const EXERCISES = {
       },
       {
         name: 'Body alignment',
-        check: (angles) => angles.trunk < 20,
-        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
+        check: (angles) => angles.trunk > 60 && angles.trunk < 100,
+        quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); },
         good: 'Body in straight line',
         bad: 'Hips sagging or piking',
         severity: 'major',
@@ -1124,8 +1124,8 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Body alignment',
-        check: (angles) => angles.trunk < 20,
-        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
+        check: (angles) => angles.trunk > 60 && angles.trunk < 100,
+        quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); },
         good: 'Flat back -- strong plank position',
         bad: 'Hips sagging or piking',
         severity: 'major',
@@ -1281,7 +1281,8 @@ export const EXERCISES = {
       },
       {
         name: 'Body alignment',
-        check: (angles) => angles.trunk < 20,
+        check: (angles) => angles.trunk > 60 && angles.trunk < 100,
+        quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); },
         good: 'Body in straight line',
         bad: 'Hips sagging or piking',
         severity: 'major',
@@ -1491,7 +1492,7 @@ export const EXERCISES = {
     downThreshold: null,
     upThreshold: null,
     formChecks: [
-      { name: 'Lower back flat', check: (angles) => angles.trunk < 20, good: 'Back pressed to floor', bad: 'Press lower back into floor', severity: 'major', citation: 'McGill SM, 2010' },
+      { name: 'Lower back flat', check: (angles) => angles.trunk > 60 && angles.trunk < 100, quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); }, good: 'Back pressed to floor', bad: 'Press lower back into floor', severity: 'major', citation: 'McGill SM, 2010' },
       { name: 'Arms overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 140, good: 'Arms extended overhead', bad: 'Reach arms overhead', severity: 'minor', citation: 'McGill SM, 2010' },
     ],
     scienceNotes: 'Hollow body hold is a gymnastics fundamental producing full-body isometric tension with emphasis on anterior core (McGill 2010).',
@@ -1525,7 +1526,7 @@ export const EXERCISES = {
     downThreshold: null,
     upThreshold: null,
     formChecks: [
-      { name: 'Body alignment', check: (angles) => angles.trunk < 20, good: 'Straight line from head to feet', bad: 'Lift hips', severity: 'major', citation: 'McGill SM, 2010' },
+      { name: 'Body alignment', check: (angles) => angles.trunk > 60 && angles.trunk < 100, quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); }, good: 'Straight line from head to feet', bad: 'Lift hips', severity: 'major', citation: 'McGill SM, 2010' },
     ],
     scienceNotes: 'Side plank produces high oblique activation with low spinal compression. One of McGill Big Three for back health (McGill 2010).',
   },
@@ -1674,7 +1675,8 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Anti-rotation',
-        check: (angles) => angles.trunk < 20,
+        check: (angles) => angles.trunk > 60 && angles.trunk < 100,
+        quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); },
         good: 'Minimal trunk rotation -- strong core brace',
         bad: 'Too much rotation',
         severity: 'major',
@@ -2531,7 +2533,7 @@ export const EXERCISES = {
     downThreshold: 140,
     upThreshold: 165,
     formChecks: [
-      { name: 'Lower back down', check: (angles) => angles.trunk < 20, good: 'Back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2006' },
+      { name: 'Lower back down', check: (angles) => angles.trunk > 60 && angles.trunk < 100, quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); }, good: 'Back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2006' },
     ],
     scienceNotes: 'Flutter kicks maintain constant lower ab tension; pressing back to floor prevents lumbar strain (Escamilla 2006).',
   },

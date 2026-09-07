@@ -444,7 +444,7 @@ export default function ResultCard({ result, onReplay }) {
           borderRadius: 12, border: '1px solid rgba(255,107,157,0.15)',
         }}>
           <span style={{ fontSize: 24, display: 'block', marginBottom: 4 }}>&#10024;</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#ff6b9d', letterSpacing: 1, textTransform: 'uppercase' }}>New Personal Best!</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#ff6b9d', letterSpacing: 1, textTransform: 'uppercase' }}>{t('new_personal_best')}</span>
         </div>
       )}
 
@@ -532,23 +532,23 @@ export default function ResultCard({ result, onReplay }) {
       {baselineComparison && (
         <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span className="text-xs text-muted">Personal Baseline ({baselineComparison.sessionsTracked} sessions)</span>
+            <span className="text-xs text-muted">{t('personal_baseline')} ({baselineComparison.sessionsTracked} {t('sessions_count', { count: baselineComparison.sessionsTracked }).replace(/^\d+ /, '')})</span>
             {baselineComparison.overallForm.isPersonalBest && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--bio-cyan, #22d3ee)', textTransform: 'uppercase', letterSpacing: 1 }}>New PB!</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--bio-cyan, #22d3ee)', textTransform: 'uppercase', letterSpacing: 1 }}>{t('new_pb')}</span>
             )}
           </div>
           <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
-            <span>Avg: <strong>{baselineComparison.overallForm.personalMean}</strong></span>
-            <span>Best: <strong>{baselineComparison.overallForm.personalBest}</strong></span>
-            <span style={{ color: baselineComparison.overallForm.deviation >= 0 ? 'var(--bio-green, #4ade80)' : 'var(--danger, #ef4444)' }}>
-              {baselineComparison.overallForm.deviation >= 0 ? '+' : ''}{baselineComparison.overallForm.deviation} vs avg
+            <span>{t('avg_label')}: <strong>{baselineComparison.overallForm.personalMean}</strong></span>
+            <span>{t('best_label')}: <strong>{baselineComparison.overallForm.personalBest}</strong></span>
+            <span style={{ color: baselineComparison.overallForm.deviation >= 0 ? 'var(--bio-green, #4ade80)' : 'var(--red)' }}>
+              {baselineComparison.overallForm.deviation >= 0 ? '+' : ''}{baselineComparison.overallForm.deviation} {t('vs_avg')}
             </span>
           </div>
           {baselineComparison.improvingChecks.length > 0 && (
-            <p className="text-xs" style={{ margin: '6px 0 0', color: 'var(--bio-green, #4ade80)' }}>Improving: {baselineComparison.improvingChecks.join(', ')}</p>
+            <p className="text-xs" style={{ margin: '6px 0 0', color: 'var(--bio-green, #4ade80)' }}>{t('improving_label')}: {baselineComparison.improvingChecks.join(', ')}</p>
           )}
           {baselineComparison.decliningChecks.length > 0 && (
-            <p className="text-xs" style={{ margin: '4px 0 0', color: 'var(--yellow, #facc15)' }}>Watch: {baselineComparison.decliningChecks.join(', ')}</p>
+            <p className="text-xs" style={{ margin: '4px 0 0', color: 'var(--yellow, #facc15)' }}>{t('watch_label')}: {baselineComparison.decliningChecks.join(', ')}</p>
           )}
         </div>
       )}
@@ -625,7 +625,7 @@ export default function ResultCard({ result, onReplay }) {
 
       {repHistory && repHistory.length >= 2 && repHistory[0]?.rom != null && (
         <div style={{ marginTop: 14 }}>
-          <h4>Range of Motion</h4>
+          <h4>{t('rom_per_rep')}</h4>
           <div className="rep-bars">
             {repHistory.map((r, i) => {
               const maxRom = Math.max(...repHistory.map(h => h.rom || 0), 1);
@@ -653,14 +653,14 @@ export default function ResultCard({ result, onReplay }) {
               const drop = 100 - last.romPercent;
               return (
                 <p className="text-xs" style={{ marginTop: 4, color: 'var(--yellow)' }}>
-                  Rep {repHistory.length} was {drop}% shallower than rep 1
+                  {t('rep_shallower', { rep: repHistory.length, drop })}
                 </p>
               );
             }
             if (first?.rom && last?.rom && last.romPercent != null && last.romPercent >= 95) {
               return (
                 <p className="text-xs" style={{ marginTop: 4, color: 'var(--accent)' }}>
-                  Consistent depth maintained across the set
+                  {t('consistent_depth')}
                 </p>
               );
             }
@@ -733,7 +733,7 @@ export default function ResultCard({ result, onReplay }) {
                   <div className="rep-bar-wrap">
                     <div className="rep-bar" style={{
                       height: `${Math.max(pct, 5)}%`,
-                      background: isGood ? 'var(--accent)' : isSlow ? 'var(--yellow)' : 'var(--danger, #ef4444)',
+                      background: isGood ? 'var(--accent)' : isSlow ? 'var(--yellow)' : 'var(--red)',
                     }} />
                   </div>
                   <span className="rep-num" title={`Ecc: ${ecc}s / Con: ${con}s / Ratio: ${ratio}`}>{i + 1}</span>
@@ -824,7 +824,7 @@ export default function ResultCard({ result, onReplay }) {
         return (
           <div style={{ marginTop: 14, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0,245,212,0.06), rgba(0,245,212,0.02))', borderRadius: 10, border: '1px solid rgba(0,245,212,0.15)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>Progression Score</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>{t('progression_score')}</span>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                 <span style={{ fontSize: '1.6rem', fontWeight: 800, color: gradeColor }}>{prog.score}</span>
                 <span style={{ fontSize: '0.8rem', fontWeight: 600, color: gradeColor }}>{prog.grade.label}</span>
@@ -832,14 +832,14 @@ export default function ResultCard({ result, onReplay }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{prog.grade.title}</span>
-              <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>Top {100 - prog.percentile}%</span>
+              <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>{t('top_percentile', { pct: 100 - prog.percentile })}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
               {[
-                { label: 'Form', val: prog.components.form, max: 250 },
-                { label: 'Consistency', val: prog.components.consistency, max: 200 },
-                { label: 'Tempo', val: prog.components.tempo, max: 150 },
-                { label: 'Power', val: prog.components.power, max: 150 },
+                { label: t('form_label'), val: prog.components.form, max: 250 },
+                { label: t('consistency_label'), val: prog.components.consistency, max: 200 },
+                { label: t('tempo_label'), val: prog.components.tempo, max: 150 },
+                { label: t('power_label'), val: prog.components.power, max: 150 },
               ].map(c => (
                 <div key={c.label} style={{ textAlign: 'center' }}>
                   <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
@@ -859,7 +859,10 @@ export default function ResultCard({ result, onReplay }) {
         const avgVel = bioAnalysis?.velocity?.perRep
           ? bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length
           : null;
-        const vbtZone = avgVel != null && avgVel > 0 ? getVBTZone(avgVel) : null;
+        // VBT zones are only scientifically validated for compound barbell exercises (Gonzalez-Badillo 2017)
+        const vbtExercises = ['squat', 'bench_press', 'deadlift', 'overhead_press', 'barbell_row', 'front_squat', 'romanian_deadlift', 'hip_thrust', 'incline_bench_press', 'close_grip_bench_press', 'sumo_deadlift'];
+        const showVbt = vbtExercises.includes(result.exercise) && exerciseDef?.category === 'compound';
+        const vbtZone = showVbt && avgVel != null && avgVel > 0 ? getVBTZone(avgVel) : null;
         const oneRM = weight > 0 && displayReps > 0 ? estimateOneRepMax(weight, displayReps) : null;
 
         if (!vbtZone && !oneRM) return null;
@@ -867,7 +870,7 @@ export default function ResultCard({ result, onReplay }) {
           <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
             {vbtZone && (
               <div className="stat-card" style={{ gridColumn: oneRM ? 'auto' : '1 / -1' }}>
-                <span className="stat-card-label">VBT ZONE</span>
+                <span className="stat-card-label">{t('vbt_zone')}</span>
                 <span className="stat-card-value" style={{ color: vbtZone.color, fontSize: '0.85rem' }}>
                   {vbtZone.zone}
                 </span>
@@ -897,7 +900,7 @@ export default function ResultCard({ result, onReplay }) {
           <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
             {vel.fatigue && (
               <div className="stat-card">
-                <span className="stat-card-label">FATIGUE</span>
+                <span className="stat-card-label">{t('fatigue_label')}</span>
                 <span className="stat-card-value" style={{ color: vel.fatigue.detected ? 'var(--red)' : 'var(--accent)' }}>
                   {vel.fatigue.detected ? `${Math.round(vel.fatigue.decay * 100)}%` : 'OK'}
                 </span>
@@ -905,19 +908,19 @@ export default function ResultCard({ result, onReplay }) {
             )}
             {vel.power && vel.power.peakW > 0 && (
               <div className="stat-card">
-                <span className="stat-card-label">PEAK POWER</span>
+                <span className="stat-card-label">{t('peak_power')}</span>
                 <span className="stat-card-value">{vel.power.peakW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
               </div>
             )}
             {vel.power && vel.power.meanW > 0 && (
               <div className="stat-card">
-                <span className="stat-card-label">AVG POWER</span>
+                <span className="stat-card-label">{t('avg_power')}</span>
                 <span className="stat-card-value">{vel.power.meanW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
               </div>
             )}
             {vel.smoothness != null && (
               <div className="stat-card">
-                <span className="stat-card-label">SMOOTHNESS</span>
+                <span className="stat-card-label">{t('smoothness_label')}</span>
                 <span className="stat-card-value">{Math.round(vel.smoothness * 100)}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>%</span></span>
               </div>
             )}
@@ -1027,10 +1030,10 @@ export default function ResultCard({ result, onReplay }) {
         }}>
           <div style={{ flex: 1 }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', display: 'block', marginBottom: 2 }}>
-              Get weekly workout reminders?
+              {t('notif_prompt_title')}
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-              Stay consistent — one nudge per week.
+              {t('notif_prompt_desc')}
             </span>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -1042,7 +1045,7 @@ export default function ResultCard({ result, onReplay }) {
                 setShowNotifPrompt(false);
               }}
             >
-              No thanks
+              {t('no_thanks')}
             </button>
             <button
               className="btn btn-primary btn-sm"
@@ -1057,7 +1060,7 @@ export default function ResultCard({ result, onReplay }) {
                 }
               }}
             >
-              Enable
+              {t('enable')}
             </button>
           </div>
         </div>

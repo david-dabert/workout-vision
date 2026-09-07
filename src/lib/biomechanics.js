@@ -42,10 +42,9 @@ export function setUserHeight(heightCm) {
  * @returns {Object} analysis results
  */
 export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userHeightCm) {
-  // Use passed height if available, otherwise fall back to module-level value
-  if (userHeightCm && userHeightCm > 100 && userHeightCm < 250) {
-    NORM_TO_METERS = userHeightCm / 100;
-  }
+  // Use passed height if available, otherwise fall back to module-level default
+  const normToMeters = (userHeightCm && userHeightCm > 100 && userHeightCm < 250)
+    ? userHeightCm / 100 : NORM_TO_METERS;
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
 
   const exercise = EXERCISES[exerciseKey];
@@ -79,7 +78,7 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps, userH
   const isPulling = ['chest_supported_row', 'seated_row', 'lat_pulldown', 'bent_over_row',
     'pull_up', 'bicep_curl', 'leg_curl'].includes(exerciseKey);
 
-  const velocity = analyzeVelocity(rawFrames, fps, reps, exercise, isPulling);
+  const velocity = analyzeVelocity(rawFrames, fps, reps, exercise, isPulling, normToMeters);
   const timeUnderTension = analyzeTUT(reps, fps, isPulling);
   const rangeOfMotion = analyzeROM(trackingValues, reps);
   const asymmetry = analyzeAsymmetry(anglesPerFrame);
@@ -110,7 +109,7 @@ function emptyResult() {
 /**
  * Velocity analysis using wrist/hip displacement during concentric phase.
  */
-function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
+function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, normToMeters = 1.7) {
   if (reps.length === 0) {
     return { avg: 0, perRep: [], trend: 'trend_insufficient' };
   }
@@ -143,9 +142,9 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
         p2 = midpoint(lm2[LANDMARKS.LEFT_WRIST], lm2[LANDMARKS.RIGHT_WRIST]);
       }
 
-      const dx = (p2.x - p1.x) * NORM_TO_METERS;
-      const dy = (p2.y - p1.y) * NORM_TO_METERS;
-      const dz = ((p2.z || 0) - (p1.z || 0)) * NORM_TO_METERS;
+      const dx = (p2.x - p1.x) * normToMeters;
+      const dy = (p2.y - p1.y) * normToMeters;
+      const dz = ((p2.z || 0) - (p1.z || 0)) * normToMeters;
       totalDisplacement += Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 

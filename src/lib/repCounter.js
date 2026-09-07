@@ -85,6 +85,7 @@ export class RepCounter {
     this._repHistory = [];
     this._phase = 'setup'; // 5-stage FSM: setup → eccentric → isometric → concentric → lockout
     this._collectedLandmarks = [];
+    this._totalFramesAnalyzed = 0;
     this._observedMin = Infinity;
     this._observedMax = -Infinity;
     this._finalized = false;
@@ -406,6 +407,8 @@ export class RepCounter {
     } catch (e) {
     }
 
+    // Preserve frame count before freeing landmarks.
+    this._totalFramesAnalyzed = this._collectedLandmarks.length;
     // Free collected landmarks after analysis is complete to prevent OOM on mobile.
     // All data needed for downstream consumption is already in _repHistory, _cycleDebug,
     // _velocityAnalysis, and _progressionScore.
@@ -544,7 +547,7 @@ export class RepCounter {
       observedRange: Math.round(range * 10) / 10,
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
-      totalFrames: this._collectedLandmarks.length,
+      totalFrames: this._totalFramesAnalyzed || this._collectedLandmarks.length,
       method: 'valley-counter',
       cycles: this._cycleDebug,
       velocity: this._velocityAnalysis,
