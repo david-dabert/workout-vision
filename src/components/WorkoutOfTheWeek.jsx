@@ -8,7 +8,7 @@ import { useT } from '../lib/LanguageContext';
  * Shows the current Workout of the Week and user's best attempt if any.
  */
 export default function WorkoutOfTheWeek({ onNavigate }) {
-  const { t, lang } = useT();
+  const { t } = useT();
   const [wotw] = useState(() => getWorkoutOfTheWeek());
   const [bestAttempt, setBestAttempt] = useState(null);
 
@@ -43,7 +43,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
             fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
             letterSpacing: '0.06em', color: 'var(--lavender, #c4b5fd)',
           }}>
-            {lang === 'fr' ? 'Exercice de la semaine' : 'Workout of the Week'}
+            {t('wotw_title')}
           </span>
         </div>
         <span style={{
@@ -51,8 +51,8 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
           fontWeight: 500,
         }}>
           {wotw.daysLeft > 0
-            ? (lang === 'fr' ? `${wotw.daysLeft}j restants` : `${wotw.daysLeft}d left`)
-            : (lang === 'fr' ? 'Dernier jour' : 'Last day')}
+            ? t('wotw_days_left').replace('{n}', wotw.daysLeft)
+            : t('wotw_last_day')}
         </span>
       </div>
 
@@ -71,7 +71,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
           </div>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
             {bestAttempt.reps} reps &middot;{' '}
-            {lang === 'fr' ? 'Votre meilleur score' : 'Your best score'}
+            {t('wotw_your_best')}
           </span>
           <button
             onClick={() => onNavigate('analyze')}
@@ -82,7 +82,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
               cursor: 'pointer',
             }}
           >
-            {lang === 'fr' ? 'Battre' : 'Beat it'}
+            {t('wotw_beat_it')}
           </button>
         </div>
       ) : (
@@ -96,7 +96,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
             cursor: 'pointer',
           }}
         >
-          {lang === 'fr' ? 'Relever le challenge' : 'Take the challenge'}
+          {t('wotw_take_challenge')}
         </button>
       )}
     </div>

@@ -281,8 +281,8 @@ export default function Profile({ onClose }) {
           />
           <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
             {profile.voiceCoachingEnabled !== false
-              ? (lang === 'fr' ? 'Activé' : 'Enabled')
-              : (lang === 'fr' ? 'Désactivé' : 'Disabled')}
+              ? t('voice_enabled')
+              : t('voice_disabled')}
           </span>
         </label>
       </div>
@@ -512,11 +512,9 @@ export default function Profile({ onClose }) {
 
       {/* Device Capabilities Benchmark */}
       <div className="card">
-        <h3>{lang === 'fr' ? 'Capacités de l\'appareil' : 'Device Capabilities'}</h3>
+        <h3>{t('device_capabilities')}</h3>
         <p className="text-xs text-muted" style={{ marginBottom: 12 }}>
-          {lang === 'fr'
-            ? 'Détectez les backends d\'accélération matérielle disponibles pour l\'inférence ML.'
-            : 'Detect available hardware acceleration backends for ML inference.'}
+          {t('device_capabilities_desc')}
         </p>
         <button
           className="btn btn-ghost"
@@ -538,8 +536,8 @@ export default function Profile({ onClose }) {
           }}
         >
           {benchmarkRunning
-            ? (lang === 'fr' ? 'Analyse en cours...' : 'Running...')
-            : (lang === 'fr' ? 'Lancer le benchmark' : 'Run Benchmark')}
+            ? t('benchmark_running')
+            : t('run_benchmark')}
         </button>
 
         {benchmarkResult && (
@@ -547,24 +545,24 @@ export default function Profile({ onClose }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
               <span style={{ color: 'var(--muted)' }}>WebGPU</span>
               <span style={{ fontWeight: 600, color: benchmarkResult.webgpu ? 'var(--green)' : 'var(--red)' }}>
-                {benchmarkResult.webgpu ? (lang === 'fr' ? 'Oui' : 'Yes') : (lang === 'fr' ? 'Non' : 'No')}
+                {benchmarkResult.webgpu ? t('yes') : t('no')}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
               <span style={{ color: 'var(--muted)' }}>WebNN</span>
               <span style={{ fontWeight: 600, color: benchmarkResult.webnn ? 'var(--green)' : 'var(--red)' }}>
-                {benchmarkResult.webnn ? (lang === 'fr' ? 'Oui' : 'Yes') : (lang === 'fr' ? 'Non' : 'No')}
+                {benchmarkResult.webnn ? t('yes') : t('no')}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
               <span style={{ color: 'var(--muted)' }}>WebGL2</span>
               <span style={{ fontWeight: 600, color: benchmarkResult.webgl2 ? 'var(--green)' : 'var(--red)' }}>
-                {benchmarkResult.webgl2 ? (lang === 'fr' ? 'Oui' : 'Yes') : (lang === 'fr' ? 'Non' : 'No')}
+                {benchmarkResult.webgl2 ? t('yes') : t('no')}
               </span>
             </div>
             {benchmarkResult.gpuAdapter && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'Adaptateur GPU' : 'GPU Adapter'}</span>
+                <span style={{ color: 'var(--muted)' }}>{t('gpu_adapter')}</span>
                 <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                   {benchmarkResult.gpuAdapter.vendor}
                   {benchmarkResult.gpuAdapter.architecture !== 'unknown' ? ` (${benchmarkResult.gpuAdapter.architecture})` : ''}
@@ -573,20 +571,20 @@ export default function Profile({ onClose }) {
             )}
             {benchmarkResult.webgl2Renderer && (
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'Moteur WebGL2' : 'WebGL2 Renderer'}</span>
+                <span style={{ color: 'var(--muted)' }}>{t('webgl2_renderer')}</span>
                 <span style={{ fontWeight: 600, color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {benchmarkResult.webgl2Renderer}
                 </span>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'Backend recommandé' : 'Recommended Backend'}</span>
+              <span style={{ color: 'var(--muted)' }}>{t('recommended_backend')}</span>
               <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
                 {benchmarkResult.recommendedBackend.toUpperCase()}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'CPU MatMul 256x256' : 'CPU MatMul 256x256'}</span>
+              <span style={{ color: 'var(--muted)' }}>CPU MatMul 256x256</span>
               <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                 {benchmarkResult.matMulCpu} ms
               </span>

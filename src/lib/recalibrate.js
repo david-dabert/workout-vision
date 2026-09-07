@@ -178,23 +178,33 @@ function evaluateFormForCycle(cycle, landmarks, exercise) {
   const sampleStep = Math.max(1, Math.floor((endFrame - startFrame) / 8));
 
   const formResults = checks.map(fc => {
-    let worst = 1;
-    let passed = true;
+    let failCount = 0, sampleCount = 0;
+    let qualitySum = 0;
+    const hasQualityFn = typeof fc.quality === 'function';
+
     for (let i = startFrame; i <= endFrame && i < landmarks.length; i += sampleStep) {
       const lm = landmarks[i];
       if (!lm) continue;
       const a = extractJointAngles(lm);
       if (!a) continue;
+      sampleCount++;
       try {
-        const ok = fc.check(a, lm);
-        if (!ok) { passed = false; worst = 0; }
+        if (!fc.check(a, lm)) failCount++;
+        if (hasQualityFn) qualitySum += fc.quality(a, lm);
       } catch { /* skip */ }
     }
-    return { name: fc.name, passed, quality: worst, bad: fc.bad };
+
+    const quality = sampleCount > 0
+      ? (hasQualityFn ? qualitySum / sampleCount : 1 - failCount / sampleCount)
+      : 0;
+    const passed = quality >= 0.70;
+
+    return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad };
   });
 
-  const passedCount = formResults.filter(r => r.passed).length;
-  const score = checks.length > 0 ? Math.round((passedCount / checks.length) * 100) : 70;
+  // Weighted average of continuous quality scores (matching RepCounter logic)
+  const totalQuality = formResults.reduce((s, r) => s + r.quality, 0);
+  const score = formResults.length > 0 ? Math.round((totalQuality / formResults.length) * 100) : 70;
   const issues = formResults.filter(r => !r.passed).map(r => r.name);
 
   return {

@@ -156,10 +156,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       }
       // iOS large file warning (>50MB)
       if (IS_IOS && f.size > 50 * 1024 * 1024) {
-        setIosWarning(lang === 'fr'
-          ? `${f.name} fait ${(f.size / 1024 / 1024).toFixed(0)} MB. Pour de meilleurs résultats sur iPhone, utilisez une vidéo de moins de 30 secondes.`
-          : `${f.name} is ${(f.size / 1024 / 1024).toFixed(0)} MB. For best results on iPhone, use a video under 30 seconds.`
-        );
+        setIosWarning(`${f.name} ${t('ios_large_file_warning').replace('{size}', (f.size / 1024 / 1024).toFixed(0))}`);
       }
       items.push({
         id: Date.now() + Math.random(),
@@ -578,9 +575,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           background: 'rgba(0,224,255,0.04)', border: '1px solid rgba(0,224,255,0.1)',
         }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-            {lang === 'fr'
-              ? '📐 Pour de meilleurs résultats : filmez de côté, corps entier visible, bonne lumière. Une seule personne dans le cadre.'
-              : '📐 For best results: film from the side, full body visible, good lighting. One person in frame.'}
+            📐 {t('filming_tip')}
           </p>
         </div>
       )}
@@ -764,10 +759,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             </div>
             <div className="analysis-phases">
               {[
-                { key: 'hashing', label: lang === 'fr' ? 'Indexation' : 'Indexing', icon: '#' },
-                { key: 'model', label: lang === 'fr' ? 'Modèle IA' : 'AI Model', icon: '◆' },
-                { key: 'extracting', label: lang === 'fr' ? 'Extraction' : 'Extracting', icon: '▦' },
-                { key: 'analyzing', label: lang === 'fr' ? 'Analyse' : 'Analyzing', icon: '◉' },
+                { key: 'hashing', label: t('phase_hashing'), icon: '#' },
+                { key: 'model', label: t('phase_model'), icon: '◆' },
+                { key: 'extracting', label: t('phase_extracting'), icon: '▦' },
+                { key: 'analyzing', label: t('phase_analyzing'), icon: '◉' },
               ].map((phase, i) => {
                 const phaseOrder = ['hashing', 'model', 'extracting', 'analyzing'];
                 const currentIdx = phaseOrder.indexOf(analysisPhase);

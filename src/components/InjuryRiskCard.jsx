@@ -15,7 +15,7 @@ const RISK_ICONS = {
 };
 
 export default function InjuryRiskCard() {
-  const { lang } = useT();
+  const { t, lang } = useT();
   const [report, setReport] = useState(null);
   const [expanded, setExpanded] = useState(false);
 
@@ -53,7 +53,7 @@ export default function InjuryRiskCard() {
         </span>
         <div style={{ flex: 1 }}>
           <h4 className="insights-card-title" style={{ margin: 0 }}>
-            {lang === 'fr' ? 'Suivi de Charge d\'Entraînement' : 'Training Load Monitor'}
+            {t('training_load_monitor')}
           </h4>
           <span style={{
             fontSize: '0.78rem',
@@ -100,7 +100,7 @@ export default function InjuryRiskCard() {
                 letterSpacing: '0.06em',
                 fontWeight: 600,
               }}>
-                {lang === 'fr' ? 'Recommandations' : 'Recommendations'}
+                {t('recommendations')}
               </span>
               {report.recommendations.map((rec, i) => (
                 <p key={i} style={{
@@ -125,9 +125,7 @@ export default function InjuryRiskCard() {
             color: 'var(--text-tertiary)',
             lineHeight: 1.5,
           }}>
-            {lang === 'fr'
-              ? 'Cette fonctionnalité fournit des conseils généraux de remise en forme uniquement et ne constitue pas un dispositif médical. Consultez un professionnel de santé avant de modifier votre entraînement sur la base de ces alertes.'
-              : 'This feature provides general fitness guidance only and is not a medical device. Consult a healthcare provider before modifying your training based on these alerts.'}
+            {t('injury_disclaimer')}
           </div>
         </div>
       )}
