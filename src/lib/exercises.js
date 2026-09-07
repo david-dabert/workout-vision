@@ -5314,7 +5314,7 @@ export function validateAllExercises() {
 }
 
 // Run validation at boot in development mode only
-if (import.meta.env.DEV) {
+if (import.meta.env && import.meta.env.DEV) {
   validateAllExercises();
 }
 
