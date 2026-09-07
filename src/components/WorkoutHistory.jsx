@@ -40,6 +40,7 @@ export default function WorkoutHistory({ onClose }) {
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {
     loadWorkouts();
@@ -57,13 +58,13 @@ export default function WorkoutHistory({ onClose }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this workout? This cannot be undone.')) return;
     try {
       await deleteWorkout(id);
       setWorkouts(prev => prev.filter(w => w.id !== id));
     } catch (err) {
       console.error('Failed to delete:', err);
     }
+    setDeleteConfirmId(null);
   }
 
   const stats = useMemo(() => {
@@ -556,7 +557,7 @@ export default function WorkoutHistory({ onClose }) {
                     </div>
                     <button
                       className="btn btn-ghost btn-sm btn-danger"
-                      onClick={() => handleDelete(w.id)}
+                      onClick={() => setDeleteConfirmId(w.id)}
                     >
                       {t('delete')}
                     </button>
@@ -575,6 +576,59 @@ export default function WorkoutHistory({ onClose }) {
             </div>
           ))}
         </>
+      )}
+
+      {/* Delete confirmation overlay */}
+      {deleteConfirmId && (
+        <div
+          onClick={() => setDeleteConfirmId(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="card"
+            style={{
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '20px 24px',
+              maxWidth: 300,
+              width: '85%',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontWeight: 600, fontSize: '0.95rem' }}>
+              Delete this workout?
+            </p>
+            <p style={{ color: 'var(--text-secondary)', margin: '0 0 18px', fontSize: '0.8rem' }}>
+              This cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => setDeleteConfirmId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-sm"
+                style={{ background: 'var(--red)', color: '#fff', border: 'none' }}
+                onClick={() => handleDelete(deleteConfirmId)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

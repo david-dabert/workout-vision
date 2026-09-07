@@ -21,8 +21,8 @@
   /* ── Text hierarchy ── */
   --text-primary: #f0f0f5;
   --text-secondary: rgba(240, 240, 245, 0.50);
-  --text-tertiary: rgba(240, 240, 245, 0.22);
-  --text-quaternary: rgba(240, 240, 245, 0.10);
+  --text-tertiary: rgba(240, 240, 245, 0.45);
+  --text-quaternary: rgba(240, 240, 245, 0.30);
 
   /* ── Glass surfaces ── */
   --glass-bg: rgba(255, 255, 255, 0.012);
@@ -147,8 +147,8 @@ body::after {
 
     --text-primary: #1a1a2e;
     --text-secondary: rgba(26, 26, 46, 0.60);
-    --text-tertiary: rgba(26, 26, 46, 0.35);
-    --text-quaternary: rgba(26, 26, 46, 0.15);
+    --text-tertiary: rgba(26, 26, 46, 0.45);
+    --text-quaternary: rgba(26, 26, 46, 0.30);
 
     --glass-bg: rgba(0, 0, 0, 0.02);
     --glass-border: rgba(0, 0, 0, 0.08);
@@ -2061,6 +2061,8 @@ select {
   align-items: center;
   gap: 2px;
   padding: 8px 16px;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: 16px;
   background: transparent;
   border: none;

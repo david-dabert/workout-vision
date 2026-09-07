@@ -38,6 +38,7 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
     const ctx = canvas.getContext('2d');
     let animId;
     let time = 0;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const resize = () => {
       const rect = canvas.parentElement.getBoundingClientRect();
@@ -67,15 +68,20 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
     stateRef.current = { triggerPulse };
 
     const draw = () => {
-      time += 0.016;
+      if (!prefersReducedMotion) time += 0.016;
       ctx.clearRect(0, 0, w, h);
 
-      // Idle drift
+      // Idle drift (disabled for reduced motion)
       particles.forEach(p => {
-        const nx = Math.sin(time * 0.8 + p.phase) * 0.008;
-        const ny = Math.cos(time * 0.6 + p.phase * 1.3) * 0.008;
-        p.px += (p.x + nx - p.px) * 0.05;
-        p.py += (p.y + ny - p.py) * 0.05;
+        if (prefersReducedMotion) {
+          p.px = p.x;
+          p.py = p.y;
+        } else {
+          const nx = Math.sin(time * 0.8 + p.phase) * 0.008;
+          const ny = Math.cos(time * 0.6 + p.phase * 1.3) * 0.008;
+          p.px += (p.x + nx - p.px) * 0.05;
+          p.py += (p.y + ny - p.py) * 0.05;
+        }
       });
 
       // Connections
@@ -127,7 +133,7 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
       particles.forEach(p => {
         const x = p.px * w;
         const y = p.py * h;
-        const pulse = Math.sin(time * 2 + p.pulsePhase) * 0.3 + 0.7;
+        const pulse = prefersReducedMotion ? 1 : Math.sin(time * 2 + p.pulsePhase) * 0.3 + 0.7;
         const size = p.size * pulse;
 
         // Glow
@@ -145,7 +151,9 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
         ctx.fill();
       });
 
-      animId = requestAnimationFrame(draw);
+      if (!prefersReducedMotion) {
+        animId = requestAnimationFrame(draw);
+      }
     };
 
     draw();

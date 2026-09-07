@@ -28,8 +28,9 @@ const LandingPage = safeLazy(() => import('./components/LandingPage'));
 const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 
 const LazyFallback = (
-  <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+  <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: '1rem' }}>
     <div className="spinner" />
+    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Loading...</p>
   </div>
 );
 

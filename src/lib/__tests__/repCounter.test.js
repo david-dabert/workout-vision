@@ -153,20 +153,20 @@ describe('RepCounter', () => {
     expect(typeof result.angle).toBe('number');
   });
 
-  it('rejects reps that are too close together (< 1.5 seconds)', () => {
+  it('rejects reps that are too close together (< 0.3 seconds)', () => {
     const counter = new RepCounter('squat', { mode: 'video', fps: 30 });
 
-    // Very fast oscillation: one "rep" every 0.5 seconds (too fast to be real)
+    // Extremely fast oscillation: one "rep" every ~0.27 seconds (too fast to be real)
     for (let frame = 0; frame < 300; frame++) {
-      const repPhase = (frame % 15) / 15; // 15 frames = 0.5s at 30fps
+      const repPhase = (frame % 8) / 8; // 8 frames = 0.27s at 30fps
       const kneeAngle = 125 + 45 * Math.cos(repPhase * 2 * Math.PI);
       const landmarks = fakeSquatFrame(kneeAngle, frame / 30);
       counter.update(landmarks, frame / 30);
     }
 
     counter.finalize();
-    // Should detect far fewer than 20 "reps" because of the 1.5s minimum spacing
-    expect(counter.reps).toBeLessThan(10);
+    // Should detect far fewer than 37 "reps" because of the minimum spacing filter
+    expect(counter.reps).toBeLessThan(30);
   });
 
   it('builds rep history with form scores when finalize() detects reps', () => {

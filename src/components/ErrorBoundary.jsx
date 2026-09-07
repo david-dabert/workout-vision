@@ -3,7 +3,7 @@ import { Component } from 'react';
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, detailsOpen: false };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -17,7 +17,7 @@ class ErrorBoundary extends Component {
   }
 
   handleTryAgain = () => {
-    this.setState({ hasError: false, error: null, detailsOpen: false });
+    this.setState({ hasError: false, error: null });
   };
 
   handleReload = () => {
@@ -29,13 +29,9 @@ class ErrorBoundary extends Component {
     window.location.href = window.location.origin + window.location.pathname;
   };
 
-  toggleDetails = () => {
-    this.setState(prev => ({ detailsOpen: !prev.detailsOpen }));
-  };
-
   render() {
     if (this.state.hasError) {
-      const { error, detailsOpen } = this.state;
+      const { error } = this.state;
       const errorMessage = error?.message || String(error) || 'Unknown error';
       const stack = this._componentStack || '';
       const currentHash = typeof window !== 'undefined' ? window.location.hash : '';
@@ -60,9 +56,12 @@ class ErrorBoundary extends Component {
                 Go Home
               </button>
             </div>
-            <pre style={styles.detailsBody}>
-              {currentHash ? `Page: ${currentHash}\n` : ''}{errorMessage}{stack ? `\n\nComponent:\n${stack.slice(0, 500)}` : ''}
-            </pre>
+            <details style={styles.details}>
+              <summary style={styles.detailsToggle}>Show technical details</summary>
+              <pre style={styles.detailsBody}>
+                {currentHash ? `Page: ${currentHash}\n` : ''}{errorMessage}{stack ? `\n\nComponent:\n${stack.slice(0, 500)}` : ''}
+              </pre>
+            </details>
           </div>
         </div>
       );

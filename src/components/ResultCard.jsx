@@ -10,6 +10,7 @@ import { gradeFromScore, gradeClass } from '../lib/utils';
 import { updateWorkout } from '../lib/storage';
 import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
 import { detectPRs, detectFormRegression } from '../lib/prSystem';
+import { estimateOneRepMax } from '../lib/coach';
 import {
   requestNotificationPermission,
   scheduleWeeklyReminder,
@@ -63,6 +64,18 @@ function generateCoachingInsight(repHistory, bioAnalysis, t) {
 
   const best = repHistory.reduce((a, b, i) => (b.score || 0) > (a.score || 0) ? { ...b, num: i + 1 } : a, { ...repHistory[0], num: 1 });
   return t('insight_best_rep', { num: best.num });
+}
+
+/**
+ * VBT zone classification (Gonzalez-Badillo 2017, Int J Sports Med).
+ * Mean concentric velocity in m/s determines training zone.
+ */
+function getVBTZone(meanVelocity) {
+  if (meanVelocity >= 1.0) return { zone: 'Speed-Strength', color: 'var(--bio-green)', intensity: '30-50%' };
+  if (meanVelocity >= 0.75) return { zone: 'Power', color: 'var(--accent)', intensity: '50-65%' };
+  if (meanVelocity >= 0.50) return { zone: 'Strength-Speed', color: 'var(--blue)', intensity: '65-80%' };
+  if (meanVelocity >= 0.35) return { zone: 'Strength', color: 'var(--yellow)', intensity: '80-90%' };
+  return { zone: 'Max Strength', color: 'var(--red)', intensity: '90%+' };
 }
 
 function generateProgressionNote(progression, t) {
@@ -266,7 +279,7 @@ export default function ResultCard({ result, onReplay }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }}
                 style={{
-                  width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--muted)',
+                  width: 44, height: 44, borderRadius: '50%', border: '1px solid var(--muted)',
                   background: 'rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: '1.1rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   lineHeight: 1, padding: 0,
@@ -276,7 +289,7 @@ export default function ResultCard({ result, onReplay }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }}
                 style={{
-                  width: 28, height: 28, borderRadius: '50%', border: '1px solid var(--muted)',
+                  width: 44, height: 44, borderRadius: '50%', border: '1px solid var(--muted)',
                   background: 'rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: '1.1rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   lineHeight: 1, padding: 0,
@@ -756,6 +769,44 @@ export default function ResultCard({ result, onReplay }) {
                 </div>
               ))}
             </div>
+          </div>
+        );
+      })()}
+
+      {/* VBT Zone + 1RM Estimation */}
+      {(() => {
+        const weight = result.weight || 0;
+        const avgVel = bioAnalysis?.velocity?.perRep
+          ? bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length
+          : null;
+        const vbtZone = avgVel != null && avgVel > 0 ? getVBTZone(avgVel) : null;
+        const oneRM = weight > 0 && displayReps > 0 ? estimateOneRepMax(weight, displayReps) : null;
+
+        if (!vbtZone && !oneRM) return null;
+        return (
+          <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
+            {vbtZone && (
+              <div className="stat-card" style={{ gridColumn: oneRM ? 'auto' : '1 / -1' }}>
+                <span className="stat-card-label">VBT ZONE</span>
+                <span className="stat-card-value" style={{ color: vbtZone.color, fontSize: '0.85rem' }}>
+                  {vbtZone.zone}
+                </span>
+                <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: 2 }}>
+                  ~{vbtZone.intensity} 1RM
+                </span>
+              </div>
+            )}
+            {oneRM && (
+              <div className="stat-card">
+                <span className="stat-card-label">{t('estimated_1rm') || 'EST. 1RM'}</span>
+                <span className="stat-card-value">
+                  {oneRM}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>kg</span>
+                </span>
+                <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: 2 }}>
+                  Brzycki {displayReps <= 10 ? '' : '(Epley)'}
+                </span>
+              </div>
+            )}
           </div>
         );
       })()}
