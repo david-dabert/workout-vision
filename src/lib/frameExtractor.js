@@ -70,14 +70,17 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   video.muted = true;
   video.playsInline = true;
   video.preload = 'auto';
-  video.src = url;
 
   try {
-    // Wait for decoder readiness, not just metadata
+    // Wait for decoder readiness, not just metadata.
+    // Handlers BEFORE src to avoid race on synchronous fires.
+    // Explicit load() required: iOS Safari does not auto-load blob URLs.
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
       video.onloadeddata = () => { clearTimeout(timeout); resolve(); };
       video.onerror = () => { clearTimeout(timeout); reject(new Error('Failed to load video')); };
+      video.src = url;
+      video.load();
     });
 
     const duration = video.duration;
