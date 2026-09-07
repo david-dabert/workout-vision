@@ -292,7 +292,7 @@ export class RepCounter {
     });
 
     // Interpolate nulls, then smooth to eliminate bestSide oscillation noise
-    let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), 5);
+    let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), 3);
 
     // ── Step 1b: 3D signal override for depth-axis exercises ──
     // When the exercise has Z-priority signals in SIGNAL_PRIORITY_3D and the
@@ -460,11 +460,11 @@ export class RepCounter {
     // Amplitude threshold as a proportion of signal range (prominence filter).
     // Default 30%; exercises with smaller angle ranges (lat_pulldown, lateral_raise)
     // can override via amplitudeRatio to avoid filtering out valid reps.
-    const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.15;
+    const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.20;
     const minAmplitude = signalRange * ampRatio;
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
-    const halfWindow = Math.max(3, Math.round(this._fps * 0.3));
+    const halfWindow = Math.max(2, Math.round(this._fps * 0.2));
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
@@ -508,7 +508,7 @@ export class RepCounter {
     };
 
     // Pass 1: generous 1.2s spacing
-    const generousGap = Math.round(this._fps * 0.5);
+    const generousGap = Math.round(this._fps * 0.4);
     const pass1 = filterWithSpacing(generousGap);
 
     let valleyFrames;

@@ -114,6 +114,7 @@ export const EXERCISES = {
     muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Erectors', 'Core'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
+    amplitudeRatio: 0.15,
     downThreshold: 120,
     upThreshold: 155,
     formChecks: [
@@ -544,6 +545,7 @@ export const EXERCISES = {
     muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Core', 'Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
+    amplitudeRatio: 0.25,
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
@@ -731,6 +733,7 @@ export const EXERCISES = {
     muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoid', 'Rhomboids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
+    amplitudeRatio: 0.22,
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
@@ -764,6 +767,7 @@ export const EXERCISES = {
     muscles: { primary: ['Biceps Brachii'], secondary: ['Brachialis', 'Brachioradialis'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
+    amplitudeRatio: 0.30,
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
@@ -2467,6 +2471,7 @@ export const EXERCISES = {
     muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Obliques'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
+    amplitudeRatio: 0.15,
     downThreshold: 80,
     upThreshold: 140,
     formChecks: [
