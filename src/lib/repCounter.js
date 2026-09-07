@@ -460,11 +460,11 @@ export class RepCounter {
     // Amplitude threshold as a proportion of signal range (prominence filter).
     // Default 30%; exercises with smaller angle ranges (lat_pulldown, lateral_raise)
     // can override via amplitudeRatio to avoid filtering out valid reps.
-    const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.30;
+    const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.15;
     const minAmplitude = signalRange * ampRatio;
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
-    const halfWindow = Math.max(5, Math.round(this._fps * 0.4));
+    const halfWindow = Math.max(3, Math.round(this._fps * 0.3));
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
@@ -508,7 +508,7 @@ export class RepCounter {
     };
 
     // Pass 1: generous 1.2s spacing
-    const generousGap = Math.round(this._fps * 1.2);
+    const generousGap = Math.round(this._fps * 0.5);
     const pass1 = filterWithSpacing(generousGap);
 
     let valleyFrames;
