@@ -3733,9 +3733,9 @@ export const EXERCISES = {
     downThreshold: 15,
     upThreshold: 80,
     formChecks: [
-      { name: 'No momentum', check: (angles) => angles.trunk < 20, good: 'No body swing', bad: 'Avoid swinging torso', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
+      { name: 'No momentum', check: (angles) => angles.trunk < 30, good: 'No body swing', bad: 'Avoid swinging torso', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
     ],
-    scienceNotes: 'Seated lateral raises eliminate lower body momentum, isolating the lateral deltoid (Reinold 2004).',
+    scienceNotes: 'Seated lateral raises eliminate lower body momentum, isolating the lateral deltoid (Reinold 2004). Trunk threshold relaxed for seated position camera angle variance.',
   },
 
   // ===== BICEPS =====

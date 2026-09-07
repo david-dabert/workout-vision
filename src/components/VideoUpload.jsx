@@ -481,6 +481,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics, confidence,
       videoUrl: url,
       frames: replayFrames,
+      fps: analysisFps,
       autoDetected,
       weight: w,
       debug,

@@ -11,6 +11,7 @@ import { updateWorkout } from '../lib/storage';
 import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
 import { detectPRs, detectFormRegression } from '../lib/prSystem';
 import { estimateOneRepMax } from '../lib/coach';
+import { recalibrateAnalysis } from '../lib/recalibrate';
 import {
   requestNotificationPermission,
   scheduleWeeklyReminder,
@@ -99,8 +100,24 @@ export default function ResultCard({ result, onReplay }) {
   const { profile } = useProfile();
   const {
     fileName, exerciseName, reps, duration,
-    formScore, bioAnalysis, report, repHistory, progression, baselineComparison,
+    formScore: origFormScore, bioAnalysis: origBioAnalysis,
+    report: origReport, repHistory: origRepHistory,
+    progression, baselineComparison,
   } = result;
+
+  const [showDetails, setShowDetails] = useState(false);
+  const [showDeepData, setShowDeepData] = useState(false);
+  const [challengeStatus, setChallengeStatus] = useState(null);
+  const [repOverride, setRepOverride] = useState(null);
+  const [showRepEdit, setShowRepEdit] = useState(false);
+  const [recalData, setRecalData] = useState(null);
+  const [isRecalibrating, setIsRecalibrating] = useState(false);
+
+  // Use recalibrated data when available, fall back to original
+  const formScore = recalData?.formScore ?? origFormScore;
+  const bioAnalysis = recalData?.bioAnalysis ?? origBioAnalysis;
+  const report = recalData?.report ?? origReport;
+  const repHistory = recalData?.repHistory ?? origRepHistory;
 
   const grade = gradeFromScore(formScore);
   const cls = gradeClass(formScore);
@@ -110,12 +127,6 @@ export default function ResultCard({ result, onReplay }) {
 
   const coachingInsight = generateCoachingInsight(repHistory, bioAnalysis, t);
   const progressionNote = generateProgressionNote(progression, t);
-
-  const [showDetails, setShowDetails] = useState(false);
-  const [showDeepData, setShowDeepData] = useState(false);
-  const [challengeStatus, setChallengeStatus] = useState(null);
-  const [repOverride, setRepOverride] = useState(null);
-  const [showRepEdit, setShowRepEdit] = useState(false);
 
   // Notification prompt: show once, after first successful analysis
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
@@ -189,22 +200,71 @@ export default function ResultCard({ result, onReplay }) {
     return () => cancelAnimationFrame(t1);
   }, [isPR, isTopGrade]);
 
-  // Persist rep override to workout history with recalculated metrics
+  // Persist rep override and recalibrate full analysis pipeline
   const handleRepChange = useCallback((newReps) => {
     const clamped = Math.max(1, Math.min(99, newReps));
     setRepOverride(clamped);
-    // Save correction layer to IndexedDB
-    if (result.workoutId) {
-      const w = result.weight || 0;
-      updateWorkout(result.workoutId, {
-        reps: clamped,
-        repsOverridden: true,
-        machineReps: result.machineReps ?? reps,
-        // Recalculate volume from corrected reps (no reanalysis needed)
-        volume: w * clamped,
-      }).catch(() => {});
+    const w = result.weight || 0;
+
+    // Run full recalibration if we have landmark frames
+    if (result.frames && result.frames.length > 0 && clamped !== reps) {
+      setIsRecalibrating(true);
+      // Use requestAnimationFrame to let the UI update before heavy computation
+      requestAnimationFrame(() => {
+        try {
+          const recal = recalibrateAnalysis({
+            frames: result.frames,
+            exerciseKey: result.exercise,
+            targetReps: clamped,
+            fps: result.fps || 10,
+            profile,
+            weightKg: w,
+          });
+          if (recal) {
+            recal.diagnostics.originalReps = result.machineReps ?? reps;
+            setRecalData(recal);
+            // Persist recalibrated data to IndexedDB
+            if (result.workoutId) {
+              updateWorkout(result.workoutId, {
+                reps: clamped,
+                repsOverridden: true,
+                machineReps: result.machineReps ?? reps,
+                volume: w * clamped,
+                formScore: recal.formScore,
+                repHistory: recal.repHistory,
+                bioAnalysis: recal.bioAnalysis,
+                recalibrated: true,
+              }).catch(() => {});
+            }
+          }
+        } catch (e) {
+          console.error('Recalibration failed:', e);
+        }
+        setIsRecalibrating(false);
+      });
+    } else if (clamped === reps) {
+      // Reset to original analysis
+      setRecalData(null);
+      if (result.workoutId) {
+        updateWorkout(result.workoutId, {
+          reps: clamped,
+          repsOverridden: false,
+          machineReps: result.machineReps ?? reps,
+          volume: w * clamped,
+        }).catch(() => {});
+      }
+    } else {
+      // No frames available, just update the count
+      if (result.workoutId) {
+        updateWorkout(result.workoutId, {
+          reps: clamped,
+          repsOverridden: true,
+          machineReps: result.machineReps ?? reps,
+          volume: w * clamped,
+        }).catch(() => {});
+      }
     }
-  }, [result.workoutId, reps, result.machineReps, result.weight]);
+  }, [result.workoutId, reps, result.machineReps, result.weight, result.frames, result.exercise, result.fps, profile]);
 
   // Score reveal animation: count up from 0
   const [displayScore, setDisplayScore] = useState(0);
@@ -310,7 +370,7 @@ export default function ResultCard({ result, onReplay }) {
             <span style={{
               fontSize: '0.55rem', color: 'var(--accent)', position: 'absolute',
               bottom: 4, left: '50%', transform: 'translateX(-50%)', opacity: 0.7,
-            }}>{t('tap_to_edit') || 'tap to edit'}</span>
+            }}>{t('tap_to_edit')}</span>
           )}
         </div>
         <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '100ms' }}>
@@ -335,6 +395,26 @@ export default function ResultCard({ result, onReplay }) {
         </div>
       </div>
 
+      {/* Recalibration indicator */}
+      {isRecalibrating && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          padding: '8px 0', fontSize: '0.75rem', color: 'var(--accent)',
+        }}>
+          <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          {t('recalibrating')}
+        </div>
+      )}
+      {recalData && !isRecalibrating && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          padding: '6px 0', marginBottom: 4, fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 600,
+        }}>
+          <span style={{ fontSize: '0.8rem' }}>&#x2713;</span>
+          {t('recalibrated_notice')}
+        </div>
+      )}
+
       {/* Analysis confidence indicator */}
       {result.confidence && (
         <div style={{
@@ -346,12 +426,12 @@ export default function ResultCard({ result, onReplay }) {
             background: result.confidence.level === 'high' ? 'var(--accent)' :
               result.confidence.level === 'medium' ? 'var(--yellow)' : 'var(--red)',
           }} />
-          {result.confidence.level === 'high' ? t('confidence_high') || 'High confidence' :
-           result.confidence.level === 'medium' ? t('confidence_medium') || 'Medium confidence — some landmarks occluded' :
-           t('confidence_low') || 'Low confidence — try a clearer camera angle'}
+          {result.confidence.level === 'high' ? t('confidence_high') :
+           result.confidence.level === 'medium' ? t('confidence_medium') :
+           t('confidence_low')}
           {repWasOverridden && (
             <span style={{ marginLeft: 8, color: 'var(--accent)', fontWeight: 600 }}>
-              {t('user_corrected') || 'User corrected'}
+              {t('user_corrected')}
             </span>
           )}
         </div>
@@ -635,7 +715,7 @@ export default function ResultCard({ result, onReplay }) {
       {/* Eccentric tempo per rep */}
       {repHistory && repHistory.length > 0 && repHistory.some(r => r.velocity?.eccentricTime > 0) && (
         <div style={{ marginTop: 14 }}>
-          <h4>{t('eccentric_tempo') || 'Eccentric Tempo'}</h4>
+          <h4>{t('eccentric_tempo')}</h4>
           <div className="rep-bars">
             {repHistory.map((rep, i) => {
               const vel = rep.velocity;
@@ -662,7 +742,7 @@ export default function ResultCard({ result, onReplay }) {
             })}
           </div>
           <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-            {t('eccentric_tempo_target') || 'Target: 2-4s eccentric for hypertrophy (green = in range)'}
+            {t('eccentric_tempo_target')}
           </p>
         </div>
       )}
@@ -738,8 +818,8 @@ export default function ResultCard({ result, onReplay }) {
       </button>
 
       {showDeepData && (<>
-      {result.diagnostics?.progression && result.diagnostics.progression.score > 0 && (() => {
-        const prog = result.diagnostics.progression;
+      {(recalData?.diagnostics?.progression || result.diagnostics?.progression)?.score > 0 && (() => {
+        const prog = recalData?.diagnostics?.progression || result.diagnostics.progression;
         const gradeColor = prog.score >= 750 ? 'var(--accent)' : prog.score >= 500 ? 'var(--yellow)' : 'var(--red)';
         return (
           <div style={{ marginTop: 14, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0,245,212,0.06), rgba(0,245,212,0.02))', borderRadius: 10, border: '1px solid rgba(0,245,212,0.15)' }}>
@@ -798,7 +878,7 @@ export default function ResultCard({ result, onReplay }) {
             )}
             {oneRM && (
               <div className="stat-card">
-                <span className="stat-card-label">{t('estimated_1rm') || 'EST. 1RM'}</span>
+                <span className="stat-card-label">{t('estimated_1rm')}</span>
                 <span className="stat-card-value">
                   {oneRM}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>kg</span>
                 </span>
