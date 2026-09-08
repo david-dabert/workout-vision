@@ -866,6 +866,15 @@ select {
   box-shadow: 0 0 30px rgba(0, 245, 212, 0.1);
 }
 
+.upload-zone.dragover {
+  background:
+    linear-gradient(rgba(0,245,212,0.06), rgba(0,245,212,0.03)) padding-box,
+    linear-gradient(135deg, var(--bio-cyan), var(--bio-green)) border-box;
+  transform: scale(1.02);
+  box-shadow: 0 0 40px rgba(0, 245, 212, 0.15);
+  border-color: var(--bio-cyan);
+}
+
 .upload-content { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
 .upload-icon {

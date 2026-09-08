@@ -28,8 +28,16 @@ const LandingPage = safeLazy(() => import('./components/LandingPage'));
 const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 
 const LazyFallback = (
-  <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: '1rem' }}>
-    <div className="spinner" />
+  <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
+    <div className="skeleton" style={{ width: '60%', height: 24, borderRadius: 8, marginBottom: 16 }} />
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+    </div>
+    <div className="skeleton" style={{ height: 120, borderRadius: 14, marginBottom: 12 }} />
+    <div className="skeleton" style={{ height: 80, borderRadius: 14 }} />
   </div>
 );
 

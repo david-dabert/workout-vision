@@ -93,9 +93,9 @@ export default function ChallengeBar({ challenge, completedResult, onAccept }) {
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
           {shareStatus === 'copied'
-            ? 'Link copied!'
+            ? t('link_copied')
             : shareStatus === 'shared'
-              ? 'Shared!'
+              ? t('shared')
               : `Send my result to ${cmp.challengerName}`}
         </button>
       </div>
@@ -188,7 +188,7 @@ export function ChallengeResponseView({ response, onDismiss }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
         <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Challenge Response
+          {t('challenge_response')}
         </span>
         <button
           onClick={() => { onDismiss(); clearChallengeFromURL(); }}

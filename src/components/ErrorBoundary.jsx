@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { tModule } from '../lib/LanguageContext';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -40,24 +41,23 @@ class ErrorBoundary extends Component {
         <div style={styles.container}>
           <div style={styles.card}>
             <div style={styles.icon}>⚠</div>
-            <h2 style={styles.title}>Something went wrong</h2>
+            <h2 style={styles.title}>{tModule('err_title')}</h2>
             <p style={styles.message}>
-              An unexpected error occurred. You can try again or return to the
-              dashboard.
+              {tModule('err_message')}
             </p>
             <div style={styles.actions}>
               <button style={styles.primaryBtn} onClick={this.handleTryAgain}>
-                Try again
+                {tModule('err_try_again')}
               </button>
               <button style={styles.secondaryBtn} onClick={this.handleReload}>
-                Reload
+                {tModule('err_reload')}
               </button>
               <button style={styles.secondaryBtn} onClick={this.handleGoHome}>
-                Go Home
+                {tModule('err_go_home')}
               </button>
             </div>
             <details style={styles.details}>
-              <summary style={styles.detailsToggle}>Show technical details</summary>
+              <summary style={styles.detailsToggle}>{tModule('err_show_details')}</summary>
               <pre style={styles.detailsBody}>
                 {currentHash ? `Page: ${currentHash}\n` : ''}{errorMessage}{stack ? `\n\nComponent:\n${stack.slice(0, 500)}` : ''}
               </pre>

@@ -108,6 +108,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   }, []);
   const [errorMsg, setErrorMsg] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
+  const [dragOver, setDragOver] = useState(false);
   const [ffmpegStatus, setFfmpegStatus] = useState('');
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -591,7 +592,18 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         </div>
       )}
 
-      <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
+      <div
+        className={`upload-zone${dragOver ? ' dragover' : ''}`}
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
+        onDrop={(e) => {
+          e.preventDefault(); e.stopPropagation(); setDragOver(false);
+          const files = e.dataTransfer?.files;
+          if (files?.length) handleFiles({ target: { files } });
+        }}
+      >
         <div className="upload-content">
           <div className="upload-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

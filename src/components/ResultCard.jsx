@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { EXERCISES, getExerciseIllustration } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
 import Confetti from './Confetti';
@@ -95,7 +95,7 @@ function generateProgressionNote(progression, t) {
   return t('prog_consistent', { date: dateStr });
 }
 
-export default function ResultCard({ result, onReplay }) {
+function ResultCard({ result, onReplay }) {
   const { t, tExercise, tFormCheck } = useT();
   const { profile } = useProfile();
   const {
@@ -1102,3 +1102,5 @@ export default function ResultCard({ result, onReplay }) {
     </div>
   );
 }
+
+export default memo(ResultCard);

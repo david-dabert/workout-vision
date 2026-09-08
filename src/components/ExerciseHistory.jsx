@@ -330,7 +330,7 @@ export default function ExerciseHistory({ onClose }) {
         <div className="card" style={{ textAlign: 'center', padding: 40 }}>
           <p className="text-muted">{t('no_exercises_recorded')}</p>
           <p className="text-xs text-muted" style={{ marginTop: 6 }}>
-            Log a workout to start tracking your history.
+            {t('exercise_history_empty_hint')}
           </p>
         </div>
       ) : (
