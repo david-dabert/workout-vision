@@ -1230,6 +1230,7 @@ export const EXERCISES = {
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
     upThreshold: 140,
+    minSpacing: 0.25,
     formChecks: [
       {
         name: 'Plank position',
@@ -1275,6 +1276,7 @@ export const EXERCISES = {
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 70,
+    minSpacing: 0.25,
     formChecks: [
       {
         name: 'Arm height',
@@ -2631,6 +2633,7 @@ export const EXERCISES = {
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 140,
     upThreshold: 165,
+    minSpacing: 0.2,
     formChecks: [
       { name: 'Lower back down', check: (angles) => angles.trunk > 60 && angles.trunk < 100, quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); }, good: 'Back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2006' },
     ],
@@ -2869,9 +2872,21 @@ export const EXERCISES = {
     category: 'compound',
     muscles: { primary: ['Deltoids', 'Core'], secondary: ['Forearms', 'Latissimus Dorsi'] },
     joint: 'shoulder',
-    getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
-    downThreshold: 20,
-    upThreshold: 60,
+    getValue: (angles, landmarks) => {
+      // Track wrist Y-position scaled to degrees-like range.
+      // Use the best-visibility wrist (not average) to handle alternating waves.
+      if (!landmarks) return bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder');
+      const lw = landmarks[15], rw = landmarks[16];
+      const lVis = lw ? (lw.visibility || 0) : 0;
+      const rVis = rw ? (rw.visibility || 0) : 0;
+      if (lVis > 0.3 && lVis >= rVis) return lw.y * 360;
+      if (rVis > 0.3) return rw.y * 360;
+      return bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder');
+    },
+    downThreshold: 100,
+    upThreshold: 200,
+    minSpacing: 0.15,
+    amplitudeRatio: 0.25,
     formChecks: [
       { name: 'Stable base', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15), good: 'Athletic stance', bad: 'Bend knees into athletic position', severity: 'minor', citation: 'Fountaine CJ, Schmidt BJ, 2015' },
     ],

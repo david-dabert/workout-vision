@@ -295,40 +295,41 @@ export class RepCounter {
       return a ? ex.getValue(a, lm) : null;
     });
 
-    // Interpolate nulls, then smooth to eliminate bestSide oscillation noise
-    let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), 3);
+    // Interpolate nulls, then smooth to eliminate bestSide oscillation noise.
+    // Exercises can override via smoothing property. Very fast exercises
+    // (minSpacing < 0.2) get reduced smoothing to preserve rapid peaks.
+    const smoothWindow = ex.smoothing != null ? ex.smoothing
+      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 3;
+    let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), smoothWindow);
 
-    // ── Step 1b: 3D signal override for depth-axis exercises ──
-    // When the exercise has Z-priority signals in SIGNAL_PRIORITY_3D and the
-    // 2D signal has poor range (camera facing the motion axis), switch to
-    // the best available 3D signal.
+    // ── Step 1b: Alternative signal override ──
+    // When the exercise has priority signals in SIGNAL_PRIORITY_3D and the
+    // primary signal has poor range, switch to the best alternative signal.
+    // This handles both depth-axis (Z) and Y-position signals.
     const priority3D = SIGNAL_PRIORITY_3D[this._exerciseKey];
-    if (priority3D) {
-      const zSignalNames = priority3D.filter(n => n.includes('_Z') || n.includes('Dist3D'));
-      if (zSignalNames.length > 0) {
-        try {
-          const signals3D = extractSignals3D(cleanedLandmarks);
-          const range2D = Math.max(...interpolated) - Math.min(...interpolated);
-          let best3DSignal = null;
-          let best3DRange = 0;
-          for (const name of zSignalNames) {
-            const sig = signals3D.find(s => s.name === name);
-            if (!sig) continue;
-            const smoothed = this._smoothSignal(this._interpolateNulls(sig.values), 5);
-            const r = Math.max(...smoothed) - Math.min(...smoothed);
-            if (r > best3DRange) {
-              best3DRange = r;
-              best3DSignal = smoothed;
-            }
+    if (priority3D && priority3D.length > 0) {
+      try {
+        const signals3D = extractSignals3D(cleanedLandmarks);
+        const range2D = Math.max(...interpolated) - Math.min(...interpolated);
+        let bestAltSignal = null;
+        let bestAltRange = 0;
+        for (const name of priority3D) {
+          const sig = signals3D.find(s => s.name === name);
+          if (!sig) continue;
+          const smoothed = this._smoothSignal(this._interpolateNulls(sig.values), 5);
+          const r = Math.max(...smoothed) - Math.min(...smoothed);
+          if (r > bestAltRange) {
+            bestAltRange = r;
+            bestAltSignal = smoothed;
           }
-          // Use 3D signal if it has meaningfully better range than 2D (>1.5x)
-          // and the 2D signal is weak (<30 degrees range)
-          if (best3DSignal && range2D < 30 && best3DRange > range2D * 1.5) {
-            interpolated = best3DSignal;
-          }
-        } catch (_) {
-          // 3D extraction failed; continue with 2D signal
         }
+        // Use alternative signal if it has meaningfully better range than primary (>1.5x)
+        // and the primary signal is weak (<45 degrees range)
+        if (bestAltSignal && range2D < 45 && bestAltRange > range2D * 1.5) {
+          interpolated = bestAltSignal;
+        }
+      } catch (_) {
+        // Alternative signal extraction failed; continue with primary signal
       }
     }
 
@@ -470,7 +471,10 @@ export class RepCounter {
     const minAmplitude = signalRange * ampRatio;
 
     // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
-    const halfWindow = Math.max(2, Math.round(this._fps * 0.2));
+    // halfWindow for local minimum detection: ±0.2s default, faster exercises
+    // can override via minSpacing to use a proportionally smaller window.
+    const hwSec = Math.min(0.2, (this._exercise.minSpacing != null) ? this._exercise.minSpacing * 0.6 : 0.2);
+    const halfWindow = Math.max(2, Math.round(this._fps * hwSec));
     const allValleys = [];
     for (let i = 1; i < signal.length - 1; i++) {
       if (signal[i] < signal[i - 1] && signal[i] <= signal[i + 1]) {
@@ -513,8 +517,10 @@ export class RepCounter {
       return frames;
     };
 
-    // Pass 1: generous 1.2s spacing
-    const generousGap = Math.round(this._fps * 0.4);
+    // Pass 1: generous spacing. Default 0.4s; fast exercises (battle ropes,
+    // jumping jacks) can override via minSpacing to allow tighter intervals.
+    const minSpacingSec = (this._exercise.minSpacing != null) ? this._exercise.minSpacing : 0.4;
+    const generousGap = Math.max(2, Math.round(this._fps * minSpacingSec));
     const pass1 = filterWithSpacing(generousGap);
 
     let valleyFrames;

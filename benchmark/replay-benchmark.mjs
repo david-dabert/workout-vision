@@ -278,14 +278,27 @@ for (const video of cache) {
 
     const actual = counter.reps || 0;
     const diag = counter.diagnostics || {};
-    results.push({
+    const entry = {
       video: name,
       expected,
       actual,
       error: actual - expected,
       method: diag.method || '',
       exercise,
-    });
+    };
+    // Dump signal diagnostics for exercises with large errors
+    if (Math.abs(entry.error) >= 2) {
+      const cycles = diag.cycles || {};
+      entry._diag = {
+        observedRange: diag.observedRange,
+        signalRange: cycles.signalRange,
+        repsFromCycles: cycles.reps,
+        periodFrames: cycles.periodFrames,
+        numCycles: cycles.cycles ? cycles.cycles.length : 0,
+        cycleAmplitudes: cycles.cycles ? cycles.cycles.map(c => Math.round(c.amplitude)) : [],
+      };
+    }
+    results.push(entry);
   } catch (err) {
     results.push({ video: name, expected, actual: 0, error: -expected, method: '', exercise, note: err.message });
   }
