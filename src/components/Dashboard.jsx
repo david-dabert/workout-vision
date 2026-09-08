@@ -51,7 +51,7 @@ const getLast7Days = (workouts, lang = 'en') => {
   return days;
 };
 
-export default function Dashboard({ profile, modelStatus, onNavigate, challenge, challengeResponse, onDismissResponse }) {
+export default function Dashboard({ profile, modelStatus, onRetryModel, onNavigate, challenge, challengeResponse, onDismissResponse }) {
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [allWorkouts, setAllWorkouts] = useState([]);
@@ -116,9 +116,15 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
           </p>
           <p className="tagline">{t(getMotivationKey(allWorkouts.length))}</p>
           <div className="hero-status-row">
-            <div className={`engine-status engine-${statusDot}`}>
+            <div
+              className={`engine-status engine-${statusDot}`}
+              onClick={modelStatus === 'error' && onRetryModel ? onRetryModel : undefined}
+              style={modelStatus === 'error' ? { cursor: 'pointer' } : undefined}
+              role={modelStatus === 'error' ? 'button' : undefined}
+              aria-label={modelStatus === 'error' ? t('retry_engine') : undefined}
+            >
               <span className={`engine-dot ${statusDot}`} />
-              <span>{statusText}</span>
+              <span>{modelStatus === 'error' ? t('engine_failed_retry') : statusText}</span>
             </div>
             {calculateStreak(allWorkouts, profile?.trainingDays) > 0 && (
               <span className="streak-badge">

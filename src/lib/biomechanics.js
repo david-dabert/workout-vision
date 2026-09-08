@@ -259,22 +259,22 @@ function analyzeAsymmetry(anglesArray) {
     ['leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder', 'Shoulder'],
   ];
 
-  const VIS_MIN = 0.5; // only compare sides when both are well-tracked
+  const VIS_MIN = 0.25; // lowered from 0.5: many exercises have partial occlusion on one side
 
   const details = {};
   let total = 0;
   let count = 0;
 
   for (const [left, right, visLeft, visRight, name] of pairs) {
-    const diffs = anglesArray
-      .filter(a => a !== null)
-      .filter(a => {
-        // Only include frames where BOTH sides are visible
-        const lv = a[visLeft] || 0;
-        const rv = a[visRight] || 0;
-        return lv >= VIS_MIN && rv >= VIS_MIN;
-      })
-      .map(a => {
+    const valid = anglesArray.filter(a => a !== null);
+    let filtered = valid.filter(a => {
+      const lv = a[visLeft] || 0;
+      const rv = a[visRight] || 0;
+      return lv >= VIS_MIN && rv >= VIS_MIN;
+    });
+    // Fallback: if threshold rejects everything, use all non-null frames
+    if (filtered.length === 0) filtered = valid;
+    const diffs = filtered.map(a => {
         const dominant = Math.max(a[left], a[right]);
         return dominant > 5 ? (Math.abs(a[left] - a[right]) / dominant) * 100 : 0;
       });

@@ -126,8 +126,13 @@ export class VelocityEngine {
     // Angular velocity metrics (signal is in degrees, so velocity is deg/s)
     const power = this._computeAngularVelocityMetrics(signedVelocity);
 
-    // Smoothness: mean absolute jerk (lower = smoother)
+    // Smoothness: normalized jerk metric (spectral arc length inspired)
+    // Normalize jerk by the signal's own velocity range so the metric is scale-invariant
     const meanAbsJerk = jerk.reduce((a, v) => a + Math.abs(v), 0) / N;
+    const velRange = Math.max(1e-6, Math.max(...signedVelocity.map(Math.abs)));
+    const normalizedJerk = meanAbsJerk / velRange;
+    // Exponential decay: typical normalized jerk ~0.5-5 for exercises
+    const smoothnessScore = Math.exp(-normalizedJerk * 0.7);
 
     return {
       velocity: signedVelocity,
@@ -138,7 +143,7 @@ export class VelocityEngine {
       repMetrics,
       fatigue,
       power,
-      smoothness: 1 / (1 + meanAbsJerk), // 0-1, higher = smoother
+      smoothness: Math.max(0, Math.min(1, smoothnessScore)),
       fps: this._fps,
     };
   }

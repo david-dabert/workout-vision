@@ -45,6 +45,8 @@ const translations = {
   'tagline': { en: 'Your AI Gym Companion', fr: 'Votre compagnon de salle intelligent' },
   'ai_engine_ready': { en: 'AI Engine Ready', fr: 'Moteur IA prêt' },
   'engine_failed': { en: 'Engine Failed', fr: 'Moteur en erreur' },
+  'engine_failed_retry': { en: 'Engine failed — tap to retry', fr: 'Erreur moteur — appuyez pour réessayer' },
+  'retry_engine': { en: 'Retry loading AI engine', fr: 'Réessayer le chargement du moteur IA' },
   'loading_ai': { en: 'Loading AI...', fr: 'Chargement IA...' },
   'install_app': { en: 'Install WorkoutVision', fr: 'Installer WorkoutVision' },
   'install_desc': { en: 'Add to home screen for full app experience', fr: "Ajouter à l'écran d'accueil" },

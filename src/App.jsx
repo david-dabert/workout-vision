@@ -30,7 +30,6 @@ const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 const LazyFallback = (
   <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: '1rem' }}>
     <div className="spinner" />
-    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Loading...</p>
   </div>
 );
 
@@ -50,20 +49,19 @@ function AppInner() {
     if (resp) setChallengeResponse(resp);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    const timeout = setTimeout(() => {
-      if (!cancelled) setModelStatus('error');
-    }, 15000);
-    // Dynamic import: MediaPipe WASM must not execute at bundle parse time.
-    // It crashes Safari if the WASM environment isn't ready. Lazy-loading
-    // lets React mount first, then loads the AI engine in the background.
+  const loadModelRef = useRef(null);
+  loadModelRef.current = () => {
+    setModelStatus('loading');
+    const timeout = setTimeout(() => setModelStatus('error'), 45000);
     import('./lib/poseAnalysis')
       .then((mod) => mod.preloadModel())
-      .then((ok) => { if (!cancelled) setModelStatus(ok ? 'ready' : 'error'); })
-      .catch(() => { if (!cancelled) setModelStatus('error'); });
-    return () => { cancelled = true; clearTimeout(timeout); };
-  }, []);
+      .then((ok) => { clearTimeout(timeout); setModelStatus(ok ? 'ready' : 'error'); })
+      .catch(() => { clearTimeout(timeout); setModelStatus('error'); });
+  };
+
+  useEffect(() => { loadModelRef.current(); }, []);
+
+  const retryModel = () => loadModelRef.current();
 
   const onNavigate = (p) => setPage(p);
 
@@ -170,6 +168,7 @@ function AppInner() {
       <Dashboard
         profile={profile}
         modelStatus={modelStatus}
+        onRetryModel={retryModel}
         onNavigate={onNavigate}
         challenge={challenge}
         challengeResponse={challengeResponse}
