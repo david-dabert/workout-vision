@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useT } from '../lib/LanguageContext';
 
 const PRIVACY_ACCEPTED_KEY = 'wv_privacy_accepted';
 
@@ -18,6 +19,15 @@ export function usePrivacyGate() {
 }
 
 export default function CameraPrivacyModal({ onAccept, onDecline }) {
+  const { t } = useT();
+
+  const items = [
+    { label: t('privacy_ondevice_label'), desc: t('privacy_ondevice_desc') },
+    { label: t('privacy_nocloud_label'), desc: t('privacy_nocloud_desc') },
+    { label: t('privacy_noaccount_label'), desc: t('privacy_noaccount_desc') },
+    { label: t('privacy_control_label'), desc: t('privacy_control_desc') },
+  ];
+
   return (
     <div className="modal-backdrop" style={{
       position: 'fixed', inset: 0, zIndex: 9999,
@@ -32,32 +42,21 @@ export default function CameraPrivacyModal({ onAccept, onDecline }) {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>🔒</div>
-          <h2 style={{ margin: 0, fontSize: 20 }}>Your Privacy Matters</h2>
+          <h2 style={{ margin: 0, fontSize: 20 }}>{t('privacy_title')}</h2>
         </div>
 
         <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary, #aaa)' }}>
           <p style={{ margin: '0 0 12px' }}>
-            WorkoutVision analyzes your exercise form using AI pose detection.
-            Here is what you should know:
+            {t('privacy_intro')}
           </p>
 
           <ul style={{ margin: '0 0 16px', paddingLeft: 20 }}>
-            <li style={{ marginBottom: 8 }}>
-              <strong style={{ color: 'var(--text, #fff)' }}>100% on-device.</strong>{' '}
-              Your video never leaves your phone. All AI processing happens locally in your browser.
-            </li>
-            <li style={{ marginBottom: 8 }}>
-              <strong style={{ color: 'var(--text, #fff)' }}>No cloud uploads.</strong>{' '}
-              No server ever sees your video, body measurements, or workout data.
-            </li>
-            <li style={{ marginBottom: 8 }}>
-              <strong style={{ color: 'var(--text, #fff)' }}>No account required.</strong>{' '}
-              No login, no email, no tracking. Your data stays in your browser.
-            </li>
-            <li>
-              <strong style={{ color: 'var(--text, #fff)' }}>You are in control.</strong>{' '}
-              Delete all data anytime from Settings. Video frames are discarded immediately after analysis.
-            </li>
+            {items.map((item, i) => (
+              <li key={i} style={{ marginBottom: i < items.length - 1 ? 8 : 0 }}>
+                <strong style={{ color: 'var(--text, #fff)' }}>{item.label}</strong>{' '}
+                {item.desc}
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -69,7 +68,7 @@ export default function CameraPrivacyModal({ onAccept, onDecline }) {
             fontWeight: 600, borderRadius: 12, marginBottom: 10,
           }}
         >
-          I Understand — Continue
+          {t('privacy_accept')}
         </button>
         <button
           onClick={onDecline}
@@ -80,7 +79,7 @@ export default function CameraPrivacyModal({ onAccept, onDecline }) {
             borderRadius: 12, color: 'var(--text-secondary, #aaa)',
           }}
         >
-          Go Back
+          {t('privacy_decline')}
         </button>
       </div>
     </div>

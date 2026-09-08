@@ -20,6 +20,7 @@ import {
   recordAnalysis,
   upgradePlan,
 } from '../lib/subscription';
+import { useT } from '../lib/LanguageContext';
 
 // ---------------------------------------------------------------------------
 // useSubscription hook
@@ -89,10 +90,19 @@ const STRIPE_ANNUAL_LINK = 'https://buy.stripe.com/placeholder-annual';
 // ---------------------------------------------------------------------------
 
 function UpgradeModal({ limitStatus, onClose }) {
+  const { t } = useT();
   const dailyLimit = PLAN_LIMITS[PLANS.FREE].analysesPerDay;
   const usedToday = limitStatus
     ? Math.max(0, dailyLimit - (limitStatus.remaining ?? 0))
     : dailyLimit;
+
+  const features = [
+    t('sub_feat_unlimited'),
+    t('sub_feat_charts'),
+    t('sub_feat_pdf'),
+    t('sub_feat_baseline'),
+    t('sub_feat_priority'),
+  ];
 
   return (
     <div style={overlayStyle}>
@@ -103,12 +113,12 @@ function UpgradeModal({ limitStatus, onClose }) {
           <span style={{ fontSize: 28 }}>⚡</span>
         </div>
 
-        <h3 style={headingStyle}>Daily limit reached</h3>
+        <h3 style={headingStyle}>{t('sub_limit_reached')}</h3>
 
         {/* Usage indicator */}
         <div style={usageBadgeStyle}>
           <span style={{ color: 'rgba(240,240,245,0.5)', fontSize: '0.78rem' }}>
-            {usedToday} of {dailyLimit} free analyses used today
+            {t('sub_usage', { used: usedToday, limit: dailyLimit })}
           </span>
           <div style={usageBarTrackStyle}>
             <div style={{ ...usageBarFillStyle, width: `${(usedToday / dailyLimit) * 100}%` }} />
@@ -117,13 +127,7 @@ function UpgradeModal({ limitStatus, onClose }) {
 
         {/* What Pro includes */}
         <ul style={featureListStyle}>
-          {[
-            'Unlimited daily analyses',
-            'Advanced joint angle charts',
-            'PDF workout reports',
-            'Form baseline tracking',
-            'Priority AI model access',
-          ].map((feat) => (
+          {features.map((feat) => (
             <li key={feat} style={featureItemStyle}>
               <span style={featureDotStyle} />
               <span style={{ fontSize: '0.82rem', color: 'rgba(240,240,245,0.85)' }}>{feat}</span>
@@ -132,7 +136,6 @@ function UpgradeModal({ limitStatus, onClose }) {
         </ul>
 
         {/* Pricing buttons — link to Stripe Payment Links */}
-        {/* Replace with real Stripe Payment Links from your Stripe Dashboard */}
         <a
           href={STRIPE_MONTHLY_LINK}
           target="_blank"
@@ -141,7 +144,7 @@ function UpgradeModal({ limitStatus, onClose }) {
         >
           <span style={{ fontWeight: 700 }}>€3.99 / month</span>
           <span style={{ fontSize: '0.72rem', opacity: 0.75, display: 'block', marginTop: 2 }}>
-            Start today, cancel anytime
+            {t('sub_monthly_cta')}
           </span>
         </a>
 
@@ -152,18 +155,18 @@ function UpgradeModal({ limitStatus, onClose }) {
           style={btnSecondaryStyle}
         >
           <span style={{ fontWeight: 700 }}>€29.99 / year</span>
-          <span style={saveBadgeStyle}>Save 37%</span>
+          <span style={saveBadgeStyle}>{t('sub_save_pct')}</span>
           <span style={{ fontSize: '0.72rem', opacity: 0.7, display: 'block', marginTop: 2 }}>
-            Best value — €2.50/month
+            {t('sub_annual_value')}
           </span>
         </a>
 
         {/* Privacy note */}
         <p style={privacyNoteStyle}>
-          Everything stays on-device. No video ever leaves your phone.
+          {t('sub_privacy_note')}
         </p>
 
-        <button style={btnGhostStyle} onClick={onClose}>Maybe later</button>
+        <button style={btnGhostStyle} onClick={onClose}>{t('sub_later')}</button>
       </div>
     </div>
   );

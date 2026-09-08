@@ -3307,3 +3307,88 @@ textarea:focus-visible {
     font-size: 1.4rem;
   }
 }
+
+
+/* ══════════════════════════════════════════
+   POLISH — micro-interactions & entrance animations
+   ══════════════════════════════════════════ */
+
+/* Card entrance animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.result-card {
+  animation: fadeInUp 0.4s var(--ease-out) both;
+}
+
+/* Stagger cards in grids */
+.stats-grid-2x2 > :nth-child(1) { animation-delay: 0ms; }
+.stats-grid-2x2 > :nth-child(2) { animation-delay: 60ms; }
+.stats-grid-2x2 > :nth-child(3) { animation-delay: 120ms; }
+.stats-grid-2x2 > :nth-child(4) { animation-delay: 180ms; }
+
+/* Smooth card border glow on hover (desktop) */
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--glass-border-hover);
+    box-shadow: 0 0 20px rgba(0, 245, 212, 0.04);
+  }
+
+  .action-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-accent-lg);
+  }
+
+  .action-secondary:hover {
+    transform: translateY(-1px);
+    border-color: var(--glass-border-hover);
+  }
+}
+
+/* VisionScore subtitle */
+.vision-score-subtitle {
+  display: block;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* Engine status retry pulse */
+.engine-status.engine-err {
+  cursor: pointer;
+}
+.engine-status.engine-err:active {
+  transform: scale(0.96);
+}
+
+/* Weekly dot transitions */
+.weekly-dot-label {
+  transition: color 0.2s, font-weight 0.2s;
+}
+
+/* Tab bar smooth transitions */
+.tab-item {
+  transition: color 0.2s var(--ease-smooth), opacity 0.2s;
+}
+
+/* Score badge reveal */
+@keyframes badgePop {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.result-badge-reveal {
+  animation: badgePop 0.5s var(--ease-spring) both;
+}
+
+/* Stat card stagger reveal */
+@keyframes statReveal {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.result-stat-reveal {
+  animation: statReveal 0.35s var(--ease-out) both;
+}
