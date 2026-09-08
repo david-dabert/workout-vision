@@ -8,6 +8,27 @@ import Onboarding from './components/Onboarding';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
+// Dynamic GPU capability detection: disable backdrop-filter on weak devices
+(() => {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) { document.documentElement.classList.add('no-glass'); return; }
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '';
+    // Detect low-end mobile GPUs that choke on backdrop-filter compositing
+    const isLowEnd = /SwiftShader|llvmpipe|Software|Mali-4|Adreno\s[23]\d{2}/i.test(renderer);
+    // Also detect iOS devices with < 4GB RAM (approximation via device pixel ratio + screen)
+    const isOldiOS = /iPad|iPhone/.test(navigator.userAgent) && window.devicePixelRatio <= 2 && screen.height < 812;
+    if (isLowEnd || isOldiOS) {
+      document.documentElement.classList.add('no-glass');
+    }
+    // Clean up GL context
+    const ext = gl.getExtension('WEBGL_lose_context');
+    if (ext) ext.loseContext();
+  } catch { /* silent fallback: keep glass */ }
+})();
+
 // Wrap lazy imports so chunk-load failures surface a readable error
 // instead of an uncatchable rejected promise.
 const safeLazy = (loader) => lazy(() =>

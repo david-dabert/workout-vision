@@ -1,27 +1,218 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 /**
- * Hook to communicate with the pose detection Web Worker.
- * Currently a scaffold — full implementation pending MediaPipe
- * OffscreenCanvas support validation.
+ * React hook that manages a Web Worker running the full MediaPipe inference pipeline.
+ *
+ * The worker handles: model load → inference → Kalman filtering → angle extraction.
+ * Main thread stays free for UI rendering at 60fps.
+ *
+ * Usage:
+ *   const { isReady, initWorker, detectFrame, resetWorker, disposeWorker } = usePoseWorker();
+ *   await initWorker();
+ *   const { landmarks, angles } = await detectFrame(canvas, timestamp, frameIndex);
+ *
+ * Falls back to null (caller should use main-thread detection) when:
+ *   - OffscreenCanvas not supported
+ *   - Worker fails to load
+ *   - Module workers not supported
  */
+
+// Feature detection: can we use the worker path?
+const WORKER_SUPPORTED = (() => {
+  try {
+    return typeof OffscreenCanvas !== 'undefined' && typeof Worker !== 'undefined';
+  } catch { return false; }
+})();
+
 export default function usePoseWorker() {
   const workerRef = useRef(null);
+  const pendingRef = useRef(new Map()); // frameIndex → { resolve, reject }
+  const [isReady, setIsReady] = useState(false);
+  const [isSupported] = useState(WORKER_SUPPORTED);
+  const initPromiseRef = useRef(null);
 
+  // Clean up on unmount
   useEffect(() => {
-    // Worker creation deferred until full migration
     return () => {
       if (workerRef.current) {
-        workerRef.current.postMessage({ type: 'destroy' });
+        workerRef.current.postMessage({ type: 'dispose' });
+        workerRef.current.terminate();
         workerRef.current = null;
       }
+      pendingRef.current.clear();
     };
   }, []);
 
-  const detect = useCallback((imageBitmap, timestamp) => {
-    // Placeholder — currently detection still runs on main thread
-    return null;
+  const handleMessage = useCallback((e) => {
+    const msg = e.data;
+
+    if (msg.type === 'ready') {
+      setIsReady(true);
+      if (initPromiseRef.current) {
+        initPromiseRef.current.resolve(true);
+        initPromiseRef.current = null;
+      }
+      return;
+    }
+
+    if (msg.type === 'error') {
+      console.error('[PoseWorker]', msg.message);
+      if (initPromiseRef.current) {
+        initPromiseRef.current.reject(new Error(msg.message));
+        initPromiseRef.current = null;
+      }
+      return;
+    }
+
+    if (msg.type === 'result') {
+      const pending = pendingRef.current.get(msg.frameIndex);
+      if (pending) {
+        pendingRef.current.delete(msg.frameIndex);
+        pending.resolve({
+          landmarks: msg.landmarks,
+          angles: msg.angles,
+          inferenceMs: msg.inferenceMs,
+        });
+      }
+      return;
+    }
+
+    if (msg.type === 'resetDone' || msg.type === 'disposed') {
+      return;
+    }
   }, []);
 
-  return { detect, isReady: false };
+  /**
+   * Initialize the worker and load the MediaPipe model.
+   * Returns a promise that resolves when the model is ready.
+   */
+  const initWorker = useCallback(async () => {
+    if (!WORKER_SUPPORTED) return false;
+    if (workerRef.current && isReady) return true;
+
+    // Already initializing
+    if (initPromiseRef.current) {
+      return initPromiseRef.current.promise;
+    }
+
+    try {
+      const worker = new Worker(
+        new URL('./poseWorker.js', import.meta.url),
+        { type: 'module' }
+      );
+      worker.onmessage = handleMessage;
+      worker.onerror = (err) => {
+        console.error('[PoseWorker] Worker error:', err);
+        setIsReady(false);
+        if (initPromiseRef.current) {
+          initPromiseRef.current.reject(new Error('Worker crashed'));
+          initPromiseRef.current = null;
+        }
+      };
+      workerRef.current = worker;
+
+      const promise = new Promise((resolve, reject) => {
+        initPromiseRef.current = { resolve, reject };
+        // Timeout after 45s
+        setTimeout(() => {
+          if (initPromiseRef.current) {
+            initPromiseRef.current.reject(new Error('Worker init timeout'));
+            initPromiseRef.current = null;
+          }
+        }, 45000);
+      });
+
+      worker.postMessage({ type: 'init' });
+      return promise;
+    } catch (err) {
+      console.error('[PoseWorker] Failed to create worker:', err);
+      return false;
+    }
+  }, [isReady, handleMessage]);
+
+  /**
+   * Send a frame to the worker for detection.
+   * @param {HTMLCanvasElement} canvas - The canvas with the current video frame drawn on it
+   * @param {number} timestamp - Deterministic timestamp for MediaPipe VIDEO mode
+   * @param {number} frameIndex - Unique frame index for response matching
+   * @returns {Promise<{landmarks, angles, inferenceMs}>}
+   */
+  const detectFrame = useCallback(async (canvas, timestamp, frameIndex) => {
+    if (!workerRef.current || !isReady) return null;
+
+    try {
+      // ImageBitmap transfer: zero-copy, fastest path
+      const bitmap = await createImageBitmap(canvas);
+      const promise = new Promise((resolve, reject) => {
+        pendingRef.current.set(frameIndex, { resolve, reject });
+        // Safety timeout per frame (5s)
+        setTimeout(() => {
+          if (pendingRef.current.has(frameIndex)) {
+            pendingRef.current.delete(frameIndex);
+            resolve(null); // Don't crash, just skip
+          }
+        }, 5000);
+      });
+      workerRef.current.postMessage(
+        { type: 'detect', bitmap, timestamp, frameIndex },
+        [bitmap] // Transfer ownership
+      );
+      return promise;
+    } catch {
+      // Fallback: raw pixel transfer if createImageBitmap fails
+      try {
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const buffer = imageData.data.buffer;
+        const promise = new Promise((resolve) => {
+          pendingRef.current.set(frameIndex, { resolve, reject: () => resolve(null) });
+          setTimeout(() => {
+            if (pendingRef.current.has(frameIndex)) {
+              pendingRef.current.delete(frameIndex);
+              resolve(null);
+            }
+          }, 5000);
+        });
+        workerRef.current.postMessage(
+          { type: 'detectPixels', frameData: buffer, width: canvas.width, height: canvas.height, timestamp, frameIndex },
+          [buffer]
+        );
+        return promise;
+      } catch {
+        return null;
+      }
+    }
+  }, [isReady]);
+
+  /**
+   * Reset Kalman filter state in the worker (between videos).
+   */
+  const resetWorker = useCallback(() => {
+    if (workerRef.current) {
+      workerRef.current.postMessage({ type: 'reset' });
+    }
+    pendingRef.current.clear();
+  }, []);
+
+  /**
+   * Dispose the worker entirely.
+   */
+  const disposeWorker = useCallback(() => {
+    if (workerRef.current) {
+      workerRef.current.postMessage({ type: 'dispose' });
+      workerRef.current.terminate();
+      workerRef.current = null;
+    }
+    setIsReady(false);
+    pendingRef.current.clear();
+  }, []);
+
+  return {
+    isReady,
+    isSupported,
+    initWorker,
+    detectFrame,
+    resetWorker,
+    disposeWorker,
+  };
 }

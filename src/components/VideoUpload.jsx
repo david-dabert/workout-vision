@@ -15,6 +15,8 @@ import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import { extractFramesStreaming, hashFile, hashLandmarks } from '../lib/frameExtractor';
 import { AudioFeedback } from '../lib/AudioFeedback';
 import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
+import usePoseWorker from '../lib/usePoseWorker';
+import { computeCalibration, applyCalibration } from '../lib/calibration';
 
 
 // ── Landmark cache (IndexedDB) ──
@@ -88,6 +90,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const { t, tExercise, tFormCheck, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
   const { accepted: privacyAccepted, accept: acceptPrivacy, showModal: showPrivacyModal } = usePrivacyGate();
+  const { isReady: workerReady, isSupported: workerSupported, initWorker, detectFrame, resetWorker, disposeWorker } = usePoseWorker();
   const [queue, setQueue] = useState([]);
   const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
@@ -119,22 +122,20 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [audioEnabled, setAudioEnabled] = useState(false);
 
   useEffect(() => {
+    // Pre-initialize worker in background (model downloads while user picks video)
+    if (workerSupported) initWorker().catch(() => {});
     return () => {
-      // Abort any in-progress analysis
       abortRef.current = true;
-      // Free WebGL contexts to prevent iOS Safari crash on re-mount
       disposeAllLandmarkers();
-      // Free any lingering blob URL
+      disposeWorker();
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
       }
-      // Clear video src to release decoder memory
       if (videoRef.current) {
         videoRef.current.removeAttribute('src');
         videoRef.current.load();
       }
-      // Dispose audio feedback
       if (audioFeedbackRef.current) {
         audioFeedbackRef.current.dispose();
         audioFeedbackRef.current = null;
@@ -189,15 +190,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setFfmpegStatus('Hashing video file...');
     const videoHash = await hashFile(queueItem.file);
 
-    // ── Phase 2: Load MediaPipe model ──
+    // ── Phase 2: Load MediaPipe model (worker or main thread) ──
     setAnalysisPhase('model');
     setFfmpegStatus('Loading AI model...');
-    // Reset Kalman filters and anatomical state from any previous analysis
     resetKalmanFilters();
-    const landmarker = await getImageLandmarker();
-    if (!landmarker) {
-      setErrorMsg(t('model_failed'));
-      return null;
+    const useWorker = workerReady || (workerSupported && await initWorker().catch(() => false));
+    if (useWorker) resetWorker();
+    let landmarker = null;
+    if (!useWorker) {
+      landmarker = await getImageLandmarker();
+      if (!landmarker) {
+        setErrorMsg(t('model_failed'));
+        return null;
+      }
     }
 
     // Target FPS and frame count
@@ -254,28 +259,41 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             async (canvas, frameIndex, timestamp) => {
               if (abortRef.current) return;
 
-              // Run MediaPipe directly on the canvas (no ImageData copy needed)
               const deterministicTs = frameIndex * (1000 / analysisFps);
-              const result = detectPoseImage(landmarker, canvas, deterministicTs);
-
               let landmarks = null;
-              if (result?.landmarks?.length) {
-                if (result.landmarks.length === 1) {
-                  landmarks = result.landmarks[0];
-                } else {
-                  if (lockedSubjectIdx === null) {
-                    landmarks = selectSubjectPose(result.landmarks);
-                    lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                  } else {
-                    landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-                  }
+              let angles = null;
+
+              if (useWorker) {
+                // Off-thread inference via Web Worker (main thread stays free)
+                const workerResult = await detectFrame(canvas, deterministicTs, frameIndex);
+                if (workerResult) {
+                  landmarks = workerResult.landmarks;
+                  angles = workerResult.angles;
                 }
+              } else {
+                // Main-thread fallback
+                const result = detectPoseImage(landmarker, canvas, deterministicTs);
+                if (result?.landmarks?.length) {
+                  if (result.landmarks.length === 1) {
+                    landmarks = result.landmarks[0];
+                  } else {
+                    if (lockedSubjectIdx === null) {
+                      landmarks = selectSubjectPose(result.landmarks);
+                      lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                    } else {
+                      landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                    }
+                  }
+                  angles = extractJointAngles(landmarks);
+                }
+              }
+
+              if (landmarks) {
                 const time = frameIndex / analysisFps;
-                const angles = extractJointAngles(landmarks);
+                if (!angles) angles = extractJointAngles(landmarks);
                 frames.push({ landmarks, timestamp: time, angles });
                 replayFrames.push({ landmarks, timestamp: time });
 
-                // Update live rep count for real-time feedback
                 const liveResult = liveRepCounter.update(landmarks, time);
                 if (liveResult?.repCount != null) {
                   setLiveReps(liveResult.repCount);
@@ -328,6 +346,23 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     // Transition to analyzing phase (exercise detection + rep counting + biomechanics)
     setAnalysisPhase('analyzing');
     setFfmpegStatus('Processing movement data...');
+
+    // ── Phase 5.5: Auto-calibration from first ~1 second of standing pose ──
+    const calibFrameCount = Math.min(Math.ceil(analysisFps * 1), frames.length);
+    if (calibFrameCount >= analysisFps * 0.5) {
+      const calibLandmarks = frames.slice(0, calibFrameCount).map(f => f.landmarks);
+      const calibration = computeCalibration(calibLandmarks, analysisFps);
+      if (calibration && Math.abs(calibration.rotationAngle) > 0.05) {
+        // Apply perspective correction to all frames
+        for (const f of frames) {
+          f.landmarks = applyCalibration(f.landmarks, calibration);
+          f.angles = extractJointAngles(f.landmarks);
+        }
+        for (const f of replayFrames) {
+          f.landmarks = applyCalibration(f.landmarks, calibration);
+        }
+      }
+    }
 
     // ── Phase 6: Compute landmark hash and confidence ──
     const landmarkHashValue = await hashLandmarks(frames.map(f => f.landmarks));
@@ -484,7 +519,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       weight: w,
       debug,
     };
-  }, [exercise, autoDetect, weight, userInjuries]);
+  }, [exercise, autoDetect, weight, userInjuries, workerReady, workerSupported, initWorker, detectFrame, resetWorker]);
 
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);
