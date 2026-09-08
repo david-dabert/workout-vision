@@ -19,7 +19,7 @@
  *   finalize() is never called.
  */
 
-import { extractJointAngles, LANDMARKS } from './poseAnalysis';
+import { extractJointAngles, LANDMARKS, interpolateOccludedLandmarks } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { shouldSkipCheck } from './injuries';
 import { VelocityEngine } from './VelocityEngine';
@@ -286,8 +286,11 @@ export class RepCounter {
     const N = this._collectedLandmarks.length;
     if (ex.isIsometric || N < 6) return;
 
+    // ── Step 0: Interpolate occluded landmarks for cleaner signal ──
+    const cleanedLandmarks = interpolateOccludedLandmarks(this._collectedLandmarks);
+
     // ── Step 1: Extract the raw tracking signal ──
-    const rawValues = this._collectedLandmarks.map(lm => {
+    const rawValues = cleanedLandmarks.map(lm => {
       const a = extractJointAngles(lm);
       return a ? ex.getValue(a, lm) : null;
     });
@@ -304,7 +307,7 @@ export class RepCounter {
       const zSignalNames = priority3D.filter(n => n.includes('_Z') || n.includes('Dist3D'));
       if (zSignalNames.length > 0) {
         try {
-          const signals3D = extractSignals3D(this._collectedLandmarks);
+          const signals3D = extractSignals3D(cleanedLandmarks);
           const range2D = Math.max(...interpolated) - Math.min(...interpolated);
           let best3DSignal = null;
           let best3DRange = 0;
@@ -390,7 +393,7 @@ export class RepCounter {
     };
 
     this._reps = result.reps;
-    this._repHistory = this._buildFormHistoryFromCycles(cycles);
+    this._repHistory = this._buildFormHistoryFromCycles(cycles, cleanedLandmarks);
 
     // Velocity and progression (downstream features, non-critical)
     try {
@@ -597,10 +600,11 @@ export class RepCounter {
 
   // ─── Private: Build form history from cycle boundaries ───
 
-  _buildFormHistoryFromCycles(cycles) {
+  _buildFormHistoryFromCycles(cycles, landmarks) {
     if (cycles.length === 0) return [];
 
-    const N = this._collectedLandmarks.length;
+    const lm = landmarks || this._collectedLandmarks;
+    const N = lm.length;
     const ex = this._exercise;
     const checks = ex.formChecks || [];
     const history = [];
@@ -624,9 +628,9 @@ export class RepCounter {
         // MOVE during the rep (swing), not its absolute angle.
         const cycleTrunkAngles = [];
         for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
-          const lm = this._collectedLandmarks[i];
-          if (!lm) continue;
-          const a = extractJointAngles(lm);
+          const frameLm = lm[i];
+          if (!frameLm) continue;
+          const a = extractJointAngles(frameLm);
           if (a && a.trunk != null) cycleTrunkAngles.push(a.trunk);
         }
         const trunkBaseline = cycleTrunkAngles.length > 0
@@ -659,9 +663,9 @@ export class RepCounter {
           const hasQualityFn = typeof fc.quality === 'function';
 
           for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
-            const landmarks = this._collectedLandmarks[i];
-            if (!landmarks) continue;
-            const angles = extractJointAngles(landmarks);
+            const frameLandmarks = lm[i];
+            if (!frameLandmarks) continue;
+            const angles = extractJointAngles(frameLandmarks);
             if (!angles) continue;
             sampleCount++;
             if (!fc.check(angles, landmarks)) failCount++;

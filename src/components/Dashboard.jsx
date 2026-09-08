@@ -337,18 +337,18 @@ export default function Dashboard({ profile, modelStatus, onNavigate, challenge,
 
 // ── Insights Section ──
 
-function translateRecommendation(data, lang) {
+function translateRecommendation(data, lang, t) {
   if (lang !== 'fr') return data.recommendation;
   const exercises = data.suggestedExercises
     .map(key => EXERCISES[key]?.name || key)
     .join(', ');
   if (data.estimatedRecovery === 'rest needed') {
-    return `Certains groupes musculaires récupèrent encore. Récupération complète dans environ ${data.daysUntilRecovered} jour(s). Pour aujourd'hui, concentrez-vous sur : ${exercises}.`;
+    return t('rec_rest_needed').replace('{days}', data.daysUntilRecovered).replace('{exercises}', exercises);
   }
   if (data.estimatedRecovery === 'partial') {
-    return `La plupart des muscles sont récupérés. Séance suggérée : ${exercises}.`;
+    return t('rec_partial').replace('{exercises}', exercises);
   }
-  return `Complètement récupéré et prêt à s'entraîner. Séance suggérée : ${exercises}.`;
+  return t('rec_recovered').replace('{exercises}', exercises);
 }
 
 function InsightsSection({ profile, workouts }) {
@@ -668,7 +668,7 @@ function InsightsSection({ profile, workouts }) {
         <div className="card insights-card">
           <h4 className="insights-card-title">{t('next_workout')}</h4>
           <p className="insights-recommendation">
-            {lang === 'fr' ? translateRecommendation(nextWorkoutData, lang) : nextWorkoutData.recommendation}
+            {translateRecommendation(nextWorkoutData, lang, t)}
           </p>
           {/* Weekly muscle volume */}
           {Object.keys(weeklyMuscleVolume).length > 0 && (

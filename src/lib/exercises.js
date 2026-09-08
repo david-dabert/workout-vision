@@ -252,7 +252,7 @@ export const EXERCISES = {
   deadlift: {
     name: 'Conventional Deadlift',
     category: 'compound',
-    muscles: { primary: ['Hamstrings', 'Glutes', 'Erectors'], secondary: ['Quadriceps', 'Traps', 'Forearms'] },
+    muscles: { primary: ['Hamstrings', 'Glutes', 'Erectors'], secondary: ['Quadriceps', 'Trapezius', 'Forearms'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
@@ -495,6 +495,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.max(angles.leftKnee, angles.rightKnee) > 165,
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 165, 15),
         good: 'Full knee extension -- peak quad contraction',
         bad: 'Extend fully',
         severity: 'minor',
@@ -529,6 +530,7 @@ export const EXERCISES = {
       {
         name: 'Knee straight',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15),
         good: 'Knees straight -- gastrocnemius targeted',
         bad: 'Knees bending',
         severity: 'minor',
@@ -542,7 +544,7 @@ export const EXERCISES = {
   push_up: {
     name: 'Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Core', 'Serratus Anterior'] },
+    muscles: { primary: ['Pectorals', 'Anterior Deltoids', 'Triceps'], secondary: ['Core', 'Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     amplitudeRatio: 0.25,
@@ -583,7 +585,7 @@ export const EXERCISES = {
   overhead_press: {
     name: 'Overhead Press',
     category: 'compound',
-    muscles: { primary: ['Anterior Deltoid', 'Medial Deltoid', 'Triceps'], secondary: ['Upper Pectorals', 'Core', 'Traps'] },
+    muscles: { primary: ['Anterior Deltoids', 'Lateral Deltoids', 'Triceps'], secondary: ['Upper Pectorals', 'Core', 'Trapezius'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
@@ -625,7 +627,7 @@ export const EXERCISES = {
   bench_press: {
     name: 'Bench Press (side view)',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
+    muscles: { primary: ['Pectorals', 'Anterior Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
@@ -659,7 +661,7 @@ export const EXERCISES = {
   dip: {
     name: 'Dip',
     category: 'bodyweight',
-    muscles: { primary: ['Triceps', 'Anterior Deltoid', 'Pectorals'], secondary: ['Core'] },
+    muscles: { primary: ['Triceps', 'Anterior Deltoids', 'Pectorals'], secondary: ['Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 95,
@@ -668,6 +670,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15),
         good: 'Upper arm parallel or below',
         bad: 'Go deeper for full activation',
         severity: 'minor',
@@ -676,6 +679,7 @@ export const EXERCISES = {
       {
         name: 'Full lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full extension at top',
         bad: 'Lock out fully at top',
         severity: 'minor',
@@ -690,7 +694,7 @@ export const EXERCISES = {
   bent_over_row: {
     name: 'Bent-Over Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Rear Deltoid'], secondary: ['Biceps', 'Erectors', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Posterior Deltoids'], secondary: ['Biceps', 'Erectors', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 130,
@@ -707,8 +711,8 @@ export const EXERCISES = {
       },
       {
         name: 'Elbow drive',
-        check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 60,
-        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15),
+        check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 75,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 75, 15),
         good: 'Full contraction -- elbows pulled past torso',
         bad: 'Pull elbows higher',
         severity: 'minor',
@@ -730,7 +734,7 @@ export const EXERCISES = {
   pull_up: {
     name: 'Pull-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoid', 'Rhomboids', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Posterior Deltoids', 'Rhomboids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     amplitudeRatio: 0.22,
@@ -753,7 +757,7 @@ export const EXERCISES = {
         good: 'Full dead hang at bottom',
         bad: 'Extend fully at bottom',
         severity: 'minor',
-        phase: 'top',
+        phase: 'bottom',
         citation: 'Youdas JW et al, 2010, J Strength Cond Res',
       },
     ],
@@ -764,7 +768,7 @@ export const EXERCISES = {
   bicep_curl: {
     name: 'Bicep Curl',
     category: 'isolation',
-    muscles: { primary: ['Biceps Brachii'], secondary: ['Brachialis', 'Brachioradialis'] },
+    muscles: { primary: ['Biceps'], secondary: ['Brachialis', 'Brachioradialis'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     amplitudeRatio: 0.30,
@@ -787,7 +791,7 @@ export const EXERCISES = {
         good: 'Full extension at bottom',
         bad: 'Extend arms fully at bottom',
         severity: 'minor',
-        phase: 'top',
+        phase: 'bottom',
         citation: 'Oliveira LF et al, 2009, J Strength Cond Res',
       },
       {
@@ -806,7 +810,7 @@ export const EXERCISES = {
   tricep_extension: {
     name: 'Overhead Tricep Extension',
     category: 'isolation',
-    muscles: { primary: ['Triceps (long head)'], secondary: [] },
+    muscles: { primary: ['Triceps'], secondary: [] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
@@ -815,6 +819,7 @@ export const EXERCISES = {
       {
         name: 'Full stretch',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 55,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 55, 15),
         good: 'Deep stretch -- long head fully lengthened',
         bad: 'Lower further behind head for full stretch',
         severity: 'minor',
@@ -823,6 +828,7 @@ export const EXERCISES = {
       {
         name: 'Full lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 155,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15),
         good: 'Full extension -- peak contraction',
         bad: 'Extend fully overhead',
         severity: 'minor',
@@ -832,6 +838,7 @@ export const EXERCISES = {
       {
         name: 'Elbow stable',
         check: (angles) => Math.abs(angles.leftShoulder - angles.rightShoulder) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftShoulder, angles.rightShoulder, 15),
         good: 'Elbows stable and aligned',
         bad: 'Elbows flaring',
         severity: 'minor',
@@ -844,7 +851,7 @@ export const EXERCISES = {
   upright_row: {
     name: 'Upright Row',
     category: 'isolation',
-    muscles: { primary: ['Medial Deltoid', 'Traps'], secondary: ['Biceps', 'Anterior Deltoid'] },
+    muscles: { primary: ['Lateral Deltoids', 'Trapezius'], secondary: ['Biceps', 'Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
@@ -853,6 +860,7 @@ export const EXERCISES = {
       {
         name: 'Elbows high',
         check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 75,
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 75, 15),
         good: 'Elbows pulled high',
         bad: 'Pull elbows higher',
         severity: 'minor',
@@ -861,6 +869,7 @@ export const EXERCISES = {
       {
         name: 'Trunk stable',
         check: (angles) => angles.trunk < 25,
+        quality: (angles) => qualityBelow(angles.trunk, 25, 10),
         good: 'Torso stable',
         bad: 'Excessive leaning',
         severity: 'minor',
@@ -873,7 +882,7 @@ export const EXERCISES = {
   lateral_raise: {
     name: 'Lateral Raise',
     category: 'isolation',
-    muscles: { primary: ['Medial Deltoid'], secondary: ['Anterior Deltoid', 'Traps'] },
+    muscles: { primary: ['Lateral Deltoids'], secondary: ['Anterior Deltoids', 'Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
@@ -883,6 +892,7 @@ export const EXERCISES = {
       {
         name: 'Height',
         check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 80,
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 80, 15),
         good: 'Arms at or above shoulder height',
         bad: 'Raise higher',
         severity: 'minor',
@@ -891,6 +901,7 @@ export const EXERCISES = {
       {
         name: 'Symmetry',
         check: (angles) => Math.abs(angles.leftShoulder - angles.rightShoulder) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftShoulder, angles.rightShoulder, 15),
         good: 'Both arms at same height',
         bad: 'Uneven raise',
         severity: 'minor',
@@ -899,6 +910,7 @@ export const EXERCISES = {
       {
         name: 'No shrugging',
         check: (angles) => angles.trunk < 10,
+        quality: (angles) => qualityBelow(angles.trunk, 10, 10),
         good: 'Shoulders down -- clean isolation',
         bad: 'Shrugging',
         severity: 'minor',
@@ -913,7 +925,7 @@ export const EXERCISES = {
   chest_supported_row: {
     name: 'Chest-Supported Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Rear Deltoid'], secondary: ['Biceps', 'Traps'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Posterior Deltoids'], secondary: ['Biceps', 'Trapezius'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 65,
@@ -922,6 +934,7 @@ export const EXERCISES = {
       {
         name: 'Full contraction',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 80,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 80, 15),
         good: 'Full pull -- shoulder blades squeezed',
         bad: 'Pull further',
         severity: 'minor',
@@ -930,6 +943,7 @@ export const EXERCISES = {
       {
         name: 'Arm symmetry',
         check: (angles) => Math.abs(angles.leftElbow - angles.rightElbow) < 20,
+        quality: (angles) => qualitySymmetry(angles.leftElbow, angles.rightElbow, 20),
         good: 'Both arms pulling evenly',
         bad: 'One arm pulling harder',
         severity: 'minor',
@@ -942,7 +956,7 @@ export const EXERCISES = {
   seated_row: {
     name: 'Seated Cable Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids'], secondary: ['Biceps', 'Rear Deltoid', 'Erectors'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids'], secondary: ['Biceps', 'Posterior Deltoids', 'Erectors'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 65,
@@ -951,6 +965,7 @@ export const EXERCISES = {
       {
         name: 'Full contraction',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 80,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 80, 15),
         good: 'Full pull -- elbows past torso',
         bad: 'Pull further',
         severity: 'minor',
@@ -959,6 +974,7 @@ export const EXERCISES = {
       {
         name: 'Trunk stable',
         check: (angles) => angles.trunk < 30,
+        quality: (angles) => qualityBelow(angles.trunk, 30, 10),
         good: 'Trunk upright and stable',
         bad: 'Excessive lean',
         severity: 'minor',
@@ -971,7 +987,7 @@ export const EXERCISES = {
   lat_pulldown: {
     name: 'Lat Pulldown',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoid', 'Rhomboids', 'Traps'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Posterior Deltoids', 'Rhomboids', 'Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
@@ -1013,6 +1029,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 90, 15),
         good: 'Full depth -- 90 deg knee angle',
         bad: 'Go deeper',
         severity: 'minor',
@@ -1021,6 +1038,7 @@ export const EXERCISES = {
       {
         name: 'Knee symmetry',
         check: (angles) => Math.abs(angles.leftKnee - angles.rightKnee) < 12,
+        quality: (angles) => qualitySymmetry(angles.leftKnee, angles.rightKnee, 12),
         good: 'Knees pressing evenly',
         bad: 'Uneven press',
         severity: 'minor',
@@ -1042,6 +1060,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 165,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 165, 15),
         good: 'Full lockout -- peak quad contraction',
         bad: 'Extend fully',
         severity: 'minor',
@@ -1051,6 +1070,7 @@ export const EXERCISES = {
       {
         name: 'Knee symmetry',
         check: (angles) => Math.abs(angles.leftKnee - angles.rightKnee) < 12,
+        quality: (angles) => qualitySymmetry(angles.leftKnee, angles.rightKnee, 12),
         good: 'Both legs extending evenly',
         bad: 'One leg weaker',
         severity: 'minor',
@@ -1072,6 +1092,7 @@ export const EXERCISES = {
       {
         name: 'Full contraction',
         check: (angles) => Math.max(angles.leftKnee, angles.rightKnee) < 50,
+        quality: (angles) => qualityBelow(bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 50, 15),
         good: 'Full curl -- heels to glutes',
         bad: 'Curl further',
         severity: 'minor',
@@ -1084,7 +1105,7 @@ export const EXERCISES = {
   machine_chest_press: {
     name: 'Machine Chest Press',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
+    muscles: { primary: ['Pectorals', 'Anterior Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
@@ -1093,6 +1114,7 @@ export const EXERCISES = {
       {
         name: 'Full press',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full extension',
         bad: 'Press further',
         severity: 'minor',
@@ -1101,6 +1123,7 @@ export const EXERCISES = {
       {
         name: 'Arm symmetry',
         check: (angles) => Math.abs(angles.leftElbow - angles.rightElbow) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftElbow, angles.rightElbow, 15),
         good: 'Both arms pressing evenly',
         bad: 'One arm lagging',
         severity: 'minor',
@@ -1159,6 +1182,7 @@ export const EXERCISES = {
       {
         name: 'Range',
         check: (angles) => angles.trunk > 25,
+        quality: (angles) => qualityAbove(angles.trunk, 25, 12),
         good: 'Sufficient curl -- shoulders off floor',
         bad: 'Curl higher',
         severity: 'minor',
@@ -1171,7 +1195,7 @@ export const EXERCISES = {
   mountain_climber: {
     name: 'Mountain Climber',
     category: 'bodyweight',
-    muscles: { primary: ['Core', 'Hip Flexors'], secondary: ['Shoulders', 'Quadriceps', 'Glutes'] },
+    muscles: { primary: ['Core', 'Hip Flexors'], secondary: ['Deltoids', 'Quadriceps', 'Glutes'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
@@ -1179,7 +1203,8 @@ export const EXERCISES = {
     formChecks: [
       {
         name: 'Plank position',
-        check: (angles) => angles.trunk < 25,
+        check: (angles) => angles.trunk > 60 && angles.trunk < 100,
+        quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); },
         good: 'Flat back maintained',
         bad: 'Hips rising',
         severity: 'major',
@@ -1192,7 +1217,7 @@ export const EXERCISES = {
   burpee: {
     name: 'Burpee',
     category: 'bodyweight',
-    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Pectorals', 'Shoulders', 'Core'] },
+    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Pectorals', 'Deltoids', 'Core'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
@@ -1201,6 +1226,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15),
         good: 'Full standing extension at top',
         bad: 'Stand up fully between reps',
         severity: 'minor',
@@ -1223,6 +1249,7 @@ export const EXERCISES = {
       {
         name: 'Arm height',
         check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 80,
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 80, 15),
         good: 'Arms reaching full overhead',
         bad: 'Raise arms higher overhead',
         severity: 'minor',
@@ -1236,7 +1263,7 @@ export const EXERCISES = {
   pike_push_up: {
     name: 'Pike Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Anterior Deltoid', 'Triceps'], secondary: ['Upper Pectorals', 'Core'] },
+    muscles: { primary: ['Anterior Deltoids', 'Triceps'], secondary: ['Upper Pectorals', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
@@ -1245,6 +1272,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15),
         good: 'Head approaching floor',
         bad: 'Go deeper',
         severity: 'minor',
@@ -1253,6 +1281,7 @@ export const EXERCISES = {
       {
         name: 'Hip pike',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 110,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 110, 15),
         good: 'Hips high -- good pike angle',
         bad: 'Push hips higher',
         severity: 'major',
@@ -1265,7 +1294,7 @@ export const EXERCISES = {
   diamond_push_up: {
     name: 'Diamond Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Triceps', 'Pectorals'], secondary: ['Anterior Deltoid', 'Core'] },
+    muscles: { primary: ['Triceps', 'Pectorals'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
@@ -1274,6 +1303,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 80,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 80, 15),
         good: 'Chest to hands',
         bad: 'Go deeper',
         severity: 'minor',
@@ -1295,7 +1325,7 @@ export const EXERCISES = {
   inverted_row: {
     name: 'Inverted Row',
     category: 'bodyweight',
-    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Rear Deltoid'], secondary: ['Biceps', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Posterior Deltoids'], secondary: ['Biceps', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
@@ -1304,6 +1334,7 @@ export const EXERCISES = {
       {
         name: 'Full pull',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 60,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15),
         good: 'Chest to bar',
         bad: 'Pull higher',
         severity: 'minor',
@@ -1315,6 +1346,7 @@ export const EXERCISES = {
           const avgHip = (angles.leftHip + angles.rightHip) / 2;
           return avgHip > 160;
         },
+        quality: (angles) => qualityAbove((angles.leftHip + angles.rightHip) / 2, 160, 15),
         good: 'Body rigid and straight',
         bad: 'Hips sagging',
         severity: 'major',
@@ -1337,6 +1369,7 @@ export const EXERCISES = {
       {
         name: 'Squat depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15),
         good: 'Good squat depth before jump',
         bad: 'Squat deeper before jumping',
         severity: 'minor',
@@ -1345,6 +1378,7 @@ export const EXERCISES = {
       {
         name: 'Landing mechanics',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 140 && angles.trunk < 30,
+        quality: (angles) => Math.min(qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 140, 15), qualityBelow(angles.trunk, 30, 12)),
         good: 'Soft landing -- knees absorbing impact',
         bad: 'Soften your landing',
         severity: 'major',
@@ -1357,7 +1391,7 @@ export const EXERCISES = {
   pistol_squat: {
     name: 'Pistol Squat',
     category: 'bodyweight',
-    muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Core', 'Hip Stabilizers'] },
+    muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Core', 'Gluteus Medius'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 90,
@@ -1366,6 +1400,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 80,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 80, 15),
         good: 'Full depth -- hamstring to calf',
         bad: 'Go deeper if mobility allows',
         severity: 'minor',
@@ -1374,6 +1409,7 @@ export const EXERCISES = {
       {
         name: 'Trunk upright',
         check: (angles) => angles.trunk < 40,
+        quality: (angles) => qualityBelow(angles.trunk, 40, 12),
         good: 'Torso controlled',
         bad: 'Excessive forward lean',
         severity: 'minor',
@@ -1395,6 +1431,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) > 165,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 165, 15),
         good: 'Full hip extension -- glutes fully engaged',
         bad: 'Push hips higher',
         severity: 'minor',
@@ -1407,6 +1444,7 @@ export const EXERCISES = {
           const avg = (angles.leftKnee + angles.rightKnee) / 2;
           return avg > 80 && avg < 110;
         },
+        quality: (angles) => qualityRange((angles.leftKnee + angles.rightKnee) / 2, 80, 110, 12),
         good: 'Knees at ~90 degrees',
         bad: 'Reposition feet',
         severity: 'minor',
@@ -1430,6 +1468,7 @@ export const EXERCISES = {
       {
         name: 'Knee angle',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15),
         good: 'Thighs at or below parallel',
         bad: 'Slide lower',
         severity: 'minor',
@@ -1438,6 +1477,7 @@ export const EXERCISES = {
       {
         name: 'Back flat',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 10),
         good: 'Back flat against wall',
         bad: 'Press back flat against wall',
         severity: 'minor',
@@ -1450,7 +1490,7 @@ export const EXERCISES = {
   dead_hang: {
     name: 'Dead Hang',
     category: 'bodyweight',
-    muscles: { primary: ['Forearms', 'Lats'], secondary: ['Shoulders', 'Core'] },
+    muscles: { primary: ['Forearms', 'Latissimus Dorsi'], secondary: ['Deltoids', 'Core'] },
     joint: 'shoulder',
     isIsometric: true,
     minIsometricDuration: 10000, // 10s minimum
@@ -1458,8 +1498,8 @@ export const EXERCISES = {
     downThreshold: null,
     upThreshold: null,
     formChecks: [
-      { name: 'Arms extended', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, good: 'Full arm extension', bad: 'Straighten arms fully', severity: 'minor', citation: 'Escamilla RF et al, 2009' },
-      { name: 'Shoulders engaged', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, good: 'Shoulders active', bad: 'Pack shoulders', severity: 'major', citation: 'Escamilla RF et al, 2009' },
+      { name: 'Arms extended', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15), good: 'Full arm extension', bad: 'Straighten arms fully', severity: 'minor', citation: 'Escamilla RF et al, 2009' },
+      { name: 'Shoulders engaged', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 150, 15), good: 'Shoulders active', bad: 'Pack shoulders', severity: 'major', citation: 'Escamilla RF et al, 2009' },
     ],
     scienceNotes: 'Dead hangs decompress the spine and develop grip endurance. Active scapular engagement prevents shoulder impingement (Escamilla 2009).',
   },
@@ -1467,7 +1507,7 @@ export const EXERCISES = {
   l_sit: {
     name: 'L-Sit Hold',
     category: 'bodyweight',
-    muscles: { primary: ['Hip Flexors', 'Rectus Abdominis'], secondary: ['Triceps', 'Quadriceps', 'Lats'] },
+    muscles: { primary: ['Hip Flexors', 'Rectus Abdominis'], secondary: ['Triceps', 'Quadriceps', 'Latissimus Dorsi'] },
     joint: 'hip',
     isIsometric: true,
     minIsometricDuration: 5000, // 5s minimum (advanced hold)
@@ -1475,8 +1515,8 @@ export const EXERCISES = {
     downThreshold: null,
     upThreshold: null,
     formChecks: [
-      { name: 'Legs parallel', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 100, good: 'Legs at or above parallel', bad: 'Raise legs higher to parallel', severity: 'major', citation: 'Contreras B, 2011' },
-      { name: 'Knees straight', check: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 150, good: 'Legs straight', bad: 'Extend knees fully', severity: 'minor', citation: 'Contreras B, 2011' },
+      { name: 'Legs parallel', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 100, 15), good: 'Legs at or above parallel', bad: 'Raise legs higher to parallel', severity: 'major', citation: 'Contreras B, 2011' },
+      { name: 'Knees straight', check: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 150, 15), good: 'Legs straight', bad: 'Extend knees fully', severity: 'minor', citation: 'Contreras B, 2011' },
     ],
     scienceNotes: 'L-sit hold demands extreme hip flexor and core isometric strength with locked-arm support (Contreras 2011).',
   },
@@ -1493,7 +1533,7 @@ export const EXERCISES = {
     upThreshold: null,
     formChecks: [
       { name: 'Lower back flat', check: (angles) => angles.trunk > 60 && angles.trunk < 100, quality: (angles) => { const dev = Math.abs(angles.trunk - 80); return Math.max(0, 1 - dev / 30); }, good: 'Back pressed to floor', bad: 'Press lower back into floor', severity: 'major', citation: 'McGill SM, 2010' },
-      { name: 'Arms overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 140, good: 'Arms extended overhead', bad: 'Reach arms overhead', severity: 'minor', citation: 'McGill SM, 2010' },
+      { name: 'Arms overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 140, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 140, 15), good: 'Arms extended overhead', bad: 'Reach arms overhead', severity: 'minor', citation: 'McGill SM, 2010' },
     ],
     scienceNotes: 'Hollow body hold is a gymnastics fundamental producing full-body isometric tension with emphasis on anterior core (McGill 2010).',
   },
@@ -1501,7 +1541,7 @@ export const EXERCISES = {
   overhead_hold: {
     name: 'Overhead Hold',
     category: 'compound',
-    muscles: { primary: ['Shoulders', 'Trapezius'], secondary: ['Core', 'Triceps'] },
+    muscles: { primary: ['Deltoids', 'Trapezius'], secondary: ['Core', 'Triceps'] },
     joint: 'shoulder',
     isIsometric: true,
     minIsometricDuration: 10000, // 10s minimum
@@ -1509,8 +1549,8 @@ export const EXERCISES = {
     downThreshold: null,
     upThreshold: null,
     formChecks: [
-      { name: 'Arms locked', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, good: 'Full lockout', bad: 'Lock elbows fully', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
-      { name: 'Overhead position', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, good: 'Weight directly overhead', bad: 'Press weight directly overhead', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
+      { name: 'Arms locked', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15), good: 'Full lockout', bad: 'Lock elbows fully', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
+      { name: 'Overhead position', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 150, 15), good: 'Weight directly overhead', bad: 'Press weight directly overhead', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
     ],
     scienceNotes: 'Overhead holds develop shoulder stability and core anti-extension strength under load (Schoenfeld 2010).',
   },
@@ -1518,7 +1558,7 @@ export const EXERCISES = {
   side_plank: {
     name: 'Side Plank',
     category: 'bodyweight',
-    muscles: { primary: ['Obliques'], secondary: ['Glutes', 'Shoulders', 'Core'] },
+    muscles: { primary: ['Obliques'], secondary: ['Glutes', 'Deltoids', 'Core'] },
     joint: 'hip',
     isIsometric: true,
     minIsometricDuration: 10000, // 10s minimum per side
@@ -1543,6 +1583,7 @@ export const EXERCISES = {
       {
         name: 'Full extension',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15),
         good: 'Full standing extension at top',
         bad: 'Stand up fully on the box',
         severity: 'minor',
@@ -1552,6 +1593,7 @@ export const EXERCISES = {
       {
         name: 'Trunk upright',
         check: (angles) => angles.trunk < 25,
+        quality: (angles) => qualityBelow(angles.trunk, 25, 10),
         good: 'Torso upright throughout',
         bad: 'Stay tall',
         severity: 'minor',
@@ -1565,7 +1607,7 @@ export const EXERCISES = {
   kettlebell_swing: {
     name: 'Kettlebell Swing',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Hamstrings'], secondary: ['Core', 'Shoulders', 'Erectors'] },
+    muscles: { primary: ['Glutes', 'Hamstrings'], secondary: ['Core', 'Deltoids', 'Erectors'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
@@ -1606,7 +1648,7 @@ export const EXERCISES = {
   thruster: {
     name: 'Thruster',
     category: 'compound',
-    muscles: { primary: ['Quadriceps', 'Glutes', 'Shoulders', 'Triceps'], secondary: ['Core', 'Upper Back'] },
+    muscles: { primary: ['Quadriceps', 'Glutes', 'Deltoids', 'Triceps'], secondary: ['Core', 'Upper Back'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 110,
@@ -1615,6 +1657,7 @@ export const EXERCISES = {
       {
         name: 'Squat depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15),
         good: 'Below parallel in squat',
         bad: 'Squat deeper before pressing',
         severity: 'minor',
@@ -1623,6 +1666,7 @@ export const EXERCISES = {
       {
         name: 'Lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Arms fully locked out overhead',
         bad: 'Press to full lockout',
         severity: 'minor',
@@ -1636,7 +1680,7 @@ export const EXERCISES = {
   clean_and_press: {
     name: 'Clean and Press',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Traps', 'Glutes', 'Shoulders', 'Core'] },
+    muscles: { primary: ['Full Body'], secondary: ['Trapezius', 'Glutes', 'Deltoids', 'Core'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 110,
@@ -1645,6 +1689,7 @@ export const EXERCISES = {
       {
         name: 'Hip extension',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) > 165,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 165, 15),
         good: 'Full hip extension on catch',
         bad: 'Extend hips fully during clean',
         severity: 'minor',
@@ -1654,6 +1699,7 @@ export const EXERCISES = {
       {
         name: 'Press lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Arms fully locked overhead',
         bad: 'Press to full lockout',
         severity: 'minor',
@@ -1667,7 +1713,7 @@ export const EXERCISES = {
   renegade_row: {
     name: 'Renegade Row',
     category: 'bodyweight',
-    muscles: { primary: ['Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Obliques', 'Shoulders'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Obliques', 'Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 90,
@@ -1689,7 +1735,7 @@ export const EXERCISES = {
   turkish_get_up: {
     name: 'Turkish Get-Up',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Core', 'Glutes', 'Hip Stabilizers'] },
+    muscles: { primary: ['Full Body'], secondary: ['Deltoids', 'Core', 'Glutes', 'Gluteus Medius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
@@ -1698,6 +1744,7 @@ export const EXERCISES = {
       {
         name: 'Arm vertical',
         check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 90,
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 90, 15),
         good: 'Arm locked vertical throughout',
         bad: 'Keep arm vertical',
         severity: 'major',
@@ -1710,7 +1757,7 @@ export const EXERCISES = {
   bear_crawl: {
     name: 'Bear Crawl',
     category: 'bodyweight',
-    muscles: { primary: ['Core', 'Shoulders'], secondary: ['Quadriceps', 'Hip Flexors', 'Triceps'] },
+    muscles: { primary: ['Core', 'Deltoids'], secondary: ['Quadriceps', 'Hip Flexors', 'Triceps'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
@@ -1719,6 +1766,7 @@ export const EXERCISES = {
       {
         name: 'Low position',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 100, 15),
         good: 'Hips low -- knees hovering near ground',
         bad: 'Get lower',
         severity: 'minor',
@@ -1732,7 +1780,7 @@ export const EXERCISES = {
   muscle_up: {
     name: 'Muscle-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Latissimus Dorsi', 'Pectorals', 'Triceps'], secondary: ['Biceps', 'Core', 'Shoulders'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Pectorals', 'Triceps'], secondary: ['Biceps', 'Core', 'Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
@@ -1741,6 +1789,7 @@ export const EXERCISES = {
       {
         name: 'Full lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full lockout above bar',
         bad: 'Push to full lockout',
         severity: 'minor',
@@ -1750,10 +1799,11 @@ export const EXERCISES = {
       {
         name: 'Full hang',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full dead hang at bottom',
         bad: 'Start from a full hang',
         severity: 'minor',
-        phase: 'top',
+        phase: 'bottom',
         citation: 'Youdas JW et al, 2010, J Strength Cond Res',
       },
     ],
@@ -1763,7 +1813,7 @@ export const EXERCISES = {
   chin_up: {
     name: 'Chin-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Biceps', 'Latissimus Dorsi'], secondary: ['Rear Deltoid', 'Core'] },
+    muscles: { primary: ['Biceps', 'Latissimus Dorsi'], secondary: ['Posterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
@@ -1772,6 +1822,7 @@ export const EXERCISES = {
       {
         name: 'Full ROM',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 55,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 55, 15),
         good: 'Chin above bar',
         bad: 'Pull higher',
         severity: 'major',
@@ -1780,10 +1831,11 @@ export const EXERCISES = {
       {
         name: 'Full hang',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full dead hang',
         bad: 'Extend fully at bottom',
         severity: 'minor',
-        phase: 'top',
+        phase: 'bottom',
         citation: 'Youdas JW et al, 2010, J Strength Cond Res',
       },
     ],
@@ -1803,6 +1855,7 @@ export const EXERCISES = {
       {
         name: 'Landing depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 120,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 120, 15),
         good: 'Soft landing on box',
         bad: 'Land softer',
         severity: 'major',
@@ -1824,6 +1877,7 @@ export const EXERCISES = {
       {
         name: 'Landing control',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 130,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 130, 15),
         good: 'Controlled single-leg landing',
         bad: 'Land with more control',
         severity: 'minor',
@@ -1845,6 +1899,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15),
         good: 'Good depth on both squat and lunge',
         bad: 'Go deeper on each phase',
         severity: 'minor',
@@ -1857,7 +1912,7 @@ export const EXERCISES = {
   man_maker: {
     name: 'Man Maker',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Back', 'Chest', 'Core', 'Legs'] },
+    muscles: { primary: ['Full Body'], secondary: ['Deltoids', 'Upper Back', 'Pectorals', 'Core', 'Quadriceps'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
@@ -1866,6 +1921,7 @@ export const EXERCISES = {
       {
         name: 'Push-up depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15),
         good: 'Full push-up depth',
         bad: 'Go lower on the push-up',
         severity: 'minor',
@@ -1887,6 +1943,7 @@ export const EXERCISES = {
       {
         name: 'Full ROM',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 60,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15),
         good: 'Head above bar',
         bad: 'Pull higher',
         severity: 'minor',
@@ -1900,7 +1957,7 @@ export const EXERCISES = {
   face_pull: {
     name: 'Face Pull',
     category: 'isolation',
-    muscles: { primary: ['Rear Deltoid', 'Rotator Cuff'], secondary: ['Rhomboids', 'Traps', 'Biceps'] },
+    muscles: { primary: ['Posterior Deltoids', 'Rotator Cuff'], secondary: ['Rhomboids', 'Trapezius', 'Biceps'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 60,
@@ -1909,6 +1966,7 @@ export const EXERCISES = {
       {
         name: 'Full pull',
         check: (angles) => Math.min(angles.leftShoulder, angles.rightShoulder) > 80,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 80, 15),
         good: 'Elbows high and flared -- rear delts engaged',
         bad: 'Pull higher',
         severity: 'minor',
@@ -1917,6 +1975,7 @@ export const EXERCISES = {
       {
         name: 'Trunk stable',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 12),
         good: 'Upright torso -- no leaning back',
         bad: 'Leaning back',
         severity: 'major',
@@ -1929,7 +1988,7 @@ export const EXERCISES = {
   incline_bench_press: {
     name: 'Incline Bench Press',
     category: 'compound',
-    muscles: { primary: ['Upper Pectorals', 'Anterior Deltoid', 'Triceps'], secondary: ['Serratus Anterior'] },
+    muscles: { primary: ['Upper Pectorals', 'Anterior Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
@@ -1938,6 +1997,7 @@ export const EXERCISES = {
       {
         name: 'Depth',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) < 75,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 75, 15),
         good: 'Bar touching upper chest',
         bad: 'Lower the bar further',
         severity: 'major',
@@ -1946,6 +2006,7 @@ export const EXERCISES = {
       {
         name: 'Lockout',
         check: (angles) => Math.min(angles.leftElbow, angles.rightElbow) > 160,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15),
         good: 'Full lockout at top',
         bad: 'Extend arms fully at top',
         severity: 'minor',
@@ -1959,7 +2020,7 @@ export const EXERCISES = {
   sumo_deadlift: {
     name: 'Sumo Deadlift',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Adductors', 'Quadriceps'], secondary: ['Hamstrings', 'Erectors', 'Traps'] },
+    muscles: { primary: ['Glutes', 'Hip Adductors', 'Quadriceps'], secondary: ['Hamstrings', 'Erectors', 'Trapezius'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
@@ -1968,6 +2029,7 @@ export const EXERCISES = {
       {
         name: 'Hip hinge depth',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 100,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 100, 15),
         good: 'Full hip hinge at setup',
         bad: 'Push hips further back and down',
         severity: 'minor',
@@ -1976,6 +2038,7 @@ export const EXERCISES = {
       {
         name: 'Trunk neutral',
         check: (angles) => angles.trunk > 20 && angles.trunk < 80,
+        quality: (angles) => qualityRange(angles.trunk, 20, 80, 12),
         good: 'Back angle within safe range',
         bad: 'Excessive trunk rounding',
         severity: 'major',
@@ -1997,6 +2060,7 @@ export const EXERCISES = {
       {
         name: 'Controlled descent',
         check: (angles) => Math.min(angles.leftKnee, angles.rightKnee) > 60,
+        quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 60, 15),
         good: 'Controlled eccentric descent',
         bad: 'Collapsing too fast',
         severity: 'major',
@@ -2005,6 +2069,7 @@ export const EXERCISES = {
       {
         name: 'Trunk alignment',
         check: (angles) => angles.trunk < 25,
+        quality: (angles) => qualityBelow(angles.trunk, 25, 12),
         good: 'Body in straight line from knee to shoulder',
         bad: 'Hips breaking',
         severity: 'minor',
@@ -2037,6 +2102,7 @@ export const EXERCISES = {
           const avg = (angles.leftKnee + angles.rightKnee) / 2;
           return avg > 80 && avg < 110;
         },
+        quality: (angles) => qualityRange((angles.leftKnee + angles.rightKnee) / 2, 80, 110, 15),
         good: 'Knees at ~90 deg -- soleus targeted',
         bad: 'Maintain knee flexion to isolate soleus',
         severity: 'major',
@@ -2045,6 +2111,7 @@ export const EXERCISES = {
       {
         name: 'Full ROM',
         check: (angles) => angles.trunk < 20,
+        quality: (angles) => qualityBelow(angles.trunk, 20, 12),
         good: 'Upright seated posture',
         bad: 'Sit upright',
         severity: 'minor',
@@ -2057,7 +2124,7 @@ export const EXERCISES = {
   hanging_leg_raise: {
     name: 'Hanging Leg Raise',
     category: 'bodyweight',
-    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Obliques', 'Grip'] },
+    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Obliques', 'Forearms'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 60,
@@ -2066,6 +2133,7 @@ export const EXERCISES = {
       {
         name: 'Leg height',
         check: (angles) => Math.min(angles.leftHip, angles.rightHip) < 90,
+        quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 90, 15),
         good: 'Legs at or above parallel',
         bad: 'Raise legs higher',
         severity: 'minor',
@@ -2074,6 +2142,7 @@ export const EXERCISES = {
       {
         name: 'No swinging',
         check: (angles) => Math.abs(angles.leftHip - angles.rightHip) < 15,
+        quality: (angles) => qualitySymmetry(angles.leftHip, angles.rightHip, 15),
         good: 'Controlled movement -- no momentum',
         bad: 'Swinging detected',
         severity: 'major',
@@ -2093,7 +2162,7 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Full depth', bad: 'Go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Full depth', bad: 'Go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Hack squat machine provides guided squat pattern with back support, emphasizing quadriceps (Schoenfeld 2010).',
   },
@@ -2107,7 +2176,7 @@ export const EXERCISES = {
     downThreshold: 110,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 105, good: 'Below parallel', bad: 'Go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 105, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 105, 15), good: 'Below parallel', bad: 'Go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
     ],
     scienceNotes: 'Smith machine provides fixed bar path; foot placement forward emphasizes quads, under hips emphasizes glutes (Schoenfeld 2010).',
   },
@@ -2121,8 +2190,8 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 150,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good depth', bad: 'Squat deeper', severity: 'major', citation: 'Gullett JC et al, 2009' },
-      { name: 'Upright torso', check: (angles) => angles.trunk < 45, good: 'Torso upright', bad: 'Stay more upright', severity: 'minor', citation: 'Gullett JC et al, 2009' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good depth', bad: 'Squat deeper', severity: 'major', citation: 'Gullett JC et al, 2009' },
+      { name: 'Upright torso', check: (angles) => angles.trunk < 45, quality: (angles) => qualityBelow(angles.trunk, 45, 12), good: 'Torso upright', bad: 'Stay more upright', severity: 'minor', citation: 'Gullett JC et al, 2009' },
     ],
     scienceNotes: 'Zercher squat holds barbell in elbow crooks, requiring extreme core and upper back engagement (Gullett 2009).',
   },
@@ -2130,14 +2199,14 @@ export const EXERCISES = {
   overhead_squat: {
     name: 'Overhead Squat',
     category: 'compound',
-    muscles: { primary: ['Quadriceps', 'Glutes', 'Shoulders'], secondary: ['Core', 'Upper Back'] },
+    muscles: { primary: ['Quadriceps', 'Glutes', 'Deltoids'], secondary: ['Core', 'Upper Back'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Full depth', bad: 'Go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
-      { name: 'Arms overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, good: 'Arms locked overhead', bad: 'Keep arms fully extended overhead', severity: 'major', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Full depth', bad: 'Go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010' },
+      { name: 'Arms overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 150, 15), good: 'Arms locked overhead', bad: 'Keep arms fully extended overhead', severity: 'major', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Overhead squat demands full-body mobility and stability, used in Olympic lifting assessment and CrossFit (NSCA 2016).',
   },
@@ -2145,13 +2214,13 @@ export const EXERCISES = {
   power_clean: {
     name: 'Power Clean',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Hamstrings', 'Traps'], secondary: ['Quadriceps', 'Core', 'Deltoids'] },
+    muscles: { primary: ['Glutes', 'Hamstrings', 'Trapezius'], secondary: ['Quadriceps', 'Core', 'Deltoids'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Hip extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full hip extension', bad: 'Extend hips fully at the top', severity: 'major', citation: 'Suchomel TJ et al, 2015', phase: 'top' },
+      { name: 'Hip extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full hip extension', bad: 'Extend hips fully at the top', severity: 'major', citation: 'Suchomel TJ et al, 2015', phase: 'top' },
     ],
     scienceNotes: 'Power clean develops explosive hip extension and triple extension power, foundational Olympic lifting movement (Suchomel 2015).',
   },
@@ -2159,13 +2228,13 @@ export const EXERCISES = {
   snatch: {
     name: 'Snatch',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Hamstrings', 'Shoulders', 'Traps'], secondary: ['Quadriceps', 'Core'] },
+    muscles: { primary: ['Glutes', 'Hamstrings', 'Deltoids', 'Trapezius'], secondary: ['Quadriceps', 'Core'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full triple extension', bad: 'Extend fully before pulling under', severity: 'major', citation: 'Suchomel TJ et al, 2015', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full triple extension', bad: 'Extend fully before pulling under', severity: 'major', citation: 'Suchomel TJ et al, 2015', phase: 'top' },
     ],
     scienceNotes: 'Snatch is the highest velocity barbell movement, demanding full-body power and overhead stability (Suchomel 2015).',
   },
@@ -2173,13 +2242,13 @@ export const EXERCISES = {
   t_bar_row: {
     name: 'T-Bar Row',
     category: 'compound',
-    muscles: { primary: ['Lats', 'Rhomboids'], secondary: ['Biceps', 'Rear Deltoids', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids'], secondary: ['Biceps', 'Posterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Torso angle', check: (angles) => angles.trunk > 30 && angles.trunk < 60, good: 'Good torso angle', bad: 'Maintain 45-degree forward lean', severity: 'minor', citation: 'Lehman GJ et al, 2004' },
+      { name: 'Torso angle', check: (angles) => angles.trunk > 30 && angles.trunk < 60, quality: (angles) => qualityRange(angles.trunk, 30, 60, 12), good: 'Good torso angle', bad: 'Maintain 45-degree forward lean', severity: 'minor', citation: 'Lehman GJ et al, 2004' },
     ],
     scienceNotes: 'T-bar row produces high lat and mid-back activation with neutral grip reducing bicep limitation (Lehman 2004).',
   },
@@ -2187,13 +2256,13 @@ export const EXERCISES = {
   pendlay_row: {
     name: 'Pendlay Row',
     category: 'compound',
-    muscles: { primary: ['Lats', 'Rhomboids', 'Traps'], secondary: ['Biceps', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Trapezius'], secondary: ['Biceps', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Parallel torso', check: (angles) => angles.trunk > 60, good: 'Torso parallel to floor', bad: 'Keep torso closer to horizontal', severity: 'major', citation: 'Fenwick CM et al, 2009' },
+      { name: 'Parallel torso', check: (angles) => angles.trunk > 60, quality: (angles) => qualityAbove(angles.trunk, 60, 12), good: 'Torso parallel to floor', bad: 'Keep torso closer to horizontal', severity: 'major', citation: 'Fenwick CM et al, 2009' },
     ],
     scienceNotes: 'Pendlay row requires dead-stop from floor with parallel torso, maximizing concentric power and lat recruitment (Fenwick 2009).',
   },
@@ -2201,13 +2270,13 @@ export const EXERCISES = {
   close_grip_bench: {
     name: 'Close-Grip Bench Press',
     category: 'compound',
-    muscles: { primary: ['Triceps', 'Chest'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Triceps', 'Pectorals'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 150,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, good: 'Full lockout', bad: 'Lock out fully at top', severity: 'minor', citation: 'Lehman GJ, 2005', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15), good: 'Full lockout', bad: 'Lock out fully at top', severity: 'minor', citation: 'Lehman GJ, 2005', phase: 'top' },
     ],
     scienceNotes: 'Close-grip bench press shifts load to triceps while maintaining chest activation (Lehman 2005).',
   },
@@ -2215,13 +2284,13 @@ export const EXERCISES = {
   decline_bench_press: {
     name: 'Decline Bench Press',
     category: 'compound',
-    muscles: { primary: ['Lower Chest', 'Triceps'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Lower Pectorals', 'Triceps'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 150,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Extend fully', severity: 'minor', citation: 'Lauver JD et al, 2016', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Extend fully', severity: 'minor', citation: 'Lauver JD et al, 2016', phase: 'top' },
     ],
     scienceNotes: 'Decline angle shifts emphasis to lower pectoralis and reduces shoulder stress (Lauver 2016).',
   },
@@ -2229,13 +2298,13 @@ export const EXERCISES = {
   floor_press: {
     name: 'Floor Press',
     category: 'compound',
-    muscles: { primary: ['Chest', 'Triceps'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Triceps'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 150,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Lock out fully', severity: 'minor', citation: 'Lehman GJ, 2005', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Lock out fully', severity: 'minor', citation: 'Lehman GJ, 2005', phase: 'top' },
     ],
     scienceNotes: 'Floor press limits ROM to reduce shoulder stress and isolate lockout strength (Lehman 2005).',
   },
@@ -2243,13 +2312,13 @@ export const EXERCISES = {
   landmine_press: {
     name: 'Landmine Press',
     category: 'compound',
-    muscles: { primary: ['Chest', 'Deltoids'], secondary: ['Triceps', 'Core'] },
+    muscles: { primary: ['Pectorals', 'Deltoids'], secondary: ['Triceps', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full press', bad: 'Press to full extension', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full press', bad: 'Press to full extension', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Landmine press provides shoulder-friendly pressing with natural arc path and core demand (NSCA 2016).',
   },
@@ -2257,13 +2326,13 @@ export const EXERCISES = {
   arnold_press: {
     name: 'Arnold Press',
     category: 'compound',
-    muscles: { primary: ['Deltoids'], secondary: ['Triceps', 'Upper Chest'] },
+    muscles: { primary: ['Deltoids'], secondary: ['Triceps', 'Upper Pectorals'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full press', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full overhead extension', bad: 'Press fully overhead', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013', phase: 'top' },
+      { name: 'Full press', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full overhead extension', bad: 'Press fully overhead', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013', phase: 'top' },
     ],
     scienceNotes: 'Arnold press adds rotation through the press, increasing anterior deltoid time under tension (Saeterbakken 2013).',
   },
@@ -2278,7 +2347,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 30, good: 'Elbows at sides', bad: 'Keep elbows pinned to sides', severity: 'minor', citation: 'Marcolin G et al, 2018' },
+      { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 30, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 30, 15), good: 'Elbows at sides', bad: 'Keep elbows pinned to sides', severity: 'minor', citation: 'Marcolin G et al, 2018' },
     ],
     scienceNotes: 'Neutral grip shifts emphasis from biceps to brachioradialis and brachialis (Marcolin 2018).',
   },
@@ -2292,7 +2361,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 140,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, good: 'Full stretch at bottom', bad: 'Extend fully at bottom', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 140, 15), good: 'Full stretch at bottom', bad: 'Extend fully at bottom', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'bottom' },
     ],
     scienceNotes: 'Preacher curl pad eliminates momentum and isolates the biceps through full ROM (Marcolin 2018).',
   },
@@ -2306,7 +2375,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 140,
     formChecks: [
-      { name: 'Controlled rep', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 30, good: 'Isolated movement', bad: 'No swinging', severity: 'minor', citation: 'Marcolin G et al, 2018' },
+      { name: 'Controlled rep', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 30, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 30, 15), good: 'Isolated movement', bad: 'No swinging', severity: 'minor', citation: 'Marcolin G et al, 2018' },
     ],
     scienceNotes: 'Concentration curl produces highest biceps peak activation of all curl variants (Marcolin 2018).',
   },
@@ -2320,8 +2389,8 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 130,
     formChecks: [
-      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 50, good: 'Full curl at top', bad: 'Incomplete contraction at top', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
-      { name: 'No shoulder movement', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 40, good: 'Shoulders stable', bad: 'Shoulder movement detected', severity: 'major', citation: 'Marcolin G et al, 2018' },
+      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 50, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 50, 15), good: 'Full curl at top', bad: 'Incomplete contraction at top', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
+      { name: 'No shoulder movement', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 40, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 40, 15), good: 'Shoulders stable', bad: 'Shoulder movement detected', severity: 'major', citation: 'Marcolin G et al, 2018' },
     ],
     scienceNotes: 'Lying (incline or flat bench) bicep curls increase bicep long head stretch, producing greater hypertrophy stimulus compared to standing curls (Marcolin 2018).',
   },
@@ -2329,13 +2398,13 @@ export const EXERCISES = {
   spider_curl: {
     name: 'Spider Curl',
     category: 'isolation',
-    muscles: { primary: ['Biceps (short head)'], secondary: ['Brachialis'] },
+    muscles: { primary: ['Biceps'], secondary: ['Brachialis'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 140,
     formChecks: [
-      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 45, good: 'Peak squeeze at top', bad: 'Curl higher', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
+      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 45, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 45, 15), good: 'Peak squeeze at top', bad: 'Curl higher', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
     ],
     scienceNotes: 'Spider curls (prone on incline bench) eliminate momentum and isolate bicep short head through gravity-loaded contraction (Marcolin 2018).',
   },
@@ -2349,7 +2418,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 140,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, good: 'Full lockout', bad: 'Extend fully at top', severity: 'minor', citation: 'Landin D, Thompson M, 2011', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 150, 15), good: 'Full lockout', bad: 'Extend fully at top', severity: 'minor', citation: 'Landin D, Thompson M, 2011', phase: 'top' },
     ],
     scienceNotes: 'Skull crushers (lying tricep extension) maximize long head tricep activation through overhead stretch (Landin 2011).',
   },
@@ -2363,7 +2432,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 130,
     formChecks: [
-      { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 25, good: 'Elbows at sides', bad: 'Keep elbows pinned', severity: 'minor', citation: 'Landin D, Thompson M, 2011' },
+      { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 25, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 25, 15), good: 'Elbows at sides', bad: 'Keep elbows pinned', severity: 'minor', citation: 'Landin D, Thompson M, 2011' },
     ],
     scienceNotes: 'Cable pushdowns isolate the triceps with constant tension through full ROM (Landin 2011).',
   },
@@ -2371,13 +2440,13 @@ export const EXERCISES = {
   front_raise: {
     name: 'Front Raise',
     category: 'isolation',
-    muscles: { primary: ['Front Deltoids'], secondary: ['Upper Chest'] },
+    muscles: { primary: ['Anterior Deltoids'], secondary: ['Upper Pectorals'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 80,
     formChecks: [
-      { name: 'No swing', check: (angles) => angles.trunk < 20, good: 'Controlled raise', bad: 'No swinging', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013' },
+      { name: 'No swing', check: (angles) => angles.trunk < 20, quality: (angles) => qualityBelow(angles.trunk, 20, 12), good: 'Controlled raise', bad: 'No swinging', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013' },
     ],
     scienceNotes: 'Front raises isolate anterior deltoid; stopping at shoulder height prevents impingement (Saeterbakken 2013).',
   },
@@ -2385,13 +2454,13 @@ export const EXERCISES = {
   rear_delt_fly: {
     name: 'Rear Delt Fly',
     category: 'isolation',
-    muscles: { primary: ['Rear Deltoids'], secondary: ['Rhomboids', 'Traps'] },
+    muscles: { primary: ['Posterior Deltoids'], secondary: ['Rhomboids', 'Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 20,
     upThreshold: 70,
     formChecks: [
-      { name: 'Forward lean', check: (angles) => angles.trunk > 30, good: 'Good bend-over position', bad: 'Lean forward more to target rear delts', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013' },
+      { name: 'Forward lean', check: (angles) => angles.trunk > 30, quality: (angles) => qualityAbove(angles.trunk, 30, 12), good: 'Good bend-over position', bad: 'Lean forward more to target rear delts', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013' },
     ],
     scienceNotes: 'Rear delt fly isolates posterior deltoid, critical for shoulder balance and posture (Saeterbakken 2013).',
   },
@@ -2399,13 +2468,13 @@ export const EXERCISES = {
   shrug: {
     name: 'Shrug',
     category: 'isolation',
-    muscles: { primary: ['Traps'], secondary: ['Levator Scapulae'] },
+    muscles: { primary: ['Trapezius'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 15,
     upThreshold: 30,
     formChecks: [
-      { name: 'No arm bend', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, good: 'Arms straight', bad: 'Keep arms straight', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'No arm bend', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 150, 15), good: 'Arms straight', bad: 'Keep arms straight', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Shrugs isolate upper trapezius. Full elevation and controlled descent maximize time under tension (NSCA 2016).',
   },
@@ -2413,13 +2482,13 @@ export const EXERCISES = {
   cable_fly: {
     name: 'Cable Fly',
     category: 'isolation',
-    muscles: { primary: ['Chest'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals'], secondary: ['Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 70,
     formChecks: [
-      { name: 'Slight elbow bend', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 130, good: 'Good arm position', bad: 'Keep slight bend in elbows', severity: 'minor', citation: 'Lauver JD et al, 2016' },
+      { name: 'Slight elbow bend', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 130, quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 130, 15), good: 'Good arm position', bad: 'Keep slight bend in elbows', severity: 'minor', citation: 'Lauver JD et al, 2016' },
     ],
     scienceNotes: 'Cable flys maintain constant tension through full chest ROM unlike dumbbell flys (Lauver 2016).',
   },
@@ -2427,13 +2496,13 @@ export const EXERCISES = {
   dumbbell_fly: {
     name: 'Dumbbell Fly',
     category: 'isolation',
-    muscles: { primary: ['Chest'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals'], secondary: ['Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 20,
     upThreshold: 60,
     formChecks: [
-      { name: 'Slight elbow bend', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 130, good: 'Good arm arc', bad: 'Keep slight bend', severity: 'minor', citation: 'Lauver JD et al, 2016' },
+      { name: 'Slight elbow bend', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 130, quality: (angles) => qualityAbove(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 130, 15), good: 'Good arm arc', bad: 'Keep slight bend', severity: 'minor', citation: 'Lauver JD et al, 2016' },
     ],
     scienceNotes: 'Dumbbell flys stretch pectorals through full horizontal adduction (Lauver 2016).',
   },
@@ -2441,13 +2510,13 @@ export const EXERCISES = {
   cable_crossover: {
     name: 'Cable Crossover',
     category: 'isolation',
-    muscles: { primary: ['Chest'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals'], secondary: ['Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 70,
     formChecks: [
-      { name: 'Controlled squeeze', check: (angles) => angles.trunk < 25, good: 'Good torso position', bad: 'Stay upright', severity: 'minor', citation: 'Lauver JD et al, 2016' },
+      { name: 'Controlled squeeze', check: (angles) => angles.trunk < 25, quality: (angles) => qualityBelow(angles.trunk, 25, 12), good: 'Good torso position', bad: 'Stay upright', severity: 'minor', citation: 'Lauver JD et al, 2016' },
     ],
     scienceNotes: 'Cable crossovers allow variable angle chest training with constant tension (Lauver 2016).',
   },
@@ -2455,13 +2524,13 @@ export const EXERCISES = {
   wrist_curl: {
     name: 'Wrist Curl',
     category: 'isolation',
-    muscles: { primary: ['Forearm Flexors'], secondary: [] },
+    muscles: { primary: ['Forearms'], secondary: [] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 100,
     formChecks: [
-      { name: 'Forearm stable', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 30, good: 'Forearms braced', bad: 'Keep forearms on thighs or bench', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Forearm stable', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 30, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 30, 15), good: 'Forearms braced', bad: 'Keep forearms on thighs or bench', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Wrist curls isolate forearm flexors, essential for grip strength development (NSCA 2016).',
   },
@@ -2477,7 +2546,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 140,
     formChecks: [
-      { name: 'Full sit', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 100, good: 'Full range', bad: 'Sit up fully', severity: 'minor', citation: 'Escamilla RF et al, 2006', phase: 'top' },
+      { name: 'Full sit', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 100, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 100, 15), good: 'Full range', bad: 'Sit up fully', severity: 'minor', citation: 'Escamilla RF et al, 2006', phase: 'top' },
     ],
     scienceNotes: 'Full sit-ups engage hip flexors more than crunches; keep feet anchored for stability (Escamilla 2006).',
   },
@@ -2491,7 +2560,7 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Touch toes', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 70, good: 'Full V position', bad: 'Reach for your toes', severity: 'minor', citation: 'Escamilla RF et al, 2006' },
+      { name: 'Touch toes', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 70, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 70, 15), good: 'Full V position', bad: 'Reach for your toes', severity: 'minor', citation: 'Escamilla RF et al, 2006' },
     ],
     scienceNotes: 'V-ups combine upper and lower ab activation for high-intensity core work (Escamilla 2006).',
   },
@@ -2505,7 +2574,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 110,
     formChecks: [
-      { name: 'Lean back', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, good: 'Good lean angle', bad: 'Lean back more for full engagement', severity: 'minor', citation: 'Escamilla RF et al, 2006' },
+      { name: 'Lean back', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 120, 15), good: 'Good lean angle', bad: 'Lean back more for full engagement', severity: 'minor', citation: 'Escamilla RF et al, 2006' },
     ],
     scienceNotes: 'Russian twists target obliques with rotational load; holding weight increases difficulty (Escamilla 2006).',
   },
@@ -2519,7 +2588,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 130,
     formChecks: [
-      { name: 'Shoulder off ground', check: (angles) => angles.trunk > 10, good: 'Shoulders lifted', bad: 'Lift shoulders off the ground', severity: 'minor', citation: 'Escamilla RF et al, 2006' },
+      { name: 'Shoulder off ground', check: (angles) => angles.trunk > 10, quality: (angles) => qualityAbove(angles.trunk, 10, 12), good: 'Shoulders lifted', bad: 'Lift shoulders off the ground', severity: 'minor', citation: 'Escamilla RF et al, 2006' },
     ],
     scienceNotes: 'Bicycle crunches produce highest oblique and rectus abdominis EMG of bodyweight core exercises (Escamilla 2006).',
   },
@@ -2527,7 +2596,7 @@ export const EXERCISES = {
   flutter_kick: {
     name: 'Flutter Kick',
     category: 'bodyweight',
-    muscles: { primary: ['Lower Abs', 'Hip Flexors'], secondary: ['Quadriceps'] },
+    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Quadriceps'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 140,
@@ -2541,13 +2610,13 @@ export const EXERCISES = {
   superman: {
     name: 'Superman',
     category: 'bodyweight',
-    muscles: { primary: ['Erectors', 'Glutes'], secondary: ['Hamstrings', 'Rear Deltoids'] },
+    muscles: { primary: ['Erectors', 'Glutes'], secondary: ['Hamstrings', 'Posterior Deltoids'] },
     joint: 'hip',
     getValue: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 150,
     upThreshold: 170,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 165, good: 'Full back extension', bad: 'Lift arms and legs higher', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 165, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 165, 15), good: 'Full back extension', bad: 'Lift arms and legs higher', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Superman exercise targets posterior chain from prone position, strengthening spinal erectors (NSCA 2016).',
   },
@@ -2555,13 +2624,13 @@ export const EXERCISES = {
   hand_release_push_up: {
     name: 'Hand-Release Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Chest', 'Triceps'], secondary: ['Front Deltoids', 'Core'] },
+    muscles: { primary: ['Pectorals', 'Triceps'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 60,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Lock out fully at top', severity: 'minor', citation: 'Cogley RM et al, 2005', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Lock out fully at top', severity: 'minor', citation: 'Cogley RM et al, 2005', phase: 'top' },
     ],
     scienceNotes: 'Hand-release ensures full ROM by requiring chest to floor each rep (Cogley 2005).',
   },
@@ -2569,13 +2638,13 @@ export const EXERCISES = {
   wide_push_up: {
     name: 'Wide Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Chest'], secondary: ['Triceps', 'Front Deltoids'] },
+    muscles: { primary: ['Pectorals'], secondary: ['Triceps', 'Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 95, good: 'Chest to floor', bad: 'Go deeper', severity: 'minor', citation: 'Cogley RM et al, 2005' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 95, 15), good: 'Chest to floor', bad: 'Go deeper', severity: 'minor', citation: 'Cogley RM et al, 2005' },
     ],
     scienceNotes: 'Wide hand placement increases pectoral activation at cost of reduced triceps engagement (Cogley 2005).',
   },
@@ -2583,13 +2652,13 @@ export const EXERCISES = {
   archer_push_up: {
     name: 'Archer Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Chest', 'Triceps'], secondary: ['Core', 'Shoulders'] },
+    muscles: { primary: ['Pectorals', 'Triceps'], secondary: ['Core', 'Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 60,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, good: 'Full press', bad: 'Extend fully', severity: 'minor', citation: 'Cogley RM et al, 2005', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 150, 15), good: 'Full press', bad: 'Extend fully', severity: 'minor', citation: 'Cogley RM et al, 2005', phase: 'top' },
     ],
     scienceNotes: 'Archer push-ups shift load unilaterally, progressing toward one-arm push-up (Cogley 2005).',
   },
@@ -2597,14 +2666,14 @@ export const EXERCISES = {
   incline_push_up: {
     name: 'Incline Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Chest (lower)', 'Triceps'], secondary: ['Anterior Deltoid', 'Core'] },
+    muscles: { primary: ['Lower Pectorals', 'Triceps'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 80, good: 'Chest near surface', bad: 'Lower chest closer to surface', severity: 'major', citation: 'Cogley RM et al, 2005', phase: 'bottom' },
-      { name: 'Body alignment', check: (angles) => angles.trunk > 15 && angles.trunk < 55, good: 'Straight body line', bad: 'Keep body in a straight line', severity: 'minor', citation: 'Contreras B, 2011' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 80, 15), good: 'Chest near surface', bad: 'Lower chest closer to surface', severity: 'major', citation: 'Cogley RM et al, 2005', phase: 'bottom' },
+      { name: 'Body alignment', check: (angles) => angles.trunk > 15 && angles.trunk < 55, quality: (angles) => qualityRange(angles.trunk, 15, 55, 12), good: 'Straight body line', bad: 'Keep body in a straight line', severity: 'minor', citation: 'Contreras B, 2011' },
     ],
     scienceNotes: 'Incline push-ups (hands elevated) reduce load compared to standard push-ups, making them a regression. The incline shifts emphasis slightly to lower pectorals (Cogley 2005).',
   },
@@ -2612,14 +2681,14 @@ export const EXERCISES = {
   deficit_push_up: {
     name: 'Deficit Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Chest', 'Triceps'], secondary: ['Anterior Deltoid', 'Core'] },
+    muscles: { primary: ['Pectorals', 'Triceps'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 50,
     upThreshold: 150,
     formChecks: [
-      { name: 'Deep stretch', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 60, good: 'Full depth below hands', bad: 'Go deeper to use the deficit', severity: 'major', citation: 'Contreras B, 2011', phase: 'bottom' },
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full extension', bad: 'Lock out fully at top', severity: 'minor', citation: 'Cogley RM et al, 2005', phase: 'top' },
+      { name: 'Deep stretch', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 60, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15), good: 'Full depth below hands', bad: 'Go deeper to use the deficit', severity: 'major', citation: 'Contreras B, 2011', phase: 'bottom' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full extension', bad: 'Lock out fully at top', severity: 'minor', citation: 'Cogley RM et al, 2005', phase: 'top' },
     ],
     scienceNotes: 'Deficit push-ups (hands on elevated surfaces like blocks or dumbbells) increase ROM beyond standard push-ups, producing greater pectoral stretch and activation (Contreras 2011).',
   },
@@ -2627,13 +2696,13 @@ export const EXERCISES = {
   deficit_push_down: {
     name: 'Deficit Push-Down',
     category: 'bodyweight',
-    muscles: { primary: ['Triceps', 'Chest'], secondary: ['Anterior Deltoid', 'Core'] },
+    muscles: { primary: ['Triceps', 'Pectorals'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 50,
     upThreshold: 150,
     formChecks: [
-      { name: 'Controlled descent', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 60, good: 'Full depth achieved', bad: 'Lower further into the deficit', severity: 'major', citation: 'Contreras B, 2011', phase: 'bottom' },
+      { name: 'Controlled descent', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 60, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15), good: 'Full depth achieved', bad: 'Lower further into the deficit', severity: 'major', citation: 'Contreras B, 2011', phase: 'bottom' },
       { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 100 || angles.trunk < 40, good: 'Elbows tracking properly', bad: 'Keep elbows closer to body', severity: 'minor', citation: 'Cogley RM et al, 2005' },
     ],
     scienceNotes: 'Deficit push-downs emphasize the eccentric phase with extended ROM, targeting triceps and chest with increased time under tension at the bottom (Contreras 2011).',
@@ -2642,13 +2711,13 @@ export const EXERCISES = {
   toes_to_bar: {
     name: 'Toes to Bar',
     category: 'bodyweight',
-    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Lats', 'Grip'] },
+    muscles: { primary: ['Rectus Abdominis', 'Hip Flexors'], secondary: ['Latissimus Dorsi', 'Forearms'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full range', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 60, good: 'Toes reaching bar', bad: 'Bring toes higher to the bar', severity: 'major', citation: 'Escamilla RF et al, 2006' },
+      { name: 'Full range', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 60, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 60, 15), good: 'Toes reaching bar', bad: 'Bring toes higher to the bar', severity: 'major', citation: 'Escamilla RF et al, 2006' },
     ],
     scienceNotes: 'Toes-to-bar combines hanging leg raise with full hip flexion, demanding core and grip strength (Escamilla 2006).',
   },
@@ -2662,7 +2731,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Hip hinge', check: (angles) => angles.trunk > 40, good: 'Good hip hinge depth', bad: 'Hinge deeper at the hips', severity: 'major', citation: 'Stastny P et al, 2015' },
+      { name: 'Hip hinge', check: (angles) => angles.trunk > 40, quality: (angles) => qualityAbove(angles.trunk, 40, 12), good: 'Good hip hinge depth', bad: 'Hinge deeper at the hips', severity: 'major', citation: 'Stastny P et al, 2015' },
     ],
     scienceNotes: 'Single-leg deadlift challenges balance and hamstring/glute activation unilaterally (Stastny 2015).',
   },
@@ -2676,7 +2745,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Knee soft', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 170, good: 'Slight knee bend', bad: 'Keep slight bend in knees', severity: 'minor', citation: 'Vigotsky AD et al, 2015' },
+      { name: 'Knee soft', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 170, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 170, 15), good: 'Slight knee bend', bad: 'Keep slight bend in knees', severity: 'minor', citation: 'Vigotsky AD et al, 2015' },
     ],
     scienceNotes: 'Good mornings target posterior chain through loaded hip hinge with barbell on back (Vigotsky 2015).',
   },
@@ -2690,7 +2759,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Knee over ankle', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 80, good: 'Knee properly aligned', bad: 'Front knee too far forward', severity: 'major', citation: 'Riemann BL et al, 2012' },
+      { name: 'Knee over ankle', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 80, quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 80, 15), good: 'Knee properly aligned', bad: 'Front knee too far forward', severity: 'major', citation: 'Riemann BL et al, 2012' },
     ],
     scienceNotes: 'Reverse lunges reduce knee shear compared to forward lunges while maintaining quad/glute activation (Riemann 2012).',
   },
@@ -2704,7 +2773,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good lunge depth', bad: 'Drop knee lower', severity: 'minor', citation: 'Riemann BL et al, 2012' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good lunge depth', bad: 'Drop knee lower', severity: 'minor', citation: 'Riemann BL et al, 2012' },
     ],
     scienceNotes: 'Walking lunges add dynamic balance and deceleration demands to the standard lunge (Riemann 2012).',
   },
@@ -2712,13 +2781,13 @@ export const EXERCISES = {
   side_lunge: {
     name: 'Side Lunge',
     category: 'compound',
-    muscles: { primary: ['Quadriceps', 'Adductors', 'Glutes'], secondary: ['Core'] },
+    muscles: { primary: ['Quadriceps', 'Hip Adductors', 'Glutes'], secondary: ['Core'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 110, good: 'Good lateral depth', bad: 'Sit deeper into the lunge', severity: 'minor', citation: 'Riemann BL et al, 2012' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 110, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 110, 15), good: 'Good lateral depth', bad: 'Sit deeper into the lunge', severity: 'minor', citation: 'Riemann BL et al, 2012' },
     ],
     scienceNotes: 'Side lunges train frontal plane movement and adductor strength, valuable for sport performance (Riemann 2012).',
   },
@@ -2732,7 +2801,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 165, good: 'Arms locked overhead', bad: 'Lock out fully overhead', severity: 'major', citation: 'Suchomel TJ et al, 2015', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 165, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 165, 15), good: 'Arms locked overhead', bad: 'Lock out fully overhead', severity: 'major', citation: 'Suchomel TJ et al, 2015', phase: 'top' },
     ],
     scienceNotes: 'Split jerk drives barbell overhead using leg drive and split stance for stability (Suchomel 2015).',
   },
@@ -2746,7 +2815,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, good: 'Full overhead press', bad: 'Lock out fully', severity: 'major', citation: 'Lake JP, Lauder MA, 2012', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15), good: 'Full overhead press', bad: 'Lock out fully', severity: 'major', citation: 'Lake JP, Lauder MA, 2012', phase: 'top' },
     ],
     scienceNotes: 'Push press uses leg drive dip to move more weight overhead than strict press (Lake 2012).',
   },
@@ -2760,7 +2829,7 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Squat depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good squat depth', bad: 'Squat deeper before throwing', severity: 'major', citation: 'Glassman G, CrossFit L1 Training Guide' },
+      { name: 'Squat depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good squat depth', bad: 'Squat deeper before throwing', severity: 'major', citation: 'Glassman G, CrossFit L1 Training Guide' },
     ],
     scienceNotes: 'Wall balls combine front squat with overhead throw, a CrossFit staple for metabolic conditioning.',
   },
@@ -2768,13 +2837,13 @@ export const EXERCISES = {
   battle_rope: {
     name: 'Battle Rope',
     category: 'compound',
-    muscles: { primary: ['Deltoids', 'Core'], secondary: ['Forearms', 'Lats'] },
+    muscles: { primary: ['Deltoids', 'Core'], secondary: ['Forearms', 'Latissimus Dorsi'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 20,
     upThreshold: 60,
     formChecks: [
-      { name: 'Stable base', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, good: 'Athletic stance', bad: 'Bend knees into athletic position', severity: 'minor', citation: 'Fountaine CJ, Schmidt BJ, 2015' },
+      { name: 'Stable base', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15), good: 'Athletic stance', bad: 'Bend knees into athletic position', severity: 'minor', citation: 'Fountaine CJ, Schmidt BJ, 2015' },
     ],
     scienceNotes: 'Battle ropes produce high cardiovascular and upper body metabolic demand (Fountaine 2015).',
   },
@@ -2789,7 +2858,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Sit fully on box', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, good: 'Full sit on box', bad: 'Sit completely on the box before standing', severity: 'major', citation: 'Swinton PA et al, 2012, J Strength Cond Res' },
+      { name: 'Sit fully on box', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 95, 15), good: 'Full sit on box', bad: 'Sit completely on the box before standing', severity: 'major', citation: 'Swinton PA et al, 2012, J Strength Cond Res' },
     ],
     scienceNotes: 'Box squats develop concentric strength by eliminating the stretch-shortening cycle at the bottom (Swinton 2012).',
   },
@@ -2803,7 +2872,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, good: 'Below parallel', bad: 'Squat deeper before pausing', severity: 'major', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 95, 15), good: 'Below parallel', bad: 'Squat deeper before pausing', severity: 'major', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Pause squats eliminate the stretch-shortening cycle, increasing time under tension at the bottom and improving rate of force development (Schoenfeld 2010).',
   },
@@ -2817,7 +2886,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good depth', bad: 'Squat deeper', severity: 'minor', citation: 'Evans TW et al, 2019, J Strength Cond Res' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good depth', bad: 'Squat deeper', severity: 'minor', citation: 'Evans TW et al, 2019, J Strength Cond Res' },
     ],
     scienceNotes: 'Belt squat loads the lower body without axial spinal compression, making it spine-friendly while maintaining quad/glute activation (Evans 2019).',
   },
@@ -2831,7 +2900,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Upright torso', check: (angles) => angles.trunk < 45, good: 'Torso upright', bad: 'Stay more upright', severity: 'minor', citation: 'Sayers MGL et al, 2012, J Strength Cond Res' },
+      { name: 'Upright torso', check: (angles) => angles.trunk < 45, quality: (angles) => qualityBelow(angles.trunk, 45, 12), good: 'Torso upright', bad: 'Stay more upright', severity: 'minor', citation: 'Sayers MGL et al, 2012, J Strength Cond Res' },
     ],
     scienceNotes: 'Heel elevation increases knee flexion ROM and shifts load anteriorly to the quadriceps by allowing a more upright torso (Sayers 2012).',
   },
@@ -2845,7 +2914,7 @@ export const EXERCISES = {
     downThreshold: 95,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good squat depth', bad: 'Squat deeper', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good squat depth', bad: 'Squat deeper', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Landmine squat provides an arc-path load that naturally encourages upright torso positioning (NSCA 2016).',
   },
@@ -2859,7 +2928,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, good: 'Full range of motion', bad: 'Go deeper', severity: 'minor', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 95, 15), good: 'Full range of motion', bad: 'Go deeper', severity: 'minor', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Pendulum squat machines provide a fixed arc path that reduces stabilization demands while maximizing quad loading (Schoenfeld 2010).',
   },
@@ -2873,7 +2942,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 155,
     formChecks: [
-      { name: 'Lean back', check: (angles) => angles.trunk > 40, good: 'Good backward lean', bad: 'Lean back further to load quads', severity: 'minor', citation: 'Signorile JF et al, 1994, J Strength Cond Res' },
+      { name: 'Lean back', check: (angles) => angles.trunk > 40, quality: (angles) => qualityAbove(angles.trunk, 40, 12), good: 'Good backward lean', bad: 'Lean back further to load quads', severity: 'minor', citation: 'Signorile JF et al, 1994, J Strength Cond Res' },
     ],
     scienceNotes: 'Sissy squats isolate the quadriceps through extreme knee flexion with posterior trunk lean (Signorile 1994).',
   },
@@ -2881,13 +2950,13 @@ export const EXERCISES = {
   adductor_machine: {
     name: 'Adductor Machine',
     category: 'machine',
-    muscles: { primary: ['Adductors'], secondary: ['Gracilis'] },
+    muscles: { primary: ['Hip Adductors'], secondary: ['Hip Adductors'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Controlled squeeze', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 110, good: 'Full adduction', bad: 'Squeeze legs fully together', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Controlled squeeze', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 110, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 110, 15), good: 'Full adduction', bad: 'Squeeze legs fully together', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Machine hip adduction isolates the adductor magnus, longus, and brevis in a controlled path (NSCA 2016).',
   },
@@ -2901,7 +2970,7 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Full abduction', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 150, good: 'Full range abduction', bad: 'Push legs further apart', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full abduction', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 150, 15), good: 'Full range abduction', bad: 'Push legs further apart', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Machine hip abduction targets the gluteus medius and minimus, important for hip stability and knee tracking (NSCA 2016).',
   },
@@ -2909,13 +2978,13 @@ export const EXERCISES = {
   cable_hip_adduction: {
     name: 'Cable Hip Adduction',
     category: 'isolation',
-    muscles: { primary: ['Adductors'], secondary: ['Gracilis'] },
+    muscles: { primary: ['Hip Adductors'], secondary: ['Hip Adductors'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Controlled motion', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, good: 'Controlled adduction', bad: 'Control the movement', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Controlled motion', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 120, 15), good: 'Controlled adduction', bad: 'Control the movement', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Cable adduction provides constant tension through the full ROM unlike machine variants (NSCA 2016).',
   },
@@ -2929,7 +2998,7 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Stable torso', check: (angles) => angles.trunk < 30, good: 'Torso stable', bad: 'Avoid leaning away from working leg', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
+      { name: 'Stable torso', check: (angles) => angles.trunk < 30, quality: (angles) => qualityBelow(angles.trunk, 30, 12), good: 'Torso stable', bad: 'Avoid leaning away from working leg', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Standing cable abduction produces high gluteus medius activation when performed with stable torso (Distefano 2009).',
   },
@@ -2943,7 +3012,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, good: 'Good depth', bad: 'Press deeper', severity: 'minor', citation: 'Escamilla RF et al, 2001, Med Sci Sports Exerc' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 95, 15), good: 'Good depth', bad: 'Press deeper', severity: 'minor', citation: 'Escamilla RF et al, 2001, Med Sci Sports Exerc' },
     ],
     scienceNotes: 'Single-leg press addresses bilateral strength deficits while providing machine stability (Escamilla 2001).',
   },
@@ -2952,13 +3021,13 @@ export const EXERCISES = {
   stiff_leg_deadlift: {
     name: 'Stiff-Leg Deadlift',
     category: 'compound',
-    muscles: { primary: ['Hamstrings', 'Erectors'], secondary: ['Glutes', 'Traps'] },
+    muscles: { primary: ['Hamstrings', 'Erectors'], secondary: ['Glutes', 'Trapezius'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 160,
     formChecks: [
-      { name: 'Straight legs', check: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 155, good: 'Legs straight', bad: 'Keep legs straighter', severity: 'minor', citation: 'McAllister MJ et al, 2014, J Strength Cond Res' },
+      { name: 'Straight legs', check: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 155, 15), good: 'Legs straight', bad: 'Keep legs straighter', severity: 'minor', citation: 'McAllister MJ et al, 2014, J Strength Cond Res' },
     ],
     scienceNotes: 'Stiff-leg deadlift maximizes hamstring stretch and eccentric loading compared to conventional deadlift (McAllister 2014).',
   },
@@ -2972,7 +3041,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full hip extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full hip extension', bad: 'Drive hips higher', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
+      { name: 'Full hip extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full hip extension', bad: 'Drive hips higher', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
     ],
     scienceNotes: 'Single-leg hip thrust addresses bilateral glute strength imbalances while producing high glute activation (Contreras 2015).',
   },
@@ -2986,7 +3055,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, good: 'Good hip hinge depth', bad: 'Hinge further at hips', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
+      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 90, 15), good: 'Good hip hinge depth', bad: 'Hinge further at hips', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
     ],
     scienceNotes: 'Cable pull-through teaches hip hinge mechanics with constant tension, useful as a deadlift accessory (Contreras 2015).',
   },
@@ -3000,7 +3069,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 160,
     formChecks: [
-      { name: 'Stable spine', check: (angles) => angles.trunk < 30, good: 'Spine neutral', bad: 'Avoid arching lower back', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
+      { name: 'Stable spine', check: (angles) => angles.trunk < 30, quality: (angles) => qualityBelow(angles.trunk, 30, 12), good: 'Spine neutral', bad: 'Avoid arching lower back', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Donkey kicks isolate glute max with minimal equipment, producing moderate-to-high glute activation (Distefano 2009).',
   },
@@ -3014,7 +3083,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 140,
     formChecks: [
-      { name: 'Stable torso', check: (angles) => angles.trunk < 25, good: 'Torso stable', bad: 'Keep torso still', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
+      { name: 'Stable torso', check: (angles) => angles.trunk < 25, quality: (angles) => qualityBelow(angles.trunk, 25, 12), good: 'Torso stable', bad: 'Keep torso still', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Fire hydrants target the gluteus medius through hip abduction and external rotation from a quadruped position (Distefano 2009).',
   },
@@ -3028,7 +3097,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 80, good: 'Full curl', bad: 'Curl further', severity: 'minor', citation: 'Schoenfeld BJ et al, 2015, J Strength Cond Res' },
+      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 80, 15), good: 'Full curl', bad: 'Curl further', severity: 'minor', citation: 'Schoenfeld BJ et al, 2015, J Strength Cond Res' },
     ],
     scienceNotes: 'Lying leg curl targets the hamstrings at the knee joint in a shortened hip position, emphasizing the short head of the biceps femoris (Schoenfeld 2015).',
   },
@@ -3042,7 +3111,7 @@ export const EXERCISES = {
     downThreshold: 50,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 60, good: 'Full body extension', bad: 'Lower further', severity: 'major', citation: 'Zebis MK et al, 2013, Br J Sports Med' },
+      { name: 'Full extension', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 60, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 60, 15), good: 'Full body extension', bad: 'Lower further', severity: 'major', citation: 'Zebis MK et al, 2013, Br J Sports Med' },
     ],
     scienceNotes: 'Glute-ham raise produces very high hamstring activation and is superior to lying leg curl for eccentric hamstring strength (Zebis 2013).',
   },
@@ -3056,7 +3125,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 170,
     formChecks: [
-      { name: 'Controlled swing', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full hip extension', bad: 'Extend hips fully', severity: 'minor', citation: 'Lawrence MA, Carlisle T, 2015, J Strength Cond Res' },
+      { name: 'Controlled swing', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full hip extension', bad: 'Extend hips fully', severity: 'minor', citation: 'Lawrence MA, Carlisle T, 2015, J Strength Cond Res' },
     ],
     scienceNotes: 'Reverse hypers decompress the spine while loading the posterior chain through hip extension (Lawrence 2015).',
   },
@@ -3070,7 +3139,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full extension', bad: 'Extend until body is straight', severity: 'minor', citation: 'Mayer JM et al, 2005, J Strength Cond Res' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full extension', bad: 'Extend until body is straight', severity: 'minor', citation: 'Mayer JM et al, 2005, J Strength Cond Res' },
     ],
     scienceNotes: '45-degree back extension produces high erector spinae activation while allowing progressive overload with weight (Mayer 2005).',
   },
@@ -3084,7 +3153,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Stable torso', check: (angles) => angles.trunk < 25, good: 'Torso stable', bad: 'Avoid leaning forward', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Stable torso', check: (angles) => angles.trunk < 25, quality: (angles) => qualityBelow(angles.trunk, 25, 12), good: 'Torso stable', bad: 'Avoid leaning forward', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Cable hip extension provides constant tension through the glute extension range, useful for glute isolation (NSCA 2016).',
   },
@@ -3099,7 +3168,7 @@ export const EXERCISES = {
     downThreshold: 155,
     upThreshold: 175,
     formChecks: [
-      { name: 'Full stretch', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, good: 'Full calf stretch at bottom', bad: 'Lower heels further', severity: 'minor', citation: 'Schoenfeld BJ et al, 2020, J Strength Cond Res' },
+      { name: 'Full stretch', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15), good: 'Full calf stretch at bottom', bad: 'Lower heels further', severity: 'minor', citation: 'Schoenfeld BJ et al, 2020, J Strength Cond Res' },
     ],
     scienceNotes: 'Donkey calf raise loads the gastrocnemius in a stretched hip position, increasing stretch-mediated hypertrophy (Schoenfeld 2020).',
   },
@@ -3113,7 +3182,7 @@ export const EXERCISES = {
     downThreshold: 155,
     upThreshold: 175,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, good: 'Full range of motion', bad: 'Use full range', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 160, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15), good: 'Full range of motion', bad: 'Use full range', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Leg press calf raise allows heavy loading with a locked knee position for gastrocnemius emphasis (NSCA 2016).',
   },
@@ -3142,7 +3211,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Quick ground contact', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 100, good: 'Short ground contact time', bad: 'React faster off the ground', severity: 'major', citation: 'Bobbert MF et al, 1987, Med Sci Sports Exerc' },
+      { name: 'Quick ground contact', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 100, quality: (angles) => qualityAbove(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Short ground contact time', bad: 'React faster off the ground', severity: 'major', citation: 'Bobbert MF et al, 1987, Med Sci Sports Exerc' },
     ],
     scienceNotes: 'Depth jumps develop reactive strength by exploiting the stretch-shortening cycle from a drop height (Bobbert 1987).',
   },
@@ -3156,7 +3225,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Landing control', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 120, good: 'Controlled landing', bad: 'Absorb landing with bent knees', severity: 'minor', citation: 'Hewett TE et al, 2005, Am J Sports Med' },
+      { name: 'Landing control', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 120, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 120, 15), good: 'Controlled landing', bad: 'Absorb landing with bent knees', severity: 'minor', citation: 'Hewett TE et al, 2005, Am J Sports Med' },
     ],
     scienceNotes: 'Broad jumps develop horizontal power production, a key predictor of sprint performance (Hewett 2005).',
   },
@@ -3170,7 +3239,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good split depth', bad: 'Drop lower before jumping', severity: 'minor', citation: 'Hewett TE et al, 2005, Am J Sports Med' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good split depth', bad: 'Drop lower before jumping', severity: 'minor', citation: 'Hewett TE et al, 2005, Am J Sports Med' },
     ],
     scienceNotes: 'Split squat jumps develop unilateral explosive power and coordination (Hewett 2005).',
   },
@@ -3184,7 +3253,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 155,
     formChecks: [
-      { name: 'Knee tuck height', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 70, good: 'Knees high', bad: 'Bring knees higher to chest', severity: 'minor', citation: 'Hewett TE et al, 2005, Am J Sports Med' },
+      { name: 'Knee tuck height', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 70, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 70, 15), good: 'Knees high', bad: 'Bring knees higher to chest', severity: 'minor', citation: 'Hewett TE et al, 2005, Am J Sports Med' },
     ],
     scienceNotes: 'Tuck jumps develop explosive power and hip flexor strength while challenging coordination (Hewett 2005).',
   },
@@ -3192,13 +3261,13 @@ export const EXERCISES = {
   curtsy_lunge: {
     name: 'Curtsy Lunge',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Quadriceps', 'Adductors'], secondary: ['Hamstrings', 'Core'] },
+    muscles: { primary: ['Glutes', 'Quadriceps', 'Hip Adductors'], secondary: ['Hamstrings', 'Core'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good lunge depth', bad: 'Step deeper behind', severity: 'minor', citation: 'Stastny P et al, 2015, J Hum Kinet' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good lunge depth', bad: 'Step deeper behind', severity: 'minor', citation: 'Stastny P et al, 2015, J Hum Kinet' },
     ],
     scienceNotes: 'Curtsy lunges emphasize glute medius and adductors through the crossover stepping pattern (Stastny 2015).',
   },
@@ -3207,13 +3276,13 @@ export const EXERCISES = {
   incline_dumbbell_press: {
     name: 'Incline Dumbbell Press',
     category: 'compound',
-    muscles: { primary: ['Upper Pectorals', 'Front Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
+    muscles: { primary: ['Upper Pectorals', 'Anterior Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'Lauver JD et al, 2016, Eur J Sport Sci', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'Lauver JD et al, 2016, Eur J Sport Sci', phase: 'top' },
     ],
     scienceNotes: 'Incline dumbbell press at 30-45 degrees maximizes clavicular head pectoralis activation compared to flat (Lauver 2016).',
   },
@@ -3221,13 +3290,13 @@ export const EXERCISES = {
   decline_dumbbell_press: {
     name: 'Decline Dumbbell Press',
     category: 'compound',
-    muscles: { primary: ['Lower Pectorals', 'Triceps'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Lower Pectorals', 'Triceps'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Extend fully', severity: 'minor', citation: 'Lauver JD et al, 2016, Eur J Sport Sci', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Extend fully', severity: 'minor', citation: 'Lauver JD et al, 2016, Eur J Sport Sci', phase: 'top' },
     ],
     scienceNotes: 'Decline pressing emphasizes the sternal head of the pectoralis major and reduces shoulder stress (Lauver 2016).',
   },
@@ -3235,13 +3304,13 @@ export const EXERCISES = {
   flat_dumbbell_press: {
     name: 'Flat Dumbbell Press',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Front Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
+    muscles: { primary: ['Pectorals', 'Anterior Deltoids', 'Triceps'], secondary: ['Serratus Anterior'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'Saeterbakken AH et al, 2017, J Sports Sci', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'Saeterbakken AH et al, 2017, J Sports Sci', phase: 'top' },
     ],
     scienceNotes: 'Dumbbell press allows greater ROM and independent arm movement compared to barbell, increasing stabilizer activation (Saeterbakken 2017).',
   },
@@ -3249,13 +3318,13 @@ export const EXERCISES = {
   machine_fly: {
     name: 'Pec Deck Fly',
     category: 'machine',
-    muscles: { primary: ['Pectorals'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals'], secondary: ['Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 70,
     formChecks: [
-      { name: 'Squeeze at center', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 40, good: 'Full contraction', bad: 'Squeeze arms together more', severity: 'minor', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
+      { name: 'Squeeze at center', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 40, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 40, 15), good: 'Full contraction', bad: 'Squeeze arms together more', severity: 'minor', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Pec deck provides isolated chest activation with reduced triceps involvement compared to pressing (Schoenfeld 2010).',
   },
@@ -3263,13 +3332,13 @@ export const EXERCISES = {
   chest_dip: {
     name: 'Chest Dip',
     category: 'compound',
-    muscles: { primary: ['Lower Pectorals', 'Triceps', 'Front Deltoids'], secondary: ['Core'] },
+    muscles: { primary: ['Lower Pectorals', 'Triceps', 'Anterior Deltoids'], secondary: ['Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Forward lean', check: (angles) => angles.trunk > 15, good: 'Good forward lean for chest emphasis', bad: 'Lean forward more to target chest', severity: 'minor', citation: 'McKenzie A et al, 2022, J Strength Cond Res' },
+      { name: 'Forward lean', check: (angles) => angles.trunk > 15, quality: (angles) => qualityAbove(angles.trunk, 15, 12), good: 'Good forward lean for chest emphasis', bad: 'Lean forward more to target chest', severity: 'minor', citation: 'McKenzie A et al, 2022, J Strength Cond Res' },
     ],
     scienceNotes: 'Forward-leaning dip position shifts emphasis from triceps to pectoralis major (McKenzie 2022).',
   },
@@ -3277,13 +3346,13 @@ export const EXERCISES = {
   decline_push_up: {
     name: 'Decline Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Upper Pectorals', 'Triceps'], secondary: ['Front Deltoids', 'Core'] },
+    muscles: { primary: ['Upper Pectorals', 'Triceps'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 80, good: 'Chest near floor', bad: 'Lower chest closer to floor', severity: 'minor', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 80, 15), good: 'Chest near floor', bad: 'Lower chest closer to floor', severity: 'minor', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
     ],
     scienceNotes: 'Decline push-ups (feet elevated) increase load on the upper chest and shoulders compared to standard push-ups (Cogley 2005).',
   },
@@ -3291,7 +3360,7 @@ export const EXERCISES = {
   svend_press: {
     name: 'Svend Press',
     category: 'isolation',
-    muscles: { primary: ['Inner Pectorals'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals'], secondary: ['Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 20,
@@ -3306,13 +3375,13 @@ export const EXERCISES = {
   neutral_grip_pull_up: {
     name: 'Neutral Grip Pull-Up',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Brachialis', 'Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Brachialis', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, good: 'Chin over bar', bad: 'Pull higher', severity: 'minor', citation: 'Youdas JW et al, 2010, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15), good: 'Chin over bar', bad: 'Pull higher', severity: 'minor', citation: 'Youdas JW et al, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Neutral grip reduces wrist and shoulder stress while maintaining high lat and bicep activation (Youdas 2010).',
   },
@@ -3320,13 +3389,13 @@ export const EXERCISES = {
   wide_grip_pull_up: {
     name: 'Wide Grip Pull-Up',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Teres Major'], secondary: ['Biceps', 'Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Teres Major'], secondary: ['Biceps', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, good: 'Chin over bar', bad: 'Pull higher', severity: 'minor', citation: 'Andersen V et al, 2014, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15), good: 'Chin over bar', bad: 'Pull higher', severity: 'minor', citation: 'Andersen V et al, 2014, J Strength Cond Res' },
     ],
     scienceNotes: 'Wide grip pull-ups increase lat width emphasis but reduce ROM compared to narrower grips (Andersen 2014).',
   },
@@ -3334,13 +3403,13 @@ export const EXERCISES = {
   close_grip_pull_up: {
     name: 'Close Grip Pull-Up',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Brachialis', 'Lower Traps'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Brachialis', 'Lower Trapezius'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, good: 'Chin over bar', bad: 'Pull higher', severity: 'minor', citation: 'Andersen V et al, 2014, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15), good: 'Chin over bar', bad: 'Pull higher', severity: 'minor', citation: 'Andersen V et al, 2014, J Strength Cond Res' },
     ],
     scienceNotes: 'Close grip allows greater ROM per rep and increased bicep contribution (Andersen 2014).',
   },
@@ -3354,7 +3423,7 @@ export const EXERCISES = {
     downThreshold: 30,
     upThreshold: 120,
     formChecks: [
-      { name: 'Straight arms', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Arms straight', bad: 'Keep arms straighter', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Straight arms', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Arms straight', bad: 'Keep arms straighter', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Straight-arm pulldowns isolate the lats without bicep involvement, useful as a mind-muscle connection exercise (NSCA 2016).',
   },
@@ -3362,13 +3431,13 @@ export const EXERCISES = {
   assisted_pull_up: {
     name: 'Assisted Pull-Up',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoids', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Posterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 95, good: 'Chin above bar', bad: 'Pull higher', severity: 'minor', citation: 'Youdas JW et al, 2010, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 95, 15), good: 'Chin above bar', bad: 'Pull higher', severity: 'minor', citation: 'Youdas JW et al, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Assisted pull-ups allow progressive overload toward bodyweight pull-ups while maintaining similar muscle activation patterns (Youdas 2010).',
   },
@@ -3376,13 +3445,13 @@ export const EXERCISES = {
   kipping_pull_up: {
     name: 'Kipping Pull-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Latissimus Dorsi', 'Shoulders'], secondary: ['Biceps', 'Core', 'Hip Flexors'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Deltoids'], secondary: ['Biceps', 'Core', 'Hip Flexors'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
-      { name: 'Chin over bar', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, good: 'Chin clears bar', bad: 'Pull higher', severity: 'minor', citation: 'Halet KA et al, 2009, J Strength Cond Res' },
+      { name: 'Chin over bar', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15), good: 'Chin clears bar', bad: 'Pull higher', severity: 'minor', citation: 'Halet KA et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Kipping pull-ups use momentum from hip drive to increase rep volume; lower per-rep muscle tension than strict pull-ups (Halet 2009).',
   },
@@ -3405,13 +3474,13 @@ export const EXERCISES = {
   single_arm_dumbbell_row: {
     name: 'Single-Arm Dumbbell Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps', 'Rear Deltoids'], secondary: ['Rhomboids', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps', 'Posterior Deltoids'], secondary: ['Rhomboids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full pull', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 105, good: 'Elbow past torso', bad: 'Pull elbow further back', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Full pull', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 105, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 105, 15), good: 'Elbow past torso', bad: 'Pull elbow further back', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Single-arm rows allow unilateral lat loading and anti-rotation core demand (Fenwick 2009).',
   },
@@ -3419,13 +3488,13 @@ export const EXERCISES = {
   meadows_row: {
     name: 'Meadows Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Rear Deltoids'], secondary: ['Biceps', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Posterior Deltoids'], secondary: ['Biceps', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Elbow drive', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, good: 'Good elbow drive', bad: 'Drive elbow higher', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Elbow drive', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 110, 15), good: 'Good elbow drive', bad: 'Drive elbow higher', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Meadows row (landmine single-arm row) provides a unique arc path that emphasizes the upper lat and teres major (Fenwick 2009).',
   },
@@ -3433,13 +3502,13 @@ export const EXERCISES = {
   seal_row: {
     name: 'Seal Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Biceps'], secondary: ['Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Rhomboids', 'Biceps'], secondary: ['Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 105, good: 'Full row', bad: 'Pull higher', severity: 'minor', citation: 'Lehman GJ et al, 2004, J Strength Cond Res' },
+      { name: 'Full contraction', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 105, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 105, 15), good: 'Full row', bad: 'Pull higher', severity: 'minor', citation: 'Lehman GJ et al, 2004, J Strength Cond Res' },
     ],
     scienceNotes: 'Seal row (prone bench row) eliminates momentum and lower back involvement, isolating the upper back (Lehman 2004).',
   },
@@ -3447,13 +3516,13 @@ export const EXERCISES = {
   machine_row: {
     name: 'Machine Row',
     category: 'machine',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rhomboids', 'Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rhomboids', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, good: 'Full pull', bad: 'Pull handles further back', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 110, 15), good: 'Full pull', bad: 'Pull handles further back', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Machine rows provide stable support for back isolation, removing core and balance limitations (NSCA 2016).',
   },
@@ -3461,13 +3530,13 @@ export const EXERCISES = {
   cable_row_single: {
     name: 'Single-Arm Cable Row',
     category: 'isolation',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoids', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Posterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Anti-rotation', check: (angles) => angles.trunk < 25, good: 'Torso stable', bad: 'Avoid rotating torso', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Anti-rotation', check: (angles) => angles.trunk < 25, quality: (angles) => qualityBelow(angles.trunk, 25, 12), good: 'Torso stable', bad: 'Avoid rotating torso', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Single-arm cable row combines lat isolation with anti-rotation core demand (Fenwick 2009).',
   },
@@ -3475,13 +3544,13 @@ export const EXERCISES = {
   dumbbell_pullover: {
     name: 'Dumbbell Pullover',
     category: 'isolation',
-    muscles: { primary: ['Latissimus Dorsi', 'Pectorals'], secondary: ['Triceps Long Head', 'Serratus Anterior'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Pectorals'], secondary: ['Triceps', 'Serratus Anterior'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 120,
     formChecks: [
-      { name: 'Slight elbow bend', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, good: 'Slight elbow bend maintained', bad: 'Keep slight bend in elbows', severity: 'minor', citation: 'Marchetti PH, Uchida MC, 2011, J Electromyogr Kinesiol' },
+      { name: 'Slight elbow bend', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 140, 15), good: 'Slight elbow bend maintained', bad: 'Keep slight bend in elbows', severity: 'minor', citation: 'Marchetti PH, Uchida MC, 2011, J Electromyogr Kinesiol' },
     ],
     scienceNotes: 'Dumbbell pullovers stretch the lats and pecs simultaneously, with activation ratio depending on cue (pull vs squeeze) (Marchetti 2011).',
   },
@@ -3489,13 +3558,13 @@ export const EXERCISES = {
   yates_row: {
     name: 'Yates Row (Underhand Barbell Row)',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rhomboids', 'Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rhomboids', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Torso angle', check: (angles) => angles.trunk > 40, good: 'Good torso angle', bad: 'Maintain moderate forward lean', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Torso angle', check: (angles) => angles.trunk > 40, quality: (angles) => qualityAbove(angles.trunk, 40, 12), good: 'Good torso angle', bad: 'Maintain moderate forward lean', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Supinated grip row increases bicep recruitment and allows higher pulling volume at a more upright torso angle (Fenwick 2009).',
   },
@@ -3503,7 +3572,7 @@ export const EXERCISES = {
   incline_dumbbell_row: {
     name: 'Incline Dumbbell Row',
     category: 'compound',
-    muscles: { primary: ['Upper Back', 'Rear Deltoids'], secondary: ['Biceps', 'Rhomboids'] },
+    muscles: { primary: ['Upper Back', 'Posterior Deltoids'], secondary: ['Biceps', 'Rhomboids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
@@ -3524,7 +3593,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Controlled motion', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, good: 'Full extension', bad: 'Extend until body is straight', severity: 'minor', citation: 'Mayer JM et al, 2005, J Strength Cond Res' },
+      { name: 'Controlled motion', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 155, 15), good: 'Full extension', bad: 'Extend until body is straight', severity: 'minor', citation: 'Mayer JM et al, 2005, J Strength Cond Res' },
     ],
     scienceNotes: 'Roman chair back extensions produce high erector spinae activation and can be loaded progressively (Mayer 2005).',
   },
@@ -3552,7 +3621,7 @@ export const EXERCISES = {
     downThreshold: 100,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full hip extension', bad: 'Stand fully upright', severity: 'minor', citation: 'Swinton PA et al, 2011, J Strength Cond Res', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full hip extension', bad: 'Stand fully upright', severity: 'minor', citation: 'Swinton PA et al, 2011, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Rack pulls overload the lockout portion of the deadlift, developing upper back and grip strength (Swinton 2011).',
   },
@@ -3567,7 +3636,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full press', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full press', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Machine shoulder press provides stable overhead pressing, suitable for beginners and high-volume training (NSCA 2016).',
   },
@@ -3581,7 +3650,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout overhead', bad: 'Press to full extension', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout overhead', bad: 'Press to full extension', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Standing dumbbell press produces higher deltoid and core activation than seated variants (Saeterbakken 2013).',
   },
@@ -3595,7 +3664,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Press to full extension', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Seated pressing allows higher loads due to back support, isolating the deltoids with less core demand (Saeterbakken 2013).',
   },
@@ -3609,7 +3678,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Upright torso', check: (angles) => angles.trunk < 20, good: 'Torso upright', bad: 'Stay upright without leaning back', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Upright torso', check: (angles) => angles.trunk < 20, quality: (angles) => qualityBelow(angles.trunk, 20, 12), good: 'Torso upright', bad: 'Stay upright without leaning back', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Z press (seated on floor, no back support) demands extreme core stability and eliminates leg drive (NSCA 2016).',
   },
@@ -3623,7 +3692,7 @@ export const EXERCISES = {
     downThreshold: 15,
     upThreshold: 80,
     formChecks: [
-      { name: 'Controlled raise', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 70, good: 'Arms at shoulder height', bad: 'Raise to shoulder level', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
+      { name: 'Controlled raise', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 70, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 70, 15), good: 'Arms at shoulder height', bad: 'Raise to shoulder level', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
     ],
     scienceNotes: 'Cable lateral raises provide constant tension throughout ROM, superior to dumbbells for lateral deltoid hypertrophy (Reinold 2004).',
   },
@@ -3637,7 +3706,7 @@ export const EXERCISES = {
     downThreshold: 15,
     upThreshold: 80,
     formChecks: [
-      { name: 'Shoulder height', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 70, good: 'Arm at shoulder height', bad: 'Raise to shoulder level', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Shoulder height', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 70, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 70, 15), good: 'Arm at shoulder height', bad: 'Raise to shoulder level', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Cable front raises provide constant tension on the anterior deltoid through the full range (NSCA 2016).',
   },
@@ -3645,13 +3714,13 @@ export const EXERCISES = {
   cable_rear_delt_fly: {
     name: 'Cable Rear Delt Fly',
     category: 'isolation',
-    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Middle Trapezius'] },
+    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 15,
     upThreshold: 70,
     formChecks: [
-      { name: 'Full retraction', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 60, good: 'Full rear delt squeeze', bad: 'Pull arms further back', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
+      { name: 'Full retraction', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 60, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 60, 15), good: 'Full rear delt squeeze', bad: 'Pull arms further back', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
     ],
     scienceNotes: 'Cable rear delt fly isolates the posterior deltoid with constant cable tension (Reinold 2004).',
   },
@@ -3659,13 +3728,13 @@ export const EXERCISES = {
   machine_rear_delt_fly: {
     name: 'Machine Rear Delt Fly (Reverse Pec Deck)',
     category: 'machine',
-    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Middle Trapezius'] },
+    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 15,
     upThreshold: 70,
     formChecks: [
-      { name: 'Full squeeze', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 60, good: 'Full retraction', bad: 'Squeeze shoulder blades together more', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full squeeze', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 60, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 60, 15), good: 'Full retraction', bad: 'Squeeze shoulder blades together more', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Reverse pec deck provides stable rear delt isolation with guided movement path (NSCA 2016).',
   },
@@ -3673,13 +3742,13 @@ export const EXERCISES = {
   band_pull_apart: {
     name: 'Band Pull-Apart',
     category: 'isolation',
-    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Middle Trapezius'] },
+    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 120,
     formChecks: [
-      { name: 'Full stretch', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 100, good: 'Band to chest', bad: 'Pull band further apart', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
+      { name: 'Full stretch', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 100, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 100, 15), good: 'Band to chest', bad: 'Pull band further apart', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
     ],
     scienceNotes: 'Band pull-aparts are a highly effective warm-up and shoulder health exercise targeting the rear delts and rhomboids (Reinold 2004).',
   },
@@ -3687,7 +3756,7 @@ export const EXERCISES = {
   external_rotation: {
     name: 'External Rotation',
     category: 'isolation',
-    muscles: { primary: ['Infraspinatus', 'Teres Minor'], secondary: ['Posterior Deltoids'] },
+    muscles: { primary: ['Rotator Cuff'], secondary: ['Posterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
@@ -3701,7 +3770,7 @@ export const EXERCISES = {
   internal_rotation: {
     name: 'Internal Rotation',
     category: 'isolation',
-    muscles: { primary: ['Subscapularis'], secondary: ['Pectorals', 'Anterior Deltoids'] },
+    muscles: { primary: ['Rotator Cuff'], secondary: ['Pectorals', 'Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
@@ -3735,7 +3804,7 @@ export const EXERCISES = {
     downThreshold: 15,
     upThreshold: 80,
     formChecks: [
-      { name: 'No momentum', check: (angles) => angles.trunk < 30, good: 'No body swing', bad: 'Avoid swinging torso', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
+      { name: 'No momentum', check: (angles) => angles.trunk < 30, quality: (angles) => qualityBelow(angles.trunk, 30, 12), good: 'No body swing', bad: 'Avoid swinging torso', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Seated lateral raises eliminate lower body momentum, isolating the lateral deltoid (Reinold 2004). Trunk threshold relaxed for seated position camera angle variance.',
   },
@@ -3750,7 +3819,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'No body swing', check: (angles) => angles.trunk < 20, good: 'Strict form', bad: 'Avoid swinging body', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
+      { name: 'No body swing', check: (angles) => angles.trunk < 20, quality: (angles) => qualityBelow(angles.trunk, 20, 12), good: 'Strict form', bad: 'Avoid swinging body', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
     ],
     scienceNotes: 'Barbell curls allow heavier loading than dumbbell variants; strict form maximizes bicep activation (Marcolin 2018).',
   },
@@ -3764,7 +3833,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Strict form', check: (angles) => angles.trunk < 20, good: 'Strict curl', bad: 'Avoid using momentum', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
+      { name: 'Strict form', check: (angles) => angles.trunk < 20, quality: (angles) => qualityBelow(angles.trunk, 20, 12), good: 'Strict curl', bad: 'Avoid using momentum', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
     ],
     scienceNotes: 'EZ bar reduces wrist strain compared to straight bar while maintaining similar bicep activation (Marcolin 2018).',
   },
@@ -3778,7 +3847,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Elbows stationary', check: (angles) => angles.trunk < 15, good: 'Elbows pinned', bad: 'Keep elbows at your sides', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Elbows stationary', check: (angles) => angles.trunk < 15, quality: (angles) => qualityBelow(angles.trunk, 15, 12), good: 'Elbows pinned', bad: 'Keep elbows at your sides', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Cable curls provide constant tension throughout the entire ROM unlike free weight curls (NSCA 2016).',
   },
@@ -3786,13 +3855,13 @@ export const EXERCISES = {
   incline_dumbbell_curl: {
     name: 'Incline Dumbbell Curl',
     category: 'isolation',
-    muscles: { primary: ['Biceps Long Head'], secondary: ['Brachialis'] },
+    muscles: { primary: ['Biceps'], secondary: ['Brachialis'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Full stretch', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, good: 'Full arm extension at bottom', bad: 'Let arms fully extend', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'bottom' },
+      { name: 'Full stretch', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 140, 15), good: 'Full arm extension at bottom', bad: 'Let arms fully extend', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'bottom' },
     ],
     scienceNotes: 'Incline position stretches the biceps long head maximally, producing greater muscle activation at long muscle lengths (Oliveira 2009).',
   },
@@ -3800,13 +3869,13 @@ export const EXERCISES = {
   reverse_curl: {
     name: 'Reverse Curl (Pronated Grip)',
     category: 'isolation',
-    muscles: { primary: ['Brachioradialis', 'Brachialis'], secondary: ['Biceps', 'Wrist Extensors'] },
+    muscles: { primary: ['Brachioradialis', 'Brachialis'], secondary: ['Biceps', 'Forearms'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Strict form', check: (angles) => angles.trunk < 15, good: 'Strict reverse curl', bad: 'Avoid swinging', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
+      { name: 'Strict form', check: (angles) => angles.trunk < 15, quality: (angles) => qualityBelow(angles.trunk, 15, 12), good: 'Strict reverse curl', bad: 'Avoid swinging', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
     ],
     scienceNotes: 'Pronated grip shifts emphasis from biceps to brachioradialis and brachialis, building forearm mass (Marcolin 2018).',
   },
@@ -3828,7 +3897,7 @@ export const EXERCISES = {
   drag_curl: {
     name: 'Drag Curl',
     category: 'isolation',
-    muscles: { primary: ['Biceps', 'Brachialis'], secondary: ['Rear Deltoids'] },
+    muscles: { primary: ['Biceps', 'Brachialis'], secondary: ['Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
@@ -3862,7 +3931,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 85, good: 'Full curl', bad: 'Curl further', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 85, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 85, 15), good: 'Full curl', bad: 'Curl further', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Machine curls provide guided movement and constant resistance, useful for isolation and drop sets (NSCA 2016).',
   },
@@ -3871,13 +3940,13 @@ export const EXERCISES = {
   bench_dip: {
     name: 'Bench Dip',
     category: 'bodyweight',
-    muscles: { primary: ['Triceps', 'Front Deltoids'], secondary: ['Pectorals'] },
+    muscles: { primary: ['Triceps', 'Anterior Deltoids'], secondary: ['Pectorals'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, good: 'Good depth', bad: 'Lower further', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15), good: 'Good depth', bad: 'Lower further', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Bench dips are an accessible bodyweight tricep exercise; avoid going too deep to protect shoulders (NSCA 2016).',
   },
@@ -3891,7 +3960,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, good: 'Full lockout', bad: 'Extend arm fully', severity: 'minor', citation: 'Boeckh-Behrens WU, Buskies D, 2000', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 150, 15), good: 'Full lockout', bad: 'Extend arm fully', severity: 'minor', citation: 'Boeckh-Behrens WU, Buskies D, 2000', phase: 'top' },
     ],
     scienceNotes: 'Tricep kickbacks produce high tricep activation at full extension due to peak resistance at lockout (Boeckh-Behrens 2000).',
   },
@@ -3905,7 +3974,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, good: 'Full lockout', bad: 'Extend arm fully', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 150, 15), good: 'Full lockout', bad: 'Extend arm fully', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Cable kickbacks maintain constant tension throughout the ROM unlike dumbbell variants (NSCA 2016).',
   },
@@ -3919,7 +3988,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 130,
     formChecks: [
-      { name: 'Spread at bottom', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 125, good: 'Full spread and lockout', bad: 'Spread the rope at the bottom', severity: 'minor', citation: 'Boeckh-Behrens WU, Buskies D, 2000', phase: 'top' },
+      { name: 'Spread at bottom', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 125, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 125, 15), good: 'Full spread and lockout', bad: 'Spread the rope at the bottom', severity: 'minor', citation: 'Boeckh-Behrens WU, Buskies D, 2000', phase: 'top' },
     ],
     scienceNotes: 'Rope pushdowns allow wrist pronation at the bottom, increasing lateral head tricep activation (Boeckh-Behrens 2000).',
   },
@@ -3927,13 +3996,13 @@ export const EXERCISES = {
   overhead_cable_tricep: {
     name: 'Overhead Cable Tricep Extension',
     category: 'isolation',
-    muscles: { primary: ['Triceps Long Head'], secondary: [] },
+    muscles: { primary: ['Triceps'], secondary: [] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 60,
     upThreshold: 145,
     formChecks: [
-      { name: 'Full stretch', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 70, good: 'Full stretch at bottom', bad: 'Let weight stretch triceps fully', severity: 'minor', citation: 'Boeckh-Behrens WU, Buskies D, 2000', phase: 'bottom' },
+      { name: 'Full stretch', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 70, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 70, 15), good: 'Full stretch at bottom', bad: 'Let weight stretch triceps fully', severity: 'minor', citation: 'Boeckh-Behrens WU, Buskies D, 2000', phase: 'bottom' },
     ],
     scienceNotes: 'Overhead extension stretches the triceps long head maximally, producing superior hypertrophy of that head (Boeckh-Behrens 2000).',
   },
@@ -3947,7 +4016,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 145, good: 'Full extension', bad: 'Extend fully', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full ROM', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 145, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 145, 15), good: 'Full extension', bad: 'Extend fully', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Machine tricep extension provides guided movement for isolated tricep training (NSCA 2016).',
   },
@@ -3955,13 +4024,13 @@ export const EXERCISES = {
   close_grip_push_up: {
     name: 'Close-Grip Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Triceps', 'Chest'], secondary: ['Front Deltoids', 'Core'] },
+    muscles: { primary: ['Triceps', 'Pectorals'], secondary: ['Anterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 80, good: 'Chest near floor', bad: 'Lower chest closer to floor', severity: 'minor', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
+      { name: 'Full ROM', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 80, 15), good: 'Chest near floor', bad: 'Lower chest closer to floor', severity: 'minor', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
     ],
     scienceNotes: 'Close-grip push-ups produce significantly higher tricep activation than standard width (Cogley 2005).',
   },
@@ -3983,7 +4052,7 @@ export const EXERCISES = {
   jm_press: {
     name: 'JM Press',
     category: 'isolation',
-    muscles: { primary: ['Triceps'], secondary: ['Front Deltoids', 'Pectorals'] },
+    muscles: { primary: ['Triceps'], secondary: ['Anterior Deltoids', 'Pectorals'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 60,
@@ -3998,7 +4067,7 @@ export const EXERCISES = {
   wrist_extension: {
     name: 'Wrist Extension (Reverse Wrist Curl)',
     category: 'isolation',
-    muscles: { primary: ['Wrist Extensors'], secondary: ['Brachioradialis'] },
+    muscles: { primary: ['Forearms'], secondary: ['Brachioradialis'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
@@ -4012,13 +4081,13 @@ export const EXERCISES = {
   farmers_walk: {
     name: "Farmer's Walk",
     category: 'compound',
-    muscles: { primary: ['Forearms', 'Traps', 'Core'], secondary: ['Glutes', 'Calves'] },
+    muscles: { primary: ['Forearms', 'Trapezius', 'Core'], secondary: ['Glutes', 'Calves'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 5,
     upThreshold: 20,
     formChecks: [
-      { name: 'Upright posture', check: (angles) => angles.trunk < 15, good: 'Tall posture', bad: 'Stand tall with shoulders back', severity: 'minor', citation: 'McGill SM et al, 2009, J Strength Cond Res' },
+      { name: 'Upright posture', check: (angles) => angles.trunk < 15, quality: (angles) => qualityBelow(angles.trunk, 15, 12), good: 'Tall posture', bad: 'Stand tall with shoulders back', severity: 'minor', citation: 'McGill SM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: "Farmer's walks produce high core, grip, and trap activation while training locomotion under load (McGill 2009).",
   },
@@ -4027,13 +4096,13 @@ export const EXERCISES = {
   dumbbell_shrug: {
     name: 'Dumbbell Shrug',
     category: 'isolation',
-    muscles: { primary: ['Upper Trapezius'], secondary: ['Levator Scapulae'] },
+    muscles: { primary: ['Upper Trapezius'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 10,
     upThreshold: 25,
     formChecks: [
-      { name: 'Full elevation', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 15, good: 'Full shrug', bad: 'Shrug higher', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full elevation', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 15, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 15, 15), good: 'Full shrug', bad: 'Shrug higher', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Dumbbell shrugs allow more natural scapular movement compared to barbell shrugs (NSCA 2016).',
   },
@@ -4041,13 +4110,13 @@ export const EXERCISES = {
   cable_shrug: {
     name: 'Cable Shrug',
     category: 'isolation',
-    muscles: { primary: ['Upper Trapezius'], secondary: ['Levator Scapulae'] },
+    muscles: { primary: ['Upper Trapezius'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 10,
     upThreshold: 25,
     formChecks: [
-      { name: 'Full elevation', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 15, good: 'Full shrug', bad: 'Shrug higher', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full elevation', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 15, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 15, 15), good: 'Full shrug', bad: 'Shrug higher', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Cable shrugs provide constant tension throughout the shrugging motion (NSCA 2016).',
   },
@@ -4056,13 +4125,13 @@ export const EXERCISES = {
   ab_wheel_rollout: {
     name: 'Ab Wheel Rollout',
     category: 'bodyweight',
-    muscles: { primary: ['Rectus Abdominis', 'Core'], secondary: ['Latissimus Dorsi', 'Shoulders'] },
+    muscles: { primary: ['Rectus Abdominis', 'Core'], secondary: ['Latissimus Dorsi', 'Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 100,
     formChecks: [
-      { name: 'No lower back sag', check: (angles) => angles.trunk < 30, good: 'Spine neutral', bad: 'Avoid lower back sagging', severity: 'major', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'No lower back sag', check: (angles) => angles.trunk < 30, quality: (angles) => qualityBelow(angles.trunk, 30, 12), good: 'Spine neutral', bad: 'Avoid lower back sagging', severity: 'major', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Ab wheel rollouts produce very high rectus abdominis and external oblique activation (Escamilla 2010).',
   },
@@ -4076,7 +4145,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 170,
     formChecks: [
-      { name: 'Body straight', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Body in straight line', bad: 'Keep body rigid and straight', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Body straight', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Body in straight line', bad: 'Keep body rigid and straight', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Dragon flags are an advanced core exercise requiring extreme anti-extension strength (NSCA 2016).',
   },
@@ -4090,7 +4159,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 130,
     formChecks: [
-      { name: 'Spine flexion', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 80, good: 'Good crunch depth', bad: 'Crunch further down', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'Spine flexion', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 80, 15), good: 'Good crunch depth', bad: 'Crunch further down', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Cable crunches allow progressive overload on the rectus abdominis, producing high activation (Escamilla 2010).',
   },
@@ -4126,7 +4195,7 @@ export const EXERCISES = {
   lying_leg_raise: {
     name: 'Lying Leg Raise',
     category: 'bodyweight',
-    muscles: { primary: ['Hip Flexors', 'Lower Abs'], secondary: ['Core'] },
+    muscles: { primary: ['Hip Flexors', 'Rectus Abdominis'], secondary: ['Core'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
@@ -4140,7 +4209,7 @@ export const EXERCISES = {
   wood_chop: {
     name: 'Cable Wood Chop',
     category: 'compound',
-    muscles: { primary: ['Obliques', 'Core'], secondary: ['Shoulders', 'Hips'] },
+    muscles: { primary: ['Obliques', 'Core'], secondary: ['Deltoids', 'Hip Flexors'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
@@ -4154,13 +4223,13 @@ export const EXERCISES = {
   pallof_press: {
     name: 'Pallof Press',
     category: 'isolation',
-    muscles: { primary: ['Core', 'Obliques'], secondary: ['Shoulders'] },
+    muscles: { primary: ['Core', 'Obliques'], secondary: ['Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 40,
     upThreshold: 140,
     formChecks: [
-      { name: 'Anti-rotation', check: (angles) => angles.trunk < 15, good: 'Resisting rotation', bad: 'Keep torso square and resist rotation', severity: 'minor', citation: 'McGill SM, 2010, Ultimate Back Fitness and Performance' },
+      { name: 'Anti-rotation', check: (angles) => angles.trunk < 15, quality: (angles) => qualityBelow(angles.trunk, 15, 12), good: 'Resisting rotation', bad: 'Keep torso square and resist rotation', severity: 'minor', citation: 'McGill SM, 2010, Ultimate Back Fitness and Performance' },
     ],
     scienceNotes: 'Pallof press trains anti-rotation core stability, recommended by McGill as a core exercise that spares the spine (McGill 2010).',
   },
@@ -4182,13 +4251,13 @@ export const EXERCISES = {
   copenhagen_plank: {
     name: 'Copenhagen Plank',
     category: 'bodyweight',
-    muscles: { primary: ['Adductors', 'Obliques', 'Core'], secondary: ['Hip Abductors'] },
+    muscles: { primary: ['Hip Adductors', 'Obliques', 'Core'], secondary: ['Hip Abductors'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 160,
     upThreshold: 180,
     formChecks: [
-      { name: 'Straight body line', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 165, good: 'Body in straight line', bad: 'Keep hips from dropping', severity: 'minor', citation: 'Serner A et al, 2014, Br J Sports Med' },
+      { name: 'Straight body line', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 165, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 165, 15), good: 'Body in straight line', bad: 'Keep hips from dropping', severity: 'minor', citation: 'Serner A et al, 2014, Br J Sports Med' },
     ],
     scienceNotes: 'Copenhagen plank produces very high adductor activation, effective for groin injury prevention in athletes (Serner 2014).',
   },
@@ -4216,7 +4285,7 @@ export const EXERCISES = {
     downThreshold: 70,
     upThreshold: 130,
     formChecks: [
-      { name: 'Full crunch', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 80, good: 'Full contraction', bad: 'Crunch further', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full crunch', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 80, 15), good: 'Full contraction', bad: 'Crunch further', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Machine crunches allow progressive overload on the rectus abdominis in a guided path (NSCA 2016).',
   },
@@ -4225,13 +4294,13 @@ export const EXERCISES = {
   hang_clean: {
     name: 'Hang Clean',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Traps', 'Quadriceps', 'Glutes', 'Hamstrings'] },
+    muscles: { primary: ['Full Body'], secondary: ['Trapezius', 'Quadriceps', 'Glutes', 'Hamstrings'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Triple extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, good: 'Full hip extension', bad: 'Extend hips fully at the top', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
+      { name: 'Triple extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 155, 15), good: 'Full hip extension', bad: 'Extend hips fully at the top', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
     ],
     scienceNotes: 'Hang cleans develop explosive hip extension power from the hang position, reducing technical complexity vs full clean (Suchomel 2015).',
   },
@@ -4239,13 +4308,13 @@ export const EXERCISES = {
   hang_snatch: {
     name: 'Hang Snatch',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Traps', 'Shoulders', 'Glutes', 'Hamstrings'] },
+    muscles: { primary: ['Full Body'], secondary: ['Trapezius', 'Deltoids', 'Glutes', 'Hamstrings'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 100,
     upThreshold: 160,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, good: 'Full extension before catch', bad: 'Extend fully before pulling under', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 155, 15), good: 'Full extension before catch', bad: 'Extend fully before pulling under', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
     ],
     scienceNotes: 'Hang snatch develops explosive triple extension and overhead stability from the hang position (Suchomel 2015).',
   },
@@ -4253,13 +4322,13 @@ export const EXERCISES = {
   clean_and_jerk: {
     name: 'Clean and Jerk',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Glutes', 'Shoulders', 'Triceps'] },
+    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Glutes', 'Deltoids', 'Triceps'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
     upThreshold: 160,
     formChecks: [
-      { name: 'Lockout overhead', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout overhead', bad: 'Lock out arms fully overhead', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med', phase: 'top' },
+      { name: 'Lockout overhead', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout overhead', bad: 'Lock out arms fully overhead', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med', phase: 'top' },
     ],
     scienceNotes: 'Clean and jerk is the ultimate test of whole-body power production and overhead stability (Suchomel 2015).',
   },
@@ -4267,13 +4336,13 @@ export const EXERCISES = {
   clean_pull: {
     name: 'Clean Pull',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Hamstrings', 'Traps'], secondary: ['Erectors', 'Quadriceps'] },
+    muscles: { primary: ['Glutes', 'Hamstrings', 'Trapezius'], secondary: ['Erectors', 'Quadriceps'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full triple extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full extension', bad: 'Extend hips, knees, and ankles fully', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
+      { name: 'Full triple extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full extension', bad: 'Extend hips, knees, and ankles fully', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
     ],
     scienceNotes: 'Clean pulls develop the pulling mechanics and power of the clean without the catch phase (Suchomel 2015).',
   },
@@ -4281,13 +4350,13 @@ export const EXERCISES = {
   snatch_pull: {
     name: 'Snatch Pull',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Hamstrings', 'Traps'], secondary: ['Erectors', 'Quadriceps'] },
+    muscles: { primary: ['Glutes', 'Hamstrings', 'Trapezius'], secondary: ['Erectors', 'Quadriceps'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full triple extension', bad: 'Extend fully at the top', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full triple extension', bad: 'Extend fully at the top', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med' },
     ],
     scienceNotes: 'Snatch pulls develop the wide-grip pulling pattern and explosive extension for the snatch (Suchomel 2015).',
   },
@@ -4302,7 +4371,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Hip drive', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, good: 'Strong hip drive', bad: 'Drive hips forward to power the clean', severity: 'minor', citation: 'Lake JP, Lauder MA, 2012, J Strength Cond Res' },
+      { name: 'Hip drive', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 155, 15), good: 'Strong hip drive', bad: 'Drive hips forward to power the clean', severity: 'minor', citation: 'Lake JP, Lauder MA, 2012, J Strength Cond Res' },
     ],
     scienceNotes: 'Kettlebell cleans develop hip power and grip strength with a unique racking mechanic (Lake 2012).',
   },
@@ -4310,13 +4379,13 @@ export const EXERCISES = {
   kettlebell_snatch: {
     name: 'Kettlebell Snatch',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Core', 'Glutes'] },
+    muscles: { primary: ['Full Body'], secondary: ['Deltoids', 'Core', 'Glutes'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 160,
     formChecks: [
-      { name: 'Lockout overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, good: 'Locked out overhead', bad: 'Lock out fully overhead', severity: 'major', citation: 'Lake JP, Lauder MA, 2012, J Strength Cond Res', phase: 'top' },
+      { name: 'Lockout overhead', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 150, 15), good: 'Locked out overhead', bad: 'Lock out fully overhead', severity: 'major', citation: 'Lake JP, Lauder MA, 2012, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Kettlebell snatch is a high-power exercise combining hip drive with overhead lockout in one fluid movement (Lake 2012).',
   },
@@ -4330,7 +4399,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Locked out overhead', bad: 'Press to full extension', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Locked out overhead', bad: 'Press to full extension', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Kettlebell press develops unilateral pressing strength with unique offset loading that challenges core stability (NSCA 2016).',
   },
@@ -4338,13 +4407,13 @@ export const EXERCISES = {
   kettlebell_windmill: {
     name: 'Kettlebell Windmill',
     category: 'compound',
-    muscles: { primary: ['Core', 'Obliques', 'Shoulders'], secondary: ['Hamstrings', 'Glutes'] },
+    muscles: { primary: ['Core', 'Obliques', 'Deltoids'], secondary: ['Hamstrings', 'Glutes'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 160,
     formChecks: [
-      { name: 'Arm locked out', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Arm stable overhead', bad: 'Keep top arm locked out', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Arm locked out', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Arm stable overhead', bad: 'Keep top arm locked out', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Kettlebell windmills develop lateral core strength, hip mobility, and shoulder stability simultaneously (NSCA 2016).',
   },
@@ -4358,7 +4427,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, good: 'Below parallel', bad: 'Squat deeper', severity: 'minor', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 95, 15), good: 'Below parallel', bad: 'Squat deeper', severity: 'minor', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res' },
     ],
     scienceNotes: 'Kettlebell goblet squat is an excellent teaching tool for squat mechanics with natural counterbalance (Schoenfeld 2010).',
   },
@@ -4366,13 +4435,13 @@ export const EXERCISES = {
   kettlebell_row: {
     name: 'Kettlebell Row',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Rear Deltoids', 'Core'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Posterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full pull', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, good: 'Full row', bad: 'Pull elbow further back', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Full pull', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 110, 15), good: 'Full row', bad: 'Pull elbow further back', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Kettlebell rows provide offset loading that challenges grip and core anti-rotation (Fenwick 2009).',
   },
@@ -4386,7 +4455,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, good: 'Good hip hinge', bad: 'Hinge more at hips', severity: 'minor', citation: 'Lake JP, Lauder MA, 2012, J Strength Cond Res' },
+      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 90, 15), good: 'Good hip hinge', bad: 'Hinge more at hips', severity: 'minor', citation: 'Lake JP, Lauder MA, 2012, J Strength Cond Res' },
     ],
     scienceNotes: 'Kettlebell deadlift teaches hip hinge mechanics with a lower center of gravity than barbell (Lake 2012).',
   },
@@ -4395,13 +4464,13 @@ export const EXERCISES = {
   cable_reverse_fly: {
     name: 'Cable Reverse Fly',
     category: 'isolation',
-    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Middle Trapezius'] },
+    muscles: { primary: ['Posterior Deltoids', 'Rhomboids'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 15,
     upThreshold: 70,
     formChecks: [
-      { name: 'Full retraction', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 60, good: 'Full squeeze', bad: 'Pull arms further back', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
+      { name: 'Full retraction', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 60, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 60, 15), good: 'Full squeeze', bad: 'Pull arms further back', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther', phase: 'top' },
     ],
     scienceNotes: 'Cable reverse fly provides constant tension for rear deltoid and rhomboid isolation (Reinold 2004).',
   },
@@ -4410,7 +4479,7 @@ export const EXERCISES = {
   trx_row: {
     name: 'TRX Row',
     category: 'compound',
-    muscles: { primary: ['Upper Back', 'Biceps'], secondary: ['Core', 'Rear Deltoids'] },
+    muscles: { primary: ['Upper Back', 'Biceps'], secondary: ['Core', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
@@ -4424,7 +4493,7 @@ export const EXERCISES = {
   trx_push_up: {
     name: 'TRX Push-Up',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Triceps', 'Core'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Triceps', 'Core'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
@@ -4444,7 +4513,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, good: 'Good squat depth', bad: 'Squat deeper', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 95, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 95, 15), good: 'Good squat depth', bad: 'Squat deeper', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
     scienceNotes: 'TRX-assisted squats allow deeper squatting while reducing load, useful for mobility work (Snarr 2014).',
   },
@@ -4458,7 +4527,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good lunge depth', bad: 'Lower further', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good lunge depth', bad: 'Lower further', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
     scienceNotes: 'TRX rear-foot-elevated lunges add instability to challenge single-leg balance and proprioception (Snarr 2014).',
   },
@@ -4466,13 +4535,13 @@ export const EXERCISES = {
   trx_pike: {
     name: 'TRX Pike',
     category: 'bodyweight',
-    muscles: { primary: ['Core', 'Shoulders'], secondary: ['Hip Flexors'] },
+    muscles: { primary: ['Core', 'Deltoids'], secondary: ['Hip Flexors'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 130,
     formChecks: [
-      { name: 'Hips high', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 50, good: 'Hips piked high', bad: 'Drive hips higher', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet', phase: 'top' },
+      { name: 'Hips high', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 50, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 50, 15), good: 'Hips piked high', bad: 'Drive hips higher', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet', phase: 'top' },
     ],
     scienceNotes: 'TRX pike combines core anti-extension with shoulder flexion strength in an unstable environment (Snarr 2014).',
   },
@@ -4486,7 +4555,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
-      { name: 'Hips up', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 150, good: 'Hips elevated', bad: 'Keep hips up throughout', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
+      { name: 'Hips up', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 150, 15), good: 'Hips elevated', bad: 'Keep hips up throughout', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
     scienceNotes: 'TRX hamstring curls train the hamstrings through both hip extension and knee flexion simultaneously (Snarr 2014).',
   },
@@ -4514,7 +4583,7 @@ export const EXERCISES = {
     downThreshold: 60,
     upThreshold: 145,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, good: 'Full lockout', bad: 'Extend arms fully', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 140, 15), good: 'Full lockout', bad: 'Extend arms fully', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet', phase: 'top' },
     ],
     scienceNotes: 'TRX tricep extensions load the triceps through bodyweight with instability challenge (Snarr 2014).',
   },
@@ -4529,7 +4598,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 155,
     formChecks: [
-      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, good: 'Good depth', bad: 'Squat deeper', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
+      { name: 'Depth', check: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 100, 15), good: 'Good depth', bad: 'Squat deeper', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
     ],
     scienceNotes: 'Band squats provide accommodating resistance that increases through the concentric phase (Shoepe 2011).',
   },
@@ -4537,13 +4606,13 @@ export const EXERCISES = {
   band_deadlift: {
     name: 'Band Deadlift',
     category: 'compound',
-    muscles: { primary: ['Glutes', 'Hamstrings', 'Erectors'], secondary: ['Core', 'Traps'] },
+    muscles: { primary: ['Glutes', 'Hamstrings', 'Erectors'], secondary: ['Core', 'Trapezius'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, good: 'Good hip hinge', bad: 'Hinge deeper at hips', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
+      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 90, 15), good: 'Good hip hinge', bad: 'Hinge deeper at hips', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
     ],
     scienceNotes: 'Band deadlifts provide accommodating resistance, useful for developing lockout strength (Shoepe 2011).',
   },
@@ -4551,13 +4620,13 @@ export const EXERCISES = {
   band_row: {
     name: 'Band Row',
     category: 'compound',
-    muscles: { primary: ['Upper Back', 'Biceps'], secondary: ['Rear Deltoids', 'Core'] },
+    muscles: { primary: ['Upper Back', 'Biceps'], secondary: ['Posterior Deltoids', 'Core'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full pull', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, good: 'Full retraction', bad: 'Pull further back', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
+      { name: 'Full pull', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 110, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 110, 15), good: 'Full retraction', bad: 'Pull further back', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
     ],
     scienceNotes: 'Band rows provide portable back training with increasing resistance through the contraction (Shoepe 2011).',
   },
@@ -4565,13 +4634,13 @@ export const EXERCISES = {
   band_chest_press: {
     name: 'Band Chest Press',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Triceps'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Triceps'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 145, good: 'Full press', bad: 'Extend arms fully', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res', phase: 'top' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 145, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 145, 15), good: 'Full press', bad: 'Extend arms fully', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Band chest press provides accommodating resistance, greatest at lockout where the chest is strongest (Shoepe 2011).',
   },
@@ -4585,7 +4654,7 @@ export const EXERCISES = {
     downThreshold: 15,
     upThreshold: 80,
     formChecks: [
-      { name: 'Shoulder height', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 70, good: 'Arms at shoulder height', bad: 'Raise to shoulder level', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res', phase: 'top' },
+      { name: 'Shoulder height', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 70, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 70, 15), good: 'Arms at shoulder height', bad: 'Raise to shoulder level', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Band lateral raises provide increasing resistance through the raise, matching the deltoid strength curve (Shoepe 2011).',
   },
@@ -4599,7 +4668,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full hip extension', bad: 'Drive hips higher', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full hip extension', bad: 'Drive hips higher', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
     ],
     scienceNotes: 'Band hip thrusts add accommodating resistance that peaks at lockout where glutes are maximally contracted (Contreras 2015).',
   },
@@ -4621,7 +4690,7 @@ export const EXERCISES = {
   band_face_pull: {
     name: 'Band Face Pull',
     category: 'isolation',
-    muscles: { primary: ['Rear Deltoids', 'Rhomboids', 'Rotator Cuff'], secondary: ['Middle Trapezius'] },
+    muscles: { primary: ['Posterior Deltoids', 'Rhomboids', 'Rotator Cuff'], secondary: ['Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 60,
@@ -4641,7 +4710,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 160,
     formChecks: [
-      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, good: 'Good hip hinge depth', bad: 'Hinge deeper at hips', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
+      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 90, 15), good: 'Good hip hinge depth', bad: 'Hinge deeper at hips', severity: 'minor', citation: 'Shoepe TC et al, 2011, J Strength Cond Res' },
     ],
     scienceNotes: 'Band good mornings provide accommodating resistance for posterior chain loading (Shoepe 2011).',
   },
@@ -4670,7 +4739,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
-      { name: 'Hips up', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 150, good: 'Hips elevated', bad: 'Keep hips from dropping', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'Hips up', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 150, 15), good: 'Hips elevated', bad: 'Keep hips from dropping', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Stability ball hamstring curls combine hip extension with knee flexion on an unstable surface (Escamilla 2010).',
   },
@@ -4684,7 +4753,7 @@ export const EXERCISES = {
     downThreshold: 90,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Full hip extension', bad: 'Drive hips higher', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Full hip extension', bad: 'Drive hips higher', severity: 'minor', citation: 'Contreras B et al, 2015, J Appl Biomech' },
     ],
     scienceNotes: 'Stability ball hip thrusts add instability to standard hip thrusts, increasing stabilizer activation (Contreras 2015).',
   },
@@ -4692,13 +4761,13 @@ export const EXERCISES = {
   stability_ball_pike: {
     name: 'Stability Ball Pike',
     category: 'bodyweight',
-    muscles: { primary: ['Core', 'Shoulders'], secondary: ['Hip Flexors'] },
+    muscles: { primary: ['Core', 'Deltoids'], secondary: ['Hip Flexors'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 130,
     formChecks: [
-      { name: 'Hips high', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 50, good: 'Hips piked high', bad: 'Drive hips higher', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther', phase: 'top' },
+      { name: 'Hips high', check: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') < 50, quality: (angles) => qualityBelow(bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 50, 15), good: 'Hips piked high', bad: 'Drive hips higher', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther', phase: 'top' },
     ],
     scienceNotes: 'Stability ball pikes produce high rectus abdominis activation with shoulder stabilization demands (Escamilla 2010).',
   },
@@ -4706,7 +4775,7 @@ export const EXERCISES = {
   stability_ball_push_up: {
     name: 'Stability Ball Push-Up',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Core', 'Triceps'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Core', 'Triceps'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
@@ -4726,7 +4795,7 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, good: 'Full extension', bad: 'Extend body to straight line', severity: 'minor', citation: 'Marshall PW, Murphy BA, 2006, J Strength Cond Res' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 155, 15), good: 'Full extension', bad: 'Extend body to straight line', severity: 'minor', citation: 'Marshall PW, Murphy BA, 2006, J Strength Cond Res' },
     ],
     scienceNotes: 'Stability ball back extensions train the erectors with an unstable surface, increasing proprioceptive demand (Marshall 2006).',
   },
@@ -4741,7 +4810,7 @@ export const EXERCISES = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, good: 'Full lockout', bad: 'Lock out arms fully', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full lockout', check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 155, 15), good: 'Full lockout', bad: 'Lock out arms fully', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Handstand push-ups are an advanced bodyweight overhead press requiring full bodyweight loading (NSCA 2016).',
   },
@@ -4750,7 +4819,7 @@ export const EXERCISES = {
     name: 'Front Lever',
     category: 'bodyweight',
     isIsometric: true,
-    muscles: { primary: ['Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Posterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 80,
@@ -4765,7 +4834,7 @@ export const EXERCISES = {
     name: 'Back Lever',
     category: 'bodyweight',
     isIsometric: true,
-    muscles: { primary: ['Pectorals', 'Biceps', 'Core'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Biceps', 'Core'], secondary: ['Anterior Deltoids'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 80,
@@ -4780,7 +4849,7 @@ export const EXERCISES = {
     name: 'Planche',
     category: 'bodyweight',
     isIsometric: true,
-    muscles: { primary: ['Pectorals', 'Front Deltoids', 'Core'], secondary: ['Triceps', 'Serratus Anterior'] },
+    muscles: { primary: ['Pectorals', 'Anterior Deltoids', 'Core'], secondary: ['Triceps', 'Serratus Anterior'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 80,
@@ -4794,7 +4863,7 @@ export const EXERCISES = {
   ring_dip: {
     name: 'Ring Dip',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Triceps', 'Core'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Triceps', 'Core'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 75,
@@ -4808,7 +4877,7 @@ export const EXERCISES = {
   ring_push_up: {
     name: 'Ring Push-Up',
     category: 'compound',
-    muscles: { primary: ['Pectorals', 'Core', 'Triceps'], secondary: ['Front Deltoids'] },
+    muscles: { primary: ['Pectorals', 'Core', 'Triceps'], secondary: ['Anterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
@@ -4822,13 +4891,13 @@ export const EXERCISES = {
   ring_row: {
     name: 'Ring Row',
     category: 'compound',
-    muscles: { primary: ['Upper Back', 'Biceps'], secondary: ['Core', 'Rear Deltoids'] },
+    muscles: { primary: ['Upper Back', 'Biceps'], secondary: ['Core', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Body straight', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, good: 'Body rigid', bad: 'Keep body in a straight line', severity: 'minor', citation: 'Snarr RL, Esco MR, 2013, J Hum Kinet' },
+      { name: 'Body straight', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 160, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 160, 15), good: 'Body rigid', bad: 'Keep body in a straight line', severity: 'minor', citation: 'Snarr RL, Esco MR, 2013, J Hum Kinet' },
     ],
     scienceNotes: 'Ring rows allow progressive difficulty adjustment through body angle with added instability challenge (Snarr 2013).',
   },
@@ -4836,13 +4905,13 @@ export const EXERCISES = {
   typewriter_pull_up: {
     name: 'Typewriter Pull-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Core', 'Rear Deltoids'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps'], secondary: ['Core', 'Posterior Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 85,
     upThreshold: 155,
     formChecks: [
-      { name: 'Chin above bar', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, good: 'Chin stays above bar', bad: 'Keep chin above bar throughout lateral movement', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Chin above bar', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 90, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 90, 15), good: 'Chin stays above bar', bad: 'Keep chin above bar throughout lateral movement', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Typewriter pull-ups develop unilateral lat strength by shifting bodyweight laterally while maintaining chin above bar (NSCA 2016).',
   },
@@ -4850,13 +4919,13 @@ export const EXERCISES = {
   one_arm_push_up: {
     name: 'One-Arm Push-Up',
     category: 'bodyweight',
-    muscles: { primary: ['Pectorals', 'Triceps', 'Core'], secondary: ['Front Deltoids', 'Obliques'] },
+    muscles: { primary: ['Pectorals', 'Triceps', 'Core'], secondary: ['Anterior Deltoids', 'Obliques'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Minimal rotation', check: (angles) => angles.trunk < 30, good: 'Minimal torso rotation', bad: 'Minimize body rotation', severity: 'minor', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
+      { name: 'Minimal rotation', check: (angles) => angles.trunk < 30, quality: (angles) => qualityBelow(angles.trunk, 30, 12), good: 'Minimal torso rotation', bad: 'Minimize body rotation', severity: 'minor', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
     ],
     scienceNotes: 'One-arm push-ups demand extreme pressing strength and anti-rotation core stability (Cogley 2005).',
   },
@@ -4864,7 +4933,7 @@ export const EXERCISES = {
   skin_the_cat: {
     name: 'Skin the Cat',
     category: 'bodyweight',
-    muscles: { primary: ['Shoulders', 'Lats', 'Core'], secondary: ['Biceps', 'Pectorals'] },
+    muscles: { primary: ['Deltoids', 'Latissimus Dorsi', 'Core'], secondary: ['Biceps', 'Pectorals'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
@@ -4879,7 +4948,7 @@ export const EXERCISES = {
   rowing_machine: {
     name: 'Rowing Machine (Erg)',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Lats', 'Biceps', 'Core'] },
+    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Latissimus Dorsi', 'Biceps', 'Core'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 80,
@@ -4893,13 +4962,13 @@ export const EXERCISES = {
   ski_erg: {
     name: 'Ski Erg',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Core', 'Triceps'], secondary: ['Shoulders', 'Hip Flexors'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Core', 'Triceps'], secondary: ['Deltoids', 'Hip Flexors'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 150,
     formChecks: [
-      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 100, good: 'Good hip hinge on pull', bad: 'Hinge more at hips during pull', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Hip hinge', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 100, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 100, 15), good: 'Good hip hinge on pull', bad: 'Hinge more at hips during pull', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Ski erg develops upper body pulling power and cardiovascular endurance simultaneously (NSCA 2016).',
   },
@@ -4907,13 +4976,13 @@ export const EXERCISES = {
   assault_bike: {
     name: 'Assault Bike',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Shoulders', 'Core'] },
+    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Deltoids', 'Core'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Upright posture', check: (angles) => angles.trunk < 40, good: 'Good posture', bad: 'Stay more upright', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Upright posture', check: (angles) => angles.trunk < 40, quality: (angles) => qualityBelow(angles.trunk, 40, 12), good: 'Good posture', bad: 'Stay more upright', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Assault bike provides full-body conditioning with fan-based resistance that scales with effort (NSCA 2016).',
   },
@@ -4921,13 +4990,13 @@ export const EXERCISES = {
   sled_push: {
     name: 'Sled Push',
     category: 'compound',
-    muscles: { primary: ['Quadriceps', 'Glutes', 'Calves'], secondary: ['Core', 'Shoulders'] },
+    muscles: { primary: ['Quadriceps', 'Glutes', 'Calves'], secondary: ['Core', 'Deltoids'] },
     joint: 'knee',
     getValue: (angles) => bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'),
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Forward lean', check: (angles) => angles.trunk > 30, good: 'Good forward lean', bad: 'Lean into the sled more', severity: 'minor', citation: 'Winwood PW et al, 2014, J Strength Cond Res' },
+      { name: 'Forward lean', check: (angles) => angles.trunk > 30, quality: (angles) => qualityAbove(angles.trunk, 30, 12), good: 'Good forward lean', bad: 'Lean into the sled more', severity: 'minor', citation: 'Winwood PW et al, 2014, J Strength Cond Res' },
     ],
     scienceNotes: 'Sled pushing develops horizontal force production with minimal eccentric loading, reducing muscle soreness (Winwood 2014).',
   },
@@ -4949,13 +5018,13 @@ export const EXERCISES = {
   tire_flip: {
     name: 'Tire Flip',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Glutes', 'Back', 'Shoulders'] },
+    muscles: { primary: ['Full Body'], secondary: ['Quadriceps', 'Glutes', 'Upper Back', 'Deltoids'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 70,
     upThreshold: 165,
     formChecks: [
-      { name: 'Hip drive position', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 80, good: 'Low hip position to start', bad: 'Get hips lower before lifting', severity: 'major', citation: 'McGill SM et al, 2009, J Strength Cond Res' },
+      { name: 'Hip drive position', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 80, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 80, 15), good: 'Low hip position to start', bad: 'Get hips lower before lifting', severity: 'major', citation: 'McGill SM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Tire flips combine deadlift and push mechanics, producing very high full-body power output (McGill 2009).',
   },
@@ -4963,7 +5032,7 @@ export const EXERCISES = {
   rope_climb: {
     name: 'Rope Climb',
     category: 'compound',
-    muscles: { primary: ['Latissimus Dorsi', 'Biceps', 'Core', 'Grip'], secondary: ['Forearms', 'Shoulders'] },
+    muscles: { primary: ['Latissimus Dorsi', 'Biceps', 'Core', 'Forearms'], secondary: ['Forearms', 'Deltoids'] },
     joint: 'elbow',
     getValue: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'),
     downThreshold: 80,
@@ -4978,13 +5047,13 @@ export const EXERCISES = {
   devil_press: {
     name: 'Devil Press',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Chest', 'Glutes', 'Core'] },
+    muscles: { primary: ['Full Body'], secondary: ['Deltoids', 'Pectorals', 'Glutes', 'Core'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 160,
     formChecks: [
-      { name: 'Full overhead lockout', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, good: 'Full overhead lockout', bad: 'Lock out dumbbells fully overhead', severity: 'major', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Full overhead lockout', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 150, 15), good: 'Full overhead lockout', bad: 'Lock out dumbbells fully overhead', severity: 'major', citation: 'NSCA, 2016', phase: 'top' },
     ],
     scienceNotes: 'Devil press combines burpee with dumbbell snatch, producing extreme metabolic demand (NSCA 2016).',
   },
@@ -4992,13 +5061,13 @@ export const EXERCISES = {
   dumbbell_snatch: {
     name: 'Dumbbell Snatch',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Shoulders', 'Core', 'Glutes', 'Traps'] },
+    muscles: { primary: ['Full Body'], secondary: ['Deltoids', 'Core', 'Glutes', 'Trapezius'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 30,
     upThreshold: 160,
     formChecks: [
-      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, good: 'Full lockout overhead', bad: 'Lock out fully overhead', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med', phase: 'top' },
+      { name: 'Lockout', check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 150, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 150, 15), good: 'Full lockout overhead', bad: 'Lock out fully overhead', severity: 'major', citation: 'Suchomel TJ et al, 2015, Sports Med', phase: 'top' },
     ],
     scienceNotes: 'Dumbbell snatch develops unilateral power from floor to overhead in one movement (Suchomel 2015).',
   },
@@ -5006,13 +5075,13 @@ export const EXERCISES = {
   dumbbell_clean: {
     name: 'Dumbbell Clean',
     category: 'compound',
-    muscles: { primary: ['Full Body'], secondary: ['Glutes', 'Traps', 'Biceps', 'Core'] },
+    muscles: { primary: ['Full Body'], secondary: ['Glutes', 'Trapezius', 'Biceps', 'Core'] },
     joint: 'hip',
     getValue: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'),
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Hip drive', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, good: 'Strong hip extension', bad: 'Drive hips forward to power the clean', severity: 'minor', citation: 'Suchomel TJ et al, 2015, Sports Med' },
+      { name: 'Hip drive', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 155, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 155, 15), good: 'Strong hip extension', bad: 'Drive hips forward to power the clean', severity: 'minor', citation: 'Suchomel TJ et al, 2015, Sports Med' },
     ],
     scienceNotes: 'Dumbbell cleans develop explosive hip power with independent arm loading (Suchomel 2015).',
   },
@@ -5020,7 +5089,7 @@ export const EXERCISES = {
   wall_walk: {
     name: 'Wall Walk',
     category: 'bodyweight',
-    muscles: { primary: ['Shoulders', 'Core'], secondary: ['Triceps', 'Chest'] },
+    muscles: { primary: ['Deltoids', 'Core'], secondary: ['Triceps', 'Pectorals'] },
     joint: 'shoulder',
     getValue: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 80,
@@ -5034,13 +5103,13 @@ export const EXERCISES = {
   sandbag_carry: {
     name: 'Sandbag Carry',
     category: 'compound',
-    muscles: { primary: ['Core', 'Traps', 'Legs'], secondary: ['Shoulders', 'Forearms'] },
+    muscles: { primary: ['Core', 'Trapezius', 'Quadriceps'], secondary: ['Deltoids', 'Forearms'] },
     joint: 'shoulder',
     getValue: (angles) => bestSide(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'),
     downThreshold: 5,
     upThreshold: 20,
     formChecks: [
-      { name: 'Upright posture', check: (angles) => angles.trunk < 20, good: 'Upright posture', bad: 'Stand taller', severity: 'minor', citation: 'McGill SM et al, 2009, J Strength Cond Res' },
+      { name: 'Upright posture', check: (angles) => angles.trunk < 20, quality: (angles) => qualityBelow(angles.trunk, 20, 12), good: 'Upright posture', bad: 'Stand taller', severity: 'minor', citation: 'McGill SM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Sandbag carries develop functional core stability and grip endurance with an unstable load (McGill 2009).',
   },
@@ -5055,8 +5124,8 @@ export const EXERCISES = {
     downThreshold: 80,
     upThreshold: 150,
     formChecks: [
-      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 145, good: 'Full back extension', bad: 'Extend further back', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
-      { name: 'Controlled return', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, good: 'Good forward lean', bad: 'Lean further forward for full ROM', severity: 'minor', citation: 'NSCA, 2016', phase: 'bottom' },
+      { name: 'Full extension', check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 145, quality: (angles) => qualityAbove(bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 145, 15), good: 'Full back extension', bad: 'Extend further back', severity: 'minor', citation: 'NSCA, 2016', phase: 'top' },
+      { name: 'Controlled return', check: (angles) => bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') < 120, quality: (angles) => qualityBelow(bestSide(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip'), 120, 15), good: 'Good forward lean', bad: 'Lean further forward for full ROM', severity: 'minor', citation: 'NSCA, 2016', phase: 'bottom' },
     ],
     scienceNotes: 'Seated back extension machines target the erector spinae through controlled trunk extension from a seated position (NSCA 2016).',
   },

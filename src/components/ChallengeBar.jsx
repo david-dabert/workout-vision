@@ -159,7 +159,7 @@ export default function ChallengeBar({ challenge, completedResult, onAccept }) {
  * Displays both users' results side by side.
  */
 export function ChallengeResponseView({ response, onDismiss }) {
-  const { tExercise } = useT();
+  const { t, tExercise } = useT();
 
   if (!response) return null;
 
@@ -196,7 +196,7 @@ export function ChallengeResponseView({ response, onDismiss }) {
             background: 'none', border: 'none', color: 'var(--muted)',
             fontSize: '1.2rem', cursor: 'pointer', padding: '0 4px',
           }}
-          aria-label="Close"
+          aria-label={t('close')}
         >&times;</button>
       </div>
       <div style={{ textAlign: 'center', marginBottom: 12 }}>

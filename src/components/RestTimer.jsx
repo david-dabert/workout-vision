@@ -152,7 +152,7 @@ export default function RestTimer({ onClose }) {
   return (
     <div className="rest-timer-page">
       <div className="rest-timer-header">
-        <button className="btn-icon" onClick={onClose} aria-label="Close">
+        <button className="btn-icon" onClick={onClose} aria-label={t('close')}>
           &#x2715;
         </button>
         <h2>{t('rest_timer_title')}</h2>

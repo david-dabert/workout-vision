@@ -14,7 +14,7 @@ import { EXERCISES } from './exercises';
 // (popular, well-tracked by pose estimation, comparable across users)
 const CHALLENGE_POOL = [
   'squat', 'bench_press', 'deadlift', 'overhead_press',
-  'barbell_row', 'pull_up', 'push_up', 'lunge',
+  'bent_over_row', 'pull_up', 'push_up', 'lunge',
   'bicep_curl', 'tricep_extension', 'lateral_raise',
   'front_squat', 'romanian_deadlift', 'goblet_squat',
 ];

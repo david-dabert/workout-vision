@@ -458,6 +458,87 @@ export function detectMirror(landmarksArray) {
   return landmarksArray.filter((_, i) => keep[i]);
 }
 
+// ─── Landmark interpolation for occluded frames ───
+
+const VIS_INTERP_THRESHOLD = 0.45;
+
+/**
+ * Interpolate individual landmark coordinates when visibility drops below threshold.
+ * Uses linear interpolation from nearest good-visibility frames on both sides.
+ * Falls back to nearest-neighbor if only one side has good data.
+ *
+ * Operates in-place on a copy of the array. Returns the cleaned array.
+ * Designed for post-capture use in finalize() and recalibrate(), not live mode.
+ *
+ * @param {Array<Array>} landmarksArray - Array of per-frame landmark arrays (33 landmarks each)
+ * @param {number} [visThreshold=0.45] - Visibility below this triggers interpolation
+ * @returns {Array<Array>} New array with interpolated landmarks
+ */
+export function interpolateOccludedLandmarks(landmarksArray, visThreshold = VIS_INTERP_THRESHOLD) {
+  if (!landmarksArray || landmarksArray.length < 3) return landmarksArray;
+
+  const N = landmarksArray.length;
+  // Deep-copy so we don't mutate originals
+  const out = landmarksArray.map(frame =>
+    frame ? frame.map(lm => ({ ...lm })) : null
+  );
+
+  // For each landmark index (0-32), scan for low-visibility frames and interpolate
+  for (let li = 0; li < 33; li++) {
+    // Build visibility array for this landmark
+    const vis = new Array(N);
+    for (let f = 0; f < N; f++) {
+      vis[f] = out[f] && out[f][li] ? (out[f][li].visibility || 0) : 0;
+    }
+
+    // Find runs of low-visibility frames
+    let i = 0;
+    while (i < N) {
+      if (vis[i] >= visThreshold) { i++; continue; }
+
+      // Start of a low-vis run
+      const runStart = i;
+      while (i < N && vis[i] < visThreshold) i++;
+      const runEnd = i; // exclusive
+
+      // Find nearest good frame before and after
+      let before = runStart - 1;
+      while (before >= 0 && vis[before] < visThreshold) before--;
+      let after = runEnd;
+      while (after < N && vis[after] < visThreshold) after++;
+
+      const hasBefore = before >= 0 && out[before] && out[before][li];
+      const hasAfter = after < N && out[after] && out[after][li];
+
+      if (!hasBefore && !hasAfter) continue; // no reference data at all
+
+      for (let f = runStart; f < runEnd; f++) {
+        if (!out[f] || !out[f][li]) continue;
+
+        if (hasBefore && hasAfter) {
+          // Linear interpolation
+          const t = (f - before) / (after - before);
+          const lmB = out[before][li];
+          const lmA = out[after][li];
+          out[f][li].x = lmB.x + t * (lmA.x - lmB.x);
+          out[f][li].y = lmB.y + t * (lmA.y - lmB.y);
+          out[f][li].z = (lmB.z || 0) + t * ((lmA.z || 0) - (lmB.z || 0));
+          out[f][li].visibility = lmB.visibility + t * (lmA.visibility - lmB.visibility);
+        } else {
+          // Nearest-neighbor fill
+          const ref = hasBefore ? out[before][li] : out[after][li];
+          out[f][li].x = ref.x;
+          out[f][li].y = ref.y;
+          out[f][li].z = ref.z || 0;
+          // Keep original low visibility so downstream still knows it's estimated
+        }
+      }
+    }
+  }
+
+  return out;
+}
+
 // ─── Geometry ───
 
 export function calculateAngle(a, b, c) {

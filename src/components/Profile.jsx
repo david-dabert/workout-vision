@@ -81,7 +81,7 @@ export default function Profile({ onClose }) {
   return (
     <div className="page">
       <div className="page-header">
-        <button className="btn-icon" onClick={onClose} aria-label="Close">
+        <button className="btn-icon" onClick={onClose} aria-label={t('close')}>
           &#x2715;
         </button>
         <h2>{t('profile')}</h2>
@@ -478,7 +478,7 @@ export default function Profile({ onClose }) {
         {fileError && (
           <div className="inline-error">
             <span>{fileError}</span>
-            <button className="inline-error-dismiss" onClick={() => setFileError(null)} aria-label="Dismiss">&times;</button>
+            <button className="inline-error-dismiss" onClick={() => setFileError(null)} aria-label={t('close')}>&times;</button>
           </div>
         )}
 

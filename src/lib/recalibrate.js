@@ -12,7 +12,7 @@
  */
 
 import { EXERCISES } from './exercises';
-import { extractJointAngles } from './poseAnalysis';
+import { extractJointAngles, interpolateOccludedLandmarks } from './poseAnalysis';
 import { analyzeSet } from './biomechanics';
 import { generateWorkoutReport } from './coach';
 import { VelocityEngine } from './VelocityEngine';
@@ -236,7 +236,8 @@ export function recalibrateAnalysis({ frames, exerciseKey, targetReps, fps, prof
     return null;
   }
 
-  const landmarks = frames.map(f => f.landmarks || f);
+  const rawLandmarks = frames.map(f => f.landmarks || f);
+  const landmarks = interpolateOccludedLandmarks(rawLandmarks);
   const interval = 1 / fps;
 
   // Extract the tracking signal

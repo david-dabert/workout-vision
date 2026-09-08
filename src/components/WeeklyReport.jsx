@@ -112,7 +112,7 @@ function FormTrend({ thisWeek, lastWeek }) {
 
 // ── Canvas share card ─────────────────────────────────────────────────────────
 
-function buildShareCard(stats, streakCount, lang) {
+function buildShareCard(stats, streakCount, lang, t) {
   const W = 1080;
   const H = 1920;
   const canvas = document.createElement('canvas');
@@ -150,7 +150,7 @@ function buildShareCard(stats, streakCount, lang) {
 
   // Week label
   const now = new Date();
-  const weekLabel = lang === 'fr' ? `Semaine du ${now.toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' })}` : `Week of ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`;
+  const weekLabel = `${t('wr_canvas_week_of')} ${now.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'long', day: 'numeric' })}`;
   ctx.font = '36px system-ui, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
   ctx.fillText(weekLabel, 80, 180);
@@ -162,10 +162,10 @@ function buildShareCard(stats, streakCount, lang) {
 
   // Big stat grid (2 × 2)
   const statItems = [
-    { label: lang === 'fr' ? 'VOLUME' : 'VOLUME', value: stats.totalVolume > 0 ? `${Math.round(stats.totalVolume).toLocaleString()}kg` : '—' },
+    { label: t('wr_volume'), value: stats.totalVolume > 0 ? `${Math.round(stats.totalVolume).toLocaleString()}kg` : '—' },
     { label: 'REPS', value: stats.totalReps.toLocaleString() },
-    { label: lang === 'fr' ? 'SÉRIES' : 'SETS', value: stats.totalSets },
-    { label: lang === 'fr' ? 'EXERCICES' : 'EXERCISES', value: stats.totalExercises },
+    { label: t('wr_sets'), value: stats.totalSets },
+    { label: t('wr_exercises'), value: stats.totalExercises },
   ];
 
   const cellW = (W - 160) / 2;
@@ -207,7 +207,7 @@ function buildShareCard(stats, streakCount, lang) {
   ctx.textAlign = 'left';
   ctx.font = 'bold 36px system-ui, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.fillText(lang === 'fr' ? 'SCORE DE FORME' : 'FORM SCORE', 80, formY);
+  ctx.fillText(t('wr_canvas_form_score'), 80, formY);
 
   if (stats.avgForm !== null) {
     ctx.font = 'bold 80px system-ui, sans-serif';
@@ -229,7 +229,7 @@ function buildShareCard(stats, streakCount, lang) {
     ctx.font = 'bold 36px system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.textAlign = 'left';
-    ctx.fillText(`🔥 ${streakCount} ${lang === 'fr' ? 'jours consécutifs' : 'day streak'}`, 80, streakY);
+    ctx.fillText(`🔥 ${streakCount} ${t('wr_canvas_streak')}`, 80, streakY);
   }
 
   // Best callout
@@ -246,13 +246,13 @@ function buildShareCard(stats, streakCount, lang) {
     ctx.font = 'bold 30px system-ui, sans-serif';
     ctx.fillStyle = '#00e096';
     ctx.textAlign = 'left';
-    ctx.fillText(lang === 'fr' ? '⭐ MEILLEUR SCORE' : '⭐ BEST FORM', 120, calloutY + 56);
+    ctx.fillText(t('wr_canvas_best_form'), 120, calloutY + 56);
 
     const name = stats.bestEntry.exerciseName || stats.bestEntry.exercise;
     const score = stats.bestEntry.formScore;
     ctx.font = 'bold 42px system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    const label = lang === 'fr' ? `${name} — ${score}/100` : `${name} at ${score}/100`;
+    const label = `${name} ${t('wr_canvas_best_at')} ${score}/100`;
     ctx.fillText(label, 120, calloutY + 120);
   }
 
@@ -311,7 +311,7 @@ export default function WeeklyReport({ onClose }) {
     if (!thisStats) return;
     setSharing(true);
     try {
-      const canvas = buildShareCard(thisStats, streak, lang);
+      const canvas = buildShareCard(thisStats, streak, lang, t);
       canvas.toBlob(async (blob) => {
         if (!blob) { setSharing(false); return; }
         const file = new File([blob], 'weekly-report.png', { type: 'image/png' });
