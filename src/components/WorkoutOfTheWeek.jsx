@@ -8,7 +8,7 @@ import { useT } from '../lib/LanguageContext';
  * Shows the current Workout of the Week and user's best attempt if any.
  */
 export default function WorkoutOfTheWeek({ onNavigate }) {
-  const { t } = useT();
+  const { t, tExercise } = useT();
   const [wotw] = useState(() => getWorkoutOfTheWeek());
   const [bestAttempt, setBestAttempt] = useState(null);
 
@@ -57,7 +57,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
       </div>
 
       <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-        {wotw.exerciseName}
+        {tExercise(wotw.exercise, wotw.exerciseName)}
       </div>
 
       {bestAttempt ? (

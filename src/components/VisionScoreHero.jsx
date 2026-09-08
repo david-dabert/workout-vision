@@ -119,15 +119,20 @@ export default function VisionScoreHero({ workouts }) {
           )}
         </div>
       </div>
-      <span className="vision-score-label">VisionScore</span>
+      <span className="vision-score-label">{t('vision_score_label')}</span>
+      <span className="vision-score-subtitle" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+        {t('vision_score_subtitle')}
+      </span>
       {!visionData && workouts && workouts.length === 0 && (
         <span className="vision-score-prompt">
-          {t('no_workouts_yet') || 'Analyze your first workout to get your score'}
+          {t('no_workouts_yet')}
         </span>
       )}
       {visionData && (
         <span className="vision-score-meta">
-          {visionData.workoutCount} {visionData.workoutCount === 1 ? 'workout' : 'workouts'} · 30d
+          {visionData.workoutCount === 1
+            ? t('vision_score_workouts', { count: visionData.workoutCount })
+            : t('vision_score_workouts_plural', { count: visionData.workoutCount })}
         </span>
       )}
     </div>

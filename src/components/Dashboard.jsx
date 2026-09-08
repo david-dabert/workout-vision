@@ -43,7 +43,7 @@ const getLast7Days = (workouts, lang = 'en') => {
     const dateStr = d.toDateString();
     const dayWorkouts = workouts.filter(w => new Date(w.date).toDateString() === dateStr);
     days.push({
-      label: d.toLocaleDateString(lang, { weekday: 'narrow' }),
+      label: d.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short' }).replace('.', '').slice(0, 3),
       count: dayWorkouts.length,
       isToday: i === 0,
     });
