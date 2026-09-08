@@ -461,6 +461,7 @@ export function detectMirror(landmarksArray) {
 // ─── Landmark interpolation for occluded frames ───
 
 const VIS_INTERP_THRESHOLD = 0.45;
+const MAX_INTERP_GAP = 15; // Don't interpolate across gaps longer than 15 frames (~500ms at 30fps)
 
 /**
  * Interpolate individual landmark coordinates when visibility drops below threshold.
@@ -511,6 +512,10 @@ export function interpolateOccludedLandmarks(landmarksArray, visThreshold = VIS_
       const hasAfter = after < N && out[after] && out[after][li];
 
       if (!hasBefore && !hasAfter) continue; // no reference data at all
+
+      // Safety cap: don't interpolate across gaps longer than MAX_INTERP_GAP frames
+      const gapLen = runEnd - runStart;
+      if (gapLen > MAX_INTERP_GAP) continue;
 
       for (let f = runStart; f < runEnd; f++) {
         if (!out[f] || !out[f][li]) continue;
@@ -595,35 +600,87 @@ function calculateTrunkAngle(landmarks) {
 
 // ─── Drawing ───
 
-// ─── Form check → affected landmark indices ───
-const FORM_CHECK_LANDMARKS = {
-  'Knee valgus': [23, 24, 25, 26, 27, 28],
-  'Hip depth': [11, 12, 23, 24, 25, 26],
-  'Trunk angle': [11, 12, 23, 24],
-  'Bar path': [13, 14, 15, 16],
-  'Elbow flare': [11, 12, 13, 14, 15, 16],
-  'Wrist position': [13, 14, 15, 16],
-  'Scapular retraction': [11, 12],
-  'Lumbar flexion': [11, 12, 23, 24],
-  'Hip hinge': [23, 24, 25, 26, 27, 28],
-  'Knee position': [23, 24, 25, 26, 27, 28],
-  'Shoulder protraction': [11, 12, 13, 14],
-  'Tempo': [],
+// ─── Form check → affected landmark segments ───
+// Maps form check names containing these keywords to landmark indices involved.
+// Checks that don't match any keyword affect all segments (whole-body feedback).
+const KEYWORD_TO_LANDMARKS = {
+  knee: [23, 24, 25, 26, 27, 28],
+  depth: [23, 24, 25, 26],
+  squat: [23, 24, 25, 26, 27, 28],
+  hip: [11, 12, 23, 24, 25, 26],
+  hinge: [11, 12, 23, 24],
+  trunk: [11, 12, 23, 24],
+  torso: [11, 12, 23, 24],
+  back: [11, 12, 23, 24],
+  lumbar: [11, 12, 23, 24],
+  spine: [11, 12, 23, 24],
+  elbow: [11, 12, 13, 14, 15, 16],
+  arm: [11, 12, 13, 14, 15, 16],
+  wrist: [13, 14, 15, 16],
+  shoulder: [11, 12, 13, 14],
+  press: [11, 12, 13, 14, 15, 16],
+  lockout: [13, 14, 15, 16],
+  overhead: [11, 12, 13, 14, 15, 16],
+  scapular: [11, 12],
+  plank: [11, 12, 23, 24],
+  body: [], // whole body = all segments
 };
+
+// Cache: check name → affected landmark index set
+const _checkLandmarkCache = {};
+function getAffectedLandmarks(checkName) {
+  if (_checkLandmarkCache[checkName]) return _checkLandmarkCache[checkName];
+  const lower = checkName.toLowerCase();
+  for (const [kw, indices] of Object.entries(KEYWORD_TO_LANDMARKS)) {
+    if (lower.includes(kw)) {
+      _checkLandmarkCache[checkName] = indices;
+      return indices;
+    }
+  }
+  // No keyword match = whole-body feedback (empty = affects everything)
+  _checkLandmarkCache[checkName] = [];
+  return [];
+}
+
+/**
+ * Map quality score (0.0-1.0) to HSL color.
+ * 1.0 = cyan (#00f5d4, hue ~168), 0.5 = yellow (hue ~50), 0.0 = red (#ff3b5c, hue ~350)
+ */
+function qualityToColor(q) {
+  // Clamp
+  const cq = Math.max(0, Math.min(1, q));
+  // HSL interpolation: red(0) → yellow(50) → cyan(168)
+  let hue;
+  if (cq <= 0.5) {
+    // 0.0→0.5 maps red(0) → yellow(50)
+    hue = cq * 2 * 50;
+  } else {
+    // 0.5→1.0 maps yellow(50) → cyan(168)
+    hue = 50 + (cq - 0.5) * 2 * (168 - 50);
+  }
+  return `hsl(${Math.round(hue)}, 100%, 50%)`;
+}
 
 function getSegmentColor(i, j, formFeedback) {
   if (!formFeedback || formFeedback.length === 0) return '#00f5d4';
-  let hasMajor = false, hasMinor = false;
+
+  // Find the minimum quality score across all checks affecting this segment
+  let minQuality = 1.0;
+  let hasRelevantCheck = false;
+
   for (const f of formFeedback) {
-    if (f.passed) continue;
-    const affected = FORM_CHECK_LANDMARKS[f.name] || [];
-    const hit = affected.includes(i) || affected.includes(j);
-    if (hit && f.severity === 'major') hasMajor = true;
-    if (hit && f.severity === 'minor') hasMinor = true;
+    const q = typeof f.quality === 'number' ? f.quality : (f.passed ? 1.0 : 0.0);
+    const affected = getAffectedLandmarks(f.name);
+
+    // Empty affected = whole-body check, applies to all segments
+    if (affected.length === 0 || (affected.includes(i) || affected.includes(j))) {
+      hasRelevantCheck = true;
+      if (q < minQuality) minQuality = q;
+    }
   }
-  if (hasMajor) return '#ff3b5c';
-  if (hasMinor) return '#ffb836';
-  return '#00f5d4';
+
+  if (!hasRelevantCheck) return '#00f5d4';
+  return qualityToColor(minQuality);
 }
 
 /**
@@ -678,10 +735,12 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   }
 
   // Joint dots — body landmarks only (11-32), skip face (0-10)
+  // Color-coded by quality: cyan (perfect) → yellow → red (failing)
   const dotR = Math.max(4, Math.round(width / 80));
-  ctx.fillStyle = '#ff3b5c';
   for (let k = 11; k < Math.min(landmarks.length, 33); k++) {
     if (!ok(landmarks[k])) continue;
+    // Use getSegmentColor with (k, k) to find worst quality for this joint
+    ctx.fillStyle = formFeedback ? getSegmentColor(k, k, formFeedback) : '#00f5d4';
     ctx.beginPath();
     ctx.arc(landmarks[k].x * width, landmarks[k].y * height, dotR, 0, 2 * Math.PI);
     ctx.fill();

@@ -168,6 +168,20 @@ export const EXERCISES = {
           const rightOk = !rightVis || (ra.x - rk.x) > -0.02;
           return leftOk && rightOk;
         },
+        quality: (angles, landmarks) => {
+          if (!landmarks || !landmarks[25] || !landmarks[26] || !landmarks[27] || !landmarks[28]) return 1;
+          const lk = landmarks[25], la = landmarks[27], rk = landmarks[26], ra = landmarks[28];
+          const leftVis = (lk.visibility || 0) > 0.3 && (la.visibility || 0) > 0.3;
+          const rightVis = (rk.visibility || 0) > 0.3 && (ra.visibility || 0) > 0.3;
+          if (!leftVis && !rightVis) return 1;
+          // Measure inward drift as fraction of threshold (0.02), clamp to 0-1
+          const drifts = [];
+          if (leftVis) drifts.push(lk.x - la.x);
+          if (rightVis) drifts.push(ra.x - rk.x);
+          const worstDrift = Math.min(...drifts);
+          if (worstDrift >= -0.02) return 1;
+          return Math.max(0, 1 - ((-0.02 - worstDrift) / 0.04));
+        },
         good: 'Knees tracking over toes',
         bad: 'Knee cave detected',
         severity: 'major',
@@ -290,6 +304,14 @@ export const EXERCISES = {
           // If hips are significantly forward of shoulders in depth (z), spine is rounding
           return (midHipZ - midShoulderZ) < 0.03;
         },
+        quality: (angles, landmarks) => {
+          if (!landmarks || !landmarks[11] || !landmarks[12] || !landmarks[23] || !landmarks[24]) return 1;
+          const midShoulderZ = ((landmarks[11].z || 0) + (landmarks[12].z || 0)) / 2;
+          const midHipZ = ((landmarks[23].z || 0) + (landmarks[24].z || 0)) / 2;
+          const diff = midHipZ - midShoulderZ;
+          if (diff < 0.03) return 1;
+          return Math.max(0, 1 - (diff - 0.03) / 0.06);
+        },
         good: 'Neutral spine maintained',
         bad: 'Potential lumbar rounding detected',
         severity: 'major',
@@ -356,6 +378,14 @@ export const EXERCISES = {
           const midShoulderZ = ((landmarks[11].z || 0) + (landmarks[12].z || 0)) / 2;
           const midHipZ = ((landmarks[23].z || 0) + (landmarks[24].z || 0)) / 2;
           return (midHipZ - midShoulderZ) < 0.03;
+        },
+        quality: (angles, landmarks) => {
+          if (!landmarks || !landmarks[11] || !landmarks[12] || !landmarks[23] || !landmarks[24]) return 1;
+          const midShoulderZ = ((landmarks[11].z || 0) + (landmarks[12].z || 0)) / 2;
+          const midHipZ = ((landmarks[23].z || 0) + (landmarks[24].z || 0)) / 2;
+          const diff = midHipZ - midShoulderZ;
+          if (diff < 0.03) return 1;
+          return Math.max(0, 1 - (diff - 0.03) / 0.06);
         },
         good: 'Neutral spine maintained',
         bad: 'Potential lumbar rounding detected',
@@ -2703,7 +2733,7 @@ export const EXERCISES = {
     upThreshold: 150,
     formChecks: [
       { name: 'Controlled descent', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 60, quality: (angles) => qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 60, 15), good: 'Full depth achieved', bad: 'Lower further into the deficit', severity: 'major', citation: 'Contreras B, 2011', phase: 'bottom' },
-      { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 100 || angles.trunk < 40, good: 'Elbows tracking properly', bad: 'Keep elbows closer to body', severity: 'minor', citation: 'Cogley RM et al, 2005' },
+      { name: 'Elbow position', check: (angles) => bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') < 100 || angles.trunk < 40, quality: (angles) => Math.max(qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 100, 15), qualityBelow(angles.trunk, 40, 12)), good: 'Elbows tracking properly', bad: 'Keep elbows closer to body', severity: 'minor', citation: 'Cogley RM et al, 2005' },
     ],
     scienceNotes: 'Deficit push-downs emphasize the eccentric phase with extended ROM, targeting triceps and chest with increased time under tension at the bottom (Contreras 2011).',
   },
@@ -5161,6 +5191,10 @@ export const EXERCISES = {
           const elbow = Math.min(angles.leftElbow, angles.rightElbow);
           return knee < 160 || elbow < 160;
         },
+        quality: (angles) => Math.max(
+          qualityBelow(bestSide(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 160, 15),
+          qualityBelow(bestSide(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 160, 15)
+        ),
         good: 'Active movement',
         bad: 'No significant joint movement detected',
         severity: 'minor',
