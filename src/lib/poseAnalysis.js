@@ -623,6 +623,17 @@ const KEYWORD_TO_LANDMARKS = {
   overhead: [11, 12, 13, 14, 15, 16],
   scapular: [11, 12],
   plank: [11, 12, 23, 24],
+  shrug: [11, 12],
+  elevation: [11, 12],
+  retraction: [11, 12],
+  chin: [11, 12, 13, 14, 15, 16],
+  hang: [11, 12, 13, 14, 15, 16],
+  pull: [11, 12, 13, 14, 15, 16],
+  crunch: [11, 12, 23, 24],
+  pelvic: [23, 24, 25, 26],
+  lean: [11, 12, 23, 24],
+  abduction: [23, 24, 25, 26],
+  leg: [23, 24, 25, 26, 27, 28],
   body: [], // whole body = all segments
 };
 
