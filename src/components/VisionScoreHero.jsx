@@ -56,7 +56,7 @@ export default function VisionScoreHero({ workouts }) {
 
   // Arc geometry for the semi-circular gauge
   const radius = 72;
-  const strokeWidth = 8;
+  const strokeWidth = 10;
   const cx = 90;
   const cy = 85;
   const startAngle = Math.PI * 0.8;
@@ -90,10 +90,22 @@ export default function VisionScoreHero({ workouts }) {
           <path
             d={bgArc}
             fill="none"
-            stroke="var(--glass-border)"
+            stroke="rgba(255,255,255,0.06)"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
           />
+          {/* Progress arc glow layer */}
+          {visionData && (
+            <path
+              d={progressArc}
+              fill="none"
+              stroke={gradeColor}
+              strokeWidth={strokeWidth + 6}
+              strokeLinecap="round"
+              opacity="0.15"
+              style={{ filter: 'blur(4px)' }}
+            />
+          )}
           {/* Progress arc */}
           {visionData && (
             <path
@@ -103,7 +115,7 @@ export default function VisionScoreHero({ workouts }) {
               strokeWidth={strokeWidth}
               strokeLinecap="round"
               style={{
-                filter: `drop-shadow(0 0 6px ${gradeColor})`,
+                filter: `drop-shadow(0 0 8px ${gradeColor})`,
               }}
             />
           )}
@@ -120,7 +132,7 @@ export default function VisionScoreHero({ workouts }) {
         </div>
       </div>
       <span className="vision-score-label">{t('vision_score_label')}</span>
-      <span className="vision-score-subtitle" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: 2 }}>
+      <span className="vision-score-subtitle">
         {t('vision_score_subtitle')}
       </span>
       {!visionData && workouts && workouts.length === 0 && (
