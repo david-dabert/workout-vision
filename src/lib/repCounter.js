@@ -337,7 +337,10 @@ export class RepCounter {
     const signal = invert ? interpolated.map(v => -v) : interpolated;
 
     // ── Step 3: Use pre-computed valley result ──
-    const result = adaptive.result;
+    // Then apply autocorrelation edge correction: if the dominant period
+    // suggests one more rep than valley counting found, and the signal shows
+    // partial motion at the edges, recover the edge rep.
+    const result = this._autocorrelationEdgeCorrect(signal, adaptive.result);
 
     if (result.reps === 0) {
       // Valley counting found nothing. Keep FSM reps if any were counted
@@ -541,8 +544,11 @@ export class RepCounter {
 
       const score = result.reps * consistency;
 
-      // Alternative must beat primary by 20% margin to justify the switch
-      if (score > bestScore * 1.2) {
+      // Asymmetric margin: alternatives finding FEWER reps than primary only
+      // need 5% margin (helps correct overcounting). Alternatives finding MORE
+      // reps need 20% (prevents noise from inflating the count).
+      const margin = result.reps < primaryCount.reps ? 1.05 : 1.2;
+      if (score > bestScore * margin) {
         bestScore = score;
         bestCand = cand;
         bestResult = result;
@@ -566,7 +572,179 @@ export class RepCounter {
   //   1. Valleys must be >= 0.4s apart
   //   2. Amplitude from preceding peak to valley must be >= 25°
 
+  // _countValleys: used by adaptive selection during candidate scoring.
+  // Returns raw valley count without reconciliation.
   _countValleys(signal) {
+    return this._findValleys(signal);
+  }
+
+  // Peak-valley reconciliation: applied ONLY to the final winning signal,
+  // never during candidate comparison in _adaptiveSignalSelect.
+  // A complete rep has one valley AND one peak. If the video starts or ends
+  // mid-rep, the bilateral prominence filter rejects the edge valley
+  // (truncated peak on one side) but the corresponding peak has full
+  // bilateral support from flanking valleys.
+  _reconcilePeaksAndValleys(signal, valleyResult) {
+    if (valleyResult.reps < 2) return valleyResult;
+
+    const inverted = signal.map(v => -v);
+    const peakResult = this._findValleys(inverted);
+
+    if (peakResult.reps !== valleyResult.reps + 1) return valleyResult;
+
+    // Peaks found exactly one more. Verify the extra peak is at an edge
+    // (first or last 20% of signal), not a noise peak in the middle.
+    const edgeZone = Math.round(signal.length * 0.20);
+    const medianGap = this._medianIntervalFrames(valleyResult.valleyFrames);
+
+    // Find the orphan peak (no nearby valley)
+    let orphanPeakFrame = null;
+    for (const pf of peakResult.valleyFrames) {
+      const nearestDist = valleyResult.valleyFrames.reduce(
+        (best, vf) => Math.min(best, Math.abs(pf - vf)), Infinity
+      );
+      if (nearestDist > medianGap * 0.3) {
+        // Only accept if at an edge
+        if (pf < edgeZone || pf > signal.length - edgeZone) {
+          orphanPeakFrame = pf;
+        }
+        break;
+      }
+    }
+
+    if (orphanPeakFrame === null) return valleyResult;
+
+    // Find the valley nearest this orphan peak at the edge
+    const searchRadius = Math.round(medianGap * 0.5);
+    const lo = Math.max(0, orphanPeakFrame - searchRadius);
+    const hi = Math.min(signal.length - 1, orphanPeakFrame + searchRadius);
+    let bestFrame = orphanPeakFrame;
+    let bestVal = signal[orphanPeakFrame];
+    for (let j = lo; j <= hi; j++) {
+      if (signal[j] < bestVal) { bestVal = signal[j]; bestFrame = j; }
+    }
+
+    const mergedFrames = [...valleyResult.valleyFrames, bestFrame].sort((a, b) => a - b);
+    // Deduplicate frames that are too close
+    const minGap = Math.max(2, Math.round(this._fps * 0.3));
+    const dedupedFrames = [mergedFrames[0]];
+    for (let i = 1; i < mergedFrames.length; i++) {
+      if (mergedFrames[i] - dedupedFrames[dedupedFrames.length - 1] >= minGap) {
+        dedupedFrames.push(mergedFrames[i]);
+      }
+    }
+
+    console.debug(`[RepCounter] Peak-valley edge reconciliation: ${valleyResult.reps} → ${dedupedFrames.length} reps`);
+    return { reps: dedupedFrames.length, allValleys: valleyResult.allValleys, valleyFrames: dedupedFrames, signalRange: valleyResult.signalRange };
+  }
+
+  _medianIntervalFrames(frames) {
+    if (frames.length < 2) return Infinity;
+    const gaps = [];
+    for (let i = 1; i < frames.length; i++) gaps.push(frames[i] - frames[i - 1]);
+    gaps.sort((a, b) => a - b);
+    return gaps[Math.floor(gaps.length / 2)];
+  }
+
+  // Autocorrelation-based edge correction.
+  // Valley counting misses edge reps because the bilateral prominence filter
+  // needs peaks on both sides. Autocorrelation uses the entire signal shape
+  // to estimate the dominant period, which is robust to edge truncation.
+  // If the period-based estimate is exactly valley_count + 1, recover the edge rep.
+  _autocorrelationEdgeCorrect(signal, valleyResult) {
+    if (valleyResult.reps < 3) return valleyResult;
+
+    const N = signal.length;
+    // Subtract mean
+    const mean = signal.reduce((a, b) => a + b, 0) / N;
+    const centered = signal.map(v => v - mean);
+
+    // Compute autocorrelation for lags from minLag to maxLag
+    // minLag: at least 0.4s (fastest reasonable rep)
+    // maxLag: half the signal length (can't detect period longer than half)
+    const minLag = Math.max(3, Math.round(this._fps * 0.3));
+    const maxLag = Math.min(Math.floor(N / 2), Math.round(this._fps * 10));
+
+    let bestLag = 0;
+    let bestCorr = -Infinity;
+    for (let lag = minLag; lag <= maxLag; lag++) {
+      let corr = 0;
+      for (let t = 0; t < N - lag; t++) {
+        corr += centered[t] * centered[t + lag];
+      }
+      corr /= (N - lag); // normalize by overlap length
+      if (corr > bestCorr) {
+        bestCorr = corr;
+        bestLag = lag;
+      }
+    }
+
+    if (bestLag === 0) return valleyResult;
+
+    // Autocorrelation-based expected rep count
+    const acReps = Math.round(N / bestLag);
+
+    // Also check: the valley-based median period should agree with autocorrelation
+    const valleyMedianGap = this._medianIntervalFrames(valleyResult.valleyFrames);
+    const periodAgreement = valleyMedianGap < Infinity
+      ? Math.min(bestLag, valleyMedianGap) / Math.max(bestLag, valleyMedianGap)
+      : 0;
+
+    // Only correct if:
+    // 1. AC suggests exactly one more rep than valleys found
+    // 2. Valley period and AC period roughly agree (within 30%)
+    // 3. Enough reps to establish reliable cadence
+    if (acReps === valleyResult.reps + 1 && periodAgreement > 0.7) {
+      // Find where the missing rep likely is: at the start or end of the signal.
+      // Check which edge has partial motion that looks like a rep.
+      const firstValley = valleyResult.valleyFrames[0];
+      const lastValley = valleyResult.valleyFrames[valleyResult.valleyFrames.length - 1];
+      const expectedPeriod = bestLag;
+
+      // Edge at start: if first valley is far from frame 0 (> 0.7 × period),
+      // there's likely a truncated rep before it.
+      // Edge at end: if last valley is far from end (> 0.7 × period),
+      // there's likely a truncated rep after it.
+      const startGap = firstValley;
+      const endGap = N - 1 - lastValley;
+
+      let edgeFrame = -1;
+      if (startGap > expectedPeriod * 0.7) {
+        // Look for a local minimum near the expected position
+        const target = Math.round(firstValley - expectedPeriod);
+        if (target >= 0) {
+          const lo = Math.max(0, target - Math.round(expectedPeriod * 0.3));
+          const hi = Math.min(firstValley - 1, target + Math.round(expectedPeriod * 0.3));
+          let bestV = signal[lo];
+          edgeFrame = lo;
+          for (let j = lo; j <= hi; j++) {
+            if (signal[j] < bestV) { bestV = signal[j]; edgeFrame = j; }
+          }
+        }
+      } else if (endGap > expectedPeriod * 0.7) {
+        const target = Math.round(lastValley + expectedPeriod);
+        if (target < N) {
+          const lo = Math.max(lastValley + 1, target - Math.round(expectedPeriod * 0.3));
+          const hi = Math.min(N - 1, target + Math.round(expectedPeriod * 0.3));
+          let bestV = signal[lo];
+          edgeFrame = lo;
+          for (let j = lo; j <= hi; j++) {
+            if (signal[j] < bestV) { bestV = signal[j]; edgeFrame = j; }
+          }
+        }
+      }
+
+      if (edgeFrame >= 0) {
+        const newFrames = [...valleyResult.valleyFrames, edgeFrame].sort((a, b) => a - b);
+        console.debug(`[RepCounter] AC edge correction: ${valleyResult.reps} → ${newFrames.length} (period=${bestLag}, AC=${acReps})`);
+        return { reps: newFrames.length, allValleys: valleyResult.allValleys, valleyFrames: newFrames, signalRange: valleyResult.signalRange };
+      }
+    }
+
+    return valleyResult;
+  }
+
+  _findValleys(signal) {
     // Signal range first — needed for adaptive amplitude threshold
     let sigMin = Infinity, sigMax = -Infinity;
     for (let i = 0; i < signal.length; i++) {
@@ -576,7 +754,6 @@ export class RepCounter {
     const signalRange = sigMax - sigMin;
 
     if (signalRange < 10) {
-      console.debug(`[RepCounter] Signal range too small: ${signalRange.toFixed(1)}`);
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
@@ -658,8 +835,6 @@ export class RepCounter {
     } else {
       valleyFrames = pass1;
     }
-
-    console.debug(`[RepCounter] Valley params: minAmp=${minAmplitude.toFixed(1)}°, range=${signalRange.toFixed(1)}°, valleys=${valleyFrames.length}`);
 
     return { reps: valleyFrames.length, allValleys: allValleys.length, valleyFrames, signalRange };
   }
