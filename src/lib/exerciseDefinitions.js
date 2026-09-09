@@ -1864,13 +1864,16 @@ export const EXERCISE_DEFINITIONS = {
     muscles: { primary: ['Deltoids', 'Core'], secondary: ['Forearms', 'Latissimus Dorsi'] },
     joint: 'shoulder',
     value: { type: 'custom', fn: (angles, landmarks) => {
-      // Wrist y-position normalized to body height (camera-distance independent)
+      // Wrist y-position normalized to body height (camera-distance independent).
+      // Guard: body height must be at least 10% of the frame (nose far enough from
+      // ankle) to avoid division-by-near-zero on bad camera angles.
       if (landmarks && landmarks[15] && landmarks[16] && landmarks[0] && landmarks[27]) {
+        const bodyHeight = Math.abs(landmarks[27].y - landmarks[0].y);
+        if (bodyHeight < 0.1) return angles.leftShoulder; // fallback to shoulder angle
         const wristY = (landmarks[15].y + landmarks[16].y) / 2;
-        const bodyHeight = Math.abs(landmarks[27].y - landmarks[0].y) || 0.001;
         return (1 - wristY / bodyHeight) * 100;
       }
-      return angles.trunk;
+      return angles.leftShoulder;
     } },
     downThreshold: 30,
     upThreshold: 50,
