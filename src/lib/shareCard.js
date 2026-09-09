@@ -493,13 +493,13 @@ export async function generateAnimatedShareCard(result, onProgress) {
   const grade = gradeFromScore(result.formScore);
   const gc = gradeColor(result.formScore);
   const repHistory = result.repHistory || [];
+  const cWeight = result.weight || 0;
+  const cVolume = cWeight > 0 ? `${cWeight * result.reps}kg` : `${result.reps}`;
   const stats = [
     { value: `${result.reps}`, label: 'REPS' },
-    { value: `${result.formScore}`, label: 'FORM' },
+    { value: result.formScore != null ? `${result.formScore}` : '--', label: 'FORM' },
+    { value: cVolume, label: 'VOLUME' },
   ];
-  if (result.bioAnalysis?.movementQuality != null) {
-    stats.push({ value: `${Math.round(result.bioAnalysis.movementQuality)}`, label: 'QUALITY' });
-  }
 
   recorder.start();
 

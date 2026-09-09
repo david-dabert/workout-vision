@@ -313,6 +313,7 @@ const translations = {
   'strength_baselines': { en: 'Strength baselines (untrained est.)', fr: 'Bases de force (est. débutant)' },
   'est_bf': { en: 'Est. BF', fr: 'MG est.' },
   'max_hr_short': { en: 'Max HR', fr: 'FC max' },
+  'baselines_caveat': { en: 'All values are population-average estimates from age, sex, height and weight. They are not measurements. Body fat error margin is typically 5-8%. Max HR varies ±12 bpm from the 220-age formula. Use your own measured values when available.', fr: 'Toutes les valeurs sont des estimations moyennes basées sur l\'âge, le sexe, la taille et le poids. Ce ne sont pas des mesures. La marge d\'erreur de la masse grasse est généralement de 5-8%. La FC max varie de ±12 bpm par rapport à la formule 220-âge. Utilisez vos propres valeurs mesurées si disponibles.' },
   'upload_medical_desc': { en: 'Upload medical files. Everything stays on your device.', fr: 'Importez vos documents médicaux. Tout reste sur votre appareil.' },
   'pdf_images_docs': { en: 'PDF, images, documents', fr: 'PDF, images, documents' },
   'no_records_yet': { en: 'No records uploaded yet.', fr: 'Aucun document importé.' },

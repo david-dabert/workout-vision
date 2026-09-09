@@ -199,9 +199,6 @@ export function generateWorkoutReport(profile, exerciseResults) {
       if (result.analysis.asymmetry && result.analysis.asymmetry.score <= 10) {
         highlights.push({ key: 'coach_symmetry', exercise: exKey, exerciseName: exercise.name });
       }
-      if (result.analysis.fatigue && result.analysis.fatigue.velocityDropoff > 30) {
-        improvements.push({ key: 'coach_velocity_drop', exercise: exKey, exerciseName: exercise.name, dropoff: Math.round(result.analysis.fatigue.velocityDropoff) });
-      }
       if (result.analysis.rangeOfMotion && result.analysis.rangeOfMotion.consistency < 70) {
         improvements.push({ key: 'coach_rom_inconsistent', exercise: exKey, exerciseName: exercise.name, consistency: result.analysis.rangeOfMotion.consistency });
       }

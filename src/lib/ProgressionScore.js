@@ -1,11 +1,12 @@
 /**
  * ProgressionScore — The Number Users Tell Friends
  *
- * Proprietary 0-1000 score integrating form quality, consistency,
- * tempo control, power/velocity, volume, fatigue resistance,
- * and improvement over previous sessions.
+ * 0-1000 score integrating form quality, consistency,
+ * tempo control (eccentric/concentric ratio from frame timing),
+ * volume, and improvement over previous sessions.
  *
- * Convergence item #5: Proprietary progression metric.
+ * No pixel-velocity or fabricated physics. Only joint angles,
+ * frame timing, and user-entered weight.
  *
  * Grades: F(0-199) D(200-349) C(350-499) B(500-649) B+(650-749) A(750-849) A+(850-929) S(930-1000)
  */

@@ -447,6 +447,12 @@ export default function Profile({ onClose }) {
               <p className="text-xs text-muted">{baselines.strengthBaselines.note}</p>
             </>
           )}
+          {baselines && (
+            <>
+              <p className="text-xs text-muted" style={{ marginTop: 12, fontStyle: 'italic' }}>
+                {t('baselines_caveat')}</p>
+            </>
+          )}
         </div>
       )}
 

@@ -586,32 +586,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {bioAnalysis?.velocity?.perRepRelative && bioAnalysis.velocity.perRepRelative.length > 0 && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('tempo_per_rep')}</h4>
-          <div className="rep-bars">
-            {bioAnalysis.velocity.perRepRelative.map((pct, i) => {
-              const declining = i > 0 && pct < bioAnalysis.velocity.perRepRelative[i - 1];
-              return (
-                <div key={i} className="rep-bar-col">
-                  <div className="rep-bar-wrap">
-                    <div className="rep-bar" style={{
-                      height: `${Math.max(pct, 5)}%`,
-                      background: declining ? 'var(--yellow)' : 'var(--accent)',
-                    }} />
-                  </div>
-                  <span className="rep-num">{i + 1}</span>
-                </div>
-              );
-            })}
-          </div>
-          {bioAnalysis.velocity.trend && (
-            <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              {t('trend')}: {t(bioAnalysis.velocity.trend)}
-            </p>
-          )}
-        </div>
-      )}
 
       {repHistory && repHistory.length >= 2 && repHistory[0]?.rom != null && (
         <div style={{ marginTop: 14 }}>

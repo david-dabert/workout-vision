@@ -75,29 +75,6 @@ describe('generateWorkoutReport', () => {
     expect(report.grade).toBe('D');
   });
 
-  it('flags high velocity dropoff as an improvement area', () => {
-    const results = [
-      {
-        exerciseKey: 'bench_press',
-        reps: 10,
-        sets: 3,
-        weight: 60,
-        analysis: {
-          movementQuality: 65,
-          fatigue: { velocityDropoff: 35 },
-          asymmetry: { score: 8 },
-          rangeOfMotion: { consistency: 90 },
-        },
-      },
-    ];
-
-    const report = generateWorkoutReport({}, results);
-    const velocityImprovement = report.improvements.find(
-      i => i.key === 'coach_velocity_drop'
-    );
-    expect(velocityImprovement).toBeDefined();
-  });
-
   it('highlights good symmetry when asymmetry score is low', () => {
     const results = [
       {
