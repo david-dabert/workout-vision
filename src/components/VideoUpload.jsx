@@ -1,66 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getImageLandmarker, detectPoseImage, extractJointAngles, disposeAllLandmarkers, selectSubjectPose, resetKalmanFilters } from '../lib/poseAnalysis';
+import { disposeAllLandmarkers } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
-import { RepCounter } from '../lib/repCounter';
-import { ExerciseAutoDetector } from '../lib/exerciseDetector';
-import { analyzeSet } from '../lib/biomechanics';
-import { generateWorkoutReport } from '../lib/coach';
-import { saveWorkout, getWorkout, updateWorkout, getLastWorkoutForExercise } from '../lib/storage';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
-import { extractFramesStreaming, hashFile, hashLandmarks } from '../lib/frameExtractor';
-import { AudioFeedback } from '../lib/AudioFeedback';
-import { updateBaseline, compareToBaseline } from '../lib/formBaselines';
 import usePoseWorker from '../lib/usePoseWorker';
-import { computeCalibration, applyCalibration } from '../lib/calibration';
-
-
-// ── Landmark cache (IndexedDB) ──
-// Keyed by SHA-256 hash of video file content + fps.
-// Same file = same hash = same landmarks. Deterministic.
-const CACHE_DB = 'workoutVisionCache';
-const CACHE_STORE = 'landmarks';
-
-function openCacheDB() {
-  return new Promise((resolve) => {
-    const req = indexedDB.open(CACHE_DB, 3);
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(CACHE_STORE)) {
-        db.createObjectStore(CACHE_STORE);
-      }
-    };
-    req.onsuccess = (e) => resolve(e.target.result);
-    req.onerror = () => resolve(null);
-  });
-}
-
-async function getCachedLandmarks(key) {
-  const db = await openCacheDB();
-  if (!db || !db.objectStoreNames.contains(CACHE_STORE)) return null;
-  return new Promise((resolve) => {
-    const tx = db.transaction(CACHE_STORE, 'readonly');
-    const get = tx.objectStore(CACHE_STORE).get(key);
-    get.onsuccess = () => resolve(get.result || null);
-    get.onerror = () => resolve(null);
-    tx.oncomplete = () => db.close();
-  });
-}
-
-async function setCachedLandmarks(key, data) {
-  const db = await openCacheDB();
-  if (!db || !db.objectStoreNames.contains(CACHE_STORE)) return;
-  return new Promise((resolve) => {
-    const tx = db.transaction(CACHE_STORE, 'readwrite');
-    tx.objectStore(CACHE_STORE).put(data, key);
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); resolve(); };
-  });
-}
+import { analyzeVideoFile } from '../lib/analyzeVideo';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = (() => {
@@ -178,352 +126,58 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   };
 
   // ─── VIDEO ANALYSIS ENGINE ───
-  //
-  // Video → native <video> seeking → MediaPipe (cached by hash) →
-  // exercise detection → rep counting → biomechanical analysis
+  // Domain logic extracted to src/lib/analyzeVideo.js.
+  // This wrapper bridges React state (progress, phase, errors) to the pure engine.
 
   const analyzeVideo = useCallback(async (queueItem) => {
-    const analysisStart = Date.now();
+    const weightKg = parseFloat(weight) || 0;
 
-    // ── Phase 1: Hash the video file for deterministic cache key ──
-    setAnalysisPhase('hashing');
-    setFfmpegStatus('Hashing video file...');
-    const videoHash = await hashFile(queueItem.file);
+    const result = await analyzeVideoFile({
+      file: queueItem.file,
+      exercise,
+      autoDetect,
+      userChangedExercise: userChangedExercise.current,
+      weightKg,
+      userInjuries,
+      userProfile,
+      worker: {
+        ready: workerReady,
+        supported: workerSupported,
+        init: initWorker,
+        detect: detectFrame,
+        reset: resetWorker,
+      },
+      onProgress: (pct) => {
+        setProgress(pct);
+        setFfmpegStatus(pct < 95 ? `Analyzing... ${pct}%` : '');
+        setQueue(prev => prev.map(q =>
+          q.id === queueItem.id ? { ...q, progress: pct } : q
+        ));
+      },
+      onPhase: (phase) => {
+        setAnalysisPhase(phase);
+        const labels = { hashing: 'Hashing video file...', model: 'Loading AI model...', extracting: 'Analyzing video...', analyzing: 'Processing movement data...' };
+        setFfmpegStatus(labels[phase] || '');
+        if (phase === 'extracting') setLiveReps(0);
+      },
+      onLiveReps: (reps) => setLiveReps(reps),
+      onExerciseDetected: (ex) => setExercise(ex),
+    });
 
-    // ── Phase 2: Load MediaPipe model (worker or main thread) ──
-    setAnalysisPhase('model');
-    setFfmpegStatus('Loading AI model...');
-    resetKalmanFilters();
-    const useWorker = workerReady || (workerSupported && await initWorker().catch(() => false));
-    if (useWorker) resetWorker();
-    let landmarker = null;
-    if (!useWorker) {
-      landmarker = await getImageLandmarker();
-      if (!landmarker) {
-        setErrorMsg(t('model_failed'));
-        return null;
-      }
-    }
-
-    // Target FPS and frame count
-    const analysisFps = IS_IOS ? 10 : 15;
-    const maxWidth = IS_IOS ? 480 : 720;
-    const cacheKey = `lm-${videoHash}-${analysisFps}`;
-
-    // ── Phase 3: Check landmark cache ──
-    const frames = [];
-    const replayFrames = [];
-    let usedCache = false;
-    let frameCount = 0;
-    let duration = 0;
-
-    const cachedLandmarks = await getCachedLandmarks(cacheKey);
-    if (cachedLandmarks && cachedLandmarks.length > 0) {
-      usedCache = true;
-      frameCount = cachedLandmarks.length;
-      duration = frameCount / analysisFps;
-      const interval = 1 / analysisFps;
-      for (let i = 0; i < cachedLandmarks.length; i++) {
-        const lm = cachedLandmarks[i];
-        const time = i * interval;
-        const angles = extractJointAngles(lm);
-        frames.push({ landmarks: lm, timestamp: time, angles });
-        replayFrames.push({ landmarks: lm, timestamp: time });
-      }
-      setProgress(99);
-    }
-
-    // ── Phase 4: If no cache, extract and process frames ──
-    // Uses native <video> seeking on ALL platforms. The previous ffmpeg.wasm
-    // desktop path (31MB WASM download) hangs during initialization on many
-    // browsers/devices. Native video seeking is fast, reliable, and requires
-    // zero external downloads.
-    if (!usedCache) {
-
-      {
-        setAnalysisPhase('extracting');
-        setFfmpegStatus('Analyzing video...');
-        setLiveReps(0);
-
-        let lockedSubjectIdx = null;
-        let streamFrameCount = 0;
-        // Live rep counter for real-time feedback during extraction
-        const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
-
-        try {
-          const streamResult = await extractFramesStreaming(
-            queueItem.file,
-            analysisFps,
-            MAX_FRAMES,
-            maxWidth,
-            async (canvas, frameIndex, timestamp) => {
-              if (abortRef.current) return;
-
-              const deterministicTs = frameIndex * (1000 / analysisFps);
-              let landmarks = null;
-              let angles = null;
-
-              if (useWorker) {
-                // Off-thread inference via Web Worker (main thread stays free)
-                const workerResult = await detectFrame(canvas, deterministicTs, frameIndex);
-                if (workerResult) {
-                  landmarks = workerResult.landmarks;
-                  angles = workerResult.angles;
-                }
-              } else {
-                // Main-thread fallback
-                const result = detectPoseImage(landmarker, canvas, deterministicTs);
-                if (result?.landmarks?.length) {
-                  if (result.landmarks.length === 1) {
-                    landmarks = result.landmarks[0];
-                  } else {
-                    if (lockedSubjectIdx === null) {
-                      landmarks = selectSubjectPose(result.landmarks);
-                      lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                    } else {
-                      landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-                    }
-                  }
-                  angles = extractJointAngles(landmarks);
-                }
-              }
-
-              if (landmarks) {
-                const time = frameIndex / analysisFps;
-                if (!angles) angles = extractJointAngles(landmarks);
-                frames.push({ landmarks, timestamp: time, angles });
-                replayFrames.push({ landmarks, timestamp: time });
-
-                const liveResult = liveRepCounter.update(landmarks, time);
-                if (liveResult?.reps != null) {
-                  setLiveReps(liveResult.reps);
-                }
-              }
-
-              streamFrameCount++;
-
-              const pct = Math.round((streamFrameCount / MAX_FRAMES) * 95);
-              setProgress(pct);
-              setFfmpegStatus(`Analyzing... frame ${streamFrameCount}`);
-              setQueue(prev => prev.map(q =>
-                q.id === queueItem.id ? { ...q, progress: pct } : q
-              ));
-            },
-            (pct) => {
-              // Extraction progress (secondary indicator)
-            }
-          );
-
-          frameCount = streamResult.frameCount;
-          duration = streamResult.duration;
-        } catch (err) {
-          console.error('[Upload] Streaming extraction failed:', err);
-          setErrorMsg(`Analysis failed: ${err.message}`);
-          return null;
-        }
-      }
-
-      // Cache landmarks keyed by video hash
-      if (frames.length > 0) {
-        const toCache = frames.map(f => f.landmarks);
-        setCachedLandmarks(cacheKey, toCache).catch(() => {});
-      }
-    }
-
-    const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
-
-    if (frames.length === 0) {
+    if (!result) {
       setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
       return null;
     }
 
-    // Transition to analyzing phase (exercise detection + rep counting + biomechanics)
-    setAnalysisPhase('analyzing');
-    setFfmpegStatus('Processing movement data...');
-
-    // ── Phase 5.5: Auto-calibration from first ~1 second of standing pose ──
-    const calibFrameCount = Math.min(Math.ceil(analysisFps * 1), frames.length);
-    if (calibFrameCount >= analysisFps * 0.5) {
-      const calibLandmarks = frames.slice(0, calibFrameCount).map(f => f.landmarks);
-      const calibration = computeCalibration(calibLandmarks, analysisFps);
-      if (calibration && Math.abs(calibration.rotationAngle) > 0.05) {
-        // Apply perspective correction to all frames
-        for (const f of frames) {
-          f.landmarks = applyCalibration(f.landmarks, calibration);
-          f.angles = extractJointAngles(f.landmarks);
-        }
-        for (const f of replayFrames) {
-          f.landmarks = applyCalibration(f.landmarks, calibration);
-        }
-      }
-    }
-
-    // ── Phase 6: Compute landmark hash and confidence ──
-    const landmarkHashValue = await hashLandmarks(frames.map(f => f.landmarks));
-
-    // Compute average landmark visibility as analysis confidence (0-1)
-    let totalVis = 0, visCount = 0;
-    for (const f of frames) {
-      if (!f.landmarks) continue;
-      for (const lm of f.landmarks) {
-        if (lm.visibility != null) { totalVis += lm.visibility; visCount++; }
-      }
-    }
-    const avgVisibility = visCount > 0 ? totalVis / visCount : 0;
-    // Confidence tiers: high (>0.7), medium (0.5-0.7), low (<0.5)
-    const confidenceLevel = avgVisibility > 0.7 ? 'high' : avgVisibility > 0.5 ? 'medium' : 'low';
-    const confidence = { visibility: Math.round(avgVisibility * 100) / 100, level: confidenceLevel, framesWithPose: frames.length, totalFrames: frameCount };
-
-    const debug = { videoHash, frameCount: frames.length, landmarkHash: landmarkHashValue, confidence };
-    setDebugInfo(debug);
-
-
-    // ── Phase 7: Exercise detection and rep counting ──
-    const isAutoMode = exercise === '__auto__';
-    const initialExercise = isAutoMode ? 'squat' : exercise;
-    let detectedExercise = initialExercise;
-    const weightKg = parseFloat(weight) || 0;
-    const interval = 1 / analysisFps;
-    let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
-    let autoDetected = false;
-
-    // Feed all frames to rep counter
-    for (const f of frames) repCounter.update(f.landmarks, f.timestamp);
-
-    // Auto-detection
-    if ((isAutoMode || (autoDetect && !userChangedExercise.current))) {
-      const tallies = {};
-      const detector = new ExerciseAutoDetector({ fps: analysisFps });
-      for (const f of frames) {
-        const det = detector.update(f.landmarks);
-        if (det) tallies[det] = (tallies[det] || 0) + 1;
-      }
-      const candidates = Object.keys(tallies);
-      if (candidates.length > 0) {
-        let bestEx = initialExercise;
-        let bestScore = -1;
-        for (const ex of candidates) {
-          const rc = new RepCounter(ex, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
-          for (const f of frames) rc.update(f.landmarks, f.timestamp);
-          rc.finalize();
-          const reps = rc.repHistory ? rc.repHistory.length : 0;
-          // Prefer exercises with real form checks (500 bonus) over placeholder-only
-          const hasChecks = EXERCISES[ex]?.formChecks?.length > 0 ? 500 : 0;
-          const score = reps * 1000 + hasChecks + tallies[ex];
-          if (score > bestScore) { bestScore = score; bestEx = ex; }
-        }
-        if (bestEx !== initialExercise || candidates.includes(initialExercise)) {
-          detectedExercise = bestEx;
-          autoDetected = true;
-          setExercise(detectedExercise);
-          repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
-          for (const f of frames) repCounter.update(f.landmarks, f.timestamp);
-        }
-      } else if (isAutoMode) {
-        // No exercise detected — flag it so the UI shows a warning
-        autoDetected = 'failed';
-      }
-    }
-
-    repCounter.finalize();
-
-    // Enrich repHistory with timestamps
-    const enrichedRepHistory = repCounter.repHistory.map(r => ({
-      ...r,
-      startTime: (r.startFrame * interval),
-      peakTime: ((r.peakFrame || r.bottomFrame) * interval),
-      endTime: (r.endFrame * interval),
-    }));
-
-
-    const landmarkFrames = frames.map(f => f.landmarks);
-    const repHistory = enrichedRepHistory;
-    const reps = repHistory.length;
-
-    // Biomechanical analysis
-    let bioAnalysis = null;
-    try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory, userProfile?.height); }
-    catch (err) { console.error('Bio analysis error:', err); }
-
-    let report = null;
-    try {
-      report = generateWorkoutReport(userProfile, [{
-        exerciseKey: detectedExercise, exercise: detectedExercise,
-        reps, analysis: bioAnalysis, bioAnalysis, repHistory,
-      }]);
-    } catch (err) { console.error('Report error:', err); }
-
-    const diagnostics = repCounter.diagnostics || null;
-
-    const exerciseDef = EXERCISES[detectedExercise];
-    const hasFormChecks = exerciseDef?.formChecks?.length > 0;
-    const scoredReps = repHistory.filter(r => r.score !== null && r.score !== undefined);
-    const avgScore = !hasFormChecks ? null
-      : scoredReps.length > 0
-        ? Math.round(scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length)
-        : bioAnalysis?.movementQuality || 0;
-
-    const w = parseFloat(weight) || 0;
-    const workout = {
-      date: new Date().toISOString(),
-      exercise: detectedExercise,
-      exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-      reps, duration: Math.round(duration), formScore: avgScore,
-      repHistory, weight: w, volume: w * reps, source: 'upload',
-      avgRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0,
-      // Machine observation layer (preserved for correction/recalculation)
-      machineReps: reps,
-      machineFormScore: avgScore,
-      bioAnalysis,
-      // Analysis provenance
-      analysisVersion: '1.0.0',
-      fps: analysisFps,
-      videoHash,
-      landmarkHash: landmarkHashValue,
-    };
-    let workoutId = null;
-    try { workoutId = await saveWorkout(workout); } catch (err) { console.error('Save error:', err); }
-
-    // Progression comparison
-    let progression = null;
-    try {
-      const prev = await getLastWorkoutForExercise(detectedExercise, workoutId);
-      if (prev) {
-        progression = { prevReps: prev.reps, prevScore: prev.formScore, prevRom: prev.avgRom || 0, prevWeight: prev.weight || 0, prevDate: prev.date };
-      }
-    } catch (_) {}
-
-    // Update personal form baselines and compare
-    let baselineComparison = null;
-    try {
-      await updateBaseline(detectedExercise, repHistory, avgScore);
-      baselineComparison = await compareToBaseline(detectedExercise, avgScore, repHistory);
-    } catch (_) {}
-
-    setProgress(100);
+    setDebugInfo(result.debug);
     setFfmpegStatus('');
 
-    // Create blob URL for replay (still need video element for replay)
+    // Create blob URL for replay
     const url = URL.createObjectURL(queueItem.file);
     blobUrlRef.current = url;
 
-    return {
-      workoutId,
-      fileName: queueItem.name, exercise: detectedExercise,
-      exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
-      reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
-      machineReps: reps, machineFormScore: avgScore,
-      hasFormChecks,
-      bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics, confidence,
-      videoUrl: url,
-      frames: replayFrames,
-      fps: analysisFps,
-      autoDetected,
-      detectionFailed: autoDetected === 'failed',
-      weight: w,
-      debug,
-    };
-  }, [exercise, autoDetect, weight, userInjuries, workerReady, workerSupported, initWorker, detectFrame, resetWorker]);
+    return { ...result, videoUrl: url };
+  }, [exercise, autoDetect, weight, userInjuries, userProfile, workerReady, workerSupported, initWorker, detectFrame, resetWorker]);
 
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);

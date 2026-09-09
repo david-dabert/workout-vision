@@ -63,6 +63,11 @@ export class AngleBuffer {
 // RepCounter
 // ---------------------------------------------------------------------------
 
+// Hard cap on collected landmarks to bound memory. At 15fps with 33 landmarks
+// per frame (~1.3KB/frame), 1200 frames = ~1.6MB. Matches 2× the MAX_FRAMES
+// ceiling in VideoUpload (600 on desktop, 300 on iOS) to handle edge cases.
+const MAX_LANDMARK_FRAMES = 1200;
+
 export class RepCounter {
   constructor(exerciseKey, opts = {}) {
     const ex = EXERCISES[exerciseKey];
@@ -142,7 +147,12 @@ export class RepCounter {
     this._frameIdx++;
     if (value < this._observedMin) this._observedMin = value;
     if (value > this._observedMax) this._observedMax = value;
-    this._collectedLandmarks.push(landmarks);
+    // Bounded landmark accumulation: stop collecting once cap is reached.
+    // finalize() will still work on whatever was collected; the cap prevents
+    // OOM on mobile for unexpectedly long videos or high-fps streams.
+    if (this._collectedLandmarks.length < MAX_LANDMARK_FRAMES) {
+      this._collectedLandmarks.push(landmarks);
+    }
 
     // Anthropometric calibration from first frames
     if (!this._anthropometricNormalizer.isCalibrated) {
@@ -637,7 +647,11 @@ export class RepCounter {
       let formResults = null;
 
       if (checks.length > 0) {
-        const sampleStep = Math.max(1, Math.floor((endFrame - startFrame) / 8));
+        // Evaluate form at EVERY frame across the full concentric/eccentric arc.
+        // Previous implementation sampled only ~8 frames per rep, missing form
+        // breakdowns that occur mid-arc (e.g., knee cave at the bottom of a squat,
+        // elbow flare during the hardest portion of a press).
+        const sampleStep = 1;
 
         // Pre-collect trunk angles for this cycle to enable relative-swing detection.
         // Isolation exercises (curls, laterals, raises) check trunk < 15-25 deg which
@@ -770,7 +784,8 @@ export class RepCounter {
     // at bottom, etc. that would be missed at lockout.
     const cycleAngles = this._cycleAngles.length > 0 ? this._cycleAngles : [angles];
     const cycleLandmarks = this._cycleLandmarks.length > 0 ? this._cycleLandmarks : [landmarks];
-    const sampleStep = Math.max(1, Math.floor(cycleAngles.length / 8));
+    // Evaluate every frame in the cycle for continuous-arc form checking.
+    const sampleStep = 1;
 
     // Pre-collect trunk angles for relative-swing detection (same logic as video mode)
     const liveTrunkAngles = [];
