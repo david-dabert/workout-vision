@@ -1,19 +1,20 @@
 // Boot scripts — moved out of inline <script> tags to comply with CSP
 // (script-src does not include 'unsafe-inline')
 
-// 1. Crash reporter: show JS errors on screen instead of black void
+// 1. Crash reporter: show JS errors on screen instead of black void.
+// Only fires if React hasn't mounted yet (root is empty). Once React is
+// running, its own error boundary handles display. This prevents a stray
+// network timeout from nuking the entire running app.
 window.onerror = function(msg, src, line, col, err) {
   var d = document.getElementById('root');
-  if (d) d.innerHTML = '<div style="padding:40px 20px;text-align:center">'
-    + '<h2 style="color:#fff;margin-bottom:12px;font-family:system-ui">Something went wrong</h2>'
-    + '<p style="color:#888;font-family:system-ui;margin-bottom:20px">WorkoutVision encountered an error. Please reload to try again.</p>'
-    + '<button onclick="location.reload()" style="padding:12px 24px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold;font-size:1rem;cursor:pointer">Reload App</button>'
-    + '</div>';
+  if (d && d.children.length === 0) {
+    d.innerHTML = '<div style="padding:40px 20px;text-align:center">'
+      + '<h2 style="color:#fff;margin-bottom:12px;font-family:system-ui">Something went wrong</h2>'
+      + '<p style="color:#888;font-family:system-ui;margin-bottom:20px">WorkoutVision encountered an error. Please reload to try again.</p>'
+      + '<button onclick="location.reload()" style="padding:12px 24px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold;font-size:1rem;cursor:pointer">Reload App</button>'
+      + '</div>';
+  }
 };
-window.addEventListener('unhandledrejection', function(e) {
-  var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unknown promise rejection';
-  window.onerror(msg, '', 0, 0, e.reason);
-});
 
 // 2. Watchdog: if React hasn't mounted after 8s, show diagnostic
 setTimeout(function() {

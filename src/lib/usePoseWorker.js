@@ -96,6 +96,12 @@ export default function usePoseWorker() {
     }
 
     try {
+      // Terminate any stale worker from a previous failed init
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+        pendingRef.current.clear();
+      }
       const worker = new Worker(
         new URL('./poseWorker.js', import.meta.url),
         { type: 'module' }

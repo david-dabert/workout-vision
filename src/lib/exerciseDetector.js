@@ -321,7 +321,7 @@ export class ExerciseAutoDetector {
       // Velocity disambiguation: swings are explosive (high hip velocity)
       if ((velocities.hip || 0) > 3) return 'kettlebell_swing';
       // Lower velocity with same pattern = cable pull-through
-      return 'kettlebell_swing';
+      return 'cable_pull_through';
     }
 
     // ========== LOWER BODY ==========

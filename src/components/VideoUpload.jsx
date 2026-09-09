@@ -302,12 +302,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
               streamFrameCount++;
 
-              // Incremental checkpoint every 20 frames
-              if (streamFrameCount > 0 && streamFrameCount % 20 === 0 && frames.length > 0) {
-                const partial = frames.map(f => f.landmarks);
-                setCachedLandmarks(`${cacheKey}-partial`, partial).catch(() => {});
-              }
-
               const pct = Math.round((streamFrameCount / MAX_FRAMES) * 95);
               setProgress(pct);
               setFfmpegStatus(`Analyzing... frame ${streamFrameCount}`);
