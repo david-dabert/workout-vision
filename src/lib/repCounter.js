@@ -25,7 +25,7 @@ import { shouldSkipCheck } from './injuries';
 import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
-import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
+import { extractSignals3D, getSignalPriority } from './SignalExtractor3D';
 
 const REP_COUNTER_BUILD = 'v24-adaptive-signal';
 
@@ -464,10 +464,11 @@ export class RepCounter {
     candidates.push({ name: 'primary', countSignal: primarySmoothed, original: primarySmoothed, inv: false });
     candidates.push({ name: 'primary_inv', countSignal: primarySmoothed.map(v => -v), original: primarySmoothed, inv: true });
 
-    // Only add biomechanically relevant alternatives from SIGNAL_PRIORITY_3D.
-    // Testing ALL signals causes overcounting from body-sway noise in
-    // unrelated joints (e.g. nose_Z during squats, knee during front_raise).
-    const priority = SIGNAL_PRIORITY_3D[this._exerciseKey];
+    // Only add biomechanically relevant alternatives. Uses explicit
+    // SIGNAL_PRIORITY_3D for ~30 exercises, falls back to joint-based
+    // defaults for the remaining ~245. This extends adaptive selection
+    // to all 275 exercises without testing irrelevant signals.
+    const priority = getSignalPriority(this._exerciseKey, this._exercise.joint);
     if (priority && priority.length > 0) {
       try {
         const signals3D = extractSignals3D(cleanedLandmarks);

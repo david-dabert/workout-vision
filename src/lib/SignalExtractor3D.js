@@ -200,6 +200,17 @@ export function extractSignals3D(collectedLandmarks) {
 // Z-signals get priority for exercises where motion is primarily in depth axis
 // ---------------------------------------------------------------------------
 
+// Default signal priorities by joint type. Exercises not in the explicit
+// SIGNAL_PRIORITY_3D map get these based on their DSL `joint` field.
+// This extends adaptive signal selection from ~30 exercises to all 275.
+const JOINT_DEFAULT_PRIORITIES = {
+  elbow:    ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
+  knee:     ['knee_L', 'knee_R', 'hip_Y', 'ankleHipDist3D_L', 'ankleHipDist3D_R'],
+  shoulder: ['shoulder_L', 'shoulder_R', 'wrist_Y_L', 'wrist_Y_R'],
+  hip:      ['hip_L', 'hip_R', 'hip_Y', 'hip_Z', 'trunk'],
+  multi:    ['hip_Y', 'shoulder_Y', 'nose_Y', 'trunk'],
+};
+
 export const SIGNAL_PRIORITY_3D = {
   bicep_curl:    ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
   hammer_curl:   ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
@@ -233,4 +244,12 @@ export const SIGNAL_PRIORITY_3D = {
   lying_bicep_curl: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
   lying_tricep_extension: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
 };
+
+/**
+ * Get signal priority for any exercise. Falls back to joint-based defaults
+ * for exercises not in the explicit map.
+ */
+export function getSignalPriority(exerciseKey, jointType) {
+  return SIGNAL_PRIORITY_3D[exerciseKey] || JOINT_DEFAULT_PRIORITIES[jointType] || null;
+}
 
