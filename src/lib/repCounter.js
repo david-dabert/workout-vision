@@ -660,7 +660,7 @@ export class RepCounter {
     const centered = signal.map(v => v - mean);
 
     // Compute autocorrelation for lags from minLag to maxLag
-    // minLag: at least 0.4s (fastest reasonable rep)
+    // minLag: at least 0.3s (fastest reasonable rep)
     // maxLag: half the signal length (can't detect period longer than half)
     const minLag = Math.max(3, Math.round(this._fps * 0.3));
     const maxLag = Math.min(Math.floor(N / 2), Math.round(this._fps * 10));
@@ -672,7 +672,7 @@ export class RepCounter {
       for (let t = 0; t < N - lag; t++) {
         corr += centered[t] * centered[t + lag];
       }
-      corr /= (N - lag); // normalize by overlap length
+      corr /= (N - lag);
       if (corr > bestCorr) {
         bestCorr = corr;
         bestLag = lag;
@@ -681,10 +681,10 @@ export class RepCounter {
 
     if (bestLag === 0) return valleyResult;
 
-    // Autocorrelation-based expected rep count
+    // AC period-based expected rep count
     const acReps = Math.round(N / bestLag);
 
-    // Also check: the valley-based median period should agree with autocorrelation
+    // Also check: the valley-based median period should agree with AC
     const valleyMedianGap = this._medianIntervalFrames(valleyResult.valleyFrames);
     const periodAgreement = valleyMedianGap < Infinity
       ? Math.min(bestLag, valleyMedianGap) / Math.max(bestLag, valleyMedianGap)
@@ -693,7 +693,6 @@ export class RepCounter {
     // Only correct if:
     // 1. AC suggests exactly one more rep than valleys found
     // 2. Valley period and AC period roughly agree (within 30%)
-    // 3. Enough reps to establish reliable cadence
     if (acReps === valleyResult.reps + 1 && periodAgreement > 0.7) {
       // Find where the missing rep likely is: at the start or end of the signal.
       // Check which edge has partial motion that looks like a rep.
@@ -738,6 +737,34 @@ export class RepCounter {
         const newFrames = [...valleyResult.valleyFrames, edgeFrame].sort((a, b) => a - b);
         console.debug(`[RepCounter] AC edge correction: ${valleyResult.reps} → ${newFrames.length} (period=${bestLag}, AC=${acReps})`);
         return { reps: newFrames.length, allValleys: valleyResult.allValleys, valleyFrames: newFrames, signalRange: valleyResult.signalRange };
+      }
+
+      // No edge gap large enough. Check for a double-wide interior gap:
+      // one inter-valley gap that's ~2× the expected period, indicating
+      // two rep cycles merged because the bilateral filter rejected the
+      // valley between them.
+      const frames = valleyResult.valleyFrames;
+      let widestGapIdx = -1;
+      let widestGap = 0;
+      for (let i = 1; i < frames.length; i++) {
+        const gap = frames[i] - frames[i - 1];
+        if (gap > widestGap) { widestGap = gap; widestGapIdx = i; }
+      }
+      // Gap must be 1.5× to 2.5× the expected period to be a merged double-cycle
+      if (widestGap > expectedPeriod * 1.5 && widestGap < expectedPeriod * 2.5) {
+        // Find the deepest local minimum in the middle of this double gap
+        const lo = frames[widestGapIdx - 1] + Math.round(expectedPeriod * 0.3);
+        const hi = frames[widestGapIdx] - Math.round(expectedPeriod * 0.3);
+        if (lo < hi) {
+          let bestV = signal[lo];
+          let insertFrame = lo;
+          for (let j = lo; j <= hi; j++) {
+            if (signal[j] < bestV) { bestV = signal[j]; insertFrame = j; }
+          }
+          const newFrames = [...frames, insertFrame].sort((a, b) => a - b);
+          console.debug(`[RepCounter] AC interior correction: ${valleyResult.reps} → ${newFrames.length} (double gap=${widestGap}, period=${bestLag})`);
+          return { reps: newFrames.length, allValleys: valleyResult.allValleys, valleyFrames: newFrames, signalRange: valleyResult.signalRange };
+        }
       }
     }
 
