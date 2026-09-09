@@ -23,10 +23,9 @@
 // preventing threshold crossing. This helper uses the side with better
 // landmark visibility, falling back safely when both are low-confidence.
 //
-// VIS_THRESHOLD raised from 0.5 to 0.6: MediaPipe visibility is a confidence
-// score, not actual occlusion percentage. At 0.5, ~30% of selected landmarks
-// are hallucinations. At 0.6, this drops to ~15%.
-const VIS_THRESHOLD = 0.6;
+// Unified visibility threshold from analysisConfig.js (0.55).
+import { VISIBILITY_THRESHOLD } from './analysisConfig';
+const VIS_THRESHOLD = VISIBILITY_THRESHOLD;
 
 // ---------------------------------------------------------------------------
 // Continuous form quality helpers (0-1 gradient scoring)
@@ -450,3 +449,64 @@ const REP_TIMING = {
   chin_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
   dip:                { minRepPeriod: 1200, maxRepPeriod: 7000 },
 };
+
+// ---------------------------------------------------------------------------
+// Extended exercise metadata for analysis pipeline
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-exercise analysis hints: which signals are most reliable,
+ * expected range of motion, and preferred camera viewpoint.
+ *
+ * Keyed by exercise key. If an exercise is not listed here, the analysis
+ * pipeline falls back to defaults.
+ *
+ * @type {Record<string, { expectedSignals: string[], expectedROM: number, preferredViewpoint: string }>}
+ */
+export const EXERCISE_ANALYSIS_META = {
+  squat:              { expectedSignals: ['knee_L', 'knee_R', 'hip_Y'], expectedROM: 80, preferredViewpoint: 'side' },
+  front_squat:        { expectedSignals: ['knee_L', 'knee_R', 'hip_Y'], expectedROM: 75, preferredViewpoint: 'side' },
+  goblet_squat:       { expectedSignals: ['knee_L', 'knee_R', 'hip_Y'], expectedROM: 80, preferredViewpoint: 'side' },
+  deadlift:           { expectedSignals: ['hip_L', 'hip_R', 'hip_Y'], expectedROM: 70, preferredViewpoint: 'side' },
+  romanian_deadlift:  { expectedSignals: ['hip_L', 'hip_R', 'hip_Y'], expectedROM: 60, preferredViewpoint: 'side' },
+  bench_press:        { expectedSignals: ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L'], expectedROM: 45, preferredViewpoint: 'front' },
+  push_up:            { expectedSignals: ['nose_Y', 'shoulder_Y', 'elbow_L'], expectedROM: 60, preferredViewpoint: 'side' },
+  pull_up:            { expectedSignals: ['nose_Y', 'nose_Z', 'shoulder_Y'], expectedROM: 50, preferredViewpoint: 'front' },
+  chin_up:            { expectedSignals: ['nose_Y', 'nose_Z', 'shoulder_Y'], expectedROM: 50, preferredViewpoint: 'front' },
+  bicep_curl:         { expectedSignals: ['elbow_L', 'elbow_R'], expectedROM: 100, preferredViewpoint: 'side' },
+  hammer_curl:        { expectedSignals: ['elbow_L', 'elbow_R'], expectedROM: 90, preferredViewpoint: 'side' },
+  tricep_extension:   { expectedSignals: ['elbow_L', 'elbow_R'], expectedROM: 80, preferredViewpoint: 'side' },
+  overhead_press:     { expectedSignals: ['elbow_L', 'elbow_R', 'wrist_Y_L'], expectedROM: 90, preferredViewpoint: 'front' },
+  shoulder_press:     { expectedSignals: ['elbow_L', 'elbow_R', 'wrist_Y_L'], expectedROM: 90, preferredViewpoint: 'front' },
+  lateral_raise:      { expectedSignals: ['shoulder_L', 'shoulder_R'], expectedROM: 70, preferredViewpoint: 'front' },
+  front_raise:        { expectedSignals: ['wrist_Y_L', 'wrist_Y_R', 'shoulder_L'], expectedROM: 90, preferredViewpoint: 'side' },
+  bent_over_row:      { expectedSignals: ['elbow_L', 'elbow_R', 'wrist_Z_L'], expectedROM: 60, preferredViewpoint: 'side' },
+  upright_row:        { expectedSignals: ['elbow_L', 'elbow_R', 'wrist_Y_L'], expectedROM: 60, preferredViewpoint: 'front' },
+  sit_up:             { expectedSignals: ['nose_Y', 'trunk'], expectedROM: 50, preferredViewpoint: 'side' },
+  crunch:             { expectedSignals: ['nose_Y', 'trunk'], expectedROM: 30, preferredViewpoint: 'side' },
+  lunge:              { expectedSignals: ['knee_L', 'knee_R', 'hip_Y'], expectedROM: 70, preferredViewpoint: 'side' },
+  hip_thrust:         { expectedSignals: ['hip_L', 'hip_R', 'hip_Y'], expectedROM: 60, preferredViewpoint: 'side' },
+  leg_press:          { expectedSignals: ['knee_L', 'knee_R'], expectedROM: 70, preferredViewpoint: 'side' },
+  leg_extension:      { expectedSignals: ['knee_L', 'knee_R'], expectedROM: 80, preferredViewpoint: 'side' },
+  leg_curl:           { expectedSignals: ['knee_L', 'knee_R'], expectedROM: 80, preferredViewpoint: 'side' },
+  calf_raise:         { expectedSignals: ['ankle_Y'], expectedROM: 20, preferredViewpoint: 'side' },
+  battle_rope:        { expectedSignals: ['wrist_Y_L', 'wrist_Y_R'], expectedROM: 30, preferredViewpoint: 'front' },
+  dip:                { expectedSignals: ['elbow_L', 'elbow_R', 'shoulder_Y'], expectedROM: 60, preferredViewpoint: 'side' },
+  lat_pulldown:       { expectedSignals: ['elbow_L', 'elbow_R', 'wrist_Y_L'], expectedROM: 70, preferredViewpoint: 'front' },
+  plank:              { expectedSignals: [], expectedROM: 0, preferredViewpoint: 'side' },
+  wall_sit:           { expectedSignals: [], expectedROM: 0, preferredViewpoint: 'side' },
+  dead_hang:          { expectedSignals: [], expectedROM: 0, preferredViewpoint: 'front' },
+};
+
+/**
+ * Get analysis metadata for an exercise.
+ * @param {string} exerciseKey
+ * @returns {{ expectedSignals: string[], expectedROM: number, preferredViewpoint: string }}
+ */
+export function getExerciseAnalysisMeta(exerciseKey) {
+  return EXERCISE_ANALYSIS_META[exerciseKey] || {
+    expectedSignals: [],
+    expectedROM: 60,
+    preferredViewpoint: 'any',
+  };
+}

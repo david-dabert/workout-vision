@@ -13,6 +13,12 @@
 import localforage from 'localforage';
 import { KalmanLandmarkFilter } from './KalmanLandmarkFilter';
 import { detectCapabilities, isSimdSupported } from './gpuBenchmark';
+import {
+  GHOST_DECAY_START,
+  GHOST_DECAY_RATE,
+  GHOST_MAX_FRAMES,
+  MEDIAPIPE_WASM_VERSION,
+} from './analysisConfig';
 
 // ─── CDN lazy loader: bypasses Vite's esbuild minifier which breaks MediaPipe WASM on iOS Safari ───
 let _mpVision = null;
@@ -38,6 +44,11 @@ let _kalmanVideo = new KalmanLandmarkFilter();
 let _lastValidLandmarksImage = null;
 let _lastValidLandmarksVideo = null;
 
+// Ghost pose tracking: counts consecutive frames where detection fails
+// and we return the stale lastResult instead.
+let _ghostFrameCount = 0;
+let _totalGhostFrames = 0;
+
 export const LANDMARKS = {
   NOSE: 0,
   LEFT_SHOULDER: 11, RIGHT_SHOULDER: 12,
@@ -51,7 +62,7 @@ export const LANDMARKS = {
 };
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
-const VISION_WASM_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
+const VISION_WASM_CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_WASM_VERSION}/wasm`;
 // Local WASM files copied by vite build plugin (scripts/copy-models.js).
 // Prefer local: serves from service worker cache (offline-capable), eliminates CDN latency.
 // FilesetResolver auto-selects SIMD vs non-SIMD binary from this directory.
@@ -350,7 +361,13 @@ export function detectPoseImage(landmarker, source, timestamp) {
 
 /**
  * Detect pose on video frame (live camera).
- * Caches last valid result for confidence decay.
+ * Caches last valid result with progressive ghost decay.
+ *
+ * Ghost decay logic:
+ * - After GHOST_DECAY_START consecutive ghost frames, visibility scores
+ *   are reduced by GHOST_DECAY_RATE per additional frame.
+ * - After GHOST_MAX_FRAMES consecutive ghost frames, returns null
+ *   instead of stale pose data.
  */
 export function detectPoseVideo(landmarker, videoElement, timestamp) {
   const EPSILON = 0.001;
@@ -377,12 +394,53 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
     }
     if (result && result.landmarks && result.landmarks.length > 0) {
       lastResult = result;
+      _ghostFrameCount = 0;
+      return result;
     }
-    return result;
+    // Detection failed — enter ghost mode
+    _ghostFrameCount++;
+    _totalGhostFrames++;
+    return _getGhostResult();
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (video):', e);
+    _ghostFrameCount++;
+    _totalGhostFrames++;
+    return _getGhostResult();
+  }
+}
+
+/**
+ * Return ghost (stale) result with decayed visibility, or null if too stale.
+ * @returns {Object|null}
+ */
+function _getGhostResult() {
+  if (_ghostFrameCount >= GHOST_MAX_FRAMES || !lastResult) {
+    return null;
+  }
+  if (_ghostFrameCount <= GHOST_DECAY_START) {
     return lastResult;
   }
+  // Decay visibility scores on the cached result
+  const decayFrames = _ghostFrameCount - GHOST_DECAY_START;
+  const decayFactor = Math.max(0, 1 - decayFrames * GHOST_DECAY_RATE);
+  const decayed = { ...lastResult };
+  if (decayed.landmarks) {
+    decayed.landmarks = decayed.landmarks.map(pose =>
+      pose.map(lm => ({
+        ...lm,
+        visibility: (lm.visibility || 0) * decayFactor,
+      }))
+    );
+  }
+  return decayed;
+}
+
+/**
+ * Get the total number of ghost frames accumulated in this session.
+ * @returns {number}
+ */
+export function getGhostFrameCount() {
+  return _totalGhostFrames;
 }
 
 export function resetTimestamp() {
@@ -390,6 +448,8 @@ export function resetTimestamp() {
   lastResult = null;
   _kalmanVideo = new KalmanLandmarkFilter();
   _lastValidLandmarksVideo = null;
+  _ghostFrameCount = 0;
+  _totalGhostFrames = 0;
 }
 
 export function resetKalmanFilters() {

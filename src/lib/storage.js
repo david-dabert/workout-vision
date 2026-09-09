@@ -12,6 +12,81 @@ const medicalStore = localforage.createInstance({ name: 'workoutVision', storeNa
 const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
 const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
 const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
+const metaStore = localforage.createInstance({ name: 'workoutVision', storeName: 'meta' });
+
+/** Current schema version. Increment when workout record shape changes. */
+export const SCHEMA_VERSION = 1;
+
+/**
+ * Check and run schema migrations on app start.
+ * Safe to call multiple times; only migrates if version is behind.
+ * @returns {Promise<void>}
+ */
+export async function checkAndMigrateSchema() {
+  try {
+    const storedVersion = await metaStore.getItem('schemaVersion');
+    if (storedVersion === SCHEMA_VERSION) return;
+
+    // Run migrations in order
+    if (!storedVersion || storedVersion < 1) {
+      await _migrateToV1();
+    }
+
+    await metaStore.setItem('schemaVersion', SCHEMA_VERSION);
+    console.log(`[Storage] Schema migrated to version ${SCHEMA_VERSION}`);
+  } catch (e) {
+    console.warn('[Storage] Schema migration failed:', e);
+  }
+}
+
+/**
+ * Migration to v1: ensure all workout records have required fields,
+ * and add machineResult/correctedResult fields if missing.
+ */
+async function _migrateToV1() {
+  const workouts = [];
+  await workoutStore.iterate((value, key) => {
+    workouts.push({ key, value });
+  });
+
+  for (const { key, value } of workouts) {
+    let modified = false;
+    // Ensure required fields exist
+    if (!value.id) { value.id = key; modified = true; }
+    if (!value.createdAt && !value.date) { value.createdAt = Date.now(); modified = true; }
+    // Add machine/corrected result fields if missing
+    if (value.reps != null && value.machineResult === undefined) {
+      value.machineResult = { reps: value.reps, confidence: value.confidence || null };
+      modified = true;
+    }
+    if (value.correctedResult === undefined) {
+      value.correctedResult = null;
+      modified = true;
+    }
+    if (modified) {
+      await workoutStore.setItem(key, value);
+    }
+  }
+}
+
+/**
+ * Validate a workout record before writing.
+ * @param {Object} workout
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+export function validateWorkoutRecord(workout) {
+  const errors = [];
+  if (!workout) {
+    return { valid: false, errors: ['Workout is null'] };
+  }
+  if (!workout.exercise && !workout.exerciseKey) {
+    errors.push('Missing exercise identifier');
+  }
+  if (workout.reps == null && workout.machineResult == null) {
+    errors.push('Missing rep count');
+  }
+  return { valid: errors.length === 0, errors };
+}
 
 // User profile
 export async function saveProfile(profile) {
@@ -26,12 +101,27 @@ export async function getProfile() {
 }
 
 // Workouts
+/**
+ * Save a workout record to IndexedDB.
+ * Validates required fields and preserves machine vs corrected results.
+ * @param {Object} workout
+ * @returns {Promise<string>} record ID
+ */
 export async function saveWorkout(workout) {
+  const { valid, errors } = validateWorkoutRecord(workout);
+  if (!valid) {
+    console.warn('[Storage] Workout validation warnings:', errors);
+  }
+
   const id = `workout_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const entry = {
     id,
     ...workout,
     createdAt: Date.now(),
+    schemaVersion: SCHEMA_VERSION,
+    // Preserve machine result alongside any user correction
+    machineResult: workout.machineResult || (workout.reps != null ? { reps: workout.reps, confidence: workout.confidence || null } : null),
+    correctedResult: workout.correctedResult || null,
   };
   await workoutStore.setItem(id, entry);
   return id;

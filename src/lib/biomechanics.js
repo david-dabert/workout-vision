@@ -16,6 +16,27 @@
 
 import { extractJointAngles } from './poseAnalysis';
 import { EXERCISES } from './exercises';
+import {
+  NORM_TO_METERS_DEFAULT,
+  ASYMMETRY_VIS_MIN,
+  PEAK_PROMINENCE_FRACTION,
+  PEAK_MIN_PROMINENCE_DEG,
+  PEAK_MIN_FRAME_GAP,
+} from './analysisConfig';
+
+// Default height in meters for velocity normalization.
+// Overridden by user's actual height when available.
+let NORM_TO_METERS = NORM_TO_METERS_DEFAULT;
+
+/**
+ * Set the user's height for accurate velocity calculations.
+ * Called once from the analysis pipeline when profile is available.
+ */
+export function setUserHeight(heightCm) {
+  if (heightCm && heightCm > 100 && heightCm < 250) {
+    NORM_TO_METERS = heightCm / 100;
+  }
+}
 
 /**
  * Analyze a complete set.
@@ -83,6 +104,194 @@ function emptyResult() {
   };
 }
 
+/**
+ * Detect rep boundaries from tracking values using threshold crossings
+ * with a simple state machine.
+ */
+/**
+ * Detect reps using peak-valley detection on the angle signal.
+ * No fixed thresholds needed — finds oscillation patterns by detecting
+ * local maxima and minima with sufficient prominence.
+ *
+ * Works for any exercise regardless of absolute angle values.
+ */
+function detectReps(values) {
+  // Fill nulls: find first valid value, pad leading nulls with it,
+  // then carry forward for remaining nulls. This keeps filled.length === values.length
+  // so downstream rep indices align with rawFrames.
+  const firstValid = values.find(v => v !== null);
+  if (firstValid === undefined) return [];
+  const filled = [];
+  for (let i = 0; i < values.length; i++) {
+    if (values[i] !== null) {
+      filled.push(values[i]);
+    } else if (filled.length > 0) {
+      filled.push(filled[filled.length - 1]);
+    } else {
+      filled.push(firstValid); // pad leading nulls
+    }
+  }
+  if (filled.length < 6) return [];
+
+  // At low frame counts (< 30 frames, i.e. ~10s at 3fps), skip smoothing
+  // because a 3-point average spans 1 second and flattens the signal
+  const smooth = [];
+  if (filled.length < 30) {
+    smooth.push(...filled);
+  } else {
+    for (let i = 0; i < filled.length; i++) {
+      if (i === 0 || i === filled.length - 1) {
+        smooth.push(filled[i]);
+      } else {
+        smooth.push((filled[i - 1] + filled[i] + filled[i + 1]) / 3);
+      }
+    }
+  }
+
+  // Find all peaks (local maxima) and valleys (local minima)
+  const peaks = [];
+  const valleys = [];
+  for (let i = 1; i < smooth.length - 1; i++) {
+    if (smooth[i] >= smooth[i - 1] && smooth[i] >= smooth[i + 1] && smooth[i] > smooth[i - 1]) {
+      peaks.push({ idx: i, val: smooth[i] });
+    }
+    if (smooth[i] <= smooth[i - 1] && smooth[i] <= smooth[i + 1] && smooth[i] < smooth[i - 1]) {
+      valleys.push({ idx: i, val: smooth[i] });
+    }
+  }
+
+  // Merge peaks and valleys into alternating sequence
+  const extrema = [
+    ...peaks.map(p => ({ ...p, type: 'peak' })),
+    ...valleys.map(v => ({ ...v, type: 'valley' })),
+  ].sort((a, b) => a.idx - b.idx);
+
+  // Remove consecutive same-type extrema (keep most extreme)
+  const alternating = [];
+  for (const e of extrema) {
+    if (alternating.length === 0 || alternating[alternating.length - 1].type !== e.type) {
+      alternating.push(e);
+    } else {
+      const prev = alternating[alternating.length - 1];
+      if (e.type === 'peak' && e.val > prev.val) alternating[alternating.length - 1] = e;
+      if (e.type === 'valley' && e.val < prev.val) alternating[alternating.length - 1] = e;
+    }
+  }
+
+  // Compute minimum prominence: 30% of total signal range, minimum 12 degrees
+  const globalMin = Math.min(...smooth);
+  const globalMax = Math.max(...smooth);
+  const globalRange = globalMax - globalMin;
+  const minProminence = Math.max(PEAK_MIN_PROMINENCE_DEG, globalRange * PEAK_PROMINENCE_FRACTION);
+
+  // Minimum frames between extrema (~1 second)
+  const minFrameGap = PEAK_MIN_FRAME_GAP;
+
+  // Filter: only keep extrema pairs with sufficient prominence AND time gap
+  const significant = [];
+  for (let i = 0; i < alternating.length; i++) {
+    if (significant.length === 0) {
+      significant.push(alternating[i]);
+      continue;
+    }
+    const prev = significant[significant.length - 1];
+    const diff = Math.abs(alternating[i].val - prev.val);
+    const gap = alternating[i].idx - prev.idx;
+
+    if (diff >= minProminence && gap >= minFrameGap) {
+      significant.push(alternating[i]);
+    } else if (alternating[i].type === prev.type) {
+      // Same type: keep the more extreme one
+      if ((alternating[i].type === 'peak' && alternating[i].val > prev.val) ||
+          (alternating[i].type === 'valley' && alternating[i].val < prev.val)) {
+        significant[significant.length - 1] = alternating[i];
+      }
+    }
+  }
+
+  // Build reps from full cycles: peak-valley-peak or valley-peak-valley
+  const reps = [];
+  for (let i = 0; i < significant.length - 2; i++) {
+    const a = significant[i];
+    const b = significant[i + 1];
+    const c = significant[i + 2];
+
+    if (a.type === c.type && a.type !== b.type) {
+      reps.push({
+        start: a.idx,
+        bottom: b.idx,
+        end: c.idx,
+      });
+      i++; // skip one, next rep starts from c
+    }
+  }
+
+  return reps;
+}
+
+/**
+ * Velocity analysis using wrist/hip displacement during concentric phase.
+ */
+function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
+  if (reps.length === 0) {
+    return { avg: 0, perRep: [], trend: 'trend_insufficient' };
+  }
+
+  const isLower = ['knee', 'hip'].includes(exercise.joint);
+  const timeDelta = 1 / fps;
+
+  const perRep = reps.map(rep => {
+    // For pushing exercises: concentric = bottom->end (angle increasing)
+    // For pulling exercises: concentric = start->bottom (angle decreasing)
+    const concentricStart = isPulling ? rep.start : rep.bottom;
+    const concentricEnd = isPulling ? rep.bottom : rep.end;
+    if (concentricStart >= concentricEnd || concentricEnd >= rawFrames.length) return 0;
+
+    // Sum frame-to-frame displacements across the entire concentric phase
+    // instead of just measuring endpoint displacement. This captures the
+    // actual path traveled and is more accurate at low FPS.
+    let totalDisplacement = 0;
+    for (let i = concentricStart; i < concentricEnd; i++) {
+      const lm1 = rawFrames[i];
+      const lm2 = rawFrames[i + 1];
+      if (!lm1 || !lm2) continue;
+
+      let p1, p2;
+      if (isLower) {
+        p1 = midpoint(lm1[LANDMARKS.LEFT_HIP], lm1[LANDMARKS.RIGHT_HIP]);
+        p2 = midpoint(lm2[LANDMARKS.LEFT_HIP], lm2[LANDMARKS.RIGHT_HIP]);
+      } else {
+        p1 = midpoint(lm1[LANDMARKS.LEFT_WRIST], lm1[LANDMARKS.RIGHT_WRIST]);
+        p2 = midpoint(lm2[LANDMARKS.LEFT_WRIST], lm2[LANDMARKS.RIGHT_WRIST]);
+      }
+
+      const dx = (p2.x - p1.x) * NORM_TO_METERS;
+      const dy = (p2.y - p1.y) * NORM_TO_METERS;
+      const dz = ((p2.z || 0) - (p1.z || 0)) * NORM_TO_METERS;
+      totalDisplacement += Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    const duration = (concentricEnd - concentricStart) * timeDelta;
+    return duration > 0 ? round(totalDisplacement / duration, 3) : 0;
+  });
+
+  const valid = perRep.filter(v => v > 0);
+  const avg = valid.length > 0 ? valid.reduce((s, v) => s + v, 0) / valid.length : 0;
+
+  let trend = 'trend_stable';
+  if (valid.length >= 3) {
+    const firstHalf = valid.slice(0, Math.floor(valid.length / 2));
+    const secondHalf = valid.slice(Math.floor(valid.length / 2));
+    const f = firstHalf.reduce((s, v) => s + v, 0) / firstHalf.length;
+    const l = secondHalf.reduce((s, v) => s + v, 0) / secondHalf.length;
+    const change = ((l - f) / (f || 1)) * 100;
+    if (change < -15) trend = 'trend_fatigue';
+    else if (change < -5) trend = 'trend_declining';
+    else if (change > 10) trend = 'trend_warmup';
+  }
+
+  return { avg: round(avg, 3), perRep, trend };
+}
 
 /**
  * Time under tension per rep.
@@ -173,7 +382,7 @@ function analyzeAsymmetry(anglesArray) {
     ['leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder', 'Shoulder'],
   ];
 
-  const VIS_MIN = 0.25; // lowered from 0.5: many exercises have partial occlusion on one side
+  const VIS_MIN = ASYMMETRY_VIS_MIN; // only compare sides when both are well-tracked
 
   const details = {};
   let total = 0;

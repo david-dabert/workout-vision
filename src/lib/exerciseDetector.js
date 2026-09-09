@@ -10,6 +10,19 @@
 import { extractJointAngles } from './poseAnalysis';
 import { bestSide } from './exercises';
 import { AngleBuffer } from './repCounter';
+import {
+  DETECTOR_SMOOTHER_WINDOW_LOW_FPS,
+  DETECTOR_SMOOTHER_WINDOW_NORMAL,
+  DETECTOR_MIN_BUFFER_SIZE,
+  DETECTOR_REQUIRED_CONFIDENCE_LOW_FPS,
+  DETECTOR_REQUIRED_CONFIDENCE_NORMAL,
+  DETECTOR_MIN_FRAMES_LOW_FPS,
+  DETECTOR_MIN_FRAMES_NORMAL,
+  DETECTOR_VOTE_WINDOW_FPS_MULT,
+  DETECTOR_VOTE_WINDOW_MIN,
+  DETECTOR_VOTE_MAJORITY,
+  DETECTOR_UNKNOWN_THRESHOLD,
+} from './analysisConfig';
 
 // ---------------------------------------------------------------------------
 // ExerciseAutoDetector
@@ -37,18 +50,19 @@ export class ExerciseAutoDetector {
    */
   constructor(opts = {}) {
     const fps = opts.fps || 30;
+    this._fps = fps;
     this._frameBuffer = [];
-    this._bufferSize = Math.max(8, Math.round(fps));
-    this._smoother = new AngleBuffer(fps <= 5 ? 2 : 3);
+    this._bufferSize = Math.max(DETECTOR_MIN_BUFFER_SIZE, Math.round(fps));
+    this._smoother = new AngleBuffer(fps <= 5 ? DETECTOR_SMOOTHER_WINDOW_LOW_FPS : DETECTOR_SMOOTHER_WINDOW_NORMAL);
     this._lastDetection = null;
     this._detectionConfidence = 0;
-    // Weighted voting: 8 agreeing frames at any FPS (~0.5s at 15fps, ~1s at 8fps)
-    // Old value of 15 was nearly impossible with real-world camera jitter
-    this._requiredConfidence = fps <= 5 ? 4 : 8;
-    this._minFrames = fps <= 5 ? 5 : 8;
+    this._requiredConfidence = fps <= 5 ? DETECTOR_REQUIRED_CONFIDENCE_LOW_FPS : DETECTOR_REQUIRED_CONFIDENCE_NORMAL;
+    this._minFrames = fps <= 5 ? DETECTOR_MIN_FRAMES_LOW_FPS : DETECTOR_MIN_FRAMES_NORMAL;
     // Vote history for majority-wins detection
     this._voteHistory = [];
-    this._voteWindowSize = Math.max(12, Math.round(fps * 1.5));
+    this._voteWindowSize = Math.max(DETECTOR_VOTE_WINDOW_MIN, Math.round(fps * DETECTOR_VOTE_WINDOW_FPS_MULT));
+    // Track total frames processed for confidence calculation
+    this._totalFrames = 0;
   }
 
   /**
@@ -57,6 +71,7 @@ export class ExerciseAutoDetector {
    * @returns {string|null} exercise key from EXERCISES, or null
    */
   update(landmarks) {
+    this._totalFrames++;
     const rawAngles = extractJointAngles(landmarks);
     if (!rawAngles) return this._lastDetection;
 
@@ -90,9 +105,12 @@ export class ExerciseAutoDetector {
       for (const [key, count] of Object.entries(counts)) {
         if (count > bestCount) { best = key; bestCount = count; }
       }
-      // Winner needs at least requiredConfidence votes AND >50% of the window
-      if (bestCount >= this._requiredConfidence && bestCount > this._voteHistory.length * 0.5) {
+      // Compute confidence as fraction of votes for winner
+      this._detectionConfidence = bestCount / this._voteHistory.length;
+      // Winner needs at least requiredConfidence votes AND majority of the window
+      if (bestCount >= this._requiredConfidence && bestCount > this._voteHistory.length * DETECTOR_VOTE_MAJORITY) {
         this._lastDetection = best;
+        this._voteCounts = counts;
         return best;
       }
     }
@@ -123,6 +141,43 @@ export class ExerciseAutoDetector {
       hip: velOf(a => vs(a, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip')),
       elbow: velOf(a => vs(a, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow')),
       shoulder: velOf(a => vs(a, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder')),
+    };
+  }
+
+  /**
+   * Get the confidence score for the current detection.
+   * @returns {number} 0-1 confidence based on vote fraction
+   */
+  getConfidence() {
+    return this._detectionConfidence;
+  }
+
+  /**
+   * Get detection info with confidence and alternatives for diagnostics.
+   * @returns {{ detected: string|null, confidence: number, alternatives: Array<{ name: string, confidence: number }> }}
+   */
+  getDetectionInfo() {
+    const counts = {};
+    for (const v of this._voteHistory) {
+      counts[v] = (counts[v] || 0) + 1;
+    }
+    const total = this._voteHistory.length || 1;
+
+    // Sort by vote count descending
+    const sorted = Object.entries(counts)
+      .map(([name, count]) => ({ name, confidence: count / total }))
+      .sort((a, b) => b.confidence - a.confidence);
+
+    const detected = this._lastDetection;
+    const topConf = sorted.length > 0 ? sorted[0].confidence : 0;
+    const confidence = detected
+      ? (topConf < DETECTOR_UNKNOWN_THRESHOLD ? topConf : topConf)
+      : 0;
+
+    return {
+      detected,
+      confidence,
+      alternatives: sorted.slice(0, 3),
     };
   }
 
@@ -460,5 +515,8 @@ export class ExerciseAutoDetector {
     this._lastDetection = null;
     this._detectionConfidence = 0;
     this._smoother.reset();
+    this._voteHistory = [];
+    this._totalFrames = 0;
+    this._voteCounts = {};
   }
 }

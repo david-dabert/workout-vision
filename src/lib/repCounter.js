@@ -26,6 +26,25 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 import { extractSignals3D, getSignalPriority } from './SignalExtractor3D';
+import {
+  YIN_CMNDF_THRESHOLD,
+  YIN_CMNDF_THRESHOLD_NARROW,
+  YIN_CMNDF_THRESHOLD_WIDE,
+  YIN_NARROW_RANGE_DEG,
+  YIN_WIDE_RANGE_DEG,
+  YIN_SUB_HARMONIC_THRESHOLDS,
+  YIN_SUB_HARMONIC_MAX_DRIFT,
+  YIN_MIN_CONFIDENCE,
+  YIN_PEAK_CMNDF_THRESHOLD,
+  ROM_CONFIDENCE_PENALTIES,
+  LIVE_DEBOUNCE_MS,
+  SHOULDER_INSTABILITY_MAX_PENALTY,
+  SHOULDER_PINNED_EXERCISES,
+  CANDIDATE_SCORE_WEIGHTS,
+  REP_CONFIDENCE_HIGH,
+  REP_CONFIDENCE_MEDIUM,
+  getRepPeriodBounds,
+} from './analysisConfig';
 
 const REP_COUNTER_BUILD = 'v24-adaptive-signal';
 
@@ -107,6 +126,9 @@ export class RepCounter {
     // Live mode: track worst angles during the current rep cycle for form evaluation
     this._cycleAngles = [];
     this._cycleLandmarks = [];
+    this._signalDiagnostics = [];
+    this._repResult = null;
+    this._exerciseConfidence = 0;
   }
 
   /**
@@ -322,12 +344,12 @@ export class RepCounter {
 
     // ── Step 1b: Adaptive multi-signal selection ──
     // Test ALL available signals (primary + 28 3D alternatives) in both
-    // orientations. Score each by reps × tempo_consistency. The signal
+    // orientations. Score each by reps x tempo_consistency. The signal
     // producing the most rhythmically consistent rep count wins.
     //
     // This is camera-angle invariant: if a front-view camera hides knee
     // flexion in 2D, the hip_Y signal wins. If overhead camera flattens
-    // Y-motion, Z-signals win. No hardcoded thresholds — the data decides.
+    // Y-motion, Z-signals win. No hardcoded thresholds -- the data decides.
     const adaptive = this._adaptiveSignalSelect(cleanedLandmarks, interpolated);
     interpolated = adaptive.signal;
     this._adaptedSignalName = adaptive.name;
@@ -344,13 +366,13 @@ export class RepCounter {
 
     // Template-correlation edge correction: uses waveform shape (NCC) to
     // distinguish truncated reps from setup/return motion at signal edges.
-    // Runs after AC correction — if AC already added a rep, the edge gap
+    // Runs after AC correction -- if AC already added a rep, the edge gap
     // shrinks below threshold so template won't double-fire.
     result = this._templateEdgeCorrect(signal, result);
 
     if (result.reps === 0) {
       // Valley counting found nothing. Keep FSM reps if any were counted
-      // during live preview — they saw real motion that valley counting missed.
+      // during live preview -- they saw real motion that valley counting missed.
       if (this._reps === 0) {
         this._repHistory = [];
       }
@@ -785,15 +807,6 @@ export class RepCounter {
   }
 
   // Period-locked edge valley recovery.
-  // The bilateral prominence filter requires peaks on BOTH sides. At edges,
-  // the outer peak is truncated, causing systematic -1. This recovers a valley
-  // at the edge ONLY if ALL of these conditions are met:
-  //   1. Edge gap is 0.7-1.3 × median period (period-locked)
-  //   2. A local minimum exists at the expected position
-  //   3. The interior-side prominence alone passes the amplitude threshold
-  //   4. The valley depth matches interior valley depths (±50%)
-  // This is stricter than unilateral prominence alone (which was catastrophic
-  // at 16/41) because conditions 1+4 eliminate setup/return false positives.
   _templateEdgeCorrect(signal, valleyResult) {
     if (valleyResult.reps < 3) return valleyResult;
 
@@ -803,14 +816,12 @@ export class RepCounter {
     const period = this._medianIntervalFrames(frames);
     if (period < 4 || period === Infinity) return valleyResult;
 
-    // Signal range and amplitude threshold (same as _findValleys)
     const sigMin = signal.reduce((a, b) => Math.min(a, b));
     const sigMax = signal.reduce((a, b) => Math.max(a, b));
     const signalRange = sigMax - sigMin;
     const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.20;
     const minAmplitude = signalRange * ampRatio;
 
-    // Compute interior valley depths for matching
     const valleyDepths = frames.map(f => signal[f]);
     valleyDepths.sort((a, b) => a - b);
     const medianDepth = valleyDepths[Math.floor(valleyDepths.length / 2)];
@@ -826,7 +837,6 @@ export class RepCounter {
     const rightGap = N - 1 - lastV;
     diag.rightRatio = Math.round((rightGap / period) * 100) / 100;
     if (rightGap >= period * 0.8 && rightGap <= period * 1.2) {
-      // Search for minimum near the expected position (lastV + period)
       const target = lastV + period;
       const lo = Math.max(lastV + Math.round(period * 0.4), 0);
       const hi = Math.min(N - 1, target + Math.round(period * 0.3));
@@ -836,13 +846,11 @@ export class RepCounter {
       }
 
       if (bestIdx >= 0) {
-        // Check interior-side prominence (peak between lastV and candidate)
         let peakBefore = signal[lastV];
         for (let j = lastV; j < bestIdx; j++) {
           if (signal[j] > peakBefore) peakBefore = signal[j];
         }
         const prominence = peakBefore - bestVal;
-        // Check depth match: candidate valley should be similar depth to interior valleys
         const depthMatch = Math.abs(bestVal - medianDepth) <= depthTolerance;
 
         diag.right = { gap: rightGap, prom: Math.round(prominence * 10) / 10, val: Math.round(bestVal * 10) / 10, depthMatch, added: false };
@@ -851,7 +859,6 @@ export class RepCounter {
           newFrames.push(bestIdx);
           changed = true;
           diag.right.added = true;
-          console.debug(`[RepCounter] Edge right: prom=${prominence.toFixed(1)} thresh=${minAmplitude.toFixed(1)} depth=${bestVal.toFixed(1)} median=${medianDepth.toFixed(1)}, valley@${bestIdx}`);
         }
       }
     }
@@ -878,12 +885,10 @@ export class RepCounter {
 
         diag.left = { gap: leftGap, prom: Math.round(prominence * 10) / 10, val: Math.round(bestVal * 10) / 10, depthMatch, added: false };
 
-        // Reject valley at very start of signal (frame 0-2 is just recording start, not a real valley)
         if (prominence >= minAmplitude && depthMatch && bestIdx >= 3) {
           newFrames.unshift(bestIdx);
           changed = true;
           diag.left.added = true;
-          console.debug(`[RepCounter] Edge left: prom=${prominence.toFixed(1)} thresh=${minAmplitude.toFixed(1)} depth=${bestVal.toFixed(1)} median=${medianDepth.toFixed(1)}, valley@${bestIdx}`);
         }
       }
     }
@@ -892,7 +897,6 @@ export class RepCounter {
 
     if (changed) {
       newFrames.sort((a, b) => a - b);
-      console.debug(`[RepCounter] Edge correction: ${valleyResult.reps} → ${newFrames.length}`);
       return { reps: newFrames.length, allValleys: valleyResult.allValleys, valleyFrames: newFrames, signalRange: valleyResult.signalRange };
     }
 
@@ -900,7 +904,6 @@ export class RepCounter {
   }
 
   _findValleys(signal) {
-    // Signal range first — needed for adaptive amplitude threshold
     let sigMin = Infinity, sigMax = -Infinity;
     for (let i = 0; i < signal.length; i++) {
       if (signal[i] < sigMin) sigMin = signal[i];
@@ -912,15 +915,9 @@ export class RepCounter {
       return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
     }
 
-    // Amplitude threshold as a proportion of signal range (prominence filter).
-    // Default 30%; exercises with smaller angle ranges (lat_pulldown, lateral_raise)
-    // can override via amplitudeRatio to avoid filtering out valid reps.
     const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.20;
     const minAmplitude = signalRange * ampRatio;
 
-    // 1. Find local minima that are the deepest point in a ±halfWindow neighborhood.
-    // halfWindow for local minimum detection: ±0.2s default, faster exercises
-    // can override via minSpacing to use a proportionally smaller window.
     const hwSec = Math.min(0.2, (this._exercise.minSpacing != null) ? this._exercise.minSpacing * 0.6 : 0.2);
     const halfWindow = Math.max(2, Math.round(this._fps * hwSec));
     const allValleys = [];
@@ -936,11 +933,6 @@ export class RepCounter {
       }
     }
 
-    // 2. Two-pass adaptive spacing.
-    //    Pass 1: generous spacing (1.0s) to estimate natural cadence.
-    //    Pass 2: if cadence is slow (>2.5s/rep), re-filter with 2.5s spacing
-    //            to reject noise valleys on slow exercises like push-ups.
-    //            Fast exercises (back extensions, curls) keep the 1.0s spacing.
     const filterWithSpacing = (minGap) => {
       const frames = [];
       let last = -Infinity;
@@ -965,22 +957,18 @@ export class RepCounter {
       return frames;
     };
 
-    // Pass 1: generous spacing. Default 0.4s; fast exercises (battle ropes,
-    // jumping jacks) can override via minSpacing to allow tighter intervals.
     const minSpacingSec = (this._exercise.minSpacing != null) ? this._exercise.minSpacing : 0.4;
     const generousGap = Math.max(2, Math.round(this._fps * minSpacingSec));
     const pass1 = filterWithSpacing(generousGap);
 
     let valleyFrames;
     if (pass1.length >= 2) {
-      // Estimate cadence from median inter-valley gap
       const gaps = [];
       for (let i = 1; i < pass1.length; i++) gaps.push(pass1[i] - pass1[i - 1]);
       gaps.sort((a, b) => a - b);
       const medianGap = gaps[Math.floor(gaps.length / 2)];
       const medianSeconds = medianGap / this._fps;
 
-      // Slow exercises (>2.5s/rep): re-filter with tight spacing to reject noise
       if (medianSeconds > 2.5) {
         const tightGap = Math.round(this._fps * 2.5);
         valleyFrames = filterWithSpacing(tightGap);
@@ -992,6 +980,31 @@ export class RepCounter {
     }
 
     return { reps: valleyFrames.length, allValleys: allValleys.length, valleyFrames, signalRange };
+  }
+
+  /**
+   * Get the rep result with uncertain classification.
+   * @returns {{ confirmed: number, uncertain: number, total: number }|null}
+   */
+  getRepResult() {
+    return this._repResult;
+  }
+
+  /**
+   * Set exercise detection confidence (from ExerciseAutoDetector).
+   * Used in candidate scoring.
+   * @param {number} conf - 0-1
+   */
+  setExerciseConfidence(conf) {
+    this._exerciseConfidence = conf || 0;
+  }
+
+  /**
+   * Get per-signal diagnostics for the analysis diagnostics layer.
+   * @returns {Array<{ name: string, repCount: number, confidence: number, period: number, signalRange: number, adaptedThreshold: number }>}
+   */
+  getSignalDiagnostics() {
+    return this._signalDiagnostics;
   }
 
   get diagnostics() {
@@ -1010,6 +1023,8 @@ export class RepCounter {
       anthropometrics: this._anthropometricNormalizer.isCalibrated
         ? { calibrated: true, bodyType: this._anthropometricNormalizer.getBodyType(), profile: this._anthropometricNormalizer.profile }
         : { calibrated: false },
+      repResult: this._repResult,
+      signalDiagnostics: this._signalDiagnostics,
     };
   }
 
@@ -1033,6 +1048,16 @@ export class RepCounter {
       if (out[i] === null) out[i] = 0;
     }
     return out;
+  }
+
+  /**
+   * Exercise-specific rep period bounds in seconds.
+   * Delegates to centralized config in analysisConfig.js.
+   * @param {string} exerciseKey
+   * @returns {{ min: number, max: number }}
+   */
+  static _repPeriodBounds(exerciseKey) {
+    return getRepPeriodBounds(exerciseKey);
   }
 
   // ─── Private: Moving average smoothing ───
