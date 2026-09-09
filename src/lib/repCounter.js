@@ -340,7 +340,13 @@ export class RepCounter {
     // Then apply autocorrelation edge correction: if the dominant period
     // suggests one more rep than valley counting found, and the signal shows
     // partial motion at the edges, recover the edge rep.
-    const result = this._autocorrelationEdgeCorrect(signal, adaptive.result);
+    let result = this._autocorrelationEdgeCorrect(signal, adaptive.result);
+
+    // Template-correlation edge correction: uses waveform shape (NCC) to
+    // distinguish truncated reps from setup/return motion at signal edges.
+    // Runs after AC correction — if AC already added a rep, the edge gap
+    // shrinks below threshold so template won't double-fire.
+    result = this._templateEdgeCorrect(signal, result);
 
     if (result.reps === 0) {
       // Valley counting found nothing. Keep FSM reps if any were counted
@@ -518,6 +524,8 @@ export class RepCounter {
     let bestCand = { original: primarySmoothed, inv: exInv, name: 'primary' };
     let bestResult = primaryCount;
 
+    this._adaptiveDiagCandidates = [{ name: 'primary', reps: primaryCount.reps, score: primaryScore, consistency: primaryConsistency, winner: false }];
+
     for (const cand of candidates) {
       // Skip the two primary entries — we already computed the baseline
       if (cand.name === 'primary' || cand.name === 'primary_inv') continue;
@@ -544,6 +552,8 @@ export class RepCounter {
 
       const score = result.reps * consistency;
 
+      this._adaptiveDiagCandidates.push({ name: cand.name, reps: result.reps, score, consistency, winner: false });
+
       // Asymmetric margin: alternatives finding FEWER reps than primary only
       // need 5% margin (helps correct overcounting). Alternatives finding MORE
       // reps need 20% (prevents noise from inflating the count).
@@ -554,6 +564,9 @@ export class RepCounter {
         bestResult = result;
       }
     }
+
+    // Store diagnostics for debugging
+    this._adaptiveDiag = this._adaptiveDiagCandidates;
 
     return {
       signal: bestCand.original,
@@ -766,6 +779,121 @@ export class RepCounter {
           return { reps: newFrames.length, allValleys: valleyResult.allValleys, valleyFrames: newFrames, signalRange: valleyResult.signalRange };
         }
       }
+    }
+
+    return valleyResult;
+  }
+
+  // Period-locked edge valley recovery.
+  // The bilateral prominence filter requires peaks on BOTH sides. At edges,
+  // the outer peak is truncated, causing systematic -1. This recovers a valley
+  // at the edge ONLY if ALL of these conditions are met:
+  //   1. Edge gap is 0.7-1.3 × median period (period-locked)
+  //   2. A local minimum exists at the expected position
+  //   3. The interior-side prominence alone passes the amplitude threshold
+  //   4. The valley depth matches interior valley depths (±50%)
+  // This is stricter than unilateral prominence alone (which was catastrophic
+  // at 16/41) because conditions 1+4 eliminate setup/return false positives.
+  _templateEdgeCorrect(signal, valleyResult) {
+    if (valleyResult.reps < 3) return valleyResult;
+
+    const frames = valleyResult.valleyFrames;
+    const N = signal.length;
+
+    const period = this._medianIntervalFrames(frames);
+    if (period < 4 || period === Infinity) return valleyResult;
+
+    // Signal range and amplitude threshold (same as _findValleys)
+    const sigMin = signal.reduce((a, b) => Math.min(a, b));
+    const sigMax = signal.reduce((a, b) => Math.max(a, b));
+    const signalRange = sigMax - sigMin;
+    const ampRatio = (this._exercise.amplitudeRatio != null) ? this._exercise.amplitudeRatio : 0.20;
+    const minAmplitude = signalRange * ampRatio;
+
+    // Compute interior valley depths for matching
+    const valleyDepths = frames.map(f => signal[f]);
+    valleyDepths.sort((a, b) => a - b);
+    const medianDepth = valleyDepths[Math.floor(valleyDepths.length / 2)];
+    const depthRange = valleyDepths[valleyDepths.length - 1] - valleyDepths[0];
+    const depthTolerance = Math.max(depthRange * 0.5, signalRange * 0.10);
+
+    const newFrames = [...frames];
+    let changed = false;
+    const diag = { period, medianDepth: Math.round(medianDepth * 10) / 10, left: null, right: null };
+
+    // RIGHT edge
+    const lastV = frames[frames.length - 1];
+    const rightGap = N - 1 - lastV;
+    diag.rightRatio = Math.round((rightGap / period) * 100) / 100;
+    if (rightGap >= period * 0.8 && rightGap <= period * 1.2) {
+      // Search for minimum near the expected position (lastV + period)
+      const target = lastV + period;
+      const lo = Math.max(lastV + Math.round(period * 0.4), 0);
+      const hi = Math.min(N - 1, target + Math.round(period * 0.3));
+      let bestVal = Infinity, bestIdx = -1;
+      for (let i = lo; i <= hi; i++) {
+        if (signal[i] < bestVal) { bestVal = signal[i]; bestIdx = i; }
+      }
+
+      if (bestIdx >= 0) {
+        // Check interior-side prominence (peak between lastV and candidate)
+        let peakBefore = signal[lastV];
+        for (let j = lastV; j < bestIdx; j++) {
+          if (signal[j] > peakBefore) peakBefore = signal[j];
+        }
+        const prominence = peakBefore - bestVal;
+        // Check depth match: candidate valley should be similar depth to interior valleys
+        const depthMatch = Math.abs(bestVal - medianDepth) <= depthTolerance;
+
+        diag.right = { gap: rightGap, prom: Math.round(prominence * 10) / 10, val: Math.round(bestVal * 10) / 10, depthMatch, added: false };
+
+        if (prominence >= minAmplitude && depthMatch) {
+          newFrames.push(bestIdx);
+          changed = true;
+          diag.right.added = true;
+          console.debug(`[RepCounter] Edge right: prom=${prominence.toFixed(1)} thresh=${minAmplitude.toFixed(1)} depth=${bestVal.toFixed(1)} median=${medianDepth.toFixed(1)}, valley@${bestIdx}`);
+        }
+      }
+    }
+
+    // LEFT edge
+    const leftGap = frames[0];
+    diag.leftRatio = Math.round((leftGap / period) * 100) / 100;
+    if (!changed && leftGap >= period * 0.8 && leftGap <= period * 1.2) {
+      const target = frames[0] - period;
+      const lo = Math.max(0, target - Math.round(period * 0.3));
+      const hi = Math.min(frames[0] - Math.round(period * 0.4), frames[0] - 1);
+      let bestVal = Infinity, bestIdx = -1;
+      for (let i = lo; i <= hi; i++) {
+        if (signal[i] < bestVal) { bestVal = signal[i]; bestIdx = i; }
+      }
+
+      if (bestIdx >= 0) {
+        let peakAfter = signal[frames[0]];
+        for (let j = bestIdx + 1; j <= frames[0]; j++) {
+          if (signal[j] > peakAfter) peakAfter = signal[j];
+        }
+        const prominence = peakAfter - bestVal;
+        const depthMatch = Math.abs(bestVal - medianDepth) <= depthTolerance;
+
+        diag.left = { gap: leftGap, prom: Math.round(prominence * 10) / 10, val: Math.round(bestVal * 10) / 10, depthMatch, added: false };
+
+        // Reject valley at very start of signal (frame 0-2 is just recording start, not a real valley)
+        if (prominence >= minAmplitude && depthMatch && bestIdx >= 3) {
+          newFrames.unshift(bestIdx);
+          changed = true;
+          diag.left.added = true;
+          console.debug(`[RepCounter] Edge left: prom=${prominence.toFixed(1)} thresh=${minAmplitude.toFixed(1)} depth=${bestVal.toFixed(1)} median=${medianDepth.toFixed(1)}, valley@${bestIdx}`);
+        }
+      }
+    }
+
+    this._templateEdgeDiag = diag;
+
+    if (changed) {
+      newFrames.sort((a, b) => a - b);
+      console.debug(`[RepCounter] Edge correction: ${valleyResult.reps} → ${newFrames.length}`);
+      return { reps: newFrames.length, allValleys: valleyResult.allValleys, valleyFrames: newFrames, signalRange: valleyResult.signalRange };
     }
 
     return valleyResult;

@@ -337,6 +337,20 @@ for (const video of cache) {
       method: diag.method || '',
       exercise,
     };
+    // Dump template edge diagnostics for all non-exact videos
+    if (counter._templateEdgeDiag && entry.error !== 0) {
+      entry._edgeGaps = counter._templateEdgeDiag;
+    }
+    // Dump edge recovery diagnostics
+    if (counter._edgeRecoveryDiag) {
+      entry._edgeDiag = counter._edgeRecoveryDiag;
+    }
+    // Dump adaptive selection diagnostics for non-zero errors
+    if (counter._adaptiveDiag && entry.error !== 0) {
+      const sorted = [...counter._adaptiveDiag].sort((a, b) => b.score - a.score);
+      const topCands = sorted.slice(0, 8).map(c => `${c.name}:${c.reps}(s=${c.score.toFixed(1)},c=${c.consistency.toFixed(3)})`);
+      entry._candidates = topCands;
+    }
     // Dump signal diagnostics for exercises with large errors
     if (Math.abs(entry.error) >= 2) {
       const cycles = diag.cycles || {};
