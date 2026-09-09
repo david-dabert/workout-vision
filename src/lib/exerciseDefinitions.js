@@ -1877,7 +1877,7 @@ export const EXERCISE_DEFINITIONS = {
     } },
     downThreshold: 30,
     upThreshold: 50,
-    amplitudeRatio: 0.25,
+    amplitudeRatio: 0.12,
     minSpacing: 0.15,
     formChecks: [
       { name: 'Stable base', type: 'below', useBestSide: true, left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee', threshold: 160, good: 'Athletic stance', bad: 'Bend knees into athletic position', severity: 'minor', citation: 'Fountaine CJ, Schmidt BJ, 2015' },

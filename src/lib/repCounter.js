@@ -27,7 +27,7 @@ import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
 
-const REP_COUNTER_BUILD = 'v23-adaptive-spacing';
+const REP_COUNTER_BUILD = 'v24-adaptive-signal';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -320,45 +320,24 @@ export class RepCounter {
       : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 3;
     let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), smoothWindow);
 
-    // ── Step 1b: Alternative signal override ──
-    // When the exercise has priority signals in SIGNAL_PRIORITY_3D and the
-    // primary signal has poor range, switch to the best alternative signal.
-    // This handles both depth-axis (Z) and Y-position signals.
-    const priority3D = SIGNAL_PRIORITY_3D[this._exerciseKey];
-    if (priority3D && priority3D.length > 0) {
-      try {
-        const signals3D = extractSignals3D(cleanedLandmarks);
-        const range2D = Math.max(...interpolated) - Math.min(...interpolated);
-        let bestAltSignal = null;
-        let bestAltRange = 0;
-        for (const name of priority3D) {
-          const sig = signals3D.find(s => s.name === name);
-          if (!sig) continue;
-          const smoothed = this._smoothSignal(this._interpolateNulls(sig.values), 5);
-          const r = Math.max(...smoothed) - Math.min(...smoothed);
-          if (r > bestAltRange) {
-            bestAltRange = r;
-            bestAltSignal = smoothed;
-          }
-        }
-        // Use alternative signal if it has meaningfully better range than primary (>1.5x)
-        // and the primary signal is weak (<45 degrees range)
-        if (bestAltSignal && range2D < 45 && bestAltRange > range2D * 1.5) {
-          interpolated = bestAltSignal;
-        }
-      } catch (_) {
-        // Alternative signal extraction failed; continue with primary signal
-      }
-    }
+    // ── Step 1b: Adaptive multi-signal selection ──
+    // Test ALL available signals (primary + 28 3D alternatives) in both
+    // orientations. Score each by reps × tempo_consistency. The signal
+    // producing the most rhythmically consistent rep count wins.
+    //
+    // This is camera-angle invariant: if a front-view camera hides knee
+    // flexion in 2D, the hip_Y signal wins. If overhead camera flattens
+    // Y-motion, Z-signals win. No hardcoded thresholds — the data decides.
+    const adaptive = this._adaptiveSignalSelect(cleanedLandmarks, interpolated);
+    interpolated = adaptive.signal;
+    this._adaptedSignalName = adaptive.name;
 
-    // ── Step 2: Invert if needed ──
-    const down = ex.downThreshold;
-    const up = ex.upThreshold;
-    const invert = down > up;
+    // ── Step 2: Apply orientation from adaptive selection ──
+    const invert = adaptive.invert;
     const signal = invert ? interpolated.map(v => -v) : interpolated;
 
-    // ── Step 3: Valley counting ──
-    const result = this._countValleys(signal);
+    // ── Step 3: Use pre-computed valley result ──
+    const result = adaptive.result;
 
     if (result.reps === 0) {
       // Valley counting found nothing. Keep FSM reps if any were counted
@@ -460,6 +439,121 @@ export class RepCounter {
     const badMatches = fc.bad && /swing|momentum|lean|sway|upright/i.test(fc.bad);
     // Only convert for isolation exercises where the check name or bad text indicates trunk sway
     return isIsolation && (nameMatches || badMatches);
+  }
+
+  // ─── Adaptive multi-signal selection ───
+  //
+  // The core innovation: instead of hardcoding which signal to track per
+  // exercise, test ALL available signals and let the data decide. This makes
+  // rep counting robust to arbitrary camera angles, body orientations, and
+  // exercise variations.
+  //
+  // For each candidate signal (primary + ~28 3D alternatives, each in 2
+  // orientations = ~58 candidates), run valley counting and score by:
+  //   score = reps × (1 / (1 + CV))
+  // where CV = coefficient of variation of inter-valley gaps.
+  //
+  // Real reps have even timing (low CV → high consistency → high score).
+  // Noise produces irregular valleys (high CV → low consistency → low score).
+  // The signal with the highest score wins.
+
+  _adaptiveSignalSelect(cleanedLandmarks, primarySmoothed) {
+    const candidates = [];
+
+    // Primary signal in both orientations
+    candidates.push({ name: 'primary', countSignal: primarySmoothed, original: primarySmoothed, inv: false });
+    candidates.push({ name: 'primary_inv', countSignal: primarySmoothed.map(v => -v), original: primarySmoothed, inv: true });
+
+    // Only add biomechanically relevant alternatives from SIGNAL_PRIORITY_3D.
+    // Testing ALL signals causes overcounting from body-sway noise in
+    // unrelated joints (e.g. nose_Z during squats, knee during front_raise).
+    const priority = SIGNAL_PRIORITY_3D[this._exerciseKey];
+    if (priority && priority.length > 0) {
+      try {
+        const signals3D = extractSignals3D(cleanedLandmarks);
+        // Alternative signals get stronger smoothing (5) to suppress noise,
+        // EXCEPT for fast exercises (battle rope, jumping jacks) where
+        // smoothing=5 kills the rapid oscillations that ARE the reps.
+        const ex = this._exercise;
+        const altSmoothWindow = (ex.minSpacing != null && ex.minSpacing < 0.2)
+          ? (ex.smoothing != null ? ex.smoothing : 1) : 5;
+
+        for (const sigName of priority) {
+          const sig = signals3D.find(s => s.name === sigName);
+          if (!sig) continue;
+          const smoothed = this._smoothSignal(this._interpolateNulls(sig.values), altSmoothWindow);
+          candidates.push({ name: sigName, countSignal: smoothed, original: smoothed, inv: false });
+          candidates.push({ name: sigName + '_inv', countSignal: smoothed.map(v => -v), original: smoothed, inv: true });
+        }
+      } catch (_) {
+        // 3D extraction failed; continue with primary only
+      }
+    }
+
+    // First: establish the primary baseline with exercise-defined orientation.
+    const exInv = this._exercise.downThreshold > this._exercise.upThreshold;
+    const primaryCount = this._countValleys(exInv ? primarySmoothed.map(v => -v) : primarySmoothed);
+    let primaryConsistency = 1;
+    if (primaryCount.valleyFrames.length >= 2) {
+      const gaps = [];
+      for (let i = 1; i < primaryCount.valleyFrames.length; i++) {
+        gaps.push(primaryCount.valleyFrames[i] - primaryCount.valleyFrames[i - 1]);
+      }
+      const mean = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const std = Math.sqrt(gaps.reduce((a, v) => a + (v - mean) ** 2, 0) / gaps.length);
+      const cv = mean > 0 ? std / mean : 1;
+      primaryConsistency = 1 / (1 + cv);
+    }
+    const primaryScore = primaryCount.reps * primaryConsistency;
+
+    // Now score all candidates. An alternative must beat the primary score
+    // by >= 20% margin to override. This prevents marginal noise signals
+    // from winning while still allowing genuine improvements (e.g. hip_Y
+    // for front-view squats where knee angles are compressed in 2D).
+    let bestScore = primaryScore;
+    let bestCand = { original: primarySmoothed, inv: exInv, name: 'primary' };
+    let bestResult = primaryCount;
+
+    for (const cand of candidates) {
+      // Skip the two primary entries — we already computed the baseline
+      if (cand.name === 'primary' || cand.name === 'primary_inv') continue;
+
+      const result = this._countValleys(cand.countSignal);
+      if (result.reps === 0) continue;
+
+      // Overcounting guard: when primary finds >= 3 reps, reject alternatives
+      // that find more than 1.5× the primary count. Double-counting from
+      // mid-rep oscillation (knee wobble, head bob) typically produces ~2× reps.
+      if (primaryCount.reps >= 3 && result.reps > primaryCount.reps * 1.5) continue;
+
+      let consistency = 1;
+      if (result.valleyFrames.length >= 2) {
+        const gaps = [];
+        for (let i = 1; i < result.valleyFrames.length; i++) {
+          gaps.push(result.valleyFrames[i] - result.valleyFrames[i - 1]);
+        }
+        const mean = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+        const std = Math.sqrt(gaps.reduce((a, v) => a + (v - mean) ** 2, 0) / gaps.length);
+        const cv = mean > 0 ? std / mean : 1;
+        consistency = 1 / (1 + cv);
+      }
+
+      const score = result.reps * consistency;
+
+      // Alternative must beat primary by 20% margin to justify the switch
+      if (score > bestScore * 1.2) {
+        bestScore = score;
+        bestCand = cand;
+        bestResult = result;
+      }
+    }
+
+    return {
+      signal: bestCand.original,
+      invert: bestCand.inv,
+      result: bestResult,
+      name: bestCand.name,
+    };
   }
 
   // ─── Valley counting ───
@@ -578,7 +672,7 @@ export class RepCounter {
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._totalFramesAnalyzed || this._collectedLandmarks.length,
-      method: 'valley-counter',
+      method: this._adaptedSignalName ? `valley:${this._adaptedSignalName}` : 'valley-counter',
       cycles: this._cycleDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,
