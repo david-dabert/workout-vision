@@ -204,6 +204,17 @@ export function loadModelWithRetry() { return Promise.resolve(null); }
 
 writeFileSync(shimPath, shimContent);
 
+// Patch exercises.js to replace import.meta.env.BASE_URL (Vite-only) with '/'
+// This is the belt-and-suspenders fix: works on any Node version regardless
+// of whether module loader hooks handle the load transform correctly.
+const exercisesPath = join(__dirname, '..', 'src', 'lib', 'exercises.js');
+const exercisesOriginal = readFileSync(exercisesPath, 'utf-8');
+const exercisesPatched = exercisesOriginal.replace(/import\.meta\.env\.BASE_URL/g, "'/'");
+if (exercisesPatched !== exercisesOriginal) {
+  writeFileSync(exercisesPath, exercisesPatched);
+}
+// Restore after import (in finally block below)
+
 // Now we need to import RepCounter. The problem is it imports from './poseAnalysis'
 // which has the CDN import. We'll use Node's module loader hooks to intercept.
 // Simpler approach: use a custom loader or just copy the needed files.
@@ -255,8 +266,8 @@ if (module.registerHooks) {
       return result;
     },
   });
-} else {
-  // Fallback for older Node versions
+} else if (module.register) {
+  // Fallback for Node 18-22 (module.register API with hooks in worker thread)
   const loaderCode = `
   export async function resolve(specifier, context, nextResolve) {
     if (specifier.endsWith('/poseAnalysis') || specifier === './poseAnalysis') {
@@ -267,9 +278,24 @@ if (module.registerHooks) {
     }
     return nextResolve(specifier, context);
   }
+  export async function load(url, context, nextLoad) {
+    const result = await nextLoad(url, context);
+    if (result.source != null) {
+      let src = typeof result.source === 'string' ? result.source : new TextDecoder().decode(result.source);
+      if (src.includes('import.meta.env')) {
+        src = src.replace(/import\\.meta\\.env\\.BASE_URL/g, "'/'");
+        src = src.replace(/import\\.meta\\.env/g, '({})');
+        return { format: result.format || 'module', source: src, shortCircuit: true };
+      }
+    }
+    return result;
+  }
   `;
   const loaderUrl = 'data:text/javascript;base64,' + Buffer.from(loaderCode).toString('base64');
   module.register(loaderUrl, import.meta.url);
+} else {
+  console.error('Node version too old: needs module.registerHooks (Node 23+) or module.register (Node 20.6+)');
+  process.exit(1);
 }
 
 // Now import RepCounter — it will use our shim for poseAnalysis
@@ -382,6 +408,11 @@ const report = {
 };
 writeFileSync(outFile, JSON.stringify(report, null, 2));
 console.log(`\n  Saved: ${outFile}`);
+
+// Restore patched exercises.js
+if (exercisesPatched !== exercisesOriginal) {
+  writeFileSync(exercisesPath, exercisesOriginal);
+}
 
 // CI gate: fail if accuracy regresses below baseline thresholds
 // Baseline recorded 2026-09-09: 80% accuracy, 70% OBO, MAE 1.40
