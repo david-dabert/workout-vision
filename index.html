@@ -17,95 +17,23 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <title>WorkoutVision</title>
     <meta name="description" content="AI-powered workout form analysis using computer vision. Real-time rep counting, form scoring, and personalized coaching — 100% on-device." />
-    <meta property="og:title" content="WorkoutVision — AI Gym Companion" />
-    <meta property="og:description" content="Real-time pose detection, rep counting, and form coaching powered by on-device AI. No data leaves your phone." />
+    <meta property="og:title" content="WorkoutVision — AI Form Coaching" />
+    <meta property="og:description" content="Free AI-powered form analysis. 264 exercises, 33 body landmarks, 100% on-device. No account needed." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/workout-vision/icon-512.png" />
-    <script type="module" crossorigin src="/workout-vision/assets/index-fp8DbBU-.js"></script>
-    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-BimnMVw0.css">
+    <meta property="og:url" content="https://david-dabert.github.io/workout-vision/" />
+    <meta property="og:image" content="https://david-dabert.github.io/workout-vision/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="WorkoutVision — AI Form Coaching" />
+    <meta name="twitter:description" content="Free AI-powered form analysis. No uploads. Runs entirely on your phone." />
+    <meta name="twitter:image" content="https://david-dabert.github.io/workout-vision/og-image.png" />
+    <script type="module" crossorigin src="/workout-vision/assets/index-DCOgdPLA.js"></script>
+    <link rel="stylesheet" crossorigin href="/workout-vision/assets/index-BACNvozK.css">
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      // Crash reporter: show JS errors on screen instead of black void
-      window.onerror = function(msg, src, line, col, err) {
-        var d = document.getElementById('root');
-        if (d) d.innerHTML = '<div style="padding:40px 20px;text-align:center">'
-          + '<h2 style="color:#fff;margin-bottom:12px;font-family:system-ui">Something went wrong</h2>'
-          + '<p style="color:#888;font-family:system-ui;margin-bottom:20px">WorkoutVision encountered an error. Please reload to try again.</p>'
-          + '<button onclick="location.reload()" style="padding:12px 24px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold;font-size:1rem;cursor:pointer">Reload App</button>'
-          + '</div>';
-      };
-      window.addEventListener('unhandledrejection', function(e) {
-        var msg = e.reason ? (e.reason.message || String(e.reason)) : 'Unknown promise rejection';
-        window.onerror(msg, '', 0, 0, e.reason);
-      });
-      // Watchdog: if React hasn't mounted after 8s, show diagnostic
-      setTimeout(function() {
-        var r = document.getElementById('root');
-        if (r && r.children.length === 0) {
-          r.innerHTML = '<div style="color:#ffb836;padding:20px;font:14px monospace">'
-            + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision</h2>'
-            + '<p>App did not load within 8 seconds.</p>'
-            + '<p style="color:#888;margin-top:8px">This may be a network issue or JavaScript error.</p>'
-            + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
-            + '</div>';
-        }
-      }, 8000);
-    </script>
-    <script>
-      // Register service worker for offline support.
-      // Uses network-first for HTML/JS to prevent the iOS Safari stale-cache
-      // problem that the previous SW caused. WASM files use cache-first
-      // since they are immutable and required for offline pose detection.
-      (function() {
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/workout-vision/sw.js', { scope: '/workout-vision/' })
-              .catch(function(err) { console.warn('[SW] Registration failed:', err); });
-          });
-        }
-      })();
-      // Glass effect heuristic: disable backdrop-filter on weak devices
-      // before first paint to prevent compositing jank.
-      (function() {
-        var ua = navigator.userAgent;
-        var disableGlass = false;
-        // Android: low-end devices only
-        if (/Android/.test(ua)) {
-          var cores = navigator.hardwareConcurrency || 4;
-          var memory = navigator.deviceMemory || 4;
-          disableGlass = cores <= 4 && memory <= 3;
-        }
-        // iOS: only iOS 14 and below (parse OS version from UA)
-        var iosMatch = ua.match(/OS (\d+)_/);
-        if (iosMatch) {
-          disableGlass = parseInt(iosMatch[1], 10) < 15;
-        }
-        if (disableGlass) {
-          document.documentElement.classList.add('no-glass');
-        }
-      })();
-    </script>
-    <script>
-      // Cache-bust: detect stale HTML pointing to deleted assets.
-      // GitHub Pages serves HTML with max-age=600. If a deploy replaces
-      // assets while the old HTML is cached, the module script 404s and
-      // React never mounts. This HEAD-checks the script src and reloads
-      // with a cache-busting query if the asset is gone.
-      (function() {
-        if (sessionStorage.getItem('_cb')) return; // one attempt per tab
-        var s = document.querySelector('script[type="module"][src]');
-        if (!s) return;
-        fetch(s.src, { method: 'HEAD' }).then(function(r) {
-          if (!r.ok) {
-            sessionStorage.setItem('_cb', '1');
-            var params = new URLSearchParams(location.search);
-            params.set('_', Date.now());
-            location.replace(location.pathname + '?' + params.toString());
-          }
-        }).catch(function() {});
-      })();
-    </script>
+    <script src="/workout-vision/boot.js"></script>
+    <script src="/workout-vision/cache-bust.js"></script>
   </body>
 </html>
