@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { disposeAllLandmarkers } from '../lib/poseAnalysis';
-import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration } from '../lib/exercises';
+import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration, getExerciseTier } from '../lib/exercises';
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
@@ -405,17 +405,17 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 <option value="__auto__">{t('automatic')}</option>
                 <optgroup label={t('compound')}>
                   {EXERCISE_GROUPS.compound.map(e => (
-                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
+                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}{e.tier === 'validated' ? ' ✓' : e.tier === 'experimental' ? ' ·' : ''}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('isolation')}>
                   {EXERCISE_GROUPS.isolation.map(e => (
-                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
+                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}{e.tier === 'validated' ? ' ✓' : e.tier === 'experimental' ? ' ·' : ''}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('bodyweight')}>
                   {EXERCISE_GROUPS.bodyweight.map(e => (
-                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}</option>
+                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}{e.tier === 'validated' ? ' ✓' : e.tier === 'experimental' ? ' ·' : ''}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('other')}>

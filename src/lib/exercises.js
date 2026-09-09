@@ -116,6 +116,13 @@ import { EXERCISE_DEFINITIONS } from './exerciseDefinitions';
 // Compile DSL definitions into runtime objects — single source of truth
 export const EXERCISES = compileExercises(EXERCISE_DEFINITIONS);
 
+// Build a map from exercise key to its DSL value type string (e.g. 'bestSide', 'bestSideMax', 'direct')
+// Used by tier classification to check if an exercise's signal pattern has been validated.
+const VALUE_TYPE_MAP = {};
+for (const [key, dsl] of Object.entries(EXERCISE_DEFINITIONS)) {
+  VALUE_TYPE_MAP[key] = dsl.value?.type || 'bestSide';
+}
+
 // RepCounter and ExerciseAutoDetector: import directly from './repCounter' and './exerciseDetector'
 // Re-exports removed to break circular dependency (exercises <-> repCounter/exerciseDetector).
 
@@ -145,19 +152,88 @@ export function getExerciseLimitations(key) {
 }
 
 // ---------------------------------------------------------------------------
+// Exercise validation tiers — honest disclosure of what has been tested
+// ---------------------------------------------------------------------------
+// Tier 1 "validated": benchmark videos exist, accuracy measured.
+// Tier 2 "supported": shares signal pattern with a validated exercise,
+//         has real form checks. Expected to work but not ground-truth tested.
+// Tier 3 "experimental": placeholder or uses an untested signal pattern.
+
+const VALIDATED_EXERCISES = new Set([
+  'squat', 'bench_press', 'bicep_curl', 'battle_rope',
+  'pull_up', 'push_up', 'lunge', 'front_raise', 'sit_up',
+]);
+
+// Signal patterns covered by validated exercises.
+// Maps DSL value type + joint to a pattern key.
+// squat=bestSide+knee, bicep_curl=bestSide+elbow, front_raise=bestSideMax+shoulder,
+// bench_press=bestSide+elbow, pull_up=bestSide+elbow, push_up=bestSide+elbow,
+// lunge=bestSide+knee, sit_up=direct+trunk, battle_rope=custom
+// All four core value types are covered by at least one validated exercise.
+// 'heelDisplacement' (calf raises) has no benchmark video yet.
+const VALIDATED_VALUE_TYPES = new Set([
+  'bestSide', 'bestSideMax', 'direct', 'custom',
+]);
+
+function classifyExerciseTier(key, ex) {
+  if (VALIDATED_EXERCISES.has(key)) return 'validated';
+  if (ex.placeholder) return 'experimental';
+  const valueType = VALUE_TYPE_MAP[key];
+  if (valueType && VALIDATED_VALUE_TYPES.has(valueType) && ex.formChecks?.length > 0) return 'supported';
+  return 'experimental';
+}
+
+// Attach tier to each exercise
+for (const [key, ex] of Object.entries(EXERCISES)) {
+  ex.tier = classifyExerciseTier(key, ex);
+}
+
+/**
+ * Get the validation tier for an exercise.
+ * @param {string} key
+ * @returns {'validated'|'supported'|'experimental'}
+ */
+export function getExerciseTier(key) {
+  return EXERCISES[key]?.tier || 'experimental';
+}
+
+// Tier label suffixes for the exercise picker
+const TIER_SUFFIX = { validated: ' \u2713', supported: '', experimental: ' \u00B7' };
+
+/**
+ * Get display name with tier indicator.
+ * @param {string} key
+ * @param {string} name
+ * @returns {string}
+ */
+export function exerciseNameWithTier(key, name) {
+  const tier = getExerciseTier(key);
+  return name + (TIER_SUFFIX[tier] || '');
+}
+
+// ---------------------------------------------------------------------------
 // Shared exercise grouping for UI selectors
 // ---------------------------------------------------------------------------
 // Groups exercises by category (compound / isolation / bodyweight), sorted
-// alphabetically within each group. Skips 'superset' (handled as "Other").
+// by tier first (validated > supported > experimental), then alphabetically.
+// Skips 'superset' (handled as "Other").
 export const EXERCISE_GROUPS = (() => {
+  const tierOrder = { validated: 0, supported: 1, experimental: 2 };
   const groups = { compound: [], isolation: [], bodyweight: [], machine: [] };
   for (const [key, ex] of Object.entries(EXERCISES)) {
     if (key === 'superset') continue;
     const cat = ex.category || 'compound';
-    if (groups[cat]) groups[cat].push({ key, name: ex.name });
-    else groups.compound.push({ key, name: ex.name });
+    if (groups[cat]) groups[cat].push({ key, name: ex.name, tier: ex.tier });
+    else groups.compound.push({ key, name: ex.name, tier: ex.tier });
   }
-  for (const g of Object.values(groups)) g.sort((a, b) => a.name.localeCompare(b.name));
+  for (const g of Object.values(groups)) {
+    g.sort((a, b) => {
+      const ta = tierOrder[a.tier] ?? 2;
+      const tb = tierOrder[b.tier] ?? 2;
+      if (ta !== tb) return ta - tb;
+      return a.name.localeCompare(b.name);
+    });
+  }
   return groups;
 })();
 
