@@ -706,18 +706,8 @@ export default function Validate({ onClose }) {
                         {r.diagnostics.progression.score} {r.diagnostics.progression.grade.label}
                       </span>
                       <span style={{ fontSize: '0.62rem', color: 'var(--muted)' }}>
-                        {r.diagnostics.progression.grade.title} · Top {100 - r.diagnostics.progression.percentile}%
+                        {r.diagnostics.progression.grade.title}
                       </span>
-                      {r.diagnostics.velocity?.fatigue?.detected && (
-                        <span style={{ fontSize: '0.62rem', color: 'var(--red)', fontWeight: 600 }}>
-                          ⚠ Fatigue {Math.round(r.diagnostics.velocity.fatigue.decay * 100)}%
-                        </span>
-                      )}
-                      {r.diagnostics.velocity?.power?.peakW > 0 && (
-                        <span style={{ fontSize: '0.62rem', color: 'var(--muted)' }}>
-                          Peak {r.diagnostics.velocity.power.peakW}W
-                        </span>
-                      )}
                     </div>
                   )}
                   {r.diagnostics?.anthropometrics?.calibrated && (
@@ -766,9 +756,6 @@ export default function Validate({ onClose }) {
                     method: r.diagnostics?.method,
                     progressionScore: r.diagnostics?.progression?.score || null,
                     progressionGrade: r.diagnostics?.progression?.grade?.label || null,
-                    fatigue: r.diagnostics?.velocity?.fatigue?.detected || false,
-                    fatigueDecay: r.diagnostics?.velocity?.fatigue?.decay || 0,
-                    peakPowerW: r.diagnostics?.velocity?.power?.peakW || 0,
                     bodyType: r.diagnostics?.anthropometrics?.calibrated ? r.diagnostics.anthropometrics.bodyType : null,
                     error: r.error,
                   })),

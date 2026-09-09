@@ -172,10 +172,12 @@ export async function generateShareCard(result, videoEl) {
   y += 70;
 
   // ── Stats card — big, bold ───────────────────────────────────────────────
+  const weight = result.weight || 0;
+  const volume = weight > 0 ? `${weight * result.reps}kg` : `${result.reps}`;
   const stats = [
     { value: `${result.reps}`, label: 'REPS' },
-    { value: `${result.formScore}`, label: 'FORM' },
-    { value: result.bioAnalysis?.movementQuality != null ? `${Math.round(result.bioAnalysis.movementQuality)}` : '--', label: 'QUALITY' },
+    { value: result.formScore != null ? `${result.formScore}` : '--', label: 'FORM' },
+    { value: volume, label: 'VOLUME' },
   ];
   if (result.bioAnalysis?.asymmetry?.score != null) {
     stats.push({ value: `${Math.round(result.bioAnalysis.asymmetry.score)}%`, label: 'SYMMETRY' });

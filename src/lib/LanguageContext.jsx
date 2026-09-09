@@ -170,6 +170,7 @@ const translations = {
   'quality': { en: 'Quality', fr: 'Qualité' },
   'analysis': { en: 'Analysis', fr: 'Analyse' },
   'velocity_per_rep': { en: 'Velocity per rep', fr: 'Vitesse par rep' },
+  'tempo_per_rep': { en: 'Tempo per rep', fr: 'Tempo par rep' },
   'time_under_tension': { en: 'Time under tension', fr: 'Temps sous tension' },
   'eccentric': { en: 'Eccentric', fr: 'Excentrique' },
   'concentric': { en: 'Concentric', fr: 'Concentrique' },

@@ -144,8 +144,8 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, norm
 
       const dx = (p2.x - p1.x) * normToMeters;
       const dy = (p2.y - p1.y) * normToMeters;
-      const dz = ((p2.z || 0) - (p1.z || 0)) * normToMeters;
-      totalDisplacement += Math.sqrt(dx * dx + dy * dy + dz * dz);
+      // Z from monocular MediaPipe is not calibrated — omitted intentionally
+      totalDisplacement += Math.sqrt(dx * dx + dy * dy);
     }
 
     const duration = (concentricEnd - concentricStart) * timeDelta;
@@ -343,51 +343,31 @@ function analyzeFatigue(velocity, reps) {
 
 /**
  * Composite movement quality score 0-100.
- * Weighted components: ROM consistency (35%), symmetry (25%),
- * tempo control (20%), velocity consistency (10%), fatigue management (10%).
+ * Weighted components: ROM consistency (45%), symmetry (30%),
+ * tempo control (25%). Only uses data derivable from joint angles
+ * and frame timing; no pixel-velocity components.
  */
-function scoreQuality(velocity, tut, rom, asymmetry, fatigue) {
-  // ROM consistency: 0-35 points
-  const romScore = Math.min(35, Math.max(0, (rom.consistency || 0) * 0.35));
+function scoreQuality(_velocity, tut, rom, asymmetry, _fatigue) {
+  // ROM consistency: 0-45 points
+  const romScore = Math.min(45, Math.max(0, (rom.consistency || 0) * 0.45));
 
-  // Symmetry: 0-25 points
-  let symScore = 25;
-  if (asymmetry.score > 25) symScore = 5;
-  else if (asymmetry.score > 20) symScore = 10;
-  else if (asymmetry.score > 15) symScore = 15;
-  else if (asymmetry.score > 10) symScore = 20;
+  // Symmetry: 0-30 points
+  let symScore = 30;
+  if (asymmetry.score > 25) symScore = 6;
+  else if (asymmetry.score > 20) symScore = 12;
+  else if (asymmetry.score > 15) symScore = 18;
+  else if (asymmetry.score > 10) symScore = 24;
 
-  // Tempo control: 0-20 points (controlled eccentric = better)
-  let tempoScore = 10;
+  // Tempo control: 0-25 points (controlled eccentric = better)
+  let tempoScore = 12;
   if (tut.perRep.length > 0) {
     const avgRatio = tut.eccentric / (tut.concentric || 1);
-    if (avgRatio >= 1.5 && avgRatio <= 3) tempoScore = 20;
-    else if (avgRatio >= 1.0 && avgRatio <= 4) tempoScore = 15;
-    else if (avgRatio < 0.5 || avgRatio > 5) tempoScore = 5;
+    if (avgRatio >= 1.5 && avgRatio <= 3) tempoScore = 25;
+    else if (avgRatio >= 1.0 && avgRatio <= 4) tempoScore = 18;
+    else if (avgRatio < 0.5 || avgRatio > 5) tempoScore = 6;
   }
 
-  // Velocity consistency: 0-10 points
-  let velScore = 5;
-  if (velocity.perRep && velocity.perRep.length >= 2) {
-    const mean = velocity.perRep.reduce((s, v) => s + v, 0) / velocity.perRep.length;
-    if (mean > 0) {
-      const variance = velocity.perRep.reduce((s, v) => s + (v - mean) ** 2, 0) / velocity.perRep.length;
-      const cv = (Math.sqrt(variance) / mean) * 100;
-      if (cv < 10) velScore = 10;
-      else if (cv < 20) velScore = 7;
-      else if (cv > 40) velScore = 2;
-    }
-  }
-
-  // Fatigue management: 0-10 points
-  let fatigueScore = 5;
-  if (fatigue && fatigue.velocityDropoff != null) {
-    if (fatigue.velocityDropoff < 10) fatigueScore = 10;
-    else if (fatigue.velocityDropoff < 20) fatigueScore = 7;
-    else if (fatigue.velocityDropoff > 35) fatigueScore = 2;
-  }
-
-  const total = romScore + symScore + tempoScore + velScore + fatigueScore;
+  const total = romScore + symScore + tempoScore;
   return Math.max(0, Math.min(100, Math.round(total)));
 }
 

@@ -46,10 +46,6 @@ function generateCoachingInsight(repHistory, bioAnalysis, t) {
     }
   }
 
-  if (bioAnalysis?.fatigue?.velocityDropoff > 25) {
-    return t('insight_fatigue', { drop: Math.round(bioAnalysis.fatigue.velocityDropoff) });
-  }
-
   if (bioAnalysis?.asymmetry?.score > 15) {
     return t('insight_asymmetry', { score: Math.round(bioAnalysis.asymmetry.score) });
   }
@@ -383,10 +379,10 @@ function ResultCard({ result, onReplay }) {
           </span>
         </div>
         <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '300ms' }}>
-          <span className="stat-card-label">{t('quality').toUpperCase()}</span>
+          <span className="stat-card-label">{t('volume').toUpperCase()}</span>
           <span className="stat-card-value">
-            {bioAnalysis?.movementQuality != null ? Math.round(bioAnalysis.movementQuality) : '--'}
-            <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>%</span>
+            {result.weight > 0 ? `${result.weight * displayReps}` : displayReps}
+            <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>{result.weight > 0 ? 'kg' : t('reps')}</span>
           </span>
         </div>
       </div>
@@ -590,14 +586,12 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {bioAnalysis?.velocity?.perRep && bioAnalysis.velocity.perRep.length > 0 && (
+      {bioAnalysis?.velocity?.perRepRelative && bioAnalysis.velocity.perRepRelative.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <h4>{t('velocity_per_rep')}</h4>
+          <h4>{t('tempo_per_rep')}</h4>
           <div className="rep-bars">
-            {bioAnalysis.velocity.perRep.map((v, i) => {
-              const max = Math.max(...bioAnalysis.velocity.perRep, 1);
-              const pct = (v / max) * 100;
-              const declining = i > 0 && v < bioAnalysis.velocity.perRep[i - 1];
+            {bioAnalysis.velocity.perRepRelative.map((pct, i) => {
+              const declining = i > 0 && pct < bioAnalysis.velocity.perRepRelative[i - 1];
               return (
                 <div key={i} className="rep-bar-col">
                   <div className="rep-bar-wrap">
@@ -828,14 +822,12 @@ function ResultCard({ result, onReplay }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{prog.grade.title}</span>
-              <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>{t('top_percentile', { pct: 100 - prog.percentile })}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
               {[
                 { label: t('form_label'), val: prog.components.form, max: 250 },
                 { label: t('consistency_label'), val: prog.components.consistency, max: 200 },
                 { label: t('tempo_label'), val: prog.components.tempo, max: 150 },
-                { label: t('power_label'), val: prog.components.power, max: 150 },
               ].map(c => (
                 <div key={c.label} style={{ textAlign: 'center' }}>
                   <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
@@ -870,81 +862,6 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {result.diagnostics?.velocity && (() => {
-        const vel = result.diagnostics.velocity;
-        return (
-          <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
-            {vel.fatigue && (
-              <div className="stat-card">
-                <span className="stat-card-label">{t('fatigue_label')}</span>
-                <span className="stat-card-value" style={{ color: vel.fatigue.detected ? 'var(--red)' : 'var(--accent)' }}>
-                  {vel.fatigue.detected ? `${Math.round(vel.fatigue.decay * 100)}%` : 'OK'}
-                </span>
-              </div>
-            )}
-            {vel.power && vel.power.peakW > 0 && (
-              <div className="stat-card">
-                <span className="stat-card-label">{t('peak_power')}</span>
-                <span className="stat-card-value">{vel.power.peakW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
-              </div>
-            )}
-            {vel.power && vel.power.meanW > 0 && (
-              <div className="stat-card">
-                <span className="stat-card-label">{t('avg_power')}</span>
-                <span className="stat-card-value">{vel.power.meanW}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>W</span></span>
-              </div>
-            )}
-            {vel.smoothness != null && (
-              <div className="stat-card">
-                <span className="stat-card-label">{t('smoothness_label')}</span>
-                <span className="stat-card-value">{Math.round(vel.smoothness * 100)}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>%</span></span>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {bioAnalysis?.fatigue && (
-        <div style={{ marginTop: 14 }}>
-          <h4>{t('fatigue')}</h4>
-          <div className="result-stats" style={{ marginBottom: 6 }}>
-            <div className="stat">
-              <span className="stat-value">{Math.round(bioAnalysis.fatigue.index || 0)}%</span>
-              <span className="stat-label">{t('fatigue_index')}</span>
-            </div>
-            {bioAnalysis.fatigue.velocityDropoff != null && (
-              <div className="stat">
-                <span className="stat-value">{Math.round(bioAnalysis.fatigue.velocityDropoff)}%</span>
-                <span className="stat-label">{t('velocity_dropoff')}</span>
-              </div>
-            )}
-          </div>
-          {bioAnalysis.fatigue.curve && bioAnalysis.fatigue.curve.length > 0 && (
-            <div className="rep-bars">
-              {bioAnalysis.fatigue.curve.map((v, i) => {
-                const max = Math.max(...bioAnalysis.fatigue.curve, 1);
-                const pct = (v / max) * 100;
-                return (
-                  <div key={i} className="rep-bar-col">
-                    <div className="rep-bar-wrap">
-                      <div className="rep-bar" style={{
-                        height: `${Math.max(pct, 5)}%`,
-                        background: pct < 60 ? 'var(--red)' : pct < 80 ? 'var(--yellow)' : 'var(--accent)',
-                      }} />
-                    </div>
-                    <span className="rep-num">{i + 1}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {bioAnalysis.fatigue.recommendation && (
-            <p className="text-xs text-muted" style={{ marginTop: 4 }}>
-              {t(bioAnalysis.fatigue.recommendation)}
-            </p>
-          )}
-        </div>
-      )}
 
       {repHistory && repHistory.length > 0 && (() => {
         const allIssues = {};

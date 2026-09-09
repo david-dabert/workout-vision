@@ -816,7 +816,7 @@ export class RepCounter {
 
     const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
     const weightedQuality = formResults.reduce((sum, f) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
-    const score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : 100;
+    const score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : null;
     const issues = formResults.filter(f => !f.passed).map(f => f.bad);
 
     this._repHistory.push({

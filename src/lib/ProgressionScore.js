@@ -32,17 +32,6 @@ function getGrade(score) {
   return GRADES[GRADES.length - 1];
 }
 
-// ---------------------------------------------------------------------------
-// Percentile estimation (simple logistic curve approximation)
-// Assumes population median around 450, stddev ~150
-// ---------------------------------------------------------------------------
-
-function estimatePercentile(score) {
-  // Logistic function centered at 450
-  const k = 0.008; // steepness
-  const percentile = 100 / (1 + Math.exp(-k * (score - 450)));
-  return Math.round(Math.min(99, Math.max(1, percentile)));
-}
 
 // ---------------------------------------------------------------------------
 // ProgressionScore
@@ -123,48 +112,16 @@ export class ProgressionScore {
       }
     }
 
-    // ── Component 4: Power/Velocity (max 150) ──
-    // Faster concentric with control
-    let powerComponent = 75; // Default
-    if (repVelocities && repVelocities.length >= 2) {
-      const validVels = repVelocities.filter(v => v !== null);
-      if (validVels.length >= 2) {
-        const meanVels = validVels.map(v => v.meanVelocity);
-        const avgVel = meanVels.reduce((a, b) => a + b, 0) / meanVels.length;
-
-        // Normalize velocity (0.1 = slow, 0.5+ = fast/explosive)
-        // Score based on controlled speed, not just raw speed
-        const velScore = Math.min(1, avgVel / 0.4);
-        powerComponent = 150 * velScore;
-      }
-    }
-
-    // ── Component 5: Volume (max 100) ──
+    // ── Component 4: Volume (max 100) ──
     // Reps x weight, log-scaled
     const volumeLoad = reps * Math.max(1, weightKg);
     const volumeComponent = Math.min(100, 100 * Math.log10(1 + volumeLoad) / Math.log10(1000));
 
-    // ── Component 6: Fatigue Resistance (max 100) ──
-    // Low velocity decay across set
-    let fatigueComponent = 50; // Default
-    if (repVelocities && repVelocities.length >= 4) {
-      const validVels = repVelocities.filter(v => v !== null);
-      if (validVels.length >= 4) {
-        const vels = validVels.map(v => v.meanVelocity);
-        const firstTwo = (vels[0] + vels[1]) / 2;
-        const lastTwo = (vels[vels.length - 2] + vels[vels.length - 1]) / 2;
-        const decay = firstTwo > 0 ? 1 - (lastTwo / firstTwo) : 0;
-
-        // Decay 0% = perfect (100), decay 20%+ = poor (0)
-        fatigueComponent = Math.max(0, 100 * (1 - decay / 0.25));
-      }
-    }
-
-    // ── Component 7: Improvement Bonus (max 50) ──
+    // ── Component 5: Improvement Bonus (max 50) ──
     // Beat your previous best
     let improvementComponent = 0;
     const rawScore = formComponent + consistencyComponent + tempoComponent +
-                     powerComponent + volumeComponent + fatigueComponent;
+                     volumeComponent;
 
     if (previousBest && previousBest.score > 0) {
       const improvement = rawScore - previousBest.score;
@@ -176,52 +133,24 @@ export class ProgressionScore {
     // ── Final Score ──
     const totalScore = Math.round(Math.min(1000,
       formComponent + consistencyComponent + tempoComponent +
-      powerComponent + volumeComponent + fatigueComponent + improvementComponent
+      volumeComponent + improvementComponent
     ));
 
     const grade = getGrade(totalScore);
-    const percentile = estimatePercentile(totalScore);
 
     return {
       score: totalScore,
       grade,
-      percentile,
+      percentile: 0, // retained for API compat, not displayed
       components: {
         form: Math.round(formComponent),
         consistency: Math.round(consistencyComponent),
         tempo: Math.round(tempoComponent),
-        power: Math.round(powerComponent),
         volume: Math.round(volumeComponent),
-        fatigue: Math.round(fatigueComponent),
         improvement: Math.round(improvementComponent),
       },
-      breakdown: `${totalScore} (${grade.label}, ${grade.title}) — Top ${100 - percentile}%`,
+      breakdown: `${totalScore} (${grade.label}, ${grade.title})`,
     };
   }
 
-  /**
-   * Compute aggregate session score from multiple sets.
-   */
-  // ponytail: dead method, no callers
-  static computeSession(setScores) {
-    if (setScores.length === 0) return { score: 0, grade: getGrade(0), percentile: 1 };
-
-    // Weighted average: later sets count slightly less (fatigue adjustment)
-    let weightedSum = 0, weightSum = 0;
-    setScores.forEach((s, i) => {
-      const w = 1 - (i * 0.05); // Each subsequent set worth 5% less
-      weightedSum += s.score * w;
-      weightSum += w;
-    });
-
-    const score = Math.round(weightedSum / weightSum);
-    return {
-      score,
-      grade: getGrade(score),
-      percentile: estimatePercentile(score),
-      setCount: setScores.length,
-      bestSet: Math.max(...setScores.map(s => s.score)),
-      breakdown: `Session: ${score} (${getGrade(score).label}) from ${setScores.length} sets`,
-    };
-  }
 }
