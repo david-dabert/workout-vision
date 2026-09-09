@@ -4,6 +4,9 @@ import { EXERCISES, EXERCISE_GROUPS, getExerciseIllustration, getExerciseTier } 
 import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/injuries';
+import { VideoSuitabilityDetector } from '../lib/videoSuitability';
+import { AnalysisDiagnostics } from '../lib/analysisDiagnostics';
+import { detectViewpointFromFrames } from '../lib/cameraViewpoint';
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
@@ -44,8 +47,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
   const userChangedExercise = useRef(!!preSelectedExercise);
   const [weight, setWeight] = useState('');
+  const weightRef = useRef('');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisPhase, setAnalysisPhase] = useState('');
+  const [phaseLabel, setPhaseLabel] = useState('');
   const [currentFile, setCurrentFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
@@ -61,6 +66,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
   const [dragOver, setDragOver] = useState(false);
   const [ffmpegStatus, setFfmpegStatus] = useState('');
+  const [suitabilityAssessment, setSuitabilityAssessment] = useState(null);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const overlayRef = useRef(null);
@@ -162,6 +168,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       },
       onLiveReps: (reps) => setLiveReps(reps),
       onExerciseDetected: (ex) => setExercise(ex),
+      onSuitability: (assessment) => setSuitabilityAssessment(assessment),
     });
 
     if (!result) {
@@ -427,7 +434,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               <input
                 type="number"
                 value={weight}
-                onChange={(e) => setWeight(e.target.value)}
+                onChange={(e) => { setWeight(e.target.value); weightRef.current = e.target.value; }}
                 placeholder="kg"
                 style={{ width: 64, padding: '10px 8px', fontSize: '0.82rem', textAlign: 'center' }}
               />
@@ -465,9 +472,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             <div className="analysis-phases">
               {[
                 { key: 'hashing', label: t('phase_hashing'), icon: '#' },
-                { key: 'model', label: t('phase_model'), icon: '◆' },
-                { key: 'extracting', label: t('phase_extracting'), icon: '▦' },
-                { key: 'analyzing', label: t('phase_analyzing'), icon: '◉' },
+                { key: 'model', label: t('phase_model'), icon: '\u25C6' },
+                { key: 'extracting', label: t('phase_extracting'), icon: '\u25A6' },
+                { key: 'analyzing', label: t('phase_analyzing'), icon: '\u25C9' },
               ].map((phase, i) => {
                 const phaseOrder = ['hashing', 'model', 'extracting', 'analyzing'];
                 const currentIdx = phaseOrder.indexOf(analysisPhase);
@@ -487,7 +494,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                       color: isDone ? 'var(--void)' : isActive ? 'var(--bio-cyan)' : 'var(--text-secondary)',
                       border: isActive ? '1.5px solid var(--bio-cyan)' : '1.5px solid transparent',
                     }}>
-                      {isDone ? '✓' : i + 1}
+                      {isDone ? '\u2713' : i + 1}
                     </span>
                     <span style={{
                       fontSize: '0.78rem', fontWeight: isActive ? 600 : 400,
@@ -533,6 +540,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                     ? userInjuries.filter(i => i !== key)
                     : [...userInjuries, key];
                   setUserInjuries(next);
+                  userInjuriesRef.current = next;
                   saveInjuries(next);
                 }}
                 style={{
@@ -573,13 +581,18 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             style={{ width: '100%', display: 'block' }} />
         </div>
         {analyzing && analysisPhase === 'analyzing' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, padding: '0 4px' }}>
-            <span style={{ color: 'var(--bio-cyan)', fontSize: 20, fontWeight: 800 }}>{liveReps} {t('reps').toLowerCase()}</span>
-            <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
-              <div style={{ width: `${progress}%`, height: '100%', background: 'var(--bio-cyan)',
-                borderRadius: 2, transition: 'width 0.1s linear' }} />
+          <div style={{ marginTop: 8, padding: '0 4px' }}>
+            {suitabilityAssessment && suitabilityAssessment.suitable !== 'good' && (
+              <VideoSuitabilityBanner assessment={suitabilityAssessment} compact />
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ color: 'var(--bio-cyan)', fontSize: 20, fontWeight: 800 }}>{liveReps} {t('reps').toLowerCase()}</span>
+              <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
+                <div style={{ width: `${progress}%`, height: '100%', background: 'var(--bio-cyan)',
+                  borderRadius: 2, transition: 'width 0.1s linear' }} />
+              </div>
+              <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
             </div>
-            <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
           </div>
         )}
       </div>
@@ -600,6 +613,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           {t('analyze_another')}
         </button>
       )}
+
 
     </div>
   );

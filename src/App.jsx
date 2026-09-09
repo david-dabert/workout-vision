@@ -3,6 +3,7 @@ import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider, useT } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
 import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
+import { checkAndMigrateSchema } from './lib/storage';
 import Dashboard from './components/Dashboard';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -66,6 +67,11 @@ function AppInner() {
   const [modelStatus, setModelStatus] = useState('loading');
   const [challenge, setChallenge] = useState(null);
   const [challengeResponse, setChallengeResponse] = useState(null);
+
+  // Run storage schema migration on mount
+  useEffect(() => {
+    checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err));
+  }, []);
 
   // Check for challenge or response URL on mount
   useEffect(() => {
@@ -247,13 +253,15 @@ function App() {
   }
 
   return (
-    <LanguageProvider>
-      <ProfileProvider>
-        <ErrorBoundary>
-          <AppInner />
-        </ErrorBoundary>
-      </ProfileProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <ProfileProvider>
+          <ErrorBoundary>
+            <AppInner />
+          </ErrorBoundary>
+        </ProfileProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }
 

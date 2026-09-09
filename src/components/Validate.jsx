@@ -1,9 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
-import { getImageLandmarker, detectPoseImage, selectSubjectPose, extractJointAngles } from '../lib/poseAnalysis';
+import { getImageLandmarker, detectPoseImage, selectSubjectPose, extractJointAngles, getGhostFrameCount } from '../lib/poseAnalysis';
 import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
 import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
+import { AnalysisDiagnostics } from '../lib/analysisDiagnostics';
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -305,9 +306,33 @@ export default function Validate({ onClose }) {
       // Re-run rep counter with the correct exercise
       const finalCounter = new RepCounter(detectedExercise, { fps: analysisFps, mode: 'video' });
       for (const f of frames) finalCounter.update(f.landmarks);
+
+      // Set exercise confidence before finalize
+      if (autoDetector && typeof finalCounter.setExerciseConfidence === 'function') {
+        try {
+          const detInfo = autoDetector.getDetectionInfo ? autoDetector.getDetectionInfo() : null;
+          if (detInfo) finalCounter.setExerciseConfidence(detInfo.confidence);
+        } catch (_) {}
+      }
+
       finalCounter.finalize();
       const repHistory = finalCounter.repHistory || [];
       const reps = repHistory.length;
+
+      // Build analysis diagnostics
+      let analysisDiag = null;
+      try {
+        const exInfo = autoDetector && typeof autoDetector.getDetectionInfo === 'function'
+          ? autoDetector.getDetectionInfo()
+          : { detected: detectedExercise, confidence: 1, alternatives: [] };
+        const ghostCount = typeof getGhostFrameCount === 'function' ? getGhostFrameCount() : 0;
+        const diagObj = AnalysisDiagnostics.fromRepCounter(
+          finalCounter, exInfo, frames.map(f => f.landmarks), { ghostFrameCount: ghostCount }
+        );
+        analysisDiag = diagObj.toJSON();
+      } catch (err) {
+        console.warn('[Validate] Diagnostics error:', err);
+      }
 
       // Biomechanics
       const landmarkFrames = frames.map(f => f.landmarks);
@@ -332,6 +357,7 @@ export default function Validate({ onClose }) {
         repHistory,
         bioAnalysis,
         diagnostics: finalCounter.diagnostics || null,
+        analysisDiagnostics: analysisDiag,
         // Cache landmarks for offline replay benchmarking
         _landmarkCache: {
           fps: analysisFps,
@@ -379,6 +405,7 @@ export default function Validate({ onClose }) {
         analysisTime: result.analysisTime || '?',
         error: result.error || null,
         diagnostics: result.diagnostics,
+        analysisDiagnostics: result.analysisDiagnostics || null,
         _landmarkCache: result._landmarkCache || null,
       };
 
@@ -715,6 +742,9 @@ export default function Validate({ onClose }) {
                       Body: {r.diagnostics.anthropometrics.bodyType.torsoType} torso · {r.diagnostics.anthropometrics.bodyType.femurType} femurs · {r.diagnostics.anthropometrics.bodyType.armType} arms · Sym {(r.diagnostics.anthropometrics.bodyType.symmetryIndex * 100).toFixed(0)}%
                     </div>
                   )}
+                  {r.analysisDiagnostics && (
+                    <DiagnosticsPanel diag={r.analysisDiagnostics} />
+                  )}
                 </>
               )}
             </div>
@@ -770,6 +800,91 @@ export default function Validate({ onClose }) {
             >
               Export Report (JSON)
             </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Expandable diagnostics panel for benchmark results ──
+function DiagnosticsPanel({ diag }) {
+  const [open, setOpen] = useState(false);
+  if (!diag) return null;
+
+  const statusColors = {
+    high: 'var(--accent)',
+    medium: 'var(--yellow)',
+    low: '#ff8c42',
+    unreliable: 'var(--red)',
+  };
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--text-tertiary)', fontSize: '0.65rem', fontWeight: 600,
+          padding: '2px 0', fontFamily: 'var(--font)',
+          display: 'flex', alignItems: 'center', gap: 4,
+        }}
+      >
+        <span style={{
+          transform: open ? 'rotate(90deg)' : 'rotate(0)',
+          transition: 'transform 0.15s', display: 'inline-block',
+        }}>&#9654;</span>
+        Diagnostics
+        {diag.analysis && (
+          <span style={{
+            marginLeft: 4, padding: '1px 6px', borderRadius: 4, fontSize: '0.6rem',
+            fontWeight: 700, color: statusColors[diag.analysis.status] || 'var(--muted)',
+            background: 'rgba(255,255,255,0.04)',
+          }}>
+            {diag.analysis.status} ({(diag.analysis.confidence * 100).toFixed(0)}%)
+          </span>
+        )}
+      </button>
+      {open && (
+        <div style={{
+          marginTop: 4, padding: '8px 10px', background: 'rgba(255,255,255,0.02)',
+          borderRadius: 6, fontSize: '0.62rem', color: 'var(--muted)', lineHeight: 1.7,
+          border: '1px solid rgba(255,255,255,0.04)',
+        }}>
+          {/* Pose */}
+          <div><strong style={{ color: 'var(--text-secondary)' }}>Pose:</strong> detection {(diag.pose?.detectionRate * 100 || 0).toFixed(0)}% | visibility {(diag.pose?.meanVisibility * 100 || 0).toFixed(0)}% | ghosts {diag.pose?.ghostFrameCount || 0}</div>
+
+          {/* Movement */}
+          <div><strong style={{ color: 'var(--text-secondary)' }}>Movement:</strong> signal {(diag.movement?.signalQuality * 100 || 0).toFixed(0)}% | ROM {(diag.movement?.rangeOfMotion * 100 || 0).toFixed(0)}% | stability {(diag.movement?.temporalStability * 100 || 0).toFixed(0)}% | amplitude {(diag.movement?.amplitudeConsistency * 100 || 0).toFixed(0)}%</div>
+
+          {/* Reps */}
+          <div><strong style={{ color: 'var(--text-secondary)' }}>Reps:</strong> machine={diag.reps?.machine || 0} conf={(diag.reps?.confidence * 100 || 0).toFixed(0)}% uncertain={diag.reps?.uncertain || 0}</div>
+
+          {/* Per-signal breakdown */}
+          {diag.signals && Object.keys(diag.signals).length > 0 && (
+            <div style={{ marginTop: 4 }}>
+              <strong style={{ color: 'var(--text-secondary)' }}>Signals:</strong>
+              {Object.entries(diag.signals).map(([name, sig]) => (
+                <div key={name} style={{ paddingLeft: 8 }}>
+                  {name}: reps={sig.repCount ?? '?'} conf={(sig.confidence * 100 || 0).toFixed(0)}%
+                  {sig.period > 0 && ` period=${sig.period.toFixed(2)}s`}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Warnings */}
+          {diag.analysis?.warnings?.length > 0 && (
+            <div style={{ marginTop: 4, color: 'var(--yellow)' }}>
+              {diag.analysis.warnings.map((w, i) => <div key={i}>&#9888; {w}</div>)}
+            </div>
+          )}
+
+          {/* Failures */}
+          {diag.analysis?.failureReasons?.length > 0 && (
+            <div style={{ marginTop: 2, color: 'var(--red)' }}>
+              {diag.analysis.failureReasons.map((r, i) => <div key={i}>&#10060; {r}</div>)}
+            </div>
           )}
         </div>
       )}
