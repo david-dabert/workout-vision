@@ -685,9 +685,9 @@ export class RepCounter {
             const angles = extractJointAngles(frameLandmarks);
             if (!angles) continue;
             sampleCount++;
-            if (!fc.check(angles, landmarks)) failCount++;
+            if (!fc.check(angles, frameLandmarks)) failCount++;
             if (hasQualityFn) {
-              qualitySum += fc.quality(angles, landmarks);
+              qualitySum += fc.quality(angles, frameLandmarks);
             }
           }
 

@@ -77,12 +77,14 @@ const CHECK_COMPILERS = {
       const val = spec.useBestSide
         ? bestSide(angles, spec.left || spec.key.replace('right', 'left'), spec.right || spec.key, spec.visLeft, spec.visRight)
         : angles[spec.key];
+      if (val == null) return true; // missing angle = cannot fail this check
       return val < spec.threshold;
     },
     quality: (angles) => {
       const val = spec.useBestSide
         ? bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight)
         : angles[spec.key];
+      if (val == null) return 1; // missing angle = neutral quality
       return qualityBelow(val, spec.threshold, spec.margin || 15);
     },
     good: spec.good,
@@ -98,12 +100,14 @@ const CHECK_COMPILERS = {
       const val = spec.useBestSide
         ? bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight)
         : angles[spec.key];
+      if (val == null) return true;
       return val > spec.threshold;
     },
     quality: (angles) => {
       const val = spec.useBestSide
         ? bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight)
         : angles[spec.key];
+      if (val == null) return 1;
       return qualityAbove(val, spec.threshold, spec.margin || 15);
     },
     good: spec.good,
@@ -117,9 +121,14 @@ const CHECK_COMPILERS = {
     name: spec.name,
     check: (angles) => {
       const val = angles[spec.key];
+      if (val == null) return true;
       return val >= spec.low && val <= spec.high;
     },
-    quality: (angles) => qualityRange(angles[spec.key], spec.low, spec.high, spec.margin || 10),
+    quality: (angles) => {
+      const val = angles[spec.key];
+      if (val == null) return 1;
+      return qualityRange(val, spec.low, spec.high, spec.margin || 10);
+    },
     good: spec.good,
     bad: spec.bad,
     severity: spec.severity || 'minor',
@@ -129,8 +138,14 @@ const CHECK_COMPILERS = {
 
   symmetry: (spec) => ({
     name: spec.name,
-    check: (angles) => Math.abs(angles[spec.left] - angles[spec.right]) < spec.threshold,
-    quality: (angles) => qualitySymmetry(angles[spec.left], angles[spec.right], spec.threshold),
+    check: (angles) => {
+      if (angles[spec.left] == null || angles[spec.right] == null) return true;
+      return Math.abs(angles[spec.left] - angles[spec.right]) < spec.threshold;
+    },
+    quality: (angles) => {
+      if (angles[spec.left] == null || angles[spec.right] == null) return 1;
+      return qualitySymmetry(angles[spec.left], angles[spec.right], spec.threshold);
+    },
     good: spec.good,
     bad: spec.bad,
     severity: spec.severity || 'major',
@@ -144,10 +159,13 @@ const CHECK_COMPILERS = {
     name: spec.name,
     check: (angles) => {
       const val = angles[spec.key];
+      if (val == null) return true;
       return Math.abs(val - spec.center) < spec.margin;
     },
     quality: (angles) => {
-      const dev = Math.abs(angles[spec.key] - spec.center);
+      const val = angles[spec.key];
+      if (val == null) return 1;
+      const dev = Math.abs(val - spec.center);
       return Math.max(0, 1 - dev / (spec.margin || 30));
     },
     good: spec.good,
@@ -160,8 +178,14 @@ const CHECK_COMPILERS = {
   // Average of bilateral angles then check above threshold
   averageAbove: (spec) => ({
     name: spec.name,
-    check: (angles) => (angles[spec.left] + angles[spec.right]) / 2 > spec.threshold,
-    quality: (angles) => qualityAbove((angles[spec.left] + angles[spec.right]) / 2, spec.threshold, spec.margin || 15),
+    check: (angles) => {
+      if (angles[spec.left] == null || angles[spec.right] == null) return true;
+      return (angles[spec.left] + angles[spec.right]) / 2 > spec.threshold;
+    },
+    quality: (angles) => {
+      if (angles[spec.left] == null || angles[spec.right] == null) return 1;
+      return qualityAbove((angles[spec.left] + angles[spec.right]) / 2, spec.threshold, spec.margin || 15);
+    },
     good: spec.good,
     bad: spec.bad,
     severity: spec.severity || 'minor',
@@ -173,10 +197,14 @@ const CHECK_COMPILERS = {
   averageRange: (spec) => ({
     name: spec.name,
     check: (angles) => {
+      if (angles[spec.left] == null || angles[spec.right] == null) return true;
       const avg = (angles[spec.left] + angles[spec.right]) / 2;
       return avg > spec.low && avg < spec.high;
     },
-    quality: (angles) => qualityRange((angles[spec.left] + angles[spec.right]) / 2, spec.low, spec.high, spec.margin || 12),
+    quality: (angles) => {
+      if (angles[spec.left] == null || angles[spec.right] == null) return 1;
+      return qualityRange((angles[spec.left] + angles[spec.right]) / 2, spec.low, spec.high, spec.margin || 12);
+    },
     good: spec.good,
     bad: spec.bad,
     severity: spec.severity || 'minor',

@@ -119,30 +119,35 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
 
       // Seek with 5-second timeout
       video.currentTime = seekTime;
+      let seekOk = true;
       try {
-        await new Promise((resolve, reject) => {
+        seekOk = await new Promise((resolve) => {
           const timeout = setTimeout(() => {
             video.removeEventListener('seeked', onSeeked);
             video.removeEventListener('error', onError);
-            resolve(); // skip frame rather than crash
+            resolve(false); // timeout: flag to skip this frame
           }, 5000);
           const onSeeked = () => {
             clearTimeout(timeout);
             video.removeEventListener('seeked', onSeeked);
             video.removeEventListener('error', onError);
-            resolve();
+            resolve(true);
           };
           const onError = () => {
             clearTimeout(timeout);
             video.removeEventListener('seeked', onSeeked);
             video.removeEventListener('error', onError);
-            resolve(); // skip frame rather than crash
+            resolve(false);
           };
           video.addEventListener('seeked', onSeeked);
           video.addEventListener('error', onError);
         });
       } catch {
-        continue; // skip this frame
+        seekOk = false;
+      }
+      if (!seekOk) {
+        if (onProgress) onProgress(Math.round(((i + 1) / frameCount) * 100));
+        continue; // skip stale frame
       }
 
       // Duplicate detection via currentTime comparison (keyframe snapping)
