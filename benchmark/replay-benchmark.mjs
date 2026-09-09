@@ -311,6 +311,15 @@ for (const video of cache) {
     continue;
   }
 
+  // Flag extraction failures: if we have fewer than 1 frame per expected rep,
+  // the video wasn't properly extracted and counting is impossible.
+  const minFramesPerRep = 3; // at minimum need 3 frames to see a valley
+  if (landmarks.length < expected * minFramesPerRep) {
+    results.push({ video: name, expected, actual: 0, error: -expected, method: '', exercise,
+      note: `extraction failure: ${landmarks.length} frames for ${expected} reps (need ≥${expected * minFramesPerRep})` });
+    continue;
+  }
+
   try {
     const counter = new RepCounter(exercise, { fps, mode: 'video' });
     for (const lm of landmarks) {
@@ -346,8 +355,8 @@ for (const video of cache) {
   }
 }
 
-// Compute stats
-const scored = results.filter(r => r.expected != null);
+// Compute stats — exclude extraction failures from metrics
+const scored = results.filter(r => r.expected != null && !r.note);
 const exact = scored.filter(r => r.error === 0).length;
 const obo = scored.filter(r => Math.abs(r.error) <= 1).length;
 const mae = scored.length > 0
@@ -364,10 +373,15 @@ const avgAcc = scored.length > 0
 console.log('='.repeat(70));
 console.log('  REPLAY BENCHMARK RESULTS');
 console.log('='.repeat(70));
+const excluded = results.filter(r => r.note);
+console.log(`  Videos:      ${scored.length} scored, ${excluded.length} excluded`);
 console.log(`  Accuracy:    ${avgAcc}%`);
 console.log(`  Exact:       ${exact}/${scored.length}`);
 console.log(`  OBO (±1):    ${obo}/${scored.length} (${scored.length > 0 ? Math.round(obo / scored.length * 100) : 0}%)`);
 console.log(`  MAE:         ${mae}`);
+if (excluded.length > 0) {
+  console.log(`  Excluded:    ${excluded.map(r => r.video.split('.')[0]).join(', ')}`);
+}
 console.log('='.repeat(70));
 
 console.log(`\n  Video                                          Got  Exp  Err  Method`);
