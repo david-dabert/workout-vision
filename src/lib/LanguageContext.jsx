@@ -126,6 +126,8 @@ const translations = {
   'analyzing_file': { en: 'Analyzing', fr: 'Analyse de' },
   'starting_file': { en: 'Starting', fr: 'Démarrage de' },
   'auto_detected': { en: 'Auto-detected', fr: 'Détecté auto.' },
+  'detection_failed': { en: 'Could not identify — select manually', fr: 'Non identifié — sélection manuelle' },
+  'form_na_tooltip': { en: 'No form checks available for this exercise', fr: 'Aucun contrôle de forme disponible pour cet exercice' },
   'confidence_high': { en: 'High confidence', fr: 'Haute confiance' },
   'confidence_medium': { en: 'Medium confidence — some landmarks occluded', fr: 'Confiance moyenne — certains points masqués' },
   'confidence_low': { en: 'Low confidence — try a clearer camera angle', fr: 'Faible confiance — essayez un meilleur angle' },

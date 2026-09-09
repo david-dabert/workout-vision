@@ -303,11 +303,17 @@ function ResultCard({ result, onReplay }) {
               <h3 style={{ marginBottom: 0, fontSize: '1.1rem' }}>{displayName}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span className="text-xs text-muted">{fileName}</span>
-                {result.autoDetected && (
+                {result.autoDetected === true && (
                   <span style={{
                     fontSize: '0.6rem', padding: '1px 6px', borderRadius: 4,
                     background: 'rgba(0,245,212,0.12)', color: 'var(--accent)', fontWeight: 600,
                   }}>{t('auto_detected')}</span>
+                )}
+                {result.detectionFailed && (
+                  <span style={{
+                    fontSize: '0.6rem', padding: '1px 6px', borderRadius: 4,
+                    background: 'rgba(255,183,54,0.15)', color: 'var(--yellow)', fontWeight: 600,
+                  }}>{t('detection_failed')}</span>
                 )}
               </div>
             </div>
@@ -380,10 +386,16 @@ function ResultCard({ result, onReplay }) {
         <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '200ms' }}>
           <span className="stat-card-label">{t('form_score_label')}</span>
           <span className="stat-card-value">
-            <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
-              {displayScore}
-            </span>
-            <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>/100</span>
+            {formScore == null ? (
+              <span style={{ color: 'var(--muted)', fontSize: '0.85em' }} title={t('form_na_tooltip')}>N/A</span>
+            ) : (
+              <>
+                <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
+                  {displayScore}
+                </span>
+                <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>/100</span>
+              </>
+            )}
           </span>
         </div>
         <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '300ms' }}>

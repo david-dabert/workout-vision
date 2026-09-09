@@ -417,6 +417,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           repCounter = new RepCounter(detectedExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
           for (const f of frames) repCounter.update(f.landmarks, f.timestamp);
         }
+      } else if (isAutoMode) {
+        // No exercise detected — flag it so the UI shows a warning
+        autoDetected = 'failed';
       }
     }
 
@@ -450,10 +453,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
     const diagnostics = repCounter.diagnostics || null;
 
+    const exerciseDef = EXERCISES[detectedExercise];
+    const hasFormChecks = exerciseDef?.formChecks?.length > 0;
     const scoredReps = repHistory.filter(r => r.score !== null && r.score !== undefined);
-    const avgScore = scoredReps.length > 0
-      ? Math.round(scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length)
-      : bioAnalysis?.movementQuality || 0;
+    const avgScore = !hasFormChecks ? null
+      : scoredReps.length > 0
+        ? Math.round(scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length)
+        : bioAnalysis?.movementQuality || 0;
 
     const w = parseFloat(weight) || 0;
     const workout = {
@@ -505,11 +511,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
       reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
       machineReps: reps, machineFormScore: avgScore,
+      hasFormChecks,
       bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics, confidence,
       videoUrl: url,
       frames: replayFrames,
       fps: analysisFps,
       autoDetected,
+      detectionFailed: autoDetected === 'failed',
       weight: w,
       debug,
     };

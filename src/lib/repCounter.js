@@ -725,7 +725,7 @@ export class RepCounter {
         // Weighted quality score: major checks count 2x, minor 1x
         const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
         const weightedQuality = formResults.reduce((sum, f) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
-        score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : 100;
+        score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : null;
         for (const f of formResults) {
           if (!f.passed) issues.push(f.bad);
         }

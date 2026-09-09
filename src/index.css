@@ -729,6 +729,7 @@ select {
 .score-badge.grade-b { background: var(--blue-glow); color: var(--blue); }
 .score-badge.grade-c, .score-badge.ok { background: var(--yellow-glow); color: var(--yellow); }
 .score-badge.grade-d, .score-badge.poor { background: var(--red-glow); color: var(--red); }
+.score-badge.grade-na { background: rgba(255,255,255,0.06); color: var(--muted); }
 
 .stats-grid-2x2 {
   display: grid;

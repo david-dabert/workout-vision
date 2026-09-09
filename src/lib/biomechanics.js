@@ -167,7 +167,11 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, norm
     else if (change > 10) trend = 'trend_warmup';
   }
 
-  return { avg: round(avg, 3), perRep, trend };
+  // Relative velocity: each rep as % of set best (camera-distance-independent)
+  const maxVel = Math.max(...valid, 0.001);
+  const perRepRelative = perRep.map(v => v > 0 ? Math.round((v / maxVel) * 100) : 0);
+
+  return { avg: round(avg, 3), perRep, perRepRelative, trend };
 }
 
 /**
