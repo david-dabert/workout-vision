@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const VALID_PAGES = new Set([
-  'dashboard', 'analyze', 'log', 'history', 'rest', 'profile', 'validate', 'landing',
+  'dashboard', 'analyze', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
 ]);
 
 function readHash() {

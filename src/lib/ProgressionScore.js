@@ -202,6 +202,7 @@ export class ProgressionScore {
   /**
    * Compute aggregate session score from multiple sets.
    */
+  // ponytail: dead method, no callers
   static computeSession(setScores) {
     if (setScores.length === 0) return { score: 0, grade: getGrade(0), percentile: 1 };
 

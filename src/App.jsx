@@ -4,9 +4,8 @@ import { LanguageProvider, useT } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
 import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
 import Dashboard from './components/Dashboard';
-import Onboarding from './components/Onboarding';
+
 import ErrorBoundary from './components/ErrorBoundary';
-import './index.css';
 
 // Dynamic GPU capability detection: disable backdrop-filter on weak devices
 (() => {
@@ -38,14 +37,12 @@ const safeLazy = (loader) => lazy(() =>
   })
 );
 
-const Analyze = safeLazy(() => import('./components/Analyze'));
+const Analyze = safeLazy(() => import('./components/VideoUpload'));
 const ManualLog = safeLazy(() => import('./components/ManualLog'));
 const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
 const RestTimer = safeLazy(() => import('./components/RestTimer'));
 const ProfilePage = safeLazy(() => import('./components/Profile'));
 const Validate = safeLazy(() => import('./components/Validate'));
-const DesignDemo = safeLazy(() => import('./components/DesignDemo'));
-const LandingPage = safeLazy(() => import('./components/LandingPage'));
 const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 
 const LazyFallback = (
@@ -173,15 +170,6 @@ function AppInner() {
       </Suspense>
     </ErrorBoundary>
   );
-  if (page === 'landing') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="landing" className="page-transition-fade">
-          <LandingPage onNavigate={onNavigate} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
   if (page === 'weekly') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
@@ -246,16 +234,6 @@ function AppInner() {
 function App() {
   const params = new URLSearchParams(window.location.search);
 
-  // Design demo mode: standalone prototype
-  if (params.has('demo')) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <DesignDemo onExit={() => { window.location.search = ''; }} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
 
   // Validate mode: render directly, skip all providers
   if (params.has('validate')) {

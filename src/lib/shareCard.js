@@ -7,7 +7,7 @@
 
 import { tModule } from './LanguageContext';
 import { gradeFromScore, getRecorderMimeType } from './utils';
-import { drawQRCodeOnCanvas } from './qrCode';
+
 
 const APP_URL = 'david-dabert.github.io/workout-vision';
 
@@ -295,15 +295,8 @@ export async function generateShareCard(result, videoEl) {
   ctx.textBaseline = 'top';
   ctx.fillText('Can you beat my form? 💪', W / 2, ctaY);
 
-  const qrSize = 160;
-  const qrX = W / 2 - qrSize / 2;
-  const qrY = ctaY + 56;
-  drawQRCodeOnCanvas(ctx, qrX, qrY, qrSize, { fg: ACCENT });
-
-  ctx.fillStyle = MUTED;
-  ctx.font = '24px -apple-system, system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Scan to try WorkoutVision', W / 2, qrY + qrSize + 14);
+  // QR code removed — was a fake pattern generator, not a real encoder.
+  // Replace with a real QR library when share-card linking is needed.
 
   // ── Footer ────────────────────────────────────────────────────────────────
   const footerY = H - footerH;

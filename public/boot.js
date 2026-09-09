@@ -28,21 +28,7 @@ setTimeout(function() {
   }
 }, 8000);
 
-// 3. Kill any service worker and clear all caches.
-(function() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(r) {
-      r.forEach(function(reg) { reg.unregister(); });
-    });
-  }
-  if ('caches' in window) {
-    caches.keys().then(function(k) {
-      k.forEach(function(n) { caches.delete(n); });
-    });
-  }
-})();
-
-// 4. Glass effect heuristic: disable backdrop-filter on weak devices
+// 3. Glass effect heuristic: disable backdrop-filter on weak devices
 (function() {
   var ua = navigator.userAgent;
   var disableGlass = false;

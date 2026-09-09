@@ -12,6 +12,7 @@
 
 import localforage from 'localforage';
 import { KalmanLandmarkFilter } from './KalmanLandmarkFilter';
+import { detectCapabilities, isSimdSupported } from './gpuBenchmark';
 
 // ─── CDN lazy loader: bypasses Vite's esbuild minifier which breaks MediaPipe WASM on iOS Safari ───
 let _mpVision = null;
@@ -50,7 +51,11 @@ export const LANDMARKS = {
 };
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
-const VISION_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
+const VISION_WASM_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm';
+// Local WASM files copied by vite build plugin (scripts/copy-models.js).
+// Prefer local: serves from service worker cache (offline-capable), eliminates CDN latency.
+// FilesetResolver auto-selects SIMD vs non-SIMD binary from this directory.
+const VISION_WASM_LOCAL = `${import.meta.env.BASE_URL}mediapipe`;
 const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
 // ─── Core: single model instance with IndexedDB cache ───
@@ -117,12 +122,51 @@ async function fetchModelBuffer() {
   return buffer;
 }
 
+// Cached capability detection result (populated on first createLandmarker call)
+let _deviceCaps = null;
+
+/**
+ * Get device capabilities (cached). Exposed for UI telemetry.
+ * @returns {Promise<Object>}
+ */
+async function getDeviceCapabilities() {
+  if (!_deviceCaps) _deviceCaps = await detectCapabilities();
+  return _deviceCaps;
+}
+
 async function createLandmarker() {
   const mp = await getMediaPipeVision();
-  const vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM);
+
+  // Try local WASM first (offline-capable via service worker), CDN fallback
+  let vision;
+  try {
+    vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_LOCAL);
+  } catch (e) {
+    console.warn('[PoseAnalysis] Local WASM failed, falling back to CDN:', e.message);
+    vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_CDN);
+  }
+
   const modelBuffer = await fetchModelBuffer();
 
-  for (const delegate of ['GPU', 'CPU']) {
+  // Detect device capabilities to select optimal delegate order
+  const caps = await getDeviceCapabilities();
+  const simd = isSimdSupported();
+
+  console.info(
+    `[PoseAnalysis] Device: SIMD=${simd}, WebGL2=${caps.webgl2}, ` +
+    `GPU=${caps.unmaskedRenderer || caps.webgl2Renderer || 'unknown'}, ` +
+    `recommendedDelegate=${caps.recommendedDelegate}`
+  );
+  if (caps.gpuBlockedReason) {
+    console.warn(`[PoseAnalysis] ${caps.gpuBlockedReason}`);
+  }
+
+  // Order delegates: use capability detection to skip known-bad GPU renderers
+  const delegates = caps.recommendedDelegate === 'CPU'
+    ? ['CPU']
+    : ['GPU', 'CPU'];
+
+  for (const delegate of delegates) {
     try {
       const landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
@@ -132,10 +176,11 @@ async function createLandmarker() {
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
       });
+      console.info(`[PoseAnalysis] Landmarker created with ${delegate} delegate (SIMD=${simd})`);
       return landmarker;
     } catch (e) {
       console.warn(`[PoseAnalysis] ${delegate} delegate failed:`, e.message);
-      if (delegate === 'CPU') throw e;
+      if (delegate === delegates[delegates.length - 1]) throw e;
     }
   }
 }
@@ -177,7 +222,7 @@ export function preloadModel() {
  * @param {function} onProgress - (progress: number, message: string) => void
  * @param {number} attempt - current attempt number
  */
-export async function loadModelWithRetry(onProgress, attempt = 1) {
+async function loadModelWithRetry(onProgress, attempt = 1) {
   const MAX_ATTEMPTS = 3;
   onProgress?.(10 + (attempt - 1) * 30, `Loading AI engine... Attempt ${attempt}/${MAX_ATTEMPTS}`);
 
@@ -212,7 +257,7 @@ export async function loadModelWithRetry(onProgress, attempt = 1) {
 /**
  * Get the unified landmarker instance (for live camera).
  */
-export async function getVideoLandmarker() {
+async function getVideoLandmarker() {
   return getPoseLandmarker();
 }
 
@@ -262,7 +307,7 @@ function _isAnatomicallyImplausible(landmarks) {
 /**
  * Filter anatomically implausible landmarks, returning previous valid ones if current fail.
  */
-export function filterAnatomicallyImplausible(landmarks, lastValid) {
+function filterAnatomicallyImplausible(landmarks, lastValid) {
   if (!landmarks) return lastValid;
   if (_isAnatomicallyImplausible(landmarks)) {
     return lastValid || landmarks; // fall back to last valid, or keep current if no history
@@ -412,7 +457,7 @@ const MIRROR_PAIRS = [
  * @param {Array} landmarksArray - array of pose landmark arrays
  * @returns {Array} filtered landmarksArray with mirror duplicates removed
  */
-export function detectMirror(landmarksArray) {
+function detectMirror(landmarksArray) {
   if (!landmarksArray || landmarksArray.length < 2) return landmarksArray;
 
   const THRESHOLD = 0.05; // normalized distance threshold
@@ -763,7 +808,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
 /**
  * Draw overlay message when no pose detected.
  */
-export function drawOverlayMessage(ctx, line1, line2) {
+function drawOverlayMessage(ctx, line1, line2) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.fillStyle = 'rgba(0,0,0,0.7)';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);

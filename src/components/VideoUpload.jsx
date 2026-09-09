@@ -295,8 +295,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 replayFrames.push({ landmarks, timestamp: time });
 
                 const liveResult = liveRepCounter.update(landmarks, time);
-                if (liveResult?.repCount != null) {
-                  setLiveReps(liveResult.repCount);
+                if (liveResult?.reps != null) {
+                  setLiveReps(liveResult.reps);
                 }
               }
 

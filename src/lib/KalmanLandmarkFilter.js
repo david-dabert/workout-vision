@@ -122,6 +122,7 @@ export class KalmanLandmarkFilter {
    *
    * @returns {Array<{x: number, y: number, z: number}|null>} Per-landmark ±95% CI widths, or null if uninitialized.
    */
+  // ponytail: dead method, no callers
   getConfidenceIntervals() {
     return this._states.map(triple => {
       if (!triple[0].initialized) return null;

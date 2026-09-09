@@ -19,7 +19,7 @@ const prStore = localforage.createInstance({ name: 'workoutVision', storeName: '
 
 // ── PR Store CRUD ──
 
-export async function getAllPRs() {
+async function getAllPRs() {
   const prs = [];
   await prStore.iterate((value) => {
     prs.push(value);
@@ -27,7 +27,7 @@ export async function getAllPRs() {
   return prs.sort((a, b) => b.achievedAt - a.achievedAt);
 }
 
-export async function getPRsForExercise(exerciseKey) {
+async function getPRsForExercise(exerciseKey) {
   const all = await getAllPRs();
   return all.filter(pr => pr.exercise === exerciseKey);
 }
@@ -129,7 +129,7 @@ function calculateLongestStreak(workouts, trainingDays) {
 
 // ── Average form score for an exercise ──
 
-export function getAverageFormScore(workouts, exerciseKey) {
+function getAverageFormScore(workouts, exerciseKey) {
   const matching = workouts.filter(w =>
     w.exercise === exerciseKey && w.formScore != null && w.formScore > 0
   );

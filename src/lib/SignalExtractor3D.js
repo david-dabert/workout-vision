@@ -113,6 +113,8 @@ export function extractSignals3D(collectedLandmarks) {
   signals.push({ name: 'trunk', values: trunkValues });
 
   // ── Y-position signals (6) ──
+  // MediaPipe landmark.y is normalized 0-1. Scale to 0-100 so valley
+  // counting thresholds (designed for degree-scale values) work correctly.
   const ySignal = (name, ...indices) => {
     const values = [];
     for (let i = 0; i < N; i++) {
@@ -121,7 +123,7 @@ export function extractSignals3D(collectedLandmarks) {
         const p = lm(i, idx);
         if (p) { sum += p.y; count++; }
       }
-      values.push(count > 0 ? sum / count : null);
+      values.push(count > 0 ? (sum / count) * 100 : null);
     }
     return { name, values };
   };
@@ -136,6 +138,7 @@ export function extractSignals3D(collectedLandmarks) {
   // ── Z-position signals (5) — THE NEW DEPTH SIGNALS ──
   // These capture motion along the camera's depth axis.
   // Bench press from front: wrist_Z oscillates. Pull-up from front: nose_Z oscillates.
+  // Scale to 0-100 range for compatibility with valley counting thresholds.
   const zSignal = (name, ...indices) => {
     const values = [];
     for (let i = 0; i < N; i++) {
@@ -144,7 +147,7 @@ export function extractSignals3D(collectedLandmarks) {
         const p = lm(i, idx);
         if (p && p.z !== undefined) { sum += p.z; count++; }
       }
-      values.push(count > 0 ? sum / count : null);
+      values.push(count > 0 ? (sum / count) * 100 : null);
     }
     return { name, values };
   };
@@ -156,13 +159,14 @@ export function extractSignals3D(collectedLandmarks) {
   signals.push(zSignal('shoulder_Z', LANDMARKS.LEFT_SHOULDER, LANDMARKS.RIGHT_SHOULDER));
 
   // ── 3D distance signals (4) ──
-  // Camera-angle invariant: measures actual limb extension in 3D space
+  // Camera-angle invariant: measures actual limb extension in 3D space.
+  // Scale to 0-100 range for compatibility with valley counting thresholds.
   const dist3DSignal = (name, a, b) => {
     const values = [];
     for (let i = 0; i < N; i++) {
       const la = lm(i, a), lb = lm(i, b);
       if (!la || !lb) { values.push(null); continue; }
-      values.push(dist3D(la, lb));
+      values.push(dist3D(la, lb) * 100);
     }
     return { name, values };
   };
@@ -173,13 +177,14 @@ export function extractSignals3D(collectedLandmarks) {
   signals.push(dist3DSignal('ankleHipDist3D_R', LANDMARKS.RIGHT_ANKLE, LANDMARKS.RIGHT_HIP));
 
   // ── 2D distance signals (for backward compat) ──
+  // Scale to 0-100 range for compatibility with valley counting thresholds.
   const dist2DSignal = (name, a, b) => {
     const values = [];
     for (let i = 0; i < N; i++) {
       const la = lm(i, a), lb = lm(i, b);
       if (!la || !lb) { values.push(null); continue; }
       const dx = la.x - lb.x, dy = la.y - lb.y;
-      values.push(Math.sqrt(dx * dx + dy * dy));
+      values.push(Math.sqrt(dx * dx + dy * dy) * 100);
     }
     return { name, values };
   };
@@ -229,4 +234,3 @@ export const SIGNAL_PRIORITY_3D = {
   lying_tricep_extension: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
 };
 
-export { computeDepthDominance, angle3D, dist3D };

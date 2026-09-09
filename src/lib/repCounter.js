@@ -27,7 +27,7 @@ import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 import { extractSignals3D, SIGNAL_PRIORITY_3D } from './SignalExtractor3D';
 
-export const REP_COUNTER_BUILD = 'v23-adaptive-spacing';
+const REP_COUNTER_BUILD = 'v23-adaptive-spacing';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -107,6 +107,8 @@ export class RepCounter {
   /**
    * Per-frame update. Collects landmarks for finalize().
    * Hysteresis counting runs for live rep display.
+   * @param {Array} landmarks - MediaPipe pose landmarks
+   * @param {number} videoTimestamp - Time in SECONDS (e.g. frameIndex / fps)
    */
   update(landmarks, videoTimestamp) {
     const rawAngles = extractJointAngles(landmarks);
@@ -161,7 +163,15 @@ export class RepCounter {
     // This handles tempo reps, pauses at bottom, and partial ROM correctly.
     {
       const dt = 1 / this._fps;
-      const now = videoTimestamp != null ? videoTimestamp * 1000 : Date.now();
+      // Convert seconds to ms. Guard against callers passing ms already (>1000 = likely ms).
+      let now;
+      if (videoTimestamp == null) {
+        now = Date.now();
+      } else if (videoTimestamp > 1000) {
+        now = videoTimestamp; // already in ms (e.g. performance.now())
+      } else {
+        now = videoTimestamp * 1000; // seconds → ms
+      }
 
       // Compute angular velocity (deg/s) with simple finite difference
       if (this._prevValue !== null) {
@@ -280,8 +290,6 @@ export class RepCounter {
     if (this._finalized) return;
     this._finalized = true;
 
-    this._hysteresisReps = this._reps;
-
     const ex = this._exercise;
     const N = this._collectedLandmarks.length;
     if (ex.isIsometric || N < 6) return;
@@ -343,8 +351,11 @@ export class RepCounter {
     const result = this._countValleys(signal);
 
     if (result.reps === 0) {
-      this._reps = 0;
-      this._repHistory = [];
+      // Valley counting found nothing. Keep FSM reps if any were counted
+      // during live preview — they saw real motion that valley counting missed.
+      if (this._reps === 0) {
+        this._repHistory = [];
+      }
       return;
     }
 

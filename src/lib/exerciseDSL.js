@@ -54,6 +54,17 @@ const VALUE_COMPILERS = {
 
   direct: (spec) => (angles) => angles[spec.key],
 
+  // Heel displacement for calf raises: tracks heel y-position normalized to body height.
+  // Dividing by nose-to-ankle distance makes the signal camera-distance independent.
+  heelDisplacement: () => (angles, landmarks) => {
+    if (landmarks && landmarks[29] && landmarks[30] && landmarks[0] && landmarks[27]) {
+      const heelY = (landmarks[29].y + landmarks[30].y) / 2;
+      const bodyHeight = Math.abs(landmarks[27].y - landmarks[0].y) || 0.001;
+      return (1 - heelY / bodyHeight) * 100;
+    }
+    return angles.trunk;
+  },
+
   custom: (spec) => spec.fn,
 };
 
@@ -127,6 +138,52 @@ const CHECK_COMPILERS = {
     safetyNote: spec.safetyNote,
   }),
 
+  // Body alignment center deviation: quality = 1 - |angle - center| / margin
+  // Used for plank, push-up body alignment (target ~80°, margin 30°)
+  centerDeviation: (spec) => ({
+    name: spec.name,
+    check: (angles) => {
+      const val = angles[spec.key];
+      return Math.abs(val - spec.center) < spec.margin;
+    },
+    quality: (angles) => {
+      const dev = Math.abs(angles[spec.key] - spec.center);
+      return Math.max(0, 1 - dev / (spec.margin || 30));
+    },
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'major',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
+  // Average of bilateral angles then check above threshold
+  averageAbove: (spec) => ({
+    name: spec.name,
+    check: (angles) => (angles[spec.left] + angles[spec.right]) / 2 > spec.threshold,
+    quality: (angles) => qualityAbove((angles[spec.left] + angles[spec.right]) / 2, spec.threshold, spec.margin || 15),
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'minor',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
+  // Average of bilateral angles then check within range
+  averageRange: (spec) => ({
+    name: spec.name,
+    check: (angles) => {
+      const avg = (angles[spec.left] + angles[spec.right]) / 2;
+      return avg > spec.low && avg < spec.high;
+    },
+    quality: (angles) => qualityRange((angles[spec.left] + angles[spec.right]) / 2, spec.low, spec.high, spec.margin || 12),
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'minor',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
   custom: (spec) => ({
     name: spec.name,
     check: spec.check,
@@ -144,17 +201,26 @@ const CHECK_COMPILERS = {
  * @param {Object} dsl - Declarative exercise definition
  * @returns {Object} Runtime exercise object with getValue function and compiled formChecks
  */
-export function compileExercise(dsl) {
+function compileExercise(dsl) {
   const valueCompiler = VALUE_COMPILERS[dsl.value?.type || 'bestSide'];
   if (!valueCompiler) throw new Error(`Unknown value type: ${dsl.value?.type}`);
 
-  const compiledChecks = (dsl.formChecks || []).map(fc => {
-    const compiler = CHECK_COMPILERS[fc.type || 'custom'];
-    if (!compiler) throw new Error(`Unknown check type: ${fc.type} in ${dsl.name}`);
-    return compiler(fc);
-  });
+  const compiledChecks = (dsl.formChecks || [])
+    .filter(fc => {
+      // Skip placeholder checks that always return true — they inflate form scores
+      // without providing real feedback. These exist as documentation of what SHOULD
+      // be checked but lack a real implementation (e.g. equipment-dependent checks
+      // that can't be verified via pose landmarks alone).
+      if (fc.type === 'custom' && fc.placeholder) return false;
+      return true;
+    })
+    .map(fc => {
+      const compiler = CHECK_COMPILERS[fc.type || 'custom'];
+      if (!compiler) throw new Error(`Unknown check type: ${fc.type} in ${dsl.name}`);
+      return compiler(fc);
+    });
 
-  return {
+  const compiled = {
     name: dsl.name,
     category: dsl.category,
     muscles: dsl.muscles,
@@ -162,12 +228,18 @@ export function compileExercise(dsl) {
     getValue: valueCompiler(dsl.value || {}),
     downThreshold: dsl.downThreshold,
     upThreshold: dsl.upThreshold,
-    amplitudeRatio: dsl.amplitudeRatio,
     formChecks: compiledChecks,
     scienceNotes: dsl.scienceNotes,
-    limitations: dsl.limitations,
-    isIsometric: dsl.isIsometric,
   };
+
+  // Optional fields — only set if defined to avoid polluting objects
+  if (dsl.amplitudeRatio != null) compiled.amplitudeRatio = dsl.amplitudeRatio;
+  if (dsl.isIsometric) compiled.isIsometric = true;
+  if (dsl.minIsometricDuration != null) compiled.minIsometricDuration = dsl.minIsometricDuration;
+  if (dsl.minSpacing != null) compiled.minSpacing = dsl.minSpacing;
+  if (dsl.limitations) compiled.limitations = dsl.limitations;
+
+  return compiled;
 }
 
 /**
@@ -187,113 +259,4 @@ export function compileExercises(dslMap) {
   return result;
 }
 
-// ─── Example DSL definitions (demonstrating the pattern) ───
-
-export const EXAMPLE_DSL = {
-  squat: {
-    name: 'Barbell Back Squat',
-    category: 'compound',
-    muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Hamstrings', 'Erectors', 'Core'] },
-    joint: 'knee',
-    value: { type: 'bestSide', left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee' },
-    amplitudeRatio: 0.15,
-    downThreshold: 120,
-    upThreshold: 155,
-    formChecks: [
-      {
-        name: 'Depth', type: 'below',
-        key: 'leftKnee', useBestSide: true,
-        left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee',
-        threshold: 90, margin: 15,
-        good: 'Below parallel', bad: 'Above parallel — go deeper',
-        severity: 'major', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res',
-        safetyNote: { en: 'If you have hip pain or impingement, do not force depth beyond comfort.', fr: 'En cas de douleur ou conflit de hanche, ne forcez pas la profondeur.' },
-      },
-      {
-        name: 'Knee symmetry', type: 'symmetry',
-        left: 'leftKnee', right: 'rightKnee', threshold: 18,
-        good: 'Knees tracking evenly', bad: 'Asymmetric knee bend',
-        severity: 'major', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther',
-      },
-      {
-        name: 'Trunk angle', type: 'below',
-        key: 'trunk', threshold: 55, margin: 15,
-        good: 'Upright torso maintained', bad: 'Excessive forward lean',
-        severity: 'minor', citation: 'Fry AC et al, 2003, J Strength Cond Res',
-      },
-    ],
-    scienceNotes: 'Full ROM squats produce greater quad and glute activation than partial squats (Schoenfeld 2010). Knee valgus >10 deg increases ACL strain (Hewett 2005). Forward lean >55 deg shifts load to erectors and increases spinal shear (Fry 2003).',
-    limitations: ['foot pressure distribution', 'breathing technique', 'grip width', 'bar position on traps'],
-  },
-
-  front_squat: {
-    name: 'Front Squat',
-    category: 'compound',
-    muscles: { primary: ['Quadriceps', 'Glutes'], secondary: ['Core', 'Upper Back'] },
-    joint: 'knee',
-    value: { type: 'bestSide', left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee' },
-    downThreshold: 120,
-    upThreshold: 155,
-    formChecks: [
-      {
-        name: 'Depth', type: 'below',
-        key: 'leftKnee', useBestSide: true,
-        left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee',
-        threshold: 85, margin: 15,
-        good: 'Below parallel', bad: 'Above parallel',
-        severity: 'major', citation: 'Gullett JC et al, 2009, J Strength Cond Res',
-      },
-      {
-        name: 'Trunk upright', type: 'below',
-        key: 'trunk', threshold: 40, margin: 12,
-        good: 'Upright torso -- elbows high', bad: 'Torso collapsing forward',
-        severity: 'major', citation: 'Gullett JC et al, 2009, J Strength Cond Res',
-      },
-      {
-        name: 'Knee symmetry', type: 'symmetry',
-        left: 'leftKnee', right: 'rightKnee', threshold: 12,
-        good: 'Knees tracking evenly', bad: 'Asymmetric knee bend',
-        severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther',
-      },
-    ],
-    scienceNotes: 'Front squats reduce posterior shear on the knee vs back squats while demanding greater quad activation and more upright torso (Gullett 2009).',
-  },
-
-  bicep_curl: {
-    name: 'Bicep Curl',
-    category: 'isolation',
-    muscles: { primary: ['Biceps'], secondary: ['Brachialis', 'Forearms'] },
-    joint: 'elbow',
-    value: { type: 'bestSide', left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow' },
-    downThreshold: 110,
-    upThreshold: 155,
-    formChecks: [
-      {
-        name: 'Peak contraction', type: 'below',
-        key: 'leftElbow', useBestSide: true,
-        left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow',
-        threshold: 50, margin: 15,
-        good: 'Full contraction at top', bad: 'Curl higher for full contraction',
-        severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ',
-      },
-      {
-        name: 'Trunk stable', type: 'below',
-        key: 'trunk', threshold: 20, margin: 10,
-        good: 'Torso upright — no swinging', bad: 'Excessive body swing (cheat curl)',
-        severity: 'major', citation: 'Marcolin G et al, 2018, PeerJ',
-      },
-    ],
-    scienceNotes: 'Full ROM bicep curls produce more hypertrophy than partial ROM (Marcolin 2018). Excessive trunk sway shifts load to anterior deltoid and momentum.',
-  },
-};
-
-// Validate DSL at build time in dev mode
-if (import.meta.env?.DEV) {
-  try {
-    const compiled = compileExercises(EXAMPLE_DSL);
-    const keys = Object.keys(compiled);
-    console.log(`[exerciseDSL] Compiled ${keys.length} example exercises successfully`);
-  } catch (err) {
-    console.error('[exerciseDSL] Compilation error:', err);
-  }
-}
+// DSL definitions are in exerciseDefinitions.js — imported by exercises.js

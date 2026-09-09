@@ -146,7 +146,7 @@ export function applyCalibration(landmarks, calibration) {
  * @param {Array<Array>} landmarkFrames
  * @returns {number} Stability score
  */
-export function checkCalibrationStability(landmarkFrames) {
+function checkCalibrationStability(landmarkFrames) {
   if (!landmarkFrames || landmarkFrames.length < 5) return 0;
 
   // Check variance of key joint positions across frames
