@@ -15,6 +15,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { gunzipSync } from 'zlib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const RESULTS_DIR = join(__dirname, 'results');
@@ -29,13 +30,12 @@ for (let i = 0; i < args.length; i++) {
 
 // Find the latest landmark cache file
 if (!cachePath) {
-  // Check benchmark/landmark-cache/ directory first
+  // Check benchmark/landmark-cache/ directory first (prefer .json, fall back to .json.gz)
   if (existsSync(CACHE_DIR)) {
-    const files = readdirSync(CACHE_DIR)
-      .filter(f => f.endsWith('.json'))
-      .sort()
-      .reverse();
-    if (files.length > 0) cachePath = join(CACHE_DIR, files[0]);
+    const jsonFiles = readdirSync(CACHE_DIR).filter(f => f.endsWith('.json') && !f.endsWith('.json.gz')).sort().reverse();
+    const gzFiles = readdirSync(CACHE_DIR).filter(f => f.endsWith('.json.gz')).sort().reverse();
+    if (jsonFiles.length > 0) cachePath = join(CACHE_DIR, jsonFiles[0]);
+    else if (gzFiles.length > 0) cachePath = join(CACHE_DIR, gzFiles[0]);
   }
   // Then check ~/Downloads
   if (!cachePath) {
@@ -60,8 +60,11 @@ if (!cachePath) {
 console.log(`\n  Replay Benchmark`);
 console.log(`  Cache: ${cachePath}\n`);
 
-// Load landmark cache
-const cache = JSON.parse(readFileSync(cachePath, 'utf-8'));
+// Load landmark cache (supports .json and .json.gz)
+const rawCache = cachePath.endsWith('.gz')
+  ? gunzipSync(readFileSync(cachePath)).toString('utf-8')
+  : readFileSync(cachePath, 'utf-8');
+const cache = JSON.parse(rawCache);
 console.log(`  Loaded ${cache.length} videos\n`);
 
 // Dynamic import of the algorithm modules.
@@ -238,6 +241,19 @@ if (module.registerHooks) {
       }
       return nextResolve(specifier, context);
     },
+    load(url, context, nextLoad) {
+      // Shim import.meta.env for Vite-specific code running in Node
+      const result = nextLoad(url, context);
+      if (result.source != null) {
+        const src = typeof result.source === 'string' ? result.source : result.source.toString();
+        if (src.includes('import.meta.env')) {
+          let patched = src.replace(/import\.meta\.env\.BASE_URL/g, "'/'");
+          patched = patched.replace(/import\.meta\.env/g, '({})');
+          result.source = patched;
+        }
+      }
+      return result;
+    },
   });
 } else {
   // Fallback for older Node versions
@@ -366,3 +382,32 @@ const report = {
 };
 writeFileSync(outFile, JSON.stringify(report, null, 2));
 console.log(`\n  Saved: ${outFile}`);
+
+// CI gate: fail if accuracy regresses below baseline thresholds
+// Baseline recorded 2026-09-09: 80% accuracy, 70% OBO, MAE 1.40
+const CI_MIN_ACCURACY = 75;  // allow 5% variance from baseline 80%
+const CI_MIN_OBO_PCT = 60;   // allow 10% variance from baseline 70%
+const CI_MAX_MAE = 2.0;      // allow 0.6 variance from baseline 1.40
+
+const isCI = args.includes('--ci');
+if (isCI) {
+  const oboPercent = scored.length > 0 ? Math.round(obo / scored.length * 100) : 0;
+  let failed = false;
+  if (avgAcc < CI_MIN_ACCURACY) {
+    console.error(`\n  CI GATE FAILED: accuracy ${avgAcc}% < ${CI_MIN_ACCURACY}% threshold`);
+    failed = true;
+  }
+  if (oboPercent < CI_MIN_OBO_PCT) {
+    console.error(`  CI GATE FAILED: OBO ${oboPercent}% < ${CI_MIN_OBO_PCT}% threshold`);
+    failed = true;
+  }
+  if (parseFloat(mae) > CI_MAX_MAE) {
+    console.error(`  CI GATE FAILED: MAE ${mae} > ${CI_MAX_MAE} threshold`);
+    failed = true;
+  }
+  if (failed) {
+    process.exit(1);
+  } else {
+    console.log(`\n  CI GATE PASSED: accuracy=${avgAcc}% OBO=${oboPercent}% MAE=${mae}`);
+  }
+}

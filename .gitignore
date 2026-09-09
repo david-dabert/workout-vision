@@ -25,6 +25,9 @@ dist-ssr
 
 # Benchmark videos (28MB+, not for git)
 benchmark/videos/
+benchmark/results/
+benchmark/landmark-cache/*.json
+!benchmark/landmark-cache/*.json.gz
 public/benchmark
 .certs/
 

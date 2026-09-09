@@ -407,7 +407,9 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           for (const f of frames) rc.update(f.landmarks, f.timestamp);
           rc.finalize();
           const reps = rc.repHistory ? rc.repHistory.length : 0;
-          const score = reps * 1000 + tallies[ex];
+          // Prefer exercises with real form checks (500 bonus) over placeholder-only
+          const hasChecks = EXERCISES[ex]?.formChecks?.length > 0 ? 500 : 0;
+          const score = reps * 1000 + hasChecks + tallies[ex];
           if (score > bestScore) { bestScore = score; bestEx = ex; }
         }
         if (bestEx !== initialExercise || candidates.includes(initialExercise)) {

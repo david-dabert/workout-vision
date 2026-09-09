@@ -54,11 +54,6 @@ function generateCoachingInsight(repHistory, bioAnalysis, t) {
     return t('insight_asymmetry', { score: Math.round(bioAnalysis.asymmetry.score) });
   }
 
-  if (bioAnalysis?.velocity?.perRep) {
-    const avgVel = bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length;
-    if (avgVel > 0.8) return t('insight_too_fast');
-  }
-
   const scores = repHistory.map(r => r.score || 0);
   const variance = Math.max(...scores) - Math.min(...scores);
   if (variance < 15 && scores[0] >= 70) return t('insight_ready_progress');
@@ -67,17 +62,6 @@ function generateCoachingInsight(repHistory, bioAnalysis, t) {
   return t('insight_best_rep', { num: best.num });
 }
 
-/**
- * VBT zone classification (Gonzalez-Badillo 2017, Int J Sports Med).
- * Mean concentric velocity in m/s determines training zone.
- */
-function getVBTZone(meanVelocity) {
-  if (meanVelocity >= 1.0) return { zone: 'Speed-Strength', color: 'var(--bio-green)', intensity: '30-50%' };
-  if (meanVelocity >= 0.75) return { zone: 'Power', color: 'var(--accent)', intensity: '50-65%' };
-  if (meanVelocity >= 0.50) return { zone: 'Strength-Speed', color: 'var(--blue)', intensity: '65-80%' };
-  if (meanVelocity >= 0.35) return { zone: 'Strength', color: 'var(--yellow)', intensity: '80-90%' };
-  return { zone: 'Max Strength', color: 'var(--red)', intensity: '90%+' };
-}
 
 function generateProgressionNote(progression, t) {
   if (!progression) return null;
@@ -865,43 +849,23 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {/* VBT Zone + 1RM Estimation */}
+      {/* 1RM Estimation (VBT zones removed: monocular 2D pose cannot produce real absolute velocity) */}
       {(() => {
         const weight = result.weight || 0;
-        const avgVel = bioAnalysis?.velocity?.perRep
-          ? bioAnalysis.velocity.perRep.reduce((a, b) => a + b, 0) / bioAnalysis.velocity.perRep.length
-          : null;
-        // VBT zones are only scientifically validated for compound barbell exercises (Gonzalez-Badillo 2017)
-        const vbtExercises = ['squat', 'bench_press', 'deadlift', 'overhead_press', 'barbell_row', 'front_squat', 'romanian_deadlift', 'hip_thrust', 'incline_bench_press', 'close_grip_bench_press', 'sumo_deadlift'];
-        const showVbt = vbtExercises.includes(result.exercise) && exerciseDef?.category === 'compound';
-        const vbtZone = showVbt && avgVel != null && avgVel > 0 ? getVBTZone(avgVel) : null;
         const oneRM = weight > 0 && displayReps > 0 ? estimateOneRepMax(weight, displayReps) : null;
 
-        if (!vbtZone && !oneRM) return null;
+        if (!oneRM) return null;
         return (
           <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
-            {vbtZone && (
-              <div className="stat-card" style={{ gridColumn: oneRM ? 'auto' : '1 / -1' }}>
-                <span className="stat-card-label">{t('vbt_zone')}</span>
-                <span className="stat-card-value" style={{ color: vbtZone.color, fontSize: '0.85rem' }}>
-                  {vbtZone.zone}
-                </span>
-                <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: 2 }}>
-                  ~{vbtZone.intensity} 1RM
-                </span>
-              </div>
-            )}
-            {oneRM && (
-              <div className="stat-card">
-                <span className="stat-card-label">{t('estimated_1rm')}</span>
-                <span className="stat-card-value">
-                  {oneRM}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>kg</span>
-                </span>
-                <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: 2 }}>
-                  Brzycki {displayReps <= 10 ? '' : '(Epley)'}
-                </span>
-              </div>
-            )}
+            <div className="stat-card" style={{ gridColumn: '1 / -1' }}>
+              <span className="stat-card-label">{t('estimated_1rm')}</span>
+              <span className="stat-card-value">
+                {oneRM}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>kg</span>
+              </span>
+              <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: 2 }}>
+                Brzycki {displayReps <= 10 ? '' : '(Epley)'}
+              </span>
+            </div>
           </div>
         );
       })()}
