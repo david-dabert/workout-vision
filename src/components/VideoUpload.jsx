@@ -15,6 +15,7 @@ import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import VideoSuitabilityBanner from './VideoSuitabilityBanner';
 import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
+import { trackEvent, trackTiming, trackAnalysis } from '../lib/telemetry';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = (() => {
@@ -142,6 +143,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
   const analyzeVideo = useCallback(async (queueItem, signal) => {
     const weightKg = parseFloat(weight) || 0;
+    const stopTiming = trackTiming('analysis', { fileName: queueItem.name });
 
     const result = await analyzeVideoFile({
       file: queueItem.file,
@@ -178,10 +180,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       signal,
     });
 
+    stopTiming();
+
     if (!result) {
+      trackEvent('analysis_failed', { fileName: queueItem.name });
       setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
       return null;
     }
+
+    trackAnalysis(result);
 
     // Handle aborted results
     if (result.aborted) {

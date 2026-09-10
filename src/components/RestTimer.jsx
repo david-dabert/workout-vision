@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useT } from '../lib/LanguageContext';
+import s from './RestTimer.module.css';
 
 const PRESETS = [30, 60, 90, 120, 180, 300];
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  const sec = seconds % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
 function playBeep() {
@@ -21,7 +22,6 @@ function playBeep() {
     gain.gain.value = 0.3;
 
     osc.start();
-    // Three short beeps
     const now = ctx.currentTime;
     gain.gain.setValueAtTime(0.3, now);
     gain.gain.setValueAtTime(0, now + 0.15);
@@ -54,15 +54,12 @@ export default function RestTimer({ onClose }) {
   const intervalRef = useRef(null);
   const wakeLockRef = useRef(null);
 
-  // Wake Lock
   const requestWakeLock = useCallback(async () => {
     try {
       if ('wakeLock' in navigator) {
         wakeLockRef.current = await navigator.wakeLock.request('screen');
       }
-    } catch (e) {
-      // Wake lock not available or denied
-    }
+    } catch (e) {}
   }, []);
 
   const releaseWakeLock = useCallback(() => {
@@ -72,7 +69,6 @@ export default function RestTimer({ onClose }) {
     }
   }, []);
 
-  // Countdown logic
   useEffect(() => {
     if (running && remaining > 0) {
       intervalRef.current = setInterval(() => {
@@ -93,7 +89,6 @@ export default function RestTimer({ onClose }) {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [running, remaining, releaseWakeLock]);
 
-  // Re-acquire wake lock on visibility change
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible' && running) {
@@ -104,7 +99,6 @@ export default function RestTimer({ onClose }) {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [running, requestWakeLock]);
 
-  // Cleanup wake lock on unmount
   useEffect(() => releaseWakeLock, [releaseWakeLock]);
 
   const selectPreset = (sec) => {
@@ -117,9 +111,7 @@ export default function RestTimer({ onClose }) {
   };
 
   const handleStart = () => {
-    if (remaining <= 0) {
-      setRemaining(totalSeconds);
-    }
+    if (remaining <= 0) setRemaining(totalSeconds);
     setRunning(true);
     requestWakeLock();
   };
@@ -150,56 +142,44 @@ export default function RestTimer({ onClose }) {
   const isComplete = remaining === 0 && !running;
 
   return (
-    <div className="rest-timer-page">
-      <div className="rest-timer-header">
+    <div className={s.page}>
+      <div className={s.header}>
         <button className="btn-icon" onClick={onClose} aria-label={t('close')}>
           &#x2715;
         </button>
         <h2>{t('rest_timer_title')}</h2>
-        <div className="rest-timer-completed">
-          <span className="rest-completed-count">{completed}</span>
-          <span className="rest-completed-label">{t('rests')}</span>
+        <div className={s.completed}>
+          <span className={s.completedCount}>{completed}</span>
+          <span className={s.completedLabel}>{t('rests')}</span>
         </div>
       </div>
 
-      {/* Circular display */}
-      <div className="rest-timer-circle-wrap">
-        <svg className="rest-timer-svg" viewBox="0 0 260 260">
+      <div className={s.circleWrap}>
+        <svg className={s.svg} viewBox="0 0 260 260">
+          <circle cx="130" cy="130" r="120" fill="none" stroke="var(--border)" strokeWidth="6" />
           <circle
-            cx="130" cy="130" r="120"
-            fill="none"
-            stroke="var(--border)"
-            strokeWidth="6"
-          />
-          <circle
-            cx="130" cy="130" r="120"
-            fill="none"
-            stroke={isComplete ? 'var(--accent)' : 'var(--accent)'}
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeOffset}
-            transform="rotate(-90 130 130)"
-            className="rest-timer-progress-ring"
+            cx="130" cy="130" r="120" fill="none"
+            stroke="var(--accent)" strokeWidth="6" strokeLinecap="round"
+            strokeDasharray={circumference} strokeDashoffset={strokeOffset}
+            transform="rotate(-90 130 130)" className={s.progressRing}
           />
         </svg>
-        <div className="rest-timer-time">
-          <span className={`rest-timer-digits ${isComplete ? 'rest-timer-done' : ''}`}>
+        <div className={s.time}>
+          <span className={`${s.digits} ${isComplete ? s.digitsDone : ''}`}>
             {formatTime(remaining)}
           </span>
-          {isComplete && <span className="rest-timer-done-label">{t('ready')}</span>}
+          {isComplete && <span className={s.doneLabel}>{t('ready')}</span>}
           {!isComplete && !running && remaining === totalSeconds && (
-            <span className="rest-timer-ready-label">{t('ready')}</span>
+            <span className={s.readyLabel}>{t('ready')}</span>
           )}
         </div>
       </div>
 
-      {/* Preset buttons */}
-      <div className="rest-timer-presets">
+      <div className={s.presets}>
         {PRESETS.map(sec => (
           <button
             key={sec}
-            className={`rest-preset-btn ${totalSeconds === sec && !showCustom ? 'active' : ''}`}
+            className={`${s.presetBtn} ${totalSeconds === sec && !showCustom ? s.presetBtnActive : ''}`}
             onClick={() => selectPreset(sec)}
             disabled={running}
           >
@@ -207,7 +187,7 @@ export default function RestTimer({ onClose }) {
           </button>
         ))}
         <button
-          className={`rest-preset-btn ${showCustom ? 'active' : ''}`}
+          className={`${s.presetBtn} ${showCustom ? s.presetBtnActive : ''}`}
           onClick={() => setShowCustom(true)}
           disabled={running}
         >
@@ -215,33 +195,27 @@ export default function RestTimer({ onClose }) {
         </button>
       </div>
 
-      {/* Custom input */}
       {showCustom && !running && (
-        <div className="rest-timer-custom">
+        <div className={s.custom}>
           <input
-            type="number"
-            placeholder={t('seconds_max_600')}
-            value={customInput}
-            onChange={e => setCustomInput(e.target.value)}
-            min="1"
-            max="600"
-            autoFocus
+            type="number" placeholder={t('seconds_max_600')}
+            value={customInput} onChange={e => setCustomInput(e.target.value)}
+            min="1" max="600" autoFocus
           />
           <button className="btn btn-primary btn-sm" onClick={handleCustomSubmit}>{t('set')}</button>
         </div>
       )}
 
-      {/* Controls */}
-      <div className="rest-timer-controls">
+      <div className={s.controls}>
         <button className="btn btn-ghost btn-lg" onClick={handleReset} disabled={remaining === totalSeconds && !running}>
           {t('reset')}
         </button>
         {running ? (
-          <button className="btn btn-primary btn-lg rest-timer-main-btn" onClick={handlePause}>
+          <button className={`btn btn-primary btn-lg ${s.mainBtn}`} onClick={handlePause}>
             {t('pause')}
           </button>
         ) : (
-          <button className="btn btn-primary btn-lg rest-timer-main-btn" onClick={handleStart}>
+          <button className={`btn btn-primary btn-lg ${s.mainBtn}`} onClick={handleStart}>
             {isComplete ? t('restart') : t('start')}
           </button>
         )}

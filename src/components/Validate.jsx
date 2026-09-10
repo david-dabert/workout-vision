@@ -5,6 +5,7 @@ import { RepCounter } from '../lib/repCounter';
 import { ExerciseAutoDetector } from '../lib/exerciseDetector';
 import { analyzeSet } from '../lib/biomechanics';
 import { AnalysisDiagnostics } from '../lib/analysisDiagnostics';
+import s from './Validate.module.css';
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -475,87 +476,79 @@ export default function Validate({ onClose }) {
   const obo = scored.length > 0
     ? Math.round((withinOne / scored.length) * 100) : null;
 
+  const accuracyColor = (v, thresholds = [90, 70]) =>
+    v >= thresholds[0] ? 'var(--accent)' : v >= thresholds[1] ? 'var(--yellow)' : 'var(--red)';
+  const repColor = (err) =>
+    err === 0 ? 'var(--accent)' : Math.abs(err) <= 1 ? 'var(--yellow)' : 'var(--red)';
+  const borderForResult = (r) =>
+    r.error ? '3px solid var(--red)' :
+    r.repError === 0 ? '3px solid var(--accent)' :
+    Math.abs(r.repError) <= 1 ? '3px solid var(--yellow)' : '3px solid var(--red)';
+
   return (
-    <div className="page" style={{ padding: '16px env(safe-area-inset-right) 16px env(safe-area-inset-left)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Engine Validation</h2>
+    <div className={`page ${s.page}`}>
+      <div className={s.header}>
+        <h2 className={s.title}>Engine Validation</h2>
         <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
       </div>
 
-      <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
+      <p className={s.description}>
         Upload videos with known rep counts. The engine runs the exact same pipeline as production.
         Compare detected reps vs ground truth to compute accuracy.
       </p>
 
-      {/* Countix benchmark — one-click */}
-      <div style={{
-        background: 'rgba(0,245,212,0.04)', borderRadius: 10, padding: '12px 14px',
-        marginBottom: 10, border: '1px solid rgba(0,245,212,0.15)',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Countix Benchmark
-          </div>
-          <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>43 videos, 9 exercises</span>
+      {/* Countix benchmark */}
+      <div className={s.benchmarkCard}>
+        <div className={s.benchmarkHeader}>
+          <div className={s.benchmarkTitle}>Countix Benchmark</div>
+          <span className={s.benchmarkMeta}>43 videos, 9 exercises</span>
         </div>
-        <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: 8, lineHeight: 1.4 }}>
+        <div className={s.benchmarkDescription}>
           Academic benchmark from Google Research (CVPR 2020). Ground truth rep counts across squats, push-ups, pull-ups, bench press, bicep curls, front raises, lunges, sit-ups, battle rope.
         </div>
         <button
-          className="btn btn-primary btn-sm"
+          className={`btn btn-primary btn-sm ${s.benchmarkBtn}`}
           onClick={loadBenchmark}
           disabled={running || benchmarkLoading}
-          style={{ fontSize: '0.75rem', fontWeight: 700, width: '100%' }}
         >
           {benchmarkLoading ? 'Loading manifest...' : 'Load Countix Benchmark'}
         </button>
         {benchmarkError && (
-          <div style={{ fontSize: '0.7rem', color: 'var(--red)', marginTop: 6, lineHeight: 1.4 }}>
-            {benchmarkError}
-          </div>
+          <div className={s.benchmarkError}>{benchmarkError}</div>
         )}
       </div>
 
-      {/* RepCount dataset loader (manual CSV + videos) */}
-      <details style={{ marginBottom: 10 }}>
-        <summary style={{ fontSize: '0.75rem', color: 'var(--muted)', cursor: 'pointer', padding: '6px 0' }}>
+      {/* RepCount dataset loader */}
+      <details className={s.datasetDetails}>
+        <summary className={s.datasetSummary}>
           Or load RepCount dataset manually (CSV + videos)
         </summary>
-        <div style={{
-          background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '12px 14px',
-          marginTop: 6, border: '1px solid rgba(255,255,255,0.08)',
-        }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: 10, lineHeight: 1.4 }}>
+        <div className={s.datasetCard}>
+          <div className={s.datasetInstructions}>
             Step 1: Load CSV annotation file (test.csv). Step 2: Select video files.
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost btn-sm" onClick={() => csvInputRef.current?.click()} style={{ fontSize: '0.72rem' }}>
+          <div className={s.datasetActions}>
+            <button className={`btn btn-ghost btn-sm ${s.datasetBtnSmall}`} onClick={() => csvInputRef.current?.click()}>
               {csvAnnotations ? 'CSV loaded' : '1. Load CSV'}
             </button>
-            <input ref={csvInputRef} type="file" accept=".csv" style={{ display: 'none' }}
+            <input ref={csvInputRef} type="file" accept=".csv" className={s.hidden}
               onChange={(e) => { if (e.target.files?.[0]) loadCSV(e.target.files[0]); e.target.value = ''; }} />
-            <button className="btn btn-ghost btn-sm" onClick={() => datasetVideoRef.current?.click()}
-              style={{ fontSize: '0.72rem', opacity: csvAnnotations ? 1 : 0.5 }}>
+            <button className={`btn btn-ghost btn-sm ${s.datasetBtnSmall}`} onClick={() => datasetVideoRef.current?.click()}
+              style={{ opacity: csvAnnotations ? 1 : 0.5 }}>
               2. Load videos
             </button>
-            <input ref={datasetVideoRef} type="file" accept="video/*" multiple style={{ display: 'none' }}
+            <input ref={datasetVideoRef} type="file" accept="video/*" multiple className={s.hidden}
               onChange={(e) => { if (e.target.files?.length) loadDatasetVideos(e.target.files); e.target.value = ''; }} />
           </div>
-          {csvFilename && <div style={{ fontSize: '0.68rem', color: 'var(--accent)', marginTop: 6 }}>{csvFilename}</div>}
+          {csvFilename && <div className={s.csvFilename}>{csvFilename}</div>}
         </div>
       </details>
 
       {/* Add test videos manually */}
-      <div
-        onClick={() => fileInputRef.current?.click()}
-        style={{
-          border: '2px dashed rgba(255,255,255,0.15)', borderRadius: 10, padding: '14px',
-          textAlign: 'center', cursor: 'pointer', marginBottom: 12,
-        }}
-      >
-        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>+ Add test video(s) manually</span>
+      <div className={s.dropZone} onClick={() => fileInputRef.current?.click()}>
+        <span className={s.dropZoneLabel}>+ Add test video(s) manually</span>
         <input ref={fileInputRef} type="file" accept="video/*" multiple
-          style={{ display: 'none' }}
+          className={s.hidden}
           onChange={(e) => {
             Array.from(e.target.files || []).forEach(f => addTest(f));
             e.target.value = '';
@@ -565,28 +558,21 @@ export default function Validate({ onClose }) {
 
       {/* Test list */}
       {tests.map((test, i) => (
-        <div key={test.id} style={{
-          background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px',
-          marginBottom: 8, border: test.status === 'running' ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+        <div key={test.id} className={test.status === 'running' ? s.testCardRunning : s.testCard}>
+          <div className={s.testCardHeader}>
+            <span className={s.testName}>
               {test.status === 'running' && '> '}{test.name}
             </span>
             {!running && (
-              <button onClick={() => removeTest(test.id)}
-                style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 14 }}>&times;</button>
+              <button onClick={() => removeTest(test.id)} className={s.removeBtn}>&times;</button>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className={s.testInputRow}>
             <select
               value={test.expectedExercise}
               onChange={(e) => updateTest(test.id, 'expectedExercise', e.target.value)}
               disabled={running}
-              style={{
-                flex: 1, minWidth: 140, padding: '6px 8px', borderRadius: 6, fontSize: '0.75rem',
-                background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.12)',
-              }}
+              className={s.exerciseSelect}
             >
               <option value="__auto__">Auto-detect</option>
               {Object.entries(EXERCISE_GROUPS).map(([label, exercises]) => (
@@ -604,11 +590,7 @@ export default function Validate({ onClose }) {
               value={test.expectedReps}
               onChange={(e) => updateTest(test.id, 'expectedReps', e.target.value)}
               disabled={running}
-              style={{
-                width: 60, padding: '6px 8px', borderRadius: 6, fontSize: '0.75rem',
-                background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.12)',
-                textAlign: 'center',
-              }}
+              className={s.repsInput}
             />
           </div>
         </div>
@@ -616,71 +598,66 @@ export default function Validate({ onClose }) {
 
       {/* Run button */}
       {tests.length > 0 && !running && (
-        <button className="btn btn-primary" onClick={runAll}
-          style={{ width: '100%', marginTop: 8, marginBottom: 16, fontWeight: 700 }}>
+        <button className={`btn btn-primary ${s.runBtn}`} onClick={runAll}>
           Run {tests.length} test{tests.length > 1 ? 's' : ''}
         </button>
       )}
 
       {running && (
-        <div style={{ textAlign: 'center', padding: '12px 0', fontSize: '0.82rem', color: 'var(--accent)' }}>
+        <div className={s.runningStatus}>
           Running test {currentIdx + 1} of {tests.length}...
         </div>
       )}
 
       {/* Hidden video element for analysis */}
-      <video ref={videoRef} muted playsInline preload="auto"
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
+      <video ref={videoRef} muted playsInline preload="auto" className={s.hiddenVideo} />
 
       {/* Results */}
       {results.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: '0.95rem', marginBottom: 12 }}>Results</h3>
+        <div className={s.resultsSection}>
+          <h3 className={s.resultsTitle}>Results</h3>
 
           {/* Aggregate stats */}
           {scored.length > 0 && (
-            <div style={{
-              background: 'rgba(0,245,212,0.06)', border: '1px solid rgba(0,245,212,0.2)',
-              borderRadius: 10, padding: '12px 14px', marginBottom: 14,
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, textAlign: 'center' }}>
+            <div className={s.aggregateCard}>
+              <div className={s.statsGrid3}>
                 <div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: avgAccuracy >= 90 ? 'var(--accent)' : avgAccuracy >= 70 ? 'var(--yellow)' : 'var(--red)' }}>
+                  <div className={s.statValueLarge} style={{ color: accuracyColor(avgAccuracy) }}>
                     {avgAccuracy}%
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>AVG ACCURACY</div>
+                  <div className={s.statLabel}>AVG ACCURACY</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <div className={`${s.statValueLarge} ${s.textPrimary}`}>
                     {exactMatch}/{scored.length}
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>EXACT MATCH</div>
+                  <div className={s.statLabel}>EXACT MATCH</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <div className={`${s.statValueLarge} ${s.textPrimary}`}>
                     {withinOne}/{scored.length}
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>WITHIN +/-1 (OBO)</div>
+                  <div className={s.statLabel}>WITHIN +/-1 (OBO)</div>
                 </div>
               </div>
               {mae !== null && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, textAlign: 'center', marginTop: 10 }}>
+                <div className={s.statsGrid2}>
                   <div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: parseFloat(mae) <= 1 ? 'var(--accent)' : parseFloat(mae) <= 2 ? 'var(--yellow)' : 'var(--red)' }}>
+                    <div className={s.statValueMedium} style={{ color: accuracyColor(parseFloat(mae) <= 1 ? 90 : parseFloat(mae) <= 2 ? 80 : 50) }}>
                       {mae}
                     </div>
-                    <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>MAE (lower = better)</div>
+                    <div className={s.statLabel}>MAE (lower = better)</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: obo >= 80 ? 'var(--accent)' : obo >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
+                    <div className={s.statValueMedium} style={{ color: accuracyColor(obo, [80, 60]) }}>
                       {obo}%
                     </div>
-                    <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>OBO ACCURACY</div>
+                    <div className={s.statLabel}>OBO ACCURACY</div>
                   </div>
                 </div>
               )}
               {exerciseTotal > 0 && (
-                <div style={{ marginTop: 8, textAlign: 'center', fontSize: '0.72rem', color: 'var(--muted)' }}>
+                <div className={s.exerciseDetection}>
                   Exercise detection: {exerciseMatches}/{exerciseTotal} correct
                 </div>
               )}
@@ -689,56 +666,47 @@ export default function Validate({ onClose }) {
 
           {/* Per-test results */}
           {results.map((r, i) => (
-            <div key={i} style={{
-              background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '10px 12px',
-              marginBottom: 6, borderLeft: r.error ? '3px solid var(--red)' :
-                r.repError === 0 ? '3px solid var(--accent)' :
-                Math.abs(r.repError) <= 1 ? '3px solid var(--yellow)' : '3px solid var(--red)',
-            }}>
+            <div key={i} className={s.resultCard} style={{ borderLeft: borderForResult(r) }}>
               {r.error ? (
-                <div style={{ color: 'var(--red)', fontSize: '0.78rem' }}>{r.name}: {r.error}</div>
+                <div className={s.resultError}>{r.name}: {r.error}</div>
               ) : (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.name}</span>
-                    <span style={{
-                      fontWeight: 700,
-                      color: r.repError === 0 ? 'var(--accent)' : Math.abs(r.repError) <= 1 ? 'var(--yellow)' : 'var(--red)',
-                    }}>
+                  <div className={s.resultRow}>
+                    <span className={s.resultName}>{r.name}</span>
+                    <span className={s.resultReps} style={{ color: repColor(r.repError) }}>
                       {r.actualReps}/{r.expectedReps === '?' ? '?' : r.expectedReps} reps
                       {r.repError !== null && r.repError !== 0 && ` (${r.repError > 0 ? '+' : ''}${r.repError})`}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.68rem', color: 'var(--muted)' }}>
+                  <div className={s.resultMeta}>
                     <span>Exercise: {EXERCISES[r.detectedExercise]?.name || r.detectedExercise}
                       {!r.exerciseMatch && r.expectedExercise !== '__auto__' &&
-                        <span style={{ color: 'var(--red)' }}> (expected: {EXERCISES[r.expectedExercise]?.name || r.expectedExercise})</span>
+                        <span className={s.exerciseMismatch}> (expected: {EXERCISES[r.expectedExercise]?.name || r.expectedExercise})</span>
                       }
                     </span>
                     <span>Form: {r.formScore}/100</span>
                     <span>{r.analysisTime}s</span>
                   </div>
                   {r.diagnostics && (
-                    <div style={{ marginTop: 4, fontSize: '0.65rem', color: 'var(--muted)', opacity: 0.7 }}>
+                    <div className={s.diagLine}>
                       Method: {r.diagnostics.method} | Range: {r.diagnostics.observedMin}-{r.diagnostics.observedMax} | Frames: {r.frames}
                     </div>
                   )}
                   {r.diagnostics?.progression && r.diagnostics.progression.score > 0 && (
-                    <div style={{ marginTop: 6, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span style={{
-                        fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: 4,
+                    <div className={s.progressionRow}>
+                      <span className={s.progressionBadge} style={{
                         background: r.diagnostics.progression.score >= 750 ? 'rgba(0,245,212,0.15)' : r.diagnostics.progression.score >= 500 ? 'rgba(255,200,0,0.15)' : 'rgba(255,80,80,0.15)',
                         color: r.diagnostics.progression.score >= 750 ? 'var(--accent)' : r.diagnostics.progression.score >= 500 ? 'var(--yellow)' : 'var(--red)',
                       }}>
                         {r.diagnostics.progression.score} {r.diagnostics.progression.grade.label}
                       </span>
-                      <span style={{ fontSize: '0.62rem', color: 'var(--muted)' }}>
+                      <span className={s.progressionTitle}>
                         {r.diagnostics.progression.grade.title}
                       </span>
                     </div>
                   )}
                   {r.diagnostics?.anthropometrics?.calibrated && (
-                    <div style={{ marginTop: 3, fontSize: '0.6rem', color: 'var(--muted)', opacity: 0.6 }}>
+                    <div className={s.bodyTypeLine}>
                       Body: {r.diagnostics.anthropometrics.bodyType.torsoType} torso · {r.diagnostics.anthropometrics.bodyType.femurType} femurs · {r.diagnostics.anthropometrics.bodyType.armType} arms · Sym {(r.diagnostics.anthropometrics.bodyType.symmetryIndex * 100).toFixed(0)}%
                     </div>
                   )}
@@ -753,8 +721,7 @@ export default function Validate({ onClose }) {
           {/* Export as JSON */}
           {scored.length > 0 && (
             <button
-              className="btn btn-ghost"
-              style={{ width: '100%', marginTop: 10, fontSize: '0.78rem' }}
+              className={`btn btn-ghost ${s.exportBtn}`}
               onClick={() => {
                 const report = {
                   date: new Date().toISOString(),
@@ -807,7 +774,6 @@ export default function Validate({ onClose }) {
   );
 }
 
-// ── Expandable diagnostics panel for benchmark results ──
 function DiagnosticsPanel({ diag }) {
   const [open, setOpen] = useState(false);
   if (!diag) return null;
@@ -820,69 +786,42 @@ function DiagnosticsPanel({ diag }) {
   };
 
   return (
-    <div style={{ marginTop: 6 }}>
+    <div className={s.diagToggle}>
       <button
         onClick={() => setOpen(v => !v)}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--text-tertiary)', fontSize: '0.65rem', fontWeight: 600,
-          padding: '2px 0', fontFamily: 'var(--font)',
-          display: 'flex', alignItems: 'center', gap: 4,
-        }}
+        className={s.diagButton}
       >
-        <span style={{
-          transform: open ? 'rotate(90deg)' : 'rotate(0)',
-          transition: 'transform 0.15s', display: 'inline-block',
-        }}>&#9654;</span>
+        <span className={open ? s.diagArrowOpen : s.diagArrow}>&#9654;</span>
         Diagnostics
         {diag.analysis && (
-          <span style={{
-            marginLeft: 4, padding: '1px 6px', borderRadius: 4, fontSize: '0.6rem',
-            fontWeight: 700, color: statusColors[diag.analysis.status] || 'var(--muted)',
-            background: 'rgba(255,255,255,0.04)',
-          }}>
+          <span className={s.diagStatusBadge} style={{ color: statusColors[diag.analysis.status] || 'var(--muted)' }}>
             {diag.analysis.status} ({(diag.analysis.confidence * 100).toFixed(0)}%)
           </span>
         )}
       </button>
       {open && (
-        <div style={{
-          marginTop: 4, padding: '8px 10px', background: 'rgba(255,255,255,0.02)',
-          borderRadius: 6, fontSize: '0.62rem', color: 'var(--muted)', lineHeight: 1.7,
-          border: '1px solid rgba(255,255,255,0.04)',
-        }}>
-          {/* Pose */}
-          <div><strong style={{ color: 'var(--text-secondary)' }}>Pose:</strong> detection {(diag.pose?.detectionRate * 100 || 0).toFixed(0)}% | visibility {(diag.pose?.meanVisibility * 100 || 0).toFixed(0)}% | ghosts {diag.pose?.ghostFrameCount || 0}</div>
-
-          {/* Movement */}
-          <div><strong style={{ color: 'var(--text-secondary)' }}>Movement:</strong> signal {(diag.movement?.signalQuality * 100 || 0).toFixed(0)}% | ROM {(diag.movement?.rangeOfMotion * 100 || 0).toFixed(0)}% | stability {(diag.movement?.temporalStability * 100 || 0).toFixed(0)}% | amplitude {(diag.movement?.amplitudeConsistency * 100 || 0).toFixed(0)}%</div>
-
-          {/* Reps */}
-          <div><strong style={{ color: 'var(--text-secondary)' }}>Reps:</strong> machine={diag.reps?.machine || 0} conf={(diag.reps?.confidence * 100 || 0).toFixed(0)}% uncertain={diag.reps?.uncertain || 0}</div>
-
-          {/* Per-signal breakdown */}
+        <div className={s.diagPanel}>
+          <div><strong className={s.diagSectionLabel}>Pose:</strong> detection {(diag.pose?.detectionRate * 100 || 0).toFixed(0)}% | visibility {(diag.pose?.meanVisibility * 100 || 0).toFixed(0)}% | ghosts {diag.pose?.ghostFrameCount || 0}</div>
+          <div><strong className={s.diagSectionLabel}>Movement:</strong> signal {(diag.movement?.signalQuality * 100 || 0).toFixed(0)}% | ROM {(diag.movement?.rangeOfMotion * 100 || 0).toFixed(0)}% | stability {(diag.movement?.temporalStability * 100 || 0).toFixed(0)}% | amplitude {(diag.movement?.amplitudeConsistency * 100 || 0).toFixed(0)}%</div>
+          <div><strong className={s.diagSectionLabel}>Reps:</strong> machine={diag.reps?.machine || 0} conf={(diag.reps?.confidence * 100 || 0).toFixed(0)}% uncertain={diag.reps?.uncertain || 0}</div>
           {diag.signals && Object.keys(diag.signals).length > 0 && (
-            <div style={{ marginTop: 4 }}>
-              <strong style={{ color: 'var(--text-secondary)' }}>Signals:</strong>
+            <div className={s.diagSignals}>
+              <strong className={s.diagSectionLabel}>Signals:</strong>
               {Object.entries(diag.signals).map(([name, sig]) => (
-                <div key={name} style={{ paddingLeft: 8 }}>
+                <div key={name} className={s.diagSignalItem}>
                   {name}: reps={sig.repCount ?? '?'} conf={(sig.confidence * 100 || 0).toFixed(0)}%
                   {sig.period > 0 && ` period=${sig.period.toFixed(2)}s`}
                 </div>
               ))}
             </div>
           )}
-
-          {/* Warnings */}
           {diag.analysis?.warnings?.length > 0 && (
-            <div style={{ marginTop: 4, color: 'var(--yellow)' }}>
+            <div className={s.diagWarnings}>
               {diag.analysis.warnings.map((w, i) => <div key={i}>&#9888; {w}</div>)}
             </div>
           )}
-
-          {/* Failures */}
           {diag.analysis?.failureReasons?.length > 0 && (
-            <div style={{ marginTop: 2, color: 'var(--red)' }}>
+            <div className={s.diagFailures}>
               {diag.analysis.failureReasons.map((r, i) => <div key={i}>&#10060; {r}</div>)}
             </div>
           )}

@@ -24,7 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, '..', 'dist');
 const SW_PATH = join(DIST, 'sw.js');
 const ASSETS_DIR = join(DIST, 'assets');
-const BASE = '/workout-vision/';
+const BASE = process.env.VITE_BASE || '/workout-vision/';
 
 // Read all built assets
 const assetFiles = readdirSync(ASSETS_DIR)
@@ -54,6 +54,9 @@ let sw = readFileSync(SW_PATH, 'utf-8');
 // Inject the asset precache list after the APP_SHELL array
 const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──\nconst PRECACHE_ASSETS = ${JSON.stringify(precacheEntries, null, 2)};\n`;
 
+// Replace the base path placeholder with the actual deployment base
+sw = sw.replaceAll('__SW_BASE__', BASE);
+
 // Replace the static CACHE_NAME with the hashed version
 sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = '${cacheName}';`);
 
@@ -71,4 +74,38 @@ sw = sw.replace(
 
 writeFileSync(SW_PATH, sw);
 
-console.log(`[inject-sw-precache] Injected ${precacheEntries.length} assets into SW (cache: ${cacheName})`);
+// ─── Build-time assertions ───
+// Verify the injection actually worked. A silent failure here would deploy
+// an SW without precache, breaking offline mode.
+const written = readFileSync(SW_PATH, 'utf-8');
+
+if (written.includes('__SW_BASE__')) {
+  console.error('[inject-sw-precache] FATAL: __SW_BASE__ placeholder was not replaced');
+  process.exit(1);
+}
+if (!written.includes(cacheName)) {
+  console.error(`[inject-sw-precache] FATAL: CACHE_NAME '${cacheName}' not found in output SW`);
+  process.exit(1);
+}
+if (!written.includes('PRECACHE_ASSETS')) {
+  console.error('[inject-sw-precache] FATAL: PRECACHE_ASSETS block not found in output SW');
+  process.exit(1);
+}
+if (!written.includes('...APP_SHELL, ...PRECACHE_ASSETS')) {
+  console.error('[inject-sw-precache] FATAL: cache.addAll() was not patched to include PRECACHE_ASSETS');
+  process.exit(1);
+}
+
+// Verify each asset file referenced in the precache list actually exists in dist/
+for (const entry of precacheEntries) {
+  const relativePath = entry.replace(BASE, '');
+  const fullPath = join(DIST, relativePath);
+  try {
+    statSync(fullPath);
+  } catch {
+    console.error(`[inject-sw-precache] FATAL: Precache entry '${entry}' references missing file: ${fullPath}`);
+    process.exit(1);
+  }
+}
+
+console.log(`[inject-sw-precache] Injected ${precacheEntries.length} assets into SW (cache: ${cacheName}) — all assertions passed`);

@@ -8,6 +8,7 @@ import { useProfile } from '../lib/ProfileContext';
 import { useT } from '../lib/LanguageContext';
 import { detectCapabilities, runMicroBenchmark } from '../lib/gpuBenchmark';
 import DataPortability from './DataPortability';
+import s from './Profile.module.css';
 
 export default function Profile({ onClose }) {
   const { profile: savedProfile, saveProfile } = useProfile();
@@ -91,7 +92,7 @@ export default function Profile({ onClose }) {
       <div className="card">
         <div className="form-group">
           <label>{t('language')}</label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className={s.langSwitcher}>
             <button className={`btn btn-sm ${lang === 'en' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('en')}>English</button>
             <button className={`btn btn-sm ${lang === 'fr' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setLang('fr')}>Français</button>
           </div>
@@ -189,40 +190,41 @@ export default function Profile({ onClose }) {
           </label>
           <label className="full-width">
             <span>{t('injuries')}</span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-              {['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'].map(area => (
-                <button
-                  key={area}
-                  type="button"
-                  onClick={() => {
-                    const current = profile.injuries || [];
-                    const next = current.includes(area)
-                      ? current.filter(i => i !== area)
-                      : [...current, area];
-                    handleChange('injuries', next);
-                  }}
-                  style={{
-                    padding: '10px 14px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
-                    border: '1px solid',
-                    borderColor: (profile.injuries || []).includes(area) ? 'var(--red)' : 'var(--border)',
-                    background: (profile.injuries || []).includes(area) ? 'rgba(255,61,87,0.15)' : 'transparent',
-                    color: (profile.injuries || []).includes(area) ? 'var(--red)' : 'var(--muted)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {area.replace('_', ' ')}
-                </button>
-              ))}
+            <div className={s.injuryTags}>
+              {['lower_back', 'shoulder', 'knee', 'wrist', 'hip', 'ankle', 'neck', 'elbow'].map(area => {
+                const active = (profile.injuries || []).includes(area);
+                return (
+                  <button
+                    key={area}
+                    type="button"
+                    className={s.injuryTag}
+                    onClick={() => {
+                      const current = profile.injuries || [];
+                      const next = current.includes(area)
+                        ? current.filter(i => i !== area)
+                        : [...current, area];
+                      handleChange('injuries', next);
+                    }}
+                    style={{
+                      borderColor: active ? 'var(--red)' : 'var(--border)',
+                      background: active ? 'rgba(255,61,87,0.15)' : 'transparent',
+                      color: active ? 'var(--red)' : 'var(--muted)',
+                    }}
+                  >
+                    {area.replace('_', ' ')}
+                  </button>
+                );
+              })}
             </div>
           </label>
         </div>
         {/* Training Days Picker */}
-        <label className="full-width" style={{ marginTop: 8 }}>
+        <label className={`full-width ${s.trainingDaysLabel}`}>
           <span>{t('training_days')}</span>
-          <p className="text-xs text-muted" style={{ margin: '4px 0 8px' }}>
+          <p className={`text-xs text-muted ${s.trainingDaysDesc}`}>
             {t('training_days_desc')}
           </p>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div className={s.trainingDaysTags}>
             {[
               { day: 0, label: t('day_sun') },
               { day: 1, label: t('day_mon') },
@@ -237,6 +239,7 @@ export default function Profile({ onClose }) {
                 <button
                   key={day}
                   type="button"
+                  className={s.trainingDayTag}
                   onClick={() => {
                     const current = profile.trainingDays || [1, 3, 5];
                     const next = selected
@@ -245,13 +248,9 @@ export default function Profile({ onClose }) {
                     handleChange('trainingDays', next);
                   }}
                   style={{
-                    padding: '10px 14px', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
-                    minWidth: 44, textAlign: 'center',
-                    border: '1px solid',
                     borderColor: selected ? 'var(--accent)' : 'var(--border)',
                     background: selected ? 'rgba(0,224,150,0.15)' : 'transparent',
                     color: selected ? 'var(--accent)' : 'var(--muted)',
-                    cursor: 'pointer',
                   }}
                 >
                   {label}
@@ -261,7 +260,7 @@ export default function Profile({ onClose }) {
           </div>
         </label>
 
-        <button className="btn btn-primary" onClick={handleSave} style={{ width: '100%', marginTop: 12 }}>
+        <button className={`btn btn-primary ${s.saveBtn}`} onClick={handleSave}>
           {saved ? t('saved') : t('save_profile')}
         </button>
       </div>
@@ -269,17 +268,17 @@ export default function Profile({ onClose }) {
       {/* Voice Coaching toggle */}
       <div className="card">
         <h3>{t('voice_coaching')}</h3>
-        <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
+        <p className={`text-xs text-muted ${s.sectionDesc}`}>
           {t('voice_coaching_desc')}
         </p>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+        <label className={s.checkboxLabel}>
           <input
             type="checkbox"
             checked={profile.voiceCoachingEnabled !== false}
             onChange={(e) => handleChange('voiceCoachingEnabled', e.target.checked)}
-            style={{ width: 18, height: 18, accentColor: 'var(--primary)' }}
+            className={s.checkbox}
           />
-          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+          <span className={s.checkboxText}>
             {profile.voiceCoachingEnabled !== false
               ? t('voice_enabled')
               : t('voice_disabled')}
@@ -290,17 +289,17 @@ export default function Profile({ onClose }) {
       {/* Cycle Tracking (optional) */}
       <div className="card">
         <h3>{t('cycle_tracking')}</h3>
-        <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
+        <p className={`text-xs text-muted ${s.sectionDesc}`}>
           {t('cycle_tracking_desc')}
         </p>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 12 }}>
+        <label className={s.checkboxLabelSpaced}>
           <input
             type="checkbox"
             checked={!!profile.cycleTrackingEnabled}
             onChange={(e) => handleChange('cycleTrackingEnabled', e.target.checked)}
-            style={{ width: 18, height: 18, accentColor: 'var(--primary)' }}
+            className={s.checkbox}
           />
-          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t('enable_cycle_tracking')}</span>
+          <span className={s.checkboxText}>{t('enable_cycle_tracking')}</span>
         </label>
 
         {profile.cycleTrackingEnabled && (
@@ -362,20 +361,14 @@ export default function Profile({ onClose }) {
               }
 
               return (
-                <div style={{
-                  marginTop: 12,
-                  padding: '12px 14px',
-                  borderRadius: 10,
-                  background: phaseColor,
-                  border: '1px solid var(--border)',
-                }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: 4 }}>
+                <div className={s.cyclePhaseBox} style={{ background: phaseColor }}>
+                  <div className={s.cyclePhaseTitle}>
                     {t('cycle_current_phase')}: {t(phaseKey)}
                   </div>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.85, marginBottom: 4 }}>
+                  <div className={s.cycleDayCount}>
                     {t('cycle_day')} {dayInCycle} / {cycleLen}
                   </div>
-                  <div style={{ fontSize: '0.78rem', fontStyle: 'italic' }}>
+                  <div className={s.cycleTip}>
                     {t(tipKey)}
                   </div>
                 </div>
@@ -449,7 +442,7 @@ export default function Profile({ onClose }) {
           )}
           {baselines && (
             <>
-              <p className="text-xs text-muted" style={{ marginTop: 12, fontStyle: 'italic' }}>
+              <p className={`text-xs text-muted ${s.baselinesCaveat}`}>
                 {t('baselines_caveat')}</p>
             </>
           )}
@@ -459,18 +452,17 @@ export default function Profile({ onClose }) {
       {/* Medical records */}
       <div className="card">
         <h3>{t('medical_records')}</h3>
-        <p className="text-xs text-muted" style={{ marginBottom: 10 }}>
+        <p className={`text-xs text-muted ${s.sectionDesc}`}>
           {t('upload_medical_desc')}
         </p>
 
         <div
-          className="upload-zone"
+          className={`upload-zone ${s.uploadZone}`}
           onClick={() => fileInputRef.current?.click()}
-          style={{ marginBottom: 10 }}
         >
           <div className="upload-content">
             <div className="upload-icon">+</div>
-            <p className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{t('upload_file')}</p>
+            <p className={`text-sm ${s.uploadLabel}`}>{t('upload_file')}</p>
             <p className="text-xs text-muted">{t('pdf_images_docs')}</p>
           </div>
           <input
@@ -478,7 +470,7 @@ export default function Profile({ onClose }) {
             type="file"
             accept="image/*,.pdf,.doc,.docx"
             onChange={handleFileUpload}
-            style={{ display: 'none' }}
+            className={s.fileInputHidden}
           />
         </div>
         {fileError && (
@@ -491,7 +483,7 @@ export default function Profile({ onClose }) {
         {records.map(r => (
           <div key={r.id} className="record-item">
             <div className="record-header">
-              <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.85rem' }}>{r.name}</span>
+              <span className={s.recordName}>{r.name}</span>
               <button
                 className="btn btn-ghost btn-sm btn-danger"
                 onClick={() => handleDeleteRecord(r.id)}
@@ -519,12 +511,11 @@ export default function Profile({ onClose }) {
       {/* Device Capabilities Benchmark */}
       <div className="card">
         <h3>{t('device_capabilities')}</h3>
-        <p className="text-xs text-muted" style={{ marginBottom: 12 }}>
+        <p className={`text-xs text-muted ${s.benchmarkDesc}`}>
           {t('device_capabilities_desc')}
         </p>
         <button
-          className="btn btn-ghost"
-          style={{ width: '100%', marginBottom: 12 }}
+          className={`btn btn-ghost ${s.benchmarkBtn}`}
           disabled={benchmarkRunning}
           onClick={async () => {
             setBenchmarkRunning(true);
@@ -547,51 +538,51 @@ export default function Profile({ onClose }) {
         </button>
 
         {benchmarkResult && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>WebGPU</span>
+          <div className={s.benchmarkResults}>
+            <div className={s.benchmarkRow}>
+              <span className={s.benchmarkLabel}>WebGPU</span>
               <span style={{ fontWeight: 600, color: benchmarkResult.webgpu ? 'var(--green)' : 'var(--red)' }}>
                 {benchmarkResult.webgpu ? t('yes') : t('no')}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>WebNN</span>
+            <div className={s.benchmarkRow}>
+              <span className={s.benchmarkLabel}>WebNN</span>
               <span style={{ fontWeight: 600, color: benchmarkResult.webnn ? 'var(--green)' : 'var(--red)' }}>
                 {benchmarkResult.webnn ? t('yes') : t('no')}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>WebGL2</span>
+            <div className={s.benchmarkRow}>
+              <span className={s.benchmarkLabel}>WebGL2</span>
               <span style={{ fontWeight: 600, color: benchmarkResult.webgl2 ? 'var(--green)' : 'var(--red)' }}>
                 {benchmarkResult.webgl2 ? t('yes') : t('no')}
               </span>
             </div>
             {benchmarkResult.gpuAdapter && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>{t('gpu_adapter')}</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+              <div className={s.benchmarkRow}>
+                <span className={s.benchmarkLabel}>{t('gpu_adapter')}</span>
+                <span className={s.benchmarkValue}>
                   {benchmarkResult.gpuAdapter.vendor}
                   {benchmarkResult.gpuAdapter.architecture !== 'unknown' ? ` (${benchmarkResult.gpuAdapter.architecture})` : ''}
                 </span>
               </div>
             )}
             {benchmarkResult.webgl2Renderer && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>{t('webgl2_renderer')}</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)', textAlign: 'right', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className={s.benchmarkRow}>
+                <span className={s.benchmarkLabel}>{t('webgl2_renderer')}</span>
+                <span className={s.rendererValue}>
                   {benchmarkResult.webgl2Renderer}
                 </span>
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>{t('recommended_backend')}</span>
-              <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+            <div className={s.benchmarkRow}>
+              <span className={s.benchmarkLabel}>{t('recommended_backend')}</span>
+              <span className={s.benchmarkValueBold}>
                 {benchmarkResult.recommendedBackend.toUpperCase()}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--muted)' }}>CPU MatMul 256x256</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+            <div className={s.benchmarkRow}>
+              <span className={s.benchmarkLabel}>CPU MatMul 256x256</span>
+              <span className={s.benchmarkValue}>
                 {benchmarkResult.matMulCpu} ms
               </span>
             </div>
@@ -599,7 +590,7 @@ export default function Profile({ onClose }) {
         )}
       </div>
 
-      <p className="text-xs text-muted" style={{ textAlign: 'center', padding: '16px 0 32px', opacity: 0.5 }}>
+      <p className={`text-xs text-muted ${s.versionFooter}`}>
         WorkoutVision v1.0.0
       </p>
     </div>

@@ -4,6 +4,7 @@ import { calculateWorkloadRatio } from '../lib/coach';
 import { EXERCISES } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
 import ExerciseHistory from './ExerciseHistory';
+import s from './WorkoutHistory.module.css';
 
 function formatDate(iso, lang = 'en') {
   const d = new Date(iso);
@@ -255,7 +256,7 @@ export default function WorkoutHistory({ onClose }) {
           <h2>{t('progress')}</h2>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
         </div>
-        <div style={{ textAlign: 'center', padding: 40 }}>
+        <div className={s.loadingContainer}>
           <div className="spinner" />
           <p className="text-sm text-muted">{t('loading_workouts')}</p>
         </div>
@@ -271,9 +272,9 @@ export default function WorkoutHistory({ onClose }) {
       </div>
 
       {workouts.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+        <div className={`card ${s.emptyState}`}>
           <p className="text-muted">{t('no_workouts')}</p>
-          <p className="text-xs text-muted" style={{ marginTop: 6 }}>
+          <p className={`text-xs text-muted ${s.emptyStateHint}`}>
             {t('no_workouts_desc')}
           </p>
         </div>
@@ -282,20 +283,20 @@ export default function WorkoutHistory({ onClose }) {
           {/* Summary stats */}
           {stats && (
             <div className="card">
-              <div className="result-stats" style={{ justifyContent: 'space-around' }}>
-                <div className="stat" style={{ alignItems: 'center' }}>
+              <div className={`result-stats ${s.summaryStats}`}>
+                <div className={`stat ${s.statCentered}`}>
                   <span className="stat-value">{stats.total}</span>
                   <span className="stat-label">{t('workouts')}</span>
                 </div>
-                <div className="stat" style={{ alignItems: 'center' }}>
+                <div className={`stat ${s.statCentered}`}>
                   <span className="stat-value">{stats.totalReps}</span>
                   <span className="stat-label">{t('total_reps')}</span>
                 </div>
-                <div className="stat" style={{ alignItems: 'center' }}>
+                <div className={`stat ${s.statCentered}`}>
                   <span className="stat-value">{stats.avgScore}</span>
                   <span className="stat-label">{t('avg_form')}</span>
                 </div>
-                <div className="stat" style={{ alignItems: 'center' }}>
+                <div className={`stat ${s.statCentered}`}>
                   <span className="stat-value">{stats.streak}</span>
                   <span className="stat-label">{t('day_streak')}</span>
                 </div>
@@ -305,36 +306,26 @@ export default function WorkoutHistory({ onClose }) {
 
           {/* Exercise history link */}
           <button
-            className="btn btn-ghost"
+            className={`btn btn-ghost ${s.exerciseHistoryBtn}`}
             onClick={() => setShowExerciseHistory(true)}
-            style={{
-              width: '100%',
-              textAlign: 'center',
-              marginBottom: 8,
-              padding: '10px 14px',
-              fontSize: '0.85rem',
-              color: 'var(--accent)',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-            }}
           >
             {t('exercise_history') || 'Exercise History'} →
           </button>
 
           {/* Journey section */}
           {workouts.length > 0 && (
-            <div className="card" style={{ padding: 16 }}>
-              <h4 style={{ marginTop: 0, marginBottom: 12 }}>{t('your_journey')}</h4>
+            <div className={`card ${s.journeyCard}`}>
+              <h4 className={s.journeyTitle}>{t('your_journey')}</h4>
 
               {/* Sparkline: form score trend for top exercise */}
               {sparklineData.length > 1 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div className="text-xs text-muted" style={{ marginBottom: 6 }}>
+                <div className={s.sparklineSection}>
+                  <div className={`text-xs text-muted ${s.sparklineLabel}`}>
                     {t('top_exercise_form')} ({exerciseTrends[0]?.name})
                   </div>
                   <svg
                     viewBox={`0 0 ${(sparklineData.length - 1) * 14} 40`}
-                    style={{ width: '100%', height: 40, display: 'block' }}
+                    className={s.sparklineSvg}
                     preserveAspectRatio="none"
                   >
                     {(() => {
@@ -373,7 +364,7 @@ export default function WorkoutHistory({ onClose }) {
                       );
                     })()}
                   </svg>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                  <div className={s.sparklineRange}>
                     <span className="text-xs text-muted">{sparklineData[0]}</span>
                     <span className="text-xs text-muted">{sparklineData[sparklineData.length - 1]}</span>
                   </div>
@@ -382,31 +373,21 @@ export default function WorkoutHistory({ onClose }) {
 
               {/* Per-exercise mini trends */}
               {exerciseTrends.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div className="text-xs text-muted" style={{ marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <div className={s.trendsSection}>
+                  <div className={`text-xs text-muted ${s.trendsHeading}`}>
                     {t('exercise_trends')}
                   </div>
                   {exerciseTrends.map(ex => (
-                    <div
-                      key={ex.key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '6px 0',
-                        borderBottom: '1px solid var(--border)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{
-                          fontSize: '0.95rem',
+                    <div key={ex.key} className={s.trendRow}>
+                      <div className={s.trendRowLeft}>
+                        <span className={s.trendArrow} style={{
                           color: ex.direction === 'improving' ? 'var(--accent)' : ex.direction === 'declining' ? 'var(--red)' : 'var(--yellow)',
                         }}>
                           {ex.direction === 'improving' ? '↑' : ex.direction === 'declining' ? '↓' : '→'}
                         </span>
-                        <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{ex.name}</span>
+                        <span className="text-sm">{ex.name}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div className={s.trendRowRight}>
                         <span className="text-xs text-muted">{ex.count}x</span>
                         <span className="text-xs" style={{
                           color: ex.direction === 'improving' ? 'var(--accent)' : ex.direction === 'declining' ? 'var(--red)' : 'var(--yellow)',
@@ -444,29 +425,18 @@ export default function WorkoutHistory({ onClose }) {
 
                 return (
                   <div>
-                    <div className="text-xs text-muted" style={{ marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div className={`text-xs text-muted ${s.milestonesHeading}`}>
                       {t('milestones')}
                     </div>
                     {achieved.map(m => (
-                      <div key={m.key} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '5px 0',
-                      }}>
-                        <span style={{ fontSize: '1rem' }}>{m.icon}</span>
-                        <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{m.label}</span>
+                      <div key={m.key} className={s.milestoneRow}>
+                        <span className={s.milestoneIcon}>{m.icon}</span>
+                        <span className="text-sm">{m.label}</span>
                       </div>
                     ))}
                     {upcoming.slice(0, 2).map((m, i) => (
-                      <div key={`upcoming-${i}`} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '5px 0',
-                        opacity: 0.35,
-                      }}>
-                        <span style={{ fontSize: '1rem' }}>{m.icon}</span>
+                      <div key={`upcoming-${i}`} className={s.milestoneUpcoming}>
+                        <span className={s.milestoneIcon}>{m.icon}</span>
                         <span className="text-sm">{m.label}</span>
                       </div>
                     ))}
@@ -480,14 +450,9 @@ export default function WorkoutHistory({ onClose }) {
           {workloadRatio && (
             <div className="card">
               <h4>{t('training_load')}</h4>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    height: 10,
-                    borderRadius: 5,
-                    background: 'var(--border)',
-                    overflow: 'hidden',
-                  }}>
+              <div className={s.workloadRow}>
+                <div className={s.workloadBarTrack}>
+                  <div className={s.workloadBarBg}>
                     <div style={{
                       width: `${Math.min((workloadRatio.ratio / 2) * 100, 100)}%`,
                       height: '100%',
@@ -496,17 +461,17 @@ export default function WorkoutHistory({ onClose }) {
                       transition: 'width 0.3s',
                     }} />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                  <div className={s.workloadLabels}>
                     <span className="text-xs text-muted">0</span>
                     <span className="text-xs text-muted">1.0 {t('optimal')}</span>
                     <span className="text-xs text-muted">2.0+</span>
                   </div>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: workloadZoneColor(workloadRatio.zone) }}>
+                <div className={s.workloadValue}>
+                  <div className={s.workloadNumber} style={{ color: workloadZoneColor(workloadRatio.zone) }}>
                     {workloadRatio.ratio?.toFixed(2)}
                   </div>
-                  <span className="text-xs text-muted" style={{ textTransform: 'capitalize' }}>
+                  <span className={`text-xs text-muted ${s.workloadZoneLabel}`}>
                     {t(`zone_${workloadRatio.zone}`) || t('unknown')}
                   </span>
                 </div>
@@ -518,7 +483,7 @@ export default function WorkoutHistory({ onClose }) {
           {trendData.length > 1 && (
             <div className="card">
               <h4>{t('form_score_trend')}</h4>
-              <div className="trend-chart" style={{ marginTop: 8 }}>
+              <div className={`trend-chart ${s.trendChart}`}>
                 {trendData.map((w, i) => {
                   const score = w.formScore || 0;
                   return (
@@ -535,7 +500,7 @@ export default function WorkoutHistory({ onClose }) {
                   );
                 })}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              <div className={s.trendChartLabels}>
                 <span className="text-xs text-muted">{t('oldest')}</span>
                 <span className="text-xs text-muted">{t('latest')}</span>
               </div>
@@ -547,13 +512,13 @@ export default function WorkoutHistory({ onClose }) {
             <div key={weekKey}>
               <div className="week-header">{getWeekLabel(weekKey, t, lang)}</div>
               {weekWorkouts.map(w => (
-                <div key={w.id} className="card" style={{ padding: 12 }}>
+                <div key={w.id} className={`card ${s.workoutCardInner}`}>
                   <div className="workout-card-header">
                     <div>
-                      <strong style={{ color: 'var(--text-primary)', fontSize: '0.88rem' }}>
+                      <strong className={s.workoutName}>
                         {w.exerciseName || w.exercise}
                       </strong>
-                      <span className="text-xs text-muted" style={{ marginLeft: 8 }}>
+                      <span className={`text-xs text-muted ${s.workoutDate}`}>
                         {formatDate(w.date, lang)}
                       </span>
                     </div>
@@ -582,39 +547,15 @@ export default function WorkoutHistory({ onClose }) {
 
       {/* Delete confirmation overlay */}
       {deleteConfirmId && (
-        <div
-          onClick={() => setDeleteConfirmId(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            className="card"
-            style={{
-              background: 'var(--glass-bg)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '20px 24px',
-              maxWidth: 300,
-              width: '85%',
-              textAlign: 'center',
-            }}
-          >
-            <p style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontWeight: 600, fontSize: '0.95rem' }}>
+        <div className={s.overlay} onClick={() => setDeleteConfirmId(null)}>
+          <div onClick={e => e.stopPropagation()} className={`card ${s.confirmDialog}`}>
+            <p className={s.confirmTitle}>
               {t('delete_confirm_title')}
             </p>
-            <p style={{ color: 'var(--text-secondary)', margin: '0 0 18px', fontSize: '0.8rem' }}>
+            <p className={s.confirmDesc}>
               {t('delete_confirm_desc')}
             </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+            <div className={s.confirmActions}>
               <button
                 className="btn btn-ghost btn-sm"
                 onClick={() => setDeleteConfirmId(null)}
@@ -622,8 +563,7 @@ export default function WorkoutHistory({ onClose }) {
                 {t('cancel')}
               </button>
               <button
-                className="btn btn-sm"
-                style={{ background: 'var(--red)', color: '#fff', border: 'none' }}
+                className={`btn btn-sm ${s.deleteBtn}`}
                 onClick={() => handleDelete(deleteConfirmId)}
               >
                 {t('delete')}

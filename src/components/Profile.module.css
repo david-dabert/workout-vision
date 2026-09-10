@@ -1,0 +1,178 @@
+.langSwitcher {
+  display: flex;
+  gap: 8px;
+}
+
+.injuryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.injuryTag {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+.trainingDaysLabel {
+  margin-top: 8px;
+}
+
+.trainingDaysDesc {
+  margin: 4px 0 8px;
+}
+
+.trainingDaysTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.trainingDayTag {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  min-width: 44px;
+  text-align: center;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+.saveBtn {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.sectionDesc {
+  margin-bottom: 10px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkboxLabelSpaced {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.checkboxText {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cyclePhaseBox {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.cyclePhaseTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cycleDayCount {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
+.cycleTip {
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.baselinesCaveat {
+  margin-top: 12px;
+  font-style: italic;
+}
+
+.uploadZone {
+  margin-bottom: 10px;
+}
+
+.uploadLabel {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.fileInputHidden {
+  display: none;
+}
+
+.recordName {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.benchmarkDesc {
+  margin-bottom: 12px;
+}
+
+.benchmarkBtn {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.benchmarkResults {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.benchmarkRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.benchmarkLabel {
+  color: var(--muted);
+}
+
+.benchmarkValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.benchmarkValueBold {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.rendererValue {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.versionFooter {
+  text-align: center;
+  padding: 16px 0 32px;
+  opacity: 0.5;
+}

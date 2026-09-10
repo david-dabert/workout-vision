@@ -6,7 +6,7 @@ import App from './App.jsx'
 // Register service worker for offline support and PWA install prompt
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/workout-vision/sw.js').catch(() => {});
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {});
   });
 }
 

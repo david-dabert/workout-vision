@@ -1,0 +1,420 @@
+.page {
+  padding: 16px env(safe-area-inset-right) 16px env(safe-area-inset-left);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.description {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.benchmarkCard {
+  background: rgba(0, 245, 212, 0.04);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(0, 245, 212, 0.15);
+}
+
+.benchmarkHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.benchmarkTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.benchmarkMeta {
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.benchmarkDescription {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.benchmarkBtn {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 100%;
+}
+
+.benchmarkError {
+  font-size: 0.7rem;
+  color: var(--red);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.datasetDetails {
+  margin-bottom: 10px;
+}
+
+.datasetSummary {
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.datasetCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.datasetInstructions {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.datasetActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.datasetBtnSmall {
+  font-size: 0.72rem;
+}
+
+.csvFilename {
+  font-size: 0.68rem;
+  color: var(--accent);
+  margin-top: 6px;
+}
+
+.dropZone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.dropZoneLabel {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.hidden {
+  display: none;
+}
+
+.testCard {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.testCardRunning {
+  composes: testCard;
+  border: 1px solid var(--accent);
+}
+
+.testCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.testName {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.testInputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.exerciseSelect {
+  flex: 1;
+  min-width: 140px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.repsInput {
+  width: 60px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+
+.runBtn {
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.runningStatus {
+  text-align: center;
+  padding: 12px 0;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+.hiddenVideo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.resultsSection {
+  margin-top: 16px;
+}
+
+.resultsTitle {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.aggregateCard {
+  background: rgba(0, 245, 212, 0.06);
+  border: 1px solid rgba(0, 245, 212, 0.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.statsGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.statsGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.statValueLarge {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.statValueMedium {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.statLabel {
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.textPrimary {
+  color: var(--text-primary);
+}
+
+.exerciseDetection {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.resultCard {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+
+.resultError {
+  color: var(--red);
+  font-size: 0.78rem;
+}
+
+.resultRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+}
+
+.resultName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.resultReps {
+  font-weight: 700;
+}
+
+.resultMeta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.exerciseMismatch {
+  color: var(--red);
+}
+
+.diagLine {
+  margin-top: 4px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.progressionRow {
+  margin-top: 6px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.progressionBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.progressionTitle {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.bodyTypeLine {
+  margin-top: 3px;
+  font-size: 0.6rem;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.exportBtn {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 0.78rem;
+}
+
+.diagToggle {
+  margin-top: 6px;
+}
+
+.diagButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 0;
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diagArrow {
+  transition: transform 0.15s;
+  display: inline-block;
+}
+
+.diagArrowOpen {
+  composes: diagArrow;
+  transform: rotate(90deg);
+}
+
+.diagStatusBadge {
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.diagPanel {
+  margin-top: 4px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  font-size: 0.62rem;
+  color: var(--muted);
+  line-height: 1.7;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.diagSectionLabel {
+  color: var(--text-secondary);
+}
+
+.diagSignals {
+  margin-top: 4px;
+}
+
+.diagSignalItem {
+  padding-left: 8px;
+}
+
+.diagWarnings {
+  margin-top: 4px;
+  color: var(--yellow);
+}
+
+.diagFailures {
+  margin-top: 2px;
+  color: var(--red);
+}
