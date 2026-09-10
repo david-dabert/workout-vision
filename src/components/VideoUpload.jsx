@@ -12,6 +12,7 @@ import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import FeedbackPanel from './FeedbackPanel';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
+import VideoSuitabilityBanner from './VideoSuitabilityBanner';
 import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
 
