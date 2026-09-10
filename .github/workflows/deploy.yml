@@ -27,6 +27,8 @@ jobs:
       - run: npm test
       - run: npm run test:benchmark
       - run: npm run build
+        env:
+          VITE_FEEDBACK_URL: ${{ secrets.VITE_FEEDBACK_URL }}
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test e2e/offline.spec.js
       - uses: actions/upload-pages-artifact@v3
