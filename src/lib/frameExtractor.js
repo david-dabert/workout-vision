@@ -1,9 +1,14 @@
 /**
  * Frame extraction and hashing utilities for video analysis.
  *
- * Primary extraction method: extractFramesStreaming (native <video> seeking).
- * Processes one frame at a time via callback, keeping memory usage constant
- * regardless of video length. Works on all platforms including iOS Safari.
+ * Two extraction methods:
+ * 1. extractFramesRVFC — requestVideoFrameCallback with accelerated playback (primary).
+ *    Plays video at 2-4x speed and captures frames via rVFC. No seeking, no timeouts,
+ *    GPU-accelerated decode. Chrome 83+, Safari 15.4+.
+ * 2. extractFramesSeek — legacy seek-based extraction (fallback).
+ *    Seeks one frame at a time. Works on all platforms including older iOS Safari.
+ *
+ * Both methods stream one frame at a time via callback, keeping memory constant.
  */
 
 /**
@@ -43,28 +48,28 @@ export async function hashLandmarks(landmarks) {
 }
 
 /**
- * Streaming frame extractor. Primary extraction method for all platforms.
+ * RVFC-based frame extractor (primary path).
  *
- * Unlike extractFramesFallback which stores ALL frames in memory at once,
- * this function seeks one frame at a time and passes it to a callback.
- * Only one ImageData exists in memory at any moment.
- *
- * Fixes from expert panel review:
- * - Waits for 'loadeddata' not just 'loadedmetadata' (decoder readiness)
- * - 5-second seek timeout (prevents infinite hang on corrupted segments)
- * - Duplicate frame detection (iOS keyframe-snapping produces duplicates)
- * - try/catch on getImageData (HEVC canvas taint on some iOS versions)
- * - Yields to main thread every frame (prevents UI freeze)
+ * Plays the video at an accelerated playback rate and uses
+ * requestVideoFrameCallback to capture frames at the target FPS interval.
+ * Much faster than seeking because:
+ * - No per-frame seek overhead (continuous decode pipeline)
+ * - GPU-accelerated video decode
+ * - Frame-accurate timing from the callback metadata
  *
  * @param {File} file - Video file
  * @param {number} targetFps - Target frames per second
  * @param {number} maxFrames - Maximum frames to extract
  * @param {number} maxWidth - Maximum frame width
- * @param {function} onFrame - Called with (canvas, frameIndex, timestamp). Process the frame here.
+ * @param {function} onFrame - Called with (canvas, frameIndex, timestamp)
  * @param {function} onProgress - Progress callback (0-100)
- * @returns {Promise<{width: number, height: number, fps: number, duration: number, frameCount: number}>}
+ * @param {Object} [options] - Additional options
+ * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
+ * @param {number} [options.startFrame] - Frame index to start from (for resume)
+ * @returns {Promise<{width, height, fps, duration, frameCount}>}
  */
-export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress) {
+async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
+  const { signal, startFrame = 0 } = options;
   const url = URL.createObjectURL(file);
   const video = document.createElement('video');
   video.muted = true;
@@ -72,13 +77,29 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   video.preload = 'auto';
 
   try {
-    // Wait for decoder readiness, not just metadata.
-    // Handlers BEFORE src to avoid race on synchronous fires.
-    // Explicit load() required: iOS Safari does not auto-load blob URLs.
+    // Check for early abort
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+    // Wait for decoder readiness
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
-      video.onloadeddata = () => { clearTimeout(timeout); resolve(); };
-      video.onerror = () => { clearTimeout(timeout); reject(new Error('Failed to load video')); };
+
+      const onAbort = () => {
+        clearTimeout(timeout);
+        reject(new DOMException('Aborted', 'AbortError'));
+      };
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+
+      video.onloadeddata = () => {
+        clearTimeout(timeout);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        resolve();
+      };
+      video.onerror = () => {
+        clearTimeout(timeout);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        reject(new Error('Failed to load video'));
+      };
       video.src = url;
       video.load();
     });
@@ -106,14 +127,228 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     const totalPossibleFrames = Math.floor(duration * targetFps);
     const frameCount = Math.min(totalPossibleFrames, maxFrames);
 
-    // For duplicate detection: compare actual video.currentTime after seek.
-    // iOS Safari snaps to keyframes, so multiple seek requests may land on
-    // the same decoded frame. Comparing currentTime is reliable; comparing
-    // pixel data from the top row is not (gym ceiling doesn't change).
-    let prevCurrentTime = -1;
-    let extractedCount = 0;
+    // If resuming, seek to the start position
+    const startTime = startFrame * interval;
+    if (startFrame > 0 && startTime < duration) {
+      video.currentTime = startTime;
+      await new Promise((resolve) => {
+        const onSeeked = () => { video.removeEventListener('seeked', onSeeked); resolve(); };
+        video.addEventListener('seeked', onSeeked);
+        setTimeout(resolve, 3000); // timeout fallback
+      });
+    }
 
-    for (let i = 0; i < frameCount; i++) {
+    // Play at accelerated rate for faster extraction
+    // 3x is a good balance: fast extraction without overloading the decoder
+    video.playbackRate = 3.0;
+
+    let extractedCount = startFrame;
+    let nextCaptureTime = startTime;
+    let lastCapturedTime = -1;
+
+    return await new Promise((resolve, reject) => {
+      let resolved = false;
+
+      const cleanup = () => {
+        video.pause();
+      };
+
+      const onAbort = () => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          reject(new DOMException('Aborted', 'AbortError'));
+        }
+      };
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+
+      const onVideoFrame = async (now, metadata) => {
+        if (resolved) return;
+
+        // Check abort
+        if (signal?.aborted) {
+          onAbort();
+          return;
+        }
+
+        const mediaTime = metadata.mediaTime;
+
+        // Check if we've reached the end or frame limit
+        if (mediaTime >= duration || extractedCount >= frameCount) {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            if (signal) signal.removeEventListener('abort', onAbort);
+            resolve({
+              width: frameWidth,
+              height: frameHeight,
+              fps: targetFps,
+              duration,
+              frameCount: extractedCount,
+            });
+          }
+          return;
+        }
+
+        // Capture frame if we've passed the next capture time threshold
+        if (mediaTime >= nextCaptureTime - 0.001) {
+          // Skip duplicate frames (same media time as last capture)
+          if (Math.abs(mediaTime - lastCapturedTime) >= 0.01) {
+            try {
+              ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
+              await onFrame(canvas, extractedCount, mediaTime);
+              extractedCount++;
+              lastCapturedTime = mediaTime;
+
+              if (onProgress) {
+                onProgress(Math.round((extractedCount / frameCount) * 100));
+              }
+            } catch {
+              // canvas draw failure, skip frame
+            }
+          }
+
+          // Advance to next capture point
+          nextCaptureTime = (extractedCount) * interval;
+        }
+
+        // Register next callback
+        video.requestVideoFrameCallback(onVideoFrame);
+      };
+
+      // Handle video ending
+      video.onended = () => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          if (signal) signal.removeEventListener('abort', onAbort);
+          resolve({
+            width: frameWidth,
+            height: frameHeight,
+            fps: targetFps,
+            duration,
+            frameCount: extractedCount,
+          });
+        }
+      };
+
+      video.onerror = () => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          if (signal) signal.removeEventListener('abort', onAbort);
+          reject(new Error('Video playback error during extraction'));
+        }
+      };
+
+      // Start frame capture loop and play
+      video.requestVideoFrameCallback(onVideoFrame);
+      video.play().catch((err) => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          if (signal) signal.removeEventListener('abort', onAbort);
+          reject(err);
+        }
+      });
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+    video.pause();
+    video.src = '';
+    video.load();
+  }
+}
+
+/**
+ * Seek-based frame extractor (fallback path).
+ *
+ * Seeks one frame at a time via <video>.currentTime. Works on all platforms
+ * including older iOS Safari that lacks requestVideoFrameCallback.
+ *
+ * Fixes from expert panel review:
+ * - Waits for 'loadeddata' not just 'loadedmetadata' (decoder readiness)
+ * - 5-second seek timeout (prevents infinite hang on corrupted segments)
+ * - Duplicate frame detection (iOS keyframe-snapping produces duplicates)
+ * - try/catch on getImageData (HEVC canvas taint on some iOS versions)
+ * - Yields to main thread every frame (prevents UI freeze)
+ *
+ * @param {File} file - Video file
+ * @param {number} targetFps - Target frames per second
+ * @param {number} maxFrames - Maximum frames to extract
+ * @param {number} maxWidth - Maximum frame width
+ * @param {function} onFrame - Called with (canvas, frameIndex, timestamp). Process the frame here.
+ * @param {function} onProgress - Progress callback (0-100)
+ * @param {Object} [options] - Additional options
+ * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
+ * @param {number} [options.startFrame] - Frame index to start from (for resume)
+ * @returns {Promise<{width: number, height: number, fps: number, duration: number, frameCount: number}>}
+ */
+async function extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
+  const { signal, startFrame = 0 } = options;
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+
+  try {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+    // Wait for decoder readiness, not just metadata.
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
+
+      const onAbort = () => {
+        clearTimeout(timeout);
+        reject(new DOMException('Aborted', 'AbortError'));
+      };
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+
+      video.onloadeddata = () => {
+        clearTimeout(timeout);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        resolve();
+      };
+      video.onerror = () => {
+        clearTimeout(timeout);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        reject(new Error('Failed to load video'));
+      };
+      video.src = url;
+      video.load();
+    });
+
+    const duration = video.duration;
+    const nativeWidth = video.videoWidth;
+    const nativeHeight = video.videoHeight;
+
+    let frameWidth = nativeWidth;
+    let frameHeight = nativeHeight;
+    if (frameWidth > maxWidth) {
+      const scale = maxWidth / frameWidth;
+      frameWidth = Math.round(frameWidth * scale);
+      frameHeight = Math.round(frameHeight * scale);
+      frameWidth -= frameWidth % 2;
+      frameHeight -= frameHeight % 2;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = frameWidth;
+    canvas.height = frameHeight;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    const interval = 1 / targetFps;
+    const totalPossibleFrames = Math.floor(duration * targetFps);
+    const frameCount = Math.min(totalPossibleFrames, maxFrames);
+
+    let prevCurrentTime = -1;
+    let extractedCount = startFrame;
+
+    for (let i = startFrame; i < frameCount; i++) {
+      // Check abort between frames
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
       const seekTime = i * interval;
       if (seekTime > duration) break;
 
@@ -125,7 +360,7 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
           const timeout = setTimeout(() => {
             video.removeEventListener('seeked', onSeeked);
             video.removeEventListener('error', onError);
-            resolve(false); // timeout: flag to skip this frame
+            resolve(false);
           }, 5000);
           const onSeeked = () => {
             clearTimeout(timeout);
@@ -147,13 +382,12 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
       }
       if (!seekOk) {
         if (onProgress) onProgress(Math.round(((i + 1) / frameCount) * 100));
-        continue; // skip stale frame
+        continue;
       }
 
       // Duplicate detection via currentTime comparison (keyframe snapping)
       const actualTime = video.currentTime;
       if (Math.abs(actualTime - prevCurrentTime) < 0.01) {
-        // Seek landed on the same keyframe as last time, skip
         if (onProgress) onProgress(Math.round(((i + 1) / frameCount) * 100));
         continue;
       }
@@ -163,11 +397,9 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
       try {
         ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
       } catch {
-        continue; // canvas taint or draw failure, skip frame
+        continue;
       }
 
-      // Pass the canvas directly to the callback (no ImageData allocation needed
-      // if the callback can work with canvas — MediaPipe's detectForVideo takes canvas)
       await onFrame(canvas, extractedCount, seekTime);
       extractedCount++;
 
@@ -191,4 +423,40 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     video.src = '';
     video.load();
   }
+}
+
+/**
+ * Streaming frame extractor with automatic method selection.
+ *
+ * Uses requestVideoFrameCallback when available (2-4x faster),
+ * falls back to seek-based extraction otherwise.
+ *
+ * @param {File} file - Video file
+ * @param {number} targetFps - Target frames per second
+ * @param {number} maxFrames - Maximum frames to extract
+ * @param {number} maxWidth - Maximum frame width
+ * @param {function} onFrame - Called with (canvas, frameIndex, timestamp)
+ * @param {function} onProgress - Progress callback (0-100)
+ * @param {Object} [options] - Additional options
+ * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
+ * @param {number} [options.startFrame] - Frame index to start from (for resume)
+ * @returns {Promise<{width, height, fps, duration, frameCount, method: string}>}
+ */
+export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
+  const useRVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+
+  if (useRVFC) {
+    try {
+      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+      return { ...result, method: 'rvfc' };
+    } catch (err) {
+      // If aborted, re-throw immediately
+      if (err.name === 'AbortError') throw err;
+      // RVFC failed for other reasons, fall back to seek
+      console.warn('[frameExtractor] RVFC extraction failed, falling back to seek:', err.message);
+    }
+  }
+
+  const result = await extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+  return { ...result, method: 'seek' };
 }

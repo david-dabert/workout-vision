@@ -137,7 +137,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   // Domain logic extracted to src/lib/analyzeVideo.js.
   // This wrapper bridges React state (progress, phase, errors) to the pure engine.
 
-  const analyzeVideo = useCallback(async (queueItem) => {
+  const analyzeVideo = useCallback(async (queueItem, signal) => {
     const weightKg = parseFloat(weight) || 0;
 
     const result = await analyzeVideoFile({
@@ -171,10 +171,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       onLiveReps: (reps) => setLiveReps(reps),
       onExerciseDetected: (ex) => setExercise(ex),
       onSuitability: (assessment) => setSuitabilityAssessment(assessment),
+      signal,
     });
 
     if (!result) {
       setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
+      return null;
+    }
+
+    // Handle aborted results
+    if (result.aborted) {
+      setCancelled(true);
+      setFfmpegStatus('');
+      if (result.reps > 0) {
+        // Partial results available
+        setDebugInfo(result.debug || null);
+        const url = URL.createObjectURL(queueItem.file);
+        blobUrlRef.current = url;
+        return { ...result, videoUrl: url, partial: true };
+      }
       return null;
     }
 
@@ -188,15 +203,24 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     return { ...result, videoUrl: url };
   }, [exercise, autoDetect, weight, userInjuries, userProfile, workerReady, workerSupported, initWorker, detectFrame, resetWorker]);
 
+  const cancelAnalysis = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  }, []);
+
   const startAnalysis = useCallback(async () => {
     setAnalyzing(true);
-    abortRef.current = false;
+    setCancelled(false);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const pending = queue.filter(q => q.status === 'queued');
     const allResults = [...results];
 
     for (const item of pending) {
-      if (abortRef.current) break;
+      if (controller.signal.aborted) break;
       setCurrentFile(item.name);
       setProgress(0);
       setQueue(prev => prev.map(q =>
@@ -204,19 +228,35 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       ));
 
       try {
-        const result = await analyzeVideo(item);
+        const result = await analyzeVideo(item, controller.signal);
 
-        if (result) {
+        if (result && !result.aborted) {
           setQueue(prev => prev.map(q =>
             q.id === item.id ? { ...q, status: 'done', progress: 100 } : q
           ));
           allResults.push(result);
+        } else if (result?.aborted && result.reps > 0) {
+          // Partial results from cancelled analysis
+          setQueue(prev => prev.map(q =>
+            q.id === item.id ? { ...q, status: 'cancelled', progress: result.progress || 0 } : q
+          ));
+          allResults.push(result);
+        } else if (controller.signal.aborted) {
+          setQueue(prev => prev.map(q =>
+            q.id === item.id ? { ...q, status: 'cancelled' } : q
+          ));
         } else {
           setQueue(prev => prev.map(q =>
             q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
           ));
         }
       } catch (err) {
+        if (err.name === 'AbortError') {
+          setQueue(prev => prev.map(q =>
+            q.id === item.id ? { ...q, status: 'cancelled' } : q
+          ));
+          break;
+        }
         console.error('[VideoUpload] Analysis failed for', item.name, err);
         setQueue(prev => prev.map(q =>
           q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
@@ -227,9 +267,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     setResults(allResults);
     setAnalyzing(false);
     setCurrentFile(null);
+    abortControllerRef.current = null;
   }, [queue, results, analyzeVideo]);
 
+  // Resume: re-queue cancelled items and start analysis again
+  const resumeAnalysis = useCallback(() => {
+    setCancelled(false);
+    setQueue(prev => prev.map(q =>
+      q.status === 'cancelled' ? { ...q, status: 'queued', progress: 0 } : q
+    ));
+  }, []);
+
   const hasQueued = queue.some(q => q.status === 'queued');
+  const hasCancelled = queue.some(q => q.status === 'cancelled');
 
   if (replayResult) {
     return (
@@ -329,6 +379,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         />
       </div>
 
+      {cancelled && !analyzing && (
+        <div style={{
+          margin: '10px 0', padding: '12px 14px', borderRadius: 10,
+          background: 'rgba(255,170,0,0.08)', border: '1px solid rgba(255,170,0,0.2)',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <p style={{ color: 'rgba(255,200,100,0.9)', fontSize: '0.82rem', margin: 0, lineHeight: 1.4, flex: 1 }}>
+            Analysis cancelled. {hasCancelled ? 'Press Resume to continue from checkpoint.' : 'Partial results shown below.'}
+          </p>
+          <button
+            onClick={() => setCancelled(false)}
+            style={{
+              background: 'none', border: 'none', color: 'var(--muted)',
+              cursor: 'pointer', fontSize: 16, padding: '0 2px', flexShrink: 0,
+            }}
+          >&times;</button>
+        </div>
+      )}
+
       {errorMsg && (
         <div style={{
           margin: '10px 0', padding: '12px 14px', borderRadius: 10,
@@ -367,6 +436,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                   </div>
                 )}
                 {q.status === 'done' && <span className="queue-done">{t('done')}</span>}
+                {q.status === 'cancelled' && (
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.73rem', lineHeight: 1.4 }}>
+                    Cancelled
+                  </span>
+                )}
                 {q.status === 'error' && (
                   <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
                     {t('failed_try_different')}
@@ -453,14 +527,24 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               >
                 {audioEnabled ? '\u{1F50A}' : '\u{1F507}'}
               </button>
-              <button
-                className="btn btn-primary"
-                style={{ flex: 1 }}
-                onClick={startAnalysis}
-                disabled={!hasQueued}
-              >
-                {t('analyze')}
-              </button>
+              {hasCancelled && !hasQueued ? (
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  onClick={() => { resumeAnalysis(); }}
+                >
+                  Resume
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  onClick={startAnalysis}
+                  disabled={!hasQueued}
+                >
+                  {t('analyze')}
+                </button>
+              )}
             </div>
           </>
         ) : (
@@ -469,7 +553,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {currentFile}
               </span>
-              <button className="btn btn-ghost btn-sm" onClick={() => { abortRef.current = true; }}>{t('stop')}</button>
+              <button className="btn btn-ghost btn-sm" onClick={cancelAnalysis}>{t('stop')}</button>
             </div>
             <div className="analysis-phases">
               {[

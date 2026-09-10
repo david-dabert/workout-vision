@@ -6,6 +6,11 @@
  * exercise detection → rep counting → biomechanical analysis → coaching report.
  *
  * Extracted from VideoUpload.jsx to decouple domain logic from UI rendering.
+ *
+ * Supports:
+ * - AbortSignal for cancellation (returns partial results with aborted flag)
+ * - Partial landmark cache checkpoints (resume from where extraction stopped)
+ * - RVFC-based frame extraction with seek fallback
  */
 
 import { getImageLandmarker, detectPoseImage, extractJointAngles, resetKalmanFilters, selectSubjectPose } from './poseAnalysis';
@@ -18,10 +23,17 @@ import { saveWorkout, getLastWorkoutForExercise } from './storage';
 import { extractFramesStreaming, hashFile, hashLandmarks } from './frameExtractor';
 import { updateBaseline, compareToBaseline } from './formBaselines';
 import { computeCalibration, applyCalibration } from './calibration';
-import { getCachedLandmarks, setCachedLandmarks } from './landmarkCache';
+import {
+  getCachedLandmarks,
+  setCachedLandmarks,
+  savePartialCheckpoint,
+  loadPartialCheckpoint,
+  clearPartialCheckpoint,
+} from './landmarkCache';
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 const MAX_FRAMES = IS_IOS ? 300 : 600;
+const CHECKPOINT_INTERVAL = 50; // Save partial checkpoint every N frames
 
 /**
  * Analyze a single video file.
@@ -39,6 +51,7 @@ const MAX_FRAMES = IS_IOS ? 300 : 600;
  * @param {Function} params.onPhase - Phase callback ('hashing'|'model'|'extracting'|'analyzing')
  * @param {Function} params.onLiveReps - Live rep count callback
  * @param {Function} params.onExerciseDetected - Called when auto-detect resolves
+ * @param {AbortSignal} [params.signal] - AbortSignal for cancellation
  * @returns {Promise<Object|null>} Analysis result or null on failure
  */
 export async function analyzeVideoFile({
@@ -54,124 +67,201 @@ export async function analyzeVideoFile({
   onPhase = () => {},
   onLiveReps = () => {},
   onExerciseDetected = () => {},
+  signal,
 }) {
   const analysisStart = Date.now();
   const analysisFps = IS_IOS ? 10 : 15;
   const maxWidth = IS_IOS ? 480 : 720;
 
-  // ── Phase 1: Hash ──
-  onPhase('hashing');
-  const videoHash = await hashFile(file);
-  const cacheKey = `lm-${videoHash}-${analysisFps}`;
+  // Helper to check abort state
+  const checkAbort = () => {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  };
 
-  // ── Phase 2: Load model ──
-  onPhase('model');
-  resetKalmanFilters();
-  const useWorker = worker.ready || (worker.supported && await worker.init().catch(() => false));
-  if (useWorker) worker.reset();
-  let landmarker = null;
-  if (!useWorker) {
-    landmarker = await getImageLandmarker();
-    if (!landmarker) return null;
-  }
+  try {
+    // ── Phase 1: Hash ──
+    onPhase('hashing');
+    checkAbort();
+    const videoHash = await hashFile(file);
+    const cacheKey = `lm-${videoHash}-${analysisFps}`;
 
-  // ── Phase 3: Check cache ──
-  const frames = [];
-  const replayFrames = [];
-  let usedCache = false;
-  let frameCount = 0;
-  let duration = 0;
-
-  const cachedLandmarks = await getCachedLandmarks(cacheKey);
-  if (cachedLandmarks && cachedLandmarks.length > 0) {
-    usedCache = true;
-    frameCount = cachedLandmarks.length;
-    duration = frameCount / analysisFps;
-    const interval = 1 / analysisFps;
-    for (let i = 0; i < cachedLandmarks.length; i++) {
-      const lm = cachedLandmarks[i];
-      const time = i * interval;
-      const angles = extractJointAngles(lm);
-      frames.push({ landmarks: lm, timestamp: time, angles });
-      replayFrames.push({ landmarks: lm, timestamp: time });
+    // ── Phase 2: Load model ──
+    onPhase('model');
+    checkAbort();
+    resetKalmanFilters();
+    const useWorker = worker.ready || (worker.supported && await worker.init().catch(() => false));
+    if (useWorker) worker.reset();
+    let landmarker = null;
+    if (!useWorker) {
+      landmarker = await getImageLandmarker();
+      if (!landmarker) return null;
     }
-    onProgress(99);
-  }
 
-  // ── Phase 4: Extract frames ──
-  if (!usedCache) {
-    onPhase('extracting');
-    const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
-    let lockedSubjectIdx = null;
-    let streamFrameCount = 0;
+    // ── Phase 3: Check cache (full + partial) ──
+    const frames = [];
+    const replayFrames = [];
+    let usedCache = false;
+    let frameCount = 0;
+    let duration = 0;
 
-    try {
-      const streamResult = await extractFramesStreaming(
-        file,
-        analysisFps,
-        MAX_FRAMES,
-        maxWidth,
-        async (canvas, frameIndex) => {
-          const deterministicTs = frameIndex * (1000 / analysisFps);
-          let landmarks = null;
-          let angles = null;
+    checkAbort();
+    const cachedLandmarks = await getCachedLandmarks(cacheKey);
+    if (cachedLandmarks && cachedLandmarks.length > 0) {
+      usedCache = true;
+      frameCount = cachedLandmarks.length;
+      duration = frameCount / analysisFps;
+      const interval = 1 / analysisFps;
+      for (let i = 0; i < cachedLandmarks.length; i++) {
+        const lm = cachedLandmarks[i];
+        const time = i * interval;
+        const angles = extractJointAngles(lm);
+        frames.push({ landmarks: lm, timestamp: time, angles });
+        replayFrames.push({ landmarks: lm, timestamp: time });
+      }
+      onProgress(99);
+    }
 
-          if (useWorker) {
-            const workerResult = await worker.detect(canvas, deterministicTs, frameIndex);
-            if (workerResult) {
-              landmarks = workerResult.landmarks;
-              angles = workerResult.angles;
-            }
-          } else {
-            const result = detectPoseImage(landmarker, canvas, deterministicTs);
-            if (result?.landmarks?.length) {
-              if (result.landmarks.length === 1) {
-                landmarks = result.landmarks[0];
-              } else {
-                if (lockedSubjectIdx === null) {
-                  landmarks = selectSubjectPose(result.landmarks);
-                  lockedSubjectIdx = result.landmarks.indexOf(landmarks);
-                } else {
-                  landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
-                }
+    // ── Phase 4: Extract frames ──
+    if (!usedCache) {
+      onPhase('extracting');
+      checkAbort();
+
+      // Check for partial checkpoint to resume from
+      let startFrame = 0;
+      const partialCheckpoint = await loadPartialCheckpoint(cacheKey);
+      if (partialCheckpoint && partialCheckpoint.landmarks && partialCheckpoint.lastFrame > 0) {
+        // Restore frames from checkpoint
+        const interval = 1 / analysisFps;
+        for (let i = 0; i < partialCheckpoint.landmarks.length; i++) {
+          const lm = partialCheckpoint.landmarks[i];
+          const time = i * interval;
+          if (lm) {
+            const angles = extractJointAngles(lm);
+            frames.push({ landmarks: lm, timestamp: time, angles });
+            replayFrames.push({ landmarks: lm, timestamp: time });
+          }
+        }
+        startFrame = partialCheckpoint.lastFrame + 1;
+        onProgress(Math.round((startFrame / MAX_FRAMES) * 95));
+      }
+
+      const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
+      let lockedSubjectIdx = null;
+      let streamFrameCount = startFrame;
+      const landmarksForCache = frames.map(f => f.landmarks);
+
+      try {
+        const streamResult = await extractFramesStreaming(
+          file,
+          analysisFps,
+          MAX_FRAMES,
+          maxWidth,
+          async (canvas, frameIndex) => {
+            const deterministicTs = frameIndex * (1000 / analysisFps);
+            let landmarks = null;
+            let angles = null;
+
+            if (useWorker) {
+              const workerResult = await worker.detect(canvas, deterministicTs, frameIndex);
+              if (workerResult) {
+                landmarks = workerResult.landmarks;
+                angles = workerResult.angles;
               }
-              angles = extractJointAngles(landmarks);
+            } else {
+              const result = detectPoseImage(landmarker, canvas, deterministicTs);
+              if (result?.landmarks?.length) {
+                if (result.landmarks.length === 1) {
+                  landmarks = result.landmarks[0];
+                } else {
+                  if (lockedSubjectIdx === null) {
+                    landmarks = selectSubjectPose(result.landmarks);
+                    lockedSubjectIdx = result.landmarks.indexOf(landmarks);
+                  } else {
+                    landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
+                  }
+                }
+                angles = extractJointAngles(landmarks);
+              }
             }
-          }
 
-          if (landmarks) {
-            const time = frameIndex / analysisFps;
-            if (!angles) angles = extractJointAngles(landmarks);
-            frames.push({ landmarks, timestamp: time, angles });
-            replayFrames.push({ landmarks, timestamp: time });
+            if (landmarks) {
+              const time = frameIndex / analysisFps;
+              if (!angles) angles = extractJointAngles(landmarks);
+              frames.push({ landmarks, timestamp: time, angles });
+              replayFrames.push({ landmarks, timestamp: time });
+              landmarksForCache.push(landmarks);
 
-            const liveResult = liveRepCounter.update(landmarks, time);
-            if (liveResult?.reps != null) {
-              onLiveReps(liveResult.reps);
+              const liveResult = liveRepCounter.update(landmarks, time);
+              if (liveResult?.reps != null) {
+                onLiveReps(liveResult.reps);
+              }
             }
+
+            streamFrameCount++;
+            onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
+
+            // Progressive checkpoint: save partial cache every N frames
+            if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
+              savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
+            }
+          },
+          undefined, // onProgress handled inside onFrame
+          { signal, startFrame },
+        );
+
+        frameCount = streamResult.frameCount;
+        duration = streamResult.duration;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // Save what we have as a partial checkpoint before returning
+          if (landmarksForCache.length > 0) {
+            await savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
           }
+          // Return partial results with aborted flag
+          return buildPartialResult({
+            frames, replayFrames, analysisFps, exercise, autoDetect,
+            userChangedExercise, weightKg, userInjuries, userProfile,
+            file, videoHash, analysisStart, onExerciseDetected,
+            aborted: true,
+          });
+        }
+        console.error('[analyzeVideo] Streaming extraction failed:', err);
+        return null;
+      }
 
-          streamFrameCount++;
-          onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
-        },
-      );
-
-      frameCount = streamResult.frameCount;
-      duration = streamResult.duration;
-    } catch (err) {
-      console.error('[analyzeVideo] Streaming extraction failed:', err);
-      return null;
+      // Cache landmarks and clear partial checkpoint
+      if (frames.length > 0) {
+        const toCache = frames.map(f => f.landmarks);
+        setCachedLandmarks(cacheKey, toCache).catch(() => {});
+        clearPartialCheckpoint(cacheKey).catch(() => {});
+      }
     }
 
-    // Cache landmarks
-    if (frames.length > 0) {
-      const toCache = frames.map(f => f.landmarks);
-      setCachedLandmarks(cacheKey, toCache).catch(() => {});
+    if (frames.length === 0) return null;
+
+    return await buildFullResult({
+      frames, replayFrames, frameCount, duration, analysisFps,
+      exercise, autoDetect, userChangedExercise, weightKg, userInjuries, userProfile,
+      file, videoHash, analysisStart, onProgress, onPhase, onExerciseDetected,
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      // Aborted before extraction started; no partial results available
+      return { aborted: true, reps: 0, frames: [], exercise };
     }
+    throw err;
   }
+}
 
-  if (frames.length === 0) return null;
-
+/**
+ * Build the full analysis result after all frames are extracted.
+ * Shared between normal completion and partial result building.
+ */
+async function buildFullResult({
+  frames, replayFrames, frameCount, duration, analysisFps,
+  exercise, autoDetect, userChangedExercise, weightKg, userInjuries, userProfile,
+  file, videoHash, analysisStart, onProgress = () => {}, onPhase = () => {}, onExerciseDetected = () => {},
+}) {
   const analysisTime = ((Date.now() - analysisStart) / 1000).toFixed(1);
 
   // ── Phase 5: Post-processing ──
@@ -335,5 +425,43 @@ export async function analyzeVideoFile({
     detectionFailed: autoDetected === 'failed',
     weight: w,
     debug,
+    aborted: false,
   };
+}
+
+/**
+ * Build a partial result when analysis is aborted mid-extraction.
+ * Runs post-processing on whatever frames were collected.
+ */
+async function buildPartialResult({
+  frames, replayFrames, analysisFps, exercise, autoDetect,
+  userChangedExercise, weightKg, userInjuries, userProfile,
+  file, videoHash, analysisStart, onExerciseDetected,
+  aborted,
+}) {
+  if (frames.length === 0) {
+    return { aborted: true, reps: 0, frames: [], exercise, fileName: file.name };
+  }
+
+  const duration = frames.length / analysisFps;
+  const frameCount = frames.length;
+
+  try {
+    return await buildFullResult({
+      frames, replayFrames, frameCount, duration, analysisFps,
+      exercise, autoDetect, userChangedExercise, weightKg, userInjuries, userProfile,
+      file, videoHash, analysisStart, onExerciseDetected,
+    });
+  } catch {
+    // If post-processing fails on partial data, return minimal result
+    return {
+      aborted: true,
+      fileName: file.name,
+      exercise,
+      reps: 0,
+      frames: replayFrames,
+      fps: analysisFps,
+      duration: Math.round(duration),
+    };
+  }
 }
