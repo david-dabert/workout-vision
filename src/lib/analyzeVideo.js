@@ -94,6 +94,7 @@ export async function analyzeVideoFile({
   onLiveReps = () => {},
   onExerciseDetected = () => {},
   onSuitability,
+  onProgressiveUpdate,
   signal,
 }) {
   const analysisStart = Date.now();
@@ -173,6 +174,11 @@ export async function analyzeVideoFile({
       }
 
       const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
+      const progressiveDetector = (exercise === '__auto__' || (autoDetect && !userChangedExercise))
+        ? new ExerciseAutoDetector({ fps: analysisFps })
+        : null;
+      let lastProgressiveUpdate = 0;
+      const PROGRESSIVE_INTERVAL = 50;
       let lockedSubjectIdx = null;
       let streamFrameCount = startFrame;
       const landmarksForCache = frames.map(f => f.landmarks);
@@ -220,6 +226,19 @@ export async function analyzeVideoFile({
 
                 const liveResult = liveRepCounter.update(result.landmarks, time);
                 if (liveResult?.reps != null) onLiveReps(liveResult.reps);
+
+                // Progressive exercise detection
+                if (progressiveDetector) progressiveDetector.update(result.landmarks);
+              }
+
+              // Emit progressive update periodically
+              if (onProgressiveUpdate && frames.length - lastProgressiveUpdate >= PROGRESSIVE_INTERVAL) {
+                lastProgressiveUpdate = frames.length;
+                const info = progressiveDetector?.getDetectionInfo();
+                onProgressiveUpdate({
+                  exercise: info?.detected || null,
+                  framesProcessed: frames.length,
+                });
               }
 
               // Progressive checkpoint
@@ -319,6 +338,8 @@ export async function analyzeVideoFile({
 
                 const liveResult = liveRepCounter.update(landmarks, time);
                 if (liveResult?.reps != null) onLiveReps(liveResult.reps);
+
+                if (progressiveDetector) progressiveDetector.update(landmarks);
               }
 
               streamFrameCount++;
@@ -326,6 +347,16 @@ export async function analyzeVideoFile({
 
               if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
                 savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
+              }
+
+              // Emit progressive update periodically
+              if (onProgressiveUpdate && frames.length - lastProgressiveUpdate >= PROGRESSIVE_INTERVAL) {
+                lastProgressiveUpdate = frames.length;
+                const info = progressiveDetector?.getDetectionInfo();
+                onProgressiveUpdate({
+                  exercise: info?.detected || null,
+                  framesProcessed: frames.length,
+                });
               }
 
               // Run suitability check once after ~30 frames

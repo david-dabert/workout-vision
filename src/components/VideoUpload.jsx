@@ -69,6 +69,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [dragOver, setDragOver] = useState(false);
   const [ffmpegStatus, setFfmpegStatus] = useState('');
   const [suitabilityAssessment, setSuitabilityAssessment] = useState(null);
+  const [progressiveDetection, setProgressiveDetection] = useState(null);
   const [cancelled, setCancelled] = useState(false);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -167,11 +168,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         setAnalysisPhase(phase);
         const labels = { hashing: 'Hashing video file...', model: 'Loading AI model...', extracting: 'Analyzing video...', analyzing: 'Processing movement data...' };
         setFfmpegStatus(labels[phase] || '');
-        if (phase === 'extracting') setLiveReps(0);
+        if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); }
       },
       onLiveReps: (reps) => setLiveReps(reps),
       onExerciseDetected: (ex) => setExercise(ex),
       onSuitability: (assessment) => setSuitabilityAssessment(assessment),
+      onProgressiveUpdate: (update) => setProgressiveDetection(update),
       signal,
     });
 
@@ -341,7 +343,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
 
       <div
         className={`upload-zone${dragOver ? ' dragover' : ''}`}
+        role="button"
+        tabIndex={0}
+        aria-label={t('upload_video') || 'Upload video'}
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
         onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
         onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
@@ -451,6 +457,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 />
               )}
               <select
+                aria-label={t('exercise_select') || 'Select exercise'}
                 value={exercise}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -492,6 +499,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 value={weight}
                 onChange={(e) => { setWeight(e.target.value); weightRef.current = e.target.value; }}
                 placeholder="kg"
+                aria-label={t('weight_label') || 'Weight in kg'}
                 className={s.weightInput}
               />
               <button
@@ -626,14 +634,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           <canvas ref={overlayRef}
             className={s.overlayCanvas} />
         </div>
-        {analyzing && analysisPhase === 'analyzing' && (
+        {analyzing && (analysisPhase === 'extracting' || analysisPhase === 'analyzing') && (
           <div className={s.liveRepSection}>
             {suitabilityAssessment && suitabilityAssessment.suitable !== 'good' && (
               <VideoSuitabilityBanner assessment={suitabilityAssessment} compact />
             )}
+            {progressiveDetection && progressiveDetection.exercise && (
+              <span className={s.liveExerciseLabel}>
+                {tExercise(progressiveDetection.exercise)}
+              </span>
+            )}
             <div className={s.liveRepRow}>
               <span className={s.liveRepCount}>{liveReps} {t('reps').toLowerCase()}</span>
-              <div className={s.liveRepTrack}>
+              <div className={s.liveRepTrack} role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
                 <div className={s.liveRepFill} style={{ width: `${progress}%` }} />
               </div>
               <span className={s.liveRepPercent}>{progress}%</span>

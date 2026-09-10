@@ -309,18 +309,20 @@ function ResultCard({ result, onReplay }) {
       {muscles && <MuscleMap muscles={muscles} size={90} />}
 
       <div className="stats-grid-2x2">
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''} ${s.statCardClickable}`} style={{ animationDelay: '0ms' }} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }}>
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''} ${s.statCardClickable}`} role="button" tabIndex={0} aria-label={t('tap_to_edit')} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowRepEdit(!showRepEdit); hapticLight(); } }}>
           <span className="stat-card-label">{t('reps').toUpperCase()}</span>
           {showRepEdit ? (
             <span className={`stat-card-value ${s.repEditControls}`}>
               <button
                 onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }}
                 className={s.repEditButton}
+                aria-label="Decrease reps"
               >−</button>
-              <span className={s.repDisplayCount}>{displayReps}</span>
+              <span className={s.repDisplayCount} aria-live="polite">{displayReps}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }}
                 className={s.repEditButton}
+                aria-label="Increase reps"
               >+</button>
             </span>
           ) : (
@@ -337,70 +339,57 @@ function ResultCard({ result, onReplay }) {
             <span className={s.tapToEditHint}>{t('tap_to_edit')}</span>
           )}
         </div>
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '100ms' }}>
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`}>
           <span className="stat-card-label">{t('duration').toUpperCase()}</span>
           <span className="stat-card-value">{formatTime(duration)}</span>
         </div>
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '200ms' }}>
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`}>
           <span className="stat-card-label">{t('form_score_label')}</span>
           <span className="stat-card-value">
             {formScore == null ? (
-              <span style={{ color: 'var(--muted)', fontSize: '0.85em' }} title={t('form_na_tooltip')}>N/A</span>
+              <span className={s.formScoreNA} title={t('form_na_tooltip')}>N/A</span>
             ) : (
               <>
-                <span style={{ color: formScore >= 80 ? 'var(--accent)' : formScore >= 60 ? 'var(--yellow)' : 'var(--red)' }}>
+                <span className={formScore >= 80 ? s.scoreGood : formScore >= 60 ? s.scoreOk : s.scorePoor}>
                   {displayScore}
                 </span>
-                <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>/100</span>
+                <span className={s.scoreUnit}>/100</span>
               </>
             )}
           </span>
         </div>
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '300ms' }}>
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`}>
           <span className="stat-card-label">{t('volume').toUpperCase()}</span>
           <span className="stat-card-value">
             {result.weight > 0 ? `${result.weight * displayReps}` : displayReps}
-            <span style={{ fontSize: '0.7em', color: 'var(--muted)', marginLeft: 2 }}>{result.weight > 0 ? 'kg' : t('reps')}</span>
+            <span className={s.volumeUnit}>{result.weight > 0 ? 'kg' : t('reps')}</span>
           </span>
         </div>
       </div>
 
       {/* Recalibration indicator */}
       {isRecalibrating && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          padding: '8px 0', fontSize: '0.75rem', color: 'var(--accent)',
-        }}>
-          <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div className={s.recalibratingIndicator}>
+          <span className={s.spinner} />
           {t('recalibrating')}
         </div>
       )}
       {recalData && !isRecalibrating && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          padding: '6px 0', marginBottom: 4, fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 600,
-        }}>
-          <span style={{ fontSize: '0.8rem' }}>&#x2713;</span>
+        <div className={s.recalibratedNotice}>
+          <span className={s.recalibratedCheckmark}>&#x2713;</span>
           {t('recalibrated_notice')}
         </div>
       )}
 
       {/* Analysis confidence indicator */}
       {result.confidence && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          padding: '4px 0', marginBottom: 6, fontSize: '0.65rem', color: 'var(--muted)',
-        }}>
-          <span style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: result.confidence.level === 'high' ? 'var(--accent)' :
-              result.confidence.level === 'medium' ? 'var(--yellow)' : 'var(--red)',
-          }} />
+        <div className={s.confidenceIndicator}>
+          <span className={`${s.confidenceDot} ${s[`confidence_${result.confidence.level}`]}`} />
           {result.confidence.level === 'high' ? t('confidence_high') :
            result.confidence.level === 'medium' ? t('confidence_medium') :
            t('confidence_low')}
           {repWasOverridden && (
-            <span style={{ marginLeft: 8, color: 'var(--accent)', fontWeight: 600 }}>
+            <span className={s.userCorrectedLabel}>
               {t('user_corrected')}
             </span>
           )}
@@ -408,29 +397,18 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {baselineComparison?.overallForm?.isPersonalBest && (
-        <div style={{
-          textAlign: 'center', padding: '12px 0', marginBottom: 8,
-          background: 'linear-gradient(135deg, rgba(255,107,157,0.08), rgba(196,181,253,0.08))',
-          borderRadius: 12, border: '1px solid rgba(255,107,157,0.15)',
-        }}>
-          <span style={{ fontSize: 24, display: 'block', marginBottom: 4 }}>&#10024;</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#ff6b9d', letterSpacing: 1, textTransform: 'uppercase' }}>{t('new_personal_best')}</span>
+        <div className={s.personalBestBanner}>
+          <span className={s.personalBestIcon}>&#10024;</span>
+          <span className={s.personalBestLabel}>{t('new_personal_best')}</span>
         </div>
       )}
 
       {/* PR Banner — golden accent, lists all PR types achieved */}
       {achievedPRs.length > 0 && (
-        <div style={{
-          textAlign: 'center', padding: '14px 16px', marginBottom: 8,
-          background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.08))',
-          borderRadius: 12, border: '1px solid rgba(255,215,0,0.3)',
-        }}>
-          <span style={{ fontSize: 28, display: 'block', marginBottom: 6 }}>&#127942;</span>
-          <span style={{
-            fontSize: 14, fontWeight: 800, color: '#ffd700', letterSpacing: 1.5,
-            textTransform: 'uppercase', display: 'block', marginBottom: 8,
-          }}>{t('pr_banner_title')}</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+        <div className={s.prBanner}>
+          <span className={s.prBannerIcon}>&#127942;</span>
+          <span className={s.prBannerTitle}>{t('pr_banner_title')}</span>
+          <div className={s.prTagList}>
             {achievedPRs.map((pr, i) => {
               const prLabels = {
                 heaviest: t('pr_heaviest'),
@@ -441,15 +419,9 @@ function ResultCard({ result, onReplay }) {
                 streak: t('pr_streak'),
               };
               return (
-                <span key={i} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                  padding: '4px 10px', borderRadius: 8,
-                  background: 'rgba(255,215,0,0.15)', color: '#ffd700',
-                  fontSize: '0.75rem', fontWeight: 700,
-                  border: '1px solid rgba(255,215,0,0.25)',
-                }}>
+                <span key={i} className={s.prTag}>
                   {prLabels[pr.type] || pr.type}
-                  <span style={{ color: 'rgba(255,215,0,0.7)', fontSize: '0.65rem' }}>
+                  <span className={s.prTagValue}>
                     {pr.value}{pr.unit !== 'pts' ? pr.unit : ''}
                   </span>
                 </span>
@@ -461,24 +433,14 @@ function ResultCard({ result, onReplay }) {
 
       {/* Form Regression Warning — loss aversion trigger */}
       {formRegression && (
-        <div style={{
-          padding: '12px 14px', marginBottom: 8,
-          background: 'linear-gradient(135deg, rgba(251,191,36,0.1), rgba(245,158,11,0.06))',
-          borderRadius: 12, border: '1px solid rgba(251,191,36,0.3)',
-          display: 'flex', alignItems: 'flex-start', gap: 10,
-        }}>
-          <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>&#9888;</span>
+        <div className={s.formRegressionBanner}>
+          <span className={s.formRegressionIcon}>&#9888;</span>
           <div>
-            <span style={{
-              fontSize: '0.8rem', fontWeight: 700, color: '#fbbf24',
-              textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 4,
-            }}>{t('form_regression_title')}</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            <span className={s.formRegressionTitle}>{t('form_regression_title')}</span>
+            <span className={s.formRegressionMessage}>
               {t('form_regression_msg', { drop: formRegression.drop })}
             </span>
-            <span style={{
-              display: 'block', marginTop: 6, fontSize: '0.7rem', color: 'var(--muted)',
-            }}>
+            <span className={s.formRegressionScores}>
               {t('form_score_label')}: {formRegression.currentScore} (avg: {formRegression.averageScore})
             </span>
           </div>
@@ -486,7 +448,7 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {coachingInsight && (
-        <div className="coaching-card" style={{ background: 'linear-gradient(135deg, rgba(0,245,212,0.06) 0%, rgba(196,181,253,0.03) 100%)' }}>
+        <div className={`coaching-card ${s.coachingCardBackground}`}>
           <div className="coaching-icon">AI</div>
           <p className="coaching-text">{coachingInsight}</p>
         </div>
@@ -495,30 +457,30 @@ function ResultCard({ result, onReplay }) {
       {progressionNote && (
         <div className="progression-card">
           <span className="progression-icon">&#x2191;</span>
-          <p className="text-sm" style={{ margin: 0, color: 'var(--text-secondary)' }}>{progressionNote}</p>
+          <p className={`text-sm ${s.progressionText}`}>{progressionNote}</p>
         </div>
       )}
 
       {baselineComparison && (
-        <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div className={s.baselineSection}>
+          <div className={s.baselineHeader}>
             <span className="text-xs text-muted">{t('personal_baseline')} ({baselineComparison.sessionsTracked} {t('sessions_count', { count: baselineComparison.sessionsTracked }).replace(/^\d+ /, '')})</span>
             {baselineComparison.overallForm.isPersonalBest && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--bio-cyan, #22d3ee)', textTransform: 'uppercase', letterSpacing: 1 }}>{t('new_pb')}</span>
+              <span className={s.personalBestInline}>{t('new_pb')}</span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
+          <div className={s.baselineStats}>
             <span>{t('avg_label')}: <strong>{baselineComparison.overallForm.personalMean}</strong></span>
             <span>{t('best_label')}: <strong>{baselineComparison.overallForm.personalBest}</strong></span>
-            <span style={{ color: baselineComparison.overallForm.deviation >= 0 ? 'var(--bio-green, #4ade80)' : 'var(--red)' }}>
+            <span className={baselineComparison.overallForm.deviation >= 0 ? s.deviationPositive : s.deviationNegative}>
               {baselineComparison.overallForm.deviation >= 0 ? '+' : ''}{baselineComparison.overallForm.deviation} {t('vs_avg')}
             </span>
           </div>
           {baselineComparison.improvingChecks.length > 0 && (
-            <p className="text-xs" style={{ margin: '6px 0 0', color: 'var(--bio-green, #4ade80)' }}>{t('improving_label')}: {baselineComparison.improvingChecks.join(', ')}</p>
+            <p className={`text-xs ${s.improvingChecks}`}>{t('improving_label')}: {baselineComparison.improvingChecks.join(', ')}</p>
           )}
           {baselineComparison.decliningChecks.length > 0 && (
-            <p className="text-xs" style={{ margin: '4px 0 0', color: 'var(--yellow, #facc15)' }}>{t('watch_label')}: {baselineComparison.decliningChecks.join(', ')}</p>
+            <p className={`text-xs ${s.decliningChecks}`}>{t('watch_label')}: {baselineComparison.decliningChecks.join(', ')}</p>
           )}
         </div>
       )}
@@ -527,12 +489,14 @@ function ResultCard({ result, onReplay }) {
       <button
         className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
         onClick={() => setShowDetails(d => !d)}
+        aria-expanded={showDetails}
+        aria-controls="result-details"
       >
         {showDetails ? t('hide_details') : t('show_details')}
         <span className={s.toggleChevron} style={{ transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
       </button>
 
-      {showDetails && (<>
+      {showDetails && (<div id="result-details">
       {report?.summary && (
         <p className={`text-sm ${s.summaryText}`}>
           {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
@@ -540,7 +504,7 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {repHistory && repHistory.length > 0 && (
-        <div className="rep-quality" style={{ marginTop: 14 }}>
+        <div className={`rep-quality ${s.repQualitySection}`}>
           <h4>{t('per_rep_quality')}</h4>
           <div className="rep-bars">
             {repHistory.map((r, i) => {
@@ -565,7 +529,7 @@ function ResultCard({ result, onReplay }) {
 
 
       {repHistory && repHistory.length >= 2 && repHistory[0]?.rom != null && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.romSection}>
           <h4>{t('rom_per_rep')}</h4>
           <div className="rep-bars">
             {repHistory.map((r, i) => {
@@ -580,7 +544,7 @@ function ResultCard({ result, onReplay }) {
                       background: degraded ? 'var(--yellow)' : 'var(--accent)',
                     }} />
                   </div>
-                  <span className="rep-num" style={{ fontSize: '0.6rem' }}>
+                  <span className={`rep-num ${s.romRepNum}`}>
                     {r.romPercent != null ? `${r.romPercent}%` : (i + 1)}
                   </span>
                 </div>
@@ -593,14 +557,14 @@ function ResultCard({ result, onReplay }) {
             if (first?.rom && last?.rom && last.romPercent != null && last.romPercent < 90) {
               const drop = 100 - last.romPercent;
               return (
-                <p className="text-xs" style={{ marginTop: 4, color: 'var(--yellow)' }}>
+                <p className={`text-xs ${s.romHint}`} style={{ color: 'var(--yellow)' }}>
                   {t('rep_shallower', { rep: repHistory.length, drop })}
                 </p>
               );
             }
             if (first?.rom && last?.rom && last.romPercent != null && last.romPercent >= 95) {
               return (
-                <p className="text-xs" style={{ marginTop: 4, color: 'var(--accent)' }}>
+                <p className={`text-xs ${s.romHint}`} style={{ color: 'var(--accent)' }}>
                   {t('consistent_depth')}
                 </p>
               );
@@ -611,9 +575,9 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {bioAnalysis?.timeUnderTension?.perRep && bioAnalysis.timeUnderTension.perRep.length > 0 && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.tutSection}>
           <h4>{t('time_under_tension')}</h4>
-          <div className="result-stats" style={{ marginBottom: 6 }}>
+          <div className={`result-stats ${s.tutStatsSpacing}`}>
             <div className="stat">
               <span className="stat-value">{bioAnalysis.timeUnderTension.eccentric?.toFixed(1)}s</span>
               <span className="stat-label">{t('eccentric')}</span>
@@ -655,7 +619,7 @@ function ResultCard({ result, onReplay }) {
 
       {/* Eccentric tempo per rep */}
       {repHistory && repHistory.length > 0 && repHistory.some(r => r.velocity?.eccentricTime > 0) && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.eccentricTempoSection}>
           <h4>{t('eccentric_tempo')}</h4>
           <div className="rep-bars">
             {repHistory.map((rep, i) => {
@@ -682,16 +646,16 @@ function ResultCard({ result, onReplay }) {
               );
             })}
           </div>
-          <p className="text-xs text-muted" style={{ marginTop: 4 }}>
+          <p className={`text-xs text-muted ${s.eccentricTempoHint}`}>
             {t('eccentric_tempo_target')}
           </p>
         </div>
       )}
 
       {bioAnalysis?.rangeOfMotion && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.rangeOfMotionSection}>
           <h4>{t('range_of_motion')}</h4>
-          <div className="result-stats" style={{ marginBottom: 6 }}>
+          <div className={`result-stats ${s.rangeOfMotionStatsSpacing}`}>
             <div className="stat">
               <span className="stat-value">{Math.round(bioAnalysis.rangeOfMotion.avgDegrees)}&deg;</span>
               <span className="stat-label">{t('avg_rom')}</span>
@@ -723,7 +687,7 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {bioAnalysis?.asymmetry && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.asymmetrySection}>
           <h4>{t('asymmetry')}</h4>
           <div className="result-stats">
             <div className="stat">
@@ -736,9 +700,9 @@ function ResultCard({ result, onReplay }) {
             </div>
           </div>
           {bioAnalysis.asymmetry.details && typeof bioAnalysis.asymmetry.details === 'object' && (
-            <div style={{ marginTop: 6 }}>
+            <div className={s.asymmetryDetails}>
               {Object.entries(bioAnalysis.asymmetry.details).map(([key, val]) => (
-                <p key={key} className="text-xs text-muted" style={{ padding: '2px 0' }}>
+                <p key={key} className={`text-xs text-muted ${s.asymmetryDetailRow}`}>
                   {t(`joint_${key.toLowerCase()}`) || key}: {typeof val === 'number' ? `${Math.round(val)}%` : String(val)}
                 </p>
               ))}
@@ -746,45 +710,46 @@ function ResultCard({ result, onReplay }) {
           )}
         </div>
       )}
-      </>)}
+      </div>)}
 
       {/* Layer 3: Deep Data toggle */}
       <button
-        className="btn btn-ghost btn-sm"
-        style={{ width: '100%', marginTop: 10, padding: '8px 0', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        className={`btn btn-ghost btn-sm ${s.deepDataToggle}`}
         onClick={() => setShowDeepData(d => !d)}
+        aria-expanded={showDeepData}
+        aria-controls="result-deep-data"
       >
         {showDeepData ? t('hide_deep_data') : t('show_deep_data')}
-        <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showDeepData ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
+        <span className={s.toggleChevron} style={{ transform: showDeepData ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
       </button>
 
-      {showDeepData && (<>
+      {showDeepData && (<div id="result-deep-data">
       {(recalData?.diagnostics?.progression || result.diagnostics?.progression)?.score > 0 && (() => {
         const prog = recalData?.diagnostics?.progression || result.diagnostics.progression;
         const gradeColor = prog.score >= 750 ? 'var(--accent)' : prog.score >= 500 ? 'var(--yellow)' : 'var(--red)';
         return (
-          <div style={{ marginTop: 14, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0,245,212,0.06), rgba(0,245,212,0.02))', borderRadius: 10, border: '1px solid rgba(0,245,212,0.15)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>{t('progression_score')}</span>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: gradeColor }}>{prog.score}</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: gradeColor }}>{prog.grade.label}</span>
+          <div className={s.progressionScoreCard}>
+            <div className={s.progressionScoreHeader}>
+              <span className={s.progressionScoreLabel}>{t('progression_score')}</span>
+              <div className={s.progressionScoreValueGroup}>
+                <span className={s.progressionScoreValue} style={{ color: gradeColor }}>{prog.score}</span>
+                <span className={s.progressionGradeLabel} style={{ color: gradeColor }}>{prog.grade.label}</span>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{prog.grade.title}</span>
+            <div className={s.progressionGradeTitle}>
+              <span className={s.progressionGradeTitleText}>{prog.grade.title}</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
+            <div className={s.progressionComponentGrid}>
               {[
                 { label: t('form_label'), val: prog.components.form, max: 250 },
                 { label: t('consistency_label'), val: prog.components.consistency, max: 200 },
                 { label: t('tempo_label'), val: prog.components.tempo, max: 150 },
               ].map(c => (
-                <div key={c.label} style={{ textAlign: 'center' }}>
-                  <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
-                    <div style={{ width: `${(c.val / c.max) * 100}%`, height: '100%', borderRadius: 2, background: gradeColor, transition: 'width 0.5s' }} />
+                <div key={c.label} className={s.progressionComponentCell}>
+                  <div className={s.progressionComponentBarTrack}>
+                    <div className={s.progressionComponentBarFill} style={{ width: `${(c.val / c.max) * 100}%`, background: gradeColor }} />
                   </div>
-                  <span style={{ fontSize: '0.55rem', color: 'var(--muted)' }}>{c.label}</span>
+                  <span className={s.progressionComponentLabel}>{c.label}</span>
                 </div>
               ))}
             </div>
@@ -799,13 +764,13 @@ function ResultCard({ result, onReplay }) {
 
         if (!oneRM) return null;
         return (
-          <div className="stats-grid-2x2" style={{ marginTop: 10 }}>
-            <div className="stat-card" style={{ gridColumn: '1 / -1' }}>
+          <div className={`stats-grid-2x2 ${s.oneRmGrid}`}>
+            <div className={`stat-card ${s.oneRmCard}`}>
               <span className="stat-card-label">{t('estimated_1rm')}</span>
               <span className="stat-card-value">
-                {oneRM}<span style={{ fontSize: '0.6em', color: 'var(--muted)', marginLeft: 2 }}>kg</span>
+                {oneRM}<span className={s.oneRmUnit}>kg</span>
               </span>
-              <span style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: 2 }}>
+              <span className={s.oneRmMethod}>
                 Brzycki {displayReps <= 10 ? '' : '(Epley)'}
               </span>
             </div>
@@ -824,7 +789,7 @@ function ResultCard({ result, onReplay }) {
         const sorted = Object.entries(allIssues).sort((a, b) => b[1] - a[1]);
         if (sorted.length === 0) return null;
         return (
-          <div className="form-notes" style={{ marginTop: 14 }}>
+          <div className={`form-notes ${s.formNotesSection}`}>
             <h4>{t('form_notes')}</h4>
             {sorted.map(([issue, count]) => (
               <div key={issue} className="note-item">
@@ -836,12 +801,12 @@ function ResultCard({ result, onReplay }) {
       })()}
 
       {report?.highlights && report.highlights.length > 0 && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.highlightsSection}>
           <h4>{t('highlights')}</h4>
           {report.highlights.map((h, i) => {
             const params = h.exercise ? { ...h, exerciseName: tExercise(h.exercise, h.exerciseName) } : h;
             return (
-              <p key={i} className="text-sm" style={{ color: 'var(--accent)', padding: '2px 0' }}>
+              <p key={i} className={`text-sm ${s.highlightItem}`}>
                 {'> '}{typeof h === 'string' ? h : t(params.key, params)}
               </p>
             );
@@ -850,40 +815,34 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {report?.improvements && report.improvements.length > 0 && (
-        <div style={{ marginTop: 14 }}>
+        <div className={s.nextStepsSection}>
           <h4>{t('next_steps')}</h4>
           {report.improvements.map((imp, i) => {
             const params = imp.exercise ? { ...imp, exerciseName: tExercise(imp.exercise, imp.exerciseName) } : imp;
             return (
-              <p key={i} className="text-sm text-muted" style={{ padding: '2px 0' }}>
+              <p key={i} className={`text-sm text-muted ${s.improvementItem}`}>
                 {i + 1}. {typeof imp === 'string' ? imp : t(params.key, params)}
               </p>
             );
           })}
         </div>
       )}
-      </>)}
+      </div>)}
 
       {/* Weekly reminder prompt — shown once, after first successful analysis */}
       {showNotifPrompt && !notifGranted && (
-        <div style={{
-          marginTop: 14, padding: '12px 16px',
-          background: 'rgba(0,245,212,0.06)',
-          borderRadius: 12, border: '1px solid rgba(0,245,212,0.18)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-        }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', display: 'block', marginBottom: 2 }}>
+        <div className={s.notificationPrompt}>
+          <div className={s.notificationPromptContent}>
+            <span className={s.notificationPromptTitle}>
               {t('notif_prompt_title')}
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+            <span className={s.notificationPromptDesc}>
               {t('notif_prompt_desc')}
             </span>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <div className={s.notificationPromptActions}>
             <button
-              className="btn btn-ghost btn-sm"
-              style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+              className={`btn btn-ghost btn-sm ${s.notifDismissBtn}`}
               onClick={() => {
                 markNotificationPromptShown();
                 setShowNotifPrompt(false);
@@ -892,8 +851,7 @@ function ResultCard({ result, onReplay }) {
               {t('no_thanks')}
             </button>
             <button
-              className="btn btn-primary btn-sm"
-              style={{ fontSize: '0.75rem', padding: '6px 14px', background: '#00f5d4', color: '#000' }}
+              className={`btn btn-primary btn-sm ${s.notifEnableBtn}`}
               onClick={async () => {
                 markNotificationPromptShown();
                 setShowNotifPrompt(false);
@@ -912,25 +870,21 @@ function ResultCard({ result, onReplay }) {
 
       {result.videoUrl && result.frames && (
         <button
-          className="btn btn-primary"
-          style={{ width: '100%', marginTop: 16, padding: '14px 0', fontSize: '1rem', fontWeight: 700 }}
+          className={`btn btn-primary ${s.replayButton}`}
           onClick={onReplay}
         >
           {t('watch_overlay')}
         </button>
       )}
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+      <div className={s.footerActions}>
         <button
-          className="btn btn-ghost"
-          style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 600 }}
+          className={`btn btn-ghost ${s.shareButton}`}
           onClick={() => { hapticLight(); shareCard(result); }}
         >
           {t('share_card')}
         </button>
         <button
-          className="btn btn-primary"
-          style={{ flex: 1, padding: '12px 0', fontSize: '0.9rem', fontWeight: 800,
-            background: 'linear-gradient(135deg, #ff6b9d, #ffb088)', border: 'none', color: '#000' }}
+          className={`btn btn-primary ${s.challengeButton}`}
           onClick={async () => {
             hapticLight();
             const outcome = await shareChallenge(result, profile);

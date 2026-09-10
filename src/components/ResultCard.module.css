@@ -124,6 +124,10 @@
   font-size: 0.85em;
 }
 
+.scoreGood { color: var(--accent); }
+.scoreOk { color: var(--yellow); }
+.scorePoor { color: var(--red); }
+
 .scoreUnit {
   font-size: 0.7em;
   color: var(--muted);
@@ -188,6 +192,13 @@
   height: 6px;
   border-radius: 50%;
 }
+
+.confidence_high { background: var(--accent); }
+.confidence_medium { background: var(--yellow); }
+.confidence_low { background: var(--red); }
+
+.deviationPositive { color: var(--bio-green, #4ade80); }
+.deviationNegative { color: var(--red); }
 
 .userCorrectedLabel {
   margin-left: 8px;
