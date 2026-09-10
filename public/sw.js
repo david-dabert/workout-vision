@@ -55,16 +55,23 @@ self.addEventListener('fetch', (event) => {
   }
 
   // JS/CSS assets with hashed filenames: cache-first
+  // Vite adds crossorigin to <script type="module"> and <link rel="stylesheet">,
+  // causing cors-mode requests. cache.addAll() stores with no-cors mode.
+  // Try both the original request and a mode-agnostic URL match.
   if (/\.[a-f0-9]{8}\.(js|css)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
+        // Fallback: match by URL with different request mode
+        return caches.match(new Request(url.href)).then((fallback) => {
+          if (fallback) return fallback;
+          return fetch(request).then((response) => {
+            if (response.ok) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          });
         });
       })
     );

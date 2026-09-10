@@ -6,6 +6,17 @@ const SCHEMA_VERSION = 1;
 const MAX_PAYLOAD = 4096;
 const BANNED_FIELDS = ['landmarks', 'video', 'frames', 'imageData', 'blob'];
 
+/** Recursively check all keys in an object for banned field names. */
+function containsBannedField(obj, depth = 0) {
+  if (depth > 5 || !obj || typeof obj !== 'object') return null;
+  for (const key of Object.keys(obj)) {
+    if (BANNED_FIELDS.includes(key)) return key;
+    const nested = containsBannedField(obj[key], depth + 1);
+    if (nested) return nested;
+  }
+  return null;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -52,11 +63,16 @@ export default {
         return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
       }
 
-      // Reject payloads containing banned fields (privacy)
-      for (const field of BANNED_FIELDS) {
-        if (field in body) {
-          return new Response(JSON.stringify({ error: `Field '${field}' not allowed` }), { status: 422 });
-        }
+      // Verify parsed size (content-length can be spoofed or omitted)
+      const serialized = JSON.stringify(body);
+      if (serialized.length > MAX_PAYLOAD) {
+        return new Response(JSON.stringify({ error: 'Payload too large' }), { status: 413 });
+      }
+
+      // Reject payloads containing banned fields at any depth (privacy)
+      const banned = containsBannedField(body);
+      if (banned) {
+        return new Response(JSON.stringify({ error: `Field '${banned}' not allowed` }), { status: 422 });
       }
 
       // Validate schema

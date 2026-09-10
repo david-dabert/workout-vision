@@ -25,30 +25,40 @@ test('service worker registers successfully', async ({ page }) => {
   expect(swRegistered).toBe(true);
 });
 
-// Skip: SW only precaches shell HTML, not JS bundles. Offline requires
-// the SW fetch handler to cache-on-navigate, which needs a second page load.
-// TODO: extend SW to precache hashed JS/CSS assets from the build manifest.
-test.skip('app loads offline after service worker precache', async ({ page, context }) => {
-  // 1. Load the app normally — triggers SW install + precache
+// SW now precaches all hashed JS/CSS assets via inject-sw-precache.js post-build.
+// First load triggers SW install; second load is intercepted by SW and cached;
+// offline reload serves from cache.
+test('app loads offline after service worker precache', async ({ page, context }) => {
+  // 1. First load — triggers SW install + precache of hashed assets
   await page.goto('/workout-vision/');
   await expect(page.locator('.logo')).toBeVisible({ timeout: 15_000 });
 
-  // 2. Wait for the service worker to activate and finish caching
+  // 2. Wait for SW to activate and claim the page
   await page.evaluate(async () => {
     if (!('serviceWorker' in navigator)) throw new Error('No SW support');
     const reg = await navigator.serviceWorker.ready;
-    // Give the SW time to cache the app shell
+    // Wait for clients.claim() to take effect
+    if (!navigator.serviceWorker.controller) {
+      await new Promise((resolve) => {
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
+        setTimeout(resolve, 5000);
+      });
+    }
+    // Give time for precache to complete
     await new Promise((r) => setTimeout(r, 3000));
   });
 
-  // 3. Go offline
+  // 3. Navigate again while online so SW intercepts and caches the response
+  await page.goto('/workout-vision/');
+  await expect(page.locator('.logo')).toBeVisible({ timeout: 15_000 });
+
+  // 4. Go offline
   await context.setOffline(true);
 
-  // 4. Reload — should serve from SW cache
+  // 5. Reload — should serve entirely from SW cache
   await page.reload({ waitUntil: 'domcontentloaded' });
 
-  // 5. The app shell should render (at minimum the HTML loads from cache)
-  // Note: full app rendering depends on JS chunks being cached by the SW.
-  // If the SW only caches the shell HTML, we verify at least that loads.
+  // 6. Full app renders: logo + tab bar (not just shell HTML)
   await expect(page.locator('.logo')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.tab-bar')).toBeVisible({ timeout: 5_000 });
 });

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/copy-models.js",
-    "build": "vite build",
+    "build": "vite build && node scripts/inject-sw-precache.js",
     "lint": "oxlint",
     "preview": "vite preview",
     "deploy": "vite build && npx gh-pages -d dist",
