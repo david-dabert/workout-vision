@@ -19,6 +19,7 @@ import {
   hasShownNotificationPrompt,
   markNotificationPromptShown,
 } from '../lib/notifications';
+import s from './ResultCard.module.css';
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -264,53 +265,43 @@ function ResultCard({ result, onReplay }) {
   }, [formScore]);
 
   return (
-    <div className="card result-card" style={{ marginTop: 14, position: 'relative' }}>
+    <div className={`card result-card ${s.resultCard}`}>
       <Confetti active={showConfetti} />
       {/* Header with grade badge */}
       <div className="result-header">
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+        <div className={s.headerContent}>
+          <div className={s.headerRow}>
             {getExerciseIllustration(result.exercise) && (
               <img
                 src={getExerciseIllustration(result.exercise, 2)}
                 alt=""
-                style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6,
-                  background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}
+                className={s.exerciseIllustration}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
             <div>
-              <h3 style={{ marginBottom: 0, fontSize: '1.1rem' }}>{displayName}</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <h3 className={s.exerciseTitle}>{displayName}</h3>
+              <div className={s.fileNameRow}>
                 <span className="text-xs text-muted">{fileName}</span>
                 {result.autoDetected === true && (
-                  <span style={{
-                    fontSize: '0.6rem', padding: '1px 6px', borderRadius: 4,
-                    background: 'rgba(0,245,212,0.12)', color: 'var(--accent)', fontWeight: 600,
-                  }}>{t('auto_detected')}</span>
+                  <span className={s.autoDetectedBadge}>{t('auto_detected')}</span>
                 )}
                 {result.detectionFailed && (
-                  <span style={{
-                    fontSize: '0.6rem', padding: '1px 6px', borderRadius: 4,
-                    background: 'rgba(255,183,54,0.15)', color: 'var(--yellow)', fontWeight: 600,
-                  }}>{t('detection_failed')}</span>
+                  <span className={s.detectionFailedBadge}>{t('detection_failed')}</span>
+                )}
+                {!result.detectionFailed && result.detectionLowConfidence && (
+                  <span className={s.lowConfidenceBadge}>{t('detection_low_confidence')}</span>
                 )}
               </div>
             </div>
           </div>
         </div>
         <span
-          className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''}`}
-          style={{ fontSize: '1.1rem', padding: '8px 16px', position: 'relative', overflow: 'hidden' }}
+          className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''} ${s.scoreBadge}`}
         >
           {grade}
           {(grade === 'A' || grade === 'A+') && (
-            <div style={{
-              position: 'absolute', inset: 0, borderRadius: 'inherit',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 2s ease-in-out infinite',
-            }} />
+            <div className={s.shimmerOverlay} />
           )}
         </span>
       </div>
@@ -318,45 +309,32 @@ function ResultCard({ result, onReplay }) {
       {muscles && <MuscleMap muscles={muscles} size={90} />}
 
       <div className="stats-grid-2x2">
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ cursor: 'pointer', position: 'relative', animationDelay: '0ms' }} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }}>
+        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''} ${s.statCardClickable}`} style={{ animationDelay: '0ms' }} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }}>
           <span className="stat-card-label">{t('reps').toUpperCase()}</span>
           {showRepEdit ? (
-            <span className="stat-card-value" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className={`stat-card-value ${s.repEditControls}`}>
               <button
                 onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }}
-                style={{
-                  width: 44, height: 44, borderRadius: '50%', border: '1px solid var(--muted)',
-                  background: 'rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: '1.1rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  lineHeight: 1, padding: 0,
-                }}
+                className={s.repEditButton}
               >−</button>
-              <span style={{ minWidth: 24, textAlign: 'center' }}>{displayReps}</span>
+              <span className={s.repDisplayCount}>{displayReps}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }}
-                style={{
-                  width: 44, height: 44, borderRadius: '50%', border: '1px solid var(--muted)',
-                  background: 'rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: '1.1rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  lineHeight: 1, padding: 0,
-                }}
+                className={s.repEditButton}
               >+</button>
             </span>
           ) : (
             <span className="stat-card-value">
               {displayReps}
               {repWasOverridden && (
-                <span style={{ fontSize: '0.55em', color: 'var(--muted)', marginLeft: 4 }}>
+                <span className={s.aiRepIndicator}>
                   (AI: {reps})
                 </span>
               )}
             </span>
           )}
           {!showRepEdit && (
-            <span style={{
-              fontSize: '0.55rem', color: 'var(--accent)', position: 'absolute',
-              bottom: 4, left: '50%', transform: 'translateX(-50%)', opacity: 0.7,
-            }}>{t('tap_to_edit')}</span>
+            <span className={s.tapToEditHint}>{t('tap_to_edit')}</span>
           )}
         </div>
         <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`} style={{ animationDelay: '100ms' }}>
@@ -547,17 +525,16 @@ function ResultCard({ result, onReplay }) {
 
       {/* Layer 2: Details toggle */}
       <button
-        className="btn btn-ghost btn-sm"
-        style={{ width: '100%', marginTop: 14, padding: '8px 0', fontSize: '0.8rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
         onClick={() => setShowDetails(d => !d)}
       >
         {showDetails ? t('hide_details') : t('show_details')}
-        <span style={{ fontSize: '0.7rem', transition: 'transform 0.2s', transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
+        <span className={s.toggleChevron} style={{ transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
       </button>
 
       {showDetails && (<>
       {report?.summary && (
-        <p className="text-sm" style={{ marginTop: 12, marginBottom: 6, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+        <p className={`text-sm ${s.summaryText}`}>
           {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
         </p>
       )}

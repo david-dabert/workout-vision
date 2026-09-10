@@ -12,6 +12,7 @@ import InjuryRiskCard from './InjuryRiskCard';
 import { calculateSmartStreak } from '../lib/prSystem';
 import WorkoutOfTheWeek from './WorkoutOfTheWeek';
 import { ChallengeResponseView } from './ChallengeBar';
+import css from './Dashboard.module.css';
 
 const getGreetingKey = () => {
   const h = new Date().getHours();
@@ -137,14 +138,14 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
 
       {/* ── Challenge response view (when arriving via response URL) ── */}
       {challengeResponse && (
-        <div style={{ padding: '0 16px' }}>
+        <div className={css.challengeWrapper}>
           <ChallengeResponseView response={challengeResponse} onDismiss={onDismissResponse} />
         </div>
       )}
 
       {/* ── Challenge bar (when arriving via challenge URL) ── */}
       {challenge && (
-        <div style={{ padding: '0 16px' }}>
+        <div className={css.challengeWrapper}>
           <ChallengeBar
             challenge={challenge}
             onAccept={() => onNavigate('analyze')}
@@ -167,7 +168,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
         >
           <div className="action-primary-glow" />
           <div className="action-primary-content">
-            <div className="action-primary-icon" style={{ animation: 'pulseGlow 3s ease-in-out infinite' }}>
+            <div className={`action-primary-icon ${css.actionPrimaryIcon}`}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7" />
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
@@ -649,7 +650,7 @@ function InsightsSection({ profile, workouts }) {
             <div className="insights-stat">
               {nextWorkoutData && (
                 <>
-                  <span className="insights-stat-value" style={{ fontSize: '1rem' }}>
+                  <span className={`insights-stat-value ${css.recoverySymbol}`}>
                     {nextWorkoutData.estimatedRecovery === 'recovered' ? '✓' : nextWorkoutData.estimatedRecovery === 'partial' ? '~' : '✗'}
                   </span>
                   <span className="insights-stat-label">{t('recovery')}</span>
@@ -679,7 +680,7 @@ function InsightsSection({ profile, workouts }) {
           {/* Weekly muscle volume */}
           {Object.keys(weeklyMuscleVolume).length > 0 && (
             <div className="muscle-volume-section">
-              <span className="insights-stat-label" style={{ marginBottom: 6, display: 'block' }}>{t('weekly_sets')}</span>
+              <span className={`insights-stat-label ${css.weeklySetsLabel}`}>{t('weekly_sets')}</span>
               <div className="muscle-volume-bars">
                 {Object.entries(weeklyMuscleVolume)
                   .sort((a, b) => b[1] - a[1])
@@ -716,7 +717,7 @@ function InsightsSection({ profile, workouts }) {
       </div>
 
       {workouts.length === 0 && (
-        <p className="insights-empty" style={{ textAlign: 'center', padding: 20 }}>{t('no_workouts_yet')}</p>
+        <p className={`insights-empty ${css.emptyStateMessage}`}>{t('no_workouts_yet')}</p>
       )}
     </div>
   );

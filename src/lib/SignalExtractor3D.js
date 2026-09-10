@@ -10,21 +10,17 @@
  * Convergence item #3: Anthropometric normalization via 3D distances.
  */
 
-import { LANDMARKS } from './poseAnalysis';
+import { LANDMARKS, calculateAngle } from './poseGeometry';
 
 // ---------------------------------------------------------------------------
-// 3D angle: uses all three coordinates (x, y, z)
+// 3D angle: uses calculateAngle from poseGeometry (single source of truth).
+// Returns null instead of 0 for degenerate inputs because signal arrays
+// use null as "missing data point" for downstream interpolation.
 // ---------------------------------------------------------------------------
 
 function angle3D(a, b, c) {
-  const ba = { x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) };
-  const bc = { x: c.x - b.x, y: c.y - b.y, z: (c.z || 0) - (b.z || 0) };
-  const dot = ba.x * bc.x + ba.y * bc.y + ba.z * bc.z;
-  const magBA = Math.sqrt(ba.x * ba.x + ba.y * ba.y + ba.z * ba.z);
-  const magBC = Math.sqrt(bc.x * bc.x + bc.y * bc.y + bc.z * bc.z);
-  if (magBA < 1e-6 || magBC < 1e-6) return null;
-  const cosAngle = Math.max(-1, Math.min(1, dot / (magBA * magBC)));
-  return (Math.acos(cosAngle) * 180) / Math.PI;
+  const result = calculateAngle(a, b, c);
+  return result === 0 ? null : result;
 }
 
 // ---------------------------------------------------------------------------

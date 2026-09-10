@@ -6,6 +6,7 @@ const ProfileContext = createContext(null);
 export function ProfileProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [storageError, setStorageError] = useState(null);
 
   useEffect(() => {
     loadProfile()
@@ -13,24 +14,40 @@ export function ProfileProvider({ children }) {
         setProfile(p);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[Profile] Storage load failed:', err);
+        setStorageError(err);
         setLoading(false);
       });
   }, []);
 
   const saveProfile = useCallback(async (updated) => {
-    await persistProfile(updated);
-    setProfile(updated);
+    try {
+      await persistProfile(updated);
+      setProfile(updated);
+      setStorageError(null);
+    } catch (err) {
+      console.error('[Profile] Storage save failed:', err);
+      setStorageError(err);
+      throw err;
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    const p = await loadProfile();
-    setProfile(p);
-    return p;
+    try {
+      const p = await loadProfile();
+      setProfile(p);
+      setStorageError(null);
+      return p;
+    } catch (err) {
+      console.error('[Profile] Storage refresh failed:', err);
+      setStorageError(err);
+      return null;
+    }
   }, []);
 
   return (
-    <ProfileContext.Provider value={{ profile, saveProfile, refreshProfile, profileLoading: loading }}>
+    <ProfileContext.Provider value={{ profile, saveProfile, refreshProfile, profileLoading: loading, storageError }}>
       {children}
     </ProfileContext.Provider>
   );

@@ -7,6 +7,7 @@ import { INJURY_MAP, INJURY_LABELS, loadInjuries, saveInjuries } from '../lib/in
 import { VideoSuitabilityDetector } from '../lib/videoSuitability';
 import { AnalysisDiagnostics } from '../lib/analysisDiagnostics';
 import { detectViewpointFromFrames } from '../lib/cameraViewpoint';
+import s from './VideoUpload.module.css';
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
 import FeedbackPanel from './FeedbackPanel';
@@ -307,15 +308,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       )}
       <div className="page-header">
         <h2>{t('analyze_video')}</h2>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <div className={s.headerControls}>
           <button
-            className="btn btn-ghost btn-sm"
-            style={{ fontSize: '0.7rem', padding: '4px 8px', opacity: lang === 'en' ? 1 : 0.5 }}
+            className={`btn btn-ghost btn-sm ${s.langButton}`}
+            style={{ opacity: lang === 'en' ? 1 : 0.5 }}
             onClick={() => setLang('en')}
           >EN</button>
           <button
-            className="btn btn-ghost btn-sm"
-            style={{ fontSize: '0.7rem', padding: '4px 8px', opacity: lang === 'fr' ? 1 : 0.5 }}
+            className={`btn btn-ghost btn-sm ${s.langButton}`}
+            style={{ opacity: lang === 'fr' ? 1 : 0.5 }}
             onClick={() => setLang('fr')}
           >FR</button>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>{t('close')}</button>
@@ -323,22 +324,16 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       </div>
 
       {queue.length === 0 && results.length === 0 && (
-        <div style={{
-          padding: '10px 14px', marginBottom: 12, borderRadius: 10,
-          background: 'rgba(0,224,255,0.04)', border: '1px solid rgba(0,224,255,0.1)',
-        }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+        <div className={s.tipBanner}>
+          <p className={s.tipText}>
             📐 {t('filming_tip')}
           </p>
         </div>
       )}
 
       {iosWarning && (
-        <div style={{
-          padding: '10px 14px', marginBottom: 12, borderRadius: 10,
-          background: 'rgba(255,170,0,0.08)', border: '1px solid rgba(255,170,0,0.2)',
-        }}>
-          <p style={{ fontSize: '0.75rem', color: 'rgba(255,200,100,0.9)', margin: 0, lineHeight: 1.5 }}>
+        <div className={s.iosWarningBanner}>
+          <p className={s.iosWarningText}>
             {iosWarning}
           </p>
         </div>
@@ -364,7 +359,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
           </div>
-          <p className="text-sm" style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: 2 }}>
+          <p className={`text-sm ${s.uploadLabel}`}>
             {t('tap_to_select')}
           </p>
           <p className="text-xs text-muted">{t('file_types')}</p>
@@ -375,51 +370,37 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           accept="video/*"
           multiple
           onChange={handleFiles}
-          style={{ display: 'none' }}
+          className={s.hiddenInput}
         />
       </div>
 
       {cancelled && !analyzing && (
-        <div style={{
-          margin: '10px 0', padding: '12px 14px', borderRadius: 10,
-          background: 'rgba(255,170,0,0.08)', border: '1px solid rgba(255,170,0,0.2)',
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <p style={{ color: 'rgba(255,200,100,0.9)', fontSize: '0.82rem', margin: 0, lineHeight: 1.4, flex: 1 }}>
+        <div className={s.cancelledBanner}>
+          <p className={s.cancelledText}>
             Analysis cancelled. {hasCancelled ? 'Press Resume to continue from checkpoint.' : 'Partial results shown below.'}
           </p>
           <button
             onClick={() => setCancelled(false)}
-            style={{
-              background: 'none', border: 'none', color: 'var(--muted)',
-              cursor: 'pointer', fontSize: 16, padding: '0 2px', flexShrink: 0,
-            }}
+            className={s.dismissButton}
           >&times;</button>
         </div>
       )}
 
       {errorMsg && (
-        <div style={{
-          margin: '10px 0', padding: '12px 14px', borderRadius: 10,
-          background: 'rgba(255,59,92,0.1)', border: '1px solid rgba(255,59,92,0.3)',
-          display: 'flex', alignItems: 'flex-start', gap: 10,
-        }}>
-          <span style={{ color: 'var(--red)', fontSize: 18, lineHeight: 1, flexShrink: 0 }}>!</span>
-          <div style={{ flex: 1 }}>
-            <p style={{ color: 'var(--red)', fontSize: '0.82rem', margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
+        <div className={s.errorBanner}>
+          <span className={s.errorIcon}>!</span>
+          <div className={s.errorBody}>
+            <p className={s.errorText}>{errorMsg}</p>
           </div>
           <button
             onClick={() => setErrorMsg(null)}
-            style={{
-              background: 'none', border: 'none', color: 'var(--muted)',
-              cursor: 'pointer', fontSize: 16, padding: '0 2px', flexShrink: 0,
-            }}
+            className={s.dismissButton}
           >&times;</button>
         </div>
       )}
 
       {queue.length > 0 && (
-        <div style={{ marginTop: 10 }}>
+        <div className={s.queueList}>
           {queue.map(q => (
             <div key={q.id} className={`queue-item ${q.status === 'done' ? 'done' : ''}`}>
               <div className="queue-info">
@@ -437,12 +418,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 )}
                 {q.status === 'done' && <span className="queue-done">{t('done')}</span>}
                 {q.status === 'cancelled' && (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.73rem', lineHeight: 1.4 }}>
+                  <span className={s.statusCancelled}>
                     Cancelled
                   </span>
                 )}
                 {q.status === 'error' && (
-                  <span style={{ color: 'var(--red)', fontSize: '0.73rem', lineHeight: 1.4 }}>
+                  <span className={s.statusError}>
                     {t('failed_try_different')}
                   </span>
                 )}
@@ -460,13 +441,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       <div className="analyze-controls">
         {!analyzing ? (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
+            <div className={s.exerciseRow}>
               {exercise !== '__auto__' && getExerciseIllustration(exercise) && (
                 <img
                   src={getExerciseIllustration(exercise, 2)}
                   alt=""
-                  style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6,
-                    background: 'var(--surface-elevated)', flexShrink: 0 }}
+                  className={s.exerciseIllustration}
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               )}
@@ -483,7 +463,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                     userChangedExercise.current = true;
                   }
                 }}
-                style={{ flex: 1, minWidth: 0, padding: 8, fontSize: '0.82rem' }}
+                className={s.exerciseSelect}
               >
                 <option value="__auto__">{t('automatic')}</option>
                 <optgroup label={t('compound')}>
@@ -506,21 +486,19 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 </optgroup>
               </select>
             </div>
-            <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+            <div className={s.weightRow}>
               <input
                 type="number"
                 value={weight}
                 onChange={(e) => { setWeight(e.target.value); weightRef.current = e.target.value; }}
                 placeholder="kg"
-                style={{ width: 64, padding: '10px 8px', fontSize: '0.82rem', textAlign: 'center' }}
+                className={s.weightInput}
               />
               <button
-                className={`btn btn-ghost btn-sm ${audioEnabled ? 'active' : ''}`}
+                className={`btn btn-ghost btn-sm ${audioEnabled ? 'active' : ''} ${s.audioToggle}`}
                 style={{
-                  padding: '10px 12px', fontSize: '1.1rem',
                   opacity: audioEnabled ? 1 : 0.4,
                   background: audioEnabled ? 'rgba(0,245,212,0.15)' : 'transparent',
-                  borderRadius: 8,
                 }}
                 onClick={() => setAudioEnabled(prev => !prev)}
                 title={audioEnabled ? 'Audio feedback ON' : 'Audio feedback OFF'}
@@ -529,16 +507,14 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
               </button>
               {hasCancelled && !hasQueued ? (
                 <button
-                  className="btn btn-primary"
-                  style={{ flex: 1 }}
+                  className={`btn btn-primary ${s.flexGrow}`}
                   onClick={() => { resumeAnalysis(); }}
                 >
                   Resume
                 </button>
               ) : (
                 <button
-                  className="btn btn-primary"
-                  style={{ flex: 1 }}
+                  className={`btn btn-primary ${s.flexGrow}`}
                   onClick={startAnalysis}
                   disabled={!hasQueued}
                 >
@@ -549,8 +525,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           </>
         ) : (
           <div className="analysis-progress-panel">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <div className={s.progressHeader}>
+              <span className={s.currentFileName}>
                 {currentFile}
               </span>
               <button className="btn btn-ghost btn-sm" onClick={cancelAnalysis}>{t('stop')}</button>
@@ -568,40 +544,25 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 const isActive = thisIdx === currentIdx;
                 const isDone = thisIdx < currentIdx;
                 return (
-                  <div key={phase.key} style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0',
-                    opacity: isDone ? 0.4 : isActive ? 1 : 0.25,
-                    transition: 'opacity 0.3s ease',
-                  }}>
-                    <span style={{
-                      width: 20, height: 20, borderRadius: '50%', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700,
-                      background: isDone ? 'var(--bio-cyan)' : isActive ? 'rgba(0,224,255,0.2)' : 'rgba(255,255,255,0.05)',
-                      color: isDone ? 'var(--void)' : isActive ? 'var(--bio-cyan)' : 'var(--text-secondary)',
-                      border: isActive ? '1.5px solid var(--bio-cyan)' : '1.5px solid transparent',
-                    }}>
+                  <div key={phase.key} className={s.phaseStep}
+                    style={{ opacity: isDone ? 0.4 : isActive ? 1 : 0.25 }}>
+                    <span className={`${s.phaseIndicator} ${isDone ? s.phaseIndicatorDone : isActive ? s.phaseIndicatorActive : s.phaseIndicatorPending}`}>
                       {isDone ? '\u2713' : i + 1}
                     </span>
-                    <span style={{
-                      fontSize: '0.78rem', fontWeight: isActive ? 600 : 400,
-                      color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    }}>
+                    <span className={isActive ? s.phaseLabelActive : s.phaseLabelInactive}>
                       {phase.label}
                     </span>
-                    {isActive && <div className="spinner-sm" style={{ width: 14, height: 14, marginLeft: 'auto' }} />}
+                    {isActive && <div className={`spinner-sm ${s.phaseSpinner}`} />}
                   </div>
                 );
               })}
             </div>
-            <div style={{ marginTop: 8 }}>
-              <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{
-                  width: `${progress}%`, height: '100%', background: 'var(--bio-cyan)',
-                  borderRadius: 2, transition: 'width 0.15s linear',
-                }} />
+            <div className={s.progressBarArea}>
+              <div className={s.progressTrack}>
+                <div className={s.progressFill} style={{ width: `${progress}%` }} />
               </div>
               {ffmpegStatus && (
-                <span style={{ display: 'block', fontSize: '0.68rem', color: 'var(--muted)', marginTop: 4 }}>
+                <span className={s.ffmpegStatus}>
                   {ffmpegStatus}
                 </span>
               )}
@@ -610,11 +571,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         )}
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block', marginBottom: 8 }}>
+      <div className={s.injurySection}>
+        <span className={s.injuryLabel}>
           {t('limitations')}:
         </span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div className={s.injuryGrid}>
           {Object.keys(INJURY_MAP).map(key => {
             const active = userInjuries.includes(key);
             const label = INJURY_LABELS[key]?.[lang] || key;
@@ -655,29 +616,27 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           : { position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }
         }
       >
-        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: 'var(--void)' }}>
+        <div className={s.analysisVideoWrapper}>
           {/* Video element: must stay in DOM for iOS Safari to decode frames via seeking.
               Hidden visually — the canvas draws video frame + skeleton as a single composited image,
               bypassing the iOS Safari hardware compositor that renders <video> above <canvas>. */}
-          <video ref={videoRef} className="analysis-video" muted playsInline preload="auto"
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.01, pointerEvents: 'none', zIndex: -1 }} />
+          <video ref={videoRef} className={`analysis-video ${s.analysisVideoElement}`} muted playsInline preload="auto" />
 
           {/* Single canvas: drawImage(video) + drawPose(skeleton) + rep counter */}
           <canvas ref={overlayRef}
-            style={{ width: '100%', display: 'block' }} />
+            className={s.overlayCanvas} />
         </div>
         {analyzing && analysisPhase === 'analyzing' && (
-          <div style={{ marginTop: 8, padding: '0 4px' }}>
+          <div className={s.liveRepSection}>
             {suitabilityAssessment && suitabilityAssessment.suitable !== 'good' && (
               <VideoSuitabilityBanner assessment={suitabilityAssessment} compact />
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ color: 'var(--bio-cyan)', fontSize: 20, fontWeight: 800 }}>{liveReps} {t('reps').toLowerCase()}</span>
-              <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: 'var(--bio-cyan)',
-                  borderRadius: 2, transition: 'width 0.1s linear' }} />
+            <div className={s.liveRepRow}>
+              <span className={s.liveRepCount}>{liveReps} {t('reps').toLowerCase()}</span>
+              <div className={s.liveRepTrack}>
+                <div className={s.liveRepFill} style={{ width: `${progress}%` }} />
               </div>
-              <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{progress}%</span>
+              <span className={s.liveRepPercent}>{progress}%</span>
             </div>
           </div>
         )}

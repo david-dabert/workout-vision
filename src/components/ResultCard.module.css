@@ -1,0 +1,654 @@
+/* ResultCard.module.css — extracted from inline styles */
+
+.resultCard {
+  margin-top: 14px;
+  position: relative;
+}
+
+.headerContent {
+  flex: 1;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.exerciseIllustration {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.exerciseTitle {
+  margin-bottom: 0;
+  font-size: 1.1rem;
+}
+
+.fileNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.autoDetectedBadge {
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 245, 212, 0.12);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.detectionFailedBadge,
+.lowConfidenceBadge {
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 183, 54, 0.15);
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.scoreBadge {
+  font-size: 1.1rem;
+  padding: 8px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmerOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.statCardClickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.repEditControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repEditButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.repDisplayCount {
+  min-width: 24px;
+  text-align: center;
+}
+
+.aiRepIndicator {
+  font-size: 0.55em;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.tapToEditHint {
+  font-size: 0.55rem;
+  color: var(--accent);
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.7;
+}
+
+.formScoreNA {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.scoreUnit {
+  font-size: 0.7em;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.volumeUnit {
+  font-size: 0.7em;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.recalibratingIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.recalibratedNotice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 0;
+  margin-bottom: 4px;
+  font-size: 0.65rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.recalibratedCheckmark {
+  font-size: 0.8rem;
+}
+
+.confidenceIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0;
+  margin-bottom: 6px;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.confidenceDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.userCorrectedLabel {
+  margin-left: 8px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.personalBestBanner {
+  text-align: center;
+  padding: 12px 0;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.08), rgba(196, 181, 253, 0.08));
+  border-radius: 12px;
+  border: 1px solid rgba(255, 107, 157, 0.15);
+}
+
+.personalBestIcon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.personalBestLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff6b9d;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.prBanner {
+  text-align: center;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.08));
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.prBannerIcon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.prBannerTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.prTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.prTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+}
+
+.prTagValue {
+  color: rgba(255, 215, 0, 0.7);
+  font-size: 0.65rem;
+}
+
+.formRegressionBanner {
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.formRegressionIcon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.formRegressionTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.formRegressionMessage {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.formRegressionScores {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.coachingCardBackground {
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.06) 0%, rgba(196, 181, 253, 0.03) 100%);
+}
+
+.progressionText {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.baselineSection {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.baselineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.personalBestInline {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bio-cyan, #22d3ee);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.baselineStats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.improvingChecks {
+  margin: 6px 0 0;
+  color: var(--bio-green, #4ade80);
+}
+
+.decliningChecks {
+  margin: 4px 0 0;
+  color: var(--yellow, #facc15);
+}
+
+.detailsToggle {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.toggleChevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+
+.summaryText {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.repQualitySection {
+  margin-top: 14px;
+}
+
+.repBarFill {
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 0 4px rgba(0, 245, 212, 0.1);
+  border-radius: 4px 4px 1px 1px;
+}
+
+.romRepNum {
+  font-size: 0.6rem;
+}
+
+.romSection {
+  margin-top: 14px;
+}
+
+.romStatsSpacing {
+  margin-bottom: 6px;
+}
+
+.romHint {
+  margin-top: 4px;
+}
+
+.tutSection {
+  margin-top: 14px;
+}
+
+.tutStatsSpacing {
+  margin-bottom: 6px;
+}
+
+.eccentricTempoSection {
+  margin-top: 14px;
+}
+
+.eccentricTempoHint {
+  margin-top: 4px;
+}
+
+.rangeOfMotionSection {
+  margin-top: 14px;
+}
+
+.rangeOfMotionStatsSpacing {
+  margin-bottom: 6px;
+}
+
+.asymmetrySection {
+  margin-top: 14px;
+}
+
+.asymmetryDetailRow {
+  padding: 2px 0;
+}
+
+.asymmetryDetails {
+  margin-top: 6px;
+}
+
+.deepDataToggle {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.progressionScoreCard {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.06), rgba(0, 245, 212, 0.02));
+  border-radius: 10px;
+  border: 1px solid rgba(0, 245, 212, 0.15);
+}
+
+.progressionScoreHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressionScoreLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.progressionScoreValueGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.progressionScoreValue {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.progressionGradeLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.progressionGradeTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.progressionGradeTitleText {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.progressionComponentGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.progressionComponentCell {
+  text-align: center;
+}
+
+.progressionComponentBarTrack {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: 3px;
+}
+
+.progressionComponentBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s;
+}
+
+.progressionComponentLabel {
+  font-size: 0.55rem;
+  color: var(--muted);
+}
+
+.oneRmGrid {
+  margin-top: 10px;
+}
+
+.oneRmCard {
+  grid-column: 1 / -1;
+}
+
+.oneRmUnit {
+  font-size: 0.6em;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.oneRmMethod {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.formNotesSection {
+  margin-top: 14px;
+}
+
+.highlightsSection {
+  margin-top: 14px;
+}
+
+.highlightItem {
+  color: var(--accent);
+  padding: 2px 0;
+}
+
+.nextStepsSection {
+  margin-top: 14px;
+}
+
+.improvementItem {
+  padding: 2px 0;
+}
+
+.notificationPrompt {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: rgba(0, 245, 212, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 212, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notificationPromptContent {
+  flex: 1;
+}
+
+.notificationPromptTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.notificationPromptDesc {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.notificationPromptActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.notifDismissBtn {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+}
+
+.notifEnableBtn {
+  font-size: 0.75rem;
+  padding: 6px 14px;
+  background: #00f5d4;
+  color: #000;
+}
+
+.replayButton {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.footerActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.shareButton {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.challengeButton {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff6b9d, #ffb088);
+  border: none;
+  color: #000;
+}

@@ -1,0 +1,21 @@
+.challengeWrapper {
+  padding: 0 16px;
+}
+
+.actionPrimaryIcon {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.recoverySymbol {
+  font-size: 1rem;
+}
+
+.weeklySetsLabel {
+  margin-bottom: 6px;
+  display: block;
+}
+
+.emptyStateMessage {
+  text-align: center;
+  padding: 20px;
+}

@@ -23,6 +23,7 @@ import { saveWorkout, getLastWorkoutForExercise } from './storage';
 import { extractFramesStreaming, hashFile, hashLandmarks } from './frameExtractor';
 import { updateBaseline, compareToBaseline } from './formBaselines';
 import { computeCalibration, applyCalibration } from './calibration';
+import { VideoSuitabilityDetector } from './videoSuitability';
 import {
   getCachedLandmarks,
   setCachedLandmarks,
@@ -32,8 +33,33 @@ import {
 } from './landmarkCache';
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-const MAX_FRAMES = IS_IOS ? 300 : 600;
 const CHECKPOINT_INTERVAL = 50; // Save partial checkpoint every N frames
+
+/**
+ * Detect available device memory and return an appropriate frame limit.
+ * Uses navigator.deviceMemory (Chrome) and performance.memory (Chrome)
+ * with conservative fallbacks for browsers that don't expose memory info.
+ */
+function getMaxFrames() {
+  const base = IS_IOS ? 300 : 600;
+  try {
+    // navigator.deviceMemory: approximate RAM in GB (Chrome 63+)
+    const deviceGB = navigator.deviceMemory;
+    if (deviceGB != null && deviceGB <= 2) return Math.min(base, 200);
+    if (deviceGB != null && deviceGB <= 4) return Math.min(base, 400);
+
+    // performance.memory: JS heap info (Chrome only, non-standard)
+    const mem = performance.memory;
+    if (mem) {
+      const usedRatio = mem.usedJSHeapSize / mem.jsHeapSizeLimit;
+      // If heap is already >60% used before analysis, reduce frame count
+      if (usedRatio > 0.6) return Math.min(base, 300);
+    }
+  } catch { /* memory APIs unavailable; use default */ }
+  return base;
+}
+
+const MAX_FRAMES = getMaxFrames();
 
 /**
  * Analyze a single video file.
@@ -67,6 +93,7 @@ export async function analyzeVideoFile({
   onPhase = () => {},
   onLiveReps = () => {},
   onExerciseDetected = () => {},
+  onSuitability,
   signal,
 }) {
   const analysisStart = Date.now();
@@ -151,25 +178,119 @@ export async function analyzeVideoFile({
       const landmarksForCache = frames.map(f => f.landmarks);
 
       try {
-        const streamResult = await extractFramesStreaming(
-          file,
-          analysisFps,
-          MAX_FRAMES,
-          maxWidth,
-          async (canvas, frameIndex) => {
-            const deterministicTs = frameIndex * (1000 / analysisFps);
-            let landmarks = null;
-            let angles = null;
+        if (useWorker) {
+          // ── Pipeline mode: overlap extraction and inference ──
+          // Extract frames as fast as possible (bitmap capture ~1ms per frame).
+          // Fire inferences to the worker with concurrency limit to avoid
+          // accumulating too many transferred bitmaps in the worker message queue.
+          const MAX_CONCURRENT = 4;
+          let inFlight = 0;
+          const slotWaiters = [];
+          const pendingInferences = []; // { promise, frameIndex }
 
-            let worldLandmarks = null;
-            if (useWorker) {
-              const workerResult = await worker.detect(canvas, deterministicTs, frameIndex);
-              if (workerResult) {
-                landmarks = workerResult.landmarks;
-                angles = workerResult.angles;
-                worldLandmarks = workerResult.worldLandmarks || null;
+          const acquireSlot = () => {
+            if (inFlight < MAX_CONCURRENT) { inFlight++; return Promise.resolve(); }
+            return new Promise(r => slotWaiters.push(r));
+          };
+          const releaseSlot = () => {
+            inFlight--;
+            if (slotWaiters.length > 0) { inFlight++; slotWaiters.shift()(); }
+          };
+
+          // Ordered results collector: results arrive out-of-order, we process in-order
+          const inferenceResults = new Map(); // frameIndex → result
+          let lastProcessedIdx = -1;
+          let suitabilityChecked = false;
+
+          // Process in-order results for live rep counting and progress
+          const drainOrderedResults = () => {
+            while (inferenceResults.has(lastProcessedIdx + 1)) {
+              lastProcessedIdx++;
+              const result = inferenceResults.get(lastProcessedIdx);
+              inferenceResults.delete(lastProcessedIdx);
+
+              if (result?.landmarks) {
+                const time = lastProcessedIdx / analysisFps;
+                const angles = result.angles || extractJointAngles(result.landmarks);
+                const frameData = { landmarks: result.landmarks, timestamp: time, angles };
+                if (result.worldLandmarks) frameData.worldLandmarks = result.worldLandmarks;
+                frames.push(frameData);
+                replayFrames.push({ landmarks: result.landmarks, timestamp: time });
+                landmarksForCache.push(result.landmarks);
+
+                const liveResult = liveRepCounter.update(result.landmarks, time);
+                if (liveResult?.reps != null) onLiveReps(liveResult.reps);
               }
-            } else {
+
+              // Progressive checkpoint
+              if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
+                savePartialCheckpoint(cacheKey, landmarksForCache, lastProcessedIdx).catch(() => {});
+              }
+
+              // Run suitability check once after ~30 frames
+              if (!suitabilityChecked && frames.length >= 30 && onSuitability) {
+                suitabilityChecked = true;
+                const suitabilityDetector = new VideoSuitabilityDetector();
+                const earlyLandmarks = frames.slice(0, 30).map(f => f.landmarks);
+                const assessment = suitabilityDetector.assess(earlyLandmarks);
+                onSuitability(assessment);
+              }
+            }
+          };
+
+          const streamResult = await extractFramesStreaming(
+            file,
+            analysisFps,
+            MAX_FRAMES,
+            maxWidth,
+            async (canvas, frameIndex) => {
+              // Capture bitmap from canvas (~1ms, non-blocking for video playback)
+              const bitmap = await createImageBitmap(canvas);
+              const deterministicTs = frameIndex * (1000 / analysisFps);
+
+              // Wait for an inference slot (back-pressure)
+              await acquireSlot();
+
+              // Fire inference without awaiting result
+              const inferPromise = (async () => {
+                try {
+                  const workerResult = await worker.detect(bitmap, deterministicTs, frameIndex);
+                  inferenceResults.set(frameIndex, workerResult);
+                  drainOrderedResults();
+                } finally {
+                  releaseSlot();
+                }
+              })();
+              pendingInferences.push(inferPromise);
+
+              streamFrameCount++;
+              onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
+            },
+            undefined,
+            { signal, startFrame },
+          );
+
+          // Wait for all in-flight inferences to complete
+          await Promise.all(pendingInferences);
+          drainOrderedResults();
+
+          frameCount = streamResult.frameCount;
+          duration = streamResult.duration;
+
+        } else {
+          // ── Serial mode: main-thread inference (no parallelism possible) ──
+          let suitabilityChecked = false;
+          const streamResult = await extractFramesStreaming(
+            file,
+            analysisFps,
+            MAX_FRAMES,
+            maxWidth,
+            async (canvas, frameIndex) => {
+              const deterministicTs = frameIndex * (1000 / analysisFps);
+              let landmarks = null;
+              let angles = null;
+              let worldLandmarks = null;
+
               const result = detectPoseImage(landmarker, canvas, deterministicTs);
               if (result?.landmarks?.length) {
                 if (result.landmarks.length === 1) {
@@ -186,37 +307,42 @@ export async function analyzeVideoFile({
                 }
                 angles = extractJointAngles(landmarks);
               }
-            }
 
-            if (landmarks) {
-              const time = frameIndex / analysisFps;
-              if (!angles) angles = extractJointAngles(landmarks);
-              const frameData = { landmarks, timestamp: time, angles };
-              if (worldLandmarks) frameData.worldLandmarks = worldLandmarks;
-              frames.push(frameData);
-              replayFrames.push({ landmarks, timestamp: time });
-              landmarksForCache.push(landmarks);
+              if (landmarks) {
+                const time = frameIndex / analysisFps;
+                if (!angles) angles = extractJointAngles(landmarks);
+                const frameData = { landmarks, timestamp: time, angles };
+                if (worldLandmarks) frameData.worldLandmarks = worldLandmarks;
+                frames.push(frameData);
+                replayFrames.push({ landmarks, timestamp: time });
+                landmarksForCache.push(landmarks);
 
-              const liveResult = liveRepCounter.update(landmarks, time);
-              if (liveResult?.reps != null) {
-                onLiveReps(liveResult.reps);
+                const liveResult = liveRepCounter.update(landmarks, time);
+                if (liveResult?.reps != null) onLiveReps(liveResult.reps);
               }
-            }
 
-            streamFrameCount++;
-            onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
+              streamFrameCount++;
+              onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
 
-            // Progressive checkpoint: save partial cache every N frames
-            if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
-              savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
-            }
-          },
-          undefined, // onProgress handled inside onFrame
-          { signal, startFrame },
-        );
+              if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
+                savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
+              }
 
-        frameCount = streamResult.frameCount;
-        duration = streamResult.duration;
+              // Run suitability check once after ~30 frames
+              if (!suitabilityChecked && frames.length >= 30 && onSuitability) {
+                suitabilityChecked = true;
+                const suitabilityDetector = new VideoSuitabilityDetector();
+                const earlyLandmarks = frames.slice(0, 30).map(f => f.landmarks);
+                onSuitability(suitabilityDetector.assess(earlyLandmarks));
+              }
+            },
+            undefined,
+            { signal, startFrame },
+          );
+
+          frameCount = streamResult.frameCount;
+          duration = streamResult.duration;
+        }
       } catch (err) {
         if (err.name === 'AbortError') {
           // Save what we have as a partial checkpoint before returning
@@ -307,6 +433,8 @@ async function buildFullResult({
   const isAutoMode = exercise === '__auto__';
   const initialExercise = isAutoMode ? 'squat' : exercise;
   let detectedExercise = initialExercise;
+  let detectionConfidence = 1; // 1.0 when user manually selected
+  let detectionLowConfidence = false;
   const interval = 1 / analysisFps;
   let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
   let autoDetected = false;
@@ -320,6 +448,10 @@ async function buildFullResult({
       const det = detector.update(f.landmarks);
       if (det) tallies[det] = (tallies[det] || 0) + 1;
     }
+    const detectionInfo = detector.getDetectionInfo();
+    detectionConfidence = detectionInfo.confidence;
+    detectionLowConfidence = detectionInfo.isLowConfidence;
+
     const candidates = Object.keys(tallies);
     if (candidates.length > 0) {
       let bestEx = initialExercise;
@@ -362,6 +494,10 @@ async function buildFullResult({
   let bioAnalysis = null;
   try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory, userProfile?.height); }
   catch (err) { console.error('Bio analysis error:', err); }
+
+  // Release frames array: only replayFrames survives in the result.
+  // This frees the duplicate angles data (~40% of frame memory).
+  frames.length = 0;
 
   let report = null;
   try {
@@ -429,6 +565,8 @@ async function buildFullResult({
     fps: analysisFps,
     autoDetected,
     detectionFailed: autoDetected === 'failed',
+    detectionConfidence,
+    detectionLowConfidence,
     weight: w,
     debug,
     aborted: false,

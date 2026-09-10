@@ -1,0 +1,377 @@
+/* VideoUpload.module.css — extracted from inline styles */
+
+/* Page header controls */
+.headerControls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.langButton {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+}
+
+/* Tip banner (filming tip shown when queue is empty) */
+.tipBanner {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: rgba(0, 224, 255, 0.04);
+  border: 1px solid rgba(0, 224, 255, 0.1);
+}
+
+.tipText {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* iOS large-file warning banner */
+.iosWarningBanner {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: rgba(255, 170, 0, 0.08);
+  border: 1px solid rgba(255, 170, 0, 0.2);
+}
+
+.iosWarningText {
+  font-size: 0.75rem;
+  color: rgba(255, 200, 100, 0.9);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Upload text styling */
+.uploadLabel {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Hidden file input */
+.hiddenInput {
+  display: none;
+}
+
+/* Cancelled analysis banner */
+.cancelledBanner {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 170, 0, 0.08);
+  border: 1px solid rgba(255, 170, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cancelledText {
+  color: rgba(255, 200, 100, 0.9);
+  font-size: 0.82rem;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.dismissButton {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+/* Error banner */
+.errorBanner {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 59, 92, 0.1);
+  border: 1px solid rgba(255, 59, 92, 0.3);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.errorIcon {
+  color: var(--red);
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.errorBody {
+  flex: 1;
+}
+
+.errorText {
+  color: var(--red);
+  font-size: 0.82rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Queue list */
+.queueList {
+  margin-top: 10px;
+}
+
+/* Queue item status labels */
+.statusCancelled {
+  color: var(--text-secondary);
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+.statusError {
+  color: var(--red);
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+/* Analyze controls - non-analyzing state */
+.exerciseRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.exerciseIllustration {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--surface-elevated);
+  flex-shrink: 0;
+}
+
+.exerciseSelect {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+  font-size: 0.82rem;
+}
+
+.weightRow {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.weightInput {
+  width: 64px;
+  padding: 10px 8px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.audioToggle {
+  padding: 10px 12px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+}
+
+.flexGrow {
+  flex: 1;
+}
+
+/* Analysis progress panel (analyzing state) */
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.currentFileName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Phase step items — static layout */
+.phaseStep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  transition: opacity 0.3s ease;
+}
+
+.phaseIndicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phaseIndicatorDone {
+  background: var(--bio-cyan);
+  color: var(--void);
+  border: 1.5px solid transparent;
+}
+
+.phaseIndicatorActive {
+  background: rgba(0, 224, 255, 0.2);
+  color: var(--bio-cyan);
+  border: 1.5px solid var(--bio-cyan);
+}
+
+.phaseIndicatorPending {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1.5px solid transparent;
+}
+
+.phaseLabelActive {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.phaseLabelInactive {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.phaseSpinner {
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+}
+
+/* Overall progress bar area */
+.progressBarArea {
+  margin-top: 8px;
+}
+
+.progressTrack {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--bio-cyan);
+  border-radius: 2px;
+  transition: width 0.15s linear;
+}
+
+.ffmpegStatus {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Injury / limitations section */
+.injurySection {
+  margin-top: 16px;
+}
+
+.injuryLabel {
+  font-size: 0.72rem;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.injuryGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.injuryChip {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.injuryChipActive {
+  border: 1px solid var(--red);
+  background: rgba(255, 59, 92, 0.15);
+  color: var(--red);
+}
+
+.injuryChipInactive {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+}
+
+/* Analysis card (video + overlay) — hidden state is dynamic */
+.analysisVideoWrapper {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--void);
+}
+
+.analysisVideoElement {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.01;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.overlayCanvas {
+  width: 100%;
+  display: block;
+}
+
+/* Live rep counter section (shown during analysis) */
+.liveRepSection {
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.liveRepRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.liveRepCount {
+  color: var(--bio-cyan);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.liveRepTrack {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.liveRepFill {
+  height: 100%;
+  background: var(--bio-cyan);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.liveRepPercent {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}

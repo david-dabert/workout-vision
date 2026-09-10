@@ -153,8 +153,18 @@ export class ExerciseAutoDetector {
   }
 
   /**
+   * Whether the current detection is below the unknown threshold.
+   * When true, the UI should show "unknown exercise" rather than
+   * confidently displaying a possibly wrong exercise name.
+   * @returns {boolean}
+   */
+  isLowConfidence() {
+    return this._detectionConfidence < DETECTOR_UNKNOWN_THRESHOLD;
+  }
+
+  /**
    * Get detection info with confidence and alternatives for diagnostics.
-   * @returns {{ detected: string|null, confidence: number, alternatives: Array<{ name: string, confidence: number }> }}
+   * @returns {{ detected: string|null, confidence: number, isLowConfidence: boolean, alternatives: Array<{ name: string, confidence: number }> }}
    */
   getDetectionInfo() {
     const counts = {};
@@ -171,12 +181,13 @@ export class ExerciseAutoDetector {
     const detected = this._lastDetection;
     const topConf = sorted.length > 0 ? sorted[0].confidence : 0;
     const confidence = detected
-      ? (topConf < DETECTOR_UNKNOWN_THRESHOLD ? topConf : topConf)
+      ? topConf
       : 0;
 
     return {
       detected,
       confidence,
+      isLowConfidence: confidence < DETECTOR_UNKNOWN_THRESHOLD,
       alternatives: sorted.slice(0, 3),
     };
   }

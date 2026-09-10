@@ -27,9 +27,20 @@ const WORKER_SUPPORTED = (() => {
 export default function usePoseWorker() {
   const workerRef = useRef(null);
   const pendingRef = useRef(new Map()); // frameIndex → { resolve, reject }
+  const timeoutsRef = useRef(new Set()); // track all active timeouts for cleanup
   const [isReady, setIsReady] = useState(false);
   const [isSupported] = useState(WORKER_SUPPORTED);
   const initPromiseRef = useRef(null);
+
+  // Helper: setTimeout with automatic tracking for cleanup on unmount
+  const trackedTimeout = (fn, ms) => {
+    const id = setTimeout(() => {
+      timeoutsRef.current.delete(id);
+      fn();
+    }, ms);
+    timeoutsRef.current.add(id);
+    return id;
+  };
 
   // Clean up on unmount
   useEffect(() => {
@@ -40,6 +51,9 @@ export default function usePoseWorker() {
         workerRef.current = null;
       }
       pendingRef.current.clear();
+      // Clear all tracked timeouts to prevent firing into dead refs
+      for (const id of timeoutsRef.current) clearTimeout(id);
+      timeoutsRef.current.clear();
     };
   }, []);
 
@@ -120,7 +134,7 @@ export default function usePoseWorker() {
       const promise = new Promise((resolve, reject) => {
         initPromiseRef.current = { resolve, reject };
         // Timeout after 45s
-        setTimeout(() => {
+        trackedTimeout(() => {
           if (initPromiseRef.current) {
             initPromiseRef.current.reject(new Error('Worker init timeout'));
             initPromiseRef.current = null;
@@ -138,21 +152,21 @@ export default function usePoseWorker() {
 
   /**
    * Send a frame to the worker for detection.
-   * @param {HTMLCanvasElement} canvas - The canvas with the current video frame drawn on it
+   * @param {HTMLCanvasElement|ImageBitmap} source - Canvas or pre-created ImageBitmap
    * @param {number} timestamp - Deterministic timestamp for MediaPipe VIDEO mode
    * @param {number} frameIndex - Unique frame index for response matching
    * @returns {Promise<{landmarks, angles, inferenceMs}>}
    */
-  const detectFrame = useCallback(async (canvas, timestamp, frameIndex) => {
+  const detectFrame = useCallback(async (source, timestamp, frameIndex) => {
     if (!workerRef.current || !isReady) return null;
 
     try {
-      // ImageBitmap transfer: zero-copy, fastest path
-      const bitmap = await createImageBitmap(canvas);
+      // Accept pre-created ImageBitmap (pipeline mode) or canvas
+      const bitmap = source instanceof ImageBitmap ? source : await createImageBitmap(source);
       const promise = new Promise((resolve, reject) => {
         pendingRef.current.set(frameIndex, { resolve, reject });
         // Safety timeout per frame (5s)
-        setTimeout(() => {
+        trackedTimeout(() => {
           if (pendingRef.current.has(frameIndex)) {
             pendingRef.current.delete(frameIndex);
             resolve(null); // Don't crash, just skip
@@ -172,7 +186,7 @@ export default function usePoseWorker() {
         const buffer = imageData.data.buffer;
         const promise = new Promise((resolve) => {
           pendingRef.current.set(frameIndex, { resolve, reject: () => resolve(null) });
-          setTimeout(() => {
+          trackedTimeout(() => {
             if (pendingRef.current.has(frameIndex)) {
               pendingRef.current.delete(frameIndex);
               resolve(null);
