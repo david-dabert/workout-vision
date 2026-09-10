@@ -27,6 +27,8 @@ jobs:
       - run: npm test
       - run: npm run test:benchmark
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/offline.spec.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -9,7 +9,7 @@ export default defineConfig({
     serviceWorkers: 'allow',
   },
   webServer: {
-    command: 'npm run build && npm run preview',
+    command: 'test -d dist && npm run preview || (npm run build && npm run preview)',
     port: 4173,
     reuseExistingServer: true,
     timeout: 120_000,
