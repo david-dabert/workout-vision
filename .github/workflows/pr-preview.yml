@@ -16,6 +16,8 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+        env:
+          VITE_BASE: /workout-vision/pr-${{ github.event.pull_request.number }}/
       - name: Deploy preview
         uses: peaceiris/actions-gh-pages@v4
         with:

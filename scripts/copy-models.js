@@ -23,7 +23,7 @@
  *        with: npm install @ffmpeg/core@0.12.6
  */
 
-import { existsSync, mkdirSync, cpSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -43,6 +43,8 @@ const COPIES = [
   //   dest: join(ROOT, 'public', 'ffmpeg'),
   // },
 ];
+
+const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task';
 
 let exitCode = 0;
 
@@ -64,6 +66,27 @@ for (const { name, src, dest } of COPIES) {
     console.error(`[copy-models] ERROR copying ${name}: ${err.message}`);
     exitCode = 1;
   }
+}
+
+// Download the pose landmarker model if not already present.
+// The model is not in node_modules; it must be fetched from Google Storage.
+// This runs both locally and in CI (Node 18+ provides global fetch).
+const modelDest = join(ROOT, 'public', 'mediapipe', 'pose_landmarker_full.task');
+if (!existsSync(modelDest)) {
+  mkdirSync(dirname(modelDest), { recursive: true });
+  console.log(`[copy-models] Downloading pose_landmarker_full.task ...`);
+  try {
+    const resp = await fetch(MODEL_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    writeFileSync(modelDest, buffer);
+    console.log(`[copy-models] OK: pose_landmarker_full.task (${buffer.length} bytes)`);
+  } catch (err) {
+    console.error(`[copy-models] ERROR downloading model: ${err.message}`);
+    exitCode = 1;
+  }
+} else {
+  console.log(`[copy-models] OK: pose_landmarker_full.task already present`);
 }
 
 process.exit(exitCode);

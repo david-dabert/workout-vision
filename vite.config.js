@@ -25,7 +25,7 @@ function copyModelsPlugin() {
 
 export default defineConfig({
   plugins: [react(), copyModelsPlugin()],
-  base: '/workout-vision/',
+  base: process.env.VITE_BASE || '/workout-vision/',
   server: {
     host: true,
     https: httpsConfig,
@@ -33,6 +33,9 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
+  test: {
+    exclude: ['e2e/**', 'node_modules/**'],
   },
   build: {
     target: ['es2022', 'safari16'],
