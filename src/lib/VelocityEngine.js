@@ -77,6 +77,11 @@ function segmentPhases(phases) {
 }
 
 // ---------------------------------------------------------------------------
+// Normalized-to-meters fallback constant
+// ---------------------------------------------------------------------------
+const NORM_TO_METERS_FALLBACK = 1.7;
+
+// ---------------------------------------------------------------------------
 // VelocityEngine class
 // ---------------------------------------------------------------------------
 
@@ -87,6 +92,34 @@ export class VelocityEngine {
   constructor(fps = 30) {
     this._fps = fps;
     this._dt = 1 / fps;
+  }
+
+  /**
+   * Extract a position signal (Y-coordinate in meters) from landmark frames.
+   * Prefers worldLandmarks (metric-scale) when available, falls back to
+   * normalized landmarks scaled by NORM_TO_METERS.
+   *
+   * @param {Array} frames - array of {landmarks, worldLandmarks?} per frame
+   * @param {number} landmarkIndex - which landmark to track
+   * @param {string} [axis='y'] - which axis to extract ('x', 'y', 'z')
+   * @param {number} [normToMeters] - scale factor for normalized landmarks
+   * @returns {number[]} position signal in meters
+   */
+  static extractPositionSignal(frames, landmarkIndex, axis = 'y', normToMeters = NORM_TO_METERS_FALLBACK) {
+    return frames.map(f => {
+      // Prefer worldLandmarks (already in meters, hip-center origin)
+      if (f.worldLandmarks && f.worldLandmarks[landmarkIndex]) {
+        const wl = f.worldLandmarks[landmarkIndex];
+        return axis === 'z' ? (wl.z || 0) : wl[axis] || 0;
+      }
+      // Fallback: normalized landmarks * scale factor
+      if (f.landmarks && f.landmarks[landmarkIndex]) {
+        const lm = f.landmarks[landmarkIndex];
+        const val = axis === 'z' ? (lm.z || 0) : lm[axis] || 0;
+        return val * normToMeters;
+      }
+      return 0;
+    });
   }
 
   /**

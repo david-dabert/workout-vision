@@ -161,17 +161,20 @@ export async function analyzeVideoFile({
             let landmarks = null;
             let angles = null;
 
+            let worldLandmarks = null;
             if (useWorker) {
               const workerResult = await worker.detect(canvas, deterministicTs, frameIndex);
               if (workerResult) {
                 landmarks = workerResult.landmarks;
                 angles = workerResult.angles;
+                worldLandmarks = workerResult.worldLandmarks || null;
               }
             } else {
               const result = detectPoseImage(landmarker, canvas, deterministicTs);
               if (result?.landmarks?.length) {
                 if (result.landmarks.length === 1) {
                   landmarks = result.landmarks[0];
+                  worldLandmarks = result.worldLandmarks?.[0] || null;
                 } else {
                   if (lockedSubjectIdx === null) {
                     landmarks = selectSubjectPose(result.landmarks);
@@ -179,6 +182,7 @@ export async function analyzeVideoFile({
                   } else {
                     landmarks = result.landmarks[lockedSubjectIdx] || selectSubjectPose(result.landmarks);
                   }
+                  worldLandmarks = result.worldLandmarks?.[lockedSubjectIdx] || null;
                 }
                 angles = extractJointAngles(landmarks);
               }
@@ -187,7 +191,9 @@ export async function analyzeVideoFile({
             if (landmarks) {
               const time = frameIndex / analysisFps;
               if (!angles) angles = extractJointAngles(landmarks);
-              frames.push({ landmarks, timestamp: time, angles });
+              const frameData = { landmarks, timestamp: time, angles };
+              if (worldLandmarks) frameData.worldLandmarks = worldLandmarks;
+              frames.push(frameData);
               replayFrames.push({ landmarks, timestamp: time });
               landmarksForCache.push(landmarks);
 

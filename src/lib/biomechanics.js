@@ -14,7 +14,7 @@
  *   - Kiesel K et al, 2007, N Am J Sports Phys Ther (asymmetry >15%)
  */
 
-import { extractJointAngles } from './poseAnalysis';
+import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import {
   NORM_TO_METERS_DEFAULT,
@@ -36,6 +36,18 @@ export function setUserHeight(heightCm) {
   if (heightCm && heightCm > 100 && heightCm < 250) {
     NORM_TO_METERS = heightCm / 100;
   }
+}
+
+/**
+ * Compute midpoint of two landmarks.
+ */
+function midpoint(a, b) {
+  if (!a || !b) return a || b || { x: 0, y: 0, z: 0 };
+  return {
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2,
+    z: ((a.z || 0) + (b.z || 0)) / 2,
+  };
 }
 
 /**
@@ -231,14 +243,24 @@ function detectReps(values) {
 
 /**
  * Velocity analysis using wrist/hip displacement during concentric phase.
+ * Uses worldLandmarks (metric-scale, in meters) when available for accurate
+ * displacement. Falls back to normalized landmarks * NORM_TO_METERS if not.
+ *
+ * @param {Array} rawFrames - raw landmark arrays per frame
+ * @param {number} fps - frames per second
+ * @param {Array} reps - rep boundaries
+ * @param {Object} exercise - exercise definition
+ * @param {boolean} isPulling - true for pulling exercises
+ * @param {Array} [worldFrames] - optional worldLandmarks per frame (metric-scale)
  */
-function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
+function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, worldFrames = null) {
   if (reps.length === 0) {
     return { avg: 0, perRep: [], trend: 'trend_insufficient' };
   }
 
   const isLower = ['knee', 'hip'].includes(exercise.joint);
   const timeDelta = 1 / fps;
+  const hasWorld = worldFrames && worldFrames.length === rawFrames.length;
 
   const perRep = reps.map(rep => {
     // For pushing exercises: concentric = bottom->end (angle increasing)
@@ -252,9 +274,13 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
     // actual path traveled and is more accurate at low FPS.
     let totalDisplacement = 0;
     for (let i = concentricStart; i < concentricEnd; i++) {
-      const lm1 = rawFrames[i];
-      const lm2 = rawFrames[i + 1];
+      // Prefer worldLandmarks (already in meters) over normalized + scale factor
+      const useWorld = hasWorld && worldFrames[i] && worldFrames[i + 1];
+      const lm1 = useWorld ? worldFrames[i] : rawFrames[i];
+      const lm2 = useWorld ? worldFrames[i + 1] : rawFrames[i + 1];
       if (!lm1 || !lm2) continue;
+      // worldLandmarks are already in meters; normalized need scaling
+      const scale = useWorld ? 1 : NORM_TO_METERS;
 
       let p1, p2;
       if (isLower) {
@@ -265,9 +291,9 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false) {
         p2 = midpoint(lm2[LANDMARKS.LEFT_WRIST], lm2[LANDMARKS.RIGHT_WRIST]);
       }
 
-      const dx = (p2.x - p1.x) * NORM_TO_METERS;
-      const dy = (p2.y - p1.y) * NORM_TO_METERS;
-      const dz = ((p2.z || 0) - (p1.z || 0)) * NORM_TO_METERS;
+      const dx = (p2.x - p1.x) * scale;
+      const dy = (p2.y - p1.y) * scale;
+      const dz = ((p2.z || 0) - (p1.z || 0)) * scale;
       totalDisplacement += Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 

@@ -3,6 +3,31 @@ import { EXERCISES } from '../lib/exercises';
 
 const FEEDBACK_STORAGE_KEY = 'wv_feedback';
 
+// Beacon feedback to the Cloudflare Worker endpoint if configured.
+// Fails silently; no user-facing error if the Worker is down or URL is empty.
+function beaconFeedback(payload) {
+  try {
+    const url = typeof __FEEDBACK_URL__ !== 'undefined' ? __FEEDBACK_URL__ : '';
+    if (!url) return;
+    const body = JSON.stringify({
+      v: 1,
+      ...payload,
+      appVersion: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'unknown',
+    });
+    // Prefer sendBeacon (fire-and-forget, survives page unload)
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(`${url}/ingest`, new Blob([body], { type: 'application/json' }));
+    } else {
+      fetch(`${url}/ingest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch { /* silent */ }
+}
+
 function loadFeedback() {
   try {
     return JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || '[]');
@@ -52,8 +77,15 @@ function FeedbackPanel({ result }) {
         correct: true,
         workoutId: result?.workoutId,
       });
+      beaconFeedback({
+        kind: 'feedback',
+        detected: result?.exercise,
+        confidence: result?.confidence?.visibility,
+        deviceClass: getDeviceInfo().device,
+        message: 'exercise_confirmed',
+      });
     }
-  }, [result?.exercise, result?.workoutId]);
+  }, [result?.exercise, result?.workoutId, result?.confidence?.visibility]);
 
   const handleExerciseCorrection = useCallback((newExercise) => {
     setCorrectedExercise(newExercise);
@@ -63,7 +95,14 @@ function FeedbackPanel({ result }) {
       corrected: newExercise,
       workoutId: result?.workoutId,
     });
-  }, [result?.exercise, result?.workoutId]);
+    beaconFeedback({
+      kind: 'correction',
+      detected: result?.exercise,
+      corrected: newExercise,
+      confidence: result?.confidence?.visibility,
+      deviceClass: getDeviceInfo().device,
+    });
+  }, [result?.exercise, result?.workoutId, result?.confidence?.visibility]);
 
   const handleThumbs = useCallback((direction) => {
     setThumbs(direction);
@@ -75,6 +114,14 @@ function FeedbackPanel({ result }) {
       formScore: result?.formScore,
       confidence: result?.confidence?.level,
       workoutId: result?.workoutId,
+    });
+    beaconFeedback({
+      kind: 'rating',
+      detected: result?.exercise,
+      confidence: result?.confidence?.visibility,
+      repCount: result?.reps,
+      deviceClass: getDeviceInfo().device,
+      message: direction,
     });
   }, [result]);
 

@@ -1,0 +1,8 @@
+name = "workout-vision-feedback"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "workout-vision-feedback"
+database_id = "" # Fill after: npx wrangler d1 create workout-vision-feedback

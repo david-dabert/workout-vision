@@ -352,6 +352,10 @@ export function detectPoseImage(landmarker, source, timestamp) {
         }
       }
     }
+    // Preserve worldLandmarks (metric-scale, hip-origin, in meters) if present.
+    // These are passed through unfiltered; Kalman and plausibility checks
+    // apply only to normalized landmarks used for rendering.
+    // worldLandmarks are used downstream for accurate velocity/ROM calculations.
     return result;
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (image):', e);

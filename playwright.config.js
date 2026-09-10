@@ -6,6 +6,7 @@ export default defineConfig({
   retries: 1,
   use: {
     baseURL: 'http://localhost:4173',
+    serviceWorkers: 'allow',
   },
   webServer: {
     command: 'npm run build && npm run preview',
