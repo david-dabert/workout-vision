@@ -9,6 +9,7 @@ import { AnalysisDiagnostics } from '../lib/analysisDiagnostics';
 import { detectViewpointFromFrames } from '../lib/cameraViewpoint';
 import VideoReplay from './VideoReplay';
 import ResultCard from './ResultCard';
+import FeedbackPanel from './FeedbackPanel';
 import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
@@ -67,10 +68,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const [dragOver, setDragOver] = useState(false);
   const [ffmpegStatus, setFfmpegStatus] = useState('');
   const [suitabilityAssessment, setSuitabilityAssessment] = useState(null);
+  const [cancelled, setCancelled] = useState(false);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const overlayRef = useRef(null);
-  const abortRef = useRef(false);
+  const abortControllerRef = useRef(null);
   const blobUrlRef = useRef(null);
   const audioFeedbackRef = useRef(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
@@ -79,7 +81,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     // Pre-initialize worker in background (model downloads while user picks video)
     if (workerSupported) initWorker().catch(() => {});
     return () => {
-      abortRef.current = true;
+      if (abortControllerRef.current) abortControllerRef.current.abort();
       disposeAllLandmarkers();
       disposeWorker();
       if (blobUrlRef.current) {
@@ -598,7 +600,10 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       </div>
 
       {results.map((r, idx) => (
-        <ResultCard key={idx} result={r} onReplay={() => setReplayResult(r)} />
+        <div key={idx}>
+          <ResultCard result={r} onReplay={() => setReplayResult(r)} />
+          <FeedbackPanel result={r} />
+        </div>
       ))}
 
       {results.length > 0 && (

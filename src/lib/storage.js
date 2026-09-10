@@ -5,6 +5,7 @@
 
 import localforage from 'localforage';
 import { calculateBMR, ACTIVITY_MULTIPLIERS } from './nutrition';
+import { validateWorkout } from './validateSchema';
 
 const profileStore = localforage.createInstance({ name: 'workoutVision', storeName: 'profile' });
 const workoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' });
@@ -128,7 +129,15 @@ export async function saveWorkout(workout) {
 }
 
 export async function getWorkout(id) {
-  return await workoutStore.getItem(id);
+  const record = await workoutStore.getItem(id);
+  if (record) {
+    const { valid, errors, sanitized } = validateWorkout(record);
+    if (!valid) {
+      console.warn('[Storage] Workout validation issues on read:', id, errors);
+    }
+    return sanitized || record;
+  }
+  return record;
 }
 
 /**
@@ -156,7 +165,11 @@ export async function getWorkouts(options = {}) {
     const ts = value.createdAt || new Date(value.date).getTime();
     if (fromTs && ts < fromTs) return;
     if (toTs && ts > toTs) return;
-    all.push(value);
+    const { valid, errors, sanitized } = validateWorkout(value);
+    if (!valid) {
+      console.warn('[Storage] Workout validation issues:', value.id, errors);
+    }
+    all.push(sanitized || value);
   });
 
   // Sort newest first, then apply offset/limit
@@ -242,7 +255,11 @@ export async function getWorkoutsByDateRange(dateFrom, dateTo) {
 export async function getAllWorkouts() {
   const workouts = [];
   await workoutStore.iterate((value) => {
-    workouts.push(value);
+    const { valid, errors, sanitized } = validateWorkout(value);
+    if (!valid) {
+      console.warn('[Storage] Workout validation issues:', value.id, errors);
+    }
+    workouts.push(sanitized || value);
   });
   return workouts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 }

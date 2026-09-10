@@ -9,6 +9,8 @@ const APP_SHELL = [
   '/workout-vision/favicon.svg',
   '/workout-vision/icon-192.png',
   '/workout-vision/icon-512.png',
+  '/workout-vision/mediapipe/pose_landmarker_full.task',
+  '/workout-vision/mediapipe/manifest.json',
 ];
 
 self.addEventListener('install', (event) => {

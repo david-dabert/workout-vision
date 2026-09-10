@@ -26,7 +26,59 @@
 const MEDIAPIPE_VERSION = '0.10.8';
 const CDN_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}`;
 const WASM_URL = `${CDN_BASE}/wasm`;
-const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+const CDN_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+const LOCAL_MODEL_URL = 'mediapipe/pose_landmarker_full.task';
+const LOCAL_MANIFEST_URL = 'mediapipe/manifest.json';
+
+/**
+ * Compute SHA-256 hex digest of an ArrayBuffer using Web Crypto API.
+ */
+async function sha256Hex(buffer) {
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const bytes = new Uint8Array(hashBuffer);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Fetch model with SHA-256 integrity verification.
+ * Tries local vendored copy first; falls back to CDN on hash mismatch or fetch failure.
+ */
+async function fetchModelWithVerification() {
+  let expectedHash = null;
+
+  // Load manifest for expected hash
+  try {
+    const manifestResp = await fetch(LOCAL_MANIFEST_URL);
+    if (manifestResp.ok) {
+      const manifest = await manifestResp.json();
+      expectedHash = manifest.files?.['pose_landmarker_full.task']?.sha256 || null;
+    }
+  } catch { /* manifest unavailable; proceed without verification */ }
+
+  // Try local vendored model first
+  try {
+    const localResp = await fetch(LOCAL_MODEL_URL);
+    if (localResp.ok) {
+      const buffer = await localResp.arrayBuffer();
+      if (expectedHash) {
+        const actualHash = await sha256Hex(buffer);
+        if (actualHash === expectedHash) {
+          return buffer;
+        }
+        console.warn('[PoseWorker] Local model SHA-256 mismatch, falling back to CDN');
+      } else {
+        // No manifest hash available; trust the local copy
+        return buffer;
+      }
+    }
+  } catch { /* local fetch failed */ }
+
+  // Fallback to CDN
+  console.warn('[PoseWorker] Loading model from CDN fallback');
+  const cdnResp = await fetch(CDN_MODEL_URL);
+  if (!cdnResp.ok) throw new Error(`Model fetch failed: ${cdnResp.status}`);
+  return cdnResp.arrayBuffer();
+}
 
 // ─── Inline Kalman filter (avoid cross-worker import issues) ───
 const KALMAN_VIS_THRESHOLD = 0.1;
@@ -201,9 +253,7 @@ async function handleInit() {
   if (landmarker) { landmarker.close(); landmarker = null; }
   try {
     const mp = await import(`${CDN_BASE}/+esm`);
-    const modelResponse = await fetch(MODEL_URL);
-    if (!modelResponse.ok) throw new Error(`Model fetch ${modelResponse.status}`);
-    const modelBuffer = await modelResponse.arrayBuffer();
+    const modelBuffer = await fetchModelWithVerification();
     const vision = await mp.FilesetResolver.forVisionTasks(WASM_URL);
     const opts = {
       runningMode: 'VIDEO',

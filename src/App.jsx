@@ -197,6 +197,12 @@ function AppInner() {
         challengeResponse={challengeResponse}
         onDismissResponse={() => setChallengeResponse(null)}
       />
+      <footer style={{
+        textAlign: 'center', padding: '8px 0 4px', fontSize: '0.6rem',
+        color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em',
+      }}>
+        Workout Vision v{__APP_VERSION__} &bull; {new Date(__BUILD_TIME__).toLocaleDateString()}
+      </footer>
       <nav className="tab-bar">
         <button className={`tab-item${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
