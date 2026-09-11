@@ -3303,7 +3303,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Lower back flat', type: 'custom', placeholder: true, good: 'Lower back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'Lower back flat', type: 'above', key: 'trunk', threshold: 155, margin: 20, good: 'Lower back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Lying leg raises target the lower portion of the rectus abdominis through hip flexion (Escamilla 2010).',
   },
@@ -3317,7 +3317,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 30,
     upThreshold: 130,
     formChecks: [
-      { name: 'Rotate from core', type: 'custom', placeholder: true, good: 'Rotating from core', bad: 'Drive rotation from hips and core, not arms', severity: 'minor', citation: 'Saeterbakken AH et al, 2011, J Strength Cond Res' },
+      { name: 'Rotate from core', type: 'centerDeviation', key: 'trunk', center: 80, margin: 25, good: 'Rotating from core', bad: 'Drive rotation from hips and core, not arms', severity: 'minor', citation: 'Saeterbakken AH et al, 2011, J Strength Cond Res' },
     ],
     scienceNotes: 'Cable wood chops train rotational power, critical for sports performance and functional movement (Saeterbakken 2011).',
   },
@@ -3345,7 +3345,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 90,
     upThreshold: 160,
     formChecks: [
-      { name: 'Lower back flat', type: 'custom', placeholder: true, good: 'Lower back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'McGill SM, 2010, Ultimate Back Fitness and Performance' },
+      { name: 'Lower back flat', type: 'above', key: 'trunk', threshold: 155, margin: 20, good: 'Lower back pressed to floor', bad: 'Press lower back into the floor', severity: 'major', citation: 'McGill SM, 2010, Ultimate Back Fitness and Performance' },
     ],
     scienceNotes: 'Dead bugs train anti-extension core stability in a supine position, spine-friendly and rehab-appropriate (McGill 2010).',
   },
@@ -4163,7 +4163,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Hip drive', type: 'custom', placeholder: true, good: 'Driving through hips', bad: 'Drive hips forward', severity: 'minor', citation: 'Winwood PW et al, 2014, J Strength Cond Res' },
+      { name: 'Hip drive', type: 'above', useBestSide: true, left: 'leftHip', right: 'rightHip', visLeft: '_visLeftHip', visRight: '_visRightHip', threshold: 160, margin: 15, good: 'Driving through hips', bad: 'Drive hips forward', severity: 'minor', citation: 'Winwood PW et al, 2014, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Sled pulling develops posterior chain strength with concentric-only loading (Winwood 2014).',
   },

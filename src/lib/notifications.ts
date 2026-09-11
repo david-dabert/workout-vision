@@ -8,9 +8,9 @@ const SHOWN_KEY = 'wv-notif-prompt-shown';
 
 /**
  * Request browser notification permission.
- * @returns {Promise<boolean>} true if permission granted
+ * @returns true if permission granted
  */
-export async function requestNotificationPermission() {
+export async function requestNotificationPermission(): Promise<boolean> {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
   if (Notification.permission === 'granted') return true;
   if (Notification.permission === 'denied') return false;
@@ -24,17 +24,21 @@ export async function requestNotificationPermission() {
  * (which can use periodic-background-sync or a push subscription if
  * a push server is wired up later). For now we persist the preference
  * so the SW can read it on activation.
- * @returns {Promise<void>}
  */
-export async function scheduleWeeklyReminder() {
+export async function scheduleWeeklyReminder(): Promise<void> {
   if (Notification.permission !== 'granted') return;
   const reg = await navigator.serviceWorker.ready;
   // Store preference in localStorage so the SW and future sessions can read it
   localStorage.setItem(STORAGE_KEY, 'enabled');
   // If Periodic Background Sync is available, register a weekly tag
-  if (reg.periodicSync) {
+  const regWithSync = reg as ServiceWorkerRegistration & {
+    periodicSync?: {
+      register(tag: string, options: { minInterval: number }): Promise<void>;
+    };
+  };
+  if (regWithSync.periodicSync) {
     try {
-      await reg.periodicSync.register('wv-weekly-reminder', {
+      await regWithSync.periodicSync.register('wv-weekly-reminder', {
         minInterval: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
     } catch {
@@ -45,24 +49,22 @@ export async function scheduleWeeklyReminder() {
 
 /**
  * Check whether the user has opted into notifications.
- * @returns {boolean}
  */
-export function isNotificationEnabled() {
+export function isNotificationEnabled(): boolean {
   return localStorage.getItem(STORAGE_KEY) === 'enabled';
 }
 
 /**
  * Check whether we have already shown the notification prompt to this user.
  * We show it exactly once, after their first successful analysis result.
- * @returns {boolean}
  */
-export function hasShownNotificationPrompt() {
+export function hasShownNotificationPrompt(): boolean {
   return localStorage.getItem(SHOWN_KEY) === 'true';
 }
 
 /**
  * Mark the prompt as shown so it is never displayed again.
  */
-export function markNotificationPromptShown() {
+export function markNotificationPromptShown(): void {
   localStorage.setItem(SHOWN_KEY, 'true');
 }

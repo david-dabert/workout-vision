@@ -5,7 +5,7 @@
 
 const canVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 
-function vibrate(pattern) {
+function vibrate(pattern: number | number[]): void {
   if (canVibrate) {
     try {
       navigator.vibrate(pattern);
@@ -16,16 +16,16 @@ function vibrate(pattern) {
 }
 
 /** Short single pulse - use on rep count increments */
-export function hapticTap() {
+export function hapticTap(): void {
   vibrate(50);
 }
 
 /** Double pulse - use on personal records */
-export function hapticPR() {
+export function hapticPR(): void {
   vibrate([50, 50, 50]);
 }
 
 /** Light pulse - use on button taps */
-export function hapticLight() {
+export function hapticLight(): void {
   vibrate(30);
 }

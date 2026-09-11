@@ -4,21 +4,23 @@
  * Tracks performance metrics and usage patterns for debugging.
  */
 
+import type { TelemetryEvent } from './types';
+
 const STORAGE_KEY = 'wv_telemetry';
 const MAX_EVENTS = 200;
 
 let sessionStart = Date.now();
 let sessionId = Math.random().toString(36).slice(2, 10);
 
-function getEvents() {
+function getEvents(): TelemetryEvent[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as TelemetryEvent[];
   } catch {
     return [];
   }
 }
 
-function persistEvents(events) {
+function persistEvents(events: TelemetryEvent[]): void {
   try {
     // Keep only most recent events
     const trimmed = events.slice(-MAX_EVENTS);
@@ -28,11 +30,11 @@ function persistEvents(events) {
 
 /**
  * Log a telemetry event.
- * @param {string} name - Event name (e.g., 'analysis_complete', 'worker_init')
- * @param {Record<string, any>} [data] - Event payload
+ * @param name - Event name (e.g., 'analysis_complete', 'worker_init')
+ * @param data - Event payload
  */
-export function trackEvent(name, data = {}) {
-  const event = {
+export function trackEvent(name: string, data: Record<string, unknown> = {}): void {
+  const event: TelemetryEvent = {
     name,
     ts: Date.now(),
     sid: sessionId,
@@ -51,11 +53,11 @@ export function trackEvent(name, data = {}) {
 /**
  * Track a performance timing.
  * Returns a stop function that logs the duration.
- * @param {string} name - Metric name
- * @param {Record<string, any>} [meta] - Additional metadata
- * @returns {() => number} stop function that returns duration in ms
+ * @param name - Metric name
+ * @param meta - Additional metadata
+ * @returns stop function that returns duration in ms
  */
-export function trackTiming(name, meta = {}) {
+export function trackTiming(name: string, meta: Record<string, unknown> = {}): () => number {
   const start = performance.now();
   return () => {
     const duration = Math.round(performance.now() - start);
@@ -64,10 +66,24 @@ export function trackTiming(name, meta = {}) {
   };
 }
 
+interface AnalysisResult {
+  exercise?: string;
+  reps?: number;
+  formScore?: number | null;
+  duration?: number;
+  analysisTime?: number;
+  fps?: number;
+  confidence?: { totalFrames?: number; level?: string };
+  autoDetected?: boolean;
+  aborted?: boolean;
+  debug?: { workerUsed?: boolean };
+  [key: string]: unknown;
+}
+
 /**
  * Track analysis completion with key metrics.
  */
-export function trackAnalysis(result) {
+export function trackAnalysis(result: AnalysisResult | null | undefined): void {
   if (!result) return;
   trackEvent('analysis_complete', {
     exercise: result.exercise,
@@ -87,7 +103,13 @@ export function trackAnalysis(result) {
 /**
  * Get session summary for diagnostics display.
  */
-export function getSessionSummary() {
+export function getSessionSummary(): {
+  sessionId: string;
+  uptime: number;
+  eventCount: number;
+  totalEvents: number;
+  analyses: number;
+} {
   const events = getEvents();
   const sessionEvents = events.filter(e => e.sid === sessionId);
   return {
@@ -102,13 +124,13 @@ export function getSessionSummary() {
 /**
  * Export all telemetry data (for user to view/download).
  */
-export function exportTelemetry() {
+export function exportTelemetry(): TelemetryEvent[] {
   return getEvents();
 }
 
 /**
  * Clear all telemetry data.
  */
-export function clearTelemetry() {
+export function clearTelemetry(): void {
   try { localStorage.removeItem(STORAGE_KEY); } catch {}
 }

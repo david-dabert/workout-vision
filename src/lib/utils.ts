@@ -2,7 +2,7 @@
  * Shared utilities used across multiple components.
  */
 
-export function gradeFromScore(score) {
+export function gradeFromScore(score: number | null | undefined): string {
   if (score == null) return '--';
   if (score >= 95) return 'A+';
   if (score >= 90) return 'A';
@@ -14,7 +14,7 @@ export function gradeFromScore(score) {
   return 'F';
 }
 
-export function gradeClass(score) {
+export function gradeClass(score: number | null | undefined): string {
   if (score == null) return 'grade-na';
   if (score >= 90) return 'grade-a';
   if (score >= 75) return 'grade-b';
@@ -22,9 +22,9 @@ export function gradeClass(score) {
   return 'grade-d';
 }
 
-export function getRecorderMimeType() {
+export function getRecorderMimeType(): string | null {
   if (typeof MediaRecorder === 'undefined') return null;
-  const types = [
+  const types: string[] = [
     'video/mp4;codecs=avc1.42E01E',
     'video/webm;codecs=vp9',
     'video/webm;codecs=vp8',
@@ -37,7 +37,7 @@ export function getRecorderMimeType() {
 }
 
 // Muscle name translations (single source of truth)
-export const MUSCLE_FR = {
+export const MUSCLE_FR: Record<string, string> = {
   'Pectorals': 'Pectoraux', 'Upper Pectorals': 'Pectoraux sup.',
   'Anterior Deltoid': 'Deltoïde ant.', 'Medial Deltoid': 'Deltoïde moy.',
   'Rear Deltoid': 'Deltoïde post.', 'Triceps': 'Triceps',
@@ -58,7 +58,7 @@ export const MUSCLE_FR = {
   'Lower Back': 'Bas du dos', 'Calves': 'Mollets',
 };
 
-export function translateMuscle(name, lang) {
+export function translateMuscle(name: string, lang: string): string {
   if (lang === 'fr' && MUSCLE_FR[name]) return MUSCLE_FR[name];
   return name;
 }
