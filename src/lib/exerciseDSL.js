@@ -248,6 +248,8 @@ function compileExercise(dsl) {
       const compiled = compiler(fc);
       // Preserve phase annotation for phase-aware form check evaluation
       if (fc.phase) compiled.phase = fc.phase;
+      // Preserve viewpoint annotation for camera-angle-aware form check filtering
+      if (fc.viewpoint) compiled.viewpoint = fc.viewpoint;
       return compiled;
     });
 

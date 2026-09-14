@@ -11,7 +11,7 @@
  */
 
 import localforage from 'localforage';
-import { KalmanLandmarkFilter } from './KalmanLandmarkFilter';
+import { OneEuroLandmarkFilter } from './oneEuroFilter';
 import { detectCapabilities, isSimdSupported } from './gpuBenchmark';
 import {
   GHOST_DECAY_START,
@@ -51,8 +51,8 @@ let _imageTimestampOffset = 0;
 let _imageMaxTimestamp = 0;
 
 // Shared Kalman filter instances (one per detection path to avoid cross-contamination)
-let _kalmanImage = new KalmanLandmarkFilter();
-let _kalmanVideo = new KalmanLandmarkFilter();
+let _kalmanImage = new OneEuroLandmarkFilter();
+let _kalmanVideo = new OneEuroLandmarkFilter();
 
 // Last valid landmarks for anatomical plausibility fallback
 let _lastValidLandmarksImage = null;
@@ -296,8 +296,8 @@ export function disposeAllLandmarkers() {
   modelLoadPromise = null;
   lastVideoTime = -1;
   lastResult = null;
-  _kalmanImage = new KalmanLandmarkFilter();
-  _kalmanVideo = new KalmanLandmarkFilter();
+  _kalmanImage = new OneEuroLandmarkFilter();
+  _kalmanVideo = new OneEuroLandmarkFilter();
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
 }
@@ -445,15 +445,15 @@ export function getGhostFrameCount() {
 export function resetTimestamp() {
   lastVideoTime = -1;
   lastResult = null;
-  _kalmanVideo = new KalmanLandmarkFilter();
+  _kalmanVideo = new OneEuroLandmarkFilter();
   _lastValidLandmarksVideo = null;
   _ghostFrameCount = 0;
   _totalGhostFrames = 0;
 }
 
 export function resetKalmanFilters() {
-  _kalmanImage = new KalmanLandmarkFilter();
-  _kalmanVideo = new KalmanLandmarkFilter();
+  _kalmanImage = new OneEuroLandmarkFilter();
+  _kalmanVideo = new OneEuroLandmarkFilter();
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
   // Bump timestamp offset so next video's deterministic timestamps

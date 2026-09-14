@@ -26,6 +26,7 @@ import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
 import { AnthropometricNormalizer } from './AnthropometricNormalizer';
 import { extractSignals3D, getSignalPriority } from './SignalExtractor3D';
+import { detectViewpointFromFrames } from './cameraViewpoint';
 import {
   findValleys,
   reconcilePeaksAndValleys,
@@ -716,6 +717,24 @@ export class RepCounter {
     const checks = ex.formChecks || [];
     const history = [];
 
+    // Detect camera viewpoint once from a sample of frames.
+    // Form checks tagged with viewpoint: 'frontal' (e.g. knee valgus,
+    // symmetry) only work from a front-facing camera. From a side view
+    // they fire false positives because x-coordinates overlap.
+    const hasViewpointChecks = checks.some(fc => fc.viewpoint && fc.viewpoint !== 'any');
+    let detectedViewpoint = 'unknown';
+    if (hasViewpointChecks) {
+      // Sample up to 20 evenly-spaced frames for viewpoint detection
+      const sampleCount = Math.min(20, N);
+      const step = Math.max(1, Math.floor(N / sampleCount));
+      const sampleFrames = [];
+      for (let i = 0; i < N; i += step) {
+        if (lm[i]) sampleFrames.push(lm[i]);
+      }
+      const vpResult = detectViewpointFromFrames(sampleFrames);
+      detectedViewpoint = vpResult.angle; // 'front', 'side', 'rear', 'unknown'
+    }
+
     for (let r = 0; r < cycles.length; r++) {
       const cycle = cycles[r];
       const startFrame = cycle.start;
@@ -754,6 +773,20 @@ export class RepCounter {
         formResults = checks.map((fc) => {
           if (shouldSkipCheck(fc.name, this._userInjuries)) {
             return { name: fc.name, passed: true, quality: 1, bad: fc.bad, severity: 'minor', skipped: true };
+          }
+
+          // Skip form checks whose required viewpoint doesn't match the detected
+          // camera angle. 'frontal' checks require 'front' viewpoint; 'sagittal'
+          // checks require 'side'. Checks without viewpoint (or 'any') always run.
+          // When viewpoint is 'unknown' or 'rear', frontal checks are also skipped
+          // to avoid false positives.
+          if (fc.viewpoint && fc.viewpoint !== 'any') {
+            const viewpointMatch =
+              (fc.viewpoint === 'frontal' && detectedViewpoint === 'front') ||
+              (fc.viewpoint === 'sagittal' && detectedViewpoint === 'side');
+            if (!viewpointMatch) {
+              return { name: fc.name, passed: true, quality: 1, bad: fc.bad, severity: fc.severity || 'minor', skipped: true, skippedReason: 'viewpoint' };
+            }
           }
 
           // Detect trunk-swing checks on isolation exercises. These checks use
@@ -911,7 +944,25 @@ export class RepCounter {
       ? Math.max(...liveTrunkAngles) - Math.min(...liveTrunkAngles)
       : 0;
 
+    // Detect viewpoint from cycle landmarks for live-mode viewpoint filtering
+    const hasViewpointChecks = this._exercise.formChecks.some(fc => fc.viewpoint && fc.viewpoint !== 'any');
+    let liveViewpoint = 'unknown';
+    if (hasViewpointChecks) {
+      const vpResult = detectViewpointFromFrames(cycleLandmarks);
+      liveViewpoint = vpResult.angle;
+    }
+
     const formResults = this._exercise.formChecks.map((fc) => {
+      // Skip form checks whose required viewpoint doesn't match (same as video mode)
+      if (fc.viewpoint && fc.viewpoint !== 'any') {
+        const viewpointMatch =
+          (fc.viewpoint === 'frontal' && liveViewpoint === 'front') ||
+          (fc.viewpoint === 'sagittal' && liveViewpoint === 'side');
+        if (!viewpointMatch) {
+          return { name: fc.name, passed: true, quality: 1, bad: fc.bad, severity: fc.severity || 'minor', skipped: true, skippedReason: 'viewpoint' };
+        }
+      }
+
       // Relative trunk-swing check for isolation exercises (same as video mode)
       if (this._isTrunkSwingCheck(fc, this._exercise)) {
         const swingLimit = 15;

@@ -28,6 +28,7 @@ const D_TRUNK = { type: 'direct', key: 'trunk' };
 const kneeValgusCheck = {
   name: 'Knee valgus',
   type: 'custom',
+  viewpoint: 'frontal',
   check: (angles, landmarks) => {
     if (!landmarks || !landmarks[25] || !landmarks[26] || !landmarks[27] || !landmarks[28]) return true;
     const lk = landmarks[25], la = landmarks[27], rk = landmarks[26], ra = landmarks[28];
@@ -96,7 +97,7 @@ export const EXERCISE_DEFINITIONS = {
     amplitudeRatio: 0.15,
     formChecks: [
       { name: 'Depth', type: 'below', useBestSide: true, left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee', threshold: 90, good: 'Below parallel', bad: 'Above parallel — go deeper', severity: 'major', citation: 'Schoenfeld BJ, 2010, J Strength Cond Res', safetyNote: { en: 'If you have hip pain or impingement, do not force depth beyond comfort.', fr: 'En cas de douleur ou conflit de hanche, ne forcez pas la profondeur.' } },
-      { name: 'Knee symmetry', type: 'symmetry', left: 'leftKnee', right: 'rightKnee', threshold: 18, good: 'Knees tracking evenly', bad: 'Asymmetric knee bend', severity: 'major', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Knee symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftKnee', right: 'rightKnee', threshold: 18, good: 'Knees tracking evenly', bad: 'Asymmetric knee bend', severity: 'major', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
       { name: 'Trunk angle', type: 'below', key: 'trunk', threshold: 55, good: 'Upright torso maintained', bad: 'Excessive forward lean', severity: 'minor', citation: 'Fry AC et al, 2003, J Strength Cond Res' },
       kneeValgusCheck,
     ],
@@ -115,7 +116,7 @@ export const EXERCISE_DEFINITIONS = {
     formChecks: [
       { name: 'Depth', type: 'below', useBestSide: true, left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee', threshold: 85, good: 'Below parallel', bad: 'Above parallel', severity: 'major', citation: 'Gullett JC et al, 2009, J Strength Cond Res' },
       { name: 'Trunk upright', type: 'below', key: 'trunk', threshold: 40, margin: 12, good: 'Upright torso -- elbows high', bad: 'Torso collapsing forward', severity: 'major', citation: 'Gullett JC et al, 2009, J Strength Cond Res' },
-      { name: 'Knee symmetry', type: 'symmetry', left: 'leftKnee', right: 'rightKnee', threshold: 12, good: 'Knees tracking evenly', bad: 'Asymmetric knee bend', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Knee symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftKnee', right: 'rightKnee', threshold: 12, good: 'Knees tracking evenly', bad: 'Asymmetric knee bend', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Front squats reduce posterior shear on the knee vs back squats while demanding greater quad activation and more upright torso (Gullett 2009).',
   },
@@ -277,7 +278,7 @@ export const EXERCISE_DEFINITIONS = {
     formChecks: [
       { name: 'Depth', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 90, good: 'Full depth -- chest near floor', bad: 'Go deeper', severity: 'major', citation: 'Cogley RM et al, 2005, J Strength Cond Res' },
       { name: 'Body alignment', type: 'centerDeviation', key: 'trunk', center: 80, margin: 30, good: 'Body in straight line', bad: 'Hips sagging or piking', severity: 'major', citation: 'Freeman S et al, 2006, J Strength Cond Res' },
-      { name: 'Elbow symmetry', type: 'symmetry', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Arms working evenly', bad: 'One arm doing more work', severity: 'minor', citation: 'Kiesel K et al, 2007, N am J Sports Phys Ther' },
+      { name: 'Elbow symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Arms working evenly', bad: 'One arm doing more work', severity: 'minor', citation: 'Kiesel K et al, 2007, N am J Sports Phys Ther' },
     ],
     scienceNotes: 'Narrow hand placement increases triceps activation; wide placement increases pectoral activation (Cogley 2005). Maintaining rigid trunk increases core demand (Freeman 2006).',
   },
@@ -293,7 +294,7 @@ export const EXERCISE_DEFINITIONS = {
     formChecks: [
       { name: 'Full lockout', type: 'above', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 165, good: 'Arms fully extended overhead', bad: 'Press to full lockout', severity: 'minor', citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res', phase: 'top' },
       { name: 'Trunk stable', type: 'below', key: 'trunk', threshold: 20, margin: 10, good: 'Trunk vertical -- no excessive lean', bad: 'Excessive back lean', severity: 'major', citation: 'Saeterbakken AH, Fimland MS, 2013, J Strength Cond Res', safetyNote: { en: 'If you have lower back issues, reduce load before correcting trunk position.', fr: 'En cas de problème lombaire, réduisez la charge avant de corriger la position du tronc.' } },
-      { name: 'Shoulder symmetry', type: 'symmetry', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Shoulders pressing evenly', bad: 'Asymmetric press', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Shoulder symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Shoulders pressing evenly', bad: 'Asymmetric press', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Standing overhead press produces greater core and deltoid activation than seated (Saeterbakken 2013). Excessive lumbar extension under load increases spinal compression risk.',
   },
@@ -342,7 +343,7 @@ export const EXERCISE_DEFINITIONS = {
     formChecks: [
       { name: 'Trunk angle', type: 'range', key: 'trunk', low: 35, high: 70, margin: 12, good: 'Trunk hinged at proper angle', bad: 'Adjust torso', severity: 'major', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
       { name: 'Elbow drive', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 75, good: 'Full contraction -- elbows pulled past torso', bad: 'Pull elbows higher', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res', phase: 'bottom' },
-      { name: 'Arm symmetry', type: 'symmetry', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Both arms pulling evenly', bad: 'One arm pulling harder', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Arm symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Both arms pulling evenly', bad: 'One arm pulling harder', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Bent-over row at 45 deg trunk angle balances lat activation with erector demand. More horizontal trunk increases lat activation but also spinal load (Fenwick 2009).',
   },
@@ -395,7 +396,7 @@ export const EXERCISE_DEFINITIONS = {
     formChecks: [
       { name: 'Full stretch', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 55, good: 'Deep stretch -- long head fully lengthened', bad: 'Lower further behind head for full stretch', severity: 'minor', citation: 'Maeo S et al, 2023, Eur J Sport Sci' },
       { name: 'Full lockout', type: 'above', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 155, good: 'Full extension -- peak contraction', bad: 'Extend fully overhead', severity: 'minor', citation: 'Maeo S et al, 2023, Eur J Sport Sci', phase: 'top' },
-      { name: 'Elbow stable', type: 'symmetry', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Elbows stable and aligned', bad: 'Elbows flaring', severity: 'minor', citation: 'Maeo S et al, 2023, Eur J Sport Sci' },
+      { name: 'Elbow stable', type: 'symmetry', viewpoint: 'frontal', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Elbows stable and aligned', bad: 'Elbows flaring', severity: 'minor', citation: 'Maeo S et al, 2023, Eur J Sport Sci' },
     ],
     scienceNotes: 'Overhead tricep exercises produce greater long-head activation due to stretched position (Maeo 2023). Full ROM from deep stretch to lockout is critical for hypertrophy.',
   },
@@ -430,7 +431,7 @@ export const EXERCISE_DEFINITIONS = {
       { name: 'Height', type: 'custom',
         check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 80,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 80, 15), good: 'Arms at or above shoulder height', bad: 'Raise higher', severity: 'minor', citation: 'Reinold MM et al, 2009, Am J Sports Med' },
-      { name: 'Symmetry', type: 'symmetry', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Both arms at same height', bad: 'Uneven raise', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Both arms at same height', bad: 'Uneven raise', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
       { name: 'No shrugging', type: 'below', key: 'trunk', threshold: 10, margin: 10, good: 'Shoulders down -- clean isolation', bad: 'Shrugging', severity: 'minor', citation: 'Reinold MM et al, 2009, Am J Sports Med' },
     ],
     scienceNotes: 'Lateral raises above 90 deg increase upper trap involvement. Stopping at shoulder height maximizes medial deltoid isolation. Slight forward lean (10-15 deg) shifts emphasis to rear deltoid (Reinold 2009).',
@@ -449,7 +450,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 110,
     formChecks: [
       { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 80, good: 'Full pull -- shoulder blades squeezed', bad: 'Pull further', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res', phase: 'bottom' },
-      { name: 'Arm symmetry', type: 'symmetry', left: 'leftElbow', right: 'rightElbow', threshold: 20, good: 'Both arms pulling evenly', bad: 'One arm pulling harder', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Arm symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftElbow', right: 'rightElbow', threshold: 20, good: 'Both arms pulling evenly', bad: 'One arm pulling harder', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Chest-supported rows eliminate erector demand, isolating upper back musculature. Produces comparable lat activation to bent-over row without spinal loading (Fenwick 2009).',
   },
@@ -496,7 +497,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 120,
     formChecks: [
       { name: 'Depth', type: 'below', useBestSide: true, left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee', threshold: 90, good: 'Full depth -- 90 deg knee angle', bad: 'Go deeper', severity: 'minor', citation: 'Escamilla RF et al, 2001, Med Sci Sports Exerc' },
-      { name: 'Knee symmetry', type: 'symmetry', left: 'leftKnee', right: 'rightKnee', threshold: 12, good: 'Knees pressing evenly', bad: 'Uneven press', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Knee symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftKnee', right: 'rightKnee', threshold: 12, good: 'Knees pressing evenly', bad: 'Uneven press', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Leg press at 90 deg knee flexion produces comparable quad activation to squat with reduced spinal load (Escamilla 2001). Avoid full lockout to protect knees.',
   },
@@ -511,7 +512,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 120,
     formChecks: [
       { name: 'Full extension', type: 'above', useBestSide: true, left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee', threshold: 165, good: 'Full lockout -- peak quad contraction', bad: 'Extend fully', severity: 'minor', citation: 'Signorile JF et al, 1994, J Strength Cond Res', phase: 'top' },
-      { name: 'Knee symmetry', type: 'symmetry', left: 'leftKnee', right: 'rightKnee', threshold: 12, good: 'Both legs extending evenly', bad: 'One leg weaker', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Knee symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftKnee', right: 'rightKnee', threshold: 12, good: 'Both legs extending evenly', bad: 'One leg weaker', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Machine leg extension isolates quadriceps, especially vastus medialis at terminal extension. Full lockout is critical for VMO activation (Signorile 1994).',
   },
@@ -542,7 +543,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 130,
     formChecks: [
       { name: 'Full press', type: 'above', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 160, good: 'Full extension', bad: 'Press further', severity: 'minor', citation: 'Larsen S et al, 2021, Int J Environ Res Public Health' },
-      { name: 'Arm symmetry', type: 'symmetry', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Both arms pressing evenly', bad: 'One arm lagging', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
+      { name: 'Arm symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Both arms pressing evenly', bad: 'One arm lagging', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Machine chest press provides stable pressing pattern with consistent resistance curve. Full ROM produces greater pec activation than partial reps (Larsen 2021).',
   },
@@ -1131,7 +1132,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 140,
     formChecks: [
       { name: 'Leg height', type: 'below', useBestSide: true, left: 'leftHip', right: 'rightHip', visLeft: '_visLeftHip', visRight: '_visRightHip', threshold: 90, good: 'Legs at or above parallel', bad: 'Raise legs higher', severity: 'minor', citation: 'Escamilla RF et al, 2006, Med Sci Sports Exerc' },
-      { name: 'No swinging', type: 'symmetry', left: 'leftHip', right: 'rightHip', threshold: 15, good: 'Controlled movement -- no momentum', bad: 'Swinging detected', severity: 'major', citation: 'Escamilla RF et al, 2006, Med Sci Sports Exerc' },
+      { name: 'No swinging', type: 'symmetry', viewpoint: 'frontal', left: 'leftHip', right: 'rightHip', threshold: 15, good: 'Controlled movement -- no momentum', bad: 'Swinging detected', severity: 'major', citation: 'Escamilla RF et al, 2006, Med Sci Sports Exerc' },
     ],
     scienceNotes: 'Hanging leg raises produce peak lower rectus abdominis and hip flexor activation. Full ROM above parallel increases oblique and transverse abdominis demand (Escamilla 2006).',
   },

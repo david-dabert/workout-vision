@@ -149,51 +149,66 @@ export function selectSubjectPose(landmarksArray) {
   return bestPose;
 }
 
-// ─── Inline Kalman filter (zero-dependency, usable in Worker) ───
+// ─── One Euro Filter (adaptive low-pass, zero-dependency, usable in Worker) ───
 
-const KALMAN_VIS_THRESHOLD = 0.1;
-const KALMAN_PROCESS_NOISE = 0.001;
-const KALMAN_MEASUREMENT_NOISE = 0.05;
+import { OneEuroLandmarkFilter } from './oneEuroFilter.js';
 
 export function createKalmanStates(n) {
-  return Array.from({ length: n }, () => [
-    { x: 0, p: 1, init: false },
-    { x: 0, p: 1, init: false },
-    { x: 0, p: 1, init: false },
-  ]);
-}
-
-function kalmanUpdate1D(state, measurement) {
-  if (!state.init) {
-    state.x = measurement;
-    state.p = KALMAN_MEASUREMENT_NOISE;
-    state.init = true;
-    return state.x;
-  }
-  state.p += KALMAN_PROCESS_NOISE;
-  const k = state.p / (state.p + KALMAN_MEASUREMENT_NOISE);
-  state.x += k * (measurement - state.x);
-  state.p *= 1 - k;
-  return state.x;
+  // Returns a OneEuroLandmarkFilter instance — drop-in replacement for the
+  // old per-coordinate Kalman state arrays. The name is kept for API compat.
+  return new OneEuroLandmarkFilter({ numLandmarks: n });
 }
 
 export function kalmanFilter(landmarks, states) {
-  if (!landmarks) return null;
-  const out = new Array(landmarks.length);
-  for (let i = 0; i < landmarks.length; i++) {
-    const lm = landmarks[i];
-    if (!lm) { out[i] = null; continue; }
-    if (lm.visibility < KALMAN_VIS_THRESHOLD) {
-      out[i] = { x: lm.x, y: lm.y, z: lm.z, visibility: lm.visibility };
-      continue;
-    }
-    const s = states[i];
-    out[i] = {
-      x: kalmanUpdate1D(s[0], lm.x),
-      y: kalmanUpdate1D(s[1], lm.y),
-      z: kalmanUpdate1D(s[2], lm.z),
-      visibility: lm.visibility,
-    };
-  }
-  return out;
+  // `states` is now a OneEuroLandmarkFilter instance.
+  return states.filter(landmarks);
 }
+
+// ─── Old Kalman filter (kept for A/B testing) ───
+//
+// const KALMAN_VIS_THRESHOLD = 0.1;
+// const KALMAN_PROCESS_NOISE = 0.001;
+// const KALMAN_MEASUREMENT_NOISE = 0.05;
+//
+// export function createKalmanStates(n) {
+//   return Array.from({ length: n }, () => [
+//     { x: 0, p: 1, init: false },
+//     { x: 0, p: 1, init: false },
+//     { x: 0, p: 1, init: false },
+//   ]);
+// }
+//
+// function kalmanUpdate1D(state, measurement) {
+//   if (!state.init) {
+//     state.x = measurement;
+//     state.p = KALMAN_MEASUREMENT_NOISE;
+//     state.init = true;
+//     return state.x;
+//   }
+//   state.p += KALMAN_PROCESS_NOISE;
+//   const k = state.p / (state.p + KALMAN_MEASUREMENT_NOISE);
+//   state.x += k * (measurement - state.x);
+//   state.p *= 1 - k;
+//   return state.x;
+// }
+//
+// export function kalmanFilter(landmarks, states) {
+//   if (!landmarks) return null;
+//   const out = new Array(landmarks.length);
+//   for (let i = 0; i < landmarks.length; i++) {
+//     const lm = landmarks[i];
+//     if (!lm) { out[i] = null; continue; }
+//     if (lm.visibility < KALMAN_VIS_THRESHOLD) {
+//       out[i] = { x: lm.x, y: lm.y, z: lm.z, visibility: lm.visibility };
+//       continue;
+//     }
+//     const s = states[i];
+//     out[i] = {
+//       x: kalmanUpdate1D(s[0], lm.x),
+//       y: kalmanUpdate1D(s[1], lm.y),
+//       z: kalmanUpdate1D(s[2], lm.z),
+//       visibility: lm.visibility,
+//     };
+//   }
+//   return out;
+// }

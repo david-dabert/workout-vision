@@ -35,20 +35,20 @@ export function interpolateNulls(signal) {
 }
 
 // ---------------------------------------------------------------------------
-// Moving average smoothing
+// Simple moving average smoother
 // ---------------------------------------------------------------------------
 
 export function smoothSignal(signal, windowSize) {
+  if (windowSize <= 1) return [...signal];
   const half = Math.floor(windowSize / 2);
-  const out = new Array(signal.length);
-  for (let i = 0; i < signal.length; i++) {
-    const lo = Math.max(0, i - half);
-    const hi = Math.min(signal.length - 1, i + half);
-    let sum = 0;
-    for (let j = lo; j <= hi; j++) sum += signal[j];
-    out[i] = sum / (hi - lo + 1);
-  }
-  return out;
+  return signal.map((_, i) => {
+    let sum = 0, count = 0;
+    for (let j = Math.max(0, i - half); j <= Math.min(signal.length - 1, i + half); j++) {
+      sum += signal[j];
+      count++;
+    }
+    return sum / count;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ export function findValleys(signal, fps, exercise) {
 // ---------------------------------------------------------------------------
 
 export function reconcilePeaksAndValleys(signal, valleyResult, fps, exercise) {
-  if (valleyResult.reps < 2) return valleyResult;
+  if (valleyResult.reps < 3) return valleyResult;
 
   const inverted = signal.map(v => -v);
   const peakResult = findValleys(inverted, fps, exercise);
@@ -376,7 +376,7 @@ export function templateEdgeCorrect(signal, valleyResult, fps, exercise) {
   // LEFT edge
   const leftGap = frames[0];
   diag.leftRatio = Math.round((leftGap / period) * 100) / 100;
-  if (!changed && leftGap >= period * 0.8 && leftGap <= period * 1.2) {
+  if (leftGap >= period * 0.8 && leftGap <= period * 1.2) {
     const target = frames[0] - period;
     const lo = Math.max(0, target - Math.round(period * 0.3));
     const hi = Math.min(frames[0] - Math.round(period * 0.4), frames[0] - 1);
