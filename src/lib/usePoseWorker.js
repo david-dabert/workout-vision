@@ -181,8 +181,8 @@ export default function usePoseWorker() {
     } catch {
       // Fallback: raw pixel transfer if createImageBitmap fails
       try {
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const ctx = source.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, source.width, source.height);
         const buffer = imageData.data.buffer;
         const promise = new Promise((resolve) => {
           pendingRef.current.set(frameIndex, { resolve, reject: () => resolve(null) });
@@ -194,7 +194,7 @@ export default function usePoseWorker() {
           }, 5000);
         });
         workerRef.current.postMessage(
-          { type: 'detectPixels', frameData: buffer, width: canvas.width, height: canvas.height, timestamp, frameIndex },
+          { type: 'detectPixels', frameData: buffer, width: source.width, height: source.height, timestamp, frameIndex },
           [buffer]
         );
         return promise;

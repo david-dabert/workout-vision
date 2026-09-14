@@ -38,13 +38,13 @@ function gradeColor(score) {
 }
 
 function gradeMotivation(grade) {
-  if (grade === 'A+') return 'Perfect Form 🔥';
-  if (grade === 'A')  return 'Elite Level 🏆';
-  if (grade === 'B+') return 'Almost Perfect ⚡';
-  if (grade === 'B')  return 'Strong Set 💪';
-  if (grade === 'C+') return 'Keep Pushing 📈';
-  if (grade === 'C')  return 'Room to Grow 🎯';
-  return 'Never Stop 🔄';
+  if (grade === 'A+') return tModule('grade_perfect');
+  if (grade === 'A')  return tModule('grade_elite');
+  if (grade === 'B+') return tModule('grade_almost_perfect');
+  if (grade === 'B')  return tModule('grade_strong');
+  if (grade === 'C+') return tModule('grade_keep_pushing');
+  if (grade === 'C')  return tModule('grade_room_to_grow');
+  return tModule('grade_never_stop');
 }
 
 function formatTime(seconds) {
@@ -176,12 +176,12 @@ export async function generateShareCard(result, videoEl) {
   const weight = result.weight || 0;
   const volume = weight > 0 ? `${weight * result.reps}kg` : `${result.reps}`;
   const stats = [
-    { value: `${result.reps}`, label: 'REPS' },
-    { value: result.formScore != null ? `${result.formScore}` : '--', label: 'FORM' },
-    { value: volume, label: 'VOLUME' },
+    { value: `${result.reps}`, label: tModule('share_reps') },
+    { value: result.formScore != null ? `${result.formScore}` : '--', label: tModule('share_form') },
+    { value: volume, label: tModule('share_volume') },
   ];
   if (result.bioAnalysis?.asymmetry?.score != null) {
-    stats.push({ value: `${Math.round(result.bioAnalysis.asymmetry.score)}%`, label: 'SYMMETRY' });
+    stats.push({ value: `${Math.round(result.bioAnalysis.asymmetry.score)}%`, label: tModule('share_symmetry') });
   }
 
   const statsCardH = 200;
@@ -213,7 +213,7 @@ export async function generateShareCard(result, videoEl) {
     ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('Rep Quality', PAD, y);
+    ctx.fillText(tModule('share_rep_quality'), PAD, y);
     y += 52;
 
     const barsH = 200;
@@ -257,7 +257,7 @@ export async function generateShareCard(result, videoEl) {
       ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText('Form Notes', PAD, y);
+      ctx.fillText(tModule('share_form_notes'), PAD, y);
       y += 52;
       sorted.forEach(([issue, count]) => {
         ctx.fillStyle = YELLOW;
@@ -275,7 +275,7 @@ export async function generateShareCard(result, videoEl) {
     ctx.font = 'bold 34px -apple-system, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('Highlights', PAD, y);
+    ctx.fillText(tModule('share_highlights'), PAD, y);
     y += 52;
     result.report.highlights.slice(0, 2).forEach(h => {
       ctx.fillStyle = ACCENT;
@@ -347,7 +347,7 @@ export async function generateShareCard(result, videoEl) {
   ctx.font = 'bold 38px -apple-system, system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText('Can you beat my form? 💪', W / 2, ctaY);
+  ctx.fillText(tModule('share_beat_my_form'), W / 2, ctaY);
 
   // QR code removed — was a fake pattern generator, not a real encoder.
   // Replace with a real QR library when share-card linking is needed.
@@ -548,9 +548,9 @@ export async function generateAnimatedShareCard(result, onProgress) {
   const cWeight = result.weight || 0;
   const cVolume = cWeight > 0 ? `${cWeight * result.reps}kg` : `${result.reps}`;
   const stats = [
-    { value: `${result.reps}`, label: 'REPS' },
-    { value: result.formScore != null ? `${result.formScore}` : '--', label: 'FORM' },
-    { value: cVolume, label: 'VOLUME' },
+    { value: `${result.reps}`, label: tModule('share_reps') },
+    { value: result.formScore != null ? `${result.formScore}` : '--', label: tModule('share_form') },
+    { value: cVolume, label: tModule('share_volume') },
   ];
 
   recorder.start();
@@ -601,7 +601,7 @@ export async function generateAnimatedShareCard(result, onProgress) {
         ctx.fillStyle = TEXT;
         ctx.font = 'bold 28px -apple-system, system-ui, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('Rep Quality', PAD + 24, barsY + 40);
+        ctx.fillText(tModule('share_rep_quality'), PAD + 24, barsY + 40);
         ctx.globalAlpha = 1;
       }
 
@@ -877,8 +877,8 @@ export async function generateFormCard(result) {
   // Stats row
   const statsY = 1020;
   const statCols = [
-    { label: 'REPS', value: String(result.reps ?? 0) },
-    { label: 'DURATION', value: (() => { const d = result.duration ?? 0; const m = Math.floor(d / 60); const s = Math.round(d % 60); return m > 0 ? `${m}m ${s}s` : `${s}s`; })() },
+    { label: tModule('share_reps'), value: String(result.reps ?? 0) },
+    { label: tModule('share_duration'), value: (() => { const d = result.duration ?? 0; const m = Math.floor(d / 60); const s = Math.round(d % 60); return m > 0 ? `${m}m ${s}s` : `${s}s`; })() },
   ];
   const colW = W / statCols.length;
   statCols.forEach((col, i) => {
@@ -906,7 +906,7 @@ export async function generateFormCard(result) {
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('REP QUALITY', W / 2, barSectionY);
+  ctx.fillText(tModule('share_rep_quality_upper'), W / 2, barSectionY);
 
   if (result.repHistory && result.repHistory.length > 0) {
     drawFormRepBars(ctx, PAD, barSectionY + 20, W - PAD * 2, 240, result.repHistory);
@@ -978,7 +978,7 @@ export async function generateFormCard(result) {
   ctx.textBaseline = 'alphabetic';
   ctx.font = '42px -apple-system, system-ui, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText(`Analyze your form free → ${APP_URL}`, W / 2, footerY + 20);
+  ctx.fillText(`${tModule('share_analyze_cta')} ${APP_URL}`, W / 2, footerY + 20);
 
   ctx.beginPath();
   ctx.arc(W / 2, footerY + 60, 6, 0, Math.PI * 2);

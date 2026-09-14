@@ -1041,5 +1041,23 @@
     "One arm doing more work -- equalize": "Un bras travaille plus — égalisez",
     "Uneven press -- one leg pushing harder": "Poussée inégale — une jambe pousse plus",
     "One leg weaker -- balance out": "Une jambe plus faible — équilibrez"
-  }
+  },
+  "share_rep_quality": "Qualité des reps",
+  "share_form_notes": "Notes de forme",
+  "share_highlights": "Points forts",
+  "share_beat_my_form": "Tu fais mieux ? 💪",
+  "share_analyze_cta": "Analyse ta forme gratuitement →",
+  "share_reps": "REPS",
+  "share_form": "FORME",
+  "share_volume": "VOLUME",
+  "share_symmetry": "SYMÉTRIE",
+  "share_duration": "DURÉE",
+  "share_rep_quality_upper": "QUALITÉ DES REPS",
+  "grade_perfect": "Forme parfaite 🔥",
+  "grade_elite": "Niveau élite 🏆",
+  "grade_almost_perfect": "Presque parfait ⚡",
+  "grade_strong": "Série solide 💪",
+  "grade_keep_pushing": "Continue 📈",
+  "grade_room_to_grow": "Marge de progression 🎯",
+  "grade_never_stop": "N'arrête jamais 🔄"
 }

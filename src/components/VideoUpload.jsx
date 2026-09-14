@@ -617,7 +617,6 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                     ? userInjuries.filter(i => i !== key)
                     : [...userInjuries, key];
                   setUserInjuries(next);
-                  userInjuriesRef.current = next;
                   saveInjuries(next);
                 }}
                 style={{

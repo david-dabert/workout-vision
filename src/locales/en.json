@@ -1041,5 +1041,23 @@
     "One arm doing more work -- equalize": "One arm doing more work -- equalize",
     "Uneven press -- one leg pushing harder": "Uneven press -- one leg pushing harder",
     "One leg weaker -- balance out": "One leg weaker -- balance out"
-  }
+  },
+  "share_rep_quality": "Rep Quality",
+  "share_form_notes": "Form Notes",
+  "share_highlights": "Highlights",
+  "share_beat_my_form": "Can you beat my form? 💪",
+  "share_analyze_cta": "Analyze your form free →",
+  "share_reps": "REPS",
+  "share_form": "FORM",
+  "share_volume": "VOLUME",
+  "share_symmetry": "SYMMETRY",
+  "share_duration": "DURATION",
+  "share_rep_quality_upper": "REP QUALITY",
+  "grade_perfect": "Perfect Form 🔥",
+  "grade_elite": "Elite Level 🏆",
+  "grade_almost_perfect": "Almost Perfect ⚡",
+  "grade_strong": "Strong Set 💪",
+  "grade_keep_pushing": "Keep Pushing 📈",
+  "grade_room_to_grow": "Room to Grow 🎯",
+  "grade_never_stop": "Never Stop 🔄"
 }
