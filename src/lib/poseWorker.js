@@ -97,6 +97,12 @@ let lastValidLandmarks = null;
 let offscreenCanvas = null;
 let offscreenCtx = null;
 let canvasW = 0, canvasH = 0;
+// MediaPipe's detectForVideo() requires strictly increasing timestamps.
+// When processing multiple videos, caller timestamps reset to 0 for each new video.
+// We track the highest timestamp seen and apply an offset after each reset
+// so the landmarker always sees monotonically increasing values.
+let tsOffset = 0;
+let maxTsSeen = 0;
 
 function ensureCanvas(w, h) {
   if (offscreenCanvas && canvasW === w && canvasH === h) return;
@@ -176,7 +182,10 @@ function processDetection(source, timestamp, frameIndex) {
   }
   const t0 = performance.now();
   try {
-    const result = landmarker.detectForVideo(source, timestamp);
+    // Apply offset so timestamps are always monotonically increasing across videos
+    const adjustedTs = timestamp + tsOffset;
+    if (adjustedTs > maxTsSeen) maxTsSeen = adjustedTs;
+    const result = landmarker.detectForVideo(source, adjustedTs);
     let landmarks = null;
     let angles = null;
 
@@ -232,6 +241,9 @@ function handleDetectPixels({ frameData, width, height, timestamp, frameIndex })
 function handleReset() {
   kalmanStates = createKalmanStates(33);
   lastValidLandmarks = null;
+  // Bump offset so next video's timestamps continue above the previous peak.
+  // The +1000 gap ensures no overlap even with rounding.
+  tsOffset = maxTsSeen + 1000;
   self.postMessage({ type: 'resetDone' });
 }
 

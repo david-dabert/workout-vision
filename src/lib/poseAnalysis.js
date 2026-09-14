@@ -44,6 +44,11 @@ let poseLandmarker = null;
 let modelLoadPromise = null;
 let lastVideoTime = -1;
 let lastResult = null;
+// MediaPipe's detectForVideo() requires monotonically increasing timestamps.
+// When analyzing multiple videos, caller timestamps reset to 0.
+// We offset them so the landmarker always sees increasing values.
+let _imageTimestampOffset = 0;
+let _imageMaxTimestamp = 0;
 
 // Shared Kalman filter instances (one per detection path to avoid cross-contamination)
 let _kalmanImage = new KalmanLandmarkFilter();
@@ -328,7 +333,8 @@ export const selectSubjectPose = _selectSubjectPose;
  */
 export function detectPoseImage(landmarker, source, timestamp) {
   try {
-    const ts = timestamp != null ? timestamp : performance.now();
+    const ts = timestamp != null ? (timestamp + _imageTimestampOffset) : performance.now();
+    if (ts > _imageMaxTimestamp) _imageMaxTimestamp = ts;
     const result = landmarker.detectForVideo(source, ts);
     // Apply Kalman filter to smooth landmark coordinates before downstream use
     if (result && result.landmarks) {
@@ -450,6 +456,9 @@ export function resetKalmanFilters() {
   _kalmanVideo = new KalmanLandmarkFilter();
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
+  // Bump timestamp offset so next video's deterministic timestamps
+  // continue above the previous peak (MediaPipe requires monotonic increase).
+  _imageTimestampOffset = _imageMaxTimestamp + 1000;
 }
 
 // ─── Person lock: select the subject (largest + most centered) ───
