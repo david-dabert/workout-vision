@@ -158,6 +158,171 @@ describe('modelHook', () => {
 });
 
 // ---------------------------------------------------------------------------
+// P0 Leaf Scoring Rules
+// ---------------------------------------------------------------------------
+
+describe('P0 leaf scoring', () => {
+  // Helper: build a minimal features object for scoring tests.
+  // All channels default to low/zero values; override what matters.
+  function makeFeatures(overrides = {}) {
+    const ch = (o = {}) => ({
+      range: 0, mean: 90, min: 80, max: 100, dwellLow: 0.1, dwellHigh: 0.1, cycles: 1, values: [],
+      ...o,
+    });
+    return {
+      knee: ch(overrides.knee),
+      hip: ch(overrides.hip),
+      elbow: ch(overrides.elbow),
+      shoulder: ch(overrides.shoulder),
+      trunk: ch(overrides.trunk),
+      corr_knee_hip: overrides.corr_knee_hip ?? 0,
+      corr_elbow_shoulder: overrides.corr_elbow_shoulder ?? 0,
+      corr_elbow_knee: overrides.corr_elbow_knee ?? 0,
+      windowMs: 2000,
+      frameCount: 30,
+    };
+  }
+
+  let detector;
+  beforeEach(() => {
+    detector = new HierarchicalDetector({ fps: 10, mode: 'gym' });
+  });
+
+  // ── seated.lower_push ──
+
+  it('leg_extension scores higher than leg_press when hip is static', () => {
+    const f = makeFeatures({
+      knee: { range: 40, mean: 120, dwellHigh: 0.2 },
+      hip: { range: 4, mean: 100 },       // hip static = extension
+      corr_knee_hip: 0.05,                 // near-zero correlation
+    });
+    const extScore = detector._scoreCandidate('leg_extension', f, 'seated', 'lower_push');
+    const pressScore = detector._scoreCandidate('leg_press', f, 'seated', 'lower_push');
+    expect(extScore).toBeGreaterThan(pressScore);
+  });
+
+  it('leg_press scores higher than leg_extension when hip moves with knee', () => {
+    const f = makeFeatures({
+      knee: { range: 45, mean: 120, dwellHigh: 0.15 },
+      hip: { range: 30, mean: 110 },      // hip moves = press
+      corr_knee_hip: 0.85,                 // high correlation
+    });
+    const pressScore = detector._scoreCandidate('leg_press', f, 'seated', 'lower_push');
+    const extScore = detector._scoreCandidate('leg_extension', f, 'seated', 'lower_push');
+    expect(pressScore).toBeGreaterThan(extScore);
+  });
+
+  // ── seated.upper_vertical ──
+
+  it('straight_arm_pulldown scores highest when elbow ROM is near zero', () => {
+    const f = makeFeatures({
+      elbow: { range: 8, mean: 160 },     // arms stay straight
+      shoulder: { range: 30, mean: 90 },
+    });
+    const sapScore = detector._scoreCandidate('straight_arm_pulldown', f, 'seated', 'upper_vertical');
+    const latScore = detector._scoreCandidate('lat_pulldown', f, 'seated', 'upper_vertical');
+    const pressScore = detector._scoreCandidate('machine_shoulder_press', f, 'seated', 'upper_vertical');
+    expect(sapScore).toBeGreaterThan(latScore);
+    expect(sapScore).toBeGreaterThan(pressScore);
+  });
+
+  it('lat_pulldown scores higher when shoulder dwells low', () => {
+    const f = makeFeatures({
+      elbow: { range: 30, mean: 110 },
+      shoulder: { range: 40, mean: 90, dwellLow: 0.25, dwellHigh: 0.08 },
+      corr_elbow_shoulder: 0.5,
+    });
+    const latScore = detector._scoreCandidate('lat_pulldown', f, 'seated', 'upper_vertical');
+    const pressScore = detector._scoreCandidate('machine_shoulder_press', f, 'seated', 'upper_vertical');
+    expect(latScore).toBeGreaterThan(pressScore);
+  });
+
+  it('machine_shoulder_press scores higher when shoulder dwells high', () => {
+    const f = makeFeatures({
+      elbow: { range: 30, mean: 110 },
+      shoulder: { range: 40, mean: 90, dwellLow: 0.08, dwellHigh: 0.25 },
+      corr_elbow_shoulder: 0.5,
+    });
+    const pressScore = detector._scoreCandidate('machine_shoulder_press', f, 'seated', 'upper_vertical');
+    const latScore = detector._scoreCandidate('lat_pulldown', f, 'seated', 'upper_vertical');
+    expect(pressScore).toBeGreaterThan(latScore);
+  });
+
+  // ── seated.upper_horizontal (weak signals, but ranking matters) ──
+
+  it('seated_row ranks above chest_press when elbow dwells low', () => {
+    const f = makeFeatures({
+      elbow: { range: 25, mean: 100, dwellLow: 0.22, dwellHigh: 0.06 },
+      corr_elbow_shoulder: -0.3,
+    });
+    const rowScore = detector._scoreCandidate('seated_row', f, 'seated', 'upper_horizontal');
+    const pressScore = detector._scoreCandidate('machine_chest_press', f, 'seated', 'upper_horizontal');
+    expect(rowScore).toBeGreaterThan(pressScore);
+  });
+
+  it('chest_press ranks above seated_row when elbow dwells high', () => {
+    const f = makeFeatures({
+      elbow: { range: 25, mean: 120, dwellLow: 0.06, dwellHigh: 0.22 },
+      corr_elbow_shoulder: 0.3,
+    });
+    const pressScore = detector._scoreCandidate('machine_chest_press', f, 'seated', 'upper_horizontal');
+    const rowScore = detector._scoreCandidate('seated_row', f, 'seated', 'upper_horizontal');
+    expect(pressScore).toBeGreaterThan(rowScore);
+  });
+
+  // ── seated.lower_pull ──
+
+  it('leg_curl scores higher when knee flexes with hip static', () => {
+    const f = makeFeatures({
+      knee: { range: 25, mean: 100, dwellLow: 0.2 },
+      hip: { range: 5, mean: 100 },
+      trunk: { range: 3, mean: 10 },
+      corr_knee_hip: 0.05,
+    });
+    const curlScore = detector._scoreCandidate('leg_curl', f, 'seated', 'lower_pull');
+    const backScore = detector._scoreCandidate('seated_back_extension', f, 'seated', 'lower_pull');
+    expect(curlScore).toBeGreaterThan(backScore);
+  });
+
+  it('seated_back_extension scores higher when trunk and hip move', () => {
+    const f = makeFeatures({
+      knee: { range: 3, mean: 100 },
+      hip: { range: 18, mean: 110 },
+      trunk: { range: 20, mean: 25 },
+    });
+    const backScore = detector._scoreCandidate('seated_back_extension', f, 'seated', 'lower_pull');
+    const curlScore = detector._scoreCandidate('leg_curl', f, 'seated', 'lower_pull');
+    expect(backScore).toBeGreaterThan(curlScore);
+  });
+
+  // ── standing.lower_pull ──
+
+  it('good_morning scores higher than deadlift when knees are locked', () => {
+    const f = makeFeatures({
+      knee: { range: 5, mean: 165 },
+      hip: { range: 30, mean: 130 },
+      trunk: { range: 25, mean: 40 },
+    });
+    const gmScore = detector._scoreCandidate('good_morning', f, 'standing', 'lower_pull');
+    const dlScore = detector._scoreCandidate('deadlift', f, 'standing', 'lower_pull');
+    expect(gmScore).toBeGreaterThan(dlScore);
+  });
+
+  // ── standing.upper_isolation ──
+
+  it('curl scores higher than pushdown when shoulder is low and elbow flexes', () => {
+    const f = makeFeatures({
+      elbow: { range: 35, mean: 100 },
+      shoulder: { range: 8, mean: 25 },
+    });
+    const curlScore = detector._scoreCandidate('bicep_curl', f, 'standing', 'upper_isolation');
+    const pushScore = detector._scoreCandidate('cable_tricep_pushdown', f, 'standing', 'upper_isolation');
+    // Both should be high for isolation, but curl slightly higher with these features
+    expect(curlScore).toBeGreaterThanOrEqual(pushScore);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // HierarchicalDetector
 // ---------------------------------------------------------------------------
 

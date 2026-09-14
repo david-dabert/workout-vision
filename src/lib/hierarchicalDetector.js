@@ -468,47 +468,159 @@ export class HierarchicalDetector {
 
   _scoreSeatedLeaf(id, f, mc) {
     const { knee, hip, elbow, shoulder, trunk } = f;
+    const corrKH = f.corr_knee_hip;
+    const corrES = f.corr_elbow_shoulder;
 
+    // ── seated.lower_push ──────────────────────────────────────────────
+    // Key signal: hip involvement separates leg press from leg extension.
+    // Knee-hip correlation separates compound (press) from isolation (extension).
     if (mc === 'lower_push') {
       if (id === 'leg_press' || id === 'single_leg_press') {
-        // Leg press: large knee + hip ROM, no arm movement
-        return knee.range > 20 && hip.range > 15 ? 2.0 : 0.5;
+        // Leg press: knee AND hip both flex/extend in sync.
+        // Large ROM on both. High knee-hip correlation (>0.6).
+        let s = 1.0;
+        s += knee.range > 30 ? 0.6 : knee.range > 20 ? 0.3 : 0;
+        s += hip.range > 20 ? 0.6 : hip.range > 12 ? 0.3 : 0;
+        s += corrKH > 0.7 ? 0.5 : corrKH > 0.5 ? 0.2 : 0;
+        // Leg press has dwell at lockout (extended)
+        s += knee.dwellHigh > 0.12 ? 0.2 : 0;
+        // Penalise if hip is static (that's extension, not press)
+        if (hip.range < 8) s *= 0.3;
+        return s;
       }
       if (id === 'leg_extension') {
-        // Leg extension: knee extends, hip stays, dwell at extended position
-        return knee.range > 10 && hip.range < 10 && knee.dwellHigh > 0.1 ? 2.0 : 0.5;
+        // Leg extension: ONLY knees move. Hips static. Zero knee-hip correlation.
+        // Strong dwell at top (isometric squeeze at full extension).
+        let s = 1.0;
+        s += knee.range > 25 ? 0.6 : knee.range > 15 ? 0.3 : 0;
+        s += hip.range < 8 ? 0.8 : hip.range < 12 ? 0.3 : 0;
+        s += Math.abs(corrKH) < 0.3 ? 0.4 : 0;
+        s += knee.dwellHigh > 0.15 ? 0.3 : 0;
+        // Penalise if hip moves a lot (that's a press, not extension)
+        if (hip.range > 15) s *= 0.3;
+        return s;
+      }
+      if (id === 'hack_squat' || id === 'smith_squat' || id === 'pendulum_squat') {
+        // Squat-family machines: knee-dominant with moderate hip.
+        // knee.range > hip.range. Moderate knee-hip correlation.
+        let s = 1.0;
+        s += knee.range > 25 ? 0.4 : 0;
+        s += (hip.range > 8 && hip.range < 25) ? 0.3 : 0;
+        s += (knee.range > hip.range * 1.3) ? 0.3 : 0;
+        s += corrKH > 0.4 ? 0.2 : 0;
+        return s;
       }
     }
 
+    // ── seated.lower_pull ──────────────────────────────────────────────
     if (mc === 'lower_pull') {
       if (id === 'leg_curl' || id === 'lying_leg_curl') {
-        // Leg curl: knee flexes, dwell at flexed position
-        return knee.range > 10 && knee.dwellLow > 0.1 ? 2.0 : 0.5;
+        // Leg curl: knee flexion against resistance. Dwell at flexed (low).
+        // Hip stays mostly static.
+        let s = 1.0;
+        s += knee.range > 15 ? 0.5 : knee.range > 8 ? 0.2 : 0;
+        s += hip.range < 10 ? 0.4 : 0;
+        s += knee.dwellLow > 0.12 ? 0.4 : 0;
+        // Negative knee-hip correlation or near-zero (hip static)
+        s += Math.abs(corrKH) < 0.3 ? 0.2 : 0;
+        return s;
+      }
+      if (id === 'seated_back_extension') {
+        // Back extension: trunk and hip ROM, knees static
+        let s = 1.0;
+        s += trunk.range > 12 ? 0.5 : 0;
+        s += hip.range > 10 ? 0.4 : 0;
+        s += knee.range < 8 ? 0.3 : 0;
+        return s;
       }
     }
 
+    // ── seated.upper_horizontal (monocular ceiling) ────────────────────
+    // Push vs pull is invisible to joint trajectory alone. But dwell patterns,
+    // elbow mean, and elbow-shoulder correlation provide weak ranking signals.
+    // All scores stay close together; chips are still shown.
     if (mc === 'upper_horizontal') {
-      // Cannot distinguish push vs pull from pose alone
-      // Use dwell patterns as weak signal
-      if (id === 'seated_row' || id === 'machine_row' || id === 'cable_row_single') {
-        return elbow.dwellLow > 0.1 ? 1.2 : 1.0;
+      if (id === 'seated_row' || id === 'machine_row' || id === 'cable_row_single' || id === 'chest_supported_row') {
+        // Row: elbows flex to contracted position (lower angle).
+        // Dwell at low (squeeze). Elbow mean tends lower.
+        let s = 1.0;
+        s += elbow.dwellLow > 0.15 ? 0.25 : elbow.dwellLow > 0.08 ? 0.1 : 0;
+        s += elbow.mean < 110 ? 0.15 : 0;
+        // Negative elbow-shoulder correlation is a weak row signal
+        // (elbows closing while shoulders retract)
+        s += corrES < -0.2 ? 0.1 : 0;
+        return s;
       }
       if (id === 'machine_chest_press') {
-        return elbow.dwellHigh > 0.1 ? 1.2 : 1.0;
-      }
-      return 1.0; // All equally likely
-    }
-
-    if (mc === 'upper_vertical') {
-      if (id === 'lat_pulldown' || id === 'straight_arm_pulldown') {
-        return shoulder.mean > 80 ? 1.5 : 0.5;
+        // Press: elbows extend to lockout (higher angle).
+        // Dwell at high (lockout). Elbow mean tends higher.
+        let s = 1.0;
+        s += elbow.dwellHigh > 0.15 ? 0.25 : elbow.dwellHigh > 0.08 ? 0.1 : 0;
+        s += elbow.mean > 110 ? 0.15 : 0;
+        // Positive elbow-shoulder correlation is a weak press signal
+        s += corrES > 0.2 ? 0.1 : 0;
+        return s;
       }
       return 1.0;
     }
 
+    // ── seated.upper_vertical ──────────────────────────────────────────
+    // Straight-arm pulldown is definitively separable (no elbow ROM).
+    // Lat pulldown vs shoulder press: shoulder dwell pattern discriminates.
+    if (mc === 'upper_vertical') {
+      if (id === 'straight_arm_pulldown') {
+        // Definitive: arms stay nearly straight, shoulder sweeps.
+        let s = 0.5;
+        s += elbow.range < 12 ? 1.5 : elbow.range < 20 ? 0.5 : 0;
+        s += shoulder.range > 15 ? 0.5 : 0;
+        // Penalise if elbows are bending a lot
+        if (elbow.range > 25) s *= 0.2;
+        return s;
+      }
+      if (id === 'lat_pulldown') {
+        // Shoulder starts high (arms up on bar), comes down to chest.
+        // Shoulder dwells LOW (contracted position, bar at chest).
+        // Elbow ROM significant (extends to flexed). High shoulder mean.
+        let s = 1.0;
+        s += shoulder.mean > 80 ? 0.4 : shoulder.mean > 60 ? 0.2 : 0;
+        s += elbow.range > 15 ? 0.3 : 0;
+        s += shoulder.dwellLow > shoulder.dwellHigh ? 0.3 : 0;
+        // Positive elbow-shoulder correlation (both come down together)
+        s += corrES > 0.3 ? 0.2 : 0;
+        // Penalise if shoulder dwell is mostly at top (that's pressing up)
+        if (shoulder.dwellHigh > shoulder.dwellLow * 1.5) s *= 0.6;
+        return s;
+      }
+      if (id === 'machine_shoulder_press' || id === 'seated_dumbbell_press') {
+        // Pushes up from shoulder height to overhead lockout.
+        // Shoulder dwells HIGH (lockout at top).
+        // Elbow ROM significant (flexed to extended).
+        let s = 1.0;
+        s += shoulder.mean > 70 ? 0.3 : 0;
+        s += elbow.range > 15 ? 0.3 : 0;
+        s += shoulder.dwellHigh > shoulder.dwellLow ? 0.3 : 0;
+        // Positive elbow-shoulder correlation (both go up together)
+        s += corrES > 0.3 ? 0.2 : 0;
+        // Penalise if shoulder dwell is mostly at bottom (that's pulling down)
+        if (shoulder.dwellLow > shoulder.dwellHigh * 1.5) s *= 0.6;
+        return s;
+      }
+    }
+
+    // ── seated.lower_isolation ─────────────────────────────────────────
     if (mc === 'lower_isolation') {
-      if (id === 'adductor_machine' || id === 'abductor_machine') return 1.0;
-      if (id === 'seated_calf_raise') return knee.range < 5 ? 1.5 : 0.5;
+      if (id === 'adductor_machine' || id === 'abductor_machine') {
+        // Both: hip ROM, knees/elbows static. Indistinguishable from each other.
+        return hip.range > 8 ? 1.2 : 1.0;
+      }
+      if (id === 'seated_calf_raise') {
+        // Ankle-only movement. Knee/hip/elbow all static. Very small knee range.
+        let s = 0.5;
+        s += knee.range < 5 ? 1.0 : 0;
+        s += hip.range < 5 ? 0.3 : 0;
+        s += elbow.range < 5 ? 0.2 : 0;
+        return s;
+      }
     }
 
     return 1.0;
@@ -516,60 +628,215 @@ export class HierarchicalDetector {
 
   _scoreStandingLeaf(id, f, mc) {
     const { knee, hip, elbow, shoulder, trunk } = f;
+    const corrKH = f.corr_knee_hip;
+    const corrES = f.corr_elbow_shoulder;
+    const corrEK = f.corr_elbow_knee;
 
+    // ── standing.lower_push ────────────────────────────────────────────
     if (mc === 'lower_push') {
-      const kneeAsym = Math.abs((f.knee.values?.[0] || 0) - (f.knee.values?.[1] || 0));
+      // Calf raises: near-zero knee/hip ROM, only ankle plantarflexion
+      if (id === 'calf_raise' || id === 'donkey_calf_raise' || id === 'leg_press_calf_raise') {
+        let s = 0.5;
+        s += knee.range < 8 ? 1.0 : knee.range < 12 ? 0.3 : 0;
+        s += hip.range < 8 ? 0.5 : 0;
+        if (knee.range > 15) s *= 0.2; // definitely not calf if knees bend a lot
+        return s;
+      }
+      // Overhead squat: shoulders overhead (>130°), plus squat ROM
+      if (id === 'overhead_squat') {
+        let s = 0.5;
+        s += shoulder.mean > 140 ? 0.8 : shoulder.mean > 120 ? 0.4 : 0;
+        s += knee.range > 20 ? 0.3 : 0;
+        if (shoulder.mean < 100) s *= 0.2;
+        return s;
+      }
+      // Front squat: upright torso (trunk < 25), deep knee bend
+      if (id === 'front_squat') {
+        let s = 1.0;
+        s += trunk.mean < 25 ? 0.4 : trunk.mean < 35 ? 0.2 : 0;
+        s += knee.range > 25 ? 0.3 : 0;
+        s += elbow.mean > 100 ? 0.2 : 0; // elbows up in rack position
+        return s;
+      }
+      // Unilateral: lunges, split squats, step-ups
       if (id.includes('lunge') || id === 'bulgarian_split_squat' || id === 'step_up' || id === 'curtsy_lunge') {
-        return kneeAsym > 20 ? 1.5 : 0.5;
+        // These produce asymmetric knee angles; hard to detect with bestSide
+        // but cycles tend higher (alternating legs) and knee range is moderate
+        let s = 1.0;
+        s += knee.range > 15 ? 0.3 : 0;
+        s += knee.cycles > 2 ? 0.2 : 0; // alternating legs = more cycles
+        s += hip.range > 10 ? 0.2 : 0;
+        return s;
       }
-      if (id === 'calf_raise' || id.includes('calf')) {
-        return knee.range < 10 && hip.range < 10 ? 1.5 : 0.3;
+      // Generic squat family: large bilateral knee ROM, moderate-high hip ROM
+      if (id.includes('squat') || id === 'belt_squat') {
+        let s = 1.0;
+        s += knee.range > 30 ? 0.5 : knee.range > 20 ? 0.2 : 0;
+        s += hip.range > 15 ? 0.3 : 0;
+        s += corrKH > 0.5 ? 0.2 : 0;
+        return s;
       }
-      if (id === 'overhead_squat') return shoulder.mean > 130 ? 1.5 : 0.3;
-      if (id === 'front_squat') return trunk.mean < 30 ? 1.3 : 0.8;
-      if (id.includes('squat')) return knee.range > 25 ? 1.2 : 0.8;
     }
 
+    // ── standing.lower_pull ────────────────────────────────────────────
     if (mc === 'lower_pull') {
-      if (id === 'good_morning') return knee.range < 10 ? 1.5 : 0.5;
-      if (id === 'romanian_deadlift' || id === 'stiff_leg_deadlift') return knee.range < 15 ? 1.3 : 0.7;
+      // Good morning: knees nearly locked, hip hinge dominant
+      if (id === 'good_morning') {
+        let s = 0.5;
+        s += knee.range < 10 ? 0.8 : knee.range < 15 ? 0.3 : 0;
+        s += hip.range > 20 ? 0.5 : hip.range > 10 ? 0.2 : 0;
+        s += trunk.mean > 35 ? 0.3 : 0;
+        if (knee.range > 20) s *= 0.3;
+        return s;
+      }
+      // RDL/stiff-leg: slight knee bend, large hip hinge
+      if (id === 'romanian_deadlift' || id === 'stiff_leg_deadlift') {
+        let s = 1.0;
+        s += (knee.range > 5 && knee.range < 18) ? 0.4 : 0;
+        s += hip.range > 20 ? 0.4 : 0;
+        s += trunk.mean > 30 ? 0.2 : 0;
+        return s;
+      }
+      // Swing / pull-through: explosive hip + shoulder ROM (arms swing)
       if (id === 'kettlebell_swing' || id === 'cable_pull_through') {
-        return hip.range > 30 && shoulder.range > 30 ? 1.3 : 0.7;
+        let s = 0.5;
+        s += hip.range > 30 ? 0.5 : hip.range > 20 ? 0.2 : 0;
+        s += shoulder.range > 25 ? 0.5 : shoulder.range > 15 ? 0.2 : 0;
+        s += hip.cycles > 1 ? 0.3 : 0; // explosive rep rate
+        return s;
       }
-      if (id.includes('deadlift')) return knee.range > 10 ? 1.2 : 0.8;
+      // Conventional / sumo deadlift: knee + hip both flex, trunk forward
+      if (id.includes('deadlift')) {
+        let s = 1.0;
+        s += knee.range > 12 ? 0.3 : 0;
+        s += hip.range > 15 ? 0.3 : 0;
+        s += trunk.mean > 25 ? 0.2 : 0;
+        s += corrKH > 0.4 ? 0.2 : 0;
+        return s;
+      }
+      if (id === 'rack_pull') {
+        let s = 1.0;
+        s += knee.range < 15 ? 0.3 : 0; // partial ROM from rack
+        s += hip.range > 10 ? 0.3 : 0;
+        s += trunk.mean > 20 ? 0.2 : 0;
+        return s;
+      }
     }
 
+    // ── standing.upper_push ────────────────────────────────────────────
     if (mc === 'upper_push') {
+      // Raises: arms nearly straight, shoulder sweeps. Elbow stays extended.
       if (id.includes('raise')) {
-        return shoulder.range > 20 && elbow.mean > 120 ? 1.3 : 0.7;
+        let s = 0.5;
+        s += shoulder.range > 20 ? 0.5 : shoulder.range > 10 ? 0.2 : 0;
+        s += elbow.mean > 130 ? 0.5 : elbow.mean > 110 ? 0.2 : 0;
+        s += elbow.range < 15 ? 0.3 : 0; // arms stay straight-ish
+        if (elbow.range > 30) s *= 0.4; // too much elbow bend = pressing
+        return s;
       }
-      if (id === 'push_press') return knee.range > 10 ? 1.3 : 0.7;
-      if (id.includes('press')) return elbow.range > 20 && shoulder.mean > 60 ? 1.2 : 0.8;
+      // Push press: like OHP but with knee dip
+      if (id === 'push_press') {
+        let s = 1.0;
+        s += knee.range > 8 ? 0.4 : 0; // leg drive
+        s += shoulder.mean > 70 ? 0.3 : 0;
+        s += elbow.range > 15 ? 0.2 : 0;
+        return s;
+      }
+      // Overhead / shoulder press family: elbow extends, shoulder high
+      if (id.includes('press')) {
+        let s = 1.0;
+        s += elbow.range > 20 ? 0.4 : elbow.range > 12 ? 0.2 : 0;
+        s += shoulder.mean > 70 ? 0.3 : 0;
+        s += knee.range < 8 ? 0.2 : 0; // strict (no leg drive)
+        return s;
+      }
     }
 
+    // ── standing.upper_pull ────────────────────────────────────────────
     if (mc === 'upper_pull') {
+      // Shrugs: minimal ROM, shoulders elevate slightly, elbows straight
       if (id === 'shrug' || id === 'dumbbell_shrug' || id === 'cable_shrug') {
-        return shoulder.range < 15 && elbow.mean > 150 ? 1.5 : 0.5;
+        let s = 0.5;
+        s += shoulder.range < 15 ? 0.6 : 0;
+        s += elbow.mean > 150 ? 0.5 : elbow.mean > 130 ? 0.2 : 0;
+        s += elbow.range < 10 ? 0.3 : 0;
+        if (elbow.range > 20) s *= 0.3; // not a shrug if elbows bend
+        return s;
       }
+      // Rear delt flies / pull-aparts: arms extended, shoulder abduction
       if (id.includes('rear_delt') || id === 'band_pull_apart') {
-        return shoulder.range > 15 && elbow.mean > 120 ? 1.3 : 0.7;
+        let s = 0.5;
+        s += shoulder.range > 15 ? 0.5 : 0;
+        s += elbow.mean > 120 ? 0.4 : 0;
+        s += elbow.range < 15 ? 0.2 : 0; // arms stay straight-ish
+        return s;
       }
-      if (id === 'face_pull') return shoulder.mean > 60 ? 1.2 : 0.8;
-      if (id === 'upright_row') return shoulder.mean < 60 ? 1.2 : 0.8;
-      if (id === 'pendlay_row') return trunk.mean > 55 ? 1.3 : 0.7;
-      if (id.includes('row')) return trunk.mean > 30 ? 1.2 : 0.8;
+      // Face pull: elbows high, shoulders elevated
+      if (id === 'face_pull') {
+        let s = 1.0;
+        s += shoulder.mean > 60 ? 0.3 : 0;
+        s += elbow.mean > 80 ? 0.2 : 0;
+        s += elbow.range > 10 ? 0.2 : 0;
+        return s;
+      }
+      // Upright row: elbows rise to sides, shoulders below horizontal
+      if (id === 'upright_row') {
+        let s = 1.0;
+        s += shoulder.mean < 70 ? 0.3 : 0;
+        s += elbow.range > 15 ? 0.2 : 0;
+        s += shoulder.range > 15 ? 0.2 : 0;
+        return s;
+      }
+      // Pendlay row: trunk nearly horizontal, explosive
+      if (id === 'pendlay_row') {
+        let s = 0.5;
+        s += trunk.mean > 50 ? 0.6 : trunk.mean > 40 ? 0.3 : 0;
+        s += elbow.range > 15 ? 0.3 : 0;
+        if (trunk.mean < 35) s *= 0.3;
+        return s;
+      }
+      // Generic rows: bent-over trunk, elbow flexion
+      if (id.includes('row')) {
+        let s = 1.0;
+        s += trunk.mean > 30 ? 0.3 : 0;
+        s += elbow.range > 15 ? 0.3 : 0;
+        return s;
+      }
     }
 
+    // ── standing.upper_isolation ────────────────────────────────────────
     if (mc === 'upper_isolation') {
-      if (id.includes('curl') || id === 'hammer_curl') {
-        return elbow.range > 15 && shoulder.range < 15 ? 1.3 : 0.7;
+      // Curls: elbow flexion, shoulder stays still, arm at side
+      if (id.includes('curl') || id === 'hammer_curl' || id === 'drag_curl') {
+        let s = 1.0;
+        s += elbow.range > 20 ? 0.4 : elbow.range > 12 ? 0.2 : 0;
+        s += shoulder.range < 15 ? 0.3 : 0;
+        s += shoulder.mean < 40 ? 0.2 : 0; // arm at side
+        if (shoulder.range > 25) s *= 0.5; // too much shoulder = not isolation
+        return s;
       }
-      if (id.includes('tricep') || id.includes('pushdown') || id === 'kickback') {
-        return elbow.range > 15 && shoulder.mean < 30 ? 1.3 : 0.7;
+      // Tricep pushdown / rope pushdown: elbow extension, shoulder static, arm at side
+      if (id.includes('pushdown') || id === 'rope_pushdown' || id === 'kickback' || id === 'cable_kickback') {
+        let s = 1.0;
+        s += elbow.range > 15 ? 0.4 : 0;
+        s += shoulder.range < 15 ? 0.3 : 0;
+        s += shoulder.mean < 40 ? 0.2 : 0;
+        return s;
       }
-      if (id === 'tricep_extension') return shoulder.mean > 100 ? 1.3 : 0.7;
+      // Overhead tricep extension: shoulder elevated, elbow ROM
+      if (id === 'tricep_extension' || id === 'overhead_cable_tricep') {
+        let s = 0.5;
+        s += shoulder.mean > 100 ? 0.6 : shoulder.mean > 80 ? 0.3 : 0;
+        s += elbow.range > 15 ? 0.4 : 0;
+        if (shoulder.mean < 60) s *= 0.3;
+        return s;
+      }
+      // Cable crossover / fly: shoulder dominant, wide arc, elbows mostly extended
       if (id.includes('cable') || id.includes('crossover') || id.includes('fly')) {
-        return shoulder.range > 15 ? 1.2 : 0.8;
+        let s = 1.0;
+        s += shoulder.range > 20 ? 0.3 : 0;
+        s += elbow.mean > 110 ? 0.2 : 0;
+        return s;
       }
     }
 
