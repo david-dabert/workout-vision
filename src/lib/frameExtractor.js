@@ -82,7 +82,7 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
 
     // Wait for decoder readiness
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
+      const timeout = setTimeout(() => reject(new Error('Video load timeout (30s)')), 30000);
 
       const onAbort = () => {
         clearTimeout(timeout);
@@ -151,6 +151,29 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
 
       const cleanup = () => {
         video.pause();
+        clearTimeout(stallTimeout);
+      };
+
+      // Safety timeout: if no frames arrive within 20 seconds of play(),
+      // the video is likely stalled (common on iOS with large files)
+      let stallTimeout;
+      const resetStallTimeout = () => {
+        clearTimeout(stallTimeout);
+        stallTimeout = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            if (signal) signal.removeEventListener('abort', onAbort);
+            if (extractedCount > 0) {
+              resolve({
+                width: frameWidth, height: frameHeight,
+                fps: targetFps, duration, frameCount: extractedCount,
+              });
+            } else {
+              reject(new Error('Video playback stalled — no frames received'));
+            }
+          }
+        }, 20000);
       };
 
       const onAbort = () => {
@@ -164,6 +187,7 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
 
       const onVideoFrame = async (now, metadata) => {
         if (resolved) return;
+        resetStallTimeout();
 
         // Check abort
         if (signal?.aborted) {
@@ -243,6 +267,7 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
 
       // Start frame capture loop and play
       video.requestVideoFrameCallback(onVideoFrame);
+      resetStallTimeout(); // Start the stall watchdog
       video.play().catch((err) => {
         if (!resolved) {
           resolved = true;
@@ -297,7 +322,7 @@ async function extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, 
 
     // Wait for decoder readiness, not just metadata.
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
+      const timeout = setTimeout(() => reject(new Error('Video load timeout (30s)')), 30000);
 
       const onAbort = () => {
         clearTimeout(timeout);

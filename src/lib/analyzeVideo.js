@@ -406,7 +406,22 @@ export async function analyzeVideoFile({
           });
         }
         console.error('[analyzeVideo] Streaming extraction failed:', err);
-        return null;
+        // If we have partial frames, return them instead of failing completely
+        if (frames.length > 0) {
+          console.warn(`[analyzeVideo] Recovering ${frames.length} frames from failed extraction`);
+          const partialLockedEx = progressiveDetector?.state?.locked ? progressiveDetector.state.exercise : null;
+          return buildPartialResult({
+            frames, replayFrames, analysisFps,
+            exercise: partialLockedEx || exercise,
+            autoDetect: partialLockedEx ? false : autoDetect,
+            userChangedExercise: partialLockedEx ? true : userChangedExercise,
+            weightKg, userInjuries, userProfile,
+            file, videoHash, analysisStart, onExerciseDetected,
+            aborted: false,
+            errorReason: err.message,
+          });
+        }
+        return { error: true, errorReason: err.message };
       }
 
       // Cache landmarks and clear partial checkpoint

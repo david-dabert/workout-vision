@@ -192,6 +192,12 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       return null;
     }
 
+    if (result.error) {
+      trackEvent('analysis_failed', { fileName: queueItem.name, reason: result.errorReason });
+      setErrorMsg(`Analysis failed: ${result.errorReason || 'unknown error'}. ${t('try_different')}`);
+      return null;
+    }
+
     trackAnalysis(result);
 
     // Handle aborted results
