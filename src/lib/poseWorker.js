@@ -33,7 +33,8 @@ import {
 
 const MEDIAPIPE_VERSION = '0.10.8';
 const CDN_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}`;
-const WASM_URL = `${CDN_BASE}/wasm`;
+const WASM_CDN_URL = `${CDN_BASE}/wasm`;
+const WASM_LOCAL_URL = 'mediapipe'; // local WASM files served by SW
 const CDN_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 const LOCAL_MODEL_URL = 'mediapipe/pose_landmarker_full.task';
 const LOCAL_MANIFEST_URL = 'mediapipe/manifest.json';
@@ -130,7 +131,14 @@ async function handleInit() {
     try {
       const mp = await import(`${CDN_BASE}/+esm`);
       const modelBuffer = await fetchModelWithVerification();
-      const vision = await mp.FilesetResolver.forVisionTasks(WASM_URL);
+      // Try local WASM first (offline-capable via service worker), CDN fallback
+      let vision;
+      try {
+        vision = await mp.FilesetResolver.forVisionTasks(WASM_LOCAL_URL);
+      } catch (e) {
+        console.warn('[PoseWorker] Local WASM failed, using CDN:', e.message);
+        vision = await mp.FilesetResolver.forVisionTasks(WASM_CDN_URL);
+      }
       const opts = {
         runningMode: 'VIDEO',
         numPoses: 1,
