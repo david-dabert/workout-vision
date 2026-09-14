@@ -29,7 +29,15 @@ setTimeout(function() {
   }
 }, 8000);
 
-// 3. Glass effect heuristic: disable backdrop-filter on weak devices
+// 3. Non-blocking Google Fonts loading (avoids render-blocking @import/link)
+(function() {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap';
+  document.head.appendChild(link);
+})();
+
+// 4. Glass effect heuristic: disable backdrop-filter on weak devices
 (function() {
   var ua = navigator.userAgent;
   var disableGlass = false;

@@ -1,0 +1,11 @@
+{
+  "version": "pose-full-1.0.0",
+  "files": {
+    "pose_landmarker_full.task": {
+      "url": "mediapipe/pose_landmarker_full.task",
+      "sha256": "4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad",
+      "bytes": 9398198
+    }
+  },
+  "minAppVersion": "1.4.0"
+}

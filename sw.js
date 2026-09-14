@@ -4,11 +4,13 @@
 
 const CACHE_NAME = 'wv-v1';
 const APP_SHELL = [
-  '/workout-vision/',
-  '/workout-vision/manifest.json',
-  '/workout-vision/favicon.svg',
-  '/workout-vision/icon-192.png',
-  '/workout-vision/icon-512.png',
+  '__SW_BASE__',
+  '__SW_BASE__manifest.json',
+  '__SW_BASE__favicon.svg',
+  '__SW_BASE__icon-192.png',
+  '__SW_BASE__icon-512.png',
+  '__SW_BASE__mediapipe/pose_landmarker_full.task',
+  '__SW_BASE__mediapipe/manifest.json',
 ];
 
 self.addEventListener('install', (event) => {
@@ -53,16 +55,23 @@ self.addEventListener('fetch', (event) => {
   }
 
   // JS/CSS assets with hashed filenames: cache-first
+  // Vite adds crossorigin to <script type="module"> and <link rel="stylesheet">,
+  // causing cors-mode requests. cache.addAll() stores with no-cors mode.
+  // Try both the original request and a mode-agnostic URL match.
   if (/\.[a-f0-9]{8}\.(js|css)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
+        // Fallback: match by URL with different request mode
+        return caches.match(new Request(url.href)).then((fallback) => {
+          if (fallback) return fallback;
+          return fetch(request).then((response) => {
+            if (response.ok) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          });
         });
       })
     );
@@ -80,7 +89,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/workout-vision/')))
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('__SW_BASE__')))
     );
     return;
   }
