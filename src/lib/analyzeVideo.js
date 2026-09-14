@@ -394,9 +394,13 @@ export async function analyzeVideoFile({
             await savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
           }
           // Return partial results with aborted flag
+          const partialLockedEx = progressiveDetector?.state?.locked ? progressiveDetector.state.exercise : null;
           return buildPartialResult({
-            frames, replayFrames, analysisFps, exercise, autoDetect,
-            userChangedExercise, weightKg, userInjuries, userProfile,
+            frames, replayFrames, analysisFps,
+            exercise: partialLockedEx || exercise,
+            autoDetect: partialLockedEx ? false : autoDetect,
+            userChangedExercise: partialLockedEx ? true : userChangedExercise,
+            weightKg, userInjuries, userProfile,
             file, videoHash, analysisStart, onExerciseDetected,
             aborted: true,
           });
@@ -415,9 +419,17 @@ export async function analyzeVideoFile({
 
     if (frames.length === 0) return null;
 
+    // If user locked an exercise via chips during progressive detection,
+    // honour that choice and skip post-hoc auto-detect.
+    const lockedExercise = progressiveDetector?.state?.locked ? progressiveDetector.state.exercise : null;
+    const finalExercise = lockedExercise || exercise;
+    const finalAutoDetect = lockedExercise ? false : autoDetect;
+    const finalUserChanged = lockedExercise ? true : userChangedExercise;
+
     return await buildFullResult({
       frames, replayFrames, frameCount, duration, analysisFps,
-      exercise, autoDetect, userChangedExercise, weightKg, userInjuries, userProfile,
+      exercise: finalExercise, autoDetect: finalAutoDetect, userChangedExercise: finalUserChanged,
+      weightKg, userInjuries, userProfile,
       file, videoHash, analysisStart, onProgress, onPhase, onExerciseDetected,
     });
   } catch (err) {
