@@ -7,6 +7,7 @@
 
 import { tModule } from './LanguageContext';
 import { gradeFromScore, getRecorderMimeType } from './utils';
+import { detectBadges } from './badges';
 
 
 const APP_URL = 'david-dabert.github.io/workout-vision';
@@ -283,6 +284,57 @@ export async function generateShareCard(result, videoEl) {
       y += 46;
     });
     y += 12;
+  }
+
+  // ── Badges row ────────────────────────────────────────────────────────────
+  const badges = await detectBadges(result);
+  if (badges.length > 0) {
+    const displayBadges = badges.slice(0, 4);
+    const badgeH = 56;
+    const badgePad = 12;
+    const badgeFont = '600 24px -apple-system, system-ui, sans-serif';
+    ctx.font = badgeFont;
+
+    // Measure total width to center
+    const badgeWidths = displayBadges.map(b => {
+      const label = tModule(b.id) || b.id.replace('badge_', '').replace(/_/g, ' ');
+      return ctx.measureText(`${b.icon} ${label}`).width + 40;
+    });
+    const totalBadgeW = badgeWidths.reduce((a, b) => a + b, 0) + (displayBadges.length - 1) * 10;
+    let bx = (W - totalBadgeW) / 2;
+
+    const tierColors = { gold: '#ffd700', silver: '#c0c0d2', bronze: '#cd7f32', accent: ACCENT };
+    const tierBg = {
+      gold: 'rgba(255,215,0,0.15)',
+      silver: 'rgba(192,192,210,0.12)',
+      bronze: 'rgba(205,127,50,0.12)',
+      accent: 'rgba(0,245,212,0.10)',
+    };
+
+    displayBadges.forEach((badge, i) => {
+      const label = tModule(badge.id) || badge.id.replace('badge_', '').replace(/_/g, ' ');
+      const w = badgeWidths[i];
+      const color = tierColors[badge.tier] || ACCENT;
+
+      // Pill background
+      roundRect(ctx, bx, y, w, badgeH, badgeH / 2);
+      ctx.fillStyle = tierBg[badge.tier] || tierBg.accent;
+      ctx.fill();
+      roundRect(ctx, bx, y, w, badgeH, badgeH / 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Text
+      ctx.fillStyle = color;
+      ctx.font = badgeFont;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${badge.icon} ${label}`, bx + w / 2, y + badgeH / 2);
+
+      bx += w + 10;
+    });
+    y += badgeH + 24;
   }
 
   // ── QR + CTA ─────────────────────────────────────────────────────────────
@@ -868,6 +920,49 @@ export async function generateFormCard(result) {
     roundRect(ctx, PAD, barSectionY + 100, bW, 80, 8);
     ctx.fillStyle = bColor;
     ctx.fill();
+  }
+
+  // Badges row on Form Card
+  const formBadges = await detectBadges(result);
+  if (formBadges.length > 0) {
+    const displayBadges = formBadges.slice(0, 3);
+    const badgeY = 1580;
+    const badgeFont = '600 28px -apple-system, system-ui, sans-serif';
+    ctx.font = badgeFont;
+    const tierColors = { gold: '#ffd700', silver: '#c0c0d2', bronze: '#cd7f32', accent: ACCENT };
+    const tierBg = {
+      gold: 'rgba(255,215,0,0.15)',
+      silver: 'rgba(192,192,210,0.12)',
+      bronze: 'rgba(205,127,50,0.12)',
+      accent: 'rgba(0,245,212,0.10)',
+    };
+
+    const bWidths = displayBadges.map(b => {
+      const label = tModule(b.id) || b.id.replace('badge_', '').replace(/_/g, ' ');
+      return ctx.measureText(`${b.icon} ${label}`).width + 48;
+    });
+    const totalW = bWidths.reduce((a, b) => a + b, 0) + (displayBadges.length - 1) * 12;
+    let bx = (W - totalW) / 2;
+    const bH = 60;
+
+    displayBadges.forEach((badge, i) => {
+      const label = tModule(badge.id) || badge.id.replace('badge_', '').replace(/_/g, ' ');
+      const w = bWidths[i];
+      const color = tierColors[badge.tier] || ACCENT;
+      roundRect(ctx, bx, badgeY, w, bH, bH / 2);
+      ctx.fillStyle = tierBg[badge.tier] || tierBg.accent;
+      ctx.fill();
+      roundRect(ctx, bx, badgeY, w, bH, bH / 2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.font = badgeFont;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${badge.icon} ${label}`, bx + w / 2, badgeY + bH / 2);
+      bx += w + 12;
+    });
   }
 
   // Footer

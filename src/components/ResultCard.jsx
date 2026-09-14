@@ -10,6 +10,7 @@ import { gradeFromScore, gradeClass } from '../lib/utils';
 import { updateWorkout } from '../lib/storage';
 import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
 import { detectPRs, detectFormRegression } from '../lib/prSystem';
+import { detectBadges } from '../lib/badges';
 import { estimateOneRepMax } from '../lib/coach';
 import { recalibrateAnalysis } from '../lib/recalibrate';
 import {
@@ -119,6 +120,7 @@ function ResultCard({ result, onReplay }) {
   // PR detection state
   const [achievedPRs, setAchievedPRs] = useState([]);
   const [formRegression, setFormRegression] = useState(null);
+  const [earnedBadges, setEarnedBadges] = useState([]);
 
   useEffect(() => {
     if (!result || !result.exercise) return;
@@ -137,6 +139,9 @@ function ResultCard({ result, onReplay }) {
     }).catch(() => {});
     detectFormRegression(workoutData).then(regression => {
       if (regression) setFormRegression(regression);
+    }).catch(() => {});
+    detectBadges(result).then(badges => {
+      if (badges && badges.length > 0) setEarnedBadges(badges);
     }).catch(() => {});
   }, [result?.workoutId]);
 
@@ -443,6 +448,20 @@ function ResultCard({ result, onReplay }) {
             <span className={s.formRegressionScores}>
               {t('form_score_label')}: {formRegression.currentScore} (avg: {formRegression.averageScore})
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Session Badges — shareable achievements */}
+      {earnedBadges.length > 0 && (
+        <div className={s.badgeSection}>
+          <div className={s.badgeGrid}>
+            {earnedBadges.map((badge) => (
+              <div key={badge.id} className={`${s.badgeChip} ${s[`badgeTier_${badge.tier}`]}`}>
+                <span className={s.badgeIcon}>{badge.icon}</span>
+                <span className={s.badgeLabel}>{t(badge.id)}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}

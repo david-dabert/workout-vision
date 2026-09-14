@@ -319,6 +319,74 @@
   color: var(--muted);
 }
 
+/* ── Session Badges ── */
+
+.badgeSection {
+  margin-bottom: 10px;
+}
+
+.badgeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.badgeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.badgeChip:nth-child(2) { animation-delay: 0.08s; }
+.badgeChip:nth-child(3) { animation-delay: 0.16s; }
+.badgeChip:nth-child(4) { animation-delay: 0.24s; }
+.badgeChip:nth-child(5) { animation-delay: 0.32s; }
+
+.badgeIcon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.badgeLabel {
+  white-space: nowrap;
+}
+
+.badgeTier_gold {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.12));
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  color: #ffd700;
+}
+
+.badgeTier_silver {
+  background: linear-gradient(135deg, rgba(192, 192, 210, 0.15), rgba(160, 160, 185, 0.10));
+  border: 1px solid rgba(192, 192, 210, 0.30);
+  color: #d0d0e0;
+}
+
+.badgeTier_bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(180, 110, 40, 0.10));
+  border: 1px solid rgba(205, 127, 50, 0.30);
+  color: #e8a850;
+}
+
+.badgeTier_accent {
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.12), rgba(0, 212, 255, 0.08));
+  border: 1px solid rgba(0, 245, 212, 0.25);
+  color: var(--accent);
+}
+
+@keyframes badgePop {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 .coachingCardBackground {
   background: linear-gradient(135deg, rgba(0, 245, 212, 0.06) 0%, rgba(196, 181, 253, 0.03) 100%);
 }
