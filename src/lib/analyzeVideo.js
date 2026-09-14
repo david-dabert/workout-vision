@@ -171,6 +171,9 @@ export async function analyzeVideoFile({
       onProgress(99);
     }
 
+    // Progressive detector – declared here so it's in scope after the cache/extract branch
+    let progressiveDetector = null;
+
     // ── Phase 4: Extract frames ──
     if (!usedCache) {
       onPhase('extracting');
@@ -196,7 +199,7 @@ export async function analyzeVideoFile({
       }
 
       const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
-      const progressiveDetector = (exercise === '__auto__' || (autoDetect && !userChangedExercise))
+      progressiveDetector = (exercise === '__auto__' || (autoDetect && !userChangedExercise))
         ? new HierarchicalDetector({ fps: analysisFps, mode: gymMode })
         : null;
       if (detectorRef && progressiveDetector) detectorRef.current = progressiveDetector;
