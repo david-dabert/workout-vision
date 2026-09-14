@@ -111,6 +111,13 @@ export class HierarchicalDetector {
     // If already locked, keep returning locked state
     if (this._locked) return this.state;
 
+    // Movement-energy gate: during rest pauses and seat adjustments,
+    // all channels have near-zero range. Skip classification to avoid
+    // context flips and chip spam on static frames.
+    const totalRange = features.knee.range + features.hip.range +
+      features.elbow.range + features.shoulder.range + features.trunk.range;
+    if (totalRange < 8) return this.state; // sub-threshold motion, hold last state
+
     // Level 0: context detection
     this._context = this._classifyContext(features);
 
@@ -248,25 +255,31 @@ export class HierarchicalDetector {
   _classifyContext(f) {
     const hip = f.hip, knee = f.knee, trunk = f.trunk, shoulder = f.shoulder, elbow = f.elbow;
 
-    // Seated: hips flexed (<130 mean) with low hip range
-    if (hip.mean < 130 && hip.range < 20 && knee.mean < 140) return 'seated';
-
     // Hanging: shoulders very elevated, knees above hips range
+    // Check first — distinctive signature, no other context has shoulder mean > 140
     if (shoulder.mean > 140 && knee.mean > 100) return 'hanging';
 
-    // Prone: trunk near horizontal (< 20), hips extended
-    if (trunk.mean < 20 && hip.mean > 140) return 'prone';
+    // Seated: hips flexed (<130 mean), trunk upright (<35), knees not fully extended.
+    // Hip RANGE can be large (leg press has 30-40° hip ROM while seated).
+    // The key is hip MEAN below standing threshold + upright trunk.
+    if (hip.mean < 130 && trunk.mean < 35 && knee.mean < 150) return 'seated';
 
-    // Supine: trunk near horizontal + low hip range + elbows active
-    if (trunk.mean < 20 && hip.mean > 130 && knee.range < 15 && elbow.range > 10) return 'supine';
-    if (trunk.mean < 25 && hip.range > 15 && knee.mean > 70 && knee.mean < 130) return 'supine';
+    // Standing: knees and hips extended (>130), trunk upright to moderately forward.
+    // Must check before prone — a standing person with low trunk lean and extended
+    // hips would otherwise match the prone rule.
+    if (knee.mean > 130 && hip.mean > 130) return 'standing';
 
-    // Supported (dip-like): mid-trunk, elbow+shoulder ROM
+    // Prone: trunk near horizontal, hips extended, knees NOT fully extended
+    // (face-down on a bench — knees typically bent or dangling, mean < 130)
+    if (trunk.mean < 20 && hip.mean > 140 && knee.mean <= 130) return 'prone';
+
+    // Supine: trunk near horizontal + elbows active (bench press family)
+    // or hip ROM pattern (hip thrust / glute bridge)
+    if (trunk.mean < 25 && hip.mean > 130 && knee.range < 15 && elbow.range > 10) return 'supine';
+
+    // Supported (dip-like): mid-trunk, elbow+shoulder ROM, knees above waist
     if (elbow.range > 25 && shoulder.range > 15 && trunk.mean > 10 && trunk.mean < 40
         && knee.mean > 100) return 'supported';
-
-    // Standing: knees and hips extended
-    if (knee.mean > 130 && hip.mean > 130) return 'standing';
 
     // Default fallback
     return 'standing';
@@ -463,7 +476,45 @@ export class HierarchicalDetector {
         break;
     }
 
+    // Visibility gate: pull score toward neutral (1.0) when key channels
+    // are poorly tracked. This prevents noisy angles from dominating the
+    // ranking on occluded gym footage (leg press hides feet, cables hide
+    // one arm, lat pulldown drops shoulder visibility).
+    const visWeight = this._visibilityWeight(f, context, movementClass);
+    score = 1.0 + (score - 1.0) * visWeight;
+
     return Math.max(0.01, score);
+  }
+
+  /**
+   * Compute a [0,1] weight reflecting how trustworthy the scoring channels
+   * are for this context + movement class. 1.0 = fully visible, score is
+   * used at full strength. Lower = score is pulled toward neutral 1.0.
+   */
+  _visibilityWeight(f, context, movementClass) {
+    // Identify which channels matter for this bucket
+    const weights = [];
+    if (context === 'seated' || context === 'standing') {
+      if (movementClass?.startsWith('lower')) {
+        weights.push(f.knee.visibility, f.hip.visibility);
+      } else if (movementClass?.startsWith('upper') || movementClass?.startsWith('core')) {
+        weights.push(f.elbow.visibility, f.shoulder.visibility);
+      }
+    } else if (context === 'hanging') {
+      weights.push(f.elbow.visibility, f.shoulder.visibility);
+    } else if (context === 'prone' || context === 'supine') {
+      weights.push(f.elbow.visibility, f.shoulder.visibility, f.hip.visibility);
+    }
+
+    if (weights.length === 0) return 1.0;
+
+    // Mean of relevant channel visibilities, clamped to [0, 1]
+    const mean = weights.reduce((s, v) => s + (v || 0), 0) / weights.length;
+
+    // Smooth ramp: full trust above 0.7, linear fade below, floor at 0.3
+    if (mean >= 0.7) return 1.0;
+    if (mean <= 0.2) return 0.3;
+    return 0.3 + (mean - 0.2) * (0.7 / 0.5); // linear from 0.3 to 1.0
   }
 
   _scoreSeatedLeaf(id, f, mc) {

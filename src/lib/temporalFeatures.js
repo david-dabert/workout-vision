@@ -62,6 +62,23 @@ function channelValue(angles, ch) {
 }
 
 /**
+ * Compute mean visibility for a channel over a set of frames.
+ * For bilateral channels: max of left and right visibility per frame, then mean.
+ * For trunk: always 1.0 (computed from shoulder+hip which are tracked separately).
+ */
+function channelMeanVisibility(frames, ch) {
+  if (ch.direct) return 1.0; // trunk visibility derived from shoulder+hip
+  let sum = 0, count = 0;
+  for (const f of frames) {
+    const lv = f.angles[ch.visL] || 0;
+    const rv = f.angles[ch.visR] || 0;
+    sum += Math.max(lv, rv); // best-side visibility
+    count++;
+  }
+  return count > 0 ? sum / count : 0;
+}
+
+/**
  * Compute statistics for a single channel over the window.
  */
 function channelStats(frames, ch) {
@@ -156,9 +173,10 @@ export class TemporalFeatureExtractor {
     const frames = this._window.frames;
     const features = {};
 
-    // Per-channel stats
+    // Per-channel stats + visibility
     for (const ch of CHANNELS) {
       features[ch.name] = channelStats(frames, ch);
+      features[ch.name].visibility = channelMeanVisibility(frames, ch);
     }
 
     // Cross-channel correlations

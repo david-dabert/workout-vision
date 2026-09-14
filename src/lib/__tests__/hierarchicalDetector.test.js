@@ -167,6 +167,7 @@ describe('P0 leaf scoring', () => {
   function makeFeatures(overrides = {}) {
     const ch = (o = {}) => ({
       range: 0, mean: 90, min: 80, max: 100, dwellLow: 0.1, dwellHigh: 0.1, cycles: 1, values: [],
+      visibility: 0.95,
       ...o,
     });
     return {
@@ -319,6 +320,36 @@ describe('P0 leaf scoring', () => {
     const pushScore = detector._scoreCandidate('cable_tricep_pushdown', f, 'standing', 'upper_isolation');
     // Both should be high for isolation, but curl slightly higher with these features
     expect(curlScore).toBeGreaterThanOrEqual(pushScore);
+  });
+
+  // ── visibility gating ──
+
+  it('low visibility pulls score toward neutral', () => {
+    const fHigh = makeFeatures({
+      knee: { range: 40, mean: 120, dwellHigh: 0.2, visibility: 0.95 },
+      hip: { range: 4, mean: 100, visibility: 0.95 },
+      corr_knee_hip: 0.05,
+    });
+    const fLow = makeFeatures({
+      knee: { range: 40, mean: 120, dwellHigh: 0.2, visibility: 0.15 },
+      hip: { range: 4, mean: 100, visibility: 0.15 },
+      corr_knee_hip: 0.05,
+    });
+    const scoreHigh = detector._scoreCandidate('leg_extension', fHigh, 'seated', 'lower_push');
+    const scoreLow = detector._scoreCandidate('leg_extension', fLow, 'seated', 'lower_push');
+    // High visibility should give stronger discrimination (further from 1.0)
+    expect(Math.abs(scoreHigh - 1.0)).toBeGreaterThan(Math.abs(scoreLow - 1.0));
+  });
+
+  it('full visibility preserves original score', () => {
+    const f = makeFeatures({
+      knee: { range: 40, mean: 120, dwellHigh: 0.2, visibility: 0.95 },
+      hip: { range: 30, mean: 110, visibility: 0.95 },
+      corr_knee_hip: 0.85,
+    });
+    // visibilityWeight should be 1.0 at high visibility
+    const weight = detector._visibilityWeight(f, 'seated', 'lower_push');
+    expect(weight).toBe(1.0);
   });
 });
 
