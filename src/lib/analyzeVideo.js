@@ -120,12 +120,31 @@ export async function analyzeVideoFile({
     onPhase('model');
     checkAbort();
     resetKalmanFilters();
-    const useWorker = worker.ready || (worker.supported && await worker.init().catch(() => false));
+    let useWorker = false;
+    let workerInitError = null;
+    if (worker.ready) {
+      useWorker = true;
+    } else if (worker.supported) {
+      try {
+        useWorker = await worker.init();
+      } catch (e) {
+        workerInitError = e;
+        console.warn('[analyzeVideo] Worker init failed, falling back to main thread:', e.message);
+        useWorker = false;
+      }
+    }
     if (useWorker) worker.reset();
     let landmarker = null;
     if (!useWorker) {
-      landmarker = await getImageLandmarker();
-      if (!landmarker) return null;
+      try {
+        landmarker = await getImageLandmarker();
+      } catch (e) {
+        console.error('[analyzeVideo] Model loading failed:', e.message);
+        return { error: true, errorReason: `Model failed to load: ${e.message}${workerInitError ? ` (worker also failed: ${workerInitError.message})` : ''}` };
+      }
+      if (!landmarker) {
+        return { error: true, errorReason: `Pose model unavailable${workerInitError ? ` (worker failed: ${workerInitError.message})` : ''}` };
+      }
     }
 
     // ── Phase 3: Check cache (full + partial) ──
@@ -432,7 +451,9 @@ export async function analyzeVideoFile({
       }
     }
 
-    if (frames.length === 0) return null;
+    if (frames.length === 0) {
+      return { error: true, errorReason: 'No poses detected in any frame. Ensure your full body is visible with good lighting.' };
+    }
 
     // If user locked an exercise via chips during progressive detection,
     // honour that choice and skip post-hoc auto-detect.
@@ -452,7 +473,8 @@ export async function analyzeVideoFile({
       // Aborted before extraction started; no partial results available
       return { aborted: true, reps: 0, frames: [], exercise };
     }
-    throw err;
+    console.error('[analyzeVideo] Unhandled analysis error:', err);
+    return { error: true, errorReason: err.message || 'Unknown analysis error' };
   }
 }
 

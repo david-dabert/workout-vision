@@ -189,13 +189,13 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     if (!result) {
       trackEvent('analysis_failed', { fileName: queueItem.name });
       setErrorMsg(`${t('no_poses')} ${queueItem.name}. ${t('try_different')}`);
-      return null;
+      return { _failed: true, errorReason: 'No result returned' };
     }
 
     if (result.error) {
       trackEvent('analysis_failed', { fileName: queueItem.name, reason: result.errorReason });
-      setErrorMsg(`Analysis failed: ${result.errorReason || 'unknown error'}. ${t('try_different')}`);
-      return null;
+      setErrorMsg(result.errorReason || `Analysis failed. ${t('try_different')}`);
+      return { _failed: true, errorReason: result.errorReason };
     }
 
     trackAnalysis(result);
@@ -251,7 +251,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       try {
         const result = await analyzeVideo(item, controller.signal);
 
-        if (result && !result.aborted) {
+        if (result?._failed) {
+          setQueue(prev => prev.map(q =>
+            q.id === item.id ? { ...q, status: 'error', progress: 0, errorReason: result.errorReason } : q
+          ));
+        } else if (result && !result.aborted) {
           setQueue(prev => prev.map(q =>
             q.id === item.id ? { ...q, status: 'done', progress: 100 } : q
           ));
@@ -268,7 +272,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           ));
         } else {
           setQueue(prev => prev.map(q =>
-            q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
+            q.id === item.id ? { ...q, status: 'error', progress: 0, errorReason: 'Analysis returned no results' } : q
           ));
         }
       } catch (err) {
@@ -280,7 +284,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         }
         console.error('[VideoUpload] Analysis failed for', item.name, err);
         setQueue(prev => prev.map(q =>
-          q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
+          q.id === item.id ? { ...q, status: 'error', progress: 0, errorReason: err.message || 'Unknown error' } : q
         ));
       }
     }
@@ -448,7 +452,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 )}
                 {q.status === 'error' && (
                   <span className={s.statusError}>
-                    {t('failed_try_different')}
+                    {q.errorReason || t('failed_try_different')}
                   </span>
                 )}
                 {q.status === 'queued' && !analyzing && (
