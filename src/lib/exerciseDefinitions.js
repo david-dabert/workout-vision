@@ -1977,8 +1977,9 @@ export const EXERCISE_DEFINITIONS = {
     muscles: { primary: ['Quadriceps'], secondary: ['Hip Flexors', 'Core'] },
     joint: 'knee',
     value: BS_KNEE,
-    downThreshold: 60,
-    upThreshold: 155,
+    downThreshold: 75,
+    upThreshold: 150,
+    amplitudeRatio: 0.15,
     formChecks: [
       { name: 'Lean back', type: 'above', key: 'trunk', threshold: 40, margin: 12, good: 'Good backward lean', bad: 'Lean back further to load quads', severity: 'minor', citation: 'Signorile JF et al, 1994, J Strength Cond Res' },
     ],
