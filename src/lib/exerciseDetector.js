@@ -5,6 +5,10 @@
  * based on joint angle patterns over a rolling window.
  *
  * Separated from exercises.js for modularity.
+ *
+ * This module now also re-exports the HierarchicalDetector for consumers
+ * that want the three-level classification with auto-lock, picker chips,
+ * local priors, and TF.js model hook.
  */
 
 import { extractJointAngles } from './poseAnalysis';
@@ -531,3 +535,13 @@ export class ExerciseAutoDetector {
     this._voteCounts = {};
   }
 }
+
+// ---------------------------------------------------------------------------
+// Re-export new hierarchical detector for consumers that want it
+// ---------------------------------------------------------------------------
+
+export { HierarchicalDetector } from './hierarchicalDetector';
+export { TemporalFeatureExtractor } from './temporalFeatures';
+export { lookupExercise, exercisesInContext, exercisesInClass, exercisesByPriority, filterByMode, getAvailableExercises } from './exerciseOntology';
+export { saveSample, exportSamplesJSONL, exportSamplesBlob, getSampleCounts, getSampleCount, clearSamples } from './sampleCapture';
+export { createModelPredictor, hasTrainedModel, featuresToVector, FEATURE_VECTOR_LENGTH } from './modelHook';

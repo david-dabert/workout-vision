@@ -260,6 +260,38 @@ export default function Profile({ onClose }) {
           </div>
         </label>
 
+        {/* Gym Mode Toggle */}
+        <label className={`full-width ${s.trainingDaysLabel}`}>
+          <span>{t('gym_mode') || 'Gym Mode'}</span>
+          <p className={`text-xs text-muted ${s.trainingDaysDesc}`}>
+            {t('gym_mode_desc') || 'Gym mode includes machine exercises (leg press, lat pulldown, etc). Home mode shows only free-weight and bodyweight exercises.'}
+          </p>
+          <div className={s.trainingDaysTags}>
+            {[
+              { mode: 'gym', label: t('gym_label') || '🏋️ Gym' },
+              { mode: 'home', label: t('home_label') || '🏠 Home' },
+            ].map(({ mode, label }) => {
+              const selected = (profile.gymMode || 'gym') === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  className={s.trainingDayTag}
+                  onClick={() => handleChange('gymMode', mode)}
+                  style={{
+                    borderColor: selected ? 'var(--accent)' : 'var(--border)',
+                    background: selected ? 'rgba(0,224,150,0.15)' : 'transparent',
+                    color: selected ? 'var(--accent)' : 'var(--muted)',
+                    minWidth: 80,
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </label>
+
         <button className={`btn btn-primary ${s.saveBtn}`} onClick={handleSave}>
           {saved ? t('saved') : t('save_profile')}
         </button>

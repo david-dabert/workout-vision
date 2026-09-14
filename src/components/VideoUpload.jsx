@@ -16,6 +16,7 @@ import VideoSuitabilityBanner from './VideoSuitabilityBanner';
 import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
 import { trackEvent, trackTiming, trackAnalysis } from '../lib/telemetry';
+import ExercisePicker, { AutoLockBadge } from './ExercisePicker';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = (() => {
@@ -79,6 +80,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const abortControllerRef = useRef(null);
   const blobUrlRef = useRef(null);
   const audioFeedbackRef = useRef(null);
+  const detectorRef = useRef(null);
   const [audioEnabled, setAudioEnabled] = useState(false);
 
   useEffect(() => {
@@ -171,13 +173,15 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         setAnalysisPhase(phase);
         const labels = { hashing: 'Hashing video file...', model: 'Loading AI model...', extracting: 'Analyzing video...', analyzing: 'Processing movement data...' };
         setFfmpegStatus(labels[phase] || '');
-        if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); }
+        if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); detectorRef.current = null; }
       },
       onLiveReps: (reps) => setLiveReps(reps),
       onExerciseDetected: (ex) => setExercise(ex),
       onSuitability: (assessment) => setSuitabilityAssessment(assessment),
       onProgressiveUpdate: (update) => setProgressiveDetection(update),
       signal,
+      gymMode: userProfile?.gymMode || 'gym',
+      detectorRef,
     });
 
     stopTiming();
@@ -647,10 +651,30 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             {suitabilityAssessment && suitabilityAssessment.suitable !== 'good' && (
               <VideoSuitabilityBanner assessment={suitabilityAssessment} compact />
             )}
-            {progressiveDetection && progressiveDetection.exercise && (
-              <span className={s.liveExerciseLabel}>
-                {tExercise(progressiveDetection.exercise)}
-              </span>
+            {progressiveDetection && !progressiveDetection.locked && progressiveDetection.candidates?.length > 0 && (
+              <ExercisePicker
+                detectorState={progressiveDetection}
+                onSelect={(exId) => {
+                  if (detectorRef.current) {
+                    detectorRef.current.lock(exId);
+                    setProgressiveDetection(detectorRef.current.state);
+                    setExercise(exId);
+                  }
+                }}
+                compact
+              />
+            )}
+            {progressiveDetection && progressiveDetection.locked && progressiveDetection.exercise && (
+              <AutoLockBadge
+                exercise={progressiveDetection.exercise}
+                confidence={progressiveDetection.confidence}
+                onUnlock={() => {
+                  if (detectorRef.current) {
+                    detectorRef.current.reset();
+                    setProgressiveDetection(detectorRef.current.state);
+                  }
+                }}
+              />
             )}
             <div className={s.liveRepRow}>
               <span className={s.liveRepCount}>{liveReps} {t('reps').toLowerCase()}</span>
