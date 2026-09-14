@@ -769,11 +769,30 @@ export class RepCounter {
             return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad, severity: fc.severity };
           }
 
+          // Phase-aware frame selection: checks with phase='bottom' evaluate
+          // near the valley (mid-cycle), phase='top' near the peaks (start/end).
+          // Without phase, evaluate all frames (original behaviour).
+          let evalStart = startFrame;
+          let evalEnd = endFrame;
+          const cycleLen = endFrame - startFrame;
+          if (fc.phase === 'bottom') {
+            // Evaluate the middle 40% of the cycle (where contraction/valley occurs)
+            const margin = Math.max(1, Math.round(cycleLen * 0.3));
+            evalStart = startFrame + margin;
+            evalEnd = endFrame - margin;
+          } else if (fc.phase === 'top') {
+            // Evaluate the outer 30% at each end (where extension/peak occurs)
+            const margin = Math.max(1, Math.round(cycleLen * 0.3));
+            evalStart = startFrame;
+            evalEnd = startFrame + margin;
+            // We'll also sample the end zone below
+          }
+
           let failCount = 0, sampleCount = 0;
           let qualitySum = 0;
           const hasQualityFn = typeof fc.quality === 'function';
 
-          for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
+          for (let i = evalStart; i <= Math.min(evalEnd, N - 1); i += sampleStep) {
             const frameLandmarks = lm[i];
             if (!frameLandmarks) continue;
             const angles = extractJointAngles(frameLandmarks);
@@ -782,6 +801,21 @@ export class RepCounter {
             if (!fc.check(angles, frameLandmarks)) failCount++;
             if (hasQualityFn) {
               qualitySum += fc.quality(angles, frameLandmarks);
+            }
+          }
+          // For 'top' phase, also sample frames near the end of the cycle
+          if (fc.phase === 'top') {
+            const tailStart = endFrame - Math.max(1, Math.round(cycleLen * 0.3));
+            for (let i = Math.max(tailStart, evalEnd + 1); i <= Math.min(endFrame, N - 1); i += sampleStep) {
+              const frameLandmarks = lm[i];
+              if (!frameLandmarks) continue;
+              const angles = extractJointAngles(frameLandmarks);
+              if (!angles) continue;
+              sampleCount++;
+              if (!fc.check(angles, frameLandmarks)) failCount++;
+              if (hasQualityFn) {
+                qualitySum += fc.quality(angles, frameLandmarks);
+              }
             }
           }
 

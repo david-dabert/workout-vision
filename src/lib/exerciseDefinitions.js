@@ -341,7 +341,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 165,
     formChecks: [
       { name: 'Trunk angle', type: 'range', key: 'trunk', low: 35, high: 70, margin: 12, good: 'Trunk hinged at proper angle', bad: 'Adjust torso', severity: 'major', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
-      { name: 'Elbow drive', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 75, good: 'Full contraction -- elbows pulled past torso', bad: 'Pull elbows higher', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Elbow drive', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 75, good: 'Full contraction -- elbows pulled past torso', bad: 'Pull elbows higher', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res', phase: 'bottom' },
       { name: 'Arm symmetry', type: 'symmetry', left: 'leftElbow', right: 'rightElbow', threshold: 15, good: 'Both arms pulling evenly', bad: 'One arm pulling harder', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Bent-over row at 45 deg trunk angle balances lat activation with erector demand. More horizontal trunk increases lat activation but also spinal load (Fenwick 2009).',
@@ -357,8 +357,8 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 155,
     amplitudeRatio: 0.22,
     formChecks: [
-      { name: 'Full ROM', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 60, good: 'Chin above bar level', bad: 'Pull higher', severity: 'major', citation: 'Youdas JW et al, 2010, J Strength Cond Res' },
-      { name: 'Full hang', type: 'above', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 160, good: 'Full dead hang at bottom', bad: 'Extend fully at bottom', severity: 'minor', citation: 'Youdas JW et al, 2010, J Strength Cond Res', phase: 'bottom' },
+      { name: 'Full ROM', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 60, good: 'Chin above bar level', bad: 'Pull higher', severity: 'major', citation: 'Youdas JW et al, 2010, J Strength Cond Res', phase: 'bottom' },
+      { name: 'Full hang', type: 'above', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 160, good: 'Full dead hang at bottom', bad: 'Extend fully at bottom', severity: 'minor', citation: 'Youdas JW et al, 2010, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Supinated grip increases biceps activation; pronated grip increases lat activation (Youdas 2010). Full ROM from dead hang produces greater strength gains than partial reps.',
   },
@@ -375,10 +375,10 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 145,
     amplitudeRatio: 0.3,
     formChecks: [
-      { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 55, good: 'Full bicep squeeze at top', bad: 'Curl higher', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res' },
+      { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 55, good: 'Full bicep squeeze at top', bad: 'Curl higher', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'bottom' },
       { name: 'Full extension', type: 'custom',
         check: (angles) => Math.max(angles.leftElbow, angles.rightElbow) > 145,
-        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 145, 15), good: 'Full extension at bottom', bad: 'Extend arms fully at bottom', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'bottom' },
+        quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 145, 15), good: 'Full extension at bottom', bad: 'Extend arms fully at bottom', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'top' },
       { name: 'No body swing', type: 'below', key: 'trunk', threshold: 20, margin: 10, good: 'Strict form -- no swinging', bad: 'Body swinging', severity: 'major', citation: 'Oliveira LF et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Strict curls produce greater bicep hypertrophy stimulus than cheat curls despite lower absolute load. Full ROM produces superior long-head activation (Oliveira 2009).',
@@ -448,7 +448,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 65,
     upThreshold: 110,
     formChecks: [
-      { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 80, good: 'Full pull -- shoulder blades squeezed', bad: 'Pull further', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 80, good: 'Full pull -- shoulder blades squeezed', bad: 'Pull further', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res', phase: 'bottom' },
       { name: 'Arm symmetry', type: 'symmetry', left: 'leftElbow', right: 'rightElbow', threshold: 20, good: 'Both arms pulling evenly', bad: 'One arm pulling harder', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
     ],
     scienceNotes: 'Chest-supported rows eliminate erector demand, isolating upper back musculature. Produces comparable lat activation to bent-over row without spinal loading (Fenwick 2009).',
@@ -463,7 +463,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 65,
     upThreshold: 110,
     formChecks: [
-      { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 80, good: 'Full pull -- elbows past torso', bad: 'Pull further', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
+      { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 80, good: 'Full pull -- elbows past torso', bad: 'Pull further', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res', phase: 'bottom' },
       { name: 'Trunk stable', type: 'below', key: 'trunk', threshold: 30, margin: 10, good: 'Trunk upright and stable', bad: 'Excessive lean', severity: 'minor', citation: 'Fenwick CM et al, 2009, J Strength Cond Res' },
     ],
     scienceNotes: 'Seated row with upright torso targets mid-back; excessive trunk lean shifts load to erectors and reduces lat isolation (Fenwick 2009).',

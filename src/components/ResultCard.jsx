@@ -272,103 +272,63 @@ function ResultCard({ result, onReplay }) {
   return (
     <div className={`card result-card ${s.resultCard}`}>
       <Confetti active={showConfetti} />
-      {/* Header with grade badge */}
-      <div className="result-header">
-        <div className={s.headerContent}>
-          <div className={s.headerRow}>
-            {getExerciseIllustration(result.exercise) && (
-              <img
-                src={getExerciseIllustration(result.exercise, 2)}
-                alt=""
-                className={s.exerciseIllustration}
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-            )}
-            <div>
-              <h3 className={s.exerciseTitle}>{displayName}</h3>
-              <div className={s.fileNameRow}>
-                <span className="text-xs text-muted">{fileName}</span>
-                {result.autoDetected === true && (
-                  <span className={s.autoDetectedBadge}>{t('auto_detected')}</span>
-                )}
-                {result.detectionFailed && (
-                  <span className={s.detectionFailedBadge}>{t('detection_failed')}</span>
-                )}
-                {!result.detectionFailed && result.detectionLowConfidence && (
-                  <span className={s.lowConfidenceBadge}>{t('detection_low_confidence')}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+
+      {/* ═══ HERO ZONE — above the fold, the "Instagram moment" ═══ */}
+
+      {/* Centered grade badge — the first thing you see */}
+      <div className={s.heroGrade}>
         <span
-          className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''} ${s.scoreBadge}`}
+          className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''} ${s.heroGradeBadge}`}
         >
           {grade}
           {(grade === 'A' || grade === 'A+') && (
             <div className={s.shimmerOverlay} />
           )}
         </span>
+        <h3 className={s.heroExerciseName}>{displayName}</h3>
+        <div className={s.heroScoreLine}>
+          {formScore != null && (
+            <span className={s.heroScore}>
+              <span className={formScore >= 80 ? s.scoreGood : formScore >= 60 ? s.scoreOk : s.scorePoor}>
+                {displayScore}
+              </span>
+              <span className={s.heroScoreUnit}>/100</span>
+            </span>
+          )}
+        </div>
       </div>
 
-      {muscles && <MuscleMap muscles={muscles} size={90} />}
-
-      <div className="stats-grid-2x2">
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''} ${s.statCardClickable}`} role="button" tabIndex={0} aria-label={t('tap_to_edit')} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowRepEdit(!showRepEdit); hapticLight(); } }}>
-          <span className="stat-card-label">{t('reps').toUpperCase()}</span>
-          {showRepEdit ? (
-            <span className={`stat-card-value ${s.repEditControls}`}>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }}
-                className={s.repEditButton}
-                aria-label="Decrease reps"
-              >−</button>
-              <span className={s.repDisplayCount} aria-live="polite">{displayReps}</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }}
-                className={s.repEditButton}
-                aria-label="Increase reps"
-              >+</button>
-            </span>
-          ) : (
-            <span className="stat-card-value">
-              {displayReps}
-              {repWasOverridden && (
-                <span className={s.aiRepIndicator}>
-                  (AI: {reps})
-                </span>
-              )}
-            </span>
-          )}
-          {!showRepEdit && (
-            <span className={s.tapToEditHint}>{t('tap_to_edit')}</span>
-          )}
-        </div>
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`}>
-          <span className="stat-card-label">{t('duration').toUpperCase()}</span>
-          <span className="stat-card-value">{formatTime(duration)}</span>
-        </div>
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`}>
-          <span className="stat-card-label">{t('form_score_label')}</span>
-          <span className="stat-card-value">
-            {formScore == null ? (
-              <span className={s.formScoreNA} title={t('form_na_tooltip')}>N/A</span>
+      {/* Compact stats row */}
+      <div className={s.heroStatsRow}>
+        <div className={s.heroStat} role="button" tabIndex={0} aria-label={t('tap_to_edit')} onClick={() => { setShowRepEdit(!showRepEdit); hapticLight(); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowRepEdit(!showRepEdit); hapticLight(); } }}>
+          <span className={s.heroStatValue}>
+            {showRepEdit ? (
+              <span className={s.repEditControls}>
+                <button onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }} className={s.repEditButton} aria-label="Decrease reps">−</button>
+                <span className={s.repDisplayCount} aria-live="polite">{displayReps}</span>
+                <button onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }} className={s.repEditButton} aria-label="Increase reps">+</button>
+              </span>
             ) : (
               <>
-                <span className={formScore >= 80 ? s.scoreGood : formScore >= 60 ? s.scoreOk : s.scorePoor}>
-                  {displayScore}
-                </span>
-                <span className={s.scoreUnit}>/100</span>
+                {displayReps}
+                {repWasOverridden && <span className={s.aiRepIndicator}> (AI: {reps})</span>}
               </>
             )}
           </span>
+          <span className={s.heroStatLabel}>{t('reps').toUpperCase()}</span>
         </div>
-        <div className={`stat-card ${revealed ? 'result-stat-reveal' : ''}`}>
-          <span className="stat-card-label">{t('volume').toUpperCase()}</span>
-          <span className="stat-card-value">
+        <div className={s.heroStatDivider} />
+        <div className={s.heroStat}>
+          <span className={s.heroStatValue}>{formatTime(duration)}</span>
+          <span className={s.heroStatLabel}>{t('duration').toUpperCase()}</span>
+        </div>
+        <div className={s.heroStatDivider} />
+        <div className={s.heroStat}>
+          <span className={s.heroStatValue}>
             {result.weight > 0 ? `${result.weight * displayReps}` : displayReps}
             <span className={s.volumeUnit}>{result.weight > 0 ? 'kg' : t('reps')}</span>
           </span>
+          <span className={s.heroStatLabel}>{t('volume').toUpperCase()}</span>
         </div>
       </div>
 
@@ -386,21 +346,7 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Analysis confidence indicator */}
-      {result.confidence && (
-        <div className={s.confidenceIndicator}>
-          <span className={`${s.confidenceDot} ${s[`confidence_${result.confidence.level}`]}`} />
-          {result.confidence.level === 'high' ? t('confidence_high') :
-           result.confidence.level === 'medium' ? t('confidence_medium') :
-           t('confidence_low')}
-          {repWasOverridden && (
-            <span className={s.userCorrectedLabel}>
-              {t('user_corrected')}
-            </span>
-          )}
-        </div>
-      )}
-
+      {/* Personal Best / PR banners — these are celebration moments, keep above fold */}
       {baselineComparison?.overallForm?.isPersonalBest && (
         <div className={s.personalBestBanner}>
           <span className={s.personalBestIcon}>&#10024;</span>
@@ -408,7 +354,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* PR Banner — golden accent, lists all PR types achieved */}
       {achievedPRs.length > 0 && (
         <div className={s.prBanner}>
           <span className={s.prBannerIcon}>&#127942;</span>
@@ -436,7 +381,73 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Form Regression Warning — loss aversion trigger */}
+      {/* Session Badges — the shareable achievements */}
+      {earnedBadges.length > 0 && (
+        <div className={s.badgeSection}>
+          <div className={s.badgeGrid}>
+            {earnedBadges.map((badge) => (
+              <div key={badge.id} className={`${s.badgeChip} ${s[`badgeTier_${badge.tier}`]}`}>
+                <span className={s.badgeIcon}>{badge.icon}</span>
+                <span className={s.badgeLabel}>{t(badge.id)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ SHARE BUTTONS — immediately visible, the call to action ═══ */}
+      <div className={s.heroActions}>
+        <button
+          className={`btn btn-ghost ${s.shareButton}`}
+          onClick={() => { hapticLight(); shareCard(result); }}
+        >
+          {t('share_card')}
+        </button>
+        <button
+          className={`btn btn-primary ${s.challengeButton}`}
+          onClick={async () => {
+            hapticLight();
+            const outcome = await shareChallenge(result, profile);
+            if (outcome === 'copied') {
+              setChallengeStatus('copied');
+              setTimeout(() => setChallengeStatus(null), 2000);
+            }
+          }}
+        >
+          {challengeStatus === 'copied' ? t('challenge_copied') : t('challenge_friend_btn')}
+        </button>
+      </div>
+
+      {/* ═══ DETAILS ZONE — everything below the fold ═══ */}
+      <button
+        className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
+        onClick={() => setShowDetails(d => !d)}
+        aria-expanded={showDetails}
+        aria-controls="result-details"
+      >
+        {showDetails ? t('hide_details') : t('show_details')}
+        <span className={s.toggleChevron} style={{ transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
+      </button>
+
+      {showDetails && (<div id="result-details">
+      {/* Analysis confidence indicator */}
+      {result.confidence && (
+        <div className={s.confidenceIndicator}>
+          <span className={`${s.confidenceDot} ${s[`confidence_${result.confidence.level}`]}`} />
+          {result.confidence.level === 'high' ? t('confidence_high') :
+           result.confidence.level === 'medium' ? t('confidence_medium') :
+           t('confidence_low')}
+          {repWasOverridden && (
+            <span className={s.userCorrectedLabel}>
+              {t('user_corrected')}
+            </span>
+          )}
+        </div>
+      )}
+
+      {muscles && <MuscleMap muscles={muscles} size={90} />}
+
+      {/* Form Regression Warning */}
       {formRegression && (
         <div className={s.formRegressionBanner}>
           <span className={s.formRegressionIcon}>&#9888;</span>
@@ -448,20 +459,6 @@ function ResultCard({ result, onReplay }) {
             <span className={s.formRegressionScores}>
               {t('form_score_label')}: {formRegression.currentScore} (avg: {formRegression.averageScore})
             </span>
-          </div>
-        </div>
-      )}
-
-      {/* Session Badges — shareable achievements */}
-      {earnedBadges.length > 0 && (
-        <div className={s.badgeSection}>
-          <div className={s.badgeGrid}>
-            {earnedBadges.map((badge) => (
-              <div key={badge.id} className={`${s.badgeChip} ${s[`badgeTier_${badge.tier}`]}`}>
-                <span className={s.badgeIcon}>{badge.icon}</span>
-                <span className={s.badgeLabel}>{t(badge.id)}</span>
-              </div>
-            ))}
           </div>
         </div>
       )}
@@ -504,18 +501,6 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Layer 2: Details toggle */}
-      <button
-        className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
-        onClick={() => setShowDetails(d => !d)}
-        aria-expanded={showDetails}
-        aria-controls="result-details"
-      >
-        {showDetails ? t('hide_details') : t('show_details')}
-        <span className={s.toggleChevron} style={{ transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
-      </button>
-
-      {showDetails && (<div id="result-details">
       {report?.summary && (
         <p className={`text-sm ${s.summaryText}`}>
           {typeof report.summary === 'string' ? report.summary : t(report.summary.key, report.summary)}
@@ -895,27 +880,7 @@ function ResultCard({ result, onReplay }) {
           {t('watch_overlay')}
         </button>
       )}
-      <div className={s.footerActions}>
-        <button
-          className={`btn btn-ghost ${s.shareButton}`}
-          onClick={() => { hapticLight(); shareCard(result); }}
-        >
-          {t('share_card')}
-        </button>
-        <button
-          className={`btn btn-primary ${s.challengeButton}`}
-          onClick={async () => {
-            hapticLight();
-            const outcome = await shareChallenge(result, profile);
-            if (outcome === 'copied') {
-              setChallengeStatus('copied');
-              setTimeout(() => setChallengeStatus(null), 2000);
-            }
-          }}
-        >
-          {challengeStatus === 'copied' ? t('challenge_copied') : t('challenge_friend_btn')}
-        </button>
-      </div>
+      {/* Share buttons already in hero zone above */}
     </div>
   );
 }

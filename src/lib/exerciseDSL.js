@@ -245,7 +245,10 @@ function compileExercise(dsl) {
     .map(fc => {
       const compiler = CHECK_COMPILERS[fc.type || 'custom'];
       if (!compiler) throw new Error(`Unknown check type: ${fc.type} in ${dsl.name}`);
-      return compiler(fc);
+      const compiled = compiler(fc);
+      // Preserve phase annotation for phase-aware form check evaluation
+      if (fc.phase) compiled.phase = fc.phase;
+      return compiled;
     });
 
   const compiled = {
