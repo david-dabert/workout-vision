@@ -171,8 +171,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       },
       onPhase: (phase) => {
         setAnalysisPhase(phase);
-        const labels = { hashing: 'Hashing video file...', model: 'Loading AI model...', extracting: 'Analyzing video...', analyzing: 'Processing movement data...' };
-        setFfmpegStatus(labels[phase] || '');
+        const labelKeys = { hashing: 'phase_hashing_desc', model: 'phase_model_desc', extracting: 'phase_extracting_desc', analyzing: 'phase_analyzing_desc' };
+        setFfmpegStatus(t(labelKeys[phase]) || '');
         if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); detectorRef.current = null; }
       },
       onLiveReps: (reps) => setLiveReps(reps),
@@ -663,6 +663,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
             {progressiveDetection && !progressiveDetection.locked && progressiveDetection.candidates?.length > 0 && (
               <ExercisePicker
                 detectorState={progressiveDetection}
+                temporalFeatures={progressiveDetection?.temporalFeatures}
                 onSelect={(exId) => {
                   if (detectorRef.current) {
                     detectorRef.current.lock(exId);

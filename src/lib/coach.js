@@ -186,15 +186,20 @@ export function generateWorkoutReport(profile, exerciseResults) {
       totalScore += result.analysis.movementQuality;
       totalScoredSets++;
     } else if (result.repHistory && result.repHistory.length > 0) {
-      const avgRepScore = result.repHistory.reduce((s, r) => s + (r.score || 0), 0) / result.repHistory.length;
-      if (!isNaN(avgRepScore)) {
+      const scoredReps = result.repHistory.filter(r => r.score != null);
+      if (scoredReps.length > 0) {
+        const avgRepScore = scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length;
         totalScore += avgRepScore;
         totalScoredSets++;
       }
     }
 
-    // Extract structured findings from analysis
-    if (result.analysis) {
+    // Extract structured findings from analysis.
+    // Skip exercise-specific coaching when detection was low-confidence
+    // (_lowConfidenceGated flag set by analyzeVideo). Universal metrics
+    // like TUT are OK; ROM targets, asymmetry thresholds, and compensation
+    // patterns are exercise-specific and unsafe under uncertainty.
+    if (result.analysis && !result.analysis._lowConfidenceGated) {
       const exKey = result.exerciseKey || result.exercise;
       if (result.analysis.asymmetry && result.analysis.asymmetry.score <= 10) {
         highlights.push({ key: 'coach_symmetry', exercise: exKey, exerciseName: exercise.name });

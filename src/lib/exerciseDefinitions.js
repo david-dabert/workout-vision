@@ -244,7 +244,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 160,
     formChecks: [
       { name: 'Full extension', type: 'custom',
-        check: (angles) => Math.max(angles.leftKnee, angles.rightKnee) > 165,
+        check: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') > 165,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 165, 15), good: 'Full knee extension -- peak quad contraction', bad: 'Extend fully', severity: 'minor', citation: 'Signorile JF et al, 1994, J Strength Cond Res', phase: 'top' },
     ],
     scienceNotes: 'Leg extension isolates vastus medialis at terminal extension (last 15 deg). Full lockout is critical for VMO activation (Signorile 1994).',
@@ -378,7 +378,7 @@ export const EXERCISE_DEFINITIONS = {
     formChecks: [
       { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 55, good: 'Full bicep squeeze at top', bad: 'Curl higher', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'bottom' },
       { name: 'Full extension', type: 'custom',
-        check: (angles) => Math.max(angles.leftElbow, angles.rightElbow) > 145,
+        check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 145,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow'), 145, 15), good: 'Full extension at bottom', bad: 'Extend arms fully at bottom', severity: 'minor', citation: 'Oliveira LF et al, 2009, J Strength Cond Res', phase: 'top' },
       { name: 'No body swing', type: 'below', key: 'trunk', threshold: 20, margin: 10, good: 'Strict form -- no swinging', bad: 'Body swinging', severity: 'major', citation: 'Oliveira LF et al, 2009, J Strength Cond Res' },
     ],
@@ -411,7 +411,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 80,
     formChecks: [
       { name: 'Elbows high', type: 'custom',
-        check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 75,
+        check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 75,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 75, 15), good: 'Elbows pulled high', bad: 'Pull elbows higher', severity: 'minor', citation: 'McAllister MJ et al, 2013, J Strength Cond Res' },
       { name: 'Trunk stable', type: 'below', key: 'trunk', threshold: 25, margin: 10, good: 'Torso stable', bad: 'Excessive leaning', severity: 'minor', citation: 'McAllister MJ et al, 2013, J Strength Cond Res' },
     ],
@@ -429,7 +429,7 @@ export const EXERCISE_DEFINITIONS = {
     amplitudeRatio: 0.2,
     formChecks: [
       { name: 'Height', type: 'custom',
-        check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 80,
+        check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 80,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 80, 15), good: 'Arms at or above shoulder height', bad: 'Raise higher', severity: 'minor', citation: 'Reinold MM et al, 2009, Am J Sports Med' },
       { name: 'Symmetry', type: 'symmetry', viewpoint: 'frontal', left: 'leftShoulder', right: 'rightShoulder', threshold: 15, good: 'Both arms at same height', bad: 'Uneven raise', severity: 'minor', citation: 'Kiesel K et al, 2007, N Am J Sports Phys Ther' },
       { name: 'No shrugging', type: 'below', key: 'trunk', threshold: 10, margin: 10, good: 'Shoulders down -- clean isolation', bad: 'Shrugging', severity: 'minor', citation: 'Reinold MM et al, 2009, Am J Sports Med' },
@@ -527,7 +527,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 160,
     formChecks: [
       { name: 'Full contraction', type: 'custom',
-        check: (angles) => Math.max(angles.leftKnee, angles.rightKnee) < 50,
+        check: (angles) => bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee') < 50,
         quality: (angles) => qualityBelow(bestSideMax(angles, 'leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee'), 50, 15), good: 'Full curl -- heels to glutes', bad: 'Curl further', severity: 'minor', citation: 'Schoenfeld BJ et al, 2015, J Strength Cond Res' },
     ],
     scienceNotes: 'Lying leg curl produces peak hamstring activation at full flexion. Slow eccentrics increase hamstring hypertrophy stimulus (Schoenfeld 2015).',
@@ -621,7 +621,7 @@ export const EXERCISE_DEFINITIONS = {
     minSpacing: 0.25,
     formChecks: [
       { name: 'Arm height', type: 'custom',
-        check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 80,
+        check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 80,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 80, 15), good: 'Arms reaching full overhead', bad: 'Raise arms higher overhead', severity: 'minor', citation: 'ACSM Guidelines, 2021' },
     ],
     scienceNotes: 'Jumping jacks provide low-impact cardiovascular conditioning with shoulder abduction and hip abduction patterns (ACSM 2021).',
@@ -921,7 +921,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 80,
     formChecks: [
       { name: 'Arm vertical', type: 'custom',
-        check: (angles) => Math.max(angles.leftShoulder, angles.rightShoulder) > 90,
+        check: (angles) => bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder') > 90,
         quality: (angles) => qualityAbove(bestSideMax(angles, 'leftShoulder', 'rightShoulder', '_visLeftShoulder', '_visRightShoulder'), 90, 15), good: 'Arm locked vertical throughout', bad: 'Keep arm vertical', severity: 'major', citation: 'Liebenson C, 2011, J Bodywork Movement Ther' },
     ],
     scienceNotes: 'Turkish get-ups develop integrated full-body stability and shoulder health. One of the most effective single exercises for functional movement quality (Liebenson 2011).',
@@ -1865,16 +1865,14 @@ export const EXERCISE_DEFINITIONS = {
     muscles: { primary: ['Deltoids', 'Core'], secondary: ['Forearms', 'Latissimus Dorsi'] },
     joint: 'shoulder',
     value: { type: 'custom', fn: (angles, landmarks) => {
-      // Wrist y-position normalized to body height (camera-distance independent).
-      // Guard: body height must be at least 10% of the frame (nose far enough from
-      // ankle) to avoid division-by-near-zero on bad camera angles.
-      if (landmarks && landmarks[15] && landmarks[16] && landmarks[0] && landmarks[27]) {
-        const bodyHeight = Math.abs(landmarks[27].y - landmarks[0].y);
-        if (bodyHeight < 0.1) return angles.leftShoulder; // fallback to shoulder angle
-        const wristY = (landmarks[15].y + landmarks[16].y) / 2;
-        return (1 - wristY / bodyHeight) * 100;
+      // Average wrist Y position scaled to 0-100.
+      // Uses raw Y (no body-height normalization) because valley counting
+      // only needs the oscillation pattern, not absolute scale.
+      if (landmarks && landmarks[15] && landmarks[16]) {
+        return ((landmarks[15].y + landmarks[16].y) / 2) * 100;
       }
-      return angles.leftShoulder;
+      // Fallback: use shoulder angle clamped to same range
+      return Math.min(angles.leftShoulder, 100);
     } },
     downThreshold: 30,
     upThreshold: 50,

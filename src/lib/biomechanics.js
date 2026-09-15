@@ -16,12 +16,10 @@
 
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
+import { lookupExercise } from './exerciseOntology';
 import {
   NORM_TO_METERS_DEFAULT,
   ASYMMETRY_VIS_MIN,
-  PEAK_PROMINENCE_FRACTION,
-  PEAK_MIN_PROMINENCE_DEG,
-  PEAK_MIN_FRAME_GAP,
 } from './analysisConfig';
 
 // Default height in meters for velocity normalization.
@@ -91,8 +89,20 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
   // For pulling exercises (rows, pulldowns, curls), the angle decreases during
   // concentric (pulling) and increases during eccentric (releasing).
   // This is opposite to pushing/squatting exercises.
-  const isPulling = ['chest_supported_row', 'seated_row', 'lat_pulldown', 'bent_over_row',
-    'pull_up', 'bicep_curl', 'leg_curl'].includes(exerciseKey);
+  // Derive from ontology movementClass + exercise key name.
+  // Classes named *_pull are pulling. Mixed classes (upper_vertical has
+  // pulldown + press; upper_isolation has curl + pushdown; upper_horizontal
+  // has row + press) require checking the exercise key name.
+  const info = lookupExercise(exerciseKey);
+  const mc = info?.movementClass || '';
+  const keyLC = exerciseKey.toLowerCase();
+  const isPulling = mc.includes('pull')
+    || mc === 'upper_pull_supine'
+    || keyLC.includes('curl')
+    || keyLC.includes('pulldown')
+    || keyLC.includes('pull_up') || keyLC.includes('chin_up')
+    || keyLC.includes('row')
+    || keyLC.includes('pullover');
 
   const timeUnderTension = analyzeTUT(reps, fps, isPulling);
   const rangeOfMotion = analyzeROM(trackingValues, reps);
@@ -114,131 +124,6 @@ function emptyResult() {
     asymmetry: { score: 0, details: {}, risk: 'low' },
     movementQuality: 0,
   };
-}
-
-/**
- * Detect rep boundaries from tracking values using threshold crossings
- * with a simple state machine.
- */
-/**
- * Detect reps using peak-valley detection on the angle signal.
- * No fixed thresholds needed — finds oscillation patterns by detecting
- * local maxima and minima with sufficient prominence.
- *
- * Works for any exercise regardless of absolute angle values.
- */
-function detectReps(values) {
-  // Fill nulls: find first valid value, pad leading nulls with it,
-  // then carry forward for remaining nulls. This keeps filled.length === values.length
-  // so downstream rep indices align with rawFrames.
-  const firstValid = values.find(v => v !== null);
-  if (firstValid === undefined) return [];
-  const filled = [];
-  for (let i = 0; i < values.length; i++) {
-    if (values[i] !== null) {
-      filled.push(values[i]);
-    } else if (filled.length > 0) {
-      filled.push(filled[filled.length - 1]);
-    } else {
-      filled.push(firstValid); // pad leading nulls
-    }
-  }
-  if (filled.length < 6) return [];
-
-  // At low frame counts (< 30 frames, i.e. ~10s at 3fps), skip smoothing
-  // because a 3-point average spans 1 second and flattens the signal
-  const smooth = [];
-  if (filled.length < 30) {
-    smooth.push(...filled);
-  } else {
-    for (let i = 0; i < filled.length; i++) {
-      if (i === 0 || i === filled.length - 1) {
-        smooth.push(filled[i]);
-      } else {
-        smooth.push((filled[i - 1] + filled[i] + filled[i + 1]) / 3);
-      }
-    }
-  }
-
-  // Find all peaks (local maxima) and valleys (local minima)
-  const peaks = [];
-  const valleys = [];
-  for (let i = 1; i < smooth.length - 1; i++) {
-    if (smooth[i] >= smooth[i - 1] && smooth[i] >= smooth[i + 1] && smooth[i] > smooth[i - 1]) {
-      peaks.push({ idx: i, val: smooth[i] });
-    }
-    if (smooth[i] <= smooth[i - 1] && smooth[i] <= smooth[i + 1] && smooth[i] < smooth[i - 1]) {
-      valleys.push({ idx: i, val: smooth[i] });
-    }
-  }
-
-  // Merge peaks and valleys into alternating sequence
-  const extrema = [
-    ...peaks.map(p => ({ ...p, type: 'peak' })),
-    ...valleys.map(v => ({ ...v, type: 'valley' })),
-  ].sort((a, b) => a.idx - b.idx);
-
-  // Remove consecutive same-type extrema (keep most extreme)
-  const alternating = [];
-  for (const e of extrema) {
-    if (alternating.length === 0 || alternating[alternating.length - 1].type !== e.type) {
-      alternating.push(e);
-    } else {
-      const prev = alternating[alternating.length - 1];
-      if (e.type === 'peak' && e.val > prev.val) alternating[alternating.length - 1] = e;
-      if (e.type === 'valley' && e.val < prev.val) alternating[alternating.length - 1] = e;
-    }
-  }
-
-  // Compute minimum prominence: 30% of total signal range, minimum 12 degrees
-  const globalMin = Math.min(...smooth);
-  const globalMax = Math.max(...smooth);
-  const globalRange = globalMax - globalMin;
-  const minProminence = Math.max(PEAK_MIN_PROMINENCE_DEG, globalRange * PEAK_PROMINENCE_FRACTION);
-
-  // Minimum frames between extrema (~1 second)
-  const minFrameGap = PEAK_MIN_FRAME_GAP;
-
-  // Filter: only keep extrema pairs with sufficient prominence AND time gap
-  const significant = [];
-  for (let i = 0; i < alternating.length; i++) {
-    if (significant.length === 0) {
-      significant.push(alternating[i]);
-      continue;
-    }
-    const prev = significant[significant.length - 1];
-    const diff = Math.abs(alternating[i].val - prev.val);
-    const gap = alternating[i].idx - prev.idx;
-
-    if (diff >= minProminence && gap >= minFrameGap) {
-      significant.push(alternating[i]);
-    } else if (alternating[i].type === prev.type) {
-      // Same type: keep the more extreme one
-      if ((alternating[i].type === 'peak' && alternating[i].val > prev.val) ||
-          (alternating[i].type === 'valley' && alternating[i].val < prev.val)) {
-        significant[significant.length - 1] = alternating[i];
-      }
-    }
-  }
-
-  // Build reps from full cycles: peak-valley-peak or valley-peak-valley
-  const reps = [];
-  for (let i = 0; i < significant.length - 2; i++) {
-    const a = significant[i];
-    const b = significant[i + 1];
-    const c = significant[i + 2];
-
-    if (a.type === c.type && a.type !== b.type) {
-      reps.push({
-        start: a.idx,
-        bottom: b.idx,
-        end: c.idx,
-      });
-      i++; // skip one, next rep starts from c
-    }
-  }
-
-  return reps;
 }
 
 /**

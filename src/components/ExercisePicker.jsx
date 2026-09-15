@@ -88,6 +88,7 @@ export default function ExercisePicker({ detectorState, onSelect, temporalFeatur
         return (
           <button
             key={c.id}
+            className="exercise-chip"
             onClick={() => handleSelect(c.id)}
             style={{
               display: 'inline-flex',
@@ -101,7 +102,7 @@ export default function ExercisePicker({ detectorState, onSelect, temporalFeatur
               fontSize: compact ? 11 : 13,
               fontWeight: isTop ? 600 : 400,
               cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'transform 0.1s, filter 0.1s',
               whiteSpace: 'nowrap',
             }}
             title={`${name} (${pct}%)`}

@@ -198,13 +198,57 @@ export async function analyzeVideoFile({
         onProgress(Math.round((startFrame / MAX_FRAMES) * 95));
       }
 
-      const liveRepCounter = new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' });
+      const liveState = {
+        repCounter: new RepCounter(exercise === '__auto__' ? 'squat' : exercise, { fps: analysisFps, mode: 'live' }),
+        exercise: exercise === '__auto__' ? 'squat' : exercise,
+        lastProgressiveUpdate: 0,
+      };
       progressiveDetector = (exercise === '__auto__' || (autoDetect && !userChangedExercise))
         ? new HierarchicalDetector({ fps: analysisFps, mode: gymMode })
         : null;
       if (detectorRef && progressiveDetector) detectorRef.current = progressiveDetector;
-      let lastProgressiveUpdate = 0;
       const PROGRESSIVE_INTERVAL = 50;
+      let suitabilityChecked = false;
+
+      // Shared per-frame processing for both worker and non-worker paths
+      const commitFrame = (landmarks, worldLandmarks, angles, time, frameIdx) => {
+        if (!angles) angles = extractJointAngles(landmarks);
+        const frameData = { landmarks, timestamp: time, angles };
+        if (worldLandmarks) frameData.worldLandmarks = worldLandmarks;
+        frames.push(frameData);
+        replayFrames.push({ landmarks, timestamp: time });
+        landmarksForCache.push(landmarks);
+
+        const liveResult = liveState.repCounter.update(landmarks, time);
+        if (liveResult?.reps != null) onLiveReps(liveResult.reps);
+
+        if (progressiveDetector) {
+          progressiveDetector.update({ landmarks, worldLandmarks, timestampMs: frameIdx * (1000 / analysisFps) });
+          const lockedEx = progressiveDetector.state?.locked ? progressiveDetector.state.exercise : null;
+          if (lockedEx && lockedEx !== liveState.exercise) {
+            try {
+              liveState.repCounter = new RepCounter(lockedEx, { fps: analysisFps, mode: 'live' });
+              liveState.exercise = lockedEx;
+            } catch { /* exercise not in EXERCISES registry; keep current counter */ }
+          }
+        }
+
+        if (onProgressiveUpdate && frames.length - liveState.lastProgressiveUpdate >= PROGRESSIVE_INTERVAL) {
+          liveState.lastProgressiveUpdate = frames.length;
+          if (progressiveDetector) onProgressiveUpdate(progressiveDetector.state);
+        }
+
+        if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
+          savePartialCheckpoint(cacheKey, landmarksForCache, frameIdx).catch(() => {});
+        }
+
+        if (!suitabilityChecked && frames.length >= 30 && onSuitability) {
+          suitabilityChecked = true;
+          const suitabilityDetector = new VideoSuitabilityDetector();
+          const earlyLandmarks = frames.slice(0, 30).map(f => f.landmarks);
+          onSuitability(suitabilityDetector.assess(earlyLandmarks));
+        }
+      };
       let lockedSubjectIdx = null;
       let streamFrameCount = startFrame;
       const landmarksForCache = frames.map(f => f.landmarks);
@@ -232,7 +276,6 @@ export async function analyzeVideoFile({
           // Ordered results collector: results arrive out-of-order, we process in-order
           const inferenceResults = new Map(); // frameIndex → result
           let lastProcessedIdx = -1;
-          let suitabilityChecked = false;
 
           // Process in-order results for live rep counting and progress
           const drainOrderedResults = () => {
@@ -244,45 +287,7 @@ export async function analyzeVideoFile({
               if (result?.landmarks) {
                 const time = lastProcessedIdx / analysisFps;
                 const angles = result.angles || extractJointAngles(result.landmarks);
-                const frameData = { landmarks: result.landmarks, timestamp: time, angles };
-                if (result.worldLandmarks) frameData.worldLandmarks = result.worldLandmarks;
-                frames.push(frameData);
-                replayFrames.push({ landmarks: result.landmarks, timestamp: time });
-                landmarksForCache.push(result.landmarks);
-
-                const liveResult = liveRepCounter.update(result.landmarks, time);
-                if (liveResult?.reps != null) onLiveReps(liveResult.reps);
-
-                // Progressive exercise detection (hierarchical)
-                if (progressiveDetector) {
-                  progressiveDetector.update({
-                    landmarks: result.landmarks,
-                    worldLandmarks: result.worldLandmarks,
-                    timestampMs: lastProcessedIdx * (1000 / analysisFps),
-                  });
-                }
-              }
-
-              // Emit progressive update periodically
-              if (onProgressiveUpdate && frames.length - lastProgressiveUpdate >= PROGRESSIVE_INTERVAL) {
-                lastProgressiveUpdate = frames.length;
-                if (progressiveDetector) {
-                  onProgressiveUpdate(progressiveDetector.state);
-                }
-              }
-
-              // Progressive checkpoint
-              if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
-                savePartialCheckpoint(cacheKey, landmarksForCache, lastProcessedIdx).catch(() => {});
-              }
-
-              // Run suitability check once after ~30 frames
-              if (!suitabilityChecked && frames.length >= 30 && onSuitability) {
-                suitabilityChecked = true;
-                const suitabilityDetector = new VideoSuitabilityDetector();
-                const earlyLandmarks = frames.slice(0, 30).map(f => f.landmarks);
-                const assessment = suitabilityDetector.assess(earlyLandmarks);
-                onSuitability(assessment);
+                commitFrame(result.landmarks, result.worldLandmarks, angles, time, lastProcessedIdx);
               }
             }
           };
@@ -328,7 +333,6 @@ export async function analyzeVideoFile({
 
         } else {
           // ── Serial mode: main-thread inference (no parallelism possible) ──
-          let suitabilityChecked = false;
           const streamResult = await extractFramesStreaming(
             file,
             analysisFps,
@@ -359,48 +363,11 @@ export async function analyzeVideoFile({
 
               if (landmarks) {
                 const time = frameIndex / analysisFps;
-                if (!angles) angles = extractJointAngles(landmarks);
-                const frameData = { landmarks, timestamp: time, angles };
-                if (worldLandmarks) frameData.worldLandmarks = worldLandmarks;
-                frames.push(frameData);
-                replayFrames.push({ landmarks, timestamp: time });
-                landmarksForCache.push(landmarks);
-
-                const liveResult = liveRepCounter.update(landmarks, time);
-                if (liveResult?.reps != null) onLiveReps(liveResult.reps);
-
-                // Progressive exercise detection (hierarchical)
-                if (progressiveDetector) {
-                  progressiveDetector.update({
-                    landmarks,
-                    worldLandmarks,
-                    timestampMs: frameIndex * (1000 / analysisFps),
-                  });
-                }
+                commitFrame(landmarks, worldLandmarks, angles, time, frameIndex);
               }
 
               streamFrameCount++;
               onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
-
-              if (landmarksForCache.length > 0 && landmarksForCache.length % CHECKPOINT_INTERVAL === 0) {
-                savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
-              }
-
-              // Emit progressive update periodically
-              if (onProgressiveUpdate && frames.length - lastProgressiveUpdate >= PROGRESSIVE_INTERVAL) {
-                lastProgressiveUpdate = frames.length;
-                if (progressiveDetector) {
-                  onProgressiveUpdate(progressiveDetector.state);
-                }
-              }
-
-              // Run suitability check once after ~30 frames
-              if (!suitabilityChecked && frames.length >= 30 && onSuitability) {
-                suitabilityChecked = true;
-                const suitabilityDetector = new VideoSuitabilityDetector();
-                const earlyLandmarks = frames.slice(0, 30).map(f => f.landmarks);
-                onSuitability(suitabilityDetector.assess(earlyLandmarks));
-              }
             },
             undefined,
             { signal, startFrame },
@@ -586,10 +553,24 @@ async function buildFullResult({
   const repHistory = enrichedRepHistory;
   const reps = repHistory.length;
 
-  // Biomechanical analysis
+  // Biomechanical analysis — skip exercise-specific form checks when detection
+  // is low-confidence to avoid unsafe coaching on a potentially wrong exercise.
   let bioAnalysis = null;
+  const safeForFormChecks = !detectionLowConfidence;
   try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory, userProfile?.height); }
   catch (err) { console.error('Bio analysis error:', err); }
+
+  // When detection confidence is low, strip exercise-specific form advice
+  // (compensation patterns, ROM targets) — keep only universal metrics.
+  if (bioAnalysis && !safeForFormChecks) {
+    bioAnalysis = {
+      ...bioAnalysis,
+      compensationPatterns: [],
+      formCheckResults: [],
+      movementQuality: null,
+      _lowConfidenceGated: true,
+    };
+  }
 
   // Release frames array: only replayFrames survives in the result.
   // This frees the duplicate angles data (~40% of frame memory).
@@ -605,7 +586,7 @@ async function buildFullResult({
 
   const diagnostics = repCounter.diagnostics || null;
   const exerciseDef = EXERCISES[detectedExercise];
-  const hasFormChecks = exerciseDef?.formChecks?.length > 0;
+  const hasFormChecks = safeForFormChecks && exerciseDef?.formChecks?.length > 0;
   const scoredReps = repHistory.filter(r => r.score !== null && r.score !== undefined);
   const avgScore = !hasFormChecks ? null
     : scoredReps.length > 0

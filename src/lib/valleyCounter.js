@@ -410,3 +410,39 @@ export function templateEdgeCorrect(signal, valleyResult, fps, exercise) {
 
   return { ...valleyResult, _templateDiag: diag };
 }
+
+// ---------------------------------------------------------------------------
+// Autocorrelation quality — measures how periodic a signal is at a given period
+//
+// Real human repetitions produce a strongly periodic signal: the autocorrelation
+// at the rep period is high (typically 0.5–0.9). Noise-induced false valleys
+// have weak or zero autocorrelation because the "reps" aren't actually periodic.
+//
+// This metric is used by adaptive signal selection to prefer genuinely periodic
+// signals over noisy ones, regardless of how many valleys the noise produces.
+// ---------------------------------------------------------------------------
+
+export function autocorrelationQuality(signal, periodFrames) {
+  const N = signal.length;
+  if (N < 6 || periodFrames < 2 || periodFrames >= Math.floor(N / 2)) return 0;
+
+  // Center the signal
+  let mean = 0;
+  for (let i = 0; i < N; i++) mean += signal[i];
+  mean /= N;
+
+  let variance = 0;
+  for (let i = 0; i < N; i++) variance += (signal[i] - mean) ** 2;
+  variance /= N;
+  if (variance < 1e-8) return 0;
+
+  // Autocorrelation at the detected period
+  let corr = 0;
+  const len = N - periodFrames;
+  for (let t = 0; t < len; t++) {
+    corr += (signal[t] - mean) * (signal[t + periodFrames] - mean);
+  }
+  corr /= (len * variance);
+
+  return Math.max(0, corr); // clamp negative correlations to 0
+}

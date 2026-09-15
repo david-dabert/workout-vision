@@ -262,6 +262,30 @@
   font-size: 0.8rem;
 }
 
+.correctionToast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+  color: var(--yellow, #ffc107);
+  background: rgba(255, 193, 7, 0.08);
+  border-radius: 8px;
+  font-weight: 600;
+  animation: correctionFadeIn 0.2s ease-out;
+}
+
+.correctionToastCheck {
+  font-size: 0.85rem;
+}
+
+@keyframes correctionFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .confidenceIndicator {
   display: flex;
   align-items: center;

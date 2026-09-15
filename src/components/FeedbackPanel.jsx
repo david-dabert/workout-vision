@@ -1,5 +1,7 @@
 import { useState, useCallback, memo } from 'react';
 import { EXERCISES } from '../lib/exercises';
+import { updateWorkout } from '../lib/storage';
+import { logCorrection } from '../lib/correctionLog';
 
 const FEEDBACK_STORAGE_KEY = 'wv_feedback';
 
@@ -102,6 +104,25 @@ function FeedbackPanel({ result }) {
       confidence: result?.confidence?.visibility,
       deviceClass: getDeviceInfo().device,
     });
+    // Log to unified correction ledger
+    logCorrection({
+      type: 'exercise',
+      workoutId: result?.workoutId,
+      exerciseKey: result?.exercise,
+      original: result?.exercise,
+      corrected: newExercise,
+      confidence: result?.confidence?.visibility,
+    }).catch(() => {});
+    // Update the stored workout record with the corrected exercise
+    if (result?.workoutId) {
+      const correctedDef = EXERCISES[newExercise];
+      updateWorkout(result.workoutId, {
+        exercise: newExercise,
+        exerciseName: correctedDef?.name || correctedDef?.label || newExercise,
+        exerciseCorrected: true,
+        originalExercise: result.exercise,
+      }).catch(() => {});
+    }
   }, [result?.exercise, result?.workoutId, result?.confidence?.visibility]);
 
   const handleThumbs = useCallback((direction) => {

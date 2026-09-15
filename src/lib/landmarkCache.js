@@ -20,6 +20,13 @@ const META_STORE = 'meta'; // stores { key, accessedAt, estimatedBytes }
 const MAX_ENTRIES = 50;
 const MAX_BYTES = 100 * 1024 * 1024; // 100MB
 
+/**
+ * Cache format version. Increment when the landmark data structure changes
+ * (e.g. different filtering, coordinate system, or landmark count).
+ * Entries with a different version are silently discarded on read.
+ */
+export const CACHE_FORMAT_VERSION = 1;
+
 function openCacheDB() {
   return new Promise((resolve) => {
     const req = indexedDB.open(CACHE_DB, DB_VERSION);
@@ -71,6 +78,31 @@ async function touchMeta(db, key, estimatedBytes) {
   }
 }
 
+/**
+ * Validate that a cached entry is structurally sound.
+ * Returns the landmark array if valid, null otherwise.
+ */
+function validateCacheEntry(entry) {
+  // Versioned envelope: { _v, landmarks }
+  if (entry && typeof entry === 'object' && !Array.isArray(entry) && entry._v != null) {
+    if (entry._v !== CACHE_FORMAT_VERSION) return null; // version mismatch
+    if (!Array.isArray(entry.landmarks) || entry.landmarks.length === 0) return null;
+    // Spot-check first frame structure
+    const first = entry.landmarks[0];
+    if (!first || !Array.isArray(first) || first.length < 33) return null;
+    if (typeof first[0]?.x !== 'number') return null;
+    return entry.landmarks;
+  }
+  // Legacy unversioned: raw array — accept if structurally valid
+  if (Array.isArray(entry) && entry.length > 0) {
+    const first = entry[0];
+    if (first && Array.isArray(first) && first.length >= 33 && typeof first[0]?.x === 'number') {
+      return entry;
+    }
+  }
+  return null;
+}
+
 export async function getCachedLandmarks(key) {
   const db = await openCacheDB();
   if (!db || !db.objectStoreNames.contains(CACHE_STORE)) return null;
@@ -78,12 +110,13 @@ export async function getCachedLandmarks(key) {
     const tx = db.transaction(CACHE_STORE, 'readonly');
     const get = tx.objectStore(CACHE_STORE).get(key);
     get.onsuccess = () => {
-      const result = get.result || null;
-      if (result) {
+      const raw = get.result || null;
+      const validated = raw ? validateCacheEntry(raw) : null;
+      if (validated) {
         // Update access time in background (don't block the read)
-        touchMeta(db, key, estimateBytes(result)).catch(() => {});
+        touchMeta(db, key, estimateBytes(validated)).catch(() => {});
       }
-      resolve(result);
+      resolve(validated);
     };
     get.onerror = () => resolve(null);
     tx.oncomplete = () => {
@@ -99,9 +132,12 @@ export async function setCachedLandmarks(key, data) {
   // Evict if needed before writing
   await evictIfNeeded(db);
 
+  // Wrap in versioned envelope so future reads can detect format changes
+  const envelope = { _v: CACHE_FORMAT_VERSION, landmarks: data };
+
   return new Promise((resolve) => {
     const tx = db.transaction(CACHE_STORE, 'readwrite');
-    tx.objectStore(CACHE_STORE).put(data, key);
+    tx.objectStore(CACHE_STORE).put(envelope, key);
     tx.oncomplete = () => {
       // Update meta in background
       touchMeta(db, key, estimateBytes(data)).then(() => db.close()).catch(() => db.close());
@@ -125,7 +161,7 @@ export async function savePartialCheckpoint(key, data, frameIndex) {
   if (!db || !db.objectStoreNames.contains(CACHE_STORE)) return;
   return new Promise((resolve) => {
     const tx = db.transaction(CACHE_STORE, 'readwrite');
-    tx.objectStore(CACHE_STORE).put({ landmarks: data, lastFrame: frameIndex, timestamp: Date.now() }, checkpointKey);
+    tx.objectStore(CACHE_STORE).put({ _v: CACHE_FORMAT_VERSION, landmarks: data, lastFrame: frameIndex, timestamp: Date.now() }, checkpointKey);
     tx.oncomplete = () => { db.close(); resolve(); };
     tx.onerror = () => { db.close(); resolve(); };
   });
@@ -144,7 +180,17 @@ export async function loadPartialCheckpoint(key) {
   return new Promise((resolve) => {
     const tx = db.transaction(CACHE_STORE, 'readonly');
     const get = tx.objectStore(CACHE_STORE).get(checkpointKey);
-    get.onsuccess = () => resolve(get.result || null);
+    get.onsuccess = () => {
+      const raw = get.result;
+      if (!raw) { resolve(null); return; }
+      // Reject stale checkpoints from a different cache format version
+      if (raw._v != null && raw._v !== CACHE_FORMAT_VERSION) { resolve(null); return; }
+      // Spot-check landmark structure (same as validateCacheEntry)
+      if (!Array.isArray(raw.landmarks) || raw.landmarks.length === 0) { resolve(null); return; }
+      const first = raw.landmarks[0];
+      if (!first || !Array.isArray(first) || first.length < 33 || typeof first[0]?.x !== 'number') { resolve(null); return; }
+      resolve(raw);
+    };
     get.onerror = () => resolve(null);
     tx.oncomplete = () => db.close();
   });

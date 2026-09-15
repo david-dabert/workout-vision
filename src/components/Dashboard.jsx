@@ -12,6 +12,7 @@ import InjuryRiskCard from './InjuryRiskCard';
 import { calculateSmartStreak } from '../lib/prSystem';
 import WorkoutOfTheWeek from './WorkoutOfTheWeek';
 import { ChallengeResponseView } from './ChallengeBar';
+import MilestoneToast from './MilestoneToast';
 import css from './Dashboard.module.css';
 
 const getGreetingKey = () => {
@@ -69,6 +70,12 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
     });
   }, []);
 
+  const daysSinceLastWorkout = useMemo(() => {
+    if (allWorkouts.length === 0) return -1;
+    const last = new Date(allWorkouts[0]?.date || allWorkouts[0]?.createdAt);
+    return Math.floor((Date.now() - last.getTime()) / 86400000);
+  }, [allWorkouts]);
+
   const stats = useMemo(() => {
     if (recentWorkouts.length === 0) return null;
     const totalReps = recentWorkouts.reduce((s, w) => s + (w.reps || 0), 0);
@@ -90,6 +97,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
 
   return (
     <div className="home">
+      <MilestoneToast />
       {/* ── Hero section ── */}
       <div className="home-hero">
         <div className="home-hero-bg" />
@@ -127,11 +135,15 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
               <span className={`engine-dot ${statusDot}`} />
               <span>{modelStatus === 'error' ? t('engine_failed_retry') : statusText}</span>
             </div>
-            {calculateStreak(allWorkouts, profile?.trainingDays) > 0 && (
+            {calculateStreak(allWorkouts, profile?.trainingDays) > 0 ? (
               <span className="streak-badge">
                 🔥 {calculateStreak(allWorkouts, profile?.trainingDays)} {profile?.trainingDays ? t('scheduled_streak') : t('days_streak')}
               </span>
-            )}
+            ) : daysSinceLastWorkout >= 2 ? (
+              <span className="streak-badge comeback">
+                {t('days_since_last', { days: daysSinceLastWorkout })}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
@@ -220,7 +232,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
 
       {/* ── Quick access grid ── */}
       <div className="quick-access-grid">
-        <button className="quick-access-btn" onClick={() => onNavigate('history')}>
+        <button className="quick-access-btn" onClick={() => onNavigate('prs')}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>

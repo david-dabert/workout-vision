@@ -3425,6 +3425,11 @@ textarea:focus-visible {
   letter-spacing: 0.02em;
   border: 1px solid rgba(0, 224, 150, 0.25);
 }
+.streak-badge.comeback {
+  background: rgba(255, 184, 54, 0.10);
+  color: var(--yellow, #ffb836);
+  border-color: rgba(255, 184, 54, 0.25);
+}
 
 
 /* ══════════════════════════════════════════
@@ -3780,4 +3785,19 @@ textarea:focus-visible {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.2);
+}
+
+/* ══════════════════════════════════════════
+   EXERCISE PICKER — chip press/hover states
+   ══════════════════════════════════════════ */
+
+.exercise-chip {
+  -webkit-tap-highlight-color: transparent;
+}
+.exercise-chip:hover {
+  filter: brightness(1.15);
+}
+.exercise-chip:active {
+  transform: scale(0.95);
+  filter: brightness(1.25);
 }

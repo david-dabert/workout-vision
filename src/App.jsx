@@ -45,6 +45,8 @@ const RestTimer = safeLazy(() => import('./components/RestTimer'));
 const ProfilePage = safeLazy(() => import('./components/Profile'));
 const Validate = safeLazy(() => import('./components/Validate'));
 const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
+const Onboarding = safeLazy(() => import('./components/Onboarding'));
+const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
 
 const LazyFallback = (
   <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
@@ -114,12 +116,29 @@ function AppInner() {
         injuries: [],
         profileComplete: false,
       };
-      saveProfile(defaultProfile).then(() => setPage('dashboard'));
+      saveProfile(defaultProfile).then(() => setPage('onboarding'));
     }
   }, [profileLoading, profile, saveProfile, setPage]);
 
   // Wait for profile check (and potential auto-create) before rendering
   if (profileLoading || !profile) return LazyFallback;
+
+  // Onboarding for first-time users
+  if (page === 'onboarding' || (profile && !profile.profileComplete && page === 'dashboard')) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={LazyFallback}>
+          <Onboarding
+            profile={profile}
+            onComplete={async (updates) => {
+              await saveProfile({ ...profile, ...updates });
+              setPage('dashboard');
+            }}
+          />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
 
   // Full-screen pages (no tab bar) - wrapped with page transition
   if (page === 'analyze') return (
@@ -181,6 +200,15 @@ function AppInner() {
       <Suspense fallback={LazyFallback}>
         <div key="weekly" className="page-transition-enter">
           <WeeklyReport onClose={() => setPage('dashboard')} />
+        </div>
+      </Suspense>
+    </ErrorBoundary>
+  );
+  if (page === 'prs') return (
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <div key="prs" className="page-transition-enter">
+          <PersonalRecords onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
     </ErrorBoundary>

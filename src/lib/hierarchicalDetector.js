@@ -32,6 +32,13 @@ const AUTOLOCK_CONFIDENCE = 0.85;
 const AUTOLOCK_MARGIN = 0.15;
 const AUTOLOCK_STABILITY_MS = 1000;
 
+// Movement classes where monocular pose cannot reliably disambiguate exercises.
+// Auto-lock is suppressed for these — user must confirm via chip selection.
+const AUTOLOCK_BLOCKED_CLASSES = new Set([
+  'upper_horizontal',    // seated row vs chest press — load direction invisible
+  'lower_isolation',     // adductor vs abductor — identical joint trajectories
+]);
+
 // ---------------------------------------------------------------------------
 // Local prior store (learned from corrections)
 // ---------------------------------------------------------------------------
@@ -148,7 +155,8 @@ export class HierarchicalDetector {
 
     // Determine exercise (null if ambiguous)
     const topCandidate = this._candidates.length > 0 ? this._candidates[0].id : null;
-    if (this._confidence >= AUTOLOCK_CONFIDENCE && this._margin >= AUTOLOCK_MARGIN) {
+    const autolockAllowed = !AUTOLOCK_BLOCKED_CLASSES.has(this._movementClass);
+    if (autolockAllowed && this._confidence >= AUTOLOCK_CONFIDENCE && this._margin >= AUTOLOCK_MARGIN) {
       // Check stability for auto-lock
       if (topCandidate === this._stableExercise) {
         if (timestampMs - this._stableStartMs >= AUTOLOCK_STABILITY_MS) {
@@ -201,6 +209,7 @@ export class HierarchicalDetector {
       confidence: this._confidence,
       margin: this._margin,
       locked: this._locked,
+      temporalFeatures: this._temporal.extract(),
     };
   }
 

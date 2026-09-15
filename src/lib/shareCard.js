@@ -8,6 +8,7 @@
 import { tModule } from './LanguageContext';
 import { gradeFromScore, getRecorderMimeType } from './utils';
 import { detectBadges } from './badges';
+import QRCode from 'qrcode';
 
 
 const APP_URL = 'david-dabert.github.io/workout-vision';
@@ -349,8 +350,23 @@ export async function generateShareCard(result, videoEl) {
   ctx.textBaseline = 'top';
   ctx.fillText(tModule('share_beat_my_form'), W / 2, ctaY);
 
-  // QR code removed — was a fake pattern generator, not a real encoder.
-  // Replace with a real QR library when share-card linking is needed.
+  // QR code — links to the app
+  try {
+    const qrSize = 160;
+    const qrDataUrl = await QRCode.toDataURL(`https://${APP_URL}`, {
+      width: qrSize, margin: 1,
+      color: { dark: '#00f5d4', light: '#00000000' },
+    });
+    const qrImg = new Image();
+    qrImg.src = qrDataUrl;
+    await new Promise((resolve, reject) => { qrImg.onload = resolve; qrImg.onerror = reject; });
+    ctx.drawImage(qrImg, W - PAD - qrSize - 10, ctaY + 50, qrSize, qrSize);
+    ctx.fillStyle = MUTED;
+    ctx.font = '400 18px -apple-system, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan to try', W - PAD - qrSize / 2 - 10, ctaY + 50 + qrSize + 20);
+    ctx.textAlign = 'center'; // reset
+  } catch { /* QR generation failed; card still valid without it */ }
 
   // ── Footer ────────────────────────────────────────────────────────────────
   const footerY = H - footerH;

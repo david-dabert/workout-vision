@@ -19,7 +19,7 @@ const prStore = localforage.createInstance({ name: 'workoutVision', storeName: '
 
 // ── PR Store CRUD ──
 
-async function getAllPRs() {
+export async function getAllPRs() {
   const prs = [];
   await prStore.iterate((value) => {
     prs.push(value);

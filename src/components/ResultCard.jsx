@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, memo } from 'react';
-import { EXERCISES, getExerciseIllustration } from '../lib/exercises';
+import { EXERCISES } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
 import Confetti from './Confetti';
-import { shareCard, challengeShare } from '../lib/shareCard';
+import { shareCard } from '../lib/shareCard';
 import { shareChallenge } from '../lib/challenges';
 import { useT } from '../lib/LanguageContext';
 import { useProfile } from '../lib/ProfileContext';
@@ -13,6 +13,7 @@ import { detectPRs, detectFormRegression } from '../lib/prSystem';
 import { detectBadges } from '../lib/badges';
 import { estimateOneRepMax } from '../lib/coach';
 import { recalibrateAnalysis } from '../lib/recalibrate';
+import { logCorrection } from '../lib/correctionLog';
 import {
   requestNotificationPermission,
   scheduleWeeklyReminder,
@@ -81,7 +82,7 @@ function ResultCard({ result, onReplay }) {
   const { t, tExercise, tFormCheck } = useT();
   const { profile } = useProfile();
   const {
-    fileName, exerciseName, reps, duration,
+    fileName: _fileName, exerciseName, reps, duration,
     formScore: origFormScore, bioAnalysis: origBioAnalysis,
     report: origReport, repHistory: origRepHistory,
     progression, baselineComparison,
@@ -94,6 +95,7 @@ function ResultCard({ result, onReplay }) {
   const [showRepEdit, setShowRepEdit] = useState(false);
   const [recalData, setRecalData] = useState(null);
   const [isRecalibrating, setIsRecalibrating] = useState(false);
+  const [correctionToast, setCorrectionToast] = useState(null);
 
   // Use recalibrated data when available, fall back to original
   const formScore = recalData?.formScore ?? origFormScore;
@@ -191,6 +193,21 @@ function ResultCard({ result, onReplay }) {
     const clamped = Math.max(1, Math.min(99, newReps));
     setRepOverride(clamped);
     const w = result.weight || 0;
+    const originalReps = result.machineReps ?? reps;
+
+    // Log correction when rep count actually changes from AI-detected value
+    if (clamped !== originalReps) {
+      logCorrection({
+        type: 'rep_count',
+        workoutId: result.workoutId,
+        exerciseKey: result.exercise,
+        original: originalReps,
+        corrected: clamped,
+        confidence: result.confidence?.visibility,
+      }).catch(() => {});
+      setCorrectionToast('rep');
+      setTimeout(() => setCorrectionToast(null), 2000);
+    }
 
     // Run full recalibration if we have landmark frames
     if (result.frames && result.frames.length > 0 && clamped !== reps) {
@@ -207,14 +224,14 @@ function ResultCard({ result, onReplay }) {
             weightKg: w,
           });
           if (recal) {
-            recal.diagnostics.originalReps = result.machineReps ?? reps;
+            recal.diagnostics.originalReps = originalReps;
             setRecalData(recal);
             // Persist recalibrated data to IndexedDB
             if (result.workoutId) {
               updateWorkout(result.workoutId, {
                 reps: clamped,
                 repsOverridden: true,
-                machineReps: result.machineReps ?? reps,
+                machineReps: originalReps,
                 volume: w * clamped,
                 formScore: recal.formScore,
                 repHistory: recal.repHistory,
@@ -235,7 +252,7 @@ function ResultCard({ result, onReplay }) {
         updateWorkout(result.workoutId, {
           reps: clamped,
           repsOverridden: false,
-          machineReps: result.machineReps ?? reps,
+          machineReps: originalReps,
           volume: w * clamped,
         }).catch(() => {});
       }
@@ -245,18 +262,22 @@ function ResultCard({ result, onReplay }) {
         updateWorkout(result.workoutId, {
           reps: clamped,
           repsOverridden: true,
-          machineReps: result.machineReps ?? reps,
+          machineReps: originalReps,
           volume: w * clamped,
         }).catch(() => {});
       }
     }
-  }, [result.workoutId, reps, result.machineReps, result.weight, result.frames, result.exercise, result.fps, profile]);
+  }, [result.workoutId, reps, result.machineReps, result.weight, result.frames, result.exercise, result.fps, result.confidence, profile]);
 
-  // Score reveal animation: count up from 0
+  // Score reveal animation: count up from 0 (skip under reduced motion)
   const [displayScore, setDisplayScore] = useState(0);
   useEffect(() => {
     if (formScore == null) return;
-    let start = 0;
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      setDisplayScore(formScore);
+      return;
+    }
     const duration = 800;
     const startTime = Date.now();
     const step = () => {
@@ -343,6 +364,14 @@ function ResultCard({ result, onReplay }) {
         <div className={s.recalibratedNotice}>
           <span className={s.recalibratedCheckmark}>&#x2713;</span>
           {t('recalibrated_notice')}
+        </div>
+      )}
+
+      {/* Correction logged toast */}
+      {correctionToast && (
+        <div className={s.correctionToast}>
+          <span className={s.correctionToastCheck}>&#x2713;</span>
+          {t('correction_saved')}
         </div>
       )}
 
