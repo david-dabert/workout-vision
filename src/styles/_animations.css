@@ -1,0 +1,257 @@
+/* ══════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════ */
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes orbit { from { transform: rotate(0deg) translateX(30px) rotate(0deg); } to { transform: rotate(360deg) translateX(30px) rotate(-360deg); } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 24px rgba(0, 240, 255, 0.2), 0 0 48px rgba(123, 97, 255, 0.08); }
+  50% { box-shadow: 0 0 48px rgba(0, 240, 255, 0.35), 0 0 96px rgba(123, 97, 255, 0.15); }
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-up { animation: fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+.spinner { width: 40px; height: 40px; border: 3px solid var(--glass-border); border-top-color: var(--bio-cyan); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+.spinner-sm { width: 16px; height: 16px; border: 2px solid var(--glass-border); border-top-color: var(--bio-cyan); border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--glass-bg) 25%, var(--surface-elevated) 50%, var(--glass-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.page, .home { animation: fadeIn 0.3s var(--ease-out); }
+
+[data-number] { font-variant-numeric: tabular-nums; }
+
+::selection { background: rgba(123, 97, 255, 0.3); color: var(--text-primary); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+button, a, .nav-card, .card, .upload-zone { transition: all 0.2s var(--ease-smooth); }
+
+
+/* ══════════════════════════════════════════
+   NO-GLASS FALLBACK
+   ══════════════════════════════════════════ */
+
+.no-glass .card,
+.no-glass .tab-bar,
+.no-glass .cam-reps,
+.no-glass .cam-btn,
+.no-glass .cam-exercise-label,
+.no-glass .btn-ghost,
+.no-glass .btn-icon,
+.no-glass .engine-status,
+.no-glass .stats-hero,
+.no-glass .analysis-progress-panel,
+.no-glass .modal-overlay,
+.no-glass .modal {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.no-glass .tab-bar { background: rgba(7, 7, 10, 0.95); }
+.no-glass .cam-reps { background: rgba(7, 7, 10, 0.8); }
+.no-glass body::before { display: none; }
+
+
+/* ══════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════ */
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton { background: var(--glass-bg) !important; animation: none !important; }
+  body::before, body::after { display: none; }
+  .tab.active::before { animation: none !important; }
+  /* Kill all backdrop-filter compositing under reduced motion */
+  .card, .tab-bar, .cam-reps, .cam-btn, .cam-exercise-label,
+  .btn-ghost, .btn-icon, .engine-status, .stats-hero,
+  .analysis-progress-panel, .modal-overlay, .modal {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   FOCUS VISIBLE — keyboard accessibility
+   ══════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--bio-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 240, 255, 0.15), 0 0 20px rgba(123, 97, 255, 0.08);
+}
+
+/* Suppress focus ring on elements that have their own visual state */
+.tab-item:focus-visible,
+.btn:focus-visible,
+.btn-icon:focus-visible,
+.btn-record:focus-visible,
+.action-primary:focus-visible,
+.action-secondary:focus-visible,
+.quick-access-btn:focus-visible,
+.lang-btn:focus-visible {
+  outline: 2px solid var(--bio-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.15), 0 0 20px rgba(0, 245, 212, 0.08);
+}
+
+/* Form inputs get a glow ring */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--bio-cyan);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px var(--bio-glow), 0 0 20px rgba(0, 245, 212, 0.06);
+}
+
+
+/* ══════════════════════════════════════════
+   TOUCH TARGETS — 44px minimum everywhere
+   ══════════════════════════════════════════ */
+
+/* Language toggle buttons */
+.lang-btn {
+  min-height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Quick access grid buttons */
+.quick-access-btn {
+  min-height: 72px;
+}
+
+/* Injury chips and toggle buttons need minimum touch area */
+.injury-chip,
+.toggle-chip {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+}
+
+/* Small stat edit buttons (rep +/-) */
+.stat-edit-btn,
+.rep-edit-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+@media (display-mode: standalone) {
+  html, body { overscroll-behavior: none; }
+}
+
+@supports (padding: max(0px)) {
+  .tab-bar { bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+
+
+/* ══════════════════════════════════════════
+   RESULT REVEAL ANIMATIONS
+   ══════════════════════════════════════════ */
+
+/* Grade badge: spring scale from 0 */
+.result-badge-reveal {
+  animation: badgeBounce 0.6s var(--ease-spring) both;
+}
+
+@keyframes badgeBounce {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  85% {
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Stat cards: staggered fade in from below */
+.result-stat-reveal {
+  animation: statReveal 0.4s var(--ease-out) both;
+}
+
+@keyframes statReveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ══════════════════════════════════════════
+   PAGE TRANSITIONS
+   ══════════════════════════════════════════ */
+
+.page-transition-enter {
+  animation: pageSlideIn 0.25s var(--ease-out) both;
+}
+
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.page-transition-fade {
+  animation: pageFade 0.2s ease both;
+}
+
+@keyframes pageFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

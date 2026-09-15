@@ -1,0 +1,264 @@
+/* ══════════════════════════════════════════════════════════════════════
+   WORKOUT VISION — Bioluminescent Design System
+   True black. Liquid glass. Film grain. Deep-sea organism aesthetic.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Google Fonts loaded via non-blocking <link> in index.html.
+   The CSS @import was render-blocking and prevented offline rendering.
+   Fonts degrade gracefully to system-ui / sans-serif fallbacks. */
+
+:root {
+  /* ── Depth layers (tinted, not flat black) ── */
+  --void: #050508;
+  --depth-1: #0a0a12;
+  --depth-2: #0f0f1a;
+  --depth-3: #161624;
+
+  /* ── Bioluminescent palette ── */
+  --bio-cyan: #00f0ff;
+  --bio-green: #00e676;
+  --bio-glow: rgba(0, 240, 255, 0.14);
+  --bio-glow-strong: rgba(0, 240, 255, 0.35);
+
+  /* ── Aurora spectrum (the soul of the identity) ── */
+  --aurora-violet: #7B61FF;
+  --aurora-magenta: #E040FB;
+  --aurora-rose: #FF4081;
+
+  /* ── Text hierarchy ── */
+  --text-primary: #eeeef6;
+  --text-secondary: rgba(238, 238, 246, 0.58);
+  --text-tertiary: rgba(238, 238, 246, 0.38);
+  --text-quaternary: rgba(238, 238, 246, 0.22);
+
+  /* ── Glass surfaces (visible on tinted backgrounds) ── */
+  --glass-bg: rgba(255, 255, 255, 0.045);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-hover: rgba(255, 255, 255, 0.18);
+  --glass-highlight: rgba(255, 255, 255, 0.07);
+
+  /* ── Aliases for existing inline styles ── */
+  --bg: var(--void);
+  --bg-mesh-1: var(--depth-1);
+  --bg-mesh-2: var(--depth-2);
+  --surface: var(--glass-bg);
+  --surface-elevated: rgba(255, 255, 255, 0.055);
+  --surface-glass: rgba(255, 255, 255, 0.035);
+  --card: var(--depth-2);
+  --card-elevated: var(--depth-3);
+  --border: var(--glass-border);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-accent: rgba(0, 240, 255, 0.25);
+  --text: var(--text-primary);
+  --muted: var(--text-tertiary);
+  --dim: var(--text-quaternary);
+
+  /* ── Accent (bio-cyan as primary) ── */
+  --accent: var(--bio-cyan);
+  --accent-2: var(--bio-green);
+  --accent-gradient: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 50%, var(--aurora-magenta) 100%);
+  --accent-glow: rgba(0, 240, 255, 0.10);
+  --accent-glow-strong: rgba(0, 240, 255, 0.20);
+
+  /* ── Semantic colors ── */
+  --red: #ff3b5c;
+  --red-glow: rgba(255, 59, 92, 0.12);
+  --yellow: #ffc233;
+  --yellow-glow: rgba(255, 194, 51, 0.12);
+  --blue: #4d8dff;
+  --blue-glow: rgba(77, 141, 255, 0.12);
+  --purple: #a855f7;
+
+  /* ── Warm accents ── */
+  --rose: #ff6b9d;
+  --rose-glow: rgba(255, 107, 157, 0.14);
+  --peach: #ffb088;
+  --peach-glow: rgba(255, 176, 136, 0.12);
+  --lavender: #c4b5fd;
+  --lavender-glow: rgba(196, 181, 253, 0.12);
+
+  /* ── Premium gradients ── */
+  --gradient-warm: linear-gradient(135deg, var(--rose) 0%, var(--peach) 100%);
+  --gradient-aurora: linear-gradient(135deg, var(--aurora-violet) 0%, var(--bio-cyan) 40%, var(--bio-green) 70%, var(--aurora-magenta) 100%);
+  --gradient-sunset: linear-gradient(135deg, var(--peach) 0%, var(--aurora-rose) 50%, var(--aurora-violet) 100%);
+  --gradient-mesh: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 100%);
+
+  /* ── Radii ── */
+  --radius: 24px;
+  --radius-sm: 14px;
+  --radius-xs: 8px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (deeper, with color) ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255,255,255,0.05);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255,255,255,0.05);
+  --shadow-accent: 0 4px 24px rgba(0, 240, 255, 0.15), 0 0 1px rgba(0, 240, 255, 0.3);
+  --shadow-accent-lg: 0 8px 48px rgba(0, 240, 255, 0.25), 0 0 2px rgba(0, 240, 255, 0.4);
+
+  /* ── Blur (tuned for mobile GPU budget) ── */
+  --blur: 20px;
+  --blur-heavy: 32px;
+
+  /* ── Easing ── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ── Typography ── */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  --font-display: 'Outfit', var(--font);
+  --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
+
+  font-family: var(--font);
+  color: var(--text-primary);
+  background: var(--void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  overflow-x: hidden;
+  min-height: 100dvh;
+}
+
+/* ── Atmospheric noise texture — subtle grain adds depth perception ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+/* ── Edge vignette — draws the eye inward ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: radial-gradient(ellipse 75% 65% at 50% 45%, transparent 55%, rgba(0,0,0,0.5) 100%);
+}
+
+/* ══════════════════════════════════════════
+   LIGHT MODE — activates via system preference
+   ══════════════════════════════════════════ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --void: #f5f5f7;
+    --depth-1: #ebebef;
+    --depth-2: #ffffff;
+    --depth-3: #f0f0f4;
+
+    --text-primary: #1a1a2e;
+    --text-secondary: rgba(26, 26, 46, 0.60);
+    --text-tertiary: rgba(26, 26, 46, 0.45);
+    --text-quaternary: rgba(26, 26, 46, 0.30);
+
+    --glass-bg: rgba(0, 0, 0, 0.02);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-border-hover: rgba(0, 0, 0, 0.14);
+    --glass-highlight: rgba(0, 0, 0, 0.03);
+
+    --bg: var(--void);
+    --surface: rgba(0, 0, 0, 0.02);
+    --surface-elevated: rgba(0, 0, 0, 0.04);
+    --surface-glass: rgba(0, 0, 0, 0.02);
+    --card: #ffffff;
+    --card-elevated: #f8f8fc;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+    --border-accent: rgba(0, 180, 160, 0.25);
+    --text: var(--text-primary);
+    --muted: var(--text-tertiary);
+    --dim: var(--text-quaternary);
+
+    /* Accent darkened for contrast on light bg (WCAG 4.5:1 on white) */
+    --accent: #009eb3;
+    --accent-2: #00a86b;
+    --accent-glow: rgba(0, 158, 179, 0.10);
+    --accent-glow-strong: rgba(0, 158, 179, 0.18);
+    --bio-glow: rgba(0, 158, 179, 0.08);
+    --bio-glow-strong: rgba(0, 158, 179, 0.16);
+    --aurora-violet: #6246ea;
+    --aurora-magenta: #c026d3;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.10);
+    --shadow-accent: 0 4px 24px rgba(0, 180, 160, 0.10);
+    --shadow-accent-lg: 0 8px 40px rgba(0, 180, 160, 0.14);
+
+    color: var(--text-primary);
+    background: var(--void);
+  }
+
+  body { background: var(--void); }
+
+  /* Disable film grain and heavy vignette in light mode */
+  body::before { opacity: 0.08; }
+  body::after { background: radial-gradient(ellipse 70% 60% at 50% 45%, transparent 60%, rgba(0,0,0,0.06) 100%); }
+
+  #root::before { display: none; }
+  .home-hero-bg { opacity: 0.3; filter: blur(60px); }
+  .vision-score-hero::before { opacity: 0.3; }
+
+  /* Card backgrounds for light mode */
+  .card, .insights-card { background: var(--card); box-shadow: var(--shadow-sm); }
+  .action-primary { background: linear-gradient(135deg, #00b4a0, #00a86b); }
+  .action-primary-glow { opacity: 0.05; }
+
+  /* Tab bar */
+  .tab-bar { background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.08); }
+  .tab-item { color: rgba(26,26,46,0.4); }
+  .tab-item.active { color: #00b4a0; }
+
+  /* Onboarding / forms */
+  input, select, textarea { background: rgba(0,0,0,0.03); color: var(--text-primary); border-color: rgba(0,0,0,0.1); }
+  input:focus, select:focus, textarea:focus { border-color: #00b4a0; }
+
+  /* Engine status */
+  .engine-status { background: rgba(0,0,0,0.04); }
+
+  /* VisionScore label — darker gradient for light bg */
+  .vision-score-label {
+    background: linear-gradient(90deg, #009eb3, #6246ea, #c026d3);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  /* Suppress aurora edge lights on cards */
+  .card::before { opacity: 0.3; }
+  .action-primary::before { opacity: 0.3; }
+
+  /* Hero glow */
+  .home-hero-bg { opacity: 0.25; filter: blur(60px); }
+  .vision-score-hero::before { opacity: 0.2; }
+}
+
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  z-index: 1;
+}
+
