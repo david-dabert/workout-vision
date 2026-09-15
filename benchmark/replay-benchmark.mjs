@@ -236,7 +236,7 @@ if (exercisesPatched !== exercisesOriginal) {
 
 import module from 'node:module';
 
-// Custom resolve hook: redirect ./poseAnalysis to our shim and add .js
+// Custom resolve hook: redirect ./poseAnalysis to our shim and add .js/.ts
 // extensions for bare relative imports (Vite handles this in browser).
 const shimUrl = new URL('../src/lib/_node_shim_poseAnalysis.mjs', import.meta.url).href;
 
@@ -247,13 +247,21 @@ if (module.registerHooks) {
       if (specifier.endsWith('/poseAnalysis') || specifier === './poseAnalysis') {
         return { shortCircuit: true, url: shimUrl };
       }
+      // Bare relative imports: try .ts first (migrated modules), fall back to .js
       if (specifier.startsWith('./') && !specifier.slice(2).includes('.')) {
+        try { return nextResolve(specifier + '.ts', context); } catch {}
         return nextResolve(specifier + '.js', context);
+      }
+      // Explicit .js imports: if file was renamed to .ts, resolve .ts instead
+      if (specifier.endsWith('.js')) {
+        try { return nextResolve(specifier, context); } catch {}
+        return nextResolve(specifier.replace(/\.js$/, '.ts'), context);
       }
       return nextResolve(specifier, context);
     },
     load(url, context, nextLoad) {
       // Shim import.meta.env for Vite-specific code running in Node
+      // Strip TypeScript type annotations for .ts files loaded by Node
       const result = nextLoad(url, context);
       if (result.source != null) {
         const src = typeof result.source === 'string' ? result.source : result.source.toString();
@@ -274,7 +282,12 @@ if (module.registerHooks) {
       return { shortCircuit: true, url: '${shimUrl}' };
     }
     if (specifier.startsWith('./') && !specifier.slice(2).includes('.')) {
+      try { return nextResolve(specifier + '.ts', context); } catch {}
       return nextResolve(specifier + '.js', context);
+    }
+    if (specifier.endsWith('.js')) {
+      try { return nextResolve(specifier, context); } catch {}
+      return nextResolve(specifier.replace(/\\.js$/, '.ts'), context);
     }
     return nextResolve(specifier, context);
   }

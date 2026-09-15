@@ -29,7 +29,7 @@ import {
   selectSubjectPose,
   createKalmanStates,
   kalmanFilter,
-} from './poseGeometry.js';
+} from './poseGeometry';
 
 const MEDIAPIPE_VERSION = '0.10.8';
 const CDN_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}`;

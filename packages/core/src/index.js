@@ -5,10 +5,10 @@
 export { EXERCISES, EXERCISE_GROUPS, qualityBelow, qualityAbove, qualitySymmetry, qualityRange } from '../../../src/lib/exercises.js';
 
 // Rep counting and form scoring
-export { RepCounter } from '../../../src/lib/repCounter.js';
+export { RepCounter } from '../../../src/lib/repCounter.ts';
 
 // Biomechanical analysis
-export { analyzeSet } from '../../../src/lib/biomechanics.js';
+export { analyzeSet } from '../../../src/lib/biomechanics.ts';
 
 // Coaching report generation
 export { generateWorkoutReport } from '../../../src/lib/coach.js';

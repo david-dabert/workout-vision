@@ -14,6 +14,20 @@
  *   - Kiesel K et al, 2007, N Am J Sports Phys Ther (asymmetry >15%)
  */
 
+import type {
+  Landmark,
+  LandmarkArray,
+  JointAngles,
+  RepBoundary,
+  BiomechanicalAnalysis,
+  TimeUnderTensionResult,
+  TUTPerRep,
+  RangeOfMotionResult,
+  AsymmetryResult,
+  AsymmetryRisk,
+  VelocityResult,
+  CompiledExercise,
+} from './types';
 import { extractJointAngles, LANDMARKS } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { lookupExercise } from './exerciseOntology';
@@ -21,6 +35,14 @@ import {
   NORM_TO_METERS_DEFAULT,
   ASYMMETRY_VIS_MIN,
 } from './analysisConfig';
+
+// ─── Internal types ───
+
+interface NormalizedRep {
+  start: number;
+  bottom: number;
+  end: number;
+}
 
 // Default height in meters for velocity normalization.
 // Overridden by user's actual height when available.
@@ -30,7 +52,7 @@ let NORM_TO_METERS = NORM_TO_METERS_DEFAULT;
  * Set the user's height for accurate velocity calculations.
  * Called once from the analysis pipeline when profile is available.
  */
-export function setUserHeight(heightCm) {
+export function setUserHeight(heightCm: number): void {
   if (heightCm && heightCm > 100 && heightCm < 250) {
     NORM_TO_METERS = heightCm / 100;
   }
@@ -39,8 +61,8 @@ export function setUserHeight(heightCm) {
 /**
  * Compute midpoint of two landmarks.
  */
-function midpoint(a, b) {
-  if (!a || !b) return a || b || { x: 0, y: 0, z: 0 };
+function midpoint(a: Landmark | null | undefined, b: Landmark | null | undefined): Landmark {
+  if (!a || !b) return (a || b || { x: 0, y: 0, z: 0 }) as Landmark;
   return {
     x: (a.x + b.x) / 2,
     y: (a.y + b.y) / 2,
@@ -51,34 +73,43 @@ function midpoint(a, b) {
 /**
  * Analyze a complete set.
  *
- * @param {Array} landmarkFrames - array of raw landmark arrays OR {landmarks} objects
- * @param {number} fps - capture frame rate
- * @param {string} exerciseKey - key into EXERCISES
- * @param {Array} [externalReps] - optional rep boundaries from RepCounter
+ * @param landmarkFrames - array of raw landmark arrays OR {landmarks} objects
+ * @param fps - capture frame rate
+ * @param exerciseKey - key into EXERCISES
+ * @param externalReps - optional rep boundaries from RepCounter
  *   Each entry: { startFrame, bottomFrame, endFrame }
- * @returns {Object} analysis results
+ * @returns analysis results
  */
-export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
+export function analyzeSet(
+  landmarkFrames: Array<LandmarkArray | { landmarks: LandmarkArray }>,
+  fps: number,
+  exerciseKey: string,
+  externalReps?: RepBoundary[],
+): BiomechanicalAnalysis {
   if (!landmarkFrames || landmarkFrames.length < 2) return emptyResult();
 
-  const exercise = EXERCISES[exerciseKey];
+  const exercise = (EXERCISES as Record<string, CompiledExercise>)[exerciseKey] as CompiledExercise | undefined;
   if (!exercise) return emptyResult();
 
   // Normalize: accept both raw landmark arrays and {landmarks} objects
-  const rawFrames = landmarkFrames.map(f => Array.isArray(f) ? f : (f.landmarks || f));
+  const rawFrames: LandmarkArray[] = landmarkFrames.map(f =>
+    Array.isArray(f) ? f : ((f as { landmarks: LandmarkArray }).landmarks || f) as LandmarkArray,
+  );
 
   // Extract angles for every frame
-  const anglesPerFrame = rawFrames.map(lm => extractJointAngles(lm));
-  const validAngles = anglesPerFrame.filter(a => a !== null);
+  const anglesPerFrame: (JointAngles | null)[] = rawFrames.map(lm => extractJointAngles(lm));
+  const validAngles = anglesPerFrame.filter((a): a is JointAngles => a !== null);
   if (validAngles.length < 2) return emptyResult();
 
   // Get tracking values (some exercises like calf_raise need landmarks too)
-  const trackingValues = anglesPerFrame.map((a, i) => a ? exercise.getValue(a, rawFrames[i]) : null);
+  const trackingValues: (number | null)[] = anglesPerFrame.map((a, i) =>
+    a ? exercise.getValue(a, rawFrames[i]) : null,
+  );
 
   // Rep boundaries come from RepCounter (single source of truth).
   // If RepCounter found 0 reps, biomechanics returns empty — no rescue algo.
   if (!externalReps || externalReps.length === 0) return emptyResult();
-  const reps = externalReps.map(r => ({
+  const reps: NormalizedRep[] = externalReps.map(r => ({
     start: Math.min(r.startFrame, rawFrames.length - 1),
     bottom: Math.min(r.bottomFrame, rawFrames.length - 1),
     end: Math.min(r.endFrame, rawFrames.length - 1),
@@ -94,7 +125,7 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
   // pulldown + press; upper_isolation has curl + pushdown; upper_horizontal
   // has row + press) require checking the exercise key name.
   const info = lookupExercise(exerciseKey);
-  const mc = info?.movementClass || '';
+  const mc: string = info?.movementClass || '';
   const keyLC = exerciseKey.toLowerCase();
   const isPulling = mc.includes('pull')
     || mc === 'upper_pull_supine'
@@ -117,7 +148,7 @@ export function analyzeSet(landmarkFrames, fps, exerciseKey, externalReps) {
   };
 }
 
-function emptyResult() {
+function emptyResult(): BiomechanicalAnalysis {
   return {
     timeUnderTension: { total: 0, eccentric: 0, concentric: 0, perRep: [] },
     rangeOfMotion: { avgDegrees: 0, perRep: [], consistency: 100 },
@@ -131,23 +162,30 @@ function emptyResult() {
  * Uses worldLandmarks (metric-scale, in meters) when available for accurate
  * displacement. Falls back to normalized landmarks * NORM_TO_METERS if not.
  *
- * @param {Array} rawFrames - raw landmark arrays per frame
- * @param {number} fps - frames per second
- * @param {Array} reps - rep boundaries
- * @param {Object} exercise - exercise definition
- * @param {boolean} isPulling - true for pulling exercises
- * @param {Array} [worldFrames] - optional worldLandmarks per frame (metric-scale)
+ * @param rawFrames - raw landmark arrays per frame
+ * @param fps - frames per second
+ * @param reps - rep boundaries
+ * @param exercise - exercise definition
+ * @param isPulling - true for pulling exercises
+ * @param worldFrames - optional worldLandmarks per frame (metric-scale)
  */
-function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, worldFrames = null) {
+function analyzeVelocity(
+  rawFrames: LandmarkArray[],
+  fps: number,
+  reps: NormalizedRep[],
+  exercise: CompiledExercise,
+  isPulling = false,
+  worldFrames: LandmarkArray[] | null = null,
+): VelocityResult {
   if (reps.length === 0) {
     return { avg: 0, perRep: [], trend: 'trend_insufficient' };
   }
 
-  const isLower = ['knee', 'hip'].includes(exercise.joint);
+  const isLower = ['knee', 'hip'].includes((exercise as { joint?: string }).joint || '');
   const timeDelta = 1 / fps;
   const hasWorld = worldFrames && worldFrames.length === rawFrames.length;
 
-  const perRep = reps.map(rep => {
+  const perRep: number[] = reps.map(rep => {
     // For pushing exercises: concentric = bottom->end (angle increasing)
     // For pulling exercises: concentric = start->bottom (angle decreasing)
     const concentricStart = isPulling ? rep.start : rep.bottom;
@@ -160,14 +198,14 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, worl
     let totalDisplacement = 0;
     for (let i = concentricStart; i < concentricEnd; i++) {
       // Prefer worldLandmarks (already in meters) over normalized + scale factor
-      const useWorld = hasWorld && worldFrames[i] && worldFrames[i + 1];
-      const lm1 = useWorld ? worldFrames[i] : rawFrames[i];
-      const lm2 = useWorld ? worldFrames[i + 1] : rawFrames[i + 1];
+      const useWorld = hasWorld && worldFrames![i] && worldFrames![i + 1];
+      const lm1 = useWorld ? worldFrames![i] : rawFrames[i];
+      const lm2 = useWorld ? worldFrames![i + 1] : rawFrames[i + 1];
       if (!lm1 || !lm2) continue;
       // worldLandmarks are already in meters; normalized need scaling
       const scale = useWorld ? 1 : NORM_TO_METERS;
 
-      let p1, p2;
+      let p1: Landmark, p2: Landmark;
       if (isLower) {
         p1 = midpoint(lm1[LANDMARKS.LEFT_HIP], lm1[LANDMARKS.RIGHT_HIP]);
         p2 = midpoint(lm2[LANDMARKS.LEFT_HIP], lm2[LANDMARKS.RIGHT_HIP]);
@@ -207,12 +245,12 @@ function analyzeVelocity(rawFrames, fps, reps, exercise, isPulling = false, worl
 /**
  * Time under tension per rep.
  */
-function analyzeTUT(reps, fps, isPulling = false) {
+function analyzeTUT(reps: NormalizedRep[], fps: number, isPulling = false): TimeUnderTensionResult {
   if (reps.length === 0) {
     return { total: 0, eccentric: 0, concentric: 0, perRep: [] };
   }
 
-  const perRep = reps.map(rep => {
+  const perRep: TUTPerRep[] = reps.map(rep => {
     // start→bottom = angle decreasing; bottom→end = angle increasing
     // For pushing/squat: decreasing = eccentric, increasing = concentric
     // For pulling/row: decreasing = concentric, increasing = eccentric
@@ -241,21 +279,21 @@ function analyzeTUT(reps, fps, isPulling = false) {
 /**
  * Range of motion per rep in degrees.
  */
-function analyzeROM(values, reps) {
+function analyzeROM(values: (number | null)[], reps: NormalizedRep[]): RangeOfMotionResult {
   if (reps.length === 0) {
     return { avgDegrees: 0, perRep: [], consistency: 100 };
   }
 
-  const perRep = reps.map(rep => {
+  const perRep: number[] = reps.map(rep => {
     // Search a small window around each boundary for the best non-null value
-    const getVal = (idx, searchUp) => {
-      if (values[idx] != null) return values[idx];
+    const getVal = (idx: number, searchUp: boolean): number => {
+      if (values[idx] != null) return values[idx]!;
       // Search up to 3 frames in each direction for a valid value
       for (let d = 1; d <= 3; d++) {
-        if (searchUp && idx + d < values.length && values[idx + d] != null) return values[idx + d];
-        if (!searchUp && idx - d >= 0 && values[idx - d] != null) return values[idx - d];
-        if (idx + d < values.length && values[idx + d] != null) return values[idx + d];
-        if (idx - d >= 0 && values[idx - d] != null) return values[idx - d];
+        if (searchUp && idx + d < values.length && values[idx + d] != null) return values[idx + d]!;
+        if (!searchUp && idx - d >= 0 && values[idx - d] != null) return values[idx - d]!;
+        if (idx + d < values.length && values[idx + d] != null) return values[idx + d]!;
+        if (idx - d >= 0 && values[idx - d] != null) return values[idx - d]!;
       }
       return 0;
     };
@@ -284,9 +322,9 @@ function analyzeROM(values, reps) {
  * Bilateral asymmetry from angle data.
  * Kiesel 2007: >15% indicates elevated injury risk.
  */
-function analyzeAsymmetry(anglesArray) {
+function analyzeAsymmetry(anglesArray: (JointAngles | null)[]): AsymmetryResult {
   // Visibility keys matching the _vis* fields from extractJointAngles
-  const pairs = [
+  const pairs: [string, string, string, string, string][] = [
     ['leftKnee', 'rightKnee', '_visLeftKnee', '_visRightKnee', 'Knee'],
     ['leftHip', 'rightHip', '_visLeftHip', '_visRightHip', 'Hip'],
     ['leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow', 'Elbow'],
@@ -295,12 +333,12 @@ function analyzeAsymmetry(anglesArray) {
 
   const VIS_MIN = ASYMMETRY_VIS_MIN; // only compare sides when both are well-tracked
 
-  const details = {};
+  const details: Record<string, number> = {};
   let total = 0;
   let count = 0;
 
   for (const [left, right, visLeft, visRight, name] of pairs) {
-    const valid = anglesArray.filter(a => a !== null);
+    const valid = anglesArray.filter((a): a is JointAngles => a !== null);
     let filtered = valid.filter(a => {
       const lv = a[visLeft] || 0;
       const rv = a[visRight] || 0;
@@ -322,7 +360,7 @@ function analyzeAsymmetry(anglesArray) {
   return {
     score,
     details,
-    risk: score > 15 ? 'elevated' : score > 10 ? 'moderate' : 'low',
+    risk: (score > 15 ? 'elevated' : score > 10 ? 'moderate' : 'low') as AsymmetryRisk,
   };
 }
 
@@ -333,7 +371,11 @@ function analyzeAsymmetry(anglesArray) {
  * tempo control (25%). Only uses data derivable from joint angles
  * and frame timing; no pixel-velocity components.
  */
-function scoreQuality(tut, rom, asymmetry) {
+function scoreQuality(
+  tut: TimeUnderTensionResult,
+  rom: RangeOfMotionResult,
+  asymmetry: AsymmetryResult,
+): number {
   // ROM consistency: 0-45 points
   const romScore = Math.min(45, Math.max(0, (rom.consistency || 0) * 0.45));
 
@@ -357,8 +399,7 @@ function scoreQuality(tut, rom, asymmetry) {
   return Math.max(0, Math.min(100, Math.round(total)));
 }
 
-function round(val, decimals) {
+function round(val: number, decimals: number): number {
   const f = 10 ** decimals;
   return Math.round(val * f) / f;
 }
-

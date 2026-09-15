@@ -14,6 +14,25 @@ export interface Landmark {
 
 export type LandmarkArray = Landmark[];
 
+/**
+ * MediaPipe Pose Landmarker 33-point model.
+ * A full pose is exactly 33 landmarks.
+ */
+export type PoseLandmarks = Landmark[] & { length: 33 };
+
+/** Named landmark indices for the MediaPipe 33-point model. */
+export interface LandmarkIndices {
+  NOSE: 0;
+  LEFT_SHOULDER: 11; RIGHT_SHOULDER: 12;
+  LEFT_ELBOW: 13; RIGHT_ELBOW: 14;
+  LEFT_WRIST: 15; RIGHT_WRIST: 16;
+  LEFT_HIP: 23; RIGHT_HIP: 24;
+  LEFT_KNEE: 25; RIGHT_KNEE: 26;
+  LEFT_ANKLE: 27; RIGHT_ANKLE: 28;
+  LEFT_HEEL: 29; RIGHT_HEEL: 30;
+  LEFT_FOOT_INDEX: 31; RIGHT_FOOT_INDEX: 32;
+}
+
 // ─── Joint Angles ───
 
 export interface JointAngles {
@@ -25,10 +44,7 @@ export interface JointAngles {
   rightElbow: number;
   leftShoulder: number;
   rightShoulder: number;
-  leftAnkle: number;
-  rightAnkle: number;
-  torsoAngle: number;
-  neckAngle: number;
+  trunk: number;
   _visLeftKnee: number;
   _visRightKnee: number;
   _visLeftHip: number;
@@ -37,8 +53,6 @@ export interface JointAngles {
   _visRightElbow: number;
   _visLeftShoulder: number;
   _visRightShoulder: number;
-  _visLeftAnkle: number;
-  _visRightAnkle: number;
   [key: string]: number;
 }
 
@@ -48,6 +62,101 @@ export interface AnalysisFrame {
   landmarks: LandmarkArray;
   timestamp: number;
   angles: JointAngles;
+}
+
+// ─── Rep Boundary (from RepCounter to biomechanics) ───
+
+export interface RepBoundary {
+  startFrame: number;
+  bottomFrame: number;
+  endFrame: number;
+}
+
+// ─── Biomechanical Analysis (return type of analyzeSet) ───
+
+export interface TUTPerRep {
+  eccentric: number;
+  concentric: number;
+  total: number;
+}
+
+export interface TimeUnderTensionResult {
+  total: number;
+  eccentric: number;
+  concentric: number;
+  perRep: TUTPerRep[];
+}
+
+export interface RangeOfMotionResult {
+  avgDegrees: number;
+  perRep: number[];
+  consistency: number;
+}
+
+export type AsymmetryRisk = 'low' | 'moderate' | 'elevated';
+
+export interface AsymmetryResult {
+  score: number;
+  details: Record<string, number>;
+  risk: AsymmetryRisk;
+}
+
+export interface VelocityResult {
+  avg: number;
+  perRep: number[];
+  trend: string;
+}
+
+export interface BiomechanicalAnalysis {
+  timeUnderTension: TimeUnderTensionResult;
+  rangeOfMotion: RangeOfMotionResult;
+  asymmetry: AsymmetryResult;
+  movementQuality: number;
+}
+
+// ─── Rep Event (returned by RepCounter.update) ───
+
+export interface RepEvent {
+  reps: number;
+  phase: string;
+  angle: number | null;
+  angles: JointAngles | null;
+  formFeedback: FormFeedbackItem[];
+  repCompleted: boolean;
+  repHistory: RepHistoryEntry[];
+}
+
+export interface FormFeedbackItem {
+  name: string;
+  passed: boolean;
+  text: string;
+  severity?: string;
+}
+
+export interface RepHistoryEntry {
+  score: number | null;
+  issues: string[];
+  feedback?: FormResultEntry[] | null;
+  ts: number;
+  startFrame: number;
+  bottomFrame: number;
+  endFrame: number;
+  peakFrame?: number;
+  rom?: number | null;
+  romPercent?: number | null;
+  startTime?: number;
+  endTime?: number;
+  velocity?: unknown;
+}
+
+export interface FormResultEntry {
+  name: string;
+  passed: boolean;
+  quality: number;
+  bad?: string;
+  severity?: string;
+  skipped?: boolean;
+  skippedReason?: string;
 }
 
 // ─── Rep ───

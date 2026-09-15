@@ -1,10 +1,15 @@
 /**
- * poseGeometry.js — Shared geometry, filtering, and pose selection utilities.
+ * poseGeometry.ts — Shared geometry, filtering, and pose selection utilities.
  *
  * Single source of truth for logic used by both the main thread (poseAnalysis.js)
  * and the Web Worker (poseWorker.js). This module has zero dependencies so it can
  * be imported from a Worker loaded with { type: 'module' }.
  */
+
+import type { Landmark, LandmarkArray, JointAngles } from './types';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — oneEuroFilter.js has no type declarations yet
+import { OneEuroLandmarkFilter } from './oneEuroFilter.js';
 
 // ─── Landmark indices (MediaPipe Pose Landmarker 33-point model) ───
 
@@ -18,7 +23,7 @@ export const LANDMARKS = {
   LEFT_ANKLE: 27, RIGHT_ANKLE: 28,
   LEFT_HEEL: 29, RIGHT_HEEL: 30,
   LEFT_FOOT_INDEX: 31, RIGHT_FOOT_INDEX: 32,
-};
+} as const;
 
 // ─── 3-point joint angle ───
 
@@ -26,7 +31,7 @@ export const LANDMARKS = {
  * Calculate the angle at vertex b formed by points a-b-c, in degrees.
  * Works in 3D (uses z if available, defaults to 0).
  */
-export function calculateAngle(a, b, c) {
+export function calculateAngle(a: Landmark, b: Landmark, c: Landmark): number {
   const ba = { x: a.x - b.x, y: a.y - b.y, z: (a.z || 0) - (b.z || 0) };
   const bc = { x: c.x - b.x, y: c.y - b.y, z: (c.z || 0) - (b.z || 0) };
   const dot = ba.x * bc.x + ba.y * bc.y + ba.z * bc.z;
@@ -42,13 +47,14 @@ export function calculateAngle(a, b, c) {
 /**
  * Extract all 8 joint angles + trunk angle + per-joint visibility scores
  * from a 33-point landmark array.
- * @param {Array} landmarks - 33-element landmark array with {x, y, z, visibility}
- * @returns {Object|null} angles object or null if landmarks invalid
+ * @param landmarks - 33-element landmark array with {x, y, z, visibility}
+ * @returns angles object or null if landmarks invalid
  */
-export function extractJointAngles(landmarks) {
+export function extractJointAngles(landmarks: LandmarkArray): JointAngles | null {
   if (!landmarks || landmarks.length < 33) return null;
   const L = landmarks;
-  const vis = (a, b, c) => Math.min(L[a].visibility || 0, L[b].visibility || 0, L[c].visibility || 0);
+  const vis = (a: number, b: number, c: number): number =>
+    Math.min(L[a].visibility || 0, L[b].visibility || 0, L[c].visibility || 0);
 
   return {
     leftKnee: calculateAngle(L[LANDMARKS.LEFT_HIP], L[LANDMARKS.LEFT_KNEE], L[LANDMARKS.LEFT_ANKLE]),
@@ -75,18 +81,18 @@ export function extractJointAngles(landmarks) {
  * Calculate trunk angle: angle between vertical reference and the
  * shoulder-midpoint to hip-midpoint line.
  */
-export function calculateTrunkAngle(landmarks) {
-  const midShoulder = {
+export function calculateTrunkAngle(landmarks: LandmarkArray): number {
+  const midShoulder: Landmark = {
     x: (landmarks[LANDMARKS.LEFT_SHOULDER].x + landmarks[LANDMARKS.RIGHT_SHOULDER].x) / 2,
     y: (landmarks[LANDMARKS.LEFT_SHOULDER].y + landmarks[LANDMARKS.RIGHT_SHOULDER].y) / 2,
     z: ((landmarks[LANDMARKS.LEFT_SHOULDER].z || 0) + (landmarks[LANDMARKS.RIGHT_SHOULDER].z || 0)) / 2,
   };
-  const midHip = {
+  const midHip: Landmark = {
     x: (landmarks[LANDMARKS.LEFT_HIP].x + landmarks[LANDMARKS.RIGHT_HIP].x) / 2,
     y: (landmarks[LANDMARKS.LEFT_HIP].y + landmarks[LANDMARKS.RIGHT_HIP].y) / 2,
     z: ((landmarks[LANDMARKS.LEFT_HIP].z || 0) + (landmarks[LANDMARKS.RIGHT_HIP].z || 0)) / 2,
   };
-  const verticalRef = { ...midHip, y: midHip.y - 1 };
+  const verticalRef: Landmark = { ...midHip, y: midHip.y - 1 };
   return calculateAngle(midShoulder, midHip, verticalRef);
 }
 
@@ -96,7 +102,7 @@ export function calculateTrunkAngle(landmarks) {
  * Check if any joint angle exceeds biomechanical limits.
  * Returns true if landmarks are anatomically implausible.
  */
-export function isAnatomicallyImplausible(landmarks) {
+export function isAnatomicallyImplausible(landmarks: LandmarkArray): boolean {
   if (!landmarks || landmarks.length < 33) return false;
   const L = landmarks;
   const checks = [
@@ -120,7 +126,7 @@ const VIS_THRESHOLD = 0.3;
  * Prioritizes body area (closest to camera = largest bounding box) and
  * penalizes distance from frame center.
  */
-export function selectSubjectPose(landmarksArray) {
+export function selectSubjectPose(landmarksArray: LandmarkArray[]): LandmarkArray | null {
   if (!landmarksArray || landmarksArray.length === 0) return null;
   if (landmarksArray.length === 1) return landmarksArray[0];
 
@@ -151,15 +157,13 @@ export function selectSubjectPose(landmarksArray) {
 
 // ─── One Euro Filter (adaptive low-pass, zero-dependency, usable in Worker) ───
 
-import { OneEuroLandmarkFilter } from './oneEuroFilter.js';
-
-export function createKalmanStates(n) {
+export function createKalmanStates(n: number): OneEuroLandmarkFilter {
   // Returns a OneEuroLandmarkFilter instance — drop-in replacement for the
   // old per-coordinate Kalman state arrays. The name is kept for API compat.
   return new OneEuroLandmarkFilter({ numLandmarks: n });
 }
 
-export function kalmanFilter(landmarks, states) {
+export function kalmanFilter(landmarks: LandmarkArray, states: OneEuroLandmarkFilter): LandmarkArray | null {
   // `states` is now a OneEuroLandmarkFilter instance.
   return states.filter(landmarks);
 }

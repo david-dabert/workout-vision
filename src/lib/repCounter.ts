@@ -19,6 +19,14 @@
  *   finalize() is never called.
  */
 
+import type {
+  LandmarkArray,
+  JointAngles,
+  RepEvent,
+  FormFeedbackItem,
+  RepHistoryEntry,
+  FormResultEntry,
+} from './types';
 import { extractJointAngles, LANDMARKS, interpolateOccludedLandmarks } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { shouldSkipCheck } from './injuries';
@@ -58,19 +66,71 @@ import {
 
 const REP_COUNTER_BUILD = 'v24-adaptive-signal';
 
+// ─── Internal types ───
+
+/** Exercise definition with compiled getValue/formChecks (from untyped exercises.js) */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Exercise = any;
+
+/** Valley counting result from valleyCounter.js */
+interface ValleyResult {
+  reps: number;
+  valleyFrames: number[];
+  signalRange: number;
+  [key: string]: unknown;
+}
+
+/** Signal candidate for adaptive selection */
+interface SignalCandidate {
+  name: string;
+  countSignal: number[];
+  original: number[];
+  inv: boolean;
+}
+
+/** Cycle boundary from valley positions */
+interface Cycle {
+  start: number;
+  end: number;
+  min: number;
+  max: number;
+  amplitude: number;
+  duration: number;
+}
+
+/** Diagnostic candidate entry */
+interface DiagCandidate {
+  name: string;
+  reps: number;
+  score: number;
+  consistency: number;
+  winner: boolean;
+}
+
+/** Constructor options for RepCounter */
+interface RepCounterOptions {
+  mode?: 'video' | 'live';
+  fps?: number;
+  userInjuries?: string[];
+  weightKg?: number;
+}
+
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
 // ---------------------------------------------------------------------------
 
 export class AngleBuffer {
+  private _window: number;
+  private _buffers: Record<string, number[]>;
+
   constructor(windowSize = 5) {
     this._window = windowSize;
     this._buffers = {};
   }
 
-  smooth(angles) {
+  smooth(angles: JointAngles | null): JointAngles | null {
     if (!angles) return null;
-    const smoothed = {};
+    const smoothed: Record<string, number> = {};
     for (const key of Object.keys(angles)) {
       if (!this._buffers[key]) this._buffers[key] = [];
       this._buffers[key].push(angles[key]);
@@ -80,10 +140,10 @@ export class AngleBuffer {
       const buf = this._buffers[key];
       smoothed[key] = buf.reduce((s, v) => s + v, 0) / buf.length;
     }
-    return smoothed;
+    return smoothed as JointAngles;
   }
 
-  reset() {
+  reset(): void {
     this._buffers = {};
   }
 }
@@ -98,8 +158,42 @@ export class AngleBuffer {
 const MAX_LANDMARK_FRAMES = 1200;
 
 export class RepCounter {
-  constructor(exerciseKey, opts = {}) {
-    const ex = EXERCISES[exerciseKey];
+  private _exercise: Exercise;
+  private _exerciseKey: string;
+  private _mode: 'video' | 'live';
+  private _fps: number;
+  private _userInjuries: string[];
+  private _weightKg: number;
+  private _anthropometricNormalizer: AnthropometricNormalizer;
+  private _reps!: number;
+  private _repHistory!: RepHistoryEntry[];
+  private _phase!: string;
+  private _collectedLandmarks!: LandmarkArray[];
+  private _totalFramesAnalyzed!: number;
+  private _observedMin!: number;
+  private _observedMax!: number;
+  private _finalized!: boolean;
+  private _lastRepTime!: number;
+  private _frameIdx!: number;
+  private _cycleDebug!: { reps: number; cycles: Cycle[]; periodFrames: number; signalRange: number } | null;
+  private _velocityAnalysis!: { fatigue: unknown; power: unknown; smoothness: unknown } | null;
+  private _progressionScore!: unknown;
+  private _prevValue!: number | null;
+  private _prevPrevValue!: number | null;
+  private _angularVelocity!: number;
+  private _isometricFrames!: number;
+  private _cycleAngles!: JointAngles[];
+  private _cycleLandmarks!: LandmarkArray[];
+  private _signalDiagnostics!: unknown[];
+  private _repResult!: { confirmed: number; uncertain: number; total: number } | null;
+  private _exerciseConfidence!: number;
+  private _adaptedSignalName?: string;
+  private _adaptiveDiagCandidates?: DiagCandidate[];
+  private _adaptiveDiag?: DiagCandidate[];
+  private _templateEdgeDiag?: unknown;
+
+  constructor(exerciseKey: string, opts: RepCounterOptions = {}) {
+    const ex = (EXERCISES as Record<string, Exercise>)[exerciseKey];
     if (!ex) throw new Error(`Unknown exercise: ${exerciseKey}`);
     this._exercise = ex;
     this._exerciseKey = exerciseKey;
@@ -111,10 +205,10 @@ export class RepCounter {
     this.reset();
   }
 
-  get repHistory() { return this._repHistory; }
-  get reps() { return this._reps; }
+  get repHistory(): RepHistoryEntry[] { return this._repHistory; }
+  get reps(): number { return this._reps; }
 
-  reset() {
+  reset(): void {
     this._reps = 0;
     this._repHistory = [];
     this._phase = 'setup'; // 5-stage FSM: setup → eccentric → isometric → concentric → lockout
@@ -144,10 +238,10 @@ export class RepCounter {
   /**
    * Per-frame update. Collects landmarks for finalize().
    * Hysteresis counting runs for live rep display.
-   * @param {Array} landmarks - MediaPipe pose landmarks
-   * @param {number} videoTimestamp - Time in SECONDS (e.g. frameIndex / fps)
+   * @param landmarks - MediaPipe pose landmarks
+   * @param videoTimestamp - Time in SECONDS (e.g. frameIndex / fps)
    */
-  update(landmarks, videoTimestamp) {
+  update(landmarks: LandmarkArray, videoTimestamp?: number): RepEvent {
     const rawAngles = extractJointAngles(landmarks);
     if (!rawAngles) {
       return {
@@ -206,7 +300,7 @@ export class RepCounter {
     {
       const dt = 1 / this._fps;
       // Convert seconds to ms. Guard against callers passing ms already (>1000 = likely ms).
-      let now;
+      let now: number;
       if (videoTimestamp == null) {
         now = Date.now();
       } else if (videoTimestamp > 1000) {
@@ -328,7 +422,7 @@ export class RepCounter {
    * (e.g. overhead press), we invert the signal and still
    * count valleys.
    */
-  finalize() {
+  finalize(): void {
     if (this._finalized) return;
     this._finalized = true;
 
@@ -337,10 +431,10 @@ export class RepCounter {
     if (ex.isIsometric || N < 6) return;
 
     // ── Step 0: Interpolate occluded landmarks for cleaner signal ──
-    const cleanedLandmarks = interpolateOccludedLandmarks(this._collectedLandmarks);
+    const cleanedLandmarks: LandmarkArray[] = interpolateOccludedLandmarks(this._collectedLandmarks);
 
     // ── Step 1: Extract the raw tracking signal ──
-    const rawValues = cleanedLandmarks.map(lm => {
+    const rawValues: (number | null)[] = cleanedLandmarks.map(lm => {
       const a = extractJointAngles(lm);
       return a ? ex.getValue(a, lm) : null;
     });
@@ -350,7 +444,7 @@ export class RepCounter {
     // (minSpacing < 0.2) get reduced smoothing to preserve rapid peaks.
     const smoothWindow = ex.smoothing != null ? ex.smoothing
       : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 3;
-    let interpolated = this._smoothSignal(this._interpolateNulls(rawValues), smoothWindow);
+    let interpolated: number[] = this._smoothSignal(this._interpolateNulls(rawValues), smoothWindow);
 
     // ── Step 1b: Adaptive multi-signal selection ──
     // Test ALL available signals (primary + 28 3D alternatives) in both
@@ -372,7 +466,7 @@ export class RepCounter {
     // Then apply autocorrelation edge correction: if the dominant period
     // suggests one more rep than valley counting found, and the signal shows
     // partial motion at the edges, recover the edge rep.
-    let result = this._autocorrelationEdgeCorrect(signal, adaptive.result);
+    let result: ValleyResult = this._autocorrelationEdgeCorrect(signal, adaptive.result);
 
     // Template-correlation edge correction: uses waveform shape (NCC) to
     // distinguish truncated reps from setup/return motion at signal edges.
@@ -390,7 +484,7 @@ export class RepCounter {
     }
 
     // Build cycles from valley positions for downstream compatibility
-    const cycles = [];
+    const cycles: Cycle[] = [];
     for (let i = 0; i < result.valleyFrames.length; i++) {
       const vFrame = result.valleyFrames[i];
       const searchStart = i > 0 ? result.valleyFrames[i - 1] : 0;
@@ -447,9 +541,10 @@ export class RepCounter {
       }
       const fullAnalysis = velocityEngine.analyze(interpolated, this._weightKg || 0);
       this._velocityAnalysis = { fatigue: fullAnalysis.fatigue, power: fullAnalysis.power, smoothness: fullAnalysis.smoothness };
-      const formScores = this._repHistory.map(r => r.score).filter(s => s !== null);
+      const formScores = this._repHistory.map(r => r.score).filter((s): s is number => s !== null);
       this._progressionScore = ProgressionScore.computeSet({ formScores, repVelocities, reps: result.reps, weightKg: this._weightKg || 0 });
     } catch (e) {
+      // Non-critical; swallow errors from velocity/progression analysis
     }
 
     // Preserve frame count before freeing landmarks.
@@ -472,7 +567,7 @@ export class RepCounter {
   // matches common swing-check patterns AND the check function tests trunk
   // against a small absolute threshold, we flag it for relative-swing evaluation.
 
-  _isTrunkSwingCheck(fc, exercise) {
+  private _isTrunkSwingCheck(fc: Exercise, exercise: Exercise): boolean {
     const swingNames = /swing|momentum|strict|upright.*torso|no.*lean|stable.*torso|body.*sway/i;
     const isIsolation = exercise.category === 'isolation';
     const nameMatches = swingNames.test(fc.name);
@@ -498,8 +593,11 @@ export class RepCounter {
   // Noise produces irregular valleys (high CV → low consistency → low score).
   // The signal with the highest score wins.
 
-  _adaptiveSignalSelect(cleanedLandmarks, primarySmoothed) {
-    const candidates = [];
+  private _adaptiveSignalSelect(
+    cleanedLandmarks: LandmarkArray[],
+    primarySmoothed: number[],
+  ): { signal: number[]; invert: boolean; result: ValleyResult; name: string } {
+    const candidates: SignalCandidate[] = [];
 
     // Primary signal in both orientations
     candidates.push({ name: 'primary', countSignal: primarySmoothed, original: primarySmoothed, inv: false });
@@ -509,7 +607,7 @@ export class RepCounter {
     // SIGNAL_PRIORITY_3D for ~30 exercises, falls back to joint-based
     // defaults for the remaining ~245. This extends adaptive selection
     // to all 275 exercises without testing irrelevant signals.
-    const priority = getSignalPriority(this._exerciseKey, this._exercise.joint);
+    const priority: string[] | null = getSignalPriority(this._exerciseKey, this._exercise.joint);
     if (priority && priority.length > 0) {
       try {
         const signals3D = extractSignals3D(cleanedLandmarks);
@@ -521,7 +619,7 @@ export class RepCounter {
           ? (ex.smoothing != null ? ex.smoothing : 1) : 5;
 
         for (const sigName of priority) {
-          const sig = signals3D.find(s => s.name === sigName);
+          const sig = signals3D.find((s: { name: string; values: (number | null)[] }) => s.name === sigName);
           if (!sig) continue;
           const smoothed = this._smoothSignal(this._interpolateNulls(sig.values), altSmoothWindow);
           candidates.push({ name: sigName, countSignal: smoothed, original: smoothed, inv: false });
@@ -533,11 +631,11 @@ export class RepCounter {
     }
 
     // First: establish the primary baseline with exercise-defined orientation.
-    const exInv = this._exercise.downThreshold > this._exercise.upThreshold;
-    const primaryCount = this._countValleys(exInv ? primarySmoothed.map(v => -v) : primarySmoothed);
+    const exInv: boolean = this._exercise.downThreshold > this._exercise.upThreshold;
+    const primaryCount: ValleyResult = this._countValleys(exInv ? primarySmoothed.map(v => -v) : primarySmoothed);
     let primaryConsistency = 1;
     if (primaryCount.valleyFrames.length >= 2) {
-      const gaps = [];
+      const gaps: number[] = [];
       for (let i = 1; i < primaryCount.valleyFrames.length; i++) {
         gaps.push(primaryCount.valleyFrames[i] - primaryCount.valleyFrames[i - 1]);
       }
@@ -553,8 +651,8 @@ export class RepCounter {
     // from winning while still allowing genuine improvements (e.g. hip_Y
     // for front-view squats where knee angles are compressed in 2D).
     let bestScore = primaryScore;
-    let bestCand = { original: primarySmoothed, inv: exInv, name: 'primary' };
-    let bestResult = primaryCount;
+    let bestCand: { original: number[]; inv: boolean; name: string } = { original: primarySmoothed, inv: exInv, name: 'primary' };
+    let bestResult: ValleyResult = primaryCount;
 
     this._adaptiveDiagCandidates = [{ name: 'primary', reps: primaryCount.reps, score: primaryScore, consistency: primaryConsistency, winner: false }];
 
@@ -562,7 +660,7 @@ export class RepCounter {
       // Skip the two primary entries — we already computed the baseline
       if (cand.name === 'primary' || cand.name === 'primary_inv') continue;
 
-      const result = this._countValleys(cand.countSignal);
+      const result: ValleyResult = this._countValleys(cand.countSignal);
       if (result.reps === 0) continue;
 
       // Overcounting guard: when primary finds >= 3 reps, reject alternatives
@@ -572,7 +670,7 @@ export class RepCounter {
 
       let consistency = 1;
       if (result.valleyFrames.length >= 2) {
-        const gaps = [];
+        const gaps: number[] = [];
         for (let i = 1; i < result.valleyFrames.length; i++) {
           gaps.push(result.valleyFrames[i] - result.valleyFrames[i - 1]);
         }
@@ -618,23 +716,23 @@ export class RepCounter {
   //   2. Amplitude from preceding peak to valley must be >= 25°
 
   // Delegates to standalone valley counter (single source of truth)
-  _countValleys(signal) {
+  private _countValleys(signal: number[]): ValleyResult {
     return findValleys(signal, this._fps, this._exercise);
   }
 
-  _reconcilePeaksAndValleys(signal, valleyResult) {
+  private _reconcilePeaksAndValleys(signal: number[], valleyResult: ValleyResult): ValleyResult {
     return reconcilePeaksAndValleys(signal, valleyResult, this._fps, this._exercise);
   }
 
-  _medianIntervalFrames(frames) {
+  private _medianIntervalFrames(frames: number[]): number {
     return medianIntervalFrames(frames);
   }
 
-  _autocorrelationEdgeCorrect(signal, valleyResult) {
+  private _autocorrelationEdgeCorrect(signal: number[], valleyResult: ValleyResult): ValleyResult {
     return autocorrelationEdgeCorrect(signal, valleyResult, this._fps);
   }
 
-  _templateEdgeCorrect(signal, valleyResult) {
+  private _templateEdgeCorrect(signal: number[], valleyResult: ValleyResult): ValleyResult {
     const result = templateEdgeCorrect(signal, valleyResult, this._fps, this._exercise);
     this._templateEdgeDiag = result._templateDiag || null;
     const { _templateDiag, ...clean } = result;
@@ -643,26 +741,24 @@ export class RepCounter {
 
   /**
    * Get the rep result with uncertain classification.
-   * @returns {{ confirmed: number, uncertain: number, total: number }|null}
    */
-  getRepResult() {
+  getRepResult(): { confirmed: number; uncertain: number; total: number } | null {
     return this._repResult;
   }
 
   /**
    * Set exercise detection confidence (from ExerciseAutoDetector).
    * Used in candidate scoring.
-   * @param {number} conf - 0-1
+   * @param conf - 0-1
    */
-  setExerciseConfidence(conf) {
+  setExerciseConfidence(conf: number): void {
     this._exerciseConfidence = conf || 0;
   }
 
   /**
    * Get per-signal diagnostics for the analysis diagnostics layer.
-   * @returns {Array<{ name: string, repCount: number, confidence: number, period: number, signalRange: number, adaptedThreshold: number }>}
    */
-  getSignalDiagnostics() {
+  getSignalDiagnostics(): unknown[] {
     return this._signalDiagnostics;
   }
 
@@ -688,46 +784,44 @@ export class RepCounter {
   }
 
   // Delegates to standalone signal processing (single source of truth)
-  _interpolateNulls(signal) {
+  private _interpolateNulls(signal: (number | null)[]): number[] {
     return interpolateNulls(signal);
   }
 
   /**
    * Exercise-specific rep period bounds in seconds.
    * Delegates to centralized config in analysisConfig.js.
-   * @param {string} exerciseKey
-   * @returns {{ min: number, max: number }}
    */
-  static _repPeriodBounds(exerciseKey) {
+  static _repPeriodBounds(exerciseKey: string): { min: number; max: number } {
     return getRepPeriodBounds(exerciseKey);
   }
 
-  _smoothSignal(signal, windowSize) {
+  private _smoothSignal(signal: number[], windowSize: number): number[] {
     return smoothSignal(signal, windowSize);
   }
 
   // ─── Private: Build form history from cycle boundaries ───
 
-  _buildFormHistoryFromCycles(cycles, landmarks) {
+  private _buildFormHistoryFromCycles(cycles: Cycle[], landmarks?: LandmarkArray[]): RepHistoryEntry[] {
     if (cycles.length === 0) return [];
 
     const lm = landmarks || this._collectedLandmarks;
     const N = lm.length;
     const ex = this._exercise;
     const checks = ex.formChecks || [];
-    const history = [];
+    const history: RepHistoryEntry[] = [];
 
     // Detect camera viewpoint once from a sample of frames.
     // Form checks tagged with viewpoint: 'frontal' (e.g. knee valgus,
     // symmetry) only work from a front-facing camera. From a side view
     // they fire false positives because x-coordinates overlap.
-    const hasViewpointChecks = checks.some(fc => fc.viewpoint && fc.viewpoint !== 'any');
+    const hasViewpointChecks = checks.some((fc: Exercise) => fc.viewpoint && fc.viewpoint !== 'any');
     let detectedViewpoint = 'unknown';
     if (hasViewpointChecks) {
       // Sample up to 20 evenly-spaced frames for viewpoint detection
       const sampleCount = Math.min(20, N);
       const step = Math.max(1, Math.floor(N / sampleCount));
-      const sampleFrames = [];
+      const sampleFrames: LandmarkArray[] = [];
       for (let i = 0; i < N; i += step) {
         if (lm[i]) sampleFrames.push(lm[i]);
       }
@@ -741,9 +835,9 @@ export class RepCounter {
       const endFrame = Math.min(cycle.end, N - 1);
       const midFrame = Math.round((startFrame + endFrame) / 2);
 
-      let score = null;
-      const issues = [];
-      let formResults = null;
+      let score: number | null = null;
+      const issues: string[] = [];
+      let formResults: FormResultEntry[] | null = null;
 
       if (checks.length > 0) {
         // Evaluate form at EVERY frame across the full concentric/eccentric arc.
@@ -756,7 +850,7 @@ export class RepCounter {
         // Isolation exercises (curls, laterals, raises) check trunk < 15-25 deg which
         // fails when seated or leaning on a machine. The real question is: did the trunk
         // MOVE during the rep (swing), not its absolute angle.
-        const cycleTrunkAngles = [];
+        const cycleTrunkAngles: number[] = [];
         for (let i = startFrame; i <= endFrame && i < N; i += sampleStep) {
           const frameLm = lm[i];
           if (!frameLm) continue;
@@ -770,7 +864,7 @@ export class RepCounter {
           ? Math.max(...cycleTrunkAngles) - Math.min(...cycleTrunkAngles)
           : 0;
 
-        formResults = checks.map((fc) => {
+        formResults = checks.map((fc: Exercise) => {
           if (shouldSkipCheck(fc.name, this._userInjuries)) {
             return { name: fc.name, passed: true, quality: 1, bad: fc.bad, severity: 'minor', skipped: true };
           }
@@ -862,7 +956,7 @@ export class RepCounter {
           // Apply anthropometric normalization: adjust quality threshold based on body proportions
           if (!passed && this._anthropometricNormalizer.isCalibrated) {
             // Map form check names to normalizer check names
-            const checkMap = {
+            const checkMap: Record<string, string> = {
               'Depth': 'squat_depth', 'depth': 'squat_depth', 'knee_depth': 'knee_depth',
               'Trunk angle': 'forward_lean', 'trunk_angle': 'forward_lean',
               'Trunk upright': 'forward_lean',
@@ -884,11 +978,11 @@ export class RepCounter {
         });
 
         // Weighted quality score: major checks count 2x, minor 1x
-        const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
-        const weightedQuality = formResults.reduce((sum, f) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
+        const totalWeight = formResults!.reduce((sum: number, f: FormResultEntry) => sum + (f.severity === 'major' ? 2 : 1), 0);
+        const weightedQuality = formResults!.reduce((sum: number, f: FormResultEntry) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
         score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : null;
-        for (const f of formResults) {
-          if (!f.passed) issues.push(f.bad);
+        for (const f of formResults!) {
+          if (!f.passed) issues.push(f.bad || '');
         }
       }
 
@@ -923,7 +1017,7 @@ export class RepCounter {
 
   // ─── Private: Live counting ───
 
-  _countLiveRep(angles, landmarks) {
+  private _countLiveRep(angles: JointAngles, landmarks: LandmarkArray): void {
     this._reps++;
 
     // Evaluate form across ALL frames collected during this rep cycle,
@@ -935,7 +1029,7 @@ export class RepCounter {
     const sampleStep = 1;
 
     // Pre-collect trunk angles for relative-swing detection (same logic as video mode)
-    const liveTrunkAngles = [];
+    const liveTrunkAngles: number[] = [];
     for (let i = 0; i < cycleAngles.length; i += sampleStep) {
       const a = cycleAngles[i];
       if (a && a.trunk != null) liveTrunkAngles.push(a.trunk);
@@ -945,14 +1039,14 @@ export class RepCounter {
       : 0;
 
     // Detect viewpoint from cycle landmarks for live-mode viewpoint filtering
-    const hasViewpointChecks = this._exercise.formChecks.some(fc => fc.viewpoint && fc.viewpoint !== 'any');
+    const hasViewpointChecks = this._exercise.formChecks.some((fc: Exercise) => fc.viewpoint && fc.viewpoint !== 'any');
     let liveViewpoint = 'unknown';
     if (hasViewpointChecks) {
       const vpResult = detectViewpointFromFrames(cycleLandmarks);
       liveViewpoint = vpResult.angle;
     }
 
-    const formResults = this._exercise.formChecks.map((fc) => {
+    const formResults: FormResultEntry[] = this._exercise.formChecks.map((fc: Exercise) => {
       // Skip form checks whose required viewpoint doesn't match (same as video mode)
       if (fc.viewpoint && fc.viewpoint !== 'any') {
         const viewpointMatch =
@@ -979,11 +1073,11 @@ export class RepCounter {
 
       for (let i = 0; i < cycleAngles.length; i += sampleStep) {
         const a = cycleAngles[i];
-        const lm = cycleLandmarks[i];
+        const frameLm = cycleLandmarks[i];
         if (!a) continue;
         sampleCount++;
-        if (!fc.check(a, lm)) failCount++;
-        if (hasQualityFn) qualitySum += fc.quality(a, lm);
+        if (!fc.check(a, frameLm)) failCount++;
+        if (hasQualityFn) qualitySum += fc.quality(a, frameLm);
       }
 
       const quality = sampleCount > 0
@@ -997,7 +1091,7 @@ export class RepCounter {
     const totalWeight = formResults.reduce((sum, f) => sum + (f.severity === 'major' ? 2 : 1), 0);
     const weightedQuality = formResults.reduce((sum, f) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
     const score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : null;
-    const issues = formResults.filter(f => !f.passed).map(f => f.bad);
+    const issues = formResults.filter(f => !f.passed).map(f => f.bad || '');
 
     this._repHistory.push({
       score,
@@ -1013,9 +1107,9 @@ export class RepCounter {
     this._cycleLandmarks = [];
   }
 
-  _evaluateForm(angles, landmarks) {
-    return this._exercise.formChecks.map((fc) => {
-      let passed = fc.check(angles, landmarks);
+  private _evaluateForm(angles: JointAngles, landmarks: LandmarkArray): FormFeedbackItem[] {
+    return this._exercise.formChecks.map((fc: Exercise) => {
+      let passed: boolean = fc.check(angles, landmarks);
 
       if (!passed && this._anthropometricNormalizer.isCalibrated) {
         const bodyType = this._anthropometricNormalizer.getBodyType();
