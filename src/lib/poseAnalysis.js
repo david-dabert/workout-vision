@@ -778,6 +778,81 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     ctx.fill();
   }
 
+  // ═══ Telemetry angle arcs at key joints ═══
+  // Draw live angle values with small arcs at knee, hip, elbow, shoulder joints.
+  // Color shifts when bilateral asymmetry exceeds 15% (Kiesel 2007 threshold).
+  const jointDefs = [
+    // [vertexIdx, armAIdx, armBIdx, label]
+    [25, 23, 27], // left knee
+    [26, 24, 28], // right knee
+    [23, 11, 25], // left hip
+    [24, 12, 26], // right hip
+    [13, 11, 15], // left elbow
+    [14, 12, 16], // right elbow
+  ];
+
+  // Bilateral pairs for asymmetry detection: [leftIdx, rightIdx] in jointDefs
+  const bilateralPairs = [[0, 1], [2, 3], [4, 5]];
+
+  const angles = jointDefs.map(([v, a, b]) => {
+    if (!ok(landmarks[v]) || !ok(landmarks[a]) || !ok(landmarks[b])) return null;
+    return Math.round(_calculateAngle(landmarks[a], landmarks[v], landmarks[b]));
+  });
+
+  // Compute asymmetry flags
+  const asymFlags = new Array(jointDefs.length).fill(false);
+  for (const [li, ri] of bilateralPairs) {
+    if (angles[li] != null && angles[ri] != null) {
+      const avg = (angles[li] + angles[ri]) / 2;
+      if (avg > 0 && Math.abs(angles[li] - angles[ri]) / avg > 0.15) {
+        asymFlags[li] = true;
+        asymFlags[ri] = true;
+      }
+    }
+  }
+
+  const arcR = Math.max(14, Math.round(width / 28));
+  const fontSize = Math.max(9, Math.round(width / 40));
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  for (let i = 0; i < jointDefs.length; i++) {
+    if (angles[i] == null) continue;
+    const [v, a, b] = jointDefs[i];
+    const vx = landmarks[v].x * width;
+    const vy = landmarks[v].y * height;
+    const ax = landmarks[a].x * width;
+    const ay = landmarks[a].y * height;
+    const bx = landmarks[b].x * width;
+    const by = landmarks[b].y * height;
+
+    // Angles of the two arms relative to vertex
+    const angA = Math.atan2(ay - vy, ax - vx);
+    const angB = Math.atan2(by - vy, bx - vx);
+
+    // Draw arc
+    const color = asymFlags[i] ? 'rgba(255, 100, 80, 0.85)' : 'rgba(0, 245, 212, 0.65)';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.5, width / 250);
+    ctx.beginPath();
+    ctx.arc(vx, vy, arcR, angA, angB, false);
+    ctx.stroke();
+
+    // Draw degree label offset from joint
+    const midAng = (angA + angB) / 2;
+    // Disambiguate: if the arc wraps the wrong way, flip
+    const labelDist = arcR + fontSize * 0.8;
+    const lx = vx + Math.cos(midAng) * labelDist;
+    const ly = vy + Math.sin(midAng) * labelDist;
+
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    // Shadow for readability
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillText(`${angles[i]}°`, lx + 1, ly + 1);
+    ctx.fillStyle = asymFlags[i] ? '#ff6450' : '#00f5d4';
+    ctx.fillText(`${angles[i]}°`, lx, ly);
+  }
+
   ctx.restore();
 }
 

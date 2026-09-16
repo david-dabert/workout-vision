@@ -424,6 +424,45 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
+      {/* ═══ TOP FORM CUES — surfaced from deep data ═══ */}
+      {(() => {
+        const topIssues = [];
+        if (repHistory && repHistory.length > 0) {
+          const allIssues = {};
+          repHistory.forEach(r => {
+            (r.issues || []).forEach(issue => {
+              allIssues[issue] = (allIssues[issue] || 0) + 1;
+            });
+          });
+          const sorted = Object.entries(allIssues).sort((a, b) => b[1] - a[1]);
+          sorted.slice(0, 2).forEach(([issue, count]) => {
+            topIssues.push({ text: tFormCheck(issue), count, total: repHistory.length });
+          });
+        }
+        if (topIssues.length === 0 && coachingInsight) {
+          return (
+            <div className={s.surfacedCues}>
+              <div className={`${s.surfacedCue} ${s.surfacedCueInsight}`}>
+                <span className={s.surfacedCueIcon}>&#9432;</span>
+                <span>{coachingInsight}</span>
+              </div>
+            </div>
+          );
+        }
+        if (topIssues.length === 0) return null;
+        return (
+          <div className={s.surfacedCues}>
+            {topIssues.map((issue, i) => (
+              <div key={i} className={`${s.surfacedCue} ${i === 0 ? s.surfacedCuePrimary : s.surfacedCueSecondary}`}>
+                <span className={s.surfacedCueIcon}>{i === 0 ? '\u26A0' : '\u2139'}</span>
+                <span>{issue.text}</span>
+                <span className={s.surfacedCueCount}>{issue.count}/{issue.total}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* ═══ SHARE BUTTONS — immediately visible, the call to action ═══ */}
       <div className={s.heroActions}>
         <button
