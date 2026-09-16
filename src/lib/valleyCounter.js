@@ -84,7 +84,7 @@ export function findValleys(signal, fps, exercise) {
     return { reps: 0, allValleys: 0, valleyFrames: [], signalRange };
   }
 
-  const ampRatio = (exercise.amplitudeRatio != null) ? exercise.amplitudeRatio : 0.20;
+  const ampRatio = (exercise.amplitudeRatio != null) ? exercise.amplitudeRatio : 0.25;
   const minAmplitude = signalRange * ampRatio;
 
   const hwSec = Math.min(0.2, (exercise.minSpacing != null) ? exercise.minSpacing * 0.6 : 0.2);
@@ -126,7 +126,7 @@ export function findValleys(signal, fps, exercise) {
     return frames;
   };
 
-  const minSpacingSec = (exercise.minSpacing != null) ? exercise.minSpacing : 0.4;
+  const minSpacingSec = (exercise.minSpacing != null) ? exercise.minSpacing : 0.5;
   const generousGap = Math.max(2, Math.round(fps * minSpacingSec));
   const pass1 = filterWithSpacing(generousGap);
 
@@ -329,7 +329,7 @@ export function templateEdgeCorrect(signal, valleyResult, fps, exercise) {
   const sigMin = signal.reduce((a, b) => Math.min(a, b));
   const sigMax = signal.reduce((a, b) => Math.max(a, b));
   const signalRange = sigMax - sigMin;
-  const ampRatio = (exercise.amplitudeRatio != null) ? exercise.amplitudeRatio : 0.20;
+  const ampRatio = (exercise.amplitudeRatio != null) ? exercise.amplitudeRatio : 0.25;
   const minAmplitude = signalRange * ampRatio;
 
   const valleyDepths = frames.map(f => signal[f]);

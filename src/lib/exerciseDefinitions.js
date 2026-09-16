@@ -1349,6 +1349,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 145,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Elbow position', type: 'below', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 30, good: 'Elbows at sides', bad: 'Keep elbows pinned to sides', severity: 'minor', citation: 'Marcolin G et al, 2018' },
     ],
@@ -1363,6 +1365,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 140,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Full extension', type: 'custom',
         check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140,
@@ -1379,6 +1383,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 75,
     upThreshold: 140,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Controlled rep', type: 'below', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 30, good: 'Isolated movement', bad: 'No swinging', severity: 'minor', citation: 'Marcolin G et al, 2018' },
     ],
@@ -1393,6 +1399,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 90,
     upThreshold: 130,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 50, good: 'Full curl at top', bad: 'Incomplete contraction at top', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
       { name: 'No shoulder movement', type: 'below', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 40, good: 'Shoulders stable', bad: 'Shoulder movement detected', severity: 'major', citation: 'Marcolin G et al, 2018' },
@@ -1408,6 +1416,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 70,
     upThreshold: 140,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Full contraction', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 45, good: 'Peak squeeze at top', bad: 'Curl higher', severity: 'minor', citation: 'Marcolin G et al, 2018', phase: 'top' },
     ],
@@ -2919,6 +2929,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 145,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Strict form', type: 'below', key: 'trunk', threshold: 20, margin: 12, good: 'Strict curl', bad: 'Avoid using momentum', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
     ],
@@ -2933,6 +2945,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 145,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Elbows stationary', type: 'below', key: 'trunk', threshold: 15, margin: 12, good: 'Elbows pinned', bad: 'Keep elbows at your sides', severity: 'minor', citation: 'NSCA, 2016' },
     ],
@@ -2947,6 +2961,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 145,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Full stretch', type: 'custom',
         check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 140,
@@ -2963,6 +2979,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 145,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Strict form', type: 'below', key: 'trunk', threshold: 15, margin: 12, good: 'Strict reverse curl', bad: 'Avoid swinging', severity: 'minor', citation: 'Marcolin G et al, 2018, PeerJ' },
     ],
@@ -3699,6 +3717,8 @@ export const EXERCISE_DEFINITIONS = {
     value: BS_ELBOW,
     downThreshold: 80,
     upThreshold: 145,
+    amplitudeRatio: 0.3,
+    minSpacing: 0.6,
     formChecks: [
       { name: 'Body stable', type: 'custom', placeholder: true, good: 'Body rigid', bad: 'Keep body rigid throughout', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
