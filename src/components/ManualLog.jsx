@@ -1,20 +1,9 @@
 import { useState, useRef } from 'react';
-import { EXERCISES, EXERCISE_GROUPS } from '../lib/exercises';
+import { EXERCISES } from '../lib/exercises';
 import { saveWorkout } from '../lib/storage';
+import ExerciseSelector from './ExerciseSelector';
 
 import { useT } from '../lib/LanguageContext';
-
-function getCategoryLabel(key, t) {
-  const map = { compound: 'compound', isolation: 'isolation', bodyweight: 'bodyweight' };
-  return map[key] ? t(map[key]) : key;
-}
-
-const categoryOrder = ['compound', 'bodyweight', 'isolation'];
-const sortedCategories = categoryOrder.filter(c => EXERCISE_GROUPS[c]);
-// Add any categories not in the predefined order
-for (const c of Object.keys(EXERCISE_GROUPS)) {
-  if (!sortedCategories.includes(c)) sortedCategories.push(c);
-}
 
 function emptyEntry() {
   return { exerciseKey: '', sets: [{ reps: '', weight: '' }] };
@@ -26,8 +15,6 @@ export default function ManualLog({ onClose }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const savingRef = useRef(false);
-  const [pickerOpen, setPickerOpen] = useState(null); // index of entry with picker open
-  const [searchTerm, setSearchTerm] = useState('');
 
   function updateEntry(idx, field, value) {
     setEntries(prev => prev.map((e, i) => i === idx ? { ...e, [field]: value } : e));
@@ -63,20 +50,6 @@ export default function ManualLog({ onClose }) {
   function removeExercise(idx) {
     if (entries.length <= 1) return;
     setEntries(prev => prev.filter((_, i) => i !== idx));
-  }
-
-  function selectExercise(entryIdx, key) {
-    updateEntry(entryIdx, 'exerciseKey', key);
-    setPickerOpen(null);
-    setSearchTerm('');
-  }
-
-  function filteredCategories() {
-    if (!searchTerm.trim()) return sortedCategories.map(c => [c, EXERCISE_GROUPS[c]]);
-    const term = searchTerm.toLowerCase();
-    return sortedCategories
-      .map(c => [c, EXERCISE_GROUPS[c].filter(ex => ex.name.toLowerCase().includes(term))])
-      .filter(([, exs]) => exs.length > 0);
   }
 
   const canSave = entries.some(e =>
@@ -168,33 +141,16 @@ export default function ManualLog({ onClose }) {
       {entries.map((entry, entryIdx) => (
         <div key={entryIdx} className="card" style={{ marginBottom: 12, padding: 14 }}>
           {/* Exercise selector */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <button
-              className="btn btn-ghost"
-              style={{
-                flex: 1,
-                textAlign: 'left',
-                minHeight: 44,
-                color: entry.exerciseKey ? 'var(--text-primary)' : 'var(--muted)',
-                fontWeight: entry.exerciseKey ? 700 : 400,
-                fontSize: '0.88rem',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '10px 12px',
-              }}
-              onClick={() => {
-                setPickerOpen(pickerOpen === entryIdx ? null : entryIdx);
-                setSearchTerm('');
-              }}
-              aria-expanded={pickerOpen === entryIdx}
-              aria-label={entry.exerciseKey ? tExercise(entry.exerciseKey, EXERCISES[entry.exerciseKey]?.name) : t('select_exercise')}
-            >
-              {entry.exerciseKey ? tExercise(entry.exerciseKey, EXERCISES[entry.exerciseKey]?.name) : t('select_exercise')}
-            </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 }}>
+            <ExerciseSelector
+              value={entry.exerciseKey}
+              onChange={(key) => updateEntry(entryIdx, 'exerciseKey', key)}
+              showAuto={false}
+            />
             {entries.length > 1 && (
               <button
                 className="btn btn-ghost btn-sm"
-                style={{ color: 'var(--red)', marginLeft: 8, minWidth: 44, minHeight: 44 }}
+                style={{ color: 'var(--red)', minWidth: 44, minHeight: 44, flexShrink: 0 }}
                 onClick={() => removeExercise(entryIdx)}
                 aria-label={t('remove_exercise') || 'Remove exercise'}
               >
@@ -202,80 +158,6 @@ export default function ManualLog({ onClose }) {
               </button>
             )}
           </div>
-
-          {/* Exercise picker dropdown */}
-          {pickerOpen === entryIdx && (
-            <div style={{
-              background: 'var(--card-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
-              maxHeight: 280,
-              overflowY: 'auto',
-              marginBottom: 10,
-            }}>
-              <div style={{ padding: '8px 10px', position: 'sticky', top: 0, background: 'var(--card-elevated)', zIndex: 1 }}>
-                <input
-                  type="text"
-                  placeholder={t('search_exercises')}
-                  aria-label={t('search_exercises')}
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border)',
-                    background: 'var(--bg)',
-                    color: 'var(--text)',
-                    fontSize: '0.82rem',
-                    outline: 'none',
-                  }}
-                  autoFocus
-                />
-              </div>
-              {filteredCategories().map(([cat, exercises]) => (
-                <div key={cat}>
-                  <div style={{
-                    padding: '6px 12px',
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    color: 'var(--muted)',
-                    background: 'var(--card)',
-                  }}>
-                    {getCategoryLabel(cat, t)}
-                  </div>
-                  {exercises.map(ex => (
-                    <button
-                      key={ex.key}
-                      onClick={() => selectExercise(entryIdx, ex.key)}
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: '10px 12px',
-                        background: entry.exerciseKey === ex.key ? 'var(--accent-glow)' : 'transparent',
-                        color: entry.exerciseKey === ex.key ? 'var(--accent)' : 'var(--text)',
-                        border: 'none',
-                        borderBottom: '1px solid var(--border)',
-                        cursor: 'pointer',
-                        fontSize: '0.82rem',
-                        minHeight: 44,
-                      }}
-                    >
-                      {tExercise(ex.key, ex.name)}
-                    </button>
-                  ))}
-                </div>
-              ))}
-              {filteredCategories().length === 0 && (
-                <p className="text-sm text-muted" style={{ padding: 16, textAlign: 'center' }}>
-                  {t('no_exercises_found')}
-                </p>
-              )}
-            </div>
-          )}
 
           {/* Sets table */}
           {entry.exerciseKey && (

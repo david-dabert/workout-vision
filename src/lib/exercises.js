@@ -236,6 +236,61 @@ export const EXERCISE_GROUPS = (() => {
   return groups;
 })();
 
+// Groups exercises by primary muscle region for the searchable picker.
+// Order: most popular body parts first.
+const MUSCLE_REGION_ORDER = [
+  'Chest', 'Back', 'Shoulders', 'Legs', 'Arms', 'Core', 'Full Body',
+];
+
+const MUSCLE_REGION_MAP = {
+  'Pectorals': 'Chest', 'Upper Pectorals': 'Chest', 'Lower Pectorals': 'Chest',
+  'Latissimus Dorsi': 'Back', 'Rhomboids': 'Back', 'Erectors': 'Back', 'Trapezius': 'Back',
+  'Upper Trapezius': 'Back', 'Lower Trapezius': 'Back', 'Teres Major': 'Back',
+  'Anterior Deltoids': 'Shoulders', 'Lateral Deltoids': 'Shoulders', 'Posterior Deltoids': 'Shoulders',
+  'Medial Deltoid': 'Shoulders', 'Deltoids': 'Shoulders', 'Rear Deltoid': 'Shoulders',
+  'Rotator Cuff': 'Shoulders',
+  'Quadriceps': 'Legs', 'Hamstrings': 'Legs', 'Glutes': 'Legs', 'Gluteus Medius': 'Legs',
+  'Gastrocnemius': 'Legs', 'Soleus': 'Legs', 'Calves': 'Legs',
+  'Hip Abductors': 'Legs', 'Hip Adductors': 'Legs', 'Hip Flexors': 'Legs',
+  'Tibialis Anterior': 'Legs',
+  'Biceps': 'Arms', 'Triceps': 'Arms', 'Brachialis': 'Arms', 'Brachioradialis': 'Arms',
+  'Forearms': 'Arms',
+  'Rectus Abdominis': 'Core', 'Transverse Abdominis': 'Core', 'Obliques': 'Core',
+  'Core': 'Core', 'Serratus Anterior': 'Core',
+  'Full Body': 'Full Body',
+};
+
+export const EXERCISE_BY_MUSCLE = (() => {
+  const tierOrder = { validated: 0, supported: 1, experimental: 2 };
+  const groups = {};
+  for (const region of MUSCLE_REGION_ORDER) groups[region] = [];
+
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    if (key === 'superset') continue;
+    const primary = ex.muscles?.primary?.[0];
+    const region = (primary && MUSCLE_REGION_MAP[primary]) || 'Full Body';
+    if (!groups[region]) groups[region] = [];
+    groups[region].push({ key, name: ex.name, tier: ex.tier, category: ex.category });
+  }
+
+  // Sort each group: validated first, then alphabetically
+  for (const g of Object.values(groups)) {
+    g.sort((a, b) => {
+      const ta = tierOrder[a.tier] ?? 2;
+      const tb = tierOrder[b.tier] ?? 2;
+      if (ta !== tb) return ta - tb;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  // Remove empty groups
+  for (const k of Object.keys(groups)) {
+    if (groups[k].length === 0) delete groups[k];
+  }
+
+  return groups;
+})();
+
 // ---------------------------------------------------------------------------
 // Exercise illustration mapping (self-hosted, no CDN dependency)
 // Images: 512x512 PNG, 3 frames per exercise (start, mid, end).

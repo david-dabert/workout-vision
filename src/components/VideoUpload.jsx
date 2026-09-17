@@ -17,6 +17,7 @@ import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
 import { trackEvent, trackTiming, trackAnalysis } from '../lib/telemetry';
 import ExercisePicker, { AutoLockBadge } from './ExercisePicker';
+import ExerciseSelector from './ExerciseSelector';
 
 // Detect iOS Safari for platform-specific workarounds
 const IS_IOS = (() => {
@@ -513,11 +514,9 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               )}
-              <select
-                aria-label={t('exercise_select') || 'Select exercise'}
+              <ExerciseSelector
                 value={exercise}
-                onChange={(e) => {
-                  const val = e.target.value;
+                onChange={(val) => {
                   setExercise(val);
                   if (val === '__auto__') {
                     setAutoDetect(true);
@@ -527,28 +526,8 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                     userChangedExercise.current = true;
                   }
                 }}
-                className={s.exerciseSelect}
-              >
-                <option value="__auto__">{t('automatic')}</option>
-                <optgroup label={t('compound')}>
-                  {EXERCISE_GROUPS.compound.map(e => (
-                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}{e.tier === 'validated' ? ' ✓' : e.tier === 'experimental' ? ' ·' : ''}</option>
-                  ))}
-                </optgroup>
-                <optgroup label={t('isolation')}>
-                  {EXERCISE_GROUPS.isolation.map(e => (
-                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}{e.tier === 'validated' ? ' ✓' : e.tier === 'experimental' ? ' ·' : ''}</option>
-                  ))}
-                </optgroup>
-                <optgroup label={t('bodyweight')}>
-                  {EXERCISE_GROUPS.bodyweight.map(e => (
-                    <option key={e.key} value={e.key}>{tExercise(e.key, e.name)}{e.tier === 'validated' ? ' ✓' : e.tier === 'experimental' ? ' ·' : ''}</option>
-                  ))}
-                </optgroup>
-                <optgroup label={t('other')}>
-                  <option value="superset">{t('ex.superset')}</option>
-                </optgroup>
-              </select>
+                showAuto
+              />
             </div>
             <div className={s.weightRow}>
               <input
