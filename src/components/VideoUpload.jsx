@@ -316,6 +316,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         reps={replayResult.reps}
         formScore={replayResult.formScore}
         repHistory={replayResult.repHistory}
+        coaching={replayResult.coaching}
         onClose={() => setReplayResult(null)}
         audioEnabled={audioEnabled}
       />

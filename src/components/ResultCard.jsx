@@ -90,6 +90,7 @@ function ResultCard({ result, onReplay }) {
 
   const [showDetails, setShowDetails] = useState(false);
   const [showDeepData, setShowDeepData] = useState(false);
+  const [showAllCoaching, setShowAllCoaching] = useState(false);
   const [challengeStatus, setChallengeStatus] = useState(null);
   const [repOverride, setRepOverride] = useState(null);
   const [showRepEdit, setShowRepEdit] = useState(false);
@@ -543,17 +544,38 @@ function ResultCard({ result, onReplay }) {
         <div className={s.coachingPanel}>
           <h4 className={s.coachingPanelTitle}>{t('coaching_analysis')}</h4>
 
-          {/* Feedback messages */}
-          <div className={s.coachingFeedbackList}>
-            {result.coaching.feedback.map((fb, i) => (
-              <div key={i} className={`${s.coachingFeedbackItem} ${s[`severity_${fb.severity}`]}`}>
-                <span className={s.coachingFeedbackIcon}>
-                  {fb.severity === 'warning' ? '⚠' : fb.severity === 'correction' ? '→' : fb.severity === 'positive' ? '✓' : 'ℹ'}
-                </span>
-                <p className={s.coachingFeedbackText}>{fb.message}</p>
+          {/* Top coaching correction — single sentence, expandable */}
+          {(() => {
+            const allFb = result.coaching.feedback;
+            const topFb = allFb[0];
+            const rest = allFb.slice(1);
+            return (
+              <div className={s.coachingFeedbackList}>
+                <div className={`${s.coachingFeedbackItem} ${s[`severity_${topFb.severity}`]} ${s.coachingTopItem}`}>
+                  <span className={s.coachingFeedbackIcon}>
+                    {topFb.severity === 'warning' ? '⚠' : topFb.severity === 'correction' ? '→' : topFb.severity === 'positive' ? '✓' : 'ℹ'}
+                  </span>
+                  <p className={s.coachingFeedbackText}>{topFb.message}</p>
+                </div>
+                {rest.length > 0 && !showAllCoaching && (
+                  <button
+                    className={s.coachingExpandBtn}
+                    onClick={() => setShowAllCoaching(true)}
+                  >
+                    +{rest.length} {t('more_feedback')}
+                  </button>
+                )}
+                {showAllCoaching && rest.map((fb, i) => (
+                  <div key={i + 1} className={`${s.coachingFeedbackItem} ${s[`severity_${fb.severity}`]}`}>
+                    <span className={s.coachingFeedbackIcon}>
+                      {fb.severity === 'warning' ? '⚠' : fb.severity === 'correction' ? '→' : fb.severity === 'positive' ? '✓' : 'ℹ'}
+                    </span>
+                    <p className={s.coachingFeedbackText}>{fb.message}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           {/* Metric cards row */}
           <div className={s.coachingMetricsRow}>

@@ -168,6 +168,7 @@
   "none_detected": "Non détecté",
   "of_reps": "des rép.",
   "within_range": "Dans la norme",
+  "more_feedback": "de plus",
   "rep_shallower": "Rép. {{rep}} était {{drop}}% moins profonde que la rép. 1",
   "consistent_depth": "Profondeur constante maintenue sur la série",
   "rom_per_rep": "Amplitude de mouvement",

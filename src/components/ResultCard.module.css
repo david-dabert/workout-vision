@@ -567,11 +567,32 @@
   line-height: 1.4;
 }
 
+.coachingTopItem {
+  border-left-width: 4px;
+}
+
 .coachingFeedbackText {
   margin: 0;
   font-size: 0.78rem;
   line-height: 1.45;
   color: var(--text-secondary, rgba(255, 255, 255, 0.8));
+}
+
+.coachingExpandBtn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.coachingExpandBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
 }
 
 .coachingMetricsRow {

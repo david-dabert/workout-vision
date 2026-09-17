@@ -723,8 +723,10 @@ function getSegmentColor(i, j, formFeedback) {
  * @param {number} height - canvas height
  * @param {number} alpha - opacity
  * @param {Array|null} formFeedback - array of {name, passed, severity} from RepCounter
+ * @param {Object|null} coachingHighlights - { segments: Map<string, color>, pulseAlpha: number }
+ *   segments maps "i-j" connection keys to override colors for coaching detections
  */
-export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedback = null) {
+export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedback = null, coachingHighlights = null) {
   if (!landmarks || landmarks.length === 0) return;
   const connections = [
     [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
@@ -755,15 +757,34 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     ctx.stroke();
   }
 
-  // Bright skeleton lines (color-coded by form feedback)
+  // Bright skeleton lines (color-coded by form feedback or coaching highlights)
   ctx.lineWidth = lw;
+  const highlightedJoints = new Set();
   for (const [i, j] of connections) {
     if (!ok(landmarks[i]) || !ok(landmarks[j])) continue;
-    ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
-    ctx.beginPath();
-    ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
-    ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
-    ctx.stroke();
+    const segKey = `${Math.min(i, j)}-${Math.max(i, j)}`;
+    const coachColor = coachingHighlights?.segments?.get(segKey);
+    if (coachColor) {
+      // Coaching highlight: thicker line with glow
+      ctx.save();
+      ctx.lineWidth = lw + 2;
+      ctx.strokeStyle = coachColor;
+      ctx.shadowColor = coachColor;
+      ctx.shadowBlur = 8 * (coachingHighlights.pulseAlpha || 1);
+      ctx.beginPath();
+      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
+      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
+      ctx.stroke();
+      ctx.restore();
+      highlightedJoints.add(i);
+      highlightedJoints.add(j);
+    } else {
+      ctx.strokeStyle = getSegmentColor(i, j, formFeedback);
+      ctx.beginPath();
+      ctx.moveTo(landmarks[i].x * width, landmarks[i].y * height);
+      ctx.lineTo(landmarks[j].x * width, landmarks[j].y * height);
+      ctx.stroke();
+    }
   }
 
   // Joint dots — body landmarks only (11-32), skip face (0-10)
@@ -771,10 +792,15 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   const dotR = Math.max(4, Math.round(width / 80));
   for (let k = 11; k < Math.min(landmarks.length, 33); k++) {
     if (!ok(landmarks[k])) continue;
-    // Use getSegmentColor with (k, k) to find worst quality for this joint
-    ctx.fillStyle = formFeedback ? getSegmentColor(k, k, formFeedback) : '#00f5d4';
+    const coachJointColor = highlightedJoints.has(k)
+      ? [...(coachingHighlights?.segments?.entries() || [])].find(([key]) => {
+          const [a, b] = key.split('-').map(Number);
+          return a === k || b === k;
+        })?.[1]
+      : null;
+    ctx.fillStyle = coachJointColor || (formFeedback ? getSegmentColor(k, k, formFeedback) : '#00f5d4');
     ctx.beginPath();
-    ctx.arc(landmarks[k].x * width, landmarks[k].y * height, dotR, 0, 2 * Math.PI);
+    ctx.arc(landmarks[k].x * width, landmarks[k].y * height, coachJointColor ? dotR + 2 : dotR, 0, 2 * Math.PI);
     ctx.fill();
   }
 

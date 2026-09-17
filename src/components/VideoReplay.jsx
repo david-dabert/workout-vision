@@ -21,17 +21,72 @@ function findClosestFrame(frames, time) {
   return frames[lo];
 }
 
-function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, repHistory) {
-  // Find current rep for form feedback
-  let currentFeedback = null;
-  if (repHistory && repHistory.length > 0) {
-    const rep = repHistory.find(r => time >= r.startTime && time <= r.endTime);
-    if (rep) currentFeedback = rep.feedback;
+// Map coaching detection categories to the skeleton segments they affect
+const COACHING_SEGMENT_MAP = {
+  knee_valgus: [[23, 25], [25, 27], [24, 26], [26, 28]], // hip-knee-ankle both sides
+  depth:       [[23, 25], [24, 26]],                       // hip-knee
+  squat_depth: [[23, 25], [24, 26]],
+  trunk_lean:  [[11, 23], [12, 24], [11, 12], [23, 24]],  // shoulders-hips
+  elbow_flare: [[11, 13], [13, 15], [12, 14], [14, 16]],  // shoulders-elbows-wrists
+  lockout:     [[13, 15], [14, 16], [25, 27], [26, 28]],  // elbows-wrists or knees-ankles
+  bar_path:    [[13, 15], [14, 16]],                       // wrists
+  balance:     [[23, 24], [23, 25], [24, 26]],             // hips-knees
+};
+
+const COACHING_SEVERITY_COLOR = {
+  warning:    '#ff4466',
+  correction: '#ffaa22',
+  info:       '#66aaff',
+  positive:   '#00f5d4',
+};
+
+function buildCoachingHighlights(coaching, repIndex, pulsePhase) {
+  if (!coaching?.feedback) return null;
+  const segments = new Map();
+
+  for (const fb of coaching.feedback) {
+    const cat = fb.category;
+    const color = COACHING_SEVERITY_COLOR[fb.severity] || '#ffaa22';
+    const segs = COACHING_SEGMENT_MAP[cat];
+    if (!segs) continue;
+
+    // Check per-rep detection if available
+    const metric = coaching.metrics?.[cat];
+    if (metric?.perRep && repIndex >= 0 && repIndex < metric.perRep.length) {
+      const repData = metric.perRep[repIndex];
+      // Only highlight if the issue is active for this rep
+      if (repData && (repData.valgusDetected === false || repData.excessive === false ||
+          repData.belowParallel === true || repData.fullLockout === true)) continue;
+    }
+
+    for (const [i, j] of segs) {
+      const key = `${Math.min(i, j)}-${Math.max(i, j)}`;
+      segments.set(key, color);
+    }
   }
+
+  if (segments.size === 0) return null;
+  return { segments, pulseAlpha: 0.7 + 0.3 * Math.sin(pulsePhase) };
+}
+
+function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, repHistory, coaching, pulsePhase) {
+  // Find current rep for form feedback and coaching
+  let currentFeedback = null;
+  let currentRepIndex = -1;
+  if (repHistory && repHistory.length > 0) {
+    const idx = repHistory.findIndex(r => time >= r.startTime && time <= r.endTime);
+    if (idx >= 0) {
+      currentFeedback = repHistory[idx].feedback;
+      currentRepIndex = idx;
+    }
+  }
+
+  // Build coaching skeleton highlights for the current rep
+  const coachingHighlights = buildCoachingHighlights(coaching, currentRepIndex, pulsePhase || 0);
 
   const closest = frames.length > 0 ? findClosestFrame(frames, time) : null;
   if (closest && closest.landmarks) {
-    drawPose(ctx, closest.landmarks, w, h, 1.0, currentFeedback);
+    drawPose(ctx, closest.landmarks, w, h, 1.0, currentFeedback, coachingHighlights);
   }
 
   // Stats overlay (top) - scale proportionally to resolution
@@ -52,6 +107,51 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.fillStyle = '#f0f0f5';
   ctx.font = `bold ${Math.round(22 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.fillText(`${reps} reps`, w - pad, boxH / 2); // Keep "reps" in overlay (universal sports term)
+
+  // ═══ Coaching annotation banner (shows during the rep where the issue is detected) ═══
+  if (coaching?.feedback?.length > 0 && currentRepIndex >= 0) {
+    // Find the top-priority feedback that applies to this rep
+    const topFb = coaching.feedback[0]; // already sorted by priority
+    if (topFb) {
+      // Truncate message to fit
+      const maxChars = Math.floor(w / (9 * scale));
+      let msg = topFb.message;
+      if (msg.length > maxChars) msg = msg.substring(0, maxChars - 1) + '…';
+
+      const bannerH = Math.round(44 * scale);
+      const bannerY = boxH + Math.round(8 * scale);
+      const bannerColor = COACHING_SEVERITY_COLOR[topFb.severity] || '#ffaa22';
+
+      // Semi-transparent banner
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      const bannerR = Math.round(8 * scale);
+      const bx = pad;
+      const bw = w - pad * 2;
+      ctx.beginPath();
+      ctx.roundRect(bx, bannerY, bw, bannerH, bannerR);
+      ctx.fill();
+
+      // Left accent bar
+      ctx.fillStyle = bannerColor;
+      ctx.beginPath();
+      ctx.roundRect(bx, bannerY, Math.round(4 * scale), bannerH, [bannerR, 0, 0, bannerR]);
+      ctx.fill();
+
+      // Icon
+      const iconX = bx + Math.round(14 * scale);
+      const iconY = bannerY + bannerH / 2;
+      ctx.font = `${Math.round(14 * scale)}px -apple-system, system-ui, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = bannerColor;
+      ctx.fillText(topFb.severity === 'warning' ? '⚠' : topFb.severity === 'correction' ? '→' : '✓', iconX, iconY);
+
+      // Message text
+      ctx.font = `${Math.round(11 * scale)}px -apple-system, system-ui, sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.fillText(msg, iconX + Math.round(18 * scale), iconY);
+    }
+  }
 
   // Branding (bottom)
   const brandH = Math.round(36 * scale);
@@ -90,7 +190,7 @@ function canExportVideo() {
  * Replays a video with skeleton overlay drawn from stored landmark frames.
  * HD download via one-tap auto-record at original video resolution.
  */
-export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, onClose, audioEnabled, duration: durationProp }) {
+export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKey, reps, formScore, repHistory, coaching, onClose, audioEnabled, duration: durationProp }) {
   const { t, tExercise } = useT();
   // Translate exercise name for overlay display
   const displayExerciseName = exerciseKey ? tExercise(exerciseKey, exerciseName) : exerciseName;
@@ -147,9 +247,9 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       const ctx = ctxRef.current || canvas.getContext('2d');
       ctxRef.current = ctx;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      drawOverlay(ctx, canvas.width, canvas.height, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
+      drawOverlay(ctx, canvas.width, canvas.height, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory, coaching, 0);
     }
-  }, [frames, displayExerciseName, reps, formScore, repHistory, videoDuration]);
+  }, [frames, displayExerciseName, reps, formScore, repHistory, coaching, videoDuration]);
 
   const handleScrubberDown = useCallback((e) => {
     if (exporting) return;
@@ -233,7 +333,8 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       const w = canvas.width;
       const h = canvas.height;
       ctx.drawImage(video, 0, 0, w, h);
-      drawOverlay(ctx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
+      const pulsePhase = (now / 400) % (2 * Math.PI); // smooth pulse for coaching highlights
+      drawOverlay(ctx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory, coaching, pulsePhase);
 
       // Audio feedback: play rep-complete sound when crossing rep boundaries
       if (audioRef.current && repHistory) {
@@ -282,7 +383,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
         ctxRef.current = ctx;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         if (frames.length > 0 && frames[0].landmarks) {
-          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, displayExerciseName, reps, formScore, repHistory);
+          drawOverlay(ctx, canvas.width, canvas.height, frames, 0, displayExerciseName, reps, formScore, repHistory, coaching, 0);
         }
       }
     };
@@ -403,7 +504,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       const w = hdCanvas.width;
       const h = hdCanvas.height;
       hdCtx.drawImage(video, 0, 0, w, h);
-      drawOverlay(hdCtx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
+      drawOverlay(hdCtx, w, h, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory, coaching, 0);
       setExportProgress(video.duration > 0 ? Math.round((video.currentTime / video.duration) * 100) : 0);
       hdRafRef.current = requestAnimationFrame(drawHDFrame);
     };
@@ -444,7 +545,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
     hdCanvas.height = video.videoHeight;
     const ctx = hdCanvas.getContext('2d');
     ctx.drawImage(video, 0, 0, hdCanvas.width, hdCanvas.height);
-    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory);
+    drawOverlay(ctx, hdCanvas.width, hdCanvas.height, frames, video.currentTime, displayExerciseName, reps, formScore, repHistory, coaching, 0);
 
     hdCanvas.toBlob((blob) => {
       if (!blob) return;

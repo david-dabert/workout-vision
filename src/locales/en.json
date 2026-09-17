@@ -168,6 +168,7 @@
   "none_detected": "None detected",
   "of_reps": "of reps",
   "within_range": "Within range",
+  "more_feedback": "more",
   "rep_shallower": "Rep {{rep}} was {{drop}}% shallower than rep 1",
   "consistent_depth": "Consistent depth maintained across the set",
   "rom_per_rep": "Range of Motion",
