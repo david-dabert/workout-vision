@@ -233,6 +233,8 @@ export const SIGNAL_PRIORITY_3D = {
   upright_row:   ['elbow_L', 'elbow_R', 'wrist_Y_L', 'wrist_Y_R'],
   tricep_extension: ['elbow_L', 'elbow_R', 'wrist_Z_L', 'wrist_Z_R'],
   tricep_pushdown:  ['elbow_L', 'elbow_R'],
+  cable_tricep_pushdown: ['elbow_L', 'elbow_R'],
+  rope_pushdown:    ['elbow_L', 'elbow_R'],
   leg_press:     ['knee_L', 'knee_R', 'ankleHipDist3D_L'],
   leg_extension: ['knee_L', 'knee_R'],
   leg_curl:      ['knee_L', 'knee_R'],

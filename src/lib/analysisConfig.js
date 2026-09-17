@@ -229,6 +229,8 @@ export const REP_PERIOD_BOUNDS = {
   upright_row:       { min: 0.8, max: 4.0 },
   tricep_extension:  { min: 0.8, max: 4.0 },
   tricep_pushdown:   { min: 0.8, max: 4.0 },
+  cable_tricep_pushdown: { min: 0.8, max: 4.0 },
+  rope_pushdown:     { min: 0.8, max: 4.0 },
   leg_press:         { min: 1.0, max: 4.0 },
   leg_extension:     { min: 0.8, max: 4.0 },
   leg_curl:          { min: 0.8, max: 4.0 },

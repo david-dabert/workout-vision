@@ -441,6 +441,8 @@ const REP_TIMING = {
   hammer_curl:        { minRepPeriod: 1000, maxRepPeriod: 6000 },
   tricep_extension:   { minRepPeriod: 1000, maxRepPeriod: 6000 },
   tricep_pushdown:    { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  cable_tricep_pushdown: { minRepPeriod: 1000, maxRepPeriod: 6000 },
+  rope_pushdown:      { minRepPeriod: 1000, maxRepPeriod: 6000 },
   lateral_raise:      { minRepPeriod: 1000, maxRepPeriod: 6000 },
   front_raise:        { minRepPeriod: 1000, maxRepPeriod: 6000 },
   calf_raise:         { minRepPeriod: 1000, maxRepPeriod: 6000 },
