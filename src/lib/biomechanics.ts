@@ -140,11 +140,17 @@ export function analyzeSet(
   const asymmetry = analyzeAsymmetry(anglesPerFrame);
   const movementQuality = scoreQuality(timeUnderTension, rangeOfMotion, asymmetry);
 
+  let velocity: VelocityResult | undefined;
+  try {
+    velocity = analyzeVelocity(rawFrames, fps, reps, exercise, isPulling);
+  } catch { /* velocity is optional; swallow errors */ }
+
   return {
     timeUnderTension,
     rangeOfMotion,
     asymmetry,
     movementQuality,
+    velocity,
   };
 }
 

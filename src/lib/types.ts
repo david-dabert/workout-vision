@@ -112,6 +112,34 @@ export interface BiomechanicalAnalysis {
   rangeOfMotion: RangeOfMotionResult;
   asymmetry: AsymmetryResult;
   movementQuality: number;
+  velocity?: VelocityResult;
+}
+
+// ─── Coaching Engine (SPARC, DTW, fatigue, form detections) ───
+
+export interface CoachingFormDetection {
+  name: string;
+  detected: boolean;
+  severity: 'info' | 'warning' | 'critical';
+  value?: number;
+  threshold?: number;
+  perRep?: boolean[];
+}
+
+export interface CoachingFeedback {
+  priority: number;
+  category: 'form' | 'tempo' | 'fatigue' | 'consistency' | 'smoothness';
+  message: string;
+  detail?: string;
+}
+
+export interface CoachingReport {
+  sparc: { perRep: number[]; mean: number };
+  consistency: { dtwScores: number[]; mean: number };
+  fatigue: { detected: boolean; onsetRep: number | null; velocityLossPercent: number };
+  formDetections: CoachingFormDetection[];
+  centerOfMass?: { lateralRange: number; apRange: number; stability: number };
+  feedback: CoachingFeedback[];
 }
 
 // ─── Rep Event (returned by RepCounter.update) ───

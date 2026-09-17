@@ -20,6 +20,7 @@ import { ExerciseAutoDetector } from './exerciseDetector';
 import { HierarchicalDetector } from './hierarchicalDetector';
 import { analyzeSet } from './biomechanics';
 import { generateWorkoutReport } from './coach';
+import { analyzeCoaching } from './coachingEngine';
 import { saveWorkout, getLastWorkoutForExercise } from './storage';
 import { extractFramesStreaming, hashFile, hashLandmarks } from './frameExtractor';
 import { updateBaseline, compareToBaseline } from './formBaselines';
@@ -572,6 +573,11 @@ async function buildFullResult({
     };
   }
 
+  // Coaching engine — SPARC smoothness, DTW consistency, fatigue, form detections
+  let coaching = null;
+  try { coaching = analyzeCoaching(landmarkFrames, repHistory, detectedExercise, analysisFps); }
+  catch (err) { console.error('Coaching analysis error:', err); }
+
   // Release frames array: only replayFrames survives in the result.
   // This frees the duplicate angles data (~40% of frame memory).
   frames.length = 0;
@@ -604,6 +610,7 @@ async function buildFullResult({
     machineReps: reps,
     machineFormScore: avgScore,
     bioAnalysis,
+    coaching,
     analysisVersion: '1.0.0',
     fps: analysisFps,
     videoHash,
@@ -637,7 +644,7 @@ async function buildFullResult({
     reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
     machineReps: reps, machineFormScore: avgScore,
     hasFormChecks,
-    bioAnalysis, repHistory, progression, baselineComparison, report, diagnostics, confidence,
+    bioAnalysis, coaching, repHistory, progression, baselineComparison, report, diagnostics, confidence,
     frames: replayFrames,
     fps: analysisFps,
     autoDetected,
