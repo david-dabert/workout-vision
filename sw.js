@@ -108,3 +108,32 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Periodic Background Sync — weekly training reminder
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'wv-weekly-reminder') {
+    event.waitUntil(
+      self.registration.showNotification('WorkoutVision', {
+        body: 'Time to train! Record a set and track your progress.',
+        icon: '__SW_BASE__icon-192.png',
+        badge: '__SW_BASE__icon-192.png',
+        tag: 'wv-weekly',
+        renotify: true,
+      })
+    );
+  }
+});
+
+// Notification click — open the app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      if (clients.length > 0) {
+        clients[0].focus();
+        return;
+      }
+      return self.clients.openWindow('__SW_BASE__');
+    })
+  );
+});

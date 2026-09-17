@@ -8,6 +8,20 @@
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "shortcuts": [
+    {
+      "name": "Analyze Video",
+      "short_name": "Analyze",
+      "url": "/workout-vision/?action=analyze",
+      "icons": [{ "src": "/workout-vision/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Workout History",
+      "short_name": "History",
+      "url": "/workout-vision/?tab=history",
+      "icons": [{ "src": "/workout-vision/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/workout-vision/favicon.svg",
