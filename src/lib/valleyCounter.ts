@@ -162,6 +162,60 @@ export function findValleys(signal: number[], fps: number, exercise: ExerciseCon
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+// Peak-valley reconciliation
+//
+// Applied to the final winning signal only. If inverted signal has exactly
+// one more peak than forward signal has valleys, recover the edge valley.
+// ---------------------------------------------------------------------------
+
+export function reconcilePeaksAndValleys(signal: number[], valleyResult: ValleyResult, fps: number, exercise: ExerciseConfig): ValleyResult {
+  if (valleyResult.reps < 3) return valleyResult;
+
+  const inverted = signal.map(v => -v);
+  const peakResult = findValleys(inverted, fps, exercise);
+
+  if (peakResult.reps !== valleyResult.reps + 1) return valleyResult;
+
+  const edgeZone = Math.round(signal.length * 0.20);
+  const medianGap = medianIntervalFrames(valleyResult.valleyFrames);
+
+  let orphanPeakFrame: number | null = null;
+  for (const pf of peakResult.valleyFrames) {
+    const nearestDist = valleyResult.valleyFrames.reduce(
+      (best, vf) => Math.min(best, Math.abs(pf - vf)), Infinity
+    );
+    if (nearestDist > medianGap * 0.3) {
+      if (pf < edgeZone || pf > signal.length - edgeZone) {
+        orphanPeakFrame = pf;
+      }
+      break;
+    }
+  }
+
+  if (orphanPeakFrame === null) return valleyResult;
+
+  const searchRadius = Math.round(medianGap * 0.5);
+  const lo = Math.max(0, orphanPeakFrame - searchRadius);
+  const hi = Math.min(signal.length - 1, orphanPeakFrame + searchRadius);
+  let bestFrame = orphanPeakFrame;
+  let bestVal = signal[orphanPeakFrame];
+  for (let j = lo; j <= hi; j++) {
+    if (signal[j] < bestVal) { bestVal = signal[j]; bestFrame = j; }
+  }
+
+  const mergedFrames = [...valleyResult.valleyFrames, bestFrame].sort((a, b) => a - b);
+  const minGap = Math.max(2, Math.round(fps * 0.3));
+  const dedupedFrames = [mergedFrames[0]];
+  for (let i = 1; i < mergedFrames.length; i++) {
+    if (mergedFrames[i] - dedupedFrames[dedupedFrames.length - 1] >= minGap) {
+      dedupedFrames.push(mergedFrames[i]);
+    }
+  }
+
+  return { reps: dedupedFrames.length, allValleys: valleyResult.allValleys, valleyFrames: dedupedFrames, signalRange: valleyResult.signalRange };
+}
+
+// ---------------------------------------------------------------------------
 // Autocorrelation-based edge correction
 //
 // Valley counting misses edge reps because bilateral prominence needs peaks
