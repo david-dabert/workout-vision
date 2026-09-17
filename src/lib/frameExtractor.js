@@ -697,22 +697,60 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
 }
 
 /**
- * Check if WebCodecs VideoDecoder is available and likely to work.
+ * Inspect a video file to determine its codec without decoding.
+ * Reads container metadata via web-demuxer (fast, no frame decode).
+ * Returns null if inspection fails (non-video file, unsupported container).
  */
-function hasWebCodecs() {
-  return typeof VideoDecoder !== 'undefined' && typeof VideoDecoder.isConfigSupported === 'function';
+async function inspectVideo(file) {
+  try {
+    const { WebDemuxer } = await import('web-demuxer');
+    let demuxer;
+    try {
+      demuxer = new WebDemuxer({ wasmFilePath: 'web-demuxer.wasm' });
+    } catch {
+      demuxer = new WebDemuxer({
+        wasmFilePath: 'https://cdn.jsdelivr.net/npm/web-demuxer@4.0.0/dist/wasm-files/web-demuxer-mini.wasm',
+      });
+    }
+    try {
+      await demuxer.load(file);
+      const info = await demuxer.getMediaInfo();
+      const video = info.streams.find(s => s.codec_type_string === 'video');
+      if (!video) return null;
+      return {
+        codec: video.codec_name, // 'hevc', 'h264', 'vp9', etc.
+        codecString: video.codec_string, // 'hev1.1.6.L93.B0', 'avc1.640032', etc.
+        width: video.width,
+        height: video.height,
+        rotation: video.rotation || 0,
+        duration: info.duration,
+      };
+    } finally {
+      demuxer.destroy();
+    }
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Streaming frame extractor with automatic method selection and fallback chain.
+ * Is this codec HEVC? (multiple naming conventions)
+ */
+function isHEVC(codec) {
+  if (!codec) return false;
+  const c = codec.toLowerCase();
+  return c === 'hevc' || c === 'h265' || c === 'hev1' || c === 'hvc1' || c.startsWith('hev1.') || c.startsWith('hvc1.');
+}
+
+/**
+ * Streaming frame extractor — inspect first, then use the right decoder.
  *
- * Priority:
- * 1. RVFC (fastest, works for H.264)
- * 2. WebCodecs (handles HEVC without canvas taint, Safari 16.4+)
- * 3. Seek-based (universal fallback)
+ * Approach: read the file's codec from container metadata, then route
+ * to the correct extraction method. No cascading try/catch fallbacks.
  *
- * When RVFC detects blank frames (HEVC canvas taint), it automatically
- * falls through to WebCodecs which decodes directly via hardware decoder.
+ * - HEVC (iPhone default) → WebCodecs VideoDecoder (hardware-accelerated,
+ *   bypasses <video> element, no canvas taint)
+ * - H.264 / other → RVFC playback (fastest) or seek (legacy fallback)
  *
  * @param {File} file - Video file
  * @param {number} targetFps - Target frames per second
@@ -726,46 +764,26 @@ function hasWebCodecs() {
  * @returns {Promise<{width, height, fps, duration, frameCount, method: string}>}
  */
 export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
-  const useRVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
-  let rvfcBlankFrames = false;
+  // Step 1: Inspect the video to know what we're dealing with
+  const info = await inspectVideo(file);
 
-  if (useRVFC) {
-    try {
-      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
-      if (result.frameCount > 0) {
-        return { ...result, method: 'rvfc' };
-      }
-      console.warn('[frameExtractor] RVFC produced 0 frames, trying WebCodecs');
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      if (err.message?.includes('BLANK_FRAMES')) {
-        rvfcBlankFrames = true;
-        console.warn('[frameExtractor] HEVC canvas taint detected, falling back to WebCodecs');
-      } else {
-        console.warn('[frameExtractor] RVFC failed, trying WebCodecs:', err.message);
-      }
-    }
-  }
-
-  // WebCodecs path: bypasses <video> element entirely, no canvas taint
-  if (hasWebCodecs()) {
-    try {
+  // Step 2: HEVC → WebCodecs (the only reliable path for HEVC in the browser)
+  if (info && isHEVC(info.codec)) {
+    if (typeof VideoDecoder !== 'undefined') {
       const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
-      if (result.frameCount > 0) {
-        return { ...result, method: 'webcodecs' };
-      }
-      console.warn('[frameExtractor] WebCodecs produced 0 frames, trying seek');
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      console.warn('[frameExtractor] WebCodecs failed, trying seek:', err.message);
+      return { ...result, method: 'webcodecs' };
     }
-  } else if (rvfcBlankFrames) {
-    // WebCodecs unavailable and RVFC gave blank frames — no recovery possible.
-    // Give actionable error instead of processing hundreds of blank frames via seek.
+    // WebCodecs not available — can't decode HEVC any other way
     throw new Error(
-      'This video uses a codec that cannot be processed on this device. ' +
+      'This video uses HEVC (H.265) which requires a newer browser. ' +
       'To fix: open iPhone Settings → Camera → Formats → select "Most Compatible", then re-record.'
     );
+  }
+
+  // Step 3: H.264 / other → RVFC (fastest) or seek (legacy)
+  if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+    const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+    return { ...result, method: 'rvfc' };
   }
 
   const result = await extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
