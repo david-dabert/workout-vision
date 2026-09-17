@@ -11,6 +11,8 @@
  * Both methods stream one frame at a time via callback, keeping memory constant.
  */
 
+const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 /**
  * Hash the first 2MB of a file using SHA-256.
  * 2MB is enough to uniquely identify any video file while staying fast.
@@ -138,9 +140,11 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
       });
     }
 
-    // Play at accelerated rate for faster extraction
-    // 3x is a good balance: fast extraction without overloading the decoder
-    video.playbackRate = 3.0;
+    // Play at accelerated rate for faster extraction.
+    // iOS HEVC hardware decoder can't sustain 3x on large files -- frames drop
+    // and rVFC callbacks fire without new decoded frames, causing stalls.
+    // 1.5x is the safe ceiling on iOS; 3x works on desktop Chrome/Firefox.
+    video.playbackRate = IS_IOS ? 1.5 : 3.0;
 
     let extractedCount = startFrame;
     let nextCaptureTime = startTime;
@@ -220,6 +224,39 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
           if (Math.abs(mediaTime - lastCapturedTime) >= 0.01) {
             try {
               ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
+
+              // On the first frame, validate the canvas isn't blank (HEVC canvas taint
+              // on some iOS versions produces all-black frames silently)
+              if (extractedCount === 0) {
+                try {
+                  const sample = ctx.getImageData(
+                    Math.floor(frameWidth / 4), Math.floor(frameHeight / 4),
+                    Math.min(32, frameWidth), Math.min(32, frameHeight)
+                  );
+                  let nonZero = 0;
+                  for (let p = 0; p < sample.data.length; p += 4) {
+                    if (sample.data[p] > 0 || sample.data[p + 1] > 0 || sample.data[p + 2] > 0) {
+                      nonZero++;
+                      if (nonZero >= 3) break; // enough to confirm non-blank
+                    }
+                  }
+                  if (nonZero < 3) {
+                    console.warn('[frameExtractor] First frame is blank — possible canvas taint from HEVC');
+                    // Continue anyway; MediaPipe will simply detect no poses
+                  }
+                } catch (e) {
+                  // getImageData threw — canvas IS tainted (CORS or codec security)
+                  console.error('[frameExtractor] Canvas tainted:', e.message);
+                  if (!resolved) {
+                    resolved = true;
+                    cleanup();
+                    if (signal) signal.removeEventListener('abort', onAbort);
+                    reject(new Error(`Canvas tainted by video codec (${e.message}). Try converting the video to H.264 MP4.`));
+                  }
+                  return;
+                }
+              }
+
               await onFrame(canvas, extractedCount, mediaTime);
               extractedCount++;
               lastCapturedTime = mediaTime;
@@ -421,8 +458,34 @@ async function extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, 
       // Draw frame to canvas
       try {
         ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
-      } catch {
+      } catch (drawErr) {
+        // On first frame, canvas taint is fatal — no point continuing
+        if (extractedCount === 0) {
+          throw new Error(`Canvas draw failed on first frame: ${drawErr.message}. Video codec may not be supported for canvas rendering.`);
+        }
         continue;
+      }
+
+      // Validate first frame isn't blank (HEVC canvas taint produces all-black)
+      if (extractedCount === 0) {
+        try {
+          const sample = ctx.getImageData(
+            Math.floor(frameWidth / 4), Math.floor(frameHeight / 4),
+            Math.min(32, frameWidth), Math.min(32, frameHeight)
+          );
+          let nonZero = 0;
+          for (let p = 0; p < sample.data.length; p += 4) {
+            if (sample.data[p] > 0 || sample.data[p + 1] > 0 || sample.data[p + 2] > 0) {
+              nonZero++;
+              if (nonZero >= 3) break;
+            }
+          }
+          if (nonZero < 3) {
+            console.warn('[frameExtractor] Seek: first frame is blank — canvas may be tainted');
+          }
+        } catch (e) {
+          throw new Error(`Canvas tainted by video codec (${e.message}). Try converting the video to H.264 MP4.`);
+        }
       }
 
       await onFrame(canvas, extractedCount, seekTime);
@@ -473,7 +536,12 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   if (useRVFC) {
     try {
       const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
-      return { ...result, method: 'rvfc' };
+      // If RVFC returned zero frames (decoder stalled, blank frames, etc.),
+      // fall through to seek-based extraction instead of returning empty.
+      if (result.frameCount > 0) {
+        return { ...result, method: 'rvfc' };
+      }
+      console.warn('[frameExtractor] RVFC produced 0 frames, falling back to seek');
     } catch (err) {
       // If aborted, re-throw immediately
       if (err.name === 'AbortError') throw err;
