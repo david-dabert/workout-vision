@@ -312,7 +312,7 @@ if (module.registerHooks) {
 }
 
 // Now import RepCounter — it will use our shim for poseAnalysis
-const { RepCounter } = await import('../src/lib/repCounter.js');
+const { RepCounter } = await import('../src/lib/repCounter/index.js');
 
 // Run benchmark
 const results = [];
