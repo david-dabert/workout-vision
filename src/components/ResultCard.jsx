@@ -538,6 +538,158 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
+      {/* ═══ Coaching Engine Panel ═══ */}
+      {result.coaching && result.coaching.feedback && result.coaching.feedback.length > 0 && (
+        <div className={s.coachingPanel}>
+          <h4 className={s.coachingPanelTitle}>{t('coaching_analysis')}</h4>
+
+          {/* Feedback messages */}
+          <div className={s.coachingFeedbackList}>
+            {result.coaching.feedback.map((fb, i) => (
+              <div key={i} className={`${s.coachingFeedbackItem} ${s[`severity_${fb.severity}`]}`}>
+                <span className={s.coachingFeedbackIcon}>
+                  {fb.severity === 'warning' ? '⚠' : fb.severity === 'correction' ? '→' : fb.severity === 'positive' ? '✓' : 'ℹ'}
+                </span>
+                <p className={s.coachingFeedbackText}>{fb.message}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Metric cards row */}
+          <div className={s.coachingMetricsRow}>
+            {/* Smoothness (SPARC) */}
+            {result.coaching.metrics?.smoothness && (
+              <div className={s.coachingMetricCard}>
+                <span className={s.coachingMetricValue}>
+                  {result.coaching.metrics.smoothness.quality === 'very_smooth' ? 'A' :
+                   result.coaching.metrics.smoothness.quality === 'normal' ? 'B' : 'C'}
+                </span>
+                <span className={s.coachingMetricLabel}>{t('smoothness_label')}</span>
+                <span className={`${s.coachingMetricSub} ${
+                  result.coaching.metrics.smoothness.quality === 'very_smooth' ? s.metricGood :
+                  result.coaching.metrics.smoothness.quality === 'normal' ? s.metricOk : s.metricPoor
+                }`}>
+                  {t(`smoothness_${result.coaching.metrics.smoothness.quality}`) || result.coaching.metrics.smoothness.quality.replace('_', ' ')}
+                </span>
+              </div>
+            )}
+
+            {/* Rep consistency (DTW) */}
+            {result.coaching.metrics?.repConsistency && (
+              <div className={s.coachingMetricCard}>
+                <span className={s.coachingMetricValue}>
+                  {result.coaching.metrics.repConsistency.consistencyScore}<span className={s.coachingMetricUnit}>/100</span>
+                </span>
+                <span className={s.coachingMetricLabel}>{t('consistency_label')}</span>
+              </div>
+            )}
+
+            {/* Fatigue */}
+            {result.coaching.metrics?.fatigue && (
+              <div className={s.coachingMetricCard}>
+                <span className={`${s.coachingMetricValue} ${
+                  result.coaching.metrics.fatigue.fatigueDetected ? s.metricPoor : s.metricGood
+                }`}>
+                  {result.coaching.metrics.fatigue.fatigueDetected
+                    ? `−${Math.round(result.coaching.metrics.fatigue.romDecayPercent)}%`
+                    : '✓'}
+                </span>
+                <span className={s.coachingMetricLabel}>{t('fatigue_label')}</span>
+                {result.coaching.metrics.fatigue.fatigueDetected && (
+                  <span className={s.coachingMetricSub}>
+                    {t(`fatigue_${result.coaching.metrics.fatigue.severity}`) || result.coaching.metrics.fatigue.severity}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* SPARC per-rep bars */}
+          {result.coaching.metrics?.smoothness?.perRep && result.coaching.metrics.smoothness.perRep.length > 1 && (
+            <div className={s.coachingSparcSection}>
+              <span className={s.coachingSubLabel}>{t('smoothness_per_rep')}</span>
+              <div className="rep-bars">
+                {result.coaching.metrics.smoothness.perRep.map((rep, i) => {
+                  const sparc = rep.sparc;
+                  // Normalize SPARC: -1 is best, -7 is worst → map to 0-100%
+                  const pct = Math.max(5, Math.min(100, ((sparc + 7) / 6) * 100));
+                  const color = sparc > -1.5 ? 'var(--accent)' : sparc > -3 ? 'var(--yellow)' : 'var(--red)';
+                  return (
+                    <div key={i} className="rep-bar-col">
+                      <div className="rep-bar-wrap">
+                        <div className="rep-bar" style={{ height: `${pct}%`, background: color }} />
+                      </div>
+                      <span className="rep-num">{i + 1}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Form detection badges */}
+          {(() => {
+            const m = result.coaching.metrics;
+            const detections = [];
+            if (m?.squatDepth) {
+              detections.push({
+                label: t('squat_depth'),
+                good: m.squatDepth.allBelowParallel,
+                detail: m.squatDepth.allBelowParallel
+                  ? t('all_below_parallel')
+                  : `${Math.round(m.squatDepth.avgBelowParallel * 100)}% ${t('below_parallel')}`,
+              });
+            }
+            if (m?.kneeValgus) {
+              detections.push({
+                label: t('knee_valgus'),
+                good: !m.kneeValgus.detected,
+                detail: m.kneeValgus.detected
+                  ? `${Math.round(m.kneeValgus.valgusRate * 100)}% ${t('of_reps')}`
+                  : t('none_detected'),
+              });
+            }
+            if (m?.trunkLean) {
+              detections.push({
+                label: t('trunk_lean'),
+                good: m.trunkLean.excessiveRate < 0.3,
+                detail: `${m.trunkLean.avgLean}°`,
+              });
+            }
+            if (m?.lockout) {
+              detections.push({
+                label: t('lockout'),
+                good: m.lockout.lockoutRate >= 0.8,
+                detail: `${Math.round(m.lockout.lockoutRate * 100)}%`,
+              });
+            }
+            if (m?.elbowFlare) {
+              detections.push({
+                label: t('elbow_flare'),
+                good: m.elbowFlare.excessiveRate < 0.3,
+                detail: m.elbowFlare.excessiveRate >= 0.3
+                  ? `${Math.round(m.elbowFlare.excessiveRate * 100)}% ${t('of_reps')}`
+                  : t('within_range'),
+              });
+            }
+            if (detections.length === 0) return null;
+            return (
+              <div className={s.coachingDetections}>
+                {detections.map((d, i) => (
+                  <div key={i} className={`${s.coachingDetectionBadge} ${d.good ? s.detectionGood : s.detectionWarn}`}>
+                    <span className={s.detectionIcon}>{d.good ? '✓' : '!'}</span>
+                    <div>
+                      <span className={s.detectionLabel}>{d.label}</span>
+                      <span className={s.detectionDetail}>{d.detail}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {progressionNote && (
         <div className="progression-card">
           <span className="progression-icon">&#x2191;</span>
