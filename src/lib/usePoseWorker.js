@@ -215,6 +215,31 @@ export default function usePoseWorker() {
   }, []);
 
   /**
+   * Reinitialize the worker's MediaPipe landmarker (between videos on iOS).
+   * Disposes the old landmarker (freeing WebGL context/GPU memory) and creates
+   * a fresh one from the cached model buffer — no network fetches needed.
+   */
+  const reinitWorker = useCallback(() => {
+    if (!workerRef.current) return Promise.resolve(false);
+    setIsReady(false);
+    pendingRef.current.clear();
+    return new Promise((resolve, reject) => {
+      if (initPromiseRef.current) {
+        initPromiseRef.current.reject(new Error('Superseded by reinit'));
+      }
+      initPromiseRef.current = { resolve: (v) => { setIsReady(true); resolve(v); }, reject };
+      trackedTimeout(() => {
+        if (initPromiseRef.current) {
+          initPromiseRef.current.reject(new Error('Reinit timeout'));
+          initPromiseRef.current = null;
+          setIsReady(false);
+        }
+      }, 30000);
+      workerRef.current.postMessage({ type: 'reinit' });
+    });
+  }, []);
+
+  /**
    * Dispose the worker entirely.
    */
   const disposeWorker = useCallback(() => {
@@ -233,6 +258,7 @@ export default function usePoseWorker() {
     initWorker,
     detectFrame,
     resetWorker,
+    reinitWorker,
     disposeWorker,
   };
 }

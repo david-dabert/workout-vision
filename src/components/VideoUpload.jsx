@@ -46,7 +46,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
   const { t, tExercise, tFormCheck, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
   const { accepted: privacyAccepted, accept: acceptPrivacy, showModal: showPrivacyModal } = usePrivacyGate();
-  const { isReady: workerReady, isSupported: workerSupported, initWorker, detectFrame, resetWorker, disposeWorker } = usePoseWorker();
+  const { isReady: workerReady, isSupported: workerSupported, initWorker, detectFrame, resetWorker, reinitWorker, disposeWorker } = usePoseWorker();
   const [queue, setQueue] = useState([]);
   const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
@@ -161,10 +161,11 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
         init: initWorker,
         detect: detectFrame,
         reset: resetWorker,
+        reinit: reinitWorker,
       },
       onProgress: (pct) => {
         setProgress(pct);
-        setFfmpegStatus(pct < 95 ? `Analyzing... ${pct}%` : '');
+        setFfmpegStatus(pct < 95 ? `${t('phase_analyzing')}... ${pct}%` : '');
         setQueue(prev => prev.map(q =>
           q.id === queueItem.id ? { ...q, progress: pct } : q
         ));
@@ -240,8 +241,23 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
     const pending = queue.filter(q => q.status === 'queued');
     const allResults = [...results];
 
+    let videoIndex = 0;
     for (const item of pending) {
       if (controller.signal.aborted) break;
+
+      // On iOS, pause between sequential videos to let the browser
+      // release GPU memory and run garbage collection.
+      if (IS_IOS && videoIndex > 0) {
+        await new Promise(r => setTimeout(r, 1500));
+      }
+      videoIndex++;
+
+      // Release previous blob URL before starting next analysis
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+
       setCurrentFile(item.name);
       setProgress(0);
       setQueue(prev => prev.map(q =>
@@ -272,7 +288,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           ));
         } else {
           setQueue(prev => prev.map(q =>
-            q.id === item.id ? { ...q, status: 'error', progress: 0, errorReason: 'Analysis returned no results' } : q
+            q.id === item.id ? { ...q, status: 'error', progress: 0 } : q
           ));
         }
       } catch (err) {
@@ -406,7 +422,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
       {cancelled && !analyzing && (
         <div className={s.cancelledBanner}>
           <p className={s.cancelledText}>
-            Analysis cancelled. {hasCancelled ? 'Press Resume to continue from checkpoint.' : 'Partial results shown below.'}
+            {t('analysis_cancelled')} {hasCancelled ? t('press_resume') : t('partial_results')}
           </p>
           <button
             onClick={() => setCancelled(false)}
@@ -448,7 +464,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 {q.status === 'done' && <span className="queue-done">{t('done')}</span>}
                 {q.status === 'cancelled' && (
                   <span className={s.statusCancelled}>
-                    Cancelled
+                    {t('cancelled')}
                   </span>
                 )}
                 {q.status === 'error' && (
@@ -521,8 +537,8 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                 type="number"
                 value={weight}
                 onChange={(e) => { setWeight(e.target.value); weightRef.current = e.target.value; }}
-                placeholder="kg"
-                aria-label={t('weight_label') || 'Weight in kg'}
+                placeholder={t('placeholder_kg')}
+                aria-label={t('weight_label')}
                 className={s.weightInput}
               />
               <button
@@ -532,7 +548,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                   background: audioEnabled ? 'rgba(0,245,212,0.15)' : 'transparent',
                 }}
                 onClick={() => setAudioEnabled(prev => !prev)}
-                title={audioEnabled ? 'Audio feedback ON' : 'Audio feedback OFF'}
+                title={audioEnabled ? t('audio_on') : t('audio_off')}
               >
                 {audioEnabled ? '\u{1F50A}' : '\u{1F507}'}
               </button>
@@ -541,7 +557,7 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
                   className={`btn btn-primary ${s.flexGrow}`}
                   onClick={() => { resumeAnalysis(); }}
                 >
-                  Resume
+                  {t('resume')}
                 </button>
               ) : (
                 <button

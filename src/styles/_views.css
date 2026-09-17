@@ -314,7 +314,7 @@
 }
 
 .logo-accent {
-  background: linear-gradient(135deg, var(--aurora-violet) 0%, var(--aurora-magenta) 100%);
+  background: linear-gradient(135deg, var(--aurora-violet) 0%, var(--bio-cyan) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -489,7 +489,7 @@
   font-weight: 700;
   letter-spacing: 3.5px;
   text-transform: uppercase;
-  background: linear-gradient(90deg, var(--bio-cyan) 0%, var(--aurora-violet) 60%, var(--aurora-magenta) 100%);
+  background: linear-gradient(90deg, var(--bio-cyan) 0%, var(--aurora-violet) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

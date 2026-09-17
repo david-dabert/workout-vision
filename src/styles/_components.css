@@ -431,7 +431,7 @@ select {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--bio-cyan), var(--aurora-violet), var(--aurora-magenta));
+  background: linear-gradient(90deg, var(--bio-cyan), var(--aurora-violet));
   background-size: 300% 100%;
   border-radius: var(--radius-full);
   transition: width 0.4s var(--ease-smooth);
@@ -476,8 +476,8 @@ select {
   transition: all 0.4s var(--ease-smooth);
   background:
     linear-gradient(var(--depth-2), var(--depth-2)) padding-box,
-    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet), var(--aurora-magenta), var(--bio-green)) border-box;
-  background-size: 100% 100%, 400% 400%;
+    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet)) border-box;
+  background-size: 100% 100%, 200% 200%;
   animation: gradientShift 8s ease infinite;
   position: relative;
 }
@@ -507,7 +507,7 @@ select {
 .upload-zone:active {
   background:
     linear-gradient(var(--depth-3), var(--depth-3)) padding-box,
-    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet), var(--aurora-magenta), var(--bio-green)) border-box;
+    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet)) border-box;
   transform: scale(0.97);
   box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), 0 0 100px rgba(123, 97, 255, 0.08);
 }

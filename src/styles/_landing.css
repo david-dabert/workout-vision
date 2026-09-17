@@ -54,7 +54,7 @@
 }
 
 .landing-title-accent {
-  background: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 50%, var(--aurora-magenta) 100%);
+  background: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

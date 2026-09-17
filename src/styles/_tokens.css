@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════════════
-   WORKOUT VISION — Bioluminescent Design System
-   True black. Liquid glass. Film grain. Deep-sea organism aesthetic.
+   WORKOUT VISION — Design System
+   True black. Liquid glass. Two-tone brand identity: cyan + violet.
    ══════════════════════════════════════════════════════════════════════ */
 
 /* Google Fonts loaded via non-blocking <link> in index.html.
@@ -20,10 +20,9 @@
   --bio-glow: rgba(0, 240, 255, 0.14);
   --bio-glow-strong: rgba(0, 240, 255, 0.35);
 
-  /* ── Aurora spectrum (the soul of the identity) ── */
+  /* ── Aurora accent (secondary to bio-cyan) ── */
   --aurora-violet: #7B61FF;
   --aurora-magenta: #E040FB;
-  --aurora-rose: #FF4081;
 
   /* ── Text hierarchy ── */
   --text-primary: #eeeef6;
@@ -56,7 +55,7 @@
   /* ── Accent (bio-cyan as primary) ── */
   --accent: var(--bio-cyan);
   --accent-2: var(--bio-green);
-  --accent-gradient: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 50%, var(--aurora-magenta) 100%);
+  --accent-gradient: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 100%);
   --accent-glow: rgba(0, 240, 255, 0.10);
   --accent-glow-strong: rgba(0, 240, 255, 0.20);
 
@@ -67,20 +66,7 @@
   --yellow-glow: rgba(255, 194, 51, 0.12);
   --blue: #4d8dff;
   --blue-glow: rgba(77, 141, 255, 0.12);
-  --purple: #a855f7;
-
-  /* ── Warm accents ── */
-  --rose: #ff6b9d;
-  --rose-glow: rgba(255, 107, 157, 0.14);
-  --peach: #ffb088;
-  --peach-glow: rgba(255, 176, 136, 0.12);
-  --lavender: #c4b5fd;
-  --lavender-glow: rgba(196, 181, 253, 0.12);
-
-  /* ── Premium gradients ── */
-  --gradient-warm: linear-gradient(135deg, var(--rose) 0%, var(--peach) 100%);
-  --gradient-aurora: linear-gradient(135deg, var(--aurora-violet) 0%, var(--bio-cyan) 40%, var(--bio-green) 70%, var(--aurora-magenta) 100%);
-  --gradient-sunset: linear-gradient(135deg, var(--peach) 0%, var(--aurora-rose) 50%, var(--aurora-violet) 100%);
+  /* ── Brand gradient ── */
   --gradient-mesh: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 100%);
 
   /* ── Radii ── */
@@ -134,28 +120,14 @@ body {
   min-height: 100dvh;
 }
 
-/* ── Atmospheric noise texture — subtle grain adds depth perception ── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-  mix-blend-mode: overlay;
-}
-
-/* ── Edge vignette — draws the eye inward ── */
+/* ── Subtle edge vignette — draws the eye inward ── */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 9998;
   pointer-events: none;
-  background: radial-gradient(ellipse 75% 65% at 50% 45%, transparent 55%, rgba(0,0,0,0.5) 100%);
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, transparent 60%, rgba(0,0,0,0.35) 100%);
 }
 
 /* ══════════════════════════════════════════
@@ -213,9 +185,8 @@ body::after {
 
   body { background: var(--void); }
 
-  /* Disable film grain and heavy vignette in light mode */
-  body::before { opacity: 0.08; }
-  body::after { background: radial-gradient(ellipse 70% 60% at 50% 45%, transparent 60%, rgba(0,0,0,0.06) 100%); }
+  /* Lighten vignette in light mode */
+  body::after { background: radial-gradient(ellipse 80% 70% at 50% 45%, transparent 65%, rgba(0,0,0,0.06) 100%); }
 
   #root::before { display: none; }
   .home-hero-bg { opacity: 0.3; filter: blur(60px); }
@@ -240,7 +211,7 @@ body::after {
 
   /* VisionScore label — darker gradient for light bg */
   .vision-score-label {
-    background: linear-gradient(90deg, #009eb3, #6246ea, #c026d3);
+    background: linear-gradient(90deg, #009eb3, #6246ea);
     -webkit-background-clip: text;
     background-clip: text;
   }

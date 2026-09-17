@@ -13,7 +13,7 @@
  * - RVFC-based frame extraction with seek fallback
  */
 
-import { getImageLandmarker, detectPoseImage, extractJointAngles, resetKalmanFilters, selectSubjectPose } from './poseAnalysis';
+import { getImageLandmarker, detectPoseImage, extractJointAngles, resetKalmanFilters, selectSubjectPose, disposeAllLandmarkers } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { RepCounter } from './repCounter';
 import { ExerciseAutoDetector } from './exerciseDetector';
@@ -134,9 +134,27 @@ export async function analyzeVideoFile({
         useWorker = false;
       }
     }
-    if (useWorker) worker.reset();
+    if (useWorker) {
+      // On iOS, fully reinit the landmarker between videos to release the
+      // WebGL context and GPU memory. Without this, iOS Safari exhausts GPU
+      // resources after 2-3 sequential analyses and returns empty results.
+      if (IS_IOS && worker.reinit) {
+        try {
+          await worker.reinit();
+        } catch (e) {
+          console.warn('[analyzeVideo] Worker reinit failed, trying reset:', e.message);
+          worker.reset();
+        }
+      } else {
+        worker.reset();
+      }
+    }
     let landmarker = null;
     if (!useWorker) {
+      // On iOS main-thread path, dispose and recreate the landmarker to free GPU memory
+      if (IS_IOS) {
+        disposeAllLandmarkers();
+      }
       try {
         landmarker = await getImageLandmarker();
       } catch (e) {

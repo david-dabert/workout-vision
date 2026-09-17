@@ -4,7 +4,7 @@
 
 /* .app-universe is unused — gradient mesh now on #root::before */
 
-/* ── Living gradient mesh — the canvas that makes glass visible ── */
+/* ── Ambient glow — two-tone brand gradient (cyan + violet) ── */
 #root::before {
   content: '';
   position: fixed;
@@ -12,43 +12,22 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 90% 70% at 5% 10%, rgba(123, 97, 255, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 80% at 95% 85%, rgba(0, 240, 255, 0.20) 0%, transparent 45%),
-    radial-gradient(ellipse 100% 60% at 50% 50%, rgba(224, 64, 251, 0.12) 0%, transparent 40%),
-    radial-gradient(ellipse 60% 50% at 85% 5%, rgba(0, 230, 118, 0.12) 0%, transparent 40%),
-    radial-gradient(ellipse 70% 50% at 15% 90%, rgba(0, 240, 255, 0.14) 0%, transparent 40%),
-    radial-gradient(ellipse 60% 40% at 70% 50%, rgba(123, 97, 255, 0.08) 0%, transparent 40%);
+    radial-gradient(ellipse 80% 70% at 15% 20%, rgba(123, 97, 255, 0.18) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 70% at 85% 80%, rgba(0, 240, 255, 0.16) 0%, transparent 50%);
   filter: blur(80px);
-  animation: meshDrift 25s ease-in-out infinite alternate;
+  animation: meshDrift 30s ease-in-out infinite alternate;
 }
 
 @keyframes meshDrift {
   0% {
     background:
-      radial-gradient(ellipse 90% 70% at 5% 10%, rgba(123, 97, 255, 0.25) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 80% at 95% 85%, rgba(0, 240, 255, 0.20) 0%, transparent 45%),
-      radial-gradient(ellipse 100% 60% at 50% 50%, rgba(224, 64, 251, 0.12) 0%, transparent 40%),
-      radial-gradient(ellipse 60% 50% at 85% 5%, rgba(0, 230, 118, 0.12) 0%, transparent 40%),
-      radial-gradient(ellipse 70% 50% at 15% 90%, rgba(0, 240, 255, 0.14) 0%, transparent 40%),
-      radial-gradient(ellipse 60% 40% at 70% 50%, rgba(123, 97, 255, 0.08) 0%, transparent 40%);
-  }
-  50% {
-    background:
-      radial-gradient(ellipse 80% 80% at 30% 40%, rgba(0, 240, 255, 0.22) 0%, transparent 50%),
-      radial-gradient(ellipse 90% 70% at 80% 60%, rgba(123, 97, 255, 0.22) 0%, transparent 45%),
-      radial-gradient(ellipse 70% 70% at 10% 80%, rgba(0, 230, 118, 0.14) 0%, transparent 40%),
-      radial-gradient(ellipse 60% 50% at 90% 15%, rgba(224, 64, 251, 0.16) 0%, transparent 40%),
-      radial-gradient(ellipse 80% 50% at 50% 95%, rgba(0, 240, 255, 0.10) 0%, transparent 40%),
-      radial-gradient(ellipse 50% 50% at 40% 20%, rgba(123, 97, 255, 0.06) 0%, transparent 40%);
+      radial-gradient(ellipse 80% 70% at 15% 20%, rgba(123, 97, 255, 0.18) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 70% at 85% 80%, rgba(0, 240, 255, 0.16) 0%, transparent 50%);
   }
   100% {
     background:
-      radial-gradient(ellipse 95% 65% at 85% 20%, rgba(224, 64, 251, 0.22) 0%, transparent 50%),
-      radial-gradient(ellipse 70% 90% at 15% 65%, rgba(0, 240, 255, 0.20) 0%, transparent 45%),
-      radial-gradient(ellipse 80% 60% at 60% 5%, rgba(123, 97, 255, 0.16) 0%, transparent 40%),
-      radial-gradient(ellipse 70% 60% at 35% 95%, rgba(0, 230, 118, 0.12) 0%, transparent 40%),
-      radial-gradient(ellipse 60% 60% at 80% 70%, rgba(224, 64, 251, 0.10) 0%, transparent 40%),
-      radial-gradient(ellipse 50% 40% at 20% 30%, rgba(0, 240, 255, 0.08) 0%, transparent 40%);
+      radial-gradient(ellipse 80% 70% at 75% 30%, rgba(0, 240, 255, 0.18) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 70% at 25% 75%, rgba(123, 97, 255, 0.16) 0%, transparent 50%);
   }
 }
 
@@ -125,7 +104,7 @@ h5 {
 .text-muted { color: var(--text-secondary); }
 .text-center { text-align: center; }
 .text-bio {
-  background: linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet), var(--aurora-magenta));
+  background: linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet));
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

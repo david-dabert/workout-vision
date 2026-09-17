@@ -326,9 +326,9 @@ function ResultCard({ result, onReplay }) {
           <span className={s.heroStatValue}>
             {showRepEdit ? (
               <span className={s.repEditControls}>
-                <button onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }} className={s.repEditButton} aria-label="Decrease reps">−</button>
+                <button onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps - 1); }} className={s.repEditButton} aria-label={t('decrease_reps')}>−</button>
                 <span className={s.repDisplayCount} aria-live="polite">{displayReps}</span>
-                <button onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }} className={s.repEditButton} aria-label="Increase reps">+</button>
+                <button onClick={(e) => { e.stopPropagation(); handleRepChange(displayReps + 1); }} className={s.repEditButton} aria-label={t('increase_reps')}>+</button>
               </span>
             ) : (
               <>

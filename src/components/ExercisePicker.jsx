@@ -155,7 +155,7 @@ export function AutoLockBadge({ exercise, confidence, onUnlock }) {
             fontSize: 11,
             padding: '0 2px',
           }}
-          title="Change exercise"
+          title={t('change_exercise')}
         >
           ✕
         </button>

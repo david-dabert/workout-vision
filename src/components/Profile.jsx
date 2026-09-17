@@ -105,7 +105,7 @@ export default function Profile({ onClose }) {
               type="text"
               value={profile.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="Your name"
+              placeholder={t('placeholder_name')}
             />
           </label>
           <label>
@@ -114,7 +114,7 @@ export default function Profile({ onClose }) {
               type="number"
               value={profile.age}
               onChange={(e) => handleChange('age', e.target.value)}
-              placeholder="Years"
+              placeholder={t('placeholder_years')}
             />
           </label>
           <label>
@@ -123,7 +123,7 @@ export default function Profile({ onClose }) {
               type="number"
               value={profile.weight}
               onChange={(e) => handleChange('weight', e.target.value)}
-              placeholder="kg"
+              placeholder={t('placeholder_kg')}
             />
           </label>
           <label>
@@ -132,7 +132,7 @@ export default function Profile({ onClose }) {
               type="number"
               value={profile.height}
               onChange={(e) => handleChange('height', e.target.value)}
-              placeholder="cm"
+              placeholder={t('placeholder_cm')}
             />
           </label>
           <label>
@@ -148,7 +148,7 @@ export default function Profile({ onClose }) {
               type="text"
               value={profile.ethnicity}
               onChange={(e) => handleChange('ethnicity', e.target.value)}
-              placeholder="Optional"
+              placeholder={t('placeholder_optional')}
             />
           </label>
           <label className="full-width">
@@ -167,7 +167,7 @@ export default function Profile({ onClose }) {
               type="number"
               value={profile.restingHR}
               onChange={(e) => handleChange('restingHR', e.target.value)}
-              placeholder="e.g. 65"
+              placeholder={t('placeholder_resting_hr')}
             />
           </label>
           <label>

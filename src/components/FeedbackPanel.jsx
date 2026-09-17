@@ -2,6 +2,7 @@ import { useState, useCallback, memo } from 'react';
 import { EXERCISES } from '../lib/exercises';
 import { updateWorkout } from '../lib/storage';
 import { logCorrection } from '../lib/correctionLog';
+import { useT } from '../lib/LanguageContext';
 
 const FEEDBACK_STORAGE_KEY = 'wv_feedback';
 
@@ -62,6 +63,7 @@ function getDeviceInfo() {
 }
 
 function FeedbackPanel({ result }) {
+  const { t, tExercise } = useT();
   const [exerciseConfirmed, setExerciseConfirmed] = useState(null); // true, false, or null
   const [correctedExercise, setCorrectedExercise] = useState('');
   const [thumbs, setThumbs] = useState(null); // 'up' or 'down'
@@ -180,7 +182,7 @@ function FeedbackPanel({ result }) {
       {/* Exercise confirmation */}
       <div style={{ marginBottom: 10 }}>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Detected <strong style={{ color: 'var(--text)' }}>{displayExercise}</strong>
+          {t('detected_exercise')} <strong style={{ color: 'var(--text)' }}>{displayExercise}</strong>
         </span>
         {exerciseConfirmed === null && (
           <span style={{ marginLeft: 10 }}>
@@ -191,7 +193,7 @@ function FeedbackPanel({ result }) {
                 color: 'var(--accent)', borderRadius: 6, padding: '3px 10px',
                 fontSize: '0.75rem', cursor: 'pointer', marginRight: 4, fontWeight: 600,
               }}
-            >Correct</button>
+            >{t('correct')}</button>
             <button
               onClick={() => handleExerciseConfirm(false)}
               style={{
@@ -199,11 +201,11 @@ function FeedbackPanel({ result }) {
                 color: 'var(--red)', borderRadius: 6, padding: '3px 10px',
                 fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600,
               }}
-            >Wrong</button>
+            >{t('wrong')}</button>
           </span>
         )}
         {exerciseConfirmed === true && (
-          <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--accent)' }}>Confirmed</span>
+          <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--accent)' }}>{t('confirmed')}</span>
         )}
         {exerciseConfirmed === false && !correctedExercise && (
           <select
@@ -215,22 +217,22 @@ function FeedbackPanel({ result }) {
               border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6,
             }}
           >
-            <option value="" disabled>Select exercise...</option>
+            <option value="" disabled>{t('select_exercise_correction')}</option>
             {exerciseOptions.map(({ key, label }) => (
-              <option key={key} value={key}>{label}</option>
+              <option key={key} value={key}>{tExercise(key, label)}</option>
             ))}
           </select>
         )}
         {correctedExercise && (
           <span style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--yellow)' }}>
-            Corrected to {EXERCISES[correctedExercise]?.label || correctedExercise}
+            {t('corrected_to', { exercise: tExercise(correctedExercise, EXERCISES[correctedExercise]?.label || correctedExercise) })}
           </span>
         )}
       </div>
 
       {/* Thumbs up/down + Report */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginRight: 4 }}>Rate result:</span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginRight: 4 }}>{t('rate_result')}</span>
         <button
           onClick={() => handleThumbs('up')}
           style={{
@@ -239,7 +241,7 @@ function FeedbackPanel({ result }) {
             borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: '1rem',
             opacity: thumbs && thumbs !== 'up' ? 0.4 : 1,
           }}
-          aria-label="Good result"
+          aria-label={t('good_result')}
         >&#128077;</button>
         <button
           onClick={() => handleThumbs('down')}
@@ -249,7 +251,7 @@ function FeedbackPanel({ result }) {
             borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: '1rem',
             opacity: thumbs && thumbs !== 'down' ? 0.4 : 1,
           }}
-          aria-label="Bad result"
+          aria-label={t('bad_result')}
         >&#128078;</button>
         <a
           href={buildIssueUrl()}
@@ -259,7 +261,7 @@ function FeedbackPanel({ result }) {
             marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--muted)',
             textDecoration: 'underline', textUnderlineOffset: 2,
           }}
-        >Report a problem</a>
+        >{t('report_problem')}</a>
       </div>
     </div>
   );

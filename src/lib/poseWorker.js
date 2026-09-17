@@ -97,6 +97,10 @@ let lastValidLandmarks = null;
 let offscreenCanvas = null;
 let offscreenCtx = null;
 let canvasW = 0, canvasH = 0;
+// Cached after first init so reinit can recreate the landmarker without re-downloading
+let _cachedModelBuffer = null;
+let _cachedMpModule = null;
+let _cachedVision = null;
 // MediaPipe's detectForVideo() requires strictly increasing timestamps.
 // When processing multiple videos, caller timestamps reset to 0 for each new video.
 // We track the highest timestamp seen and apply an offset after each reset
@@ -117,6 +121,7 @@ self.onmessage = async (e) => {
   const msg = e.data;
   switch (msg.type) {
     case 'init': await handleInit(); break;
+    case 'reinit': await handleReinit(); break;
     case 'detect': handleDetectBitmap(msg); break;
     case 'detectPixels': handleDetectPixels(msg); break;
     case 'reset': handleReset(); break;
@@ -135,35 +140,22 @@ async function handleInit() {
   initPromise = (async () => {
     if (landmarker) { landmarker.close(); landmarker = null; }
     try {
-      const mp = await import(`${CDN_BASE}/+esm`);
-      const modelBuffer = await fetchModelWithVerification();
+      const mp = _cachedMpModule || await import(`${CDN_BASE}/+esm`);
+      _cachedMpModule = mp;
+      const modelBuffer = _cachedModelBuffer || await fetchModelWithVerification();
+      _cachedModelBuffer = modelBuffer;
       // Try local WASM first (offline-capable via service worker), CDN fallback
-      let vision;
-      try {
-        vision = await mp.FilesetResolver.forVisionTasks(WASM_LOCAL_URL);
-      } catch (e) {
-        console.warn('[PoseWorker] Local WASM failed, using CDN:', e.message);
-        vision = await mp.FilesetResolver.forVisionTasks(WASM_CDN_URL);
+      let vision = _cachedVision;
+      if (!vision) {
+        try {
+          vision = await mp.FilesetResolver.forVisionTasks(WASM_LOCAL_URL);
+        } catch (e) {
+          console.warn('[PoseWorker] Local WASM failed, using CDN:', e.message);
+          vision = await mp.FilesetResolver.forVisionTasks(WASM_CDN_URL);
+        }
+        _cachedVision = vision;
       }
-      const opts = {
-        runningMode: 'VIDEO',
-        numPoses: 1,
-        minPoseDetectionConfidence: 0.35,
-        minPosePresenceConfidence: 0.4,
-        minTrackingConfidence: 0.5,
-      };
-      // GPU first, CPU fallback
-      try {
-        landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
-          baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'GPU' },
-          ...opts,
-        });
-      } catch {
-        landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
-          baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'CPU' },
-          ...opts,
-        });
-      }
+      landmarker = await createLandmarkerWithFallback(mp, vision, modelBuffer);
       self.postMessage({ type: 'ready' });
     } catch (err) {
       self.postMessage({ type: 'error', message: `Init failed: ${err.message}` });
@@ -173,6 +165,56 @@ async function handleInit() {
   })();
 
   await initPromise;
+}
+
+const LANDMARKER_OPTS = {
+  runningMode: 'VIDEO',
+  numPoses: 1,
+  minPoseDetectionConfidence: 0.35,
+  minPosePresenceConfidence: 0.4,
+  minTrackingConfidence: 0.5,
+};
+
+async function createLandmarkerWithFallback(mp, vision, modelBuffer) {
+  try {
+    return await mp.PoseLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'GPU' },
+      ...LANDMARKER_OPTS,
+    });
+  } catch {
+    return await mp.PoseLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'CPU' },
+      ...LANDMARKER_OPTS,
+    });
+  }
+}
+
+/**
+ * Reinit: dispose the current landmarker (releases WebGL context) and create
+ * a fresh one from cached model/WASM. No network fetches needed.
+ * Critical for iOS Safari which exhausts GPU memory after 2-3 sequential
+ * video analyses without releasing WebGL contexts.
+ */
+async function handleReinit() {
+  if (!_cachedMpModule || !_cachedModelBuffer || !_cachedVision) {
+    return handleInit();
+  }
+  try {
+    if (landmarker) { landmarker.close(); landmarker = null; }
+    kalmanStates = createKalmanStates(33);
+    lastValidLandmarks = null;
+    offscreenCanvas = null;
+    offscreenCtx = null;
+    canvasW = 0;
+    canvasH = 0;
+    tsOffset = maxTsSeen + 1000;
+    landmarker = await createLandmarkerWithFallback(_cachedMpModule, _cachedVision, _cachedModelBuffer);
+    self.postMessage({ type: 'ready' });
+  } catch (err) {
+    console.warn('[PoseWorker] Reinit failed, trying full init:', err.message);
+    _cachedVision = null;
+    return handleInit();
+  }
 }
 
 function processDetection(source, timestamp, frameIndex) {

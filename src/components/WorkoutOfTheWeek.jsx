@@ -41,7 +41,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
           <span style={{ fontSize: '1.1rem' }}>&#127942;</span>
           <span style={{
             fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.06em', color: 'var(--lavender, #c4b5fd)',
+            letterSpacing: '0.06em', color: 'var(--aurora-violet, #7B61FF)',
           }}>
             {t('wotw_title')}
           </span>
@@ -77,8 +77,8 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
             onClick={() => onNavigate('analyze')}
             style={{
               marginLeft: 'auto', padding: '6px 12px', borderRadius: 8,
-              background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.25)',
-              color: 'var(--lavender, #c4b5fd)', fontSize: '0.75rem', fontWeight: 600,
+              background: 'rgba(123,97,255,0.15)', border: '1px solid rgba(123,97,255,0.25)',
+              color: 'var(--aurora-violet, #7B61FF)', fontSize: '0.75rem', fontWeight: 600,
               cursor: 'pointer',
             }}
           >
