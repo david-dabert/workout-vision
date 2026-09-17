@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useT } from '../lib/LanguageContext';
 
 const PRIVACY_ACCEPTED_KEY = 'wv_privacy_accepted';
@@ -20,6 +20,29 @@ export function usePrivacyGate() {
 
 export default function CameraPrivacyModal({ onAccept, onDecline }) {
   const { t } = useT();
+  const dialogRef = useRef(null);
+
+  // Focus trap: keep focus within modal
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const focusable = dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+
+    const trap = (e) => {
+      if (e.key === 'Escape') { onDecline(); return; }
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    };
+    dialog.addEventListener('keydown', trap);
+    return () => dialog.removeEventListener('keydown', trap);
+  }, [onDecline]);
 
   const items = [
     { label: t('privacy_ondevice_label'), desc: t('privacy_ondevice_desc') },
@@ -34,15 +57,15 @@ export default function CameraPrivacyModal({ onAccept, onDecline }) {
       background: 'rgba(0,0,0,0.85)', display: 'flex',
       alignItems: 'center', justifyContent: 'center', padding: 20,
     }}>
-      <div className="card" style={{
+      <div ref={dialogRef} className="card" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title" style={{
         maxWidth: 440, width: '100%', padding: '28px 24px',
         background: 'var(--surface, #1a1a2e)',
         border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 16,
       }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>🔒</div>
-          <h2 style={{ margin: 0, fontSize: 20 }}>{t('privacy_title')}</h2>
+          <div style={{ fontSize: 40, marginBottom: 8 }} aria-hidden="true">🔒</div>
+          <h2 id="privacy-modal-title" style={{ margin: 0, fontSize: 20 }}>{t('privacy_title')}</h2>
         </div>
 
         <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary, #aaa)' }}>

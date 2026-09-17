@@ -1116,5 +1116,17 @@
   "placeholder_years": "Years",
   "placeholder_cm": "cm",
   "placeholder_optional": "Optional",
-  "placeholder_resting_hr": "e.g. 65"
+  "placeholder_resting_hr": "e.g. 65",
+  "remove_exercise": "Remove exercise",
+  "remove_set": "Remove set",
+  "skip_to_content": "Skip to content",
+  "main_navigation": "Main navigation",
+  "live_mode": "Live Camera Mode",
+  "start_camera": "Start Camera",
+  "requesting_camera": "Requesting camera access...",
+  "loading_model": "Loading pose detection model...",
+  "start_workout": "Start Workout",
+  "stop": "Stop",
+  "flip_camera": "Flip camera",
+  "camera_denied": "Camera access denied. Check your browser permissions."
 }

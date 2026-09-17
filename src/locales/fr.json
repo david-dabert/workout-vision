@@ -1117,5 +1117,17 @@
   "placeholder_years": "Années",
   "placeholder_cm": "cm",
   "placeholder_optional": "Optionnel",
-  "placeholder_resting_hr": "ex. 65"
+  "placeholder_resting_hr": "ex. 65",
+  "remove_exercise": "Supprimer l'exercice",
+  "remove_set": "Supprimer la série",
+  "skip_to_content": "Aller au contenu",
+  "main_navigation": "Navigation principale",
+  "live_mode": "Mode caméra en direct",
+  "start_camera": "Démarrer la caméra",
+  "requesting_camera": "Demande d'accès à la caméra...",
+  "loading_model": "Chargement du modèle de détection...",
+  "start_workout": "Commencer l'entraînement",
+  "stop": "Arrêter",
+  "flip_camera": "Retourner la caméra",
+  "camera_denied": "Accès à la caméra refusé. Vérifiez les permissions de votre navigateur."
 }

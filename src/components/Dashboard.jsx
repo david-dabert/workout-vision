@@ -112,11 +112,13 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
                 className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
                 onClick={() => setLang('en')}
                 aria-label="English"
+                aria-pressed={lang === 'en'}
               >EN</button>
               <button
                 className={`lang-btn ${lang === 'fr' ? 'active' : ''}`}
                 onClick={() => setLang('fr')}
                 aria-label="Français"
+                aria-pressed={lang === 'fr'}
               >FR</button>
             </div>
           </div>
@@ -128,9 +130,11 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
             <div
               className={`engine-status engine-${statusDot}`}
               onClick={modelStatus === 'error' && onRetryModel ? onRetryModel : undefined}
+              onKeyDown={modelStatus === 'error' && onRetryModel ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRetryModel(); } } : undefined}
               style={modelStatus === 'error' ? { cursor: 'pointer' } : undefined}
-              role={modelStatus === 'error' ? 'button' : undefined}
-              aria-label={modelStatus === 'error' ? t('retry_engine') : undefined}
+              role={modelStatus === 'error' ? 'button' : 'status'}
+              tabIndex={modelStatus === 'error' ? 0 : undefined}
+              aria-label={modelStatus === 'error' ? t('retry_engine') : statusText}
             >
               <span className={`engine-dot ${statusDot}`} />
               <span>{modelStatus === 'error' ? t('engine_failed_retry') : statusText}</span>
@@ -232,28 +236,28 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
 
       {/* ── Quick access grid ── */}
       <div className="quick-access-grid">
-        <button className="quick-access-btn" onClick={() => onNavigate('prs')}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className="quick-access-btn" onClick={() => onNavigate('prs')} aria-label={t('nav_prs_title')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
           <span>{t('nav_prs_title')}</span>
         </button>
-        <button className="quick-access-btn" onClick={() => onNavigate('rest')}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className="quick-access-btn" onClick={() => onNavigate('rest')} aria-label={t('nav_rest_title')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
           <span>{t('nav_rest_title')}</span>
         </button>
-        <button className="quick-access-btn" onClick={() => onNavigate('profile')}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className="quick-access-btn" onClick={() => onNavigate('profile')} aria-label={t('profile')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
           <span>{t('profile')}</span>
         </button>
-        <button className="quick-access-btn" onClick={() => onNavigate('weekly')}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className="quick-access-btn" onClick={() => onNavigate('weekly')} aria-label={t('weekly_report')}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
             <line x1="8" y1="2" x2="8" y2="6" />

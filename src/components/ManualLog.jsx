@@ -164,6 +164,8 @@ export default function ManualLog({ onClose }) {
                 setPickerOpen(pickerOpen === entryIdx ? null : entryIdx);
                 setSearchTerm('');
               }}
+              aria-expanded={pickerOpen === entryIdx}
+              aria-label={entry.exerciseKey ? tExercise(entry.exerciseKey, EXERCISES[entry.exerciseKey]?.name) : t('select_exercise')}
             >
               {entry.exerciseKey ? tExercise(entry.exerciseKey, EXERCISES[entry.exerciseKey]?.name) : t('select_exercise')}
             </button>
@@ -172,6 +174,7 @@ export default function ManualLog({ onClose }) {
                 className="btn btn-ghost btn-sm"
                 style={{ color: 'var(--red)', marginLeft: 8, minWidth: 44, minHeight: 44 }}
                 onClick={() => removeExercise(entryIdx)}
+                aria-label={t('remove_exercise') || 'Remove exercise'}
               >
                 X
               </button>
@@ -192,6 +195,7 @@ export default function ManualLog({ onClose }) {
                 <input
                   type="text"
                   placeholder={t('search_exercises')}
+                  aria-label={t('search_exercises')}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   style={{
@@ -286,6 +290,7 @@ export default function ManualLog({ onClose }) {
                     min="1"
                     step="1"
                     placeholder="0"
+                    aria-label={`${t('reps')} ${setIdx + 1}`}
                     value={set.reps}
                     onChange={e => updateSet(entryIdx, setIdx, 'reps', e.target.value)}
                     style={{
@@ -305,6 +310,7 @@ export default function ManualLog({ onClose }) {
                     min="0.5"
                     step="0.5"
                     placeholder="0"
+                    aria-label={`${t('weight_kg_short')} ${setIdx + 1}`}
                     value={set.weight}
                     onChange={e => updateSet(entryIdx, setIdx, 'weight', e.target.value)}
                     style={{
@@ -323,6 +329,7 @@ export default function ManualLog({ onClose }) {
                     style={{ color: 'var(--muted)', minWidth: 44, minHeight: 44 }}
                     onClick={() => removeSet(entryIdx, setIdx)}
                     disabled={entry.sets.length <= 1}
+                    aria-label={`${t('remove_set') || 'Remove set'} ${setIdx + 1}`}
                   >
                     -
                   </button>

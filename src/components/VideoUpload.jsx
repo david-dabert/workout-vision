@@ -42,7 +42,7 @@ const yieldToMain = () => new Promise(resolve => {
 const MAX_FRAMES = IS_IOS ? 300 : 600;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
-export default function VideoUpload({ onClose, preSelectedExercise }) {
+export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }) {
   const { t, tExercise, tFormCheck, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
   const { accepted: privacyAccepted, accept: acceptPrivacy, showModal: showPrivacyModal } = usePrivacyGate();
@@ -418,6 +418,24 @@ export default function VideoUpload({ onClose, preSelectedExercise }) {
           className={s.hiddenInput}
         />
       </div>
+
+      {/* Live camera mode toggle */}
+      {onLiveMode && (
+        <button
+          className="btn btn-ghost"
+          onClick={onLiveMode}
+          style={{
+            width: '100%', marginBottom: 12, minHeight: 44,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            border: '1px solid var(--border)',
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+          {t('live_mode') || 'Live Camera Mode'}
+        </button>
+      )}
 
       {cancelled && !analyzing && (
         <div className={s.cancelledBanner}>

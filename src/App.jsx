@@ -47,6 +47,7 @@ const Validate = safeLazy(() => import('./components/Validate'));
 const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 const Onboarding = safeLazy(() => import('./components/Onboarding'));
 const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
+const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
 
 const LazyFallback = (
   <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
@@ -145,7 +146,16 @@ function AppInner() {
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
         <div key="analyze" className="page-transition-enter">
-          <Analyze onClose={() => setPage('dashboard')} />
+          <Analyze onClose={() => setPage('dashboard')} onLiveMode={() => setPage('live')} />
+        </div>
+      </Suspense>
+    </ErrorBoundary>
+  );
+  if (page === 'live') return (
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <div key="live" className="page-transition-enter">
+          <LiveCapture onClose={() => setPage('dashboard')} profile={profile} />
         </div>
       </Suspense>
     </ErrorBoundary>
@@ -216,6 +226,8 @@ function AppInner() {
 
   return (
     <div className="app">
+      <a href="#main-content" className="skip-link">{t('skip_to_content') || 'Skip to content'}</a>
+      <main id="main-content">
       <Dashboard
         profile={profile}
         modelStatus={modelStatus}
@@ -231,36 +243,37 @@ function AppInner() {
       }}>
         Workout Vision v{__APP_VERSION__} &bull; {new Date(__BUILD_TIME__).toLocaleDateString()}
       </footer>
-      <nav className="tab-bar">
-        <button className={`tab-item${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      </main>
+      <nav className="tab-bar" aria-label={t('main_navigation') || 'Main navigation'}>
+        <button className={`tab-item${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')} aria-current={page === 'dashboard' ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
           <span>{t('home')}</span>
         </button>
-        <button className={`tab-item${page === 'analyze' ? ' active' : ''}`} onClick={() => onNavigate('analyze')}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className={`tab-item${page === 'analyze' ? ' active' : ''}`} onClick={() => onNavigate('analyze')} aria-current={page === 'analyze' ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polygon points="23 7 16 12 23 17 23 7" />
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
           </svg>
           <span>{t('analyze')}</span>
         </button>
-        <button className={`tab-item${page === 'history' ? ' active' : ''}`} onClick={() => onNavigate('history')}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className={`tab-item${page === 'history' ? ' active' : ''}`} onClick={() => onNavigate('history')} aria-current={page === 'history' ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
           <span>{t('progress')}</span>
         </button>
-        <button className={`tab-item${page === 'rest' ? ' active' : ''}`} onClick={() => onNavigate('rest')}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className={`tab-item${page === 'rest' ? ' active' : ''}`} onClick={() => onNavigate('rest')} aria-current={page === 'rest' ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
           <span>{t('timer')}</span>
         </button>
-        <button className={`tab-item${page === 'profile' ? ' active' : ''}`} onClick={() => onNavigate('profile')}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button className={`tab-item${page === 'profile' ? ' active' : ''}`} onClick={() => onNavigate('profile')} aria-current={page === 'profile' ? 'page' : undefined}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>

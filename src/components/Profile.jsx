@@ -198,6 +198,7 @@ export default function Profile({ onClose }) {
                     key={area}
                     type="button"
                     className={s.injuryTag}
+                    aria-pressed={active}
                     onClick={() => {
                       const current = profile.injuries || [];
                       const next = current.includes(area)
@@ -240,6 +241,7 @@ export default function Profile({ onClose }) {
                   key={day}
                   type="button"
                   className={s.trainingDayTag}
+                  aria-pressed={selected}
                   onClick={() => {
                     const current = profile.trainingDays || [1, 3, 5];
                     const next = selected
@@ -277,6 +279,7 @@ export default function Profile({ onClose }) {
                   key={mode}
                   type="button"
                   className={s.trainingDayTag}
+                  aria-pressed={selected}
                   onClick={() => handleChange('gymMode', mode)}
                   style={{
                     borderColor: selected ? 'var(--accent)' : 'var(--border)',

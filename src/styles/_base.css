@@ -127,6 +127,30 @@ h5 {
 
 
 /* ══════════════════════════════════════════
+   SKIP LINK (keyboard a11y)
+   ══════════════════════════════════════════ */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: var(--bio-cyan);
+  color: var(--void);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: var(--radius-xs);
+  text-decoration: none;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+
+/* ══════════════════════════════════════════
    UTILITIES
    ══════════════════════════════════════════ */
 

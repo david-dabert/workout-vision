@@ -2240,7 +2240,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 155,
     upThreshold: 175,
     formChecks: [
-      { name: 'Controlled motion', type: 'custom', placeholder: true, good: 'Controlled dorsiflexion', bad: 'Slow down the movement', severity: 'minor', citation: 'Jeon HS et al, 2015, J Phys Ther Sci' },
+      { name: 'Knee straight', type: 'above', useBestSide: true, left: 'leftKnee', right: 'rightKnee', visLeft: '_visLeftKnee', visRight: '_visRightKnee', threshold: 160, good: 'Knees straight during raise', bad: 'Keep knees straight', severity: 'minor', citation: 'Jeon HS et al, 2015, J Phys Ther Sci' },
     ],
     scienceNotes: 'Tibialis raises strengthen the tibialis anterior, important for ankle stability and shin splint prevention (Jeon 2015).',
   },
@@ -2418,7 +2418,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 20,
     upThreshold: 60,
     formChecks: [
-      { name: 'Constant squeeze', type: 'custom', placeholder: true, good: 'Maintaining plate squeeze', bad: 'Squeeze plates harder together', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Elbow angle', type: 'range', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', low: 130, high: 170, margin: 10, good: 'Arms extended with squeeze', bad: 'Keep arms nearly extended while squeezing', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Svend press emphasizes inner chest activation through isometric adduction force while pressing (NSCA 2016).',
   },
@@ -2520,7 +2520,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 150,
     upThreshold: 170,
     formChecks: [
-      { name: 'Scapular retraction', type: 'custom', placeholder: true, good: 'Good scapular movement', bad: 'Focus on pulling shoulder blades down and back', severity: 'minor', citation: 'Decker MJ et al, 1999, J Shoulder Elbow Surg' },
+      { name: 'Scapular retraction', type: 'above', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 150, good: 'Good scapular movement', bad: 'Focus on pulling shoulder blades down and back', severity: 'minor', citation: 'Decker MJ et al, 1999, J Shoulder Elbow Surg' },
     ],
     scienceNotes: 'Scapular pull-ups train scapular depression and retraction, foundational for healthy overhead movement (Decker 1999).',
   },
@@ -2636,7 +2636,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Chest on bench', type: 'custom', placeholder: true, good: 'Chest supported on bench', bad: 'Keep chest on the bench', severity: 'minor', citation: 'Lehman GJ et al, 2004, J Strength Cond Res' },
+      { name: 'Trunk stable', type: 'range', key: 'trunk', low: 30, high: 55, margin: 10, good: 'Chest supported on bench', bad: 'Keep chest on the bench — maintain trunk angle', severity: 'minor', citation: 'Lehman GJ et al, 2004, J Strength Cond Res' },
     ],
     scienceNotes: 'Incline dumbbell rows with chest support eliminate momentum and isolate upper back musculature (Lehman 2004).',
   },
@@ -2684,7 +2684,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 45,
     upThreshold: 165,
     formChecks: [
-      { name: 'Slow controlled descent', type: 'custom', placeholder: true, good: 'Controlled spinal articulation', bad: 'Roll down one vertebra at a time', severity: 'major', citation: 'McGill SM, 2015, Low Back Disorders' },
+      { name: 'Deep flexion', type: 'below', key: 'trunk', threshold: 45, margin: 15, good: 'Controlled spinal articulation', bad: 'Roll down one vertebra at a time', severity: 'major', citation: 'McGill SM, 2015, Low Back Disorders' },
     ],
     scienceNotes: 'Jefferson curls train spinal flexion under load for mobility; contraindicated for those with disc issues (McGill 2015).',
   },
@@ -2858,7 +2858,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 30,
     upThreshold: 80,
     formChecks: [
-      { name: 'Elbow pinned', type: 'custom', placeholder: true, good: 'Elbow at side', bad: 'Keep elbow pinned to your side', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
+      { name: 'Elbow pinned', type: 'range', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', low: 75, high: 105, margin: 10, good: 'Elbow at side', bad: 'Keep elbow pinned to your side', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'External rotation strengthens the infraspinatus and teres minor, critical for shoulder stability and injury prevention (Reinold 2004).',
   },
@@ -2872,7 +2872,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 30,
     upThreshold: 80,
     formChecks: [
-      { name: 'Elbow pinned', type: 'custom', placeholder: true, good: 'Elbow at side', bad: 'Keep elbow pinned to your side', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
+      { name: 'Elbow pinned', type: 'range', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', low: 75, high: 105, margin: 10, good: 'Elbow at side', bad: 'Keep elbow pinned to your side', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Internal rotation targets the subscapularis for balanced rotator cuff strength (Reinold 2004).',
   },
@@ -2886,7 +2886,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 10,
     upThreshold: 90,
     formChecks: [
-      { name: 'Thumbs up position', type: 'custom', placeholder: true, good: 'Thumbs pointing up', bad: 'Rotate thumbs upward', severity: 'minor', citation: 'Cools AM et al, 2007, Am J Sports Med' },
+      { name: 'Arm raise height', type: 'above', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 60, good: 'Good arm elevation', bad: 'Raise arms higher into Y position', severity: 'minor', citation: 'Cools AM et al, 2007, Am J Sports Med' },
     ],
     scienceNotes: 'Prone Y raises produce high lower trapezius activation, important for scapular upward rotation and shoulder health (Cools 2007).',
   },
@@ -2996,7 +2996,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Rotation at top', type: 'custom', placeholder: true, good: 'Supinate up, pronate down', bad: 'Rotate wrists at the top', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full curl ROM', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 50, good: 'Full curl range achieved', bad: 'Curl all the way up before rotating', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Zottman curls combine supinated concentric (biceps emphasis) with pronated eccentric (brachioradialis emphasis) (NSCA 2016).',
   },
@@ -3010,7 +3010,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 140,
     formChecks: [
-      { name: 'Elbows back', type: 'custom', placeholder: true, good: 'Bar dragging up body', bad: 'Keep the bar close to your torso', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Elbow behind body', type: 'below', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 30, good: 'Elbows driving behind body', bad: 'Drive elbows further back behind torso', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Drag curls eliminate front deltoid involvement by driving elbows behind the body, isolating the biceps (NSCA 2016).',
   },
@@ -3024,7 +3024,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 145,
     formChecks: [
-      { name: 'Cross midline', type: 'custom', placeholder: true, good: 'Curling across body', bad: 'Curl dumbbell across to opposite shoulder', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Full curl', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 50, good: 'Full curl range', bad: 'Curl fully across to opposite shoulder', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Cross-body (pinwheel) curls emphasize the brachialis through a neutral grip and cross-body path (NSCA 2016).',
   },
@@ -3160,7 +3160,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 60,
     upThreshold: 140,
     formChecks: [
-      { name: 'Elbows stable', type: 'custom', placeholder: true, good: 'Elbows pointing out', bad: 'Keep elbows flared', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Elbow flexion', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 90, good: 'Elbows flexed — good tricep load', bad: 'Lower dumbbells more toward chest', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Tate press targets the triceps through a unique inward pressing path with dumbbells (NSCA 2016).',
   },
@@ -3174,7 +3174,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 60,
     upThreshold: 140,
     formChecks: [
-      { name: 'Bar path to chin', type: 'custom', placeholder: true, good: 'Bar lowering to chin/neck area', bad: 'Lower bar toward chin, not chest', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Elbow flexion', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 80, good: 'Bar lowering to chin/neck area', bad: 'Lower bar toward chin, not chest', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'JM press is a hybrid between close-grip bench and skull crusher, heavily loading the triceps (NSCA 2016).',
   },
@@ -3190,7 +3190,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 100,
     formChecks: [
-      { name: 'Controlled motion', type: 'custom', placeholder: true, good: 'Controlled wrist extension', bad: 'Slow down the movement', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Elbow stability', type: 'range', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', low: 155, high: 180, margin: 10, good: 'Forearm stable on bench', bad: 'Keep forearm flat — isolate wrist movement', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Wrist extensions strengthen the extensor carpi muscles, important for grip balance and injury prevention (NSCA 2016).',
   },
@@ -3293,7 +3293,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 70,
     upThreshold: 130,
     formChecks: [
-      { name: 'Controlled motion', type: 'custom', placeholder: true, good: 'Controlled descent', bad: 'Lower slowly', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'Trunk flexion', type: 'below', key: 'trunk', threshold: 50, margin: 15, good: 'Good trunk flexion on decline', bad: 'Crunch further — flex the trunk more', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Decline angle increases resistance against the rectus abdominis compared to flat crunches (Escamilla 2010).',
   },
@@ -3307,7 +3307,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 60,
     upThreshold: 140,
     formChecks: [
-      { name: 'No swinging', type: 'custom', placeholder: true, good: 'Controlled raise', bad: 'Minimize body swing', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'Hip flexion', type: 'below', useBestSide: true, left: 'leftHip', right: 'rightHip', visLeft: '_visLeftHip', visRight: '_visRightHip', threshold: 90, good: 'Knees raised to hip level', bad: 'Raise knees higher — minimize swing', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Hanging knee raises primarily target the hip flexors with upper ab contribution through posterior pelvic tilt (Escamilla 2010).',
   },
@@ -3394,7 +3394,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 160,
     formChecks: [
-      { name: 'Controlled rotation', type: 'custom', placeholder: true, good: 'Controlled side-to-side motion', bad: 'Slow down the rotation', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Trunk upright', type: 'range', key: 'trunk', low: 0, high: 20, margin: 10, good: 'Trunk vertical — controlled rotation', bad: 'Keep trunk vertical — slow down the rotation', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Windshield wipers train rotational control and oblique strength through a challenging hanging or lying position (NSCA 2016).',
   },
@@ -3632,7 +3632,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 100,
     upThreshold: 155,
     formChecks: [
-      { name: 'Body angle', type: 'custom', placeholder: true, good: 'Appropriate lean angle', bad: 'Adjust angle for desired difficulty', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
+      { name: 'Body angle', type: 'range', key: 'trunk', low: 20, high: 60, margin: 10, good: 'Appropriate lean angle', bad: 'Adjust body angle for desired difficulty', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
     scienceNotes: 'TRX rows allow progressive difficulty through body angle adjustment while adding instability challenge (Snarr 2014).',
   },
@@ -3646,7 +3646,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Stable base', type: 'custom', placeholder: true, good: 'Controlled movement', bad: 'Minimize swinging', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
+      { name: 'Trunk rigid', type: 'range', key: 'trunk', low: 0, high: 15, margin: 8, good: 'Trunk rigid — controlled movement', bad: 'Keep body straight — minimize sagging', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
     scienceNotes: 'TRX push-ups increase core and stabilizer demands compared to floor push-ups (Snarr 2014).',
   },
@@ -3720,7 +3720,7 @@ export const EXERCISE_DEFINITIONS = {
     amplitudeRatio: 0.3,
     minSpacing: 0.6,
     formChecks: [
-      { name: 'Body stable', type: 'custom', placeholder: true, good: 'Body rigid', bad: 'Keep body rigid throughout', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
+      { name: 'Trunk rigid', type: 'range', key: 'trunk', low: 0, high: 15, margin: 8, good: 'Body rigid throughout curl', bad: 'Keep body rigid — do not swing', severity: 'minor', citation: 'Snarr RL, Esco MR, 2014, J Hum Kinet' },
     ],
     scienceNotes: 'TRX curls challenge biceps with bodyweight loading and core co-contraction (Snarr 2014).',
   },
@@ -3842,7 +3842,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 100,
     upThreshold: 150,
     formChecks: [
-      { name: 'Stable pelvis', type: 'custom', placeholder: true, good: 'Pelvis not rotating', bad: 'Keep hips stacked and still', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
+      { name: 'Hip angle', type: 'range', useBestSide: true, left: 'leftHip', right: 'rightHip', visLeft: '_visLeftHip', visRight: '_visRightHip', low: 100, high: 150, margin: 10, good: 'Pelvis stable — good hip opening', bad: 'Keep hips stacked and still', severity: 'minor', citation: 'Distefano LJ et al, 2009, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Band clamshells activate the gluteus medius and are a staple in hip stability and rehab protocols (Distefano 2009).',
   },
@@ -3856,7 +3856,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 60,
     upThreshold: 120,
     formChecks: [
-      { name: 'External rotation', type: 'custom', placeholder: true, good: 'Good external rotation at finish', bad: 'Rotate hands outward at the top', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
+      { name: 'Elbow bend', type: 'range', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', low: 70, high: 110, margin: 10, good: 'Good external rotation at finish', bad: 'Keep elbows at 90 degrees — rotate hands outward', severity: 'minor', citation: 'Reinold MM et al, 2004, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Band face pulls are a portable shoulder health exercise targeting posterior deltoids and external rotators (Reinold 2004).',
   },
@@ -3886,7 +3886,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 130,
     formChecks: [
-      { name: 'Controlled crunch', type: 'custom', placeholder: true, good: 'Controlled motion', bad: 'Slow down the movement', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
+      { name: 'Trunk flexion', type: 'below', key: 'trunk', threshold: 45, margin: 15, good: 'Good trunk flexion on ball', bad: 'Crunch further — flex trunk more', severity: 'minor', citation: 'Escamilla RF et al, 2010, J Orthop Sports Phys Ther' },
     ],
     scienceNotes: 'Stability ball crunches increase rectus abdominis activation compared to floor crunches due to instability (Escamilla 2010).',
   },
@@ -3946,7 +3946,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Stable ball', type: 'custom', placeholder: true, good: 'Ball stable under hands', bad: 'Control the ball', severity: 'minor', citation: 'Marshall PW, Murphy BA, 2006, J Strength Cond Res' },
+      { name: 'Trunk rigid', type: 'range', key: 'trunk', low: 0, high: 15, margin: 8, good: 'Body straight — ball stable', bad: 'Keep body straight — control the ball', severity: 'minor', citation: 'Marshall PW, Murphy BA, 2006, J Strength Cond Res' },
     ],
     scienceNotes: 'Stability ball push-ups significantly increase core and stabilizer muscle activation compared to floor push-ups (Marshall 2006).',
   },
@@ -3995,7 +3995,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 100,
     isIsometric: true,
     formChecks: [
-      { name: 'Body horizontal', type: 'custom', placeholder: true, good: 'Body horizontal under bar', bad: 'Keep body straight and horizontal', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Body horizontal', type: 'range', key: 'trunk', low: 80, high: 100, margin: 8, good: 'Body horizontal under bar', bad: 'Keep body straight and horizontal', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Front lever is an advanced isometric hold requiring extreme lat and core strength to maintain a horizontal body under the bar (NSCA 2016).',
   },
@@ -4010,7 +4010,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 100,
     isIsometric: true,
     formChecks: [
-      { name: 'Body horizontal', type: 'custom', placeholder: true, good: 'Body horizontal behind bar', bad: 'Maintain straight horizontal line', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Body horizontal', type: 'range', key: 'trunk', low: 80, high: 100, margin: 8, good: 'Body horizontal behind bar', bad: 'Maintain straight horizontal line', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Back lever demands high shoulder extension strength and core stability in a prone horizontal position (NSCA 2016).',
   },
@@ -4025,7 +4025,7 @@ export const EXERCISE_DEFINITIONS = {
     upThreshold: 100,
     isIsometric: true,
     formChecks: [
-      { name: 'Body horizontal', type: 'custom', placeholder: true, good: 'Body horizontal above hands', bad: 'Lean forward more and keep body straight', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Body horizontal', type: 'range', key: 'trunk', low: 80, high: 100, margin: 8, good: 'Body horizontal above hands', bad: 'Lean forward more and keep body straight', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Planche is one of the most difficult bodyweight holds, requiring extreme anterior deltoid and core strength (NSCA 2016).',
   },
@@ -4039,7 +4039,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 75,
     upThreshold: 155,
     formChecks: [
-      { name: 'Ring stability', type: 'custom', placeholder: true, good: 'Rings stable', bad: 'Keep rings close to body', severity: 'minor', citation: 'Snarr RL, Esco MR, 2013, J Hum Kinet' },
+      { name: 'Depth', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 90, good: 'Full depth on rings', bad: 'Go deeper — elbows past 90 degrees', severity: 'minor', citation: 'Snarr RL, Esco MR, 2013, J Hum Kinet' },
     ],
     scienceNotes: 'Ring dips produce significantly higher muscle activation than bar dips due to instability demands (Snarr 2013).',
   },
@@ -4053,7 +4053,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 70,
     upThreshold: 150,
     formChecks: [
-      { name: 'Ring turnout', type: 'custom', placeholder: true, good: 'Rings turned out at top', bad: 'Turn rings out at the top', severity: 'minor', citation: 'Snarr RL, Esco MR, 2013, J Hum Kinet', phase: 'top' },
+      { name: 'Trunk rigid', type: 'range', key: 'trunk', low: 0, high: 15, margin: 8, good: 'Body straight — rings turned out at top', bad: 'Keep body straight — turn rings out at top', severity: 'minor', citation: 'Snarr RL, Esco MR, 2013, J Hum Kinet', phase: 'top' },
     ],
     scienceNotes: 'Ring push-ups increase chest and core activation by 50% or more compared to floor push-ups (Snarr 2013).',
   },
@@ -4111,7 +4111,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 30,
     upThreshold: 170,
     formChecks: [
-      { name: 'Controlled motion', type: 'custom', placeholder: true, good: 'Controlled rotation', bad: 'Move slowly through full range', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Shoulder ROM', type: 'above', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 150, good: 'Full shoulder rotation — controlled', bad: 'Move slowly through full range of motion', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Skin the cat develops shoulder flexibility and strength through a full 360-degree shoulder rotation under load (NSCA 2016).',
   },
@@ -4127,7 +4127,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 165,
     formChecks: [
-      { name: 'Drive sequence', type: 'custom', placeholder: true, good: 'Legs-back-arms sequence', bad: 'Drive with legs first, then back, then arms', severity: 'minor', citation: 'Kleshnev V, 2010, Rowing Biomechanics Newsletter' },
+      { name: 'Trunk layback', type: 'range', key: 'trunk', low: 20, high: 55, margin: 10, good: 'Good trunk layback at finish', bad: 'Drive with legs first — lean back at finish', severity: 'minor', citation: 'Kleshnev V, 2010, Rowing Biomechanics Newsletter' },
     ],
     scienceNotes: 'Rowing ergometer engages 86% of the musculature with correct drive sequence: legs, back, arms (Kleshnev 2010).',
   },
@@ -4211,7 +4211,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 155,
     formChecks: [
-      { name: 'Foot lock', type: 'custom', placeholder: true, good: 'Secure foot lock', bad: 'Establish foot lock before pulling', severity: 'major', citation: 'NSCA, 2016' },
+      { name: 'Elbow pull', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 90, good: 'Strong arm pull', bad: 'Pull harder — bend elbows more', severity: 'major', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Rope climbing develops grip strength, lat strength, and upper body pulling power with bodyweight load (NSCA 2016).',
   },
@@ -4275,7 +4275,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 170,
     formChecks: [
-      { name: 'Controlled movement', type: 'custom', placeholder: true, good: 'Controlled wall walk', bad: 'Move slowly and controlled', severity: 'minor', citation: 'NSCA, 2016' },
+      { name: 'Shoulder overhead', type: 'above', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 150, good: 'Full overhead position — controlled', bad: 'Walk hands closer to wall — get more vertical', severity: 'minor', citation: 'NSCA, 2016' },
     ],
     scienceNotes: 'Wall walks progressively load the shoulders and develop overhead stability toward handstand positioning (NSCA 2016).',
   },

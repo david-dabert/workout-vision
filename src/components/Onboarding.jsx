@@ -78,8 +78,9 @@ export default function Onboarding({ profile, onComplete }) {
 
             <div className="onb-form">
               <div className="onb-field">
-                <label className="onb-label">{t('name')}</label>
+                <label className="onb-label" htmlFor="onb-name">{t('name')}</label>
                 <input
+                  id="onb-name"
                   type="text"
                   className="onb-input"
                   value={name}
@@ -91,12 +92,14 @@ export default function Onboarding({ profile, onComplete }) {
 
               <div className="onb-field">
                 <label className="onb-label">{t('experience')}</label>
-                <div className="onb-chips">
+                <div className="onb-chips" role="radiogroup" aria-label={t('experience')}>
                   {EXPERIENCE.map(exp => (
                     <button
                       key={exp}
                       onClick={() => setExperience(exp)}
                       className={`onb-chip${experience === exp ? ' selected' : ''}`}
+                      role="radio"
+                      aria-checked={experience === exp}
                     >
                       <span className="onb-chip-num">{EXP_ICONS[exp]}</span>
                       {t(`experience_${exp}`)}
@@ -115,15 +118,17 @@ export default function Onboarding({ profile, onComplete }) {
               <p className="onb-subtitle">{t('onb_step2_desc')}</p>
             </div>
 
-            <div className="onb-goals">
+            <div className="onb-goals" role="radiogroup" aria-label={t('onb_step2_title')}>
               {GOALS.map((g, i) => (
                 <button
                   key={g}
                   className={`onb-goal${goal === g ? ' selected' : ''}`}
                   onClick={() => setGoal(g)}
                   style={{ animationDelay: `${i * 0.06}s` }}
+                  role="radio"
+                  aria-checked={goal === g}
                 >
-                  <span className="onb-goal-icon">{GOAL_ICONS[g]}</span>
+                  <span className="onb-goal-icon" aria-hidden="true">{GOAL_ICONS[g]}</span>
                   <span className="onb-goal-label">{t(`goal_${g}`)}</span>
                   {goal === g && (
                     <svg className="onb-goal-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -145,8 +150,8 @@ export default function Onboarding({ profile, onComplete }) {
           </>
         ) : (
           <>
-            <button className="onb-back" onClick={() => setStep(0)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button className="onb-back" onClick={() => setStep(0)} aria-label={t('back') || 'Back'}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
               </svg>
             </button>
