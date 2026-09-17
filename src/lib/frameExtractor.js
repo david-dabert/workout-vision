@@ -1,14 +1,16 @@
 /**
  * Frame extraction and hashing utilities for video analysis.
  *
- * Two extraction methods:
+ * Three extraction methods (tried in order):
  * 1. extractFramesRVFC — requestVideoFrameCallback with accelerated playback (primary).
- *    Plays video at 2-4x speed and captures frames via rVFC. No seeking, no timeouts,
- *    GPU-accelerated decode. Chrome 83+, Safari 15.4+.
- * 2. extractFramesSeek — legacy seek-based extraction (fallback).
+ *    Plays video at 2-4x speed and captures frames via rVFC. Chrome 83+, Safari 15.4+.
+ * 2. extractFramesWebCodecs — WebCodecs VideoDecoder with web-demuxer (HEVC fix).
+ *    Decodes video frames directly via hardware decoder, bypassing <video> + canvas.
+ *    Solves HEVC canvas taint on iOS Safari. Safari 16.4+.
+ * 3. extractFramesSeek — legacy seek-based extraction (fallback).
  *    Seeks one frame at a time. Works on all platforms including older iOS Safari.
  *
- * Both methods stream one frame at a time via callback, keeping memory constant.
+ * All methods stream one frame at a time via callback, keeping memory constant.
  */
 
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -241,8 +243,15 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
                     }
                   }
                   if (nonZero < 3) {
-                    console.warn('[frameExtractor] First frame is blank — possible canvas taint from HEVC');
-                    // Continue anyway; MediaPipe will simply detect no poses
+                    // HEVC canvas taint: drawImage renders black pixels.
+                    // Stop immediately — processing hundreds of blank frames is pointless.
+                    if (!resolved) {
+                      resolved = true;
+                      cleanup();
+                      if (signal) signal.removeEventListener('abort', onAbort);
+                      reject(new Error('BLANK_FRAMES: Video frames are blank (canvas cannot render this codec)'));
+                    }
+                    return;
                   }
                 } catch (e) {
                   // getImageData threw — canvas IS tainted (CORS or codec security)
@@ -481,7 +490,7 @@ async function extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, 
             }
           }
           if (nonZero < 3) {
-            console.warn('[frameExtractor] Seek: first frame is blank — canvas may be tainted');
+            throw new Error('BLANK_FRAMES: Video frames are blank (canvas cannot render this codec)');
           }
         } catch (e) {
           throw new Error(`Canvas tainted by video codec (${e.message}). Try converting the video to H.264 MP4.`);
@@ -514,10 +523,196 @@ async function extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, 
 }
 
 /**
- * Streaming frame extractor with automatic method selection.
+ * WebCodecs-based frame extractor.
  *
- * Uses requestVideoFrameCallback when available (2-4x faster),
- * falls back to seek-based extraction otherwise.
+ * Decodes video frames directly via the browser's hardware VideoDecoder,
+ * completely bypassing the <video> element and canvas.drawImage() pipeline.
+ * This eliminates HEVC canvas taint on iOS Safari — the root cause of
+ * all-black frames when drawing HEVC video to canvas.
+ *
+ * Pipeline: File → web-demuxer (WASM) → VideoDecoder (hardware) → VideoFrame → canvas
+ *
+ * Requires: Safari 16.4+ or Chrome 94+ (VideoDecoder API)
+ * WASM: web-demuxer-mini.wasm (~500KB, supports MOV/MP4/MKV/WebM)
+ */
+async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
+  const { signal, startFrame = 0 } = options;
+  const { WebDemuxer } = await import('web-demuxer');
+
+  // Use local WASM (copied to public/), CDN fallback
+  let demuxer;
+  try {
+    demuxer = new WebDemuxer({ wasmFilePath: 'web-demuxer.wasm' });
+  } catch {
+    demuxer = new WebDemuxer({
+      wasmFilePath: 'https://cdn.jsdelivr.net/npm/web-demuxer@4.0.0/dist/wasm-files/web-demuxer-mini.wasm',
+    });
+  }
+
+  try {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+
+    await demuxer.load(file);
+    const mediaInfo = await demuxer.getMediaInfo();
+    const videoStream = mediaInfo.streams.find(s => s.codec_type_string === 'video');
+    if (!videoStream) throw new Error('No video track found in file');
+
+    const duration = mediaInfo.duration;
+    const rotation = videoStream.rotation || 0;
+    let srcWidth = videoStream.width;
+    let srcHeight = videoStream.height;
+
+    // Apply rotation to get display dimensions
+    const swapDims = (rotation === 90 || rotation === -90 || rotation === 270 || rotation === -270);
+    let displayWidth = swapDims ? srcHeight : srcWidth;
+    let displayHeight = swapDims ? srcWidth : srcHeight;
+
+    // Scale to maxWidth
+    let frameWidth = displayWidth;
+    let frameHeight = displayHeight;
+    if (frameWidth > maxWidth) {
+      const scale = maxWidth / frameWidth;
+      frameWidth = Math.round(frameWidth * scale);
+      frameHeight = Math.round(frameHeight * scale);
+      frameWidth -= frameWidth % 2;
+      frameHeight -= frameHeight % 2;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = frameWidth;
+    canvas.height = frameHeight;
+    const ctx = canvas.getContext('2d');
+
+    // Get decoder config from demuxer
+    const decoderConfig = await demuxer.getDecoderConfig('video');
+    const support = await VideoDecoder.isConfigSupported(decoderConfig);
+    if (!support.supported) {
+      throw new Error(`Codec not supported by WebCodecs: ${decoderConfig.codec}`);
+    }
+
+    const interval = 1 / targetFps;
+    const totalPossibleFrames = Math.floor(duration * targetFps);
+    const frameCount = Math.min(totalPossibleFrames, maxFrames);
+    let extractedCount = startFrame;
+    let nextCaptureTime = startFrame * interval;
+
+    // Frame queue: decoder output pushes, main loop pulls
+    const frameQueue = [];
+    let decodeComplete = false;
+    let decodeError = null;
+    let wakeMain = null;
+
+    const decoder = new VideoDecoder({
+      output: (frame) => {
+        frameQueue.push(frame);
+        if (wakeMain) { wakeMain(); wakeMain = null; }
+      },
+      error: (e) => {
+        decodeError = e;
+        if (wakeMain) { wakeMain(); wakeMain = null; }
+      },
+    });
+    decoder.configure(decoderConfig);
+
+    // Feed encoded chunks from demuxer stream (runs concurrently)
+    const feedPromise = (async () => {
+      const stream = demuxer.read('video', startFrame * interval);
+      const reader = stream.getReader();
+      try {
+        while (true) {
+          if (signal?.aborted || extractedCount >= frameCount) break;
+          const { done, value } = await reader.read();
+          if (done) break;
+          decoder.decode(value);
+          // Back-pressure: pause feeding if decoder queue is deep
+          while (decoder.decodeQueueSize > 8 && !signal?.aborted) {
+            await new Promise(r => setTimeout(r, 0));
+          }
+        }
+        await decoder.flush();
+      } catch (e) {
+        if (!decodeError) decodeError = e;
+      } finally {
+        decodeComplete = true;
+        if (wakeMain) { wakeMain(); wakeMain = null; }
+        try { reader.releaseLock(); } catch {}
+      }
+    })();
+
+    // Process decoded frames in main loop
+    const waitForFrame = () => new Promise(r => { wakeMain = r; });
+
+    // Rotation transform helper
+    const drawWithRotation = (frame) => {
+      if (rotation === 0) {
+        ctx.drawImage(frame, 0, 0, frameWidth, frameHeight);
+        return;
+      }
+      ctx.save();
+      ctx.translate(frameWidth / 2, frameHeight / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      const dw = swapDims ? frameHeight : frameWidth;
+      const dh = swapDims ? frameWidth : frameHeight;
+      ctx.drawImage(frame, -dw / 2, -dh / 2, dw, dh);
+      ctx.restore();
+    };
+
+    while (extractedCount < frameCount) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+      if (decodeError) throw new Error(`Video decode failed: ${decodeError.message}`);
+
+      // Wait for frames if queue is empty
+      while (frameQueue.length === 0 && !decodeComplete && !decodeError) {
+        await waitForFrame();
+      }
+      if (frameQueue.length === 0) break;
+
+      // Drain queued frames
+      while (frameQueue.length > 0 && extractedCount < frameCount) {
+        const frame = frameQueue.shift();
+        const timestamp = frame.timestamp / 1_000_000; // microseconds → seconds
+
+        if (timestamp >= nextCaptureTime - 0.001) {
+          drawWithRotation(frame);
+          frame.close();
+          await onFrame(canvas, extractedCount, timestamp);
+          extractedCount++;
+          nextCaptureTime = extractedCount * interval;
+          if (onProgress) onProgress(Math.round((extractedCount / frameCount) * 100));
+        } else {
+          frame.close();
+        }
+      }
+    }
+
+    // Discard any remaining queued frames
+    while (frameQueue.length > 0) frameQueue.shift().close();
+    try { decoder.close(); } catch {}
+    await feedPromise;
+
+    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount };
+  } finally {
+    demuxer.destroy();
+  }
+}
+
+/**
+ * Check if WebCodecs VideoDecoder is available and likely to work.
+ */
+function hasWebCodecs() {
+  return typeof VideoDecoder !== 'undefined' && typeof VideoDecoder.isConfigSupported === 'function';
+}
+
+/**
+ * Streaming frame extractor with automatic method selection and fallback chain.
+ *
+ * Priority:
+ * 1. RVFC (fastest, works for H.264)
+ * 2. WebCodecs (handles HEVC without canvas taint, Safari 16.4+)
+ * 3. Seek-based (universal fallback)
+ *
+ * When RVFC detects blank frames (HEVC canvas taint), it automatically
+ * falls through to WebCodecs which decodes directly via hardware decoder.
  *
  * @param {File} file - Video file
  * @param {number} targetFps - Target frames per second
@@ -532,22 +727,45 @@ async function extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, 
  */
 export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const useRVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+  let rvfcBlankFrames = false;
 
   if (useRVFC) {
     try {
       const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
-      // If RVFC returned zero frames (decoder stalled, blank frames, etc.),
-      // fall through to seek-based extraction instead of returning empty.
       if (result.frameCount > 0) {
         return { ...result, method: 'rvfc' };
       }
-      console.warn('[frameExtractor] RVFC produced 0 frames, falling back to seek');
+      console.warn('[frameExtractor] RVFC produced 0 frames, trying WebCodecs');
     } catch (err) {
-      // If aborted, re-throw immediately
       if (err.name === 'AbortError') throw err;
-      // RVFC failed for other reasons, fall back to seek
-      console.warn('[frameExtractor] RVFC extraction failed, falling back to seek:', err.message);
+      if (err.message?.includes('BLANK_FRAMES')) {
+        rvfcBlankFrames = true;
+        console.warn('[frameExtractor] HEVC canvas taint detected, falling back to WebCodecs');
+      } else {
+        console.warn('[frameExtractor] RVFC failed, trying WebCodecs:', err.message);
+      }
     }
+  }
+
+  // WebCodecs path: bypasses <video> element entirely, no canvas taint
+  if (hasWebCodecs()) {
+    try {
+      const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+      if (result.frameCount > 0) {
+        return { ...result, method: 'webcodecs' };
+      }
+      console.warn('[frameExtractor] WebCodecs produced 0 frames, trying seek');
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      console.warn('[frameExtractor] WebCodecs failed, trying seek:', err.message);
+    }
+  } else if (rvfcBlankFrames) {
+    // WebCodecs unavailable and RVFC gave blank frames — no recovery possible.
+    // Give actionable error instead of processing hundreds of blank frames via seek.
+    throw new Error(
+      'This video uses a codec that cannot be processed on this device. ' +
+      'To fix: open iPhone Settings → Camera → Formats → select "Most Compatible", then re-record.'
+    );
   }
 
   const result = await extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
