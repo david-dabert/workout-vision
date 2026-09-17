@@ -577,7 +577,7 @@ function generateCoachingFeedback(metrics, exerciseKey) {
         category: 'depth',
         message: rate === 0
           ? 'None of your reps reached below parallel. For full muscle activation, aim to bring your hips below your knees at the bottom.'
-          : `Only ${rate}% of reps reached below parallel. Focus on consistent depth — partial reps reduce quadriceps and glute activation.`,
+          : `Only ${rate}% of reps reached below parallel. Focus on consistent depth. Partial reps reduce quadriceps and glute activation.`,
         severity: 'correction',
       });
     } else {
@@ -595,7 +595,7 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 1,
       category: 'knee_valgus',
-      message: `Knee valgus detected in ${Math.round(metrics.kneeValgus.valgusRate * 100)}% of reps — your knees are collapsing inward at the bottom position. This increases ACL stress. Cue: "push knees out over toes." Consider glute activation warmup.`,
+      message: `Knee valgus detected in ${Math.round(metrics.kneeValgus.valgusRate * 100)}% of reps. Your knees are collapsing inward at the bottom position. This increases ACL stress. Cue: "push knees out over toes." Consider glute activation warmup.`,
       severity: 'warning',
     });
   }
@@ -643,7 +643,7 @@ function generateCoachingFeedback(metrics, exerciseKey) {
       feedback.push({
         priority: 9,
         category: 'consistency',
-        message: `Excellent rep consistency (${metrics.repConsistency.consistencyScore}/100). Each rep follows the same controlled path — this is how you build reliable strength.`,
+        message: `Excellent rep consistency (${metrics.repConsistency.consistencyScore}/100). Each rep follows the same controlled path. This is how you build reliable strength.`,
         severity: 'positive',
       });
     }

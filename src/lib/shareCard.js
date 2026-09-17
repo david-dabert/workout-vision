@@ -1022,7 +1022,7 @@ export async function shareFormCard(result) {
     try {
       await navigator.share({
         title: 'WorkoutVision Form Card',
-        text: `${result.exerciseName || result.exercise || 'Workout'} — ${result.formScore ?? 0}/100 form`,
+        text: `${result.exerciseName || result.exercise || 'Workout'}, ${result.formScore ?? 0}/100 form`,
         files: [file],
       });
       return;
