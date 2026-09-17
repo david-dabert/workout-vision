@@ -208,6 +208,7 @@
   "try_different": "Essayez un autre angle ou un meilleur éclairage. Assurez-vous que tout le corps est visible.",
   "model_failed": "Le modèle IA n'a pas pu se charger. Vérifiez votre connexion.",
   "video_failed": "Échec du chargement vidéo. Essayez un autre fichier ou un clip plus court.",
+  "video_load_error": "Échec du chargement vidéo",
   "too_large": "est trop volumineux. Maximum 500 Mo.",
   "filming_tip": "Pour de meilleurs résultats : filmez de côté, corps entier visible, bonne lumière. Une seule personne dans le cadre.",
   "ios_large_file_warning": "fait {size} MB. Pour de meilleurs résultats sur iPhone, utilisez une vidéo de moins de 30 secondes.",

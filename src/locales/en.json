@@ -208,6 +208,7 @@
   "try_different": "Try a different angle or better lighting. Ensure your full body is visible.",
   "model_failed": "AI model failed to load. Check your connection.",
   "video_failed": "Video failed to load. Try a different file or shorter clip.",
+  "video_load_error": "Video failed to load",
   "too_large": "is too large. Maximum is 500 MB.",
   "filming_tip": "For best results: film from the side, full body visible, good lighting. One person in frame.",
   "ios_large_file_warning": "is {size} MB. For best results on iPhone, use a video under 30 seconds.",

@@ -781,9 +781,22 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   }
 
   // Step 3: H.264 / other → RVFC (fastest) or seek (legacy)
+  // On iOS Safari, video.play() inside RVFC can fail with a permission error
+  // if the user gesture context was lost during async model loading.
+  // Fall back to seek-based extraction when this happens.
   if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
-    const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
-    return { ...result, method: 'rvfc' };
+    try {
+      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+      return { ...result, method: 'rvfc' };
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      if (err.name === 'NotAllowedError' || (err.message && err.message.includes('not allowed'))) {
+        // iOS lost user gesture context — fall through to seek-based extraction
+        console.warn('[frameExtractor] RVFC play() blocked, falling back to seek:', err.message);
+      } else {
+        throw err;
+      }
+    }
   }
 
   const result = await extractFramesSeek(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);

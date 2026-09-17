@@ -20,6 +20,14 @@ function detectLang() {
 // ─── Locale cache ───
 const locales = { en: enData };
 
+// Eagerly load French if that's the detected/saved language,
+// so tModule() (used by canvas overlays outside React) has the
+// data available synchronously when it first runs.
+const _initialLang = detectLang();
+if (_initialLang === 'fr') {
+  import('../locales/fr.json').then(mod => { locales.fr = mod.default; });
+}
+
 async function loadLocale(lang) {
   if (locales[lang]) return locales[lang];
   if (lang === 'fr') {

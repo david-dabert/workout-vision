@@ -361,7 +361,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       console.warn('Draw frame error:', e);
     }
     rafRef.current = requestAnimationFrame(drawFrame);
-  }, [frames, displayExerciseName, reps, formScore, repHistory]);
+  }, [frames, displayExerciseName, reps, formScore, repHistory, coaching]);
 
   // Setup video
   useEffect(() => {
@@ -387,7 +387,30 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
         }
       }
     };
+
+    const onError = () => {
+      console.error('[VideoReplay] Video failed to load:', video.error?.message);
+      // Draw an error state on the canvas so it's not just a black screen
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = 480;
+        canvas.height = 360;
+        ctx.fillStyle = '#07070a';
+        ctx.fillRect(0, 0, 480, 360);
+        ctx.fillStyle = '#ff3b5c';
+        ctx.font = 'bold 16px -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tModule('video_load_error') || 'Video failed to load', 240, 170);
+        ctx.fillStyle = '#888';
+        ctx.font = '13px -apple-system, system-ui, sans-serif';
+        ctx.fillText(tModule('try_different') || 'Try a different video', 240, 200);
+      }
+    };
+
     video.addEventListener('loadeddata', onLoaded, { once: true });
+    video.addEventListener('error', onError, { once: true });
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -395,11 +418,12 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
       if (recorderRef.current && recorderRef.current.state !== 'inactive') {
         recorderRef.current.stop();
       }
+      video.removeEventListener('error', onError);
       // Release video decoder memory (blob URL owned by parent VideoUpload)
       video.removeAttribute('src');
       video.load();
     };
-  }, [videoUrl, frames, exerciseName, reps, formScore, repHistory]);
+  }, [videoUrl, frames, displayExerciseName, reps, formScore, repHistory, coaching]);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
@@ -521,7 +545,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
     video.muted = true;
     video.play();
     hdRafRef.current = requestAnimationFrame(drawHDFrame);
-  }, [frames, exerciseName, reps, formScore, repHistory, exporting]);
+  }, [frames, displayExerciseName, reps, formScore, repHistory, coaching, exporting]);
 
   const cancelExport = useCallback(() => {
     const video = videoRef.current;
@@ -558,7 +582,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
         triggerDownload(blob, fileName);
       }
     }, 'image/png');
-  }, [frames, displayExerciseName, reps, formScore, repHistory]);
+  }, [frames, displayExerciseName, reps, formScore, repHistory, coaching]);
 
   const supportsVideoExport = canExportVideo();
 
