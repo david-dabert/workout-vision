@@ -465,6 +465,7 @@
   pointer-events: none;
 }
 
+/* The score earns its entrance — it doesn't just appear, it arrives */
 .vision-score-number {
   font-family: var(--font-display);
   font-size: 56px;
@@ -473,8 +474,11 @@
   letter-spacing: -3px;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0 60px rgba(0,240,255,0.25), 0 0 120px rgba(123,97,255,0.12);
+  animation: enterHeavy 0.8s var(--ease-power) both;
+  animation-delay: 0.2s;
 }
 
+/* Grade letter — the verdict. It carries weight. */
 .vision-score-grade {
   font-size: 16px;
   font-weight: 700;
@@ -482,6 +486,8 @@
   text-transform: uppercase;
   margin-top: 2px;
   opacity: 0.9;
+  animation: gradeReveal 0.7s var(--ease-power) both;
+  animation-delay: 0.5s;
 }
 
 .vision-score-label {
@@ -605,9 +611,11 @@
   animation: iconPulse 3s ease-in-out infinite alternate;
 }
 
+/* The action icon breathes — it's alive, calling you to train */
 @keyframes iconPulse {
-  0% { box-shadow: 0 0 30px rgba(0, 240, 255, 0.18), 0 0 60px rgba(123, 97, 255, 0.10); }
-  100% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.25), 0 0 80px rgba(123, 97, 255, 0.15); }
+  0% { box-shadow: 0 0 30px rgba(0, 240, 255, 0.18), 0 0 60px rgba(123, 97, 255, 0.10); transform: scale(1); }
+  50% { box-shadow: 0 0 45px rgba(0, 240, 255, 0.30), 0 0 90px rgba(123, 97, 255, 0.18); transform: scale(1.04); }
+  100% { box-shadow: 0 0 30px rgba(0, 240, 255, 0.18), 0 0 60px rgba(123, 97, 255, 0.10); transform: scale(1); }
 }
 
 .action-primary-text {
@@ -791,6 +799,10 @@
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), rgba(123,97,255,0.06), transparent);
   pointer-events: none;
 }
+.stats-hero-card {
+  animation: enterHeavy 0.6s var(--ease-power) both;
+  animation-delay: 0.1s;
+}
 
 .stats-numbers {
   flex: 1;
@@ -842,6 +854,7 @@
   gap: 1px;
 }
 
+/* Each workout is a moment in your story — it has presence */
 .workout-row {
   display: flex;
   align-items: center;
@@ -849,13 +862,16 @@
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.025);
   border-radius: 14px;
-  transition: transform 0.2s var(--ease-spring), background 0.2s ease;
-  animation: fadeInUp 0.4s var(--ease-out) both;
+  transition: transform 0.2s var(--ease-spring), background 0.3s ease, box-shadow 0.3s ease;
+  animation: enterHeavy 0.5s var(--ease-power) both;
+  border: 1px solid transparent;
 }
 
 .workout-row:active {
-  transform: scale(0.98);
+  transform: scale(0.97) perspective(600px) rotateX(1deg);
   background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(0, 240, 255, 0.12);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
 }
 .workout-row:nth-child(1) { animation-delay: 0.05s; }
 .workout-row:nth-child(2) { animation-delay: 0.1s; }
@@ -875,6 +891,7 @@
   border-radius: 14px;
 }
 
+/* Grade badge — not just a letter, a verdict that glows with meaning */
 .workout-grade {
   width: 40px;
   height: 40px;
@@ -889,6 +906,12 @@
   border: 1px solid color-mix(in srgb, var(--grade-color, var(--bio-cyan)) 15%, transparent);
   flex-shrink: 0;
   letter-spacing: -0.02em;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--grade-color, var(--bio-cyan)) 15%, transparent);
+  transition: box-shadow 0.3s ease, transform 0.2s var(--ease-spring);
+}
+.workout-row:active .workout-grade {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--grade-color, var(--bio-cyan)) 25%, transparent);
 }
 
 .workout-info {

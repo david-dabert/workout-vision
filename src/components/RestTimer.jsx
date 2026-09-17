@@ -141,8 +141,20 @@ export default function RestTimer({ onClose }) {
   const strokeOffset = circumference * (1 - progress);
   const isComplete = remaining === 0 && !running;
 
+  // Urgency states — the timer shifts personality as time runs out
+  const isUrgent = running && remaining > 0 && remaining <= Math.max(10, totalSeconds * 0.15);
+  const isCritical = running && remaining > 0 && remaining <= 5;
+
+  // Ring color shifts with urgency
+  const ringColor = isCritical ? 'var(--red)' : isUrgent ? 'var(--yellow)' : 'var(--accent)';
+  const ringGlow = isCritical ? 'rgba(255, 59, 92, 0.6)' : isUrgent ? 'rgba(255, 194, 51, 0.5)' : 'rgba(0, 240, 255, 0.4)';
+  const timerGlow = isCritical ? 'rgba(255, 59, 92, 0.15)' : isUrgent ? 'rgba(255, 194, 51, 0.12)' : 'rgba(0, 240, 255, 0.12)';
+
+  // Digit state class
+  const digitClass = isComplete ? s.digitsDone : isCritical ? s.digitsCritical : isUrgent ? s.digitsUrgent : '';
+
   return (
-    <div className={s.page}>
+    <div className={s.page} style={{ '--timer-glow': timerGlow }}>
       <div className={s.header}>
         <button className="btn-icon" onClick={onClose} aria-label={t('close')}>
           &#x2715;
@@ -154,18 +166,19 @@ export default function RestTimer({ onClose }) {
         </div>
       </div>
 
-      <div className={s.circleWrap}>
+      <div className={`${s.circleWrap} ${isComplete ? s.circleWrapDone : ''}`}>
         <svg className={s.svg} viewBox="0 0 260 260">
           <circle cx="130" cy="130" r="120" fill="none" stroke="var(--border)" strokeWidth="6" />
           <circle
             cx="130" cy="130" r="120" fill="none"
-            stroke="var(--accent)" strokeWidth="6" strokeLinecap="round"
+            stroke={ringColor} strokeWidth={isCritical ? 8 : isUrgent ? 7 : 6} strokeLinecap="round"
             strokeDasharray={circumference} strokeDashoffset={strokeOffset}
             transform="rotate(-90 130 130)" className={s.progressRing}
+            style={{ '--ring-glow': ringGlow }}
           />
         </svg>
         <div className={s.time}>
-          <span className={`${s.digits} ${isComplete ? s.digitsDone : ''}`}>
+          <span className={`${s.digits} ${digitClass}`}>
             {formatTime(remaining)}
           </span>
           {isComplete && <span className={s.doneLabel}>{t('ready')}</span>}

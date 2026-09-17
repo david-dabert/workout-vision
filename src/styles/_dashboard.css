@@ -301,6 +301,7 @@
    GREETING TEXT — migrated from inline
    ══════════════════════════════════════════ */
 
+/* The greeting isn't a label — it's recognition. You showed up. */
 .greeting-text {
   font-size: 1.4rem;
   font-weight: 800;
@@ -308,6 +309,7 @@
   margin-bottom: 6px;
   font-family: var(--font-display, var(--font));
   letter-spacing: -0.02em;
+  animation: enterHeavy 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 
@@ -389,10 +391,12 @@
   border-color: rgba(255,255,255,0.25);
 }
 
+/* Active days glow — each one is proof you showed up */
 .weekly-dot.active {
   background: linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet));
   border-color: var(--bio-cyan);
   box-shadow: 0 0 8px rgba(0,240,255,0.3), 0 0 16px rgba(123,97,255,0.15);
+  animation: phaseShift 3s ease-in-out infinite;
 }
 
 .weekly-dot.active.today {

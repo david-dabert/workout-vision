@@ -42,6 +42,8 @@ export default function LiveCapture({ onClose, profile }) {
   const [formFeedback, setFormFeedback] = useState([]);
   const [inferenceMs, setInferenceMs] = useState(0);
   const [facingMode, setFacingMode] = useState('user');
+  const [repBurst, setRepBurst] = useState(false);
+  const prevRepsRef = useRef(0);
 
   // Clean up on unmount
   useEffect(() => {
@@ -186,6 +188,12 @@ export default function LiveCapture({ onClose, profile }) {
       if (counter) {
         const repResult = counter.update(result.landmarks, timestamp);
         if (repResult) {
+          // Trigger rep burst when count increases — the number doesn't just change, it HITS
+          if (repResult.reps > prevRepsRef.current) {
+            prevRepsRef.current = repResult.reps;
+            setRepBurst(true);
+            setTimeout(() => setRepBurst(false), 600);
+          }
           setReps(repResult.reps);
           setPhase(repResult.phase || 'setup');
           if (repResult.formFeedback?.length) {
@@ -344,6 +352,17 @@ export default function LiveCapture({ onClose, profile }) {
           </button>
         </div>
 
+        {/* Phase environment glow — the whole frame responds to movement phase */}
+        {status === 'running' && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: `radial-gradient(ellipse 120% 80% at 50% 100%, ${phaseColor}22 0%, transparent 60%)`,
+            pointerEvents: 'none',
+            transition: 'background 0.4s ease',
+            opacity: phase === 'setup' ? 0 : 1,
+          }} />
+        )}
+
         {/* Rep counter overlay (bottom of video) */}
         {status === 'running' && (
           <div style={{
@@ -352,13 +371,14 @@ export default function LiveCapture({ onClose, profile }) {
             padding: '40px 20px 20px',
             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           }}>
-            {/* Rep count */}
+            {/* Rep count — the number doesn't just change, it HITS */}
             <div style={{ textAlign: 'center' }}>
               <div aria-live="polite" style={{
                 fontSize: '3.5rem', fontWeight: 900, color: '#fff',
                 fontFamily: 'var(--font-display)',
                 lineHeight: 1,
-                textShadow: `0 0 30px ${phaseColor}`,
+                textShadow: `0 0 30px ${phaseColor}, 0 0 60px ${phaseColor}44`,
+                animation: repBurst ? 'repBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1' : 'none',
               }}>
                 {reps}
               </div>
@@ -366,6 +386,7 @@ export default function LiveCapture({ onClose, profile }) {
                 fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
                 letterSpacing: '0.1em', color: phaseColor,
                 marginTop: 4,
+                transition: 'color 0.3s ease',
               }}>
                 {phase}
               </div>
@@ -418,7 +439,7 @@ export default function LiveCapture({ onClose, profile }) {
         )}
 
         {status === 'ready' && (
-          <button className="btn btn-primary" onClick={startSession} style={{ minHeight: 48 }}>
+          <button className="btn btn-primary btn-heartbeat" onClick={startSession} style={{ minHeight: 48 }}>
             {t('start_workout') || 'Start Workout'}
           </button>
         )}

@@ -66,6 +66,7 @@
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.10) 0%, rgba(123, 97, 255, 0.06) 100%);
 }
 
+/* Active tab underline — a live energy conduit, not a highlight */
 .tab-item.active::after {
   content: '';
   position: absolute;
@@ -77,6 +78,7 @@
   border-radius: var(--radius-full);
   background: linear-gradient(90deg, var(--bio-cyan), var(--aurora-violet));
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(123, 97, 255, 0.3);
+  animation: phaseShift 3s ease-in-out infinite;
 }
 
 .tab-item:active {
@@ -367,11 +369,13 @@
   position: relative;
   opacity: 0; animation: fadeInUp 0.4s var(--ease-out) both;
 }
-.onb-goal:active { transform: scale(0.98); }
+/* Each goal is a commitment — selecting it should feel decisive */
+.onb-goal:active { transform: scale(0.97) perspective(600px) rotateX(1deg); }
 .onb-goal.selected {
   background: rgba(0, 240, 255, 0.06);
   border-color: rgba(0, 240, 255, 0.3);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.08), 0 0 40px rgba(123, 97, 255, 0.04);
+  animation: savePulse 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1;
 }
 
 .onb-goal-icon {

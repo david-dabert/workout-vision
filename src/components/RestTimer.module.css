@@ -1,28 +1,80 @@
-.page { min-height: 100dvh; background: var(--void); display: flex; flex-direction: column; padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page {
+  min-height: 100dvh; background: var(--void); display: flex; flex-direction: column;
+  padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  position: relative; overflow: hidden;
+}
+/* Ambient glow behind the timer — shifts color with urgency */
+.page::before {
+  content: '';
+  position: absolute;
+  top: 15%; left: 50%; transform: translateX(-50%);
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, var(--timer-glow, rgba(0, 240, 255, 0.12)) 0%, transparent 60%);
+  pointer-events: none;
+  filter: blur(40px);
+  transition: background 1s ease;
+  animation: breathe 4s ease-in-out infinite;
+}
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; position: relative; z-index: 1; }
 .header h2 { font-size: 1.2rem; }
 .completed { display: flex; flex-direction: column; align-items: center; }
 .completedCount { font-size: 1.4rem; font-weight: 900; color: var(--bio-cyan); line-height: 1; }
 .completedLabel { font-size: 0.55rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
-.circleWrap { position: relative; width: 260px; height: 260px; margin: 24px auto 32px; }
+.circleWrap {
+  position: relative; width: 260px; height: 260px; margin: 24px auto 32px;
+  z-index: 1;
+}
 .svg { width: 100%; height: 100%; }
-.progressRing { transition: stroke-dashoffset 0.3s var(--ease-smooth); }
+/* The ring responds — its glow intensifies as time runs out */
+.progressRing {
+  transition: stroke-dashoffset 0.3s var(--ease-smooth), stroke 0.5s ease, filter 0.5s ease;
+  filter: drop-shadow(0 0 6px var(--ring-glow, rgba(0, 240, 255, 0.4)));
+}
 .time { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
-.digits { font-size: 3.8rem; font-weight: 900; color: var(--text-primary); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.digitsDone { color: var(--bio-cyan); }
-.doneLabel { font-size: 0.72rem; color: var(--bio-cyan); text-transform: uppercase; letter-spacing: 0.2em; font-weight: 800; margin-top: 6px; }
-.readyLabel { font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; margin-top: 4px; }
-.presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 24px; }
+.digits {
+  font-size: 3.8rem; font-weight: 900; color: var(--text-primary); line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+  transition: color 0.5s ease, text-shadow 0.5s ease;
+}
+/* Urgency: digits glow warmer as time runs out */
+.digitsUrgent {
+  color: var(--yellow);
+  text-shadow: 0 0 20px rgba(255, 194, 51, 0.3);
+}
+.digitsCritical {
+  color: var(--red);
+  text-shadow: 0 0 30px rgba(255, 59, 92, 0.4);
+  animation: heartbeat 1s ease-in-out infinite;
+}
+/* Done: power restored — the reactor is online */
+.digitsDone {
+  color: var(--bio-cyan);
+  text-shadow: 0 0 40px rgba(0, 240, 255, 0.5), 0 0 80px rgba(123, 97, 255, 0.2);
+  animation: repBurst 0.6s var(--ease-power) 1;
+}
+.doneLabel {
+  font-size: 0.72rem; color: var(--bio-cyan); text-transform: uppercase;
+  letter-spacing: 0.2em; font-weight: 800; margin-top: 6px;
+}
+.readyLabel {
+  font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase;
+  letter-spacing: 0.12em; font-weight: 700; margin-top: 4px;
+}
+/* Completion burst — the whole timer ring explodes with energy */
+.circleWrapDone {
+  animation: powerRestore 1s var(--ease-power) 1;
+}
+.presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 24px; position: relative; z-index: 1; }
 .presetBtn {
   padding: 10px 18px; background: var(--glass-bg); border: 1px solid var(--glass-border);
   border-radius: var(--radius-full); color: var(--text-primary); font-size: 0.82rem;
   font-weight: 700; cursor: pointer; transition: all 0.2s var(--ease-smooth);
   min-width: 56px; font-family: var(--font);
 }
-.presetBtn:active { transform: scale(0.93); }
+.presetBtn:active { transform: scale(0.90) perspective(400px) rotateX(2deg); }
 .presetBtnActive { border-color: var(--border-accent); background: var(--accent-glow); color: var(--bio-cyan); box-shadow: 0 0 12px var(--bio-glow); }
 .presetBtn:disabled { opacity: 0.35; cursor: default; }
-.custom { display: flex; gap: 8px; margin-bottom: 24px; max-width: 260px; margin-left: auto; margin-right: auto; }
+.custom { display: flex; gap: 8px; margin-bottom: 24px; max-width: 260px; margin-left: auto; margin-right: auto; position: relative; z-index: 1; }
 .custom input { flex: 1; text-align: center; }
-.controls { display: flex; gap: 14px; justify-content: center; margin-top: auto; padding-top: 24px; }
+.controls { display: flex; gap: 14px; justify-content: center; margin-top: auto; padding-top: 24px; position: relative; z-index: 1; }
 .mainBtn { flex: 1; max-width: 180px; }

@@ -120,17 +120,39 @@ export default function ManualLog({ onClose }) {
 
   if (saved) {
     return (
-      <div className="page">
+      <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '60px 20px',
-          gap: 12,
+          gap: 16,
+          animation: 'enterHeavy 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
         }}>
-          <div style={{ fontSize: '2rem', color: 'var(--accent)' }}>{t('saved')}</div>
-          <p className="text-sm text-muted">{t('workout_saved')}</p>
+          <div style={{
+            width: 72, height: 72, borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.15), rgba(0, 240, 255, 0.10))',
+            border: '2px solid rgba(0, 230, 118, 0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.8rem', color: 'var(--bio-green)',
+            boxShadow: '0 0 40px rgba(0, 230, 118, 0.2), 0 0 80px rgba(0, 240, 255, 0.08)',
+            animation: 'repBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both',
+          }}>
+            &#x2713;
+          </div>
+          <div style={{
+            fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)',
+            fontFamily: 'var(--font-display)', letterSpacing: '-0.02em',
+          }}>
+            {t('workout_saved')}
+          </div>
+          <div style={{
+            fontSize: '0.75rem', color: 'var(--text-tertiary)',
+            textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700,
+          }}>
+            {t('saved')}
+          </div>
         </div>
       </div>
     );

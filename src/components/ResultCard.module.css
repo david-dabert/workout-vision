@@ -7,9 +7,11 @@
 
 /* ═══ HERO ZONE ═══ */
 
+/* The grade is the moment. It earns its entrance. */
 .heroGrade {
   text-align: center;
   padding: 20px 0 10px;
+  position: relative;
 }
 
 .heroGradeBadge {
@@ -18,6 +20,19 @@
   position: relative;
   overflow: hidden;
   display: inline-block;
+  /* Grade entrance handled by .result-badge-reveal class in _components.css */
+}
+
+/* Ambient glow behind the grade — the score radiates */
+.heroGrade::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  filter: blur(20px);
+  animation: scoreGlow 4s ease-in-out infinite alternate;
 }
 
 .heroExerciseName {
@@ -33,9 +48,11 @@
   gap: 4px;
 }
 
+/* The score counts up — you watch your number climb */
 .heroScore {
   font-size: 1.4rem;
   font-weight: 800;
+  animation: enterHeavy 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
 }
 
 .heroScoreUnit {
@@ -43,6 +60,7 @@
   color: var(--muted);
 }
 
+/* Stats row — not a table, a dashboard readout */
 .heroStatsRow {
   display: flex;
   align-items: center;
@@ -50,9 +68,12 @@
   gap: 0;
   padding: 14px 8px;
   margin: 8px 0;
-  background: rgba(255, 255, 255, 0.03);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, rgba(123, 97, 255, 0.02) 100%);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
+  animation: enterHeavy 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .heroStat {
@@ -316,13 +337,16 @@
   font-weight: 600;
 }
 
+/* Personal Best is a moment of triumph — it doesn't whisper, it announces */
 .personalBestBanner {
   text-align: center;
-  padding: 12px 0;
+  padding: 14px 0;
   margin-bottom: 8px;
   background: linear-gradient(135deg, rgba(255, 107, 157, 0.08), rgba(196, 181, 253, 0.08));
   border-radius: 12px;
   border: 1px solid rgba(255, 107, 157, 0.15);
+  animation: enterHeavy 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  box-shadow: 0 0 30px rgba(255, 107, 157, 0.08), 0 0 60px rgba(196, 181, 253, 0.05);
 }
 
 .personalBestIcon {
@@ -339,6 +363,7 @@
   text-transform: uppercase;
 }
 
+/* PR banner — you earned something. The UI acknowledges it. */
 .prBanner {
   text-align: center;
   padding: 14px 16px;
@@ -346,6 +371,8 @@
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.08));
   border-radius: 12px;
   border: 1px solid rgba(255, 215, 0, 0.3);
+  animation: enterHeavy 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.10), 0 0 60px rgba(255, 165, 0, 0.06);
 }
 
 .prBannerIcon {

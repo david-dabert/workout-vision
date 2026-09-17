@@ -154,6 +154,73 @@ h5 {
    UTILITIES
    ══════════════════════════════════════════ */
 
+/* ══════════════════════════════════════════
+   CELEBRATION & MICRO-INTERACTION KEYFRAMES
+   Every moment matters. Nothing increments silently.
+   ══════════════════════════════════════════ */
+
+/* Rep burst — the number doesn't just change, it HITS */
+@keyframes repBurst {
+  0% { transform: scale(1); filter: brightness(1); }
+  15% { transform: scale(1.35); filter: brightness(1.6); }
+  30% { transform: scale(0.92); filter: brightness(1.1); }
+  50% { transform: scale(1.08); filter: brightness(1.0); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Grade reveal — the letter earns its entrance */
+@keyframes gradeReveal {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; filter: blur(12px); }
+  40% { transform: scale(1.3) rotate(4deg); opacity: 1; filter: blur(0); }
+  60% { transform: scale(0.9) rotate(-2deg); }
+  80% { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Power restore — timer completion is not a beep, it's a reactor coming online */
+@keyframes powerRestore {
+  0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+  30% { box-shadow: 0 0 40px 10px rgba(0, 240, 255, 0.5), 0 0 80px 20px rgba(123, 97, 255, 0.2); }
+  60% { box-shadow: 0 0 60px 15px rgba(0, 240, 255, 0.3), 0 0 120px 30px rgba(123, 97, 255, 0.1); }
+  100% { box-shadow: 0 0 20px 5px rgba(0, 240, 255, 0.15), 0 0 40px 10px rgba(123, 97, 255, 0.05); }
+}
+
+/* Save celebration — success is not a checkmark, it's a flash of energy */
+@keyframes savePulse {
+  0% { background: rgba(0, 230, 118, 0); }
+  20% { background: rgba(0, 230, 118, 0.15); }
+  100% { background: rgba(0, 230, 118, 0); }
+}
+
+/* Attention draw — a card that has something to say */
+@keyframes cardAttention {
+  0%, 100% { border-color: rgba(255, 255, 255, 0.10); }
+  50% { border-color: rgba(0, 240, 255, 0.35); box-shadow: 0 0 30px rgba(0, 240, 255, 0.08); }
+}
+
+/* Entrance with weight — elements arrive, they don't just appear */
+@keyframes enterHeavy {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Phase shift — the whole environment responds to state changes */
+@keyframes phaseShift {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* Heartbeat — for things that are alive and waiting */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.06); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.04); }
+  56% { transform: scale(1); }
+}
+
 .hidden { display: none; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .gap-sm { gap: 6px; }

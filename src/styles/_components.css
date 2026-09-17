@@ -36,9 +36,26 @@
   pointer-events: none;
 }
 
-.card:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.06); }
+/* Active: the card responds to your force — it yields, then returns */
+.card:active {
+  transform: scale(0.97) perspective(600px) rotateX(1deg);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.06);
+  transition-duration: 0.1s;
+}
 .result-card:active { transform: none; }
-.card:hover { border-color: rgba(0,240,255,0.18); box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 8px 40px rgba(0,0,0,0.45), 0 0 30px rgba(123,97,255,0.10), 0 0 60px rgba(0,240,255,0.06), 0 0 1px rgba(0,240,255,0.2); }
+/* Hover: the card acknowledges your presence */
+.card:hover {
+  border-color: rgba(0,240,255,0.18);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 8px 40px rgba(0,0,0,0.45), 0 0 30px rgba(123,97,255,0.10), 0 0 60px rgba(0,240,255,0.06), 0 0 1px rgba(0,240,255,0.2);
+}
+/* Card alive state — when something has changed or needs attention */
+.card.card-alive {
+  animation: cardAttention 2s ease-in-out 1;
+}
+/* Card celebration — save success, PR achieved */
+.card.card-celebrate {
+  animation: savePulse 0.8s var(--ease-power) 1;
+}
 
 .card-elevated {
   background: var(--surface-elevated);
@@ -135,13 +152,20 @@
   transition: transform 0.25s var(--ease-spring), box-shadow 0.3s ease, background-position 0.4s;
 }
 
+/* Press: the button compresses like a physical object and releases energy */
 .btn-primary:active {
   box-shadow:
     0 2px 16px rgba(0, 240, 255, 0.5),
     0 0 4px rgba(123, 97, 255, 0.4),
+    0 0 40px rgba(0, 240, 255, 0.12),
     inset 0 1px 0 rgba(255,255,255,0.25);
-  transform: scale(0.96);
+  transform: scale(0.94) perspective(400px) rotateX(2deg);
   background-position: 100% 100%;
+  transition-duration: 0.08s;
+}
+/* Start button heartbeat — it's alive, waiting for you to act */
+.btn-primary.btn-heartbeat {
+  animation: heartbeat 2.5s ease-in-out infinite;
 }
 
 .btn-ghost {
@@ -350,6 +374,16 @@ select {
 .score-badge.grade-c, .score-badge.ok { background: var(--yellow-glow); color: var(--yellow); }
 .score-badge.grade-d, .score-badge.poor { background: var(--red-glow); color: var(--red); }
 .score-badge.grade-na { background: rgba(255,255,255,0.06); color: var(--muted); }
+
+/* Grade reveal — the letter earns its place */
+.result-badge-reveal {
+  animation: gradeReveal 0.7s var(--ease-power) both;
+}
+/* PR badge — glows with achievement */
+.score-badge.pr-achieved {
+  box-shadow: var(--glow-burst);
+  animation: gradeReveal 0.7s var(--ease-power) both, cardAttention 2s ease-in-out 0.7s 2;
+}
 
 .stats-grid-2x2 {
   display: grid;
