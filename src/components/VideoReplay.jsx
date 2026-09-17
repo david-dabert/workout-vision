@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { drawPose } from '../lib/poseAnalysis';
 import { gradeClass } from '../lib/utils';
-import { useT } from '../lib/LanguageContext';
+import { useT, tModule } from '../lib/LanguageContext';
 import { AudioFeedback } from '../lib/AudioFeedback';
 
 /**
@@ -106,7 +106,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.textAlign = 'right';
   ctx.fillStyle = '#f0f0f5';
   ctx.font = `bold ${Math.round(22 * scale)}px -apple-system, system-ui, sans-serif`;
-  ctx.fillText(`${reps} reps`, w - pad, boxH / 2); // Keep "reps" in overlay (universal sports term)
+  ctx.fillText(`${reps} ${tModule('reps')}`, w - pad, boxH / 2);
 
   // ═══ Coaching annotation banner (shows during the rep where the issue is detected) ═══
   if (coaching?.feedback?.length > 0 && currentRepIndex >= 0) {
@@ -115,7 +115,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
     if (topFb) {
       // Truncate message to fit
       const maxChars = Math.floor(w / (9 * scale));
-      let msg = topFb.message;
+      let msg = topFb.messageKey ? tModule(topFb.messageKey, topFb.messageParams) : topFb.message;
       if (msg.length > maxChars) msg = msg.substring(0, maxChars - 1) + '…';
 
       const bannerH = Math.round(44 * scale);
@@ -632,7 +632,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
             className="timeline-tooltip"
             style={{ left: `${hoverRep.left}%` }}
           >
-            Rep {hoverRep.repIndex + 1} &middot; {Math.round(hoverRep.score)}%
+            {t('rep')} {hoverRep.repIndex + 1} &middot; {Math.round(hoverRep.score)}%
           </div>
         )}
       </div>

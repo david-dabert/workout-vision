@@ -438,7 +438,7 @@ export function getStrengthLevel(exerciseKey, oneRM, bodyweight, sex) {
 export function suggestNextWorkout(profile, workoutHistory) {
   if (!workoutHistory || workoutHistory.length === 0) {
     return {
-      recommendation: 'No training history available. Start with a full-body session focusing on compound movements at moderate intensity.',
+      recommendationKey: 'coach_no_history',
       suggestedExercises: ['squat', 'bench_press', 'bent_over_row', 'overhead_press'],
       estimatedRecovery: 'recovered',
       daysUntilRecovered: 0,

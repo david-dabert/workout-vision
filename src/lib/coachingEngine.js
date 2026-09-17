@@ -555,14 +555,16 @@ function generateCoachingFeedback(metrics, exerciseKey) {
       feedback.push({
         priority: 1,
         category: 'fatigue',
-        message: `Your range of motion dropped ${decay}% from the first half of your set to the second. This level of fatigue suggests reducing weight by 5-10% or adding 30 seconds of rest between sets.`,
+        messageKey: 'coaching_fatigue_significant',
+        messageParams: { decay },
         severity: 'warning',
       });
     } else {
       feedback.push({
         priority: 3,
         category: 'fatigue',
-        message: `Mild fatigue detected: ${decay}% ROM decrease across the set. Form is still safe but watch for further degradation.`,
+        messageKey: 'coaching_fatigue_mild',
+        messageParams: { decay },
         severity: 'info',
       });
     }
@@ -575,16 +577,15 @@ function generateCoachingFeedback(metrics, exerciseKey) {
       feedback.push({
         priority: 2,
         category: 'depth',
-        message: rate === 0
-          ? 'None of your reps reached below parallel. For full muscle activation, aim to bring your hips below your knees at the bottom.'
-          : `Only ${rate}% of reps reached below parallel. Focus on consistent depth. Partial reps reduce quadriceps and glute activation.`,
+        messageKey: rate === 0 ? 'coaching_depth_none' : 'coaching_depth_partial',
+        messageParams: { rate },
         severity: 'correction',
       });
     } else {
       feedback.push({
         priority: 8,
         category: 'depth',
-        message: 'All reps reached below parallel. Excellent depth consistency.',
+        messageKey: 'coaching_depth_good',
         severity: 'positive',
       });
     }
@@ -595,7 +596,8 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 1,
       category: 'knee_valgus',
-      message: `Knee valgus detected in ${Math.round(metrics.kneeValgus.valgusRate * 100)}% of reps. Your knees are collapsing inward at the bottom position. This increases ACL stress. Cue: "push knees out over toes." Consider glute activation warmup.`,
+      messageKey: 'coaching_knee_valgus',
+      messageParams: { rate: Math.round(metrics.kneeValgus.valgusRate * 100) },
       severity: 'warning',
     });
   }
@@ -605,7 +607,8 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 2,
       category: 'elbow_flare',
-      message: `Excessive elbow flare detected in ${Math.round(metrics.elbowFlare.excessiveRate * 100)}% of reps. Wide elbows increase shoulder impingement risk. Aim for a 45-degree angle between your upper arm and torso.`,
+      messageKey: 'coaching_elbow_flare',
+      messageParams: { rate: Math.round(metrics.elbowFlare.excessiveRate * 100) },
       severity: 'correction',
     });
   }
@@ -615,7 +618,8 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 2,
       category: 'trunk_lean',
-      message: `Excessive forward lean (avg ${metrics.trunkLean.avgLean}°) detected. This shifts load from legs to lower back. Cue: "chest up, break at the hips and knees simultaneously."`,
+      messageKey: 'coaching_trunk_lean',
+      messageParams: { avgLean: metrics.trunkLean.avgLean },
       severity: 'correction',
     });
   }
@@ -625,7 +629,8 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 4,
       category: 'lockout',
-      message: `Only ${Math.round(metrics.lockout.lockoutRate * 100)}% of reps reached full lockout. Completing the top of the movement ensures full muscle contraction. Focus on extending fully at the top.`,
+      messageKey: 'coaching_lockout_incomplete',
+      messageParams: { rate: Math.round(metrics.lockout.lockoutRate * 100) },
       severity: 'correction',
     });
   }
@@ -636,14 +641,16 @@ function generateCoachingFeedback(metrics, exerciseKey) {
       feedback.push({
         priority: 3,
         category: 'consistency',
-        message: `Your reps are inconsistent (consistency score: ${metrics.repConsistency.consistencyScore}/100). Rep ${metrics.repConsistency.mostInconsistentRep + 1} deviated the most. A consistent rep pattern means each rep trains the same muscles through the same range.`,
+        messageKey: 'coaching_consistency_low',
+        messageParams: { score: metrics.repConsistency.consistencyScore, rep: metrics.repConsistency.mostInconsistentRep + 1 },
         severity: 'correction',
       });
     } else if (metrics.repConsistency.consistencyScore >= 85) {
       feedback.push({
         priority: 9,
         category: 'consistency',
-        message: `Excellent rep consistency (${metrics.repConsistency.consistencyScore}/100). Each rep follows the same controlled path. This is how you build reliable strength.`,
+        messageKey: 'coaching_consistency_good',
+        messageParams: { score: metrics.repConsistency.consistencyScore },
         severity: 'positive',
       });
     }
@@ -654,7 +661,7 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 3,
       category: 'smoothness',
-      message: 'Your movement appears jerky with abrupt speed changes. Smooth, controlled reps reduce injury risk and improve muscle time under tension. Slow down the eccentric (lowering) phase.',
+      messageKey: 'coaching_smoothness_jerky',
       severity: 'correction',
     });
   }
@@ -664,7 +671,8 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 4,
       category: 'bar_path',
-      message: `Significant lateral drift (${metrics.barPath.avgMaxDrift}%) detected in your bar path. A straighter path means more efficient force transfer. Check your grip width and ensure even loading.`,
+      messageKey: 'coaching_bar_path_drift',
+      messageParams: { drift: metrics.barPath.avgMaxDrift },
       severity: 'info',
     });
   }
@@ -674,7 +682,8 @@ function generateCoachingFeedback(metrics, exerciseKey) {
     feedback.push({
       priority: 5,
       category: 'balance',
-      message: `Your center of mass shifts laterally during reps (${metrics.centerOfMass.avgLateralSway}% sway). This suggests one side is compensating. Focus on even weight distribution through both feet.`,
+      messageKey: 'coaching_balance_sway',
+      messageParams: { sway: metrics.centerOfMass.avgLateralSway },
       severity: 'info',
     });
   }

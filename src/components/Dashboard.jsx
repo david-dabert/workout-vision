@@ -361,7 +361,9 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
 // ── Insights Section ──
 
 function translateRecommendation(data, lang, t) {
-  if (lang !== 'fr') return data.recommendation;
+  if (data.recommendationKey) {
+    return t(data.recommendationKey);
+  }
   const exercises = data.suggestedExercises
     .map(key => EXERCISES[key]?.name || key)
     .join(', ');

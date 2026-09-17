@@ -6,7 +6,7 @@ import { shareCard } from '../lib/shareCard';
 import { shareChallenge } from '../lib/challenges';
 import { useT } from '../lib/LanguageContext';
 import { useProfile } from '../lib/ProfileContext';
-import { gradeFromScore, gradeClass } from '../lib/utils';
+import { gradeFromScore, gradeClass, translateMuscle } from '../lib/utils';
 import { updateWorkout } from '../lib/storage';
 import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
 import { detectPRs, detectFormRegression } from '../lib/prSystem';
@@ -79,7 +79,7 @@ function generateProgressionNote(progression, t) {
 }
 
 function ResultCard({ result, onReplay }) {
-  const { t, tExercise, tFormCheck } = useT();
+  const { t, tExercise, tFormCheck, lang } = useT();
   const { profile } = useProfile();
   const {
     fileName: _fileName, exerciseName, reps, duration,
@@ -555,7 +555,7 @@ function ResultCard({ result, onReplay }) {
                   <span className={s.coachingFeedbackIcon}>
                     {topFb.severity === 'warning' ? '⚠' : topFb.severity === 'correction' ? '→' : topFb.severity === 'positive' ? '✓' : 'ℹ'}
                   </span>
-                  <p className={s.coachingFeedbackText}>{topFb.message}</p>
+                  <p className={s.coachingFeedbackText}>{topFb.messageKey ? t(topFb.messageKey, topFb.messageParams) : topFb.message}</p>
                 </div>
                 {rest.length > 0 && !showAllCoaching && (
                   <button
@@ -570,7 +570,7 @@ function ResultCard({ result, onReplay }) {
                     <span className={s.coachingFeedbackIcon}>
                       {fb.severity === 'warning' ? '⚠' : fb.severity === 'correction' ? '→' : fb.severity === 'positive' ? '✓' : 'ℹ'}
                     </span>
-                    <p className={s.coachingFeedbackText}>{fb.message}</p>
+                    <p className={s.coachingFeedbackText}>{fb.messageKey ? t(fb.messageKey, fb.messageParams) : fb.message}</p>
                   </div>
                 ))}
               </div>
@@ -983,7 +983,7 @@ function ResultCard({ result, onReplay }) {
               </div>
             </div>
             <div className={s.progressionGradeTitle}>
-              <span className={s.progressionGradeTitleText}>{prog.grade.title}</span>
+              <span className={s.progressionGradeTitleText}>{t(prog.grade.title)}</span>
             </div>
             <div className={s.progressionComponentGrid}>
               {[
@@ -1039,7 +1039,7 @@ function ResultCard({ result, onReplay }) {
             <h4>{t('form_notes')}</h4>
             {sorted.map(([issue, count]) => (
               <div key={issue} className="note-item">
-                {tFormCheck(issue)} ({count}/{repHistory.length} reps)
+                {tFormCheck(issue)} ({count}/{repHistory.length} {t('reps')})
               </div>
             ))}
           </div>
@@ -1050,7 +1050,8 @@ function ResultCard({ result, onReplay }) {
         <div className={s.highlightsSection}>
           <h4>{t('highlights')}</h4>
           {report.highlights.map((h, i) => {
-            const params = h.exercise ? { ...h, exerciseName: tExercise(h.exercise, h.exerciseName) } : h;
+            const params = h.exercise ? { ...h, exerciseName: tExercise(h.exercise, h.exerciseName) } : { ...h };
+            if (params.muscle) params.muscle = translateMuscle(params.muscle, lang);
             return (
               <p key={i} className={`text-sm ${s.highlightItem}`}>
                 {'> '}{typeof h === 'string' ? h : t(params.key, params)}

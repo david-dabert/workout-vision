@@ -56,6 +56,14 @@ export const MUSCLE_FR: Record<string, string> = {
   'Chest': 'Pectoraux', 'Shoulders': 'Épaules', 'Abs': 'Abdominaux',
   'Lats': 'Grand dorsal', 'Rear Delts': 'Deltoïdes post.',
   'Lower Back': 'Bas du dos', 'Calves': 'Mollets',
+  'Lateral Deltoids': 'Deltoïdes latéraux', 'Lateral Deltoid': 'Deltoïde latéral',
+  'Anterior Deltoids': 'Deltoïdes antérieurs', 'Posterior Deltoids': 'Deltoïdes postérieurs',
+  'Trapezius': 'Trapèzes', 'Upper Trapezius': 'Trapèzes supérieurs',
+  'Lower Trapezius': 'Trapèzes inférieurs', 'Deltoids': 'Deltoïdes',
+  'Gluteus Medius': 'Moyen fessier', 'Lower Pectorals': 'Pectoraux inférieurs',
+  'Rotator Cuff': 'Coiffe des rotateurs', 'Teres Major': 'Grand rond',
+  'Tibialis Anterior': 'Tibial antérieur', 'Hip Abductors': 'Abducteurs de hanche',
+  'Hip Adductors': 'Adducteurs de hanche',
 };
 
 export function translateMuscle(name: string, lang: string): string {

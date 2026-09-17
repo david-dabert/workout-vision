@@ -16,14 +16,14 @@
 // ---------------------------------------------------------------------------
 
 const GRADES = [
-  { min: 930, label: 'S',  title: 'Legendary' },
-  { min: 850, label: 'A+', title: 'Elite' },
-  { min: 750, label: 'A',  title: 'Advanced' },
-  { min: 650, label: 'B+', title: 'Strong' },
-  { min: 500, label: 'B',  title: 'Solid' },
-  { min: 350, label: 'C',  title: 'Developing' },
-  { min: 200, label: 'D',  title: 'Beginner' },
-  { min: 0,   label: 'F',  title: 'Starting' },
+  { min: 930, label: 'S',  title: 'grade_legendary' },
+  { min: 850, label: 'A+', title: 'grade_elite_title' },
+  { min: 750, label: 'A',  title: 'grade_advanced' },
+  { min: 650, label: 'B+', title: 'grade_strong_title' },
+  { min: 500, label: 'B',  title: 'grade_solid' },
+  { min: 350, label: 'C',  title: 'grade_developing' },
+  { min: 200, label: 'D',  title: 'grade_beginner' },
+  { min: 0,   label: 'F',  title: 'grade_starting' },
 ];
 
 function getGrade(score) {
