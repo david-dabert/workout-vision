@@ -31,23 +31,16 @@ import { VelocityEngine } from '../VelocityEngine';
 import { ProgressionScore } from '../ProgressionScore';
 import { AnthropometricNormalizer } from '../AnthropometricNormalizer';
 import {
-  findValleys,
-  reconcilePeaksAndValleys,
-  autocorrelationEdgeCorrect,
-  templateEdgeCorrect,
-  medianIntervalFrames,
   interpolateNulls,
   smoothSignal,
 } from '../valleyCounter';
-import {
-  getRepPeriodBounds,
-} from '../analysisConfig';
 
 import type { Exercise, ValleyResult, Cycle, DiagCandidate, RepCounterOptions } from './types';
 import { adaptiveSignalSelect } from './valley';
 import { buildFormHistoryFromCycles, evaluateLiveRep, evaluateFormFeedback } from './scoring';
+import { oneEuroFilter } from './stateMachine';
 
-const REP_COUNTER_BUILD = 'v24-adaptive-signal';
+const REP_COUNTER_BUILD = 'v25-state-machine';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -373,16 +366,15 @@ export class RepCounter {
       return a ? ex.getValue(a, lm) : null;
     });
 
-    // Interpolate nulls, then smooth to eliminate side-switching noise.
-    // Exercises can override via smoothing property. Very fast exercises
-    // (minSpacing < 0.2) get reduced smoothing to preserve rapid peaks.
-    // Window of 9 frames = 300ms at 30fps. Kills side-switching oscillations
-    // (which flip every 1-5 frames) while preserving rep-scale motion (1-4s).
-    // Increased from 5 to 9 to eliminate the root cause of sub-rep false valleys:
-    // bilateral flicker that survives 5-frame smoothing but not 9-frame.
+    // Two-stage smoothing:
+    //   1. Moving average (window=5) kills bilateral flicker (1-5 frame oscillations)
+    //   2. One-Euro filter adapts: heavy smoothing during holds, light during fast motion
+    // This preserves sharp phase transitions (important for the state machine)
+    // while suppressing jitter (important for threshold crossings).
     const smoothWindow = ex.smoothing != null ? ex.smoothing
-      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 9;
-    let interpolated: number[] = smoothSignal(interpolateNulls(rawValues), smoothWindow);
+      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 5;
+    const maSmoothed: number[] = smoothSignal(interpolateNulls(rawValues), smoothWindow);
+    let interpolated: number[] = oneEuroFilter(maSmoothed, this._fps);
 
     // ── Step 1b: Adaptive multi-signal selection ──
     // Test ALL available signals (primary + 28 3D alternatives) in both
@@ -398,103 +390,22 @@ export class RepCounter {
     this._adaptiveDiagCandidates = adaptive.diagCandidates;
     this._adaptiveDiag = adaptive.diagCandidates;
 
-    // ── Step 2: Apply orientation from adaptive selection ──
-    const invert = adaptive.invert;
-    const signal = invert ? interpolated.map(v => -v) : interpolated;
-
-    // ── Step 3: Use pre-computed valley result ──
-    // Then apply autocorrelation edge correction: if the dominant period
-    // suggests one more rep than valley counting found, and the signal shows
-    // partial motion at the edges, recover the edge rep.
-    let result: ValleyResult = this._autocorrelationEdgeCorrect(signal, adaptive.result);
-
-    // Template-correlation edge correction: uses waveform shape (NCC) to
-    // distinguish truncated reps from setup/return motion at signal edges.
-    // Runs after AC correction -- if AC already added a rep, the edge gap
-    // shrinks below threshold so template won't double-fire.
-    result = this._templateEdgeCorrect(signal, result);
-
-    // ── Step 3b: Autocorrelation sanity check ──
-    // If valley counting found significantly more reps than the signal's
-    // dominant period suggests, the valleys are likely noise (sub-cycle
-    // oscillations, side-switching artifacts). Re-count with the AC period
-    // as minimum spacing to suppress false valleys.
-    if (result.reps >= 3) {
-      const acPeriod = this._estimateDominantPeriod(signal);
-      if (acPeriod > 0) {
-        // Use VALLEY SPAN (first to last valley) not total signal length.
-        // Total signal includes setup and cooldown frames that aren't reps.
-        // At 30fps, a 10-rep exercise at 3s/rep = 300 rep-frames + 100-200 non-rep frames.
-        // signal.length / acPeriod would overccount by 30-60%.
-        // Valley span correctly captures only the exercise portion of the signal.
-        const valleySpan = result.valleyFrames.length >= 2
-          ? result.valleyFrames[result.valleyFrames.length - 1] - result.valleyFrames[0]
-          : signal.length;
-        const acExpectedReps = Math.max(1, Math.round(valleySpan / acPeriod) + 1);
-        // If valley count exceeds AC estimate by >40%, trust the AC period
-        if (result.reps > acExpectedReps * 1.4 && acExpectedReps >= 2) {
-          // Re-count with AC period as minimum spacing (in seconds)
-          const acSpacingSec = acPeriod / this._fps;
-          const exWithStricterSpacing = {
-            ...ex,
-            minSpacing: Math.max(ex.minSpacing || 0.5, acSpacingSec * 0.7),
-            amplitudeRatio: Math.max(ex.amplitudeRatio || 0.25, 0.30),
-          };
-          const strictResult = findValleys(signal, this._fps, exWithStricterSpacing);
-          // Only accept if the stricter count is closer to AC estimate
-          if (Math.abs(strictResult.reps - acExpectedReps) < Math.abs(result.reps - acExpectedReps)) {
-            result = strictResult;
-          }
-        }
-      }
-    }
+    // ── Step 2: Use state machine result directly ──
+    // The adaptive selection already ran the hysteresis state machine on
+    // each candidate signal. The result contains Cycle[] with proper phase
+    // boundaries — no edge correction or AC sanity check needed because
+    // the state machine's hysteresis inherently prevents the failure modes
+    // that those heuristics were patching.
+    const result = adaptive.result;
 
     if (result.reps === 0) {
-      // Valley counting found nothing. Keep FSM reps if any were counted
-      // during live preview -- they saw real motion that valley counting missed.
       if (this._reps === 0) {
         this._repHistory = [];
       }
       return;
     }
 
-    // Build cycles from valley positions for downstream compatibility
-    const cycles: Cycle[] = [];
-    for (let i = 0; i < result.valleyFrames.length; i++) {
-      const vFrame = result.valleyFrames[i];
-      const searchStart = i > 0 ? result.valleyFrames[i - 1] : 0;
-      let peakFrame = searchStart;
-      let peakVal = interpolated[searchStart];
-      for (let j = searchStart; j < vFrame; j++) {
-        if (invert ? interpolated[j] < peakVal : interpolated[j] > peakVal) {
-          peakVal = interpolated[j];
-          peakFrame = j;
-        }
-      }
-      const searchEnd = i < result.valleyFrames.length - 1 ? result.valleyFrames[i + 1] : interpolated.length - 1;
-      let endFrame = vFrame;
-      let endVal = interpolated[vFrame];
-      for (let j = vFrame; j <= searchEnd; j++) {
-        if (invert ? interpolated[j] < endVal : interpolated[j] > endVal) {
-          endVal = interpolated[j];
-          endFrame = j;
-        }
-      }
-
-      const valleyVal = interpolated[vFrame];
-      const amplitude = invert
-        ? valleyVal - Math.min(peakVal, endVal)
-        : Math.max(peakVal, endVal) - valleyVal;
-
-      cycles.push({
-        start: peakFrame,
-        end: endFrame,
-        min: invert ? peakVal : valleyVal,
-        max: invert ? valleyVal : Math.max(peakVal, endVal),
-        amplitude: Math.abs(amplitude),
-        duration: endFrame - peakFrame,
-      });
-    }
+    const cycles: Cycle[] = (result.cycles as Cycle[]) || [];
 
     this._cycleDebug = {
       reps: result.reps,
@@ -533,76 +444,6 @@ export class RepCounter {
     this._collectedLandmarks = [];
   }
 
-  // ─── Valley counting ───
-  //
-  // A rep = a local minimum (valley) in the tracking signal.
-  // For bicep curls: each valley is the bottom of one curl.
-  //
-  // Filters:
-  //   1. Valleys must be >= 0.4s apart
-  //   2. Amplitude from preceding peak to valley must be >= 25°
-
-  // Delegates to standalone valley counter (single source of truth)
-  private _countValleys(signal: number[]): ValleyResult {
-    return findValleys(signal, this._fps, this._exercise);
-  }
-
-  private _reconcilePeaksAndValleys(signal: number[], valleyResult: ValleyResult): ValleyResult {
-    return reconcilePeaksAndValleys(signal, valleyResult, this._fps, this._exercise);
-  }
-
-  private _medianIntervalFrames(frames: number[]): number {
-    return medianIntervalFrames(frames);
-  }
-
-  private _autocorrelationEdgeCorrect(signal: number[], valleyResult: ValleyResult): ValleyResult {
-    return autocorrelationEdgeCorrect(signal, valleyResult, this._fps);
-  }
-
-  private _templateEdgeCorrect(signal: number[], valleyResult: ValleyResult): ValleyResult {
-    const result = templateEdgeCorrect(signal, valleyResult, this._fps, this._exercise);
-    this._templateEdgeDiag = result._templateDiag || null;
-    const { _templateDiag, ...clean } = result;
-    return clean;
-  }
-
-  /**
-   * Estimate the dominant period of the signal via autocorrelation.
-   * Returns period in frames, or 0 if no clear periodicity.
-   */
-  private _estimateDominantPeriod(signal: number[]): number {
-    const N = signal.length;
-    if (N < 12) return 0;
-
-    let mean = 0;
-    for (let i = 0; i < N; i++) mean += signal[i];
-    mean /= N;
-
-    let variance = 0;
-    for (let i = 0; i < N; i++) variance += (signal[i] - mean) ** 2;
-    variance /= N;
-    if (variance < 1e-8) return 0;
-
-    const minLag = Math.max(3, Math.round(this._fps * 0.5));
-    const maxLag = Math.min(Math.floor(N / 2), Math.round(this._fps * 8));
-
-    let bestLag = 0;
-    let bestCorr = -Infinity;
-    for (let lag = minLag; lag <= maxLag; lag++) {
-      let corr = 0;
-      for (let t = 0; t < N - lag; t++) {
-        corr += (signal[t] - mean) * (signal[t + lag] - mean);
-      }
-      corr /= ((N - lag) * variance);
-      if (corr > bestCorr) {
-        bestCorr = corr;
-        bestLag = lag;
-      }
-    }
-
-    // Require minimum correlation strength to trust the period
-    return bestCorr > 0.3 ? bestLag : 0;
-  }
 
   /**
    * Get the rep result with uncertain classification.
@@ -636,7 +477,7 @@ export class RepCounter {
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._totalFramesAnalyzed || this._collectedLandmarks.length,
-      method: this._adaptedSignalName ? `valley:${this._adaptedSignalName}` : 'valley-counter',
+      method: this._adaptedSignalName ? `sm:${this._adaptedSignalName}` : 'state-machine',
       cycles: this._cycleDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,
@@ -646,14 +487,6 @@ export class RepCounter {
       repResult: this._repResult,
       signalDiagnostics: this._signalDiagnostics,
     };
-  }
-
-  /**
-   * Exercise-specific rep period bounds in seconds.
-   * Delegates to centralized config in analysisConfig.js.
-   */
-  static _repPeriodBounds(exerciseKey: string): { min: number; max: number } {
-    return getRepPeriodBounds(exerciseKey);
   }
 
   // ─── Private: Live counting ───

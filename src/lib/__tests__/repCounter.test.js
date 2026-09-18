@@ -133,7 +133,7 @@ describe('RepCounter', () => {
     expect(diag).toHaveProperty('repsDetected');
     expect(diag).toHaveProperty('totalFrames');
     expect(diag).toHaveProperty('method');
-    expect(diag.method).toMatch(/^valley/);
+    expect(diag.method).toMatch(/^(valley|sm|state-machine)/);
     expect(diag.totalFrames).toBe(20);
   });
 
