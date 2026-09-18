@@ -164,43 +164,38 @@ export function buildFormHistoryFromCycles(
         let failCount = 0, sampleCount = 0;
         let qualitySum = 0;
         const hasQualityFn = typeof fc.quality === 'function';
-        // ROM checks (below/above) measure "did the user REACH the target angle at peak?"
-        // Averaging quality across ALL frames would give near-zero because the target
-        // is only achieved for 1-3 frames out of 30. Use the BEST frame instead.
-        // Consistency/stability checks (range, symmetry, custom, trunk swing) correctly
-        // use average quality across frames.
-        const isRomCheck = fc.type === 'below' || fc.type === 'above';
-        let bestQuality = 0;
 
-        const sampleFrame = (i: number) => {
+        for (let i = evalStart; i <= Math.min(evalEnd, N - 1); i += sampleStep) {
           const frameLandmarks = lm[i];
-          if (!frameLandmarks) return;
+          if (!frameLandmarks) continue;
           const angles = extractJointAngles(frameLandmarks);
-          if (!angles) return;
+          if (!angles) continue;
           sampleCount++;
           if (!fc.check(angles, frameLandmarks)) failCount++;
           if (hasQualityFn) {
-            const q = fc.quality(angles, frameLandmarks);
-            qualitySum += q;
-            if (isRomCheck && q > bestQuality) bestQuality = q;
+            qualitySum += fc.quality(angles, frameLandmarks);
           }
-        };
-
-        for (let i = evalStart; i <= Math.min(evalEnd, N - 1); i += sampleStep) sampleFrame(i);
-
+        }
         // For 'top' phase, also sample frames near the end of the cycle
         if (fc.phase === 'top') {
           const tailStart = endFrame - Math.max(1, Math.round(cycleLen * 0.3));
-          for (let i = Math.max(tailStart, evalEnd + 1); i <= Math.min(endFrame, N - 1); i += sampleStep) sampleFrame(i);
+          for (let i = Math.max(tailStart, evalEnd + 1); i <= Math.min(endFrame, N - 1); i += sampleStep) {
+            const frameLandmarks = lm[i];
+            if (!frameLandmarks) continue;
+            const angles = extractJointAngles(frameLandmarks);
+            if (!angles) continue;
+            sampleCount++;
+            if (!fc.check(angles, frameLandmarks)) failCount++;
+            if (hasQualityFn) {
+              qualitySum += fc.quality(angles, frameLandmarks);
+            }
+          }
         }
 
         const failRate = sampleCount > 0 ? failCount / sampleCount : 0;
-        // ROM checks: best achieved quality (did user reach target at peak?)
-        // Other checks: average quality across sampled frames (consistency, stability)
+        // Continuous quality: use explicit quality function if available, else derive from failRate
         const quality = sampleCount > 0
-          ? (hasQualityFn
-            ? (isRomCheck ? bestQuality : qualitySum / sampleCount)
-            : 1 - failRate)
+          ? (hasQualityFn ? qualitySum / sampleCount : 1 - failRate)
           : 0;
         let passed = quality >= 0.70;
 

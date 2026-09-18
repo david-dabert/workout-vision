@@ -320,6 +320,33 @@ export function autocorrelationEdgeCorrect(signal: number[], valleyResult: Valle
 }
 
 // ---------------------------------------------------------------------------
+// Autocorrelation quality — how periodic is the signal at a given period?
+// ---------------------------------------------------------------------------
+
+export function autocorrelationQuality(signal: number[], periodFrames: number): number {
+  const N = signal.length;
+  if (N < 6 || periodFrames < 2 || periodFrames >= Math.floor(N / 2)) return 0;
+
+  let mean = 0;
+  for (let i = 0; i < N; i++) mean += signal[i];
+  mean /= N;
+
+  let variance = 0;
+  for (let i = 0; i < N; i++) variance += (signal[i] - mean) ** 2;
+  variance /= N;
+  if (variance < 1e-8) return 0;
+
+  let corr = 0;
+  const len = N - periodFrames;
+  for (let t = 0; t < len; t++) {
+    corr += (signal[t] - mean) * (signal[t + periodFrames] - mean);
+  }
+  corr /= (len * variance);
+
+  return Math.max(0, corr);
+}
+
+// ---------------------------------------------------------------------------
 // Template-based edge correction
 //
 // Period-locked valley recovery: if edge gap matches the median inter-valley
@@ -421,39 +448,6 @@ export function templateEdgeCorrect(signal: number[], valleyResult: ValleyResult
   }
 
   return { ...valleyResult, _templateDiag: diag };
-}
-
-// ---------------------------------------------------------------------------
-// Autocorrelation quality — measures how well a detected period dominates
-// the signal's autocorrelation structure.
-//
-// A signal with 7 real reps has an AC peak at lag = N/7. If valley counting
-// overcounts to 17, the detected period is N/17 — but the AC at lag N/17
-// is near zero because the signal doesn't repeat at that frequency.
-// acQuality(signal, N/17) ≈ 0, killing the false candidate's score.
-// ---------------------------------------------------------------------------
-
-export function autocorrelationQuality(signal: number[], periodFrames: number): number {
-  const N = signal.length;
-  if (N < 6 || periodFrames < 2 || periodFrames >= Math.floor(N / 2)) return 0;
-
-  let mean = 0;
-  for (let i = 0; i < N; i++) mean += signal[i];
-  mean /= N;
-
-  let variance = 0;
-  for (let i = 0; i < N; i++) variance += (signal[i] - mean) ** 2;
-  variance /= N;
-  if (variance < 1e-8) return 0;
-
-  let corr = 0;
-  const len = N - periodFrames;
-  for (let t = 0; t < len; t++) {
-    corr += (signal[t] - mean) * (signal[t + periodFrames] - mean);
-  }
-  corr /= (len * variance);
-
-  return Math.max(0, corr);
 }
 
 // ---------------------------------------------------------------------------
