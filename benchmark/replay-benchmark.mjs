@@ -248,7 +248,7 @@ if (module.registerHooks) {
         return { shortCircuit: true, url: shimUrl };
       }
       // Bare relative imports: try .ts first (migrated modules), fall back to .js
-      if (specifier.startsWith('./') && !specifier.slice(2).includes('.')) {
+      if ((specifier.startsWith('./') || specifier.startsWith('../')) && !specifier.split('/').pop().includes('.')) {
         try { return nextResolve(specifier + '.ts', context); } catch {}
         return nextResolve(specifier + '.js', context);
       }
