@@ -2,20 +2,57 @@
 // Strategy: cache app shell on install, network-first for navigation,
 // cache-first for static assets and MediaPipe WASM files.
 
-const CACHE_NAME = 'wv-v1';
+const CACHE_NAME = 'wv-va71783cc';
 const APP_SHELL = [
-  '__SW_BASE__',
-  '__SW_BASE__manifest.json',
-  '__SW_BASE__favicon.svg',
-  '__SW_BASE__icon-192.png',
-  '__SW_BASE__icon-512.png',
-  '__SW_BASE__mediapipe/pose_landmarker_full.task',
-  '__SW_BASE__mediapipe/manifest.json',
+  '/workout-vision/',
+  '/workout-vision/manifest.json',
+  '/workout-vision/favicon.svg',
+  '/workout-vision/icon-192.png',
+  '/workout-vision/icon-512.png',
+  '/workout-vision/mediapipe/pose_landmarker_full.task',
+  '/workout-vision/mediapipe/manifest.json',
 ];
+// ── Auto-injected by inject-sw-precache.js ──
+const PRECACHE_ASSETS = [
+  "/workout-vision/assets/ExerciseSelector-D8y9mbjy.js",
+  "/workout-vision/assets/LiveCapture-Ck9wN2-V.js",
+  "/workout-vision/assets/ManualLog-DH5hK10g.js",
+  "/workout-vision/assets/Onboarding-C-cG4Ua8.js",
+  "/workout-vision/assets/PersonalRecords-CmZcKEzw.js",
+  "/workout-vision/assets/Profile-B0ayDLoy.js",
+  "/workout-vision/assets/Profile-DSM60F3w.css",
+  "/workout-vision/assets/RestTimer-D-40sIG4.css",
+  "/workout-vision/assets/RestTimer-Dh0M86pm.js",
+  "/workout-vision/assets/Validate-935Y_SOq.js",
+  "/workout-vision/assets/Validate-D51oBttc.css",
+  "/workout-vision/assets/VideoUpload-Cx2vq5w1.css",
+  "/workout-vision/assets/VideoUpload-DzSgckIg.js",
+  "/workout-vision/assets/WeeklyReport-vsRpou6O.js",
+  "/workout-vision/assets/WorkoutHistory-BGH-WWTo.js",
+  "/workout-vision/assets/WorkoutHistory-BWSnJ6m8.css",
+  "/workout-vision/assets/biomechanics-CZipYXY0.js",
+  "/workout-vision/assets/correctionLog-CmRCgcUw.js",
+  "/workout-vision/assets/exerciseDetector-DYb47XmA.js",
+  "/workout-vision/assets/exercises-DFeh26_f.js",
+  "/workout-vision/assets/fr-Kt8g5cD_.js",
+  "/workout-vision/assets/gpuBenchmark-CWotvkM8.js",
+  "/workout-vision/assets/i18n-Cne2JNyh.js",
+  "/workout-vision/assets/index-BvQnUhP1.css",
+  "/workout-vision/assets/index-CFxQHUAw.js",
+  "/workout-vision/assets/localforage-53-gm4O1.js",
+  "/workout-vision/assets/poseAnalysis-Db_dUfxW.js",
+  "/workout-vision/assets/poseWorker-DcYzUWYA.js",
+  "/workout-vision/assets/react-vendor-DCgi73_X.js",
+  "/workout-vision/assets/usePoseWorker-ChOopUp0.js",
+  "/workout-vision/assets/web-demuxer-Cj2z-sgM.js",
+  "/workout-vision/boot.js",
+  "/workout-vision/cache-bust.js"
+];
+
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll([...APP_SHELL, ...PRECACHE_ASSETS]))
   );
   self.skipWaiting();
 });
@@ -89,7 +126,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('__SW_BASE__')))
+        .catch(() => caches.match(request).then((cached) => cached || caches.match('/workout-vision/')))
     );
     return;
   }
@@ -115,8 +152,8 @@ self.addEventListener('periodicsync', (event) => {
     event.waitUntil(
       self.registration.showNotification('WorkoutVision', {
         body: 'Time to train! Record a set and track your progress.',
-        icon: '__SW_BASE__icon-192.png',
-        badge: '__SW_BASE__icon-192.png',
+        icon: '/workout-vision/icon-192.png',
+        badge: '/workout-vision/icon-192.png',
         tag: 'wv-weekly',
         renotify: true,
       })
@@ -133,7 +170,7 @@ self.addEventListener('notificationclick', (event) => {
         clients[0].focus();
         return;
       }
-      return self.clients.openWindow('__SW_BASE__');
+      return self.clients.openWindow('/workout-vision/');
     })
   );
 });
