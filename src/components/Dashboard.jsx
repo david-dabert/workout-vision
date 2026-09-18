@@ -13,6 +13,7 @@ import { calculateSmartStreak } from '../lib/prSystem';
 import WorkoutOfTheWeek from './WorkoutOfTheWeek';
 import { ChallengeResponseView } from './ChallengeBar';
 import MilestoneToast from './MilestoneToast';
+import { Icon } from '../lib/icons';
 import css from './Dashboard.module.css';
 
 const getGreetingKey = () => {
@@ -141,7 +142,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
             </div>
             {calculateStreak(allWorkouts, profile?.trainingDays) > 0 ? (
               <span className="streak-badge">
-                🔥 {calculateStreak(allWorkouts, profile?.trainingDays)} {profile?.trainingDays ? t('scheduled_streak') : t('days_streak')}
+                <Icon name="fire" size={14} /> {calculateStreak(allWorkouts, profile?.trainingDays)} {profile?.trainingDays ? t('scheduled_streak') : t('days_streak')}
               </span>
             ) : daysSinceLastWorkout >= 2 ? (
               <span className="streak-badge comeback">

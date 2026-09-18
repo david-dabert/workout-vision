@@ -3,6 +3,7 @@ import { getAllWorkouts, deleteWorkout, getMilestones, saveMilestones } from '..
 import { calculateWorkloadRatio } from '../lib/coach';
 import { EXERCISES } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
+import { Icon, MILESTONE_ICON_KEY } from '../lib/icons';
 import ExerciseHistory from './ExerciseHistory';
 import s from './WorkoutHistory.module.css';
 
@@ -403,23 +404,23 @@ export default function WorkoutHistory({ onClose }) {
               {/* Milestones */}
               {(() => {
                 const achieved = [];
-                if (milestones.first_workout) achieved.push({ key: 'first_workout', label: t('milestone_first_workout'), icon: '🏁' });
-                if (milestones.first_a_grade) achieved.push({ key: 'first_a_grade', label: t('milestone_first_a_grade'), icon: '⭐' });
-                if (milestones.five_day_streak) achieved.push({ key: 'five_day_streak', label: t('milestone_5_day_streak'), icon: '🔥' });
-                if (milestones.ten_workouts) achieved.push({ key: 'ten_workouts', label: t('milestone_10_workouts'), icon: '💪' });
-                if (milestones.twenty_five_workouts) achieved.push({ key: 'twenty_five_workouts', label: t('milestone_25_workouts'), icon: '🎯' });
-                if (milestones.fifty_workouts) achieved.push({ key: 'fifty_workouts', label: t('milestone_50_workouts'), icon: '🏆' });
+                if (milestones.first_workout) achieved.push({ key: 'first_workout', label: t('milestone_first_workout'), iconKey: 'flag' });
+                if (milestones.first_a_grade) achieved.push({ key: 'first_a_grade', label: t('milestone_first_a_grade'), iconKey: 'star' });
+                if (milestones.five_day_streak) achieved.push({ key: 'five_day_streak', label: t('milestone_5_day_streak'), iconKey: 'fire' });
+                if (milestones.ten_workouts) achieved.push({ key: 'ten_workouts', label: t('milestone_10_workouts'), iconKey: 'ten' });
+                if (milestones.twenty_five_workouts) achieved.push({ key: 'twenty_five_workouts', label: t('milestone_25_workouts'), iconKey: 'medal' });
+                if (milestones.fifty_workouts) achieved.push({ key: 'fifty_workouts', label: t('milestone_50_workouts'), iconKey: 'trophy' });
                 if (milestones.form_improved) {
                   const exName = EXERCISES[milestones.form_improved_exercise]?.name || milestones.form_improved_exercise;
-                  achieved.push({ key: 'form_improved', label: `${t('milestone_form_improved')} ${exName}`, icon: '📈' });
+                  achieved.push({ key: 'form_improved', label: `${t('milestone_form_improved')} ${exName}`, iconKey: 'chartUp' });
                 }
 
                 // Also show upcoming milestones (dimmed)
                 const upcoming = [];
-                if (!milestones.first_workout) upcoming.push({ label: t('milestone_first_workout'), icon: '🏁' });
-                if (!milestones.first_a_grade) upcoming.push({ label: t('milestone_first_a_grade'), icon: '⭐' });
-                if (!milestones.five_day_streak) upcoming.push({ label: t('milestone_5_day_streak'), icon: '🔥' });
-                if (!milestones.ten_workouts) upcoming.push({ label: t('milestone_10_workouts'), icon: '💪' });
+                if (!milestones.first_workout) upcoming.push({ label: t('milestone_first_workout'), iconKey: 'flag' });
+                if (!milestones.first_a_grade) upcoming.push({ label: t('milestone_first_a_grade'), iconKey: 'star' });
+                if (!milestones.five_day_streak) upcoming.push({ label: t('milestone_5_day_streak'), iconKey: 'fire' });
+                if (!milestones.ten_workouts) upcoming.push({ label: t('milestone_10_workouts'), iconKey: 'ten' });
 
                 if (achieved.length === 0 && upcoming.length === 0) return null;
 
@@ -430,13 +431,13 @@ export default function WorkoutHistory({ onClose }) {
                     </div>
                     {achieved.map(m => (
                       <div key={m.key} className={s.milestoneRow}>
-                        <span className={s.milestoneIcon}>{m.icon}</span>
+                        <span className={s.milestoneIcon}><Icon name={m.iconKey} size={14} /></span>
                         <span className="text-sm">{m.label}</span>
                       </div>
                     ))}
                     {upcoming.slice(0, 2).map((m, i) => (
                       <div key={`upcoming-${i}`} className={s.milestoneUpcoming}>
-                        <span className={s.milestoneIcon}>{m.icon}</span>
+                        <span className={s.milestoneIcon}><Icon name={m.iconKey} size={14} /></span>
                         <span className="text-sm">{m.label}</span>
                       </div>
                     ))}

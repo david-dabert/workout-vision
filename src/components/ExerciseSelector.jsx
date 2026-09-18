@@ -1,11 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { EXERCISES, EXERCISE_BY_MUSCLE } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
-
-const REGION_ICONS = {
-  Chest: '💪', Back: '🔙', Shoulders: '🏋', Legs: '🦵',
-  Arms: '💪', Core: '🎯', 'Full Body': '⚡',
-};
+import { Icon, REGION_ICON_KEY } from '../lib/icons';
 
 const REGION_KEYS = {
   Chest: 'region_chest', Back: 'region_back', Shoulders: 'region_shoulders',
@@ -153,58 +149,62 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
             />
           </div>
 
-          {/* Region tabs (only when not searching) */}
-          {!search && (
-            <div style={{
-              display: 'flex',
-              overflowX: 'auto',
-              gap: 4,
-              padding: '6px 8px',
-              borderBottom: '1px solid var(--border, #333)',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-            }}>
+          {/* Region tabs */}
+          <div style={{
+            display: 'flex',
+            overflowX: 'auto',
+            gap: 6,
+            padding: '8px 10px',
+            borderBottom: '1px solid var(--border, #333)',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+          }}>
+            <button
+              type="button"
+              onClick={() => setActiveRegion(null)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 14,
+                border: 'none',
+                background: !activeRegion ? 'var(--accent, #00f5d4)' : 'rgba(255,255,255,0.06)',
+                color: !activeRegion ? '#07070a' : 'var(--text-secondary, #888)',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                minHeight: 32,
+              }}
+            >
+              {t('all') || 'All'}
+            </button>
+            {regions.map(region => (
               <button
+                key={region}
                 type="button"
-                onClick={() => setActiveRegion(null)}
+                onClick={() => setActiveRegion(activeRegion === region ? null : region)}
                 style={{
-                  padding: '4px 10px',
-                  borderRadius: 12,
+                  padding: '6px 12px',
+                  borderRadius: 14,
                   border: 'none',
-                  background: !activeRegion ? 'var(--accent, #00f5d4)' : 'rgba(255,255,255,0.06)',
-                  color: !activeRegion ? '#07070a' : 'var(--text-secondary, #888)',
-                  fontSize: '0.72rem',
+                  background: activeRegion === region ? 'var(--accent, #00f5d4)' : 'rgba(255,255,255,0.06)',
+                  color: activeRegion === region ? '#07070a' : 'var(--text-secondary, #888)',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
+                  minHeight: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
                 }}
               >
-                {t('all') || 'All'}
+                <Icon name={REGION_ICON_KEY[region] || 'weight'} size={13} color="currentColor" />
+                {t(REGION_KEYS[region]) || region}
               </button>
-              {regions.map(region => (
-                <button
-                  key={region}
-                  type="button"
-                  onClick={() => setActiveRegion(activeRegion === region ? null : region)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 12,
-                    border: 'none',
-                    background: activeRegion === region ? 'var(--accent, #00f5d4)' : 'rgba(255,255,255,0.06)',
-                    color: activeRegion === region ? '#07070a' : 'var(--text-secondary, #888)',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
-                >
-                  {t(REGION_KEYS[region]) || region}
-                </button>
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
 
           {/* Exercise list */}
           <div style={{ overflowY: 'auto', flex: 1 }} role="listbox">
@@ -229,7 +229,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                   minHeight: 44,
                 }}
               >
-                <span style={{ fontSize: 16, width: 20, textAlign: 'center' }}>🤖</span>
+                <Icon name="auto" size={16} color="currentColor" />
                 {t('automatic')}
               </button>
             )}
@@ -238,20 +238,20 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
               <div key={region}>
                 {/* Region header */}
                 <div style={{
-                  padding: '6px 12px',
-                  fontSize: '0.68rem',
+                  padding: '8px 12px 4px',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
                   textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
+                  letterSpacing: '0.06em',
                   color: 'var(--text-tertiary, #666)',
                   background: 'rgba(255,255,255,0.02)',
                   position: 'sticky', top: 0,
                   zIndex: 1,
                   display: 'flex', alignItems: 'center', gap: 6,
+                  borderBottom: '1px solid rgba(255,255,255,0.04)',
                 }}>
-                  <span style={{ fontSize: 12 }}>{REGION_ICONS[region] || '🏋'}</span>
                   {t(REGION_KEYS[region]) || region}
-                  <span style={{ opacity: 0.4, marginLeft: 'auto', fontSize: '0.65rem' }}>{exercises.length}</span>
+                  <span style={{ opacity: 0.35, marginLeft: 'auto', fontSize: '0.65rem', fontWeight: 500 }}>{exercises.length}</span>
                 </div>
 
                 {exercises.map(ex => (
@@ -264,31 +264,20 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                     style={{
                       display: 'flex', alignItems: 'center', gap: 8,
                       width: '100%', textAlign: 'left',
-                      padding: '9px 12px 9px 16px',
-                      background: value === ex.key ? 'rgba(0, 245, 212, 0.1)' : 'transparent',
+                      padding: '10px 12px 10px 16px',
+                      background: value === ex.key ? 'rgba(0, 245, 212, 0.08)' : 'transparent',
                       color: value === ex.key ? 'var(--accent, #00f5d4)' : 'var(--text-primary, #f0f0f5)',
                       border: 'none',
-                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      borderBottom: '1px solid rgba(255,255,255,0.03)',
                       cursor: 'pointer',
-                      fontSize: '0.82rem',
+                      fontSize: '0.85rem',
                       fontWeight: value === ex.key ? 600 : 400,
-                      minHeight: 42,
+                      minHeight: 44,
                     }}
                   >
                     <span style={{ flex: 1 }}>{tExercise(ex.key, ex.name)}</span>
                     {ex.tier === 'validated' && (
-                      <span style={{
-                        fontSize: '0.6rem', padding: '1px 5px', borderRadius: 4,
-                        background: 'rgba(0, 230, 118, 0.12)', color: 'var(--bio-green, #00e676)',
-                        fontWeight: 700,
-                      }}>✓</span>
-                    )}
-                    {ex.tier === 'experimental' && (
-                      <span style={{
-                        fontSize: '0.6rem', padding: '1px 5px', borderRadius: 4,
-                        background: 'rgba(255,170,0,0.1)', color: 'var(--yellow, #ffc233)',
-                        fontWeight: 700,
-                      }}>β</span>
+                      <Icon name="check" size={12} color="var(--bio-green, #00e676)" />
                     )}
                   </button>
                 ))}

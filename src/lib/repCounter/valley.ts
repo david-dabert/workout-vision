@@ -8,12 +8,17 @@
  *
  * For each candidate signal (primary + ~28 3D alternatives, each in 2
  * orientations = ~58 candidates), run valley counting and score by:
- *   score = reps × (1 / (1 + CV))
- * where CV = coefficient of variation of inter-valley gaps.
+ *   score = reps × consistency × autocorrelationQuality(signal, detected_period)
  *
- * Real reps have even timing (low CV → high consistency → high score).
- * Noise produces irregular valleys (high CV → low consistency → low score).
- * The signal with the highest score wins.
+ * Three-factor scoring:
+ *   - reps: more reps = higher signal (but capped by overcounting guard)
+ *   - consistency: low CV of inter-valley gaps → even timing → real reps
+ *   - autocorrelationQuality: does the detected period actually dominate the signal?
+ *     An overcounting signal (17 instead of 7) has detected period T/17, but
+ *     the AC peak is at T/7. acQuality(signal, T/17) ≈ 0, killing the false signal.
+ *
+ * This is why sub-cycle oscillations (side-switching noise) cannot win:
+ * they are regular (high consistency) but at the wrong period (low acQuality).
  */
 
 import type { LandmarkArray } from '../types';
@@ -23,6 +28,7 @@ import {
   findValleys,
   interpolateNulls,
   smoothSignal,
+  autocorrelationQuality,
 } from '../valleyCounter';
 
 interface AdaptiveResult {
@@ -62,11 +68,12 @@ export function adaptiveSignalSelect(
   if (priority && priority.length > 0) {
     try {
       const signals3D = extractSignals3D(cleanedLandmarks);
-      // Alternative signals get stronger smoothing (5) to suppress noise,
+      // Alternative signals get stronger smoothing (9) to suppress noise,
       // EXCEPT for fast exercises (battle rope, jumping jacks) where
-      // smoothing=5 kills the rapid oscillations that ARE the reps.
+      // smoothing kills the rapid oscillations that ARE the reps.
+      // 9 frames = 300ms at 30fps — kills bilateral flicker, preserves reps (≥1s).
       const altSmoothWindow = (exercise.minSpacing != null && exercise.minSpacing < 0.2)
-        ? (exercise.smoothing != null ? exercise.smoothing : 1) : 5;
+        ? (exercise.smoothing != null ? exercise.smoothing : 1) : 9;
 
       for (const sigName of priority) {
         const sig = signals3D.find((s: { name: string; values: (number | null)[] }) => s.name === sigName);
@@ -94,12 +101,22 @@ export function adaptiveSignalSelect(
     const cv = mean > 0 ? std / mean : 1;
     primaryConsistency = 1 / (1 + cv);
   }
-  const primaryScore = primaryCount.reps * primaryConsistency;
+  // Three-factor score for primary: reps × consistency × acQuality
+  // acQuality checks whether the detected rep period actually dominates the signal.
+  // A signal with 17 false reps (period = N/17) scores near 0 if the real AC
+  // peak is at N/7 — the physics of the signal proves the count is wrong.
+  const primaryPeriodFrames = primaryCount.reps > 0
+    ? Math.round(primarySmoothed.length / primaryCount.reps)
+    : 0;
+  const primaryAcQuality = primaryPeriodFrames > 0
+    ? Math.max(0.1, autocorrelationQuality(
+        exInv ? primarySmoothed.map((v: number) => -v) : primarySmoothed,
+        primaryPeriodFrames))
+    : 0.1;
+  const primaryScore = primaryCount.reps * primaryConsistency * primaryAcQuality;
 
   // Now score all candidates. An alternative must beat the primary score
-  // by >= 20% margin to override. This prevents marginal noise signals
-  // from winning while still allowing genuine improvements (e.g. hip_Y
-  // for front-view squats where knee angles are compressed in 2D).
+  // by >= 20% margin to override.
   let bestScore = primaryScore;
   let bestCand: { original: number[]; inv: boolean; name: string } = { original: primarySmoothed, inv: exInv, name: 'primary' };
   let bestResult: ValleyResult = primaryCount;
@@ -114,9 +131,11 @@ export function adaptiveSignalSelect(
     if (result.reps === 0) continue;
 
     // Overcounting guard: when primary finds >= 3 reps, reject alternatives
-    // that find more than 1.5× the primary count. Double-counting from
-    // mid-rep oscillation (knee wobble, head bob) typically produces ~2× reps.
-    if (primaryCount.reps >= 3 && result.reps > primaryCount.reps * 1.5) continue;
+    // that find more than 1.3× the primary count. Sub-cycle oscillations
+    // (side-switching, mid-rep wobble) typically produce 1.5-2.5× overcounting.
+    if (primaryCount.reps >= 3 && result.reps > primaryCount.reps * 1.3) continue;
+    // When primary finds fewer than 3, still reject extreme outliers
+    if (primaryCount.reps >= 1 && result.reps > primaryCount.reps * 2) continue;
 
     let consistency = 1;
     if (result.valleyFrames.length >= 2) {
@@ -130,14 +149,26 @@ export function adaptiveSignalSelect(
       consistency = 1 / (1 + cv);
     }
 
-    const score = result.reps * consistency;
+    // Three-factor score: reps × consistency × acQuality
+    // acQuality = how well the detected rep period dominates the signal.
+    // An overcounting signal (e.g. 17 reps instead of 7) has a detected period
+    // that is WRONG — the AC peak is at the true rep period, not 1/17 of the signal.
+    // autocorrelationQuality(signal, detectedPeriod) will be near 0 for the
+    // overcounting period, collapsing the score despite high reps × consistency.
+    const detectedPeriodFrames = result.reps > 0
+      ? Math.round(cand.countSignal.length / result.reps)
+      : 0;
+    const acQuality = detectedPeriodFrames > 0
+      ? Math.max(0.1, autocorrelationQuality(cand.countSignal, detectedPeriodFrames))
+      : 0.1;
+    const score = result.reps * consistency * acQuality;
 
     diagCandidates.push({ name: cand.name, reps: result.reps, score, consistency, winner: false });
 
     // Asymmetric margin: alternatives finding FEWER reps than primary only
     // need 5% margin (helps correct overcounting). Alternatives finding MORE
-    // reps need 20% (prevents noise from inflating the count).
-    const margin = result.reps < primaryCount.reps ? 1.05 : 1.2;
+    // reps need 40% margin (prevents noise from inflating the count).
+    const margin = result.reps < primaryCount.reps ? 1.05 : 1.4;
     if (score > bestScore * margin) {
       bestScore = score;
       bestCand = cand;

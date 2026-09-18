@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react';
 import { assessInjuryRisk } from '../lib/injuryRisk';
 import { useT } from '../lib/LanguageContext';
+import { Icon, RISK_ICON_KEY } from '../lib/icons';
 
 const RISK_COLORS = {
   low: 'var(--accent, #00f5d4)',
   moderate: 'var(--yellow, #ffb836)',
   high: 'var(--red, #ff3b5c)',
-};
-
-const RISK_ICONS = {
-  low: '✓',
-  moderate: '⚠',
-  high: '⚡',
 };
 
 export default function InjuryRiskCard() {
@@ -49,7 +44,7 @@ export default function InjuryRiskCard() {
           background: `${RISK_COLORS[report.overall]}15`,
           color: RISK_COLORS[report.overall],
         }}>
-          {RISK_ICONS[report.overall]}
+          <Icon name={RISK_ICON_KEY[report.overall]} size={18} />
         </span>
         <div style={{ flex: 1 }}>
           <h4 className="insights-card-title" style={{ margin: 0 }}>
@@ -85,7 +80,7 @@ export default function InjuryRiskCard() {
               lineHeight: 1.5,
             }}>
               <span style={{ color: RISK_COLORS[flag.risk], fontWeight: 600 }}>
-                {RISK_ICONS[flag.risk]}{' '}
+                <Icon name={RISK_ICON_KEY[flag.risk]} size={14} style={{ marginRight: 4 }} />{' '}
               </span>
               {flag[lang] || flag.en}
             </div>

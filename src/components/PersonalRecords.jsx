@@ -3,15 +3,7 @@ import { getAllPRs } from '../lib/prSystem';
 import { getCorrectionStats } from '../lib/correctionLog';
 import { EXERCISES } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
-
-const TYPE_ICONS = {
-  heaviest: '🏋️',
-  most_reps: '🔁',
-  best_form: '⭐',
-  longest_set: '⏱️',
-  max_volume: '📊',
-  streak: '🔥',
-};
+import { Icon, PR_ICON_KEY } from '../lib/icons';
 
 export default function PersonalRecords({ onClose }) {
   const { t, tExercise } = useT();
@@ -79,7 +71,7 @@ export default function PersonalRecords({ onClose }) {
               cursor: 'pointer',
             }}
           >
-            {type === 'all' ? t('all') || 'All' : `${TYPE_ICONS[type] || ''} ${t(`pr_${type}`) || type}`}
+            {type === 'all' ? t('all') || 'All' : <><Icon name={PR_ICON_KEY[type]} size={12} style={{ marginRight: 4 }} />{t(`pr_${type}`) || type}</>}
           </button>
         ))}
       </div>
@@ -130,7 +122,7 @@ export default function PersonalRecords({ onClose }) {
                           fontSize: '0.78rem',
                         }}
                       >
-                        <span>{TYPE_ICONS[type] || ''}</span>
+                        <Icon name={PR_ICON_KEY[type]} size={14} color="var(--accent)" />
                         <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
                           {pr.value}{pr.unit === 'kg' ? 'kg' : pr.unit === 'reps' ? '' : pr.unit === 'pts' ? '/100' : pr.unit === 's' ? 's' : pr.unit === 'days' ? 'd' : ''}
                         </span>

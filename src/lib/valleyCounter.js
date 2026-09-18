@@ -126,7 +126,11 @@ export function findValleys(signal, fps, exercise) {
     return frames;
   };
 
-  const minSpacingSec = (exercise.minSpacing != null) ? exercise.minSpacing : 0.5;
+  // Default 1.2s: any controlled rep (0.6s down + 0.6s up minimum) is valid.
+  // Fast exercises (battle rope, jumping jack) set explicit minSpacing ≤ 0.25.
+  // Compound exercises (squat, deadlift) should set 2.0 in exerciseDefinitions.
+  // This default prevents 0.5s noise-valleys that break slow-tempo analysis.
+  const minSpacingSec = (exercise.minSpacing != null) ? exercise.minSpacing : 1.2;
   const generousGap = Math.max(2, Math.round(fps * minSpacingSec));
   const pass1 = filterWithSpacing(generousGap);
 
@@ -237,7 +241,10 @@ export function autocorrelationEdgeCorrect(signal, valleyResult, fps) {
     }
   }
 
-  if (bestLag === 0) return valleyResult;
+  // bestLag is always >= minLag >= 3 (the loop always updates from -Infinity baseline).
+  // Guard on correlation strength: if AC peak is non-positive, the signal lacks
+  // clear periodicity — do not add speculative edge reps.
+  if (bestLag === 0 || bestCorr <= 0) return valleyResult;
 
   const acReps = Math.round(N / bestLag);
   const valleyMedianGap = medianIntervalFrames(valleyResult.valleyFrames);

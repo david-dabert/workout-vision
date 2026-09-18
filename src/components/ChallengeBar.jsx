@@ -60,11 +60,11 @@ export default function ChallengeBar({ challenge, completedResult, onAccept }) {
         <div style={{ display: 'flex', gap: 16, fontSize: 13, marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, marginBottom: 4, color: 'var(--accent)' }}>{t('challenge_you')}</div>
-            <div>{cmp.userReps} reps, {cmp.userScore}/100 {t('form').toLowerCase()}</div>
+            <div>{cmp.userReps} {t('reps')}, {cmp.userScore}/100 {t('form').toLowerCase()}</div>
           </div>
           <div style={{ flex: 1, textAlign: 'right' }}>
             <div style={{ fontWeight: 700, marginBottom: 4, color: 'var(--muted)' }}>{cmp.challengerName}</div>
-            <div>{cmp.challengerReps} reps, {cmp.challengerScore}/100 {t('form').toLowerCase()}</div>
+            <div>{cmp.challengerReps} {t('reps')}, {cmp.challengerScore}/100 {t('form').toLowerCase()}</div>
           </div>
         </div>
         {/* Share response button - closes the viral loop */}
@@ -96,7 +96,7 @@ export default function ChallengeBar({ challenge, completedResult, onAccept }) {
             ? t('link_copied')
             : shareStatus === 'shared'
               ? t('shared')
-              : `Send my result to ${cmp.challengerName}`}
+              : t('challenge_send_result', { name: cmp.challengerName })}
         </button>
       </div>
     );
@@ -169,10 +169,10 @@ export function ChallengeResponseView({ response, onDismiss }) {
   const tie = response.responderScore === response.challengerScore && response.responderReps === response.challengerReps;
 
   const resultLabel = tie
-    ? "It's a tie!"
+    ? t('challenge_tie')
     : responderWins
-      ? `${response.responderName} wins!`
-      : `${response.challengerName} wins!`;
+      ? t('challenge_you_win', { name: response.responderName })
+      : t('challenge_they_win', { name: response.challengerName });
 
   const resultColor = tie
     ? 'rgba(255,184,54,0.15)'
@@ -220,7 +220,7 @@ export function ChallengeResponseView({ response, onDismiss }) {
             {response.challengerScore}<span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--muted)' }}>/100</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>
-            {response.challengerReps} reps
+            {response.challengerReps} {t('reps')}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', color: 'var(--muted)', fontWeight: 700, fontSize: '0.8rem' }}>
@@ -238,7 +238,7 @@ export function ChallengeResponseView({ response, onDismiss }) {
             {response.responderScore}<span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--muted)' }}>/100</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 2 }}>
-            {response.responderReps} reps
+            {response.responderReps} {t('reps')}
           </div>
         </div>
       </div>

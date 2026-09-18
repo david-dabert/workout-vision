@@ -1,11 +1,23 @@
 /**
- * VelocityEngine — The Physics Layer
+ * VelocityEngine — Angular Kinematics from Joint Angles
  *
- * From position at 30fps, computes velocity, acceleration, jerk.
- * Detects concentric/eccentric phases from velocity sign changes.
- * Computes tempo, fatigue (linear regression on rep velocities), angular velocity metrics.
+ * WHAT THIS MEASURES:
+ *   Angular velocity (deg/s) — first derivative of joint angles from MediaPipe.
+ *   This is NOT velocity-based training (VBT). VBT requires linear barbell
+ *   velocity in m/s from a linear position transducer or accelerometer.
+ *   A single phone camera cannot measure linear velocity reliably.
  *
- * Convergence items #2 (VBT) and #6 (concentric/eccentric detection).
+ * WHAT IT CAN DO:
+ *   - Compute angular velocity, acceleration, jerk via Savitzky-Golay derivatives
+ *   - Detect concentric/eccentric phases from velocity sign changes
+ *   - Measure eccentric:concentric tempo ratio (Wilk M et al, 2020, Biology of Sport)
+ *   - Detect fatigue via velocity decay across reps (Baker D, 2001, J Strength Cond Res: >20% = fatigue)
+ *   - Quantify movement smoothness via dimensionless jerk (Hogan & Sternad, 2009, Biol Cybern)
+ *
+ * WHAT IT CANNOT DO:
+ *   - Measure barbell velocity in m/s (requires linear encoder)
+ *   - Estimate power output in watts (requires force plate or encoder)
+ *   - Replace a GymAware, Tendo, or PUSH band for VBT programming
  */
 
 // ---------------------------------------------------------------------------
@@ -159,13 +171,19 @@ export class VelocityEngine {
     // Angular velocity metrics (signal is in degrees, so velocity is deg/s)
     const power = this._computeAngularVelocityMetrics(signedVelocity);
 
-    // Smoothness: normalized jerk metric (spectral arc length inspired)
-    // Normalize jerk by the signal's own velocity range so the metric is scale-invariant
-    const meanAbsJerk = jerk.reduce((a, v) => a + Math.abs(v), 0) / N;
-    const velRange = Math.max(1e-6, Math.max(...signedVelocity.map(Math.abs)));
-    const normalizedJerk = meanAbsJerk / velRange;
-    // Exponential decay: typical normalized jerk ~0.5-5 for exercises
-    const smoothnessScore = Math.exp(-normalizedJerk * 0.7);
+    // Smoothness: dimensionless jerk metric
+    // Based on Hogan & Sternad 2009, Biol Cybern — normalized jerk cost:
+    //   NJ = sqrt(0.5 * ∫jerk² dt * T⁵ / D²)
+    // where T = movement duration, D = movement amplitude.
+    // Lower NJ = smoother. Minimum-jerk trajectory NJ ≈ √(720/2) ≈ 18.97.
+    // We map NJ to 0-1 score: NJ=19 → 1.0, NJ=200+ → ~0.0
+    const duration = N * this._dt;
+    const amplitude = Math.max(1e-6, Math.max(...signal) - Math.min(...signal));
+    const jerkSqIntegral = jerk.reduce((a, v) => a + v * v * this._dt, 0);
+    const NJ = Math.sqrt(0.5 * jerkSqIntegral * Math.pow(duration, 5) / (amplitude * amplitude));
+    // Minimum-jerk baseline ≈ 19 (theoretical optimum for point-to-point movement)
+    // Typical exercise NJ: 30-80 (controlled), 100-300 (jerky/fatigued)
+    const smoothnessScore = Math.max(0, Math.min(1, 1 - (NJ - 19) / 181));
 
     return {
       velocity: signedVelocity,

@@ -1,31 +1,6 @@
 import { useState } from 'react';
-
-const STATUS_CONFIG = {
-  high: {
-    label: 'High confidence',
-    color: 'var(--bio-cyan)',
-    bg: 'rgba(0,245,212,0.12)',
-    border: 'rgba(0,245,212,0.25)',
-  },
-  medium: {
-    label: 'Moderate confidence',
-    color: 'var(--yellow)',
-    bg: 'rgba(255,184,54,0.1)',
-    border: 'rgba(255,184,54,0.25)',
-  },
-  low: {
-    label: 'Low confidence - results may be inaccurate',
-    color: '#ff8c42',
-    bg: 'rgba(255,140,66,0.1)',
-    border: 'rgba(255,140,66,0.25)',
-  },
-  unreliable: {
-    label: 'Unreliable - try a different video',
-    color: 'var(--red)',
-    bg: 'rgba(255,59,92,0.1)',
-    border: 'rgba(255,59,92,0.25)',
-  },
-};
+import { Icon } from '../lib/icons';
+import { useT } from '../lib/LanguageContext';
 
 /**
  * Displays analysis confidence to the user with an expandable details panel.
@@ -35,11 +10,40 @@ const STATUS_CONFIG = {
  * @param {Object} [props.viewpoint] - { angle, confidence } from cameraViewpoint
  */
 export default function AnalysisConfidence({ diagnostics, viewpoint }) {
+  const { t } = useT();
   const [expanded, setExpanded] = useState(false);
 
   if (!diagnostics || !diagnostics.analysis) return null;
 
   const status = diagnostics.analysis.status || 'unreliable';
+
+  const STATUS_CONFIG = {
+    high: {
+      label: t('confidence_high'),
+      color: 'var(--bio-cyan)',
+      bg: 'rgba(0,245,212,0.12)',
+      border: 'rgba(0,245,212,0.25)',
+    },
+    medium: {
+      label: t('confidence_medium'),
+      color: 'var(--yellow)',
+      bg: 'rgba(255,184,54,0.1)',
+      border: 'rgba(255,184,54,0.25)',
+    },
+    low: {
+      label: t('confidence_low'),
+      color: '#ff8c42',
+      bg: 'rgba(255,140,66,0.1)',
+      border: 'rgba(255,140,66,0.25)',
+    },
+    unreliable: {
+      label: t('confidence_unreliable'),
+      color: 'var(--red)',
+      bg: 'rgba(255,59,92,0.1)',
+      border: 'rgba(255,59,92,0.25)',
+    },
+  };
+
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.unreliable;
 
   const poseRate = diagnostics.pose?.detectionRate;
@@ -85,19 +89,19 @@ export default function AnalysisConfidence({ diagnostics, viewpoint }) {
           color: 'var(--text-secondary)', lineHeight: 1.6,
         }}>
           {poseRate != null && (
-            <div>Pose detection rate: <strong style={{ color: 'var(--text-primary)' }}>{(poseRate * 100).toFixed(0)}%</strong></div>
+            <div>{t('confidence_pose_rate')}: <strong style={{ color: 'var(--text-primary)' }}>{(poseRate * 100).toFixed(0)}%</strong></div>
           )}
           {movQ != null && (
-            <div>Movement quality: <strong style={{ color: 'var(--text-primary)' }}>{(movQ * 100).toFixed(0)}%</strong></div>
+            <div>{t('confidence_movement')}: <strong style={{ color: 'var(--text-primary)' }}>{(movQ * 100).toFixed(0)}%</strong></div>
           )}
           <div>
-            Rep confidence: <strong style={{ color: 'var(--text-primary)' }}>{repMachine} confirmed</strong>
+            {t('confidence_rep')}: <strong style={{ color: 'var(--text-primary)' }}>{repMachine} {t('confidence_confirmed')}</strong>
             {repUncertain > 0 && (
-              <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>+ {repUncertain} uncertain</span>
+              <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>+ {repUncertain} {t('confidence_uncertain')}</span>
             )}
           </div>
           {viewpoint && viewpoint.angle !== 'unknown' && (
-            <div>Camera viewpoint: <strong style={{ color: 'var(--text-primary)' }}>{viewpoint.angle}</strong>
+            <div>{t('confidence_viewpoint')}: <strong style={{ color: 'var(--text-primary)' }}>{viewpoint.angle}</strong>
               <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>({(viewpoint.confidence * 100).toFixed(0)}%)</span>
             </div>
           )}
@@ -105,7 +109,7 @@ export default function AnalysisConfidence({ diagnostics, viewpoint }) {
             <div style={{ marginTop: 8 }}>
               {warnings.map((w, i) => (
                 <div key={i} style={{ color: 'var(--yellow)', fontSize: '0.7rem', padding: '2px 0' }}>
-                  &#9888; {w}
+                  <Icon name="warning" size={12} style={{ marginRight: 4 }} /> {w}
                 </div>
               ))}
             </div>
@@ -114,7 +118,7 @@ export default function AnalysisConfidence({ diagnostics, viewpoint }) {
             <div style={{ marginTop: 4 }}>
               {diagnostics.analysis.failureReasons.map((r, i) => (
                 <div key={i} style={{ color: 'var(--red)', fontSize: '0.7rem', padding: '2px 0' }}>
-                  &#10060; {r}
+                  <span style={{ color: 'var(--red)', marginRight: 4, fontWeight: 700 }}>x</span> {r}
                 </div>
               ))}
             </div>

@@ -3,6 +3,7 @@ import { drawPose } from '../lib/poseAnalysis';
 import { gradeClass } from '../lib/utils';
 import { useT, tModule } from '../lib/LanguageContext';
 import { AudioFeedback } from '../lib/AudioFeedback';
+import { drawCanvasIcon } from '../lib/icons';
 
 /**
  * Binary search for the closest frame to a given timestamp.
@@ -144,7 +145,8 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = bannerColor;
-      ctx.fillText(topFb.severity === 'warning' ? '⚠' : topFb.severity === 'correction' ? '→' : '✓', iconX, iconY);
+      const canvasIconName = topFb.severity === 'warning' ? 'warning' : topFb.severity === 'correction' ? 'arrowRight' : 'check';
+      drawCanvasIcon(ctx, canvasIconName, iconX + Math.round(7 * scale), iconY, Math.round(12 * scale), bannerColor);
 
       // Message text
       ctx.font = `${Math.round(11 * scale)}px -apple-system, system-ui, sans-serif`;

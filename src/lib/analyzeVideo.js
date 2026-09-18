@@ -16,6 +16,7 @@
 import { getImageLandmarker, detectPoseImage, extractJointAngles, resetKalmanFilters, selectSubjectPose, disposeAllLandmarkers } from './poseAnalysis';
 import { EXERCISES } from './exercises';
 import { RepCounter } from './repCounter';
+import { ProgressionScore } from './ProgressionScore';
 import { ExerciseAutoDetector } from './exerciseDetector';
 import { HierarchicalDetector } from './hierarchicalDetector';
 import { analyzeSet } from './biomechanics';
@@ -617,12 +618,31 @@ async function buildFullResult({
       ? Math.round(scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length)
       : bioAnalysis?.movementQuality || 0;
 
+  // Compute composite progression score (form 60% + consistency 20% + tempo 20%)
+  // for every analysis, not just recalibration. This is the number that belongs
+  // in the WorkoutHistory and VisionScoreHero, not the raw formScore average.
+  let progressionScore = null;
+  try {
+    const formScores = repHistory.map(r => r.score).filter(s => s != null);
+    const repVelocities = repHistory.map(r => r.velocity).filter(Boolean);
+    if (formScores.length > 0 || reps > 0) {
+      const ps = ProgressionScore.computeSet({
+        formScores,
+        repVelocities,
+        reps,
+        weightKg: weightKg || 0,
+      });
+      progressionScore = ps.score;
+    }
+  } catch (_) {}
+
   const w = weightKg;
   const workout = {
     date: new Date().toISOString(),
     exercise: detectedExercise,
     exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
     reps, duration: Math.round(duration), formScore: avgScore,
+    progressionScore,
     repHistory, weight: w, volume: w * reps, source: 'upload',
     avgRom: bioAnalysis?.rangeOfMotion?.avgDegrees || 0,
     machineReps: reps,
@@ -660,6 +680,7 @@ async function buildFullResult({
     fileName: file.name, exercise: detectedExercise,
     exerciseName: EXERCISES[detectedExercise]?.name || detectedExercise,
     reps, duration: Math.round(duration), analysisTime, formScore: avgScore,
+    progressionScore,
     machineReps: reps, machineFormScore: avgScore,
     hasFormChecks,
     bioAnalysis, coaching, repHistory, progression, baselineComparison, report, diagnostics, confidence,

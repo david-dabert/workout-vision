@@ -8,6 +8,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllWorkouts } from '../lib/storage';
 import { EXERCISES } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
+import { Icon } from '../lib/icons';
 import { translateMuscle } from '../lib/utils';
 import MuscleMap from './MuscleMap';
 
@@ -229,7 +230,7 @@ function buildShareCard(stats, streakCount, lang, t) {
     ctx.font = 'bold 36px system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.textAlign = 'left';
-    ctx.fillText(`🔥 ${streakCount} ${t('wr_canvas_streak')}`, 80, streakY);
+    ctx.fillText(`${streakCount} ${t('wr_canvas_streak')}`, 80, streakY);
   }
 
   // Best callout
@@ -433,7 +434,7 @@ export default function WeeklyReport({ onClose }) {
           {streak > 0 && (
             <SectionCard>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '2rem' }}>🔥</span>
+                <Icon name="fire" size={28} color="var(--accent, #00f5d4)" />
                 <div>
                   <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent)' }}>{streak}</span>
                   <span style={{ marginLeft: 6, fontSize: '0.95rem', color: 'var(--muted)' }}>{t('wr_streak_label')}</span>
@@ -599,7 +600,7 @@ function EmptyState({ t }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', padding: '60px 24px', gap: 16, textAlign: 'center',
     }}>
-      <span style={{ fontSize: '3rem' }}>📊</span>
+      <Icon name="barChart" size={40} color="var(--text-secondary, #888)" />
       <h3 style={{ margin: 0, color: 'var(--text)', fontWeight: 700 }}>{t('wr_empty_title')}</h3>
       <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.9rem' }}>{t('wr_empty_desc')}</p>
     </div>

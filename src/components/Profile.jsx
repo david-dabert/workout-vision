@@ -270,8 +270,8 @@ export default function Profile({ onClose }) {
           </p>
           <div className={s.trainingDaysTags}>
             {[
-              { mode: 'gym', label: t('gym_label') || '🏋️ Gym' },
-              { mode: 'home', label: t('home_label') || '🏠 Home' },
+              { mode: 'gym', label: t('gym_label') || 'Gym' },
+              { mode: 'home', label: t('home_label') || 'Home' },
             ].map(({ mode, label }) => {
               const selected = (profile.gymMode || 'gym') === mode;
               return (

@@ -38,7 +38,11 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: '1.1rem' }}>&#127942;</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
+            <path d="M6 9H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3M18 9h3a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-3" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <path d="M6 4h12v6a6 6 0 0 1-12 0V4z" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <path d="M9 18h6M12 16v2M8 22h8" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          </svg>
           <span style={{
             fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
             letterSpacing: '0.06em', color: 'var(--aurora-violet, #7B61FF)',

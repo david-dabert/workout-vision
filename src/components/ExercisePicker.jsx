@@ -126,6 +126,7 @@ export default function ExercisePicker({ detectorState, onSelect, temporalFeatur
  * Shows when the detector has auto-locked an exercise.
  */
 export function AutoLockBadge({ exercise, confidence, onUnlock }) {
+  const { t, tExercise } = useT();
   const ex = EXERCISES[exercise];
   if (!ex) return null;
 
@@ -142,7 +143,7 @@ export function AutoLockBadge({ exercise, confidence, onUnlock }) {
         fontSize: 13,
       }}
     >
-      <span style={{ color: 'var(--accent, #00f5d4)', fontWeight: 600 }}>{ex.name}</span>
+      <span style={{ color: 'var(--accent, #00f5d4)', fontWeight: 600 }}>{tExercise(exercise, ex.name)}</span>
       <span style={{ fontSize: 10, opacity: 0.6 }}>{Math.round(confidence * 100)}%</span>
       {onUnlock && (
         <button

@@ -122,8 +122,12 @@ export const PEAK_MIN_FRAME_GAP = 3;
 // poseAnalysis.js — ghost pose decay
 // ---------------------------------------------------------------------------
 
+// Reduced from 5 to 2. At 30fps, 5 ghost frames = 167ms of stale landmark plateau.
+// interpolateOccludedLandmarks treats undecayed ghost frames as valid landmarks,
+// creating a flat plateau in the angle signal that shifts valley positions ±2 frames.
+// At 2 frames (67ms), the plateau falls below the 9-frame smoothing window — invisible.
 /** Consecutive ghost frames before visibility starts decaying */
-export const GHOST_DECAY_START = 5;
+export const GHOST_DECAY_START = 2;
 
 /** Visibility decay rate per ghost frame beyond GHOST_DECAY_START */
 export const GHOST_DECAY_RATE = 0.20;

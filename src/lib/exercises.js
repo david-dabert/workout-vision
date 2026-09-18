@@ -101,6 +101,40 @@ export function bestSideMax(angles, leftKey, rightKey, visLeftKey, visRightKey) 
   return bestSideAgg(angles, leftKey, rightKey, visLeftKey, visRightKey, Math.max);
 }
 
+/**
+ * Stable side selection for signal extraction (rep counting).
+ *
+ * Unlike bestSide (which uses Math.min), this picks the side with higher
+ * landmark visibility. When both sides are well-visible and similar, it
+ * averages them. This eliminates false oscillations caused by the min-signal
+ * switching which side is "worse" mid-rep.
+ *
+ * Use this for getValue (signal extraction). Keep bestSide for form checks
+ * where the conservative (Math.min) behavior is correct.
+ */
+export function bestSideStable(angles, leftKey, rightKey, visLeftKey, visRightKey) {
+  const lv = angles[visLeftKey] || 0;
+  const rv = angles[visRightKey] || 0;
+  const left = angles[leftKey];
+  const right = angles[rightKey];
+  const leftOk = lv >= VIS_THRESHOLD && left != null && !isNaN(left);
+  const rightOk = rv >= VIS_THRESHOLD && right != null && !isNaN(right);
+  if (leftOk && rightOk) {
+    // Both visible: pick higher-visibility side, or average if similar
+    const visDiff = Math.abs(lv - rv);
+    if (visDiff < 0.1) return (left + right) / 2;
+    return lv > rv ? left : right;
+  }
+  if (leftOk) return left;
+  if (rightOk) return right;
+  if (left != null && !isNaN(left) && right != null && !isNaN(right)) {
+    return lv >= rv ? left : right;
+  }
+  if (left != null && !isNaN(left)) return left;
+  if (right != null && !isNaN(right)) return right;
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Exercise database — compiled from declarative DSL definitions
 // ---------------------------------------------------------------------------

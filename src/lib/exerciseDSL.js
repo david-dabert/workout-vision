@@ -41,13 +41,16 @@
  * }
  */
 
-import { bestSide, bestSideMax, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
+import { bestSide, bestSideMax, bestSideStable, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
 
 // ─── Value function compiler ───
+// getValue uses bestSideStable (higher-visibility side or average) to produce
+// a smooth signal for rep counting. Form checks still use bestSide (Math.min)
+// to conservatively flag the worse side.
 
 const VALUE_COMPILERS = {
   bestSide: (spec) => (angles) =>
-    bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
+    bestSideStable(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
 
   bestSideMax: (spec) => (angles) =>
     bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
@@ -246,10 +249,12 @@ function compileExercise(dsl) {
       const compiler = CHECK_COMPILERS[fc.type || 'custom'];
       if (!compiler) throw new Error(`Unknown check type: ${fc.type} in ${dsl.name}`);
       const compiled = compiler(fc);
-      // Preserve phase annotation for phase-aware form check evaluation
+      // Preserve annotations needed by scoring.ts
       if (fc.phase) compiled.phase = fc.phase;
-      // Preserve viewpoint annotation for camera-angle-aware form check filtering
       if (fc.viewpoint) compiled.viewpoint = fc.viewpoint;
+      // type is needed to distinguish ROM checks (below/above = peak quality)
+      // from consistency checks (range/symmetry/custom = average quality)
+      if (fc.type) compiled.type = fc.type;
       return compiled;
     });
 

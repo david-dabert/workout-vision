@@ -6,6 +6,8 @@
  * @param {Object} props.assessment - from VideoSuitabilityDetector.assess()
  * @param {boolean} [props.compact] - smaller variant for inline use
  */
+import { Icon } from '../lib/icons';
+
 export default function VideoSuitabilityBanner({ assessment, compact }) {
   if (!assessment) return null;
 
@@ -22,7 +24,7 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
         fontSize: '0.75rem', color: 'var(--bio-cyan)',
         marginBottom: 10,
       }}>
-        <span style={{ flexShrink: 0 }}>&#10003;</span>
+        <Icon name="check" size={14} />
         <span>Video looks suitable for analysis</span>
       </div>
     );
@@ -40,7 +42,7 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
           display: 'flex', alignItems: 'center', gap: 8,
           fontSize: '0.78rem', color: 'var(--yellow)', fontWeight: 600,
         }}>
-          <span style={{ flexShrink: 0 }}>&#9888;&#65039;</span>
+          <Icon name="warning" size={16} />
           <span>Some movement may be obscured. Results may vary.</span>
         </div>
         {!compact && issues && issues.length > 0 && (
@@ -68,7 +70,7 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
         display: 'flex', alignItems: 'center', gap: 8,
         fontSize: '0.78rem', color: 'var(--red)', fontWeight: 600,
       }}>
-        <span style={{ flexShrink: 0 }}>&#10060;</span>
+        <span style={{ flexShrink: 0, fontWeight: 800 }}>&#215;</span>
         <span>Video may not be suitable for analysis. Try filming from the side with full body visible.</span>
       </div>
       {!compact && issues && issues.length > 0 && (

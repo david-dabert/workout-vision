@@ -11,6 +11,7 @@ import { updateWorkout } from '../lib/storage';
 import { hapticTap, hapticPR, hapticLight } from '../lib/haptics';
 import { detectPRs, detectFormRegression } from '../lib/prSystem';
 import { detectBadges } from '../lib/badges';
+import { Icon, SEVERITY_ICON_KEY } from '../lib/icons';
 import { estimateOneRepMax } from '../lib/coach';
 import { recalibrateAnalysis } from '../lib/recalibrate';
 import { logCorrection } from '../lib/correctionLog';
@@ -74,7 +75,7 @@ function generateProgressionNote(progression, t) {
     if (romChange < -5) return t('prog_rom_down', { change: romChange, date: dateStr });
   }
   if (progression.currentScore > prevScore + 5) return t('prog_form_up', { change: Math.round(progression.currentScore - prevScore), date: dateStr });
-  if (progression.currentScore < prevScore - 10) return t('prog_form_down', { date: dateStr });
+  if (progression.currentScore < prevScore - 5) return t('prog_form_down', { date: dateStr });
   return t('prog_consistent', { date: dateStr });
 }
 
@@ -381,14 +382,14 @@ function ResultCard({ result, onReplay }) {
       {/* Personal Best / PR banners — these are celebration moments, keep above fold */}
       {baselineComparison?.overallForm?.isPersonalBest && (
         <div className={s.personalBestBanner}>
-          <span className={s.personalBestIcon}>&#10024;</span>
+          <span className={s.personalBestIcon}><Icon name="star" size={16} /></span>
           <span className={s.personalBestLabel}>{t('new_personal_best')}</span>
         </div>
       )}
 
       {achievedPRs.length > 0 && (
         <div className={s.prBanner}>
-          <span className={s.prBannerIcon}>&#127942;</span>
+          <span className={s.prBannerIcon}><Icon name="trophy" size={18} /></span>
           <span className={s.prBannerTitle}>{t('pr_banner_title')}</span>
           <div className={s.prTagList}>
             {achievedPRs.map((pr, i) => {
@@ -419,7 +420,6 @@ function ResultCard({ result, onReplay }) {
           <div className={s.badgeGrid}>
             {earnedBadges.map((badge) => (
               <div key={badge.id} className={`${s.badgeChip} ${s[`badgeTier_${badge.tier}`]}`}>
-                <span className={s.badgeIcon}>{badge.icon}</span>
                 <span className={s.badgeLabel}>{t(badge.id)}</span>
               </div>
             ))}
@@ -446,7 +446,7 @@ function ResultCard({ result, onReplay }) {
           return (
             <div className={s.surfacedCues}>
               <div className={`${s.surfacedCue} ${s.surfacedCueInsight}`}>
-                <span className={s.surfacedCueIcon}>&#9432;</span>
+                <span className={s.surfacedCueIcon}><Icon name="info" size={14} /></span>
                 <span>{coachingInsight}</span>
               </div>
             </div>
@@ -457,7 +457,7 @@ function ResultCard({ result, onReplay }) {
           <div className={s.surfacedCues}>
             {topIssues.map((issue, i) => (
               <div key={i} className={`${s.surfacedCue} ${i === 0 ? s.surfacedCuePrimary : s.surfacedCueSecondary}`}>
-                <span className={s.surfacedCueIcon}>{i === 0 ? '\u26A0' : '\u2139'}</span>
+                <span className={s.surfacedCueIcon}><Icon name={i === 0 ? 'warning' : 'info'} size={14} /></span>
                 <span>{issue.text}</span>
                 <span className={s.surfacedCueCount}>{issue.count}/{issue.total}</span>
               </div>
@@ -521,7 +521,7 @@ function ResultCard({ result, onReplay }) {
       {/* Form Regression Warning */}
       {formRegression && (
         <div className={s.formRegressionBanner}>
-          <span className={s.formRegressionIcon}>&#9888;</span>
+          <span className={s.formRegressionIcon}><Icon name="warning" size={16} /></span>
           <div>
             <span className={s.formRegressionTitle}>{t('form_regression_title')}</span>
             <span className={s.formRegressionMessage}>
@@ -555,7 +555,7 @@ function ResultCard({ result, onReplay }) {
               <div className={s.coachingFeedbackList}>
                 <div className={`${s.coachingFeedbackItem} ${s[`severity_${topFb.severity}`]} ${s.coachingTopItem}`}>
                   <span className={s.coachingFeedbackIcon}>
-                    {topFb.severity === 'warning' ? '⚠' : topFb.severity === 'correction' ? '→' : topFb.severity === 'positive' ? '✓' : 'ℹ'}
+                    <Icon name={SEVERITY_ICON_KEY[topFb.severity] || 'info'} size={14} />
                   </span>
                   <p className={s.coachingFeedbackText}>{topFb.messageKey ? t(topFb.messageKey, topFb.messageParams) : topFb.message}</p>
                 </div>
@@ -570,7 +570,7 @@ function ResultCard({ result, onReplay }) {
                 {showAllCoaching && rest.map((fb, i) => (
                   <div key={i + 1} className={`${s.coachingFeedbackItem} ${s[`severity_${fb.severity}`]}`}>
                     <span className={s.coachingFeedbackIcon}>
-                      {fb.severity === 'warning' ? '⚠' : fb.severity === 'correction' ? '→' : fb.severity === 'positive' ? '✓' : 'ℹ'}
+                      <Icon name={SEVERITY_ICON_KEY[fb.severity] || 'info'} size={14} />
                     </span>
                     <p className={s.coachingFeedbackText}>{fb.messageKey ? t(fb.messageKey, fb.messageParams) : fb.message}</p>
                   </div>
@@ -974,14 +974,14 @@ function ResultCard({ result, onReplay }) {
       {showDeepData && (<div id="result-deep-data">
       {(recalData?.diagnostics?.progression || result.diagnostics?.progression)?.score > 0 && (() => {
         const prog = recalData?.diagnostics?.progression || result.diagnostics.progression;
-        const gradeColor = prog.score >= 750 ? 'var(--accent)' : prog.score >= 500 ? 'var(--yellow)' : 'var(--red)';
+        const gradeColor = prog.score >= 75 ? 'var(--accent)' : prog.score >= 60 ? 'var(--yellow)' : 'var(--red)';
         return (
           <div className={s.progressionScoreCard}>
             <div className={s.progressionScoreHeader}>
-              <span className={s.progressionScoreLabel}>{t('progression_score')}</span>
+              <span className={s.progressionScoreLabel}>{t('movement_quality')}</span>
               <div className={s.progressionScoreValueGroup}>
                 <span className={s.progressionScoreValue} style={{ color: gradeColor }}>{prog.score}</span>
-                <span className={s.progressionGradeLabel} style={{ color: gradeColor }}>{prog.grade.label}</span>
+                <span className={s.progressionGradeLabel} style={{ color: gradeColor, fontSize: '0.7rem' }}>/100</span>
               </div>
             </div>
             <div className={s.progressionGradeTitle}>
@@ -989,15 +989,15 @@ function ResultCard({ result, onReplay }) {
             </div>
             <div className={s.progressionComponentGrid}>
               {[
-                { label: t('form_label'), val: prog.components.form, max: 250 },
-                { label: t('consistency_label'), val: prog.components.consistency, max: 200 },
-                { label: t('tempo_label'), val: prog.components.tempo, max: 150 },
+                { label: t('form_label'), val: prog.components.form, max: 100 },
+                { label: t('consistency_label'), val: prog.components.consistency, max: 100 },
+                { label: t('tempo_label'), val: prog.components.tempo, max: 100 },
               ].map(c => (
                 <div key={c.label} className={s.progressionComponentCell}>
                   <div className={s.progressionComponentBarTrack}>
                     <div className={s.progressionComponentBarFill} style={{ width: `${(c.val / c.max) * 100}%`, background: gradeColor }} />
                   </div>
-                  <span className={s.progressionComponentLabel}>{c.label}</span>
+                  <span className={s.progressionComponentLabel}>{c.label} {c.val}/100</span>
                 </div>
               ))}
             </div>

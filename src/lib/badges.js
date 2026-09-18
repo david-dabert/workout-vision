@@ -12,7 +12,7 @@ import { getAllWorkouts } from './storage';
 /**
  * @typedef {Object} Badge
  * @property {string} id       - unique key (used for translation + dedup)
- * @property {string} icon     - emoji icon
+ * @property {string} icon     - icon key (maps to SVG via BADGE_ICON_KEY in icons.jsx)
  * @property {'gold'|'silver'|'bronze'|'accent'} tier - visual tier for styling
  */
 
@@ -44,31 +44,31 @@ export async function detectBadges(result, allWorkouts) {
 
   // Perfect Form: score >= 95
   if (score >= 95) {
-    badges.push({ id: 'badge_perfect_form', icon: '\u{1F451}', tier: 'gold' }); // 👑
+    badges.push({ id: 'badge_perfect_form', icon: 'crown', tier: 'gold' });
   }
 
   // New Exercise Unlocked: first time doing this exercise
   if (!pastExercises.has(exercise) || pastForExercise.length === 0) {
-    badges.push({ id: 'badge_new_exercise', icon: '\u{1F513}', tier: 'gold' }); // 🔓
+    badges.push({ id: 'badge_new_exercise', icon: 'unlock', tier: 'gold' });
   }
 
   // Century Club: 100+ total workouts
   if (workouts.length >= 100) {
-    badges.push({ id: 'badge_century_club', icon: '\u{1F4AF}', tier: 'gold' }); // 💯
+    badges.push({ id: 'badge_century_club', icon: 'hundred', tier: 'gold' });
   }
 
   // ── TIER 2: Silver badges (notable achievements) ──
 
   // A-Grade Club: score >= 90
   if (score >= 90 && score < 95) {
-    badges.push({ id: 'badge_a_grade', icon: '\u{2B50}', tier: 'silver' }); // ⭐
+    badges.push({ id: 'badge_a_grade', icon: 'star', tier: 'silver' });
   }
 
   // Form Breakthrough: beat your personal best form score for this exercise
   if (pastForExercise.length > 0) {
     const prevBest = Math.max(...pastForExercise.map(w => w.formScore || 0));
     if (score > prevBest && prevBest > 0) {
-      badges.push({ id: 'badge_form_breakthrough', icon: '\u{1F4C8}', tier: 'silver' }); // 📈
+      badges.push({ id: 'badge_form_breakthrough', icon: 'chartUp', tier: 'silver' });
     }
   }
 
@@ -78,21 +78,21 @@ export async function detectBadges(result, allWorkouts) {
     if (scores.length >= 4) {
       const variance = Math.max(...scores) - Math.min(...scores);
       if (variance <= 10) {
-        badges.push({ id: 'badge_iron_consistency', icon: '\u{1F3AF}', tier: 'silver' }); // 🎯
+        badges.push({ id: 'badge_iron_consistency', icon: 'target', tier: 'silver' });
       }
     }
   }
 
   // Symmetry Master: asymmetry score < 5%
   if (bio.asymmetry && bio.asymmetry.score < 5 && bio.asymmetry.score >= 0) {
-    badges.push({ id: 'badge_symmetry_master', icon: '\u{2696}\u{FE0F}', tier: 'silver' }); // ⚖️
+    badges.push({ id: 'badge_symmetry_master', icon: 'scale', tier: 'silver' });
   }
 
   // ── TIER 3: Bronze badges (encouragement, common) ──
 
   // Endurance Set: 12+ reps in a single set
   if (reps >= 12) {
-    badges.push({ id: 'badge_endurance_set', icon: '\u{1F525}', tier: 'bronze' }); // 🔥
+    badges.push({ id: 'badge_endurance_set', icon: 'fire', tier: 'bronze' });
   }
 
   // Slow & Controlled: average eccentric tempo 2-4s (hypertrophy range)
@@ -101,14 +101,14 @@ export async function detectBadges(result, allWorkouts) {
     if (eccTimes.length >= 3) {
       const avgEcc = eccTimes.reduce((a, b) => a + b, 0) / eccTimes.length;
       if (avgEcc >= 2.0 && avgEcc <= 4.0) {
-        badges.push({ id: 'badge_slow_controlled', icon: '\u{1F9CA}', tier: 'bronze' }); // 🧊
+        badges.push({ id: 'badge_slow_controlled', icon: 'snowflake', tier: 'bronze' });
       }
     }
   }
 
   // Full ROM: ROM consistency >= 90%
   if (bio.rangeOfMotion && bio.rangeOfMotion.consistency >= 90) {
-    badges.push({ id: 'badge_full_rom', icon: '\u{1F4AA}', tier: 'bronze' }); // 💪
+    badges.push({ id: 'badge_full_rom', icon: 'muscle', tier: 'bronze' });
   }
 
   // Comeback: form improved 10+ pts from last session of same exercise
@@ -118,7 +118,7 @@ export async function detectBadges(result, allWorkouts) {
     );
     const lastScore = sorted[0]?.formScore || 0;
     if (lastScore > 0 && score >= lastScore + 10) {
-      badges.push({ id: 'badge_comeback', icon: '\u{1F4AA}', tier: 'bronze' }); // 💪
+      badges.push({ id: 'badge_comeback', icon: 'chartUp', tier: 'bronze' });
     }
   }
 
@@ -127,17 +127,17 @@ export async function detectBadges(result, allWorkouts) {
   // Exercise Explorer: 5+ different exercises
   const uniqueWithCurrent = new Set([...pastExercises, exercise]);
   if (uniqueWithCurrent.size >= 5) {
-    badges.push({ id: 'badge_explorer', icon: '\u{1F30D}', tier: 'accent' }); // 🌍
+    badges.push({ id: 'badge_explorer', icon: 'globe', tier: 'accent' });
   }
 
   // Variety Pack: 10+ different exercises
   if (uniqueWithCurrent.size >= 10) {
-    badges.push({ id: 'badge_variety_pack', icon: '\u{1F3C6}', tier: 'accent' }); // 🏆
+    badges.push({ id: 'badge_variety_pack', icon: 'trophy', tier: 'accent' });
   }
 
   // Dedicated: 5+ sessions of the same exercise
   if (pastForExercise.length >= 4) {
-    badges.push({ id: 'badge_dedicated', icon: '\u{1F48E}', tier: 'accent' }); // 💎
+    badges.push({ id: 'badge_dedicated', icon: 'gem', tier: 'accent' });
   }
 
   return badges;

@@ -423,7 +423,7 @@ export async function downloadShareCard(result, videoEl) {
  */
 export function getChallengeText(result) {
   const grade = gradeFromScore(result.formScore);
-  return `I just scored ${result.formScore}/100 (${grade}) on ${result.exerciseName} (${result.reps} reps). Can you beat my form? 💪 Try WorkoutVision → ${APP_URL}`;
+  return `I just scored ${result.formScore}/100 (${grade}) on ${result.exerciseName} (${result.reps} reps). Can you beat my form? Try WorkoutVision → ${APP_URL}`;
 }
 
 /**
@@ -533,9 +533,11 @@ function drawAnimatedBackground(ctx, w, h) {
  * @returns {Promise<Blob>} WebM video blob
  */
 export async function generateAnimatedShareCard(result, onProgress) {
-  // Respect prefers-reduced-motion: fall back to static card
+  // Respect prefers-reduced-motion: fall back to static card (convert data URL to Blob for consistent return type)
   if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return generateShareCard(result);
+    const dataUrl = await generateShareCard(result);
+    const res = await fetch(dataUrl);
+    return res.blob();
   }
 
   const canvas = document.createElement('canvas');

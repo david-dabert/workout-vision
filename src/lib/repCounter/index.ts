@@ -373,11 +373,15 @@ export class RepCounter {
       return a ? ex.getValue(a, lm) : null;
     });
 
-    // Interpolate nulls, then smooth to eliminate bestSide oscillation noise.
+    // Interpolate nulls, then smooth to eliminate side-switching noise.
     // Exercises can override via smoothing property. Very fast exercises
     // (minSpacing < 0.2) get reduced smoothing to preserve rapid peaks.
+    // Window of 9 frames = 300ms at 30fps. Kills side-switching oscillations
+    // (which flip every 1-5 frames) while preserving rep-scale motion (1-4s).
+    // Increased from 5 to 9 to eliminate the root cause of sub-rep false valleys:
+    // bilateral flicker that survives 5-frame smoothing but not 9-frame.
     const smoothWindow = ex.smoothing != null ? ex.smoothing
-      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 3;
+      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 9;
     let interpolated: number[] = smoothSignal(interpolateNulls(rawValues), smoothWindow);
 
     // ── Step 1b: Adaptive multi-signal selection ──
@@ -409,6 +413,41 @@ export class RepCounter {
     // Runs after AC correction -- if AC already added a rep, the edge gap
     // shrinks below threshold so template won't double-fire.
     result = this._templateEdgeCorrect(signal, result);
+
+    // ── Step 3b: Autocorrelation sanity check ──
+    // If valley counting found significantly more reps than the signal's
+    // dominant period suggests, the valleys are likely noise (sub-cycle
+    // oscillations, side-switching artifacts). Re-count with the AC period
+    // as minimum spacing to suppress false valleys.
+    if (result.reps >= 3) {
+      const acPeriod = this._estimateDominantPeriod(signal);
+      if (acPeriod > 0) {
+        // Use VALLEY SPAN (first to last valley) not total signal length.
+        // Total signal includes setup and cooldown frames that aren't reps.
+        // At 30fps, a 10-rep exercise at 3s/rep = 300 rep-frames + 100-200 non-rep frames.
+        // signal.length / acPeriod would overccount by 30-60%.
+        // Valley span correctly captures only the exercise portion of the signal.
+        const valleySpan = result.valleyFrames.length >= 2
+          ? result.valleyFrames[result.valleyFrames.length - 1] - result.valleyFrames[0]
+          : signal.length;
+        const acExpectedReps = Math.max(1, Math.round(valleySpan / acPeriod) + 1);
+        // If valley count exceeds AC estimate by >40%, trust the AC period
+        if (result.reps > acExpectedReps * 1.4 && acExpectedReps >= 2) {
+          // Re-count with AC period as minimum spacing (in seconds)
+          const acSpacingSec = acPeriod / this._fps;
+          const exWithStricterSpacing = {
+            ...ex,
+            minSpacing: Math.max(ex.minSpacing || 0.5, acSpacingSec * 0.7),
+            amplitudeRatio: Math.max(ex.amplitudeRatio || 0.25, 0.30),
+          };
+          const strictResult = findValleys(signal, this._fps, exWithStricterSpacing);
+          // Only accept if the stricter count is closer to AC estimate
+          if (Math.abs(strictResult.reps - acExpectedReps) < Math.abs(result.reps - acExpectedReps)) {
+            result = strictResult;
+          }
+        }
+      }
+    }
 
     if (result.reps === 0) {
       // Valley counting found nothing. Keep FSM reps if any were counted
@@ -525,6 +564,44 @@ export class RepCounter {
     this._templateEdgeDiag = result._templateDiag || null;
     const { _templateDiag, ...clean } = result;
     return clean;
+  }
+
+  /**
+   * Estimate the dominant period of the signal via autocorrelation.
+   * Returns period in frames, or 0 if no clear periodicity.
+   */
+  private _estimateDominantPeriod(signal: number[]): number {
+    const N = signal.length;
+    if (N < 12) return 0;
+
+    let mean = 0;
+    for (let i = 0; i < N; i++) mean += signal[i];
+    mean /= N;
+
+    let variance = 0;
+    for (let i = 0; i < N; i++) variance += (signal[i] - mean) ** 2;
+    variance /= N;
+    if (variance < 1e-8) return 0;
+
+    const minLag = Math.max(3, Math.round(this._fps * 0.5));
+    const maxLag = Math.min(Math.floor(N / 2), Math.round(this._fps * 8));
+
+    let bestLag = 0;
+    let bestCorr = -Infinity;
+    for (let lag = minLag; lag <= maxLag; lag++) {
+      let corr = 0;
+      for (let t = 0; t < N - lag; t++) {
+        corr += (signal[t] - mean) * (signal[t + lag] - mean);
+      }
+      corr /= ((N - lag) * variance);
+      if (corr > bestCorr) {
+        bestCorr = corr;
+        bestLag = lag;
+      }
+    }
+
+    // Require minimum correlation strength to trust the period
+    return bestCorr > 0.3 ? bestLag : 0;
   }
 
   /**

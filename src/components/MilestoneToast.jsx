@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getMilestones } from '../lib/storage';
 import { useT } from '../lib/LanguageContext';
+import { Icon, MILESTONE_ICON_KEY } from '../lib/icons';
 
 const MILESTONE_KEYS = [
-  { key: 'first_workout', icon: '🎯' },
-  { key: 'ten_workouts', icon: '🔟' },
-  { key: 'twenty_five_workouts', icon: '🏅' },
-  { key: 'fifty_workouts', icon: '🏆' },
-  { key: 'first_a_grade', icon: '⭐' },
-  { key: 'five_day_streak', icon: '🔥' },
-  { key: 'form_improved', icon: '📈' },
+  { key: 'first_workout' },
+  { key: 'ten_workouts' },
+  { key: 'twenty_five_workouts' },
+  { key: 'fifty_workouts' },
+  { key: 'first_a_grade' },
+  { key: 'five_day_streak' },
+  { key: 'form_improved' },
 ];
 
 const SEEN_KEY = 'wv-milestones-seen';
@@ -26,12 +27,12 @@ export default function MilestoneToast() {
 
       const seen = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
       // Find the first newly achieved milestone not yet shown
-      for (const { key, icon } of MILESTONE_KEYS) {
+      for (const { key } of MILESTONE_KEYS) {
         if (milestones[key] && !seen[key]) {
           seen[key] = true;
           localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
           const label = t(`milestone_${key}`) || key.replace(/_/g, ' ');
-          setToast({ icon, label });
+          setToast({ iconKey: MILESTONE_ICON_KEY[key] || 'star', label });
           setVisible(true);
           setTimeout(() => setVisible(false), 4000);
           break;
@@ -65,7 +66,7 @@ export default function MilestoneToast() {
         maxWidth: 'calc(100vw - 32px)',
       }}
     >
-      <span style={{ fontSize: 24 }}>{toast.icon}</span>
+      <Icon name={toast.iconKey} size={24} color="var(--accent, #00f5d4)" />
       <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.88rem' }}>
         {toast.label}
       </span>
