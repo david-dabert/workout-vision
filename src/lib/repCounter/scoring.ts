@@ -223,9 +223,12 @@ export function buildFormHistoryFromCycles(
         return { name: fc.name, passed, quality: Math.round(quality * 100) / 100, bad: fc.bad, severity: fc.severity };
       });
 
-      // Weighted quality score: major checks count 2x, minor 1x
-      const totalWeight = formResults!.reduce((sum: number, f: FormResultEntry) => sum + (f.severity === 'major' ? 2 : 1), 0);
-      const weightedQuality = formResults!.reduce((sum: number, f: FormResultEntry) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
+      // Weighted quality score: major checks count 2x, minor 1x.
+      // Skipped checks (injury exclusions, viewpoint mismatches) are excluded
+      // entirely — they must NOT inflate the score by contributing quality=1.
+      const activeResults = formResults!.filter((f: FormResultEntry) => !f.skipped);
+      const totalWeight = activeResults.reduce((sum: number, f: FormResultEntry) => sum + (f.severity === 'major' ? 2 : 1), 0);
+      const weightedQuality = activeResults.reduce((sum: number, f: FormResultEntry) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
       score = totalWeight > 0 ? Math.round((weightedQuality / totalWeight) * 100) : null;
       for (const f of formResults!) {
         if (!f.passed) issues.push(f.bad || '');

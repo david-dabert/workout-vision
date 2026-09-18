@@ -347,10 +347,12 @@ function ResultCard({ result, onReplay }) {
         <div className={s.heroStatDivider} />
         <div className={s.heroStat}>
           <span className={s.heroStatValue}>
-            {result.weight > 0 ? `${result.weight * displayReps}` : displayReps}
-            <span className={s.volumeUnit}>{result.weight > 0 ? 'kg' : t('reps')}</span>
+            {result.weight > 0
+              ? <>{Math.round(result.weight * displayReps)}<span className={s.volumeUnit}>kg</span></>
+              : <>{result.weight || 0}<span className={s.volumeUnit}>kg</span></>
+            }
           </span>
-          <span className={s.heroStatLabel}>{t('volume').toUpperCase()}</span>
+          <span className={s.heroStatLabel}>{t('weight_label') ? t('weight_label').toUpperCase() : 'WEIGHT'}</span>
         </div>
       </div>
 

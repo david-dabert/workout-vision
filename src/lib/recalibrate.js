@@ -170,7 +170,7 @@ function buildCyclesFromValleys(valleys, signal, totalFrames) {
 function evaluateFormForCycle(cycle, landmarks, exercise) {
   const checks = exercise.formChecks || [];
   if (checks.length === 0) {
-    return { score: 70, issues: [], startFrame: cycle.start, endFrame: cycle.end, bottomFrame: Math.round((cycle.start + cycle.end) / 2), rom: cycle.amplitude };
+    return { score: null, issues: [], startFrame: cycle.start, endFrame: cycle.end, bottomFrame: Math.round((cycle.start + cycle.end) / 2), rom: cycle.amplitude };
   }
 
   const startFrame = cycle.start;
@@ -204,7 +204,7 @@ function evaluateFormForCycle(cycle, landmarks, exercise) {
 
   // Weighted average of continuous quality scores (matching RepCounter logic)
   const totalQuality = formResults.reduce((s, r) => s + r.quality, 0);
-  const score = formResults.length > 0 ? Math.round((totalQuality / formResults.length) * 100) : 70;
+  const score = formResults.length > 0 ? Math.round((totalQuality / formResults.length) * 100) : null;
   const issues = formResults.filter(r => !r.passed).map(r => r.name);
 
   return {

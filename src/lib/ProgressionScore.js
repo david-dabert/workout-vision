@@ -59,12 +59,15 @@ export class ProgressionScore {
 
     // ── Component 1: Form Quality (max 250) ──
     // Average form score with diminishing returns above 90
-    const avgForm = formScores.length > 0
-      ? formScores.reduce((a, b) => a + b, 0) / formScores.length
-      : 70; // Default if no form checks
+    const validFormScores = formScores.filter(s => s != null);
+    const avgForm = validFormScores.length > 0
+      ? validFormScores.reduce((a, b) => a + b, 0) / validFormScores.length
+      : null; // No form data = no form component
 
     let formComponent;
-    if (avgForm >= 90) {
+    if (avgForm == null) {
+      formComponent = 0; // No form data = no form points
+    } else if (avgForm >= 90) {
       formComponent = 225 + (avgForm - 90) * 2.5; // 225-250 for 90-100
     } else if (avgForm >= 70) {
       formComponent = 150 + (avgForm - 70) * 3.75; // 150-225 for 70-90
