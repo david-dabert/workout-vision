@@ -2,7 +2,7 @@
 // Strategy: cache app shell on install, network-first for navigation,
 // cache-first for static assets and MediaPipe WASM files.
 
-const CACHE_NAME = 'wv-va71783cc';
+const CACHE_NAME = 'wv-vb6246dc2';
 const APP_SHELL = [
   '/workout-vision/',
   '/workout-vision/manifest.json',
@@ -14,22 +14,22 @@ const APP_SHELL = [
 ];
 // ── Auto-injected by inject-sw-precache.js ──
 const PRECACHE_ASSETS = [
-  "/workout-vision/assets/ExerciseSelector-D8y9mbjy.js",
+  "/workout-vision/assets/ExerciseSelector-DeM312L3.js",
   "/workout-vision/assets/LiveCapture-Ck9wN2-V.js",
-  "/workout-vision/assets/ManualLog-DH5hK10g.js",
+  "/workout-vision/assets/ManualLog-afTCrWLx.js",
   "/workout-vision/assets/Onboarding-C-cG4Ua8.js",
-  "/workout-vision/assets/PersonalRecords-CmZcKEzw.js",
-  "/workout-vision/assets/Profile-B0ayDLoy.js",
+  "/workout-vision/assets/PersonalRecords-Dbf8YJFr.js",
+  "/workout-vision/assets/Profile-B6MPncdE.js",
   "/workout-vision/assets/Profile-DSM60F3w.css",
   "/workout-vision/assets/RestTimer-D-40sIG4.css",
   "/workout-vision/assets/RestTimer-Dh0M86pm.js",
   "/workout-vision/assets/Validate-935Y_SOq.js",
   "/workout-vision/assets/Validate-D51oBttc.css",
   "/workout-vision/assets/VideoUpload-Cx2vq5w1.css",
-  "/workout-vision/assets/VideoUpload-DzSgckIg.js",
-  "/workout-vision/assets/WeeklyReport-vsRpou6O.js",
-  "/workout-vision/assets/WorkoutHistory-BGH-WWTo.js",
+  "/workout-vision/assets/VideoUpload-WhcqktG2.js",
+  "/workout-vision/assets/WeeklyReport-QNtVp4HD.js",
   "/workout-vision/assets/WorkoutHistory-BWSnJ6m8.css",
+  "/workout-vision/assets/WorkoutHistory-zIPZ6ZSY.js",
   "/workout-vision/assets/biomechanics-CZipYXY0.js",
   "/workout-vision/assets/correctionLog-CmRCgcUw.js",
   "/workout-vision/assets/exerciseDetector-DYb47XmA.js",
@@ -38,7 +38,7 @@ const PRECACHE_ASSETS = [
   "/workout-vision/assets/gpuBenchmark-CWotvkM8.js",
   "/workout-vision/assets/i18n-Cne2JNyh.js",
   "/workout-vision/assets/index-BvQnUhP1.css",
-  "/workout-vision/assets/index-CFxQHUAw.js",
+  "/workout-vision/assets/index-DnLn6zQK.js",
   "/workout-vision/assets/localforage-53-gm4O1.js",
   "/workout-vision/assets/poseAnalysis-Db_dUfxW.js",
   "/workout-vision/assets/poseWorker-DcYzUWYA.js",
