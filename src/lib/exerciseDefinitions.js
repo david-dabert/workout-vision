@@ -497,10 +497,10 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 40,
     upThreshold: 140,
     amplitudeRatio: 0.2,
-    minSpacing: 2.0, // Signorile 2002: full-ROM pulldown requires ~1s concentric + ~1s eccentric to reach full stretch
+    minSpacing: 1.2, // Signorile 2002: full-ROM pulldown ~2s/rep ideal, but 2.0s floor suppresses natural tempo variation
     formChecks: [
       { name: 'Full pull', type: 'below', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 60, good: 'Bar at chest -- full lat contraction', bad: 'Pull lower', severity: 'major', citation: 'Signorile JF et al, 2002, J Strength Cond Res' },
-      { name: 'Full stretch', type: 'above', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 140, good: 'Full stretch at top', bad: 'Let the bar go fully up', severity: 'minor', citation: 'Signorile JF et al, 2002, J Strength Cond Res' },
+      { name: 'Full stretch', type: 'above', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 130, good: 'Full stretch at top', bad: 'Let the bar go fully up', severity: 'minor', citation: 'Signorile JF et al, 2002, J Strength Cond Res' },
     ],
     scienceNotes: 'Wide grip lat pulldown produces greater lat activation than narrow grip. Pulling to chest is safer and more effective than behind neck (Signorile 2002).',
     limitations: ['grip width', 'breathing technique', 'scapular depression', 'cable path'],

@@ -349,7 +349,7 @@ function ResultCard({ result, onReplay }) {
         <div className={s.heroStat}>
           <span className={s.heroStatValue}>
             {result.weight > 0
-              ? <>{Math.round(result.weight * displayReps)}<span className={s.volumeUnit}>kg</span></>
+              ? <>{Math.round(result.weight)}<span className={s.volumeUnit}>kg</span></>
               : <>{result.weight || 0}<span className={s.volumeUnit}>kg</span></>
             }
           </span>
