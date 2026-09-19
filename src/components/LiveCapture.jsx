@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useT } from '../lib/LanguageContext';
 import usePoseWorker from '../lib/usePoseWorker';
-import { ExerciseAutoDetector } from '../lib/exerciseDetector';
+import { HierarchicalDetector } from '../lib/hierarchicalDetector';
+import { detectViewpoint } from '../lib/cameraViewpoint';
 import { EXERCISES } from '../lib/exercises';
+import ExercisePicker, { AutoLockBadge } from './ExercisePicker';
 
 // Dynamically import RepCounter (TypeScript module)
 let _RepCounter = null;
@@ -16,6 +18,8 @@ const getRepCounter = async () => {
 
 const CAPTURE_FPS = 15; // inference budget — balance accuracy vs battery
 const FRAME_INTERVAL = 1000 / CAPTURE_FPS;
+// Re-detect viewpoint every N frames (cheap but no need every frame)
+const VIEWPOINT_INTERVAL = 30;
 
 export default function LiveCapture({ onClose, profile }) {
   const { t, tExercise } = useT();
@@ -30,6 +34,7 @@ export default function LiveCapture({ onClose, profile }) {
   const detectorRef = useRef(null);
   const activeRef = useRef(false);
   const exerciseRef = useRef(null);
+  const viewpointRef = useRef('unknown');
 
   const { isReady, isSupported, initWorker, detectFrame, resetWorker, disposeWorker } = usePoseWorker();
 
@@ -37,7 +42,7 @@ export default function LiveCapture({ onClose, profile }) {
   const [error, setError] = useState(null);
   const [reps, setReps] = useState(0);
   const [exercise, setExercise] = useState(null);
-  const [exerciseConfidence, setExerciseConfidence] = useState(0);
+  const [detectorState, setDetectorState] = useState(null);
   const [phase, setPhase] = useState('setup');
   const [formFeedback, setFormFeedback] = useState([]);
   const [inferenceMs, setInferenceMs] = useState(0);
@@ -94,8 +99,8 @@ export default function LiveCapture({ onClose, profile }) {
         await initWorker();
       }
 
-      // Init exercise detector
-      detectorRef.current = new ExerciseAutoDetector({ fps: CAPTURE_FPS });
+      // Init hierarchical detector (same as video mode)
+      detectorRef.current = new HierarchicalDetector({ fps: CAPTURE_FPS });
 
       setStatus('ready');
     } catch (err) {
@@ -108,26 +113,71 @@ export default function LiveCapture({ onClose, profile }) {
   const startSession = useCallback(async () => {
     if (status !== 'ready' || !isReady) return;
 
+    // Don't create RepCounter yet — wait for the detector to identify
+    // the exercise first. This prevents wrong form checks from firing
+    // against a hardcoded default exercise.
+    repCounterRef.current = null;
+
+    setReps(0);
+    setExercise(null);
+    setDetectorState(null);
+    setPhase('setup');
+    setFormFeedback([]);
+    frameIndexRef.current = 0;
+    lastFrameTimeRef.current = 0;
+    prevRepsRef.current = 0;
+    exerciseRef.current = null;
+    viewpointRef.current = 'unknown';
+    activeRef.current = true;
+    setStatus('running');
+
+    // Reset detector for fresh session
+    if (detectorRef.current) {
+      detectorRef.current.reset();
+    }
+
+    // Start the frame loop
+    processFrame();
+  }, [status, isReady, profile]);
+
+  // Create or switch RepCounter for a given exercise
+  const initCounterForExercise = useCallback(async (exerciseKey) => {
     const RC = await getRepCounter();
-    repCounterRef.current = new RC('squat', {
+    const counter = new RC(exerciseKey, {
       mode: 'live',
       fps: CAPTURE_FPS,
       userInjuries: profile?.injuries,
       weightKg: profile?.weight,
     });
-
+    counter.setViewpoint(viewpointRef.current);
+    repCounterRef.current = counter;
+    exerciseRef.current = exerciseKey;
+    setExercise(exerciseKey);
     setReps(0);
-    setExercise(null);
+    prevRepsRef.current = 0;
     setPhase('setup');
     setFormFeedback([]);
-    frameIndexRef.current = 0;
-    lastFrameTimeRef.current = 0;
-    activeRef.current = true;
-    setStatus('running');
+  }, [profile]);
 
-    // Start the frame loop
-    processFrame();
-  }, [status, isReady, profile]);
+  // Handle user exercise selection from ExercisePicker chips
+  const handleExerciseSelect = useCallback((exerciseKey) => {
+    const detector = detectorRef.current;
+    if (detector) {
+      detector.lock(exerciseKey);
+      setDetectorState({ ...detector.state });
+    }
+    initCounterForExercise(exerciseKey);
+  }, [initCounterForExercise]);
+
+  // Handle unlock from AutoLockBadge
+  const handleUnlock = useCallback(() => {
+    const detector = detectorRef.current;
+    if (detector) {
+      detector.reset();
+      setDetectorState({ ...detector.state });
+    }
+    // Keep current counter running — detector will re-identify
+  }, []);
 
   const processFrame = useCallback(() => {
     if (!activeRef.current) return;
@@ -157,33 +207,31 @@ export default function LiveCapture({ onClose, profile }) {
     detectFrame(canvas, timestamp, frameIndex).then(result => {
       if (!activeRef.current || !result?.landmarks) return;
 
-      // Exercise auto-detection
-      const detector = detectorRef.current;
-      if (detector) {
-        const detected = detector.update(result.landmarks);
-        if (detected) {
-          const info = detector.getDetectionInfo();
-          setExerciseConfidence(info.confidence);
-
-          // Switch rep counter when exercise changes
-          if (detected !== exerciseRef.current) {
-            exerciseRef.current = detected;
-            setExercise(detected);
-            getRepCounter().then(RC => {
-              repCounterRef.current = new RC(detected, {
-                mode: 'live',
-                fps: CAPTURE_FPS,
-                userInjuries: profile?.injuries,
-                weightKg: profile?.weight,
-              });
-              setReps(0);
-              setPhase('setup');
-            });
-          }
+      // Periodic viewpoint detection — updates form check filtering
+      if (frameIndex % VIEWPOINT_INTERVAL === 0) {
+        const vp = detectViewpoint(result.landmarks);
+        viewpointRef.current = vp.angle;
+        if (repCounterRef.current) {
+          repCounterRef.current.setViewpoint(vp.angle);
         }
       }
 
-      // Update rep counter
+      // Exercise detection via HierarchicalDetector
+      const detector = detectorRef.current;
+      if (detector) {
+        const state = detector.update({
+          landmarks: result.landmarks,
+          timestampMs: timestamp,
+        });
+        setDetectorState({ ...state });
+
+        // When the detected exercise changes, switch the counter
+        if (state.exercise && state.exercise !== exerciseRef.current) {
+          initCounterForExercise(state.exercise);
+        }
+      }
+
+      // Update rep counter (only if one exists — before detection, it's null)
       const counter = repCounterRef.current;
       if (counter) {
         const repResult = counter.update(result.landmarks, timestamp);
@@ -197,7 +245,11 @@ export default function LiveCapture({ onClose, profile }) {
           setReps(repResult.reps);
           setPhase(repResult.phase || 'setup');
           if (repResult.formFeedback?.length) {
-            setFormFeedback(repResult.formFeedback.slice(0, 3));
+            // Only show failed checks — passed checks are noise in the overlay
+            const failed = repResult.formFeedback.filter(fb => !fb.passed);
+            setFormFeedback(failed.slice(0, 3));
+          } else {
+            setFormFeedback([]);
           }
         }
       }
@@ -209,7 +261,7 @@ export default function LiveCapture({ onClose, profile }) {
     });
 
     rafRef.current = requestAnimationFrame(processFrame);
-  }, [detectFrame, profile]);
+  }, [detectFrame, profile, initCounterForExercise]);
 
   const drawSkeleton = useCallback((landmarks) => {
     const overlay = overlayRef.current;
@@ -363,12 +415,44 @@ export default function LiveCapture({ onClose, profile }) {
           }} />
         )}
 
+        {/* Exercise detection chips — same UX as video mode */}
+        {status === 'running' && detectorState && !detectorState.locked && detectorState.candidates?.length > 0 && (
+          <div style={{
+            position: 'absolute', top: 60, left: 0, right: 0,
+            display: 'flex', justifyContent: 'center',
+            pointerEvents: 'auto',
+          }}>
+            <ExercisePicker
+              detectorState={detectorState}
+              temporalFeatures={detectorState?.temporalFeatures}
+              onSelect={handleExerciseSelect}
+              compact
+            />
+          </div>
+        )}
+
+        {/* Auto-lock badge — shows locked exercise with unlock option */}
+        {status === 'running' && detectorState?.locked && detectorState.exercise && (
+          <div style={{
+            position: 'absolute', top: 60, left: 0, right: 0,
+            display: 'flex', justifyContent: 'center',
+            pointerEvents: 'auto',
+          }}>
+            <AutoLockBadge
+              exercise={detectorState.exercise}
+              confidence={detectorState.confidence}
+              onUnlock={handleUnlock}
+            />
+          </div>
+        )}
+
         {/* Rep counter overlay (bottom of video) */}
         {status === 'running' && (
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
             background: 'linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%)',
             padding: '40px 20px 20px',
+            paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           }}>
             {/* Rep count — the number doesn't just change, it HITS */}
@@ -400,9 +484,6 @@ export default function LiveCapture({ onClose, profile }) {
                   marginBottom: 6,
                 }}>
                   {tExercise(exercise, EXERCISES[exercise]?.name)}
-                  {exerciseConfidence < 0.7 && (
-                    <span style={{ fontSize: '0.65rem', color: 'var(--yellow)', marginLeft: 6 }}>?</span>
-                  )}
                 </div>
               )}
               {formFeedback.map((fb, i) => (
@@ -410,7 +491,7 @@ export default function LiveCapture({ onClose, profile }) {
                   fontSize: '0.72rem', color: fb.severity === 'major' ? 'var(--red)' : 'var(--yellow)',
                   marginBottom: 2,
                 }}>
-                  {fb.bad || fb.name}
+                  {fb.text || fb.bad || fb.name}
                 </div>
               ))}
             </div>
@@ -419,7 +500,11 @@ export default function LiveCapture({ onClose, profile }) {
       </div>
 
       {/* Controls below video */}
-      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{
+        padding: '20px 16px',
+        paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
+        display: 'flex', flexDirection: 'column', gap: 12,
+      }}>
         {status === 'idle' && (
           <button className="btn btn-primary" onClick={startCamera} style={{ minHeight: 48 }}>
             {t('start_camera') || 'Start Camera'}

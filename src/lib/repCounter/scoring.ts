@@ -352,8 +352,21 @@ export function evaluateFormFeedback(
   landmarks: LandmarkArray,
   exercise: Exercise,
   anthropometricNormalizer: AnthropometricNormalizer,
+  viewpoint?: string,
 ): FormFeedbackItem[] {
   return exercise.formChecks.map((fc: Exercise) => {
+    // Skip form checks whose required viewpoint doesn't match the camera angle.
+    // Same logic as evaluateLiveRep — prevents phantom "bad form" in live mode
+    // when the camera angle can't actually see the thing being checked.
+    if (viewpoint && viewpoint !== 'unknown' && fc.viewpoint && fc.viewpoint !== 'any') {
+      const viewpointMatch =
+        (fc.viewpoint === 'frontal' && viewpoint === 'front') ||
+        (fc.viewpoint === 'sagittal' && viewpoint === 'side');
+      if (!viewpointMatch) {
+        return { name: fc.name, passed: true, text: fc.good, severity: fc.severity };
+      }
+    }
+
     let passed: boolean = fc.check(angles, landmarks);
 
     if (!passed && anthropometricNormalizer.isCalibrated) {

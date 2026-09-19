@@ -127,6 +127,7 @@ export class RepCounter {
   private _adaptiveDiagCandidates?: DiagCandidate[];
   private _adaptiveDiag?: DiagCandidate[];
   private _templateEdgeDiag?: unknown;
+  private _viewpoint: string = 'unknown';
 
   constructor(exerciseKey: string, opts: RepCounterOptions = {}) {
     const ex = (EXERCISES as Record<string, Exercise>)[exerciseKey];
@@ -193,7 +194,7 @@ export class RepCounter {
       return {
         reps: 0, phase: 'hold',
         angle: Math.round((angles.trunk || 0) * 10) / 10, angles,
-        formFeedback: evaluateFormFeedback(angles, landmarks, ex, this._anthropometricNormalizer),
+        formFeedback: evaluateFormFeedback(angles, landmarks, ex, this._anthropometricNormalizer, this._viewpoint),
         repCompleted: false, repHistory: [],
       };
     }
@@ -336,7 +337,7 @@ export class RepCounter {
       }
     }
 
-    const formFeedback = evaluateFormFeedback(angles, landmarks, ex, this._anthropometricNormalizer);
+    const formFeedback = evaluateFormFeedback(angles, landmarks, ex, this._anthropometricNormalizer, this._viewpoint);
 
     return {
       reps: this._reps, phase: this._phase,
@@ -615,6 +616,16 @@ export class RepCounter {
    */
   setExerciseConfidence(conf: number): void {
     this._exerciseConfidence = conf || 0;
+  }
+
+  /**
+   * Set camera viewpoint for viewpoint-aware form check filtering.
+   * In live mode, prevents phantom "bad form" feedback when the camera
+   * angle can't actually observe the thing being checked.
+   * @param vp - 'front' | 'side' | 'rear' | 'unknown'
+   */
+  setViewpoint(vp: string): void {
+    this._viewpoint = vp;
   }
 
   /**
