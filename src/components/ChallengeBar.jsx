@@ -38,13 +38,13 @@ export default function ChallengeBar({ challenge, completedResult, onAccept }) {
       <div style={{
         padding: '12px 16px',
         background: cmp.userWins
-          ? 'linear-gradient(135deg, rgba(0,245,212,0.12), rgba(0,230,118,0.08))'
+          ? 'linear-gradient(135deg, rgba(212,167,106,0.12), rgba(93,184,122,0.08))'
           : cmp.tie
             ? 'linear-gradient(135deg, rgba(255,184,54,0.12), rgba(255,184,54,0.06))'
             : 'linear-gradient(135deg, rgba(255,59,92,0.12), rgba(255,59,92,0.06))',
         borderRadius: 12,
         marginBottom: 12,
-        border: `1px solid ${cmp.userWins ? 'rgba(0,245,212,0.2)' : cmp.tie ? 'rgba(255,184,54,0.2)' : 'rgba(255,59,92,0.2)'}`,
+        border: `1px solid ${cmp.userWins ? 'rgba(212,167,106,0.2)' : cmp.tie ? 'rgba(255,184,54,0.2)' : 'rgba(255,59,92,0.2)'}`,
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>{resultLabel}</span>
@@ -176,7 +176,7 @@ export function ChallengeResponseView({ response, onDismiss }) {
 
   const resultColor = tie
     ? 'rgba(255,184,54,0.15)'
-    : 'rgba(0,245,212,0.12)';
+    : 'rgba(212,167,106,0.12)';
 
   return (
     <div style={{
@@ -210,8 +210,8 @@ export function ChallengeResponseView({ response, onDismiss }) {
       <div style={{ display: 'flex', gap: 12 }}>
         <div style={{
           flex: 1, textAlign: 'center', padding: '12px 8px',
-          background: !responderWins && !tie ? 'rgba(0,245,212,0.08)' : 'rgba(255,255,255,0.03)',
-          borderRadius: 10, border: !responderWins && !tie ? '1px solid rgba(0,245,212,0.15)' : '1px solid rgba(255,255,255,0.06)',
+          background: !responderWins && !tie ? 'rgba(212,167,106,0.08)' : 'rgba(255,255,255,0.03)',
+          borderRadius: 10, border: !responderWins && !tie ? '1px solid rgba(212,167,106,0.15)' : '1px solid rgba(255,255,255,0.06)',
         }}>
           <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 6, color: !responderWins && !tie ? 'var(--accent)' : 'var(--text-primary)' }}>
             {response.challengerName}
@@ -228,8 +228,8 @@ export function ChallengeResponseView({ response, onDismiss }) {
         </div>
         <div style={{
           flex: 1, textAlign: 'center', padding: '12px 8px',
-          background: responderWins ? 'rgba(0,245,212,0.08)' : 'rgba(255,255,255,0.03)',
-          borderRadius: 10, border: responderWins ? '1px solid rgba(0,245,212,0.15)' : '1px solid rgba(255,255,255,0.06)',
+          background: responderWins ? 'rgba(212,167,106,0.08)' : 'rgba(255,255,255,0.03)',
+          borderRadius: 10, border: responderWins ? '1px solid rgba(212,167,106,0.15)' : '1px solid rgba(255,255,255,0.06)',
         }}>
           <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 6, color: responderWins ? 'var(--accent)' : 'var(--text-primary)' }}>
             {response.responderName}

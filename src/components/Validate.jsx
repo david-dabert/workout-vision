@@ -695,7 +695,7 @@ export default function Validate({ onClose }) {
                   {r.diagnostics?.progression && r.diagnostics.progression.score > 0 && (
                     <div className={s.progressionRow}>
                       <span className={s.progressionBadge} style={{
-                        background: r.diagnostics.progression.score >= 75 ? 'rgba(0,245,212,0.15)' : r.diagnostics.progression.score >= 50 ? 'rgba(255,200,0,0.15)' : 'rgba(255,80,80,0.15)',
+                        background: r.diagnostics.progression.score >= 75 ? 'rgba(212,167,106,0.15)' : r.diagnostics.progression.score >= 50 ? 'rgba(255,200,0,0.15)' : 'rgba(255,80,80,0.15)',
                         color: r.diagnostics.progression.score >= 75 ? 'var(--accent)' : r.diagnostics.progression.score >= 50 ? 'var(--yellow)' : 'var(--red)',
                       }}>
                         {r.diagnostics.progression.score} {r.diagnostics.progression.grade.label}

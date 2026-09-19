@@ -205,8 +205,8 @@ function BodyView({ view, primaryMuscles, secondaryMuscles, size = 120 }) {
           <path
             key={name}
             d={muscle.path}
-            fill={isPrimary ? 'rgba(0,245,212,0.55)' : 'rgba(0,245,212,0.25)'}
-            stroke={isPrimary ? 'rgba(0,245,212,0.8)' : 'rgba(0,245,212,0.4)'}
+            fill={isPrimary ? 'rgba(212,167,106,0.55)' : 'rgba(212,167,106,0.25)'}
+            stroke={isPrimary ? 'rgba(212,167,106,0.8)' : 'rgba(212,167,106,0.4)'}
             strokeWidth="0.4"
             style={{ transition: 'fill 0.3s ease' }}
           />

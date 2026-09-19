@@ -18,8 +18,8 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
     return (
       <div style={{
         padding: '8px 12px', borderRadius: 10,
-        background: 'rgba(0,245,212,0.05)',
-        border: '1px solid rgba(0,245,212,0.12)',
+        background: 'rgba(212,167,106,0.05)',
+        border: '1px solid rgba(212,167,106,0.12)',
         display: 'flex', alignItems: 'center', gap: 8,
         fontSize: '0.75rem', color: 'var(--bio-cyan)',
         marginBottom: 10,

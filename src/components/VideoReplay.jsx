@@ -38,7 +38,7 @@ const COACHING_SEVERITY_COLOR = {
   warning:    '#ff4466',
   correction: '#ffaa22',
   info:       '#66aaff',
-  positive:   '#00f5d4',
+  positive:   '#D4A76A',
 };
 
 function buildCoachingHighlights(coaching, repIndex, pulsePhase) {
@@ -98,7 +98,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(0, 0, w, boxH);
 
-  ctx.fillStyle = '#00f5d4';
+  ctx.fillStyle = '#D4A76A';
   ctx.font = `bold ${Math.round(24 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
@@ -160,7 +160,7 @@ function drawOverlay(ctx, w, h, frames, time, exerciseName, reps, formScore, rep
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.fillRect(0, h - brandH, w, brandH);
 
-  ctx.fillStyle = '#00f5d4';
+  ctx.fillStyle = '#D4A76A';
   ctx.font = `bold ${Math.round(16 * scale)}px -apple-system, system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -398,7 +398,7 @@ export default function VideoReplay({ videoUrl, frames, exerciseName, exerciseKe
         const ctx = canvas.getContext('2d');
         canvas.width = 480;
         canvas.height = 360;
-        ctx.fillStyle = '#07070a';
+        ctx.fillStyle = '#0a0a0e';
         ctx.fillRect(0, 0, 480, 360);
         ctx.fillStyle = '#ff3b5c';
         ctx.font = 'bold 16px -apple-system, system-ui, sans-serif';

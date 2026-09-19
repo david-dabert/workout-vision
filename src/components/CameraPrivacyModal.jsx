@@ -65,7 +65,7 @@ export default function CameraPrivacyModal({ onAccept, onDecline }) {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }} aria-hidden="true">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #00f5d4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent, #D4A76A)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
           </div>

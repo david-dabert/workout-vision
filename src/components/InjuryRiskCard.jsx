@@ -4,7 +4,7 @@ import { useT } from '../lib/LanguageContext';
 import { Icon, RISK_ICON_KEY } from '../lib/icons';
 
 const RISK_COLORS = {
-  low: 'var(--accent, #00f5d4)',
+  low: 'var(--accent, #D4A76A)',
   moderate: 'var(--yellow, #ffb836)',
   high: 'var(--red, #ff3b5c)',
 };

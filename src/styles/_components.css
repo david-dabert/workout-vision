@@ -9,44 +9,29 @@
    ══════════════════════════════════════════ */
 
 .card {
-  background: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(123,97,255,0.03) 50%, rgba(255,255,255,0.03) 100%);
-  backdrop-filter: blur(var(--blur)) saturate(200%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(200%);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: var(--depth-2);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 22px;
   margin-bottom: 16px;
-  transition: transform 0.3s var(--ease-spring), border-color 0.4s ease, box-shadow 0.4s ease;
+  transition: border-color 0.2s var(--ease-smooth);
   position: relative;
   overflow: hidden;
-  box-shadow:
-    inset 0 1px 1px rgba(255,255,255,0.08),
-    inset 0 -1px 1px rgba(0,0,0,0.1),
-    0 4px 24px rgba(0,0,0,0.4),
-    0 1px 3px rgba(0,0,0,0.25),
-    0 0 0 0.5px rgba(255,255,255,0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 5%; right: 5%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.25), rgba(123,97,255,0.20), rgba(224,64,251,0.15), transparent);
-  pointer-events: none;
+  display: none;
 }
 
-/* Active: the card responds to your force — it yields, then returns */
 .card:active {
-  transform: scale(0.97) perspective(600px) rotateX(1deg);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.06);
+  transform: scale(0.98);
   transition-duration: 0.1s;
 }
 .result-card:active { transform: none; }
-/* Hover: the card acknowledges your presence */
+
 .card:hover {
-  border-color: rgba(0,240,255,0.18);
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), 0 8px 40px rgba(0,0,0,0.45), 0 0 30px rgba(123,97,255,0.10), 0 0 60px rgba(0,240,255,0.06), 0 0 1px rgba(0,240,255,0.2);
+  border-color: var(--glass-border-hover);
 }
 /* Card alive state — when something has changed or needs attention */
 .card.card-alive {
@@ -79,26 +64,18 @@
   padding: 14px;
 }
 
-/* Glass class (design-demo) */
+/* Glass class */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--blur-heavy)) saturate(160%);
-  -webkit-backdrop-filter: blur(var(--blur-heavy)) saturate(160%);
+  background: var(--depth-2);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  box-shadow: inset 0 1px 1px var(--glass-highlight), 0 24px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
-  transition: border-color 0.4s ease;
+  transition: border-color 0.2s var(--ease-smooth);
 }
 
-.glass::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 20%; right: 20%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-}
+.glass::before { display: none; }
 
 .glass:hover { border-color: var(--glass-border-hover); }
 
@@ -124,56 +101,33 @@
   font-family: var(--font);
 }
 
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 50%);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
+.btn::after { display: none; }
 
-.btn:active { transform: scale(0.95); }
-.btn:active::after { opacity: 1; }
+.btn:active { transform: scale(0.96); }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--bio-cyan) 0%, var(--aurora-violet) 100%);
-  color: #fff;
-  font-weight: 800;
+  background: var(--accent);
+  color: #0a0a0e;
+  font-weight: 700;
   letter-spacing: -0.01em;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  box-shadow:
-    0 4px 20px rgba(0, 240, 255, 0.3),
-    0 1px 3px rgba(123, 97, 255, 0.2),
-    inset 0 1px 0 rgba(255,255,255,0.2),
-    0 0 0 0.5px rgba(0, 240, 255, 0.3);
-  background-size: 200% 200%;
-  transition: transform 0.25s var(--ease-spring), box-shadow 0.3s ease, background-position 0.4s;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s var(--ease-smooth), opacity 0.15s;
 }
 
-/* Press: the button compresses like a physical object and releases energy */
 .btn-primary:active {
-  box-shadow:
-    0 2px 16px rgba(0, 240, 255, 0.5),
-    0 0 4px rgba(123, 97, 255, 0.4),
-    0 0 40px rgba(0, 240, 255, 0.12),
-    inset 0 1px 0 rgba(255,255,255,0.25);
-  transform: scale(0.94) perspective(400px) rotateX(2deg);
-  background-position: 100% 100%;
+  transform: scale(0.96);
+  opacity: 0.9;
   transition-duration: 0.08s;
 }
-/* Start button heartbeat — it's alive, waiting for you to act */
+
 .btn-primary.btn-heartbeat {
-  animation: heartbeat 2.5s ease-in-out infinite;
+  /* No animation. The button is ready when you are. */
 }
 
 .btn-ghost {
   background: var(--glass-bg);
   color: var(--text-primary);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .btn-sm {
@@ -197,38 +151,31 @@
 }
 
 .btn-record {
-  background: var(--bio-cyan);
-  color: #000;
+  background: var(--accent);
+  color: #0a0a0e;
   padding: 12px 28px;
   border-radius: var(--radius-full);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.86rem;
   border: none;
   cursor: pointer;
-  box-shadow: var(--shadow-accent);
-  transition: all 0.2s var(--ease-smooth);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s var(--ease-smooth);
   font-family: var(--font);
 }
 
-.btn-record:active { transform: scale(0.93); box-shadow: var(--shadow-accent-lg); }
+.btn-record:active { transform: scale(0.95); }
 
 .btn-record.rec-on {
   background: var(--red);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(255, 59, 92, 0.3);
-  animation: recPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes recPulse {
-  0%, 100% { box-shadow: 0 4px 20px rgba(255, 59, 92, 0.3); }
-  50% { box-shadow: 0 4px 40px rgba(255, 59, 92, 0.5); }
 }
 
 .btn-icon {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-primary);
   border: 1px solid var(--glass-border);
   cursor: pointer;
@@ -237,12 +184,10 @@
   justify-content: center;
   font-size: 0.82rem;
   font-weight: 700;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.2s var(--ease-spring);
+  transition: all 0.15s var(--ease-smooth);
 }
 
-.btn-icon:active { transform: scale(0.88); background: rgba(255, 255, 255, 0.08); }
+.btn-icon:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.06); }
 
 
 /* ══════════════════════════════════════════
@@ -269,8 +214,8 @@ button {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--bio-cyan);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(0, 240, 255, 0.12), 0 0 24px rgba(0, 240, 255, 0.08), 0 0 48px rgba(123, 97, 255, 0.04);
+  border-color: var(--accent);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.15), 0 0 0 2px rgba(212, 167, 106, 0.10);
 }
 
 select {
@@ -355,20 +300,9 @@ select {
 }
 
 .score-badge.grade-a, .score-badge.good {
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.18) 0%, rgba(123, 97, 255, 0.12) 100%);
-  color: var(--bio-cyan);
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.2), 0 0 40px rgba(123, 97, 255, 0.08);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(0, 240, 255, 0.15);
-}
-.score-badge.grade-a::after, .score-badge.good::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2.5s ease-in-out infinite;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid var(--border-accent);
 }
 .score-badge.grade-b { background: var(--blue-glow); color: var(--blue); }
 .score-badge.grade-c, .score-badge.ok { background: var(--yellow-glow); color: var(--yellow); }
@@ -379,10 +313,10 @@ select {
 .result-badge-reveal {
   animation: gradeReveal 0.7s var(--ease-power) both;
 }
-/* PR badge — glows with achievement */
+/* PR badge */
 .score-badge.pr-achieved {
   box-shadow: var(--glow-burst);
-  animation: gradeReveal 0.7s var(--ease-power) both, cardAttention 2s ease-in-out 0.7s 2;
+  animation: gradeReveal 0.4s var(--ease-power) both;
 }
 
 .stats-grid-2x2 {
@@ -465,32 +399,15 @@ select {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--bio-cyan), var(--aurora-violet));
-  background-size: 300% 100%;
+  background: var(--accent);
   border-radius: var(--radius-full);
   transition: width 0.4s var(--ease-smooth);
   position: relative;
-  animation: progressFlow 3s ease-in-out infinite;
 }
 
-@keyframes progressFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+.progress-fill::after { display: none; }
 
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0; right: 0;
-  width: 24px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
-  border-radius: var(--radius-full);
-  box-shadow: 0 0 12px rgba(255,255,255,0.3), 0 0 24px rgba(0, 240, 255, 0.2);
-}
-
-.progress-text { font-size: 0.72rem; color: var(--bio-cyan); font-weight: 800; }
+.progress-text { font-size: 0.72rem; color: var(--accent); font-weight: 700; }
 
 
 /* ══════════════════════════════════════════
@@ -501,85 +418,45 @@ select {
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px dashed transparent;
+  border: 1px dashed var(--glass-border-hover);
   border-radius: var(--radius);
   padding: 40px 32px;
   cursor: pointer;
   text-align: center;
   touch-action: manipulation;
-  transition: all 0.4s var(--ease-smooth);
-  background:
-    linear-gradient(var(--depth-2), var(--depth-2)) padding-box,
-    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet)) border-box;
-  background-size: 100% 100%, 200% 200%;
-  animation: gradientShift 8s ease infinite;
+  transition: all 0.2s var(--ease-smooth);
+  background: var(--depth-1);
   position: relative;
 }
 
-.upload-zone::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius);
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(0, 240, 255, 0.08), transparent 60%),
-    radial-gradient(ellipse at 50% 100%, rgba(123, 97, 255, 0.05), transparent 60%);
-  pointer-events: none;
-  transition: opacity 0.4s;
-}
-
-.upload-zone::after {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border-radius: calc(var(--radius) - 6px);
-  border: 1px dashed rgba(255, 255, 255, 0.08);
-  pointer-events: none;
-  transition: border-color 0.4s, opacity 0.4s;
-}
+.upload-zone::before { display: none; }
+.upload-zone::after { display: none; }
 
 .upload-zone:active {
-  background:
-    linear-gradient(var(--depth-3), var(--depth-3)) padding-box,
-    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet)) border-box;
-  transform: scale(0.97);
-  box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), 0 0 100px rgba(123, 97, 255, 0.08);
+  background: var(--depth-2);
+  transform: scale(0.98);
 }
 
 .upload-zone.dragover {
-  background:
-    linear-gradient(rgba(0,240,255,0.08), rgba(123,97,255,0.04)) padding-box,
-    linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet)) border-box;
-  transform: scale(1.02);
-  box-shadow: 0 0 60px rgba(0, 240, 255, 0.2), 0 0 120px rgba(123, 97, 255, 0.1);
-  border-color: var(--bio-cyan);
-}
-
-.upload-zone.dragover::after {
-  border-color: rgba(0, 240, 255, 0.25);
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  border-style: solid;
 }
 
 .upload-content { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
 .upload-icon {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(123, 97, 255, 0.12));
-  color: var(--bio-cyan);
+  background: var(--accent-glow);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
-  font-weight: 800;
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.15), 0 0 60px rgba(123, 97, 255, 0.08);
-  border: 1px solid rgba(0, 240, 255, 0.15);
-  animation: uploadIconPulse 3s ease-in-out infinite;
-}
-
-@keyframes uploadIconPulse {
-  0%, 100% { box-shadow: 0 0 30px rgba(0, 240, 255, 0.15), 0 0 60px rgba(123, 97, 255, 0.08); transform: scale(1); }
-  50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.25), 0 0 80px rgba(123, 97, 255, 0.12); transform: scale(1.05); }
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 1px solid var(--border-accent);
 }
 
 

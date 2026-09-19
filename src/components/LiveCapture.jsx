@@ -278,7 +278,7 @@ export default function LiveCapture({ onClose, profile }) {
       [25, 27], [26, 28],
     ];
 
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
+    ctx.strokeStyle = 'rgba(212, 167, 106, 0.7)';
     ctx.lineWidth = 2;
 
     for (const [a, b] of connections) {
@@ -293,7 +293,7 @@ export default function LiveCapture({ onClose, profile }) {
     }
 
     // Draw joint dots
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.9)';
+    ctx.fillStyle = 'rgba(212, 167, 106, 0.9)';
     for (let i = 11; i <= 28; i++) {
       const lm = landmarks[i];
       if (!lm || (lm.visibility || 0) < 0.5) continue;

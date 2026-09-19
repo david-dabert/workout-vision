@@ -64,7 +64,7 @@ export default function PersonalRecords({ onClose }) {
               padding: '5px 12px',
               borderRadius: 16,
               border: filter === type ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-              background: filter === type ? 'rgba(0, 245, 212, 0.1)' : 'var(--glass-bg)',
+              background: filter === type ? 'rgba(212, 167, 106, 0.1)' : 'var(--glass-bg)',
               color: filter === type ? 'var(--accent)' : 'var(--text-secondary)',
               fontSize: '0.78rem',
               fontWeight: filter === type ? 600 : 400,
@@ -117,8 +117,8 @@ export default function PersonalRecords({ onClose }) {
                         style={{
                           display: 'flex', alignItems: 'center', gap: 6,
                           padding: '4px 10px', borderRadius: 12,
-                          background: 'rgba(0, 245, 212, 0.06)',
-                          border: '1px solid rgba(0, 245, 212, 0.15)',
+                          background: 'rgba(212, 167, 106, 0.06)',
+                          border: '1px solid rgba(212, 167, 106, 0.15)',
                           fontSize: '0.78rem',
                         }}
                       >

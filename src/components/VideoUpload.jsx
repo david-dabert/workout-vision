@@ -542,7 +542,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                 className={`btn btn-ghost btn-sm ${audioEnabled ? 'active' : ''} ${s.audioToggle}`}
                 style={{
                   opacity: audioEnabled ? 1 : 0.4,
-                  background: audioEnabled ? 'rgba(0,245,212,0.15)' : 'transparent',
+                  background: audioEnabled ? 'rgba(212,167,106,0.15)' : 'transparent',
                 }}
                 onClick={() => setAudioEnabled(prev => !prev)}
                 title={audioEnabled ? t('audio_on') : t('audio_off')}

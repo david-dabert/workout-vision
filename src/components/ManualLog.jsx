@@ -105,11 +105,11 @@ export default function ManualLog({ onClose }) {
         }}>
           <div style={{
             width: 72, height: 72, borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.15), rgba(0, 240, 255, 0.10))',
-            border: '2px solid rgba(0, 230, 118, 0.3)',
+            background: 'linear-gradient(135deg, rgba(93, 184, 122, 0.15), rgba(212, 167, 106, 0.10))',
+            border: '2px solid rgba(93, 184, 122, 0.3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '1.8rem', color: 'var(--bio-green)',
-            boxShadow: '0 0 40px rgba(0, 230, 118, 0.2), 0 0 80px rgba(0, 240, 255, 0.08)',
+            boxShadow: '0 0 40px rgba(93, 184, 122, 0.2), 0 0 80px rgba(212, 167, 106, 0.08)',
             animation: 'repBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both',
           }}>
             &#x2713;

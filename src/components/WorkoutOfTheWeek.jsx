@@ -45,7 +45,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
           </svg>
           <span style={{
             fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.06em', color: 'var(--aurora-violet, #7B61FF)',
+            letterSpacing: '0.06em', color: 'var(--aurora-violet, #8B8198)',
           }}>
             {t('wotw_title')}
           </span>
@@ -68,7 +68,7 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
           <div style={{
             padding: '4px 10px', borderRadius: 8,
-            background: 'rgba(0,245,212,0.12)',
+            background: 'rgba(212,167,106,0.12)',
             fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent)',
           }}>
             {bestAttempt.formScore}/100
@@ -81,8 +81,8 @@ export default function WorkoutOfTheWeek({ onNavigate }) {
             onClick={() => onNavigate('analyze')}
             style={{
               marginLeft: 'auto', padding: '6px 12px', borderRadius: 8,
-              background: 'rgba(123,97,255,0.15)', border: '1px solid rgba(123,97,255,0.25)',
-              color: 'var(--aurora-violet, #7B61FF)', fontSize: '0.75rem', fontWeight: 600,
+              background: 'rgba(139,129,152,0.15)', border: '1px solid rgba(139,129,152,0.25)',
+              color: 'var(--aurora-violet, #8B8198)', fontSize: '0.75rem', fontWeight: 600,
               cursor: 'pointer',
             }}
           >

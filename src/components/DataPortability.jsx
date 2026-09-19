@@ -148,7 +148,7 @@ export default function DataPortability() {
         <div style={{
           padding: '12px 14px',
           borderRadius: 10,
-          background: 'rgba(0, 245, 212, 0.08)',
+          background: 'rgba(212, 167, 106, 0.08)',
           border: '1px solid var(--border)',
           marginBottom: 12,
         }}>
@@ -203,7 +203,7 @@ export default function DataPortability() {
         <div style={{
           padding: '12px 14px',
           borderRadius: 10,
-          background: 'rgba(0, 245, 212, 0.08)',
+          background: 'rgba(212, 167, 106, 0.08)',
           border: '1px solid var(--border)',
           marginBottom: 12,
         }}>

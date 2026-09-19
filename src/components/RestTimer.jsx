@@ -147,8 +147,8 @@ export default function RestTimer({ onClose }) {
 
   // Ring color shifts with urgency
   const ringColor = isCritical ? 'var(--red)' : isUrgent ? 'var(--yellow)' : 'var(--accent)';
-  const ringGlow = isCritical ? 'rgba(255, 59, 92, 0.6)' : isUrgent ? 'rgba(255, 194, 51, 0.5)' : 'rgba(0, 240, 255, 0.4)';
-  const timerGlow = isCritical ? 'rgba(255, 59, 92, 0.15)' : isUrgent ? 'rgba(255, 194, 51, 0.12)' : 'rgba(0, 240, 255, 0.12)';
+  const ringGlow = isCritical ? 'rgba(255, 59, 92, 0.6)' : isUrgent ? 'rgba(255, 194, 51, 0.5)' : 'rgba(212, 167, 106, 0.4)';
+  const timerGlow = isCritical ? 'rgba(255, 59, 92, 0.15)' : isUrgent ? 'rgba(255, 194, 51, 0.12)' : 'rgba(212, 167, 106, 0.12)';
 
   // Digit state class
   const digitClass = isComplete ? s.digitsDone : isCritical ? s.digitsCritical : isUrgent ? s.digitsUrgent : '';

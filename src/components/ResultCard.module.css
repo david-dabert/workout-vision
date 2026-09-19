@@ -29,7 +29,7 @@
   position: absolute;
   top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(212, 167, 106, 0.08) 0%, transparent 60%);
   pointer-events: none;
   filter: blur(20px);
   animation: scoreGlow 4s ease-in-out infinite alternate;
@@ -68,7 +68,7 @@
   gap: 0;
   padding: 14px 8px;
   margin: 8px 0;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, rgba(123, 97, 255, 0.02) 100%);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, rgba(139, 129, 152, 0.02) 100%);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   animation: enterHeavy 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
@@ -147,7 +147,7 @@
   font-size: 0.6rem;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(0, 245, 212, 0.12);
+  background: rgba(212, 167, 106, 0.12);
   color: var(--accent);
   font-weight: 600;
 }
@@ -514,8 +514,8 @@
 }
 
 .badgeTier_accent {
-  background: linear-gradient(135deg, rgba(0, 245, 212, 0.12), rgba(0, 212, 255, 0.08));
-  border: 1px solid rgba(0, 245, 212, 0.25);
+  background: linear-gradient(135deg, rgba(212, 167, 106, 0.12), rgba(0, 212, 255, 0.08));
+  border: 1px solid rgba(212, 167, 106, 0.25);
   color: var(--accent);
 }
 
@@ -525,7 +525,7 @@
 }
 
 .coachingCardBackground {
-  background: linear-gradient(135deg, rgba(0, 245, 212, 0.06) 0%, rgba(196, 181, 253, 0.03) 100%);
+  background: linear-gradient(135deg, rgba(212, 167, 106, 0.06) 0%, rgba(196, 181, 253, 0.03) 100%);
 }
 
 /* ═══ COACHING ENGINE PANEL ═══ */
@@ -533,9 +533,9 @@
 .coachingPanel {
   margin-top: 16px;
   padding: 14px;
-  background: rgba(0, 245, 212, 0.04);
+  background: rgba(212, 167, 106, 0.04);
   border-radius: 12px;
-  border: 1px solid rgba(0, 245, 212, 0.12);
+  border: 1px solid rgba(212, 167, 106, 0.12);
 }
 
 .coachingPanelTitle {
@@ -585,8 +585,8 @@
 }
 
 .severity_positive {
-  border-left-color: var(--accent, #00f5d4);
-  background: rgba(0, 245, 212, 0.04);
+  border-left-color: var(--accent, #D4A76A);
+  background: rgba(212, 167, 106, 0.04);
 }
 
 .severity_info {
@@ -671,7 +671,7 @@
   font-weight: 500;
 }
 
-.metricGood { color: var(--accent, #00f5d4); }
+.metricGood { color: var(--accent, #D4A76A); }
 .metricOk { color: var(--yellow, #facc15); }
 .metricPoor { color: var(--red, #ef4444); }
 
@@ -706,8 +706,8 @@
 }
 
 .detectionGood {
-  background: rgba(0, 245, 212, 0.08);
-  border: 1px solid rgba(0, 245, 212, 0.2);
+  background: rgba(212, 167, 106, 0.08);
+  border: 1px solid rgba(212, 167, 106, 0.2);
 }
 
 .detectionWarn {
@@ -721,7 +721,7 @@
   flex-shrink: 0;
 }
 
-.detectionGood .detectionIcon { color: var(--accent, #00f5d4); }
+.detectionGood .detectionIcon { color: var(--accent, #D4A76A); }
 .detectionWarn .detectionIcon { color: var(--yellow, #facc15); }
 
 .detectionLabel {
@@ -811,7 +811,7 @@
 }
 
 .repBarFill {
-  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 0 4px rgba(0, 245, 212, 0.1);
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 0 4px rgba(212, 167, 106, 0.1);
   border-radius: 4px 4px 1px 1px;
 }
 
@@ -883,9 +883,9 @@
 .progressionScoreCard {
   margin-top: 14px;
   padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(0, 245, 212, 0.06), rgba(0, 245, 212, 0.02));
+  background: linear-gradient(135deg, rgba(212, 167, 106, 0.06), rgba(212, 167, 106, 0.02));
   border-radius: 10px;
-  border: 1px solid rgba(0, 245, 212, 0.15);
+  border: 1px solid rgba(212, 167, 106, 0.15);
 }
 
 .progressionScoreHeader {
@@ -1009,8 +1009,8 @@
 }
 
 .surfacedCueInsight {
-  background: rgba(0, 245, 212, 0.06);
-  border-left: 3px solid rgba(0, 245, 212, 0.4);
+  background: rgba(212, 167, 106, 0.06);
+  border-left: 3px solid rgba(212, 167, 106, 0.4);
   color: var(--text);
 }
 
@@ -1051,9 +1051,9 @@
 .notificationPrompt {
   margin-top: 14px;
   padding: 12px 16px;
-  background: rgba(0, 245, 212, 0.06);
+  background: rgba(212, 167, 106, 0.06);
   border-radius: 12px;
-  border: 1px solid rgba(0, 245, 212, 0.18);
+  border: 1px solid rgba(212, 167, 106, 0.18);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1091,7 +1091,7 @@
 .notifEnableBtn {
   font-size: 0.75rem;
   padding: 6px 14px;
-  background: #00f5d4;
+  background: #D4A76A;
   color: #000;
 }
 

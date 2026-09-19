@@ -9,7 +9,7 @@
   position: absolute;
   top: 15%; left: 50%; transform: translateX(-50%);
   width: 320px; height: 320px;
-  background: radial-gradient(circle, var(--timer-glow, rgba(0, 240, 255, 0.12)) 0%, transparent 60%);
+  background: radial-gradient(circle, var(--timer-glow, rgba(212, 167, 106, 0.12)) 0%, transparent 60%);
   pointer-events: none;
   filter: blur(40px);
   transition: background 1s ease;
@@ -28,7 +28,7 @@
 /* The ring responds — its glow intensifies as time runs out */
 .progressRing {
   transition: stroke-dashoffset 0.3s var(--ease-smooth), stroke 0.5s ease, filter 0.5s ease;
-  filter: drop-shadow(0 0 6px var(--ring-glow, rgba(0, 240, 255, 0.4)));
+  filter: drop-shadow(0 0 6px var(--ring-glow, rgba(212, 167, 106, 0.4)));
 }
 .time { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
 .digits {
@@ -49,7 +49,7 @@
 /* Done: power restored — the reactor is online */
 .digitsDone {
   color: var(--bio-cyan);
-  text-shadow: 0 0 40px rgba(0, 240, 255, 0.5), 0 0 80px rgba(123, 97, 255, 0.2);
+  text-shadow: 0 0 40px rgba(212, 167, 106, 0.5), 0 0 80px rgba(139, 129, 152, 0.2);
   animation: repBurst 0.6s var(--ease-power) 1;
 }
 .doneLabel {

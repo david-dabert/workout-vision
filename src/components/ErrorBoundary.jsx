@@ -146,7 +146,7 @@ const styles = {
     lineHeight: 1.4,
   },
   primaryBtn: {
-    background: 'var(--accent, #00f5d4)',
+    background: 'var(--accent, #D4A76A)',
     color: 'var(--void, #000)',
     border: 'none',
     borderRadius: '0.5rem',

@@ -763,7 +763,7 @@ function ResultCard({ result, onReplay }) {
                     <div className="rep-bar" style={{
                       height: `${Math.max(score, 5)}%`,
                       background: score >= 80 ? 'var(--accent)' : score >= 50 ? 'var(--yellow)' : 'var(--red)',
-                      boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.2), 0 0 4px rgba(0,245,212,0.1)',
+                      boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.2), 0 0 4px rgba(212,167,106,0.1)',
                       borderRadius: '4px 4px 1px 1px',
                     }} />
                   </div>

@@ -79,9 +79,9 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
           minHeight: 44,
           padding: '10px 36px 10px 12px',
           borderRadius: 'var(--radius-sm, 8px)',
-          border: '1px solid var(--border, #333)',
-          background: 'var(--surface-elevated, rgba(255,255,255,0.04))',
-          color: value && value !== '__auto__' ? 'var(--text-primary, #f0f0f5)' : 'var(--text-secondary, #888)',
+          border: '1px solid var(--border, #222)',
+          background: 'var(--depth-2, #161619)',
+          color: value && value !== '__auto__' ? 'var(--text-primary, #e8e6e1)' : 'var(--text-secondary, #777)',
           fontWeight: value && value !== '__auto__' ? 600 : 400,
           fontSize: '0.88rem',
           cursor: 'pointer',
@@ -103,8 +103,8 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
           left: 0, right: 0,
           zIndex: 100,
           marginTop: 4,
-          background: 'var(--card-elevated, #111)',
-          border: '1px solid var(--border, #333)',
+          background: 'var(--depth-3, #1e1e22)',
+          border: '1px solid var(--glass-border, #222)',
           borderRadius: 'var(--radius-sm, 8px)',
           maxHeight: 380,
           display: 'flex',
@@ -129,8 +129,8 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                 padding: '6px 12px',
                 borderRadius: 14,
                 border: 'none',
-                background: !activeRegion ? 'var(--accent, #00f5d4)' : 'rgba(255,255,255,0.06)',
-                color: !activeRegion ? '#07070a' : 'var(--text-secondary, #888)',
+                background: !activeRegion ? 'var(--accent, #D4A76A)' : 'rgba(255,255,255,0.04)',
+                color: !activeRegion ? '#0a0a0e' : 'var(--text-secondary, #777)',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -150,8 +150,8 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                   padding: '6px 12px',
                   borderRadius: 14,
                   border: 'none',
-                  background: activeRegion === region ? 'var(--accent, #00f5d4)' : 'rgba(255,255,255,0.06)',
-                  color: activeRegion === region ? '#07070a' : 'var(--text-secondary, #888)',
+                  background: activeRegion === region ? 'var(--accent, #D4A76A)' : 'rgba(255,255,255,0.04)',
+                  color: activeRegion === region ? '#0a0a0e' : 'var(--text-secondary, #777)',
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -182,8 +182,8 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                   display: 'flex', alignItems: 'center', gap: 8,
                   width: '100%', textAlign: 'left',
                   padding: '10px 12px',
-                  background: value === '__auto__' ? 'rgba(0, 245, 212, 0.1)' : 'transparent',
-                  color: value === '__auto__' ? 'var(--accent, #00f5d4)' : 'var(--text-primary, #f0f0f5)',
+                  background: value === '__auto__' ? 'rgba(212, 167, 106, 0.08)' : 'transparent',
+                  color: value === '__auto__' ? 'var(--accent, #D4A76A)' : 'var(--text-primary, #e8e6e1)',
                   border: 'none',
                   borderBottom: '1px solid var(--border, #333)',
                   cursor: 'pointer',
@@ -228,8 +228,8 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                       display: 'flex', alignItems: 'center', gap: 8,
                       width: '100%', textAlign: 'left',
                       padding: '10px 12px 10px 16px',
-                      background: value === ex.key ? 'rgba(0, 245, 212, 0.08)' : 'transparent',
-                      color: value === ex.key ? 'var(--accent, #00f5d4)' : 'var(--text-primary, #f0f0f5)',
+                      background: value === ex.key ? 'rgba(212, 167, 106, 0.08)' : 'transparent',
+                      color: value === ex.key ? 'var(--accent, #D4A76A)' : 'var(--text-primary, #e8e6e1)',
                       border: 'none',
                       borderBottom: '1px solid rgba(255,255,255,0.03)',
                       cursor: 'pointer',
@@ -240,7 +240,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                   >
                     <span style={{ flex: 1 }}>{tExercise(ex.key, ex.name)}</span>
                     {ex.tier === 'validated' && (
-                      <Icon name="check" size={12} color="var(--bio-green, #00e676)" />
+                      <Icon name="check" size={12} color="var(--bio-green, #5DB87A)" />
                     )}
                   </button>
                 ))}

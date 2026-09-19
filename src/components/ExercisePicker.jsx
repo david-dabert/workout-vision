@@ -96,9 +96,9 @@ export default function ExercisePicker({ detectorState, onSelect, temporalFeatur
               gap: 4,
               padding: compact ? '3px 8px' : '5px 12px',
               borderRadius: 16,
-              border: isTop ? '2px solid var(--accent, #00f5d4)' : '1px solid var(--border, #333)',
-              background: isTop ? 'rgba(0, 245, 212, 0.12)' : 'rgba(255,255,255,0.05)',
-              color: isTop ? 'var(--accent, #00f5d4)' : 'var(--text, #eee)',
+              border: isTop ? '2px solid var(--accent, #D4A76A)' : '1px solid var(--border, #333)',
+              background: isTop ? 'rgba(212, 167, 106, 0.12)' : 'rgba(255,255,255,0.05)',
+              color: isTop ? 'var(--accent, #D4A76A)' : 'var(--text, #eee)',
               fontSize: compact ? 11 : 13,
               fontWeight: isTop ? 600 : 400,
               cursor: 'pointer',
@@ -138,12 +138,12 @@ export function AutoLockBadge({ exercise, confidence, onUnlock }) {
         gap: 6,
         padding: '4px 10px',
         borderRadius: 14,
-        background: 'rgba(0, 245, 212, 0.1)',
-        border: '1px solid var(--accent, #00f5d4)',
+        background: 'rgba(212, 167, 106, 0.1)',
+        border: '1px solid var(--accent, #D4A76A)',
         fontSize: 13,
       }}
     >
-      <span style={{ color: 'var(--accent, #00f5d4)', fontWeight: 600 }}>{tExercise(exercise, ex.name)}</span>
+      <span style={{ color: 'var(--accent, #D4A76A)', fontWeight: 600 }}>{tExercise(exercise, ex.name)}</span>
       <span style={{ fontSize: 10, opacity: 0.6 }}>{Math.round(confidence * 100)}%</span>
       {onUnlock && (
         <button

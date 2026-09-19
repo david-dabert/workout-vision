@@ -434,7 +434,7 @@ export default function WeeklyReport({ onClose }) {
           {streak > 0 && (
             <SectionCard>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Icon name="fire" size={28} color="var(--accent, #00f5d4)" />
+                <Icon name="fire" size={28} color="var(--accent, #D4A76A)" />
                 <div>
                   <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent)' }}>{streak}</span>
                   <span style={{ marginLeft: 6, fontSize: '0.95rem', color: 'var(--muted)' }}>{t('wr_streak_label')}</span>

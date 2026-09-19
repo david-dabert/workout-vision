@@ -57,8 +57,8 @@ export default function MilestoneToast() {
         gap: 10,
         padding: '12px 20px',
         borderRadius: 'var(--radius)',
-        background: 'rgba(0, 245, 212, 0.12)',
-        border: '1px solid rgba(0, 245, 212, 0.3)',
+        background: 'rgba(212, 167, 106, 0.12)',
+        border: '1px solid rgba(212, 167, 106, 0.3)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
@@ -66,7 +66,7 @@ export default function MilestoneToast() {
         maxWidth: 'calc(100vw - 32px)',
       }}
     >
-      <Icon name={toast.iconKey} size={24} color="var(--accent, #00f5d4)" />
+      <Icon name={toast.iconKey} size={24} color="var(--accent, #D4A76A)" />
       <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.88rem' }}>
         {toast.label}
       </span>

@@ -16,15 +16,13 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.10) 0%, rgba(123, 97, 255, 0.08) 100%);
-  border: 1px solid rgba(0, 240, 255, 0.12);
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--bio-cyan);
+  color: var(--accent);
   font-size: 2rem;
-  box-shadow: 0 0 40px rgba(0, 240, 255, 0.10), 0 0 80px rgba(123, 97, 255, 0.05);
-  animation: breathe 5s ease-in-out infinite;
 }
 
 .empty-state-title {
@@ -55,46 +53,17 @@
 .welcome-card {
   margin: 0 20px 16px;
   padding: 32px 24px;
-  background: linear-gradient(145deg, rgba(0, 240, 255, 0.08) 0%, rgba(123, 97, 255, 0.06) 40%, rgba(224, 64, 251, 0.04) 100%);
-  border: 1px solid rgba(0, 240, 255, 0.18);
+  background: var(--depth-2);
+  border: 1px solid var(--border-accent);
   border-radius: var(--radius);
   position: relative;
   overflow: hidden;
-  animation: fadeInUp 0.6s var(--ease-out) 0.3s both;
-  box-shadow:
-    0 4px 32px rgba(0,240,255,0.08),
-    0 8px 64px rgba(123,97,255,0.05),
-    inset 0 1px 1px rgba(255,255,255,0.07);
+  animation: fadeInUp 0.4s var(--ease-out) both;
+  box-shadow: var(--shadow-md);
 }
 
-.welcome-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 5%, rgba(0, 240, 255, 0.3) 25%, rgba(123, 97, 255, 0.25) 50%, rgba(224, 64, 251, 0.2) 75%, transparent 95%);
-}
-
-.welcome-card::after {
-  content: '';
-  position: absolute;
-  top: -80px;
-  right: -60px;
-  width: 200px;
-  height: 200px;
-  background:
-    radial-gradient(circle, rgba(123,97,255,0.08) 0%, transparent 60%),
-    radial-gradient(circle at 40% 60%, rgba(0,240,255,0.05) 0%, transparent 50%);
-  pointer-events: none;
-  animation: welcomeOrb 8s ease-in-out infinite alternate;
-}
-
-@keyframes welcomeOrb {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(-20px, 20px) scale(1.2); }
-}
+.welcome-card::before { display: none; }
+.welcome-card::after { display: none; }
 
 .welcome-card-title {
   font-family: var(--font-display);
@@ -132,16 +101,15 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(0,245,212,0.12);
-  border: 1px solid rgba(0,245,212,0.2);
-  color: var(--bio-cyan);
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
+  color: var(--accent);
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 16px rgba(0, 245, 212, 0.10);
 }
 
 .welcome-card .btn-primary {
@@ -279,10 +247,10 @@
 }
 
 .analyze-another:active {
-  transform: scale(0.97);
-  border-color: rgba(0, 245, 212, 0.2);
-  color: var(--bio-cyan);
-  background: rgba(0, 245, 212, 0.04);
+  transform: scale(0.98);
+  border-color: var(--border-accent);
+  color: var(--accent);
+  background: var(--accent-glow);
 }
 
 
@@ -334,14 +302,14 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0, 224, 150, 0.12);
+  background: var(--accent-glow);
   color: var(--accent);
   padding: 3px 10px;
   border-radius: 20px;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  border: 1px solid rgba(0, 224, 150, 0.25);
+  border: 1px solid var(--border-accent);
 }
 .streak-badge.comeback {
   background: rgba(255, 184, 54, 0.10);
@@ -360,12 +328,9 @@
   gap: 12px;
   padding: 16px 20px;
   margin: 4px 16px 8px;
-  background: linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(123,97,255,0.015) 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--depth-1);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
 }
 
 .weekly-dot-col {
@@ -391,16 +356,13 @@
   border-color: rgba(255,255,255,0.25);
 }
 
-/* Active days glow — each one is proof you showed up */
 .weekly-dot.active {
-  background: linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet));
-  border-color: var(--bio-cyan);
-  box-shadow: 0 0 8px rgba(0,240,255,0.3), 0 0 16px rgba(123,97,255,0.15);
-  animation: phaseShift 3s ease-in-out infinite;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .weekly-dot.active.today {
-  box-shadow: 0 0 14px rgba(0,240,255,0.5), 0 0 28px rgba(123,97,255,0.25), 0 0 4px rgba(0,240,255,0.7);
+  box-shadow: 0 0 6px rgba(212, 167, 106, 0.3);
 }
 
 .weekly-dot-label {
@@ -514,24 +476,16 @@
 @media (hover: hover) {
   .card:hover {
     border-color: var(--glass-border-hover);
-    box-shadow:
-      inset 0 1px 1px rgba(255,255,255,0.08),
-      0 8px 40px rgba(0,0,0,0.45),
-      0 0 30px rgba(123,97,255,0.06),
-      0 0 1px rgba(0,240,255,0.15);
   }
 
   .action-primary:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 8px 40px rgba(0, 240, 255, 0.18),
-      0 16px 64px rgba(123, 97, 255, 0.10);
+    transform: translateY(-1px);
+    border-color: var(--border-accent);
   }
 
   .action-secondary:hover {
     transform: translateY(-1px);
     border-color: var(--glass-border-hover);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
 }
 
@@ -605,14 +559,9 @@
   z-index: 1;
 }
 
-/* Active dot glow pulse on today */
+/* Active today dot — no pulse, just presence */
 .weekly-dot.active.today {
-  animation: dotPulse 2.5s ease-in-out infinite;
-}
-
-@keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 14px rgba(0,240,255,0.4), 0 0 28px rgba(123,97,255,0.2), 0 0 4px rgba(0,240,255,0.6); }
-  50% { box-shadow: 0 0 20px rgba(0,240,255,0.5), 0 0 40px rgba(123,97,255,0.3), 0 0 6px rgba(0,240,255,0.7); }
+  /* Static. The dot is there. You trained. That's enough. */
 }
 
 /* Workout grade badge entrance */
@@ -625,25 +574,12 @@
 .workout-row:nth-child(4) .workout-grade { animation-delay: 0.34s; }
 .workout-row:nth-child(5) .workout-grade { animation-delay: 0.42s; }
 
-/* Action card icon glow ring */
+/* Action card icon */
 .action-icon-wrap {
   position: relative;
 }
 
-.action-icon-wrap::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,240,255,0.14) 0%, rgba(123,97,255,0.06) 50%, transparent 70%);
-  animation: iconGlow 4s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-@keyframes iconGlow {
-  0% { opacity: 0.4; transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1.15); }
-}
+.action-icon-wrap::after { display: none; }
 
 /* Insights card stagger entrance */
 .insights-section .card:nth-child(1) { animation: fadeInUp 0.4s var(--ease-out) 0.1s both; }
@@ -663,8 +599,8 @@
 /* Smooth gradient border on focused inputs */
 .profile-edit-grid input:focus,
 .profile-edit-grid select:focus {
-  border-color: rgba(0,245,212,0.3);
-  box-shadow: 0 0 0 3px rgba(0,245,212,0.06);
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 2px rgba(212, 167, 106, 0.08);
   outline: none;
 }
 

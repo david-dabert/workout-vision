@@ -97,7 +97,7 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
-        ctx.strokeStyle = `rgba(0, 245, 212, ${alpha})`;
+        ctx.strokeStyle = `rgba(212, 167, 106, ${alpha})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       });
@@ -118,14 +118,14 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
         const py = ay + (by - ay) * pulse.progress;
 
         const glow = ctx.createRadialGradient(px, py, 0, px, py, 20);
-        glow.addColorStop(0, `rgba(0, 245, 212, ${0.8 * (1 - pulse.progress)})`);
-        glow.addColorStop(1, 'rgba(0, 245, 212, 0)');
+        glow.addColorStop(0, `rgba(212, 167, 106, ${0.8 * (1 - pulse.progress)})`);
+        glow.addColorStop(1, 'rgba(212, 167, 106, 0)');
         ctx.fillStyle = glow;
         ctx.fillRect(px - 20, py - 20, 40, 40);
 
         ctx.beginPath();
         ctx.arc(px, py, 3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 245, 212, ${1 - pulse.progress})`;
+        ctx.fillStyle = `rgba(212, 167, 106, ${1 - pulse.progress})`;
         ctx.fill();
       }
 
@@ -138,9 +138,9 @@ export default function ParticleSkeleton({ onRep, className = '' }) {
 
         // Glow
         const glow = ctx.createRadialGradient(x, y, 0, x, y, size * 6);
-        glow.addColorStop(0, `rgba(0, 245, 212, ${0.35 * pulse})`);
-        glow.addColorStop(0.5, `rgba(0, 230, 118, ${0.12 * pulse})`);
-        glow.addColorStop(1, 'rgba(0, 245, 212, 0)');
+        glow.addColorStop(0, `rgba(212, 167, 106, ${0.35 * pulse})`);
+        glow.addColorStop(0.5, `rgba(93, 184, 122, ${0.12 * pulse})`);
+        glow.addColorStop(1, 'rgba(212, 167, 106, 0)');
         ctx.fillStyle = glow;
         ctx.fillRect(x - size * 6, y - size * 6, size * 12, size * 12);
 

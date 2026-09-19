@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const COLORS = ['#00f5d4', '#00e676', '#ffb836', '#ff6b9d', '#a855f7'];
+const COLORS = ['#D4A76A', '#5DB87A', '#ffb836', '#ff6b9d', '#a855f7'];
 const PARTICLE_COUNT = 60;
 const DURATION = 2000;
 const GRAVITY = 0.003;

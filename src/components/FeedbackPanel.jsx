@@ -189,7 +189,7 @@ function FeedbackPanel({ result }) {
             <button
               onClick={() => handleExerciseConfirm(true)}
               style={{
-                background: 'rgba(0,245,212,0.1)', border: '1px solid rgba(0,245,212,0.2)',
+                background: 'rgba(212,167,106,0.1)', border: '1px solid rgba(212,167,106,0.2)',
                 color: 'var(--accent)', borderRadius: 6, padding: '3px 10px',
                 fontSize: '0.75rem', cursor: 'pointer', marginRight: 4, fontWeight: 600,
               }}
@@ -236,8 +236,8 @@ function FeedbackPanel({ result }) {
         <button
           onClick={() => handleThumbs('up')}
           style={{
-            background: thumbs === 'up' ? 'rgba(0,245,212,0.15)' : 'transparent',
-            border: thumbs === 'up' ? '1px solid rgba(0,245,212,0.3)' : '1px solid rgba(255,255,255,0.1)',
+            background: thumbs === 'up' ? 'rgba(212,167,106,0.15)' : 'transparent',
+            border: thumbs === 'up' ? '1px solid rgba(212,167,106,0.3)' : '1px solid rgba(255,255,255,0.1)',
             borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: '1rem',
             opacity: thumbs && thumbs !== 'up' ? 0.4 : 1,
           }}

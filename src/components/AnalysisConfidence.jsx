@@ -21,8 +21,8 @@ export default function AnalysisConfidence({ diagnostics, viewpoint }) {
     high: {
       label: t('confidence_high'),
       color: 'var(--bio-cyan)',
-      bg: 'rgba(0,245,212,0.12)',
-      border: 'rgba(0,245,212,0.25)',
+      bg: 'rgba(212,167,106,0.12)',
+      border: 'rgba(212,167,106,0.25)',
     },
     medium: {
       label: t('confidence_medium'),

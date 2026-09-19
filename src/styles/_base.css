@@ -1,41 +1,10 @@
 /* ══════════════════════════════════════════
-   ATMOSPHERE (design-demo + full app)
+   ATMOSPHERE — quiet confidence, not spectacle
    ══════════════════════════════════════════ */
 
-/* .app-universe is unused — gradient mesh now on #root::before */
-
-/* ── Ambient glow — two-tone brand gradient (cyan + violet) ── */
+/* No ambient mesh. The void IS the atmosphere. */
 #root::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 70% at 15% 20%, rgba(123, 97, 255, 0.18) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 70% at 85% 80%, rgba(0, 240, 255, 0.16) 0%, transparent 50%);
-  filter: blur(80px);
-  animation: meshDrift 30s ease-in-out infinite alternate;
-}
-
-@keyframes meshDrift {
-  0% {
-    background:
-      radial-gradient(ellipse 80% 70% at 15% 20%, rgba(123, 97, 255, 0.18) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 70% at 85% 80%, rgba(0, 240, 255, 0.16) 0%, transparent 50%);
-  }
-  100% {
-    background:
-      radial-gradient(ellipse 80% 70% at 75% 30%, rgba(0, 240, 255, 0.18) 0%, transparent 50%),
-      radial-gradient(ellipse 80% 70% at 25% 75%, rgba(123, 97, 255, 0.16) 0%, transparent 50%);
-  }
-}
-
-/* app-universe::after and ambient-glow removed — elements don't exist in DOM */
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+  display: none;
 }
 
 .scanline {
@@ -104,17 +73,7 @@ h5 {
 .text-muted { color: var(--text-secondary); }
 .text-center { text-align: center; }
 .text-bio {
-  background: linear-gradient(135deg, var(--bio-cyan), var(--aurora-violet));
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: textShimmer 6s ease-in-out infinite;
-}
-
-@keyframes textShimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  color: var(--accent);
 }
 
 .label {
@@ -155,70 +114,58 @@ h5 {
    ══════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════
-   CELEBRATION & MICRO-INTERACTION KEYFRAMES
-   Every moment matters. Nothing increments silently.
+   MICRO-INTERACTIONS — purposeful, not theatrical
    ══════════════════════════════════════════ */
 
-/* Rep burst — the number doesn't just change, it HITS */
+/* Rep count increment — a confident tick, not an explosion */
 @keyframes repBurst {
-  0% { transform: scale(1); filter: brightness(1); }
-  15% { transform: scale(1.35); filter: brightness(1.6); }
-  30% { transform: scale(0.92); filter: brightness(1.1); }
-  50% { transform: scale(1.08); filter: brightness(1.0); }
-  100% { transform: scale(1); filter: brightness(1); }
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
 }
 
-/* Grade reveal — the letter earns its entrance */
+/* Grade reveal — arrives with composure */
 @keyframes gradeReveal {
-  0% { transform: scale(0) rotate(-20deg); opacity: 0; filter: blur(12px); }
-  40% { transform: scale(1.3) rotate(4deg); opacity: 1; filter: blur(0); }
-  60% { transform: scale(0.9) rotate(-2deg); }
-  80% { transform: scale(1.05) rotate(1deg); }
-  100% { transform: scale(1) rotate(0); }
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* Power restore — timer completion is not a beep, it's a reactor coming online */
+/* Timer completion — a gentle warmth, not a reactor */
 @keyframes powerRestore {
-  0% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
-  30% { box-shadow: 0 0 40px 10px rgba(0, 240, 255, 0.5), 0 0 80px 20px rgba(123, 97, 255, 0.2); }
-  60% { box-shadow: 0 0 60px 15px rgba(0, 240, 255, 0.3), 0 0 120px 30px rgba(123, 97, 255, 0.1); }
-  100% { box-shadow: 0 0 20px 5px rgba(0, 240, 255, 0.15), 0 0 40px 10px rgba(123, 97, 255, 0.05); }
+  0% { box-shadow: 0 0 0 0 rgba(212, 167, 106, 0); }
+  40% { box-shadow: 0 0 16px 4px rgba(212, 167, 106, 0.2); }
+  100% { box-shadow: 0 0 8px 2px rgba(212, 167, 106, 0.08); }
 }
 
-/* Save celebration — success is not a checkmark, it's a flash of energy */
+/* Save — brief acknowledgment */
 @keyframes savePulse {
-  0% { background: rgba(0, 230, 118, 0); }
-  20% { background: rgba(0, 230, 118, 0.15); }
-  100% { background: rgba(0, 230, 118, 0); }
+  0% { background: rgba(93, 184, 122, 0); }
+  25% { background: rgba(93, 184, 122, 0.08); }
+  100% { background: rgba(93, 184, 122, 0); }
 }
 
-/* Attention draw — a card that has something to say */
+/* Attention — subtle border shift */
 @keyframes cardAttention {
-  0%, 100% { border-color: rgba(255, 255, 255, 0.10); }
-  50% { border-color: rgba(0, 240, 255, 0.35); box-shadow: 0 0 30px rgba(0, 240, 255, 0.08); }
+  0%, 100% { border-color: rgba(255, 255, 255, 0.07); }
+  50% { border-color: rgba(212, 167, 106, 0.20); }
 }
 
-/* Entrance with weight — elements arrive, they don't just appear */
+/* Entrance — clean fade in */
 @keyframes enterHeavy {
-  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-  60% { opacity: 1; transform: translateY(-4px) scale(1.01); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Phase shift — the whole environment responds to state changes */
+/* Phase shift — minimal */
 @keyframes phaseShift {
-  0% { opacity: 0.7; }
+  0%, 100% { opacity: 0.85; }
   50% { opacity: 1; }
-  100% { opacity: 0.7; }
 }
 
-/* Heartbeat — for things that are alive and waiting */
+/* Heartbeat — removed. Static confidence. */
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
-  14% { transform: scale(1.06); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.04); }
-  56% { transform: scale(1); }
 }
 
 .hidden { display: none; }
