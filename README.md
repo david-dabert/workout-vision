@@ -7,7 +7,7 @@ On-device AI workout analysis. Upload a video of your exercise, get rep counts, 
 ## What it does
 
 - Detects 274 exercises from pose landmarks using a heuristic classifier with confidence scoring (low-confidence detections flagged in UI)
-- Counts reps via valley detection on joint angle signals (video mode) and a 5-stage biomechanical FSM (live mode)
+- Counts reps via adaptive multi-signal valley detection with hysteresis overcounting guard (video mode) and a 5-stage biomechanical FSM (live mode)
 - Scores form using declarative checks compiled from an exercise DSL (237 exercises with real checks, 37 with placeholder stubs scored as N/A)
 - Computes velocity, time under tension, ROM, bilateral asymmetry, and fatigue trends
 - Progressive exercise detection during frame extraction (early feedback before analysis completes)
@@ -70,7 +70,9 @@ npm run deploy     # build + deploy to GitHub Pages
 
 ## Benchmark
 
-A validation harness (`?validate=1`) runs the engine against the Countix benchmark (43 videos, 9 exercises) with ground truth rep counts. Results include accuracy, MAE, OBO accuracy, and per-video diagnostics.
+Validated against 43 Countix videos (9 exercises): **21/41 exact (51%), 37/41 off-by-one (90%), MAE 0.76**. Two videos excluded due to extraction failure.
+
+Full results, method description, known limitations, and reproduction instructions: **[BENCHMARK.md](BENCHMARK.md)**
 
 ## License
 

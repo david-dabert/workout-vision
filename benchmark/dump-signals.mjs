@@ -198,8 +198,13 @@ if (module.registerHooks) {
       if (specifier.endsWith('/poseAnalysis') || specifier === './poseAnalysis') {
         return { shortCircuit: true, url: shimUrl };
       }
-      if (specifier.startsWith('./') && !specifier.slice(2).includes('.')) {
+      if ((specifier.startsWith('./') || specifier.startsWith('../')) && !specifier.split('/').pop().includes('.')) {
+        try { return nextResolve(specifier + '.ts', context); } catch {}
         return nextResolve(specifier + '.js', context);
+      }
+      if (specifier.endsWith('.js')) {
+        try { return nextResolve(specifier, context); } catch {}
+        return nextResolve(specifier.replace(/\.js$/, '.ts'), context);
       }
       return nextResolve(specifier, context);
     },
@@ -248,7 +253,7 @@ if (module.registerHooks) {
 }
 
 // ── Import RepCounter after loader hooks are set up ──
-const { RepCounter } = await import('../src/lib/repCounter.js');
+const { RepCounter } = await import('../src/lib/repCounter/index.js');
 
 // Restore exercises.js if it was patched
 if (exercisesPatched !== exercisesOriginal) {

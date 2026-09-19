@@ -39,6 +39,7 @@ import {
   interpolateNulls,
   smoothSignal,
 } from '../valleyCounter';
+import { hysteresisCount } from '../hysteresisCounter';
 import {
   getRepPeriodBounds,
 } from '../analysisConfig';
@@ -47,7 +48,7 @@ import type { Exercise, ValleyResult, Cycle, DiagCandidate, RepCounterOptions } 
 import { adaptiveSignalSelect } from './valley';
 import { buildFormHistoryFromCycles, evaluateLiveRep, evaluateFormFeedback } from './scoring';
 
-const REP_COUNTER_BUILD = 'v24-adaptive-signal';
+const REP_COUNTER_BUILD = 'v25-hys-guard';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -122,6 +123,7 @@ export class RepCounter {
   private _repResult!: { confirmed: number; uncertain: number; total: number } | null;
   private _exerciseConfidence!: number;
   private _adaptedSignalName?: string;
+  private _countMethod?: string;
   private _adaptiveDiagCandidates?: DiagCandidate[];
   private _adaptiveDiag?: DiagCandidate[];
   private _templateEdgeDiag?: unknown;
@@ -414,6 +416,36 @@ export class RepCounter {
     // shrinks below threshold so template won't double-fire.
     result = this._templateEdgeCorrect(signal, result);
 
+    // Hysteresis cross-check for overcounting detection.
+    // Hysteresis requires full cycle completion (cross both thresholds),
+    // so it is immune to noise-created false valleys. When valley counting
+    // finds significantly more reps than hysteresis AND both methods
+    // are in the same ballpark, trust the lower (hysteresis) count.
+    //
+    // Conditions for capping (all must be true):
+    //   1. Hysteresis found > 0 reps (calibration succeeded)
+    //   2. Valley found more than hysteresis
+    //   3. The difference is >= 2 (not just an edge rep)
+    //   4. Hysteresis is within 75% of valley (both in same ballpark —
+    //      avoids capping when hysteresis severely undercounts)
+    const hysResult: ValleyResult = hysteresisCount(signal, this._fps, ex);
+
+    let countMethod: string = 'valley';
+    if (hysResult.reps > 0
+        && result.reps > hysResult.reps
+        && result.reps - hysResult.reps >= 2
+        && hysResult.reps >= result.reps * 0.75) {
+      result = {
+        ...result,
+        reps: hysResult.reps,
+        valleyFrames: result.valleyFrames.slice(0, hysResult.reps),
+      };
+      countMethod = 'valley+hys-cap';
+    }
+    this._countMethod = countMethod;
+    // Store hysteresis result for diagnostics
+    (this as any)._hysReps = hysResult.reps;
+
     if (result.reps === 0) {
       // Valley counting found nothing. Keep FSM reps if any were counted
       // during live preview -- they saw real motion that valley counting missed.
@@ -601,7 +633,9 @@ export class RepCounter {
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._totalFramesAnalyzed || this._collectedLandmarks.length,
-      method: this._adaptedSignalName ? `valley:${this._adaptedSignalName}` : 'valley-counter',
+      method: this._countMethod
+        ? `${this._countMethod}:${this._adaptedSignalName || 'primary'}`
+        : (this._adaptedSignalName ? `valley:${this._adaptedSignalName}` : 'valley-counter'),
       cycles: this._cycleDebug,
       velocity: this._velocityAnalysis,
       progression: this._progressionScore,

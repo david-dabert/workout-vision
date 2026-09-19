@@ -330,7 +330,7 @@ export const EXERCISE_BY_MUSCLE = (() => {
 // Images: 512x512 PNG, 3 frames per exercise (start, mid, end).
 // Source: @bryllim/workout-guide, copied to public/assets/exercises/
 // ---------------------------------------------------------------------------
-const ILLUSTRATION_BASE = `${import.meta.env.BASE_URL}assets/exercises`;
+const ILLUSTRATION_BASE = `${'/'}assets/exercises`;
 
 const EXERCISE_SLUG_MAP = {
   // Keys must match EXERCISES object keys exactly.

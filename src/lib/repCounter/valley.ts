@@ -63,10 +63,12 @@ export function adaptiveSignalSelect(
     try {
       const signals3D = extractSignals3D(cleanedLandmarks);
       // Alternative signals get stronger smoothing (5) to suppress noise,
-      // EXCEPT for fast exercises (battle rope, jumping jacks) where
-      // smoothing=5 kills the rapid oscillations that ARE the reps.
-      const altSmoothWindow = (exercise.minSpacing != null && exercise.minSpacing < 0.2)
-        ? (exercise.smoothing != null ? exercise.smoothing : 1) : 5;
+      // EXCEPT when the exercise explicitly sets a smoothing override
+      // (e.g. sit_up smoothing=1 for Nyquist-limited fast reps), or for
+      // fast exercises (battle rope, jumping jacks) where smoothing=5
+      // kills the rapid oscillations that ARE the reps.
+      const altSmoothWindow = exercise.smoothing != null ? exercise.smoothing
+        : (exercise.minSpacing != null && exercise.minSpacing < 0.2) ? 1 : 5;
 
       for (const sigName of priority) {
         const sig = signals3D.find((s: { name: string; values: (number | null)[] }) => s.name === sigName);

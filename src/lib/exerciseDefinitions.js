@@ -1565,6 +1565,11 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 140,
     amplitudeRatio: 0.15,
+    // Sit-ups can be fast (~0.4-0.5s/rep). Default smoothing=3 and
+    // minSpacing=0.5 at 10fps creates a Nyquist limit of ~12 reps.
+    // Reduce both to resolve fast reps without over-smoothing.
+    smoothing: 1,
+    minSpacing: 0.3,
     formChecks: [
       { name: 'Full sit', type: 'custom',
         check: (angles) => bestSideMax(angles, 'leftHip', 'rightHip', '_visLeftHip', '_visRightHip') > 100,

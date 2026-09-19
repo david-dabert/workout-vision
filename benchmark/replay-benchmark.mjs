@@ -341,11 +341,13 @@ for (const video of cache) {
     counter.finalize();
 
     const actual = counter.reps || 0;
+    const hysReps = counter._hysReps || 0;
     const diag = counter.diagnostics || {};
     const entry = {
       video: name,
       expected,
       actual,
+      hysReps,
       error: actual - expected,
       method: diag.method || '',
       exercise,
@@ -418,8 +420,9 @@ for (const r of results) {
   const got = String(r.actual).padStart(3);
   const exp = String(r.expected ?? '?').padStart(4);
   const err = r.error === 0 ? '  0' : ((r.error > 0 ? '+' : '') + r.error).padStart(3);
+  const hys = r.hysReps != null ? `hys=${String(r.hysReps).padStart(2)}` : '';
   const note = r.note ? ` (${r.note})` : '';
-  console.log(`  ${name} ${got} ${exp}  ${err}  ${r.method}${note}`);
+  console.log(`  ${name} ${got} ${exp}  ${err}  ${hys}  ${r.method}${note}`);
 }
 
 // Per-exercise breakdown

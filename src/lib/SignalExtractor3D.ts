@@ -289,7 +289,7 @@ export const SIGNAL_PRIORITY_3D: Record<string, string[]> = {
   push_up:       ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   pull_up:       ['nose_Y', 'nose_Z', 'shoulder_Y'],
   chin_up:       ['nose_Y', 'nose_Z', 'shoulder_Y'],
-  sit_up:        ['nose_Y', 'trunk', 'nose_Z'],
+  sit_up:        ['nose_Y', 'shoulder_Y', 'trunk', 'nose_Z'],
   crunch:        ['nose_Y', 'trunk'],
   front_raise:   ['wrist_Y_L', 'wrist_Y_R', 'shoulder_L', 'shoulder_R'],
   lateral_raise: ['shoulder_L', 'shoulder_R', 'wrist_Y_L', 'wrist_Y_R'],
