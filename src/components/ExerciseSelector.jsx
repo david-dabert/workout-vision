@@ -10,7 +10,7 @@ const REGION_KEYS = {
 };
 
 /**
- * Searchable exercise selector with muscle-group tabs.
+ * Exercise selector with muscle-group tabs.
  *
  * @param {string} value - current exercise key (or '__auto__')
  * @param {function} onChange - called with exercise key
@@ -20,9 +20,7 @@ const REGION_KEYS = {
 export default function ExerciseSelector({ value, onChange, showAuto = true, className }) {
   const { t, tExercise } = useT();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
   const [activeRegion, setActiveRegion] = useState(null);
-  const inputRef = useRef(null);
   const panelRef = useRef(null);
 
   // Close on outside click
@@ -37,32 +35,19 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
     return () => document.removeEventListener('pointerdown', handler);
   }, [open]);
 
-  // Focus search input when opening
-  useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [open]);
-
   const regions = useMemo(() => Object.keys(EXERCISE_BY_MUSCLE), []);
 
-  // Filter exercises by search term
+  // Filter exercises by active region
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term && !activeRegion) return EXERCISE_BY_MUSCLE;
+    if (!activeRegion) return EXERCISE_BY_MUSCLE;
 
     const result = {};
     for (const [region, exercises] of Object.entries(EXERCISE_BY_MUSCLE)) {
-      if (activeRegion && region !== activeRegion) continue;
-      const matched = exercises.filter(ex => {
-        if (!term) return true;
-        const translatedName = tExercise(ex.key, ex.name).toLowerCase();
-        return translatedName.includes(term) || ex.name.toLowerCase().includes(term) || ex.key.includes(term);
-      });
-      if (matched.length > 0) result[region] = matched;
+      if (region !== activeRegion) continue;
+      if (exercises.length > 0) result[region] = exercises;
     }
     return result;
-  }, [search, activeRegion, tExercise]);
+  }, [activeRegion]);
 
   const totalResults = useMemo(() =>
     Object.values(filtered).reduce((sum, arr) => sum + arr.length, 0),
@@ -77,7 +62,6 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
   function select(key) {
     onChange(key);
     setOpen(false);
-    setSearch('');
     setActiveRegion(null);
   }
 
@@ -86,7 +70,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
       {/* Trigger button */}
       <button
         type="button"
-        onClick={() => { setOpen(!open); setSearch(''); setActiveRegion(null); }}
+        onClick={() => { setOpen(!open); setActiveRegion(null); }}
         aria-expanded={open}
         aria-haspopup="listbox"
         style={{
@@ -128,27 +112,6 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
           boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
           animation: 'fadeIn 0.15s ease',
         }}>
-          {/* Search input */}
-          <div style={{ padding: 8, borderBottom: '1px solid var(--border, #333)' }}>
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder={t('search_exercises') || 'Search exercises...'}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: 'var(--radius-sm, 8px)',
-                border: '1px solid var(--border, #333)',
-                background: 'var(--bg, #07070a)',
-                color: 'var(--text-primary, #f0f0f5)',
-                fontSize: '0.85rem',
-                outline: 'none',
-              }}
-            />
-          </div>
-
           {/* Region tabs */}
           <div style={{
             display: 'flex',
@@ -209,7 +172,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
           {/* Exercise list */}
           <div style={{ overflowY: 'auto', flex: 1 }} role="listbox">
             {/* Automatic option */}
-            {showAuto && !search && !activeRegion && (
+            {showAuto && !activeRegion && (
               <button
                 type="button"
                 role="option"
