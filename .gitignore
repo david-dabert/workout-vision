@@ -28,6 +28,8 @@ benchmark/videos/
 benchmark/results/
 benchmark/landmark-cache/*.json
 !benchmark/landmark-cache/*.json.gz
+benchmark/artifacts/*.json
+!benchmark/artifacts/.gitkeep
 public/benchmark
 .certs/
 

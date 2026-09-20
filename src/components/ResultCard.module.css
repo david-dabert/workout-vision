@@ -1125,3 +1125,62 @@
   border: none;
   color: #000;
 }
+
+/* Insufficient footage banner */
+.insufficientFootageBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  background: var(--yellow-glow);
+  border: 1px solid rgba(201, 160, 74, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.insufficientFootageIcon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.insufficientFootageText {
+  line-height: 1.3;
+}
+
+/* Filming guide (shown in insufficient footage state) */
+.filmingGuide {
+  padding: 16px 0 8px;
+}
+
+.filmingGuide h4 {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.filmingGuideList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filmingGuideList li {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding-left: 16px;
+  position: relative;
+}
+
+.filmingGuideList li::before {
+  content: '\2022';
+  position: absolute;
+  left: 0;
+  color: var(--text-tertiary);
+}

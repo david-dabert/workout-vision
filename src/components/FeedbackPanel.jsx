@@ -114,6 +114,9 @@ function FeedbackPanel({ result }) {
       original: result?.exercise,
       corrected: newExercise,
       confidence: result?.confidence?.visibility,
+      detectionConfidence: result?.detectionConfidence,
+      insufficientFootage: result?.insufficientFootage,
+      qualityGateReasons: result?.qualityGateReasons,
     }).catch(() => {});
     // Update the stored workout record with the corrected exercise
     if (result?.workoutId) {

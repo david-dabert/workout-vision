@@ -206,6 +206,10 @@ function ResultCard({ result, onReplay }) {
         original: originalReps,
         corrected: clamped,
         confidence: result.confidence?.visibility,
+        detectionConfidence: result.detectionConfidence,
+        insufficientFootage: result.insufficientFootage,
+        qualityGateReasons: result.qualityGateReasons,
+        formScore,
       }).catch(() => {});
       setCorrectionToast('rep');
       setTimeout(() => setCorrectionToast(null), 2000);
@@ -291,6 +295,31 @@ function ResultCard({ result, onReplay }) {
     };
     requestAnimationFrame(step);
   }, [formScore]);
+
+  // Insufficient footage: exclusive degraded state — no grade, no coaching, no stats
+  if (result.insufficientFootage) {
+    return (
+      <div className={`card result-card ${s.resultCard}`}>
+        <div className={s.heroGrade}>
+          <span className={`score-badge grade-na ${s.heroGradeBadge}`}>--</span>
+          <h3 className={s.heroExerciseName}>{displayName}</h3>
+        </div>
+        <div className={s.insufficientFootageBanner}>
+          <span className={s.insufficientFootageIcon}>&#9888;</span>
+          <span className={s.insufficientFootageText}>{t('insufficient_footage')}</span>
+        </div>
+        <div className={s.filmingGuide}>
+          <h4>{t('filming_tips_title')}</h4>
+          <ul className={s.filmingGuideList}>
+            <li>{t('filming_tip_light')}</li>
+            <li>{t('filming_tip_angle')}</li>
+            <li>{t('filming_tip_rom')}</li>
+            <li>{t('filming_tip_stable')}</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`card result-card ${s.resultCard}`}>

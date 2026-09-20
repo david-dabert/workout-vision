@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WorkoutVision — Landmark Dump</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.2rem; margin-bottom: 1rem; }
+  .controls { display: flex; flex-direction: column; gap: 0.75rem; }
+  label { font-size: 0.9rem; }
+  input[type=file] { font-size: 0.9rem; }
+  input[type=number] { width: 60px; font-size: 0.9rem; }
+  button { padding: 0.5rem 1.5rem; font-size: 0.9rem; cursor: pointer; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  #status { margin-top: 1rem; font-size: 0.85rem; white-space: pre-wrap; font-family: monospace; }
+  video { display: none; }
+  canvas { display: none; }
+</style>
+</head>
+<body>
+
+<h1>Landmark Dump — Full 33-point MediaPipe Pose</h1>
+
+<div class="controls">
+  <label>Video file: <input type="file" id="videoFile" accept="video/*"></label>
+  <label>Target FPS: <input type="number" id="fps" value="15" min="1" max="30"></label>
+  <button id="runBtn" disabled>Run extraction</button>
+</div>
+
+<div id="status">Select a video to begin.</div>
+
+<video id="vid" muted playsinline></video>
+<canvas id="cvs"></canvas>
+
+<script type="module">
+// MediaPipe Tasks Vision from CDN
+const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/+esm');
+const { PoseLandmarker, FilesetResolver } = vision;
+
+const statusEl = document.getElementById('status');
+const log = (msg) => { statusEl.textContent += '\n' + msg; };
+
+// Resolve WASM fileset
+log('Loading MediaPipe WASM...');
+const wasmFileset = await FilesetResolver.forVisionTasks(
+  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm'
+);
+log('WASM ready.');
+
+// Create PoseLandmarker
+log('Loading pose model (full, float16)...');
+const landmarker = await PoseLandmarker.createFromOptions(wasmFileset, {
+  baseOptions: {
+    modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
+    delegate: 'GPU',
+  },
+  runningMode: 'VIDEO',
+  numPoses: 1,
+});
+log('Model loaded.');
+
+const fileInput = document.getElementById('videoFile');
+const fpsInput = document.getElementById('fps');
+const runBtn = document.getElementById('runBtn');
+const vid = document.getElementById('vid');
+const cvs = document.getElementById('cvs');
+const ctx = cvs.getContext('2d');
+
+fileInput.addEventListener('change', () => {
+  runBtn.disabled = !fileInput.files.length;
+});
+
+runBtn.addEventListener('click', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  runBtn.disabled = true;
+  statusEl.textContent = `Processing: ${file.name}`;
+
+  const targetFps = parseInt(fpsInput.value, 10) || 15;
+  const artifact = await extractLandmarks(file, targetFps);
+
+  if (!artifact) {
+    log('Extraction failed.');
+    runBtn.disabled = false;
+    return;
+  }
+
+  // Download artifact
+  const json = JSON.stringify(artifact);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const baseName = file.name.replace(/\.[^.]+$/, '');
+  a.href = url;
+  a.download = `landmarks-${baseName}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  log(`\nDone. ${artifact.frames.length} frames extracted.`);
+  log(`Artifact: landmarks-${baseName}.json (${(json.length / 1024).toFixed(0)} KB)`);
+  runBtn.disabled = false;
+});
+
+async function extractLandmarks(file, targetFps) {
+  return new Promise((resolve) => {
+    const videoUrl = URL.createObjectURL(file);
+    vid.src = videoUrl;
+
+    vid.onloadedmetadata = async () => {
+      const duration = vid.duration;
+      const nativeWidth = vid.videoWidth;
+      const nativeHeight = vid.videoHeight;
+
+      // Cap canvas to 720px wide for performance
+      const scale = Math.min(1, 720 / nativeWidth);
+      cvs.width = Math.round(nativeWidth * scale);
+      cvs.height = Math.round(nativeHeight * scale);
+
+      log(`Video: ${nativeWidth}x${nativeHeight}, ${duration.toFixed(2)}s`);
+      log(`Canvas: ${cvs.width}x${cvs.height}, target ${targetFps} FPS`);
+
+      const interval = 1 / targetFps;
+      const totalFrames = Math.floor(duration * targetFps);
+      const frames = [];
+      let frameIndex = 0;
+
+      // Seek-based extraction: precise frame-by-frame
+      for (let t = 0; t < duration; t += interval) {
+        vid.currentTime = t;
+        await new Promise(r => { vid.onseeked = r; });
+
+        ctx.drawImage(vid, 0, 0, cvs.width, cvs.height);
+
+        // Deterministic timestamp for MediaPipe (must be monotonically increasing)
+        const tsMs = Math.round(t * 1000);
+
+        try {
+          const result = landmarker.detectForVideo(cvs, tsMs);
+          if (result.landmarks && result.landmarks.length > 0) {
+            // Take first (or largest) person
+            const lm = result.landmarks[0].map(p => ({
+              x: Math.round(p.x * 1e6) / 1e6,
+              y: Math.round(p.y * 1e6) / 1e6,
+              z: Math.round(p.z * 1e6) / 1e6,
+              visibility: Math.round(p.visibility * 1e4) / 1e4,
+            }));
+            const wlm = result.worldLandmarks?.[0]?.map(p => ({
+              x: Math.round(p.x * 1e6) / 1e6,
+              y: Math.round(p.y * 1e6) / 1e6,
+              z: Math.round(p.z * 1e6) / 1e6,
+              visibility: Math.round(p.visibility * 1e4) / 1e4,
+            })) || null;
+
+            frames.push({
+              index: frameIndex,
+              timestamp: Math.round(t * 1e4) / 1e4,
+              landmarks: lm,
+              worldLandmarks: wlm,
+            });
+          } else {
+            frames.push({ index: frameIndex, timestamp: Math.round(t * 1e4) / 1e4, landmarks: null, worldLandmarks: null });
+          }
+        } catch (err) {
+          frames.push({ index: frameIndex, timestamp: Math.round(t * 1e4) / 1e4, landmarks: null, worldLandmarks: null });
+        }
+
+        frameIndex++;
+        if (frameIndex % 10 === 0) {
+          log(`  frame ${frameIndex}/${totalFrames}`);
+        }
+      }
+
+      URL.revokeObjectURL(videoUrl);
+
+      const artifact = {
+        version: 1,
+        video: file.name,
+        metadata: {
+          duration: Math.round(duration * 1000) / 1000,
+          fps: targetFps,
+          nativeWidth,
+          nativeHeight,
+          canvasWidth: cvs.width,
+          canvasHeight: cvs.height,
+          extractedAt: new Date().toISOString(),
+        },
+        frames,
+      };
+
+      resolve(artifact);
+    };
+
+    vid.onerror = () => {
+      log('Error loading video.');
+      resolve(null);
+    };
+  });
+}
+</script>
+</body>
+</html>

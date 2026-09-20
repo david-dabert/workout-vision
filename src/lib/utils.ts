@@ -4,11 +4,9 @@
 
 export function gradeFromScore(score: number | null | undefined): string {
   if (score == null) return '--';
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'B+';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C+';
+  if (score >= 90) return 'A+';
+  if (score >= 80) return 'A';
+  if (score >= 70) return 'B';
   if (score >= 60) return 'C';
   if (score >= 50) return 'D';
   return 'F';
@@ -16,8 +14,8 @@ export function gradeFromScore(score: number | null | undefined): string {
 
 export function gradeClass(score: number | null | undefined): string {
   if (score == null) return 'grade-na';
-  if (score >= 90) return 'grade-a';
-  if (score >= 75) return 'grade-b';
+  if (score >= 80) return 'grade-a';
+  if (score >= 70) return 'grade-b';
   if (score >= 60) return 'grade-c';
   return 'grade-d';
 }

@@ -1593,5 +1593,11 @@
   "coaching_smoothness_jerky": "Votre mouvement est saccadé avec des changements de vitesse brusques. Des répétitions fluides et contrôlées réduisent le risque de blessure et améliorent le temps sous tension. Ralentissez la phase excentrique (descente).",
   "coaching_bar_path_drift": "Dérive latérale significative ({{drift}}%) détectée dans la trajectoire de la barre. Une trajectoire plus droite signifie un transfert de force plus efficace. Vérifiez la largeur de prise et l'équilibre de la charge.",
   "coaching_balance_sway": "Votre centre de gravité se déplace latéralement pendant les répétitions ({{sway}}% de balancement). Cela suggère qu'un côté compense. Concentrez-vous sur une répartition égale du poids sur les deux pieds.",
-  "coach_no_history": "Aucun historique d'entraînement disponible. Commencez par une séance full-body axée sur les mouvements polyarticulaires à intensité modérée."
+  "coach_no_history": "Aucun historique d'entraînement disponible. Commencez par une séance full-body axée sur les mouvements polyarticulaires à intensité modérée.",
+  "insufficient_footage": "Qualité vidéo insuffisante pour un scoring fiable.",
+  "filming_tips_title": "COMMENT OBTENIR UNE BONNE ANALYSE",
+  "filming_tip_light": "Filmez dans un espace bien éclairé avec une lumière naturelle ou vive",
+  "filming_tip_angle": "Placez votre téléphone à hauteur de poitrine, à 2-3m, corps entier visible",
+  "filming_tip_rom": "Effectuez une amplitude complète à chaque répétition",
+  "filming_tip_stable": "Gardez la caméra stable \u2014 appuyez-la contre quelque chose ou utilisez un trépied"
 }

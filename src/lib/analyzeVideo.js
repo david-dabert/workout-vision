@@ -34,6 +34,7 @@ import {
   loadPartialCheckpoint,
   clearPartialCheckpoint,
 } from './landmarkCache';
+import { runInputQualityGate } from './inputQualityGate';
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 const CHECKPOINT_INTERVAL = 50; // Save partial checkpoint every N frames
@@ -518,6 +519,7 @@ async function buildFullResult({
   let detectedExercise = initialExercise;
   let detectionConfidence = 1; // 1.0 when user manually selected
   let detectionLowConfidence = false;
+  let candidateScores = []; // top detection candidates for diagnostics
   const interval = 1 / analysisFps;
   let repCounter = new RepCounter(initialExercise, { fps: analysisFps, userInjuries, mode: 'video', weightKg });
   let autoDetected = false;
@@ -536,6 +538,7 @@ async function buildFullResult({
     detectionLowConfidence = detectionInfo.isLowConfidence;
 
     const candidates = Object.keys(tallies);
+    candidateScores = []; // top-3 candidates for diagnostics
     if (candidates.length > 0) {
       let bestEx = initialExercise;
       let bestScore = -1;
@@ -546,8 +549,10 @@ async function buildFullResult({
         const reps = rc.repHistory ? rc.repHistory.length : 0;
         const hasChecks = EXERCISES[ex]?.formChecks?.length > 0 ? 500 : 0;
         const score = reps * 1000 + hasChecks + tallies[ex];
+        candidateScores.push({ exercise: ex, score, reps, tally: tallies[ex] });
         if (score > bestScore) { bestScore = score; bestEx = ex; }
       }
+      candidateScores.sort((a, b) => b.score - a.score);
       if (bestEx !== initialExercise || candidates.includes(initialExercise)) {
         detectedExercise = bestEx;
         autoDetected = true;
@@ -573,10 +578,37 @@ async function buildFullResult({
   const repHistory = enrichedRepHistory;
   const reps = repHistory.length;
 
+  // Input quality gate — runs AFTER detection + rep counting, BEFORE form scoring.
+  // Flags insufficient footage so the UI can show a degraded result instead of
+  // misleading grades derived from bad data.
+  const frameTimestamps = enrichedRepHistory.length > 0
+    ? frames.map(f => f.timestamp)
+    : [];
+  const videoDurationSec = frames.length > 0
+    ? frames[frames.length - 1].timestamp - frames[0].timestamp
+    : 0;
+  const repCounterDiagnostics = repCounter.diagnostics || {};
+  const qualityGate = runInputQualityGate({
+    exercise: detectedExercise,
+    reps,
+    durationSec: videoDurationSec,
+    detectionLowConfidence,
+    frameTimestamps,
+    fps: analysisFps,
+    observedRange: repCounterDiagnostics.observedRange,
+  });
+
+  // Halve detection confidence when plausibility fails — the primary signal
+  // is suspect, so downstream consumers (form scoring, coach) should be cautious.
+  if (!qualityGate.pass && detectionConfidence > 0) {
+    detectionConfidence = detectionConfidence * 0.5;
+    detectionLowConfidence = true;
+  }
+
   // Biomechanical analysis — skip exercise-specific form checks when detection
   // is low-confidence to avoid unsafe coaching on a potentially wrong exercise.
   let bioAnalysis = null;
-  const safeForFormChecks = !detectionLowConfidence;
+  const safeForFormChecks = !detectionLowConfidence && qualityGate.pass;
   try { bioAnalysis = analyzeSet(landmarkFrames, analysisFps, detectedExercise, repHistory, userProfile?.height); }
   catch (err) { console.error('Bio analysis error:', err); }
 
@@ -690,6 +722,9 @@ async function buildFullResult({
     detectionFailed: autoDetected === 'failed',
     detectionConfidence,
     detectionLowConfidence,
+    detectionCandidates: candidateScores.slice(0, 3),
+    insufficientFootage: qualityGate.insufficientFootage,
+    qualityGateReasons: qualityGate.reasons,
     weight: w,
     debug,
     aborted: false,

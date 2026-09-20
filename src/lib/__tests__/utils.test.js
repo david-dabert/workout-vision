@@ -13,30 +13,20 @@ import { gradeFromScore, gradeClass, translateMuscle, MUSCLE_FR } from '../utils
 // ---------------------------------------------------------------------------
 
 describe('gradeFromScore', () => {
-  it('returns A+ for scores >= 95', () => {
-    expect(gradeFromScore(95)).toBe('A+');
+  it('returns A+ for scores >= 90', () => {
+    expect(gradeFromScore(90)).toBe('A+');
     expect(gradeFromScore(100)).toBe('A+');
     expect(gradeFromScore(99.5)).toBe('A+');
   });
 
-  it('returns A for scores 90-94', () => {
-    expect(gradeFromScore(90)).toBe('A');
-    expect(gradeFromScore(94)).toBe('A');
+  it('returns A for scores 80-89', () => {
+    expect(gradeFromScore(80)).toBe('A');
+    expect(gradeFromScore(89)).toBe('A');
   });
 
-  it('returns B+ for scores 85-89', () => {
-    expect(gradeFromScore(85)).toBe('B+');
-    expect(gradeFromScore(89)).toBe('B+');
-  });
-
-  it('returns B for scores 80-84', () => {
-    expect(gradeFromScore(80)).toBe('B');
-    expect(gradeFromScore(84)).toBe('B');
-  });
-
-  it('returns C+ for scores 70-79', () => {
-    expect(gradeFromScore(70)).toBe('C+');
-    expect(gradeFromScore(79)).toBe('C+');
+  it('returns B for scores 70-79', () => {
+    expect(gradeFromScore(70)).toBe('B');
+    expect(gradeFromScore(79)).toBe('B');
   });
 
   it('returns C for scores 60-69', () => {
@@ -56,14 +46,12 @@ describe('gradeFromScore', () => {
   });
 
   it('handles exact boundary values correctly', () => {
-    // Each boundary is the lower bound of the next grade
     const boundaries = [
-      [95, 'A+'], [90, 'A'], [85, 'B+'], [80, 'B'],
-      [70, 'C+'], [60, 'C'], [50, 'D'],
+      [90, 'A+'], [80, 'A'], [70, 'B'],
+      [60, 'C'], [50, 'D'],
     ];
     for (const [score, expected] of boundaries) {
       expect(gradeFromScore(score)).toBe(expected);
-      // One point below should yield the previous grade
       expect(gradeFromScore(score - 1)).not.toBe(expected);
     }
   });
@@ -74,19 +62,19 @@ describe('gradeFromScore', () => {
 // ---------------------------------------------------------------------------
 
 describe('gradeClass', () => {
-  it('returns grade-a for scores >= 90', () => {
-    expect(gradeClass(90)).toBe('grade-a');
+  it('returns grade-a for scores >= 80', () => {
+    expect(gradeClass(80)).toBe('grade-a');
     expect(gradeClass(100)).toBe('grade-a');
   });
 
-  it('returns grade-b for scores 75-89', () => {
-    expect(gradeClass(75)).toBe('grade-b');
-    expect(gradeClass(89)).toBe('grade-b');
+  it('returns grade-b for scores 70-79', () => {
+    expect(gradeClass(70)).toBe('grade-b');
+    expect(gradeClass(79)).toBe('grade-b');
   });
 
-  it('returns grade-c for scores 60-74', () => {
+  it('returns grade-c for scores 60-69', () => {
     expect(gradeClass(60)).toBe('grade-c');
-    expect(gradeClass(74)).toBe('grade-c');
+    expect(gradeClass(69)).toBe('grade-c');
   });
 
   it('returns grade-d for scores below 60', () => {

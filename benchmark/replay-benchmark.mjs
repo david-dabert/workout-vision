@@ -247,10 +247,12 @@ if (module.registerHooks) {
       if (specifier.endsWith('/poseAnalysis') || specifier === './poseAnalysis') {
         return { shortCircuit: true, url: shimUrl };
       }
-      // Bare relative imports: try .ts first (migrated modules), fall back to .js
+      // Bare relative imports: try .ts first (migrated modules), fall back to .js, then directory index
       if ((specifier.startsWith('./') || specifier.startsWith('../')) && !specifier.split('/').pop().includes('.')) {
         try { return nextResolve(specifier + '.ts', context); } catch {}
-        return nextResolve(specifier + '.js', context);
+        try { return nextResolve(specifier + '.js', context); } catch {}
+        try { return nextResolve(specifier + '/index.ts', context); } catch {}
+        return nextResolve(specifier + '/index.js', context);
       }
       // Explicit .js imports: if file was renamed to .ts, resolve .ts instead
       if (specifier.endsWith('.js')) {
@@ -404,10 +406,10 @@ console.log('  REPLAY BENCHMARK RESULTS');
 console.log('='.repeat(70));
 const excluded = results.filter(r => r.note);
 console.log(`  Videos:      ${scored.length} scored, ${excluded.length} excluded`);
-console.log(`  Accuracy:    ${avgAcc}%`);
-console.log(`  Exact:       ${exact}/${scored.length}`);
+console.log(`  Exact match: ${exact}/${scored.length} (${scored.length > 0 ? Math.round(exact / scored.length * 100) : 0}%)`);
 console.log(`  OBO (±1):    ${obo}/${scored.length} (${scored.length > 0 ? Math.round(obo / scored.length * 100) : 0}%)`);
 console.log(`  MAE:         ${mae}`);
+console.log(`  Avg accuracy:${avgAcc}% (mean of per-video max(0, 1-|error|/expected))`);
 if (excluded.length > 0) {
   console.log(`  Excluded:    ${excluded.map(r => r.video.split('.')[0]).join(', ')}`);
 }

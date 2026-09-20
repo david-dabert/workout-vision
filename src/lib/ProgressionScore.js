@@ -1,29 +1,47 @@
 /**
  * ProgressionScore — The Number Users Tell Friends
  *
- * 0-1000 score integrating form quality, consistency,
+ * 0-100 score integrating form quality, consistency,
  * tempo control (eccentric/concentric ratio from frame timing),
  * volume, and improvement over previous sessions.
+ *
+ * All exported values (score + every component) are ∈ [0, 100].
+ *
+ * Internal weights: form 33%, consistency 27%, tempo 20%,
+ * volume 13%, improvement 7% — but the surface is always 0-100.
  *
  * No pixel-velocity or fabricated physics. Only joint angles,
  * frame timing, and user-entered weight.
  *
- * Grades: F(0-199) D(200-349) C(350-499) B(500-649) B+(650-749) A(750-849) A+(850-929) S(930-1000)
+ * Grades: F(0-19) D(20-34) C(35-49) B(50-64) B+(65-74) A(75-84) A+(85-92) S(93-100)
  */
 
 // ---------------------------------------------------------------------------
-// Grade thresholds
+// Internal component maxima (used to normalize to 0-100)
+// ---------------------------------------------------------------------------
+
+const COMPONENT_MAX = {
+  form: 250,
+  consistency: 200,
+  tempo: 150,
+  volume: 100,
+  improvement: 50,
+};
+const TOTAL_MAX = Object.values(COMPONENT_MAX).reduce((a, b) => a + b, 0); // 750
+
+// ---------------------------------------------------------------------------
+// Grade thresholds (on normalized 0-100 scale)
 // ---------------------------------------------------------------------------
 
 const GRADES = [
-  { min: 930, label: 'S',  title: 'grade_legendary' },
-  { min: 850, label: 'A+', title: 'grade_elite_title' },
-  { min: 750, label: 'A',  title: 'grade_advanced' },
-  { min: 650, label: 'B+', title: 'grade_strong_title' },
-  { min: 500, label: 'B',  title: 'grade_solid' },
-  { min: 350, label: 'C',  title: 'grade_developing' },
-  { min: 200, label: 'D',  title: 'grade_beginner' },
-  { min: 0,   label: 'F',  title: 'grade_starting' },
+  { min: 93, label: 'S',  title: 'grade_legendary' },
+  { min: 85, label: 'A+', title: 'grade_elite_title' },
+  { min: 75, label: 'A',  title: 'grade_advanced' },
+  { min: 65, label: 'B+', title: 'grade_strong_title' },
+  { min: 50, label: 'B',  title: 'grade_solid' },
+  { min: 35, label: 'C',  title: 'grade_developing' },
+  { min: 20, label: 'D',  title: 'grade_beginner' },
+  { min: 0,  label: 'F',  title: 'grade_starting' },
 ];
 
 function getGrade(score) {
@@ -59,7 +77,7 @@ export class ProgressionScore {
 
     // ── Component 1: Form Quality (max 250) ──
     // Average form score with diminishing returns above 90
-    const validFormScores = formScores.filter(s => s != null);
+    const validFormScores = formScores.filter(s => s != null && Number.isFinite(s));
     const avgForm = validFormScores.length > 0
       ? validFormScores.reduce((a, b) => a + b, 0) / validFormScores.length
       : null; // No form data = no form component
@@ -122,23 +140,30 @@ export class ProgressionScore {
     const volumeComponent = Math.min(100, 100 * Math.log10(1 + volumeLoad) / Math.log10(1000));
 
     // ── Component 5: Improvement Bonus (max 50) ──
-    // Beat your previous best
+    // Beat your previous best (previousBest.score is 0-100, convert to internal scale)
     let improvementComponent = 0;
     const rawScore = formComponent + consistencyComponent + tempoComponent +
                      volumeComponent;
 
     if (previousBest && previousBest.score > 0) {
-      const improvement = rawScore - previousBest.score;
+      // Guard: scores > 100 are from the pre-normalization 0-1000 era.
+      // Convert them to 0-100 first so the comparison is meaningful.
+      const prevNorm = previousBest.score > 100
+        ? Math.min(100, previousBest.score / 10)
+        : previousBest.score;
+      const prevInternal = (prevNorm / 100) * TOTAL_MAX;
+      const improvement = rawScore - prevInternal;
       if (improvement > 0) {
         improvementComponent = Math.min(50, improvement * 0.5);
       }
     }
 
-    // ── Final Score ──
-    const totalScore = Math.round(Math.min(1000,
-      formComponent + consistencyComponent + tempoComponent +
-      volumeComponent + improvementComponent
-    ));
+    // ── Normalize to 0-100 ──
+    const norm = (val, max) => Math.round(Math.min(100, Math.max(0, (val / max) * 100)));
+
+    const rawTotal = formComponent + consistencyComponent + tempoComponent +
+                     volumeComponent + improvementComponent;
+    const totalScore = Math.round(Math.min(100, Math.max(0, (rawTotal / TOTAL_MAX) * 100)));
 
     const grade = getGrade(totalScore);
 
@@ -147,11 +172,11 @@ export class ProgressionScore {
       grade,
       percentile: 0, // retained for API compat, not displayed
       components: {
-        form: Math.round(formComponent),
-        consistency: Math.round(consistencyComponent),
-        tempo: Math.round(tempoComponent),
-        volume: Math.round(volumeComponent),
-        improvement: Math.round(improvementComponent),
+        form: norm(formComponent, COMPONENT_MAX.form),
+        consistency: norm(consistencyComponent, COMPONENT_MAX.consistency),
+        tempo: norm(tempoComponent, COMPONENT_MAX.tempo),
+        volume: norm(volumeComponent, COMPONENT_MAX.volume),
+        improvement: norm(improvementComponent, COMPONENT_MAX.improvement),
       },
       breakdown: `${totalScore} (${grade.label}, ${grade.title})`,
     };

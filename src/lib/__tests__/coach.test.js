@@ -48,8 +48,8 @@ describe('generateWorkoutReport', () => {
     expect(report).toHaveProperty('volumeLoad');
     expect(report).toHaveProperty('musclesWorked');
 
-    // Grade should be C+ (score 75 maps to 70-79 range)
-    expect(report.grade).toBe('C+');
+    // Grade should be B (score 75 maps to 70-79 range)
+    expect(report.grade).toBe('B');
 
     // Volume load = reps * sets * weight = 8 * 3 * 80 = 1920
     expect(report.volumeLoad).toBe(1920);
@@ -128,24 +128,16 @@ describe('_scoreToGrade (via generateWorkoutReport)', () => {
     analysis: { movementQuality: quality },
   }];
 
-  it('maps 95 to A+', () => {
-    expect(generateWorkoutReport({}, makeResult(95)).grade).toBe('A+');
+  it('maps 90 to A+', () => {
+    expect(generateWorkoutReport({}, makeResult(90)).grade).toBe('A+');
   });
 
-  it('maps 90 to A', () => {
-    expect(generateWorkoutReport({}, makeResult(90)).grade).toBe('A');
+  it('maps 80 to A', () => {
+    expect(generateWorkoutReport({}, makeResult(80)).grade).toBe('A');
   });
 
-  it('maps 85 to B+', () => {
-    expect(generateWorkoutReport({}, makeResult(85)).grade).toBe('B+');
-  });
-
-  it('maps 80 to B', () => {
-    expect(generateWorkoutReport({}, makeResult(80)).grade).toBe('B');
-  });
-
-  it('maps 70 to C+', () => {
-    expect(generateWorkoutReport({}, makeResult(70)).grade).toBe('C+');
+  it('maps 70 to B', () => {
+    expect(generateWorkoutReport({}, makeResult(70)).grade).toBe('B');
   });
 
   it('maps 60 to C', () => {

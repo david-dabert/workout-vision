@@ -1593,5 +1593,11 @@
   "coaching_smoothness_jerky": "Your movement appears jerky with abrupt speed changes. Smooth, controlled reps reduce injury risk and improve muscle time under tension. Slow down the eccentric (lowering) phase.",
   "coaching_bar_path_drift": "Significant lateral drift ({{drift}}%) detected in your bar path. A straighter path means more efficient force transfer. Check your grip width and ensure even loading.",
   "coaching_balance_sway": "Your center of mass shifts laterally during reps ({{sway}}% sway). This suggests one side is compensating. Focus on even weight distribution through both feet.",
-  "coach_no_history": "No training history available. Start with a full-body session focusing on compound movements at moderate intensity."
+  "coach_no_history": "No training history available. Start with a full-body session focusing on compound movements at moderate intensity.",
+  "insufficient_footage": "Video quality insufficient for reliable scoring.",
+  "filming_tips_title": "HOW TO GET A GOOD ANALYSIS",
+  "filming_tip_light": "Film in a well-lit area with natural or bright artificial light",
+  "filming_tip_angle": "Place your phone at chest height, 2-3m away, with your full body visible",
+  "filming_tip_rom": "Perform full range of motion on every rep",
+  "filming_tip_stable": "Keep the camera steady \u2014 lean it against something or use a tripod"
 }

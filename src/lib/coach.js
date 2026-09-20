@@ -181,17 +181,22 @@ export function generateWorkoutReport(profile, exerciseResults) {
       muscleMap[m.name].estimatedVolume += repVolume;
     }
 
-    // Score from analysis
-    if (result.analysis && result.analysis.movementQuality != null) {
-      totalScore += result.analysis.movementQuality;
-      totalScoredSets++;
-    } else if (result.repHistory && result.repHistory.length > 0) {
+    // Score from per-rep form checks (same signal as the hero grade).
+    // Prefer repHistory scores over movementQuality to keep the coach
+    // grade aligned with what the user sees on the hero badge.
+    if (result.repHistory && result.repHistory.length > 0) {
       const scoredReps = result.repHistory.filter(r => r.score != null);
       if (scoredReps.length > 0) {
         const avgRepScore = scoredReps.reduce((s, r) => s + r.score, 0) / scoredReps.length;
         totalScore += avgRepScore;
         totalScoredSets++;
+      } else if (result.analysis && result.analysis.movementQuality != null) {
+        totalScore += result.analysis.movementQuality;
+        totalScoredSets++;
       }
+    } else if (result.analysis && result.analysis.movementQuality != null) {
+      totalScore += result.analysis.movementQuality;
+      totalScoredSets++;
     }
 
     // Extract structured findings from analysis.
@@ -214,7 +219,17 @@ export function generateWorkoutReport(profile, exerciseResults) {
           }
         }
       }
-      if (result.analysis.movementQuality >= 85) {
+      // Only emit positive quality highlight if per-rep form scores agree.
+      // movementQuality (biomechanics: TUT, ROM, asymmetry) can be high even
+      // when form checks fail — avoid contradicting a low hero grade.
+      const repFormAvg = result.repHistory && result.repHistory.length > 0
+        ? (() => {
+            const scored = result.repHistory.filter(r => r.score != null);
+            return scored.length > 0 ? scored.reduce((s, r) => s + r.score, 0) / scored.length : null;
+          })()
+        : null;
+      const formAgreesWithQuality = repFormAvg == null || repFormAvg >= 70;
+      if (result.analysis.movementQuality >= 85 && formAgreesWithQuality) {
         highlights.push({ key: 'coach_quality_strong', exercise: exKey, exerciseName: exercise.name, score: result.analysis.movementQuality });
       }
     }
@@ -283,11 +298,9 @@ export function generateWorkoutReport(profile, exerciseResults) {
 }
 
 function _scoreToGrade(score) {
-  if (score >= 95) return 'A+';
-  if (score >= 90) return 'A';
-  if (score >= 85) return 'B+';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C+';
+  if (score >= 90) return 'A+';
+  if (score >= 80) return 'A';
+  if (score >= 70) return 'B';
   if (score >= 60) return 'C';
   if (score >= 50) return 'D';
   return 'F';
