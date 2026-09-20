@@ -138,8 +138,8 @@ function loadNewArtifact(path) {
       video: data.video,
       fps: data.metadata.fps,
       duration: data.metadata.duration,
-      exercise: null, // auto-detect
-      expected: null,
+      exercise: data.metadata.exercise || null,
+      expected: data.metadata.reps || null,
       landmarks: data.frames.map(f => f.landmarks),
       timestamps: data.frames.map(f => f.timestamp),
       worldLandmarks: data.frames.map(f => f.worldLandmarks || null),

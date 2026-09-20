@@ -596,6 +596,7 @@ async function buildFullResult({
     frameTimestamps,
     fps: analysisFps,
     observedRange: repCounterDiagnostics.observedRange,
+    medianRepAmplitude: repCounterDiagnostics.medianRepAmplitude,
   });
 
   // Halve detection confidence when plausibility fails — the primary signal

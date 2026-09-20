@@ -171,14 +171,23 @@ const DEFAULT_MIN_AMPLITUDE = 15;
  *
  * @param {string} exercise - exercise key
  * @param {number} observedRange - degrees of primary signal range from RepCounter diagnostics
+ * @param {number|null} medianRepAmplitude - median per-rep ROM from RepCounter diagnostics
  * @returns {{ plausible: boolean, reason?: string }}
  */
-function checkAmplitude(exercise, observedRange) {
-  if (observedRange == null || observedRange < 0) {
+function checkAmplitude(exercise, observedRange, medianRepAmplitude) {
+  const minAmp = MIN_AMPLITUDE[exercise] ?? DEFAULT_MIN_AMPLITUDE;
+
+  // Prefer median per-rep amplitude: global observedRange passes trivially
+  // (e.g. 115° for a curl) even when individual reps have tiny amplitude
+  // from noise-driven overcounting.
+  const effectiveAmplitude = medianRepAmplitude != null && medianRepAmplitude > 0
+    ? medianRepAmplitude
+    : observedRange;
+
+  if (effectiveAmplitude == null || effectiveAmplitude < 0) {
     return { plausible: false, reason: 'signal_no_amplitude' };
   }
-  const minAmp = MIN_AMPLITUDE[exercise] ?? DEFAULT_MIN_AMPLITUDE;
-  if (observedRange < minAmp) {
+  if (effectiveAmplitude < minAmp) {
     return { plausible: false, reason: 'signal_amplitude_too_low' };
   }
   return { plausible: true };
@@ -199,6 +208,7 @@ function checkAmplitude(exercise, observedRange) {
  * @param {number[]} [params.frameTimestamps] - per-frame timestamps for continuity check
  * @param {number} [params.fps] - analysis FPS
  * @param {number} [params.observedRange] - primary signal amplitude in degrees from RepCounter diagnostics
+ * @param {number|null} [params.medianRepAmplitude] - median per-rep ROM from RepCounter diagnostics
  * @returns {{ pass: boolean, insufficientFootage: boolean, reasons: string[] }}
  */
 export function runInputQualityGate({
@@ -209,6 +219,7 @@ export function runInputQualityGate({
   frameTimestamps = [],
   fps = 8,
   observedRange,
+  medianRepAmplitude,
 }) {
   const reasons = [];
 
@@ -231,9 +242,9 @@ export function runInputQualityGate({
     reasons.push(plausibility.reason);
   }
 
-  // Gate 4: Signal amplitude
-  if (observedRange != null) {
-    const amplitude = checkAmplitude(exercise, observedRange);
+  // Gate 4: Signal amplitude (prefer median per-rep over global range)
+  if (observedRange != null || medianRepAmplitude != null) {
+    const amplitude = checkAmplitude(exercise, observedRange, medianRepAmplitude);
     if (!amplitude.plausible) {
       reasons.push(amplitude.reason);
     }

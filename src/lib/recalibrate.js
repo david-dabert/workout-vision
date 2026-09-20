@@ -14,6 +14,7 @@
 import { EXERCISES } from './exercises';
 import { extractJointAngles, interpolateOccludedLandmarks } from './poseAnalysis';
 import { analyzeSet } from './biomechanics';
+import { analyzeCoaching } from './coachingEngine';
 import { generateWorkoutReport } from './coach';
 import { VelocityEngine } from './VelocityEngine';
 import { ProgressionScore } from './ProgressionScore';
@@ -291,6 +292,12 @@ export function recalibrateAnalysis({ frames, exerciseKey, targetReps, fps, prof
     bioAnalysis = analyzeSet(landmarks, fps, exerciseKey, repHistory, profile?.height);
   } catch { /* non-critical */ }
 
+  // Re-run coaching engine on recalibrated rep boundaries
+  let coaching = null;
+  try {
+    coaching = analyzeCoaching(landmarks, repHistory, exerciseKey, fps);
+  } catch { /* non-critical */ }
+
   // Generate report
   let report = null;
   try {
@@ -319,6 +326,7 @@ export function recalibrateAnalysis({ frames, exerciseKey, targetReps, fps, prof
   return {
     repHistory,
     bioAnalysis,
+    coaching,
     report,
     formScore,
     reps: repHistory.length,

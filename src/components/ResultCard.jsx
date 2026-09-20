@@ -24,6 +24,41 @@ import {
 } from '../lib/notifications';
 import s from './ResultCard.module.css';
 
+/**
+ * Export landmark frames as a JSON artifact for offline replay.
+ * Output format matches dump-landmarks.html / replay-full-pipeline.mjs.
+ */
+function exportLandmarks(result) {
+  const frames = (result.frames || []).map((f, i) => ({
+    index: i,
+    timestamp: f.timestamp ?? i / (result.fps || 10),
+    landmarks: f.landmarks || f,
+  }));
+  const artifact = {
+    version: 1,
+    video: result.videoName || result.exercise || 'export',
+    metadata: {
+      exercise: result.exercise,
+      fps: result.fps || 10,
+      duration: result.duration || 0,
+      reps: result.reps,
+      machineReps: result.machineReps,
+      exportDate: new Date().toISOString(),
+      frameCount: frames.length,
+    },
+    frames,
+  };
+  const json = JSON.stringify(artifact);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const name = (result.exercise || 'export').replace(/\s+/g, '_');
+  a.download = `landmarks-${name}-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.round(seconds % 60);
@@ -104,6 +139,7 @@ function ResultCard({ result, onReplay }) {
   const bioAnalysis = recalData?.bioAnalysis ?? origBioAnalysis;
   const report = recalData?.report ?? origReport;
   const repHistory = recalData?.repHistory ?? origRepHistory;
+  const coaching = recalData?.coaching ?? result.coaching;
 
   const grade = gradeFromScore(formScore);
   const cls = gradeClass(formScore);
@@ -571,13 +607,13 @@ function ResultCard({ result, onReplay }) {
       )}
 
       {/* ═══ Coaching Engine Panel ═══ */}
-      {result.coaching && result.coaching.feedback && result.coaching.feedback.length > 0 && (
+      {coaching && coaching.feedback && coaching.feedback.length > 0 && (
         <div className={s.coachingPanel}>
           <h4 className={s.coachingPanelTitle}>{t('coaching_analysis')}</h4>
 
           {/* Top coaching correction — single sentence, expandable */}
           {(() => {
-            const allFb = result.coaching.feedback;
+            const allFb = coaching.feedback;
             const topFb = allFb[0];
             const rest = allFb.slice(1);
             return (
@@ -611,46 +647,46 @@ function ResultCard({ result, onReplay }) {
           {/* Metric cards row */}
           <div className={s.coachingMetricsRow}>
             {/* Smoothness (SPARC) */}
-            {result.coaching.metrics?.smoothness && (
+            {coaching.metrics?.smoothness && (
               <div className={s.coachingMetricCard}>
                 <span className={s.coachingMetricValue}>
-                  {result.coaching.metrics.smoothness.quality === 'very_smooth' ? 'A' :
-                   result.coaching.metrics.smoothness.quality === 'normal' ? 'B' : 'C'}
+                  {coaching.metrics.smoothness.quality === 'very_smooth' ? 'A' :
+                   coaching.metrics.smoothness.quality === 'normal' ? 'B' : 'C'}
                 </span>
                 <span className={s.coachingMetricLabel}>{t('smoothness_label')}</span>
                 <span className={`${s.coachingMetricSub} ${
-                  result.coaching.metrics.smoothness.quality === 'very_smooth' ? s.metricGood :
-                  result.coaching.metrics.smoothness.quality === 'normal' ? s.metricOk : s.metricPoor
+                  coaching.metrics.smoothness.quality === 'very_smooth' ? s.metricGood :
+                  coaching.metrics.smoothness.quality === 'normal' ? s.metricOk : s.metricPoor
                 }`}>
-                  {t(`smoothness_${result.coaching.metrics.smoothness.quality}`) || result.coaching.metrics.smoothness.quality.replace('_', ' ')}
+                  {t(`smoothness_${coaching.metrics.smoothness.quality}`) || coaching.metrics.smoothness.quality.replace('_', ' ')}
                 </span>
               </div>
             )}
 
             {/* Rep consistency (DTW) */}
-            {result.coaching.metrics?.repConsistency && (
+            {coaching.metrics?.repConsistency && (
               <div className={s.coachingMetricCard}>
                 <span className={s.coachingMetricValue}>
-                  {result.coaching.metrics.repConsistency.consistencyScore}<span className={s.coachingMetricUnit}>/100</span>
+                  {coaching.metrics.repConsistency.consistencyScore}<span className={s.coachingMetricUnit}>/100</span>
                 </span>
                 <span className={s.coachingMetricLabel}>{t('consistency_label')}</span>
               </div>
             )}
 
             {/* Fatigue */}
-            {result.coaching.metrics?.fatigue && (
+            {coaching.metrics?.fatigue && (
               <div className={s.coachingMetricCard}>
                 <span className={`${s.coachingMetricValue} ${
-                  result.coaching.metrics.fatigue.fatigueDetected ? s.metricPoor : s.metricGood
+                  coaching.metrics.fatigue.fatigueDetected ? s.metricPoor : s.metricGood
                 }`}>
-                  {result.coaching.metrics.fatigue.fatigueDetected
-                    ? `−${Math.round(result.coaching.metrics.fatigue.romDecayPercent)}%`
+                  {coaching.metrics.fatigue.fatigueDetected
+                    ? `−${Math.round(coaching.metrics.fatigue.romDecayPercent)}%`
                     : '✓'}
                 </span>
                 <span className={s.coachingMetricLabel}>{t('fatigue_label')}</span>
-                {result.coaching.metrics.fatigue.fatigueDetected && (
+                {coaching.metrics.fatigue.fatigueDetected && (
                   <span className={s.coachingMetricSub}>
-                    {t(`fatigue_${result.coaching.metrics.fatigue.severity}`) || result.coaching.metrics.fatigue.severity}
+                    {t(`fatigue_${coaching.metrics.fatigue.severity}`) || coaching.metrics.fatigue.severity}
                   </span>
                 )}
               </div>
@@ -658,11 +694,11 @@ function ResultCard({ result, onReplay }) {
           </div>
 
           {/* SPARC per-rep bars */}
-          {result.coaching.metrics?.smoothness?.perRep && result.coaching.metrics.smoothness.perRep.length > 1 && (
+          {coaching.metrics?.smoothness?.perRep && coaching.metrics.smoothness.perRep.length > 1 && (
             <div className={s.coachingSparcSection}>
               <span className={s.coachingSubLabel}>{t('smoothness_per_rep')}</span>
               <div className="rep-bars">
-                {result.coaching.metrics.smoothness.perRep.map((rep, i) => {
+                {coaching.metrics.smoothness.perRep.map((rep, i) => {
                   const sparc = rep.sparc;
                   // Normalize SPARC: -1 is best, -7 is worst → map to 0-100%
                   const pct = Math.max(5, Math.min(100, ((sparc + 7) / 6) * 100));
@@ -682,7 +718,7 @@ function ResultCard({ result, onReplay }) {
 
           {/* Form detection badges */}
           {(() => {
-            const m = result.coaching.metrics;
+            const m = coaching.metrics;
             const detections = [];
             if (m?.squatDepth) {
               detections.push({
@@ -1019,7 +1055,7 @@ function ResultCard({ result, onReplay }) {
             <div className={s.progressionComponentGrid}>
               {[
                 { label: t('form_label'), val: prog.components.form, max: 100 },
-                { label: t('consistency_label'), val: prog.components.consistency, max: 100 },
+                { label: t('steadiness_label'), val: prog.components.consistency, max: 100 },
                 { label: t('tempo_label'), val: prog.components.tempo, max: 100 },
               ].map(c => (
                 <div key={c.label} className={s.progressionComponentCell}>
@@ -1154,7 +1190,14 @@ function ResultCard({ result, onReplay }) {
           {t('watch_overlay')}
         </button>
       )}
-      {/* Share buttons already in hero zone above */}
+      {result.frames && result.frames.length > 0 && (
+        <button
+          className={`btn btn-ghost ${s.exportButton}`}
+          onClick={() => exportLandmarks(result)}
+        >
+          {t('export_landmarks')}
+        </button>
+      )}
     </div>
   );
 }

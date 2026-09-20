@@ -1103,6 +1103,14 @@
   font-weight: 700;
 }
 
+.exportButton {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 0;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
 .footerActions {
   display: flex;
   gap: 8px;

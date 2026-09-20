@@ -216,7 +216,93 @@ When provided, run through the harness and report raw numbers — no interpretat
 | `benchmark/artifacts/.gitkeep` | New: artifacts directory |
 | `.gitignore` | Added benchmark/artifacts/*.json |
 
+## Phase 3 — Fix Three Confirmed Enemies (2026-09-20)
+
+Three bugs confirmed from IMG_0865 production footage (bicep curl, 9 reps, 32° avg ROM).
+
+### Enemy 1: Gate 4 uses global range instead of per-rep amplitude
+
+**Root cause**: `observedRange` in RepCounter diagnostics tracks the global min/max of the primary signal across ALL frames. For a real bicep curl (45°→160°), global range = 115° — trivially passes the 40° gate threshold even when overcounted reps have tiny per-rep amplitude (20° from noise).
+
+**Fix**:
+- Added `medianRepAmplitude` to `RepCounter.diagnostics` (`src/lib/repCounter/index.ts`): computes median ROM from `_repHistory` entries, which reflects actual per-rep signal amplitude
+- Updated `checkAmplitude()` in `inputQualityGate.js` to prefer `medianRepAmplitude` over global `observedRange` when available
+- Wired `medianRepAmplitude` through `analyzeVideo.js` into the gate call
+
+### Enemy 2: Stale recalibration
+
+**Root cause**: `recalibrateAnalysis()` re-segments signal and re-runs form evaluation, biomechanics, coach report, and ProgressionScore — but NOT the coaching engine (`analyzeCoaching`). ResultCard's coaching panel reads directly from `result.coaching`, which stays stale from the original (wrong) analysis. After correcting 12→9 reps, coaching shows 12-slot fluidity chart and references "Rep 12".
+
+**Fix**:
+- Added `analyzeCoaching()` call to `recalibrate.js` after biomechanics, returning `coaching` in the result
+- Updated `ResultCard.jsx`: introduced `const coaching = recalData?.coaching ?? result.coaching` and replaced all `result.coaching` references in the coaching panel with the new `coaching` variable
+
+### Enemy 3: Label collision — "Régularité" displayed twice
+
+**Root cause**: Both DTW rep consistency (coaching engine metric) and ProgressionScore consistency component used `consistency_label` ("Régularité" in French). Same label, two different computations, two different values on the same card (e.g., 53/100 vs 0/100).
+
+**Fix**:
+- Added `steadiness_label` key: "Steadiness" (EN) / "Stabilité" (FR) in locale files
+- ProgressionScore component bar now uses `steadiness_label` instead of `consistency_label`
+- Coaching panel's DTW consistency keeps `consistency_label` ("Consistency" / "Régularité")
+
+### Verification
+
+- 220/220 tests passing
+- Rep-counting benchmark: 21/41 exact (51%), 37/41 OBO (90%), MAE 0.76 — unchanged
+
+### Files changed (Phase 3)
+
+| File | Change |
+|------|--------|
+| `src/lib/repCounter/index.ts` | Added `medianRepAmplitude` to diagnostics getter |
+| `src/lib/inputQualityGate.js` | `checkAmplitude` prefers medianRepAmplitude; `runInputQualityGate` accepts it |
+| `src/lib/analyzeVideo.js` | Passes `medianRepAmplitude` to quality gate |
+| `src/lib/recalibrate.js` | Added `analyzeCoaching()` import + call; returns `coaching` in result |
+| `src/components/ResultCard.jsx` | Uses recalibrated coaching; ProgressionScore uses `steadiness_label` |
+| `src/locales/en.json` | Added `steadiness_label`: "Steadiness" |
+| `src/locales/fr.json` | Added `steadiness_label`: "Stabilité" |
+
+### Periodicity-First Rep Counting (2026-09-20)
+
+**New file**: `src/lib/repCounter/periodCounter.ts`
+
+Implements autocorrelation-based periodicity estimation as a primary counting principle, complementing valley counting. Instead of "count every local minimum," asks "how many cycles of a periodic process fit in this signal?"
+
+**Algorithm**:
+1. Compute normalized autocorrelation of demeaned signal
+2. Find first strong peak in physiological period band (per-exercise bounds from `analysisConfig.ts`)
+3. Estimate reps as `round(signalLength / dominantPeriod)`
+4. Phase-align rep boundaries by snapping to nearest local minimum within ±T/3
+
+**Integration** (`src/lib/repCounter/index.ts`):
+- Runs after valley counting + hysteresis capping as A/B comparison
+- Period count overrides valley only when ALL three conditions are met:
+  1. ACF peak >= 0.5 (strongly periodic signal)
+  2. Valley count >= 1.5× period count (significant overcounting)
+  3. Period count >= hysteresis count (ACF found fundamental, not harmonic)
+- The hysteresis guard prevents ACF harmonic confusion (finding 2T/3T instead of T)
+
+**Diagnostics**: `period.periodSeconds`, `period.autocorrPeak`, `period.periodReps`, `period.valleyReps` exposed in RepCounter diagnostics.
+
+**Reference**: "RGB camera-based live repetition counter using autocorrelation" (Nature Scientific Reports, 2025).
+
+**Verification**:
+- 220/220 tests passing
+- Benchmark: 21/41 exact (51%), 37/41 OBO (90%), MAE 0.76 — unchanged
+- Period counter does not activate on clean YouTube benchmark data (correct: valley counting is accurate there)
+- Designed to activate on noise-driven overcounting (e.g., 15 false reps on 9 real incline curls where MediaPipe noise creates sub-rep valleys)
+
+### Files changed (Periodicity)
+
+| File | Change |
+|------|--------|
+| `src/lib/repCounter/periodCounter.ts` | New: `estimateDominantPeriod`, `countByPeriod`, `periodCount` |
+| `src/lib/repCounter/index.ts` | Period A/B in finalize(), period diagnostics, build version v26-period-primary |
+
 ## Pending
 
 - **ExerciseSelector UI rework** — user called it "put together by a toddler." Not started per instruction. Needs full visual redesign for mobile.
-- **Real-clip verification** — user to provide landmark dumps from IMG_0865 bicep curl and incline press via `dump-landmarks.html`, then run through `replay-full-pipeline.mjs` for Steps 3 & 4.
+- **Real-clip verification** — user to provide landmark dumps from IMG_0865 bicep curl and incline press via `dump-landmarks.html`, then run through `replay-full-pipeline.mjs` for Steps 3 & 4. This is now critical to validate that the period counter fires on the overcounting case.
+- **Recalibrate form evaluation parity** — `recalibrate.js:evaluateFormForCycle` is a simplified version of `scoring.ts:buildFormHistoryFromCycles`, lacking phase-aware sampling, trunk swing detection, viewpoint filtering, anthropometric normalization, and severity weighting. Ideally should call the same function.
+- **PoseRAC evaluation** — once signal-level counting is saturated, evaluate PoseRAC (small Transformer on pose landmarks, <5MB, ONNX-exportable) as next accuracy upgrade.

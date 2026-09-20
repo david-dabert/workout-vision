@@ -47,8 +47,9 @@ import {
 import type { Exercise, ValleyResult, Cycle, DiagCandidate, RepCounterOptions } from './types';
 import { adaptiveSignalSelect } from './valley';
 import { buildFormHistoryFromCycles, evaluateLiveRep, evaluateFormFeedback } from './scoring';
+import { periodCount, type PeriodResult } from './periodCounter';
 
-const REP_COUNTER_BUILD = 'v25-hys-guard';
+const REP_COUNTER_BUILD = 'v26-period-primary';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -127,6 +128,7 @@ export class RepCounter {
   private _adaptiveDiagCandidates?: DiagCandidate[];
   private _adaptiveDiag?: DiagCandidate[];
   private _templateEdgeDiag?: unknown;
+  private _periodDiag?: PeriodResult | null;
   private _viewpoint: string = 'unknown';
 
   constructor(exerciseKey: string, opts: RepCounterOptions = {}) {
@@ -443,6 +445,33 @@ export class RepCounter {
       };
       countMethod = 'valley+hys-cap';
     }
+    // ── Step 4: Periodicity-first counting ──
+    // Primary principle: count cycles of a periodic process.
+    // Valley counting is the fallback when ACF can't find a period.
+    const valleyReps = result.reps;
+    (this as any)._valleyReps = valleyReps;
+    const pResult = periodCount(signal, this._fps, this._exerciseKey);
+    this._periodDiag = pResult;
+
+    if (pResult && pResult.reps >= 2
+        && pResult.autocorrPeak >= 0.35
+        && valleyReps > pResult.reps
+        && valleyReps >= pResult.reps * 1.3
+        && pResult.reps >= hysResult.reps) {
+      // Valley overcounts by 30%+ relative to period, AND the period
+      // count is at least as high as hysteresis. The hysteresis guard
+      // prevents ACF harmonic confusion: if hysteresis found more reps
+      // than period, the ACF likely found 2T instead of T.
+      //
+      // This is the overcounting case: 15 noise valleys on 9 real cycles.
+      result = {
+        ...result,
+        reps: pResult.reps,
+        valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+      };
+      countMethod = 'period';
+    }
+
     this._countMethod = countMethod;
     // Store hysteresis result for diagnostics
     (this as any)._hysReps = hysResult.reps;
@@ -637,10 +666,21 @@ export class RepCounter {
 
   get diagnostics() {
     const range = this._observedMax - this._observedMin;
+    // Median per-rep amplitude: more reliable than global range for gate checks.
+    // Global range passes trivially (e.g. 115° for a curl) even when individual
+    // reps have tiny amplitude from noise-driven overcounting.
+    const repAmplitudes = this._repHistory
+      .map(r => r.rom)
+      .filter((v): v is number => v != null && v > 0)
+      .sort((a, b) => a - b);
+    const medianRepAmplitude = repAmplitudes.length > 0
+      ? repAmplitudes[Math.floor(repAmplitudes.length / 2)]
+      : null;
     return {
       observedMin: Math.round(this._observedMin * 10) / 10,
       observedMax: Math.round(this._observedMax * 10) / 10,
       observedRange: Math.round(range * 10) / 10,
+      medianRepAmplitude: medianRepAmplitude != null ? Math.round(medianRepAmplitude * 10) / 10 : null,
       minROM: this._exercise.minROM || 0,
       repsDetected: this._reps,
       totalFrames: this._totalFramesAnalyzed || this._collectedLandmarks.length,
@@ -655,6 +695,12 @@ export class RepCounter {
         : { calibrated: false },
       repResult: this._repResult,
       signalDiagnostics: this._signalDiagnostics,
+      period: this._periodDiag ? {
+        periodSeconds: Math.round(this._periodDiag.periodSeconds * 100) / 100,
+        autocorrPeak: Math.round(this._periodDiag.autocorrPeak * 1000) / 1000,
+        periodReps: this._periodDiag.reps,
+        valleyReps: (this as any)._valleyReps ?? null,
+      } : null,
     };
   }
 
