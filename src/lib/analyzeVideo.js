@@ -134,7 +134,7 @@ export async function analyzeVideoFile({
         // Force CPU delegate for deterministic landmark extraction.
         // GPU floating-point ops produce non-deterministic results:
         // the same video yields different rep counts on different runs.
-        useWorker = await worker.init({ forceCPU: true });
+        useWorker = await worker.init({ forceCPU: true, useImageMode: true });
       } catch (e) {
         workerInitError = e;
         console.warn('[analyzeVideo] Worker init failed, falling back to main thread:', e.message);
@@ -147,7 +147,7 @@ export async function analyzeVideoFile({
       // after 2-3 sequential analyses).
       if (worker.reinit) {
         try {
-          await worker.reinit({ forceCPU: true });
+          await worker.reinit({ forceCPU: true, useImageMode: true });
         } catch (e) {
           console.warn('[analyzeVideo] Worker reinit failed, trying reset:', e.message);
           worker.reset();
@@ -229,7 +229,7 @@ export async function analyzeVideoFile({
         lastProgressiveUpdate: 0,
       };
       progressiveDetector = (exercise === '__auto__' || (autoDetect && !userChangedExercise))
-        ? new HierarchicalDetector({ fps: analysisFps, mode: gymMode })
+        ? new HierarchicalDetector({ fps: analysisFps, mode: gymMode, deterministic: true })
         : null;
       if (detectorRef && progressiveDetector) detectorRef.current = progressiveDetector;
       const PROGRESSIVE_INTERVAL = 50;
@@ -346,7 +346,7 @@ export async function analyzeVideoFile({
               onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
             },
             undefined,
-            { signal, startFrame },
+            { signal, startFrame, deterministic: true },
           );
 
           // Wait for all in-flight inferences to complete
@@ -395,7 +395,7 @@ export async function analyzeVideoFile({
               onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
             },
             undefined,
-            { signal, startFrame },
+            { signal, startFrame, deterministic: true },
           );
 
           frameCount = streamResult.frameCount;

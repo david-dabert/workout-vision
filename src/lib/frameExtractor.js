@@ -761,6 +761,7 @@ function isHEVC(codec) {
  * @param {Object} [options] - Additional options
  * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
  * @param {number} [options.startFrame] - Frame index to start from (for resume)
+ * @param {boolean} [options.deterministic] - If true, skip RVFC and use seek-based extraction for reproducible frame sets
  * @returns {Promise<{width, height, fps, duration, frameCount, method: string}>}
  */
 export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
@@ -780,11 +781,13 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     );
   }
 
-  // Step 3: H.264 / other → RVFC (fastest) or seek (legacy)
+  // Step 3: H.264 / other → seek (deterministic) or RVFC (fastest) or seek (legacy)
+  // When deterministic mode is requested, skip RVFC entirely to guarantee
+  // reproducible frame sets across runs of the same video.
   // On iOS Safari, video.play() inside RVFC can fail with a permission error
   // if the user gesture context was lost during async model loading.
   // Fall back to seek-based extraction when this happens.
-  if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+  if (!options.deterministic && 'requestVideoFrameCallback' in HTMLVideoElement.prototype) {
     try {
       const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
       return { ...result, method: 'rvfc' };

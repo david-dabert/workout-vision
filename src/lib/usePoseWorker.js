@@ -100,6 +100,7 @@ export default function usePoseWorker() {
    * Initialize the worker and load the MediaPipe model.
    * @param {Object} [opts]
    * @param {boolean} [opts.forceCPU] - Force CPU delegate for deterministic results
+   * @param {boolean} [opts.useImageMode] - Use IMAGE running mode for deterministic per-frame detection
    * Returns a promise that resolves when the model is ready.
    */
   const initWorker = useCallback(async (opts) => {
@@ -144,7 +145,7 @@ export default function usePoseWorker() {
         }, 45000);
       });
 
-      worker.postMessage({ type: 'init', forceCPU: opts?.forceCPU || false });
+      worker.postMessage({ type: 'init', forceCPU: opts?.forceCPU || false, useImageMode: opts?.useImageMode || false });
       return promise;
     } catch (err) {
       console.error('[PoseWorker] Failed to create worker:', err);
@@ -222,6 +223,7 @@ export default function usePoseWorker() {
    * a fresh one from the cached model buffer — no network fetches needed.
    * @param {Object} [opts]
    * @param {boolean} [opts.forceCPU] - Force CPU delegate for deterministic results
+   * @param {boolean} [opts.useImageMode] - Use IMAGE running mode for deterministic per-frame detection
    */
   const reinitWorker = useCallback((opts) => {
     if (!workerRef.current) return Promise.resolve(false);
@@ -239,7 +241,7 @@ export default function usePoseWorker() {
           setIsReady(false);
         }
       }, 30000);
-      workerRef.current.postMessage({ type: 'reinit', forceCPU: opts?.forceCPU || false });
+      workerRef.current.postMessage({ type: 'reinit', forceCPU: opts?.forceCPU || false, useImageMode: opts?.useImageMode || false });
     });
   }, []);
 

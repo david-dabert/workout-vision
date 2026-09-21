@@ -62,6 +62,8 @@ let _lastValidLandmarksVideo = null;
 // and we return the stale lastResult instead.
 let _ghostFrameCount = 0;
 let _totalGhostFrames = 0;
+// Tracks whether the current landmarker was created in IMAGE mode
+let _landmarkerIsImageMode = false;
 
 // Re-export from shared geometry module so existing imports keep working
 export const LANDMARKS = _LANDMARKS;
@@ -150,7 +152,7 @@ async function getDeviceCapabilities() {
   return _deviceCaps;
 }
 
-async function createLandmarker({ forceCPU = false } = {}) {
+async function createLandmarker({ forceCPU = false, useImageMode = false } = {}) {
   const mp = await getMediaPipeVision();
 
   // Try local WASM first (offline-capable via service worker), CDN fallback
@@ -180,6 +182,8 @@ async function createLandmarker({ forceCPU = false } = {}) {
   // Force CPU delegate for deterministic results in video upload mode.
   // GPU floating-point operations are non-deterministic: the same video
   // produces different landmark coordinates on different runs.
+  const runningMode = useImageMode ? 'IMAGE' : 'VIDEO';
+  _landmarkerIsImageMode = useImageMode;
   const delegates = forceCPU
     ? ['CPU']
     : caps.recommendedDelegate === 'CPU'
@@ -190,13 +194,13 @@ async function createLandmarker({ forceCPU = false } = {}) {
     try {
       const landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
-        runningMode: 'VIDEO',
+        runningMode,
         numPoses: 1,
         minPoseDetectionConfidence: 0.35,
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
       });
-      console.info(`[PoseAnalysis] Landmarker created with ${delegate} delegate (SIMD=${simd}${forceCPU ? ', deterministic mode' : ''})`);
+      console.info(`[PoseAnalysis] Landmarker created with ${delegate} delegate (SIMD=${simd}, runningMode=${runningMode}${forceCPU ? ', deterministic mode' : ''})`);
       return landmarker;
     } catch (e) {
       console.warn(`[PoseAnalysis] ${delegate} delegate failed:`, e.message);
@@ -287,7 +291,7 @@ async function getVideoLandmarker() {
  * operations produce different landmark coordinates between runs.
  */
 export async function getImageLandmarker() {
-  return getPoseLandmarker({ forceCPU: true });
+  return getPoseLandmarker({ forceCPU: true, useImageMode: true });
 }
 
 /**
@@ -301,6 +305,7 @@ export function disposeAllLandmarkers() {
   modelLoadPromise = null;
   lastVideoTime = -1;
   lastResult = null;
+  _landmarkerIsImageMode = false;
   _kalmanImage = new OneEuroLandmarkFilter();
   _kalmanVideo = new OneEuroLandmarkFilter();
   _lastValidLandmarksImage = null;
@@ -338,9 +343,16 @@ export const selectSubjectPose = _selectSubjectPose;
  */
 export function detectPoseImage(landmarker, source, timestamp) {
   try {
-    const ts = timestamp != null ? (timestamp + _imageTimestampOffset) : performance.now();
-    if (ts > _imageMaxTimestamp) _imageMaxTimestamp = ts;
-    const result = landmarker.detectForVideo(source, ts);
+    // IMAGE mode: no timestamp, no temporal state (deterministic per-frame).
+    // VIDEO mode: timestamps must be monotonically increasing.
+    let result;
+    if (_landmarkerIsImageMode) {
+      result = landmarker.detect(source);
+    } else {
+      const ts = timestamp != null ? (timestamp + _imageTimestampOffset) : performance.now();
+      if (ts > _imageMaxTimestamp) _imageMaxTimestamp = ts;
+      result = landmarker.detectForVideo(source, ts);
+    }
     // Apply Kalman filter to smooth landmark coordinates before downstream use
     if (result && result.landmarks) {
       for (let i = 0; i < result.landmarks.length; i++) {

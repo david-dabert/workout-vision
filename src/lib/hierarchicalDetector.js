@@ -68,14 +68,16 @@ export class HierarchicalDetector {
    * @param {number}  [opts.fps=30]
    * @param {'gym'|'home'} [opts.mode='gym']
    * @param {function} [opts.onModelPredict] - TF.js model hook, receives features, returns scores
+   * @param {boolean}  [opts.deterministic=false] - skip localStorage priors for deterministic classification
    */
   constructor(opts = {}) {
     this._fps = opts.fps || 30;
     this._mode = opts.mode || 'gym';
     this._onModelPredict = opts.onModelPredict || null;
+    this._deterministic = !!opts.deterministic;
     this._temporal = new TemporalFeatureExtractor();
     this._smoother = new AngleBuffer(3);
-    this._priors = loadLocalPriors();
+    this._priors = this._deterministic ? {} : loadLocalPriors();
 
     // State
     this._context = null;        // Level 0

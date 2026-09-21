@@ -11,7 +11,7 @@
  *   new Worker(new URL('./poseWorker.js', import.meta.url), { type: 'module' })
  *
  * Messages accepted:
- *   { type: 'init', forceCPU?: boolean }
+ *   { type: 'init', forceCPU?: boolean, useImageMode?: boolean }
  *   { type: 'detect', bitmap: ImageBitmap, timestamp: number, frameIndex: number }
  *   { type: 'detectPixels', frameData: ArrayBuffer, width, height, timestamp, frameIndex }
  *   { type: 'reset' }
@@ -103,6 +103,9 @@ let _cachedMpModule = null;
 let _cachedVision = null;
 // When true, always use CPU delegate for deterministic results (video upload mode)
 let _forceCPU = false;
+// When true, use IMAGE running mode instead of VIDEO for deterministic per-frame
+// detection (no MediaPipe temporal state). See MediaPipe bug #5253.
+let _useImageMode = false;
 // MediaPipe's detectForVideo() requires strictly increasing timestamps.
 // When processing multiple videos, caller timestamps reset to 0 for each new video.
 // We track the highest timestamp seen and apply an offset after each reset
@@ -124,10 +127,12 @@ self.onmessage = async (e) => {
   switch (msg.type) {
     case 'init':
       if (msg.forceCPU != null) _forceCPU = msg.forceCPU;
+      if (msg.useImageMode != null) _useImageMode = msg.useImageMode;
       await handleInit();
       break;
     case 'reinit':
       if (msg.forceCPU != null) _forceCPU = msg.forceCPU;
+      if (msg.useImageMode != null) _useImageMode = msg.useImageMode;
       await handleReinit();
       break;
     case 'detect': handleDetectBitmap(msg); break;
@@ -175,34 +180,37 @@ async function handleInit() {
   await initPromise;
 }
 
-const LANDMARKER_OPTS = {
-  runningMode: 'VIDEO',
-  numPoses: 1,
-  minPoseDetectionConfidence: 0.35,
-  minPosePresenceConfidence: 0.4,
-  minTrackingConfidence: 0.5,
-};
+function getLandmarkerOpts() {
+  return {
+    runningMode: _useImageMode ? 'IMAGE' : 'VIDEO',
+    numPoses: 1,
+    minPoseDetectionConfidence: 0.35,
+    minPosePresenceConfidence: 0.4,
+    minTrackingConfidence: 0.5,
+  };
+}
 
 async function createLandmarkerWithFallback(mp, vision, modelBuffer) {
+  const opts = getLandmarkerOpts();
   // Force CPU delegate for deterministic results in video upload mode.
   // GPU floating-point operations are non-deterministic: the same video
   // produces different landmark coordinates on different runs.
   if (_forceCPU) {
-    console.info('[PoseWorker] Using CPU delegate (deterministic mode)');
+    console.info(`[PoseWorker] Using CPU delegate (deterministic mode, runningMode=${opts.runningMode})`);
     return await mp.PoseLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'CPU' },
-      ...LANDMARKER_OPTS,
+      ...opts,
     });
   }
   try {
     return await mp.PoseLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'GPU' },
-      ...LANDMARKER_OPTS,
+      ...opts,
     });
   } catch {
     return await mp.PoseLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'CPU' },
-      ...LANDMARKER_OPTS,
+      ...opts,
     });
   }
 }
@@ -242,10 +250,16 @@ function processDetection(source, timestamp, frameIndex) {
   }
   const t0 = performance.now();
   try {
-    // Apply offset so timestamps are always monotonically increasing across videos
-    const adjustedTs = timestamp + tsOffset;
-    if (adjustedTs > maxTsSeen) maxTsSeen = adjustedTs;
-    const result = landmarker.detectForVideo(source, adjustedTs);
+    // IMAGE mode: no timestamp needed, no temporal state (deterministic per-frame).
+    // VIDEO mode: timestamps must be monotonically increasing across videos.
+    let result;
+    if (_useImageMode) {
+      result = landmarker.detect(source);
+    } else {
+      const adjustedTs = timestamp + tsOffset;
+      if (adjustedTs > maxTsSeen) maxTsSeen = adjustedTs;
+      result = landmarker.detectForVideo(source, adjustedTs);
+    }
     let landmarks = null;
     let angles = null;
 
