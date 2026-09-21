@@ -419,98 +419,124 @@ export class RepCounter {
     // shrinks below threshold so template won't double-fire.
     result = this._templateEdgeCorrect(signal, result);
 
-    // Hysteresis cross-check for overcounting detection.
-    // Hysteresis requires full cycle completion (cross both thresholds),
-    // so it is immune to noise-created false valleys. When valley counting
-    // finds significantly more reps than hysteresis AND both methods
-    // are in the same ballpark, trust the lower (hysteresis) count.
+    // ── Step 4: Period-first arbitration ──
+    // Primary principle: "one periodic kinematic cycle per rep."
+    // Period counter is PRIMARY. Valley and hysteresis are VALIDATION.
     //
-    // Conditions for capping (all must be true):
-    //   1. Hysteresis found > 0 reps (calibration succeeded)
-    //   2. Valley found more than hysteresis
-    //   3. The difference is >= 2 (not just an edge rep)
-    //   4. Hysteresis is within 75% of valley (both in same ballpark —
-    //      avoids capping when hysteresis severely undercounts)
-    //   5. Sufficient frames per rep for hysteresis to be reliable.
-    //      At very low sampling rates (< 5 frames per min rep period),
-    //      the signal may not have enough samples to cleanly cross both
-    //      hysteresis thresholds, making hysteresis systematically
-    //      undercount. In that case, trust valley counting instead.
+    // Priority:
+    //   1. Period counter on the signal (ACF-based cycle counting)
+    //   2. If period has strong autocorrelation (>= 0.35), use its count
+    //   3. If period is weak (< 0.35), fall back to valley + hysteresis
+    //   4. Valley and hysteresis validate the count
     const hysResult: ValleyResult = hysteresisCount(signal, this._fps, ex);
+    const valleyReps = result.reps;
+    (this as any)._valleyReps = valleyReps;
+
+    const pResult = periodCount(signal, this._fps, this._exerciseKey);
+    this._periodDiag = pResult;
 
     const minSpacingSec = (ex.minSpacing != null) ? ex.minSpacing : 0.5;
     const framesPerMinRep = this._fps * minSpacingSec;
     const hysReliable = framesPerMinRep >= 5;
 
     let countMethod: string = 'valley';
-    if (hysReliable
-        && hysResult.reps > 0
-        && result.reps > hysResult.reps
-        && result.reps - hysResult.reps >= 2
-        && hysResult.reps >= result.reps * 0.75) {
-      result = {
-        ...result,
-        reps: hysResult.reps,
-        valleyFrames: result.valleyFrames.slice(0, hysResult.reps),
-      };
-      countMethod = 'valley+hys-cap';
+
+    if (pResult && pResult.reps >= 2 && pResult.autocorrPeak >= 0.35) {
+      // Period counter has a strong signal. Use it as primary.
+      //
+      // Guard against ACF harmonic confusion: if valley found 2x+ more
+      // than period, the ACF likely locked onto 2T (or 3T) instead of T.
+      // Also fires if both valley AND hysteresis are significantly higher.
+      const valleyMuchHigher = valleyReps >= pResult.reps * 1.8;
+      const bothHigher = valleyReps > pResult.reps * 1.3
+        && hysReliable && hysResult.reps > pResult.reps * 1.3;
+      const valleyHysAgree = hysReliable
+        && Math.abs(valleyReps - hysResult.reps) <= 2;
+      const harmonicConfusion = (valleyMuchHigher) || (bothHigher && valleyHysAgree);
+
+      if (!harmonicConfusion) {
+        const valleyAgrees = Math.abs(valleyReps - pResult.reps) <= 1;
+        const hysAgrees = !hysReliable || Math.abs(hysResult.reps - pResult.reps) <= 1;
+
+        if (valleyReps > pResult.reps && valleyReps >= pResult.reps * 1.3) {
+          // Valley overcounts by 30%+ relative to period.
+          // Period counter wins (overcounting correction).
+          result = {
+            ...result,
+            reps: pResult.reps,
+            valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+          };
+          countMethod = 'period';
+        } else if (valleyReps > pResult.reps) {
+          // Valley found slightly more than period (within 30%).
+          // Valley found actual physical minima; trust it unless
+          // hysteresis also agrees with the lower period count.
+          if (hysReliable && Math.abs(hysResult.reps - pResult.reps) <= 1
+              && hysResult.reps < valleyReps) {
+            result = {
+              ...result,
+              reps: pResult.reps,
+              valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+            };
+            countMethod = 'period-confirmed';
+          }
+          // else: keep valley count (it found real valleys)
+        } else if (pResult.reps > valleyReps && pResult.reps <= valleyReps * 2) {
+          // Period finds MORE reps than valley. Valley can undercount
+          // when bilateral prominence filtering is too strict (fast reps
+          // at low fps where peaks between valleys are shallow).
+          // Guard: period must be within 2x valley (sub-harmonic would be 2x/3x).
+          result = {
+            ...result,
+            reps: pResult.reps,
+            valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+          };
+          countMethod = 'period-up';
+        } else {
+          // Period and valley agree exactly. Use period-aligned frames.
+          result = {
+            ...result,
+            reps: pResult.reps,
+            valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+          };
+          countMethod = valleyAgrees && hysAgrees ? 'period-confirmed' : 'period';
+        }
+      }
+      // else: harmonic confusion detected, leave valley result as-is
+      // and apply hysteresis cap/floor below.
     }
 
-    // Hysteresis floor: when valley counting essentially fails (< 3 reps),
-    // use hysteresis as a floor. Valley can miss reps when bilateral
-    // prominence filtering is too strict at low fps, but hysteresis
-    // tracks full cycle completion which is more robust to shallow valleys.
-    if (result.reps < 3 && hysResult.reps > result.reps) {
-      result = {
-        ...result,
-        reps: hysResult.reps,
-        valleyFrames: hysResult.valleyFrames,
-      };
-      countMethod = 'hys-floor';
-    }
-    // ── Step 4: Periodicity-first counting ──
-    // Primary principle: count cycles of a periodic process.
-    // Valley counting is the fallback when ACF can't find a period.
-    const valleyReps = result.reps;
-    (this as any)._valleyReps = valleyReps;
-    const pResult = periodCount(signal, this._fps, this._exerciseKey);
-    this._periodDiag = pResult;
+    // Valley+hysteresis validation (applies when period didn't win,
+    // including harmonic confusion fallback).
+    if (countMethod === 'valley' || countMethod === 'valley-harmonic-guard') {
+      // Hysteresis cap: if valley significantly overcounts vs hysteresis,
+      // trust hysteresis (it requires full cycle completion).
+      if (hysReliable
+          && hysResult.reps > 0
+          && result.reps > hysResult.reps
+          && result.reps - hysResult.reps >= 2
+          && hysResult.reps >= result.reps * 0.75) {
+        result = {
+          ...result,
+          reps: hysResult.reps,
+          valleyFrames: result.valleyFrames.slice(0, hysResult.reps),
+        };
+        countMethod = 'valley+hys-cap';
+      }
 
-    if (pResult && pResult.reps >= 2
-        && pResult.autocorrPeak >= 0.35
-        && valleyReps > pResult.reps
-        && valleyReps >= pResult.reps * 1.3
-        && pResult.reps >= hysResult.reps) {
-      // Valley overcounts by 30%+ relative to period, AND the period
-      // count is at least as high as hysteresis. The hysteresis guard
-      // prevents ACF harmonic confusion: if hysteresis found more reps
-      // than period, the ACF likely found 2T instead of T.
-      //
-      // This is the overcounting case: 15 noise valleys on 9 real cycles.
-      result = {
-        ...result,
-        reps: pResult.reps,
-        valleyFrames: pResult.repFrames.slice(0, pResult.reps),
-      };
-      countMethod = 'period';
-    } else if (pResult && pResult.reps >= 3
-        && pResult.autocorrPeak >= 0.35
-        && pResult.reps > valleyReps
-        && pResult.reps <= valleyReps * 2) {
-      // Period counter finds MORE reps than valley counting.
-      // Valley counting can undercount when bilateral prominence filtering
-      // is too strict (e.g. fast reps at low fps where peaks between
-      // valleys are shallow). The ACF-based period estimate uses the full
-      // signal shape and is robust to individual valley prominence.
-      //
-      // Guard against harmonic confusion: period must be within 2× valley
-      // count (sub-harmonic would produce exactly 2× or 3×).
-      result = {
-        ...result,
-        reps: pResult.reps,
-        valleyFrames: pResult.repFrames.slice(0, pResult.reps),
-      };
-      countMethod = 'period-up';
+      // Hysteresis floor: when valley counting fails (< 3 reps),
+      // use hysteresis as a floor.
+      if (result.reps < 3 && hysResult.reps > result.reps) {
+        result = {
+          ...result,
+          reps: hysResult.reps,
+          valleyFrames: hysResult.valleyFrames,
+        };
+        countMethod = 'hys-floor';
+      }
+
+      // Note: weak period (0.2-0.35 ACF) is NOT used for overcounting correction.
+      // Weak ACF often locks onto harmonics and produces wrong counts.
     }
 
     this._countMethod = countMethod;
@@ -564,6 +590,32 @@ export class RepCounter {
       });
     }
 
+    // ── Per-rep amplitude gate (Change 2) ──
+    // After finding rep boundaries, compute amplitude of EACH rep.
+    // If median per-rep amplitude is too low, the "reps" are likely noise.
+    // This catches evenly-spaced noise that passes the global range gate.
+    const perRepAmplitudes = cycles.map(c => c.amplitude).filter(a => a > 0);
+    let measurementQuality: 'high' | 'medium' | 'low' = 'high';
+
+    if (perRepAmplitudes.length >= 2) {
+      perRepAmplitudes.sort((a, b) => a - b);
+      const medianAmplitude = perRepAmplitudes[Math.floor(perRepAmplitudes.length / 2)];
+      // Use exercise amplitudeRatio as the minimum; default to 25% of signal range.
+      // But also enforce an absolute minimum of 15 degrees for angle-based exercises.
+      const ampRatio = (ex.amplitudeRatio != null) ? ex.amplitudeRatio : 0.25;
+      const minPerRepAmplitude = Math.max(result.signalRange * ampRatio * 0.5, 15);
+
+      if (medianAmplitude < minPerRepAmplitude) {
+        // Per-rep amplitude is too low. Flag as low quality.
+        measurementQuality = 'low';
+      } else if (medianAmplitude < minPerRepAmplitude * 1.5) {
+        measurementQuality = 'medium';
+      }
+    }
+
+    // Store quality for downstream use (coaching gate)
+    (this as any)._measurementQuality = measurementQuality;
+
     this._cycleDebug = {
       reps: result.reps,
       cycles,
@@ -593,12 +645,14 @@ export class RepCounter {
       // Non-critical; swallow errors from velocity/progression analysis
     }
 
-    // Preserve frame count before freeing landmarks.
+    // Preserve frame count for diagnostics.
     this._totalFramesAnalyzed = this._collectedLandmarks.length;
-    // Free collected landmarks after analysis is complete to prevent OOM on mobile.
-    // All data needed for downstream consumption is already in _repHistory, _cycleDebug,
-    // _velocityAnalysis, and _progressionScore.
-    this._collectedLandmarks = [];
+    // NOTE: _collectedLandmarks is intentionally NOT cleared here.
+    // The landmark data must survive until the user has had a chance to
+    // click "Export Landmarks" on the results screen. Clearing eagerly
+    // caused the export to produce an empty JSON file. The RepCounter
+    // instance (and its landmarks) will be garbage-collected once the
+    // analysis result is no longer referenced by the UI.
   }
 
   // ─── Valley counting ───
@@ -742,6 +796,11 @@ export class RepCounter {
         periodReps: this._periodDiag.reps,
         valleyReps: (this as any)._valleyReps ?? null,
       } : null,
+      // Quality flag for coaching gate (Change 4):
+      // 'high' = strong periodicity + good per-rep amplitude, coaching is credible
+      // 'medium' = marginal amplitude, coaching should be cautious
+      // 'low' = weak measurement, do NOT generate coaching feedback
+      measurementQuality: (this as any)._measurementQuality || 'high',
     };
   }
 
