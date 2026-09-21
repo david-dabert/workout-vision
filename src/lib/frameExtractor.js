@@ -16,11 +16,28 @@
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 /**
- * Hash the first 2MB of a file using SHA-256.
- * 2MB is enough to uniquely identify any video file while staying fast.
- * Returns first 16 hex chars.
+ * Hash a file for cache keying. Returns first 16 hex chars of SHA-256.
+ *
+ * On iOS, the photo library transcodes video files (HEVC → H.264) on every
+ * file pick, producing slightly different binary content each time. A pure
+ * content hash therefore misses the cache on every run, defeating determinism.
+ *
+ * Strategy: hash file metadata (name + lastModified + size rounded to nearest
+ * MB) on iOS. On other platforms, hash the first 2MB of binary content.
+ * The metadata hash has a negligible collision risk for a personal video library.
  */
 export async function hashFile(file) {
+  if (IS_IOS) {
+    // Metadata-based hash: stable across iOS photo library transcodings.
+    // Round size to nearest MB to absorb transcoding size variance (~0.1%).
+    const sizeMB = Math.round(file.size / (1024 * 1024));
+    const metaString = `${file.name}|${file.lastModified}|${sizeMB}MB`;
+    const buffer = new TextEncoder().encode(metaString);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+  }
+  // Content-based hash: deterministic on non-iOS platforms.
   const chunkSize = 2 * 1024 * 1024;
   const slice = file.slice(0, Math.min(file.size, chunkSize));
   const buffer = await slice.arrayBuffer();
