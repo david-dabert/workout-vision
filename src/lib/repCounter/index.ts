@@ -481,11 +481,11 @@ export class RepCounter {
             countMethod = 'period-confirmed';
           }
           // else: keep valley count (it found real valleys)
-        } else if (pResult.reps > valleyReps && pResult.reps <= valleyReps * 2) {
-          // Period finds MORE reps than valley. Valley can undercount
-          // when bilateral prominence filtering is too strict (fast reps
-          // at low fps where peaks between valleys are shallow).
-          // Guard: period must be within 2x valley (sub-harmonic would be 2x/3x).
+        } else if (pResult.reps > valleyReps && pResult.reps <= valleyReps + 2) {
+          // Period finds slightly MORE reps than valley (at most +2).
+          // Valley can miss 1-2 edge reps due to bilateral prominence.
+          // Previously allowed up to 2x which let sub-harmonic ACF
+          // confusion nearly double the count (e.g. 7 real → 17 reported).
           result = {
             ...result,
             reps: pResult.reps,
@@ -506,25 +506,27 @@ export class RepCounter {
       // and apply hysteresis cap/floor below.
     }
 
-    // Valley+hysteresis validation (applies when period didn't win,
-    // including harmonic confusion fallback).
-    if (countMethod === 'valley' || countMethod === 'valley-harmonic-guard') {
-      // Hysteresis cap: if valley significantly overcounts vs hysteresis,
-      // trust hysteresis (it requires full cycle completion).
+    // Hysteresis validation — runs on ALL counting methods (valley, period,
+    // period-up, etc). Previously only ran on 'valley', which let period-up
+    // results bypass sanity checking entirely.
+    {
+      // Hysteresis cap: if the current count significantly exceeds hysteresis,
+      // trust hysteresis (it requires full cycle completion through the
+      // hysteresis band, making it resistant to sub-harmonic confusion).
       if (hysReliable
           && hysResult.reps > 0
           && result.reps > hysResult.reps
           && result.reps - hysResult.reps >= 2
-          && hysResult.reps >= result.reps * 0.75) {
+          && hysResult.reps >= result.reps * 0.5) {
         result = {
           ...result,
           reps: hysResult.reps,
           valleyFrames: result.valleyFrames.slice(0, hysResult.reps),
         };
-        countMethod = 'valley+hys-cap';
+        countMethod = countMethod + '+hys-cap';
       }
 
-      // Hysteresis floor: when valley counting fails (< 3 reps),
+      // Hysteresis floor: when other methods fail (< 3 reps),
       // use hysteresis as a floor.
       if (result.reps < 3 && hysResult.reps > result.reps) {
         result = {
@@ -534,9 +536,6 @@ export class RepCounter {
         };
         countMethod = 'hys-floor';
       }
-
-      // Note: weak period (0.2-0.35 ACF) is NOT used for overcounting correction.
-      // Weak ACF often locks onto harmonics and produces wrong counts.
     }
 
     this._countMethod = countMethod;
