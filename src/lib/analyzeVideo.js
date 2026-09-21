@@ -117,7 +117,9 @@ export async function analyzeVideoFile({
     onPhase('hashing');
     checkAbort();
     const videoHash = await hashFile(file);
-    const cacheKey = `lm-${videoHash}-${analysisFps}`;
+    // Cache key includes 'cpu' to invalidate stale GPU-derived landmarks
+    // from before the deterministic CPU delegate fix
+    const cacheKey = `lm-${videoHash}-${analysisFps}-cpu`;
 
     // ── Phase 2: Load model ──
     onPhase('model');
@@ -129,7 +131,10 @@ export async function analyzeVideoFile({
       useWorker = true;
     } else if (worker.supported) {
       try {
-        useWorker = await worker.init();
+        // Force CPU delegate for deterministic landmark extraction.
+        // GPU floating-point ops produce non-deterministic results:
+        // the same video yields different rep counts on different runs.
+        useWorker = await worker.init({ forceCPU: true });
       } catch (e) {
         workerInitError = e;
         console.warn('[analyzeVideo] Worker init failed, falling back to main thread:', e.message);
@@ -137,12 +142,12 @@ export async function analyzeVideoFile({
       }
     }
     if (useWorker) {
-      // On iOS, fully reinit the landmarker between videos to release the
-      // WebGL context and GPU memory. Without this, iOS Safari exhausts GPU
-      // resources after 2-3 sequential analyses and returns empty results.
-      if (IS_IOS && worker.reinit) {
+      // Reinit the landmarker with CPU delegate for deterministic results.
+      // Also releases WebGL context on iOS (prevents GPU memory exhaustion
+      // after 2-3 sequential analyses).
+      if (worker.reinit) {
         try {
-          await worker.reinit();
+          await worker.reinit({ forceCPU: true });
         } catch (e) {
           console.warn('[analyzeVideo] Worker reinit failed, trying reset:', e.message);
           worker.reset();
@@ -153,10 +158,9 @@ export async function analyzeVideoFile({
     }
     let landmarker = null;
     if (!useWorker) {
-      // On iOS main-thread path, dispose and recreate the landmarker to free GPU memory
-      if (IS_IOS) {
-        disposeAllLandmarkers();
-      }
+      // Dispose any existing GPU landmarker so getImageLandmarker() creates
+      // a fresh one with CPU delegate for deterministic results.
+      disposeAllLandmarkers();
       try {
         landmarker = await getImageLandmarker();
       } catch (e) {

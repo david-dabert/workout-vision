@@ -98,9 +98,11 @@ export default function usePoseWorker() {
 
   /**
    * Initialize the worker and load the MediaPipe model.
+   * @param {Object} [opts]
+   * @param {boolean} [opts.forceCPU] - Force CPU delegate for deterministic results
    * Returns a promise that resolves when the model is ready.
    */
-  const initWorker = useCallback(async () => {
+  const initWorker = useCallback(async (opts) => {
     if (!WORKER_SUPPORTED) return false;
     if (workerRef.current && isReady) return true;
 
@@ -142,7 +144,7 @@ export default function usePoseWorker() {
         }, 45000);
       });
 
-      worker.postMessage({ type: 'init' });
+      worker.postMessage({ type: 'init', forceCPU: opts?.forceCPU || false });
       return promise;
     } catch (err) {
       console.error('[PoseWorker] Failed to create worker:', err);
@@ -218,8 +220,10 @@ export default function usePoseWorker() {
    * Reinitialize the worker's MediaPipe landmarker (between videos on iOS).
    * Disposes the old landmarker (freeing WebGL context/GPU memory) and creates
    * a fresh one from the cached model buffer — no network fetches needed.
+   * @param {Object} [opts]
+   * @param {boolean} [opts.forceCPU] - Force CPU delegate for deterministic results
    */
-  const reinitWorker = useCallback(() => {
+  const reinitWorker = useCallback((opts) => {
     if (!workerRef.current) return Promise.resolve(false);
     setIsReady(false);
     pendingRef.current.clear();
@@ -235,7 +239,7 @@ export default function usePoseWorker() {
           setIsReady(false);
         }
       }, 30000);
-      workerRef.current.postMessage({ type: 'reinit' });
+      workerRef.current.postMessage({ type: 'reinit', forceCPU: opts?.forceCPU || false });
     });
   }, []);
 

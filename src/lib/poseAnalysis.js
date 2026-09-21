@@ -150,7 +150,7 @@ async function getDeviceCapabilities() {
   return _deviceCaps;
 }
 
-async function createLandmarker() {
+async function createLandmarker({ forceCPU = false } = {}) {
   const mp = await getMediaPipeVision();
 
   // Try local WASM first (offline-capable via service worker), CDN fallback
@@ -177,10 +177,14 @@ async function createLandmarker() {
     console.warn(`[PoseAnalysis] ${caps.gpuBlockedReason}`);
   }
 
-  // Order delegates: use capability detection to skip known-bad GPU renderers
-  const delegates = caps.recommendedDelegate === 'CPU'
+  // Force CPU delegate for deterministic results in video upload mode.
+  // GPU floating-point operations are non-deterministic: the same video
+  // produces different landmark coordinates on different runs.
+  const delegates = forceCPU
     ? ['CPU']
-    : ['GPU', 'CPU'];
+    : caps.recommendedDelegate === 'CPU'
+      ? ['CPU']
+      : ['GPU', 'CPU'];
 
   for (const delegate of delegates) {
     try {
@@ -192,7 +196,7 @@ async function createLandmarker() {
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
       });
-      console.info(`[PoseAnalysis] Landmarker created with ${delegate} delegate (SIMD=${simd})`);
+      console.info(`[PoseAnalysis] Landmarker created with ${delegate} delegate (SIMD=${simd}${forceCPU ? ', deterministic mode' : ''})`);
       return landmarker;
     } catch (e) {
       console.warn(`[PoseAnalysis] ${delegate} delegate failed:`, e.message);
@@ -210,11 +214,11 @@ function withTimeout(promise, ms, label) {
   ]);
 }
 
-function getPoseLandmarker() {
+function getPoseLandmarker(opts) {
   if (poseLandmarker) return Promise.resolve(poseLandmarker);
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
-    poseLandmarker = await withTimeout(createLandmarker(), 30000, 'Model load');
+    poseLandmarker = await withTimeout(createLandmarker(opts), 30000, 'Model load');
     return poseLandmarker;
   })();
   return modelLoadPromise;
@@ -278,11 +282,12 @@ async function getVideoLandmarker() {
 }
 
 /**
- * Get the unified landmarker instance (for image/video upload).
- * Same instance — VIDEO mode handles single frames fine with unique timestamps.
+ * Get landmarker instance for image/video upload analysis.
+ * Forces CPU delegate for deterministic results: GPU floating-point
+ * operations produce different landmark coordinates between runs.
  */
 export async function getImageLandmarker() {
-  return getPoseLandmarker();
+  return getPoseLandmarker({ forceCPU: true });
 }
 
 /**

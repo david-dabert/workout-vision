@@ -11,7 +11,7 @@
  *   new Worker(new URL('./poseWorker.js', import.meta.url), { type: 'module' })
  *
  * Messages accepted:
- *   { type: 'init' }
+ *   { type: 'init', forceCPU?: boolean }
  *   { type: 'detect', bitmap: ImageBitmap, timestamp: number, frameIndex: number }
  *   { type: 'detectPixels', frameData: ArrayBuffer, width, height, timestamp, frameIndex }
  *   { type: 'reset' }
@@ -101,6 +101,8 @@ let canvasW = 0, canvasH = 0;
 let _cachedModelBuffer = null;
 let _cachedMpModule = null;
 let _cachedVision = null;
+// When true, always use CPU delegate for deterministic results (video upload mode)
+let _forceCPU = false;
 // MediaPipe's detectForVideo() requires strictly increasing timestamps.
 // When processing multiple videos, caller timestamps reset to 0 for each new video.
 // We track the highest timestamp seen and apply an offset after each reset
@@ -120,8 +122,14 @@ function ensureCanvas(w, h) {
 self.onmessage = async (e) => {
   const msg = e.data;
   switch (msg.type) {
-    case 'init': await handleInit(); break;
-    case 'reinit': await handleReinit(); break;
+    case 'init':
+      if (msg.forceCPU != null) _forceCPU = msg.forceCPU;
+      await handleInit();
+      break;
+    case 'reinit':
+      if (msg.forceCPU != null) _forceCPU = msg.forceCPU;
+      await handleReinit();
+      break;
     case 'detect': handleDetectBitmap(msg); break;
     case 'detectPixels': handleDetectPixels(msg); break;
     case 'reset': handleReset(); break;
@@ -176,6 +184,16 @@ const LANDMARKER_OPTS = {
 };
 
 async function createLandmarkerWithFallback(mp, vision, modelBuffer) {
+  // Force CPU delegate for deterministic results in video upload mode.
+  // GPU floating-point operations are non-deterministic: the same video
+  // produces different landmark coordinates on different runs.
+  if (_forceCPU) {
+    console.info('[PoseWorker] Using CPU delegate (deterministic mode)');
+    return await mp.PoseLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'CPU' },
+      ...LANDMARKER_OPTS,
+    });
+  }
   try {
     return await mp.PoseLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate: 'GPU' },
