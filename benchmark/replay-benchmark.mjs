@@ -368,6 +368,10 @@ for (const video of cache) {
       const topCands = sorted.slice(0, 8).map(c => `${c.name}:${c.reps}(s=${c.score.toFixed(1)},c=${c.consistency.toFixed(3)})`);
       entry._candidates = topCands;
     }
+    // Dump period counter diagnostics for non-exact videos
+    if (diag.period && entry.error !== 0) {
+      entry._period = diag.period;
+    }
     // Dump signal diagnostics for exercises with large errors
     if (Math.abs(entry.error) >= 2) {
       const cycles = diag.cycles || {};

@@ -431,10 +431,20 @@ export class RepCounter {
     //   3. The difference is >= 2 (not just an edge rep)
     //   4. Hysteresis is within 75% of valley (both in same ballpark —
     //      avoids capping when hysteresis severely undercounts)
+    //   5. Sufficient frames per rep for hysteresis to be reliable.
+    //      At very low sampling rates (< 5 frames per min rep period),
+    //      the signal may not have enough samples to cleanly cross both
+    //      hysteresis thresholds, making hysteresis systematically
+    //      undercount. In that case, trust valley counting instead.
     const hysResult: ValleyResult = hysteresisCount(signal, this._fps, ex);
 
+    const minSpacingSec = (ex.minSpacing != null) ? ex.minSpacing : 0.5;
+    const framesPerMinRep = this._fps * minSpacingSec;
+    const hysReliable = framesPerMinRep >= 5;
+
     let countMethod: string = 'valley';
-    if (hysResult.reps > 0
+    if (hysReliable
+        && hysResult.reps > 0
         && result.reps > hysResult.reps
         && result.reps - hysResult.reps >= 2
         && hysResult.reps >= result.reps * 0.75) {
@@ -444,6 +454,19 @@ export class RepCounter {
         valleyFrames: result.valleyFrames.slice(0, hysResult.reps),
       };
       countMethod = 'valley+hys-cap';
+    }
+
+    // Hysteresis floor: when valley counting essentially fails (< 3 reps),
+    // use hysteresis as a floor. Valley can miss reps when bilateral
+    // prominence filtering is too strict at low fps, but hysteresis
+    // tracks full cycle completion which is more robust to shallow valleys.
+    if (result.reps < 3 && hysResult.reps > result.reps) {
+      result = {
+        ...result,
+        reps: hysResult.reps,
+        valleyFrames: hysResult.valleyFrames,
+      };
+      countMethod = 'hys-floor';
     }
     // ── Step 4: Periodicity-first counting ──
     // Primary principle: count cycles of a periodic process.
@@ -470,6 +493,24 @@ export class RepCounter {
         valleyFrames: pResult.repFrames.slice(0, pResult.reps),
       };
       countMethod = 'period';
+    } else if (pResult && pResult.reps >= 3
+        && pResult.autocorrPeak >= 0.35
+        && pResult.reps > valleyReps
+        && pResult.reps <= valleyReps * 2) {
+      // Period counter finds MORE reps than valley counting.
+      // Valley counting can undercount when bilateral prominence filtering
+      // is too strict (e.g. fast reps at low fps where peaks between
+      // valleys are shallow). The ACF-based period estimate uses the full
+      // signal shape and is robust to individual valley prominence.
+      //
+      // Guard against harmonic confusion: period must be within 2× valley
+      // count (sub-harmonic would produce exactly 2× or 3×).
+      result = {
+        ...result,
+        reps: pResult.reps,
+        valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+      };
+      countMethod = 'period-up';
     }
 
     this._countMethod = countMethod;
