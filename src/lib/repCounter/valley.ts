@@ -138,8 +138,11 @@ export function adaptiveSignalSelect(
 
     // Asymmetric margin: alternatives finding FEWER reps than primary only
     // need 5% margin (helps correct overcounting). Alternatives finding MORE
-    // reps need 20% (prevents noise from inflating the count).
-    const margin = result.reps < primaryCount.reps ? 1.05 : 1.2;
+    // reps need 10% margin. The 1.5x overcounting guard above already prevents
+    // dramatic noise inflation; the margin here prevents marginal noise wins
+    // without blocking legitimate undercounting corrections (e.g. 9→12 on
+    // cable pushdowns where elbow angle is noisy but wrist_Y is clean).
+    const margin = result.reps < primaryCount.reps ? 1.05 : 1.1;
     if (score > bestScore * margin) {
       bestScore = score;
       bestCand = cand;

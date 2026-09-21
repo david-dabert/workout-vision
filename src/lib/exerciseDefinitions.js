@@ -1448,7 +1448,6 @@ export const EXERCISE_DEFINITIONS = {
     value: BSM_ELBOW,
     downThreshold: 60,
     upThreshold: 130,
-    amplitudeRatio: 0.15,
     formChecks: [
       { name: 'Elbow position', type: 'below', useBestSide: true, left: 'leftShoulder', right: 'rightShoulder', visLeft: '_visLeftShoulder', visRight: '_visRightShoulder', threshold: 25, good: 'Elbows at sides', bad: 'Keep elbows pinned', severity: 'minor', citation: 'Landin D, Thompson M, 2011' },
     ],
@@ -3105,7 +3104,6 @@ export const EXERCISE_DEFINITIONS = {
     value: BSM_ELBOW,
     downThreshold: 60,
     upThreshold: 130,
-    amplitudeRatio: 0.15,
     formChecks: [
       { name: 'Spread at bottom', type: 'custom',
         check: (angles) => bestSideMax(angles, 'leftElbow', 'rightElbow', '_visLeftElbow', '_visRightElbow') > 125,
