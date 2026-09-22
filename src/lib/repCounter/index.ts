@@ -518,14 +518,18 @@ export class RepCounter {
     // period-up, etc). Previously only ran on 'valley', which let period-up
     // results bypass sanity checking entirely.
     {
-      // Hysteresis cap: if the current count significantly exceeds hysteresis,
+      // Hysteresis cap: if the current count DRAMATICALLY exceeds hysteresis,
       // trust hysteresis (it requires full cycle completion through the
       // hysteresis band, making it resistant to sub-harmonic confusion).
+      // Require >= 40% gap (not just 2 reps) to prevent hysteresis from
+      // over-capping when its auto-calibrated thresholds are too tight
+      // (e.g. machine_tricep_ext: hys=9 vs real=12, gap only 25%).
+      const hysGapRatio = hysResult.reps > 0 ? (result.reps - hysResult.reps) / hysResult.reps : 0;
       if (hysReliable
           && hysResult.reps > 0
           && result.reps > hysResult.reps
-          && result.reps - hysResult.reps >= 2
-          && hysResult.reps >= result.reps * 0.5) {
+          && hysGapRatio >= 0.4
+          && hysResult.reps >= result.reps * 0.4) {
         result = {
           ...result,
           reps: hysResult.reps,
@@ -808,6 +812,7 @@ export class RepCounter {
       // 'medium' = marginal amplitude, coaching should be cautious
       // 'low' = weak measurement, do NOT generate coaching feedback
       measurementQuality: (this as any)._measurementQuality || 'high',
+      hysteresisReps: (this as any)._hysReps ?? null,
       adaptiveCandidates: this._adaptiveDiagCandidates || [],
       debugSignal: this._debugSignal || [],
     };

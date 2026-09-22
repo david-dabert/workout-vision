@@ -99,6 +99,7 @@ function reportToGitHub(result) {
     period.autocorrPeak != null ? `- ACF peak: ${period.autocorrPeak}` : '',
     period.periodReps != null ? `- Period reps: ${period.periodReps}` : '',
     period.valleyReps != null ? `- Valley reps: ${period.valleyReps}` : '',
+    diag.hysteresisReps != null ? `- Hysteresis reps: ${diag.hysteresisReps}` : '',
     '',
     '### Signal candidates',
     candidates || '  (none)',
