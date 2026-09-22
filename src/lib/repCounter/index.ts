@@ -374,24 +374,17 @@ export class RepCounter {
     const cleanedLandmarks: LandmarkArray[] = interpolateOccludedLandmarks(this._collectedLandmarks);
 
     // ── Step 1: Extract the raw tracking signal ──
-    // Use getSignalValue (visibility-aware stable side selection) instead of
-    // getValue (Math.min) for signal extraction. Math.min flips between sides
-    // frame-to-frame when both arms/legs are visible, creating false valleys
-    // that double the rep count. getSignalValue picks the higher-visibility
-    // side consistently, eliminating bilateral flicker.
-    const signalFn = ex.getSignalValue || ex.getValue;
     const rawValues: (number | null)[] = cleanedLandmarks.map(lm => {
       const a = extractJointAngles(lm);
-      return a ? signalFn(a, lm) : null;
+      return a ? ex.getValue(a, lm) : null;
     });
 
     // Interpolate nulls, then smooth to eliminate side-switching noise.
     // Exercises can override via smoothing property. Very fast exercises
     // (minSpacing < 0.2) get reduced smoothing to preserve rapid peaks.
-    // Window of 9 frames = 300ms at 30fps. Kills side-switching oscillations
-    // (which flip every 1-5 frames) while preserving rep-scale motion (1-4s).
-    // Increased from 5 to 9 to eliminate the root cause of sub-rep false valleys:
-    // bilateral flicker that survives 5-frame smoothing but not 9-frame.
+    // Window=3 at 10fps = 300ms. Tested window=5 (500ms) and window=9 (900ms);
+    // both over-smooth at 10fps, flattening real valleys and causing
+    // undercounting. Window=3 is the benchmark-validated optimum.
     const smoothWindow = ex.smoothing != null ? ex.smoothing
       : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 3;
     let interpolated: number[] = smoothSignal(interpolateNulls(rawValues), smoothWindow);
@@ -518,25 +511,12 @@ export class RepCounter {
     // period-up, etc). Previously only ran on 'valley', which let period-up
     // results bypass sanity checking entirely.
     {
-      // Hysteresis cap: if the current count DRAMATICALLY exceeds hysteresis,
-      // trust hysteresis (it requires full cycle completion through the
-      // hysteresis band, making it resistant to sub-harmonic confusion).
-      // Require >= 40% gap (not just 2 reps) to prevent hysteresis from
-      // over-capping when its auto-calibrated thresholds are too tight
-      // (e.g. machine_tricep_ext: hys=9 vs real=12, gap only 25%).
-      const hysGapRatio = hysResult.reps > 0 ? (result.reps - hysResult.reps) / hysResult.reps : 0;
-      if (hysReliable
-          && hysResult.reps > 0
-          && result.reps > hysResult.reps
-          && hysGapRatio >= 0.4
-          && hysResult.reps >= result.reps * 0.4) {
-        result = {
-          ...result,
-          reps: hysResult.reps,
-          valleyFrames: result.valleyFrames.slice(0, hysResult.reps),
-        };
-        countMethod = countMethod + '+hys-cap';
-      }
+      // Hysteresis cap: DISABLED after 43-video benchmark analysis.
+      // Hysteresis systematically undercounts (returns 0 on many exercises)
+      // because auto-calibrated 25%/75% thresholds are often too tight at
+      // 10fps. It was wrong 75% of the time it fired (3 of 4 cases lost
+      // 3-4 real reps). The cap dragged correct valley/period counts down
+      // to hysteresis's own miscalibrated undercount.
 
       // Hysteresis floor: when other methods fail (< 3 reps),
       // use hysteresis as a floor.

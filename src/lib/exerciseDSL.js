@@ -41,7 +41,7 @@
  * }
  */
 
-import { bestSide, bestSideMax, bestSideStable, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
+import { bestSide, bestSideMax, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
 
 // ─── Value function compiler ───
 
@@ -68,20 +68,12 @@ const VALUE_COMPILERS = {
   custom: (spec) => spec.fn,
 };
 
-// Signal-extraction variants: bestSide uses bestSideStable (visibility-aware)
-// instead of Math.min, eliminating bilateral flicker that creates false valleys.
-// Form checks still use conservative Math.min via VALUE_COMPILERS above.
-const SIGNAL_COMPILERS = {
-  bestSide: (spec) => (angles) =>
-    bestSideStable(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
-
-  bestSideMax: (spec) => (angles) =>
-    bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
-
-  direct: VALUE_COMPILERS.direct,
-  heelDisplacement: VALUE_COMPILERS.heelDisplacement,
-  custom: VALUE_COMPILERS.custom,
-};
+// Note: bestSideStable (visibility-aware) was tested as a global replacement
+// for bestSide in signal extraction (commit c4c25a7). It regressed 7 of 43
+// benchmark videos and improved 0. The pipeline's valley detection, period
+// counting, and adaptive selection are tuned for Math.min's signal shape.
+// Bilateral flicker is better addressed via the adaptive signal selection
+// (which can pick single-side alternatives like elbow_R when primary flickers).
 
 // ─── Form check compiler ───
 
@@ -268,16 +260,12 @@ function compileExercise(dsl) {
       return compiled;
     });
 
-  const valueType = dsl.value?.type || 'bestSide';
-  const signalCompiler = SIGNAL_COMPILERS[valueType] || valueCompiler;
-
   const compiled = {
     name: dsl.name,
     category: dsl.category,
     muscles: dsl.muscles,
     joint: dsl.joint,
     getValue: valueCompiler(dsl.value || {}),
-    getSignalValue: signalCompiler(dsl.value || {}),
     downThreshold: dsl.downThreshold,
     upThreshold: dsl.upThreshold,
     formChecks: compiledChecks,
