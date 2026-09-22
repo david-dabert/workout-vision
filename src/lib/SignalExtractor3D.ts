@@ -315,12 +315,23 @@ export const SIGNAL_PRIORITY_3D: Record<string, string[]> = {
   incline_bench_press: ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R', 'wrist_Y_L', 'wrist_Y_R'],
   decline_bench_press: ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R', 'wrist_Y_L', 'wrist_Y_R'],
   close_grip_bench:    ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R', 'wrist_Y_L', 'wrist_Y_R'],
-  // Push-up variants — same nose_Y/Z priority as standard push-up
+  // Push-up variants — nose_Y/shoulder_Y resist bilateral flicker from BS_ELBOW
   diamond_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   wide_push_up:     ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   incline_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   decline_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   pike_push_up:     ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  deficit_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  hand_release_push_up: ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  archer_push_up:   ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  close_grip_push_up: ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  trx_push_up:      ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  stability_ball_push_up: ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  handstand_push_up: ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  ring_push_up:     ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  one_arm_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
+  // Sissy squat — knee angle flickers bilaterally; hip_Y tracks body position
+  sissy_squat:      ['knee_L', 'knee_R', 'hip_Y', 'hip_Z'],
   // Dips — elbow angle primary, shoulder_Y for depth
   dip:              ['elbow_L', 'elbow_R', 'shoulder_Y', 'wristShoulderDist3D_L'],
   chest_dip:        ['elbow_L', 'elbow_R', 'shoulder_Y', 'wristShoulderDist3D_L'],

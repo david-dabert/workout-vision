@@ -108,6 +108,9 @@ export function adaptiveSignalSelect(
 
   const diagCandidates: DiagCandidate[] = [{ name: 'primary', reps: primaryCount.reps, score: primaryScore, consistency: primaryConsistency, winner: false }];
 
+  // Store alternative results for consensus check after scoring
+  const altResults: { name: string; reps: number; score: number; consistency: number; result: ValleyResult; cand: typeof bestCand }[] = [];
+
   for (const cand of candidates) {
     // Skip the two primary entries — we already computed the baseline
     if (cand.name === 'primary' || cand.name === 'primary_inv') continue;
@@ -135,6 +138,7 @@ export function adaptiveSignalSelect(
     const score = result.reps * consistency;
 
     diagCandidates.push({ name: cand.name, reps: result.reps, score, consistency, winner: false });
+    altResults.push({ name: cand.name, reps: result.reps, score, consistency, result, cand: { original: cand.original, inv: cand.inv, name: cand.name } });
 
     // Asymmetric margin: alternatives finding FEWER reps than primary only
     // need 5% margin (helps correct overcounting). Alternatives finding MORE
@@ -147,6 +151,47 @@ export function adaptiveSignalSelect(
       bestScore = score;
       bestCand = cand;
       bestResult = result;
+    }
+  }
+
+  // ── Bilateral flicker consensus detection ──
+  // bestSide (Math.min) flips between left/right sides frame-to-frame when
+  // both limbs are visible, creating false valleys that ~double the count.
+  // The scoring function (reps × consistency) inherently favors overcounted
+  // signals because 2× reps at moderate consistency outscores correct reps
+  // at high consistency.
+  //
+  // Detection: when the winner's count is ≥ 1.8× the median of alternatives
+  // that found ≥ 3 reps, and ≥ 3 alternatives cluster within ±30% of their
+  // median, the winner is likely double-counting. In that case, pick the
+  // best-scoring candidate from the consensus cluster.
+  //
+  // Evidence: deficit_push_up #9 (primary=18, 6 alts agree on ~6, expected 7),
+  // lying_bicep_curl #7 (primary=12, 6 alts agree on ~6, expected 7).
+  {
+    const altsWithReps = altResults.filter(a => a.reps >= 3);
+    if (altsWithReps.length >= 4) {
+      const sortedReps = altsWithReps.map(a => a.reps).sort((a, b) => a - b);
+      const median = sortedReps[Math.floor(sortedReps.length / 2)];
+      const winnerReps = bestResult.reps;
+
+      if (winnerReps > median * 2) {
+        // Find the consensus cluster: alternatives within ±30% of median
+        const clusterLow = median * 0.7;
+        const clusterHigh = median * 1.3;
+        const cluster = altsWithReps.filter(a => a.reps >= clusterLow && a.reps <= clusterHigh);
+
+        if (cluster.length >= 3) {
+          // Pick the highest-scoring candidate in the consensus cluster
+          let clusterBest = cluster[0];
+          for (const c of cluster) {
+            if (c.score > clusterBest.score) clusterBest = c;
+          }
+          bestScore = clusterBest.score;
+          bestCand = clusterBest.cand;
+          bestResult = clusterBest.result;
+        }
+      }
     }
   }
 
