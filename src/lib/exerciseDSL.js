@@ -41,7 +41,7 @@
  * }
  */
 
-import { bestSide, bestSideMax, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
+import { bestSide, bestSideMax, bestSideStable, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
 
 // ─── Value function compiler ───
 
@@ -66,6 +66,21 @@ const VALUE_COMPILERS = {
   },
 
   custom: (spec) => spec.fn,
+};
+
+// Signal-extraction variants: bestSide uses bestSideStable (visibility-aware)
+// instead of Math.min, eliminating bilateral flicker that creates false valleys.
+// Form checks still use conservative Math.min via VALUE_COMPILERS above.
+const SIGNAL_COMPILERS = {
+  bestSide: (spec) => (angles) =>
+    bestSideStable(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
+
+  bestSideMax: (spec) => (angles) =>
+    bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight),
+
+  direct: VALUE_COMPILERS.direct,
+  heelDisplacement: VALUE_COMPILERS.heelDisplacement,
+  custom: VALUE_COMPILERS.custom,
 };
 
 // ─── Form check compiler ───
@@ -253,12 +268,16 @@ function compileExercise(dsl) {
       return compiled;
     });
 
+  const valueType = dsl.value?.type || 'bestSide';
+  const signalCompiler = SIGNAL_COMPILERS[valueType] || valueCompiler;
+
   const compiled = {
     name: dsl.name,
     category: dsl.category,
     muscles: dsl.muscles,
     joint: dsl.joint,
     getValue: valueCompiler(dsl.value || {}),
+    getSignalValue: signalCompiler(dsl.value || {}),
     downThreshold: dsl.downThreshold,
     upThreshold: dsl.upThreshold,
     formChecks: compiledChecks,

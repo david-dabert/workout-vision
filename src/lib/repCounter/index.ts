@@ -374,9 +374,15 @@ export class RepCounter {
     const cleanedLandmarks: LandmarkArray[] = interpolateOccludedLandmarks(this._collectedLandmarks);
 
     // ── Step 1: Extract the raw tracking signal ──
+    // Use getSignalValue (visibility-aware stable side selection) instead of
+    // getValue (Math.min) for signal extraction. Math.min flips between sides
+    // frame-to-frame when both arms/legs are visible, creating false valleys
+    // that double the rep count. getSignalValue picks the higher-visibility
+    // side consistently, eliminating bilateral flicker.
+    const signalFn = ex.getSignalValue || ex.getValue;
     const rawValues: (number | null)[] = cleanedLandmarks.map(lm => {
       const a = extractJointAngles(lm);
-      return a ? ex.getValue(a, lm) : null;
+      return a ? signalFn(a, lm) : null;
     });
 
     // Interpolate nulls, then smooth to eliminate side-switching noise.
