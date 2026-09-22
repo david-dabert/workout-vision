@@ -5,6 +5,7 @@ import useHashRouter from './lib/useHashRouter';
 import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
 import { checkAndMigrateSchema } from './lib/storage';
 import Dashboard from './components/Dashboard';
+import TabBar from './components/TabBar';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -141,7 +142,10 @@ function AppInner() {
     );
   }
 
-  // Full-screen pages (no tab bar) - wrapped with page transition
+  // Full-screen pages (no tab bar)
+  const fullScreenPages = ['analyze', 'live', 'log'];
+  const showTabBar = !fullScreenPages.includes(page);
+
   if (page === 'analyze') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
@@ -169,117 +173,92 @@ function AppInner() {
       </Suspense>
     </ErrorBoundary>
   );
-  if (page === 'history') return (
-    <ErrorBoundary>
+
+  // Pages with tab bar visible
+  let pageContent = null;
+
+  if (page === 'history') {
+    pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="history" className="page-transition-enter">
           <WorkoutHistory onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'rest') return (
-    <ErrorBoundary>
+    );
+  } else if (page === 'rest') {
+    pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="rest" className="page-transition-enter">
           <RestTimer onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'profile') return (
-    <ErrorBoundary>
+    );
+  } else if (page === 'profile') {
+    pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="profile" className="page-transition-enter">
           <ProfilePage onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'validate') return (
-    <ErrorBoundary>
+    );
+  } else if (page === 'validate') {
+    pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="validate" className="page-transition-enter">
           <Validate onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'weekly') return (
-    <ErrorBoundary>
+    );
+  } else if (page === 'weekly') {
+    pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="weekly" className="page-transition-enter">
           <WeeklyReport onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'prs') return (
-    <ErrorBoundary>
+    );
+  } else if (page === 'prs') {
+    pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="prs" className="page-transition-enter">
           <PersonalRecords onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
-    </ErrorBoundary>
-  );
+    );
+  }
+
+  // Dashboard (default)
+  if (!pageContent) {
+    pageContent = (
+      <>
+        <Dashboard
+          profile={profile}
+          modelStatus={modelStatus}
+          onRetryModel={retryModel}
+          onNavigate={onNavigate}
+          challenge={challenge}
+          challengeResponse={challengeResponse}
+          onDismissResponse={() => setChallengeResponse(null)}
+        />
+        <footer style={{
+          textAlign: 'center', padding: '8px 0 4px', fontSize: '0.6rem',
+          color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em',
+        }}>
+          Workout Vision v{__APP_VERSION__} &bull; {new Date(__BUILD_TIME__).toLocaleDateString()}
+        </footer>
+      </>
+    );
+  }
 
   return (
     <div className="app">
       <a href="#main-content" className="skip-link">{t('skip_to_content') || 'Skip to content'}</a>
       <main id="main-content">
-      <Dashboard
-        profile={profile}
-        modelStatus={modelStatus}
-        onRetryModel={retryModel}
-        onNavigate={onNavigate}
-        challenge={challenge}
-        challengeResponse={challengeResponse}
-        onDismissResponse={() => setChallengeResponse(null)}
-      />
-      <footer style={{
-        textAlign: 'center', padding: '8px 0 4px', fontSize: '0.6rem',
-        color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em',
-      }}>
-        Workout Vision v{__APP_VERSION__} &bull; {new Date(__BUILD_TIME__).toLocaleDateString()}
-      </footer>
+        <ErrorBoundary>
+          {pageContent}
+        </ErrorBoundary>
       </main>
-      <nav className="tab-bar" aria-label={t('main_navigation') || 'Main navigation'}>
-        <button className={`tab-item${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')} aria-current={page === 'dashboard' ? 'page' : undefined}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-          <span>{t('home')}</span>
-        </button>
-        <button className={`tab-item${page === 'analyze' ? ' active' : ''}`} onClick={() => onNavigate('analyze')} aria-current={page === 'analyze' ? 'page' : undefined}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polygon points="23 7 16 12 23 17 23 7" />
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-          </svg>
-          <span>{t('analyze')}</span>
-        </button>
-        <button className={`tab-item${page === 'history' ? ' active' : ''}`} onClick={() => onNavigate('history')} aria-current={page === 'history' ? 'page' : undefined}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-          </svg>
-          <span>{t('progress')}</span>
-        </button>
-        <button className={`tab-item${page === 'rest' ? ' active' : ''}`} onClick={() => onNavigate('rest')} aria-current={page === 'rest' ? 'page' : undefined}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <span>{t('timer')}</span>
-        </button>
-        <button className={`tab-item${page === 'profile' ? ' active' : ''}`} onClick={() => onNavigate('profile')} aria-current={page === 'profile' ? 'page' : undefined}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <span>{t('profile')}</span>
-        </button>
-      </nav>
+      {showTabBar && <TabBar page={page} onNavigate={onNavigate} />}
     </div>
   );
 }

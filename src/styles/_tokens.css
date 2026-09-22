@@ -31,11 +31,12 @@
   --text-tertiary: rgba(232, 230, 225, 0.32);
   --text-quaternary: rgba(232, 230, 225, 0.18);
 
-  /* ── Surfaces (subtle, not glassy) ── */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.07);
-  --glass-border-hover: rgba(255, 255, 255, 0.13);
-  --glass-highlight: rgba(255, 255, 255, 0.04);
+  /* ── Surfaces (liquid glass) ── */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.14);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-highlight-top: rgba(255, 255, 255, 0.09);
 
   /* ── Aliases ── */
   --bg: var(--void);
@@ -83,16 +84,25 @@
   --shadow-accent: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-accent-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
 
-  /* ── Blur (reduced for clarity) ── */
-  --blur: 16px;
-  --blur-heavy: 24px;
+  /* ── Blur (liquid glass depth) ── */
+  --blur: 20px;
+  --blur-heavy: 32px;
 
-  /* ── Easing (deliberate, not bouncy) ── */
-  --ease-spring: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* ── Easing (Apple-grade spring physics) ── */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-settle: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-elastic: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-snap: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ease-power: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Stagger timing for choreographed entry ── */
+  --stagger-1: 0ms;
+  --stagger-2: 40ms;
+  --stagger-3: 80ms;
+  --stagger-4: 120ms;
+  --stagger-5: 160ms;
+  --stagger-6: 200ms;
 
   /* ── Celebration (restrained) ── */
   --glow-cyan: 0 0 12px rgba(212, 167, 106, 0.2);
@@ -153,10 +163,11 @@ body::after {
     --text-tertiary: rgba(26, 26, 30, 0.40);
     --text-quaternary: rgba(26, 26, 30, 0.25);
 
-    --glass-bg: rgba(0, 0, 0, 0.02);
-    --glass-border: rgba(0, 0, 0, 0.07);
-    --glass-border-hover: rgba(0, 0, 0, 0.12);
-    --glass-highlight: rgba(0, 0, 0, 0.02);
+    --glass-bg: rgba(0, 0, 0, 0.03);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-border-hover: rgba(0, 0, 0, 0.14);
+    --glass-highlight: rgba(0, 0, 0, 0.03);
+    --glass-highlight-top: rgba(255, 255, 255, 0.5);
 
     --bg: var(--void);
     --surface: rgba(0, 0, 0, 0.02);

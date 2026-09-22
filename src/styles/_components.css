@@ -14,14 +14,23 @@
   border-radius: var(--radius);
   padding: 22px;
   margin-bottom: 16px;
-  transition: border-color 0.2s var(--ease-smooth);
+  transition: border-color 0.2s var(--ease-smooth), transform 0.2s var(--ease-spring);
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
 
+/* 1px inner top highlight for liquid glass depth */
 .card::before {
-  display: none;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--glass-highlight-top, rgba(255, 255, 255, 0.09));
+  pointer-events: none;
+  z-index: 1;
 }
 
 .card:active {
@@ -75,7 +84,17 @@
   transition: border-color 0.2s var(--ease-smooth);
 }
 
-.glass::before { display: none; }
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--glass-highlight-top, rgba(255, 255, 255, 0.09));
+  pointer-events: none;
+  z-index: 1;
+}
 
 .glass:hover { border-color: var(--glass-border-hover); }
 
