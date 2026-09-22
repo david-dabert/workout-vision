@@ -129,6 +129,7 @@ export class RepCounter {
   private _adaptiveDiag?: DiagCandidate[];
   private _templateEdgeDiag?: unknown;
   private _periodDiag?: PeriodResult | null;
+  private _debugSignal?: number[];
   private _viewpoint: string = 'unknown';
 
   constructor(exerciseKey: string, opts: RepCounterOptions = {}) {
@@ -402,6 +403,7 @@ export class RepCounter {
     this._adaptedSignalName = adaptive.name;
     this._adaptiveDiagCandidates = adaptive.diagCandidates;
     this._adaptiveDiag = adaptive.diagCandidates;
+    this._debugSignal = interpolated.slice();
 
     // ── Step 2: Apply orientation from adaptive selection ──
     const invert = adaptive.invert;
@@ -800,6 +802,8 @@ export class RepCounter {
       // 'medium' = marginal amplitude, coaching should be cautious
       // 'low' = weak measurement, do NOT generate coaching feedback
       measurementQuality: (this as any)._measurementQuality || 'high',
+      adaptiveCandidates: this._adaptiveDiagCandidates || [],
+      debugSignal: this._debugSignal || [],
     };
   }
 

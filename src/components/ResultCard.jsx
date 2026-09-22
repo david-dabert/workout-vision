@@ -34,8 +34,9 @@ function exportLandmarks(result) {
     timestamp: f.timestamp ?? i / (result.fps || 10),
     landmarks: f.landmarks || f,
   }));
+  const diag = result.diagnostics || {};
   const artifact = {
-    version: 1,
+    version: 2,
     video: result.videoName || result.exercise || 'export',
     metadata: {
       exercise: result.exercise,
@@ -45,6 +46,15 @@ function exportLandmarks(result) {
       machineReps: result.machineReps,
       exportDate: new Date().toISOString(),
       frameCount: frames.length,
+    },
+    diagnostics: {
+      method: diag.method || null,
+      observedRange: diag.observedRange || null,
+      medianRepAmplitude: diag.medianRepAmplitude || null,
+      measurementQuality: diag.measurementQuality || null,
+      period: diag.period || null,
+      adaptiveCandidates: diag.adaptiveCandidates || [],
+      debugSignal: diag.debugSignal || [],
     },
     frames,
   };
@@ -57,6 +67,52 @@ function exportLandmarks(result) {
   a.download = `landmarks-${name}-${Date.now()}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Open a pre-filled GitHub Issue with debug diagnostics summary.
+ * No token, no API, works on iOS Safari. User taps, reviews, submits.
+ */
+function reportToGitHub(result) {
+  const diag = result.diagnostics || {};
+  const exercise = result.exercise || 'unknown';
+  const reps = result.reps ?? '?';
+  const method = diag.method || 'unknown';
+  const period = diag.period || {};
+  const candidates = (diag.adaptiveCandidates || [])
+    .map(c => `  - ${c.name}: ${c.reps} reps, score=${c.score?.toFixed(2)}, consistency=${c.consistency?.toFixed(2)}`)
+    .join('\n');
+
+  const title = `Debug: ${exercise} — ${reps} reps (expected: ?)`;
+  const body = [
+    '## Debug Report',
+    '',
+    `**Exercise:** ${exercise}`,
+    `**Reps detected:** ${reps}`,
+    `**Expected reps:** <!-- fill in -->`,
+    `**Method:** ${method}`,
+    `**Duration:** ${result.duration ? result.duration.toFixed(1) + 's' : '?'}`,
+    `**FPS:** ${result.fps || '?'}`,
+    '',
+    '### Period analysis',
+    period.periodSeconds ? `- Period: ${period.periodSeconds}s` : '- No period data',
+    period.autocorrPeak != null ? `- ACF peak: ${period.autocorrPeak}` : '',
+    period.periodReps != null ? `- Period reps: ${period.periodReps}` : '',
+    period.valleyReps != null ? `- Valley reps: ${period.valleyReps}` : '',
+    '',
+    '### Signal candidates',
+    candidates || '  (none)',
+    '',
+    `**Range:** ${diag.observedRange ?? '?'}°`,
+    `**Median rep amplitude:** ${diag.medianRepAmplitude ?? '?'}°`,
+    `**Quality:** ${diag.measurementQuality || '?'}`,
+    '',
+    '### Notes',
+    '<!-- Describe what happened, attach the video if possible -->',
+  ].filter(Boolean).join('\n');
+
+  const url = `https://github.com/david-dabert/workout-vision/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=debug-report`;
+  window.open(url, '_blank');
 }
 
 function formatTime(seconds) {
@@ -1198,6 +1254,13 @@ function ResultCard({ result, onReplay }) {
           {t('export_landmarks')}
         </button>
       )}
+      <button
+        className={`btn btn-ghost ${s.exportButton}`}
+        onClick={() => reportToGitHub(result)}
+        title="Report debug data to GitHub"
+      >
+        🐛 Report
+      </button>
     </div>
   );
 }
