@@ -78,7 +78,7 @@ export default function TabBar({ page, onNavigate }) {
   }), [activeIndex]);
 
   return (
-    <nav className={css.tabBar} aria-label={t('main_navigation') || 'Main navigation'}>
+    <nav className={css.tabBar} aria-label={t('main_navigation') || 'Main navigation'} data-testid="tab-bar">
       {/* Sliding indicator behind active tab */}
       <div className={css.indicatorTrack}>
         <div className={css.indicator} style={indicatorStyle} />

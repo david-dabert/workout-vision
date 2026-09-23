@@ -25,7 +25,7 @@ test('app loads and renders dashboard', async ({ page }) => {
   await ensureDashboard(page);
   await expect(page.locator('.logo')).toBeVisible({ timeout: 5_000 });
   // Tab bar should be present
-  await expect(page.locator('.tab-bar')).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator('[data-testid="tab-bar"]')).toBeVisible({ timeout: 5_000 });
 });
 
 test('service worker registers successfully', async ({ page }) => {
@@ -83,5 +83,5 @@ test('app loads offline after service worker precache', async ({ page, context }
 
   // 6. Full app renders: logo + tab bar (not just shell HTML)
   await expect(page.locator('.logo')).toBeVisible({ timeout: 10_000 });
-  await expect(page.locator('.tab-bar')).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator('[data-testid="tab-bar"]')).toBeVisible({ timeout: 5_000 });
 });
