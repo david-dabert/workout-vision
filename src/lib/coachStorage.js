@@ -6,6 +6,7 @@
 import localforage from 'localforage';
 
 const coachStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coach' });
+const clientWorkoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachClientWorkouts' });
 
 /**
  * @typedef {Object} CoachProfile
@@ -67,4 +68,43 @@ export async function getAllClients() {
 /** Delete a client. */
 export async function deleteClient(id) {
   await coachStore.removeItem(id);
+}
+
+// ---------------------------------------------------------------------------
+// Client-workout associations
+// ---------------------------------------------------------------------------
+
+/**
+ * Associate a workout with a client.
+ * @param {string} clientId
+ * @param {string} workoutId
+ */
+export async function saveClientWorkout(clientId, workoutId) {
+  const key = `${clientId}__${workoutId}`;
+  await clientWorkoutStore.setItem(key, { clientId, workoutId, addedAt: Date.now() });
+}
+
+/**
+ * Get all workout IDs associated with a client.
+ * @param {string} clientId
+ * @returns {Promise<string[]>} workout IDs
+ */
+export async function getClientWorkouts(clientId) {
+  const workoutIds = [];
+  await clientWorkoutStore.iterate((value) => {
+    if (value.clientId === clientId) {
+      workoutIds.push(value.workoutId);
+    }
+  });
+  return workoutIds;
+}
+
+/**
+ * Remove a client-workout association.
+ * @param {string} clientId
+ * @param {string} workoutId
+ */
+export async function removeClientWorkout(clientId, workoutId) {
+  const key = `${clientId}__${workoutId}`;
+  await clientWorkoutStore.removeItem(key);
 }

@@ -58,10 +58,30 @@ export default function Onboarding({ profile, onComplete }) {
   const [name, setName] = useState(profile?.name || '');
   const [experience, setExperience] = useState(profile?.experience || 'intermediate');
   const [goal, setGoal] = useState(profile?.goal || 'general');
+  const [age, setAge] = useState(profile?.age || '');
+  const [sex, setSex] = useState(profile?.sex || '');
+  const [weight, setWeight] = useState(profile?.weight || '');
+  const [height, setHeight] = useState(profile?.height || '');
 
-  const handleFinish = () => {
-    onComplete({ name: name.trim(), experience, goal, profileComplete: true });
+  const isBeginner = experience === 'beginner';
+  const totalSteps = isBeginner ? 4 : 3;
+
+  const collectData = () => ({
+    name: name.trim(),
+    experience,
+    goal,
+    age: age ? Number(age) : undefined,
+    sex: sex || undefined,
+    weight: weight ? Number(weight) : undefined,
+    height: height ? Number(height) : undefined,
+    profileComplete: true,
+  });
+
+  const handleFinish = (navigateTo) => {
+    onComplete(collectData(), navigateTo);
   };
+
+  const progressPercent = ((step + 1) / totalSteps) * 100;
 
   return (
     <div className="onboarding">
@@ -71,15 +91,15 @@ export default function Onboarding({ profile, onComplete }) {
       {/* Progress bar */}
       <div className="onb-progress-bar">
         <div className="onb-progress-track">
-          <div className="onb-progress-fill" style={{ width: step === 0 ? '50%' : '100%' }} />
+          <div className="onb-progress-fill" style={{ width: `${progressPercent}%` }} />
         </div>
-        <span className="onb-progress-label">{step + 1}/2</span>
+        <span className="onb-progress-label">{step + 1}/{totalSteps}</span>
       </div>
 
       <div className="onboarding-content">
+        {/* Step 1: Name + Experience */}
         {step === 0 && (
           <div className="onboarding-step">
-            {/* Hero wordmark */}
             <div className="onb-hero">
               <div className="onb-wordmark">
                 <span className="onb-w">W</span>orkout
@@ -123,7 +143,97 @@ export default function Onboarding({ profile, onComplete }) {
           </div>
         )}
 
+        {/* Step 2: Body measurements */}
         {step === 1 && (
+          <div className="onboarding-step">
+            <div className="onb-hero">
+              <h2 className="onb-title">{t('onb_step2_body_title')}</h2>
+              <p className="onb-subtitle">{t('onb_step2_body_desc')}</p>
+            </div>
+
+            <div className="onb-form">
+              <div className="onb-body-grid">
+                <div className="onb-field">
+                  <label className="onb-label" htmlFor="onb-age">{t('age')}</label>
+                  <input
+                    id="onb-age"
+                    type="number"
+                    className="onb-input"
+                    value={age}
+                    onChange={e => setAge(e.target.value)}
+                    placeholder="28"
+                    inputMode="numeric"
+                    min="10"
+                    max="120"
+                  />
+                </div>
+
+                <div className="onb-field">
+                  <label className="onb-label">{t('sex')}</label>
+                  <div className="onb-chips" role="radiogroup" aria-label={t('sex')}>
+                    <button
+                      onClick={() => setSex('male')}
+                      className={`onb-chip${sex === 'male' ? ' selected' : ''}`}
+                      role="radio"
+                      aria-checked={sex === 'male'}
+                    >
+                      {t('male')}
+                    </button>
+                    <button
+                      onClick={() => setSex('female')}
+                      className={`onb-chip${sex === 'female' ? ' selected' : ''}`}
+                      role="radio"
+                      aria-checked={sex === 'female'}
+                    >
+                      {t('female')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="onb-body-grid">
+                <div className="onb-field">
+                  <label className="onb-label" htmlFor="onb-weight">{t('weight')}</label>
+                  <div className="onb-input-with-unit">
+                    <input
+                      id="onb-weight"
+                      type="number"
+                      className="onb-input"
+                      value={weight}
+                      onChange={e => setWeight(e.target.value)}
+                      placeholder="70"
+                      inputMode="decimal"
+                      min="20"
+                      max="300"
+                    />
+                    <span className="onb-unit">{t('kg')}</span>
+                  </div>
+                </div>
+
+                <div className="onb-field">
+                  <label className="onb-label" htmlFor="onb-height">{t('height')}</label>
+                  <div className="onb-input-with-unit">
+                    <input
+                      id="onb-height"
+                      type="number"
+                      className="onb-input"
+                      value={height}
+                      onChange={e => setHeight(e.target.value)}
+                      placeholder="175"
+                      inputMode="numeric"
+                      min="50"
+                      max="250"
+                    />
+                    <span className="onb-unit">{t('cm')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Goal selection */}
+        {step === 2 && (
           <div className="onboarding-step">
             <div className="onb-hero">
               <h2 className="onb-title">{t('onb_step2_title')}</h2>
@@ -152,22 +262,63 @@ export default function Onboarding({ profile, onComplete }) {
             </div>
           </div>
         )}
+
+        {/* Step 4: Exercise Guide teaser (beginners only) */}
+        {step === 3 && isBeginner && (
+          <div className="onboarding-step">
+            <div className="onb-hero">
+              <div className="onb-exercises-icon" aria-hidden="true">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  <path d="M8 7h8" /><path d="M8 11h6" />
+                </svg>
+              </div>
+              <h2 className="onb-title">{t('onb_exercises_title')}</h2>
+              <p className="onb-subtitle">{t('onb_exercises_desc')}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="onb-actions">
         {step === 0 ? (
           <>
-            <button className="onb-skip" onClick={handleFinish}>{t('skip')}</button>
+            <button className="onb-skip" onClick={() => handleFinish()}>{t('skip')}</button>
             <button className="onb-next" onClick={() => setStep(1)}>{t('next')}</button>
           </>
-        ) : (
+        ) : step === 1 ? (
           <>
-            <button className="onb-back" onClick={() => setStep(0)} aria-label={t('back') || 'Back'}>
+            <button className="onb-back" onClick={() => setStep(0)} aria-label={t('back')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
               </svg>
             </button>
-            <button className="onb-next" onClick={handleFinish}>{t('finish')}</button>
+            <button className="onb-next" onClick={() => setStep(2)}>{t('next')}</button>
+          </>
+        ) : step === 2 && !isBeginner ? (
+          <>
+            <button className="onb-back" onClick={() => setStep(1)} aria-label={t('back')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
+              </svg>
+            </button>
+            <button className="onb-next" onClick={() => handleFinish()}>{t('finish')}</button>
+          </>
+        ) : step === 2 && isBeginner ? (
+          <>
+            <button className="onb-back" onClick={() => setStep(1)} aria-label={t('back')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
+              </svg>
+            </button>
+            <button className="onb-next" onClick={() => setStep(3)}>{t('next')}</button>
+          </>
+        ) : (
+          /* step === 3 (beginner exercise teaser) */
+          <>
+            <button className="onb-skip" onClick={() => handleFinish()}>{t('skip')}</button>
+            <button className="onb-next" onClick={() => handleFinish('exercises')}>{t('onb_browse_exercises')}</button>
           </>
         )}
       </div>

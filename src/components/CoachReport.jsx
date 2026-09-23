@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useT } from '../lib/LanguageContext';
-import { getCoachProfile, saveCoachProfile, getAllClients, saveClient } from '../lib/coachStorage';
+import { getCoachProfile, saveCoachProfile, getAllClients, saveClient, saveClientWorkout, getClientWorkouts } from '../lib/coachStorage';
 import { getRecentWorkouts } from '../lib/storage';
 import { generateCoachReportPDF } from '../lib/coachPDF';
+import { estimateOneRepMax, getStrengthLevel, calculateWorkloadRatio, analyzeWeeklyVolume, suggestNextWorkout } from '../lib/coach';
 import { EXERCISES } from '../lib/exercises';
 import { ExerciseAnimation } from './ExerciseGuide';
 import css from './CoachReport.module.css';
@@ -19,6 +20,10 @@ export default function CoachReport({ onClose }) {
   const [coachNotes, setCoachNotes] = useState('');
   const [toast, setToast] = useState(null);
   const [step, setStep] = useState('setup'); // setup | select | review
+  const [saveToClient, setSaveToClient] = useState(true);
+  const [showClientOnly, setShowClientOnly] = useState(false);
+  const [clientWorkoutIds, setClientWorkoutIds] = useState([]);
+  const [coachingData, setCoachingData] = useState(null);
 
   // Load data on mount
   useEffect(() => {
@@ -48,6 +53,15 @@ export default function CoachReport({ onClose }) {
     setClient(cl);
   };
 
+  // Load client workout IDs when client changes
+  useEffect(() => {
+    if (client.id) {
+      getClientWorkouts(client.id).then(ids => setClientWorkoutIds(ids));
+    } else {
+      setClientWorkoutIds([]);
+    }
+  }, [client.id]);
+
   const handleNext = async () => {
     if (step === 'setup') {
       // Save client if new
@@ -58,6 +72,59 @@ export default function CoachReport({ onClose }) {
       }
       setStep('select');
     } else if (step === 'select' && selectedWorkout) {
+      // Save workout to client history if checked
+      if (saveToClient && client.id && selectedWorkout.id) {
+        await saveClientWorkout(client.id, selectedWorkout.id);
+        setClientWorkoutIds(prev => prev.includes(selectedWorkout.id) ? prev : [...prev, selectedWorkout.id]);
+      }
+
+      // Compute coaching intelligence data
+      const w = selectedWorkout;
+      const data = {};
+
+      // 1RM estimation
+      if (w.weight > 0 && w.reps > 0) {
+        data.oneRM = estimateOneRepMax(w.weight, w.reps);
+      } else {
+        data.oneRM = null;
+      }
+
+      // Strength level
+      const exKey = w.exerciseKey || w.exercise || '';
+      const clientWeightNum = parseFloat(client.weight);
+      if (data.oneRM && clientWeightNum > 0 && client.sex) {
+        data.strengthLevel = getStrengthLevel(exKey, data.oneRM, clientWeightNum, client.sex);
+      } else {
+        data.strengthLevel = null;
+      }
+
+      // Workload ratio and weekly volume from all workouts
+      const allWk = await getRecentWorkouts(100);
+      const historyForRatio = allWk
+        .filter(wk => wk.date || wk.createdAt)
+        .map(wk => ({
+          date: wk.date || wk.createdAt,
+          load: (wk.reps || 0) * (wk.sets || 1) * (wk.weight || 1),
+        }));
+      data.workloadRatio = calculateWorkloadRatio(historyForRatio);
+
+      const historyForVolume = allWk
+        .filter(wk => wk.date || wk.createdAt)
+        .map(wk => ({
+          date: wk.date || wk.createdAt,
+          exercises: [{ exerciseKey: wk.exerciseKey || wk.exercise, sets: wk.sets || 1, reps: wk.reps || 0 }],
+        }));
+      data.weeklyVolume = analyzeWeeklyVolume(historyForVolume);
+
+      // Training recommendations
+      const suggestion = suggestNextWorkout(
+        { bodyweight: clientWeightNum || undefined, sex: client.sex || undefined, experience: client.level || undefined },
+        historyForVolume
+      );
+      data.trainingRecommendation = suggestion.recommendation || suggestion.recommendationKey || null;
+      data.suggestedExercises = suggestion.suggestedExercises || [];
+
+      setCoachingData(data);
       setStep('review');
     }
   };
@@ -70,6 +137,7 @@ export default function CoachReport({ onClose }) {
       client,
       workout: selectedWorkout,
       coachNotes: coachNotes || null,
+      coachingData: coachingData || null,
       t,
       tExercise,
     });
@@ -214,11 +282,41 @@ export default function CoachReport({ onClose }) {
             {t('coach_recent_workouts') || 'Recent Workouts'} ({client.name})
           </h2>
 
+          {/* Filter and save toggles */}
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+            {client.id && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  className={`${css.workoutItem}${!showClientOnly ? ` ${css.workoutItemSelected}` : ''}`}
+                  style={{ flex: 'none', padding: '4px 10px', fontSize: '0.8rem' }}
+                  onClick={() => setShowClientOnly(false)}
+                >
+                  {t('coach_show_all') || 'All workouts'}
+                </button>
+                <button
+                  className={`${css.workoutItem}${showClientOnly ? ` ${css.workoutItemSelected}` : ''}`}
+                  style={{ flex: 'none', padding: '4px 10px', fontSize: '0.8rem' }}
+                  onClick={() => setShowClientOnly(true)}
+                >
+                  {t('coach_show_client') || "Client's workouts"}
+                </button>
+              </div>
+            )}
+            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: '0.85rem', color: 'var(--text-secondary, #888)' }}>
+              <input
+                type="checkbox"
+                checked={saveToClient}
+                onChange={e => setSaveToClient(e.target.checked)}
+              />
+              {t('coach_save_to_client') || 'Save to client history'}
+            </label>
+          </div>
+
           {workouts.length === 0 ? (
             <p className={css.empty}>{t('coach_no_workouts') || 'No workouts recorded yet. Analyze a video first.'}</p>
           ) : (
             <div className={css.workoutList}>
-              {workouts.map(w => {
+              {workouts.filter(w => !showClientOnly || clientWorkoutIds.includes(w.id)).map(w => {
                 const exKey = w.exerciseKey || w.exercise || '';
                 const exName = tExercise ? tExercise(exKey, w.exerciseName || exKey) : (w.exerciseName || exKey);
                 const date = w.date || w.createdAt ? new Date(w.date || w.createdAt).toLocaleDateString() : '';
@@ -302,6 +400,35 @@ export default function CoachReport({ onClose }) {
             <span>{t('coach_tut_total') || 'Time Under Tension'}</span>
             <span className={css.previewValue}>{selectedWorkout.bioAnalysis.timeUnderTension.total.toFixed(1)}s</span>
           </div>
+        )}
+
+        {/* Coaching intelligence data */}
+        {coachingData && (coachingData.oneRM || coachingData.strengthLevel || coachingData.workloadRatio) && (
+          <>
+            <div style={{ borderTop: '1px solid var(--border, #333)', margin: '8px 0', paddingTop: 8 }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary, #888)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {t('coach_intelligence') || 'Performance Analysis'}
+              </span>
+            </div>
+            {coachingData.oneRM != null && (
+              <div className={css.previewRow}>
+                <span>{t('coach_1rm') || 'Estimated 1RM'}</span>
+                <span className={css.previewValue}>{coachingData.oneRM} kg</span>
+              </div>
+            )}
+            {coachingData.strengthLevel && (
+              <div className={css.previewRow}>
+                <span>{t('coach_strength_level') || 'Strength Level'}</span>
+                <span className={css.previewValue} style={{ textTransform: 'capitalize' }}>{coachingData.strengthLevel}</span>
+              </div>
+            )}
+            {coachingData.workloadRatio && coachingData.workloadRatio.ratio > 0 && (
+              <div className={css.previewRow}>
+                <span>{t('coach_workload') || 'Training Load'}</span>
+                <span className={css.previewValue}>{coachingData.workloadRatio.ratio} ({coachingData.workloadRatio.zone})</span>
+              </div>
+            )}
+          </>
         )}
       </div>
 

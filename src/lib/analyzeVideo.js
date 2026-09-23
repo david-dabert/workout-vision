@@ -107,9 +107,36 @@ export async function analyzeVideoFile({
   const analysisFps = IS_IOS ? 10 : 15;
   const maxWidth = IS_IOS ? 480 : 720;
 
+  const MAX_VIDEO_DURATION = 120; // seconds
+  const ANALYSIS_TIMEOUT = 180_000; // milliseconds
+
+  // ── Global analysis timeout ──
+  // If the caller provided a signal, combine it with our timeout signal.
+  // Otherwise create a standalone timeout abort.
+  const timeoutController = new AbortController();
+  const timeoutId = setTimeout(() => timeoutController.abort(), ANALYSIS_TIMEOUT);
+  const effectiveSignal = (() => {
+    if (!signal) return timeoutController.signal;
+    // Combine caller signal and timeout signal
+    const combined = new AbortController();
+    const onAbort = () => combined.abort();
+    signal.addEventListener('abort', onAbort);
+    timeoutController.signal.addEventListener('abort', onAbort);
+    return combined.signal;
+  })();
+
   // Helper to check abort state
   const checkAbort = () => {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (effectiveSignal?.aborted) {
+      if (timeoutController.signal.aborted && !signal?.aborted) {
+        const elapsed = Math.round((Date.now() - analysisStart) / 1000);
+        const err = new Error('Analysis timeout');
+        err.name = 'TimeoutError';
+        err._structured = { error: 'analysis_timeout', elapsed };
+        throw err;
+      }
+      throw new DOMException('Aborted', 'AbortError');
+    }
   };
 
   try {
@@ -117,6 +144,24 @@ export async function analyzeVideoFile({
     onPhase('hashing');
     checkAbort();
     const videoHash = await hashFile(file);
+
+    // ── Duration guard ──
+    // Read the video duration via a temporary <video> element.
+    // Abort early if the video exceeds MAX_VIDEO_DURATION to prevent
+    // browser hangs on very long recordings.
+    const videoDuration = await new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      const cleanup = () => { URL.revokeObjectURL(url); tempVideo.src = ''; };
+      tempVideo.onloadedmetadata = () => { const d = tempVideo.duration; cleanup(); resolve(d); };
+      tempVideo.onerror = () => { cleanup(); resolve(Infinity); }; // on error, skip guard
+      tempVideo.src = url;
+    });
+    if (Number.isFinite(videoDuration) && videoDuration > MAX_VIDEO_DURATION) {
+      clearTimeout(timeoutId);
+      return { error: 'video_too_long', duration: Math.round(videoDuration), maxDuration: MAX_VIDEO_DURATION };
+    }
     // Cache key includes 'cpu' to invalidate stale GPU-derived landmarks
     // from before the deterministic CPU delegate fix
     const cacheKey = `lm-${videoHash}-${analysisFps}-cpu`;
@@ -346,7 +391,7 @@ export async function analyzeVideoFile({
               onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
             },
             undefined,
-            { signal, startFrame, deterministic: true },
+            { signal: effectiveSignal, startFrame, deterministic: true },
           );
 
           // Wait for all in-flight inferences to complete
@@ -395,14 +440,19 @@ export async function analyzeVideoFile({
               onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
             },
             undefined,
-            { signal, startFrame, deterministic: true },
+            { signal: effectiveSignal, startFrame, deterministic: true },
           );
 
           frameCount = streamResult.frameCount;
           duration = streamResult.duration;
         }
       } catch (err) {
+        if (err.name === 'TimeoutError' && err._structured) {
+          clearTimeout(timeoutId);
+          return err._structured;
+        }
         if (err.name === 'AbortError') {
+          clearTimeout(timeoutId);
           // Save what we have as a partial checkpoint before returning
           if (landmarksForCache.length > 0) {
             await savePartialCheckpoint(cacheKey, landmarksForCache, streamFrameCount - 1).catch(() => {});
@@ -447,6 +497,7 @@ export async function analyzeVideoFile({
     }
 
     if (frames.length === 0) {
+      clearTimeout(timeoutId);
       return { error: true, errorReason: 'No poses detected in any frame. Ensure your full body is visible with good lighting.' };
     }
 
@@ -457,6 +508,7 @@ export async function analyzeVideoFile({
     const finalAutoDetect = lockedExercise ? false : autoDetect;
     const finalUserChanged = lockedExercise ? true : userChangedExercise;
 
+    clearTimeout(timeoutId);
     return await buildFullResult({
       frames, replayFrames, frameCount, duration, analysisFps,
       exercise: finalExercise, autoDetect: finalAutoDetect, userChangedExercise: finalUserChanged,
@@ -464,6 +516,10 @@ export async function analyzeVideoFile({
       file, videoHash, analysisStart, onProgress, onPhase, onExerciseDetected,
     });
   } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'TimeoutError' && err._structured) {
+      return err._structured;
+    }
     if (err.name === 'AbortError') {
       // Aborted before extraction started; no partial results available
       return { aborted: true, reps: 0, frames: [], exercise };

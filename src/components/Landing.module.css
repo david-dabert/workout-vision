@@ -1,0 +1,237 @@
+.landing {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px 32px;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* ── Background canvas ── */
+.bgCanvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeSlideUp 0.6s var(--ease-settle) both;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.wordmarkW {
+  display: inline-block;
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+.wordmarkAccent {
+  color: var(--accent);
+}
+
+.tagline {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ── Feature cards ── */
+.cards {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeSlideUp 0.5s var(--ease-settle) both;
+}
+
+.card:nth-child(1) { animation-delay: 0.15s; }
+.card:nth-child(2) { animation-delay: 0.25s; }
+.card:nth-child(3) { animation-delay: 0.35s; }
+
+.cardIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.cardIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cardText {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.cardDesc {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* ── Privacy badge ── */
+.privacy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fadeSlideUp 0.5s var(--ease-settle) 0.45s both;
+}
+
+.privacyIcon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.privacyIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.privacyText {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── CTA button ── */
+.cta {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #0f0f13;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-settle);
+  box-shadow: var(--shadow-accent);
+  opacity: 0;
+  animation: fadeSlideUp 0.5s var(--ease-settle) 0.55s both;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ── Footer ── */
+.footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 24px;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+  opacity: 0;
+  animation: fadeSlideUp 0.5s var(--ease-settle) 0.65s both;
+}
+
+/* ── Animation ── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Light mode overrides ── */
+@media (prefers-color-scheme: light) {
+  .card {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.07);
+  }
+
+  .cta {
+    color: #fff;
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .card,
+  .privacy,
+  .cta,
+  .footer {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

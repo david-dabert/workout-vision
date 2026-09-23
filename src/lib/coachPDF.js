@@ -33,7 +33,7 @@ const COLORS = {
  * @param {Function} params.tExercise - exercise name translation
  * @returns {jsPDF} The generated PDF document
  */
-export function generateCoachReportPDF({ coach, client, workout, coachNotes, t, tExercise }) {
+export function generateCoachReportPDF({ coach, client, workout, coachNotes, coachingData, t, tExercise }) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -66,6 +66,12 @@ export function generateCoachReportPDF({ coach, client, workout, coachNotes, t, 
   if (workout.report) {
     y = _checkPageBreak(doc, y, 40, pageH, margin);
     y = _drawCoachingFeedback(doc, workout, y, margin, contentW, t);
+  }
+
+  // ── Coaching intelligence ──
+  if (coachingData && (coachingData.oneRM || coachingData.strengthLevel || coachingData.workloadRatio || coachingData.trainingRecommendation)) {
+    y = _checkPageBreak(doc, y, 50, pageH, margin);
+    y = _drawCoachingIntelligence(doc, coachingData, y, margin, contentW, t);
   }
 
   // ── Coach notes ──
@@ -411,6 +417,91 @@ function _drawCoachingFeedback(doc, workout, y, margin, contentW, t) {
         y += 4;
       }
     }
+  }
+
+  y += 4;
+  return y;
+}
+
+function _drawCoachingIntelligence(doc, data, y, margin, contentW, t) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...COLORS.text);
+  doc.text(t('coach_intelligence') || 'Performance Analysis', margin, y);
+  y += 6;
+
+  const metrics = [];
+
+  if (data.oneRM != null) {
+    metrics.push({
+      label: t('coach_1rm') || 'Estimated 1RM',
+      value: `${data.oneRM} kg`,
+    });
+  }
+
+  if (data.strengthLevel) {
+    const levelLabel = data.strengthLevel.charAt(0).toUpperCase() + data.strengthLevel.slice(1);
+    metrics.push({
+      label: t('coach_strength_level') || 'Strength Level',
+      value: levelLabel,
+    });
+  }
+
+  if (data.workloadRatio && data.workloadRatio.ratio > 0) {
+    const zoneLabel = data.workloadRatio.zone.charAt(0).toUpperCase() + data.workloadRatio.zone.slice(1);
+    metrics.push({
+      label: t('coach_workload') || 'Training Load',
+      value: `${data.workloadRatio.ratio} (${zoneLabel})`,
+    });
+  }
+
+  // Render metrics in 2-column grid
+  if (metrics.length > 0) {
+    doc.setFillColor(...COLORS.bgLight);
+    const gridH = Math.ceil(metrics.length / 2) * 8 + 4;
+    doc.roundedRect(margin, y, contentW, gridH, 2, 2, 'F');
+
+    const colW = (contentW - 4) / 2;
+    for (let i = 0; i < metrics.length; i++) {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = margin + 4 + col * (colW + 4);
+      const my = y + 5 + row * 8;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...COLORS.textLight);
+      doc.text(metrics[i].label, x, my);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...COLORS.text);
+      doc.text(metrics[i].value, x + 55, my);
+    }
+
+    y += gridH + 4;
+  }
+
+  // Training recommendations
+  if (data.trainingRecommendation) {
+    y += 2;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.accent);
+    doc.text(t('coach_training_recs') || 'Training Recommendations', margin, y);
+    y += 5;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...COLORS.text);
+    const recText = typeof data.trainingRecommendation === 'string'
+      ? data.trainingRecommendation
+      : String(data.trainingRecommendation);
+    const lines = doc.splitTextToSize(recText, contentW - 8);
+    for (const line of lines) {
+      doc.text(line, margin + 4, y);
+      y += 4;
+    }
+    y += 2;
   }
 
   y += 4;

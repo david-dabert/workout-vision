@@ -416,6 +416,31 @@
   opacity: 0.9;
 }
 
+/* Body measurements grid */
+.onb-body-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+.onb-input-with-unit {
+  position: relative; display: flex; align-items: center;
+}
+.onb-input-with-unit .onb-input {
+  width: 100%; padding-right: 40px;
+}
+.onb-unit {
+  position: absolute; right: 14px;
+  font-size: 0.82rem; color: var(--text-tertiary);
+  pointer-events: none; font-weight: 500;
+}
+
+/* Exercise guide teaser icon */
+.onb-exercises-icon {
+  width: 72px; height: 72px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-glow); color: var(--accent);
+  margin: 0 auto 20px; border: 1px solid var(--border-accent);
+}
+
 
 /* ══════════════════════════════════════════
    MACHINE IDENTIFIER / EQUIPMENT

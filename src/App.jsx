@@ -51,6 +51,7 @@ const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
 const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
 const ExerciseGuide = safeLazy(() => import('./components/ExerciseGuide'));
 const CoachReport = safeLazy(() => import('./components/CoachReport'));
+const Landing = safeLazy(() => import('./components/Landing'));
 
 const LazyFallback = (
   <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
@@ -73,6 +74,7 @@ function AppInner() {
   const [modelStatus, setModelStatus] = useState('loading');
   const [challenge, setChallenge] = useState(null);
   const [challengeResponse, setChallengeResponse] = useState(null);
+  const [showLanding, setShowLanding] = useState(() => !localStorage.getItem('wv_seen_landing'));
 
   // Run storage schema migration on mount
   useEffect(() => {
@@ -127,6 +129,17 @@ function AppInner() {
   // Wait for profile check (and potential auto-create) before rendering
   if (profileLoading || !profile) return LazyFallback;
 
+  // Landing page for first-time visitors (before onboarding)
+  if (showLanding) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={LazyFallback}>
+          <Landing onStart={() => setShowLanding(false)} />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
   // Onboarding for first-time users
   if (page === 'onboarding' || (profile && !profile.profileComplete && page === 'dashboard')) {
     return (
@@ -134,9 +147,9 @@ function AppInner() {
         <Suspense fallback={LazyFallback}>
           <Onboarding
             profile={profile}
-            onComplete={async (updates) => {
+            onComplete={async (updates, navigateTo) => {
               await saveProfile({ ...profile, ...updates });
-              setPage('dashboard');
+              setPage(navigateTo || 'dashboard');
             }}
           />
         </Suspense>

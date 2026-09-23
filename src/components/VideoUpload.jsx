@@ -194,6 +194,18 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
       return { _failed: true, errorReason: 'No result returned' };
     }
 
+    if (result.error === 'video_too_long') {
+      trackEvent('analysis_failed', { fileName: queueItem.name, reason: 'video_too_long' });
+      setErrorMsg(t('video_too_long', { duration: result.duration, max: result.maxDuration }));
+      return { _failed: true, errorReason: 'video_too_long' };
+    }
+
+    if (result.error === 'analysis_timeout') {
+      trackEvent('analysis_failed', { fileName: queueItem.name, reason: 'analysis_timeout' });
+      setErrorMsg(t('analysis_timeout', { seconds: result.elapsed }));
+      return { _failed: true, errorReason: 'analysis_timeout' };
+    }
+
     if (result.error) {
       trackEvent('analysis_failed', { fileName: queueItem.name, reason: result.errorReason });
       setErrorMsg(result.errorReason || `Analysis failed. ${t('try_different')}`);
