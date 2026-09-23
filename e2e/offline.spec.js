@@ -1,19 +1,26 @@
 import { test, expect } from '@playwright/test';
 
-// Helper: complete onboarding if it appears (first-time users see an onboarding screen).
-// Waits for either .logo (dashboard) or Skip button (onboarding) to appear.
+// Helper: navigate through landing + onboarding if they appear (first-time users).
+// Flow: Landing ("Get Started") → Onboarding ("Skip") → Dashboard (.logo).
 async function ensureDashboard(page) {
-  // Wait for either the dashboard logo or the onboarding Skip button
   const logo = page.locator('.logo');
   const skipBtn = page.locator('button', { hasText: 'Skip' });
+  const getStartedBtn = page.locator('button', { hasText: 'Get Started' });
 
-  // Race: whichever appears first
   await Promise.race([
     logo.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
     skipBtn.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
+    getStartedBtn.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
   ]);
 
-  // If Skip is visible, click it and wait for logo
+  if (await getStartedBtn.isVisible().catch(() => false)) {
+    await getStartedBtn.click();
+    await Promise.race([
+      logo.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
+      skipBtn.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
+    ]);
+  }
+
   if (await skipBtn.isVisible().catch(() => false)) {
     await skipBtn.click();
     await logo.waitFor({ state: 'visible', timeout: 15_000 });
