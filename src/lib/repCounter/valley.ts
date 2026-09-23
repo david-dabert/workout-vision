@@ -195,6 +195,33 @@ export function adaptiveSignalSelect(
     }
   }
 
+  // ── High-consistency cluster override ──
+  // When many alternative signals with very high consistency (>0.85) agree
+  // on a rep count that is less than HALF the winner's count, the winner is
+  // likely overcounting from noise or one-sided tracking failure.
+  //
+  // Thresholds are deliberately conservative (≥4 signals, consistency >0.85,
+  // ratio <0.45) to avoid false triggers on exercises where the winner is
+  // genuinely correct. Only fires on extreme overcounting (e.g. 15 vs 6).
+  {
+    const highConsAlts = altResults.filter(a => a.consistency > 0.85 && a.reps >= 2);
+    if (highConsAlts.length >= 4 && bestResult.reps >= 10) {
+      const repCounts = highConsAlts.map(a => a.reps).sort((a, b) => a - b);
+      const hcMedian = repCounts[Math.floor(repCounts.length / 2)];
+      const cluster = highConsAlts.filter(a => Math.abs(a.reps - hcMedian) <= 1);
+
+      if (cluster.length >= 4 && hcMedian <= bestResult.reps * 0.40) {
+        let clusterBest = cluster[0];
+        for (const c of cluster) {
+          if (c.score > clusterBest.score) clusterBest = c;
+        }
+        bestScore = clusterBest.score;
+        bestCand = clusterBest.cand;
+        bestResult = clusterBest.result;
+      }
+    }
+  }
+
   return {
     signal: bestCand.original,
     invert: bestCand.inv,
