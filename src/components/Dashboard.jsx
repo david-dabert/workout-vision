@@ -58,6 +58,9 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [allWorkouts, setAllWorkouts] = useState([]);
+  const [showMore, setShowMore] = useState(false);
+
+  const isCoach = profile?.isCoach === true;
 
   const statusDot = modelStatus === 'ready' ? 'ready'
     : modelStatus === 'error' ? 'err' : 'pulse';
@@ -96,10 +99,34 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
       muscles: { primary: [...primarySet], secondary: [...secondarySet] } };
   }, [recentWorkouts]);
 
+  // Last session info for the summary line
+  const lastSession = useMemo(() => {
+    if (allWorkouts.length === 0) return null;
+    const w = allWorkouts[0];
+    const score = w.formScore || 0;
+    return {
+      exercise: w.exerciseName || w.exercise,
+      grade: gradeFromScore(score),
+      date: new Date(w.date || w.createdAt).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' }),
+      score,
+    };
+  }, [allWorkouts, lang]);
+
+  // Client count for coach mode
+  const clientCount = useMemo(() => {
+    if (!isCoach || allWorkouts.length === 0) return 0;
+    const clients = new Set();
+    for (const w of allWorkouts) {
+      if (w.clientName) clients.add(w.clientName);
+    }
+    return clients.size;
+  }, [isCoach, allWorkouts]);
+
   return (
     <div className="home">
       <MilestoneToast />
-      {/* ── Hero section ── */}
+
+      {/* ===== SECTION 1: Hero with greeting + last session summary ===== */}
       <div className="home-hero">
         <div className="home-hero-bg" />
         <div className="home-hero-content">
@@ -126,7 +153,13 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
           <p className="greeting-text">
             {profile?.name ? `${t(getGreetingKey())}, ${profile.name.split(' ')[0]}` : t(getGreetingKey())}
           </p>
-          <p className="tagline">{t(getMotivationKey(allWorkouts.length))}</p>
+          {lastSession ? (
+            <p className="tagline" style={{ fontSize: '0.82rem', opacity: 0.8 }}>
+              {t('dash_last_session')}: {lastSession.exercise} — {lastSession.grade} — {lastSession.date}
+            </p>
+          ) : (
+            <p className="tagline">{t(getMotivationKey(allWorkouts.length))}</p>
+          )}
           <div className="hero-status-row">
             <div
               className={`engine-status engine-${statusDot}`}
@@ -140,13 +173,17 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
               <span className={`engine-dot ${statusDot}`} />
               <span>{modelStatus === 'error' ? t('engine_failed_retry') : statusText}</span>
             </div>
-            {calculateStreak(allWorkouts, profile?.trainingDays) > 0 ? (
+            {!isCoach && calculateStreak(allWorkouts, profile?.trainingDays) > 0 ? (
               <span className="streak-badge">
                 <Icon name="fire" size={14} /> {calculateStreak(allWorkouts, profile?.trainingDays)} {profile?.trainingDays ? t('scheduled_streak') : t('days_streak')}
               </span>
-            ) : daysSinceLastWorkout >= 2 ? (
+            ) : !isCoach && daysSinceLastWorkout >= 2 ? (
               <span className="streak-badge comeback">
                 {t('days_since_last', { days: daysSinceLastWorkout })}
+              </span>
+            ) : isCoach && clientCount > 0 ? (
+              <span className="streak-badge">
+                {clientCount} {t('dash_clients_analyzed')}
               </span>
             ) : null}
           </div>
@@ -170,37 +207,125 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
         </div>
       )}
 
-      {/* ── Workout of the Week ── */}
-      <WorkoutOfTheWeek onNavigate={onNavigate} />
-
-      {/* ── VisionScore hero metric ── */}
-      <VisionScoreHero workouts={allWorkouts} />
-
-      {/* ── Primary action: Analyze Video ── */}
+      {/* ===== SECTION 2: Primary CTA ===== */}
       <div className="action-cards">
-        <button
-          className="action-primary"
-          onClick={() => onNavigate('analyze')}
-          aria-label={t('nav_video_title')}
-        >
-          <div className="action-primary-glow" />
-          <div className="action-primary-content">
-            <div className={`action-primary-icon ${css.actionPrimaryIcon}`}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="23 7 16 12 23 17 23 7" />
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+        {isCoach ? (
+          /* Coach mode: two equal-weight primary buttons */
+          <div className={css.coachDualCta}>
+            <button
+              className="action-primary"
+              onClick={() => onNavigate('analyze')}
+              aria-label={t('dash_analyze_client')}
+              style={{ flex: 1 }}
+            >
+              <div className="action-primary-glow" />
+              <div className="action-primary-content">
+                <div className={`action-primary-icon ${css.actionPrimaryIcon}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                  </svg>
+                </div>
+                <div className="action-primary-text">
+                  <span className="action-label">{t('dash_analyze_client')}</span>
+                </div>
+              </div>
+            </button>
+            <button
+              className="action-primary"
+              onClick={() => onNavigate('coach')}
+              aria-label={t('dash_generate_report')}
+              style={{ flex: 1 }}
+            >
+              <div className="action-primary-glow" />
+              <div className="action-primary-content">
+                <div className={`action-primary-icon ${css.actionPrimaryIcon}`}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                </div>
+                <div className="action-primary-text">
+                  <span className="action-label">{t('dash_generate_report')}</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        ) : (
+          /* Individual mode: single prominent Analyze Video button */
+          <button
+            className="action-primary"
+            onClick={() => onNavigate('analyze')}
+            aria-label={t('nav_video_title')}
+            style={{ minHeight: '80px' }}
+          >
+            <div className="action-primary-glow" />
+            <div className="action-primary-content">
+              <div className={`action-primary-icon ${css.actionPrimaryIcon}`}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7" />
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                </svg>
+              </div>
+              <div className="action-primary-text">
+                <span className="action-label">{t('nav_video_title')}</span>
+                <span className="action-desc">{t('nav_video_desc')}</span>
+              </div>
+              <svg className="action-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </div>
-            <div className="action-primary-text">
-              <span className="action-label">{t('nav_video_title')}</span>
-              <span className="action-desc">{t('nav_video_desc')}</span>
-            </div>
-            <svg className="action-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-        </button>
+          </button>
+        )}
+      </div>
 
+      {/* ===== SECTION 3: Last result preview card ===== */}
+      {recentWorkouts.length > 0 && (() => {
+        const w = recentWorkouts[0];
+        const score = w.formScore || 0;
+        const gradeColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
+        return (
+          <div className="recent-section" style={{ paddingTop: '4px' }}>
+            <div className="workout-list">
+              <div className="workout-row">
+                <div className="workout-grade" style={{ '--grade-color': gradeColor }}>
+                  {gradeFromScore(score)}
+                </div>
+                <div className="workout-info">
+                  <span className="workout-name">{w.exerciseName || w.exercise}</span>
+                  <span className="workout-meta">
+                    {new Date(w.date || w.createdAt).toLocaleDateString()} &middot; {w.reps} {t('reps').toLowerCase()}
+                    {w.weight > 0 && ` \u00B7 ${w.weight}kg`}
+                  </span>
+                </div>
+                <div className="workout-reps">
+                  <span className="workout-reps-num">{w.reps}</span>
+                  <span className="workout-reps-label">reps</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Welcome card for first-time users ── */}
+      {allWorkouts.length === 0 && (
+        <div className="welcome-card">
+          <h3 className="welcome-card-title">{t('welcome_first_run')}</h3>
+          <p className="welcome-card-text">{t('welcome_first_run_text')}</p>
+          <div className="welcome-card-steps">
+            <div className="welcome-step"><span className="welcome-step-num">1</span><span>{t('welcome_step_1')}</span></div>
+            <div className="welcome-step"><span className="welcome-step-num">2</span><span>{t('welcome_step_2')}</span></div>
+            <div className="welcome-step"><span className="welcome-step-num">3</span><span>{t('welcome_step_3')}</span></div>
+          </div>
+          <button className="btn btn-primary" onClick={() => onNavigate('analyze')}>{t('nav_video_title')}</button>
+        </div>
+      )}
+
+      {/* ===== Secondary actions (below the fold) ===== */}
+      <div className="action-cards" style={{ marginTop: '8px' }}>
         <button
           className="action-secondary"
           onClick={() => onNavigate('log')}
@@ -239,75 +364,33 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
           </div>
         </button>
 
-        <button
-          className="action-secondary"
-          onClick={() => onNavigate('coach')}
-          aria-label={t('coach_report') || 'Coach Report'}
-        >
-          <div className="action-secondary-content">
-            <div className="action-secondary-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
+        {!isCoach && (
+          <button
+            className="action-secondary"
+            onClick={() => onNavigate('coach')}
+            aria-label={t('coach_report') || 'Coach Report'}
+          >
+            <div className="action-secondary-content">
+              <div className="action-secondary-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              </div>
+              <span className="action-label">{t('coach_report') || 'Coach Report'}</span>
+              <svg className="action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </div>
-            <span className="action-label">{t('coach_report') || 'Coach Report'}</span>
-            <svg className="action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-        </button>
+          </button>
+        )}
       </div>
 
-      {/* ── Welcome card for first-time users ── */}
-      {allWorkouts.length === 0 && (
-        <div className="welcome-card">
-          <h3 className="welcome-card-title">{t('welcome_first_run')}</h3>
-          <p className="welcome-card-text">{t('welcome_first_run_text')}</p>
-          <div className="welcome-card-steps">
-            <div className="welcome-step"><span className="welcome-step-num">1</span><span>{t('welcome_step_1')}</span></div>
-            <div className="welcome-step"><span className="welcome-step-num">2</span><span>{t('welcome_step_2')}</span></div>
-            <div className="welcome-step"><span className="welcome-step-num">3</span><span>{t('welcome_step_3')}</span></div>
-          </div>
-          <button className="btn btn-primary" onClick={() => onNavigate('analyze')}>{t('nav_video_title')}</button>
-        </div>
-      )}
+      {/* ── VisionScore + weekly dots: always visible ── */}
+      <VisionScoreHero workouts={allWorkouts} />
 
-      {/* ── Stats summary ── */}
-      {stats && stats.muscles.primary.length > 0 && (
-        <div className="stats-section">
-          <h3 className="section-title">{t('recent')}</h3>
-          <div className="stats-hero-card">
-            <MuscleMap muscles={stats.muscles} size={90} />
-            <div className="stats-numbers">
-              <div className="stat-item">
-                <span className="stat-value">{stats.totalReps}</span>
-                <span className="stat-label">{t('reps').toUpperCase()}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">{stats.totalSets}</span>
-                <span className="stat-label">{t('sets').toUpperCase()}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value" style={{
-                  color: stats.avgScore >= 80 ? 'var(--accent)' : stats.avgScore >= 60 ? 'var(--yellow)' : 'var(--red)'
-                }}>{stats.avgScore}</span>
-                <span className="stat-label">{t('form').toUpperCase()}</span>
-              </div>
-              {stats.totalVolume > 0 && (
-                <div className="stat-item">
-                  <span className="stat-value">{Math.round(stats.totalVolume)}<span className="stat-unit">kg</span></span>
-                  <span className="stat-label">{t('volume').toUpperCase()}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Weekly mini-graph ── */}
       {allWorkouts.length > 0 && (
         <div className="weekly-dots">
           {getLast7Days(allWorkouts, lang).map((day, i) => (
@@ -319,42 +402,96 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
         </div>
       )}
 
-      {/* ── Recent workouts ── */}
-      {recentWorkouts.length > 0 && (
-        <div className="recent-section">
-          {!stats && <h3 className="section-title">{t('recent')}</h3>}
-          <div className="workout-list">
-            {recentWorkouts.slice(0, 5).map(w => {
-              const score = w.formScore || 0;
-              const gradeColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
-              return (
-                <div key={w.id} className="workout-row">
-                  <div className="workout-grade" style={{ '--grade-color': gradeColor }}>
-                    {gradeFromScore(score)}
-                  </div>
-                  <div className="workout-info">
-                    <span className="workout-name">{w.exerciseName || w.exercise}</span>
-                    <span className="workout-meta">
-                      {new Date(w.date || w.createdAt).toLocaleDateString()} &middot; {w.reps} {t('reps').toLowerCase()}
-                      {w.weight > 0 && ` \u00B7 ${w.weight}kg`}
-                    </span>
-                  </div>
-                  <div className="workout-reps">
-                    <span className="workout-reps-num">{w.reps}</span>
-                    <span className="workout-reps-label">reps</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* ===== View More / View Less divider ===== */}
+      {allWorkouts.length > 0 && (
+        <button
+          className={css.viewMoreBtn}
+          onClick={() => setShowMore(prev => !prev)}
+        >
+          <span>{showMore ? t('dash_view_less') : t('dash_view_more')}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ transform: showMore ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
       )}
 
-      {/* ── Training Load Monitor ── */}
-      {allWorkouts.length >= 5 && <InjuryRiskCard />}
+      {/* ===== Expandable section: everything else ===== */}
+      {showMore && (
+        <>
+          {/* ── Workout of the Week ── */}
+          <WorkoutOfTheWeek onNavigate={onNavigate} />
 
-      {/* ── Insights section ── */}
-      <InsightsSection profile={profile} workouts={recentWorkouts} />
+          {/* ── Stats summary ── */}
+          {stats && stats.muscles.primary.length > 0 && (
+            <div className="stats-section">
+              <h3 className="section-title">{t('recent')}</h3>
+              <div className="stats-hero-card">
+                <MuscleMap muscles={stats.muscles} size={90} />
+                <div className="stats-numbers">
+                  <div className="stat-item">
+                    <span className="stat-value">{stats.totalReps}</span>
+                    <span className="stat-label">{t('reps').toUpperCase()}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value">{stats.totalSets}</span>
+                    <span className="stat-label">{t('sets').toUpperCase()}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-value" style={{
+                      color: stats.avgScore >= 80 ? 'var(--accent)' : stats.avgScore >= 60 ? 'var(--yellow)' : 'var(--red)'
+                    }}>{stats.avgScore}</span>
+                    <span className="stat-label">{t('form').toUpperCase()}</span>
+                  </div>
+                  {stats.totalVolume > 0 && (
+                    <div className="stat-item">
+                      <span className="stat-value">{Math.round(stats.totalVolume)}<span className="stat-unit">kg</span></span>
+                      <span className="stat-label">{t('volume').toUpperCase()}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Recent workouts (rest of them) ── */}
+          {recentWorkouts.length > 1 && (
+            <div className="recent-section">
+              {!stats && <h3 className="section-title">{t('recent')}</h3>}
+              <div className="workout-list">
+                {recentWorkouts.slice(1, 5).map(w => {
+                  const score = w.formScore || 0;
+                  const gradeColor = score >= 80 ? 'var(--accent)' : score >= 60 ? 'var(--yellow)' : 'var(--red)';
+                  return (
+                    <div key={w.id} className="workout-row">
+                      <div className="workout-grade" style={{ '--grade-color': gradeColor }}>
+                        {gradeFromScore(score)}
+                      </div>
+                      <div className="workout-info">
+                        <span className="workout-name">{w.exerciseName || w.exercise}</span>
+                        <span className="workout-meta">
+                          {new Date(w.date || w.createdAt).toLocaleDateString()} &middot; {w.reps} {t('reps').toLowerCase()}
+                          {w.weight > 0 && ` \u00B7 ${w.weight}kg`}
+                        </span>
+                      </div>
+                      <div className="workout-reps">
+                        <span className="workout-reps-num">{w.reps}</span>
+                        <span className="workout-reps-label">reps</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Training Load Monitor ── */}
+          {allWorkouts.length >= 5 && <InjuryRiskCard />}
+
+          {/* ── Insights section ── */}
+          <InsightsSection profile={profile} workouts={recentWorkouts} />
+        </>
+      )}
 
       {/* ── Footer ── */}
       <div className="home-footer">
