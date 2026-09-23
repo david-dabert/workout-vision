@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { initExercises } from './lib/exercises'
 
 // Register service worker for offline support and PWA install prompt
 if ('serviceWorker' in navigator) {
@@ -30,8 +31,20 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+// Load exercise definitions from JSON before rendering.
+// This populates the EXERCISES object that all components reference synchronously.
+initExercises().then(() => {
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}).catch(err => {
+  console.error('Failed to load exercise definitions:', err);
+  // Render anyway — components will see empty EXERCISES and degrade gracefully
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+});

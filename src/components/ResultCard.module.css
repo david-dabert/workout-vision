@@ -1,13 +1,12 @@
-/* ResultCard.module.css — extracted from inline styles */
+/* ResultCard.module.css — container layout and styles kept in parent */
 
 .resultCard {
   margin-top: 14px;
   position: relative;
 }
 
-/* ═══ HERO ZONE ═══ */
+/* ═══ Insufficient footage (kept in parent since it's an early-return path) ═══ */
 
-/* The grade is the moment. It earns its entrance. */
 .heroGrade {
   text-align: center;
   padding: 20px 0 10px;
@@ -20,10 +19,8 @@
   position: relative;
   overflow: hidden;
   display: inline-block;
-  /* Grade entrance handled by .result-badge-reveal class in _components.css */
 }
 
-/* Ambient glow behind the grade — the score radiates */
 .heroGrade::before {
   content: '';
   position: absolute;
@@ -41,745 +38,64 @@
   font-weight: 700;
 }
 
-.heroScoreLine {
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 4px;
-}
-
-/* The score counts up — you watch your number climb */
-.heroScore {
-  font-size: 1.4rem;
-  font-weight: 800;
-  animation: enterHeavy 0.5s var(--ease-power) 0.25s both;
-}
-
-.heroScoreUnit {
-  font-size: 0.7em;
-  color: var(--muted);
-}
-
-/* Stats row — not a table, a dashboard readout */
-.heroStatsRow {
+.insufficientFootageBanner {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 14px 8px;
+  gap: 8px;
+  padding: 10px 14px;
   margin: 8px 0;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, rgba(139, 129, 152, 0.02) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  animation: enterHeavy 0.5s var(--ease-power) 0.35s both;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.heroStat {
-  flex: 1;
-  text-align: center;
-  cursor: default;
-}
-
-.heroStatValue {
-  display: block;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.heroStatLabel {
-  display: block;
-  font-size: 0.6rem;
-  color: var(--muted);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-top: 2px;
-}
-
-.heroStatDivider {
-  width: 1px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-}
-
-.heroActions {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0 4px;
-}
-
-/* Legacy header kept for compatibility */
-.headerContent {
-  flex: 1;
-}
-
-.headerRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
-}
-
-.exerciseIllustration {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  flex-shrink: 0;
-}
-
-.exerciseTitle {
-  margin-bottom: 0;
-  font-size: 1.1rem;
-}
-
-.fileNameRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.autoDetectedBadge {
-  font-size: 0.6rem;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(212, 167, 106, 0.12);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.detectionFailedBadge,
-.lowConfidenceBadge {
-  font-size: 0.6rem;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(255, 183, 54, 0.15);
+  background: var(--yellow-glow);
+  border: 1px solid rgba(201, 160, 74, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
   color: var(--yellow);
   font-weight: 600;
 }
 
-.scoreBadge {
-  font-size: 1.1rem;
-  padding: 8px 16px;
-  position: relative;
-  overflow: hidden;
+.insufficientFootageIcon {
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.shimmerOverlay {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
+.insufficientFootageText {
+  line-height: 1.3;
 }
 
-.statCardClickable {
-  cursor: pointer;
-  position: relative;
+.filmingGuide {
+  padding: 16px 0 8px;
 }
 
-.repEditControls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.filmingGuide h4 {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
 }
 
-.repEditButton {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--muted);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+.filmingGuideList {
+  list-style: none;
   padding: 0;
-}
-
-.repDisplayCount {
-  min-width: 24px;
-  text-align: center;
-}
-
-.aiRepIndicator {
-  font-size: 0.55em;
-  color: var(--muted);
-  margin-left: 4px;
-}
-
-.tapToEditHint {
-  font-size: 0.55rem;
-  color: var(--accent);
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0.7;
-}
-
-.formScoreNA {
-  color: var(--muted);
-  font-size: 0.85em;
-}
-
-.scoreGood { color: var(--accent); }
-.scoreOk { color: var(--yellow); }
-.scorePoor { color: var(--red); }
-
-.scoreUnit {
-  font-size: 0.7em;
-  color: var(--muted);
-  margin-left: 2px;
-}
-
-.volumeUnit {
-  font-size: 0.7em;
-  color: var(--muted);
-  margin-left: 2px;
-}
-
-.recalibratingIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 0;
-  font-size: 0.75rem;
-  color: var(--accent);
-}
-
-.spinner {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--accent);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.recalibratedNotice {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 0;
-  margin-bottom: 4px;
-  font-size: 0.65rem;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.recalibratedCheckmark {
-  font-size: 0.8rem;
-}
-
-.correctionToast {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 12px;
-  margin-bottom: 6px;
-  font-size: 0.7rem;
-  color: var(--yellow, #ffc107);
-  background: rgba(255, 193, 7, 0.08);
-  border-radius: 8px;
-  font-weight: 600;
-  animation: correctionFadeIn 0.2s ease-out;
-}
-
-.correctionToastCheck {
-  font-size: 0.85rem;
-}
-
-@keyframes correctionFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.confidenceIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 4px 0;
-  margin-bottom: 6px;
-  font-size: 0.65rem;
-  color: var(--muted);
-}
-
-.confidenceDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.confidence_high { background: var(--accent); }
-.confidence_medium { background: var(--yellow); }
-.confidence_low { background: var(--red); }
-
-.deviationPositive { color: var(--bio-green, #4ade80); }
-.deviationNegative { color: var(--red); }
-
-.userCorrectedLabel {
-  margin-left: 8px;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-/* Personal Best is a moment of triumph — it doesn't whisper, it announces */
-.personalBestBanner {
-  text-align: center;
-  padding: 14px 0;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, rgba(255, 107, 157, 0.08), rgba(196, 181, 253, 0.08));
-  border-radius: 12px;
-  border: 1px solid rgba(255, 107, 157, 0.15);
-  animation: enterHeavy 0.6s var(--ease-power) 0.45s both;
-  box-shadow: 0 0 30px rgba(255, 107, 157, 0.08), 0 0 60px rgba(196, 181, 253, 0.05);
-}
-
-.personalBestIcon {
-  font-size: 24px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.personalBestLabel {
-  font-size: 13px;
-  font-weight: 700;
-  color: #ff6b9d;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-/* PR banner — you earned something. The UI acknowledges it. */
-.prBanner {
-  text-align: center;
-  padding: 14px 16px;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.08));
-  border-radius: 12px;
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  animation: enterHeavy 0.6s var(--ease-power) 0.5s both;
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.10), 0 0 60px rgba(255, 165, 0, 0.06);
-}
-
-.prBannerIcon {
-  font-size: 28px;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.prBannerTitle {
-  font-size: 14px;
-  font-weight: 800;
-  color: #ffd700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.prTagList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-}
-
-.prTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  background: rgba(255, 215, 0, 0.15);
-  color: #ffd700;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border: 1px solid rgba(255, 215, 0, 0.25);
-}
-
-.prTagValue {
-  color: rgba(255, 215, 0, 0.7);
-  font-size: 0.65rem;
-}
-
-.formRegressionBanner {
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
-  border-radius: 12px;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.formRegressionIcon {
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.formRegressionTitle {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #fbbf24;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.formRegressionMessage {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.formRegressionScores {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-/* ── Session Badges ── */
-
-.badgeSection {
-  margin-bottom: 10px;
-}
-
-.badgeGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-}
-
-.badgeChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  animation: badgePop 0.4s var(--ease-snap) both;
-}
-
-.badgeChip:nth-child(2) { animation-delay: 0.08s; }
-.badgeChip:nth-child(3) { animation-delay: 0.16s; }
-.badgeChip:nth-child(4) { animation-delay: 0.24s; }
-.badgeChip:nth-child(5) { animation-delay: 0.32s; }
-
-.badgeIcon {
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
-.badgeLabel {
-  white-space: nowrap;
-}
-
-.badgeTier_gold {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.12));
-  border: 1px solid rgba(255, 215, 0, 0.35);
-  color: #ffd700;
-}
-
-.badgeTier_silver {
-  background: linear-gradient(135deg, rgba(192, 192, 210, 0.15), rgba(160, 160, 185, 0.10));
-  border: 1px solid rgba(192, 192, 210, 0.30);
-  color: #d0d0e0;
-}
-
-.badgeTier_bronze {
-  background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(180, 110, 40, 0.10));
-  border: 1px solid rgba(205, 127, 50, 0.30);
-  color: #e8a850;
-}
-
-.badgeTier_accent {
-  background: linear-gradient(135deg, rgba(212, 167, 106, 0.12), rgba(0, 212, 255, 0.08));
-  border: 1px solid rgba(212, 167, 106, 0.25);
-  color: var(--accent);
-}
-
-@keyframes badgePop {
-  0% { opacity: 0; transform: scale(0.6); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-.coachingCardBackground {
-  background: linear-gradient(135deg, rgba(212, 167, 106, 0.06) 0%, rgba(196, 181, 253, 0.03) 100%);
-}
-
-/* ═══ COACHING ENGINE PANEL ═══ */
-
-.coachingPanel {
-  margin-top: 16px;
-  padding: 14px;
-  background: rgba(212, 167, 106, 0.04);
-  border-radius: 12px;
-  border: 1px solid rgba(212, 167, 106, 0.12);
-}
-
-.coachingPanelTitle {
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin: 0 0 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.coachingPanelTitle::before {
-  content: '';
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  background: currentColor;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2L4 14h7l-2 8 9-12h-7z' fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2L4 14h7l-2 8 9-12h-7z' fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;
-  vertical-align: middle;
-}
-
-.coachingFeedbackList {
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
-.coachingFeedbackItem {
-  display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid transparent;
-}
-
-.severity_warning {
-  border-left-color: var(--red, #ef4444);
-  background: rgba(239, 68, 68, 0.06);
-}
-
-.severity_correction {
-  border-left-color: var(--yellow, #facc15);
-  background: rgba(250, 204, 21, 0.04);
-}
-
-.severity_positive {
-  border-left-color: var(--accent, #D4A76A);
-  background: rgba(212, 167, 106, 0.04);
-}
-
-.severity_info {
-  border-left-color: rgba(255, 255, 255, 0.2);
-}
-
-.coachingFeedbackIcon {
-  flex-shrink: 0;
-  width: 18px;
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.coachingTopItem {
-  border-left-width: 4px;
-}
-
-.coachingFeedbackText {
-  margin: 0;
+.filmingGuideList li {
   font-size: 0.78rem;
-  line-height: 1.45;
-  color: var(--text-secondary, rgba(255, 255, 255, 0.8));
-}
-
-.coachingExpandBtn {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 0.72rem;
-  color: var(--muted);
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-}
-
-.coachingExpandBtn:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text);
-}
-
-.coachingMetricsRow {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.coachingMetricCard {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  gap: 2px;
-}
-
-.coachingMetricValue {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.coachingMetricUnit {
-  font-size: 0.6em;
-  font-weight: 400;
-  color: var(--muted);
-}
-
-.coachingMetricLabel {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.coachingMetricSub {
-  font-size: 0.65rem;
-  font-weight: 500;
-}
-
-.metricGood { color: var(--accent, #D4A76A); }
-.metricOk { color: var(--yellow, #facc15); }
-.metricPoor { color: var(--red, #ef4444); }
-
-.coachingSparcSection {
-  margin-bottom: 10px;
-}
-
-.coachingSubLabel {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--muted);
-  margin-bottom: 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.coachingDetections {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.coachingDetectionBadge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.72rem;
-}
-
-.detectionGood {
-  background: rgba(212, 167, 106, 0.08);
-  border: 1px solid rgba(212, 167, 106, 0.2);
-}
-
-.detectionWarn {
-  background: rgba(250, 204, 21, 0.08);
-  border: 1px solid rgba(250, 204, 21, 0.2);
-}
-
-.detectionIcon {
-  font-weight: 800;
-  font-size: 0.8rem;
-  flex-shrink: 0;
-}
-
-.detectionGood .detectionIcon { color: var(--accent, #D4A76A); }
-.detectionWarn .detectionIcon { color: var(--yellow, #facc15); }
-
-.detectionLabel {
-  display: block;
-  font-weight: 700;
-  font-size: 0.7rem;
-  color: var(--text);
-}
-
-.detectionDetail {
-  display: block;
-  font-size: 0.65rem;
-  color: var(--muted);
-}
-
-.progressionText {
-  margin: 0;
   color: var(--text-secondary);
+  line-height: 1.4;
+  padding-left: 16px;
+  position: relative;
 }
 
-.baselineSection {
-  margin-top: 12px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.filmingGuideList li::before {
+  content: '\2022';
+  position: absolute;
+  left: 0;
+  color: var(--text-tertiary);
 }
 
-.baselineHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.personalBestInline {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--bio-cyan, #22d3ee);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.baselineStats {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-}
-
-.improvingChecks {
-  margin: 6px 0 0;
-  color: var(--bio-green, #4ade80);
-}
-
-.decliningChecks {
-  margin: 4px 0 0;
-  color: var(--yellow, #facc15);
-}
+/* ═══ Toggle buttons ═══ */
 
 .detailsToggle {
   width: 100%;
@@ -799,74 +115,6 @@
   transition: transform 0.2s;
 }
 
-.summaryText {
-  margin-top: 12px;
-  margin-bottom: 6px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-.repQualitySection {
-  margin-top: 14px;
-}
-
-.repBarFill {
-  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 0 4px rgba(212, 167, 106, 0.1);
-  border-radius: 4px 4px 1px 1px;
-}
-
-.romRepNum {
-  font-size: 0.6rem;
-}
-
-.romSection {
-  margin-top: 14px;
-}
-
-.romStatsSpacing {
-  margin-bottom: 6px;
-}
-
-.romHint {
-  margin-top: 4px;
-}
-
-.tutSection {
-  margin-top: 14px;
-}
-
-.tutStatsSpacing {
-  margin-bottom: 6px;
-}
-
-.eccentricTempoSection {
-  margin-top: 14px;
-}
-
-.eccentricTempoHint {
-  margin-top: 4px;
-}
-
-.rangeOfMotionSection {
-  margin-top: 14px;
-}
-
-.rangeOfMotionStatsSpacing {
-  margin-bottom: 6px;
-}
-
-.asymmetrySection {
-  margin-top: 14px;
-}
-
-.asymmetryDetailRow {
-  padding: 2px 0;
-}
-
-.asymmetryDetails {
-  margin-top: 6px;
-}
-
 .deepDataToggle {
   width: 100%;
   margin-top: 10px;
@@ -880,173 +128,7 @@
   gap: 6px;
 }
 
-.progressionScoreCard {
-  margin-top: 14px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(212, 167, 106, 0.06), rgba(212, 167, 106, 0.02));
-  border-radius: 10px;
-  border: 1px solid rgba(212, 167, 106, 0.15);
-}
-
-.progressionScoreHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.progressionScoreLabel {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-}
-
-.progressionScoreValueGroup {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.progressionScoreValue {
-  font-size: 1.6rem;
-  font-weight: 800;
-}
-
-.progressionGradeLabel {
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.progressionGradeTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.progressionGradeTitleText {
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-.progressionComponentGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-}
-
-.progressionComponentCell {
-  text-align: center;
-}
-
-.progressionComponentBarTrack {
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.08);
-  margin-bottom: 3px;
-}
-
-.progressionComponentBarFill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.5s;
-}
-
-.progressionComponentLabel {
-  font-size: 0.55rem;
-  color: var(--muted);
-}
-
-.oneRmGrid {
-  margin-top: 10px;
-}
-
-.oneRmCard {
-  grid-column: 1 / -1;
-}
-
-.oneRmUnit {
-  font-size: 0.6em;
-  color: var(--muted);
-  margin-left: 2px;
-}
-
-.oneRmMethod {
-  font-size: 0.6rem;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-.surfacedCues {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 12px 0 8px;
-}
-
-.surfacedCue {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  line-height: 1.3;
-}
-
-.surfacedCuePrimary {
-  background: rgba(255, 180, 50, 0.10);
-  border-left: 3px solid rgba(255, 180, 50, 0.7);
-  color: var(--text);
-}
-
-.surfacedCueSecondary {
-  background: rgba(150, 180, 220, 0.08);
-  border-left: 3px solid rgba(150, 180, 220, 0.4);
-  color: var(--text-secondary, var(--muted));
-}
-
-.surfacedCueInsight {
-  background: rgba(212, 167, 106, 0.06);
-  border-left: 3px solid rgba(212, 167, 106, 0.4);
-  color: var(--text);
-}
-
-.surfacedCueIcon {
-  flex-shrink: 0;
-  font-size: 0.9rem;
-}
-
-.surfacedCueCount {
-  margin-left: auto;
-  flex-shrink: 0;
-  font-size: 0.7rem;
-  opacity: 0.6;
-  white-space: nowrap;
-}
-
-.formNotesSection {
-  margin-top: 14px;
-}
-
-.highlightsSection {
-  margin-top: 14px;
-}
-
-.highlightItem {
-  color: var(--accent);
-  padding: 2px 0;
-}
-
-.nextStepsSection {
-  margin-top: 14px;
-}
-
-.improvementItem {
-  padding: 2px 0;
-}
+/* ═══ Notification prompt ═══ */
 
 .notificationPrompt {
   margin-top: 14px;
@@ -1095,6 +177,8 @@
   color: #000;
 }
 
+/* ═══ Footer actions ═══ */
+
 .replayButton {
   width: 100%;
   margin-top: 16px;
@@ -1109,86 +193,4 @@
   padding: 10px 0;
   font-size: 0.85rem;
   opacity: 0.6;
-}
-
-.footerActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.shareButton {
-  flex: 1;
-  padding: 12px 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.challengeButton {
-  flex: 1;
-  padding: 12px 0;
-  font-size: 0.9rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #ff6b9d, #ffb088);
-  border: none;
-  color: #000;
-}
-
-/* Insufficient footage banner */
-.insufficientFootageBanner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  margin: 8px 0;
-  background: var(--yellow-glow);
-  border: 1px solid rgba(201, 160, 74, 0.25);
-  border-radius: var(--radius-sm);
-  font-size: 0.78rem;
-  color: var(--yellow);
-  font-weight: 600;
-}
-
-.insufficientFootageIcon {
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.insufficientFootageText {
-  line-height: 1.3;
-}
-
-/* Filming guide (shown in insufficient footage state) */
-.filmingGuide {
-  padding: 16px 0 8px;
-}
-
-.filmingGuide h4 {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 10px;
-}
-
-.filmingGuideList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filmingGuideList li {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  padding-left: 16px;
-  position: relative;
-}
-
-.filmingGuideList li::before {
-  content: '\2022';
-  position: absolute;
-  left: 0;
-  color: var(--text-tertiary);
 }

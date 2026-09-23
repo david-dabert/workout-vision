@@ -1,0 +1,119 @@
+.progressionScoreCard {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(212, 167, 106, 0.06), rgba(212, 167, 106, 0.02));
+  border-radius: 10px;
+  border: 1px solid rgba(212, 167, 106, 0.15);
+}
+
+.progressionScoreHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressionScoreLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.progressionScoreValueGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.progressionScoreValue {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.progressionGradeLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.progressionGradeTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.progressionGradeTitleText {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.progressionComponentGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.progressionComponentCell {
+  text-align: center;
+}
+
+.progressionComponentBarTrack {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: 3px;
+}
+
+.progressionComponentBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s;
+}
+
+.progressionComponentLabel {
+  font-size: 0.55rem;
+  color: var(--muted);
+}
+
+.oneRmGrid {
+  margin-top: 10px;
+}
+
+.oneRmCard {
+  grid-column: 1 / -1;
+}
+
+.oneRmUnit {
+  font-size: 0.6em;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.oneRmMethod {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.formNotesSection {
+  margin-top: 14px;
+}
+
+.highlightsSection {
+  margin-top: 14px;
+}
+
+.highlightItem {
+  color: var(--accent);
+  padding: 2px 0;
+}
+
+.nextStepsSection {
+  margin-top: 14px;
+}
+
+.improvementItem {
+  padding: 2px 0;
+}

@@ -5,12 +5,7 @@
  * Stored in IndexedDB via localforage. Each correction is an immutable entry.
  */
 
-import localforage from 'localforage';
-
-const correctionStore = localforage.createInstance({
-  name: 'workoutVision',
-  storeName: 'corrections',
-});
+import { correctionStore } from './storage';
 
 /**
  * Log a correction made by the user.

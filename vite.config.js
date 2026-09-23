@@ -37,6 +37,7 @@ export default defineConfig({
   },
   test: {
     exclude: ['e2e/**', 'node_modules/**'],
+    setupFiles: ['src/lib/__tests__/setup.js'],
   },
   build: {
     target: ['es2022', 'safari16'],

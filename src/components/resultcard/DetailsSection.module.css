@@ -1,0 +1,176 @@
+.confidenceIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0;
+  margin-bottom: 6px;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.confidenceDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.confidence_high { background: var(--accent); }
+.confidence_medium { background: var(--yellow); }
+.confidence_low { background: var(--red); }
+
+.userCorrectedLabel {
+  margin-left: 8px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.formRegressionBanner {
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.06));
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.formRegressionIcon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.formRegressionTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.formRegressionMessage {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.formRegressionScores {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.coachingCardBackground {
+  background: linear-gradient(135deg, rgba(212, 167, 106, 0.06) 0%, rgba(196, 181, 253, 0.03) 100%);
+}
+
+.progressionText {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.baselineSection {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.baselineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.personalBestInline {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bio-cyan, #22d3ee);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.baselineStats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.deviationPositive { color: var(--bio-green, #4ade80); }
+.deviationNegative { color: var(--red); }
+
+.improvingChecks {
+  margin: 6px 0 0;
+  color: var(--bio-green, #4ade80);
+}
+
+.decliningChecks {
+  margin: 4px 0 0;
+  color: var(--yellow, #facc15);
+}
+
+.summaryText {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.repQualitySection {
+  margin-top: 14px;
+}
+
+.romRepNum {
+  font-size: 0.6rem;
+}
+
+.romSection {
+  margin-top: 14px;
+}
+
+.romHint {
+  margin-top: 4px;
+}
+
+.tutSection {
+  margin-top: 14px;
+}
+
+.tutStatsSpacing {
+  margin-bottom: 6px;
+}
+
+.eccentricTempoSection {
+  margin-top: 14px;
+}
+
+.eccentricTempoHint {
+  margin-top: 4px;
+}
+
+.rangeOfMotionSection {
+  margin-top: 14px;
+}
+
+.rangeOfMotionStatsSpacing {
+  margin-bottom: 6px;
+}
+
+.asymmetrySection {
+  margin-top: 14px;
+}
+
+.asymmetryDetailRow {
+  padding: 2px 0;
+}
+
+.asymmetryDetails {
+  margin-top: 6px;
+}

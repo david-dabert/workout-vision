@@ -42,6 +42,7 @@
  */
 
 import { bestSide, bestSideMax, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
+import { CUSTOM_CHECKS, CUSTOM_VALUES } from './exerciseCustomChecks';
 
 // ─── Value function compiler ───
 
@@ -66,6 +67,13 @@ const VALUE_COMPILERS = {
   },
 
   custom: (spec) => spec.fn,
+
+  // Resolve named custom value functions from exerciseCustomChecks.js
+  namedCustomValue: (spec) => {
+    const fn = CUSTOM_VALUES[spec.ref];
+    if (!fn) throw new Error(`Unknown custom value ref: ${spec.ref}`);
+    return fn;
+  },
 };
 
 // Note: bestSideStable (visibility-aware) was tested as a global replacement
@@ -229,6 +237,105 @@ const CHECK_COMPILERS = {
     citation: spec.citation,
     safetyNote: spec.safetyNote,
   }),
+
+  // ─── New DSL types for JSON-serializable custom checks ───
+
+  // bestSideMax + qualityAbove: "angle (using max of both sides) should be above threshold"
+  aboveBSM: (spec) => ({
+    name: spec.name,
+    check: (angles) => {
+      const val = bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return true;
+      return val > spec.threshold;
+    },
+    quality: (angles) => {
+      const val = bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return 1;
+      return qualityAbove(val, spec.threshold, spec.margin || 15);
+    },
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'minor',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
+  // bestSideMax + qualityBelow: "angle (using max of both sides) should be below threshold"
+  belowBSM: (spec) => ({
+    name: spec.name,
+    check: (angles) => {
+      const val = bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return true;
+      return val < spec.threshold;
+    },
+    quality: (angles) => {
+      const val = bestSideMax(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return 1;
+      return qualityBelow(val, spec.threshold, spec.margin || 15);
+    },
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'minor',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
+  // bestSide (min) + qualityBelow
+  belowBS: (spec) => ({
+    name: spec.name,
+    check: (angles) => {
+      const val = bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return true;
+      return val < spec.threshold;
+    },
+    quality: (angles) => {
+      const val = bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return 1;
+      return qualityBelow(val, spec.threshold, spec.margin || 15);
+    },
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'minor',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
+  // bestSide (min) + qualityRange
+  rangeBS: (spec) => ({
+    name: spec.name,
+    check: (angles) => {
+      const val = bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return true;
+      return val >= spec.low && val <= spec.high;
+    },
+    quality: (angles) => {
+      const val = bestSide(angles, spec.left, spec.right, spec.visLeft, spec.visRight);
+      if (val == null) return 1;
+      return qualityRange(val, spec.low, spec.high, spec.margin || 10);
+    },
+    good: spec.good,
+    bad: spec.bad,
+    severity: spec.severity || 'minor',
+    citation: spec.citation,
+    safetyNote: spec.safetyNote,
+  }),
+
+  // Named custom check resolved from exerciseCustomChecks.js registry
+  namedCustom: (spec) => {
+    const custom = CUSTOM_CHECKS[spec.ref];
+    if (!custom) throw new Error(`Unknown custom check ref: ${spec.ref}`);
+    return {
+      name: custom.name || spec.name,
+      check: custom.check,
+      quality: custom.quality || (() => 1),
+      good: custom.good || spec.good,
+      bad: custom.bad || spec.bad,
+      severity: custom.severity || spec.severity || 'minor',
+      citation: custom.citation || spec.citation,
+      safetyNote: custom.safetyNote || spec.safetyNote,
+      viewpoint: custom.viewpoint,
+    };
+  },
 };
 
 /**

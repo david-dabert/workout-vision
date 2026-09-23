@@ -10,7 +10,7 @@
  * - Confidence-decayed ghost pose when detection drops frames.
  */
 
-import localforage from 'localforage';
+import { modelCacheStore as modelCache } from './storage';
 import { OneEuroLandmarkFilter } from './oneEuroFilter';
 import { detectCapabilities, isSimdSupported } from './gpuBenchmark';
 import {
@@ -37,7 +37,6 @@ async function getMediaPipeVision() {
   return _mpVision;
 }
 
-const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
 const MODEL_CACHE_KEY = 'pose-landmarker-full-v2-0.10.8'; // includes version so model updates don't serve stale cache
 
 let poseLandmarker = null;

@@ -1,0 +1,141 @@
+/* Personal Best is a moment of triumph — it doesn't whisper, it announces */
+.personalBestBanner {
+  text-align: center;
+  padding: 14px 0;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.08), rgba(196, 181, 253, 0.08));
+  border-radius: 12px;
+  border: 1px solid rgba(255, 107, 157, 0.15);
+  animation: enterHeavy 0.6s var(--ease-power) 0.45s both;
+  box-shadow: 0 0 30px rgba(255, 107, 157, 0.08), 0 0 60px rgba(196, 181, 253, 0.05);
+}
+
+.personalBestIcon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.personalBestLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff6b9d;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* PR banner — you earned something. The UI acknowledges it. */
+.prBanner {
+  text-align: center;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.08));
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  animation: enterHeavy 0.6s var(--ease-power) 0.5s both;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.10), 0 0 60px rgba(255, 165, 0, 0.06);
+}
+
+.prBannerIcon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.prBannerTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.prTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.prTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+}
+
+.prTagValue {
+  color: rgba(255, 215, 0, 0.7);
+  font-size: 0.65rem;
+}
+
+/* ── Session Badges ── */
+
+.badgeSection {
+  margin-bottom: 10px;
+}
+
+.badgeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.badgeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  animation: badgePop 0.4s var(--ease-snap) both;
+}
+
+.badgeChip:nth-child(2) { animation-delay: 0.08s; }
+.badgeChip:nth-child(3) { animation-delay: 0.16s; }
+.badgeChip:nth-child(4) { animation-delay: 0.24s; }
+.badgeChip:nth-child(5) { animation-delay: 0.32s; }
+
+.badgeLabel {
+  white-space: nowrap;
+}
+
+.badgeTier_gold {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.12));
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  color: #ffd700;
+}
+
+.badgeTier_silver {
+  background: linear-gradient(135deg, rgba(192, 192, 210, 0.15), rgba(160, 160, 185, 0.10));
+  border: 1px solid rgba(192, 192, 210, 0.30);
+  color: #d0d0e0;
+}
+
+.badgeTier_bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(180, 110, 40, 0.10));
+  border: 1px solid rgba(205, 127, 50, 0.30);
+  color: #e8a850;
+}
+
+.badgeTier_accent {
+  background: linear-gradient(135deg, rgba(212, 167, 106, 0.12), rgba(0, 212, 255, 0.08));
+  border: 1px solid rgba(212, 167, 106, 0.25);
+  color: var(--accent);
+}
+
+@keyframes badgePop {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
+}

@@ -138,22 +138,58 @@ export function bestSideStable(angles, leftKey, rightKey, visLeftKey, visRightKe
 // ---------------------------------------------------------------------------
 // Exercise database — compiled from declarative DSL definitions
 // ---------------------------------------------------------------------------
-// The DSL definitions live in exerciseDefinitions.js and are compiled at
-// module init by exerciseDSL.js. This replaces the previous 5000+ lines of
-// imperative definitions with a single import + compile step.
+// The DSL definitions are loaded from public/data/exercises.json on demand,
+// then compiled by exerciseDSL.js. This replaces the previous 4,357-line
+// inline JS module with a lazy-loaded JSON file + compile step.
+//
+// Call initExercises() before first use (done in main.jsx).
+// After init, EXERCISES is populated and all synchronous access works.
 // ---------------------------------------------------------------------------
 
 import { compileExercises } from './exerciseDSL';
-import { EXERCISE_DEFINITIONS } from './exerciseDefinitions';
+import { loadExerciseDefinitions, getExerciseDefinitionsSync } from './exerciseDefinitions';
 
-// Compile DSL definitions into runtime objects — single source of truth
-export const EXERCISES = compileExercises(EXERCISE_DEFINITIONS);
+// Mutable EXERCISES object — populated by initExercises(), then used
+// synchronously by all consumers. Using Object.assign preserves the
+// same object reference so existing imports stay valid.
+export const EXERCISES = {};
 
-// Build a map from exercise key to its DSL value type string (e.g. 'bestSide', 'bestSideMax', 'direct')
-// Used by tier classification to check if an exercise's signal pattern has been validated.
+// Build a map from exercise key to its DSL value type string
 const VALUE_TYPE_MAP = {};
-for (const [key, dsl] of Object.entries(EXERCISE_DEFINITIONS)) {
-  VALUE_TYPE_MAP[key] = dsl.value?.type || 'bestSide';
+
+let _initPromise = null;
+
+/**
+ * Initialize the exercise database by fetching and compiling definitions.
+ * Must be called once at app startup before rendering.
+ * Safe to call multiple times (returns cached promise).
+ * @returns {Promise<void>}
+ */
+export async function initExercises() {
+  if (_initPromise) return _initPromise;
+  _initPromise = _doInit();
+  return _initPromise;
+}
+
+async function _doInit() {
+  const definitions = await loadExerciseDefinitions();
+  const compiled = compileExercises(definitions);
+
+  // Populate the mutable EXERCISES object in-place
+  Object.assign(EXERCISES, compiled);
+
+  // Build VALUE_TYPE_MAP for tier classification
+  for (const [key, dsl] of Object.entries(definitions)) {
+    VALUE_TYPE_MAP[key] = dsl.value?.type || 'bestSide';
+  }
+
+  // Attach validation tiers
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    ex.tier = classifyExerciseTier(key, ex);
+  }
+
+  // Build derived groupings
+  _buildGroups();
 }
 
 // RepCounter and ExerciseAutoDetector: import directly from './repCounter' and './exerciseDetector'
@@ -205,7 +241,7 @@ const VALIDATED_EXERCISES = new Set([
 // All four core value types are covered by at least one validated exercise.
 // 'heelDisplacement' (calf raises) has no benchmark video yet.
 const VALIDATED_VALUE_TYPES = new Set([
-  'bestSide', 'bestSideMax', 'direct', 'custom',
+  'bestSide', 'bestSideMax', 'direct', 'custom', 'namedCustomValue',
 ]);
 
 function classifyExerciseTier(key, ex) {
@@ -216,10 +252,7 @@ function classifyExerciseTier(key, ex) {
   return 'experimental';
 }
 
-// Attach tier to each exercise
-for (const [key, ex] of Object.entries(EXERCISES)) {
-  ex.tier = classifyExerciseTier(key, ex);
-}
+// Tier assignment happens inside initExercises() after EXERCISES is populated.
 
 /**
  * Get the validation tier for an exercise.
@@ -247,31 +280,10 @@ export function exerciseNameWithTier(key, name) {
 // ---------------------------------------------------------------------------
 // Shared exercise grouping for UI selectors
 // ---------------------------------------------------------------------------
-// Groups exercises by category (compound / isolation / bodyweight), sorted
-// by tier first (validated > supported > experimental), then alphabetically.
-// Skips 'superset' (handled as "Other").
-export const EXERCISE_GROUPS = (() => {
-  const tierOrder = { validated: 0, supported: 1, experimental: 2 };
-  const groups = { compound: [], isolation: [], bodyweight: [], machine: [] };
-  for (const [key, ex] of Object.entries(EXERCISES)) {
-    if (key === 'superset') continue;
-    const cat = ex.category || 'compound';
-    if (groups[cat]) groups[cat].push({ key, name: ex.name, tier: ex.tier });
-    else groups.compound.push({ key, name: ex.name, tier: ex.tier });
-  }
-  for (const g of Object.values(groups)) {
-    g.sort((a, b) => {
-      const ta = tierOrder[a.tier] ?? 2;
-      const tb = tierOrder[b.tier] ?? 2;
-      if (ta !== tb) return ta - tb;
-      return a.name.localeCompare(b.name);
-    });
-  }
-  return groups;
-})();
+// Groups built by _buildGroups() after initExercises() completes.
+// Mutable objects so existing import references remain valid.
+export const EXERCISE_GROUPS = { compound: [], isolation: [], bodyweight: [], machine: [] };
 
-// Groups exercises by primary muscle region for the searchable picker.
-// Order: most popular body parts first.
 const MUSCLE_REGION_ORDER = [
   'Chest', 'Back', 'Shoulders', 'Legs', 'Arms', 'Core', 'Full Body',
 ];
@@ -294,21 +306,24 @@ const MUSCLE_REGION_MAP = {
   'Full Body': 'Full Body',
 };
 
-export const EXERCISE_BY_MUSCLE = (() => {
+export const EXERCISE_BY_MUSCLE = {};
+
+function _buildGroups() {
   const tierOrder = { validated: 0, supported: 1, experimental: 2 };
-  const groups = {};
-  for (const region of MUSCLE_REGION_ORDER) groups[region] = [];
+
+  // Reset EXERCISE_GROUPS
+  EXERCISE_GROUPS.compound = [];
+  EXERCISE_GROUPS.isolation = [];
+  EXERCISE_GROUPS.bodyweight = [];
+  EXERCISE_GROUPS.machine = [];
 
   for (const [key, ex] of Object.entries(EXERCISES)) {
     if (key === 'superset') continue;
-    const primary = ex.muscles?.primary?.[0];
-    const region = (primary && MUSCLE_REGION_MAP[primary]) || 'Full Body';
-    if (!groups[region]) groups[region] = [];
-    groups[region].push({ key, name: ex.name, tier: ex.tier, category: ex.category });
+    const cat = ex.category || 'compound';
+    if (EXERCISE_GROUPS[cat]) EXERCISE_GROUPS[cat].push({ key, name: ex.name, tier: ex.tier });
+    else EXERCISE_GROUPS.compound.push({ key, name: ex.name, tier: ex.tier });
   }
-
-  // Sort each group: validated first, then alphabetically
-  for (const g of Object.values(groups)) {
+  for (const g of Object.values(EXERCISE_GROUPS)) {
     g.sort((a, b) => {
       const ta = tierOrder[a.tier] ?? 2;
       const tb = tierOrder[b.tier] ?? 2;
@@ -317,13 +332,33 @@ export const EXERCISE_BY_MUSCLE = (() => {
     });
   }
 
-  // Remove empty groups
-  for (const k of Object.keys(groups)) {
-    if (groups[k].length === 0) delete groups[k];
+  // Build EXERCISE_BY_MUSCLE
+  // Clear existing keys
+  for (const k of Object.keys(EXERCISE_BY_MUSCLE)) delete EXERCISE_BY_MUSCLE[k];
+
+  for (const region of MUSCLE_REGION_ORDER) EXERCISE_BY_MUSCLE[region] = [];
+
+  for (const [key, ex] of Object.entries(EXERCISES)) {
+    if (key === 'superset') continue;
+    const primary = ex.muscles?.primary?.[0];
+    const region = (primary && MUSCLE_REGION_MAP[primary]) || 'Full Body';
+    if (!EXERCISE_BY_MUSCLE[region]) EXERCISE_BY_MUSCLE[region] = [];
+    EXERCISE_BY_MUSCLE[region].push({ key, name: ex.name, tier: ex.tier, category: ex.category });
   }
 
-  return groups;
-})();
+  for (const g of Object.values(EXERCISE_BY_MUSCLE)) {
+    g.sort((a, b) => {
+      const ta = tierOrder[a.tier] ?? 2;
+      const tb = tierOrder[b.tier] ?? 2;
+      if (ta !== tb) return ta - tb;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  for (const k of Object.keys(EXERCISE_BY_MUSCLE)) {
+    if (EXERCISE_BY_MUSCLE[k].length === 0) delete EXERCISE_BY_MUSCLE[k];
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Exercise illustration mapping (self-hosted, no CDN dependency)
