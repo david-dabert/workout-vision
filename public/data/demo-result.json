@@ -1,0 +1,267 @@
+{
+  "isDemo": true,
+  "workoutId": null,
+  "fileName": "demo-squat.mp4",
+  "exercise": "squat",
+  "exerciseName": "Squat",
+  "reps": 8,
+  "duration": 32,
+  "analysisTime": "4.2",
+  "formScore": 78,
+  "progressionScore": 74,
+  "machineReps": 8,
+  "machineFormScore": 78,
+  "hasFormChecks": true,
+  "weight": 0,
+  "autoDetected": false,
+  "detectionFailed": false,
+  "detectionConfidence": 1,
+  "detectionLowConfidence": false,
+  "detectionCandidates": [],
+  "insufficientFootage": false,
+  "qualityGateReasons": [],
+  "aborted": false,
+  "frames": [],
+  "fps": 15,
+  "repHistory": [
+    {
+      "rep": 1,
+      "startFrame": 15,
+      "bottomFrame": 30,
+      "endFrame": 50,
+      "peakFrame": 30,
+      "score": 82,
+      "startTime": 1.0,
+      "peakTime": 2.0,
+      "endTime": 3.33,
+      "rom": 108,
+      "velocity": 0.42
+    },
+    {
+      "rep": 2,
+      "startFrame": 50,
+      "bottomFrame": 68,
+      "endFrame": 88,
+      "peakFrame": 68,
+      "score": 80,
+      "startTime": 3.33,
+      "peakTime": 4.53,
+      "endTime": 5.87,
+      "rom": 105,
+      "velocity": 0.44
+    },
+    {
+      "rep": 3,
+      "startFrame": 88,
+      "bottomFrame": 106,
+      "endFrame": 126,
+      "peakFrame": 106,
+      "score": 81,
+      "startTime": 5.87,
+      "peakTime": 7.07,
+      "endTime": 8.4,
+      "rom": 110,
+      "velocity": 0.41
+    },
+    {
+      "rep": 4,
+      "startFrame": 126,
+      "bottomFrame": 145,
+      "endFrame": 165,
+      "peakFrame": 145,
+      "score": 79,
+      "startTime": 8.4,
+      "peakTime": 9.67,
+      "endTime": 11.0,
+      "rom": 104,
+      "velocity": 0.39
+    },
+    {
+      "rep": 5,
+      "startFrame": 165,
+      "bottomFrame": 184,
+      "endFrame": 204,
+      "peakFrame": 184,
+      "score": 76,
+      "startTime": 11.0,
+      "peakTime": 12.27,
+      "endTime": 13.6,
+      "rom": 102,
+      "velocity": 0.38
+    },
+    {
+      "rep": 6,
+      "startFrame": 204,
+      "bottomFrame": 224,
+      "endFrame": 244,
+      "peakFrame": 224,
+      "score": 75,
+      "startTime": 13.6,
+      "peakTime": 14.93,
+      "endTime": 16.27,
+      "rom": 100,
+      "velocity": 0.36
+    },
+    {
+      "rep": 7,
+      "startFrame": 244,
+      "bottomFrame": 264,
+      "endFrame": 286,
+      "peakFrame": 264,
+      "score": 74,
+      "startTime": 16.27,
+      "peakTime": 17.6,
+      "endTime": 19.07,
+      "rom": 98,
+      "velocity": 0.34
+    },
+    {
+      "rep": 8,
+      "startFrame": 286,
+      "bottomFrame": 308,
+      "endFrame": 330,
+      "peakFrame": 308,
+      "score": 72,
+      "startTime": 19.07,
+      "peakTime": 20.53,
+      "endTime": 22.0,
+      "rom": 96,
+      "velocity": 0.32
+    }
+  ],
+  "bioAnalysis": {
+    "timeUnderTension": {
+      "total": 22.0,
+      "eccentric": 10.4,
+      "concentric": 11.6,
+      "perRep": [2.33, 2.54, 2.53, 2.6, 2.6, 2.67, 2.8, 2.93]
+    },
+    "rangeOfMotion": {
+      "avgDegrees": 103,
+      "perRep": [108, 105, 110, 104, 102, 100, 98, 96],
+      "consistency": 88
+    },
+    "asymmetry": {
+      "score": 6,
+      "details": {
+        "knee": { "left": 104, "right": 98, "diff": 6 }
+      },
+      "risk": "low"
+    },
+    "movementQuality": 78
+  },
+  "coaching": {
+    "metrics": {
+      "smoothness": {
+        "perRep": [
+          { "sparc": -1.8, "rep": 1 },
+          { "sparc": -1.7, "rep": 2 },
+          { "sparc": -1.9, "rep": 3 },
+          { "sparc": -2.0, "rep": 4 },
+          { "sparc": -2.1, "rep": 5 },
+          { "sparc": -2.2, "rep": 6 },
+          { "sparc": -2.4, "rep": 7 },
+          { "sparc": -2.5, "rep": 8 }
+        ],
+        "avgSparc": -2.075,
+        "quality": "normal"
+      },
+      "consistency": {
+        "dtwScore": 0.82,
+        "quality": "good"
+      },
+      "fatigue": {
+        "fatigueDetected": true,
+        "severity": "mild",
+        "velocityDecayPercent": 24,
+        "romDecayPercent": 11,
+        "onsetRep": 6
+      },
+      "squat": {
+        "depthRatio": 0.88,
+        "belowParallel": true
+      },
+      "lockout": {
+        "perRep": [
+          { "angle": 172, "fullLockout": true },
+          { "angle": 170, "fullLockout": true },
+          { "angle": 168, "fullLockout": false },
+          { "angle": 171, "fullLockout": true },
+          { "angle": 165, "fullLockout": false },
+          { "angle": 163, "fullLockout": false },
+          { "angle": 160, "fullLockout": false },
+          { "angle": 158, "fullLockout": false }
+        ],
+        "avgAngle": 165.9,
+        "fullLockoutRate": 0.375
+      },
+      "barPath": {
+        "perRep": [],
+        "avgSpread": 0,
+        "excessive": false
+      },
+      "trunkLean": {
+        "perRep": [
+          { "angle": 28, "excessive": false },
+          { "angle": 30, "excessive": false },
+          { "angle": 29, "excessive": false },
+          { "angle": 32, "excessive": false },
+          { "angle": 34, "excessive": false },
+          { "angle": 36, "excessive": false },
+          { "angle": 38, "excessive": false },
+          { "angle": 40, "excessive": false }
+        ],
+        "avgAngle": 33.4,
+        "excessive": false
+      }
+    },
+    "feedback": [
+      {
+        "priority": 2,
+        "category": "fatigue",
+        "messageKey": "coaching_fatigue_mild",
+        "messageParams": { "decay": 11 },
+        "severity": "info"
+      },
+      {
+        "priority": 3,
+        "category": "lockout",
+        "messageKey": "coaching_lockout_incomplete",
+        "messageParams": { "rate": 37.5 },
+        "severity": "correction"
+      },
+      {
+        "priority": 5,
+        "category": "depth",
+        "messageKey": "coaching_squat_depth_good",
+        "messageParams": {},
+        "severity": "positive"
+      }
+    ],
+    "feedbackCount": 3,
+    "hasWarnings": false,
+    "hasCorrections": true,
+    "timestamp": 1727000000000
+  },
+  "progression": null,
+  "baselineComparison": null,
+  "report": null,
+  "diagnostics": null,
+  "confidence": {
+    "visibility": 0.85,
+    "level": "high",
+    "framesWithPose": 330,
+    "totalFrames": 340
+  },
+  "debug": {
+    "videoHash": "demo",
+    "frameCount": 330,
+    "landmarkHash": "demo",
+    "confidence": {
+      "visibility": 0.85,
+      "level": "high",
+      "framesWithPose": 330,
+      "totalFrames": 340
+    }
+  }
+}
