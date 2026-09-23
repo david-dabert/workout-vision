@@ -1602,5 +1602,10 @@
   "filming_tip_light": "Filmez dans un espace bien éclairé avec une lumière naturelle ou vive",
   "filming_tip_angle": "Placez votre téléphone à hauteur de poitrine, à 2-3m, corps entier visible",
   "filming_tip_rom": "Effectuez une amplitude complète à chaque répétition",
-  "filming_tip_stable": "Gardez la caméra stable \u2014 appuyez-la contre quelque chose ou utilisez un trépied"
+  "filming_tip_stable": "Gardez la caméra stable \u2014 appuyez-la contre quelque chose ou utilisez un trépied",
+  "video_suitable": "La vidéo semble adaptée à l'analyse",
+  "video_questionable": "Certains mouvements pourraient être masqués. Les résultats peuvent varier.",
+  "video_unsuitable": "La vidéo pourrait ne pas convenir à l'analyse. Essayez de filmer de côté avec le corps entier visible.",
+  "auto_detect": "Détection auto",
+  "report_debug": "Signaler les données de débogage sur GitHub"
 }

@@ -7,8 +7,10 @@
  * @param {boolean} [props.compact] - smaller variant for inline use
  */
 import { Icon } from '../lib/icons';
+import { useT } from '../lib/LanguageContext';
 
 export default function VideoSuitabilityBanner({ assessment, compact }) {
+  const { t } = useT();
   if (!assessment) return null;
 
   const { suitable, issues } = assessment;
@@ -25,7 +27,7 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
         marginBottom: 10,
       }}>
         <Icon name="check" size={14} />
-        <span>Video looks suitable for analysis</span>
+        <span>{t('video_suitable')}</span>
       </div>
     );
   }
@@ -43,7 +45,7 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
           fontSize: '0.78rem', color: 'var(--yellow)', fontWeight: 600,
         }}>
           <Icon name="warning" size={16} />
-          <span>Some movement may be obscured. Results may vary.</span>
+          <span>{t('video_questionable')}</span>
         </div>
         {!compact && issues && issues.length > 0 && (
           <div style={{ marginTop: 6, paddingLeft: 24 }}>
@@ -71,7 +73,7 @@ export default function VideoSuitabilityBanner({ assessment, compact }) {
         fontSize: '0.78rem', color: 'var(--red)', fontWeight: 600,
       }}>
         <span style={{ flexShrink: 0, fontWeight: 800 }}>&#215;</span>
-        <span>Video may not be suitable for analysis. Try filming from the side with full body visible.</span>
+        <span>{t('video_unsuitable')}</span>
       </div>
       {!compact && issues && issues.length > 0 && (
         <div style={{ marginTop: 6, paddingLeft: 24 }}>

@@ -1602,5 +1602,10 @@
   "filming_tip_light": "Film in a well-lit area with natural or bright artificial light",
   "filming_tip_angle": "Place your phone at chest height, 2-3m away, with your full body visible",
   "filming_tip_rom": "Perform full range of motion on every rep",
-  "filming_tip_stable": "Keep the camera steady \u2014 lean it against something or use a tripod"
+  "filming_tip_stable": "Keep the camera steady \u2014 lean it against something or use a tripod",
+  "video_suitable": "Video looks suitable for analysis",
+  "video_questionable": "Some movement may be obscured. Results may vary.",
+  "video_unsuitable": "Video may not be suitable for analysis. Try filming from the side with full body visible.",
+  "auto_detect": "Auto-detect",
+  "report_debug": "Report debug data to GitHub"
 }

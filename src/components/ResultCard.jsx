@@ -1241,7 +1241,7 @@ function ResultCard({ result, onReplay }) {
       <button
         className={`btn btn-ghost ${s.exportButton}`}
         onClick={() => reportToGitHub(result)}
-        title="Report debug data to GitHub"
+        title={t('report_debug')}
       >
         🐛 Report
       </button>

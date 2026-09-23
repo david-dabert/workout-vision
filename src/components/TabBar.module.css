@@ -89,7 +89,7 @@
   width: 20%;  /* 1/5 tabs */
   border-radius: 18px;
   background: rgba(212, 167, 106, 0.10);
-  transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.45s var(--ease-spring);
   will-change: transform;
 }
 
@@ -104,7 +104,7 @@
   height: 4px;
   border-radius: 50%;
   background: var(--accent, #D4A76A);
-  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.35s var(--ease-spring);
 }
 
 .tabActive .dot {
