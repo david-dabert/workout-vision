@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useT } from '../lib/LanguageContext';
-import { getExerciseFrames, hasExerciseGuide, getMappedKeys } from '../lib/exerciseGuide';
+import { getExerciseFrames, hasExerciseGuide, getAllGuideExercises, getGuideExercise } from '../lib/exerciseGuide';
 import { EXERCISES } from '../lib/exercises';
 import css from './ExerciseGuide.module.css';
 
@@ -44,28 +44,43 @@ export function ExerciseAnimation({ exerciseKey, compact, autoPlay = true }) {
   );
 }
 
+/** Category labels for display */
+const CATEGORY_LABELS = {
+  legs: 'Legs',
+  chest: 'Chest',
+  back: 'Back',
+  shoulders: 'Shoulders',
+  arms: 'Arms',
+  core: 'Core',
+  full_body: 'Full Body',
+  cardio: 'Cardio',
+  stretching: 'Stretching',
+};
+
 /**
  * Full exercise library page with search, filter, and detail view.
+ * Shows ALL 302 exercises from the bryllim/workout-guide library.
  */
 export default function ExerciseGuideLibrary({ onClose }) {
   const { t, tExercise } = useT();
   const [search, setSearch] = useState('');
-  const [muscle, setMuscle] = useState(null);
+  const [category, setCategory] = useState(null);
   const [detail, setDetail] = useState(null);
 
-  // Build exercise list from our definitions that have guide visuals
-  const exercises = getMappedKeys()
-    .map(key => {
-      const ex = EXERCISES[key];
-      if (!ex) return null;
-      return { key, name: ex.name, muscles: ex.muscles, category: ex.category };
-    })
-    .filter(Boolean);
+  // Build exercise list from the full guide catalogue
+  const exercises = getAllGuideExercises().map(g => {
+    const ex = EXERCISES[g.key];
+    return {
+      key: g.key,
+      name: ex?.name || g.name,
+      category: g.category,
+      muscles: ex?.muscles || null,
+      hasFullData: !!ex,
+    };
+  });
 
-  // Get unique muscle groups for filter chips
-  const muscleGroups = [...new Set(
-    exercises.flatMap(e => e.muscles?.primary || [])
-  )].sort();
+  // Get unique categories for filter chips
+  const categories = [...new Set(exercises.map(e => e.category))].sort();
 
   // Filter
   const filtered = exercises.filter(e => {
@@ -74,8 +89,8 @@ export default function ExerciseGuideLibrary({ onClose }) {
       const name = (tExercise ? tExercise(e.key, e.name) : e.name).toLowerCase();
       if (!name.includes(q) && !e.key.includes(q)) return false;
     }
-    if (muscle) {
-      if (!e.muscles?.primary?.includes(muscle)) return false;
+    if (category) {
+      if (e.category !== category) return false;
     }
     return true;
   });
@@ -87,6 +102,9 @@ export default function ExerciseGuideLibrary({ onClose }) {
           &larr;
         </button>
         <h1 className={css.libraryTitle}>{t('exercise_guide') || 'Exercise Guide'}</h1>
+        <span style={{ fontSize: '0.75rem', opacity: 0.5, marginLeft: 8 }}>
+          {filtered.length}/{exercises.length}
+        </span>
       </div>
 
       <input
@@ -99,18 +117,18 @@ export default function ExerciseGuideLibrary({ onClose }) {
 
       <div className={css.muscleFilter}>
         <button
-          className={`${css.filterChip}${!muscle ? ` ${css.filterChipActive}` : ''}`}
-          onClick={() => setMuscle(null)}
+          className={`${css.filterChip}${!category ? ` ${css.filterChipActive}` : ''}`}
+          onClick={() => setCategory(null)}
         >
           {t('all') || 'All'}
         </button>
-        {muscleGroups.map(m => (
+        {categories.map(c => (
           <button
-            key={m}
-            className={`${css.filterChip}${muscle === m ? ` ${css.filterChipActive}` : ''}`}
-            onClick={() => setMuscle(muscle === m ? null : m)}
+            key={c}
+            className={`${css.filterChip}${category === c ? ` ${css.filterChipActive}` : ''}`}
+            onClick={() => setCategory(category === c ? null : c)}
           >
-            {m}
+            {CATEGORY_LABELS[c] || c}
           </button>
         ))}
       </div>
@@ -123,7 +141,7 @@ export default function ExerciseGuideLibrary({ onClose }) {
               {tExercise ? tExercise(e.key, e.name) : e.name}
             </span>
             <span className={css.exerciseCardMuscle}>
-              {e.muscles?.primary?.[0] || ''}
+              {CATEGORY_LABELS[e.category] || e.category}
             </span>
           </div>
         ))}
@@ -160,24 +178,28 @@ function ExerciseDetail({ exercise, onClose, t, tExercise }) {
         </h2>
 
         <p className={css.detailMuscle}>
-          {exercise.muscles?.primary?.join(', ')}
+          {ex?.muscles?.primary?.join(', ') || CATEGORY_LABELS[exercise.category] || exercise.category}
         </p>
 
-        {exercise.muscles?.secondary?.length > 0 && (
+        {ex?.muscles?.secondary?.length > 0 && (
           <p className={css.detailSecondary}>
-            {t('secondary') || 'Secondary'}: {exercise.muscles.secondary.join(', ')}
+            {t('secondary') || 'Secondary'}: {ex.muscles.secondary.join(', ')}
           </p>
         )}
 
-        {ex?.category && (
-          <span className={css.detailEquipment}>
-            {ex.category}
-          </span>
-        )}
+        <span className={css.detailEquipment}>
+          {CATEGORY_LABELS[exercise.category] || ex?.category || ''}
+        </span>
 
         {ex?.scienceNotes && (
           <p style={{ fontSize: '0.75rem', color: 'rgba(232,230,225,0.5)', lineHeight: 1.4, marginBottom: 16 }}>
             {ex.scienceNotes}
+          </p>
+        )}
+
+        {!exercise.hasFullData && (
+          <p style={{ fontSize: '0.7rem', color: 'rgba(232,230,225,0.3)', fontStyle: 'italic', marginBottom: 12 }}>
+            {t('guide_only') || 'Visual guide only — full form analysis not yet available for this exercise.'}
           </p>
         )}
 
