@@ -49,6 +49,8 @@ const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 const Onboarding = safeLazy(() => import('./components/Onboarding'));
 const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
 const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
+const ExerciseGuide = safeLazy(() => import('./components/ExerciseGuide'));
+const CoachReport = safeLazy(() => import('./components/CoachReport'));
 
 const LazyFallback = (
   <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
@@ -222,6 +224,22 @@ function AppInner() {
       <Suspense fallback={LazyFallback}>
         <div key="prs" className="page-transition-enter">
           <PersonalRecords onClose={() => setPage('dashboard')} />
+        </div>
+      </Suspense>
+    );
+  } else if (page === 'exercises') {
+    pageContent = (
+      <Suspense fallback={LazyFallback}>
+        <div key="exercises" className="page-transition-enter">
+          <ExerciseGuide onClose={() => setPage('dashboard')} />
+        </div>
+      </Suspense>
+    );
+  } else if (page === 'coach') {
+    pageContent = (
+      <Suspense fallback={LazyFallback}>
+        <div key="coach" className="page-transition-enter">
+          <CoachReport onClose={() => setPage('dashboard')} />
         </div>
       </Suspense>
     );

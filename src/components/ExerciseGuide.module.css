@@ -1,0 +1,298 @@
+/* ══════════════════════════════════════════════════════════════
+   ExerciseGuide — Animated exercise illustration preview
+   ══════════════════════════════════════════════════════════════ */
+
+.guideContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 200px;
+  margin: 0 auto;
+  border-radius: var(--radius, 16px);
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.guideFrame {
+  position: absolute;
+  inset: 8%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: invert(0.85) sepia(0.2) saturate(0.5) hue-rotate(10deg) brightness(1.1);
+}
+
+.guideFrameActive {
+  opacity: 1;
+}
+
+.guideLabel {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(232, 230, 225, 0.4);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* ── Compact variant for lists ── */
+
+.compact {
+  max-width: 64px;
+  border-radius: 10px;
+}
+
+.compact .guideFrame {
+  inset: 10%;
+}
+
+.compact .guideLabel {
+  display: none;
+}
+
+/* ── Full exercise library grid ── */
+
+.libraryPage {
+  padding: 1rem;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+.libraryHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--accent, #D4A76A);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.libraryTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text, #E8E6E1);
+  margin: 0;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text, #E8E6E1);
+  font-size: 0.9rem;
+  outline: none;
+  margin-bottom: 16px;
+  font-family: var(--font, system-ui, sans-serif);
+}
+
+.searchInput::placeholder {
+  color: rgba(232, 230, 225, 0.3);
+}
+
+.searchInput:focus {
+  border-color: var(--accent, #D4A76A);
+}
+
+.muscleFilter {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+
+.muscleFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.filterChip {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(232, 230, 225, 0.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font, system-ui, sans-serif);
+  transition: all 0.2s;
+}
+
+.filterChipActive {
+  background: var(--accent, #D4A76A);
+  color: #1a1a1e;
+  border-color: var(--accent, #D4A76A);
+}
+
+.exerciseGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.exerciseCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.exerciseCard:active {
+  transform: scale(0.95);
+}
+
+.exerciseCardName {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(232, 230, 225, 0.6);
+  text-align: center;
+  line-height: 1.2;
+  max-height: 2.4em;
+  overflow: hidden;
+}
+
+.exerciseCardMuscle {
+  font-size: 0.55rem;
+  color: var(--accent, #D4A76A);
+  opacity: 0.7;
+}
+
+/* ── Exercise detail modal ── */
+
+.detailOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.detailCard {
+  background: var(--bg, #1a1a1e);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.detailName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text, #E8E6E1);
+  margin: 12px 0 4px;
+  text-align: center;
+}
+
+.detailMuscle {
+  font-size: 0.8rem;
+  color: var(--accent, #D4A76A);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.detailSecondary {
+  font-size: 0.7rem;
+  color: rgba(232, 230, 225, 0.4);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.detailEquipment {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.7rem;
+  color: rgba(232, 230, 225, 0.5);
+  margin: 0 auto 16px;
+  display: block;
+  text-align: center;
+  width: fit-content;
+}
+
+.detailClose {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--text, #E8E6E1);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: var(--font, system-ui, sans-serif);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Light mode ── */
+
+@media (prefers-color-scheme: light) {
+  .guideContainer {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .guideFrame {
+    filter: none;
+  }
+
+  .guideLabel {
+    color: rgba(26, 26, 30, 0.4);
+  }
+
+  .searchInput {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: var(--text, #1a1a1e);
+  }
+
+  .exerciseCard {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .exerciseCardName {
+    color: rgba(26, 26, 30, 0.6);
+  }
+
+  .detailCard {
+    background: #fff;
+  }
+
+  .detailName {
+    color: #1a1a1e;
+  }
+}
