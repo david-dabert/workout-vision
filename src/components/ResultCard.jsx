@@ -29,7 +29,9 @@ import AchievementBanners from './resultcard/AchievementBanners';
 import CoachingPanel from './resultcard/CoachingPanel';
 import DetailsSection from './resultcard/DetailsSection';
 import DeepDataSection from './resultcard/DeepDataSection';
+import GradeReveal from './resultcard/GradeReveal';
 import s from './ResultCard.module.css';
+import revealStyles from './resultcard/GradeReveal.module.css';
 
 function ResultCard({ result, onReplay }) {
   const { t, tExercise } = useT();
@@ -119,6 +121,8 @@ function ResultCard({ result, onReplay }) {
   // Reveal animation state
   const [revealed, setRevealed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showGradeReveal, setShowGradeReveal] = useState(true);
+  const [revealDismissed, setRevealDismissed] = useState(false);
 
   const isPR = baselineComparison?.overallForm?.isPersonalBest;
   const isTopGrade = grade === 'A+' || grade === 'A';
@@ -246,8 +250,20 @@ function ResultCard({ result, onReplay }) {
 
   return (
     <div className={`card result-card ${s.resultCard}`}>
+      {showGradeReveal && !result.insufficientFootage && (
+        <GradeReveal
+          grade={grade}
+          score={formScore}
+          exerciseName={displayName}
+          onComplete={() => {
+            setShowGradeReveal(false);
+            setRevealDismissed(true);
+          }}
+        />
+      )}
       <Confetti active={showConfetti} />
 
+      <div className={revealDismissed ? revealStyles.revealedHero : undefined}>
       <HeroSection
         grade={grade}
         cls={cls}
@@ -277,13 +293,17 @@ function ResultCard({ result, onReplay }) {
         achievedPRs={achievedPRs}
         earnedBadges={earnedBadges}
       />
+      </div>
 
+      <div className={revealDismissed ? revealStyles.revealedCoaching : undefined}>
       <CoachingPanel
         coaching={coaching}
         repHistory={repHistory}
         coachingInsight={coachingInsight}
       />
+      </div>
 
+      <div className={revealDismissed ? revealStyles.revealedDetails : undefined}>
       {/* Details toggle */}
       <button
         className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
@@ -394,6 +414,7 @@ function ResultCard({ result, onReplay }) {
       >
         🐛 Report
       </button>
+      </div>
     </div>
   );
 }

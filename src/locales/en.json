@@ -1659,5 +1659,7 @@
   "coach_show_all": "All workouts",
   "coach_show_client": "Client's workouts",
   "coach_training_recs": "Training Recommendations",
-  "coach_intelligence": "Performance Analysis"
+  "coach_intelligence": "Performance Analysis",
+  "grade_reveal_dismiss": "Tap to dismiss",
+  "grade_reveal_tap": "Tap anywhere to continue"
 }
