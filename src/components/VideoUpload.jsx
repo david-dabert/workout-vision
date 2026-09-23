@@ -600,7 +600,12 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                     <span className={isActive ? s.phaseLabelActive : s.phaseLabelInactive}>
                       {phase.label}
                     </span>
-                    {isActive && <div className={`spinner-sm ${s.phaseSpinner}`} />}
+                    {isActive && (
+                      <div className={`ai-orb ${s.phaseSpinner}`} style={{ width: 16, height: 16 }}>
+                        <span />
+                        <div className="ai-orb-ring" />
+                      </div>
+                    )}
                   </div>
                 );
               })}

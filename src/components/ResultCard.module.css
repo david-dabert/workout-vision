@@ -52,7 +52,7 @@
 .heroScore {
   font-size: 1.4rem;
   font-weight: 800;
-  animation: enterHeavy 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  animation: enterHeavy 0.5s var(--ease-power) 0.25s both;
 }
 
 .heroScoreUnit {
@@ -71,7 +71,7 @@
   background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, rgba(139, 129, 152, 0.02) 100%);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  animation: enterHeavy 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  animation: enterHeavy 0.5s var(--ease-power) 0.35s both;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -345,7 +345,7 @@
   background: linear-gradient(135deg, rgba(255, 107, 157, 0.08), rgba(196, 181, 253, 0.08));
   border-radius: 12px;
   border: 1px solid rgba(255, 107, 157, 0.15);
-  animation: enterHeavy 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  animation: enterHeavy 0.6s var(--ease-power) 0.45s both;
   box-shadow: 0 0 30px rgba(255, 107, 157, 0.08), 0 0 60px rgba(196, 181, 253, 0.05);
 }
 
@@ -371,7 +371,7 @@
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.08));
   border-radius: 12px;
   border: 1px solid rgba(255, 215, 0, 0.3);
-  animation: enterHeavy 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+  animation: enterHeavy 0.6s var(--ease-power) 0.5s both;
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.10), 0 0 60px rgba(255, 165, 0, 0.06);
 }
 

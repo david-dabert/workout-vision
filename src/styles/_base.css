@@ -153,8 +153,14 @@ h5 {
 
 /* Entrance — clean fade in */
 @keyframes enterHeavy {
-  0% { opacity: 0; transform: translateY(12px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(12px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Score glow — ambient radiance behind grade badge */
+@keyframes scoreGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 /* Phase shift — minimal */

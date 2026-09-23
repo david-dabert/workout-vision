@@ -15,6 +15,7 @@ import { Icon, SEVERITY_ICON_KEY } from '../lib/icons';
 import { estimateOneRepMax } from '../lib/coach';
 import { recalibrateAnalysis } from '../lib/recalibrate';
 import { logCorrection } from '../lib/correctionLog';
+import useCountUp from '../lib/useCountUp';
 import {
   requestNotificationPermission,
   scheduleWeeklyReminder,
@@ -368,26 +369,8 @@ function ResultCard({ result, onReplay }) {
     }
   }, [result.workoutId, reps, result.machineReps, result.weight, result.frames, result.exercise, result.fps, result.confidence, profile]);
 
-  // Score reveal animation: count up from 0 (skip under reduced motion)
-  const [displayScore, setDisplayScore] = useState(0);
-  useEffect(() => {
-    if (formScore == null) return;
-    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) {
-      setDisplayScore(formScore);
-      return;
-    }
-    const duration = 800;
-    const startTime = Date.now();
-    const step = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setDisplayScore(Math.round(eased * formScore));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [formScore]);
+  // Score reveal animation: count up from 0 using shared hook
+  const displayScore = useCountUp(formScore ?? 0, { duration: 800, delay: 200 });
 
   // Insufficient footage: exclusive degraded state — no grade, no coaching, no stats
   if (result.insufficientFootage) {
