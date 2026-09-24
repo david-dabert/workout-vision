@@ -165,7 +165,11 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
     const stopTiming = trackTiming('analysis', { fileName: queueItem.name });
 
     // Breadcrumb: write analysis stage to localStorage so we can detect crashes
-    try { localStorage.setItem('wv_analysis_stage', JSON.stringify({ file: queueItem.name, stage: 'started', ts: Date.now() })); } catch {}
+    // and resume from last known stage after reload.
+    const writeStage = (stage, extra) => {
+      try { localStorage.setItem('wv_analysis_stage', JSON.stringify({ file: queueItem.name, stage, ts: Date.now(), ...extra })); } catch {}
+    };
+    writeStage('started');
 
     const result = await analyzeVideoFile({
       file: queueItem.file,
@@ -192,6 +196,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
       },
       onPhase: (phase) => {
         setAnalysisPhase(phase);
+        writeStage(phase);
         const labelKeys = { hashing: 'phase_hashing_desc', model: 'phase_model_desc', extracting: 'phase_extracting_desc', analyzing: 'phase_analyzing_desc' };
         setFfmpegStatus(t(labelKeys[phase]) || '');
         if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); detectorRef.current = null; }
@@ -206,6 +211,16 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
     });
 
     stopTiming();
+
+    // Release pose model and worker before the result screen mounts.
+    // Frees ~5MB model buffer + WebGL context (prevents iOS GPU memory exhaustion).
+    disposeWorker();
+    disposeAllLandmarkers();
+
+    // Write result stage to localStorage so a reload can show the last stage reached.
+    if (result && !result.error && !result.aborted) {
+      writeStage('result', { exercise: result.exercise, reps: result.reps });
+    }
 
     // Clear breadcrumb on completion (success or handled error)
     try { localStorage.removeItem('wv_analysis_stage'); } catch {}
