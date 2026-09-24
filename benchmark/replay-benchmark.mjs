@@ -474,6 +474,19 @@ const isCI = args.includes('--ci');
 if (isCI) {
   const oboPercent = scored.length > 0 ? Math.round(obo / scored.length * 100) : 0;
   let failed = false;
+  // Honesty gate: excluded clips must fail CI. A silently dropped clip is a
+  // dishonest scoreboard; the manifest total is the denominator, not scored.length.
+  if (excluded.length > 0) {
+    console.error(`\n  CI GATE FAILED: ${excluded.length} clip(s) excluded from scoring: ${excluded.map(r => r.video).join(', ')}`);
+    failed = true;
+  }
+  // Honesty gate: an "Unknown exercise" result means the manifest label was not
+  // recognised by the scoring path. That is a scoring failure, not a data quirk.
+  const unknown = scored.filter(r => r.method === 'Unknown exercise');
+  if (unknown.length > 0) {
+    console.error(`  CI GATE FAILED: ${unknown.length} clip(s) scored as "Unknown exercise": ${unknown.map(r => r.video).join(', ')}`);
+    failed = true;
+  }
   if (avgAcc < CI_MIN_ACCURACY) {
     console.error(`\n  CI GATE FAILED: accuracy ${avgAcc}% < ${CI_MIN_ACCURACY}% threshold`);
     failed = true;
@@ -489,6 +502,6 @@ if (isCI) {
   if (failed) {
     process.exit(1);
   } else {
-    console.log(`\n  CI GATE PASSED: accuracy=${avgAcc}% OBO=${oboPercent}% MAE=${mae}`);
+    console.log(`\n  CI GATE PASSED: accuracy=${avgAcc}% OBO=${oboPercent}% MAE=${mae} (0 excluded, 0 unknown)`);
   }
 }
