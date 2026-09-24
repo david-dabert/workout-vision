@@ -550,7 +550,7 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
   // Use local WASM (copied to public/), CDN fallback
   let demuxer;
   try {
-    demuxer = new WebDemuxer({ wasmFilePath: 'web-demuxer.wasm' });
+    demuxer = new WebDemuxer({ wasmFilePath: new URL('web-demuxer.wasm', new URL(import.meta.env.BASE_URL || '/', location.origin)).href });
   } catch {
     demuxer = new WebDemuxer({
       wasmFilePath: 'https://cdn.jsdelivr.net/npm/web-demuxer@4.0.0/dist/wasm-files/web-demuxer-mini.wasm',
@@ -714,7 +714,7 @@ async function inspectVideo(file) {
     const { WebDemuxer } = await import('web-demuxer');
     let demuxer;
     try {
-      demuxer = new WebDemuxer({ wasmFilePath: 'web-demuxer.wasm' });
+      demuxer = new WebDemuxer({ wasmFilePath: new URL('web-demuxer.wasm', new URL(import.meta.env.BASE_URL || '/', location.origin)).href });
     } catch {
       demuxer = new WebDemuxer({
         wasmFilePath: 'https://cdn.jsdelivr.net/npm/web-demuxer@4.0.0/dist/wasm-files/web-demuxer-mini.wasm',
@@ -789,12 +789,24 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     );
   }
 
-  // Step 3: H.264 / other → seek (deterministic) or RVFC (fastest) or seek (legacy)
-  // When deterministic mode is requested, skip RVFC entirely to guarantee
-  // reproducible frame sets across runs of the same video.
-  // On iOS Safari, video.play() inside RVFC can fail with a permission error
-  // if the user gesture context was lost during async model loading.
-  // Fall back to seek-based extraction when this happens.
+  // Step 3: H.264 / other codecs
+  // Priority: WebCodecs (sequential, deterministic, handles rotation) →
+  //           RVFC (fastest but needs video playback) → seek (legacy fallback).
+  // WebCodecs is preferred for deterministic mode because it decodes sequentially
+  // without playback, applies rotation metadata, and produces identical output
+  // across runs. RVFC requires video.play() which fails in headless browsers
+  // and isn't deterministic. Seek is one-seek-per-frame (slow, to avoid).
+  if (typeof VideoDecoder !== 'undefined') {
+    try {
+      const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+      return { ...result, method: 'webcodecs' };
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      console.warn('[frameExtractor] WebCodecs failed, trying RVFC:', err?.message || err?.toString() || String(err), err);
+    }
+  }
+
+  // RVFC: skip in deterministic mode (non-deterministic playback timing)
   if (!options.deterministic && 'requestVideoFrameCallback' in HTMLVideoElement.prototype) {
     try {
       const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
@@ -802,7 +814,6 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     } catch (err) {
       if (err.name === 'AbortError') throw err;
       if (err.name === 'NotAllowedError' || (err.message && err.message.includes('not allowed'))) {
-        // iOS lost user gesture context — fall through to seek-based extraction
         console.warn('[frameExtractor] RVFC play() blocked, falling back to seek:', err.message);
       } else {
         throw err;
