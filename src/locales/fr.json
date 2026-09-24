@@ -1652,6 +1652,7 @@
   "coach_tut_total": "Temps sous tension",
   "video_too_long": "Vidéo trop longue ({{duration}}s). Maximum : {{max}} secondes. Filmez une seule série pour de meilleurs résultats.",
   "analysis_timeout": "L'analyse a expiré après {{seconds}} secondes. Essayez une vidéo plus courte avec un meilleur éclairage.",
+  "crash_recovery": "L'analyse précédente de \"{{file}}\" a été interrompue (mémoire insuffisante). Essayez un clip plus court.",
   "coach_1rm": "1RM estimé",
   "coach_strength_level": "Niveau de force",
   "coach_workload": "Charge d'entraînement",

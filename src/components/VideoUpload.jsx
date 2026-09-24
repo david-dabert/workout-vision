@@ -117,6 +117,22 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
   }, []);
 
   const [iosWarning, setIosWarning] = useState(null);
+  const [crashRecoveryMsg, setCrashRecoveryMsg] = useState(null);
+
+  // On mount, check for breadcrumb from a previous crashed analysis
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('wv_analysis_stage');
+      if (raw) {
+        const breadcrumb = JSON.parse(raw);
+        // Only show if the breadcrumb is less than 10 minutes old
+        if (breadcrumb.ts && Date.now() - breadcrumb.ts < 10 * 60 * 1000) {
+          setCrashRecoveryMsg(t('crash_recovery', { file: breadcrumb.file || '?' }));
+        }
+        localStorage.removeItem('wv_analysis_stage');
+      }
+    } catch {}
+  }, []);
 
   const handleFiles = (e) => {
     setErrorMsg(null);
@@ -158,6 +174,9 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
     const weightKg = parseFloat(weight) || 0;
     const stopTiming = trackTiming('analysis', { fileName: queueItem.name });
 
+    // Breadcrumb: write analysis stage to localStorage so we can detect crashes
+    try { localStorage.setItem('wv_analysis_stage', JSON.stringify({ file: queueItem.name, stage: 'started', ts: Date.now() })); } catch {}
+
     const result = await analyzeVideoFile({
       file: queueItem.file,
       exercise,
@@ -197,6 +216,9 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
     });
 
     stopTiming();
+
+    // Clear breadcrumb on completion (success or handled error)
+    try { localStorage.removeItem('wv_analysis_stage'); } catch {}
 
     if (!result) {
       trackEvent('analysis_failed', { fileName: queueItem.name });
@@ -406,6 +428,13 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
           <p className={s.tipText}>
             {t('filming_tip')}
           </p>
+        </div>
+      )}
+
+      {crashRecoveryMsg && (
+        <div className={s.iosWarningBanner} role="alert">
+          <p className={s.iosWarningText}>{crashRecoveryMsg}</p>
+          <button onClick={() => setCrashRecoveryMsg(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
         </div>
       )}
 
