@@ -27,20 +27,11 @@ const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navig
  * The metadata hash has a negligible collision risk for a personal video library.
  */
 export async function hashFile(file) {
-  if (IS_IOS) {
-    // Metadata-based hash: stable across iOS photo library transcodings.
-    // Round size to nearest MB to absorb transcoding size variance (~0.1%).
-    const sizeMB = Math.round(file.size / (1024 * 1024));
-    const metaString = `${file.name}|${file.lastModified}|${sizeMB}MB`;
-    const buffer = new TextEncoder().encode(metaString);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-  }
-  // Content-based hash: deterministic on non-iOS platforms.
-  const chunkSize = 2 * 1024 * 1024;
-  const slice = file.slice(0, Math.min(file.size, chunkSize));
-  const buffer = await slice.arrayBuffer();
+  // Metadata-based hash on all platforms: no file reads, instant.
+  // Round size to nearest MB to absorb iOS photo library transcoding variance (~0.1%).
+  const sizeMB = Math.round(file.size / (1024 * 1024));
+  const metaString = `${file.name}|${file.lastModified}|${sizeMB}MB`;
+  const buffer = new TextEncoder().encode(metaString);
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
