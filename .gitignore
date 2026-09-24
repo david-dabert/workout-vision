@@ -43,3 +43,15 @@ public/ffmpeg/
 
 # Staging videos and temp files
 benchmark/staging/*.mp4
+
+# Unverified benchmark clips (labels not confirmed by David)
+benchmark/unverified/*.mp4
+benchmark/unverified/*.json
+!benchmark/unverified/README.md
+
+# Real-phone test clips (David's own recordings)
+test/real-phone/clips/
+test/real-phone/results.json
+
+# Scoreboard history (local, not for git — baseline recorded in STATE.md)
+scoreboard/history/

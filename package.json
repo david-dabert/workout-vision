@@ -13,6 +13,8 @@
     "deploy": "vite build && npx gh-pages -d dist",
     "test": "vitest run",
     "test:benchmark": "node benchmark/replay-benchmark.mjs --ci",
+    "scoreboard": "node scripts/scoreboard.mjs",
+    "scoreboard:ci": "node scripts/scoreboard.mjs --ci",
     "typecheck": "tsc --noEmit",
     "test:e2e": "npx playwright test"
   },
