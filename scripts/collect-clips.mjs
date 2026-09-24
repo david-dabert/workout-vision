@@ -127,7 +127,7 @@ const HTML = `<!DOCTYPE html>
   <div class="file-btn" id="fileBtn" onclick="document.getElementById('fileInput').click()">
     Tap to select video
   </div>
-  <input type="file" id="fileInput" accept="video/*">
+  <input type="file" id="fileInput" accept=".mov,.mp4,.m4v,.webm,video/quicktime,video/mp4">
   <video id="preview" playsinline muted></video>
 </div>
 
