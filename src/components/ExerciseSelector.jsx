@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { EXERCISES, EXERCISE_BY_MUSCLE } from '../lib/exercises';
+import { EXERCISES, EXERCISE_BY_MUSCLE, LAUNCH_LIFTS } from '../lib/exercises';
 import { useT } from '../lib/LanguageContext';
 import { Icon, REGION_ICON_KEY } from '../lib/icons';
 
@@ -171,7 +171,46 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
 
           {/* Exercise list */}
           <div style={{ overflowY: 'auto', flex: 1 }} role="listbox">
-            {/* Automatic option */}
+            {/* Launch lifts — validated exercises shown first */}
+            {!activeRegion && (
+              <>
+                <div style={{ padding: '8px 12px 4px', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent, #D4A76A)' }}>
+                  {t('launch_lifts_label') || 'Validated'}
+                </div>
+                {LAUNCH_LIFTS.map(key => {
+                  const ex = EXERCISES[key];
+                  if (!ex) return null;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      role="option"
+                      aria-selected={value === key}
+                      onClick={() => select(key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        width: '100%', textAlign: 'left',
+                        padding: '10px 12px',
+                        background: value === key ? 'rgba(212, 167, 106, 0.08)' : 'transparent',
+                        color: value === key ? 'var(--accent, #D4A76A)' : 'var(--text-primary, #e8e6e1)',
+                        border: 'none',
+                        borderBottom: '1px solid var(--border, #222)',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: value === key ? 600 : 400,
+                        minHeight: 44,
+                      }}
+                    >
+                      {tExercise(key, ex.name)}
+                    </button>
+                  );
+                })}
+                <div style={{ padding: '8px 12px 4px', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-tertiary, #666)', borderTop: '1px solid var(--border, #333)' }}>
+                  {t('experimental_label') || 'Experimental'}
+                </div>
+              </>
+            )}
+            {/* Automatic option — under experimental */}
             {showAuto && !activeRegion && (
               <button
                 type="button"
@@ -183,7 +222,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                   width: '100%', textAlign: 'left',
                   padding: '10px 12px',
                   background: value === '__auto__' ? 'rgba(212, 167, 106, 0.08)' : 'transparent',
-                  color: value === '__auto__' ? 'var(--accent, #D4A76A)' : 'var(--text-primary, #e8e6e1)',
+                  color: value === '__auto__' ? 'var(--accent, #D4A76A)' : 'var(--text-secondary, #999)',
                   border: 'none',
                   borderBottom: '1px solid var(--border, #333)',
                   cursor: 'pointer',

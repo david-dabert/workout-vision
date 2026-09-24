@@ -280,6 +280,9 @@ export function exerciseNameWithTier(key, name) {
 // ---------------------------------------------------------------------------
 // Shared exercise grouping for UI selectors
 // ---------------------------------------------------------------------------
+// The five exercises validated for launch. Everything else is experimental.
+export const LAUNCH_LIFTS = ['bench_press', 'bicep_curl', 'lateral_raise', 'overhead_press', 'lat_pulldown'];
+
 // Groups built by _buildGroups() after initExercises() completes.
 // Mutable objects so existing import references remain valid.
 export const EXERCISE_GROUPS = { compound: [], isolation: [], bodyweight: [], machine: [] };

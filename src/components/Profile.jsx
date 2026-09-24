@@ -626,7 +626,7 @@ export default function Profile({ onClose }) {
       </div>
 
       <p className={`text-xs text-muted ${s.versionFooter}`}>
-        WorkoutVision v1.0.0
+        WorkoutVision v1.0.0 · {typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : 'dev'}
       </p>
     </div>
   );
