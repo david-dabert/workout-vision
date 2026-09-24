@@ -9,7 +9,12 @@
  * Storage: IndexedDB via localforage, keyed by exercise slug.
  */
 
-import { baselineStore } from './storage';
+import localforage from 'localforage';
+
+const baselineStore = localforage.createInstance({
+  name: 'workoutVision',
+  storeName: 'formBaselines',
+});
 
 /**
  * Per-exercise baseline shape:

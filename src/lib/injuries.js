@@ -4,7 +4,9 @@
  * are auto-passed instead of penalizing the score.
  */
 
-import { medicalStore as injuryStore } from './storage';
+import localforage from 'localforage';
+
+const injuryStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
 
 // Check names must match actual formCheck names in exerciseDefinitions.js.
 // shouldSkipCheck uses bidirectional includes() matching, so partial matches work

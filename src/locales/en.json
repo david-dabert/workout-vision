@@ -1659,10 +1659,5 @@
   "coach_show_all": "All workouts",
   "coach_show_client": "Client's workouts",
   "coach_training_recs": "Training Recommendations",
-  "coach_intelligence": "Performance Analysis",
-  "grade_reveal_dismiss": "Tap to dismiss",
-  "grade_reveal_tap": "Tap anywhere to continue",
-  "try_demo": "Try a Demo",
-  "demo_description": "See what your analysis looks like",
-  "demo_badge": "Demo"
+  "coach_intelligence": "Performance Analysis"
 }

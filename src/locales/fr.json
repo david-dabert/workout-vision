@@ -1659,10 +1659,5 @@
   "coach_show_all": "Tous les entraînements",
   "coach_show_client": "Entraînements du client",
   "coach_training_recs": "Recommandations d'entraînement",
-  "coach_intelligence": "Analyse de performance",
-  "grade_reveal_dismiss": "Appuyez pour fermer",
-  "grade_reveal_tap": "Appuyez n'importe o\u00f9 pour continuer",
-  "try_demo": "Essayer une d\u00e9mo",
-  "demo_description": "D\u00e9couvrez \u00e0 quoi ressemble votre analyse",
-  "demo_badge": "D\u00e9mo"
+  "coach_intelligence": "Analyse de performance"
 }

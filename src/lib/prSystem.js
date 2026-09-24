@@ -12,7 +12,10 @@
  *   6. Streak     — longest consecutive scheduled days trained
  */
 
-import { getAllWorkouts, getProfile, prStore } from './storage';
+import localforage from 'localforage';
+import { getAllWorkouts, getProfile } from './storage';
+
+const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
 
 // ── PR Store CRUD ──
 

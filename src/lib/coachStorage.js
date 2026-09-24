@@ -3,7 +3,10 @@
  * Uses localforage (IndexedDB) for on-device persistence.
  */
 
-import { coachStore, clientWorkoutStore } from './storage';
+import localforage from 'localforage';
+
+const coachStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coach' });
+const clientWorkoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachClientWorkouts' });
 
 /**
  * @typedef {Object} CoachProfile

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useT } from '../lib/LanguageContext';
 import { getCoachProfile, saveCoachProfile, getAllClients, saveClient, saveClientWorkout, getClientWorkouts } from '../lib/coachStorage';
 import { getRecentWorkouts } from '../lib/storage';
+import { generateCoachReportPDF } from '../lib/coachPDF';
 import { estimateOneRepMax, getStrengthLevel, calculateWorkloadRatio, analyzeWeeklyVolume, suggestNextWorkout } from '../lib/coach';
 import { EXERCISES } from '../lib/exercises';
 import { ExerciseAnimation } from './ExerciseGuide';
@@ -128,11 +129,10 @@ export default function CoachReport({ onClose }) {
     }
   };
 
-  const handleGeneratePDF = async () => {
+  const handleGeneratePDF = () => {
     if (!selectedWorkout) return;
 
-    const { generateCoachReportPDF } = await import('../lib/coachPDF');
-    const doc = await generateCoachReportPDF({
+    const doc = generateCoachReportPDF({
       coach,
       client,
       workout: selectedWorkout,

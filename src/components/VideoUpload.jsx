@@ -15,7 +15,6 @@ import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import VideoSuitabilityBanner from './VideoSuitabilityBanner';
 import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
-import { getWorkoutCount } from '../lib/storage';
 import { trackEvent, trackTiming, trackAnalysis } from '../lib/telemetry';
 import ExercisePicker, { AutoLockBadge } from './ExercisePicker';
 import ExerciseSelector from './ExerciseSelector';
@@ -69,19 +68,10 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
   useEffect(() => {
     loadInjuries().then(injuries => setUserInjuries(injuries || []));
   }, []);
-
-  // Check if this is a first-time user (0 workouts) to show demo button
-  useEffect(() => {
-    getWorkoutCount().then(count => {
-      if (count === 0) setIsFirstTime(true);
-    }).catch(() => {});
-  }, []);
   const [errorMsg, setErrorMsg] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null); // { videoHash, frameCount, landmarkHash }
   const [dragOver, setDragOver] = useState(false);
   const [ffmpegStatus, setFfmpegStatus] = useState('');
-  const [isFirstTime, setIsFirstTime] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
   const [suitabilityAssessment, setSuitabilityAssessment] = useState(null);
   const [progressiveDetection, setProgressiveDetection] = useState(null);
   const [cancelled, setCancelled] = useState(false);
@@ -342,20 +332,6 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
     ));
   }, []);
 
-  const loadDemo = useCallback(async () => {
-    setDemoLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.BASE_URL}data/demo-result.json`);
-      const demo = await res.json();
-      setResults([demo]);
-      setIsFirstTime(false);
-    } catch (err) {
-      console.error('[VideoUpload] Failed to load demo:', err);
-      setErrorMsg('Failed to load demo data.');
-    }
-    setDemoLoading(false);
-  }, []);
-
   const hasQueued = queue.some(q => q.status === 'queued');
   const hasCancelled = queue.some(q => q.status === 'cancelled');
 
@@ -407,17 +383,6 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
             {t('filming_tip')}
           </p>
         </div>
-      )}
-
-      {isFirstTime && queue.length === 0 && results.length === 0 && !analyzing && (
-        <button
-          className={`btn btn-ghost ${s.demoButton}`}
-          onClick={loadDemo}
-          disabled={demoLoading}
-        >
-          <span className={s.demoButtonText}>{t('try_demo')}</span>
-          <span className={s.demoButtonDesc}>{t('demo_description')}</span>
-        </button>
       )}
 
       {iosWarning && (
@@ -769,11 +734,8 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
 
       {results.map((r, idx) => (
         <div key={idx}>
-          {r.isDemo && (
-            <div className={s.demoBadge}>{t('demo_badge')}</div>
-          )}
           <ResultCard result={r} onReplay={() => setReplayResult(r)} />
-          {!r.isDemo && <FeedbackPanel result={r} />}
+          <FeedbackPanel result={r} />
         </div>
       ))}
 

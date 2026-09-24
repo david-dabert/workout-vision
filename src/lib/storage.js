@@ -4,38 +4,16 @@
  */
 
 import localforage from 'localforage';
+import { calculateBMR, ACTIVITY_MULTIPLIERS } from './nutrition';
 import { validateWorkout } from './validateSchema';
 
-// Mifflin-St Jeor (1990) BMR — inlined from deleted nutrition.js
-const ACTIVITY_MULTIPLIERS = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  veryActive: 1.9,
-};
-
-function calculateBMR(weightKg, heightCm, age, sex) {
-  if (sex === 'male') {
-    return 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
-  }
-  return 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-}
-
-// ── Centralized store instances (single source of truth) ──
-// Every module that needs IndexedDB access imports from here.
-export const profileStore = localforage.createInstance({ name: 'workoutVision', storeName: 'profile' });
-export const workoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' });
-export const medicalStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
-export const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
-export const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
-export const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
-export const metaStore = localforage.createInstance({ name: 'workoutVision', storeName: 'meta' });
-export const coachStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coach' });
-export const clientWorkoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachClientWorkouts' });
-export const correctionStore = localforage.createInstance({ name: 'workoutVision', storeName: 'corrections' });
-export const baselineStore = localforage.createInstance({ name: 'workoutVision', storeName: 'formBaselines' });
-export const modelCacheStore = localforage.createInstance({ name: 'wv-model-cache' });
+const profileStore = localforage.createInstance({ name: 'workoutVision', storeName: 'profile' });
+const workoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' });
+const medicalStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
+const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
+const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
+const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
+const metaStore = localforage.createInstance({ name: 'workoutVision', storeName: 'meta' });
 
 /** Current schema version. Increment when workout record shape changes. */
 export const SCHEMA_VERSION = 1;

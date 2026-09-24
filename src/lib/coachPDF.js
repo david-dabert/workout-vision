@@ -5,6 +5,7 @@
  * Uses jsPDF for client-side PDF generation.
  */
 
+import { jsPDF } from 'jspdf';
 import { EXERCISES } from './exercises';
 
 // Color palette matching the app's design tokens
@@ -32,8 +33,7 @@ const COLORS = {
  * @param {Function} params.tExercise - exercise name translation
  * @returns {jsPDF} The generated PDF document
  */
-export async function generateCoachReportPDF({ coach, client, workout, coachNotes, coachingData, t, tExercise }) {
-  const { jsPDF } = await import('jspdf');
+export function generateCoachReportPDF({ coach, client, workout, coachNotes, coachingData, t, tExercise }) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();

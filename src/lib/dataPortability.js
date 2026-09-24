@@ -3,23 +3,17 @@
  * Packages all IndexedDB stores into a single .wv file (gzipped JSON).
  */
 
-import {
-  profileStore,
-  workoutStore,
-  medicalStore,
-  foodStore,
-  milestoneStore,
-} from './storage';
+import localforage from 'localforage';
 
 const DATA_VERSION = 2;
 
-// Use centralized store instances from storage.js
+// Mirror the store instances from storage.js
 const stores = {
-  profile: profileStore,
-  workouts: workoutStore,
-  medical: medicalStore,
-  food: foodStore,
-  milestones: milestoneStore,
+  profile: localforage.createInstance({ name: 'workoutVision', storeName: 'profile' }),
+  workouts: localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' }),
+  medical: localforage.createInstance({ name: 'workoutVision', storeName: 'medical' }),
+  food: localforage.createInstance({ name: 'workoutVision', storeName: 'food' }),
+  milestones: localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' }),
 };
 
 /** Collect all items from a localforage instance into an array. */
