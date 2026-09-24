@@ -59,6 +59,12 @@ function getMaxFrames() {
       // If heap is already >60% used before analysis, reduce frame count
       if (usedRatio > 0.6) return Math.min(base, 300);
     }
+
+    // Safari exposes neither API. Be conservative: cap at 250 on iOS Safari,
+    // 400 on desktop Safari. Better to finish with fewer frames than crash.
+    if (deviceGB == null && !mem) {
+      return IS_IOS ? 250 : 400;
+    }
   } catch { /* memory APIs unavailable; use default */ }
   return base;
 }
@@ -107,7 +113,7 @@ export async function analyzeVideoFile({
   const analysisFps = IS_IOS ? 10 : 15;
   const maxWidth = 640; // Cap all platforms to reduce memory pressure on iOS Safari
 
-  const MAX_VIDEO_DURATION = 120; // seconds
+  const MAX_VIDEO_DURATION = 60; // seconds — keep short to avoid iOS memory crashes
   const ANALYSIS_TIMEOUT = 180_000; // milliseconds
 
   // ── Global analysis timeout ──
