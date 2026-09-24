@@ -297,9 +297,12 @@ function processDetection(source, timestamp, frameIndex) {
 
 // ImageBitmap path (preferred — zero-copy transfer)
 function handleDetectBitmap({ bitmap, timestamp, frameIndex }) {
-  ensureCanvas(bitmap.width, bitmap.height);
-  offscreenCtx.drawImage(bitmap, 0, 0);
-  bitmap.close();
+  try {
+    ensureCanvas(bitmap.width, bitmap.height);
+    offscreenCtx.drawImage(bitmap, 0, 0);
+  } finally {
+    try { bitmap.close(); } catch {}
+  }
   processDetection(offscreenCanvas, timestamp, frameIndex);
 }
 

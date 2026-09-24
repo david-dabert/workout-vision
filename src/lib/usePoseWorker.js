@@ -163,9 +163,10 @@ export default function usePoseWorker() {
   const detectFrame = useCallback(async (source, timestamp, frameIndex) => {
     if (!workerRef.current || !isReady) return null;
 
+    let bitmap = null;
     try {
       // Accept pre-created ImageBitmap (pipeline mode) or canvas
-      const bitmap = source instanceof ImageBitmap ? source : await createImageBitmap(source);
+      bitmap = source instanceof ImageBitmap ? source : await createImageBitmap(source);
       const promise = new Promise((resolve, reject) => {
         pendingRef.current.set(frameIndex, { resolve, reject });
         // Safety timeout per frame (5s)
@@ -180,8 +181,10 @@ export default function usePoseWorker() {
         { type: 'detect', bitmap, timestamp, frameIndex },
         [bitmap] // Transfer ownership
       );
+      bitmap = null; // Ownership transferred, don't close in catch
       return promise;
     } catch {
+      if (bitmap) { try { bitmap.close(); } catch {} }
       // Fallback: raw pixel transfer if createImageBitmap fails
       try {
         const ctx = source.getContext('2d');

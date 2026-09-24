@@ -105,7 +105,7 @@ export async function analyzeVideoFile({
 }) {
   const analysisStart = Date.now();
   const analysisFps = IS_IOS ? 10 : 15;
-  const maxWidth = IS_IOS ? 480 : 720;
+  const maxWidth = 640; // Cap all platforms to reduce memory pressure on iOS Safari
 
   const MAX_VIDEO_DURATION = 120; // seconds
   const ANALYSIS_TIMEOUT = 180_000; // milliseconds
@@ -369,7 +369,13 @@ export async function analyzeVideoFile({
             maxWidth,
             async (canvas, frameIndex) => {
               // Capture bitmap from canvas (~1ms, non-blocking for video playback)
-              const bitmap = await createImageBitmap(canvas);
+              let bitmap = null;
+              try {
+                bitmap = await createImageBitmap(canvas);
+              } catch (e) {
+                console.warn('[analyzeVideo] createImageBitmap failed, skipping frame', frameIndex, e.message);
+                return;
+              }
               const deterministicTs = frameIndex * (1000 / analysisFps);
 
               // Wait for an inference slot (back-pressure)
@@ -379,8 +385,15 @@ export async function analyzeVideoFile({
               const inferPromise = (async () => {
                 try {
                   const workerResult = await worker.detect(bitmap, deterministicTs, frameIndex);
+                  // After postMessage with transfer, bitmap ownership moves to worker.
+                  // Set to null so the finally block doesn't double-close.
+                  bitmap = null;
                   inferenceResults.set(frameIndex, workerResult);
                   drainOrderedResults();
+                } catch (e) {
+                  // If transfer or detection failed, close bitmap here
+                  if (bitmap) { try { bitmap.close(); } catch {} bitmap = null; }
+                  console.warn('[analyzeVideo] Worker detect failed, frame', frameIndex, e.message);
                 } finally {
                   releaseSlot();
                 }
