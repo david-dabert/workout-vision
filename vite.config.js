@@ -34,6 +34,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     __FEEDBACK_URL__: JSON.stringify(process.env.VITE_FEEDBACK_URL || ''),
+    __GIT_HASH__: JSON.stringify((() => { try { return execSync('git rev-parse --short HEAD').toString().trim(); } catch { return 'dev'; } })()),
   },
   test: {
     exclude: ['e2e/**', 'node_modules/**'],

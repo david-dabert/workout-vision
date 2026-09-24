@@ -250,6 +250,9 @@ export function exerciseNameWithTier(key, name) {
 // Groups exercises by category (compound / isolation / bodyweight), sorted
 // by tier first (validated > supported > experimental), then alphabetically.
 // Skips 'superset' (handled as "Other").
+// The five exercises validated for launch. Everything else is experimental.
+export const LAUNCH_LIFTS = ['bench_press', 'bicep_curl', 'lateral_raise', 'overhead_press', 'lat_pulldown'];
+
 export const EXERCISE_GROUPS = (() => {
   const tierOrder = { validated: 0, supported: 1, experimental: 2 };
   const groups = { compound: [], isolation: [], bodyweight: [], machine: [] };
