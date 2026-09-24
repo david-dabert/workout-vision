@@ -175,7 +175,7 @@ export function adaptiveSignalSelect(
       const median = sortedReps[Math.floor(sortedReps.length / 2)];
       const winnerReps = bestResult.reps;
 
-      if (winnerReps > median * 2) {
+      if (winnerReps > median * 1.7) {
         // Find the consensus cluster: alternatives within ±30% of median
         const clusterLow = median * 0.7;
         const clusterHigh = median * 1.3;

@@ -1720,6 +1720,7 @@
     "downThreshold": 90,
     "upThreshold": 140,
     "minSpacing": 0.25,
+    "repDivisor": 2,
     "formChecks": [
       {
         "name": "Plank position",
@@ -1802,6 +1803,7 @@
     "downThreshold": 30,
     "upThreshold": 70,
     "minSpacing": 0.25,
+    "smoothing": 1,
     "formChecks": [
       {
         "name": "Arm height",
@@ -4607,7 +4609,6 @@
     "downThreshold": 80,
     "upThreshold": 140,
     "amplitudeRatio": 0.15,
-    "smoothing": 1,
     "minSpacing": 0.3,
     "formChecks": [
       {

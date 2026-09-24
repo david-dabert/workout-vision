@@ -384,6 +384,8 @@ function compileExercise(dsl) {
   if (dsl.isIsometric) compiled.isIsometric = true;
   if (dsl.minIsometricDuration != null) compiled.minIsometricDuration = dsl.minIsometricDuration;
   if (dsl.minSpacing != null) compiled.minSpacing = dsl.minSpacing;
+  if (dsl.repDivisor != null) compiled.repDivisor = dsl.repDivisor;
+  if (dsl.smoothing != null) compiled.smoothing = dsl.smoothing;
   if (dsl.limitations) compiled.limitations = dsl.limitations;
 
   return compiled;

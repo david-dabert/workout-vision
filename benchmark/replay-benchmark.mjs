@@ -313,8 +313,24 @@ if (module.registerHooks) {
   process.exit(1);
 }
 
+// Shim global fetch so exerciseDefinitions.js can load exercises.json from disk
+const exercisesJsonPath = join(__dirname, '..', 'public', 'data', 'exercises.json');
+const exercisesJsonContent = readFileSync(exercisesJsonPath, 'utf-8');
+const _originalFetch = globalThis.fetch;
+globalThis.fetch = async (url) => {
+  if (typeof url === 'string' && url.includes('exercises.json')) {
+    return { ok: true, json: async () => JSON.parse(exercisesJsonContent) };
+  }
+  if (_originalFetch) return _originalFetch(url);
+  throw new Error(`fetch not available for: ${url}`);
+};
+
 // Now import RepCounter — it will use our shim for poseAnalysis
 const { RepCounter } = await import('../src/lib/repCounter/index.js');
+
+// Initialize the exercise database (populates EXERCISES from exercises.json)
+const { initExercises } = await import('../src/lib/exercises.js');
+await initExercises();
 
 // Run benchmark
 const results = [];

@@ -445,6 +445,14 @@ export class RepCounter {
     if (pResult && pResult.reps >= 2 && pResult.autocorrPeak >= 0.35) {
       // Period counter has a strong signal. Use it as primary.
       //
+      // Dynamic trust gate: when period diverges significantly from valley,
+      // require stronger autocorrelation evidence. Prevents catastrophic
+      // overcounting (e.g. incline_bench 8→25 at autocorrPeak=0.365).
+      const periodValleyRatio = pResult.reps / Math.max(valleyReps, 1);
+      const minAutocorrForDivergence = periodValleyRatio > 2.0 ? 0.70
+        : periodValleyRatio > 1.5 ? 0.55 : 0.35;
+      const periodTrusted = pResult.autocorrPeak >= minAutocorrForDivergence;
+
       // Guard against ACF harmonic confusion: if valley found 2x+ more
       // than period, the ACF likely locked onto 2T (or 3T) instead of T.
       // Also fires if both valley AND hysteresis are significantly higher.
@@ -455,7 +463,7 @@ export class RepCounter {
         && Math.abs(valleyReps - hysResult.reps) <= 2;
       const harmonicConfusion = (valleyMuchHigher) || (bothHigher && valleyHysAgree);
 
-      if (!harmonicConfusion) {
+      if (periodTrusted && !harmonicConfusion) {
         const valleyAgrees = Math.abs(valleyReps - pResult.reps) <= 1;
         const hysAgrees = !hysReliable || Math.abs(hysResult.reps - pResult.reps) <= 1;
 
@@ -482,19 +490,25 @@ export class RepCounter {
             countMethod = 'period-confirmed';
           }
           // else: keep valley count (it found real valleys)
-        } else if (pResult.reps > valleyReps && pResult.reps <= valleyReps + 2) {
-          // Period finds slightly MORE reps than valley (at most +2).
-          // Valley can miss 1-2 edge reps due to bilateral prominence.
-          // Previously allowed up to 2x which let sub-harmonic ACF
-          // confusion nearly double the count (e.g. 7 real → 17 reported).
+        } else if (pResult.reps > valleyReps && pResult.reps <= valleyReps + 1) {
+          // Period finds ONE more rep than valley.
           result = {
             ...result,
             reps: pResult.reps,
             valleyFrames: pResult.repFrames.slice(0, pResult.reps),
           };
           countMethod = 'period-up';
-        } else {
-          // Period and valley agree exactly. Use period-aligned frames.
+        } else if (pResult.reps > valleyReps && pResult.reps <= valleyReps + 2
+                   && pResult.autocorrPeak >= 0.70) {
+          // Period finds +2 reps but with very strong autocorrelation.
+          result = {
+            ...result,
+            reps: pResult.reps,
+            valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+          };
+          countMethod = 'period-up';
+        } else if (pResult.reps <= valleyReps) {
+          // Period and valley agree or period is lower. Use period-aligned frames.
           result = {
             ...result,
             reps: pResult.reps,
@@ -502,9 +516,11 @@ export class RepCounter {
           };
           countMethod = valleyAgrees && hysAgrees ? 'period-confirmed' : 'period';
         }
+        // else: period wants to add more than +2 or +2 without strong ACF.
+        // Keep valley result as-is.
       }
-      // else: harmonic confusion detected, leave valley result as-is
-      // and apply hysteresis cap/floor below.
+      // else: period not trusted (divergence too high for ACF strength)
+      // or harmonic confusion detected. Keep valley result.
     }
 
     // Hysteresis validation — runs on ALL counting methods (valley, period,
@@ -528,6 +544,36 @@ export class RepCounter {
         };
         countMethod = 'hys-floor';
       }
+    }
+
+    // ── Physical sanity bound ──
+    // Rep count cannot exceed what is physically possible given signal
+    // duration and exercise minimum rep period. Uses REP_PERIOD_BOUNDS.min
+    // (calibrated per exercise, e.g. 0.8s for bent_over_row) rather than
+    // just minSpacing (defaults to 0.5s), giving a much tighter cap.
+    {
+      const signalDurationS = N / this._fps;
+      const periodBounds = getRepPeriodBounds(this._exerciseKey);
+      const effectiveMinPeriod = Math.max(minSpacingSec, periodBounds.min);
+      const maxPhysicalReps = Math.ceil(signalDurationS / effectiveMinPeriod) + 1;
+      if (result.reps > maxPhysicalReps) {
+        result = { ...result, reps: maxPhysicalReps };
+        countMethod += ':capped';
+      }
+    }
+
+    // ── Alternating-limb divisor ──
+    // Exercises like mountain_climber drive one leg per cycle, producing 2×
+    // the expected rep count. repDivisor halves (or otherwise scales) the
+    // count and thins valley frames to match.
+    if (ex.repDivisor && ex.repDivisor > 1) {
+      const divisor = ex.repDivisor;
+      result = {
+        ...result,
+        reps: Math.round(result.reps / divisor),
+        valleyFrames: result.valleyFrames.filter((_: number, i: number) => i % divisor === divisor - 1),
+      };
+      countMethod += ':div' + divisor;
     }
 
     this._countMethod = countMethod;

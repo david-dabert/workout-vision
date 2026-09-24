@@ -3,7 +3,7 @@
  * Used on IndexedDB reads to catch corrupted or legacy data gracefully.
  */
 
-import { ValidationResult, WorkoutRecord } from './types';
+import type { ValidationResult, WorkoutRecord } from './types';
 
 const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'id', 'date', 'createdAt', 'updatedAt', 'schemaVersion',
