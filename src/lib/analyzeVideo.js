@@ -139,6 +139,9 @@ export async function analyzeVideoFile({
     }
   };
 
+  let useWorker = false;
+  let usedMainThreadLandmarker = false;
+
   try {
     // ── Phase 1: Hash ──
     onPhase('hashing');
@@ -170,7 +173,6 @@ export async function analyzeVideoFile({
     onPhase('model');
     checkAbort();
     resetKalmanFilters();
-    let useWorker = false;
     let workerInitError = null;
     if (worker.ready) {
       useWorker = true;
@@ -203,6 +205,7 @@ export async function analyzeVideoFile({
     }
     let landmarker = null;
     if (!useWorker) {
+      usedMainThreadLandmarker = true;
       // Dispose any existing GPU landmarker so getImageLandmarker() creates
       // a fresh one with CPU delegate for deterministic results.
       disposeAllLandmarkers();
@@ -522,14 +525,24 @@ export async function analyzeVideoFile({
     const finalUserChanged = lockedExercise ? true : userChangedExercise;
 
     clearTimeout(timeoutId);
-    return await buildFullResult({
+    const result = await buildFullResult({
       frames, replayFrames, frameCount, duration, analysisFps,
       exercise: finalExercise, autoDetect: finalAutoDetect, userChangedExercise: finalUserChanged,
       weightKg, userInjuries, userProfile,
       file, videoHash, analysisStart, onProgress, onPhase, onExerciseDetected,
     });
+
+    // Release main-thread landmarker after analysis to free WebGL context + ~5MB model buffer.
+    // On iOS Safari this prevents GPU memory exhaustion across sequential analyses.
+    if (!useWorker) {
+      disposeAllLandmarkers();
+    }
+
+    return result;
   } catch (err) {
     clearTimeout(timeoutId);
+    // Always release main-thread landmarker on error
+    if (usedMainThreadLandmarker) disposeAllLandmarkers();
     if (err.name === 'TimeoutError' && err._structured) {
       return err._structured;
     }
