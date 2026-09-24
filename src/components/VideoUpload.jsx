@@ -15,6 +15,7 @@ import CameraPrivacyModal, { usePrivacyGate } from './CameraPrivacyModal';
 import VideoSuitabilityBanner from './VideoSuitabilityBanner';
 import usePoseWorker from '../lib/usePoseWorker';
 import { analyzeVideoFile } from '../lib/analyzeVideo';
+import { analyzeVideoV2 } from '../lib/pipeline/orchestrator';
 import { trackEvent, trackTiming, trackAnalysis } from '../lib/telemetry';
 import ExercisePicker, { AutoLockBadge } from './ExercisePicker';
 import ExerciseSelector from './ExerciseSelector';
@@ -157,8 +158,8 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
   };
 
   // ─── VIDEO ANALYSIS ENGINE ───
-  // Domain logic extracted to src/lib/analyzeVideo.js.
-  // This wrapper bridges React state (progress, phase, errors) to the pure engine.
+  // v2 pipeline: Frame extraction (30fps) -> Kinematic engine -> FSM rep counter -> Analysis
+  // Falls back to v1 pipeline for auto-detect mode.
 
   const analyzeVideo = useCallback(async (queueItem, signal) => {
     const weightKg = parseFloat(weight) || 0;
@@ -171,44 +172,70 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
     };
     writeStage('started');
 
-    const result = await analyzeVideoFile({
-      file: queueItem.file,
-      exercise,
-      autoDetect,
-      userChangedExercise: userChangedExercise.current,
-      weightKg,
-      userInjuries,
-      userProfile,
-      worker: {
-        ready: workerReady,
-        supported: workerSupported,
-        init: initWorker,
-        detect: detectFrame,
-        reset: resetWorker,
-        reinit: reinitWorker,
-      },
-      onProgress: (pct) => {
-        setProgress(pct);
-        setFfmpegStatus(pct < 95 ? `${t('phase_analyzing')}... ${pct}%` : '');
-        setQueue(prev => prev.map(q =>
-          q.id === queueItem.id ? { ...q, progress: pct } : q
-        ));
-      },
-      onPhase: (phase) => {
-        setAnalysisPhase(phase);
-        writeStage(phase);
-        const labelKeys = { hashing: 'phase_hashing_desc', model: 'phase_model_desc', extracting: 'phase_extracting_desc', analyzing: 'phase_analyzing_desc' };
-        setFfmpegStatus(t(labelKeys[phase]) || '');
-        if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); detectorRef.current = null; }
-      },
-      onLiveReps: (reps) => setLiveReps(reps),
-      onExerciseDetected: (ex) => setExercise(ex),
-      onSuitability: (assessment) => setSuitabilityAssessment(assessment),
-      onProgressiveUpdate: (update) => setProgressiveDetection(update),
-      signal,
-      gymMode: userProfile?.gymMode || 'gym',
-      detectorRef,
-    });
+    // Use v2 pipeline when exercise is selected (not auto-detect)
+    const useV2 = exercise && exercise !== '__auto__' && !autoDetect;
+    let result;
+
+    if (useV2) {
+      result = await analyzeVideoV2({
+        file: queueItem.file,
+        exercise,
+        onProgress: (pct) => {
+          setProgress(pct);
+          setFfmpegStatus(pct < 95 ? `${t('phase_analyzing')}... ${pct}%` : '');
+          setQueue(prev => prev.map(q =>
+            q.id === queueItem.id ? { ...q, progress: pct } : q
+          ));
+        },
+        onPhase: (phase) => {
+          setAnalysisPhase(phase);
+          writeStage(phase);
+          const labelKeys = { hashing: 'phase_hashing_desc', model: 'phase_model_desc', extracting: 'phase_extracting_desc', analyzing: 'phase_analyzing_desc' };
+          setFfmpegStatus(t(labelKeys[phase]) || '');
+          if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); detectorRef.current = null; }
+        },
+        signal,
+      });
+    } else {
+      result = await analyzeVideoFile({
+        file: queueItem.file,
+        exercise,
+        autoDetect,
+        userChangedExercise: userChangedExercise.current,
+        weightKg,
+        userInjuries,
+        userProfile,
+        worker: {
+          ready: workerReady,
+          supported: workerSupported,
+          init: initWorker,
+          detect: detectFrame,
+          reset: resetWorker,
+          reinit: reinitWorker,
+        },
+        onProgress: (pct) => {
+          setProgress(pct);
+          setFfmpegStatus(pct < 95 ? `${t('phase_analyzing')}... ${pct}%` : '');
+          setQueue(prev => prev.map(q =>
+            q.id === queueItem.id ? { ...q, progress: pct } : q
+          ));
+        },
+        onPhase: (phase) => {
+          setAnalysisPhase(phase);
+          writeStage(phase);
+          const labelKeys = { hashing: 'phase_hashing_desc', model: 'phase_model_desc', extracting: 'phase_extracting_desc', analyzing: 'phase_analyzing_desc' };
+          setFfmpegStatus(t(labelKeys[phase]) || '');
+          if (phase === 'extracting') { setLiveReps(0); setProgressiveDetection(null); detectorRef.current = null; }
+        },
+        onLiveReps: (reps) => setLiveReps(reps),
+        onExerciseDetected: (ex) => setExercise(ex),
+        onSuitability: (assessment) => setSuitabilityAssessment(assessment),
+        onProgressiveUpdate: (update) => setProgressiveDetection(update),
+        signal,
+        gymMode: userProfile?.gymMode || 'gym',
+        detectorRef,
+      });
+    }
 
     stopTiming();
 
@@ -582,7 +609,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                     userChangedExercise.current = true;
                   }
                 }}
-                showAuto
+                showAuto={false}
               />
             </div>
             <div className={s.weightRow}>
@@ -620,9 +647,9 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                 <button
                   className={`btn btn-primary ${s.flexGrow}`}
                   onClick={startAnalysis}
-                  disabled={!hasQueued || (!exercise && exercise !== '__auto__')}
+                  disabled={!hasQueued || !exercise || exercise === '__auto__'}
                 >
-                  {!exercise && exercise !== '__auto__' ? (t('select_exercise_first') || 'Select exercise') : t('analyze')}
+                  {!exercise || exercise === '__auto__' ? (t('select_exercise_first') || 'Select exercise') : t('analyze')}
                 </button>
               )}
             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, useCallback, memo, Component } from 'react';
 import { EXERCISES } from '../lib/exercises';
 import MuscleMap from './MuscleMap';
 import Confetti from './Confetti';
@@ -191,6 +191,7 @@ function ResultCard({ result, onReplay }) {
   const [recalData, setRecalData] = useState(null);
   const [isRecalibrating, setIsRecalibrating] = useState(false);
   const [correctionToast, setCorrectionToast] = useState(null);
+  const [showV2Details, setShowV2Details] = useState(false);
 
   // Use recalibrated data when available, fall back to original
   const formScore = recalData?.formScore ?? origFormScore;
@@ -439,6 +440,156 @@ function ResultCard({ result, onReplay }) {
               {(result.qualityGateReasons || []).map(r => <li key={r}>{t(`gate_reason_${r}`, r)}</li>)}
             </ul>
           </details>
+        )}
+      </div>
+    );
+  }
+
+  // ═══ V2 PIPELINE RESULT — simplified confirmation-first UI ═══
+  if (result.v2Pipeline) {
+    const v2Analysis = result.analysis || {};
+    const v2Coaching = v2Analysis.coaching || [];
+    const v2Metrics = v2Analysis.metrics || {};
+    const v2Diag = result.diagnostics || {};
+
+    return (
+      <div className={`card result-card ${s.resultCard}`}>
+        {/* Exercise name */}
+        <div className={s.heroGrade}>
+          <h3 className={s.heroExerciseName}>{displayName}</h3>
+        </div>
+
+        {/* "We counted N. Is that right?" confirmation */}
+        <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+          <span style={{ fontSize: '0.95rem', color: 'var(--text-muted, #aaa)' }}>
+            We counted
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '4px 0 8px' }}>
+          <button onClick={() => handleRepChange(displayReps - 1)} className={s.repEditButton} aria-label={t('decrease_reps')}>−</button>
+          <span style={{ fontSize: '2.5rem', fontWeight: 700, minWidth: '3ch', textAlign: 'center' }}>{displayReps}</span>
+          <button onClick={() => handleRepChange(displayReps + 1)} className={s.repEditButton} aria-label={t('increase_reps')}>+</button>
+        </div>
+        <div style={{ textAlign: 'center', paddingBottom: '12px' }}>
+          <span style={{ fontSize: '0.95rem', color: 'var(--text-muted, #aaa)' }}>
+            Is that right?
+          </span>
+        </div>
+
+        {repWasOverridden && (
+          <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted, #888)', padding: '0 0 8px' }}>
+            AI detected: {reps} &middot; You corrected to: {displayReps}
+          </div>
+        )}
+
+        {/* Correction logged toast */}
+        {correctionToast && (
+          <div className={s.correctionToast}>
+            <span className={s.correctionToastCheck}>&#x2713;</span>
+            {t('correction_saved')}
+          </div>
+        )}
+
+        {/* Compact stats row: duration + confidence */}
+        <div className={s.heroStatsRow}>
+          <div className={s.heroStat}>
+            <span className={s.heroStatValue}>{formatTime(duration)}</span>
+            <span className={s.heroStatLabel}>{t('duration').toUpperCase()}</span>
+          </div>
+          <div className={s.heroStatDivider} />
+          <div className={s.heroStat}>
+            <span className={s.heroStatValue}>
+              {result.confidence?.level === 'high' ? 'High' : result.confidence?.level === 'medium' ? 'Med' : 'Low'}
+            </span>
+            <span className={s.heroStatLabel}>CONFIDENCE</span>
+          </div>
+          <div className={s.heroStatDivider} />
+          <div className={s.heroStat}>
+            <span className={s.heroStatValue}>{result.confidence?.framesWithPose || 0}</span>
+            <span className={s.heroStatLabel}>FRAMES</span>
+          </div>
+        </div>
+
+        {/* Share + replay actions */}
+        <div className={s.heroActions}>
+          <button
+            className={`btn btn-ghost ${s.shareButton}`}
+            onClick={() => { hapticLight(); shareCard(result); }}
+          >
+            {t('share_card')}
+          </button>
+          {onReplay && result.videoUrl && result.frames && (
+            <button className={`btn btn-primary ${s.replayButton}`} onClick={onReplay}>
+              {t('watch_overlay')}
+            </button>
+          )}
+        </div>
+
+        {/* Details (experimental) accordion */}
+        <button
+          className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
+          onClick={() => setShowV2Details(d => !d)}
+          aria-expanded={showV2Details}
+        >
+          {showV2Details ? 'Hide details (experimental)' : 'Details (experimental)'}
+          <span className={s.toggleChevron} style={{ transform: showV2Details ? 'rotate(180deg)' : 'rotate(0deg)' }}>&#9660;</span>
+        </button>
+
+        {showV2Details && (
+          <div style={{ padding: '8px 0' }}>
+            {/* V2 metrics */}
+            {v2Metrics.avgRom != null && (
+              <div style={{ padding: '8px 12px', fontSize: '0.85rem' }}>
+                <span style={{ display: 'inline-block', background: 'var(--surface-2, #333)', borderRadius: 4, padding: '2px 6px', fontSize: '0.7rem', marginBottom: 4, color: 'var(--text-muted, #aaa)' }}>EXPERIMENTAL</span>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 4 }}>
+                  <div><strong>Avg ROM:</strong> {v2Metrics.avgRom}&deg; (&plusmn;{v2Metrics.romStdDev}&deg;)</div>
+                  <div><strong>Avg Tempo:</strong> {v2Metrics.avgTempo}s (&plusmn;{v2Metrics.tempoStdDev}s)</div>
+                  {v2Metrics.fatigueIndicator != null && (
+                    <div><strong>Fatigue:</strong> {v2Metrics.fatigueIndicator > 0 ? `${v2Metrics.fatigueIndicator}% ROM decline` : 'None detected'}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* V2 coaching notes */}
+            {v2Coaching.length > 0 && (
+              <div style={{ padding: '8px 12px' }}>
+                <h4 style={{ fontSize: '0.85rem', margin: '0 0 4px' }}>Coaching notes</h4>
+                {v2Coaching.map((note, i) => (
+                  <div key={i} style={{ fontSize: '0.8rem', padding: '4px 0', color: 'var(--text-muted, #ccc)' }}>
+                    <span style={{ display: 'inline-block', background: 'var(--surface-2, #333)', borderRadius: 4, padding: '1px 5px', fontSize: '0.65rem', marginRight: 6, color: 'var(--text-muted, #aaa)' }}>EXPERIMENTAL</span>
+                    {note.message}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Diagnostics */}
+            <div style={{ padding: '8px 12px', fontSize: '0.8rem', color: 'var(--text-muted, #888)' }}>
+              <h4 style={{ fontSize: '0.85rem', margin: '0 0 4px', color: 'var(--text, #ccc)' }}>Diagnostics</h4>
+              <div>Signal range: {v2Diag.observedMin}&deg; to {v2Diag.observedMax}&deg; (span: {v2Diag.observedRange}&deg;)</div>
+              <div>Frames: {v2Diag.totalFrames} &middot; Reps detected: {v2Diag.repsDetected} &middot; Method: {v2Diag.method}</div>
+              <div>Analysis time: {result.analysisTime}s &middot; Pipeline: v2</div>
+            </div>
+
+            {/* Export landmarks */}
+            {result.frames && result.frames.length > 0 && (
+              <button
+                className={`btn btn-ghost ${s.exportButton}`}
+                onClick={() => exportLandmarks(result)}
+                style={{ marginTop: 8 }}
+              >
+                {t('export_landmarks')}
+              </button>
+            )}
+            <button
+              className={`btn btn-ghost ${s.exportButton}`}
+              onClick={() => reportToGitHub(result)}
+              title={t('report_debug')}
+            >
+              Report
+            </button>
+          </div>
         )}
       </div>
     );
@@ -1300,4 +1451,45 @@ function ResultCard({ result, onReplay }) {
   );
 }
 
-export default memo(ResultCard);
+// Error boundary to prevent result rendering crashes from killing the app
+class ResultCardErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('ResultCard crashed:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="card result-card" style={{ padding: 24, textAlign: 'center' }}>
+          <h3>Result display error</h3>
+          <p style={{ color: 'var(--text-muted, #888)', fontSize: '0.9rem' }}>
+            The analysis completed but the result could not be displayed.
+          </p>
+          <p style={{ color: 'var(--text-muted, #888)', fontSize: '0.8rem' }}>
+            {this.state.error?.message || 'Unknown error'}
+          </p>
+          <button className="btn btn-ghost" onClick={() => this.setState({ hasError: false, error: null })}>
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function ResultCardWithBoundary(props) {
+  return (
+    <ResultCardErrorBoundary>
+      <ResultCard {...props} />
+    </ResultCardErrorBoundary>
+  );
+}
+
+export default memo(ResultCardWithBoundary);
