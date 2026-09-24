@@ -43,3 +43,16 @@ public/ffmpeg/
 
 # Staging videos and temp files
 benchmark/staging/*.mp4
+
+# David's real-phone clips and unverified benchmark videos
+test/real-phone/clips/
+benchmark/unverified/
+
+# All video files anywhere (any case)
+*.[mM][pP]4
+*.[mM][oO][vV]
+*.[mM]4[vV]
+*.[wW][eE][bB][mM]
+
+# Frame PNGs from test extraction (stay on Mac only)
+test/real-phone/frames/

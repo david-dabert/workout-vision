@@ -10,6 +10,8 @@ RULES
 - Sampling stays at 15 per second unless a clip shows a rep that 15 cannot resolve.
 - Paste evidence for every claim; mark anything unchecked as unverified.
 - At each STOP, confirm no video file is tracked, push counter-core to GitHub, and wait for David's reply.
+- Stage files by path. Never run git add -A or git add .
+- Never run npm run deploy or push to gh-pages.
 
 0. FREEZE. Stop every background agent. Commit all uncommitted work, on whatever branch it sits, to a branch named park-<date>; delete nothing. Then create counter-core from hotfix-ios and commit this message to it as PLAN.md at the repository root. List every branch with its last commit and one line on what it holds, including where the five-layer rebuild lives, and say which commit the live site serves. Confirm no video file appears anywhere in the repository's history; if one does, tell David and rewrite nothing. STOP.
 
@@ -26,4 +28,3 @@ Synthetic tests first: ten cycles must count 10 at 15, 30, 60 and 120 samples pe
 3. APP. Wire the core into the app behind the required lift selection. Low confidence shows "We counted N. Is that right?". Refuse only when the lift's joints are hidden for most of the set, and say why. The form score stays hidden. Run the five clips through the app and paste what the result screen shows for each.
 
 4. PREVIEW. On Vercel, production deploys only from a release branch and every other branch gets its own preview link. Make the Vite base path work on both Vercel and GitHub Pages. Give David the counter-core preview link and confirm it opens on a phone. If Vercel access fails, tell David the exact steps; install no certificate on his phone. STOP.
-GitHub David Dabert Workout Vision
