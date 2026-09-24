@@ -47,7 +47,7 @@ import {
 import type { Exercise, ValleyResult, Cycle, DiagCandidate, RepCounterOptions } from './types';
 import { adaptiveSignalSelect } from './valley';
 import { buildFormHistoryFromCycles, evaluateLiveRep, evaluateFormFeedback } from './scoring';
-import { periodCount, type PeriodResult } from './periodCounter';
+import { periodCount, getAllACFPeaks, type PeriodResult } from './periodCounter';
 
 const REP_COUNTER_BUILD = 'v26-period-primary';
 
@@ -384,9 +384,14 @@ export class RepCounter {
     // (minSpacing < 0.2) get reduced smoothing to preserve rapid peaks.
     // Window=3 at 10fps = 300ms. Tested window=5 (500ms) and window=9 (900ms);
     // both over-smooth at 10fps, flattening real valleys and causing
-    // undercounting. Window=3 is the benchmark-validated optimum.
+    // undercounting. Window=3 is the benchmark-validated optimum for most
+    // exercises. For fast exercises (short min period), auto-tune smoothing
+    // to avoid destroying the signal: smooth = round(minPeriodFrames / 3).
+    const periodBoundsForSmooth = getRepPeriodBounds(this._exerciseKey);
+    const minPeriodFrames = periodBoundsForSmooth.min * this._fps;
+    const autoSmooth = Math.min(5, Math.max(1, Math.round(minPeriodFrames / 3)));
     const smoothWindow = ex.smoothing != null ? ex.smoothing
-      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : 3;
+      : (ex.minSpacing != null && ex.minSpacing < 0.2) ? 1 : autoSmooth;
     let interpolated: number[] = smoothSignal(interpolateNulls(rawValues), smoothWindow);
 
     // ── Step 1b: Adaptive multi-signal selection ──
@@ -442,15 +447,18 @@ export class RepCounter {
 
     let countMethod: string = 'valley';
 
-    if (pResult && pResult.reps >= 2 && pResult.autocorrPeak >= 0.35) {
-      // Period counter has a strong signal. Use it as primary.
+    if (pResult && pResult.reps >= 2 && pResult.autocorrPeak >= 0.30) {
+      // Period counter has a signal worth considering. Use it as primary
+      // when trust conditions are met.
       //
       // Dynamic trust gate: when period diverges significantly from valley,
       // require stronger autocorrelation evidence. Prevents catastrophic
       // overcounting (e.g. incline_bench 8→25 at autocorrPeak=0.365).
+      // Base threshold lowered from 0.35 to 0.30 to catch weak-ACF
+      // overcounting cases (e.g. bent_over_row period=7@0.317 vs valley=10).
       const periodValleyRatio = pResult.reps / Math.max(valleyReps, 1);
       const minAutocorrForDivergence = periodValleyRatio > 2.0 ? 0.70
-        : periodValleyRatio > 1.5 ? 0.55 : 0.35;
+        : periodValleyRatio > 1.5 ? 0.55 : 0.30;
       const periodTrusted = pResult.autocorrPeak >= minAutocorrForDivergence;
 
       // Guard against ACF harmonic confusion: if valley found 2x+ more
@@ -523,6 +531,34 @@ export class RepCounter {
       // or harmonic confusion detected. Keep valley result.
     }
 
+    // ── Period-backed primary rescue ──
+    // When adaptive signal selection overrode the primary signal (via bilateral
+    // consensus or high-consistency cluster), the primary's valley count may have
+    // been correct. If the period counter (run on the selected signal) finds a
+    // cycle count that:
+    //   1. Agrees with the original primary count (within ±30% or ±2)
+    //   2. Is significantly higher than the current result (> 1.4×)
+    //   3. Has decent ACF (>= 0.40)
+    // then the override was likely wrong (alternatives were measuring a different
+    // body axis that doesn't capture the exercise motion). Use the period count.
+    //
+    // Evidence: sit_up clip 1 — primary=13 (truth=15), consensus→shoulder_Y_inv=7,
+    // period=12 at ACF=0.613. Period agrees with primary and is much closer to truth.
+    if (adaptive.name !== 'primary' && pResult && pResult.autocorrPeak >= 0.40
+        && pResult.reps > result.reps * 1.4 && pResult.reps > result.reps) {
+      const primaryDiff = Math.abs(adaptive.primaryReps - pResult.reps);
+      const primaryClose = primaryDiff <= Math.max(2, adaptive.primaryReps * 0.3);
+
+      if (primaryClose) {
+        result = {
+          ...result,
+          reps: pResult.reps,
+          valleyFrames: pResult.repFrames.slice(0, pResult.reps),
+        };
+        countMethod = 'primary-rescue';
+      }
+    }
+
     // Hysteresis validation — runs on ALL counting methods (valley, period,
     // period-up, etc). Previously only ran on 'valley', which let period-up
     // results bypass sanity checking entirely.
@@ -543,6 +579,108 @@ export class RepCounter {
           valleyFrames: hysResult.valleyFrames,
         };
         countMethod = 'hys-floor';
+      }
+    }
+
+    // ── Sub-oscillation detection ──
+    // Some exercises produce TWO local minima per rep (eccentric + concentric
+    // phases), causing systematic double-counting.
+    //
+    // Two detection modes:
+    //
+    // Mode 1 (bimodal intervals): short gaps alternating with long gaps.
+    // Short mean < 45% of long mean, 30-55% of intervals are short.
+    //
+    // Mode 2 (uniform sub-oscillation via ACF cross-check): valley intervals
+    // are roughly uniform at period T, but the ACF shows a strong peak at 2T,
+    // meaning the signal truly repeats at double the valley period. The valleys
+    // are sub-oscillation artifacts, not real reps.
+    if (result.reps >= 8 && result.valleyFrames.length >= 8) {
+      const vf = result.valleyFrames;
+      const intervals: number[] = [];
+      for (let i = 1; i < vf.length; i++) intervals.push(vf[i] - vf[i - 1]);
+
+      let subOscDetected = false;
+
+      // Mode 1: bimodal interval detection
+      if (intervals.length >= 7) {
+        const sorted = [...intervals].sort((a, b) => a - b);
+        const median = sorted[Math.floor(sorted.length / 2)];
+        const shortThreshold = median * 0.55;
+        const shortIntervals = intervals.filter(g => g < shortThreshold);
+        const longIntervals = intervals.filter(g => g >= shortThreshold);
+        const shortFraction = shortIntervals.length / intervals.length;
+        if (shortFraction >= 0.30 && shortFraction <= 0.55
+            && shortIntervals.length >= 3 && longIntervals.length >= 3) {
+          const shortMean = shortIntervals.reduce((a, b) => a + b, 0) / shortIntervals.length;
+          const longMean = longIntervals.reduce((a, b) => a + b, 0) / longIntervals.length;
+          if (shortMean < longMean * 0.45) {
+            subOscDetected = true;
+          }
+        }
+      }
+
+      // Mode 2: ACF multi-peak analysis for uniform sub-oscillation.
+      // When valley count is high and intervals are uniform (not bimodal),
+      // check the ACF for a secondary peak at ~2× the primary period.
+      //
+      // Key discriminator: for genuine fast exercises (battle_rope, lunge),
+      // the ACF peak at T is the STRONGEST peak. For sub-oscillation, the
+      // ACF peak at 2T (the true fundamental) is stronger than or comparable
+      // to the peak at T. This is because sub-oscillation introduces phase
+      // asymmetry that weakens the T peak relative to the 2T peak.
+      //
+      // Threshold: secondary peak at ~2T must be STRONGER than the primary
+      // peak at T. This is very conservative — only fires when the 2T peak
+      // genuinely dominates, ruling out harmonic echo (always weaker).
+      if (!subOscDetected && intervals.length >= 5) {
+        const meanIntervalCheck = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        // Only check when mean interval >= 7 frames (0.7s at 10fps).
+        // Shorter intervals are near the ACF reliability limit where
+        // the 2T peak can appear stronger due to Nyquist degradation
+        // of the T peak (false positive on genuinely fast exercises
+        // like battle_rope at ~5 frames/rep).
+        if (meanIntervalCheck < 7) { /* skip — too fast for reliable 2T check */ }
+        else {
+        const bounds = getRepPeriodBounds(this._exerciseKey);
+        // Search up to 2× max period to find 2T peaks that may exceed
+        // the standard period bounds. E.g. dumbbell_fly T=2.0s, 2T=4.1s
+        // exceeds max=4.0s in standard range.
+        const extendedMax = Math.min(bounds.max * 2, N / (2 * this._fps));
+        const allPeaks = getAllACFPeaks(signal, this._fps, bounds.min, extendedMax);
+
+        if (allPeaks.length >= 1) {
+          const meanInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+          const tolerance = Math.max(2, Math.round(meanInterval * 0.2));
+
+          // Find the peak closest to the mean valley interval (the "T" peak)
+          const tPeak = allPeaks.find(p =>
+            Math.abs(p.lag - meanInterval) <= tolerance
+          );
+
+          // Find a peak near 2× the mean interval (the "2T" peak)
+          const doubleLag = meanInterval * 2;
+          const doubleTolerance = Math.max(3, Math.round(doubleLag * 0.2));
+          const twoPeak = allPeaks.find(p =>
+            Math.abs(p.lag - doubleLag) <= doubleTolerance
+          );
+
+          // Sub-oscillation: 2T peak exists AND is at least as strong as
+          // T peak. For genuine periodicity, harmonic echo at 2T is always
+          // weaker (h_ratio < 1.0). For sub-oscillation, 2T is the true
+          // fundamental and is stronger (h_ratio > 1.0).
+          // Data: dumbbell_fly h_ratio=1.98, controls all < 0.92.
+          if (tPeak && twoPeak && twoPeak.height >= tPeak.height * 1.0) {
+            subOscDetected = true;
+          }
+        }
+        } // end else (meanIntervalCheck >= 7)
+      }
+
+      if (subOscDetected) {
+        const correctedReps = Math.ceil(result.reps / 2);
+        result = { ...result, reps: correctedReps };
+        countMethod += ':sub-osc';
       }
     }
 

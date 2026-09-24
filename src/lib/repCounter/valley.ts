@@ -31,6 +31,9 @@ interface AdaptiveResult {
   result: ValleyResult;
   name: string;
   diagCandidates: DiagCandidate[];
+  primaryReps: number;
+  primarySignal: number[];
+  primaryInvert: boolean;
 }
 
 /**
@@ -155,19 +158,21 @@ export function adaptiveSignalSelect(
   }
 
   // ── Bilateral flicker consensus detection ──
-  // bestSide (Math.min) flips between left/right sides frame-to-frame when
-  // both limbs are visible, creating false valleys that ~double the count.
   // The scoring function (reps × consistency) inherently favors overcounted
-  // signals because 2× reps at moderate consistency outscores correct reps
-  // at high consistency.
+  // signals: 2× reps at moderate consistency outscores correct reps at high
+  // consistency. This creates systematic overcounting from:
+  //   - bestSide (Math.min) flipping between left/right sides frame-to-frame
+  //   - Sub-oscillation (eccentric+concentric phases creating 2 valleys/rep)
   //
-  // Detection: when the winner's count is ≥ 1.8× the median of alternatives
+  // Detection: when the winner's count is ≥ 1.7× the median of alternatives
   // that found ≥ 3 reps, and ≥ 3 alternatives cluster within ±30% of their
-  // median, the winner is likely double-counting. In that case, pick the
-  // best-scoring candidate from the consensus cluster.
+  // median, the winner is likely overcounting. Pick the best-scoring
+  // candidate from the consensus cluster.
   //
-  // Evidence: deficit_push_up #9 (primary=18, 6 alts agree on ~6, expected 7),
-  // lying_bicep_curl #7 (primary=12, 6 alts agree on ~6, expected 7).
+  // Threshold 1.7 is conservative: only catches extreme cases like bilateral
+  // flicker (winner=18, median=6). Lower thresholds (1.3) were tested but
+  // cause 13 regressions vs 4 improvements because they override correct
+  // winners when alternatives systematically undercount due to occlusion.
   {
     const altsWithReps = altResults.filter(a => a.reps >= 3);
     if (altsWithReps.length >= 4) {
@@ -228,5 +233,8 @@ export function adaptiveSignalSelect(
     result: bestResult,
     name: bestCand.name,
     diagCandidates,
+    primaryReps: primaryCount.reps,
+    primarySignal: primarySmoothed,
+    primaryInvert: exInv,
   };
 }

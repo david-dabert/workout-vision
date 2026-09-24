@@ -1,0 +1,1197 @@
+{
+  "date": "2026-09-24T08:01:00.984Z",
+  "gitHash": "91e1e4e",
+  "countix": {
+    "stats": {
+      "total": 107,
+      "exact": 31,
+      "withinOne": 71,
+      "catastrophic": 14,
+      "catastrophicClips": [
+        "dumbbell_fly_u7qKtYIgsUY_5reps.mp4",
+        "leg_curl_AKL-p4U5HH0_5reps.mp4",
+        "sissy_squat_9FjwBMw5uMA_5reps.mp4",
+        "bent_over_row_cu7XrWm0BUc_5reps.mp4",
+        "crunch_9T4WQGlKCRk_8reps.mp4",
+        "glute_bridge_Tj_4iwy9EbI_5reps.mp4",
+        "goblet_squat_dxtgqrJC6gI_6reps.mp4",
+        "incline_bench_press_DutO2wEtqaw_8reps.mp4",
+        "jumping_jack_iSSAk4XCsRA_15reps.mp4",
+        "leg_press_YpYaaXGw3DA_8reps.mp4",
+        "mountain_climber_kLh-uczlPLg_10reps.mp4",
+        "mountain_climber_ruQ4ZwncXBg_10reps.mp4",
+        "romanian_deadlift_7j-2w4-P14I_6reps.mp4",
+        "upright_row_aYLFVUgcuik_6reps.mp4"
+      ],
+      "mae": 1.61
+    },
+    "perLift": {
+      "battle_rope": {
+        "total": 4,
+        "exact": 3,
+        "withinOne": 3,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.5
+      },
+      "bench_press": {
+        "total": 4,
+        "exact": 1,
+        "withinOne": 3,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "bicep_curl": {
+        "total": 4,
+        "exact": 3,
+        "withinOne": 4,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.25
+      },
+      "front_raise": {
+        "total": 5,
+        "exact": 4,
+        "withinOne": 5,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.2
+      },
+      "lunge": {
+        "total": 5,
+        "exact": 2,
+        "withinOne": 5,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.6
+      },
+      "pull_up": {
+        "total": 5,
+        "exact": 2,
+        "withinOne": 5,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.6
+      },
+      "push_up": {
+        "total": 5,
+        "exact": 3,
+        "withinOne": 4,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.6
+      },
+      "sit_up": {
+        "total": 4,
+        "exact": 0,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.5
+      },
+      "squat": {
+        "total": 5,
+        "exact": 2,
+        "withinOne": 4,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.8
+      },
+      "assisted_pull_up": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "deficit_push_up": {
+        "total": 2,
+        "exact": 1,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "ez_bar_curl": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "face_pull": {
+        "total": 3,
+        "exact": 1,
+        "withinOne": 3,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.67
+      },
+      "lat_pulldown": {
+        "total": 1,
+        "exact": 1,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0
+      },
+      "lateral_raise": {
+        "total": 3,
+        "exact": 0,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.33
+      },
+      "lying_bicep_curl": {
+        "total": 2,
+        "exact": 1,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "machine_shoulder_press": {
+        "total": 3,
+        "exact": 1,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "machine_tricep_extension": {
+        "total": 3,
+        "exact": 2,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.67
+      },
+      "sissy_squat": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "sissy_squat_9FjwBMw5uMA_5reps.mp4"
+        ],
+        "mae": 2
+      },
+      "deadlift": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "dumbbell_fly": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "dumbbell_fly_u7qKtYIgsUY_5reps.mp4"
+        ],
+        "mae": 3
+      },
+      "hip_thrust": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "leg_curl": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "leg_curl_AKL-p4U5HH0_5reps.mp4"
+        ],
+        "mae": 4
+      },
+      "leg_extension": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 2
+      },
+      "overhead_press": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "cable_tricep_pushdown": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "bent_over_row": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "bent_over_row_cu7XrWm0BUc_5reps.mp4"
+        ],
+        "mae": 3.5
+      },
+      "bulgarian_split_squat": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 2
+      },
+      "calf_raise": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.5
+      },
+      "chin_up": {
+        "total": 2,
+        "exact": 1,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 0.5
+      },
+      "crunch": {
+        "total": 2,
+        "exact": 1,
+        "withinOne": 1,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "crunch_9T4WQGlKCRk_8reps.mp4"
+        ],
+        "mae": 3
+      },
+      "dip": {
+        "total": 2,
+        "exact": 1,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "front_squat": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.5
+      },
+      "glute_bridge": {
+        "total": 2,
+        "exact": 1,
+        "withinOne": 1,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "glute_bridge_Tj_4iwy9EbI_5reps.mp4"
+        ],
+        "mae": 1.5
+      },
+      "goblet_squat": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "goblet_squat_dxtgqrJC6gI_6reps.mp4"
+        ],
+        "mae": 2.5
+      },
+      "hammer_curl": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.5
+      },
+      "incline_bench_press": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "incline_bench_press_DutO2wEtqaw_8reps.mp4"
+        ],
+        "mae": 17
+      },
+      "jumping_jack": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "jumping_jack_iSSAk4XCsRA_15reps.mp4"
+        ],
+        "mae": 12
+      },
+      "leg_press": {
+        "total": 1,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "leg_press_YpYaaXGw3DA_8reps.mp4"
+        ],
+        "mae": 7
+      },
+      "mountain_climber": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 0,
+        "catastrophic": 2,
+        "catastrophicClips": [
+          "mountain_climber_kLh-uczlPLg_10reps.mp4",
+          "mountain_climber_ruQ4ZwncXBg_10reps.mp4"
+        ],
+        "mae": 8.5
+      },
+      "pike_push_up": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 2,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1
+      },
+      "romanian_deadlift": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "romanian_deadlift_7j-2w4-P14I_6reps.mp4"
+        ],
+        "mae": 2
+      },
+      "seated_row": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.5
+      },
+      "tricep_extension": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 0,
+        "catastrophicClips": [],
+        "mae": 1.5
+      },
+      "upright_row": {
+        "total": 2,
+        "exact": 0,
+        "withinOne": 1,
+        "catastrophic": 1,
+        "catastrophicClips": [
+          "upright_row_aYLFVUgcuik_6reps.mp4"
+        ],
+        "mae": 3
+      }
+    },
+    "clips": [
+      {
+        "file": "battle_rope_bvlg9_Di1vI_14reps.mp4",
+        "exercise": "battle_rope",
+        "expected": 14,
+        "actual": 14,
+        "error": 0
+      },
+      {
+        "file": "battle_rope_N0LntA705tY_9reps.mp4",
+        "exercise": "battle_rope",
+        "expected": 9,
+        "actual": 9,
+        "error": 0
+      },
+      {
+        "file": "battle_rope_BuhAROfTtx8_9reps.mp4",
+        "exercise": "battle_rope",
+        "expected": 9,
+        "actual": 11,
+        "error": 2
+      },
+      {
+        "file": "battle_rope_k3OYki3qGs0_9reps.mp4",
+        "exercise": "battle_rope",
+        "expected": 9,
+        "actual": 9,
+        "error": 0
+      },
+      {
+        "file": "bench_press_Q8hAgtaL-5s_5reps.mp4",
+        "exercise": "bench_press",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "bench_press_MLLbKM7T41Y_6reps.mp4",
+        "exercise": "bench_press",
+        "expected": 6,
+        "actual": 4,
+        "error": -2
+      },
+      {
+        "file": "bench_press_FyYRvnHdOgU_5reps.mp4",
+        "exercise": "bench_press",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "bench_press_E9KZOVuBRfA_11reps.mp4",
+        "exercise": "bench_press",
+        "expected": 11,
+        "actual": 10,
+        "error": -1
+      },
+      {
+        "file": "bench_press_gWszV_R2qsk_6reps.mp4",
+        "exercise": "bench_press",
+        "expected": 6,
+        "actual": 0,
+        "error": -6,
+        "note": "extraction failure: 9 frames for 6 reps (need ≥18)"
+      },
+      {
+        "file": "bicep_curl_APTrC7Yce1A_6reps.mp4",
+        "exercise": "bicep_curl",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "bicep_curl_G__9za6MzoU_6reps.mp4",
+        "exercise": "bicep_curl",
+        "expected": 6,
+        "actual": 5,
+        "error": -1
+      },
+      {
+        "file": "bicep_curl_bl0J_8pKDVk_7reps.mp4",
+        "exercise": "bicep_curl",
+        "expected": 7,
+        "actual": 7,
+        "error": 0
+      },
+      {
+        "file": "bicep_curl_ieps1GV1aeI_6reps.mp4",
+        "exercise": "bicep_curl",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "front_raise_2h2EMB7Q4KQ_7reps.mp4",
+        "exercise": "front_raise",
+        "expected": 7,
+        "actual": 7,
+        "error": 0
+      },
+      {
+        "file": "front_raise_N5a2yRphkcs_6reps.mp4",
+        "exercise": "front_raise",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "front_raise_JWPJRoehLxg_5reps.mp4",
+        "exercise": "front_raise",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "front_raise_6gdNjUNfctI_6reps.mp4",
+        "exercise": "front_raise",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "front_raise_XV3_pSSGqbA_5reps.mp4",
+        "exercise": "front_raise",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "lunge_G3HrMXGn4k0_6reps.mp4",
+        "exercise": "lunge",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "lunge_-2zA7B3u1r8_6reps.mp4",
+        "exercise": "lunge",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "lunge_5DHKLIb6QpI_5reps.mp4",
+        "exercise": "lunge",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "lunge_04s5S8V2Rx0_5reps.mp4",
+        "exercise": "lunge",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "lunge_SQ_4MVrxuH8_9reps.mp4",
+        "exercise": "lunge",
+        "expected": 9,
+        "actual": 10,
+        "error": 1
+      },
+      {
+        "file": "pull_up_efQJ44Mk6BM_5reps.mp4",
+        "exercise": "pull_up",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "pull_up_y2OiEe3K-8c_7reps.mp4",
+        "exercise": "pull_up",
+        "expected": 7,
+        "actual": 7,
+        "error": 0
+      },
+      {
+        "file": "pull_up_Uj7VQlHIltM_5reps.mp4",
+        "exercise": "pull_up",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "pull_up_HmwfLUgHZIc_5reps.mp4",
+        "exercise": "pull_up",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "pull_up_aiJcIGNepAM_8reps.mp4",
+        "exercise": "pull_up",
+        "expected": 8,
+        "actual": 7,
+        "error": -1
+      },
+      {
+        "file": "push_up_CnXUdZq7bBc_5reps.mp4",
+        "exercise": "push_up",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "push_up_Py0A9wWkWao_5reps.mp4",
+        "exercise": "push_up",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "push_up_E0p8QDRa0Fg_8reps.mp4",
+        "exercise": "push_up",
+        "expected": 8,
+        "actual": 10,
+        "error": 2
+      },
+      {
+        "file": "push_up_u9XyJmAGV0c_6reps.mp4",
+        "exercise": "push_up",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "push_up_miNX6dg_arc_6reps.mp4",
+        "exercise": "push_up",
+        "expected": 6,
+        "actual": 7,
+        "error": 1
+      },
+      {
+        "file": "sit_up_h_HmJ7f7C1I_15reps.mp4",
+        "exercise": "sit_up",
+        "expected": 15,
+        "actual": 14,
+        "error": -1
+      },
+      {
+        "file": "sit_up_TAfiVPo1vg8_5reps.mp4",
+        "exercise": "sit_up",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "sit_up_c2ovcn-VOyI_5reps.mp4",
+        "exercise": "sit_up",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "sit_up_9bIwX1vZrXg_5reps.mp4",
+        "exercise": "sit_up",
+        "expected": 5,
+        "actual": 0,
+        "error": -5,
+        "note": "extraction failure: 3 frames for 5 reps (need ≥15)"
+      },
+      {
+        "file": "sit_up_q0bQropuof0_6reps.mp4",
+        "exercise": "sit_up",
+        "expected": 6,
+        "actual": 4,
+        "error": -2
+      },
+      {
+        "file": "squat_VO3ts38ZCTk_5reps.mp4",
+        "exercise": "squat",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "squat_QQPv17nfR_E_6reps.mp4",
+        "exercise": "squat",
+        "expected": 6,
+        "actual": 5,
+        "error": -1
+      },
+      {
+        "file": "squat_rRUaSaoVlBc_8reps.mp4",
+        "exercise": "squat",
+        "expected": 8,
+        "actual": 6,
+        "error": -2
+      },
+      {
+        "file": "squat_hVI6VQIS2Yo_7reps.mp4",
+        "exercise": "squat",
+        "expected": 7,
+        "actual": 6,
+        "error": -1
+      },
+      {
+        "file": "squat_dptApZvEt5Y_6reps.mp4",
+        "exercise": "squat",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "assisted_pull_up_AsUBri1uYzo_5reps.mp4",
+        "exercise": "assisted_pull_up",
+        "expected": 6,
+        "actual": 7,
+        "error": 1
+      },
+      {
+        "file": "assisted_pull_up_wFj808u2HWU_8reps.mp4",
+        "exercise": "assisted_pull_up",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "deficit_push_up_ad4gF84rj8A_5reps.mp4",
+        "exercise": "deficit_push_up",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "deficit_push_up_gmNlqsE3Onc_5reps.mp4",
+        "exercise": "deficit_push_up",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "ez_bar_curl_LaO2vPi6o_w_6reps.mp4",
+        "exercise": "ez_bar_curl",
+        "expected": 6,
+        "actual": 7,
+        "error": 1
+      },
+      {
+        "file": "ez_bar_curl_nzV07kb4xYA_6reps.mp4",
+        "exercise": "ez_bar_curl",
+        "expected": 6,
+        "actual": 5,
+        "error": -1
+      },
+      {
+        "file": "face_pull_0Po47vvj9g4_5reps.mp4",
+        "exercise": "face_pull",
+        "expected": 7,
+        "actual": 7,
+        "error": 0
+      },
+      {
+        "file": "face_pull_8CGMuud1ANw_5reps.mp4",
+        "exercise": "face_pull",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "face_pull_F0ma4r2jqBo_5reps.mp4",
+        "exercise": "face_pull",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "lat_pulldown_JGeRYIZdojU_5reps.mp4",
+        "exercise": "lat_pulldown",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "lateral_raise_XPPfnSEATJA_6reps.mp4",
+        "exercise": "lateral_raise",
+        "expected": 6,
+        "actual": 4,
+        "error": -2
+      },
+      {
+        "file": "lateral_raise_bYtl-iUUDww_8reps.mp4",
+        "exercise": "lateral_raise",
+        "expected": 6,
+        "actual": 7,
+        "error": 1
+      },
+      {
+        "file": "lateral_raise_d7n8ycGfdFc_10reps.mp4",
+        "exercise": "lateral_raise",
+        "expected": 10,
+        "actual": 11,
+        "error": 1
+      },
+      {
+        "file": "lying_bicep_curl_Q7RyGuOAFKM_8reps.mp4",
+        "exercise": "lying_bicep_curl",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "lying_bicep_curl_tMEGqKuOa-M_5reps.mp4",
+        "exercise": "lying_bicep_curl",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "machine_shoulder_press_GcY6TZxfS0k_5reps.mp4",
+        "exercise": "machine_shoulder_press",
+        "expected": 3,
+        "actual": 3,
+        "error": 0
+      },
+      {
+        "file": "machine_shoulder_press_OLqZDUUD2b0_5reps.mp4",
+        "exercise": "machine_shoulder_press",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "machine_shoulder_press_pT4Ebx2ra1A_8reps.mp4",
+        "exercise": "machine_shoulder_press",
+        "expected": 8,
+        "actual": 10,
+        "error": 2
+      },
+      {
+        "file": "machine_tricep_extension_GwOKIDT4h60_8reps.mp4",
+        "exercise": "machine_tricep_extension",
+        "expected": 6,
+        "actual": 4,
+        "error": -2
+      },
+      {
+        "file": "machine_tricep_extension_T_r1sB7Q4X0_8reps.mp4",
+        "exercise": "machine_tricep_extension",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "machine_tricep_extension_k0iX2cUy7AE_5reps.mp4",
+        "exercise": "machine_tricep_extension",
+        "expected": 7,
+        "actual": 7,
+        "error": 0
+      },
+      {
+        "file": "sissy_squat_q-UUgY3nr9k_6reps.mp4",
+        "exercise": "sissy_squat",
+        "expected": 6,
+        "actual": 5,
+        "error": -1
+      },
+      {
+        "file": "deadlift_AweC3UaM14o_5reps.mp4",
+        "exercise": "deadlift",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "dumbbell_fly_u7qKtYIgsUY_5reps.mp4",
+        "exercise": "dumbbell_fly",
+        "expected": 5,
+        "actual": 8,
+        "error": 3
+      },
+      {
+        "file": "hip_thrust_Hc7y60n-JTU_5reps.mp4",
+        "exercise": "hip_thrust",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "leg_curl_AKL-p4U5HH0_5reps.mp4",
+        "exercise": "leg_curl",
+        "expected": 5,
+        "actual": 9,
+        "error": 4
+      },
+      {
+        "file": "leg_extension_GAwVUVe5aIw_8reps.mp4",
+        "exercise": "leg_extension",
+        "expected": 8,
+        "actual": 10,
+        "error": 2
+      },
+      {
+        "file": "overhead_press_cGnhixvC8uA_5reps.mp4",
+        "exercise": "overhead_press",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "sissy_squat_9FjwBMw5uMA_5reps.mp4",
+        "exercise": "sissy_squat",
+        "expected": 5,
+        "actual": 2,
+        "error": -3
+      },
+      {
+        "file": "tricep_pushdown_6Fzep104f0s_5reps.mp4",
+        "exercise": "cable_tricep_pushdown",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "tricep_pushdown_LXkCrxn3caQ_5reps.mp4",
+        "exercise": "cable_tricep_pushdown",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "bent_over_row_6gvmcqr226U_5reps.mp4",
+        "exercise": "bent_over_row",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "bent_over_row_cu7XrWm0BUc_5reps.mp4",
+        "exercise": "bent_over_row",
+        "expected": 5,
+        "actual": 10,
+        "error": 5
+      },
+      {
+        "file": "bulgarian_split_squat_Fmjj7wFJWRE_5reps.mp4",
+        "exercise": "bulgarian_split_squat",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "bulgarian_split_squat_TEXl2b3__S4_5reps.mp4",
+        "exercise": "bulgarian_split_squat",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "calf_raise_eMTy3qylqnE_6reps.mp4",
+        "exercise": "calf_raise",
+        "expected": 6,
+        "actual": 5,
+        "error": -1
+      },
+      {
+        "file": "calf_raise_snRRo5LhqBc_6reps.mp4",
+        "exercise": "calf_raise",
+        "expected": 6,
+        "actual": 4,
+        "error": -2
+      },
+      {
+        "file": "chin_up_u5h9TM9KAh0_5reps.mp4",
+        "exercise": "chin_up",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "chin_up_uoBfONI94kI_5reps.mp4",
+        "exercise": "chin_up",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "crunch_9T4WQGlKCRk_8reps.mp4",
+        "exercise": "crunch",
+        "expected": 8,
+        "actual": 14,
+        "error": 6
+      },
+      {
+        "file": "crunch_T8Cymd8X71Q_5reps.mp4",
+        "exercise": "crunch",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "dip_PNTB_BeqiMs_5reps.mp4",
+        "exercise": "dip",
+        "expected": 5,
+        "actual": 5,
+        "error": 0
+      },
+      {
+        "file": "dip_ejENWRxmo0Q_5reps.mp4",
+        "exercise": "dip",
+        "expected": 5,
+        "actual": 7,
+        "error": 2
+      },
+      {
+        "file": "front_squat_CE0uSrr4SYQ_5reps.mp4",
+        "exercise": "front_squat",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "front_squat_Q1Ypb8ZNzI4_5reps.mp4",
+        "exercise": "front_squat",
+        "expected": 5,
+        "actual": 3,
+        "error": -2
+      },
+      {
+        "file": "glute_bridge_Tj_4iwy9EbI_5reps.mp4",
+        "exercise": "glute_bridge",
+        "expected": 5,
+        "actual": 8,
+        "error": 3
+      },
+      {
+        "file": "glute_bridge_Xp33YgPZgns_6reps.mp4",
+        "exercise": "glute_bridge",
+        "expected": 6,
+        "actual": 6,
+        "error": 0
+      },
+      {
+        "file": "goblet_squat_dxtgqrJC6gI_6reps.mp4",
+        "exercise": "goblet_squat",
+        "expected": 6,
+        "actual": 3,
+        "error": -3
+      },
+      {
+        "file": "goblet_squat_pEGfGwp6IEA_5reps.mp4",
+        "exercise": "goblet_squat",
+        "expected": 5,
+        "actual": 3,
+        "error": -2
+      },
+      {
+        "file": "hammer_curl_0yVwCMwRkss_5reps.mp4",
+        "exercise": "hammer_curl",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "hammer_curl_B8O6Ed_l6xw_6reps.mp4",
+        "exercise": "hammer_curl",
+        "expected": 6,
+        "actual": 4,
+        "error": -2
+      },
+      {
+        "file": "incline_bench_press_DutO2wEtqaw_8reps.mp4",
+        "exercise": "incline_bench_press",
+        "expected": 8,
+        "actual": 25,
+        "error": 17
+      },
+      {
+        "file": "jumping_jack_iSSAk4XCsRA_15reps.mp4",
+        "exercise": "jumping_jack",
+        "expected": 15,
+        "actual": 3,
+        "error": -12
+      },
+      {
+        "file": "leg_press_YpYaaXGw3DA_8reps.mp4",
+        "exercise": "leg_press",
+        "expected": 8,
+        "actual": 15,
+        "error": 7
+      },
+      {
+        "file": "mountain_climber_kLh-uczlPLg_10reps.mp4",
+        "exercise": "mountain_climber",
+        "expected": 10,
+        "actual": 19,
+        "error": 9
+      },
+      {
+        "file": "mountain_climber_ruQ4ZwncXBg_10reps.mp4",
+        "exercise": "mountain_climber",
+        "expected": 10,
+        "actual": 2,
+        "error": -8
+      },
+      {
+        "file": "pike_push_up_Dh5r4KMEKgo_5reps.mp4",
+        "exercise": "pike_push_up",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "pike_push_up_XckEEwa1BPI_5reps.mp4",
+        "exercise": "pike_push_up",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "romanian_deadlift_7j-2w4-P14I_6reps.mp4",
+        "exercise": "romanian_deadlift",
+        "expected": 6,
+        "actual": 3,
+        "error": -3
+      },
+      {
+        "file": "romanian_deadlift_xgusDooVfKU_5reps.mp4",
+        "exercise": "romanian_deadlift",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "seated_row_NYok5zjbDcw_6reps.mp4",
+        "exercise": "seated_row",
+        "expected": 6,
+        "actual": 7,
+        "error": 1
+      },
+      {
+        "file": "seated_row_TeFo51Q_Nsc_6reps.mp4",
+        "exercise": "seated_row",
+        "expected": 6,
+        "actual": 8,
+        "error": 2
+      },
+      {
+        "file": "tricep_extension_a9oPnZReIRE_5reps.mp4",
+        "exercise": "tricep_extension",
+        "expected": 5,
+        "actual": 3,
+        "error": -2
+      },
+      {
+        "file": "tricep_extension_q5X9thiKofE_5reps.mp4",
+        "exercise": "tricep_extension",
+        "expected": 5,
+        "actual": 6,
+        "error": 1
+      },
+      {
+        "file": "upright_row_Ub6QruNKfbY_5reps.mp4",
+        "exercise": "upright_row",
+        "expected": 5,
+        "actual": 4,
+        "error": -1
+      },
+      {
+        "file": "upright_row_aYLFVUgcuik_6reps.mp4",
+        "exercise": "upright_row",
+        "expected": 6,
+        "actual": 11,
+        "error": 5
+      }
+    ]
+  },
+  "realPhone": {
+    "stats": {
+      "total": 0,
+      "exact": 0,
+      "withinOne": 0,
+      "catastrophic": 0,
+      "catastrophicClips": [],
+      "mae": 0
+    },
+    "perLift": {},
+    "clips": []
+  }
+}

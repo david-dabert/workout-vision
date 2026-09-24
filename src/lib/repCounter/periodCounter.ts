@@ -267,3 +267,39 @@ export function periodCount(
 
   return result;
 }
+
+/**
+ * Return all ACF peaks in the physiological band, sorted by height.
+ *
+ * Used for multi-candidate period analysis: when the primary period
+ * (selectFundamental) and valley counter agree on a high count, a
+ * secondary peak at ~2× the primary lag may represent the true rep
+ * period (the primary being sub-oscillation).
+ */
+export function getAllACFPeaks(
+  signal: number[],
+  fps: number,
+  minPeriodS: number,
+  maxPeriodS: number,
+): { lag: number; height: number }[] {
+  const N = signal.length;
+  if (N < 12) return [];
+
+  let mean = 0;
+  for (let i = 0; i < N; i++) mean += signal[i];
+  mean /= N;
+  let variance = 0;
+  for (let i = 0; i < N; i++) variance += (signal[i] - mean) ** 2;
+  variance /= N;
+  if (variance < 1e-8) return [];
+
+  const minLag = Math.max(3, Math.round(fps * minPeriodS));
+  const maxLag = Math.min(Math.floor(N / 2), Math.round(fps * maxPeriodS));
+  if (minLag >= maxLag) return [];
+
+  const acf = computeACF(signal, minLag, maxLag);
+  if (acf.length === 0) return [];
+
+  return findACFPeaks(acf, minLag, maxLag, 0.15)
+    .sort((a, b) => b.height - a.height);
+}

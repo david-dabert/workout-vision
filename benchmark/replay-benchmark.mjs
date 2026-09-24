@@ -391,13 +391,29 @@ for (const video of cache) {
     // Dump signal diagnostics for exercises with large errors
     if (Math.abs(entry.error) >= 2) {
       const cycles = diag.cycles || {};
+      const cycleList = cycles.cycles || [];
+      // Compute valley-to-valley intervals for sub-oscillation detection
+      const vFrames = cycleList.map(c => c.start);
+      const intervals = [];
+      for (let k = 1; k < vFrames.length; k++) intervals.push(vFrames[k] - vFrames[k-1]);
+      // Check alternating pattern
+      let intervalRatio = 0;
+      if (intervals.length >= 3) {
+        const oddI = intervals.filter((_,k) => k % 2 === 0);
+        const evenI = intervals.filter((_,k) => k % 2 === 1);
+        const oddM = oddI.reduce((a,b)=>a+b,0)/oddI.length;
+        const evenM = evenI.reduce((a,b)=>a+b,0)/evenI.length;
+        intervalRatio = Math.max(oddM,evenM) / Math.max(Math.min(oddM,evenM), 0.1);
+      }
       entry._diag = {
         observedRange: diag.observedRange,
         signalRange: cycles.signalRange,
         repsFromCycles: cycles.reps,
         periodFrames: cycles.periodFrames,
-        numCycles: cycles.cycles ? cycles.cycles.length : 0,
-        cycleAmplitudes: cycles.cycles ? cycles.cycles.map(c => Math.round(c.amplitude)) : [],
+        numCycles: cycleList.length,
+        cycleAmplitudes: cycleList.map(c => Math.round(c.amplitude)),
+        intervals,
+        intervalRatio: Math.round(intervalRatio * 100) / 100,
       };
     }
     results.push(entry);

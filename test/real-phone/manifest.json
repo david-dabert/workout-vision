@@ -1,0 +1,58 @@
+{
+  "name": "WorkoutVision Real-Phone Benchmark",
+  "description": "Clips filmed by David on his iPhone, with human-counted ground truth.",
+  "source": "david-phone",
+  "rule": "R1: never modify a label, never delete a clip, labels come from David only.",
+  "clips": [
+    {
+      "file": "bench_press_7_angle_mufhcy60.mov",
+      "type": "video",
+      "exercise": "bench_press",
+      "reps": 7,
+      "view": "angle",
+      "source": "david-phone",
+      "addedAt": "2026-09-24",
+      "sizeBytes": 68482222
+    },
+    {
+      "file": "bicep_curl_7_side_mufhf3wy.mov",
+      "type": "video",
+      "exercise": "bicep_curl",
+      "reps": 7,
+      "view": "side",
+      "source": "david-phone",
+      "addedAt": "2026-09-24",
+      "sizeBytes": 71735378
+    },
+    {
+      "file": "lat_pulldown_10_front_mufhlh4o.mov",
+      "type": "video",
+      "exercise": "lat_pulldown",
+      "reps": 10,
+      "view": "front",
+      "source": "david-phone",
+      "addedAt": "2026-09-24",
+      "sizeBytes": 37013204
+    },
+    {
+      "file": "lateral_raise_10_front_mufhhbun.mov",
+      "type": "video",
+      "exercise": "lateral_raise",
+      "reps": 10,
+      "view": "front",
+      "source": "david-phone",
+      "addedAt": "2026-09-24",
+      "sizeBytes": 93100828
+    },
+    {
+      "file": "overhead_press_10_front_mufhjkku.mov",
+      "type": "video",
+      "exercise": "overhead_press",
+      "reps": 10,
+      "view": "front",
+      "source": "david-phone",
+      "addedAt": "2026-09-24",
+      "sizeBytes": 78374114
+    }
+  ]
+}
