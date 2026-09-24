@@ -233,13 +233,15 @@ export function runInputQualityGate({
   const reasons = [];
   let hardRefuse = false;
 
-  // Hard refuse: person not detected in enough frames
+  // ── Hard refuse: only two conditions warrant blocking the result entirely ──
+
+  // 1. Person not detected in enough frames (unvalidated threshold: 60%)
   if (poseDetectionRate != null && poseDetectionRate < 0.6) {
     reasons.push('person_not_visible');
     hardRefuse = true;
   }
 
-  // Hard refuse: no repeated movement detected at all (0 reps + low amplitude)
+  // 2. No repeated movement detected at all (0 reps + low amplitude)
   if (reps === 0) {
     const minAmp = MIN_AMPLITUDE[exercise] ?? DEFAULT_MIN_AMPLITUDE;
     const effectiveAmplitude = medianRepAmplitude != null ? medianRepAmplitude : observedRange;
@@ -249,7 +251,9 @@ export function runInputQualityGate({
     }
   }
 
-  // Soft warnings (show count with confirm buttons, no grade)
+  // ── Soft warnings: show "We counted N. Is that right?" with named reason ──
+  // These no longer block the result; they flag suspect counts for user confirmation.
+
   if (detectionLowConfidence) {
     reasons.push('detection_low_confidence');
   }

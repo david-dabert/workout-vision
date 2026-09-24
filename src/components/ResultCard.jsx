@@ -369,8 +369,10 @@ function ResultCard({ result, onReplay }) {
     }
   }, [result.workoutId, reps, result.machineReps, result.weight, result.frames, result.exercise, result.fps, result.confidence, profile]);
 
-  // Score reveal animation: count up from 0 using shared hook
-  const displayScore = useCountUp(formScore ?? 0, { duration: 800, delay: 200 });
+  // Form score is hidden until the scoring system is validated against ground truth.
+  // Rep counts and confirmations are still shown.
+  const formScoreValidated = false; // flip to true when form scoring is validated
+  const displayScore = useCountUp(formScoreValidated ? (formScore ?? 0) : 0, { duration: 800, delay: 200 });
 
   // Insufficient footage: two tiers
   // Hard refuse: person not visible or no movement at all
@@ -450,25 +452,29 @@ function ResultCard({ result, onReplay }) {
 
       {/* Centered grade badge — the first thing you see */}
       <div className={s.heroGrade}>
-        <span
-          className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''} ${s.heroGradeBadge}`}
-        >
-          {grade}
-          {(grade === 'A' || grade === 'A+') && (
-            <div className={s.shimmerOverlay} />
-          )}
-        </span>
+        {formScoreValidated && (
+          <span
+            className={`score-badge ${cls} ${revealed ? 'result-badge-reveal' : ''} ${s.heroGradeBadge}`}
+          >
+            {grade}
+            {(grade === 'A' || grade === 'A+') && (
+              <div className={s.shimmerOverlay} />
+            )}
+          </span>
+        )}
         <h3 className={s.heroExerciseName}>{displayName}</h3>
-        <div className={s.heroScoreLine}>
-          {formScore != null && (
-            <span className={s.heroScore}>
-              <span className={formScore >= 80 ? s.scoreGood : formScore >= 60 ? s.scoreOk : s.scorePoor}>
-                {displayScore}
+        {formScoreValidated && (
+          <div className={s.heroScoreLine}>
+            {formScore != null && (
+              <span className={s.heroScore}>
+                <span className={formScore >= 80 ? s.scoreGood : formScore >= 60 ? s.scoreOk : s.scorePoor}>
+                  {displayScore}
+                </span>
+                <span className={s.heroScoreUnit}>/100</span>
               </span>
-              <span className={s.heroScoreUnit}>/100</span>
-            </span>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Compact stats row */}

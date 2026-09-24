@@ -49,7 +49,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
   const { accepted: privacyAccepted, accept: acceptPrivacy, showModal: showPrivacyModal } = usePrivacyGate();
   const { isReady: workerReady, isSupported: workerSupported, initWorker, detectFrame, resetWorker, reinitWorker, disposeWorker } = usePoseWorker();
   const [queue, setQueue] = useState([]);
-  const [exercise, setExercise] = useState(preSelectedExercise || '__auto__');
+  const [exercise, setExercise] = useState(preSelectedExercise || '');
   const [autoDetect, setAutoDetect] = useState(!preSelectedExercise);
   const userChangedExercise = useRef(!!preSelectedExercise);
   const [weight, setWeight] = useState('');
@@ -620,9 +620,9 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
                 <button
                   className={`btn btn-primary ${s.flexGrow}`}
                   onClick={startAnalysis}
-                  disabled={!hasQueued}
+                  disabled={!hasQueued || (!exercise && exercise !== '__auto__')}
                 >
-                  {t('analyze')}
+                  {!exercise && exercise !== '__auto__' ? (t('select_exercise_first') || 'Select exercise') : t('analyze')}
                 </button>
               )}
             </div>
