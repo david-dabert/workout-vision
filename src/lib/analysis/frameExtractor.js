@@ -34,6 +34,12 @@ export function getMaxFrames() {
       const usedRatio = mem.usedJSHeapSize / mem.jsHeapSizeLimit;
       if (usedRatio > 0.6) return Math.min(base, 300);
     }
+
+    // Safari exposes neither API. Be conservative: cap at 250 on iOS Safari,
+    // 400 on desktop Safari. Better to finish with fewer frames than crash.
+    if (deviceGB == null && !mem) {
+      return IS_IOS ? 250 : 400;
+    }
   } catch { /* memory APIs unavailable; use default */ }
   return base;
 }
@@ -186,7 +192,13 @@ export async function extractAndInferFrames({
         maxFrames,
         maxWidth,
         async (canvas, frameIndex) => {
-          const bitmap = await createImageBitmap(canvas);
+          let bitmap = null;
+          try {
+            bitmap = await createImageBitmap(canvas);
+          } catch (e) {
+            console.warn('[frameExtractor] createImageBitmap failed, skipping frame', frameIndex, e.message);
+            return;
+          }
           const deterministicTs = frameIndex * (1000 / analysisFps);
 
           await acquireSlot();
@@ -194,8 +206,13 @@ export async function extractAndInferFrames({
           const inferPromise = (async () => {
             try {
               const workerResult = await worker.detect(bitmap, deterministicTs, frameIndex);
+              // After postMessage with transfer, bitmap ownership moves to worker.
+              bitmap = null;
               inferenceResults.set(frameIndex, workerResult);
               drainOrderedResults();
+            } catch (e) {
+              if (bitmap) { try { bitmap.close(); } catch {} bitmap = null; }
+              console.warn('[frameExtractor] Worker detect failed, frame', frameIndex, e.message);
             } finally {
               releaseSlot();
             }

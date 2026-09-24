@@ -13,7 +13,7 @@
  *   formAnalyzer    — form checks, scoring, coaching, result compilation
  */
 
-import { extractJointAngles } from './poseAnalysis';
+import { extractJointAngles, disposeAllLandmarkers } from './poseAnalysis';
 import { hashFile } from './frameExtractor';
 import {
   getCachedLandmarks,
@@ -57,8 +57,8 @@ export async function analyzeVideoFile({
 }) {
   const analysisStart = Date.now();
   const analysisFps = IS_IOS ? 10 : 15;
-  const maxWidth = IS_IOS ? 480 : 720;
-  const MAX_VIDEO_DURATION = 120;
+  const maxWidth = 640; // Cap all platforms to reduce memory pressure on iOS Safari
+  const MAX_VIDEO_DURATION = 60; // seconds — keep short to avoid iOS memory crashes
   const ANALYSIS_TIMEOUT = 180_000;
 
   // ── Global analysis timeout ──
@@ -85,6 +85,8 @@ export async function analyzeVideoFile({
       throw new DOMException('Aborted', 'AbortError');
     }
   };
+
+  let useWorker = false;
 
   try {
     // ── Phase 1: Hash ──
@@ -113,7 +115,8 @@ export async function analyzeVideoFile({
     checkAbort();
     const poseInit = await initPoseDetection({ worker });
     if (poseInit.error) { clearTimeout(timeoutId); return poseInit.error; }
-    const { useWorker, landmarker } = poseInit;
+    useWorker = poseInit.useWorker;
+    const { landmarker } = poseInit;
 
     // ── Phase 3: Check cache ──
     const frames = [];
@@ -208,14 +211,24 @@ export async function analyzeVideoFile({
     const finalUserChanged = lockedExercise ? true : userChangedExercise;
 
     clearTimeout(timeoutId);
-    return await buildFullResult({
+    const result = await buildFullResult({
       frames, replayFrames, frameCount, duration, analysisFps,
       exercise: finalExercise, autoDetect: finalAutoDetect, userChangedExercise: finalUserChanged,
       weightKg, userInjuries, userProfile,
       file, videoHash, analysisStart, onProgress, onPhase, onExerciseDetected,
     });
+
+    // Release main-thread landmarker after analysis to free WebGL context + ~5MB model buffer.
+    // On iOS Safari this prevents GPU memory exhaustion across sequential analyses.
+    if (!useWorker) {
+      disposeAllLandmarkers();
+    }
+
+    return result;
   } catch (err) {
     clearTimeout(timeoutId);
+    // Always release main-thread landmarker on error
+    if (!useWorker) disposeAllLandmarkers();
     if (err.name === 'TimeoutError' && err._structured) return err._structured;
     if (err.name === 'AbortError') return { aborted: true, reps: 0, frames: [], exercise };
     console.error('[analyzeVideo] Unhandled analysis error:', err);
