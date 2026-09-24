@@ -200,6 +200,13 @@ function checkAmplitude(exercise, observedRange, medianRepAmplitude) {
 /**
  * Run the input quality gate on analysis results.
  *
+ * Returns three tiers:
+ * - pass=true: everything looks good, show full results
+ * - pass=false, hardRefuse=true: person not visible or no movement at all.
+ *   Show refusal with named reason. No count shown.
+ * - pass=false, hardRefuse=false: count is suspect but not impossible.
+ *   Show "We counted N. Please confirm." with +/- buttons. No grade.
+ *
  * @param {Object} params
  * @param {string} params.exercise - exercise key
  * @param {number} params.reps - detected rep count
@@ -209,7 +216,8 @@ function checkAmplitude(exercise, observedRange, medianRepAmplitude) {
  * @param {number} [params.fps] - analysis FPS
  * @param {number} [params.observedRange] - primary signal amplitude in degrees from RepCounter diagnostics
  * @param {number|null} [params.medianRepAmplitude] - median per-rep ROM from RepCounter diagnostics
- * @returns {{ pass: boolean, insufficientFootage: boolean, reasons: string[] }}
+ * @param {number} [params.poseDetectionRate] - fraction of frames with pose detected (0-1)
+ * @returns {{ pass: boolean, insufficientFootage: boolean, hardRefuse: boolean, reasons: string[] }}
  */
 export function runInputQualityGate({
   exercise,
@@ -220,15 +228,32 @@ export function runInputQualityGate({
   fps = 8,
   observedRange,
   medianRepAmplitude,
+  poseDetectionRate,
 }) {
   const reasons = [];
+  let hardRefuse = false;
 
-  // Gate 1: Detection confidence
+  // Hard refuse: person not detected in enough frames
+  if (poseDetectionRate != null && poseDetectionRate < 0.6) {
+    reasons.push('person_not_visible');
+    hardRefuse = true;
+  }
+
+  // Hard refuse: no repeated movement detected at all (0 reps + low amplitude)
+  if (reps === 0) {
+    const minAmp = MIN_AMPLITUDE[exercise] ?? DEFAULT_MIN_AMPLITUDE;
+    const effectiveAmplitude = medianRepAmplitude != null ? medianRepAmplitude : observedRange;
+    if (effectiveAmplitude == null || effectiveAmplitude < minAmp) {
+      reasons.push('no_repeated_movement');
+      hardRefuse = true;
+    }
+  }
+
+  // Soft warnings (show count with confirm buttons, no grade)
   if (detectionLowConfidence) {
     reasons.push('detection_low_confidence');
   }
 
-  // Gate 2: Frame continuity
   if (frameTimestamps.length >= 2) {
     const { continuity } = assessFrameContinuity(frameTimestamps, fps);
     if (continuity < 0.5) {
@@ -236,14 +261,12 @@ export function runInputQualityGate({
     }
   }
 
-  // Gate 3: Plausibility
   const plausibility = checkPlausibility(exercise, reps, durationSec);
   if (!plausibility.plausible) {
     reasons.push(plausibility.reason);
   }
 
-  // Gate 4: Signal amplitude (prefer median per-rep over global range)
-  if (observedRange != null || medianRepAmplitude != null) {
+  if (reps > 0 && (observedRange != null || medianRepAmplitude != null)) {
     const amplitude = checkAmplitude(exercise, observedRange, medianRepAmplitude);
     if (!amplitude.plausible) {
       reasons.push(amplitude.reason);
@@ -253,5 +276,5 @@ export function runInputQualityGate({
   const pass = reasons.length === 0;
   const insufficientFootage = !pass;
 
-  return { pass, insufficientFootage, reasons };
+  return { pass, insufficientFootage, hardRefuse, reasons };
 }

@@ -372,8 +372,11 @@ function ResultCard({ result, onReplay }) {
   // Score reveal animation: count up from 0 using shared hook
   const displayScore = useCountUp(formScore ?? 0, { duration: 800, delay: 200 });
 
-  // Insufficient footage: exclusive degraded state — no grade, no coaching, no stats
-  if (result.insufficientFootage) {
+  // Insufficient footage: two tiers
+  // Hard refuse: person not visible or no movement at all
+  // Soft warning: count suspect but usable — show count with confirm buttons
+  if (result.insufficientFootage && result.hardRefuse) {
+    const reasonKeys = result.qualityGateReasons || [];
     return (
       <div className={`card result-card ${s.resultCard}`}>
         <div className={s.heroGrade}>
@@ -382,8 +385,22 @@ function ResultCard({ result, onReplay }) {
         </div>
         <div className={s.insufficientFootageBanner}>
           <span className={s.insufficientFootageIcon}>&#9888;</span>
-          <span className={s.insufficientFootageText}>{t('insufficient_footage')}</span>
+          <span className={s.insufficientFootageText}>
+            {reasonKeys.includes('person_not_visible')
+              ? t('refuse_person_not_visible')
+              : reasonKeys.includes('no_repeated_movement')
+                ? t('refuse_no_movement')
+                : t('insufficient_footage')}
+          </span>
         </div>
+        {reasonKeys.length > 0 && (
+          <details className={s.filmingGuide}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>{t('details')}</summary>
+            <ul className={s.filmingGuideList}>
+              {reasonKeys.map(r => <li key={r}>{t(`gate_reason_${r}`, r)}</li>)}
+            </ul>
+          </details>
+        )}
         <div className={s.filmingGuide}>
           <h4>{t('filming_tips_title')}</h4>
           <ul className={s.filmingGuideList}>
@@ -393,6 +410,34 @@ function ResultCard({ result, onReplay }) {
             <li>{t('filming_tip_stable')}</li>
           </ul>
         </div>
+      </div>
+    );
+  }
+
+  // Soft warning: count is suspect but we have a number. Show it with confirm buttons.
+  if (result.insufficientFootage && !result.hardRefuse) {
+    return (
+      <div className={`card result-card ${s.resultCard}`}>
+        <div className={s.heroGrade}>
+          <h3 className={s.heroExerciseName}>{displayName}</h3>
+        </div>
+        <div className={s.insufficientFootageBanner}>
+          <span className={s.insufficientFootageIcon}>&#9888;</span>
+          <span className={s.insufficientFootageText}>{t('confirm_count', { count: displayReps })}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '12px 0' }}>
+          <button onClick={() => handleRepChange(displayReps - 1)} className={s.repEditButton} aria-label={t('decrease_reps')}>−</button>
+          <span style={{ fontSize: '2rem', fontWeight: 700 }}>{displayReps}</span>
+          <button onClick={() => handleRepChange(displayReps + 1)} className={s.repEditButton} aria-label={t('increase_reps')}>+</button>
+        </div>
+        {(result.qualityGateReasons || []).length > 0 && (
+          <details className={s.filmingGuide}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>{t('details')}</summary>
+            <ul className={s.filmingGuideList}>
+              {(result.qualityGateReasons || []).map(r => <li key={r}>{t(`gate_reason_${r}`, r)}</li>)}
+            </ul>
+          </details>
+        )}
       </div>
     );
   }

@@ -680,6 +680,7 @@ async function buildFullResult({
     ? frames[frames.length - 1].timestamp - frames[0].timestamp
     : 0;
   const repCounterDiagnostics = repCounter.diagnostics || {};
+  const poseDetectionRate = frameCount > 0 ? frames.length / frameCount : 0;
   const qualityGate = runInputQualityGate({
     exercise: detectedExercise,
     reps,
@@ -689,6 +690,7 @@ async function buildFullResult({
     fps: analysisFps,
     observedRange: repCounterDiagnostics.observedRange,
     medianRepAmplitude: repCounterDiagnostics.medianRepAmplitude,
+    poseDetectionRate,
   });
 
   // Halve detection confidence when plausibility fails — the primary signal
@@ -817,6 +819,7 @@ async function buildFullResult({
     detectionLowConfidence,
     detectionCandidates: candidateScores.slice(0, 3),
     insufficientFootage: qualityGate.insufficientFootage,
+    hardRefuse: qualityGate.hardRefuse,
     qualityGateReasons: qualityGate.reasons,
     weight: w,
     debug,
