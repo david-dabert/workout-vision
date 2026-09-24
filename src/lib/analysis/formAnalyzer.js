@@ -63,6 +63,7 @@ export function runQualityGate({
   detectedExercise,
   reps,
   frames,
+  frameCount,
   detectionLowConfidence,
   enrichedRepHistory,
   analysisFps,
@@ -74,6 +75,7 @@ export function runQualityGate({
   const videoDurationSec = frames.length > 0
     ? frames[frames.length - 1].timestamp - frames[0].timestamp
     : 0;
+  const poseDetectionRate = frameCount > 0 ? frames.length / frameCount : 0;
 
   return runInputQualityGate({
     exercise: detectedExercise,
@@ -84,6 +86,7 @@ export function runQualityGate({
     fps: analysisFps,
     observedRange: repCounterDiagnostics.observedRange,
     medianRepAmplitude: repCounterDiagnostics.medianRepAmplitude,
+    poseDetectionRate,
   });
 }
 
@@ -128,6 +131,7 @@ export async function compileResults({
     detectedExercise,
     reps,
     frames,
+    frameCount,
     detectionLowConfidence,
     enrichedRepHistory: repHistory,
     analysisFps,
@@ -258,6 +262,7 @@ export async function compileResults({
     detectionLowConfidence: adjustedDetectionLowConfidence,
     detectionCandidates: candidateScores.slice(0, 3),
     insufficientFootage: qualityGate.insufficientFootage,
+    hardRefuse: qualityGate.hardRefuse,
     qualityGateReasons: qualityGate.reasons,
     weight: w,
     debug,
