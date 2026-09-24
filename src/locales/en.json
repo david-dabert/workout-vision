@@ -1652,6 +1652,7 @@
   "coach_tut_total": "Time Under Tension",
   "video_too_long": "Video is too long ({{duration}}s). Maximum is {{max}} seconds. Film a single set for best results.",
   "analysis_timeout": "Analysis timed out after {{seconds}} seconds. Try a shorter video with better lighting.",
+  "crash_recovery": "Previous analysis of \"{{file}}\" was interrupted (browser ran out of memory). Try a shorter clip.",
   "coach_1rm": "Estimated 1RM",
   "coach_strength_level": "Strength Level",
   "coach_workload": "Training Load",
