@@ -2,11 +2,11 @@
   "name": "workout-vision",
   "private": true,
   "version": "1.4.0",
-  "description": "On-device AI workout analysis — rep counting, form scoring, and biomechanical feedback from video. Runs entirely in-browser with MediaPipe.",
+  "description": "On-device AI workout analysis \u2014 rep counting, form scoring, and biomechanical feedback from video. Runs entirely in-browser with MediaPipe.",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/copy-models.js",
+    "prebuild": "node scripts/copy-models.js && node scripts/copy-guide.js",
     "build": "vite build && node scripts/inject-sw-precache.js",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -30,6 +30,7 @@
     "web-demuxer": "^4.0.0"
   },
   "devDependencies": {
+    "@bryllim/workout-guide": "^1.0.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.2",
     "@types/react": "^19.3.0",
@@ -37,6 +38,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
+    "sharp": "^0.35.4",
     "typescript": "^7.0.2",
     "vite": "^5.4.21",
     "vitest": "^4.1.11"

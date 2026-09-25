@@ -60,3 +60,6 @@ test/real-phone/frames/
 # Uncompressed landmark JSON (commit only .gz and manifest.json)
 test/real-phone/landmarks/*.json
 !test/real-phone/landmarks/manifest.json
+
+# App-served guide artwork generated from the pinned package
+public/guide/

@@ -212,3 +212,5 @@ function drawDoor(ctx, W, H, e, rect, now) {
   ctx.globalCompositeOperation = 'source-over';
 }
 }
+
+export { Body, mapPose, DPR, LITE };

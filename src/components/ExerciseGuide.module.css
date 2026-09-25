@@ -19,10 +19,12 @@
 .guideFrame {
   position: absolute;
   inset: 8%;
+  width: 84%;
+  height: 84%;
   object-fit: contain;
   opacity: 0;
   transition: opacity 0.3s ease;
-  filter: invert(0.85) sepia(0.2) saturate(0.5) hue-rotate(10deg) brightness(1.1);
+  filter: none;
 }
 
 .guideFrameActive {
@@ -50,6 +52,8 @@
 
 .compact .guideFrame {
   inset: 10%;
+  width: 80%;
+  height: 80%;
 }
 
 .compact .guideLabel {
@@ -266,7 +270,7 @@
   }
 
   .guideFrame {
-    filter: none;
+    filter: invert(1);
   }
 
   .guideLabel {

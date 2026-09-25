@@ -3,10 +3,10 @@ import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 
-export default function CoreUpload({ onClose }) {
+export default function CoreUpload({ onClose, initialLift = '' }) {
   const { lang, tExercise } = useT();
   const fr = lang === 'fr';
-  const [lift, setLift] = useState('');
+  const [lift, setLift] = useState(initialLift);
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -59,9 +59,7 @@ export default function CoreUpload({ onClose }) {
         {/* Ask for verification for every result, including all low-confidence results. */}
         <h2>{fr ? `Nous avons compté ${result.count}. Est-ce correct ?` : `We counted ${result.count}. Is that right?`}</h2>
         <p>{fr ? 'Bras utilisé' : 'Arm used'}: {result.arm}</p>
-        <ol style={{ paddingLeft: 28 }}>{result.reps.map(rep => <li key={rep.index}>
-          {rep.startTime.toFixed(2)}–{rep.endTime.toFixed(2)} s · {rep.romDegrees.toFixed(1)}° · {fr ? 'Montée' : 'Concentric'} {rep.concentricSec.toFixed(2)} s · {fr ? 'Descente' : 'Eccentric'} {rep.eccentricSec.toFixed(2)} s
-        </li>)}</ol>
+        <ol aria-label={fr ? 'Répétitions comptées' : 'Counted repetitions'} style={{ display: 'flex', gap: 4, listStyle: 'none', padding: 0, flexWrap: 'wrap' }}>{result.reps.map(rep => <li key={rep.index} aria-label={`${fr ? 'Répétition' : 'Rep'} ${rep.index}`} style={{ width: 12, height: 28, background: 'currentColor', borderRadius: 2 }} />)}</ol>
       </>}
     </section>}
   </main>;

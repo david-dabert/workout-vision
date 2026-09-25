@@ -53,7 +53,7 @@ export default function Entry({ onEnter }) {
     timer.current = setTimeout(onEnter, reduced.current ? 10 : 820);
   }
 
-  return <div className="entry-experience">
+  return <div className="entry-experience wv-experience">
     <canvas ref={canvas} className="entry-stage" aria-hidden="true" />
     <div className="vignette" aria-hidden="true" />
     <section className={`screen entry is-active ${phase} ${skipped ? 'skip' : ''}`} aria-label="Workout Vision">

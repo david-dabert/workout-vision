@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import TabBar from './components/TabBar';
 
 import ErrorBoundary from './components/ErrorBoundary';
+import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 
 // Dynamic GPU capability detection: disable backdrop-filter on weak devices
@@ -72,6 +73,7 @@ function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
   const { t } = useT();
   const [page, setPage] = useHashRouter();
+  const [selectedLift, setSelectedLift] = useState('');
   const [modelStatus, setModelStatus] = useState('idle');
   const [challenge, setChallenge] = useState(null);
   const [challengeResponse, setChallengeResponse] = useState(null);
@@ -147,6 +149,16 @@ function AppInner() {
     );
   }
 
+  if (page === 'dashboard' || (page === 'analyze' && !selectedLift)) return <Choice
+    onChoose={lift => {
+      setSelectedLift(lift);
+      // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
+      fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
+      setPage('analyze');
+    }}
+    onGuide={() => setPage('exercises')}
+  />;
+
   // Full-screen pages (no tab bar)
   const fullScreenPages = ['analyze', 'live', 'log'];
   const showTabBar = !fullScreenPages.includes(page);
@@ -155,7 +167,7 @@ function AppInner() {
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
         <div key="analyze" className="page-transition-enter">
-          <Analyze onClose={() => setPage('dashboard')} onLiveMode={() => setPage('live')} />
+          <Analyze initialLift={selectedLift} onClose={() => { setSelectedLift(''); setPage('dashboard'); }} onLiveMode={() => setPage('live')} />
         </div>
       </Suspense>
     </ErrorBoundary>

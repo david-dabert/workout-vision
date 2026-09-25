@@ -1,0 +1,158 @@
+{
+  "result": "PASS",
+  "buttons": [
+    "Élévations latérales",
+    "Curl biceps",
+    "Tirage vertical",
+    "Un autre exercice"
+  ],
+  "errors": [],
+  "failed": [],
+  "images": [
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/bench-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/bench-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/bench-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/incline-bench-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/incline-bench-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/incline-bench-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/incline-dumbbell-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/incline-dumbbell-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/incline-dumbbell-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/dumbbell-bench-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/dumbbell-bench-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/dumbbell-bench-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/decline-bench-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/decline-bench-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/decline-bench-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/machine-chest-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/machine-chest-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/machine-chest-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/pec-deck/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/pec-deck/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/pec-deck/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/cable-fly/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/cable-fly/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/cable-fly/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/push-up/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/push-up/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/push-up/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/weighted-push-up/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/weighted-push-up/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/weighted-push-up/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/overhead-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/overhead-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/overhead-press/frame-3.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/seated-dumbbell-press/frame-1.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/seated-dumbbell-press/frame-2.webp",
+      "loaded": true
+    },
+    {
+      "src": "http://127.0.0.1:4175/workout-vision/guide/seated-dumbbell-press/frame-3.webp",
+      "loaded": true
+    }
+  ],
+  "modelRequestedAfterChoice": true
+}

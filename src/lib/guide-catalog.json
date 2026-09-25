@@ -1,0 +1,3561 @@
+[
+  {
+    "key": "bench_press",
+    "name": "Bench Press",
+    "slug": "bench-press",
+    "category": "chest",
+    "equipment": "Barbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "incline_bench_press",
+    "name": "Incline Bench Press",
+    "slug": "incline-bench-press",
+    "category": "chest",
+    "equipment": "Barbell",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "incline_dumbbell_press",
+    "name": "Incline Dumbbell Press",
+    "slug": "incline-dumbbell-press",
+    "category": "chest",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "dumbbell_bench_press",
+    "name": "Dumbbell Bench Press",
+    "slug": "dumbbell-bench-press",
+    "category": "chest",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "decline_bench_press",
+    "name": "Decline Bench Press",
+    "slug": "decline-bench-press",
+    "category": "chest",
+    "equipment": "Barbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "machine_chest_press",
+    "name": "Machine Chest Press",
+    "slug": "machine-chest-press",
+    "category": "chest",
+    "equipment": "Machine",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "pec_deck",
+    "name": "Pec Deck",
+    "slug": "pec-deck",
+    "category": "chest",
+    "equipment": "Machine",
+    "muscles": [
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "cable_fly",
+    "name": "Cable Fly",
+    "slug": "cable-fly",
+    "category": "chest",
+    "equipment": "Cable",
+    "muscles": [
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "push_up",
+    "name": "Push-up",
+    "slug": "push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "weighted_push_up",
+    "name": "Weighted Push-up",
+    "slug": "weighted-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "overhead_press",
+    "name": "Overhead Press",
+    "slug": "overhead-press",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "seated_dumbbell_press",
+    "name": "Dumbbell Seated Shoulder Press",
+    "slug": "seated-dumbbell-press",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "arnold_press",
+    "name": "Arnold Press",
+    "slug": "arnold-press",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "lateral_raise",
+    "name": "Lateral Raise",
+    "slug": "lateral-raise",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "cable_lateral_raise",
+    "name": "Cable Lateral Raise",
+    "slug": "cable-lateral-raise",
+    "category": "shoulders",
+    "equipment": "Cable",
+    "muscles": [
+      "Shoulders",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "front_raise",
+    "name": "Front Raise",
+    "slug": "front-raise",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Chest"
+    ]
+  },
+  {
+    "key": "rear_delt_fly",
+    "name": "Rear Delt Fly",
+    "slug": "rear-delt-fly",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Rear Delts",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "reverse_pec_deck",
+    "name": "Reverse Pec Deck",
+    "slug": "reverse-pec-deck",
+    "category": "shoulders",
+    "equipment": "Machine",
+    "muscles": [
+      "Rear Delts",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "face_pull",
+    "name": "Face Pull",
+    "slug": "face-pull",
+    "category": "shoulders",
+    "equipment": "Cable",
+    "muscles": [
+      "Upper Back",
+      "Rear Delts",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "upright_row",
+    "name": "Upright Row",
+    "slug": "upright-row",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Upper Back",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "deadlift",
+    "name": "Deadlift",
+    "slug": "deadlift",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Back",
+      "Grip"
+    ]
+  },
+  {
+    "key": "romanian_deadlift",
+    "name": "Romanian Deadlift",
+    "slug": "romanian-deadlift",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "barbell_row",
+    "name": "Barbell Row",
+    "slug": "barbell-row",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "t_bar_row",
+    "name": "T-Bar Row",
+    "slug": "t-bar-row",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "dumbbell_bent_over_row",
+    "name": "Dumbbell Bent Over Row",
+    "slug": "dumbbell-bent-over-row",
+    "category": "back",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "one_arm_dumbbell_row",
+    "name": "One-Arm Dumbbell Row",
+    "slug": "one-arm-dumbbell-row",
+    "category": "back",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Back",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "chest_supported_row",
+    "name": "Chest Supported Row",
+    "slug": "chest-supported-row",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "seated_row",
+    "name": "Seated Cable Row",
+    "slug": "seated-row",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "machine_row",
+    "name": "Machine Row",
+    "slug": "machine-row",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Back",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "lat_pulldown",
+    "name": "Lat Pulldown",
+    "slug": "lat-pulldown",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "close_grip_lat_pulldown",
+    "name": "Close-Grip Lat Pulldown",
+    "slug": "close-grip-lat-pulldown",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "straight_arm_pulldown",
+    "name": "Straight-Arm Pulldown",
+    "slug": "straight-arm-pulldown",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Core"
+    ]
+  },
+  {
+    "key": "pull_up",
+    "name": "Pull-up",
+    "slug": "pull-up",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "assisted_pull_up",
+    "name": "Assisted Pull-up",
+    "slug": "assisted-pull-up",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "weighted_pull_up",
+    "name": "Weighted Pull-up",
+    "slug": "weighted-pull-up",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "chin_up",
+    "name": "Chin-up",
+    "slug": "chin-up",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Biceps",
+      "Lats"
+    ]
+  },
+  {
+    "key": "shrug",
+    "name": "Barbell Shrug",
+    "slug": "shrug",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Upper Back",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "squat",
+    "name": "Squat",
+    "slug": "squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "front_squat",
+    "name": "Front Squat",
+    "slug": "front-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Core",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "hack_squat",
+    "name": "Hack Squat",
+    "slug": "hack-squat",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "leg_press",
+    "name": "Leg Press",
+    "slug": "leg-press",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "bulgarian_split_squat",
+    "name": "Bulgarian Split Squat",
+    "slug": "bulgarian-split-squat",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "walking_lunge",
+    "name": "Walking Lunge",
+    "slug": "walking-lunge",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "step_up",
+    "name": "Step-Up",
+    "slug": "step-up",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "leg_extension",
+    "name": "Leg Extension",
+    "slug": "leg-extension",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads"
+    ]
+  },
+  {
+    "key": "leg_curl",
+    "name": "Leg Curl",
+    "slug": "leg-curl",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Hamstrings",
+      "Calves"
+    ]
+  },
+  {
+    "key": "seated_leg_curl",
+    "name": "Seated Leg Curl",
+    "slug": "seated-leg-curl",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Hamstrings",
+      "Calves"
+    ]
+  },
+  {
+    "key": "hip_thrust",
+    "name": "Hip Thrust",
+    "slug": "hip-thrust",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "glute_bridge",
+    "name": "Glute Bridge",
+    "slug": "glute-bridge",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "good_morning",
+    "name": "Good Morning",
+    "slug": "good-morning",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "standing_calf_raise",
+    "name": "Standing Calf Raise",
+    "slug": "standing-calf-raise",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Calves"
+    ]
+  },
+  {
+    "key": "seated_calf_raise",
+    "name": "Seated Calf Raise",
+    "slug": "seated-calf-raise",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Calves"
+    ]
+  },
+  {
+    "key": "bicep_curl",
+    "name": "Bicep Curl",
+    "slug": "bicep-curl",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "hammer_curl",
+    "name": "Hammer Curl",
+    "slug": "hammer-curl",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "preacher_curl",
+    "name": "Preacher Curl",
+    "slug": "preacher-curl",
+    "category": "arms",
+    "equipment": "Machine",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "cable_curl",
+    "name": "Cable Curl",
+    "slug": "cable-curl",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "reverse_curl",
+    "name": "Reverse Curl",
+    "slug": "reverse-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Forearms",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "wrist_curl",
+    "name": "Wrist Curl",
+    "slug": "wrist-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Forearms"
+    ]
+  },
+  {
+    "key": "tricep_pushdown",
+    "name": "Tricep Pushdown",
+    "slug": "tricep-pushdown",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "overhead_tricep_extension",
+    "name": "Overhead Tricep Extension",
+    "slug": "overhead-tricep-extension",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "skull_crusher",
+    "name": "Skull Crusher",
+    "slug": "skull-crusher",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "close_grip_bench_press",
+    "name": "Close-Grip Bench Press",
+    "slug": "close-grip-bench-press",
+    "category": "chest",
+    "equipment": "Barbell",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "dip",
+    "name": "Dip",
+    "slug": "dip",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "assisted_dip",
+    "name": "Assisted Dip",
+    "slug": "assisted-dip",
+    "category": "chest",
+    "equipment": "Machine",
+    "muscles": [
+      "Triceps",
+      "Chest"
+    ]
+  },
+  {
+    "key": "plank",
+    "name": "Plank",
+    "slug": "plank",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "side_plank",
+    "name": "Side Plank",
+    "slug": "side-plank",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "hanging_leg_raise",
+    "name": "Hanging Leg Raise",
+    "slug": "hanging-leg-raise",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Grip"
+    ]
+  },
+  {
+    "key": "cable_crunch",
+    "name": "Cable Crunch",
+    "slug": "cable-crunch",
+    "category": "core",
+    "equipment": "Cable",
+    "muscles": [
+      "Core"
+    ]
+  },
+  {
+    "key": "ab_wheel",
+    "name": "Ab Wheel Rollout",
+    "slug": "ab-wheel",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "running",
+    "name": "Running",
+    "slug": "running",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "walking",
+    "name": "Walking",
+    "slug": "walking",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "cycling",
+    "name": "Cycling",
+    "slug": "cycling",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "rowing",
+    "name": "Rowing",
+    "slug": "rowing",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Back",
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "stair_climber",
+    "name": "Stair Climber",
+    "slug": "stair-climber",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "dumbbell_fly",
+    "name": "Dumbbell Fly",
+    "slug": "dumbbell-fly",
+    "category": "chest",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "incline_cable_fly",
+    "name": "Incline Cable Fly",
+    "slug": "incline-cable-fly",
+    "category": "chest",
+    "equipment": "Cable",
+    "muscles": [
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "decline_dumbbell_press",
+    "name": "Decline Dumbbell Press",
+    "slug": "decline-dumbbell-press",
+    "category": "chest",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "smith_machine_bench_press",
+    "name": "Smith Machine Bench Press",
+    "slug": "smith-machine-bench-press",
+    "category": "chest",
+    "equipment": "Machine",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "landmine_press",
+    "name": "Landmine Press",
+    "slug": "landmine-press",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Chest",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "chest_dip",
+    "name": "Chest Dip",
+    "slug": "chest-dip",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "weighted_dip",
+    "name": "Weighted Dip",
+    "slug": "weighted-dip",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "machine_shoulder_press",
+    "name": "Machine Shoulder Press",
+    "slug": "machine-shoulder-press",
+    "category": "shoulders",
+    "equipment": "Machine",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "standing_dumbbell_press",
+    "name": "Standing Dumbbell Press",
+    "slug": "standing-dumbbell-press",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "push_press",
+    "name": "Push Press",
+    "slug": "push-press",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Quads"
+    ]
+  },
+  {
+    "key": "machine_lateral_raise",
+    "name": "Machine Lateral Raise",
+    "slug": "machine-lateral-raise",
+    "category": "shoulders",
+    "equipment": "Machine",
+    "muscles": [
+      "Shoulders",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "cable_front_raise",
+    "name": "Cable Front Raise",
+    "slug": "cable-front-raise",
+    "category": "shoulders",
+    "equipment": "Cable",
+    "muscles": [
+      "Shoulders",
+      "Chest"
+    ]
+  },
+  {
+    "key": "plate_front_raise",
+    "name": "Plate Front Raise",
+    "slug": "plate-front-raise",
+    "category": "shoulders",
+    "equipment": "Plate",
+    "muscles": [
+      "Shoulders",
+      "Chest"
+    ]
+  },
+  {
+    "key": "bent_over_rear_delt_raise",
+    "name": "Bent-Over Rear Delt Raise",
+    "slug": "bent-over-rear-delt-raise",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Rear Delts",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "cable_rear_delt_fly",
+    "name": "Cable Rear Delt Fly",
+    "slug": "cable-rear-delt-fly",
+    "category": "shoulders",
+    "equipment": "Cable",
+    "muscles": [
+      "Rear Delts",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "pendlay_row",
+    "name": "Pendlay Row",
+    "slug": "pendlay-row",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "inverted_row",
+    "name": "Inverted Row",
+    "slug": "inverted-row",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "meadows_row",
+    "name": "Meadows Row",
+    "slug": "meadows-row",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "single_arm_cable_row",
+    "name": "Single-Arm Cable Row",
+    "slug": "single-arm-cable-row",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ]
+  },
+  {
+    "key": "wide_grip_lat_pulldown",
+    "name": "Wide-Grip Lat Pulldown",
+    "slug": "wide-grip-lat-pulldown",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ]
+  },
+  {
+    "key": "neutral_grip_pull_up",
+    "name": "Neutral-Grip Pull-up",
+    "slug": "neutral-grip-pull-up",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "assisted_chin_up",
+    "name": "Assisted Chin-up",
+    "slug": "assisted-chin-up",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Biceps",
+      "Lats"
+    ]
+  },
+  {
+    "key": "weighted_chin_up",
+    "name": "Weighted Chin-up",
+    "slug": "weighted-chin-up",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Biceps",
+      "Lats"
+    ]
+  },
+  {
+    "key": "rack_pull",
+    "name": "Rack Pull",
+    "slug": "rack-pull",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Back",
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "back_extension",
+    "name": "Back Extension",
+    "slug": "back-extension",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Lower Back",
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "dumbbell_shrug",
+    "name": "Dumbbell Shrug",
+    "slug": "dumbbell-shrug",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Upper Back",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "goblet_squat",
+    "name": "Goblet Squat",
+    "slug": "goblet-squat",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "smith_machine_squat",
+    "name": "Smith Machine Squat",
+    "slug": "smith-machine-squat",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "belt_squat",
+    "name": "Belt Squat",
+    "slug": "belt-squat",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "sumo_deadlift",
+    "name": "Sumo Deadlift",
+    "slug": "sumo-deadlift",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Glutes",
+      "Quads"
+    ]
+  },
+  {
+    "key": "trap_bar_deadlift",
+    "name": "Trap Bar Deadlift",
+    "slug": "trap-bar-deadlift",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Quads",
+      "Grip"
+    ]
+  },
+  {
+    "key": "lying_leg_curl",
+    "name": "Lying Leg Curl",
+    "slug": "lying-leg-curl",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Hamstrings",
+      "Calves"
+    ]
+  },
+  {
+    "key": "nordic_hamstring_curl",
+    "name": "Nordic Hamstring Curl",
+    "slug": "nordic-hamstring-curl",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Calves"
+    ]
+  },
+  {
+    "key": "single_leg_romanian_deadlift",
+    "name": "Single-Leg Romanian Deadlift",
+    "slug": "single-leg-romanian-deadlift",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "reverse_lunge",
+    "name": "Reverse Lunge",
+    "slug": "reverse-lunge",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "split_squat",
+    "name": "Split Squat",
+    "slug": "split-squat",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "cable_kickback",
+    "name": "Cable Kickback",
+    "slug": "cable-kickback",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "hip_abduction_machine",
+    "name": "Hip Abduction Machine",
+    "slug": "hip-abduction-machine",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "single_leg_glute_bridge",
+    "name": "Single-Leg Glute Bridge",
+    "slug": "single-leg-glute-bridge",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "barbell_glute_bridge",
+    "name": "Barbell Glute Bridge",
+    "slug": "barbell-glute-bridge",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "dumbbell_glute_bridge",
+    "name": "Dumbbell Glute Bridge",
+    "slug": "dumbbell-glute-bridge",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "dumbbell_hip_thrust",
+    "name": "Dumbbell Hip Thrust",
+    "slug": "dumbbell-hip-thrust",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "smith_machine_hip_thrust",
+    "name": "Smith Machine Hip Thrust",
+    "slug": "smith-machine-hip-thrust",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "smith_machine_romanian_deadlift",
+    "name": "Smith Machine Romanian Deadlift",
+    "slug": "smith-machine-romanian-deadlift",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "dumbbell_romanian_deadlift",
+    "name": "Dumbbell Romanian Deadlift",
+    "slug": "dumbbell-romanian-deadlift",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "kettlebell_romanian_deadlift",
+    "name": "Kettlebell Romanian Deadlift",
+    "slug": "kettlebell-romanian-deadlift",
+    "category": "legs",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "cable_pull_through",
+    "name": "Cable Pull-Through",
+    "slug": "cable-pull-through",
+    "category": "legs",
+    "equipment": "Cable",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "machine_glute_kickback",
+    "name": "Machine Glute Kickback",
+    "slug": "machine-glute-kickback",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "cable_standing_hip_abduction",
+    "name": "Cable Standing Hip Abduction",
+    "slug": "cable-standing-hip-abduction",
+    "category": "legs",
+    "equipment": "Cable",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "cable_standing_hip_adduction",
+    "name": "Cable Standing Hip Adduction",
+    "slug": "cable-standing-hip-adduction",
+    "category": "legs",
+    "equipment": "Cable",
+    "muscles": [
+      "Adductors",
+      "Core",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "hip_adduction_machine",
+    "name": "Hip Adduction Machine",
+    "slug": "hip-adduction-machine",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Adductors",
+      "Core"
+    ]
+  },
+  {
+    "key": "smith_machine_bulgarian_split_squat",
+    "name": "Smith Machine Bulgarian Split Squat",
+    "slug": "smith-machine-bulgarian-split-squat",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "smith_machine_reverse_lunge",
+    "name": "Smith Machine Reverse Lunge",
+    "slug": "smith-machine-reverse-lunge",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "smith_machine_split_squat",
+    "name": "Smith Machine Split Squat",
+    "slug": "smith-machine-split-squat",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "heel_elevated_goblet_squat",
+    "name": "Heel-Elevated Goblet Squat",
+    "slug": "heel-elevated-goblet-squat",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "dumbbell_sumo_squat",
+    "name": "Dumbbell Sumo Squat",
+    "slug": "dumbbell-sumo-squat",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Glutes",
+      "Quads",
+      "Adductors",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "dumbbell_sumo_deadlift",
+    "name": "Dumbbell Sumo Deadlift",
+    "slug": "dumbbell-sumo-deadlift",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Posterior Chain",
+      "Glutes",
+      "Quads",
+      "Adductors"
+    ]
+  },
+  {
+    "key": "front_foot_elevated_split_squat",
+    "name": "Front-Foot Elevated Split Squat",
+    "slug": "front-foot-elevated-split-squat",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "deficit_reverse_lunge",
+    "name": "Deficit Reverse Lunge",
+    "slug": "deficit-reverse-lunge",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Glutes",
+      "Quads",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "dumbbell_lateral_lunge",
+    "name": "Dumbbell Lateral Lunge",
+    "slug": "dumbbell-lateral-lunge",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Adductors",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "dumbbell_curtsy_lunge",
+    "name": "Dumbbell Curtsy Lunge",
+    "slug": "dumbbell-curtsy-lunge",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Glutes",
+      "Quads",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "landmine_squat",
+    "name": "Landmine Squat",
+    "slug": "landmine-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "landmine_romanian_deadlift",
+    "name": "Landmine Romanian Deadlift",
+    "slug": "landmine-romanian-deadlift",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "kettlebell_swing",
+    "name": "Kettlebell Swing",
+    "slug": "kettlebell-swing",
+    "category": "full_body",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "glute_focused_back_extension",
+    "name": "Glute-Focused Back Extension",
+    "slug": "glute-focused-back-extension",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "reverse_hyperextension",
+    "name": "Reverse Hyperextension",
+    "slug": "reverse-hyperextension",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Lower Back"
+    ]
+  },
+  {
+    "key": "donkey_calf_raise",
+    "name": "Donkey Calf Raise",
+    "slug": "donkey-calf-raise",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Calves"
+    ]
+  },
+  {
+    "key": "leg_press_calf_raise",
+    "name": "Leg Press Calf Raise",
+    "slug": "leg-press-calf-raise",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Calves"
+    ]
+  },
+  {
+    "key": "wall_sit",
+    "name": "Wall Sit",
+    "slug": "wall-sit",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "jump_squat",
+    "name": "Jump Squat",
+    "slug": "jump-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Calves"
+    ]
+  },
+  {
+    "key": "incline_dumbbell_curl",
+    "name": "Incline Dumbbell Curl",
+    "slug": "incline-dumbbell-curl",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "concentration_curl",
+    "name": "Concentration Curl",
+    "slug": "concentration-curl",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "ez_bar_curl",
+    "name": "EZ-Bar Curl",
+    "slug": "ez-bar-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "spider_curl",
+    "name": "Spider Curl",
+    "slug": "spider-curl",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "rope_hammer_curl",
+    "name": "Rope Hammer Curl",
+    "slug": "rope-hammer-curl",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "drag_curl",
+    "name": "Drag Curl",
+    "slug": "drag-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "rope_tricep_pushdown",
+    "name": "Rope Tricep Pushdown",
+    "slug": "rope-tricep-pushdown",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "dumbbell_skull_crusher",
+    "name": "Two Dumbbell Skullcrusher",
+    "slug": "dumbbell-skull-crusher",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "single_dumbbell_skullcrusher",
+    "name": "Single Dumbbell Skullcrusher",
+    "slug": "single-dumbbell-skullcrusher",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "dumbbell_overhead_tricep_extension",
+    "name": "Dumbbell Overhead Tricep Extension",
+    "slug": "dumbbell-overhead-tricep-extension",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "single_arm_dumbbell_tricep_extension",
+    "name": "Single Arm Dumbbell Tricep Extension",
+    "slug": "single-arm-dumbbell-tricep-extension",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "bench_dip",
+    "name": "Bench Dip",
+    "slug": "bench-dip",
+    "category": "arms",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "tricep_kickback",
+    "name": "Tricep Kickback",
+    "slug": "tricep-kickback",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "wrist_extension",
+    "name": "Wrist Extension",
+    "slug": "wrist-extension",
+    "category": "arms",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Forearms"
+    ]
+  },
+  {
+    "key": "farmer_carry",
+    "name": "Farmer Carry",
+    "slug": "farmer-carry",
+    "category": "full_body",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Forearms",
+      "Upper Back",
+      "Core"
+    ]
+  },
+  {
+    "key": "crunch",
+    "name": "Crunch",
+    "slug": "crunch",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core"
+    ]
+  },
+  {
+    "key": "reverse_crunch",
+    "name": "Reverse Crunch",
+    "slug": "reverse-crunch",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core"
+    ]
+  },
+  {
+    "key": "russian_twist",
+    "name": "Russian Twist",
+    "slug": "russian-twist",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "bicycle_crunch",
+    "name": "Bicycle Crunch",
+    "slug": "bicycle-crunch",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Legs"
+    ]
+  },
+  {
+    "key": "mountain_climber",
+    "name": "Mountain Climber",
+    "slug": "mountain-climber",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Legs"
+    ]
+  },
+  {
+    "key": "dead_bug",
+    "name": "Dead Bug",
+    "slug": "dead-bug",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Legs"
+    ]
+  },
+  {
+    "key": "bird_dog",
+    "name": "Bird Dog",
+    "slug": "bird-dog",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Glutes",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "pallof_press",
+    "name": "Pallof Press",
+    "slug": "pallof-press",
+    "category": "core",
+    "equipment": "Cable",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "cable_woodchop",
+    "name": "Cable Woodchop",
+    "slug": "cable-woodchop",
+    "category": "core",
+    "equipment": "Cable",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "half_kneeling_pallof_press",
+    "name": "Half-Kneeling Pallof Press",
+    "slug": "half-kneeling-pallof-press",
+    "category": "core",
+    "equipment": "Cable",
+    "muscles": [
+      "Core",
+      "Glutes",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "cable_pallof_hold",
+    "name": "Cable Pallof Hold",
+    "slug": "cable-pallof-hold",
+    "category": "core",
+    "equipment": "Cable",
+    "muscles": [
+      "Core",
+      "Glutes",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "hanging_knee_raise",
+    "name": "Hanging Knee Raise",
+    "slug": "hanging-knee-raise",
+    "category": "core",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Core",
+      "Grip"
+    ]
+  },
+  {
+    "key": "captains_chair_knee_raise",
+    "name": "Captain's Chair Knee Raise",
+    "slug": "captains-chair-knee-raise",
+    "category": "core",
+    "equipment": "Machine",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "decline_sit_up",
+    "name": "Decline Sit-Up",
+    "slug": "decline-sit-up",
+    "category": "core",
+    "equipment": "Bench",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "weighted_crunch",
+    "name": "Weighted Crunch",
+    "slug": "weighted-crunch",
+    "category": "core",
+    "equipment": "Plate",
+    "muscles": [
+      "Core"
+    ]
+  },
+  {
+    "key": "weighted_russian_twist",
+    "name": "Weighted Russian Twist",
+    "slug": "weighted-russian-twist",
+    "category": "core",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "dumbbell_side_bend",
+    "name": "Dumbbell Side Bend",
+    "slug": "dumbbell-side-bend",
+    "category": "core",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Core",
+      "Grip"
+    ]
+  },
+  {
+    "key": "elliptical",
+    "name": "Elliptical",
+    "slug": "elliptical",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "swimming",
+    "name": "Swimming",
+    "slug": "swimming",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Back",
+      "Shoulders",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "jump_rope",
+    "name": "Jump Rope",
+    "slug": "jump-rope",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Calves",
+      "Cardio",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "assault_bike",
+    "name": "Assault Bike",
+    "slug": "assault-bike",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Cardio",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "skierg",
+    "name": "SkiErg",
+    "slug": "skierg",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Back",
+      "Triceps",
+      "Core",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "hiking",
+    "name": "Hiking",
+    "slug": "hiking",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Glutes",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "treadmill_incline_walk",
+    "name": "Treadmill Incline Walk",
+    "slug": "treadmill-incline-walk",
+    "category": "cardio",
+    "equipment": "Cardio",
+    "muscles": [
+      "Legs",
+      "Glutes",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "battle_ropes",
+    "name": "Battle Ropes",
+    "slug": "battle-ropes",
+    "category": "full_body",
+    "equipment": "Cardio",
+    "muscles": [
+      "Shoulders",
+      "Core",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "incline_push_up",
+    "name": "Incline Push-up",
+    "slug": "incline-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "knee_push_up",
+    "name": "Knee Push-up",
+    "slug": "knee-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "wide_push_up",
+    "name": "Wide Push-up",
+    "slug": "wide-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Triceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "diamond_push_up",
+    "name": "Diamond Push-up",
+    "slug": "diamond-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "decline_push_up",
+    "name": "Decline Push-up",
+    "slug": "decline-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Triceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "pike_push_up",
+    "name": "Pike Push-up",
+    "slug": "pike-push-up",
+    "category": "shoulders",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Chest",
+      "Core"
+    ]
+  },
+  {
+    "key": "feet_elevated_pike_push_up",
+    "name": "Feet-Elevated Pike Push-up",
+    "slug": "feet-elevated-pike-push-up",
+    "category": "shoulders",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Chest",
+      "Core"
+    ]
+  },
+  {
+    "key": "archer_push_up",
+    "name": "Archer Push-up",
+    "slug": "archer-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "typewriter_push_up",
+    "name": "Typewriter Push-up",
+    "slug": "typewriter-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "explosive_push_up",
+    "name": "Explosive Push-up",
+    "slug": "explosive-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "hindu_push_up",
+    "name": "Hindu Push-up",
+    "slug": "hindu-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Triceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "scapular_push_up",
+    "name": "Scapular Push-up",
+    "slug": "scapular-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Upper Back",
+      "Chest",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "push_up_shoulder_tap",
+    "name": "Push-up Shoulder Tap",
+    "slug": "push-up-shoulder-tap",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Chest",
+      "Shoulders",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "wall_push_up",
+    "name": "Wall Push-up",
+    "slug": "wall-push-up",
+    "category": "chest",
+    "equipment": "Wall",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "wall_walk",
+    "name": "Wall Walk",
+    "slug": "wall-walk",
+    "category": "full_body",
+    "equipment": "Wall",
+    "muscles": [
+      "Shoulders",
+      "Core",
+      "Chest",
+      "Triceps"
+    ]
+  },
+  {
+    "key": "wall_handstand_push_up",
+    "name": "Wall Handstand Push-up",
+    "slug": "wall-handstand-push-up",
+    "category": "shoulders",
+    "equipment": "Wall",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Core",
+      "Chest"
+    ]
+  },
+  {
+    "key": "handstand_push_up",
+    "name": "Handstand Push-up",
+    "slug": "handstand-push-up",
+    "category": "shoulders",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Core",
+      "Chest"
+    ]
+  },
+  {
+    "key": "chair_dip",
+    "name": "Chair Dip",
+    "slug": "chair-dip",
+    "category": "arms",
+    "equipment": "Chair",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "doorway_row",
+    "name": "Doorway Row",
+    "slug": "doorway-row",
+    "category": "back",
+    "equipment": "Doorway",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Upper Back",
+      "Core"
+    ]
+  },
+  {
+    "key": "towel_row",
+    "name": "Towel Row",
+    "slug": "towel-row",
+    "category": "back",
+    "equipment": "Towel",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Upper Back",
+      "Core"
+    ]
+  },
+  {
+    "key": "prone_y_raise",
+    "name": "Prone Y Raise",
+    "slug": "prone-y-raise",
+    "category": "shoulders",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Upper Back",
+      "Rear Delts",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "prone_t_raise",
+    "name": "Prone T Raise",
+    "slug": "prone-t-raise",
+    "category": "shoulders",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Upper Back",
+      "Rear Delts",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "superman",
+    "name": "Superman",
+    "slug": "superman",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Lower Back",
+      "Glutes",
+      "Upper Back",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "superman_hold",
+    "name": "Superman Hold",
+    "slug": "superman-hold",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Lower Back",
+      "Glutes",
+      "Upper Back",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "reverse_snow_angel",
+    "name": "Reverse Snow Angel",
+    "slug": "reverse-snow-angel",
+    "category": "back",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Upper Back",
+      "Rear Delts",
+      "Lower Back",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "dead_hang",
+    "name": "Dead Hang",
+    "slug": "dead-hang",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Forearms",
+      "Lats",
+      "Shoulders",
+      "Core"
+    ]
+  },
+  {
+    "key": "active_hang",
+    "name": "Active Hang",
+    "slug": "active-hang",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Upper Back",
+      "Forearms",
+      "Core"
+    ]
+  },
+  {
+    "key": "scapular_pull_up",
+    "name": "Scapular Pull-up",
+    "slug": "scapular-pull-up",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Upper Back",
+      "Forearms",
+      "Core"
+    ]
+  },
+  {
+    "key": "negative_pull_up",
+    "name": "Negative Pull-up",
+    "slug": "negative-pull-up",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Upper Back",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "commando_pull_up",
+    "name": "Commando Pull-up",
+    "slug": "commando-pull-up",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Upper Back",
+      "Core"
+    ]
+  },
+  {
+    "key": "l_sit_pull_up",
+    "name": "L-Sit Pull-up",
+    "slug": "l-sit-pull-up",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Core",
+      "Forearms"
+    ]
+  },
+  {
+    "key": "towel_pull_up",
+    "name": "Towel Pull-up",
+    "slug": "towel-pull-up",
+    "category": "back",
+    "equipment": "Towel",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Forearms",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "bodyweight_squat",
+    "name": "Bodyweight Squat",
+    "slug": "bodyweight-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "pistol_squat",
+    "name": "Pistol Squat",
+    "slug": "pistol-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "assisted_pistol_squat",
+    "name": "Assisted Pistol Squat",
+    "slug": "assisted-pistol-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "shrimp_squat",
+    "name": "Shrimp Squat",
+    "slug": "shrimp-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "cossack_squat",
+    "name": "Cossack Squat",
+    "slug": "cossack-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "sissy_squat",
+    "name": "Sissy Squat",
+    "slug": "sissy-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Core",
+      "Calves"
+    ]
+  },
+  {
+    "key": "forward_lunge",
+    "name": "Forward Lunge",
+    "slug": "forward-lunge",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "lateral_lunge",
+    "name": "Lateral Lunge",
+    "slug": "lateral-lunge",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "curtsy_lunge",
+    "name": "Curtsy Lunge",
+    "slug": "curtsy-lunge",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Quads",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "skater_squat",
+    "name": "Skater Squat",
+    "slug": "skater-squat",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "single_leg_box_squat",
+    "name": "Single-Leg Box Squat",
+    "slug": "single-leg-box-squat",
+    "category": "legs",
+    "equipment": "Box",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "step_down",
+    "name": "Step-Down",
+    "slug": "step-down",
+    "category": "legs",
+    "equipment": "Box",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Calves"
+    ]
+  },
+  {
+    "key": "calf_raise",
+    "name": "Calf Raise",
+    "slug": "calf-raise",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Calves"
+    ]
+  },
+  {
+    "key": "single_leg_calf_raise",
+    "name": "Single-Leg Calf Raise",
+    "slug": "single-leg-calf-raise",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Calves",
+      "Core"
+    ]
+  },
+  {
+    "key": "glute_bridge_march",
+    "name": "Glute Bridge March",
+    "slug": "glute-bridge-march",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "frog_pump",
+    "name": "Frog Pump",
+    "slug": "frog-pump",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "donkey_kick",
+    "name": "Donkey Kick",
+    "slug": "donkey-kick",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "fire_hydrant",
+    "name": "Fire Hydrant",
+    "slug": "fire-hydrant",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "clamshell",
+    "name": "Clamshell",
+    "slug": "clamshell",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "hip_airplane",
+    "name": "Hip Airplane",
+    "slug": "hip-airplane",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "side_lying_hip_abduction",
+    "name": "Side-Lying Hip Abduction",
+    "slug": "side-lying-hip-abduction",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "side_lying_leg_raise",
+    "name": "Side-Lying Leg Raise",
+    "slug": "side-lying-leg-raise",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "lying_hamstring_walkout",
+    "name": "Lying Hamstring Walkout",
+    "slug": "lying-hamstring-walkout",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "towel_hamstring_curl",
+    "name": "Towel Hamstring Curl",
+    "slug": "towel-hamstring-curl",
+    "category": "legs",
+    "equipment": "Towel",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "stability_ball_hamstring_curl",
+    "name": "Stability Ball Hamstring Curl",
+    "slug": "stability-ball-hamstring-curl",
+    "category": "legs",
+    "equipment": "Stability Ball",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_glute_bridge",
+    "name": "Banded Glute Bridge",
+    "slug": "banded-glute-bridge",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_hip_thrust",
+    "name": "Banded Hip Thrust",
+    "slug": "banded-hip-thrust",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_frog_pump",
+    "name": "Banded Frog Pump",
+    "slug": "banded-frog-pump",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ]
+  },
+  {
+    "key": "banded_clamshell",
+    "name": "Banded Clamshell",
+    "slug": "banded-clamshell",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_lateral_walk",
+    "name": "Banded Lateral Walk",
+    "slug": "banded-lateral-walk",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Quads",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_monster_walk",
+    "name": "Banded Monster Walk",
+    "slug": "banded-monster-walk",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Quads",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_squat",
+    "name": "Banded Squat",
+    "slug": "banded-squat",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_donkey_kick",
+    "name": "Banded Donkey Kick",
+    "slug": "banded-donkey-kick",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_fire_hydrant",
+    "name": "Banded Fire Hydrant",
+    "slug": "banded-fire-hydrant",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_kickback",
+    "name": "Banded Kickback",
+    "slug": "banded-kickback",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Hamstrings",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_standing_hip_abduction",
+    "name": "Banded Standing Hip Abduction",
+    "slug": "banded-standing-hip-abduction",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_seated_hip_abduction",
+    "name": "Banded Seated Hip Abduction",
+    "slug": "banded-seated-hip-abduction",
+    "category": "legs",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Glutes",
+      "Core"
+    ]
+  },
+  {
+    "key": "band_pull_apart",
+    "name": "Band Pull-Apart",
+    "slug": "band-pull-apart",
+    "category": "shoulders",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Upper Back",
+      "Rear Delts",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "banded_face_pull",
+    "name": "Banded Face Pull",
+    "slug": "banded-face-pull",
+    "category": "shoulders",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Upper Back",
+      "Rear Delts",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "banded_row",
+    "name": "Banded Row",
+    "slug": "banded-row",
+    "category": "back",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "banded_lat_pulldown",
+    "name": "Banded Lat Pulldown",
+    "slug": "banded-lat-pulldown",
+    "category": "back",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Core"
+    ]
+  },
+  {
+    "key": "banded_pallof_press",
+    "name": "Banded Pallof Press",
+    "slug": "banded-pallof-press",
+    "category": "core",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Core",
+      "Glutes",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "banded_woodchop",
+    "name": "Banded Woodchop",
+    "slug": "banded-woodchop",
+    "category": "core",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "banded_dead_bug",
+    "name": "Banded Dead Bug",
+    "slug": "banded-dead-bug",
+    "category": "core",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Core",
+      "Glutes",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "hollow_body_hold",
+    "name": "Hollow Body Hold",
+    "slug": "hollow-body-hold",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "hollow_rock",
+    "name": "Hollow Rock",
+    "slug": "hollow-rock",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "v_up",
+    "name": "V-Up",
+    "slug": "v-up",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "flutter_kick",
+    "name": "Flutter Kick",
+    "slug": "flutter-kick",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "lying_leg_raise",
+    "name": "Lying Leg Raise",
+    "slug": "lying-leg-raise",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "toe_touch",
+    "name": "Toe Touch",
+    "slug": "toe-touch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core"
+    ]
+  },
+  {
+    "key": "heel_tap",
+    "name": "Heel Tap",
+    "slug": "heel-tap",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core"
+    ]
+  },
+  {
+    "key": "plank_shoulder_tap",
+    "name": "Plank Shoulder Tap",
+    "slug": "plank-shoulder-tap",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Chest"
+    ]
+  },
+  {
+    "key": "plank_jack",
+    "name": "Plank Jack",
+    "slug": "plank-jack",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "bear_plank",
+    "name": "Bear Plank",
+    "slug": "bear-plank",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "bear_crawl",
+    "name": "Bear Crawl",
+    "slug": "bear-crawl",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Quads",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "crab_walk",
+    "name": "Crab Walk",
+    "slug": "crab-walk",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Triceps",
+      "Glutes",
+      "Core",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "inchworm",
+    "name": "Inchworm",
+    "slug": "inchworm",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Hamstrings",
+      "Chest"
+    ]
+  },
+  {
+    "key": "l_sit_hold",
+    "name": "L-Sit Hold",
+    "slug": "l-sit-hold",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Triceps",
+      "Quads",
+      "Shoulders"
+    ]
+  },
+  {
+    "key": "seated_knee_tuck",
+    "name": "Seated Knee Tuck",
+    "slug": "seated-knee-tuck",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads"
+    ]
+  },
+  {
+    "key": "side_plank_hip_dip",
+    "name": "Side Plank Hip Dip",
+    "slug": "side-plank-hip-dip",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Shoulders",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "copenhagen_plank",
+    "name": "Copenhagen Plank",
+    "slug": "copenhagen-plank",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Quads",
+      "Glutes"
+    ]
+  },
+  {
+    "key": "dragon_flag",
+    "name": "Dragon Flag",
+    "slug": "dragon-flag",
+    "category": "core",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Lats",
+      "Quads"
+    ]
+  },
+  {
+    "key": "burpee",
+    "name": "Burpee",
+    "slug": "burpee",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Legs",
+      "Chest",
+      "Shoulders",
+      "Core",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "half_burpee",
+    "name": "Half Burpee",
+    "slug": "half-burpee",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Legs",
+      "Shoulders",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "squat_thrust",
+    "name": "Squat Thrust",
+    "slug": "squat-thrust",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Core",
+      "Legs",
+      "Shoulders",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "high_knees",
+    "name": "High Knees",
+    "slug": "high-knees",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Legs",
+      "Core",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "jumping_jack",
+    "name": "Jumping Jack",
+    "slug": "jumping-jack",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Legs",
+      "Shoulders",
+      "Calves",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "skater_hop",
+    "name": "Skater Hop",
+    "slug": "skater-hop",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Legs",
+      "Glutes",
+      "Calves",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "lateral_shuffle",
+    "name": "Lateral Shuffle",
+    "slug": "lateral-shuffle",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Legs",
+      "Glutes",
+      "Calves",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "fast_feet",
+    "name": "Fast Feet",
+    "slug": "fast-feet",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Calves",
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "sprawl",
+    "name": "Sprawl",
+    "slug": "sprawl",
+    "category": "full_body",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Legs",
+      "Core",
+      "Shoulders",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "seal_jack",
+    "name": "Seal Jack",
+    "slug": "seal-jack",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Legs",
+      "Cardio"
+    ]
+  },
+  {
+    "key": "cat_cow_stretch",
+    "name": "Cat-Cow Stretch",
+    "slug": "cat-cow-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Mobility",
+      "Back",
+      "Core"
+    ]
+  },
+  {
+    "key": "arm_circles",
+    "name": "Arm Circles",
+    "slug": "arm-circles",
+    "category": "shoulders",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Shoulders",
+      "Chest",
+      "Upper Back",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "worlds_greatest_stretch",
+    "name": "World's Greatest Stretch",
+    "slug": "worlds-greatest-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Mobility",
+      "Hips",
+      "Hamstrings",
+      "Upper Back"
+    ]
+  },
+  {
+    "key": "leg_swings_stretch",
+    "name": "Leg Swings",
+    "slug": "leg-swings-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Mobility",
+      "Hips",
+      "Hamstrings",
+      "Quads"
+    ]
+  },
+  {
+    "key": "torso_twist_stretch",
+    "name": "Torso Twists",
+    "slug": "torso-twist-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Mobility",
+      "Core",
+      "Back"
+    ]
+  },
+  {
+    "key": "doorway_chest_stretch",
+    "name": "Doorway Chest Stretch",
+    "slug": "doorway-chest-stretch",
+    "category": "stretching",
+    "equipment": "Doorway",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "childs_pose",
+    "name": "Child's Pose",
+    "slug": "childs-pose",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Back",
+      "Shoulders",
+      "Hips",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "kneeling_hip_flexor_stretch",
+    "name": "Kneeling Hip Flexor Stretch",
+    "slug": "kneeling-hip-flexor-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Hips",
+      "Quads",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "hamstring_stretch",
+    "name": "Hamstring Stretch",
+    "slug": "hamstring-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Hamstrings",
+      "Calves",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "standing_quad_stretch",
+    "name": "Standing Quad Stretch",
+    "slug": "standing-quad-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Hips",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "seated_forward_fold_stretch",
+    "name": "Seated Forward Fold",
+    "slug": "seated-forward-fold-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Hamstrings",
+      "Back",
+      "Calves",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "cross_body_shoulder_stretch",
+    "name": "Cross-Body Shoulder Stretch",
+    "slug": "cross-body-shoulder-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Shoulders",
+      "Upper Back",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "wall_calf_stretch",
+    "name": "Wall Calf Stretch",
+    "slug": "wall-calf-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Calves",
+      "Mobility"
+    ]
+  },
+  {
+    "key": "butterfly_stretch",
+    "name": "Butterfly Stretch",
+    "slug": "butterfly-stretch",
+    "category": "stretching",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Hips",
+      "Groin",
+      "Mobility"
+    ]
+  }
+]
