@@ -209,8 +209,8 @@ function ExerciseDetail({ exercise, onClose, t, tExercise }) {
         )}
 
         {!exercise.hasFullData && (
-          <p style={{ fontSize: '0.7rem', color: 'rgba(232,230,225,0.3)', fontStyle: 'italic', marginBottom: 12 }}>
-            {t('guide_only') || 'Visual guide only — full form analysis not yet available for this exercise.'}
+          <p className={css.detailSecondary} style={{ fontStyle: 'italic', marginBottom: 12 }}>
+            Visual guide only — full form analysis not yet available for this exercise.
           </p>
         )}
 

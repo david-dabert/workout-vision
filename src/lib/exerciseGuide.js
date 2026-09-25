@@ -847,6 +847,14 @@ export function getGuideExercise(key) {
   return null;
 }
 
+/** Slugs whose CDN frames return 404 (42 frames across 14 exercises). Hidden, not deleted. */
+const HIDDEN_SLUGS = new Set([
+  'barbell-back-squat', 'bent-over-row', 'box-jump', 'cable-row',
+  'cable-tricep-pushdown', 'clean-and-press', 'deficit-push-up',
+  'dumbbell-row', 'dumbbell-shoulder-press', 'leg-raise', 'lunge',
+  'machine-tricep-extension', 'sit-up', 'tricep-extension',
+]);
+
 /**
  * Get all guide exercises as an array of { key, name, slug, category, frames }.
  * @returns {Array<{ key: string, name: string, slug: string, category: string, frames: string[] }>}
@@ -864,5 +872,5 @@ export function getAllGuideExercises() {
       all.set(key, { key, name, slug, category: 'full_body', frames: buildFrames(slug) });
     }
   }
-  return [...all.values()];
+  return [...all.values()].filter(e => !HIDDEN_SLUGS.has(e.slug));
 }
