@@ -1,0 +1,19 @@
+{
+  "browser": "webkit-iphone",
+  "lift": "bench_press",
+  "expected": null,
+  "mode": "landmarks-only; curl selected",
+  "count": null,
+  "refused": true,
+  "samples": 331,
+  "elapsed": 13.975,
+  "decoder": "webcodecs",
+  "comparisons": {
+    "timestamps": true,
+    "imageLandmarks": true,
+    "worldLandmarks": true
+  },
+  "screen": "Not offered; landmark check only",
+  "errors": [],
+  "failed": []
+}

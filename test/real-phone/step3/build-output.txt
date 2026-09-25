@@ -1,0 +1,56 @@
+
+> workout-vision@1.4.0 prebuild
+> node scripts/copy-models.js
+
+[copy-models] OK: MediaPipe tasks-vision WASM -> /Users/azeliebernard/Documents/Lamine/workout-vision/public/mediapipe (8 files)
+[copy-models] OK: pose_landmarker_full.task already present
+
+> workout-vision@1.4.0 build
+> vite build && node scripts/inject-sw-precache.js
+
+vite v5.4.21 building for production...
+[copy-models] OK: MediaPipe tasks-vision WASM -> /Users/azeliebernard/Documents/Lamine/workout-vision/public/mediapipe (8 files)
+[copy-models] OK: pose_landmarker_full.task already present
+transforming...
+✓ 514 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             2.97 kB │ gzip:   1.05 kB
+dist/assets/poseWorker-DOf495x4.js        144.35 kB
+dist/assets/corePoseWorker-t_fi2zBW.js    174.42 kB
+dist/assets/Profile-DSM60F3w.css            2.21 kB │ gzip:   0.78 kB
+dist/assets/WorkoutHistory-BWSnJ6m8.css     2.85 kB │ gzip:   0.99 kB
+dist/assets/RestTimer-CS2fTymd.css          3.44 kB │ gzip:   1.31 kB
+dist/assets/Landing-BpHTMkge.css            3.58 kB │ gzip:   1.13 kB
+dist/assets/CoachReport-jw50fc85.css        3.85 kB │ gzip:   1.31 kB
+dist/assets/ExerciseGuide-Cm39WDQj.css      4.31 kB │ gzip:   1.44 kB
+dist/assets/Validate-miAs5MrC.css           5.67 kB │ gzip:   1.57 kB
+dist/assets/index-s7sKwjQn.css             78.11 kB │ gzip:  14.74 kB
+dist/assets/gpuBenchmark-CWotvkM8.js        2.02 kB │ gzip:   1.04 kB
+dist/assets/RestTimer-CK_aR_Ab.js           5.08 kB │ gzip:   2.09 kB
+dist/assets/PersonalRecords-C39HcC3Q.js     5.46 kB │ gzip:   2.11 kB
+dist/assets/Landing-83NoH_xW.js             6.64 kB │ gzip:   2.52 kB
+dist/assets/Onboarding-DoNLhVzs.js          9.90 kB │ gzip:   2.06 kB
+dist/assets/ManualLog-BJGZ69ND.js          11.32 kB │ gzip:   3.60 kB
+dist/assets/WeeklyReport-BPa5MdS6.js       14.11 kB │ gzip:   4.60 kB
+dist/assets/CoreUpload-jc4feqxm.js         15.04 kB │ gzip:   6.47 kB
+dist/assets/WorkoutHistory-K80ZcI7Y.js     21.36 kB │ gzip:   5.92 kB
+dist/assets/Profile-DRGEfCcy.js            25.30 kB │ gzip:   6.82 kB
+dist/assets/purify.es-BYftNTi7.js          29.40 kB │ gzip:  11.31 kB
+dist/assets/localforage-53-gm4O1.js        29.67 kB │ gzip:   9.66 kB
+dist/assets/LiveCapture-CVfygu36.js        32.14 kB │ gzip:  10.56 kB
+dist/assets/ExerciseGuide-CxwlsbB4.js      33.16 kB │ gzip:   8.29 kB
+dist/assets/Validate-DkTH4nDK.js           38.17 kB │ gzip:  13.14 kB
+dist/assets/exerciseOntology-C4wWAdrX.js   65.35 kB │ gzip:  18.05 kB
+dist/assets/i18n-DNQJuhpM.js               83.57 kB │ gzip:  28.85 kB
+dist/assets/index-BKMdU-yt.js              95.37 kB │ gzip:  27.72 kB
+dist/assets/fr-BmTGo6hN.js                109.69 kB │ gzip:  37.13 kB
+dist/assets/web-demuxer-weuWD7o4.js       112.56 kB │ gzip:  43.51 kB
+dist/assets/poseAnalysis-CqqVEkxP.js      150.04 kB │ gzip:  46.19 kB
+dist/assets/index.es-Ccz12Tp2.js          151.01 kB │ gzip:  51.70 kB
+dist/assets/exercises-DAWtkCPp.js         198.04 kB │ gzip:  33.71 kB
+dist/assets/html2canvas.esm-BfxBtG_O.js   201.41 kB │ gzip:  48.03 kB
+dist/assets/react-vendor-DCgi73_X.js      221.91 kB │ gzip:  68.77 kB
+dist/assets/CoachReport-BK4pjPKi.js       413.92 kB │ gzip: 135.15 kB
+✓ built in 1.60s
+[inject-sw-precache] Injected 38 assets into SW (cache: wv-v6abfbd9d) — all assertions passed

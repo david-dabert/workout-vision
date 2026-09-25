@@ -1,0 +1,202 @@
+[WebServer] (node:18404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:18414) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"webkit-iphone","lift":"bicep_curl","expected":7,"mode":"approved app result","count":7,"refused":false,"samples":341,"elapsed":14.998,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":true,"worldLandmarks":true},"screen":"Bicep Curl\nWe counted 7. Is that right?\n\nArm used: left\n\n0.00–1.13 s · 78.9° · Concentric 0.67 s · Eccentric 0.47 s\n3.60–4.93 s · 74.7° · Concentric 0.80 s · Eccentric 0.53 s\n7.00–8.40 s · 95.2° · Concentric 1.00 s · Eccentric 0.40 s\n10.13–11.40 s · 89.3° · Concentric 0.73 s · Eccentric 0.53 s\n13.47–14.87 s · 107.4° · Concentric 0.93 s · Eccentric 0.47 s\n16.33–17.87 s · 98.4° · Concentric 1.13 s · Eccentric 0.40 s\n19.47–20.93 s · 91.9° · Concentric 1.07 s · Eccentric 0.40 s","errors":[],"failed":[]}
+  ✓   1 [webkit-iphone] › e2e/core-app.spec.js:19:3 › bicep_curl (17.2s)
+{"browser":"webkit-iphone","lift":"lateral_raise","expected":10,"mode":"approved app result","count":10,"refused":false,"samples":439,"elapsed":19.062,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":true,"worldLandmarks":true},"screen":"Lateral Raise\nWe counted 10. Is that right?\n\nArm used: right\n\n1.20–3.73 s · 67.3° · Concentric 1.27 s · Eccentric 1.27 s\n4.73–6.37 s · 67.1° · Concentric 0.93 s · Eccentric 0.70 s\n7.37–9.23 s · 73.0° · Concentric 1.00 s · Eccentric 0.87 s\n10.23–11.83 s · 73.3° · Concentric 0.87 s · Eccentric 0.73 s\n12.90–14.56 s · 70.8° · Concentric 0.93 s · Eccentric 0.73 s\n15.50–17.03 s · 72.6° · Concentric 0.80 s · Eccentric 0.73 s\n17.96–19.43 s · 73.1° · Concentric 0.93 s · Eccentric 0.53 s\n20.63–22.30 s · 76.6° · Concentric 0.87 s · Eccentric 0.80 s\n23.30–24.70 s · 77.8° · Concentric 0.93 s · Eccentric 0.47 s\n25.76–27.30 s · 71.2° · Concentric 1.00 s · Eccentric 0.53 s","errors":[],"failed":[]}
+  ✓   2 [webkit-iphone] › e2e/core-app.spec.js:19:3 › lateral_raise (21.1s)
+{"browser":"webkit-iphone","lift":"lat_pulldown","expected":10,"mode":"approved app result","count":10,"refused":false,"samples":609,"elapsed":18.941,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":true,"worldLandmarks":true},"screen":"Lat Pulldown\nWe counted 10. Is that right?\n\nArm used: right\n\n2.07–4.40 s · 41.7° · Concentric 1.47 s · Eccentric 0.87 s\n5.53–7.73 s · 42.5° · Concentric 1.33 s · Eccentric 0.87 s\n8.67–10.87 s · 41.8° · Concentric 1.33 s · Eccentric 0.87 s\n12.07–14.27 s · 40.6° · Concentric 1.33 s · Eccentric 0.87 s\n15.60–17.54 s · 42.3° · Concentric 1.20 s · Eccentric 0.73 s\n19.07–21.27 s · 41.2° · Concentric 1.33 s · Eccentric 0.87 s\n22.60–24.80 s · 43.7° · Concentric 1.27 s · Eccentric 0.93 s\n26.27–28.34 s · 43.8° · Concentric 1.27 s · Eccentric 0.80 s\n30.07–32.60 s · 44.5° · Concentric 1.67 s · Eccentric 0.87 s\n35.00–37.47 s · 43.0° · Concentric 1.93 s · Eccentric 0.53 s","errors":["[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446"],"failed":[]}
+  ✘   3 [webkit-iphone] › e2e/core-app.spec.js:19:3 › lat_pulldown (21.1s)
+(node:18569) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"webkit-iphone","lift":"bench_press","expected":null,"mode":"landmarks-only; curl selected","count":null,"refused":true,"samples":331,"elapsed":13.975,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":true,"worldLandmarks":true},"screen":"Not offered; landmark check only","errors":[],"failed":[]}
+  ✓   4 [webkit-iphone] › e2e/core-app.spec.js:19:3 › bench_press (15.8s)
+{"browser":"webkit-iphone","lift":"overhead_press","expected":null,"mode":"landmarks-only; curl selected","count":null,"refused":false,"samples":620,"elapsed":20.978,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":true,"worldLandmarks":true},"screen":"Not offered; landmark check only","errors":[],"failed":[]}
+  ✓   5 [webkit-iphone] › e2e/core-app.spec.js:19:3 › overhead_press (23.1s)
+(node:18616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"chrome","lift":"bicep_curl","expected":7,"mode":"approved app result","count":7,"refused":false,"samples":341,"elapsed":12.954,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":false,"worldLandmarks":false},"screen":"Bicep Curl\nWe counted 7. Is that right?\n\nArm used: left\n\n0.00–1.20 s · 81.5° · Concentric 0.67 s · Eccentric 0.53 s\n3.60–4.93 s · 80.8° · Concentric 0.73 s · Eccentric 0.60 s\n5.00–8.33 s · 108.1° · Concentric 2.93 s · Eccentric 0.40 s\n8.40–11.40 s · 116.0° · Concentric 2.53 s · Eccentric 0.47 s\n13.40–14.87 s · 110.2° · Concentric 1.00 s · Eccentric 0.47 s\n16.33–17.87 s · 101.0° · Concentric 1.07 s · Eccentric 0.47 s\n19.47–21.00 s · 103.1° · Concentric 1.07 s · Eccentric 0.47 s","errors":[],"failed":[]}
+  ✘   6 [chrome] › e2e/core-app.spec.js:19:3 › bicep_curl (15.0s)
+(node:18649) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"chrome","lift":"lateral_raise","expected":10,"mode":"approved app result","count":10,"refused":false,"samples":439,"elapsed":17.935,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":false,"worldLandmarks":false},"screen":"Lateral Raise\nWe counted 10. Is that right?\n\nArm used: right\n\n1.20–3.73 s · 66.9° · Concentric 1.27 s · Eccentric 1.27 s\n4.73–6.37 s · 69.0° · Concentric 0.93 s · Eccentric 0.70 s\n7.37–9.16 s · 71.1° · Concentric 1.00 s · Eccentric 0.80 s\n10.23–11.83 s · 72.2° · Concentric 0.87 s · Eccentric 0.73 s\n12.90–14.56 s · 73.0° · Concentric 0.93 s · Eccentric 0.73 s\n15.50–16.96 s · 70.8° · Concentric 0.80 s · Eccentric 0.67 s\n17.96–19.43 s · 73.9° · Concentric 0.93 s · Eccentric 0.53 s\n20.63–22.23 s · 72.3° · Concentric 0.87 s · Eccentric 0.73 s\n23.30–24.70 s · 77.1° · Concentric 0.93 s · Eccentric 0.47 s\n25.76–27.30 s · 71.4° · Concentric 1.00 s · Eccentric 0.53 s","errors":[],"failed":[]}
+  ✘   7 [chrome] › e2e/core-app.spec.js:19:3 › lateral_raise (19.4s)
+(node:18732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"chrome","lift":"lat_pulldown","expected":10,"mode":"approved app result","count":10,"refused":false,"samples":609,"elapsed":18.856,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":false,"worldLandmarks":false},"screen":"Lat Pulldown\nWe counted 10. Is that right?\n\nArm used: right\n\n2.07–4.33 s · 41.8° · Concentric 1.40 s · Eccentric 0.87 s\n5.47–7.73 s · 46.3° · Concentric 1.40 s · Eccentric 0.87 s\n8.60–10.93 s · 44.1° · Concentric 1.33 s · Eccentric 1.00 s\n12.07–14.27 s · 42.1° · Concentric 1.27 s · Eccentric 0.93 s\n15.60–17.67 s · 44.3° · Concentric 1.20 s · Eccentric 0.87 s\n19.07–21.27 s · 41.4° · Concentric 1.33 s · Eccentric 0.87 s\n22.60–24.80 s · 47.2° · Concentric 1.27 s · Eccentric 0.93 s\n26.27–28.34 s · 45.6° · Concentric 1.27 s · Eccentric 0.80 s\n30.07–32.53 s · 44.7° · Concentric 1.60 s · Eccentric 0.87 s\n34.94–37.53 s · 43.3° · Concentric 1.93 s · Eccentric 0.67 s","errors":["[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446"],"failed":[]}
+  ✘   8 [chrome] › e2e/core-app.spec.js:19:3 › lat_pulldown (23.8s)
+(node:18775) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"chrome","lift":"bench_press","expected":null,"mode":"landmarks-only; curl selected","count":null,"refused":true,"samples":331,"elapsed":13.37,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":false,"worldLandmarks":false},"screen":"Not offered; landmark check only","errors":[],"failed":[]}
+  ✘   9 [chrome] › e2e/core-app.spec.js:19:3 › bench_press (14.6s)
+(node:18854) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"browser":"chrome","lift":"overhead_press","expected":null,"mode":"landmarks-only; curl selected","count":null,"refused":false,"samples":620,"elapsed":19.479,"decoder":"webcodecs","comparisons":{"timestamps":true,"imageLandmarks":false,"worldLandmarks":false},"screen":"Not offered; landmark check only","errors":[],"failed":[]}
+  ✘  10 [chrome] › e2e/core-app.spec.js:19:3 › overhead_press (21.6s)
+
+
+  1) [webkit-iphone] › e2e/core-app.spec.js:19:3 › lat_pulldown ────────────────────────────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446",
+    + ]
+
+      71 |     }
+      72 |     expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
+    > 73 |     expect(errors).toEqual([]);
+         |                    ^
+      74 |     expect(failed).toEqual([]);
+      75 |   });
+      76 | }
+        at /Users/azeliebernard/Documents/Lamine/workout-vision/e2e/core-app.spec.js:73:20
+
+    Error Context: test-results/core-app-lat-pulldown-webkit-iphone/error-context.md
+
+  2) [chrome] › e2e/core-app.spec.js:19:3 › bicep_curl ─────────────────────────────────────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "imageLandmarks": true,
+    +   "imageLandmarks": false,
+        "timestamps": true,
+    -   "worldLandmarks": true,
+    +   "worldLandmarks": false,
+      }
+
+      70 |       expect(actual.refused).toBe(false);
+      71 |     }
+    > 72 |     expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
+         |                         ^
+      73 |     expect(errors).toEqual([]);
+      74 |     expect(failed).toEqual([]);
+      75 |   });
+        at /Users/azeliebernard/Documents/Lamine/workout-vision/e2e/core-app.spec.js:72:25
+
+    Error Context: test-results/core-app-bicep-curl-chrome/error-context.md
+
+  3) [chrome] › e2e/core-app.spec.js:19:3 › lateral_raise ──────────────────────────────────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "imageLandmarks": true,
+    +   "imageLandmarks": false,
+        "timestamps": true,
+    -   "worldLandmarks": true,
+    +   "worldLandmarks": false,
+      }
+
+      70 |       expect(actual.refused).toBe(false);
+      71 |     }
+    > 72 |     expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
+         |                         ^
+      73 |     expect(errors).toEqual([]);
+      74 |     expect(failed).toEqual([]);
+      75 |   });
+        at /Users/azeliebernard/Documents/Lamine/workout-vision/e2e/core-app.spec.js:72:25
+
+    Error Context: test-results/core-app-lateral-raise-chrome/error-context.md
+
+  4) [chrome] › e2e/core-app.spec.js:19:3 › lat_pulldown ───────────────────────────────────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "imageLandmarks": true,
+    +   "imageLandmarks": false,
+        "timestamps": true,
+    -   "worldLandmarks": true,
+    +   "worldLandmarks": false,
+      }
+
+      70 |       expect(actual.refused).toBe(false);
+      71 |     }
+    > 72 |     expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
+         |                         ^
+      73 |     expect(errors).toEqual([]);
+      74 |     expect(failed).toEqual([]);
+      75 |   });
+        at /Users/azeliebernard/Documents/Lamine/workout-vision/e2e/core-app.spec.js:72:25
+
+    Error Context: test-results/core-app-lat-pulldown-chrome/error-context.md
+
+  5) [chrome] › e2e/core-app.spec.js:19:3 › bench_press ────────────────────────────────────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "imageLandmarks": true,
+    +   "imageLandmarks": false,
+        "timestamps": true,
+    -   "worldLandmarks": true,
+    +   "worldLandmarks": false,
+      }
+
+      70 |       expect(actual.refused).toBe(false);
+      71 |     }
+    > 72 |     expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
+         |                         ^
+      73 |     expect(errors).toEqual([]);
+      74 |     expect(failed).toEqual([]);
+      75 |   });
+        at /Users/azeliebernard/Documents/Lamine/workout-vision/e2e/core-app.spec.js:72:25
+
+    Error Context: test-results/core-app-bench-press-chrome/error-context.md
+
+  6) [chrome] › e2e/core-app.spec.js:19:3 › overhead_press ─────────────────────────────────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "imageLandmarks": true,
+    +   "imageLandmarks": false,
+        "timestamps": true,
+    -   "worldLandmarks": true,
+    +   "worldLandmarks": false,
+      }
+
+      70 |       expect(actual.refused).toBe(false);
+      71 |     }
+    > 72 |     expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
+         |                         ^
+      73 |     expect(errors).toEqual([]);
+      74 |     expect(failed).toEqual([]);
+      75 |   });
+        at /Users/azeliebernard/Documents/Lamine/workout-vision/e2e/core-app.spec.js:72:25
+
+    Error Context: test-results/core-app-overhead-press-chrome/error-context.md
+
+  6 failed
+    [webkit-iphone] › e2e/core-app.spec.js:19:3 › lat_pulldown ─────────────────────────────────────
+    [chrome] › e2e/core-app.spec.js:19:3 › bicep_curl ──────────────────────────────────────────────
+    [chrome] › e2e/core-app.spec.js:19:3 › lateral_raise ───────────────────────────────────────────
+    [chrome] › e2e/core-app.spec.js:19:3 › lat_pulldown ────────────────────────────────────────────
+    [chrome] › e2e/core-app.spec.js:19:3 › bench_press ─────────────────────────────────────────────
+    [chrome] › e2e/core-app.spec.js:19:3 › overhead_press ──────────────────────────────────────────
+  4 passed (3.3m)

@@ -10,6 +10,8 @@ RULES
 - Sampling stays at 15 per second unless a clip shows a rep that 15 cannot resolve.
 - Paste evidence for every claim; mark anything unchecked as unverified.
 - At each STOP, confirm no video file is tracked, push counter-core to GitHub, and wait for David's reply.
+- If git reports a lock or a damaged index, stop and tell David. Never run read-tree, checkout-index, reset --hard or any command that overwrites working files.
+- From now on a parameter changes only through a synthetic test that fails first. Never try parameter settings against David's clips.
 - Stage files by path. Never run git add -A or git add .
 - Never run npm run deploy or push to gh-pages.
 - Never type a measured number by hand; every number in a report comes from a run whose output is pasted.
@@ -27,6 +29,6 @@ Pass mark on the Mac, in Playwright WebKit where it can decode the file, otherwi
 - If a curl set may alternate arms, ask David how he counts it; do not guess.
 Synthetic tests first: ten cycles must count 10 at 15, 30, 60 and 120 samples per second, with wobble of 10% of the range added, and with the tracked arm hidden for half a second mid-set. Then a per-clip table: expected, hotfix-ios count, new core count. STOP.
 
-3. APP. Wire the core into the app behind the required lift selection. Low confidence shows "We counted N. Is that right?". Refuse only when the lift's joints are hidden for most of the set, and say why. The form score stays hidden. The app runs pose detection in its worker, the harness on the main thread; the app's own landmarks for the five clips must equal the committed files. Run the five clips through the production build (vite build, then vite preview), in WebKit with the iPhone profile and in Chrome. The old code loaded MediaPipe from a CDN because bundling it reportedly broke it on iOS Safari, and the dev server does not minify. Run the five clips through the app and paste what the result screen shows for each.
+3. APP. Only curl, lateral raise and lat pulldown are approved. The lift selector offers those three only; all other lifts and Automatic are hidden. Bench press and overhead press are parked until they pass on additional footage; no more press changes now. Wire the core into the app behind the required lift selection. Low confidence shows "We counted N. Is that right?". Refuse only when the lift's joints are hidden for most of the set, and say why. The form score stays hidden. The app runs pose detection in its worker, the harness on the main thread; the app's own landmarks for the five clips must equal the committed files. Run the three approved clips through the production build (vite build, then vite preview), in WebKit with the iPhone profile and in Chrome. The old code loaded MediaPipe from a CDN because bundling it reportedly broke it on iOS Safari, and the dev server does not minify. Run the three approved clips through the app and paste what the result screen shows for each. Show that bench and overhead press are not offered. STOP.
 
 4. PREVIEW. On Vercel, production deploys only from a release branch and every other branch gets its own preview link. Make the Vite base path work on both Vercel and GitHub Pages. Give David the counter-core preview link and confirm it opens on a phone. If Vercel access fails, tell David the exact steps; install no certificate on his phone. STOP.

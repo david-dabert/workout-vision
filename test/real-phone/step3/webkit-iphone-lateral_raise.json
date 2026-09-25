@@ -1,0 +1,19 @@
+{
+  "browser": "webkit-iphone",
+  "lift": "lateral_raise",
+  "expected": 10,
+  "mode": "approved app result",
+  "count": 10,
+  "refused": false,
+  "samples": 439,
+  "elapsed": 19.062,
+  "decoder": "webcodecs",
+  "comparisons": {
+    "timestamps": true,
+    "imageLandmarks": true,
+    "worldLandmarks": true
+  },
+  "screen": "Lateral Raise\nWe counted 10. Is that right?\n\nArm used: right\n\n1.20–3.73 s · 67.3° · Concentric 1.27 s · Eccentric 1.27 s\n4.73–6.37 s · 67.1° · Concentric 0.93 s · Eccentric 0.70 s\n7.37–9.23 s · 73.0° · Concentric 1.00 s · Eccentric 0.87 s\n10.23–11.83 s · 73.3° · Concentric 0.87 s · Eccentric 0.73 s\n12.90–14.56 s · 70.8° · Concentric 0.93 s · Eccentric 0.73 s\n15.50–17.03 s · 72.6° · Concentric 0.80 s · Eccentric 0.73 s\n17.96–19.43 s · 73.1° · Concentric 0.93 s · Eccentric 0.53 s\n20.63–22.30 s · 76.6° · Concentric 0.87 s · Eccentric 0.80 s\n23.30–24.70 s · 77.8° · Concentric 0.93 s · Eccentric 0.47 s\n25.76–27.30 s · 71.2° · Concentric 1.00 s · Eccentric 0.53 s",
+  "errors": [],
+  "failed": []
+}

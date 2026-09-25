@@ -66,7 +66,7 @@ let _landmarkerIsImageMode = false;
 // Re-export from shared geometry module so existing imports keep working
 export const LANDMARKS = _LANDMARKS;
 
-const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+const MODEL_URL = `${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`;
 // Local WASM files copied by vite build plugin (scripts/copy-models.js) from the installed
 // @mediapipe/tasks-vision@0.10.35. No CDN fallback — one version, served by the app.
 const VISION_WASM_LOCAL = `${import.meta.env.BASE_URL}mediapipe`;

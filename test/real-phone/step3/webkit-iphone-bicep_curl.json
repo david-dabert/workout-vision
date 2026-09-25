@@ -1,0 +1,19 @@
+{
+  "browser": "webkit-iphone",
+  "lift": "bicep_curl",
+  "expected": 7,
+  "mode": "approved app result",
+  "count": 7,
+  "refused": false,
+  "samples": 341,
+  "elapsed": 14.998,
+  "decoder": "webcodecs",
+  "comparisons": {
+    "timestamps": true,
+    "imageLandmarks": true,
+    "worldLandmarks": true
+  },
+  "screen": "Bicep Curl\nWe counted 7. Is that right?\n\nArm used: left\n\n0.00–1.13 s · 78.9° · Concentric 0.67 s · Eccentric 0.47 s\n3.60–4.93 s · 74.7° · Concentric 0.80 s · Eccentric 0.53 s\n7.00–8.40 s · 95.2° · Concentric 1.00 s · Eccentric 0.40 s\n10.13–11.40 s · 89.3° · Concentric 0.73 s · Eccentric 0.53 s\n13.47–14.87 s · 107.4° · Concentric 0.93 s · Eccentric 0.47 s\n16.33–17.87 s · 98.4° · Concentric 1.13 s · Eccentric 0.40 s\n19.47–20.93 s · 91.9° · Concentric 1.07 s · Eccentric 0.40 s",
+  "errors": [],
+  "failed": []
+}

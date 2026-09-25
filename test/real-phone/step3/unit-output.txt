@@ -1,0 +1,20 @@
+
+> workout-vision@1.4.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:7:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+5:46:47 PM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+5:46:47 PM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /Users/azeliebernard/Documents/Lamine/workout-vision/public/mediapipe (8 files)
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /Users/azeliebernard/Documents/Lamine/workout-vision
+
+
+ Test Files  14 passed (14)
+      Tests  247 passed | 1 expected fail (248)
+   Start at  17:46:47
+   Duration  527ms (transform 1.88s, setup 0ms, import 2.84s, tests 379ms, environment 1ms)

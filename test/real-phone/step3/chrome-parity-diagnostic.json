@@ -1,0 +1,42 @@
+{
+  "browser": "153.0.8010.53",
+  "clip": "bicep_curl_7_side_mufhf3wy",
+  "workerVsMain": {
+    "timestamps": true,
+    "imageLandmarks": false,
+    "worldLandmarks": false
+  },
+  "mainVsCommitted": {
+    "timestamps": true,
+    "imageLandmarks": false,
+    "worldLandmarks": false
+  },
+  "workerVsCommitted": {
+    "timestamps": true,
+    "imageLandmarks": false,
+    "worldLandmarks": false
+  },
+  "workerCount": 7,
+  "mainMetadata": {
+    "fileName": "bicep_curl_7_side_mufhf3wy.mov",
+    "fileSize": 71735378,
+    "extractionMethod": "webcodecs",
+    "extractedWidth": 360,
+    "extractedHeight": 640,
+    "duration": 22.766666999999998,
+    "sampleCount": 341,
+    "targetFps": 15,
+    "maxLongSide": 640,
+    "elapsedSeconds": 10.08,
+    "modelLoadSeconds": 0.1,
+    "midFrameIndex": 170,
+    "midFrameWidth": 360,
+    "midFrameHeight": 640,
+    "peakOpenFrames": 1,
+    "rotationDecision": "frame carries rotation=90, drawImage handles it",
+    "poseCoverage": 1,
+    "noseAboveHips": 1,
+    "leftArmVisibility": 0.9765395894428153,
+    "rightArmVisibility": 0.12316715542521994
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "browser": "webkit-iphone",
+  "lift": "lat_pulldown",
+  "expected": 10,
+  "mode": "approved app result",
+  "count": 10,
+  "refused": false,
+  "samples": 609,
+  "elapsed": 18.941,
+  "decoder": "webcodecs",
+  "comparisons": {
+    "timestamps": true,
+    "imageLandmarks": true,
+    "worldLandmarks": true
+  },
+  "screen": "Lat Pulldown\nWe counted 10. Is that right?\n\nArm used: right\n\n2.07–4.40 s · 41.7° · Concentric 1.47 s · Eccentric 0.87 s\n5.53–7.73 s · 42.5° · Concentric 1.33 s · Eccentric 0.87 s\n8.67–10.87 s · 41.8° · Concentric 1.33 s · Eccentric 0.87 s\n12.07–14.27 s · 40.6° · Concentric 1.33 s · Eccentric 0.87 s\n15.60–17.54 s · 42.3° · Concentric 1.20 s · Eccentric 0.73 s\n19.07–21.27 s · 41.2° · Concentric 1.33 s · Eccentric 0.87 s\n22.60–24.80 s · 43.7° · Concentric 1.27 s · Eccentric 0.93 s\n26.27–28.34 s · 43.8° · Concentric 1.27 s · Eccentric 0.80 s\n30.07–32.60 s · 44.5° · Concentric 1.67 s · Eccentric 0.87 s\n35.00–37.47 s · 43.0° · Concentric 1.93 s · Eccentric 0.53 s",
+  "errors": [
+    "[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446"
+  ],
+  "failed": []
+}

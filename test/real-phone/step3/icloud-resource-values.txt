@@ -1,0 +1,3 @@
+/Users/azeliebernard/Documents isUbiquitousItem= Optional(true)
+/Users/azeliebernard/Documents/Lamine/workout-vision isUbiquitousItem= Optional(true)
+/Users/azeliebernard/Documents/Lamine/workout-vision/.git/index isUbiquitousItem= Optional(true)

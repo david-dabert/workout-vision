@@ -1,0 +1,19 @@
+{
+  "browser": "chrome",
+  "lift": "overhead_press",
+  "expected": null,
+  "mode": "landmarks-only; curl selected",
+  "count": null,
+  "refused": false,
+  "samples": 620,
+  "elapsed": 19.479,
+  "decoder": "webcodecs",
+  "comparisons": {
+    "timestamps": true,
+    "imageLandmarks": false,
+    "worldLandmarks": false
+  },
+  "screen": "Not offered; landmark check only",
+  "errors": [],
+  "failed": []
+}

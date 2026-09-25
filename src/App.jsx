@@ -39,7 +39,7 @@ const safeLazy = (loader) => lazy(() =>
   })
 );
 
-const Analyze = safeLazy(() => import('./components/VideoUpload'));
+const Analyze = safeLazy(() => import('./components/CoreUpload'));
 const ManualLog = safeLazy(() => import('./components/ManualLog'));
 const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
 const RestTimer = safeLazy(() => import('./components/RestTimer'));
@@ -99,7 +99,7 @@ function AppInner() {
       .catch(() => { clearTimeout(timeout); setModelStatus('error'); });
   };
 
-  useEffect(() => { loadModelRef.current(); }, []);
+  useEffect(() => { if (page !== 'analyze') loadModelRef.current(); }, []);
 
   const retryModel = () => loadModelRef.current();
 

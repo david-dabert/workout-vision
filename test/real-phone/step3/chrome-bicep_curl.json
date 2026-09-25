@@ -1,0 +1,19 @@
+{
+  "browser": "chrome",
+  "lift": "bicep_curl",
+  "expected": 7,
+  "mode": "approved app result",
+  "count": 7,
+  "refused": false,
+  "samples": 341,
+  "elapsed": 12.954,
+  "decoder": "webcodecs",
+  "comparisons": {
+    "timestamps": true,
+    "imageLandmarks": false,
+    "worldLandmarks": false
+  },
+  "screen": "Bicep Curl\nWe counted 7. Is that right?\n\nArm used: left\n\n0.00–1.20 s · 81.5° · Concentric 0.67 s · Eccentric 0.53 s\n3.60–4.93 s · 80.8° · Concentric 0.73 s · Eccentric 0.60 s\n5.00–8.33 s · 108.1° · Concentric 2.93 s · Eccentric 0.40 s\n8.40–11.40 s · 116.0° · Concentric 2.53 s · Eccentric 0.47 s\n13.40–14.87 s · 110.2° · Concentric 1.00 s · Eccentric 0.47 s\n16.33–17.87 s · 101.0° · Concentric 1.07 s · Eccentric 0.47 s\n19.47–21.00 s · 103.1° · Concentric 1.07 s · Eccentric 0.47 s",
+  "errors": [],
+  "failed": []
+}
