@@ -44,6 +44,8 @@ const yieldToMain = () => new Promise(resolve => {
 const MAX_FRAMES = IS_IOS ? 300 : 600;
 const MAX_FILE_SIZE = IS_IOS ? 250 * 1024 * 1024 : 500 * 1024 * 1024;
 
+const LIVE_CAMERA_ENABLED = false; // Returns in Step 3b after the route works.
+
 export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }) {
   const { t, tExercise, tFormCheck, lang, setLang } = useT();
   const { profile: userProfile } = useProfile();
@@ -497,7 +499,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
       </div>
 
       {/* Live camera mode toggle */}
-      {onLiveMode && (
+      {LIVE_CAMERA_ENABLED && onLiveMode && (
         <button
           className="btn btn-ghost"
           onClick={onLiveMode}

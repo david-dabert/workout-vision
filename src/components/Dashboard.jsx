@@ -54,6 +54,8 @@ const getLast7Days = (workouts, lang = 'en') => {
   return days;
 };
 
+const COACH_REPORT_ENABLED = false; // Returns in Step 3b after the route/report works.
+
 export default function Dashboard({ profile, modelStatus, onRetryModel, onNavigate, challenge, challengeResponse, onDismissResponse }) {
   const { t, lang, setLang } = useT();
   const [recentWorkouts, setRecentWorkouts] = useState([]);
@@ -231,7 +233,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
                 </div>
               </div>
             </button>
-            <button
+            {COACH_REPORT_ENABLED && (<button
               className="action-primary"
               onClick={() => onNavigate('coach')}
               aria-label={t('dash_generate_report')}
@@ -251,7 +253,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
                   <span className="action-label">{t('dash_generate_report')}</span>
                 </div>
               </div>
-            </button>
+            </button>)}
           </div>
         ) : (
           /* Individual mode: single prominent Analyze Video button */
@@ -364,7 +366,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
           </div>
         </button>
 
-        {!isCoach && (
+        {COACH_REPORT_ENABLED && !isCoach && (
           <button
             className="action-secondary"
             onClick={() => onNavigate('coach')}

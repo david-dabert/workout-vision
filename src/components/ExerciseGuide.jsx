@@ -5,7 +5,7 @@ import { EXERCISES } from '../lib/exercises';
 import css from './ExerciseGuide.module.css';
 
 /**
- * Animated exercise illustration — cycles 3 SVG frames.
+ * Animated exercise illustration — cycles 3 PNG frames.
  * Fetches frames from jsDelivr CDN on demand.
  *
  * @param {Object} props
@@ -42,6 +42,15 @@ export function ExerciseAnimation({ exerciseKey, compact, autoPlay = true }) {
       ))}
     </div>
   );
+}
+
+function IllustrationCredit() {
+  const { lang } = useT();
+  return <p style={{ fontSize: '0.75rem', lineHeight: 1.5, margin: '12px 0' }}>
+    {lang === 'fr' ? 'Illustrations : ' : 'Illustrations: '}
+    Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noopener noreferrer">bryllim/workout-guide</a>,{' '}
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>
+  </p>;
 }
 
 /** Category labels for display */
@@ -106,6 +115,8 @@ export default function ExerciseGuideLibrary({ onClose }) {
           {filtered.length}/{exercises.length}
         </span>
       </div>
+
+      <IllustrationCredit />
 
       <input
         className={css.searchInput}
@@ -202,6 +213,8 @@ function ExerciseDetail({ exercise, onClose, t, tExercise }) {
             {t('guide_only') || 'Visual guide only — full form analysis not yet available for this exercise.'}
           </p>
         )}
+
+        <IllustrationCredit />
 
         <button className={css.detailClose} onClick={onClose}>
           {t('close') || 'Close'}

@@ -1,11 +1,11 @@
 /**
  * Exercise visual guide — maps our exercise keys to the bryllim/workout-guide
- * library for animated SVG illustrations.
+ * library for animated PNG illustrations.
  *
  * Source: https://github.com/bryllim/workout-guide (CC BY-SA 4.0)
- * 302 exercises with 3-frame SVG animations.
+ * 302 exercises with 3-frame PNG animations.
  *
- * CDN pattern: https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/{slug}/frame-{n}.svg
+ * CDN pattern: https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/{slug}/frame-{n}.png
  */
 
 const CDN_BASE = 'https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets';
@@ -757,13 +757,13 @@ GUIDE_EXERCISES.deficit_push_up = { name: 'Deficit Push Up', slug: 'deficit-push
 // ---------------------------------------------------------------------------
 
 /**
- * Get the CDN URL for an exercise frame SVG.
+ * Get the CDN URL for an exercise frame PNG.
  * @param {string} slug - workout-guide slug
  * @param {1|2|3} frame - frame number (1-3)
  * @returns {string} CDN URL
  */
 export function getFrameUrl(slug, frame) {
-  return `${CDN_BASE}/${slug}/frame-${frame}.svg`;
+  return `${CDN_BASE}/${slug}/frame-${frame}.png`;
 }
 
 /**

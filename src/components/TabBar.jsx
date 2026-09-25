@@ -66,14 +66,18 @@ const TABS = [
 export default function TabBar({ page, onNavigate }) {
   const { t } = useT();
 
+  // Live stays hidden until its route works in Step 3b.
+  const visibleTabs = TABS.filter(tab => tab.id !== 'live');
+
   // Compute the active tab index for the sliding indicator
   const activeIndex = useMemo(() => {
-    const idx = TABS.findIndex(tab => tab.id === page);
+    const idx = visibleTabs.findIndex(tab => tab.id === page);
     return idx >= 0 ? idx : 0;
   }, [page]);
 
   // Indicator transform: slide to the active tab position
   const indicatorStyle = useMemo(() => ({
+    width: `${100 / visibleTabs.length}%`,
     transform: `translateX(${activeIndex * 100}%)`,
   }), [activeIndex]);
 
@@ -84,7 +88,7 @@ export default function TabBar({ page, onNavigate }) {
         <div className={css.indicator} style={indicatorStyle} />
       </div>
 
-      {TABS.map(tab => {
+      {visibleTabs.map(tab => {
         const isActive = tab.id === page;
         return (
           <button
