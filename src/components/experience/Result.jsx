@@ -51,6 +51,7 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
   }
 
   function handleYes() {
+    navigator.vibrate?.(10);
     doSave(result.count, false);
   }
 
@@ -59,6 +60,7 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
   }
 
   function handleSaveFix() {
+    navigator.vibrate?.(10);
     doSave(trueN, true);
   }
 
@@ -134,9 +136,9 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
         <div className="glass" data-testid="fix-card">
           <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
           <div className="stepper">
-            <button className="round press" onClick={() => setTrueN(Math.max(0, trueN - 1))} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
+            <button className="round press" onClick={() => { navigator.vibrate?.(5); setTrueN(Math.max(0, trueN - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
             <span className="stepper-n" aria-live="polite">{trueN}</span>
-            <button className="round press" onClick={() => setTrueN(trueN + 1)} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
+            <button className="round press" onClick={() => { navigator.vibrate?.(5); setTrueN(trueN + 1); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
           <button className="btn-primary press" onClick={handleSaveFix}>{fr ? 'Enregistrer' : 'Save'}</button>
         </div>

@@ -1,0 +1,45 @@
+{
+  "result": "PASS",
+  "touchTargetAudit": [
+    {
+      "screen": "choice",
+      "element": "altar-0",
+      "height": 390,
+      "width": 276.796875,
+      "pass": true
+    },
+    {
+      "screen": "choice",
+      "element": "altar-1",
+      "height": 390,
+      "width": 276.796875,
+      "pass": true
+    },
+    {
+      "screen": "choice",
+      "element": "altar-2",
+      "height": 390,
+      "width": 276.796875,
+      "pass": true
+    }
+  ],
+  "pressRule": "found",
+  "buttonMinHeights": {
+    "btn-primary": [],
+    "btn-ghost": [],
+    "btn-line": [],
+    "text-btn": [],
+    "icon-btn": [
+      "44px",
+      "18px"
+    ],
+    "round": []
+  },
+  "hapticInBundle": {
+    "hasVibrateInResult": false,
+    "hasNavigatorVibrate": false
+  },
+  "coreChunkName": null,
+  "errors": [],
+  "failed": []
+}
