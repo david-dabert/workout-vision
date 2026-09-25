@@ -43,21 +43,15 @@ Synthetic tests first: ten cycles must count 10 at 15, 30, 60 and 120 samples pe
 - Add to the guide, in French and English: "Illustrations: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0", linked to the source and to the licence.
 Production build in the WebKit iPhone profile: open the dashboard, tap Exercise Guide, open three exercises, and paste the screenshots and the console output. Stage by path, commit, push main, wait for the Pages deploy, then open the live guide in the iPhone profile and paste a screenshot showing frames. STOP.
 
-3c. STABILITY, on counter-core.
-- Rep details. The core starts a rep where the smoothed angle crosses a threshold, so a rest that hovers near the threshold makes the start unstable; that is why Chrome moves curl reps 3 and 4. Write a synthetic test first: ten reps separated by 2 s rests during which the angle sits within 2° of the low threshold with 1° of random noise. Across ten noise seeds, each rep's start may move by at most 0.2 s and its range by at most 5°. Show that it fails on the current core; if it passes, stop and report. Then change how core.ts places rep boundaries until it passes, with every other test green. Nothing is tried against the clips.
-- Then run the three approved clips in WebKit and Chrome. Counts must not change, and for every rep, start, end and range must agree between the two browsers within 0.2 s and 5°. Paste the table.
-- In Chrome the worker and the main-thread harness disagree. Hash the pixels handed to the landmarker at every sample in both paths, report the first sample that differs and why, and make the app and the harness share one inference path.
-- Route the demuxer's FFmpeg log lines to console.info with a [demuxer] prefix, as you did for XNNPACK. Console errors remain a failure.
-- scripts/copy-models.js downloads the model tagged float16/latest, so a Google update would change the live app without a commit. Point it at float16/1 and fail the build when the file's SHA-256 differs from a value recorded in the script.
-- index.html now allows unsafe-eval. Offset it: remove https://cdn.jsdelivr.net, https://unpkg.com and https://storage.googleapis.com from script-src and connect-src if a search proves nothing loads from them. Paste the search.
-- npm ci fails on counter-core with "Missing: esbuild@0.28.2 from lock file". Bring package-lock.json in line with package.json, and make the workflows on counter-core use npm ci.
-- .github/workflows/pr-preview.yml publishes to gh-pages, which the rules forbid. Delete it.
+BUILD FIXES, on counter-core.
+- npm ci fails with "Missing: esbuild@0.28.2 from lock file". Bring package-lock.json in line with package.json, add include=dev to the repository's .npmrc, and make the workflows on counter-core use npm ci.
+- Delete .github/workflows/pr-preview.yml; it publishes to gh-pages, which the rules forbid.
 - Remove the deploy script from package.json.
-- The service worker precaches the pose model under a cache name that changes with every build, so each deploy makes every returning phone download the model again. Keep the model in its own cache, named after its SHA-256, and delete only superseded caches.
-- ci.yml runs only for main. Run lint, typecheck, tests and the build on every push to counter-core.
-STOP.
+- Run lint, typecheck, tests and the build on every push to counter-core.
+- Point scripts/copy-models.js at float16/1 instead of float16/latest, and fail the build when the file's SHA-256 differs from a value recorded in the script.
+- Paste the first passing CI run on counter-core, then begin 3b without waiting.
 
-3b. EXPERIENCE. Starts only when David has approved the prototype and it sits in the repository as design/experience-prototype.html. Build the app to match it, screen by screen. Until 3c passes, the result screen and the coach report show no per-rep durations or ranges: the bars become one equal mark per counted rep.
+3b. EXPERIENCE. Starts only when David has approved the prototype and it sits in the repository as design/experience-prototype.html. Build the app to match it, screen by screen. Build the entry screen first; push it to counter-core and tell David, so he can open it on his phone before the other screens exist. Push again after each finished screen. Until 3c passes, the result screen and the coach report show no per-rep durations or ranges: the bars become one equal mark per counted rep.
 - The link. A first-time visitor sees the entry once, then the screen the link names. No questions before the first analysis: name, level, age, sex, weight, height and goal move to Profile and are asked only when a feature needs them.
 - Entry. As in the prototype, with the words David approves. It can be skipped, never plays twice, and stays still under prefers-reduced-motion.
 - Choice. The counted lifts, shown as moving figures, with French and English names and the names people use for them. Nothing else is offered for analysis. "Another exercise" opens the guide.
@@ -72,6 +66,15 @@ STOP.
 - Fonts are served by the app, not by Google.
 - Guide frames are served by the app as WebP at the size shown, loaded lazily, not precached; remove https://cdn.jsdelivr.net from img-src once they are.
 - The 14 exercises hidden in dd19de2 are mapped to a frame set or removed from the list.
+- The pose model downloads when the visitor chooses a lift, not on arrival, and is kept in its own cache named after its SHA-256; only superseded caches are deleted.
+STOP.
+
+3c. STABILITY, on counter-core.
+- Rep details. The core starts a rep where the smoothed angle crosses a threshold, so a rest that hovers near the threshold makes the start unstable; that is why Chrome moves curl reps 3 and 4. Write a synthetic test first: ten reps separated by 2 s rests during which the angle sits within 2° of the low threshold with 1° of random noise. Across ten noise seeds, each rep's start may move by at most 0.2 s and its range by at most 5°. Show that it fails on the current core; if it passes, stop and report. Then change how core.ts places rep boundaries until it passes, with every other test green. Nothing is tried against the clips.
+- Then run the three approved clips in WebKit and Chrome. Counts must not change, and for every rep, start, end and range must agree between the two browsers within 0.2 s and 5°. Paste the table.
+- In Chrome the worker and the main-thread harness disagree. Hash the pixels handed to the landmarker at every sample in both paths, report the first sample that differs and why, and make the app and the harness share one inference path.
+- Route the demuxer's FFmpeg log lines to console.info with a [demuxer] prefix, as you did for XNNPACK. Console errors remain a failure.
+- index.html now allows unsafe-eval. Offset it: remove https://cdn.jsdelivr.net, https://unpkg.com and https://storage.googleapis.com from script-src and connect-src if a search proves nothing loads from them. Paste the search.
 STOP.
 
 4. PREVIEW. Done outside the repository on 25 September. The counter-core preview is https://workout-vision-next.vercel.app, built from GitHub on Azélie's Vercel account under the same /workout-vision/ path as the live site, so the base path needs no change. It does not rebuild on push; after each push to counter-core, David has it rebuilt. Step 5 still requires David's approval of the preview on his phone.
