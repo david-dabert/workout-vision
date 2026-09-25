@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "lifts": [
+    "lateral_raise",
+    "bicep_curl",
+    "lat_pulldown"
+  ],
+  "filmScreenHeight": 876.125,
+  "primaryBtnHeight": 58,
+  "ghostBtnHeight": 54,
+  "errors": [],
+  "failed": []
+}

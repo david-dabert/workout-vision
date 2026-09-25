@@ -1,0 +1,41 @@
+/* Film screen — camera framing instructions before recording.
+   Same position override as Guide: WebKit collapses position:fixed
+   inside isolation:isolate, so the film screen uses position:relative. */
+.wv-experience:has(.film-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
+.wv-experience .film-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
+.wv-experience .film-screen .eyebrow { margin-top: 16px; }
+.wv-experience .film-screen .title { margin-top: 10px; }
+.wv-experience .frame {
+  position: relative; width: min(46%, 178px); max-width: 100%; aspect-ratio: 9 / 16; margin: 22px auto 0;
+  border-radius: 30px; border: 1px solid var(--hair-2); background: #050404; overflow: hidden;
+  box-shadow: inset 0 0 0 6px #0C0A08, 0 40px 80px -30px rgba(0, 0, 0, 0.85), 0 0 70px -24px rgba(232, 189, 126, 0.22);
+}
+.wv-experience .frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wv-experience .corners { position: absolute; inset: 16px; width: calc(100% - 32px); height: calc(100% - 32px); color: var(--lamp); }
+.wv-experience .scan { position: absolute; left: 10%; right: 10%; top: 8%; height: 1px; background: linear-gradient(90deg, transparent, rgba(247, 220, 174, 0.75), transparent); animation: film-scan 4.4s var(--ease) infinite; }
+@keyframes film-scan { 0% { top: 8%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 92%; opacity: 0; } }
+.wv-experience .caption { margin: 12px 0 0; text-align: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .steps { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.wv-experience .steps li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: baseline; font-size: 16px; line-height: 1.5; }
+.wv-experience .steps .n { font-family: var(--serif); font-size: 27px; line-height: 1; color: var(--lamp); }
+.wv-experience .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
+.wv-experience .btn-primary {
+  position: relative; height: 58px; width: 100%; border-radius: 18px; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  color: var(--ink); font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #F6DAAA 0%, #E3B170 55%, #C98F48 100%);
+  box-shadow: 0 18px 40px -18px rgba(232, 189, 126, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  min-height: 44px; cursor: pointer;
+}
+.wv-experience .btn-primary::after { background: radial-gradient(170px circle at var(--px, 50%) var(--py, 50%), rgba(255, 255, 255, 0.45), transparent 65%); }
+.wv-experience .btn-primary svg { width: 18px; height: 18px; }
+.wv-experience .btn-ghost { height: 54px; width: 100%; border-radius: 18px; border: 1px solid var(--hair-2); font-size: 15px; color: var(--bone); display: inline-flex; align-items: center; justify-content: center; min-height: 44px; cursor: pointer; }
+.wv-experience .btn-line { height: 54px; width: 100%; border-radius: 18px; border: 1px solid rgba(232, 189, 126, 0.55); color: var(--lamp-hi); display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; min-height: 44px; }
+.wv-experience .btn-line svg { width: 17px; height: 17px; }
+.wv-experience .text-btn { height: 44px; padding: 0 16px; font-size: 14px; color: var(--ash); align-self: center; }
+.wv-experience .privacy { margin: 18px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; line-height: 1.4; color: var(--ash); text-align: center; }
+.wv-experience .privacy svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wv-experience .scan { animation: none; opacity: 0.5; top: 50%; }
+}

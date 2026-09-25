@@ -3,11 +3,11 @@ import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 
-export default function CoreUpload({ onClose, initialLift = '' }) {
+export default function CoreUpload({ onClose, initialLift = '', initialFile = null }) {
   const { lang, tExercise } = useT();
   const fr = lang === 'fr';
   const [lift, setLift] = useState(initialLift);
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState(initialFile);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState('');

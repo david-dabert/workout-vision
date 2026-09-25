@@ -52,6 +52,7 @@ const Onboarding = safeLazy(() => import('./components/Onboarding'));
 const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
 const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
 const ExerciseGuide = safeLazy(() => import('./components/experience/Guide'));
+const ExperienceFilm = safeLazy(() => import('./components/experience/Film'));
 const CoachReport = safeLazy(() => import('./components/CoachReport'));
 
 
@@ -74,6 +75,7 @@ function AppInner() {
   const { t } = useT();
   const [page, setPage] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
+  const [videoFile, setVideoFile] = useState(null);
   const [modelStatus, setModelStatus] = useState('idle');
   const [challenge, setChallenge] = useState(null);
   const [challengeResponse, setChallengeResponse] = useState(null);
@@ -149,25 +151,33 @@ function AppInner() {
     );
   }
 
-  if (page === 'dashboard' || (page === 'analyze' && !selectedLift)) return <Choice
+  if (page === 'dashboard' || (page === 'analyze' && !selectedLift && !videoFile)) return <Choice
     onChoose={lift => {
       setSelectedLift(lift);
+      setVideoFile(null);
       // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
       fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
-      setPage('analyze');
+      setPage('film');
     }}
     onGuide={() => setPage('exercises')}
   />;
 
   // Full-screen pages (no tab bar)
-  const fullScreenPages = ['analyze', 'live', 'log', 'exercises'];
+  const fullScreenPages = ['analyze', 'live', 'log', 'exercises', 'film'];
   const showTabBar = !fullScreenPages.includes(page);
 
+  if (page === 'film' && selectedLift) return (
+    <ErrorBoundary>
+      <Suspense fallback={LazyFallback}>
+        <ExperienceFilm lift={selectedLift} onBack={() => { setSelectedLift(''); setVideoFile(null); setPage('dashboard'); }} onFile={f => { setVideoFile(f); setPage('analyze'); }} />
+      </Suspense>
+    </ErrorBoundary>
+  );
   if (page === 'analyze') return (
     <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
         <div key="analyze" className="page-transition-enter">
-          <Analyze initialLift={selectedLift} onClose={() => { setSelectedLift(''); setPage('dashboard'); }} onLiveMode={() => setPage('live')} />
+          <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={() => { setSelectedLift(''); setVideoFile(null); setPage('dashboard'); }} onLiveMode={() => setPage('live')} />
         </div>
       </Suspense>
     </ErrorBoundary>
@@ -246,7 +256,7 @@ function AppInner() {
     pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="exercises" className="page-transition-enter">
-          <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={lift => { setSelectedLift(lift); fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {}); setPage('analyze'); }} />
+          <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={lift => { setSelectedLift(lift); setVideoFile(null); fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {}); setPage('film'); }} />
         </div>
       </Suspense>
     );
