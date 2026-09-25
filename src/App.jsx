@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
-import { LanguageProvider, useT } from './lib/LanguageContext';
+import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
-import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
+// Hidden: challenges are not part of core path
+// import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
 import { checkAndMigrateSchema } from './lib/storage';
-import Dashboard from './components/Dashboard';
-import TabBar from './components/TabBar';
+// Hidden, not deleted: Dashboard and TabBar are not rendered during 3b
+// import Dashboard from './components/Dashboard';
+// import TabBar from './components/TabBar';
 
 import ErrorBoundary from './components/ErrorBoundary';
 import Choice from './components/experience/Choice';
@@ -41,19 +43,22 @@ const safeLazy = (loader) => lazy(() =>
   })
 );
 
+// Core path
 const Analyze = safeLazy(() => import('./components/CoreUpload'));
-const ManualLog = safeLazy(() => import('./components/ManualLog'));
-const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
-const RestTimer = safeLazy(() => import('./components/RestTimer'));
-const ProfilePage = safeLazy(() => import('./components/Profile'));
-const Validate = safeLazy(() => import('./components/Validate'));
-const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
-const Onboarding = safeLazy(() => import('./components/Onboarding'));
-const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
-const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
 const ExerciseGuide = safeLazy(() => import('./components/experience/Guide'));
 const ExperienceFilm = safeLazy(() => import('./components/experience/Film'));
-const CoachReport = safeLazy(() => import('./components/CoachReport'));
+
+// Hidden, not deleted: lazy imports for features outside the core path
+// const ManualLog = safeLazy(() => import('./components/ManualLog'));
+// const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
+// const RestTimer = safeLazy(() => import('./components/RestTimer'));
+// const ProfilePage = safeLazy(() => import('./components/Profile'));
+// const Validate = safeLazy(() => import('./components/Validate'));
+// const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
+// const Onboarding = safeLazy(() => import('./components/Onboarding'));
+// const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
+// const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
+// const CoachReport = safeLazy(() => import('./components/CoachReport'));
 
 
 const LazyFallback = (
@@ -72,43 +77,13 @@ const LazyFallback = (
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
-  const { t } = useT();
   const [page, setPage] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
   const [videoFile, setVideoFile] = useState(null);
-  const [modelStatus, setModelStatus] = useState('idle');
-  const [challenge, setChallenge] = useState(null);
-  const [challengeResponse, setChallengeResponse] = useState(null);
-
-
   // Run storage schema migration on mount
   useEffect(() => {
     checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err));
   }, []);
-
-  // Check for challenge or response URL on mount
-  useEffect(() => {
-    const parsed = parseChallengeFromURL();
-    if (parsed) { setChallenge(parsed); return; }
-    const resp = parseResponseFromURL();
-    if (resp) setChallengeResponse(resp);
-  }, []);
-
-  const loadModelRef = useRef(null);
-  loadModelRef.current = () => {
-    setModelStatus('loading');
-    const timeout = setTimeout(() => setModelStatus('error'), 45000);
-    import('./lib/poseAnalysis')
-      .then((mod) => mod.preloadModel())
-      .then((ok) => { clearTimeout(timeout); setModelStatus(ok ? 'ready' : 'error'); })
-      .catch(() => { clearTimeout(timeout); setModelStatus('error'); });
-  };
-
-  // Model loading begins only after a lift is chosen, never on arrival.
-
-  const retryModel = () => loadModelRef.current();
-
-  const onNavigate = (p) => setPage(p);
 
   // Auto-create default profile for first-time users and skip straight to dashboard
   const autoCreatedRef = useRef(false);
@@ -134,22 +109,7 @@ function AppInner() {
   // Wait for profile check (and potential auto-create) before rendering
   if (profileLoading || !profile) return LazyFallback;
 
-  // Onboarding for first-time users
-  if (page === 'onboarding') {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <Onboarding
-            profile={profile}
-            onComplete={async (updates, navigateTo) => {
-              await saveProfile({ ...profile, ...updates });
-              setPage(navigateTo || 'dashboard');
-            }}
-          />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
+  // Hidden: Onboarding — profiles are auto-created, no questions before first analysis
 
   if (page === 'dashboard' || (page === 'analyze' && !selectedLift && !videoFile)) return <Choice
     onChoose={lift => {
@@ -161,10 +121,6 @@ function AppInner() {
     }}
     onGuide={() => setPage('exercises')}
   />;
-
-  // Full-screen pages (no tab bar)
-  const fullScreenPages = ['analyze', 'live', 'log', 'exercises', 'film'];
-  const showTabBar = !fullScreenPages.includes(page);
 
   if (page === 'film' && selectedLift) return (
     <ErrorBoundary>
@@ -182,128 +138,37 @@ function AppInner() {
       </Suspense>
     </ErrorBoundary>
   );
-  if (page === 'live') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="live" className="page-transition-enter">
-          <LiveCapture onClose={() => setPage('dashboard')} profile={profile} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'log') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="log" className="page-transition-enter">
-          <ManualLog onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
+  // Hidden: live (LiveCapture) and log (ManualLog) — fall through to Choice
 
-  // Pages with tab bar visible
-  let pageContent = null;
-
-  if (page === 'history') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="history" className="page-transition-enter">
-          <WorkoutHistory onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'rest') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="rest" className="page-transition-enter">
-          <RestTimer onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'profile') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="profile" className="page-transition-enter">
-          <ProfilePage onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'validate') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="validate" className="page-transition-enter">
-          <Validate onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'weekly') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="weekly" className="page-transition-enter">
-          <WeeklyReport onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'prs') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="prs" className="page-transition-enter">
-          <PersonalRecords onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'exercises') {
-    pageContent = (
+  // Exercise guide (core path)
+  if (page === 'exercises') return (
+    <ErrorBoundary>
       <Suspense fallback={LazyFallback}>
         <div key="exercises" className="page-transition-enter">
           <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={lift => { setSelectedLift(lift); setVideoFile(null); fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {}); setPage('film'); }} />
         </div>
       </Suspense>
-    );
-  } else if (page === 'coach') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="coach" className="page-transition-enter">
-          <CoachReport onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  }
-
-  // Dashboard (default)
-  if (!pageContent) {
-    pageContent = (
-      <>
-        <Dashboard
-          profile={profile}
-          modelStatus={modelStatus}
-          onRetryModel={retryModel}
-          onNavigate={onNavigate}
-          challenge={challenge}
-          challengeResponse={challengeResponse}
-          onDismissResponse={() => setChallengeResponse(null)}
-        />
-        <footer style={{
-          textAlign: 'center', padding: '8px 0 4px', fontSize: '0.6rem',
-          color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em',
-        }}>
-          Workout Vision v{__APP_VERSION__} &bull; {new Date(__BUILD_TIME__).toLocaleDateString()}
-        </footer>
-      </>
-    );
-  }
-
-  return (
-    <div className="app">
-      <a href="#main-content" className="skip-link">{t('skip_to_content') || 'Skip to content'}</a>
-      <main id="main-content">
-        <ErrorBoundary>
-          {pageContent}
-        </ErrorBoundary>
-      </main>
-      {showTabBar && <TabBar page={page} onNavigate={onNavigate} />}
-    </div>
+    </ErrorBoundary>
   );
+
+  // ── Hidden features (not deleted, just unreachable) ──
+  // The following pages are hidden during 3b but their code remains:
+  //   history (WorkoutHistory), rest (RestTimer), profile (ProfilePage),
+  //   validate (Validate), weekly (WeeklyReport), prs (PersonalRecords),
+  //   coach (CoachReport standalone), log (ManualLog), live (LiveCapture),
+  //   Dashboard (challenges, badges, confetti, injury risk, streak).
+  // TabBar is also hidden. All fall through to Choice below.
+
+  // Fallback: any unknown page renders Choice (the core path entry)
+  return <Choice
+    onChoose={lift => {
+      setSelectedLift(lift);
+      setVideoFile(null);
+      fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
+      setPage('film');
+    }}
+    onGuide={() => setPage('exercises')}
+  />;
 }
 
 function EntryGate({ children }) {
@@ -312,20 +177,7 @@ function EntryGate({ children }) {
 }
 
 function App() {
-  const params = new URLSearchParams(window.location.search);
-
-
-  // Validate mode: render directly, skip all providers
-  if (params.has('validate')) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <Validate onClose={() => { window.location.search = ''; }} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
+  // Hidden: ?validate URL param entry point
   return (
     <ErrorBoundary>
       <LanguageProvider>
