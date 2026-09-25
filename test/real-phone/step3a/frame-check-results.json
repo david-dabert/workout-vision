@@ -1,0 +1,220 @@
+{
+  "checkedAt": "2026-09-25T17:50:47.367Z",
+  "exercises": 318,
+  "addresses": 948,
+  "http200": 906,
+  "non200": 42,
+  "invalidImages": 0,
+  "results": [
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/barbell-back-squat/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/barbell-back-squat/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/barbell-back-squat/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bent-over-row/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bent-over-row/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/bent-over-row/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/box-jump/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/box-jump/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/box-jump/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/cable-row/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/cable-row/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/cable-row/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/cable-tricep-pushdown/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/cable-tricep-pushdown/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/cable-tricep-pushdown/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/clean-and-press/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/clean-and-press/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/clean-and-press/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/deficit-push-up/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/deficit-push-up/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/deficit-push-up/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/dumbbell-row/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/dumbbell-row/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/dumbbell-row/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/dumbbell-shoulder-press/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/dumbbell-shoulder-press/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/dumbbell-shoulder-press/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/leg-raise/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/leg-raise/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/leg-raise/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/lunge/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/lunge/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/lunge/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/machine-tricep-extension/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/machine-tricep-extension/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/machine-tricep-extension/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/sit-up/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/sit-up/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/sit-up/frame-3.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/tricep-extension/frame-1.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/tricep-extension/frame-2.png",
+      "status": 404,
+      "png": false
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@bryllim/workout-guide@1.0.0/assets/tricep-extension/frame-3.png",
+      "status": 404,
+      "png": false
+    }
+  ]
+}
