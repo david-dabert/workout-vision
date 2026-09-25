@@ -1,0 +1,43 @@
+[info] Successfully preconnected to https://cdn.jsdelivr.net/
+[info] Successfully preconnected to https://fonts.gstatic.com/
+[info] Successfully preconnected to https://fonts.googleapis.com/
+[log] [Storage] Schema migrated to version 1
+[log] [Storage] Schema migrated to version 1
+[error] [PoseAnalysis] Preload failed: TypeError: Importing a module script failed.
+[error] [PoseAnalysis] Preload failed: TypeError: Importing a module script failed.
+[error] [Lazy load failed] TypeError: Importing a module script failed.
+[error] %o
+
+%s
+
+%s
+ TypeError: Importing a module script failed. The above error occurred in the <default> component. React will try to recreate this component tree from scratch using the error boundary you provided, I.
+[error] [ErrorBoundary] Caught error: TypeError: Importing a module script failed.
+[error] [ErrorBoundary] Component stack: 
+default@unknown:0:0
+Suspense@unknown:0:0
+I@http://localhost:4174/workout-vision/assets/index-Dn6cdRdC.js:2:161040
+_s@http://localhost:4174/workout-vision/assets/index-Dn6cdRdC.js:6:6556
+I@http://localhost:4174/workout-vision/assets/index-Dn6cdRdC.js:2:161040
+Oe@http://localhost:4174/workout-vision/assets/index-Dn6cdRdC.js:2:7520
+Qf@http://localhost:4174/workout-vision/assets/i18n-Wo-rPVpF.js:1:83029
+I@http://localhost:4174/workout-vision/assets/index-Dn6cdRdC.js:2:161040
+De@unknown:0:0
+[info] Successfully preconnected to https://fonts.googleapis.com/
+[info] Successfully preconnected to https://fonts.gstatic.com/
+[info] Successfully preconnected to https://cdn.jsdelivr.net/
+[info] [PoseAnalysis] Device: SIMD=true, WebGL2=true, GPU=Apple GPU, recommendedDelegate=GPU
+[warning] WebGL: non-portable extension enabled: WEBGL_polygon_mode
+[log] I0925 17:58:06.116000 2136208 gl_context.cc:407] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0)), renderer: WebKit WebGL
+[warning] W0925 17:58:06.116000 2136208 gl_context.cc:1118] OpenGL error checking is disabled
+[log] Graph successfully started running.
+[info] [PoseAnalysis] Landmarker created with GPU delegate (SIMD=true, runningMode=VIDEO)
+[info] Successfully preconnected to https://fonts.googleapis.com/
+[info] Successfully preconnected to https://fonts.gstatic.com/
+[info] Successfully preconnected to https://cdn.jsdelivr.net/
+[info] [PoseAnalysis] Device: SIMD=true, WebGL2=true, GPU=Apple GPU, recommendedDelegate=GPU
+[warning] WebGL: non-portable extension enabled: WEBGL_polygon_mode
+[log] I0925 17:58:08.744000 2136208 gl_context.cc:407] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0)), renderer: WebKit WebGL
+[warning] W0925 17:58:08.744000 2136208 gl_context.cc:1118] OpenGL error checking is disabled
+[log] Graph successfully started running.
+[info] [PoseAnalysis] Landmarker created with GPU delegate (SIMD=true, runningMode=VIDEO)
