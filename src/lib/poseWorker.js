@@ -31,9 +31,10 @@ import {
   kalmanFilter,
 } from './poseGeometry';
 
-const MEDIAPIPE_VERSION = '0.10.8';
-const CDN_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}`;
-const WASM_CDN_URL = `${CDN_BASE}/wasm`;
+// Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
+// Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
+import * as mp from '@mediapipe/tasks-vision';
+
 const WASM_LOCAL_URL = 'mediapipe'; // local WASM files served by SW
 const CDN_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 const LOCAL_MODEL_URL = 'mediapipe/pose_landmarker_full.task';
@@ -99,7 +100,6 @@ let offscreenCtx = null;
 let canvasW = 0, canvasH = 0;
 // Cached after first init so reinit can recreate the landmarker without re-downloading
 let _cachedModelBuffer = null;
-let _cachedMpModule = null;
 let _cachedVision = null;
 // When true, always use CPU delegate for deterministic results (video upload mode)
 let _forceCPU = false;
@@ -153,19 +153,11 @@ async function handleInit() {
   initPromise = (async () => {
     if (landmarker) { landmarker.close(); landmarker = null; }
     try {
-      const mp = _cachedMpModule || await import(`${CDN_BASE}/+esm`);
-      _cachedMpModule = mp;
       const modelBuffer = _cachedModelBuffer || await fetchModelWithVerification();
       _cachedModelBuffer = modelBuffer;
-      // Try local WASM first (offline-capable via service worker), CDN fallback
       let vision = _cachedVision;
       if (!vision) {
-        try {
-          vision = await mp.FilesetResolver.forVisionTasks(WASM_LOCAL_URL);
-        } catch (e) {
-          console.warn('[PoseWorker] Local WASM failed, using CDN:', e.message);
-          vision = await mp.FilesetResolver.forVisionTasks(WASM_CDN_URL);
-        }
+        vision = await mp.FilesetResolver.forVisionTasks(WASM_LOCAL_URL);
         _cachedVision = vision;
       }
       landmarker = await createLandmarkerWithFallback(mp, vision, modelBuffer);
@@ -222,7 +214,7 @@ async function createLandmarkerWithFallback(mp, vision, modelBuffer) {
  * video analyses without releasing WebGL contexts.
  */
 async function handleReinit() {
-  if (!_cachedMpModule || !_cachedModelBuffer || !_cachedVision) {
+  if (!_cachedModelBuffer || !_cachedVision) {
     return handleInit();
   }
   try {
@@ -234,7 +226,7 @@ async function handleReinit() {
     canvasW = 0;
     canvasH = 0;
     tsOffset = maxTsSeen + 1000;
-    landmarker = await createLandmarkerWithFallback(_cachedMpModule, _cachedVision, _cachedModelBuffer);
+    landmarker = await createLandmarkerWithFallback(mp, _cachedVision, _cachedModelBuffer);
     self.postMessage({ type: 'ready' });
   } catch (err) {
     console.warn('[PoseWorker] Reinit failed, trying full init:', err.message);

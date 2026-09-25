@@ -498,11 +498,14 @@ export async function analyzeVideoFile({
       return { error: true, errorReason: 'No poses detected in any frame. Ensure your full body is visible with good lighting.' };
     }
 
-    // Orientation check: for upright lifts, nose (landmark 0) must be above
+    // Orientation check: for upright lifts only, nose (landmark 0) must be above
     // hips (landmarks 23, 24) in normalised image coordinates (y increases
     // downward). If fewer than 90% of detected frames pass, the video is
     // likely rotated or the person is not upright; refuse with explanation.
-    {
+    // Bench press is excluded: the person is supine, so nose is level with hips.
+    const UPRIGHT_LIFTS = ['bicep_curl', 'lateral_raise', 'overhead_press', 'lat_pulldown'];
+    const effectiveExercise = (progressiveDetector?.state?.locked ? progressiveDetector.state.exercise : null) || exercise;
+    if (!effectiveExercise || UPRIGHT_LIFTS.includes(effectiveExercise)) {
       let noseAboveCount = 0;
       let checkedCount = 0;
       for (const f of frames) {

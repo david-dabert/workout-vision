@@ -149,6 +149,23 @@ async function processFile(file) {
   }
   const noseAboveHips = detectedCount > 0 ? noseAboveHipsCount / detectedCount : 0;
 
+  // Per-arm visibility: share of detected samples where shoulder, elbow, and
+  // wrist all have visibility >= 0.5.
+  // Left arm: shoulder=11, elbow=13, wrist=15
+  // Right arm: shoulder=12, elbow=14, wrist=16
+  const VIS_THRESH = 0.5;
+  let leftArmVisCount = 0;
+  let rightArmVisCount = 0;
+  for (const lm of imageLandmarks) {
+    if (!lm) continue;
+    const lVis = [lm[11], lm[13], lm[15]].every(p => p && (p.visibility ?? 0) >= VIS_THRESH);
+    const rVis = [lm[12], lm[14], lm[16]].every(p => p && (p.visibility ?? 0) >= VIS_THRESH);
+    if (lVis) leftArmVisCount++;
+    if (rVis) rightArmVisCount++;
+  }
+  const leftArmVisibility = detectedCount > 0 ? leftArmVisCount / detectedCount : 0;
+  const rightArmVisibility = detectedCount > 0 ? rightArmVisCount / detectedCount : 0;
+
   const metadata = {
     fileName: file.name,
     fileSize: file.size,
@@ -168,6 +185,8 @@ async function processFile(file) {
     rotationDecision: streamResult.rotationDecision || 'none',
     poseCoverage,
     noseAboveHips,
+    leftArmVisibility,
+    rightArmVisibility,
   };
 
   disposeAllLandmarkers();

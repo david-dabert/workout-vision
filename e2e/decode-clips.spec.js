@@ -109,6 +109,8 @@ test.describe('Step 1: Decode clips', () => {
         `${result.metadata.sampleCount} samples`,
         `coverage ${(result.metadata.poseCoverage * 100).toFixed(1)}%`,
         `nose>${(result.metadata.noseAboveHips * 100).toFixed(1)}%`,
+        `L-arm ${(result.metadata.leftArmVisibility * 100).toFixed(1)}%`,
+        `R-arm ${(result.metadata.rightArmVisibility * 100).toFixed(1)}%`,
         `peak ${result.metadata.peakOpenFrames} frames`,
         `mid: ${result.metadata.midFrameWidth}x${result.metadata.midFrameHeight}`,
       ].join(' | '));

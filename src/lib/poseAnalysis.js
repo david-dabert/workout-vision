@@ -17,7 +17,6 @@ import {
   GHOST_DECAY_START,
   GHOST_DECAY_RATE,
   GHOST_MAX_FRAMES,
-  MEDIAPIPE_WASM_VERSION,
 } from './analysisConfig';
 // Shared geometry — single source of truth for both main thread and Worker
 import {
@@ -29,16 +28,15 @@ import {
   selectSubjectPose as _selectSubjectPose,
 } from './poseGeometry';
 
-// ─── CDN lazy loader: bypasses Vite's esbuild minifier which breaks MediaPipe WASM on iOS Safari ───
-let _mpVision = null;
-async function getMediaPipeVision() {
-  if (_mpVision) return _mpVision;
-  _mpVision = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/+esm');
-  return _mpVision;
+// Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
+// Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
+import * as mpVision from '@mediapipe/tasks-vision';
+function getMediaPipeVision() {
+  return mpVision;
 }
 
 const modelCache = localforage.createInstance({ name: 'wv-model-cache' });
-const MODEL_CACHE_KEY = 'pose-landmarker-full-v2-0.10.8'; // includes version so model updates don't serve stale cache
+const MODEL_CACHE_KEY = 'pose-landmarker-full-v2-0.10.35'; // includes version so model updates don't serve stale cache
 
 let poseLandmarker = null;
 let modelLoadPromise = null;
@@ -69,10 +67,8 @@ let _landmarkerIsImageMode = false;
 export const LANDMARKS = _LANDMARKS;
 
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
-const VISION_WASM_CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_WASM_VERSION}/wasm`;
-// Local WASM files copied by vite build plugin (scripts/copy-models.js).
-// Prefer local: serves from service worker cache (offline-capable), eliminates CDN latency.
-// FilesetResolver auto-selects SIMD vs non-SIMD binary from this directory.
+// Local WASM files copied by vite build plugin (scripts/copy-models.js) from the installed
+// @mediapipe/tasks-vision@0.10.35. No CDN fallback — one version, served by the app.
 const VISION_WASM_LOCAL = `${import.meta.env.BASE_URL}mediapipe`;
 const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
@@ -153,16 +149,9 @@ async function getDeviceCapabilities() {
 }
 
 async function createLandmarker({ forceCPU = false, useImageMode = false } = {}) {
-  const mp = await getMediaPipeVision();
+  const mp = getMediaPipeVision();
 
-  // Try local WASM first (offline-capable via service worker), CDN fallback
-  let vision;
-  try {
-    vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_LOCAL);
-  } catch (e) {
-    console.warn('[PoseAnalysis] Local WASM failed, falling back to CDN:', e.message);
-    vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_CDN);
-  }
+  const vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_LOCAL);
 
   const modelBuffer = await fetchModelBuffer();
 

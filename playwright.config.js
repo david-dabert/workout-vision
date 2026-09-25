@@ -1,26 +1,16 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
   retries: 1,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:4173',
     serviceWorkers: 'allow',
   },
-  projects: [
-    {
-      name: 'chrome',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
   webServer: {
-    command: 'npx vite --port 5173',
-    port: 5173,
+    command: 'test -d dist && npm run preview || (npm run build && npm run preview)',
+    port: 4173,
     reuseExistingServer: true,
     timeout: 120_000,
   },
