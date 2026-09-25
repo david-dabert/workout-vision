@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "screenHeight": 688.875,
+  "numeralFontSize": 218.399994,
+  "stepperFontSize": 74,
+  "roundBtnSize": 54,
+  "states": [
+    "ask",
+    "fix",
+    "saved",
+    "refused"
+  ],
+  "errors": [],
+  "failed": []
+}

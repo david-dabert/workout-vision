@@ -3,6 +3,7 @@ import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 import Watch from './experience/Watch';
+import Result from './experience/Result';
 
 export default function CoreUpload({ onClose, initialLift = '', initialFile = null }) {
   const { lang, tExercise } = useT();
@@ -33,7 +34,8 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
     try {
       const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: setProgress, onPhase: setPhase });
       setResult(output);
-      if (!output.refused) {
+      // In experience mode (initialFile), Result component handles saving
+      if (!initialFile && !output.refused) {
         try {
           await saveWorkout({ exercise: lift, reps: output.count, repDetails: output.reps, arm: output.arm, confidence: output.confidence, date: new Date().toISOString(), source: 'counter-core', duration: output.metadata.duration });
         } catch {
@@ -48,6 +50,11 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
   // Experience-mode Watch screen while analyzing
   if (initialFile && busy) {
     return <Watch lift={lift} progress={progress} phase={phase} onSkip={() => { abort.current?.abort(); onClose(); }} />;
+  }
+
+  // Experience-mode Result screen after analysis
+  if (initialFile && result) {
+    return <Result result={result} lift={lift} onClose={onClose} onReport={() => {}} onNewSet={onClose} onRefilm={onClose} />;
   }
 
   return <main className="page" style={{ maxWidth: 520, margin: '0 auto', padding: 20 }}>
