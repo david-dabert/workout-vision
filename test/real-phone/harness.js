@@ -1,19 +1,19 @@
 /**
  * Decode harness — one extraction path for the app and every test.
  *
- * Loads a video file, decodes sequentially via extractFramesStreaming
- * (WebCodecs where available, otherwise rVFC), runs MediaPipe pose
+ * Loads a video file, decodes via extractFramesStreaming
+ * (WebCodecs first, RVFC fallback), runs MediaPipe pose
  * detection on each frame, and outputs timestamped landmarks.
+ *
+ * Uses the same shared config (TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES)
+ * as the app. No harness-specific values.
  *
  * Served by Vite dev server so it uses the exact same modules as the app.
  */
 
 import { extractFramesStreaming } from '../../src/lib/frameExtractor.js';
+import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from '../../src/lib/extractionConfig.js';
 import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, selectSubjectPose } from '../../src/lib/poseAnalysis.js';
-
-const TARGET_FPS = 15;
-const MAX_WIDTH = 640;
-const MAX_FRAMES = 9999; // no artificial limit; duration is the limit
 
 const log = document.getElementById('log');
 function appendLog(msg) {
@@ -53,19 +53,20 @@ async function processFile(file) {
   const imageLandmarks = [];   // per-sample: array of 33 landmarks (normalised) or null
   const worldLandmarksArr = []; // per-sample: array of 33 world landmarks (metres) or null
   const timestamps = [];
-  let midCanvas = null;
   let lockedSubjectIdx = null;
   let sampleCount = 0;
-  let totalSamples = 0; // estimated, updated after extraction
+  let midFrameDataURL = null;
+  let midFrameIndex = -1;
+  let midW = 0, midH = 0;
 
-  // t0 starts AFTER model load — measures decode+inference only
+  // t0 includes model load — David's correction: time to result includes model loading
   const t0 = performance.now();
 
   const streamResult = await extractFramesStreaming(
     file,
     TARGET_FPS,
     MAX_FRAMES,
-    MAX_WIDTH,
+    MAX_LONG_SIDE,
     async (canvas, frameIndex, timestamp) => {
       // Run MediaPipe detection
       const deterministicTs = frameIndex * (1000 / TARGET_FPS);
@@ -92,10 +93,6 @@ async function processFile(file) {
       worldLandmarksArr.push(wlm);
       timestamps.push(timestamp);
       sampleCount++;
-
-      // Capture mid-frame canvas snapshot (we'll determine the exact middle after)
-      // For now, keep overwriting until we pass the middle
-      // We'll capture it properly after we know totalSamples
     },
     (pct) => {
       if (pct % 10 === 0) appendLog(`  Extraction: ${pct}%`);
@@ -104,61 +101,53 @@ async function processFile(file) {
   );
 
   const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
-  totalSamples = imageLandmarks.length;
+  const totalSamples = imageLandmarks.length;
   appendLog(`Extraction done: ${totalSamples} samples in ${elapsed}s (method: ${streamResult.method})`);
 
-  // Capture middle frame by seeking the video to the middle timestamp
-  const midFrameIndex = Math.floor(totalSamples / 2);
+  // Capture middle frame by re-running extraction for just that one frame,
+  // so the saved PNG comes from the same canvas the pose model sees.
+  midFrameIndex = Math.floor(totalSamples / 2);
   const midTimestamp = midFrameIndex / TARGET_FPS;
-  let midFrameDataURL = null;
-  let midW = 0, midH = 0;
-
-  const tempVideo = document.createElement('video');
-  tempVideo.muted = true;
-  tempVideo.playsInline = true;
-  tempVideo.preload = 'auto';
-  const url = URL.createObjectURL(file);
   try {
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Video load timeout')), 15000);
-      tempVideo.onloadeddata = () => { clearTimeout(timeout); resolve(); };
-      tempVideo.onerror = () => { clearTimeout(timeout); reject(new Error('Video load error')); };
-      tempVideo.src = url;
-      tempVideo.load();
-    });
-
-    tempVideo.currentTime = midTimestamp;
-    await new Promise((resolve) => {
-      tempVideo.onseeked = resolve;
-      setTimeout(resolve, 5000);
-    });
-
-    // videoWidth/videoHeight are post-rotation (browser applies rotation metadata)
-    const vw = tempVideo.videoWidth;
-    const vh = tempVideo.videoHeight;
-    let fw = vw, fh = vh;
-    const longSide = Math.max(fw, fh);
-    if (longSide > MAX_WIDTH) {
-      const scale = MAX_WIDTH / longSide;
-      fw = Math.round(fw * scale);
-      fh = Math.round(fh * scale);
-      fw -= fw % 2;
-      fh -= fh % 2;
-    }
-    midCanvas = document.createElement('canvas');
-    midCanvas.width = fw;
-    midCanvas.height = fh;
-    midCanvas.getContext('2d').drawImage(tempVideo, 0, 0, fw, fh);
-    midFrameDataURL = midCanvas.toDataURL('image/png');
-    midW = fw;
-    midH = fh;
-    appendLog(`Middle frame: index ${midFrameIndex}, ${fw}x${fh}`);
+    await extractFramesStreaming(
+      file,
+      TARGET_FPS,
+      midFrameIndex + 1, // extract up to and including the mid frame
+      MAX_LONG_SIDE,
+      async (canvas, frameIndex) => {
+        if (frameIndex === midFrameIndex) {
+          midFrameDataURL = canvas.toDataURL('image/png');
+          midW = canvas.width;
+          midH = canvas.height;
+          appendLog(`Middle frame: index ${midFrameIndex}, ${midW}x${midH} (from extraction canvas)`);
+        }
+      },
+      null,
+      { deterministic: true },
+    );
   } catch (e) {
-    appendLog(`Middle frame capture failed: ${e.message}`);
-  } finally {
-    URL.revokeObjectURL(url);
-    tempVideo.src = '';
+    appendLog(`Middle frame re-extraction failed: ${e.message}`);
   }
+
+  // Pose coverage: share of samples with at least one landmark detected
+  const detectedCount = imageLandmarks.filter(lm => lm !== null).length;
+  const poseCoverage = totalSamples > 0 ? detectedCount / totalSamples : 0;
+
+  // Nose above hips: for upright exercises, nose.y < hip.y in normalised coords
+  // (y increases downward in MediaPipe normalised landmarks)
+  // Nose = landmark 0, Left hip = 23, Right hip = 24
+  let noseAboveHipsCount = 0;
+  for (const lm of imageLandmarks) {
+    if (!lm) continue;
+    const nose = lm[0];
+    const lHip = lm[23];
+    const rHip = lm[24];
+    if (nose && lHip && rHip) {
+      const hipY = (lHip.y + rHip.y) / 2;
+      if (nose.y < hipY) noseAboveHipsCount++;
+    }
+  }
+  const noseAboveHips = detectedCount > 0 ? noseAboveHipsCount / detectedCount : 0;
 
   const metadata = {
     fileName: file.name,
@@ -169,12 +158,15 @@ async function processFile(file) {
     duration: streamResult.duration,
     sampleCount: totalSamples,
     targetFps: TARGET_FPS,
-    maxWidth: MAX_WIDTH,
+    maxLongSide: MAX_LONG_SIDE,
     elapsedSeconds: parseFloat(elapsed),
     modelLoadSeconds: parseFloat(modelLoadTime),
     midFrameIndex,
     midFrameWidth: midW,
     midFrameHeight: midH,
+    peakOpenFrames: streamResult.peakOpenFrames || 0,
+    poseCoverage,
+    noseAboveHips,
   };
 
   disposeAllLandmarkers();

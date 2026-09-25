@@ -24,6 +24,7 @@ import { generateWorkoutReport } from './coach';
 import { analyzeCoaching } from './coachingEngine';
 import { saveWorkout, getLastWorkoutForExercise } from './storage';
 import { extractFramesStreaming, hashFile, hashLandmarks } from './frameExtractor';
+import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES as EXTRACTION_MAX_FRAMES } from './extractionConfig';
 import { updateBaseline, compareToBaseline } from './formBaselines';
 import { computeCalibration, applyCalibration } from './calibration';
 import { VideoSuitabilityDetector } from './videoSuitability';
@@ -36,40 +37,7 @@ import {
 } from './landmarkCache';
 import { runInputQualityGate } from './inputQualityGate';
 
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 const CHECKPOINT_INTERVAL = 50; // Save partial checkpoint every N frames
-
-/**
- * Detect available device memory and return an appropriate frame limit.
- * Uses navigator.deviceMemory (Chrome) and performance.memory (Chrome)
- * with conservative fallbacks for browsers that don't expose memory info.
- */
-function getMaxFrames() {
-  const base = IS_IOS ? 300 : 600;
-  try {
-    // navigator.deviceMemory: approximate RAM in GB (Chrome 63+)
-    const deviceGB = navigator.deviceMemory;
-    if (deviceGB != null && deviceGB <= 2) return Math.min(base, 200);
-    if (deviceGB != null && deviceGB <= 4) return Math.min(base, 400);
-
-    // performance.memory: JS heap info (Chrome only, non-standard)
-    const mem = performance.memory;
-    if (mem) {
-      const usedRatio = mem.usedJSHeapSize / mem.jsHeapSizeLimit;
-      // If heap is already >60% used before analysis, reduce frame count
-      if (usedRatio > 0.6) return Math.min(base, 300);
-    }
-
-    // Safari exposes neither API. Be conservative: cap at 250 on iOS Safari,
-    // 400 on desktop Safari. Better to finish with fewer frames than crash.
-    if (deviceGB == null && !mem) {
-      return IS_IOS ? 250 : 400;
-    }
-  } catch { /* memory APIs unavailable; use default */ }
-  return base;
-}
-
-const MAX_FRAMES = getMaxFrames();
 
 /**
  * Analyze a single video file.
@@ -110,8 +78,8 @@ export async function analyzeVideoFile({
   detectorRef,
 }) {
   const analysisStart = Date.now();
-  const analysisFps = IS_IOS ? 10 : 15;
-  const maxWidth = 640; // Cap all platforms to reduce memory pressure on iOS Safari
+  const analysisFps = TARGET_FPS;
+  const maxWidth = MAX_LONG_SIDE;
 
   const MAX_VIDEO_DURATION = 60; // seconds — keep short to avoid iOS memory crashes
   const ANALYSIS_TIMEOUT = 180_000; // milliseconds
@@ -274,7 +242,7 @@ export async function analyzeVideoFile({
           }
         }
         startFrame = partialCheckpoint.lastFrame + 1;
-        onProgress(Math.round((startFrame / MAX_FRAMES) * 95));
+        onProgress(Math.round((startFrame / EXTRACTION_MAX_FRAMES) * 95));
       }
 
       const liveState = {
@@ -374,7 +342,7 @@ export async function analyzeVideoFile({
           const streamResult = await extractFramesStreaming(
             file,
             analysisFps,
-            MAX_FRAMES,
+            EXTRACTION_MAX_FRAMES,
             maxWidth,
             async (canvas, frameIndex) => {
               // Capture bitmap from canvas (~1ms, non-blocking for video playback)
@@ -410,7 +378,7 @@ export async function analyzeVideoFile({
               pendingInferences.push(inferPromise);
 
               streamFrameCount++;
-              onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
+              onProgress(Math.round((streamFrameCount / EXTRACTION_MAX_FRAMES) * 95));
             },
             undefined,
             { signal: effectiveSignal, startFrame, deterministic: true },
@@ -428,7 +396,7 @@ export async function analyzeVideoFile({
           const streamResult = await extractFramesStreaming(
             file,
             analysisFps,
-            MAX_FRAMES,
+            EXTRACTION_MAX_FRAMES,
             maxWidth,
             async (canvas, frameIndex) => {
               const deterministicTs = frameIndex * (1000 / analysisFps);
@@ -459,7 +427,7 @@ export async function analyzeVideoFile({
               }
 
               streamFrameCount++;
-              onProgress(Math.round((streamFrameCount / MAX_FRAMES) * 95));
+              onProgress(Math.round((streamFrameCount / EXTRACTION_MAX_FRAMES) * 95));
             },
             undefined,
             { signal: effectiveSignal, startFrame, deterministic: true },

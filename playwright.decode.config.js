@@ -6,14 +6,22 @@ export default defineConfig({
   timeout: 300_000,
   retries: 0,
   workers: 1, // sequential: model loading is heavy
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'webkit',
+      use: {
+        ...devices['iPhone 14'],
+      },
+    },
+  ],
   use: {
     baseURL: 'http://localhost:5173',
-    // Chrome: rVFC support, reliable H.264 decode
-    ...devices['Desktop Chrome'],
-    // Allow large payloads (landmark arrays)
-    launchOptions: {
-      args: ['--disable-web-security'],
-    },
   },
   webServer: {
     command: 'npx vite --port 5173',

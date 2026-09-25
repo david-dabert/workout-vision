@@ -1,0 +1,75 @@
+{
+  "generated": "2026-09-25T08:15:46.892Z",
+  "clips": {
+    "bench_press_7_angle_mufhcy60.mov": {
+      "exercise": "bench_press",
+      "samples": 331,
+      "duration": 22.128332999999998,
+      "resolution": "360x640",
+      "decoder": "webcodecs",
+      "targetFps": 15,
+      "maxLongSide": 640,
+      "poseCoverage": 0.5438066465256798,
+      "noseAboveHips": 0.9444444444444444,
+      "peakOpenFrames": 1,
+      "landmarkFile": "bench_press_7_angle_mufhcy60.json",
+      "gzFile": "bench_press_7_angle_mufhcy60.json.gz"
+    },
+    "bicep_curl_7_side_mufhf3wy.mov": {
+      "exercise": "bicep_curl",
+      "samples": 341,
+      "duration": 22.766666999999998,
+      "resolution": "360x640",
+      "decoder": "webcodecs",
+      "targetFps": 15,
+      "maxLongSide": 640,
+      "poseCoverage": 1,
+      "noseAboveHips": 1,
+      "peakOpenFrames": 1,
+      "landmarkFile": "bicep_curl_7_side_mufhf3wy.json",
+      "gzFile": "bicep_curl_7_side_mufhf3wy.json.gz"
+    },
+    "lat_pulldown_10_front_mufhlh4o.mov": {
+      "exercise": "lat_pulldown",
+      "samples": 609,
+      "duration": 40.618333,
+      "resolution": "592x640",
+      "decoder": "webcodecs",
+      "targetFps": 15,
+      "maxLongSide": 640,
+      "poseCoverage": 1,
+      "noseAboveHips": 1,
+      "peakOpenFrames": 1,
+      "landmarkFile": "lat_pulldown_10_front_mufhlh4o.json",
+      "gzFile": "lat_pulldown_10_front_mufhlh4o.json.gz"
+    },
+    "lateral_raise_10_front_mufhhbun.mov": {
+      "exercise": "lateral_raise",
+      "samples": 439,
+      "duration": 29.328332999999997,
+      "resolution": "360x640",
+      "decoder": "webcodecs",
+      "targetFps": 15,
+      "maxLongSide": 640,
+      "poseCoverage": 1,
+      "noseAboveHips": 1,
+      "peakOpenFrames": 1,
+      "landmarkFile": "lateral_raise_10_front_mufhhbun.json",
+      "gzFile": "lateral_raise_10_front_mufhhbun.json.gz"
+    },
+    "overhead_press_10_front_mufhjkku.mov": {
+      "exercise": "overhead_press",
+      "samples": 620,
+      "duration": 41.363333,
+      "resolution": "360x640",
+      "decoder": "webcodecs",
+      "targetFps": 15,
+      "maxLongSide": 640,
+      "poseCoverage": 0.917741935483871,
+      "noseAboveHips": 0.9947275922671354,
+      "peakOpenFrames": 1,
+      "landmarkFile": "overhead_press_10_front_mufhjkku.json",
+      "gzFile": "overhead_press_10_front_mufhjkku.json.gz"
+    }
+  }
+}
