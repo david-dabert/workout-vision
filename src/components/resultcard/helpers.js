@@ -61,9 +61,10 @@ export function reportToGitHub(result) {
   const body = [
     '## Debug Report',
     '',
+    '**Répétitions réellement effectuées / Reps actually performed:**',
+    '',
     `**Exercise:** ${exercise}`,
     `**Reps detected:** ${reps}`,
-    `**Expected reps:** <!-- fill in -->`,
     `**Method:** ${method}`,
     `**Duration:** ${result.duration ? result.duration.toFixed(1) + 's' : '?'}`,
     `**FPS:** ${result.fps || '?'}`,
@@ -83,7 +84,7 @@ export function reportToGitHub(result) {
     `**Quality:** ${diag.measurementQuality || '?'}`,
     '',
     '### Notes',
-    '<!-- Describe what happened, attach the video if possible -->',
+    "N'ajoutez pas de vidéo : cette page est publique. / Do not attach a video: this page is public.",
   ].filter(Boolean).join('\n');
 
   const url = `https://github.com/david-dabert/workout-vision/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=debug-report`;

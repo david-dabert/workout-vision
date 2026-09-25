@@ -240,7 +240,7 @@
   "video_failed": "Video failed to load. Try a different file or shorter clip.",
   "video_load_error": "Video failed to load",
   "too_large": "is too large. Maximum is 500 MB.",
-  "filming_tip": "For best results: film from the side, full body visible, good lighting. One person in frame.",
+  "filming_tip": "Film a single set of under 25 seconds, with your whole body in frame, in 1080p at 30 frames per second (Settings, Camera, Record Video). If the count is wrong, report it with the number of repetitions you actually performed.",
   "ios_large_file_warning": "is {size} MB. For best results on iPhone, use a video under 30 seconds.",
   "phase_hashing": "Indexing",
   "phase_model": "AI Model",
@@ -1683,5 +1683,7 @@
   "grade_reveal_tap": "Tap anywhere to continue",
   "try_demo": "Try a Demo",
   "demo_description": "See what your analysis looks like",
-  "demo_badge": "Demo"
+  "demo_badge": "Demo",
+  "test_banner_line1": "Test version, currently being rebuilt.",
+  "test_banner_line2": "Counts may be inaccurate, and form scores have not been validated."
 }

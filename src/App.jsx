@@ -67,6 +67,26 @@ const LazyFallback = (
   </div>
 );
 
+function TestBanner() {
+  const { t } = useT();
+  return (
+    <div style={{
+      background: 'rgba(255, 180, 0, 0.15)',
+      border: '1px solid rgba(255, 180, 0, 0.3)',
+      borderRadius: 8,
+      padding: '8px 12px',
+      margin: '8px 12px 0',
+      textAlign: 'center',
+      fontSize: '0.75rem',
+      lineHeight: 1.5,
+      color: 'rgba(255, 220, 150, 0.95)',
+    }}>
+      <div style={{ fontWeight: 700 }}>{t('test_banner_line1')}</div>
+      <div>{t('test_banner_line2')}</div>
+    </div>
+  );
+}
+
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
   const { t } = useT();
@@ -163,6 +183,7 @@ function AppInner() {
 
   if (page === 'analyze') return (
     <ErrorBoundary>
+      <TestBanner />
       <Suspense fallback={LazyFallback}>
         <div key="analyze" className="page-transition-enter">
           <Analyze onClose={() => setPage('dashboard')} onLiveMode={() => setPage('live')} />
@@ -172,6 +193,7 @@ function AppInner() {
   );
   if (page === 'live') return (
     <ErrorBoundary>
+      <TestBanner />
       <Suspense fallback={LazyFallback}>
         <div key="live" className="page-transition-enter">
           <LiveCapture onClose={() => setPage('dashboard')} profile={profile} />
@@ -181,6 +203,7 @@ function AppInner() {
   );
   if (page === 'log') return (
     <ErrorBoundary>
+      <TestBanner />
       <Suspense fallback={LazyFallback}>
         <div key="log" className="page-transition-enter">
           <ManualLog onClose={() => setPage('dashboard')} />
@@ -284,6 +307,7 @@ function AppInner() {
   return (
     <div className="app">
       <a href="#main-content" className="skip-link">{t('skip_to_content') || 'Skip to content'}</a>
+      <TestBanner />
       <main id="main-content">
         <ErrorBoundary>
           {pageContent}

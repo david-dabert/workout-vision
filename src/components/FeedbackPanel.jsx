@@ -155,6 +155,8 @@ function FeedbackPanel({ result }) {
     const { browser, device } = getDeviceInfo();
     const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'unknown';
     const body = [
+      '**Répétitions réellement effectuées / Reps actually performed:**',
+      '',
       `**Device:** ${device}`,
       `**Browser:** ${browser}`,
       `**App Version:** ${version}`,
@@ -164,7 +166,7 @@ function FeedbackPanel({ result }) {
       result?.correctedResult ? `**Expected:** ${result.correctedResult.reps}` : '',
       '',
       '**What happened:**',
-      '[Please describe the issue]',
+      "N'ajoutez pas de vidéo : cette page est publique. / Do not attach a video: this page is public.",
     ].filter(Boolean).join('\n');
 
     return `https://github.com/david-dabert/workout-vision/issues/new?title=${encodeURIComponent('Analysis Issue')}&body=${encodeURIComponent(body)}`;

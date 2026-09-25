@@ -240,7 +240,7 @@
   "video_failed": "Échec du chargement vidéo. Essayez un autre fichier ou un clip plus court.",
   "video_load_error": "Échec du chargement vidéo",
   "too_large": "est trop volumineux. Maximum 500 Mo.",
-  "filming_tip": "Pour de meilleurs résultats : filmez de côté, corps entier visible, bonne lumière. Une seule personne dans le cadre.",
+  "filming_tip": "Filmez une seule série de moins de 25 secondes, corps entier visible, en 1080p à 30 images par seconde (Réglages, Appareil photo, Enregistrement vidéo). Si le comptage est faux, signalez-le en indiquant le nombre de répétitions réellement effectuées.",
   "ios_large_file_warning": "fait {size} MB. Pour de meilleurs résultats sur iPhone, utilisez une vidéo de moins de 30 secondes.",
   "phase_hashing": "Indexation",
   "phase_model": "Modèle IA",
@@ -1683,5 +1683,7 @@
   "grade_reveal_tap": "Appuyez n'importe o\u00f9 pour continuer",
   "try_demo": "Essayer une d\u00e9mo",
   "demo_description": "D\u00e9couvrez \u00e0 quoi ressemble votre analyse",
-  "demo_badge": "D\u00e9mo"
+  "demo_badge": "D\u00e9mo",
+  "test_banner_line1": "Version de test, en cours de refonte.",
+  "test_banner_line2": "Les comptages peuvent \u00eatre inexacts et les notes de forme ne sont pas valid\u00e9es."
 }
