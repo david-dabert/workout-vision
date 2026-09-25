@@ -177,6 +177,7 @@ export default function ExerciseGuideLibrary({ onClose }) {
 }
 
 function ExerciseDetail({ exercise, onClose, t, tExercise }) {
+  const { lang } = useT();
   const ex = EXERCISES[exercise.key];
 
   return (
@@ -210,7 +211,9 @@ function ExerciseDetail({ exercise, onClose, t, tExercise }) {
 
         {!exercise.hasFullData && (
           <p className={css.detailSecondary} style={{ fontStyle: 'italic', marginBottom: 12 }}>
-            Visual guide only — full form analysis not yet available for this exercise.
+            {lang === 'fr'
+              ? 'Pas encore compté par l\u2019app. Le guide montre le mouvement.'
+              : 'Not counted by the app yet. The guide shows the movement.'}
           </p>
         )}
 
