@@ -378,7 +378,11 @@ export async function analyzeVideoFile({
               pendingInferences.push(inferPromise);
 
               streamFrameCount++;
-              onProgress(Math.round((streamFrameCount / EXTRACTION_MAX_FRAMES) * 95));
+              // Estimate total frames from video duration (or cap if set)
+              const estTotal = videoDuration > 0 && isFinite(videoDuration)
+                ? Math.min(Math.floor(videoDuration * analysisFps), EXTRACTION_MAX_FRAMES)
+                : EXTRACTION_MAX_FRAMES;
+              onProgress(Math.round((streamFrameCount / (isFinite(estTotal) ? estTotal : Math.max(streamFrameCount, 1))) * 95));
             },
             undefined,
             { signal: effectiveSignal, startFrame, deterministic: true },
@@ -427,7 +431,10 @@ export async function analyzeVideoFile({
               }
 
               streamFrameCount++;
-              onProgress(Math.round((streamFrameCount / EXTRACTION_MAX_FRAMES) * 95));
+              const estTotal = videoDuration > 0 && isFinite(videoDuration)
+                ? Math.min(Math.floor(videoDuration * analysisFps), EXTRACTION_MAX_FRAMES)
+                : EXTRACTION_MAX_FRAMES;
+              onProgress(Math.round((streamFrameCount / (isFinite(estTotal) ? estTotal : Math.max(streamFrameCount, 1))) * 95));
             },
             undefined,
             { signal: effectiveSignal, startFrame, deterministic: true },
@@ -489,6 +496,35 @@ export async function analyzeVideoFile({
     if (frames.length === 0) {
       clearTimeout(timeoutId);
       return { error: true, errorReason: 'No poses detected in any frame. Ensure your full body is visible with good lighting.' };
+    }
+
+    // Orientation check: for upright lifts, nose (landmark 0) must be above
+    // hips (landmarks 23, 24) in normalised image coordinates (y increases
+    // downward). If fewer than 90% of detected frames pass, the video is
+    // likely rotated or the person is not upright; refuse with explanation.
+    {
+      let noseAboveCount = 0;
+      let checkedCount = 0;
+      for (const f of frames) {
+        const lm = f.landmarks;
+        if (!lm) continue;
+        const nose = lm[0];
+        const lHip = lm[23];
+        const rHip = lm[24];
+        if (nose && lHip && rHip) {
+          checkedCount++;
+          const hipY = (lHip.y + rHip.y) / 2;
+          if (nose.y < hipY) noseAboveCount++;
+        }
+      }
+      const noseAboveRatio = checkedCount > 0 ? noseAboveCount / checkedCount : 0;
+      if (checkedCount > 0 && noseAboveRatio < 0.9) {
+        clearTimeout(timeoutId);
+        return {
+          error: true,
+          errorReason: `Orientation could not be read: nose above hips in only ${Math.round(noseAboveRatio * 100)}% of frames (need 90%). Film upright in portrait mode.`,
+        };
+      }
     }
 
     // If user locked an exercise via chips during progressive detection,

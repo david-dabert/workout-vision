@@ -165,6 +165,7 @@ async function processFile(file) {
     midFrameWidth: midW,
     midFrameHeight: midH,
     peakOpenFrames: streamResult.peakOpenFrames || 0,
+    rotationDecision: streamResult.rotationDecision || 'none',
     poseCoverage,
     noseAboveHips,
   };

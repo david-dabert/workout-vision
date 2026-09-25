@@ -467,41 +467,27 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
     // We detect on the first frame: draw at coded aspect, check if the result
     // matches display aspect ratio (auto-rotated) or coded aspect (needs manual).
     let needsManualRotation = null;
+    let rotationDecision = '';
 
     function probeAutoRotation(frame) {
       if (!swapDims) return false;
-      // Chromium's canvas.drawImage auto-applies VideoFrame rotation metadata.
-      // WebKit does NOT — it draws coded pixels without rotation.
-      // Detection: draw the frame onto a probe canvas sized to DISPLAY aspect (portrait).
-      // Then check if the rendered content fills the canvas width.
-      //   - Chromium (auto-rotates): portrait content fills the portrait canvas fully.
-      //   - WebKit (no rotation): landscape coded content drawn into portrait canvas;
-      //     the content is stretched vertically, producing a distorted image, but critically
-      //     we can detect the difference by drawing at CODED aspect instead and checking
-      //     the output dimensions via a second draw.
+      // The VideoFrame carries its own rotation metadata when the browser's
+      // VideoDecoder processes the container's rotation. Chrome sets
+      // frame.rotation (e.g. 90) and swaps display dimensions to portrait;
+      // its drawImage auto-applies the rotation. WebKit ignores container
+      // rotation: frame.rotation is absent, display dimensions stay at
+      // coded (landscape), and drawImage draws coded pixels as-is.
       //
-      // Simpler and fully reliable: draw the frame twice — once at coded aspect ratio,
-      // once at display aspect ratio — to two tiny canvases. Sample a diagonal pixel
-      // strip from each. The one where the person is upright (not sideways) will have
-      // more color variance along the vertical axis. BUT this is fragile.
-      //
-      // Most reliable: detect the rendering engine. WebKit exposes specific APIs.
-      // This is not UA sniffing — it's checking for WebKit-only DOM APIs.
-      const isWebKit = (
-        typeof window !== 'undefined' &&
-        'webkitConvertPointFromNodeToPage' in window
-      );
-      if (isWebKit) {
-        console.log('[frameExtractor] WebKit engine detected — manual rotation required');
-        return true;
-      }
-      // Fallback: check for WebKit via CSS
-      if (typeof CSS !== 'undefined' && CSS.supports && CSS.supports('-webkit-touch-callout', 'none')) {
-        console.log('[frameExtractor] WebKit engine detected via CSS — manual rotation required');
-        return true;
-      }
-      console.log('[frameExtractor] Non-WebKit engine — relying on auto-rotation');
-      return false;
+      // Decision: if frame.rotation is a non-zero number, the decoder
+      // embedded the rotation and drawImage will handle it. Otherwise,
+      // we rotate by hand using the container rotation from web-demuxer.
+      const frameRotation = frame.rotation;
+      const frameCarriesRotation = (typeof frameRotation === 'number' && frameRotation !== 0);
+      rotationDecision = frameCarriesRotation
+        ? `frame carries rotation=${frameRotation}, drawImage handles it`
+        : `frame has no rotation (rotation=${frameRotation}), manual rotation=${rotation}° from container`;
+      console.log(`[frameExtractor] Rotation decision: ${rotationDecision}`);
+      return !frameCarriesRotation;
     }
 
     const drawFrame = (frame) => {
@@ -559,7 +545,7 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
     try { decoder.close(); } catch {}
     await feedPromise;
 
-    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames };
+    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames, rotationDecision };
   } finally {
     demuxer.destroy();
   }

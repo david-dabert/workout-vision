@@ -353,6 +353,16 @@ export function detectPoseImage(landmarker, source, timestamp) {
       if (ts > _imageMaxTimestamp) _imageMaxTimestamp = ts;
       result = landmarker.detectForVideo(source, ts);
     }
+    // Log raw landmark point keys once (before any filtering)
+    if (result && result.landmarks && result.landmarks.length > 0 && !detectPoseImage._loggedKeys) {
+      detectPoseImage._loggedKeys = true;
+      const rawPt = result.landmarks[0][0];
+      const rawWPt = result.worldLandmarks?.[0]?.[0];
+      console.log('[PoseAnalysis] Raw image landmark point keys:', rawPt ? Object.keys(rawPt) : 'null');
+      console.log('[PoseAnalysis] Raw image landmark point 0:', rawPt ? JSON.stringify(rawPt) : 'null');
+      console.log('[PoseAnalysis] Raw world landmark point keys:', rawWPt ? Object.keys(rawWPt) : 'null');
+      console.log('[PoseAnalysis] Raw world landmark point 0:', rawWPt ? JSON.stringify(rawWPt) : 'null');
+    }
     // Apply Kalman filter to smooth landmark coordinates before downstream use
     if (result && result.landmarks) {
       for (let i = 0; i < result.landmarks.length; i++) {
