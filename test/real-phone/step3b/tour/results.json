@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "count": 10,
+  "screenshots": [
+    "01-entry",
+    "02-choice",
+    "03-film",
+    "04-watch-start",
+    "05-result",
+    "06-saved",
+    "07-report",
+    "08-back-to-choice",
+    "09-guide",
+    "10-guide-exercises"
+  ],
+  "exercisesInGuide": 302,
+  "exercisesChecked": 10,
+  "errors": [],
+  "failed": []
+}
