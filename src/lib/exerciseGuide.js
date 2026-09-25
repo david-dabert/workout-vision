@@ -782,15 +782,14 @@ function buildFrames(slug) {
  * @returns {{ slug: string, frames: string[] } | null}
  */
 export function getExerciseFrames(exerciseKey) {
-  // Check KEY_TO_SLUG first (legacy mappings, e.g. squat -> barbell-back-squat)
-  const legacySlug = KEY_TO_SLUG[exerciseKey];
-  if (legacySlug) {
-    return { slug: legacySlug, frames: buildFrames(legacySlug) };
-  }
-  // Check GUIDE_EXERCISES
+  // GUIDE_EXERCISES first (canonical slugs); KEY_TO_SLUG is a legacy fallback
   const guide = GUIDE_EXERCISES[exerciseKey];
   if (guide) {
     return { slug: guide.slug, frames: buildFrames(guide.slug) };
+  }
+  const legacySlug = KEY_TO_SLUG[exerciseKey];
+  if (legacySlug) {
+    return { slug: legacySlug, frames: buildFrames(legacySlug) };
   }
   return null;
 }
@@ -810,8 +809,8 @@ export function hasExerciseGuide(exerciseKey) {
  * @returns {string|null}
  */
 export function getSlug(exerciseKey) {
-  if (KEY_TO_SLUG[exerciseKey]) return KEY_TO_SLUG[exerciseKey];
   if (GUIDE_EXERCISES[exerciseKey]) return GUIDE_EXERCISES[exerciseKey].slug;
+  if (KEY_TO_SLUG[exerciseKey]) return KEY_TO_SLUG[exerciseKey];
   return null;
 }
 

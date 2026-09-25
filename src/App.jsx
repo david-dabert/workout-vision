@@ -71,15 +71,15 @@ function TestBanner() {
   const { t } = useT();
   return (
     <div style={{
-      background: 'rgba(255, 180, 0, 0.15)',
-      border: '1px solid rgba(255, 180, 0, 0.3)',
+      background: 'var(--accent-glow-strong, rgba(255, 180, 0, 0.15))',
+      border: '1px solid var(--accent-glow, rgba(255, 180, 0, 0.3))',
       borderRadius: 8,
       padding: '8px 12px',
       margin: '8px 12px 0',
       textAlign: 'center',
       fontSize: '0.75rem',
       lineHeight: 1.5,
-      color: 'rgba(255, 220, 150, 0.95)',
+      color: 'var(--text-secondary, rgba(255, 220, 150, 0.95))',
     }}>
       <div style={{ fontWeight: 700 }}>{t('test_banner_line1')}</div>
       <div>{t('test_banner_line2')}</div>

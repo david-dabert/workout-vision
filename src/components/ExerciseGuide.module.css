@@ -296,6 +296,15 @@
     color: var(--text, #1a1a1e);
   }
 
+  .searchInput::placeholder {
+    color: rgba(26, 26, 30, 0.35);
+  }
+
+  .filterChip {
+    color: rgba(26, 26, 30, 0.55);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
   .exerciseCard {
     background: rgba(0, 0, 0, 0.02);
     border-color: rgba(0, 0, 0, 0.06);
