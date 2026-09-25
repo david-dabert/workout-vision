@@ -50,6 +50,11 @@ Production build in the WebKit iPhone profile: open the dashboard, tap Exercise 
 - Route the demuxer's FFmpeg log lines to console.info with a [demuxer] prefix, as you did for XNNPACK. Console errors remain a failure.
 - scripts/copy-models.js downloads the model tagged float16/latest, so a Google update would change the live app without a commit. Point it at float16/1 and fail the build when the file's SHA-256 differs from a value recorded in the script.
 - index.html now allows unsafe-eval. Offset it: remove https://cdn.jsdelivr.net, https://unpkg.com and https://storage.googleapis.com from script-src and connect-src if a search proves nothing loads from them. Paste the search.
+- npm ci fails on counter-core with "Missing: esbuild@0.28.2 from lock file". Bring package-lock.json in line with package.json, and make the workflows on counter-core use npm ci.
+- .github/workflows/pr-preview.yml publishes to gh-pages, which the rules forbid. Delete it.
+- Remove the deploy script from package.json.
+- The service worker precaches the pose model under a cache name that changes with every build, so each deploy makes every returning phone download the model again. Keep the model in its own cache, named after its SHA-256, and delete only superseded caches.
+- ci.yml runs only for main. Run lint, typecheck, tests and the build on every push to counter-core.
 STOP.
 
 3b. EXPERIENCE. Starts only when David has approved the prototype and it sits in the repository as design/experience-prototype.html. Build the app to match it, screen by screen. Until 3c passes, the result screen and the coach report show no per-rep durations or ranges: the bars become one equal mark per counted rep.
@@ -63,8 +68,12 @@ STOP.
 - Coach report. Opens from the result. It contains the lift, the date, the client's name, the coach's name, the count and the coach's notes, plus per-rep details once 3c passes. No form score, no estimated maximum, no training load. On iPhone Safari the PDF opens the share sheet. Attach a PDF generated from one of the three approved clips to the STOP report.
 - Touch. Every tap shows a pressed state within 100 ms. Targets are at least 44 points. A haptic tick on Enter, on choosing a lift and on confirming the count: navigator.vibrate where it exists; on iPhone, the switch-input method (Safari 17.4 and later, one tick per real tap only).
 - Everything outside this path is hidden, not deleted: for example challenges, badges, confetti, injury risk, weekly report, rest timer, manual log, live camera, validate. List what you hid.
-- Tour test. One Playwright test on the production build in the WebKit iPhone profile: first visit through the link, entry, choice, filming with one of the three approved clips, analysis, result, confirmation, coach PDF, then ten random guide exercises. It fails on any console error, failed request, missing image or wrong destination. Paste every screenshot. STOP.
+- Tour test. One Playwright test on the production build in the WebKit iPhone profile: first visit through the link, entry, choice, filming with one of the three approved clips, analysis, result, confirmation, coach PDF, then ten random guide exercises. It fails on any console error, failed request, missing image or wrong destination. Paste every screenshot.
+- Fonts are served by the app, not by Google.
+- Guide frames are served by the app as WebP at the size shown, loaded lazily, not precached; remove https://cdn.jsdelivr.net from img-src once they are.
+- The 14 exercises hidden in dd19de2 are mapped to a frame set or removed from the list.
+STOP.
 
-4. PREVIEW. On Vercel, production deploys only from a release branch and every other branch gets its own preview link. Make the Vite base path work on both Vercel and GitHub Pages. Give David the counter-core preview link and confirm it opens on a phone. If Vercel access fails, tell David the exact steps; install no certificate on his phone. STOP.
+4. PREVIEW. Done outside the repository on 25 September. The counter-core preview is https://workout-vision-next.vercel.app, built from GitHub on Azélie's Vercel account under the same /workout-vision/ path as the live site, so the base path needs no change. It does not rebuild on push; after each push to counter-core, David has it rebuilt. Step 5 still requires David's approval of the preview on his phone.
 
 5. SWITCH. Only after David approves the preview on his phone. main takes counter-core's app through a merge, never a force push; the test notice stays. Returning users keep their history. On the live site, open the link as a first-time visitor and as a returning one, and paste both. STOP.
