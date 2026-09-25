@@ -12,20 +12,26 @@
  * have the highest average visibility across the set. Short dropouts (< bridgeGap)
  * are filled with the last valid angle; the arm never alternates frame-by-frame.
  *
- * Rep detection: Savitzky–Golay smoothed angle crosses a low threshold (from
- * extended/abducted) and a high threshold (from flexed/adducted) derived from
- * the set's own 10th/90th percentile range. A rep is one full cycle
- * (cross low → cross high → cross low) whose duration falls within [minRepSec, maxRepSec].
+ * Signal conditioning pipeline: outlier removal → bridge dropouts → Savitzky–Golay.
+ * Outlier removal nulls samples that deviate from their local median by more
+ * than OUTLIER_DEVIATION_DEG (rejects pose-estimation glitches without
+ * attenuating shallow reps). SG smoothing then operates on clean data.
+ * All windows are defined in seconds and converted to samples at runtime.
+ *
+ * Rep detection: smoothed angle crosses a low threshold (from extended/abducted)
+ * and a high threshold (from flexed/adducted) derived from the set's own
+ * 10th/90th percentile range. A rep is one full cycle whose duration falls
+ * within [minRepSec, maxRepSec].
  *
  * Every parameter is in seconds or degrees, never frames.
  *
  * References (fixed parameters only):
- *   Savitzky–Golay window: 5 points at 15 fps ≈ 333 ms, standard for
- *     biomechanical signal smoothing (Winter, "Biomechanics and Motor Control
- *     of Human Movement", 4th ed., ch. 2).
- *   Rep duration bounds: 0.4–8.0 s covers controlled eccentrics through
- *     explosive concentrics across standard resistance exercises (Schoenfeld
- *     et al., "Resistance Training Recommendations", ACSM, 2009).
+ *   Rep duration bounds: 0.5–8.0 s covers controlled eccentrics through
+ *     explosive concentrics across standard resistance exercises (Schoenfeld,
+ *     Ogborn & Krieger, "Effect of Repetition Duration During Resistance
+ *     Training on Muscle Hypertrophy", Sports Medicine 2015; 45(4):577-85).
+ *   Savitzky–Golay window and outlier parameters: unvalidated starting values.
+ *     Not derived from a specific published recommendation.
  */
 
 // ─── Types ───
@@ -69,18 +75,28 @@ const L_ELBOW = 13, R_ELBOW = 14;
 const L_WRIST = 15, R_WRIST = 16;
 const L_HIP = 23, R_HIP = 24;
 
-// Savitzky–Golay quadratic, 5-point kernel (symmetric, preserves peaks)
-const SG5 = [-3, 12, 17, 12, -3].map(v => v / 35);
+// Savitzky–Golay quadratic kernels (symmetric, preserves peaks)
+// Selected at runtime from SG_WINDOW_SEC and actual sample rate.
+const SG_KERNELS: Record<number, number[]> = {
+  3: [1, 1, 1].map(v => v / 3),
+  5: [-3, 12, 17, 12, -3].map(v => v / 35),
+  7: [-2, 3, 6, 7, 6, 3, -2].map(v => v / 21),
+  9: [-21, 14, 39, 54, 59, 54, 39, 14, -21].map(v => v / 231),
+  11: [-36, 9, 44, 69, 84, 89, 84, 69, 44, 9, -36].map(v => v / 429),
+};
 
 // Unvalidated starting values — recorded per PLAN.md rule
-const BRIDGE_GAP_SEC = 0.5;      // max dropout to bridge
-const MIN_REP_SEC = 0.4;         // shortest plausible rep
-const MAX_REP_SEC = 8.0;         // longest plausible rep
-const PERCENTILE_LOW = 10;       // for threshold from set's own range
+const BRIDGE_GAP_SEC = 0.5;       // max dropout to bridge
+const OUTLIER_WINDOW_SEC = 0.5;   // window for local median in outlier removal
+const OUTLIER_DEVIATION_DEG = 40; // max deviation from local median before nulling
+const SG_WINDOW_SEC = 0.333;      // Savitzky–Golay window in seconds
+const MIN_REP_SEC = 0.5;          // shortest plausible rep (Schoenfeld et al. 2015)
+const MAX_REP_SEC = 8.0;          // longest plausible rep
+const PERCENTILE_LOW = 10;        // for threshold from set's own range
 const PERCENTILE_HIGH = 90;
-const THRESHOLD_MARGIN = 0.20;   // fraction of range added as hysteresis band
-const MIN_ROM_DEGREES = 20;      // minimum ROM to accept a rep
-const VIS_THRESHOLD = 0.5;       // per-joint visibility floor
+const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
+const MIN_ROM_DEGREES = 20;       // minimum ROM to accept a rep
+const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
 
 // ─── Public API ───
 
@@ -98,13 +114,21 @@ export function countReps(
     return extractAngle(wl, lift, arm);
   });
 
-  // 3. Bridge short dropouts
-  const bridged = bridgeDropouts(rawAngles, timestamps, BRIDGE_GAP_SEC);
+  // 3. Estimate sample rate from timestamps
+  const sampleRate = estimateSampleRate(timestamps);
 
-  // 4. Smooth with Savitzky–Golay
-  const smoothed = savitzkyGolay(bridged);
+  // 4. Remove outliers (before bridging, so spikes don't propagate)
+  const outlierSize = secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
+  const cleaned = removeOutliers(rawAngles, outlierSize, OUTLIER_DEVIATION_DEG);
 
-  // 5. Compute thresholds from the set's own range
+  // 5. Bridge short dropouts
+  const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
+
+  // 6. Smooth with Savitzky–Golay (window in seconds)
+  const sgSize = secToOddSamples(SG_WINDOW_SEC, sampleRate);
+  const smoothed = savitzkyGolay(bridged, sgSize);
+
+  // 7. Compute thresholds from the set's own range
   const validAngles = smoothed.filter((a): a is number => a !== null);
   if (validAngles.length < 3) {
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
@@ -123,10 +147,10 @@ export function countReps(
   const lowThreshold = pLow + margin;
   const highThreshold = pHigh - margin;
 
-  // 6. Detect reps via threshold crossings
+  // 8. Detect reps via threshold crossings
   const reps = detectReps(smoothed, timestamps, lowThreshold, highThreshold, lift);
 
-  // 7. Confidence: fraction of samples with a detected pose on the tracked arm
+  // 9. Confidence: fraction of samples with a detected pose on the tracked arm
   const totalSamples = worldLandmarks.length;
   const detectedSamples = rawAngles.filter(a => a !== null).length;
   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
@@ -142,7 +166,6 @@ function selectArm(worldLandmarks: WorldLandmarkFrame[], lift: Lift): 'left' | '
     if (!wl) continue;
     count++;
     if (lift === 'lateral_raise') {
-      // For lateral raise, we need hip + shoulder + elbow
       lVis += vis(wl[L_HIP]) + vis(wl[L_SHOULDER]) + vis(wl[L_ELBOW]);
       rVis += vis(wl[R_HIP]) + vis(wl[R_SHOULDER]) + vis(wl[R_ELBOW]);
     } else {
@@ -163,20 +186,17 @@ function vis(p: WorldLandmark): number {
 function extractAngle(wl: WorldLandmark[], lift: Lift, arm: 'left' | 'right'): number | null {
   let a: WorldLandmark, b: WorldLandmark, c: WorldLandmark;
   if (lift === 'lateral_raise') {
-    // Shoulder abduction: hip–shoulder–elbow
     const hip = arm === 'left' ? wl[L_HIP] : wl[R_HIP];
     const shoulder = arm === 'left' ? wl[L_SHOULDER] : wl[R_SHOULDER];
     const elbow = arm === 'left' ? wl[L_ELBOW] : wl[R_ELBOW];
     a = hip; b = shoulder; c = elbow;
   } else {
-    // Elbow angle: shoulder–elbow–wrist
     const shoulder = arm === 'left' ? wl[L_SHOULDER] : wl[R_SHOULDER];
     const elbow = arm === 'left' ? wl[L_ELBOW] : wl[R_ELBOW];
     const wrist = arm === 'left' ? wl[L_WRIST] : wl[R_WRIST];
     a = shoulder; b = elbow; c = wrist;
   }
 
-  // Check visibility of all three joints
   if (vis(a) < VIS_THRESHOLD || vis(b) < VIS_THRESHOLD || vis(c) < VIS_THRESHOLD) {
     return null;
   }
@@ -192,6 +212,57 @@ function angleDeg(a: WorldLandmark, vertex: WorldLandmark, c: WorldLandmark): nu
   const m2 = Math.sqrt(v2x * v2x + v2y * v2y + v2z * v2z);
   if (m1 < 1e-9 || m2 < 1e-9) return 0;
   return Math.acos(Math.max(-1, Math.min(1, dot / (m1 * m2)))) * (180 / Math.PI);
+}
+
+// ─── Sample rate helpers ───
+
+function estimateSampleRate(timestamps: number[]): number {
+  if (timestamps.length < 2) return 15;
+  const duration = timestamps[timestamps.length - 1] - timestamps[0];
+  if (duration <= 0) return 15;
+  return (timestamps.length - 1) / duration;
+}
+
+function secToOddSamples(sec: number, sampleRate: number): number {
+  let n = Math.round(sec * sampleRate);
+  if (n < 3) n = 3;
+  if (n % 2 === 0) n += 1;
+  return n;
+}
+
+// ─── Outlier removal ───
+
+/**
+ * Nulls samples that deviate from their local median by more than maxDev degrees.
+ * Requires at least 2 non-null neighbors (excluding self) to judge; otherwise
+ * keeps the sample. Run before bridging so spikes don't propagate.
+ */
+function removeOutliers(
+  angles: (number | null)[],
+  windowSize: number,
+  maxDev: number,
+): (number | null)[] {
+  const result: (number | null)[] = [...angles];
+  const half = Math.floor(windowSize / 2);
+
+  for (let i = 0; i < angles.length; i++) {
+    if (angles[i] === null) continue;
+    const neighbors: number[] = [];
+    const lo = Math.max(0, i - half);
+    const hi = Math.min(angles.length - 1, i + half);
+    for (let j = lo; j <= hi; j++) {
+      if (j === i) continue;
+      const v = angles[j];
+      if (v !== null) neighbors.push(v);
+    }
+    if (neighbors.length < 2) continue;
+    neighbors.sort((a, b) => a - b);
+    const median = neighbors[Math.floor(neighbors.length / 2)];
+    if (Math.abs(angles[i]! - median) > maxDev) {
+      result[i] = null;
+    }
+  }
+  return result;
 }
 
 // ─── Bridging ───
@@ -218,17 +289,18 @@ function bridgeDropouts(
 
 // ─── Smoothing ───
 
-function savitzkyGolay(angles: (number | null)[]): (number | null)[] {
+function savitzkyGolay(angles: (number | null)[], windowSize: number): (number | null)[] {
+  const kernel = SG_KERNELS[windowSize] ?? SG_KERNELS[5];
   const result: (number | null)[] = [...angles];
-  const half = Math.floor(SG5.length / 2);
+  const half = Math.floor(kernel.length / 2);
 
   for (let i = half; i < angles.length - half; i++) {
     let sum = 0;
     let allValid = true;
-    for (let j = 0; j < SG5.length; j++) {
+    for (let j = 0; j < kernel.length; j++) {
       const v = angles[i - half + j];
       if (v === null) { allValid = false; break; }
-      sum += SG5[j] * v;
+      sum += kernel[j] * v;
     }
     if (allValid) result[i] = sum;
   }
@@ -240,15 +312,9 @@ function savitzkyGolay(angles: (number | null)[]): (number | null)[] {
 /**
  * For elbow-angle lifts (curl, bench, overhead, pulldown), a rep cycle is:
  *   extended (high angle) → flexed (low angle) → extended (high angle)
- * The "low" crossing marks peak flexion, the return to "high" completes the rep.
  *
  * For lateral raise (shoulder abduction), a rep cycle is:
- *   adducted (low angle, arms at sides) → abducted (high angle, arms raised) → adducted
- *
- * We unify by tracking: cross below lowThreshold, then cross above highThreshold.
- * For elbow lifts this is natural (extended → flexed → extended).
- * For lateral raise, we invert: the signal goes low→high→low, so we
- * swap thresholds to detect abduction reps correctly.
+ *   adducted (low angle) → abducted (high angle) → adducted
  */
 function detectReps(
   smoothed: (number | null)[],
@@ -257,30 +323,19 @@ function detectReps(
   highThreshold: number,
   lift: Lift,
 ): RepDetail[] {
-  // For lateral raise, reps go from low (arms down) → high (arms up) → low.
-  // For elbow lifts, reps go from high (extended) → low (flexed) → high.
-  // We normalise: "phase A" is the first half, "phase B" is the return.
   const isAbduction = lift === 'lateral_raise';
-
-  // In both cases we detect: cross threshold A → cross threshold B → that's one rep.
-  // Elbow lifts: A = drop below high, B = rise above high after touching low
-  // Lateral raise: A = rise above low, B = drop below low after touching high
-
   const reps: RepDetail[] = [];
   let state: 'waiting' | 'inRep' = 'waiting';
   let repStartIdx = -1;
   let peakAngle = -Infinity;
   let troughAngle = Infinity;
-  let crossIdx = -1; // index where the mid-rep extremum was reached
+  let crossIdx = -1;
 
   for (let i = 0; i < smoothed.length; i++) {
     const angle = smoothed[i];
     if (angle === null) continue;
 
     if (isAbduction) {
-      // Lateral raise: arms start down (low angle ~15°), rise to ~90-110°, return.
-      // Rep starts when angle rises above lowThreshold, ends when it drops back below lowThreshold
-      // after having been above highThreshold.
       if (state === 'waiting') {
         if (angle > lowThreshold) {
           state = 'inRep';
@@ -294,27 +349,22 @@ function detectReps(
         troughAngle = Math.min(troughAngle, angle);
         if (angle >= highThreshold) crossIdx = i;
         if (angle < lowThreshold && crossIdx > -1) {
-          // Rep complete
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
           if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
-            const concentricEnd = timestamps[crossIdx];
             reps.push({
               index: reps.length + 1,
               startTime: timestamps[repStartIdx],
               endTime: timestamps[i],
               romDegrees: rom,
-              concentricSec: concentricEnd - timestamps[repStartIdx],
-              eccentricSec: timestamps[i] - concentricEnd,
+              concentricSec: timestamps[crossIdx] - timestamps[repStartIdx],
+              eccentricSec: timestamps[i] - timestamps[crossIdx],
             });
           }
           state = 'waiting';
         }
       }
     } else {
-      // Elbow lifts: arms start extended (high angle ~170°), flex to ~50°, return.
-      // Rep starts when angle drops below highThreshold, ends when it rises back above highThreshold
-      // after having been below lowThreshold.
       if (state === 'waiting') {
         if (angle < highThreshold) {
           state = 'inRep';
@@ -328,18 +378,16 @@ function detectReps(
         troughAngle = Math.min(troughAngle, angle);
         if (angle <= lowThreshold) crossIdx = i;
         if (angle > highThreshold && crossIdx > -1) {
-          // Rep complete
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
           if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
-            const eccentricEnd = timestamps[crossIdx];
             reps.push({
               index: reps.length + 1,
               startTime: timestamps[repStartIdx],
               endTime: timestamps[i],
               romDegrees: rom,
-              concentricSec: eccentricEnd - timestamps[repStartIdx],
-              eccentricSec: timestamps[i] - eccentricEnd,
+              concentricSec: timestamps[crossIdx] - timestamps[repStartIdx],
+              eccentricSec: timestamps[i] - timestamps[crossIdx],
             });
           }
           state = 'waiting';

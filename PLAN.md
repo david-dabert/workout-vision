@@ -12,6 +12,7 @@ RULES
 - At each STOP, confirm no video file is tracked, push counter-core to GitHub, and wait for David's reply.
 - Stage files by path. Never run git add -A or git add .
 - Never run npm run deploy or push to gh-pages.
+- Never type a measured number by hand; every number in a report comes from a run whose output is pasted.
 - Exception approved by David on 25 September: main carries a test notice, a filming tip and report-form changes; nothing else changes on main.
 
 0. FREEZE. Stop every background agent. Commit all uncommitted work, on whatever branch it sits, to a branch named park-<date>; delete nothing. Then create counter-core from hotfix-ios and commit this message to it as PLAN.md at the repository root. List every branch with its last commit and one line on what it holds, including where the five-layer rebuild lives, and say which commit the live site serves. Confirm no video file appears anywhere in the repository's history; if one does, tell David and rewrite nothing. STOP.
