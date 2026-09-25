@@ -23,7 +23,8 @@
  *        with: npm install @ffmpeg/core@0.12.6
  */
 
-import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync, readFileSync } from 'fs';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -44,7 +45,15 @@ const COPIES = [
   // },
 ];
 
-const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task';
+const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+
+// SHA-256 of the immutable float16/1 archive; checked before writing and on every build.
+const MODEL_SHA256 = '5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1';
+function verifyModel(buffer) {
+  const actual = createHash('sha256').update(buffer).digest('hex');
+  if (actual !== MODEL_SHA256) throw new Error(`Model SHA-256 mismatch: expected ${MODEL_SHA256}, received ${actual}`);
+  console.log(`[copy-models] Model SHA-256 verified: ${actual}`);
+}
 
 let exitCode = 0;
 
@@ -52,7 +61,7 @@ for (const { name, src, dest } of COPIES) {
   if (!existsSync(src)) {
     console.warn(`[copy-models] WARN: ${name} source not found at ${src}`);
     console.warn(`[copy-models]       Run 'npm install' and try again.`);
-    exitCode = 0; // warn but don't fail the build
+    exitCode = 1; // missing runtime assets must fail the build
     continue;
   }
 
@@ -79,6 +88,7 @@ if (!existsSync(modelDest)) {
     const resp = await fetch(MODEL_URL);
     if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
     const buffer = Buffer.from(await resp.arrayBuffer());
+    verifyModel(buffer);
     writeFileSync(modelDest, buffer);
     console.log(`[copy-models] OK: pose_landmarker_full.task (${buffer.length} bytes)`);
   } catch (err) {
@@ -86,7 +96,13 @@ if (!existsSync(modelDest)) {
     exitCode = 1;
   }
 } else {
-  console.log(`[copy-models] OK: pose_landmarker_full.task already present`);
+  try {
+    verifyModel(readFileSync(modelDest));
+    console.log(`[copy-models] OK: pose_landmarker_full.task already present`);
+  } catch (err) {
+    console.error(`[copy-models] ${err.message}`);
+    exitCode = 1;
+  }
 }
 
 process.exit(exitCode);

@@ -14,11 +14,7 @@ function copyModelsPlugin() {
   return {
     name: 'copy-models',
     buildStart() {
-      try {
-        execSync('node scripts/copy-models.js', { stdio: 'inherit', cwd: __dirname })
-      } catch (e) {
-        console.warn('[copy-models plugin] Warning:', e.message)
-      }
+      execSync('node scripts/copy-models.js', { stdio: 'inherit', cwd: __dirname })
     },
   }
 }

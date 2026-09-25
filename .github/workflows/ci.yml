@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, counter-core]
   pull_request:
-    branches: [main]
+    branches: [main, counter-core]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint & Typecheck
+    name: Lint, typecheck, tests and production build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,31 +20,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm install
       - run: npm test
-
-  benchmark:
-    name: Benchmark
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm install
-      - run: npm run test:benchmark
-        continue-on-error: true
+      - run: npm run build

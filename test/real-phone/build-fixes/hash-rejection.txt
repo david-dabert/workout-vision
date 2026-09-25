@@ -1,0 +1,2 @@
+[copy-models] OK: MediaPipe tasks-vision WASM -> /Users/azeliebernard/Developer/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 mismatch: expected 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1, received 4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad
