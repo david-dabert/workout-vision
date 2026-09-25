@@ -36,6 +36,7 @@ export default defineConfig({
     exclude: ['e2e/**', 'node_modules/**'],
   },
   build: {
+    assetsInlineLimit: 0, // Fonts remain same-origin files under font-src 'self'.
     target: ['es2022', 'safari16'],
     modulePreload: false,
     minify: 'esbuild',

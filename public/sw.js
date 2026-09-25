@@ -3,14 +3,13 @@
 // cache-first for static assets and MediaPipe WASM files.
 
 const CACHE_NAME = 'wv-v1';
+const MODEL_CACHE = 'wv-model-__MODEL_SHA256__';
 const APP_SHELL = [
   '__SW_BASE__',
   '__SW_BASE__manifest.json',
   '__SW_BASE__favicon.svg',
   '__SW_BASE__icon-192.png',
   '__SW_BASE__icon-512.png',
-  '__SW_BASE__mediapipe/pose_landmarker_full.task',
-  '__SW_BASE__mediapipe/manifest.json',
 ];
 
 self.addEventListener('install', (event) => {
@@ -23,7 +22,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => (k.startsWith('wv-v') && k !== CACHE_NAME) || (k.startsWith('wv-model-') && k !== MODEL_CACHE)).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -37,7 +36,23 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.origin !== self.location.origin) return;
 
-  // MediaPipe WASM/model files: cache-first (large, immutable)
+  if (url.pathname.endsWith('/mediapipe/pose_landmarker_full.task')) {
+    event.respondWith(caches.open(MODEL_CACHE).then(async (cache) => {
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response.ok) {
+        const bytes = await response.clone().arrayBuffer();
+        const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
+        if (MODEL_CACHE !== `wv-model-${hash}`) throw new Error('Pose model integrity mismatch');
+        await cache.put(request, response.clone());
+      }
+      return response;
+    }));
+    return;
+  }
+
+  // MediaPipe WASM files: cache-first
   if (url.pathname.includes('/mediapipe/')) {
     event.respondWith(
       caches.match(request).then((cached) => {

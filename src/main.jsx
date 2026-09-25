@@ -1,3 +1,5 @@
+import '@fontsource-variable/inter';
+import '@fontsource-variable/outfit';
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -7,8 +9,9 @@ import App from './App.jsx'
 if ('serviceWorker' in navigator) {
   // Auto-reload when a new SW takes control (after skipWaiting + clients.claim)
   let refreshing = false;
+  const wasControlled = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!refreshing) {
+    if (wasControlled && !refreshing) {
       refreshing = true;
       window.location.reload();
     }

@@ -56,6 +56,8 @@ const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──
 
 // Replace the base path placeholder with the actual deployment base
 sw = sw.replaceAll('__SW_BASE__', BASE);
+const modelHash = createHash('sha256').update(readFileSync(join(DIST, 'mediapipe/pose_landmarker_full.task'))).digest('hex');
+sw = sw.replaceAll('__MODEL_SHA256__', modelHash);
 
 // Replace the static CACHE_NAME with the hashed version
 sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = '${cacheName}';`);

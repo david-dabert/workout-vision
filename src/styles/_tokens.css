@@ -4,9 +4,7 @@
    Inspired by Dieter Rams: less, but better.
    ══════════════════════════════════════════════════════════════════════ */
 
-/* Google Fonts loaded via non-blocking <link> in index.html.
-   The CSS @import was render-blocking and prevented offline rendering.
-   Fonts degrade gracefully to system-ui / sans-serif fallbacks. */
+/* Fonts are served locally from @fontsource packages, including offline. */
 
 :root {
   /* ── Depth layers (warm, not blue-tinted) ── */
@@ -111,8 +109,8 @@
   --glow-burst: 0 0 16px rgba(212, 167, 106, 0.25), 0 0 40px rgba(212, 167, 106, 0.08);
 
   /* ── Typography ── */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
-  --font-display: 'Outfit', var(--font);
+  --font: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  --font-display: 'Outfit Variable', var(--font);
   --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
 
   font-family: var(--font);

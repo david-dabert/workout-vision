@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import TabBar from './components/TabBar';
 
 import ErrorBoundary from './components/ErrorBoundary';
+import Entry, { shouldShowEntry } from './components/experience/Entry';
 
 // Dynamic GPU capability detection: disable backdrop-filter on weak devices
 (() => {
@@ -51,7 +52,7 @@ const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
 const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
 const ExerciseGuide = safeLazy(() => import('./components/ExerciseGuide'));
 const CoachReport = safeLazy(() => import('./components/CoachReport'));
-const Landing = safeLazy(() => import('./components/Landing'));
+
 
 const LazyFallback = (
   <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
@@ -71,10 +72,10 @@ function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
   const { t } = useT();
   const [page, setPage] = useHashRouter();
-  const [modelStatus, setModelStatus] = useState('loading');
+  const [modelStatus, setModelStatus] = useState('idle');
   const [challenge, setChallenge] = useState(null);
   const [challengeResponse, setChallengeResponse] = useState(null);
-  const [showLanding, setShowLanding] = useState(() => !localStorage.getItem('wv_seen_landing'));
+
 
   // Run storage schema migration on mount
   useEffect(() => {
@@ -99,7 +100,7 @@ function AppInner() {
       .catch(() => { clearTimeout(timeout); setModelStatus('error'); });
   };
 
-  useEffect(() => { if (page !== 'analyze') loadModelRef.current(); }, []);
+  // Model loading begins only after a lift is chosen, never on arrival.
 
   const retryModel = () => loadModelRef.current();
 
@@ -122,26 +123,15 @@ function AppInner() {
         injuries: [],
         profileComplete: false,
       };
-      saveProfile(defaultProfile).then(() => setPage('onboarding'));
+      saveProfile(defaultProfile);
     }
   }, [profileLoading, profile, saveProfile, setPage]);
 
   // Wait for profile check (and potential auto-create) before rendering
   if (profileLoading || !profile) return LazyFallback;
 
-  // Landing page for first-time visitors (before onboarding)
-  if (showLanding) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <Landing onStart={() => setShowLanding(false)} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
   // Onboarding for first-time users
-  if (page === 'onboarding' || (profile && !profile.profileComplete && page === 'dashboard')) {
+  if (page === 'onboarding') {
     return (
       <ErrorBoundary>
         <Suspense fallback={LazyFallback}>
@@ -294,6 +284,11 @@ function AppInner() {
   );
 }
 
+function EntryGate({ children }) {
+  const [showEntry, setShowEntry] = useState(shouldShowEntry);
+  return showEntry ? <Entry onEnter={() => setShowEntry(false)} /> : children;
+}
+
 function App() {
   const params = new URLSearchParams(window.location.search);
 
@@ -312,11 +307,13 @@ function App() {
   return (
     <ErrorBoundary>
       <LanguageProvider>
+        <EntryGate>
         <ProfileProvider>
           <ErrorBoundary>
             <AppInner />
           </ErrorBoundary>
         </ProfileProvider>
+        </EntryGate>
       </LanguageProvider>
     </ErrorBoundary>
   );
