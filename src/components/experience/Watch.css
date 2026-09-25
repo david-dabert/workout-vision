@@ -1,0 +1,17 @@
+/* Watch screen — analysis progress display.
+   Same position override as Guide/Film: WebKit collapses position:fixed
+   inside isolation:isolate, so the watch screen uses position:relative. */
+.wv-experience:has(.watch-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
+.wv-experience .watch-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; display: flex; flex-direction: column; justify-content: space-between; text-align: center; }
+.wv-experience .watch-screen .eyebrow { margin-top: 18px; color: var(--ash); letter-spacing: 0.3em; }
+.wv-experience .watch-bottom { width: 100%; max-width: 380px; margin: 0 auto; padding: 0 var(--gut, 20px) calc(40px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.wv-experience .pct { margin: 0; font-family: var(--serif); font-size: 66px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--bone); }
+.wv-experience .watch-progress { width: 100%; height: 1px; background: var(--hair-2); position: relative; }
+.wv-experience .watch-progress i { position: absolute; left: 0; top: -0.5px; height: 2px; width: 0; background: linear-gradient(90deg, rgba(232, 189, 126, 0.2), var(--lamp-hi)); box-shadow: 0 0 12px rgba(247, 220, 174, 0.7); transition: width 0.3s ease-out; }
+.wv-experience .watch-screen .privacy { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; line-height: 1.4; color: var(--ash); text-align: center; }
+.wv-experience .watch-screen .privacy svg { width: 14px; height: 14px; flex-shrink: 0; }
+.wv-experience .watch-screen .text-btn { height: 44px; padding: 0 16px; font-size: 14px; color: var(--ash); min-height: 44px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wv-experience .watch-progress i { transition: none; }
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
+import Watch from './experience/Watch';
 
 export default function CoreUpload({ onClose, initialLift = '', initialFile = null }) {
   const { lang, tExercise } = useT();
@@ -14,7 +15,16 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const abort = useRef(null);
+  const autoStarted = useRef(false);
   useEffect(() => () => abort.current?.abort(), []);
+
+  // Auto-start analysis when arriving from the Film screen with a file
+  useEffect(() => {
+    if (initialFile && initialLift && !autoStarted.current) {
+      autoStarted.current = true;
+      analyze();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function analyze() {
     const controller = new AbortController();
@@ -33,6 +43,11 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
     } catch (e) {
       if (e.name !== 'AbortError') setError(e.message);
     } finally { setBusy(false); abort.current = null; }
+  }
+
+  // Experience-mode Watch screen while analyzing
+  if (initialFile && busy) {
+    return <Watch lift={lift} progress={progress} phase={phase} onSkip={() => { abort.current?.abort(); onClose(); }} />;
   }
 
   return <main className="page" style={{ maxWidth: 520, margin: '0 auto', padding: 20 }}>
