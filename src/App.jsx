@@ -51,7 +51,7 @@ const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
 const Onboarding = safeLazy(() => import('./components/Onboarding'));
 const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
 const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
-const ExerciseGuide = safeLazy(() => import('./components/ExerciseGuide'));
+const ExerciseGuide = safeLazy(() => import('./components/experience/Guide'));
 const CoachReport = safeLazy(() => import('./components/CoachReport'));
 
 
@@ -160,7 +160,7 @@ function AppInner() {
   />;
 
   // Full-screen pages (no tab bar)
-  const fullScreenPages = ['analyze', 'live', 'log'];
+  const fullScreenPages = ['analyze', 'live', 'log', 'exercises'];
   const showTabBar = !fullScreenPages.includes(page);
 
   if (page === 'analyze') return (
@@ -246,7 +246,7 @@ function AppInner() {
     pageContent = (
       <Suspense fallback={LazyFallback}>
         <div key="exercises" className="page-transition-enter">
-          <ExerciseGuide onClose={() => setPage('dashboard')} />
+          <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={lift => { setSelectedLift(lift); fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {}); setPage('analyze'); }} />
         </div>
       </Suspense>
     );

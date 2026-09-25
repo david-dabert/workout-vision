@@ -1,0 +1,51 @@
+{
+  "result": "PASS",
+  "frame200": 906,
+  "frameNon200": 0,
+  "exercises": 302,
+  "FrenchNames": 302,
+  "randomDetails": [
+    {
+      "key": "sumo_deadlift",
+      "name": "Soulevé sumo"
+    },
+    {
+      "key": "l_sit_hold",
+      "name": "Maintien en équerre"
+    },
+    {
+      "key": "assisted_pistol_squat",
+      "name": "Pistol squat assisté"
+    },
+    {
+      "key": "skierg",
+      "name": "SkiErg"
+    },
+    {
+      "key": "swimming",
+      "name": "Natation"
+    },
+    {
+      "key": "weighted_russian_twist",
+      "name": "Rotation russe lestée"
+    },
+    {
+      "key": "elliptical",
+      "name": "Vélo elliptique"
+    },
+    {
+      "key": "hiking",
+      "name": "Randonnée"
+    },
+    {
+      "key": "single_arm_dumbbell_tricep_extension",
+      "name": "Extension triceps haltère à un bras"
+    },
+    {
+      "key": "wall_handstand_push_up",
+      "name": "Pompes en équilibre au mur"
+    }
+  ],
+  "errors": [],
+  "failed": []
+}
