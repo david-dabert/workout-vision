@@ -19,10 +19,12 @@
 .guideFrame {
   position: absolute;
   inset: 8%;
+  width: 84%;
+  height: 84%;
   object-fit: contain;
   opacity: 0;
   transition: opacity 0.3s ease;
-  filter: invert(0.85) sepia(0.2) saturate(0.5) hue-rotate(10deg) brightness(1.1);
+  /* Source PNGs are white strokes on transparent; visible on dark bg as-is */
 }
 
 .guideFrameActive {
@@ -266,7 +268,22 @@
   }
 
   .guideFrame {
-    filter: none;
+    /* Invert white strokes to dark so they show on the light background */
+    filter: invert(1);
+  }
+
+  .detailSecondary {
+    color: rgba(26, 26, 30, 0.5);
+  }
+
+  .detailEquipment {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(26, 26, 30, 0.5);
+  }
+
+  .detailClose {
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--text, #1a1a1e);
   }
 
   .guideLabel {
