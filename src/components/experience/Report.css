@@ -1,0 +1,44 @@
+/* Report screen — coach report form and paper sheet preview.
+   Same position override as other experience screens. */
+.wv-experience:has(.report-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
+.wv-experience .report-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
+.wv-experience .report-screen .wrap { padding: 0 var(--gut, 20px) calc(40px + env(safe-area-inset-bottom, 0px)); }
+
+/* Form grid */
+.wv-experience .form-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.wv-experience .field { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.wv-experience .form-grid .field { margin-top: 0; }
+.wv-experience .field label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .field input,
+.wv-experience .field textarea { width: 100%; border-radius: 14px; background: var(--basalt); border: 1px solid var(--hair); color: var(--bone); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
+.wv-experience .field input { height: 50px; padding: 0 14px; }
+.wv-experience .field textarea { padding: 12px 14px; line-height: 1.45; resize: none; }
+.wv-experience .field input:focus,
+.wv-experience .field textarea:focus { border-color: rgba(232, 189, 126, 0.6); }
+.wv-experience .field ::placeholder { color: var(--ash-2); }
+
+/* Paper sheet */
+.wv-experience .sheet {
+  margin-top: 20px; background: var(--paper); color: var(--paper-ink); border-radius: 6px; padding: 22px 20px 18px;
+  box-shadow: 0 50px 80px -40px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.wv-experience .sh-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-ash); }
+.wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; }
+.wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); }
+.wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
+.wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
+.wv-experience .sh-n { font-family: var(--serif); font-size: 58px; line-height: 0.9; color: #8A6630; font-variant-numeric: lining-nums; }
+.wv-experience .sh-nl { display: flex; flex-direction: column; font-size: 12px; color: var(--paper-ash); }
+.wv-experience .sh-nl b { font-weight: 500; color: var(--paper-ink); font-size: 13px; }
+.wv-experience .sh-line { margin: 0; font-size: 12px; color: var(--paper-ash); }
+.wv-experience .sh-table { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--paper-rule); }
+.wv-experience .sh-table td { padding: 5px 4px 5px 0; border-bottom: 1px solid #F0EADF; font-family: var(--mono); }
+.wv-experience .sh-notes em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
+.wv-experience .sh-notes p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.wv-experience .sh-foot { padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 10px; line-height: 1.5; color: var(--paper-ash); }
+
+/* Share button */
+.wv-experience .report-screen .btn-primary { margin-top: 20px; }
+.wv-experience .toast { margin: 12px 0 0; text-align: center; font-size: 13px; color: var(--ash); }

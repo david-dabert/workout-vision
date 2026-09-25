@@ -4,6 +4,7 @@ import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 import Watch from './experience/Watch';
 import Result from './experience/Result';
+import Report from './experience/Report';
 
 export default function CoreUpload({ onClose, initialLift = '', initialFile = null }) {
   const { lang, tExercise } = useT();
@@ -15,6 +16,8 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
   const [phase, setPhase] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [showReport, setShowReport] = useState(false);
+  const trueNRef = useRef(null);
   const abort = useRef(null);
   const autoStarted = useRef(false);
   useEffect(() => () => abort.current?.abort(), []);
@@ -52,9 +55,14 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
     return <Watch lift={lift} progress={progress} phase={phase} onSkip={() => { abort.current?.abort(); onClose(); }} />;
   }
 
+  // Experience-mode Report screen
+  if (initialFile && result && showReport) {
+    return <Report result={result} lift={lift} trueN={trueNRef.current} onBack={() => setShowReport(false)} />;
+  }
+
   // Experience-mode Result screen after analysis
   if (initialFile && result) {
-    return <Result result={result} lift={lift} onClose={onClose} onReport={() => {}} onNewSet={onClose} onRefilm={onClose} />;
+    return <Result result={result} lift={lift} onClose={onClose} onReport={(savedN) => { trueNRef.current = savedN; setShowReport(true); }} onNewSet={onClose} onRefilm={onClose} />;
   }
 
   return <main className="page" style={{ maxWidth: 520, margin: '0 auto', padding: 20 }}>
