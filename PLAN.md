@@ -1,7 +1,7 @@
 Fresh start. This message is PLAN.md. It overrides every earlier plan, the council document, your memory notes and any plan pasted from another model. Reread PLAN.md at the start of every session and after every compaction. If a later message conflicts with it, ask David whether to amend PLAN.md before acting.
 
 RULES
-- One branch, counter-core. Nothing merges to main before Step 5, except the approved exceptions. Work yourself, one step at a time; no background agents.
+- One branch, counter-core. Nothing merges to main before Step 5, except the approved exceptions. Work yourself, one step at a time. No background agents; the two sub-agents under METHOD are the only exception.
 - The repository lives at ~/Developer/workout-vision, outside iCloud. Work only there.
 - Experience is part of the product, as accuracy is. The first visit, the choice of exercise, the guide, the result screen and the coach report are built in Step 3b and judged by David on his phone. Experience work changes nothing in src/lib/counting, the decoding path or any counting parameter.
 - A screen is finished only when it has been opened in the production build in the WebKit iPhone profile, every button on it has been tapped and has led where it says, and the run shows no console error and no failed request. Paste the screenshots.
@@ -20,6 +20,17 @@ RULES
 - Never run npm run deploy or push to gh-pages.
 - Never type a measured number by hand; every number in a report comes from a run whose output is pasted.
 - Exceptions approved by David for main: the test notice, filming tip and report-form changes (25 September), and Step 3a. Nothing else changes on main before Step 5.
+
+METHOD
+- Two foreground sub-agents are part of every step. Their briefs are .claude/agents/wv-reviewer.md and .claude/agents/wv-verifier.md. Only David changes them.
+- wv-reviewer reads each change before it is committed. Give it only the goal of the change, in one sentence.
+- wv-verifier checks a step after its push and before its STOP. Give it only the step name, the commit range and the evidence folders.
+- Add no assessment of your own to either. Neither edits, creates or deletes a file, stages, commits or pushes.
+- Start each with the Agent tool under its name. If the name is not offered, start a general-purpose agent whose prompt is the brief's text after the front matter, unchanged, followed by the goal or the step. Never run either in the background.
+- Each reviewer finding is fixed with a test that fails first, or listed as open in the STOP report. None is dropped.
+- A STOP report carries the verifier's table and verdict unchanged. On FAIL, fix, push and run it again. After a second FAIL, stop and report the unmet rows.
+- A row that can only be met by breaking another rule is not fixed. Report it to David as a conflict.
+- The tour writes the output of node scripts/src-hash.mjs into its results.json as srcHash, so the verifier can tell whether the evidence comes from the code under review.
 
 0. FREEZE. Stop every background agent. Commit all uncommitted work, on whatever branch it sits, to a branch named park-<date>; delete nothing. Then create counter-core from hotfix-ios and commit this message to it as PLAN.md at the repository root. List every branch with its last commit and one line on what it holds, including where the five-layer rebuild lives, and say which commit the live site serves. Confirm no video file appears anywhere in the repository's history; if one does, tell David and rewrite nothing. STOP.
 

@@ -9,6 +9,7 @@
  */
 import { webkit, devices, expect } from '@playwright/test';
 import { writeFileSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
 const dir = 'test/real-phone/step3b/tour';
@@ -245,8 +246,12 @@ try {
     !e.includes('AbortError')
   );
 
+  // Compute srcHash so the verifier can confirm evidence matches the code
+  const srcHash = execFileSync('node', ['scripts/src-hash.mjs'], { cwd: resolve(dir, '../../../..'), encoding: 'utf8' }).trim();
+
   const report = {
     result: realErrors.length === 0 && failed.length === 0 ? 'PASS' : 'FAIL',
+    srcHash,
     count: parseInt(count),
     screenshots,
     exercisesInGuide: itemCount,
