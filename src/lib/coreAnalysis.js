@@ -12,7 +12,7 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   return { ...core, refused: visible < worldLandmarks.length / 2 || worldLandmarks.length === 0 };
 }
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {} } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {} } = {}) {
   if (!APPROVED_LIFTS.includes(lift)) throw new Error('Choose an approved lift');
   const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
   let id = 0;
@@ -51,6 +51,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
+      onLandmarks(result.image);
     }, onProgress, { deterministic: true, signal });
     signal?.throwIfAborted();
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };

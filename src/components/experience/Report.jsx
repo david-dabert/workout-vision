@@ -3,6 +3,86 @@ import { useT } from '../../lib/LanguageContext';
 import { META, liftView } from './lift-scenes';
 import './Report.css';
 
+async function buildPDF({ fr, today, client, coach, count, liftName, armLabel, corrected, resultCount, notes }) {
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, M = 20;
+  let y = 25;
+
+  doc.setFontSize(9);
+  doc.setTextColor(107, 98, 86);
+  doc.text('Workout Vision', M, y);
+  doc.text(today, W - M, y, { align: 'right' });
+  y += 12;
+
+  doc.setFontSize(24);
+  doc.setTextColor(29, 24, 18);
+  doc.text(fr ? 'Rapport de séance' : 'Session report', M, y);
+  y += 14;
+
+  doc.setFontSize(9);
+  doc.setTextColor(107, 98, 86);
+  doc.text(fr ? 'CLIENT' : 'CLIENT', M, y);
+  doc.text(fr ? 'COACH' : 'COACH', M + 85, y);
+  y += 5;
+  doc.setFontSize(12);
+  doc.setTextColor(29, 24, 18);
+  doc.text(client || '-', M, y);
+  doc.text(coach || '-', M + 85, y);
+  y += 12;
+
+  doc.setDrawColor(228, 220, 205);
+  doc.line(M, y, W - M, y);
+  y += 10;
+
+  doc.setFontSize(48);
+  doc.setTextColor(138, 102, 48);
+  doc.text(String(count), M, y);
+  const countW = doc.getTextWidth(String(count));
+  doc.setFontSize(13);
+  doc.setTextColor(29, 24, 18);
+  doc.text(fr ? 'répétitions' : 'reps', M + countW + 6, y - 10);
+  doc.setFontSize(12);
+  doc.setTextColor(107, 98, 86);
+  doc.text(liftName, M + countW + 6, y - 1);
+  y += 8;
+
+  doc.setFontSize(11);
+  doc.setTextColor(107, 98, 86);
+  doc.text(`${fr ? 'Bras suivi : ' : 'Arm tracked: '}${armLabel}`, M, y);
+  y += 6;
+
+  if (corrected) {
+    doc.text(fr
+      ? `Compté par l'app : ${resultCount}. Corrigé : ${count}.`
+      : `Counted by the app: ${resultCount}. Corrected: ${count}.`, M, y);
+    y += 6;
+  }
+
+  if (notes) {
+    y += 6;
+    doc.setFontSize(9);
+    doc.setTextColor(107, 98, 86);
+    doc.text(fr ? 'NOTES' : 'NOTES', M, y);
+    y += 5;
+    doc.setFontSize(11);
+    doc.setTextColor(29, 24, 18);
+    const noteLines = doc.splitTextToSize(notes, W - 2 * M);
+    doc.text(noteLines, M, y);
+    y += noteLines.length * 5;
+  }
+
+  y += 8;
+  doc.setDrawColor(228, 220, 205);
+  doc.line(M, y, W - M, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setTextColor(107, 98, 86);
+  doc.text(fr ? 'Comptage automatique sur le téléphone. Version de test. Aucun score de forme.' : 'Counted automatically on the phone. Test version. No form score.', M, y);
+
+  return doc.output('blob');
+}
+
 export default function Report({ result, lift, trueN, onBack }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [client, setClient] = useState('');
@@ -20,47 +100,22 @@ export default function Report({ result, lift, trueN, onBack }) {
   const today = new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
   async function handleShare() {
-    // Build plain-text fallback for share
-    const lines = [
-      fr ? 'Rapport de séance' : 'Session report',
-      `${today}`,
-      '',
-      `${fr ? 'Client' : 'Client'}: ${client || '-'}`,
-      `${fr ? 'Coach' : 'Coach'}: ${coach || '-'}`,
-      '',
-      `${count} ${liftName}`,
-      `${fr ? 'Bras suivi' : 'Arm tracked'}: ${armLabel}`,
-    ];
-    if (corrected) {
-      lines.push(fr
-        ? `Compté par l'app : ${result.count}. Corrigé : ${count}.`
-        : `Counted by the app: ${result.count}. Corrected: ${count}.`);
-    }
-    if (result.reps?.length) {
-      lines.push('');
-      lines.push(fr ? 'Rép. | Durée | Amplitude' : 'Rep | Time | Range');
-      result.reps.forEach(rep => {
-        const dur = rep.duration ? `${(rep.duration / 1000).toFixed(1)}s` : '-';
-        const rom = rep.rom ? `${Math.round(rep.rom)}°` : '-';
-        lines.push(`${rep.index} | ${dur} | ${rom}`);
-      });
-    }
-    if (notes) { lines.push(''); lines.push(`${fr ? 'Notes' : 'Notes'}: ${notes}`); }
-    lines.push('');
-    lines.push(fr ? 'Comptage automatique sur le téléphone. Version de test.' : 'Counted automatically on the phone. Test version.');
+    const blob = await buildPDF({ fr, today, client, coach, count, liftName, armLabel, corrected, resultCount: result.count, notes });
+    const file = new File([blob], fr ? 'rapport_seance.pdf' : 'session_report.pdf', { type: 'application/pdf' });
 
-    const text = lines.join('\n');
-
-    if (navigator.share) {
+    if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ title: fr ? 'Rapport de séance' : 'Session report', text });
+        await navigator.share({ files: [file], title: fr ? 'Rapport de séance' : 'Session report' });
       } catch { /* user cancelled */ }
     } else {
-      try {
-        await navigator.clipboard.writeText(text);
-        setToast(true);
-        setTimeout(() => setToast(false), 3000);
-      } catch { /* ignore */ }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      a.click();
+      URL.revokeObjectURL(url);
+      setToast(true);
+      setTimeout(() => setToast(false), 3000);
     }
   }
 
@@ -107,24 +162,6 @@ export default function Report({ result, lift, trueN, onBack }) {
           : `Counted by the app: ${result.count}. Corrected: ${count}.`
         }</p>}
         <p className="sh-line">{fr ? 'Bras suivi : ' : 'Arm tracked: '}{armLabel}</p>
-        {result.reps?.length > 0 && <table className="sh-table">
-          <thead><tr>
-            <th>{fr ? 'Rép.' : 'Rep'}</th>
-            <th>{fr ? 'Durée' : 'Time'}</th>
-            <th>{fr ? 'Amplitude' : 'Range'}</th>
-            <th>{fr ? 'Montée' : 'Up'}</th>
-            <th>{fr ? 'Descente' : 'Down'}</th>
-          </tr></thead>
-          <tbody>
-            {result.reps.map(rep => <tr key={rep.index}>
-              <td>{rep.index}</td>
-              <td>{rep.duration ? `${(rep.duration / 1000).toFixed(1)}s` : '-'}</td>
-              <td>{rep.rom ? `${Math.round(rep.rom)}°` : '-'}</td>
-              <td>{rep.up ? `${(rep.up / 1000).toFixed(1)}s` : '-'}</td>
-              <td>{rep.down ? `${(rep.down / 1000).toFixed(1)}s` : '-'}</td>
-            </tr>)}
-          </tbody>
-        </table>}
         {notes && <div className="sh-notes">
           <em>{fr ? 'Notes' : 'Notes'}</em>
           <p>{notes}</p>
@@ -136,7 +173,7 @@ export default function Report({ result, lift, trueN, onBack }) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
         <span>{fr ? 'Partager le PDF' : 'Share the PDF'}</span>
       </button>
-      {toast && <p className="toast">{fr ? 'Sur iPhone, la feuille de partage s\u2019ouvre ici.' : 'On iPhone, the share sheet opens here.'}</p>}
+      {toast && <p className="toast">{fr ? 'PDF téléchargé.' : 'PDF downloaded.'}</p>}
     </div></section>
   </div>;
 }

@@ -8,7 +8,6 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
   const { lang } = useT(), fr = lang === 'fr';
   const [step, setStep] = useState('ask'); // ask | fix | saved
   const [trueN, setTrueN] = useState(result.count);
-  const [selBar, setSelBar] = useState(-1);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState('');
   const numeralRef = useRef(null);
@@ -108,19 +107,15 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
       </div>
       <span className="numeral" ref={numeralRef} aria-live="polite">{result.count}</span>
       <p className="res-label">{fr ? 'Répétitions' : 'Reps'}</p>
-      <div className={`bars${selBar >= 0 ? ' has-sel' : ''}`}>
+      <div className="bars">
         {result.reps.map((rep, i) => (
-          <button key={rep.index} className={`bar${i < result.count ? ' lit' : ''}${selBar === i ? ' sel' : ''}`}
+          <div key={rep.index} className={`bar${i < result.count ? ' lit' : ''}`}
             style={{ width: Math.max(16, 280 / Math.max(result.reps.length, 1)), padding: '0 2px' }}
-            onClick={() => setSelBar(selBar === i ? -1 : i)}
             aria-label={`${fr ? 'Rép.' : 'Rep'} ${rep.index}`}>
-            <i style={{ height: `${Math.max(20, Math.min(100, (rep.rom || 50) * 1.2))}%` }} />
-          </button>
+            <i />
+          </div>
         ))}
       </div>
-      <p className="res-detail">
-        {selBar >= 0 && result.reps[selBar] ? `${fr ? 'Rép.' : 'Rep'} ${result.reps[selBar].index} · ${(result.reps[selBar].duration / 1000).toFixed(1)}s` : ''}
-      </p>
 
       {step === 'ask' && (
         <div className="glass" data-testid="ask-card">

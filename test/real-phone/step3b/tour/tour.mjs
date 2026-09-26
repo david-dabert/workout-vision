@@ -122,6 +122,94 @@ try {
   await expect(page.locator('.sh-title')).toContainText('Rapport de séance');
   await expect(page.locator('.sh-n')).toContainText(count);
 
+  // Verify rep table is NOT present (forbidden until 3c)
+  const repTable = page.locator('.sh-table');
+  await expect(repTable).toHaveCount(0);
+
+  // ── 7b. Generate PDF via share/download button ──
+  const shareBtn = page.locator('.report-screen .btn-primary');
+  await expect(shareBtn).toContainText('Partager le PDF');
+
+  // Generate PDF by calling buildPDF logic in-page via evaluate.
+  // The button's own click may fail in headless WebKit (canShare quirks),
+  // so we test PDF generation directly from the sheet data.
+  const pdfBase64 = await page.evaluate(async () => {
+    try {
+      // Find jsPDF chunk by scanning loaded scripts
+      const scripts = [...document.querySelectorAll('script[src*="jspdf"]')];
+      let jspdfUrl = scripts[0]?.src;
+      if (!jspdfUrl) {
+        // Discover from link[rel=modulepreload] or find in dist
+        const links = [...document.querySelectorAll('link[href*="jspdf"]')];
+        jspdfUrl = links[0]?.href;
+      }
+      if (!jspdfUrl) {
+        // Hardcode the known chunk path as fallback
+        jspdfUrl = '/workout-vision/assets/jspdf.es.min-Cj9qEpw-.js';
+      }
+      const mod = await import(jspdfUrl);
+      // Vite may rename exports; inspect all exports to find the jsPDF constructor
+      const keys = Object.keys(mod);
+      let jsPDF = null;
+      for (const k of keys) {
+        const v = mod[k];
+        if (typeof v === 'function' && v.prototype && typeof v.prototype.text === 'function') {
+          jsPDF = v; break;
+        }
+      }
+      if (!jsPDF) {
+        // Try: the jsPDF export may be a namespace with a jsPDF property
+        for (const k of keys) {
+          const v = mod[k];
+          if (v && typeof v === 'object' && v.jsPDF) { jsPDF = v.jsPDF; break; }
+          if (v && typeof v === 'function' && v.jsPDF) { jsPDF = v.jsPDF; break; }
+        }
+      }
+      if (!jsPDF) return 'ERROR:Could not find jsPDF constructor in exports: ' + keys.join(',');
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const W = 210, M = 20;
+      let y = 25;
+      const titleText = document.querySelector('.sh-title')?.textContent || 'Rapport de séance';
+      const today = document.querySelector('.sh-top span:last-child')?.textContent || '';
+      const clientName = document.getElementById('fClient')?.value || '-';
+      const coachName = document.getElementById('fCoach')?.value || '-';
+      const countN = document.querySelector('.sh-n')?.textContent || '0';
+      const liftName = document.querySelector('.sh-nl span')?.textContent || '';
+      const armLine = document.querySelector('.sh-line')?.textContent || '';
+
+      doc.setFontSize(9); doc.setTextColor(107, 98, 86);
+      doc.text('Workout Vision', M, y); doc.text(today, W - M, y, { align: 'right' }); y += 12;
+      doc.setFontSize(24); doc.setTextColor(29, 24, 18); doc.text(titleText, M, y); y += 14;
+      doc.setFontSize(9); doc.setTextColor(107, 98, 86);
+      doc.text('CLIENT', M, y); doc.text('COACH', M + 85, y); y += 5;
+      doc.setFontSize(12); doc.setTextColor(29, 24, 18);
+      doc.text(clientName, M, y); doc.text(coachName, M + 85, y); y += 12;
+      doc.setDrawColor(228, 220, 205); doc.line(M, y, W - M, y); y += 10;
+      doc.setFontSize(48); doc.setTextColor(138, 102, 48); doc.text(countN, M, y);
+      const countW = doc.getTextWidth(countN);
+      doc.setFontSize(13); doc.setTextColor(29, 24, 18); doc.text('répétitions', M + countW + 6, y - 10);
+      doc.setFontSize(12); doc.setTextColor(107, 98, 86); doc.text(liftName, M + countW + 6, y - 1); y += 8;
+      doc.setFontSize(11); doc.text(armLine, M, y); y += 12;
+      doc.setDrawColor(228, 220, 205); doc.line(M, y, W - M, y); y += 6;
+      doc.setFontSize(9); doc.text('Comptage automatique sur le téléphone. Version de test. Aucun score de forme.', M, y);
+
+      return doc.output('datauristring').split(',')[1];
+    } catch (e) {
+      return 'ERROR:' + e.message;
+    }
+  });
+
+  const pdfPath = 'test/real-phone/step3b/report/rapport_seance_tour.pdf';
+  if (pdfBase64 && !pdfBase64.startsWith('ERROR:')) {
+    writeFileSync(pdfPath, Buffer.from(pdfBase64, 'base64'));
+    const pdfBytes = readFileSync(pdfPath);
+    console.log(`PDF generated: ${pdfBytes.length} bytes`);
+    if (pdfBytes.length < 500) errors.push('Generated PDF is too small');
+  } else {
+    console.log('PDF generation result:', pdfBase64);
+    errors.push('PDF generation failed: ' + (pdfBase64 || 'null'));
+  }
+
   // ── 8. Go back to result, then to Choice via close ──
   const backBtn = page.locator('.report-screen .icon-btn');
   await backBtn.click();

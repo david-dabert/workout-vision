@@ -17,6 +17,7 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [showReport, setShowReport] = useState(false);
+  const [landmarks, setLandmarks] = useState(null);
   const trueNRef = useRef(null);
   const abort = useRef(null);
   const autoStarted = useRef(false);
@@ -35,7 +36,7 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
     abort.current = controller;
     setBusy(true); setResult(null); setError(''); setProgress(0);
     try {
-      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: setProgress, onPhase: setPhase });
+      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: setProgress, onPhase: setPhase, onLandmarks: setLandmarks });
       setResult(output);
       // In experience mode (initialFile), Result component handles saving
       if (!initialFile && !output.refused) {
@@ -52,7 +53,7 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
 
   // Experience-mode Watch screen while analyzing
   if (initialFile && busy) {
-    return <Watch lift={lift} progress={progress} phase={phase} onSkip={() => { abort.current?.abort(); onClose(); }} />;
+    return <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} onSkip={() => { abort.current?.abort(); onClose(); }} />;
   }
 
   // Experience-mode Result + Report (Result stays mounted so step state survives)

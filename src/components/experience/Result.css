@@ -16,13 +16,10 @@
 .wv-experience .numeral.tick { animation: res-tick 0.34s var(--ease); }
 @keyframes res-tick { from { scale: 1.07; opacity: 0.55; } to { scale: 1; opacity: 1; } }
 .wv-experience .res-label { margin: 8px 0 0; text-align: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; color: var(--ash); }
-.wv-experience .bars { display: flex; justify-content: center; align-items: flex-end; height: 104px; margin-top: 20px; }
-.wv-experience .bar { height: 104px; display: flex; align-items: flex-end; justify-content: center; }
-.wv-experience .bar i { display: block; width: 6px; border-radius: 3px; background: rgba(232, 189, 126, 0.16); transition: background 0.5s var(--ease), box-shadow 0.5s var(--ease), opacity 0.3s, width 0.3s var(--ease); }
+.wv-experience .bars { display: flex; justify-content: center; align-items: flex-end; height: 40px; margin-top: 20px; }
+.wv-experience .bar { height: 40px; display: flex; align-items: flex-end; justify-content: center; }
+.wv-experience .bar i { display: block; width: 6px; height: 28px; border-radius: 3px; background: rgba(232, 189, 126, 0.16); transition: background 0.5s var(--ease), box-shadow 0.5s var(--ease); }
 .wv-experience .bar.lit i { background: linear-gradient(to top, rgba(232, 189, 126, 0.15), var(--lamp-hi)); box-shadow: 0 0 14px rgba(247, 220, 174, 0.5); }
-.wv-experience .bars.has-sel .bar:not(.sel) i { opacity: 0.3; }
-.wv-experience .bar.sel i { width: 9px; }
-.wv-experience .res-detail { min-height: 20px; margin: 14px 0 0; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--ash); }
 .wv-experience .glass {
   margin-top: 22px; padding: 22px 20px; border-radius: 26px; display: flex; flex-direction: column; gap: 16px;
   background: rgba(20, 17, 13, 0.56); border: 1px solid var(--hair);
