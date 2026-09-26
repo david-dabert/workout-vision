@@ -121,7 +121,11 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
         <div className="glass" data-testid="ask-card">
           <p className="ask-q">{fr ? `Nous avons compté ${result.count}. Est-ce juste ?` : `We counted ${result.count}. Is that right?`}</p>
           <div className="ask-row">
-            <button className="btn-primary press" onClick={handleYes}>{fr ? 'Oui, c\u2019est juste' : 'Yes, that\u2019s right'}</button>
+            <label className="btn-primary press" role="button" tabIndex={0}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleYes(); } }}>
+              <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={handleYes} />
+              <span>{fr ? 'Oui, c\u2019est juste' : 'Yes, that\u2019s right'}</span>
+            </label>
             <button className="btn-ghost press" onClick={handleNo}>{fr ? 'Non' : 'No'}</button>
           </div>
         </div>
@@ -135,7 +139,11 @@ export default function Result({ result, lift, onClose, onReport, onNewSet, onRe
             <span className="stepper-n" aria-live="polite">{trueN}</span>
             <button className="round press" onClick={() => { navigator.vibrate?.(5); setTrueN(trueN + 1); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
-          <button className="btn-primary press" onClick={handleSaveFix}>{fr ? 'Enregistrer' : 'Save'}</button>
+          <label className="btn-primary press" role="button" tabIndex={0}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSaveFix(); } }}>
+            <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={handleSaveFix} />
+            <span>{fr ? 'Enregistrer' : 'Save'}</span>
+          </label>
         </div>
       )}
 
