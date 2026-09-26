@@ -14,7 +14,8 @@ import { resolve } from 'node:path';
 
 const dir = process.env.WV_DIR || 'test/real-phone/step3b/tour';
 mkdirSync(dir, { recursive: true });
-const base = 'http://127.0.0.1:4175/workout-vision/';
+// WV_BASE runs the same tour against the live site, e.g. WV_BASE=https://david-dabert.github.io/workout-vision/
+const base = process.env.WV_BASE || 'http://127.0.0.1:4175/workout-vision/';
 const clipPath = resolve('test/real-phone/clips/lateral_raise_10_front_mufhhbun.mov');
 
 // Craft check: the same tour at other phone heights, in light system mode or
@@ -196,7 +197,8 @@ try {
     return btoa(s);
   });
 
-  const pdfPath = 'test/real-phone/step3b/report/rapport_seance_tour.pdf';
+  // A run with its own folder keeps its own PDF.
+  const pdfPath = process.env.WV_DIR ? `${dir}/rapport_seance_tour.pdf` : 'test/real-phone/step3b/report/rapport_seance_tour.pdf';
   if (pdfBase64) {
     writeFileSync(pdfPath, Buffer.from(pdfBase64, 'base64'));
     const pdfBytes = readFileSync(pdfPath);

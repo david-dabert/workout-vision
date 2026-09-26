@@ -1,44 +1,27 @@
 import { test, expect } from '@playwright/test';
 
-// Helper: navigate through landing + onboarding if they appear (first-time users).
-// Flow: Landing ("Get Started") → Onboarding ("Skip") → Dashboard (.logo).
-async function ensureDashboard(page) {
-  const logo = page.locator('.logo');
-  const skipBtn = page.locator('button', { hasText: 'Skip' });
-  const getStartedBtn = page.locator('button', { hasText: 'Get Started' });
-
+// A first visit plays the entry once, then shows the choice of lift.
+// A returning visit opens straight on the choice.
+async function reachChoice(page) {
+  const enter = page.locator('.enter');
+  const lifts = page.locator('.altar');
   await Promise.race([
-    logo.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
-    skipBtn.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
-    getStartedBtn.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
+    enter.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
+    lifts.first().waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
   ]);
-
-  if (await getStartedBtn.isVisible().catch(() => false)) {
-    await getStartedBtn.click();
-    await Promise.race([
-      logo.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
-      skipBtn.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {}),
-    ]);
-  }
-
-  if (await skipBtn.isVisible().catch(() => false)) {
-    await skipBtn.click();
-    await logo.waitFor({ state: 'visible', timeout: 15_000 });
-  }
+  // The button takes taps once the entry has started to play; click() waits for that.
+  if (await enter.isVisible().catch(() => false)) await enter.click();
+  await expect(lifts).toHaveCount(3, { timeout: 15_000 });
 }
 
-test('app loads and renders dashboard', async ({ page }) => {
+test('app loads and shows the choice of lift', async ({ page }) => {
   await page.goto('/workout-vision/');
-  await ensureDashboard(page);
-  await expect(page.locator('.logo')).toBeVisible({ timeout: 5_000 });
-  // Tab bar should be present
-  await expect(page.locator('[data-testid="tab-bar"]')).toBeVisible({ timeout: 5_000 });
+  await reachChoice(page);
 });
 
 test('service worker registers successfully', async ({ page }) => {
   await page.goto('/workout-vision/');
-  await ensureDashboard(page);
-  await expect(page.locator('.logo')).toBeVisible({ timeout: 5_000 });
+  await reachChoice(page);
 
   const swRegistered = await page.evaluate(async () => {
     if (!('serviceWorker' in navigator)) return false;
@@ -53,19 +36,18 @@ test('service worker registers successfully', async ({ page }) => {
   expect(swRegistered).toBe(true);
 });
 
-// SW now precaches all hashed JS/CSS assets via inject-sw-precache.js post-build.
+// SW precaches all hashed JS/CSS assets via inject-sw-precache.js post-build.
 // First load triggers SW install; second load is intercepted by SW and cached;
 // offline reload serves from cache.
 test('app loads offline after service worker precache', async ({ page, context }) => {
   // 1. First load — triggers SW install + precache of hashed assets
   await page.goto('/workout-vision/');
-  await ensureDashboard(page);
-  await expect(page.locator('.logo')).toBeVisible({ timeout: 5_000 });
+  await reachChoice(page);
 
   // 2. Wait for SW to activate and claim the page
   await page.evaluate(async () => {
     if (!('serviceWorker' in navigator)) throw new Error('No SW support');
-    const reg = await navigator.serviceWorker.ready;
+    await navigator.serviceWorker.ready;
     // Wait for clients.claim() to take effect
     if (!navigator.serviceWorker.controller) {
       await new Promise((resolve) => {
@@ -79,8 +61,7 @@ test('app loads offline after service worker precache', async ({ page, context }
 
   // 3. Navigate again while online so SW intercepts and caches the response
   await page.goto('/workout-vision/');
-  await ensureDashboard(page);
-  await expect(page.locator('.logo')).toBeVisible({ timeout: 5_000 });
+  await reachChoice(page);
 
   // 4. Go offline
   await context.setOffline(true);
@@ -88,7 +69,6 @@ test('app loads offline after service worker precache', async ({ page, context }
   // 5. Reload — should serve entirely from SW cache
   await page.reload({ waitUntil: 'domcontentloaded' });
 
-  // 6. Full app renders: logo + tab bar (not just shell HTML)
-  await expect(page.locator('.logo')).toBeVisible({ timeout: 10_000 });
-  await expect(page.locator('[data-testid="tab-bar"]')).toBeVisible({ timeout: 5_000 });
+  // 6. The full app renders, not just the shell: the three lifts on the choice screen
+  await expect(page.locator('.altar')).toHaveCount(3, { timeout: 10_000 });
 });
