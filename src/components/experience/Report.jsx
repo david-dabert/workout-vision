@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { META, liftView } from './lift-scenes';
 import './Report.css';
@@ -22,8 +22,8 @@ async function buildPDF({ fr, today, client, coach, count, liftName, armLabel, c
 
   doc.setFontSize(9);
   doc.setTextColor(107, 98, 86);
-  doc.text(fr ? 'CLIENT' : 'CLIENT', M, y);
-  doc.text(fr ? 'COACH' : 'COACH', M + 85, y);
+  doc.text('CLIENT', M, y);
+  doc.text('COACH', M + 85, y);
   y += 5;
   doc.setFontSize(12);
   doc.setTextColor(29, 24, 18);
@@ -88,8 +88,10 @@ export default function Report({ result, lift, trueN, onBack }) {
   const [client, setClient] = useState('');
   const [coach, setCoach] = useState('');
   const [notes, setNotes] = useState('');
-  const [toast, setToast] = useState(false);
+  const [toast, setToast] = useState('');
   const sheetRef = useRef(null);
+  const pdfRef = useRef(null);
+  const buildingRef = useRef(false);
 
   const liftName = META[lift]?.[lang] || lift;
   const count = trueN ?? result.count;
@@ -99,24 +101,54 @@ export default function Report({ result, lift, trueN, onBack }) {
     : (result.arm === 'left' ? 'left arm' : 'right arm');
   const today = new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  const rebuildPDF = useCallback(async () => {
+    if (buildingRef.current) return;
+    buildingRef.current = true;
+    try {
+      pdfRef.current = await buildPDF({ fr, today, client, coach, count, liftName, armLabel, corrected, resultCount: result.count, notes });
+    } catch { /* will retry on share */ }
+    buildingRef.current = false;
+  }, [fr, today, client, coach, count, liftName, armLabel, corrected, result.count, notes]);
+
+  // Build PDF eagerly on mount and after every edit
+  useEffect(() => { rebuildPDF(); }, [rebuildPDF]);
+
   async function handleShare() {
-    const blob = await buildPDF({ fr, today, client, coach, count, liftName, armLabel, corrected, resultCount: result.count, notes });
-    const file = new File([blob], fr ? 'rapport_seance.pdf' : 'session_report.pdf', { type: 'application/pdf' });
+    // Ensure PDF is ready (may already be built)
+    if (!pdfRef.current) {
+      try { await rebuildPDF(); } catch { /* handled below */ }
+    }
+    if (!pdfRef.current) {
+      setToast(fr ? 'Le PDF n\u2019a pas pu être créé.' : 'The PDF could not be created.');
+      setTimeout(() => setToast(''), 4000);
+      return;
+    }
+
+    const blob = pdfRef.current;
+    const fileName = fr ? 'rapport_seance.pdf' : 'session_report.pdf';
+    const file = new File([blob], fileName, { type: 'application/pdf' });
 
     if (navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: fr ? 'Rapport de séance' : 'Session report' });
-      } catch { /* user cancelled */ }
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = file.name;
-      a.click();
-      URL.revokeObjectURL(url);
-      setToast(true);
-      setTimeout(() => setToast(false), 3000);
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return; // user cancelled
+        // Share failed for another reason; fall through to download
+      }
     }
+
+    // Download fallback
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setToast(fr ? 'PDF téléchargé.' : 'PDF downloaded.');
+    setTimeout(() => setToast(''), 3000);
   }
 
   return <div className="wv-experience">
@@ -173,7 +205,7 @@ export default function Report({ result, lift, trueN, onBack }) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
         <span>{fr ? 'Partager le PDF' : 'Share the PDF'}</span>
       </button>
-      {toast && <p className="toast">{fr ? 'PDF téléchargé.' : 'PDF downloaded.'}</p>}
+      {toast && <p className="toast">{toast}</p>}
     </div></section>
   </div>;
 }

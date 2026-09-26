@@ -51,7 +51,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
-      onLandmarks(result.image);
+      onLandmarks(result.image, canvas.width, canvas.height);
     }, onProgress, { deterministic: true, signal });
     signal?.throwIfAborted();
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };

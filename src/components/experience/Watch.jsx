@@ -4,7 +4,7 @@ import { META } from './lift-scenes';
 import { Body, mapPose, DPR } from './entry-scene';
 import './Watch.css';
 
-export default function Watch({ lift, progress, phase, landmarks, onSkip }) {
+export default function Watch({ lift, progress, phase, landmarks, frameSize, onSkip }) {
   const { lang } = useT(), fr = lang === 'fr';
   const pct = Math.round(progress);
   const title = META[lift]?.[lang] || lift;
@@ -12,8 +12,10 @@ export default function Watch({ lift, progress, phase, landmarks, onSkip }) {
   const bodyRef = useRef(null);
   const rafRef = useRef(null);
   const lmRef = useRef(null);
+  const fsRef = useRef(null);
 
   lmRef.current = landmarks;
+  fsRef.current = frameSize;
 
   useEffect(() => {
     const c = canvasRef.current;
@@ -31,26 +33,48 @@ export default function Watch({ lift, progress, phase, landmarks, onSkip }) {
     observer.observe(c);
     resize();
 
-    let stopped = false;
-    function loop(now) {
-      if (stopped) return;
+    function drawFrame(now) {
       const W = c.width, H = c.height;
       ctx.clearRect(0, 0, W, H);
       const lm = lmRef.current;
+      const fs = fsRef.current;
       if (lm && lm.length >= 33) {
         const flat = new Float32Array(66);
+        // Landmarks are normalised 0-1; scale by frame dimensions so
+        // mapPose preserves the video's aspect ratio.
+        const fw = fs ? fs[0] : 1, fh = fs ? fs[1] : 1;
         for (let i = 0; i < 33; i++) {
-          flat[i * 2] = lm[i].x;
-          flat[i * 2 + 1] = lm[i].y;
+          flat[i * 2] = lm[i].x * fw;
+          flat[i * 2 + 1] = lm[i].y * fh;
         }
-        mapPose(flat, [1, 1], { x: W * 0.1, y: H * 0.05, w: W * 0.8, h: H * 0.9 }, out);
+        mapPose(flat, [fw, fh], { x: W * 0.1, y: H * 0.05, w: W * 0.8, h: H * 0.9 }, out);
         bodyRef.current.draw(ctx, out, {
           alpha: 0.7, time: now / 1000, dpr: DPR, size: 0.7, stars: 0.5,
         });
       }
+    }
+
+    let stopped = false;
+    if (reduced) {
+      // Under reduced motion, redraw on each new landmark without animation
+      let lastLm = null;
+      const check = () => {
+        if (stopped) return;
+        if (lmRef.current !== lastLm) {
+          lastLm = lmRef.current;
+          drawFrame(performance.now());
+        }
+        rafRef.current = requestAnimationFrame(check);
+      };
+      rafRef.current = requestAnimationFrame(check);
+    } else {
+      function loop(now) {
+        if (stopped) return;
+        drawFrame(now);
+        rafRef.current = requestAnimationFrame(loop);
+      }
       rafRef.current = requestAnimationFrame(loop);
     }
-    if (!reduced) rafRef.current = requestAnimationFrame(loop);
     return () => { stopped = true; cancelAnimationFrame(rafRef.current); observer.disconnect(); };
   }, []);
 
