@@ -83,7 +83,7 @@ async function buildPDF({ fr, today, client, coach, count, liftName, armLabel, c
   return doc.output('blob');
 }
 
-export default function Report({ result, lift, trueN, onBack }) {
+export default function Report({ result, lift, trueN, leaving, onBack }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [client, setClient] = useState('');
   const [coach, setCoach] = useState('');
@@ -187,7 +187,7 @@ export default function Report({ result, lift, trueN, onBack }) {
     setTimeout(() => setToast(''), 3000);
   }
 
-  return <div className="wv-experience">
+  return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
     <section className="screen is-active report-screen"><div className="wrap">
       <div className="topbar">
         <button className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>

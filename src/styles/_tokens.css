@@ -136,15 +136,8 @@ body {
   min-height: 100dvh;
 }
 
-/* ── Subtle edge vignette — draws the eye inward ── */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9998;
-  pointer-events: none;
-  background: radial-gradient(ellipse 80% 70% at 50% 45%, transparent 60%, rgba(0,0,0,0.35) 100%);
-}
+/* The old page-wide vignette sat above every screen (z-index 9998) and greyed
+   the coach report's paper; the experience draws its own, under the content. */
 
 /* ══════════════════════════════════════════
    LIGHT MODE — activates via system preference

@@ -39,3 +39,18 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .scan { animation: none; opacity: 0.5; top: 50%; }
 }
+
+/* The phone outline takes the reference clip's own proportions and shrinks
+   with the screen, so "Filmer ma série" is reachable without scrolling on a
+   664 px Safari screen. */
+.wv-experience .frame { width: max(112px, min(46%, 178px, calc((100svh - 428px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
+@media (max-height: 760px) {
+  .wv-experience .film-screen .eyebrow { margin-top: 8px; }
+  .wv-experience .film-screen .title { margin-top: 8px; }
+  .wv-experience .frame { margin-top: 16px; }
+  .wv-experience .caption { margin-top: 8px; }
+  .wv-experience .steps { margin-top: 18px; gap: 8px; }
+  .wv-experience .actions { margin-top: 18px; }
+}
+.wv-experience .btn-ghost { background: transparent; }
+@media (prefers-reduced-motion: reduce) { .wv-experience .scan { display: none; } }

@@ -39,7 +39,7 @@ export function createLiftScene(canvas, lift, mode = 'loop') {
     if (mode === 'loop') {
       const n = frames.length, fi = reduced ? n * 0.55 : (t * 15 + k * 9) % n;
       lerpPose(frames, fi, buf);
-      mapPose(buf, data.loop.vb, { x: W * 0.1, y: H * 0.1, w: W * 0.8, h: H * 0.84 }, out);
+      mapPose(buf, data.loop.vb, { x: W * 0.1, y: H * 0.04, w: W * 0.8, h: H * 0.9 }, out);
       body.draw(ctx, out, { alpha: 0.95, time: t, dpr: DPR, size: 0.85, stars: 0.8 });
     } else {
       mapPose(new Float32Array(data.rest.p.map(v => v < 0 ? NaN : v)), data.rest.vb, { x: 0, y: 0, w: W, h: H }, out);
@@ -53,3 +53,15 @@ export function createLiftScene(canvas, lift, mode = 'loop') {
   return () => { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); };
 }
 export const liftView = lift => poses[lift].view;
+// The reference framing's size, for the phone outline on the filming screen.
+export const restBox = lift => poses[lift].rest.vb;
+// The reference pose at rest, as flat [x0, y0, x1, y1, ...] in its own box.
+export function restPose(lift) {
+  const r = poses[lift].rest;
+  return { p: new Float32Array(r.p.map(v => (v < 0 ? NaN : v))), vb: r.vb };
+}
+// The reference pose at the top of the movement, when the data has one.
+export function topPose(lift) {
+  const d = poses[lift], src = d.top || d.rest;
+  return { p: new Float32Array(src.p.map(v => (v < 0 ? NaN : v))), vb: src.vb };
+}

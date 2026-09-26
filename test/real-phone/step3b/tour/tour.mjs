@@ -8,19 +8,25 @@
  * Fails on any console error, failed network request, missing image, or wrong destination.
  */
 import { webkit, devices, expect } from '@playwright/test';
-import { writeFileSync, readFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
-const dir = 'test/real-phone/step3b/tour';
+const dir = process.env.WV_DIR || 'test/real-phone/step3b/tour';
+mkdirSync(dir, { recursive: true });
 const base = 'http://127.0.0.1:4175/workout-vision/';
 const clipPath = resolve('test/real-phone/clips/lateral_raise_10_front_mufhhbun.mov');
 
+// Craft check: the same tour at other phone heights, in light system mode or
+// with Reduce Motion, e.g. WV_W=375 WV_H=548 WV_DIR=test/real-phone/step3b/tour-548
+const W = Number(process.env.WV_W) || null, H = Number(process.env.WV_H) || null;
 const browser = await webkit.launch();
 const context = await browser.newContext({
   ...devices['iPhone 14'],
+  ...(W && H ? { viewport: { width: W, height: H } } : {}),
   locale: 'fr-FR',
-  colorScheme: 'dark',
+  colorScheme: process.env.WV_SCHEME === 'light' ? 'light' : 'dark',
+  reducedMotion: process.env.WV_REDUCED === '1' ? 'reduce' : 'no-preference',
 });
 const page = await context.newPage();
 const errors = [], failed = [], screenshots = [];
@@ -29,25 +35,37 @@ page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', e => errors.push(e.message));
 page.on('response', r => { if (r.status() >= 400) failed.push({ url: r.url(), status: r.status() }); });
 
+// JPEG keeps four runs of evidence small enough for the repository.
 async function shot(name) {
-  const path = `${dir}/${name}.png`;
-  await page.screenshot({ path, fullPage: true });
+  const path = `${dir}/${name}.jpg`;
+  await page.screenshot({ path, fullPage: true, type: 'jpeg', quality: 80 });
   screenshots.push(name);
 }
+
+// Each change of screen is shot 150 ms after the tap, while the old screen
+// gives way to the new one (files t*.jpg), and again once the new one has settled.
+async function between(name) {
+  await page.waitForTimeout(150);
+  await shot(name);
+}
+const SETTLE = 1600;
 
 try {
   // ── 1. First visit — Entry screen ──
   await page.goto(base, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(500);
 
   // Entry should be visible (first visit, no wv_seen_entry)
   const entryEnter = page.locator('.enter');
   await expect(entryEnter).toBeVisible({ timeout: 5000 });
+  // The brand, the title, the line and the button arrive in turn over about four seconds.
+  await page.locator('.entry.play').waitFor({ timeout: 5000 });
+  await page.waitForTimeout(4600);
   await shot('01-entry');
 
   // Tap Enter — the label wraps a hidden checkbox; clicking the label triggers onChange
   await entryEnter.click();
-  await page.waitForTimeout(2000); // Wait for leave animation (820ms + buffer)
+  await between('t02-to-choice');
+  await page.waitForTimeout(2000); // Wait for leave animation (820ms) and the arrival of Choice
 
   // ── 2. Choice screen ──
   const altars = page.locator('.altar');
@@ -57,7 +75,8 @@ try {
   // Choose lateral raise (index 0 in LIFTS: ['lateral_raise', 'bicep_curl', 'lat_pulldown'])
   const lateralAltar = altars.nth(0);
   await lateralAltar.click();
-  await page.waitForTimeout(500);
+  await between('t03-to-film');
+  await page.waitForTimeout(SETTLE);
 
   // ── 3. Film screen ──
   const filmScreen = page.locator('.film-screen');
@@ -67,7 +86,8 @@ try {
   // Pick video (use the "Choisir une vidéo" file input)
   const pickInput = page.locator('.film-screen input[type="file"]').last();
   await pickInput.setInputFiles(clipPath);
-  await page.waitForTimeout(500);
+  await between('t04-to-watch');
+  await page.waitForTimeout(1000);
 
   // ── 4. Watch screen (analysis in progress) ──
   const watchScreen = page.locator('.watch-screen');
@@ -85,6 +105,9 @@ try {
   // Wait for analysis to complete (Result screen appears)
   const resultScreen = page.locator('.result-screen');
   await expect(resultScreen).toBeVisible({ timeout: 300000 });
+  await shot('t05-to-result');
+  // The count rises one rep at a time; the question appears once it has finished.
+  await expect(page.locator('[data-testid="ask-card"]')).toBeVisible({ timeout: 10000 });
   await page.waitForTimeout(500);
   await shot('05-result');
 
@@ -108,13 +131,15 @@ try {
   // Should show saved state (async save to IndexedDB may take a moment)
   const savedCard = page.locator('[data-testid="saved-card"]');
   await expect(savedCard).toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(700);
   await shot('06-saved');
 
   // ── 7. Open Coach Report ──
   const reportBtn = page.locator('.btn-line');
   await expect(reportBtn).toContainText('Rapport pour mon coach');
   await reportBtn.click();
-  await page.waitForTimeout(500);
+  await between('t07-to-report');
+  await page.waitForTimeout(800);
 
   const reportScreen = page.locator('.report-screen');
   await expect(reportScreen).toBeVisible({ timeout: 5000 });
@@ -184,7 +209,8 @@ try {
   // ── 8. Go back to result, then to Choice via close ──
   const backBtn = page.locator('.report-screen .icon-btn');
   await backBtn.click();
-  await page.waitForTimeout(300);
+  await between('t07b-back-to-result');
+  await page.waitForTimeout(600);
 
   // Should be back at Result (saved state)
   await expect(savedCard).toBeVisible();
@@ -192,7 +218,8 @@ try {
   // Tap "Nouvelle série" to go back to Choice
   const newSetBtn = page.locator('.text-btn');
   await newSetBtn.click();
-  await page.waitForTimeout(500);
+  await between('t08-to-choice');
+  await page.waitForTimeout(SETTLE);
 
   // Should be back at Choice
   await expect(altars.first()).toBeVisible({ timeout: 5000 });
@@ -201,7 +228,8 @@ try {
   // ── 9. Navigate to Guide ──
   const guideLink = page.locator('.row-link');
   await guideLink.click();
-  await page.waitForTimeout(500);
+  await between('t09-to-guide');
+  await page.waitForTimeout(SETTLE);
 
   const guideScreen = page.locator('.guide-screen');
   await expect(guideScreen).toBeVisible({ timeout: 5000 });
@@ -247,7 +275,8 @@ try {
   );
 
   // Compute srcHash so the verifier can confirm evidence matches the code
-  const srcHash = execFileSync('node', ['scripts/src-hash.mjs'], { cwd: resolve(dir, '../../../..'), encoding: 'utf8' }).trim();
+  // The tour runs from the repository root, whatever WV_DIR says.
+  const srcHash = execFileSync('node', ['scripts/src-hash.mjs'], { encoding: 'utf8' }).trim();
 
   const report = {
     result: realErrors.length === 0 && failed.length === 0 ? 'PASS' : 'FAIL',

@@ -150,8 +150,18 @@ function drawDust(ctx, W, H, t, k) {
 }
 
 
-export function createEntryScene(canvas, reduced) {
+export function createEntryScene(canvas, reduced, bounds) {
   const ctx = canvas.getContext('2d');
+  // The figure fits between the brand and the text block, whatever the
+  // screen height (the prototype assumed 844 px and collided at 664).
+  let fit = null;
+  function measure() { fit = bounds ? bounds() : null; }
+  function figureRect(W, H) {
+    if (!fit) return { x: W * 0.1, y: H * 0.085, w: W * 0.8, h: H * 0.49 };
+    const top = Math.max(H * 0.085, (fit.top + 16) * DPR);
+    const h = Math.max(H * 0.26, Math.min(H * 0.49, (fit.bottom - 20) * DPR - top));
+    return { x: W * 0.1, y: top, w: W * 0.8, h };
+  }
   const big = new Body(LITE ? 1700 : 2600, 7);
   const pose = new Float32Array(entry.p), P2 = new Float32Array(66);
   const stage = { entryStart: performance.now(), explodeAt: 0 };
@@ -162,7 +172,7 @@ export function createEntryScene(canvas, reduced) {
     ctx.clearRect(0, 0, W, H);
     drawDust(ctx, W, H, t, 1);
     const e = reduced ? 9 : (now - stage.entryStart) / 1000;
-    const rect = { x: W * 0.1, y: H * 0.085, w: W * 0.8, h: H * 0.49 };
+    const rect = figureRect(W, H);
     drawDoor(ctx, W, H, e, rect, now);
     mapPose(pose, entry.vb, rect, P2);
     big.draw(ctx, P2, {
@@ -172,8 +182,9 @@ export function createEntryScene(canvas, reduced) {
     });
   }
   function size() {
-    canvas.width = Math.max(1, Math.round(canvas.clientWidth * DPR));
-    canvas.height = Math.max(1, Math.round(canvas.clientHeight * DPR));
+    const w = Math.max(1, Math.round(canvas.clientWidth * DPR)), h = Math.max(1, Math.round(canvas.clientHeight * DPR));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    measure();
     draw(performance.now());
   }
   function loop(now) { draw(now); if (!disposed) frame = requestAnimationFrame(loop); }
@@ -182,17 +193,19 @@ export function createEntryScene(canvas, reduced) {
   if (!reduced) frame = requestAnimationFrame(loop);
   return {
     skip() { stage.entryStart = performance.now() - 6000; draw(performance.now()); },
+    remeasure() { measure(); },
     leave() { if (!reduced) stage.explodeAt = performance.now(); },
     dispose() { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); }
   };
 function drawDoor(ctx, W, H, e, rect, now) {
   const cx = W / 2, top = rect.y - H * 0.045, bot = rect.y + rect.h + H * 0.045;
   const hh = (bot - top) * easeOut(clamp(e / 1.1)), y0 = (top + bot) / 2 - hh / 2;
-  let inten = e < 1.7 ? 1 : Math.max(0.32, 1 - (e - 1.7) * 0.45), lw = 1.4 * DPR;
+  const rest = e < 1.7 ? 1 : Math.max(0.32, 1 - (e - 1.7) * 0.45);
+  let inten = rest, lw = 1.4 * DPR;
   if (stage.explodeAt) {
     const x = (now - stage.explodeAt) / 1000;
     lw = 1.4 * DPR + easeIn(clamp(x / 0.7)) * W * 1.2;
-    inten = x < 0.35 ? 1 : Math.max(0, 1 - (x - 0.35) / 0.55);
+    inten = x < 0.35 ? rest + (1 - rest) * easeOut(x / 0.35) : Math.max(0, 1 - (x - 0.35) / 0.55);
   }
   if (hh < 1) return;
   ctx.globalCompositeOperation = 'lighter';
@@ -203,9 +216,12 @@ function drawDoor(ctx, W, H, e, rect, now) {
     return;
   }
   const gw = 110 * DPR + lw;
-  const g1 = ctx.createLinearGradient(cx - gw, 0, cx + gw, 0);
-  g1.addColorStop(0, 'rgba(232,189,126,0)'); g1.addColorStop(0.5, `rgba(232,189,126,${0.09 * inten})`); g1.addColorStop(1, 'rgba(232,189,126,0)');
-  ctx.fillStyle = g1; ctx.fillRect(cx - gw, y0, gw * 2, hh);
+  ctx.save(); ctx.translate(cx, y0 + hh / 2); ctx.scale(gw, Math.max(1, hh * 0.62));
+  const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+  g1.addColorStop(0, `rgba(232,189,126,${0.09 * inten})`); g1.addColorStop(0.45, `rgba(232,189,126,${0.05 * inten})`);
+  g1.addColorStop(0.78, `rgba(232,189,126,${0.012 * inten})`); g1.addColorStop(1, 'rgba(232,189,126,0)');
+  ctx.fillStyle = g1; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
+  ctx.globalCompositeOperation = 'lighter';
   const g2 = ctx.createLinearGradient(0, y0, 0, y0 + hh);
   g2.addColorStop(0, 'rgba(255,240,215,0)'); g2.addColorStop(0.5, `rgba(255,240,215,${0.9 * inten})`); g2.addColorStop(1, 'rgba(255,240,215,0)');
   ctx.fillStyle = g2; ctx.fillRect(cx - lw / 2, y0, lw, hh);
@@ -213,4 +229,4 @@ function drawDoor(ctx, W, H, e, rect, now) {
 }
 }
 
-export { Body, mapPose, DPR, LITE };
+export { Body, mapPose, drawDust, SPR, DPR, LITE };

@@ -5,6 +5,9 @@ RULES
 - The repository lives at ~/Developer/workout-vision, outside iCloud. Work only there.
 - Experience is part of the product, as accuracy is. The first visit, the choice of exercise, the guide, the result screen and the coach report are built in Step 3b and judged by David on his phone. Experience work changes nothing in src/lib/counting, the decoding path or any counting parameter.
 - A screen is finished only when it has been opened in the production build in the WebKit iPhone profile, every button on it has been tapped and has led where it says, and the run shows no console error and no failed request. Paste the screenshots.
+- The approved prototype, design/experience-prototype.html, is the standard for every experience screen. A difference in layout, type, spacing, colour, motion or wording is a defect, unless David approved it or a rule forbids what the prototype shows.
+- An experience screen is finished only when the tour has also shot it at 390×664, 390×745 and 375×548, and at 390×664 with Reduce Motion and the light system appearance. In none of these shots does text overlap other text or a control, or run out of its box, and no title or button leaves a single word on its own line. At 390×664 and 390×745 the main action of the screen is visible without scrolling.
+- The tour shoots each change of screen 150 ms after the tap that causes it. That shot shows the old screen, the new one or both on the dark stage, never a blank, white or unstyled page.
 - The app states nothing it does not do. No text promises form scores, form analysis, injury prediction or precision until the exam supports it.
 - Nothing about the user leaves the phone. Guide images are served by the app itself, not by a third party, and the guide shows the credit its licence requires.
 - Leave the old counter's code unchanged. Do not use the YouTube benchmark for any decision.

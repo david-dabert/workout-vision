@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const VALID_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'coach', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
@@ -21,10 +21,17 @@ function readHash() {
  */
 export default function useHashRouter() {
   const [page, setPageState] = useState(readHash);
+  const current = useRef(page);
+  current.current = page;
 
-  // Sync hash -> state when the user presses back/forward
+  // Sync hash -> state when the user presses back/forward. Safari animates
+  // its own back swipe, so the app marks the change and skips its crossfade.
   useEffect(() => {
-    const onHashChange = () => setPageState(readHash());
+    const onHashChange = () => {
+      const next = readHash();
+      if (next !== current.current) window.__wvHistoryNav = performance.now();
+      setPageState(next);
+    };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);

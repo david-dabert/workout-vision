@@ -43,6 +43,8 @@ const LanguageContext = createContext(null);
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(detectLang);
+  // The page declares its language, so VoiceOver reads French in a French voice.
+  useEffect(() => { try { document.documentElement.lang = lang; } catch (_) { /* no document */ } }, [lang]);
   const [strings, setStrings] = useState(() => locales[lang] || enData);
   const formChecksRef = useRef(enData._formChecks || {});
 

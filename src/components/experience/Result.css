@@ -1,13 +1,11 @@
 /* Result screen — count reveal and confirmation.
    Same position override as other experience screens. */
-.wv-experience:has(.result-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
-.wv-experience .result-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
-.wv-experience .result-screen .wrap { padding: 0 var(--gut, 20px) calc(40px + env(safe-area-inset-bottom, 0px)); }
+/* The screen pads itself (Entry.css .screen); the column adds no second gutter. */
 .wv-experience .res-head { margin-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .wv-experience .res-meta { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
 .wv-experience .numeral {
   display: block; margin: 6px auto 0; text-align: center;
-  font-family: var(--serif); font-weight: 400; font-size: clamp(170px, 56vw, 260px); line-height: 0.84; letter-spacing: -0.04em;
+  font-family: var(--serif); font-weight: 400; font-size: clamp(120px, min(56vw, 30svh), 260px); line-height: 0.84; letter-spacing: -0.04em;
   font-variant-numeric: lining-nums tabular-nums;
   background: linear-gradient(180deg, #FFF3DC 0%, #F0CB8E 46%, #B9823F 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -24,8 +22,8 @@
   margin-top: 22px; padding: 22px 20px; border-radius: 26px; display: flex; flex-direction: column; gap: 16px;
   background: rgba(20, 17, 13, 0.56); border: 1px solid var(--hair);
 }
-.no-glass .wv-experience .glass { -webkit-backdrop-filter: none; backdrop-filter: none; }
-:not(.no-glass) .wv-experience .glass { -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15); }
+.wv-experience .glass { -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15); }
+.no-glass .wv-experience .glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
 .wv-experience .ask-q { margin: 0; text-align: center; font-family: var(--serif); font-size: 31px; line-height: 1.08; text-wrap: balance; }
 .wv-experience .ask-row { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 10px; }
 .wv-experience .result-screen .hx { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 3; cursor: pointer; }
@@ -46,4 +44,20 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .numeral.tick { animation: none; }
   .wv-experience .bar i { transition: none; }
+}
+
+/* One equal mark per counted rep, at the prototype's height and rhythm. */
+.wv-experience .bars { height: 104px; margin-top: 18px; gap: 0; }
+.wv-experience .bar { flex: 0 1 36px; min-width: 0; height: 104px; }
+.wv-experience .bar i { width: min(6px, calc(100% - 3px)); height: 84px; }
+.wv-experience .saved-corr { text-align: center; margin-bottom: 4px; }
+.wv-experience .save-error { color: var(--lamp); text-align: center; margin: 12px 0 0; }
+.wv-experience .result-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
+.wv-experience .round:disabled { opacity: 0.35; cursor: default; }
+.wv-experience .result-screen .text-btn { border-radius: 999px; }
+@media (max-height: 600px) {
+  .wv-experience .bars, .wv-experience .bar { height: 72px; }
+  .wv-experience .bar i { height: 56px; }
+  .wv-experience .result-screen .glass { margin-top: 16px; padding: 18px; gap: 12px; }
+  .wv-experience .result-screen .ask-q { font-size: 27px; }
 }

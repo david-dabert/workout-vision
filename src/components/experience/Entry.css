@@ -112,7 +112,6 @@
 
 .wv-experience { position: fixed; inset: 0; z-index: 100; isolation: isolate; }
 .wv-experience .entry-stage { position: absolute; }
-.wv-experience .entry-skip:active { background: rgba(232,189,126,0.03); }
 .wv-experience .tactile:active { transition-duration: 0.06s; }
 @media (prefers-reduced-motion: reduce) {
  .wv-experience *, .wv-experience *::before, .wv-experience *::after { animation: none !important; transition: none !important; }
@@ -121,3 +120,59 @@
 }
 
 .wv-experience .entry-l1 { color: var(--bone); }
+
+/* ── Shared craft rules (26 September) ─────────────────────────────── */
+/* The page itself is the void, so nothing pale ever shows between screens. */
+html, body { background: #080706; color-scheme: dark; }
+/* Screens float over one stage (dust, vignette, grain); the entry and the
+   report keep their own opaque ground. */
+.wv-experience { background: transparent; }
+.wv-experience.entry-experience, .wv-experience:has(.report-screen) { background: var(--void); }
+.wv-stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; }
+.wv-vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(130% 90% at 50% 36%, transparent 50%, rgba(0, 0, 0, 0.62) 100%); }
+.wv-grain {
+  position: fixed; inset: -60px; z-index: 200; pointer-events: none; opacity: 0.07;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px; animation: grain 0.9s steps(5) infinite;
+}
+/* Every screen after the entry fades in; its blocks rise one after another. */
+.wv-experience .screen.is-active:not(.entry) { animation: screen-in 0.8s var(--ease) 0.05s backwards; }
+@keyframes screen-in { from { opacity: 0; } }
+.wv-experience .screen.is-active [data-reveal] { animation-delay: calc(0.08s + var(--i, 0) * 0.07s); }
+/* Both layers stay above the stage and its vignette while they cross. */
+.wv-current, .wv-leaving { position: relative; z-index: 2; }
+.wv-leaving { opacity: 0; transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+/* After a browser back swipe the screen is simply there: Safari already animated it. */
+.wv-instant .screen.is-active, .wv-instant [data-reveal] { animation: none !important; opacity: 1; }
+/* A report on its way out still takes the taps, so a double tap on Back cannot fall through. */
+.wv-experience.is-leaving { opacity: 0; transition: opacity 0.45s var(--ease); }
+/* The report opens over the result: its whole layer fades in, ground included,
+   so the result never drops to black in between. */
+.wv-experience:has(.report-screen) { animation: screen-in 0.6s var(--ease) backwards; }
+.wv-experience .report-screen.is-active { animation: none; }
+/* The brand sits on the pill's centre line. */
+.wv-experience .brand-sm { display: inline-flex; align-items: center; }
+/* Touch: no text selection or callouts on UI, no double-tap zoom. */
+.wv-experience { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+.wv-experience :is(input, textarea, .sheet) { -webkit-user-select: text; user-select: text; }
+/* Old global styles that leaked into the new screens. */
+.wv-experience .btn-primary:active { transform: none; opacity: 1; }
+.wv-experience :is(button, a) { transition: scale 0.22s var(--ease), background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s; }
+.wv-experience :is(input, textarea), .wv-experience :is(input, textarea):is(:focus, :focus-visible) { box-shadow: none; }
+.wv-experience ::selection { background: rgba(232, 189, 126, 0.3); color: var(--bone); }
+.wv-experience ::-webkit-scrollbar { width: 0; height: 0; }
+/* The entry on short screens (Safari with its toolbars, iPhone SE). */
+@media (max-height: 700px) {
+  .wv-experience .entry-l2 { margin-top: 10px; }
+  .wv-experience .entry-l3 { margin-top: 16px; }
+  .wv-experience .enter { margin-top: 22px; height: 52px; }
+  .wv-experience .entry-test { margin-top: 12px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wv-experience .entry:not(.play) .enter { pointer-events: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wv-experience [data-reveal] { opacity: 1; translate: none; }
+  .wv-experience:has(.report-screen) { animation: none; }
+  .wv-grain { animation: none; }
+}

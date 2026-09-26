@@ -12,6 +12,8 @@ import { checkAndMigrateSchema } from './lib/storage';
 import ErrorBoundary from './components/ErrorBoundary';
 import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
+import Stage from './components/experience/Stage';
+import ScreenFade from './components/experience/ScreenFade';
 
 // Dynamic GPU capability detection: disable backdrop-filter on weak devices
 (() => {
@@ -43,10 +45,22 @@ const safeLazy = (loader) => lazy(() =>
   })
 );
 
+// A lazily loaded screen that can be warmed in advance. Once its code is
+// loaded it renders directly: React.lazy would otherwise suspend on first
+// render and hold the screen back behind a blank fallback.
+function lazyScreen(load) {
+  let Mod = null, pending = null;
+  const warm = () => (pending ||= load().then(m => { Mod = m.default; return m; }));
+  const Lazy = safeLazy(warm);
+  function Screen(props) { const C = useRef(Mod || Lazy).current; return <C {...props} />; }
+  Screen.warm = () => warm().catch(() => {});
+  return Screen;
+}
+
 // Core path
-const Analyze = safeLazy(() => import('./components/CoreUpload'));
-const ExerciseGuide = safeLazy(() => import('./components/experience/Guide'));
-const ExperienceFilm = safeLazy(() => import('./components/experience/Film'));
+const Analyze = lazyScreen(() => import('./components/CoreUpload'));
+const ExerciseGuide = lazyScreen(() => import('./components/experience/Guide'));
+const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -61,28 +75,25 @@ const ExperienceFilm = safeLazy(() => import('./components/experience/Film'));
 // const CoachReport = safeLazy(() => import('./components/CoachReport'));
 
 
-const LazyFallback = (
-  <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
-    <div className="skeleton" style={{ width: '60%', height: 24, borderRadius: 8, marginBottom: 16 }} />
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-    </div>
-    <div className="skeleton" style={{ height: 120, borderRadius: 14, marginBottom: 12 }} />
-    <div className="skeleton" style={{ height: 80, borderRadius: 14 }} />
-  </div>
-);
+// While a screen's code loads, show the void itself, never a placeholder of another app.
+const LazyFallback = <div className="wv-experience" aria-busy="true" />;
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
   const [page, setPage] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
   const [videoFile, setVideoFile] = useState(null);
+  const fileSerial = useRef(0);
   // Run storage schema migration on mount
   useEffect(() => {
     checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err));
+  }, []);
+
+  // Warm the next screens while the visitor reads, so none waits on a download.
+  useEffect(() => {
+    const a = setTimeout(() => { ExperienceFilm.warm(); Analyze.warm(); }, 1200);
+    const b = setTimeout(() => ExerciseGuide.warm(), 3000);
+    return () => { clearTimeout(a); clearTimeout(b); };
   }, []);
 
   // Auto-create default profile for first-time users and skip straight to dashboard
@@ -106,74 +117,49 @@ function AppInner() {
     }
   }, [profileLoading, profile, saveProfile, setPage]);
 
-  // Wait for profile check (and potential auto-create) before rendering
-  if (profileLoading || !profile) return LazyFallback;
+  // The profile is created in the background; no screen waits for it.
+  const chooseLift = lift => {
+    setSelectedLift(lift);
+    setVideoFile(null);
+    // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
+    fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
+    setPage('film');
+  };
+  const backToChoice = () => { setSelectedLift(''); setVideoFile(null); setPage('dashboard'); };
+  const backToFilm = () => { setVideoFile(null); setPage('film'); };
 
-  // Hidden: Onboarding — profiles are auto-created, no questions before first analysis
+  let key, screen;
+  if (page === 'film' && selectedLift) {
+    key = `film:${selectedLift}`;
+    screen = <ExperienceFilm lift={selectedLift} onBack={backToChoice} onFile={f => { fileSerial.current += 1; setVideoFile(f); setPage('analyze'); }} />;
+  } else if (page === 'analyze' && selectedLift && videoFile) {
+    key = `analyze:${fileSerial.current}`;
+    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
+  } else if (page === 'exercises') {
+    key = 'guide';
+    screen = <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={chooseLift} />;
+  } else {
+    // Hidden, not deleted: history, rest, profile, validate, weekly, prs, coach, log,
+    // live and the dashboard. Every other page falls through to the choice of lift.
+    key = 'choice';
+    screen = <Choice onChoose={chooseLift} onGuide={() => setPage('exercises')} />;
+  }
 
-  if (page === 'dashboard' || (page === 'analyze' && !selectedLift && !videoFile)) return <Choice
-    onChoose={lift => {
-      setSelectedLift(lift);
-      setVideoFile(null);
-      // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
-      fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
-      setPage('film');
-    }}
-    onGuide={() => setPage('exercises')}
-  />;
-
-  if (page === 'film' && selectedLift) return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <ExperienceFilm lift={selectedLift} onBack={() => { setSelectedLift(''); setVideoFile(null); setPage('dashboard'); }} onFile={f => { setVideoFile(f); setPage('analyze'); }} />
-      </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'analyze') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="analyze" className="page-transition-enter">
-          <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={() => { setSelectedLift(''); setVideoFile(null); setPage('dashboard'); }} onLiveMode={() => setPage('live')} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
-  // Hidden: live (LiveCapture) and log (ManualLog) — fall through to Choice
-
-  // Exercise guide (core path)
-  if (page === 'exercises') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="exercises" className="page-transition-enter">
-          <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={lift => { setSelectedLift(lift); setVideoFile(null); fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {}); setPage('film'); }} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
-
-  // ── Hidden features (not deleted, just unreachable) ──
-  // The following pages are hidden during 3b but their code remains:
-  //   history (WorkoutHistory), rest (RestTimer), profile (ProfilePage),
-  //   validate (Validate), weekly (WeeklyReport), prs (PersonalRecords),
-  //   coach (CoachReport standalone), log (ManualLog), live (LiveCapture),
-  //   Dashboard (challenges, badges, confetti, injury risk, streak).
-  // TabBar is also hidden. All fall through to Choice below.
-
-  // Fallback: any unknown page renders Choice (the core path entry)
-  return <Choice
-    onChoose={lift => {
-      setSelectedLift(lift);
-      setVideoFile(null);
-      fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
-      setPage('film');
-    }}
-    onGuide={() => setPage('exercises')}
-  />;
+  return <>
+    <Stage />
+    <ScreenFade screenKey={key}>
+      <ErrorBoundary>
+        <Suspense fallback={LazyFallback}>{screen}</Suspense>
+      </ErrorBoundary>
+    </ScreenFade>
+  </>;
 }
 
 function EntryGate({ children }) {
   const [showEntry, setShowEntry] = useState(shouldShowEntry);
-  return showEntry ? <Entry onEnter={() => setShowEntry(false)} /> : children;
+  return <ScreenFade screenKey={showEntry ? 'entry' : 'app'}>
+    {showEntry ? <Entry onEnter={() => setShowEntry(false)} /> : children}
+  </ScreenFade>;
 }
 
 function App() {
@@ -181,13 +167,14 @@ function App() {
   return (
     <ErrorBoundary>
       <LanguageProvider>
-        <EntryGate>
+        {/* The profile loads during the entry, so nothing waits for it after. */}
         <ProfileProvider>
-          <ErrorBoundary>
-            <AppInner />
-          </ErrorBoundary>
+          <EntryGate>
+            <ErrorBoundary>
+              <AppInner />
+            </ErrorBoundary>
+          </EntryGate>
         </ProfileProvider>
-        </EntryGate>
       </LanguageProvider>
     </ErrorBoundary>
   );

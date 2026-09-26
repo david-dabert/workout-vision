@@ -3,15 +3,18 @@ import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 import Watch from './experience/Watch';
-import Result from './experience/Result';
+import Result, { AnalysisError } from './experience/Result';
 import Report from './experience/Report';
+import ScreenFade from './experience/ScreenFade';
 
-export default function CoreUpload({ onClose, initialLift = '', initialFile = null }) {
+export default function CoreUpload({ onClose, onRefilm, initialLift = '', initialFile = null }) {
   const { lang, tExercise } = useT();
   const fr = lang === 'fr';
   const [lift, setLift] = useState(initialLift);
   const [file, setFile] = useState(initialFile);
-  const [busy, setBusy] = useState(false);
+  // Arriving from Film, the analysis starts at once: never paint the old form first.
+  const [busy, setBusy] = useState(Boolean(initialFile && initialLift));
+  const [reportLeaving, setReportLeaving] = useState(false);
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState('');
   const [result, setResult] = useState(null);
@@ -21,24 +24,34 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
   const [frameSize, setFrameSize] = useState(null);
   const trueNRef = useRef(null);
   const abort = useRef(null);
-  const autoStarted = useRef(false);
-  useEffect(() => () => abort.current?.abort(), []);
+  const closeTimer = useRef(null);
+  useEffect(() => () => { abort.current?.abort(); clearTimeout(closeTimer.current); }, []);
 
-  // Auto-start analysis when arriving from the Film screen with a file
+  // Arriving from the Film screen with a file, the analysis starts at once. Start and
+  // abort live in one effect, so a remount (StrictMode) restarts it instead of losing it.
   useEffect(() => {
-    if (initialFile && initialLift && !autoStarted.current) {
-      autoStarted.current = true;
-      analyze();
-    }
+    if (!(initialFile && initialLift)) return undefined;
+    const controller = analyze();
+    return () => controller.abort();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function analyze() {
+  function analyze() {
     const controller = new AbortController();
     abort.current = controller;
+    run(controller);
+    return controller;
+  }
+
+  async function run(controller) {
+    const mine = () => abort.current === controller;
     setBusy(true); setResult(null); setError(''); setProgress(0);
     try {
-      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: setProgress, onPhase: setPhase, onLandmarks: (lm, w, h) => { setLandmarks(lm); setFrameSize([w, h]); } });
-      setResult(output);
+      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase: p => { if (mine()) setPhase(p); }, onLandmarks: (lm, w, h) => { if (mine()) { setLandmarks(lm); setFrameSize([w, h]); } } });
+      // A beat at 100 %, then the result, as in the prototype.
+      setProgress(100);
+      if (initialFile && !matchMedia('(prefers-reduced-motion: reduce)').matches) await new Promise(r => setTimeout(r, 380));
+      controller.signal.throwIfAborted();
+      if (mine()) setResult(output);
       // In experience mode (initialFile), Result component handles saving
       if (!initialFile && !output.refused) {
         try {
@@ -48,20 +61,34 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
         }
       }
     } catch (e) {
-      if (e.name !== 'AbortError') setError(e.message);
-    } finally { setBusy(false); abort.current = null; }
+      if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); }
+    } finally { if (mine()) { setBusy(false); abort.current = null; } }
   }
 
-  // Experience-mode Watch screen while analyzing
-  if (initialFile && busy) {
-    return <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); onClose(); }} />;
+  const refilm = onRefilm || onClose;
+  function closeReport() {
+    if (reportLeaving) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setShowReport(false); return; }
+    setReportLeaving(true);
+    closeTimer.current = setTimeout(() => { setShowReport(false); setReportLeaving(false); }, 450);
+  }
+  function openReport(savedN) {
+    clearTimeout(closeTimer.current);
+    trueNRef.current = savedN;
+    setReportLeaving(false);
+    setShowReport(true);
   }
 
-  // Experience-mode Result + Report (Result stays mounted so step state survives)
-  if (initialFile && result) {
+  // Experience mode: analysis, then the result (or what went wrong), crossfaded.
+  if (initialFile) {
+    const view = result ? 'result' : error ? 'error' : 'watch';
     return <>
-      <Result result={result} lift={lift} onClose={onClose} onReport={(savedN) => { trueNRef.current = savedN; setShowReport(true); }} onNewSet={onClose} onRefilm={onClose} />
-      {showReport && <Report result={result} lift={lift} trueN={trueNRef.current} onBack={() => setShowReport(false)} />}
+      <ScreenFade screenKey={view}>
+        {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); refilm(); }} />}
+        {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
+        {view === 'result' && <Result result={result} lift={lift} covered={showReport && !reportLeaving} onClose={onClose} onReport={openReport} onNewSet={onClose} onRefilm={refilm} />}
+      </ScreenFade>
+      {view === 'result' && showReport && <Report result={result} lift={lift} trueN={trueNRef.current} leaving={reportLeaving} onBack={closeReport} />}
     </>;
   }
 
@@ -76,7 +103,7 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
     </select>
     <label htmlFor="core-file">{fr ? 'Vidéo' : 'Video'}</label>
     <input id="core-file" type="file" accept="video/*,.mov" disabled={busy} onChange={e => { setFile(e.target.files[0] || null); setResult(null); }} style={{ display: 'block', marginBottom: 20, maxWidth: '100%' }} />
-    <button className="btn btn-primary" disabled={!file || !lift || busy} onClick={analyze}>{fr ? 'Analyser' : 'Analyze'}</button>
+    <button className="btn btn-primary" disabled={!file || !lift || busy} onClick={() => analyze()}>{fr ? 'Analyser' : 'Analyze'}</button>
     {busy && <div role="status">
       <p>{phase === 'model' ? (fr ? 'Chargement du modèle…' : 'Loading model…') : `${fr ? 'Analyse' : 'Analysis'} ${Math.round(progress)}%`}</p>
       <progress max="100" value={progress} />

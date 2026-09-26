@@ -14,7 +14,7 @@ You never edit, create or delete a file in the repository, except build outputs 
 2. Run npm run lint, npm run typecheck, npm test and npm run build. Keep the last lines of each output. Then run git status --porcelain; anything it lists is a finding.
 3. Run git log --stat on the commit range and list every file it changes.
 4. Open every screenshot in the evidence folders with the Read tool. For each, first write one line on what is visible, in plain words, before comparing it with anything. A screenshot that does not show what its name or its requirement promises is UNMET.
-5. Extract the text of every PDF in the evidence folders (pdftotext if present, otherwise Python) and compare it.
+5. Extract the text of every PDF in the evidence folders (pdftotext if present, otherwise Python) and quote it.
 6. Run node scripts/src-hash.mjs and compare its output with srcHash in each results.json. A mismatch means the evidence predates the code: UNMET.
 7. Check on the commit range, each with its command and output as proof:
 - no video file (.mov .mp4 .m4v .webm .avi .mkv) is tracked, and no file over 5 MB is added or changed;
