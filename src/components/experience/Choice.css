@@ -29,3 +29,17 @@
   .wv-experience .row-link { margin-top: 16px; }
   .wv-experience .altar { height: clamp(300px, calc(100svh - 320px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
 }
+
+/* A return opens on the prototype's greeting; the cards give up its height, so
+   they still end above the fold of a 664 px Safari screen. */
+.wv-experience .choose-screen.has-welcome .altar { height: clamp(300px, calc(100svh - 346px - 73px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
+@media (max-height: 760px) {
+  .wv-experience .welcome { margin-top: 10px; }
+  .wv-experience .choose-screen.has-welcome .altar { height: clamp(300px, calc(100svh - 320px - 65px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
+}
+/* On the shortest screens (iPhone SE in Safari) the cards shrink a little more under the greeting. */
+@media (max-height: 600px) {
+  .wv-experience .choose-screen.has-welcome .altar { height: clamp(250px, calc(100svh - 320px - 65px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
+}
+/* The row to the saved sets sits under the first row and shares its rule. */
+.wv-experience .row-link + .row-link { margin-top: 0; border-top: 0; }

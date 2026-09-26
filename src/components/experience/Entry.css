@@ -121,6 +121,25 @@
 
 .wv-experience .entry-l1 { color: var(--bone); }
 
+/* Buttons shared by every screen (from the prototype, formerly in Film.css):
+   defined here, with the entry, so a screen reached first never lacks them. */
+.wv-experience .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
+.wv-experience .btn-primary {
+  position: relative; height: 58px; width: 100%; border-radius: 18px; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  color: var(--ink); font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #F6DAAA 0%, #E3B170 55%, #C98F48 100%);
+  box-shadow: 0 18px 40px -18px rgba(232, 189, 126, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  min-height: 44px; cursor: pointer;
+}
+.wv-experience .btn-primary::after { background: radial-gradient(170px circle at var(--px, 50%) var(--py, 50%), rgba(255, 255, 255, 0.45), transparent 65%); }
+.wv-experience .btn-primary svg { width: 18px; height: 18px; }
+.wv-experience .btn-ghost { height: 54px; width: 100%; border-radius: 18px; border: 1px solid var(--hair-2); font-size: 15px; color: var(--bone); display: inline-flex; align-items: center; justify-content: center; min-height: 44px; cursor: pointer; }
+.wv-experience .btn-line { height: 54px; width: 100%; border-radius: 18px; border: 1px solid rgba(232, 189, 126, 0.55); color: var(--lamp-hi); display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; min-height: 44px; }
+.wv-experience .btn-line svg { width: 17px; height: 17px; }
+.wv-experience .text-btn { height: 44px; padding: 0 16px; font-size: 14px; color: var(--ash); align-self: center; }
+.wv-experience .btn-ghost { background: transparent; }
+
 /* ── Shared craft rules (26 September) ─────────────────────────────── */
 /* The page itself is the void, so nothing pale ever shows between screens. */
 html, body { background: #080706; color-scheme: dark; }

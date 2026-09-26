@@ -1,0 +1,26 @@
+/* History: the sets saved on this phone, by day. The list follows the Guide's
+   (hair rules, serif names, mono heads); the count stands where the Guide shows
+   a picture, in the lamp colour of the Film screen's step numbers.
+   Same position override as the Guide, so the page itself scrolls. */
+.wv-experience:has(.history-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
+.wv-experience .history-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
+.wv-experience .history-screen .wrap { padding: 0; }
+.wv-experience .history-screen .title { margin-top: 16px; color: var(--bone); }
+.wv-experience .history-screen .sub { margin-top: 10px; }
+.wv-experience .hist-day { margin-top: 26px; }
+.wv-experience .hist-head { margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--hair); font-family: var(--mono); font-weight: 400; font-size: 10.5px; line-height: 1.5; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .hist-list { list-style: none; margin: 0; padding: 0; }
+.wv-experience .hist-item { border-bottom: 1px solid rgba(239, 232, 220, 0.07); }
+.wv-experience .hist-btn { width: 100%; min-height: 44px; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; text-align: left; }
+.wv-experience .hist-n { font-family: var(--serif); font-size: 44px; line-height: 0.9; text-align: center; color: var(--lamp); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .hist-txt { display: flex; flex-direction: column; min-width: 0; }
+.wv-experience .hist-name { font-family: var(--serif); font-size: 23px; line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
+.wv-experience .hist-meta { margin-top: 5px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .hist-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 9px 4px; border-radius: 999px; border: 1px solid var(--hair-2); color: var(--ash); }
+.wv-experience .hist-detail { display: flex; flex-direction: column; gap: 10px; padding: 0 0 20px 70px; }
+.wv-experience .hist-corr { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .hist-detail .text-btn { align-self: flex-start; padding: 0 2px; border-radius: 999px; }
+.wv-experience .hist-detail .text-btn.is-armed { color: var(--lamp); }
+.wv-experience .hist-empty { margin-top: 28px; display: flex; flex-direction: column; gap: 18px; }
+.wv-experience .hist-empty p { margin: 0; font-size: 15px; color: var(--ash); }
+.wv-experience .hist-error { margin: 18px 0 0; font-size: 14px; line-height: 1.5; color: var(--lamp); }

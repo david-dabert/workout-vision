@@ -70,8 +70,8 @@ sw = sw.replace(
 
 // Modify the install handler to precache both APP_SHELL and PRECACHE_ASSETS
 sw = sw.replace(
-  /cache\.addAll\(APP_SHELL\)/,
-  'cache.addAll([...APP_SHELL, ...PRECACHE_ASSETS])'
+  /cache\.addAll\(fresh\(APP_SHELL\)\)/,
+  'cache.addAll(fresh([...APP_SHELL, ...PRECACHE_ASSETS]))'
 );
 
 writeFileSync(SW_PATH, sw);
@@ -93,7 +93,7 @@ if (!written.includes('PRECACHE_ASSETS')) {
   console.error('[inject-sw-precache] FATAL: PRECACHE_ASSETS block not found in output SW');
   process.exit(1);
 }
-if (!written.includes('...APP_SHELL, ...PRECACHE_ASSETS')) {
+if (!written.includes('fresh([...APP_SHELL, ...PRECACHE_ASSETS])')) {
   console.error('[inject-sw-precache] FATAL: cache.addAll() was not patched to include PRECACHE_ASSETS');
   process.exit(1);
 }

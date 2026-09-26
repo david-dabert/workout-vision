@@ -1,0 +1,24 @@
+{
+  "first": {
+    "page": "A",
+    "mounted": true,
+    "stored": {
+      "wv-v6afe96d0": "A"
+    }
+  },
+  "afterDeploy": {
+    "stored": {
+      "wv-vd5b0e54b": "B"
+    }
+  },
+  "reopenedOnline": {
+    "page": "B",
+    "mounted": true
+  },
+  "reopenedOffline": {
+    "page": "B",
+    "mounted": true
+  },
+  "result": "PASS",
+  "swSha256": "d2b33acfaca4eb381d4b961d08a9e2f45059f3dc05f22c696ced409ef9221c09"
+}

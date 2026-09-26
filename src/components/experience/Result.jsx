@@ -4,6 +4,8 @@ import { META, topPose } from './lift-scenes';
 import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
+import { warmReportPdf } from './Report';
+import { refreshSets } from './sets';
 import './Result.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -96,8 +98,16 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
   const [saveError, setSaveError] = useState('');
   const saving = useRef(false);
   const rootRef = useRef(null);
+  const reportRef = useRef(null);
   const coveredRef = useRef(covered);
   coveredRef.current = covered;
+
+  // Back from the report, the keyboard and screen readers return to its button.
+  const wasCovered = useRef(covered);
+  useEffect(() => {
+    if (wasCovered.current && !covered) reportRef.current?.focus({ preventScroll: true });
+    wasCovered.current = covered;
+  }, [covered]);
 
   const liftName = META[lift]?.[lang] || lift;
   const side = result.arm === 'left' ? (fr ? 'gauche' : 'left') : (fr ? 'droit' : 'right');
@@ -139,8 +149,13 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
       await saveWorkout({
         exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
         date: new Date().toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
+        // What the app counted stays apart from what the visitor kept.
+        machineResult: { reps: count, confidence: result.confidence ?? null },
+        correctedResult: n !== count ? { reps: n } : null,
       });
+      refreshSets();
       setStep('saved');
+      warmReportPdf().catch(() => {}); // the report screen says so if it could not load
     } catch {
       setSaveError(fr ? 'Résultat affiché, mais non enregistré.' : 'Result shown, but could not save it.');
     } finally { saving.current = false; }
@@ -187,7 +202,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
   }
 
   const one = shown <= 1;
-  return <div className="wv-experience" ref={rootRef}>
+  // Under the report, the result is out of reach of taps, the keyboard and screen readers.
+  return <div className="wv-experience" ref={rootRef} inert={covered || undefined}>
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
       <div className="res-head">
@@ -237,7 +253,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
-          <button className="btn-line press" onClick={() => onReport(trueN)}>
+          <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport pour mon coach' : 'Report for my coach'}</span>
           </button>

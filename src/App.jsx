@@ -14,6 +14,7 @@ import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
 import ScreenFade from './components/experience/ScreenFade';
+import { loadSets } from './components/experience/sets';
 
 // Dynamic GPU capability detection: disable backdrop-filter on weak devices
 (() => {
@@ -61,6 +62,7 @@ function lazyScreen(load) {
 const Analyze = lazyScreen(() => import('./components/CoreUpload'));
 const ExerciseGuide = lazyScreen(() => import('./components/experience/Guide'));
 const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
+const History = lazyScreen(() => import('./components/experience/History'));
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -85,14 +87,16 @@ function AppInner() {
   const [videoFile, setVideoFile] = useState(null);
   const fileSerial = useRef(0);
   // Run storage schema migration on mount
+  // The saved sets are read once the records are migrated, while the entry plays,
+  // so the choice of lift never waits for them.
   useEffect(() => {
-    checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err));
+    checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err)).then(() => loadSets()).catch(() => {});
   }, []);
 
   // Warm the next screens while the visitor reads, so none waits on a download.
   useEffect(() => {
     const a = setTimeout(() => { ExperienceFilm.warm(); Analyze.warm(); }, 1200);
-    const b = setTimeout(() => ExerciseGuide.warm(), 3000);
+    const b = setTimeout(() => { ExerciseGuide.warm(); History.warm(); }, 3000);
     return () => { clearTimeout(a); clearTimeout(b); };
   }, []);
 
@@ -138,11 +142,14 @@ function AppInner() {
   } else if (page === 'exercises') {
     key = 'guide';
     screen = <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={chooseLift} />;
+  } else if (page === 'history') {
+    key = 'history';
+    screen = <History onClose={() => setPage('dashboard')} />;
   } else {
-    // Hidden, not deleted: history, rest, profile, validate, weekly, prs, coach, log,
+    // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // live and the dashboard. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={chooseLift} onGuide={() => setPage('exercises')} />;
+    screen = <Choice onChoose={chooseLift} onGuide={() => setPage('exercises')} onHistory={() => setPage('history')} />;
   }
 
   return <>

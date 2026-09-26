@@ -16,6 +16,8 @@ const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'fileName', 'videoUrl', 'frames', 'fps',
   'autoDetected', 'detectionFailed',
   'workoutId',
+  // The counting core's result screen writes these; reading them back keeps the arm and the app's own count.
+  'source', 'arm', 'repDetails', 'corrected',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

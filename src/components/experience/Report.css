@@ -25,8 +25,8 @@
   display: flex; flex-direction: column; gap: 12px;
 }
 .wv-experience .sh-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-ash); }
-.wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; color: var(--paper-ink); }
-.wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); }
+.wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: normal; color: var(--paper-ink); }
+.wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); overflow-wrap: anywhere; }
 .wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
 .wv-experience .sh-n { font-family: var(--serif); font-size: 58px; line-height: 0.9; color: #8A6630; font-variant-numeric: lining-nums; }
@@ -40,6 +40,18 @@
 .wv-experience .sh-notes p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .wv-experience .sh-foot { padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 10px; line-height: 1.5; color: var(--paper-ash); }
 
-/* Share button */
-.wv-experience .report-screen .btn-primary { margin-top: 20px; }
-.wv-experience .toast { margin: 12px 0 0; text-align: center; font-size: 13px; color: var(--ash); }
+/* Share bar: the share stays in reach at every height. The sheet scrolls under
+   it and meets it 20 px below the sheet, where the prototype puts the button. */
+/* The page scrolls, not the section, so the bar sticks to the bottom of the screen. */
+.wv-experience .report-screen { padding-bottom: 0; overflow: visible; }
+.wv-experience .share-bar {
+  position: sticky; bottom: 0; z-index: 3; margin-top: 8px;
+  padding: 12px 0 calc(env(safe-area-inset-bottom, 0px) + 16px);
+  background: linear-gradient(to bottom, rgba(8, 7, 6, 0), var(--void) 22px);
+}
+.wv-experience .share-note { margin: 0 0 10px; text-align: center; font-size: 13px; line-height: 1.45; color: var(--ash); text-wrap: balance; }
+/* Empty, it takes no room but stays a live region, so a message is announced. */
+.wv-experience .share-note:empty { margin: 0; }
+/* A message sits on the solid part of the bar, below its fade, never over the sheet. */
+.wv-experience .share-bar:has(.share-note:not(:empty)) { padding-top: 30px; }
+.wv-experience .share-bar .btn-primary.is-busy { opacity: 0.6; cursor: default; pointer-events: none; }

@@ -1,15 +1,16 @@
 /**
  * PDF race-condition test.
  *
- * Delays the jsPDF chunk by 2 s so the initial PDF build is still running
- * when the user types into the Client field with pressSequentially.
- * After the share button is tapped, the captured PDF must contain the
- * text that was typed — not the empty default from the first build.
- *
- * Expected: FAIL on the current code (rebuildPDF drops edits during a build).
+ * Delays the PDF code by 3 s, so it is still loading when the report opens and
+ * the visitor types into the Client field. Since the second round the PDF is
+ * built at the tap from what the screen shows, so no edit can be lost: while the
+ * code loads, the button says so and does nothing; once it is ready, the PDF
+ * shared must carry the name typed (its file name is made from it) and be a PDF.
  */
 import { webkit, devices, expect } from '@playwright/test';
 import { resolve } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 const base = 'http://127.0.0.1:4175/workout-vision/';
 const clipPath = resolve('test/real-phone/clips/lateral_raise_10_front_mufhhbun.mov');
@@ -47,6 +48,16 @@ try {
   await expect(resultScreen).toBeVisible({ timeout: 300000 });
   await page.waitForTimeout(500);
 
+  // Delay the PDF code once. The app asks for it as soon as the set is saved.
+  let delayed = false;
+  await page.route(/(report-pdf|jspdf)[^/]*\.js$/, async route => {
+    if (!delayed) {
+      delayed = true;
+      await new Promise(r => setTimeout(r, 3000));
+    }
+    await route.continue();
+  });
+
   // Confirm count
   const yesBtn = page.locator('.ask-row .btn-primary');
   await expect(yesBtn).toBeVisible();
@@ -55,39 +66,32 @@ try {
   const savedCard = page.locator('[data-testid="saved-card"]');
   await expect(savedCard).toBeVisible({ timeout: 15000 });
 
-  // Delay the jsPDF chunk so the first PDF build on the report screen
-  // takes time. Only delay once — subsequent loads proceed normally.
-  let delayed = false;
-  await page.route('**/*jspdf*', async route => {
-    if (!delayed) {
-      delayed = true;
-      await new Promise(r => setTimeout(r, 2000));
-    }
-    await route.continue();
-  });
-
   // Open report
   const reportBtn = page.locator('.btn-line');
   await reportBtn.click();
   const reportScreen = page.locator('.report-screen');
   await expect(reportScreen).toBeVisible({ timeout: 5000 });
 
-  // The jsPDF chunk is delayed by 2 s. The first rebuildPDF call starts
-  // on mount and will be in flight. Type into Client while it builds.
+  // While the PDF code loads, the button says so and does nothing.
+  const shareBtn = page.locator('.report-screen .share-bar .btn-primary');
+  await expect(shareBtn).toContainText('Préparation du PDF');
+  if (await shareBtn.getAttribute('aria-disabled') !== 'true') {
+    console.log('FAIL: the share button is not marked unavailable while the PDF code loads.');
+    process.exit(1);
+  }
+
+  // Type into Client meanwhile, one character at a time.
   const clientInput = page.locator('#fClient');
   await clientInput.click();
-  // pressSequentially types one character at a time, triggering onChange
-  // on each keystroke — each fires rebuildPDF, which returns early because
-  // buildingRef.current is true. The edit is dropped.
   await clientInput.pressSequentially('Alice Durand', { delay: 80 });
+  await page.locator('#fNotes').pressSequentially('Tempo lent, puis repos.', { delay: 20 });
+  await expect(shareBtn).toContainText('Partager le PDF', { timeout: 10000 });
 
-  // Wait long enough for the delayed build to finish + any rebuild
-  await page.waitForTimeout(4000);
-
-  // Stub canShare to force download, hook createObjectURL to capture blob
+  // Stub canShare to force the download, and capture the blob and the file name.
   await page.evaluate(() => {
     navigator.canShare = () => false;
     window.__pdfBlob = null;
+    window.__pdfName = null;
     const origCreate = URL.createObjectURL.bind(URL);
     URL.createObjectURL = (blob) => {
       if (blob && blob.type === 'application/pdf') window.__pdfBlob = blob;
@@ -95,37 +99,43 @@ try {
     };
     const origRevoke = URL.revokeObjectURL.bind(URL);
     URL.revokeObjectURL = (url) => setTimeout(() => origRevoke(url), 10000);
+    const origClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () { if (this.download) window.__pdfName = this.download; return origClick.call(this); };
   });
 
-  // Tap share
-  const shareBtn = page.locator('.report-screen .btn-primary');
-  await shareBtn.click();
+  // Tap share, where a finger would: the label carries the hidden switch.
+  const shareBox = await shareBtn.boundingBox();
+  await page.mouse.click(shareBox.x + shareBox.width / 2, shareBox.y + shareBox.height / 2);
   await page.waitForTimeout(2000);
 
-  // Extract PDF text content
-  const pdfText = await page.evaluate(async () => {
+  // The PDF, and the name it was shared under.
+  const shared = await page.evaluate(async () => {
     const blob = window.__pdfBlob;
     if (!blob) return null;
-    const buf = await blob.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let s = '';
-    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-    return s;
+    const head = new TextDecoder('latin1').decode(new Uint8Array(await blob.slice(0, 5).arrayBuffer()));
+    return { head, name: window.__pdfName, bytes: Array.from(new Uint8Array(await blob.arrayBuffer())) };
   });
 
-  if (!pdfText) {
+  if (!shared) {
     console.log('FAIL: no PDF blob captured');
     process.exit(1);
   }
-
-  // The PDF must contain "Alice Durand" — the text typed during the build
-  const hasClient = pdfText.includes('Alice Durand');
-  console.log(`PDF contains "Alice Durand": ${hasClient}`);
-
-  if (!hasClient) {
-    console.log('FAIL: PDF does not contain the edited client name. The edit was dropped during the build.');
+  console.log(`Shared: ${shared.name} (${shared.head})`);
+  if (shared.head !== '%PDF-' || !/^rapport-seance-alice-durand-\d{4}-\d{2}-\d{2}\.pdf$/.test(shared.name || '')) {
+    console.log('FAIL: the PDF shared does not carry the name typed while the PDF code loaded.');
     process.exit(1);
   }
+
+  const dir = 'test/real-phone/wave2/pdf-race';
+  mkdirSync(dir, { recursive: true });
+  const file = `${dir}/${shared.name}`;
+  writeFileSync(file, Buffer.from(shared.bytes));
+  const text = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
+  writeFileSync(`${dir}/content.txt`, text);
+  expect(text).toContain('Alice Durand');
+  expect(text.replace(/\s+/g, ' ')).toContain('Tempo lent, puis repos.');
+  expect(errors).toEqual([]);
+  console.log(text);
 
   console.log('PASS: PDF matches the screen.');
   process.exit(0);

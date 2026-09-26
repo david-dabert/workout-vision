@@ -12,9 +12,13 @@ const APP_SHELL = [
   '__SW_BASE__icon-512.png',
 ];
 
+// Files are fetched past the browser's own cache, which may still hold the last
+// version's page for ten minutes: a new version must never store the old one.
+const fresh = (urls) => urls.map((url) => new Request(url, { cache: 'reload' }));
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(fresh(APP_SHELL)))
   );
   self.skipWaiting();
 });
@@ -69,11 +73,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // JS/CSS assets with hashed filenames: cache-first
+  // JS/CSS assets with hashed filenames (Vite names them name-XXXXXXXX.js): cache-first
   // Vite adds crossorigin to <script type="module"> and <link rel="stylesheet">,
   // causing cors-mode requests. cache.addAll() stores with no-cors mode.
   // Try both the original request and a mode-agnostic URL match.
-  if (/\.[a-f0-9]{8}\.(js|css)$/.test(url.pathname)) {
+  if (/-[A-Za-z0-9_-]{8}\.(js|css)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
@@ -93,10 +97,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation and app shell: network-first with cache fallback
+  // Navigation and app shell: network-first with cache fallback. The page is checked
+  // with the server each time, so it never outlives the files it names.
   if (request.mode === 'navigate' || APP_SHELL.includes(url.pathname)) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-cache' })
         .then((response) => {
           if (response.ok) {
             const clone = response.clone();

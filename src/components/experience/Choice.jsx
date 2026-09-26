@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { LIFTS, META, createLiftScene, liftView } from './lift-scenes';
+import { useSets } from './sets';
 import './Choice.css';
+
+// A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
+let returning = null;
 
 export function LiftCanvas({ lift, mode }) {
   const canvas = useRef(null);
@@ -25,13 +29,26 @@ export function HapticButton({ children, onClick, className, label }) {
   </label>;
 }
 
-export default function Choice({ onChoose, onGuide }) {
-  const { lang } = useT(), fr = lang === 'fr';
+export default function Choice({ onChoose, onGuide, onHistory }) {
+  const { lang, tExercise } = useT(), fr = lang === 'fr';
   const [active, setActive] = useState(0);
+  // Give storage a moment before showing the choice; late results still expose history.
+  const sets = useSets();
+  if (sets === undefined) return <div className="wv-experience" aria-busy="true" />;
+  if (returning === null && sets) returning = sets.length > 0;
+  const last = returning && sets?.[0];
+  const n = sets?.length || 0;
+  const lastName = last && (META[last.exercise]?.[lang] || tExercise(last.exercise || last.exerciseKey)).toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
   return <div className="wv-experience">
-    <section className="screen is-active choose-screen">
+    <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
       <div className="wrap">
         <div className="topbar"><span className="brand-sm">Workout Vision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
+        {last && <div className="welcome">
+          <p className="welcome-l1">{fr ? 'Bon retour.' : 'Welcome back.'}</p>
+          <p className="welcome-l2">{fr
+            ? `Dernière série\u00A0: ${lastName}, ${last.reps} ${last.reps > 1 ? 'répétitions' : 'répétition'}.`
+            : `Last set: ${lastName}, ${last.reps} ${last.reps === 1 ? 'rep' : 'reps'}.`}</p>
+        </div>}
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour voir les trois.' : 'Choose the movement you recognise. Swipe to see all three.'}</p>
       </div>
@@ -59,6 +76,11 @@ export default function Choice({ onChoose, onGuide }) {
           <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>
+        {n > 0 && <button className="row-link press" onClick={onHistory}>
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6 7v10M10 7v10M14 7v10M18 7v10" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         <p className="foot">{fr ? 'Trois mouvements sont comptés pour l’instant.' : 'Three movements are counted for now.'}</p>
       </div>
     </section>

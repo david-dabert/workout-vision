@@ -10,8 +10,10 @@
  * link again and requires the new app on screen, the same set still stored,
  * and one load without a console error within three reloads, because the
  * first loads after the switch can still run files the old app left behind.
+ * The visit after that load (entering, the choice of lift) must be clean too;
+ * its errors are kept apart from the loads' own.
  */
-import { webkit, devices } from '@playwright/test';
+import { webkit, devices, expect } from '@playwright/test';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
@@ -134,20 +136,22 @@ try {
     }
     await shot(page, '01-returning-open');
 
+    // The visit itself, after the settled load: its errors are counted apart.
+    errors.length = 0;
     const enter = page.locator('.enter');
-    if (await enter.count()) {
-      await enter.click();
-      await page.waitForTimeout(2000);
-    }
-    const lifts = await page.locator('.altar').count();
+    if (await enter.count()) await enter.click();
+    // The lifts show once the app has read the saved sets: wait for them, do not count once.
+    const lifts = await expect(page.locator('.altar')).toHaveCount(3, { timeout: 20_000 })
+      .then(() => 3, () => page.locator('.altar').count());
+    await page.waitForTimeout(1000);
     await shot(page, '02-returning-choice');
-    loads[loads.length - 1] = kept(); // the settled load, through the choice of lift
     const settled = loads[loads.length - 1];
+    const visit = kept();
 
     const after = await workouts(page, false, MARK);
     const srcHash = execFileSync('node', ['scripts/src-hash.mjs'], { encoding: 'utf8' }).trim();
     const report = {
-      result: after.stillStored && after.count >= seed.workoutsAfterSeed && lifts === 3 && settled.length === 0 ? 'PASS' : 'FAIL',
+      result: after.stillStored && after.count >= seed.workoutsAfterSeed && lifts === 3 && settled.length === 0 && visit.length === 0 ? 'PASS' : 'FAIL',
       srcHash,
       newAppTitle: await page.title(),
       liftsOffered: lifts,
@@ -157,6 +161,7 @@ try {
       loads: loads.length,
       errorsByLoad: loads,
       errors: settled,
+      errorsDuringVisit: visit,
       screenshots,
     };
     writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2));

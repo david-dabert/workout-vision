@@ -12,7 +12,8 @@
  */
 
 import { createServer } from 'http';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, createWriteStream } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, createWriteStream, renameSync, rmSync, statSync } from 'fs';
+import { pipeline } from 'stream/promises';
 import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { networkInterfaces } from 'os';
@@ -57,7 +58,9 @@ function loadManifest() {
 }
 
 function saveManifest(manifest) {
-  writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
+  // Written aside, then moved into place: a stop mid-write never leaves half a manifest.
+  writeFileSync(MANIFEST_PATH + '.tmp', JSON.stringify(manifest, null, 2));
+  renameSync(MANIFEST_PATH + '.tmp', MANIFEST_PATH);
 }
 
 // ─── HTML page served to phone ─────────────────────────────────────────
@@ -338,46 +341,44 @@ const server = createServer(async (req, res) => {
     const filename = `${exercise}_${reps}_${view}_${ts}.${ext}`;
     const filepath = join(CLIPS_DIR, filename);
 
-    // Stream body to file
-    const ws = createWriteStream(filepath);
-    let bytes = 0;
+    // The clip is written under a temporary name and takes its own only once it is
+    // whole on disk; only then does the manifest name it. A failed or stopped upload
+    // leaves neither a clip nor a manifest entry.
+    const partial = filepath + '.part';
+    try {
+      await pipeline(req, createWriteStream(partial));
+      renameSync(partial, filepath);
+    } catch (err) {
+      rmSync(partial, { force: true });
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Upload error: ' + err.message);
+      }
+      return;
+    }
+    const bytes = statSync(filepath).size;
 
-    req.on('data', (chunk) => {
-      bytes += chunk.length;
-      ws.write(chunk);
+    // Update manifest
+    const manifest = loadManifest();
+    manifest.clips.push({
+      file: filename,
+      type: fileType,
+      exercise,
+      reps,
+      view,
+      source: 'david-phone',
+      addedAt: new Date().toISOString().slice(0, 10),
+      sizeBytes: bytes,
     });
+    manifest.clips.sort((a, b) => a.file.localeCompare(b.file));
+    saveManifest(manifest);
 
-    req.on('end', () => {
-      ws.end();
+    const sizeMB = (bytes / 1024 / 1024).toFixed(1);
+    const label = fileType === 'image' ? `${exercise} image` : `${exercise} × ${reps} reps`;
+    console.log(`  ✓ ${filename} (${sizeMB} MB) — ${label}`);
 
-      // Update manifest
-      const manifest = loadManifest();
-      manifest.clips.push({
-        file: filename,
-        type: fileType,
-        exercise,
-        reps,
-        view,
-        source: 'david-phone',
-        addedAt: new Date().toISOString().slice(0, 10),
-        sizeBytes: bytes,
-      });
-      manifest.clips.sort((a, b) => a.file.localeCompare(b.file));
-      saveManifest(manifest);
-
-      const sizeMB = (bytes / 1024 / 1024).toFixed(1);
-      const label = fileType === 'image' ? `${exercise} image` : `${exercise} × ${reps} reps`;
-      console.log(`  ✓ ${filename} (${sizeMB} MB) — ${label}`);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: true, file: filename, totalClips: manifest.clips.length }));
-    });
-
-    req.on('error', (err) => {
-      ws.destroy();
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('Upload error: ' + err.message);
-    });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, file: filename, totalClips: manifest.clips.length }));
 
     return;
   }
