@@ -25,8 +25,8 @@ export default function Report({ result, lift, trueN, onBack }) {
       fr ? 'Rapport de séance' : 'Session report',
       `${today}`,
       '',
-      `${fr ? 'Client' : 'Client'}: ${client || '—'}`,
-      `${fr ? 'Coach' : 'Coach'}: ${coach || '—'}`,
+      `${fr ? 'Client' : 'Client'}: ${client || '-'}`,
+      `${fr ? 'Coach' : 'Coach'}: ${coach || '-'}`,
       '',
       `${count} ${liftName}`,
       `${fr ? 'Bras suivi' : 'Arm tracked'}: ${armLabel}`,
@@ -40,8 +40,8 @@ export default function Report({ result, lift, trueN, onBack }) {
       lines.push('');
       lines.push(fr ? 'Rép. | Durée | Amplitude' : 'Rep | Time | Range');
       result.reps.forEach(rep => {
-        const dur = rep.duration ? `${(rep.duration / 1000).toFixed(1)}s` : '—';
-        const rom = rep.rom ? `${Math.round(rep.rom)}°` : '—';
+        const dur = rep.duration ? `${(rep.duration / 1000).toFixed(1)}s` : '-';
+        const rom = rep.rom ? `${Math.round(rep.rom)}°` : '-';
         lines.push(`${rep.index} | ${dur} | ${rom}`);
       });
     }
@@ -92,8 +92,8 @@ export default function Report({ result, lift, trueN, onBack }) {
         <div className="sh-top"><span>Workout Vision</span><span>{today}</span></div>
         <h3 className="sh-title">{fr ? 'Rapport de séance' : 'Session report'}</h3>
         <div className="sh-people">
-          <span><em>{fr ? 'Client' : 'Client'}</em><span>{client || '—'}</span></span>
-          <span><em>{fr ? 'Coach' : 'Coach'}</em><span>{coach || '—'}</span></span>
+          <span><em>{fr ? 'Client' : 'Client'}</em><span>{client || '-'}</span></span>
+          <span><em>{fr ? 'Coach' : 'Coach'}</em><span>{coach || '-'}</span></span>
         </div>
         <div className="sh-count">
           <span className="sh-n">{count}</span>
@@ -118,10 +118,10 @@ export default function Report({ result, lift, trueN, onBack }) {
           <tbody>
             {result.reps.map(rep => <tr key={rep.index}>
               <td>{rep.index}</td>
-              <td>{rep.duration ? `${(rep.duration / 1000).toFixed(1)}s` : '—'}</td>
-              <td>{rep.rom ? `${Math.round(rep.rom)}°` : '—'}</td>
-              <td>{rep.up ? `${(rep.up / 1000).toFixed(1)}s` : '—'}</td>
-              <td>{rep.down ? `${(rep.down / 1000).toFixed(1)}s` : '—'}</td>
+              <td>{rep.duration ? `${(rep.duration / 1000).toFixed(1)}s` : '-'}</td>
+              <td>{rep.rom ? `${Math.round(rep.rom)}°` : '-'}</td>
+              <td>{rep.up ? `${(rep.up / 1000).toFixed(1)}s` : '-'}</td>
+              <td>{rep.down ? `${(rep.down / 1000).toFixed(1)}s` : '-'}</td>
             </tr>)}
           </tbody>
         </table>}

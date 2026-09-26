@@ -66,7 +66,7 @@ export default function CoreUpload({ onClose, initialLift = '', initialFile = nu
   return <main className="page" style={{ maxWidth: 520, margin: '0 auto', padding: 20 }}>
     <button className="btn btn-ghost" onClick={() => { abort.current?.abort(); onClose(); }}>{fr ? 'Retour' : 'Back'}</button>
     <h1>{fr ? 'Analyser une vidéo' : 'Analyze a video'}</h1>
-    <p>{fr ? 'Version de test — vérifiez le nombre de répétitions.' : 'Test version — check the repetition count.'}</p>
+    <p>{fr ? 'Version de test - vérifiez le nombre de répétitions.' : 'Test version - check the repetition count.'}</p>
     <label htmlFor="core-lift">{fr ? 'Exercice' : 'Exercise'}</label>
     <select id="core-lift" value={lift} disabled={busy} onChange={e => { setLift(e.target.value); setResult(null); }} style={{ display: 'block', width: '100%', minHeight: 44, marginBottom: 16 }}>
       <option value="">{fr ? 'Choisir un exercice' : 'Choose an exercise'}</option>

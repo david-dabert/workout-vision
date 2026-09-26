@@ -44,7 +44,7 @@ export function GuideFrames({ exercise }) {
     const timer = setInterval(() => setActive(n => (n + 1) % exercise.frames.length), 800);
     return () => clearInterval(timer);
   }, [exercise]);
-  return <div className="guide-frames">{exercise.frames.map((src, i) => <img key={src} className={i === active ? 'active' : ''} src={src} width="320" height="320" loading="lazy" alt={`${exercise.fr} / ${exercise.name} — ${i + 1}`} />)}</div>;
+  return <div className="guide-frames">{exercise.frames.map((src, i) => <img key={src} className={i === active ? 'active' : ''} src={src} width="320" height="320" loading="lazy" alt={`${exercise.fr} / ${exercise.name} - ${i + 1}`} />)}</div>;
 }
 export default function Guide({ onClose, onChoose }) {
   const { lang, setLang } = useT(), fr = lang === 'fr';
