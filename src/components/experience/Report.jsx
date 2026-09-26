@@ -90,8 +90,14 @@ export default function Report({ result, lift, trueN, onBack }) {
   const [notes, setNotes] = useState('');
   const [toast, setToast] = useState('');
   const sheetRef = useRef(null);
-  const pdfRef = useRef(null);
-  const buildingRef = useRef(false);
+
+  // Refs mirror state so the build loop always reads the latest values
+  const clientRef = useRef(client);
+  const coachRef = useRef(coach);
+  const notesRef = useRef(notes);
+  clientRef.current = client;
+  coachRef.current = coach;
+  notesRef.current = notes;
 
   const liftName = META[lift]?.[lang] || lift;
   const count = trueN ?? result.count;
@@ -101,40 +107,70 @@ export default function Report({ result, lift, trueN, onBack }) {
     : (result.arm === 'left' ? 'left arm' : 'right arm');
   const today = new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  const rebuildPDF = useCallback(async () => {
+  // PDF is stored alongside the key it was built from.
+  // The key is a JSON string of all inputs. When the key changes,
+  // the build loop rebuilds until the stored key matches.
+  const pdfStore = useRef({ blob: null, key: null });
+  const buildingRef = useRef(false);
+
+  function currentKey() {
+    return JSON.stringify([fr, today, clientRef.current, coachRef.current, count, liftName, armLabel, corrected, result.count, notesRef.current]);
+  }
+
+  async function buildLoop() {
     if (buildingRef.current) return;
     buildingRef.current = true;
     try {
-      pdfRef.current = await buildPDF({ fr, today, client, coach, count, liftName, armLabel, corrected, resultCount: result.count, notes });
-    } catch { /* will retry on share */ }
-    buildingRef.current = false;
-  }, [fr, today, client, coach, count, liftName, armLabel, corrected, result.count, notes]);
+      let key = currentKey();
+      while (pdfStore.current.key !== key) {
+        // Snapshot the ref values and compute the key from the same snapshot
+        const snap = {
+          fr, today,
+          client: clientRef.current,
+          coach: coachRef.current,
+          count, liftName, armLabel, corrected,
+          resultCount: result.count,
+          notes: notesRef.current,
+        };
+        key = JSON.stringify([snap.fr, snap.today, snap.client, snap.coach, snap.count, snap.liftName, snap.armLabel, snap.corrected, snap.resultCount, snap.notes]);
+        try {
+          const blob = await buildPDF(snap);
+          pdfStore.current = { blob, key };
+        } catch { break; }
+        // Re-read; if inputs changed during the build, loop again
+        key = currentKey();
+      }
+    } finally {
+      buildingRef.current = false;
+    }
+  }
 
-  // Build PDF eagerly on mount and after every edit
-  useEffect(() => { rebuildPDF(); }, [rebuildPDF]);
+  // Trigger build on mount and after every edit
+  useEffect(() => { buildLoop(); }, [fr, today, client, coach, count, liftName, armLabel, corrected, result.count, notes]);
 
   async function handleShare() {
-    // Ensure PDF is ready (may already be built)
-    if (!pdfRef.current) {
-      try { await rebuildPDF(); } catch { /* handled below */ }
-    }
-    if (!pdfRef.current) {
-      setToast(fr ? 'Le PDF n\u2019a pas pu être créé.' : 'The PDF could not be created.');
-      setTimeout(() => setToast(''), 4000);
+    const key = currentKey();
+    const ready = pdfStore.current.key === key;
+    const blob = ready ? pdfStore.current.blob : null;
+
+    if (!blob) {
+      // PDF not ready yet; do not await (burns the gesture window on Safari).
+      // Kick a build and tell the user.
+      buildLoop();
+      setToast(fr ? 'Le PDF se pr\u00e9pare, r\u00e9essayez.' : 'PDF is preparing, try again.');
+      setTimeout(() => setToast(''), 3000);
       return;
     }
 
-    const blob = pdfRef.current;
     const fileName = fr ? 'rapport_seance.pdf' : 'session_report.pdf';
     const file = new File([blob], fileName, { type: 'application/pdf' });
 
     if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: fr ? 'Rapport de séance' : 'Session report' });
+        await navigator.share({ files: [file], title: fr ? 'Rapport de s\u00e9ance' : 'Session report' });
         return;
       } catch (e) {
-        if (e.name === 'AbortError') return; // user cancelled
-        // Share failed for another reason; fall through to download
+        if (e.name === 'AbortError') return;
       }
     }
 
@@ -147,7 +183,7 @@ export default function Report({ result, lift, trueN, onBack }) {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
-    setToast(fr ? 'PDF téléchargé.' : 'PDF downloaded.');
+    setToast(fr ? 'PDF t\u00e9l\u00e9charg\u00e9.' : 'PDF downloaded.');
     setTimeout(() => setToast(''), 3000);
   }
 
