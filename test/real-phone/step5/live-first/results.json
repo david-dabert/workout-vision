@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "srcHash": "73e7e88cf4ed2d30b893f98582cbcc2e862d7e23c1d2c7944891a51d510f0ecc",
+  "count": 10,
+  "screenshots": [
+    "01-entry",
+    "t02-to-choice",
+    "02-choice",
+    "t03-to-film",
+    "03-film",
+    "t04-to-watch",
+    "04-watch-start",
+    "04b-watch-figure",
+    "t05-to-result",
+    "05-result",
+    "06-saved",
+    "t07-to-report",
+    "07-report",
+    "t07b-back-to-result",
+    "t08-to-choice",
+    "08-back-to-choice",
+    "t09-to-guide",
+    "09-guide",
+    "10-guide-exercises"
+  ],
+  "exercisesInGuide": 302,
+  "exercisesChecked": 10,
+  "errors": [],
+  "failed": []
+}

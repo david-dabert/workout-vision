@@ -1,0 +1,29 @@
+{
+  "result": "FAIL",
+  "srcHash": "73e7e88cf4ed2d30b893f98582cbcc2e862d7e23c1d2c7944891a51d510f0ecc",
+  "newAppTitle": "Workout Vision",
+  "liftsOffered": 3,
+  "stillStored": true,
+  "workoutsAfterSeed": 1,
+  "workoutsNow": 1,
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 ()",
+    "wasm streaming compile failed: TypeError: Load failed",
+    "falling back to ArrayBuffer instantiation",
+    "/david-dabert.github.io/workout-vision/mediapipe/vision_wasm_internal.wasm due to access control checks.",
+    "failed to asynchronously prepare wasm: both async and sync fetching of the wasm failed",
+    "Aborted(both async and sync fetching of the wasm failed)",
+    "/david-dabert.github.io/workout-vision/mediapipe/vision_wasm_internal.wasm due to access control checks.",
+    "wasm streaming compile failed: TypeError: Load failed",
+    "falling back to ArrayBuffer instantiation",
+    "/david-dabert.github.io/workout-vision/mediapipe/vision_wasm_internal.wasm due to access control checks.",
+    "failed to asynchronously prepare wasm: both async and sync fetching of the wasm failed",
+    "Aborted(both async and sync fetching of the wasm failed)",
+    "[PoseAnalysis] Preload failed: RuntimeError: Aborted(both async and sync fetching of the wasm failed). Build with -sASSERTIONS for more info.",
+    "Refused to load https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap because it does not appear in the style-src directive of the Content Security Policy."
+  ],
+  "screenshots": [
+    "01-returning-open",
+    "02-returning-choice"
+  ]
+}

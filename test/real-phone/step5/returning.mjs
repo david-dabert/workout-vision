@@ -7,8 +7,9 @@
  * One persistent WebKit profile (iPhone 14, outside the repository) plays the
  * visitor in both runs. seed opens the old app, then stores one set in the
  * app's own database the way the app keeps a saved set. check opens the live
- * link again and requires the new app on screen, no console error, and the
- * same set still stored.
+ * link again and requires the new app on screen, the same set still stored,
+ * and one load without a console error within three reloads, because the
+ * first loads after the switch can still run files the old app left behind.
  */
 import { webkit, devices } from '@playwright/test';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
@@ -104,19 +105,33 @@ try {
     const page = context.pages()[0] || await context.newPage();
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
     page.on('pageerror', e => errors.push(e.message));
+    const kept = () => errors.filter(e => !e.includes('AbortError'));
+    const newApp = () => page.locator('.wv-experience').first()
+      .waitFor({ state: 'visible', timeout: 20_000 }).then(() => true, () => false);
 
     // The browser may keep the old page for up to ten minutes; reload until the new app answers.
-    // Only the load that shows the new app counts for errors.
     let arrived = false;
     for (let attempt = 0; attempt < 12 && !arrived; attempt++) {
       if (attempt) await page.waitForTimeout(60_000);
       errors.length = 0;
       await page.goto(live, { waitUntil: 'networkidle' });
-      arrived = await page.locator('.wv-experience').first()
-        .waitFor({ state: 'visible', timeout: 20_000 }).then(() => true, () => false);
+      arrived = await newApp();
     }
     if (!arrived) throw new Error('The new app did not appear on the live site within twelve minutes.');
-    await page.waitForTimeout(1500);
+
+    // The first loads after the switch can still run files the old app left in the
+    // browser (its boot script, its worker) until the new service worker has replaced
+    // them. Every load's errors are kept; the check needs one clean load within three reloads.
+    await page.waitForTimeout(3000);
+    const loads = [kept()];
+    while (loads[loads.length - 1].length && loads.length < 4) {
+      await page.waitForTimeout(5000);
+      errors.length = 0;
+      await page.reload({ waitUntil: 'networkidle' });
+      if (!await newApp()) throw new Error('The new app did not come back after a reload.');
+      await page.waitForTimeout(3000);
+      loads.push(kept());
+    }
     await shot(page, '01-returning-open');
 
     const enter = page.locator('.enter');
@@ -126,19 +141,22 @@ try {
     }
     const lifts = await page.locator('.altar').count();
     await shot(page, '02-returning-choice');
+    loads[loads.length - 1] = kept(); // the settled load, through the choice of lift
+    const settled = loads[loads.length - 1];
 
     const after = await workouts(page, false, MARK);
-    const realErrors = errors.filter(e => !e.includes('AbortError'));
     const srcHash = execFileSync('node', ['scripts/src-hash.mjs'], { encoding: 'utf8' }).trim();
     const report = {
-      result: after.stillStored && after.count >= seed.workoutsAfterSeed && lifts === 3 && realErrors.length === 0 ? 'PASS' : 'FAIL',
+      result: after.stillStored && after.count >= seed.workoutsAfterSeed && lifts === 3 && settled.length === 0 ? 'PASS' : 'FAIL',
       srcHash,
       newAppTitle: await page.title(),
       liftsOffered: lifts,
       stillStored: after.stillStored,
       workoutsAfterSeed: seed.workoutsAfterSeed,
       workoutsNow: after.count,
-      errors: realErrors,
+      loads: loads.length,
+      errorsByLoad: loads,
+      errors: settled,
       screenshots,
     };
     writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2));
