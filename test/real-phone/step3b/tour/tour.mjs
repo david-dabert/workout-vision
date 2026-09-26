@@ -13,6 +13,7 @@ import { webkit, devices, expect } from '@playwright/test';
 import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { frameFault, layoutFaults } from '../../checks.mjs';
 
 const dir = process.env.WV_DIR || 'test/real-phone/step3b/tour';
 mkdirSync(dir, { recursive: true });
@@ -33,23 +34,38 @@ const context = await browser.newContext({
 });
 const page = await context.newPage();
 const errors = [], failed = [], screenshots = [];
+// Rules 7 and 8, checked on every shot (checks.mjs); a fault fails the run.
+const probe = await (await browser.newContext()).newPage();
+const frameFaults = [], layoutFound = [], layoutNotes = [];
+// Rule 7 against the prototype's own titles: three words on two lines leave one
+// alone (the choice; the guide, "Trouvez votre exercice" in the prototype).
+// Listed apart for David, not failed.
+const PROTOTYPE = ['Que travaillez-vous aujourd\u2019hui', 'Trouvez votre'];
 
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', e => errors.push(e.message));
 page.on('response', r => { if (r.status() >= 400) failed.push({ url: r.url(), status: r.status() }); });
 
-// JPEG keeps four runs of evidence small enough for the repository.
-async function shot(name) {
+// JPEG keeps four runs of evidence small enough for the repository. Every shot is
+// checked for a blank or white frame; a settled screen also for its layout.
+async function shot(name, settled = true) {
   const path = `${dir}/${name}.jpg`;
-  await page.screenshot({ path, fullPage: true, type: 'jpeg', quality: 80 });
+  const jpeg = await page.screenshot({ path, fullPage: true, type: 'jpeg', quality: 80 });
   screenshots.push(name);
+  const fault = await frameFault(probe, jpeg);
+  if (fault) frameFaults.push(`${name}: ${fault}`);
+  if (settled) {
+    for (const f of await page.evaluate(layoutFaults)) {
+      (PROTOTYPE.some(words => f.includes(words)) ? layoutNotes : layoutFound).push(`${name}: ${f}`);
+    }
+  }
 }
 
 // Each change of screen is shot 150 ms after the tap, while the old screen
 // gives way to the new one (files t*.jpg), and again once the new one has settled.
 async function between(name) {
   await page.waitForTimeout(150);
-  await shot(name);
+  await shot(name, false);
 }
 const SETTLE = 1600;
 
@@ -350,7 +366,7 @@ try {
   const srcHash = execFileSync('node', ['scripts/src-hash.mjs'], { encoding: 'utf8' }).trim();
 
   const report = {
-    result: realErrors.length === 0 && failed.length === 0 ? 'PASS' : 'FAIL',
+    result: realErrors.length === 0 && failed.length === 0 && frameFaults.length === 0 && layoutFound.length === 0 ? 'PASS' : 'FAIL',
     srcHash,
     count: parseInt(count),
     screenshots,
@@ -358,6 +374,9 @@ try {
     exercisesChecked: indices.length,
     errors: realErrors,
     failed,
+    frameFaults,
+    layoutFaults: layoutFound,
+    layoutNotes,
   };
 
   writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2));

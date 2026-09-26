@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
@@ -55,6 +55,7 @@ function lazyScreen(load) {
   const Lazy = safeLazy(warm);
   function Screen(props) { const C = useRef(Mod || Lazy).current; return <C {...props} />; }
   Screen.warm = () => warm().catch(() => {});
+  Screen.loaded = () => Mod !== null;
   return Screen;
 }
 
@@ -63,6 +64,7 @@ const Analyze = lazyScreen(() => import('./components/CoreUpload'));
 const ExerciseGuide = lazyScreen(() => import('./components/experience/Guide'));
 const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
 const History = lazyScreen(() => import('./components/experience/History'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -121,35 +123,51 @@ function AppInner() {
     }
   }, [profileLoading, profile, saveProfile, setPage]);
 
+  // A tap changes the screen only once the next screen's code is in; until then
+  // the current screen stays. A screen still loading shows only LazyFallback,
+  // and Reduce Motion removes the leaving screen at once: the stage would be empty.
+  // A later tap, or a change of page by the browser, cancels a change still waiting.
+  const pageRef = useRef(page);
+  useLayoutEffect(() => { pageRef.current = page; }, [page]);
+  const waiting = useRef(0);
+  const go = (next, apply) => {
+    const ticket = ++waiting.current, from = pageRef.current;
+    const show = () => {
+      if (ticket !== waiting.current || pageRef.current !== from) return;
+      apply?.();
+      setPage(next);
+    };
+    const target = LAZY[next];
+    if (!target || target.loaded()) show(); else target.warm().then(() => { if (target.loaded()) show(); });
+  };
+
   // The profile is created in the background; no screen waits for it.
   const chooseLift = lift => {
-    setSelectedLift(lift);
-    setVideoFile(null);
     // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
     fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
-    setPage('film');
+    go('film', () => { setSelectedLift(lift); setVideoFile(null); });
   };
-  const backToChoice = () => { setSelectedLift(''); setVideoFile(null); setPage('dashboard'); };
-  const backToFilm = () => { setVideoFile(null); setPage('film'); };
+  const backToChoice = () => go('dashboard', () => { setSelectedLift(''); setVideoFile(null); });
+  const backToFilm = () => go('film', () => setVideoFile(null));
 
   let key, screen;
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
-    screen = <ExperienceFilm lift={selectedLift} onBack={backToChoice} onFile={f => { fileSerial.current += 1; setVideoFile(f); setPage('analyze'); }} />;
+    screen = <ExperienceFilm lift={selectedLift} onBack={backToChoice} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
     screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
   } else if (page === 'exercises') {
     key = 'guide';
-    screen = <ExerciseGuide onClose={() => setPage('dashboard')} onChoose={chooseLift} />;
+    screen = <ExerciseGuide onClose={() => go('dashboard')} onChoose={chooseLift} />;
   } else if (page === 'history') {
     key = 'history';
-    screen = <History onClose={() => setPage('dashboard')} />;
+    screen = <History onClose={() => go('dashboard')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // live and the dashboard. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={chooseLift} onGuide={() => setPage('exercises')} onHistory={() => setPage('history')} />;
+    screen = <Choice onChoose={chooseLift} onGuide={() => go('exercises')} onHistory={() => go('history')} />;
   }
 
   return <>

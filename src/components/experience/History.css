@@ -15,7 +15,13 @@
 .wv-experience .hist-n { font-family: var(--serif); font-size: 44px; line-height: 0.9; text-align: center; color: var(--lamp); font-variant-numeric: lining-nums tabular-nums; }
 .wv-experience .hist-txt { display: flex; flex-direction: column; min-width: 0; }
 .wv-experience .hist-name { font-family: var(--serif); font-size: 23px; line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
-.wv-experience .hist-meta { margin-top: 5px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .hist-meta { margin-top: 5px; overflow: hidden; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+/* Time, length and arm break only between one another, never inside one; the
+   dot before each is as wide as " · " was, and the one that opens a line sits
+   in the margin the outer span clips. */
+.wv-experience .hist-meta > span { display: flex; flex-wrap: wrap; margin-left: calc(-3ch - 0.24em); }
+.wv-experience .hist-meta > span > span { white-space: nowrap; }
+.wv-experience .hist-meta > span > span::before { content: '\00B7'; content: '\00B7' / ''; display: inline-block; width: calc(3ch + 0.24em); text-align: center; }
 .wv-experience .hist-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 9px 4px; border-radius: 999px; border: 1px solid var(--hair-2); color: var(--ash); }
 .wv-experience .hist-detail { display: flex; flex-direction: column; gap: 10px; padding: 0 0 20px 70px; }
 .wv-experience .hist-corr { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }

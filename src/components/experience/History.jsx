@@ -105,7 +105,7 @@ export default function History({ onClose }) {
                 <span className="hist-n" aria-hidden="true">{w.reps}</span>
                 <span className="hist-txt">
                   <span className="hist-name">{liftName(w)}</span>
-                  <span className="hist-meta">{[time(w), seconds ? `${seconds} s` : '', arm].filter(Boolean).join(' · ')}</span>
+                  <span className="hist-meta"><span>{[time(w), seconds ? `${seconds} s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
                 {counted !== w.reps && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
