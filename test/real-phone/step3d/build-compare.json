@@ -1,0 +1,83 @@
+{
+  "baseline": {
+    "ref": "91aa10a",
+    "label": "91aa10a",
+    "results": [
+      {
+        "clip": "bicep_curl_7_side_mufhf3wy",
+        "lift": "bicep_curl",
+        "expected": 7,
+        "count": 7,
+        "samples": 341,
+        "errors": [
+          "Failed to load resource: net::ERR_CACHE_WRITE_FAILURE"
+        ],
+        "status": "OK"
+      },
+      {
+        "clip": "lateral_raise_10_front_mufhhbun",
+        "lift": "lateral_raise",
+        "expected": 10,
+        "count": 10,
+        "samples": 439,
+        "errors": [
+          "Failed to load resource: net::ERR_CACHE_WRITE_FAILURE"
+        ],
+        "status": "OK"
+      },
+      {
+        "clip": "lat_pulldown_10_front_mufhlh4o",
+        "lift": "lat_pulldown",
+        "expected": 10,
+        "count": 10,
+        "samples": 609,
+        "errors": [
+          "Failed to load resource: net::ERR_CACHE_WRITE_FAILURE",
+          "[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446"
+        ],
+        "status": "OK"
+      }
+    ]
+  },
+  "candidate": {
+    "ref": "91ec236",
+    "label": "91ec236",
+    "results": [
+      {
+        "clip": "bicep_curl_7_side_mufhf3wy",
+        "lift": "bicep_curl",
+        "expected": 7,
+        "count": 7,
+        "samples": 341,
+        "errors": [
+          "Failed to load resource: net::ERR_CACHE_WRITE_FAILURE"
+        ],
+        "status": "OK"
+      },
+      {
+        "clip": "lateral_raise_10_front_mufhhbun",
+        "lift": "lateral_raise",
+        "expected": 10,
+        "count": 10,
+        "samples": 439,
+        "errors": [
+          "Failed to load resource: net::ERR_CACHE_WRITE_FAILURE"
+        ],
+        "status": "OK"
+      },
+      {
+        "clip": "lat_pulldown_10_front_mufhlh4o",
+        "lift": "lat_pulldown",
+        "expected": 10,
+        "count": 10,
+        "samples": 609,
+        "errors": [
+          "Failed to load resource: net::ERR_CACHE_WRITE_FAILURE",
+          "[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446"
+        ],
+        "status": "OK"
+      }
+    ]
+  },
+  "verdict": "MATCH"
+}
