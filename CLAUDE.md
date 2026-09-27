@@ -1,3 +1,4 @@
+PLAN.md on counter-core prevails over this file.
 # WorkoutVision Standing Rules
 
 Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026.

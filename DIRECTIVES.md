@@ -1,3 +1,4 @@
+PLAN.md on counter-core prevails over this file.
 # WorkoutVision: Build Directives
 
 Owner: David Dabert. Executor: the Claude Code companion.

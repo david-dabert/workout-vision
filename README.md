@@ -23,6 +23,7 @@ The video is analysed on the phone and never leaves it.
 - It does not score form, predict injury or estimate strength.
 - It does not measure bar speed in metres per second; speeds are joint angles per second.
 - It counts no other lift yet. The three lifts on offer have not yet passed the exam PLAN.md requires; their exams are still to be filmed. No further lift is offered until it counts every one of its exam sets exactly.
+- Accuracy on other people is measured on the MM-Fit dataset, admitted as build data and never as an exam, through the test harness in desktop Chrome rather than through the app on a phone. Of the three lifts on offer it covers only the lateral raise: it holds no lat pulldown, and its curls are counted as alternating curls, which the app does not offer. Results of the run of 27 September 2026: [test/real-phone/mmfit/table.md](https://github.com/david-dabert/workout-vision/blob/dfe4d43f9fdcf27c37ad92e1992db8fed64bcdf9/test/real-phone/mmfit/table.md).
 - This is a test version.
 
 ## Privacy

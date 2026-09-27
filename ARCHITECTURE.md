@@ -179,8 +179,6 @@ The only caller is `FeedbackPanel.jsx`, which is dormant, so the live app sends 
 
 | Document | Says | Code says |
 |---|---|---|
-| `STATE.md` | Phase 0; live commit b31bdba; five launch lifts. | `main` is at 91aa10a with the counter-core app; three lifts are approved in `coreAnalysis.js`. |
 | `CLAUDE.md` R2, R6 | Counting changes go through `npm run scoreboard`; CI includes a real-phone gate. | No `scoreboard` script exists in `package.json`; no workflow runs the real-phone clips. |
 | `DIRECTIVES.md` 0.5 | Crash breadcrumbs on the current stage. | `wv_analysis_stage` is written only by `VideoUpload.jsx`, which is dormant. |
 | `DIRECTIVES.md` 1.1 | `test/real-phone/manifest.json` with true count, view, labeller, date. | Only `test/real-phone/landmarks/manifest.json`, which records extraction data; true counts sit in test code and in file names. |
-| `README.md` | Architecture of `VideoUpload` → `analyzeVideo` → `poseWorker` → `RepCounter` → `biomechanics` → `coach`; 274 detected exercises; form scores. | All of those modules are dormant. The live app counts three chosen lifts and does no exercise detection or form scoring. |
