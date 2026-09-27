@@ -4,7 +4,6 @@ PLAN.md on counter-core prevails over this file.
 Owner: David Dabert. Executor: the Claude Code companion.
 Version 1, 24 September 2026.
 This file overrides any earlier roadmap or council report in this repository.
-When PLAN.md exists, it prevails over this file on any point of conflict.
 
 ## How to use this file
 

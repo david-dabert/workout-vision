@@ -3,7 +3,6 @@ PLAN.md on counter-core prevails over this file.
 
 Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026.
 Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md.
-When PLAN.md exists, it prevails over this file and DIRECTIVES.md on any point of conflict.
 
 **R1. Ground truth is sacred.**
 Never modify a label. Never delete a test clip. Never set or adjust a label from the app's output, a video title, a thumbnail or a guess. Labels come only from David, or from human-annotated public datasets (Countix). If a label looks wrong, report it to David and wait.
