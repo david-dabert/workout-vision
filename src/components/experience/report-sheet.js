@@ -15,7 +15,7 @@ export const decimal = (x, fr) => (fr ? x.toFixed(1).replace('.', ',') : x.toFix
  * What a set measured, from its whole reps (a rep the recording cut is counted but
  * not measured): the time under tension (the reps' lengths,
  * pauses at the working end included, rests between reps not), and how the
- * lifting speed changed from the first two reps to the last two. The lifting speed
+ * concentric speed changed from the first two reps to the last two. The concentric speed
  * of a rep is its range over its concentric time, in degrees per second; the
  * change is the share by which the mean of the last two differs from the mean of
  * the first two (velocity loss within a set: Sánchez-Medina and González-Badillo,
@@ -64,8 +64,8 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
     if (c !== null) {
       const signed = c < 0 ? `${MINUS}${-c}` : c > 0 ? `+${c}` : '0';
       summary += fr
-        ? ` · Vitesse de montée${colon}${signed}${NBSP}% du début à la fin`
-        : ` · Lifting speed${colon}${signed}% from start to end`;
+        ? ` · Vitesse concentrique${colon}${signed}${NBSP}% du début à la fin`
+        : ` · Concentric speed${colon}${signed}% from start to end`;
     }
   }
   return {
@@ -86,7 +86,8 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
     arm: arm === 'left' || arm === 'right'
       ? (fr ? 'Bras suivi' : 'Arm tracked') + colon + (arm === 'left' ? (fr ? 'gauche' : 'left') : (fr ? 'droit' : 'right'))
       : '',
-    columns: fr ? ['Rép.', 'Durée', 'Amplitude', 'Montée', 'Descente'] : ['Rep', 'Time', 'Range', 'Up', 'Down'],
+    // Concentric and eccentric, not up and down: a pulldown's concentric phase brings the bar down.
+    columns: fr ? ['Rép.', 'Durée', 'Amplitude', 'Conc.', 'Exc.'] : ['Rep', 'Time', 'Range', 'Conc.', 'Ecc.'],
     // A rep the recording cut keeps its number and range; its times read "…".
     rows: (reps || []).map((r, i) => r.clipped
       ? [String(i + 1), '…', `${Math.round(r.romDegrees)}°`, '…', '…']

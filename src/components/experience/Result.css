@@ -53,7 +53,7 @@
 .wv-experience .bar i { width: min(6px, calc(100% - 3px)); height: calc(18px + 72px * var(--r, 1)); }
 .wv-experience .bars.has-sel .bar:not(.sel) i { opacity: 0.3; }
 .wv-experience .bar.sel i { width: min(9px, calc(100% - 1px)); }
-.wv-experience .res-detail { min-height: 20px; margin: 14px 0 0; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--ash); }
+.wv-experience .res-detail { min-height: 20px; margin: 14px 0 0; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--ash); text-wrap: balance; }
 .wv-experience .saved-corr { text-align: center; margin-bottom: 4px; }
 .wv-experience .save-error { color: var(--lamp); text-align: center; margin: 12px 0 0; }
 .wv-experience .result-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
@@ -66,3 +66,12 @@
   .wv-experience .result-screen .glass { margin-top: 16px; padding: 18px; gap: 12px; }
   .wv-experience .result-screen .ask-q { font-size: 27px; }
 }
+
+/* Replay: between Close and the test-version mark, a full-height target. */
+.wv-experience .rp-open {
+  height: 44px; padding: 0 16px 0 13px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(232, 189, 126, 0.5); color: var(--lamp-hi);
+  background: radial-gradient(120% 140% at 50% 125%, rgba(232, 189, 126, 0.16), transparent 60%);
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+}
+.wv-experience .rp-open svg { width: 12px; height: 12px; }

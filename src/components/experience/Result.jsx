@@ -58,11 +58,15 @@ function ghostSource(result, lift) {
   return topPose(lift);
 }
 
-function Topbar({ fr, onClose }) {
+function Topbar({ fr, onClose, onReplay, replayRef }) {
   return <div className="topbar">
     <button className="icon-btn press" onClick={onClose} aria-label={fr ? 'Fermer' : 'Close'}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
     </button>
+    {onReplay && <button ref={replayRef} className="rp-open press" onClick={onReplay} aria-label={fr ? 'Revoir la série avec le squelette' : 'Replay the set with the skeleton'}>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z" /></svg>
+      <span>{fr ? 'Revoir' : 'Replay'}</span>
+    </button>}
     <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
   </div>;
 }
@@ -89,7 +93,11 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
   </div>;
 }
 
-export default function Result({ result, lift, covered, onClose, onReport, onNewSet, onRefilm }) {
+/**
+ * covered: the screen open over the result ('report' or 'replay'), or nothing.
+ * onReplay: opens the replay; absent when the video is not at hand.
+ */
+export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
@@ -101,13 +109,14 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
   const saving = useRef(false);
   const rootRef = useRef(null);
   const reportRef = useRef(null);
+  const replayRef = useRef(null);
   const coveredRef = useRef(covered);
   coveredRef.current = covered;
 
-  // Back from the report, the keyboard and screen readers return to its button.
+  // Back from the report or the replay, the keyboard and screen readers return to the button that opened it.
   const wasCovered = useRef(covered);
   useEffect(() => {
-    if (wasCovered.current && !covered) reportRef.current?.focus({ preventScroll: true });
+    if (wasCovered.current && !covered) (wasCovered.current === 'replay' ? replayRef : reportRef).current?.focus({ preventScroll: true });
     wasCovered.current = covered;
   }, [covered]);
 
@@ -124,17 +133,18 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
+  // Where a line must break, it breaks after a separator, never inside a measure.
   let detail = '', detailHead = '';
   if (sel >= 0 && reps[sel]) {
     const r = reps[sel];
     detailHead = `${fr ? 'Rép.' : 'Rep'} ${sel + 1} · `;
     detail = r.clipped
-      ? `${Math.round(r.romDegrees)}° · ${fr ? 'filmée en partie' : 'partly filmed'}`
-      : `${sec(r.endTime - r.startTime)} · ${Math.round(r.romDegrees)}° · ${fr ? 'montée' : 'up'} ${sec(r.concentricSec)} · ${fr ? 'descente' : 'down'} ${sec(r.eccentricSec)}`;
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
+      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
   } else if ((asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
-    detail = fr ? `Amplitude moyenne ${Math.round(rom)}° · durée moyenne ${sec(dur)}` : `Average range ${Math.round(rom)}° · average duration ${sec(dur)}`;
+    detail = fr ? `Amplitude moyenne ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average range ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
   }
   const marksRef = useRef(null);
   function pick(e) {
@@ -216,9 +226,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
       : why.cause === 'nobody'
         ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l\u2019image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
         : (fr ? 'Placez-vous au centre de l\u2019image, bras compris, puis refilmez.' : 'Stand in the middle of the picture, arms included, then record again.');
-    return <div className="wv-experience">
+    // The replay shows where the tracking lost the body; under it, this screen is out of reach.
+    return <div className="wv-experience" inert={covered ? true : undefined}>
       <section className="screen is-active result-screen"><div className="wrap">
-        <Topbar fr={fr} onClose={onClose} />
+        <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
         <p className="eyebrow refused-eyebrow">{liftName}</p>
         <h2 className="title refused-title">{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2>
         {why.cause === 'outside' && <div className="frame">
@@ -240,9 +251,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
 
   const one = shown <= 1;
   // Under the report, the result is out of reach of taps, the keyboard and screen readers.
-  return <div className="wv-experience" ref={rootRef} inert={covered || undefined}>
+  return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
     <section className="screen is-active result-screen"><div className="wrap">
-      <Topbar fr={fr} onClose={onClose} />
+      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
       <div className="res-head">
         <p className="eyebrow">{liftName}</p>
         <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>

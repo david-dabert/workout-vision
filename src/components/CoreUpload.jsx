@@ -5,6 +5,7 @@ import { saveWorkout } from '../lib/storage';
 import Watch from './experience/Watch';
 import Result, { AnalysisError } from './experience/Result';
 import Report from './experience/Report';
+import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
 
 export default function CoreUpload({ onClose, onRefilm, initialLift = '', initialFile = null }) {
@@ -14,12 +15,13 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   const [file, setFile] = useState(initialFile);
   // Arriving from Film, the analysis starts at once: never paint the old form first.
   const [busy, setBusy] = useState(Boolean(initialFile && initialLift));
-  const [reportLeaving, setReportLeaving] = useState(false);
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [showReport, setShowReport] = useState(false);
+  // The screen open over the result: 'report' or 'replay'; it fades out before it goes.
+  const [overlay, setOverlay] = useState(null);
+  const [overlayLeaving, setOverlayLeaving] = useState(false);
   const [landmarks, setLandmarks] = useState(null);
   const [frameSize, setFrameSize] = useState(null);
   const trueNRef = useRef(null);
@@ -66,17 +68,20 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   }
 
   const refilm = onRefilm || onClose;
-  function closeReport() {
-    if (reportLeaving) return;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setShowReport(false); return; }
-    setReportLeaving(true);
-    closeTimer.current = setTimeout(() => { setShowReport(false); setReportLeaving(false); }, 450);
+  function closeOverlay() {
+    if (overlayLeaving) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setOverlay(null); return; }
+    setOverlayLeaving(true);
+    closeTimer.current = setTimeout(() => { setOverlay(null); setOverlayLeaving(false); }, 450);
+  }
+  function openOverlay(name) {
+    clearTimeout(closeTimer.current);
+    setOverlayLeaving(false);
+    setOverlay(name);
   }
   function openReport(savedN) {
-    clearTimeout(closeTimer.current);
     trueNRef.current = savedN;
-    setReportLeaving(false);
-    setShowReport(true);
+    openOverlay('report');
   }
 
   // Experience mode: analysis, then the result (or what went wrong), crossfaded.
@@ -86,9 +91,10 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       <ScreenFade screenKey={view}>
         {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); refilm(); }} />}
         {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
-        {view === 'result' && <Result result={result} lift={lift} covered={showReport && !reportLeaving} onClose={onClose} onReport={openReport} onNewSet={onClose} onRefilm={refilm} />}
+        {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} />}
       </ScreenFade>
-      {view === 'result' && showReport && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} leaving={reportLeaving} onBack={closeReport} />}
+      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} leaving={overlayLeaving} onBack={closeOverlay} />}
+      {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} leaving={overlayLeaving} onBack={closeOverlay} />}
     </>;
   }
 

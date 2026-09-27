@@ -107,11 +107,12 @@ const reps = [rep(0, 1.9, 90, 0.8, 1.0), rep(3, 1.9, 88, 0.9, 1.0), rep(6, 1.9, 
 
 describe('rep details', () => {
   it('lists each rep with its time, range and phases, to one decimal, with a comma in French', () => {
+    // Concentric and eccentric, not up and down: a pulldown's concentric phase brings the bar down.
     const s = reportSheet({ ...base, reps });
-    expect(s.columns).toEqual(['Rép.', 'Durée', 'Amplitude', 'Montée', 'Descente']);
+    expect(s.columns).toEqual(['Rép.', 'Durée', 'Amplitude', 'Conc.', 'Exc.']);
     expect(s.rows[0]).toEqual(['1', `1,9${NBSP}s`, '90°', `0,8${NBSP}s`, `1,0${NBSP}s`]);
     const en = reportSheet({ ...base, lang: 'en', reps });
-    expect(en.columns).toEqual(['Rep', 'Time', 'Range', 'Up', 'Down']);
+    expect(en.columns).toEqual(['Rep', 'Time', 'Range', 'Conc.', 'Ecc.']);
     expect(en.rows[4]).toEqual(['5', `1.9${NBSP}s`, '82°', `1.2${NBSP}s`, `1.0${NBSP}s`]);
   });
 
@@ -120,10 +121,10 @@ describe('rep details', () => {
     expect(s.rows[0]).toEqual(['1', '…', '95°', '…', '…']);
   });
 
-  it('adds the time under tension and how the lifting speed changed from the first two reps to the last two', () => {
-    // Lifting speeds 112.5, 97.8 … 76.4, 68.3 °/s: the last two average 31% below the first two.
-    expect(reportSheet({ ...base, reps }).summary).toBe(`Temps sous tension${NBSP}: 9,5${NBSP}s · Vitesse de montée${NBSP}: \u221231${NBSP}% du début à la fin`);
-    expect(reportSheet({ ...base, lang: 'en', reps }).summary).toBe(`Time under tension: 9.5${NBSP}s · Lifting speed: \u221231% from start to end`);
+  it('adds the time under tension and how the concentric speed changed from the first two reps to the last two', () => {
+    // Concentric speeds 112.5, 97.8 … 76.4, 68.3 °/s: the last two average 31% below the first two.
+    expect(reportSheet({ ...base, reps }).summary).toBe(`Temps sous tension${NBSP}: 9,5${NBSP}s · Vitesse concentrique${NBSP}: \u221231${NBSP}% du début à la fin`);
+    expect(reportSheet({ ...base, lang: 'en', reps }).summary).toBe(`Time under tension: 9.5${NBSP}s · Concentric speed: \u221231% from start to end`);
   });
 
   it('measures whole reps only, and gives no speed change under four of them', () => {

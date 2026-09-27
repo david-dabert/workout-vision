@@ -122,7 +122,8 @@ const L_KNEE = 25, R_KNEE = 26;
 const L_ANKLE = 27, R_ANKLE = 28;
 
 // Each joint's three landmarks (first point, vertex, last point), per side.
-const JOINT_POINTS: Record<Joint, { left: [number, number, number]; right: [number, number, number] }> = {
+// The replay draws the same three, so what it lights is what was measured.
+export const JOINT_POINTS: Record<Joint, { left: [number, number, number]; right: [number, number, number] }> = {
   elbow: { left: [L_SHOULDER, L_ELBOW, L_WRIST], right: [R_SHOULDER, R_ELBOW, R_WRIST] },
   shoulder: { left: [L_HIP, L_SHOULDER, L_ELBOW], right: [R_HIP, R_SHOULDER, R_ELBOW] },
   knee: { left: [L_HIP, L_KNEE, L_ANKLE], right: [R_HIP, R_KNEE, R_ANKLE] },
