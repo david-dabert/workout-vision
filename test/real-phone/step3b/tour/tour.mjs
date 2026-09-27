@@ -37,10 +37,6 @@ const errors = [], failed = [], screenshots = [];
 // Rules 7 and 8, checked on every shot (checks.mjs); a fault fails the run.
 const probe = await (await browser.newContext()).newPage();
 const frameFaults = [], layoutFound = [], layoutNotes = [];
-// Rule 7 against the prototype's own titles: three words on two lines leave one
-// alone (the choice; the guide, "Trouvez votre exercice" in the prototype).
-// Listed apart for David, not failed.
-const PROTOTYPE = ['Que travaillez-vous aujourd\u2019hui', 'Trouvez votre'];
 
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', e => errors.push(e.message));
@@ -56,7 +52,7 @@ async function shot(name, settled = true) {
   if (fault) frameFaults.push(`${name}: ${fault}`);
   if (settled) {
     for (const f of await page.evaluate(layoutFaults)) {
-      (PROTOTYPE.some(words => f.includes(words)) ? layoutNotes : layoutFound).push(`${name}: ${f}`);
+      if (f.startsWith('note: ')) layoutNotes.push(`${name}: ${f.slice(6)}`); else layoutFound.push(`${name}: ${f}`);
     }
   }
 }

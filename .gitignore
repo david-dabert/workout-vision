@@ -63,3 +63,6 @@ test/real-phone/landmarks/*.json
 
 # App-served guide artwork generated from the pinned package
 public/guide/
+
+# Exam sets: opened by the exam script only (PLAN.md)
+test/real-phone/exam/

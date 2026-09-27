@@ -35,7 +35,9 @@ export async function frameFault(probe, jpeg) {
 /**
  * Rule 7, measured in the page (run with page.evaluate): no title or button leaves
  * a single word on its own line; no text overlaps other text or a control, or runs
- * out of its box; no screen scrolls sideways. Only what is on screen counts: text
+ * out of its box; no screen scrolls sideways. Three words on two lines always leave
+ * one alone, whatever the break: those come back as notes ("note: ..."), for David,
+ * not as faults. Only what is on screen counts: text
  * scrolled or clipped out of view is left out, and text in a sticky or fixed layer
  * (the share bar) is compared only with text of the same layer, since it is meant
  * to pass over the content. Returns one line per fault.
@@ -114,11 +116,10 @@ export function layoutFaults() {
     if (!onScreen.length) continue;
 
     // A title or a button leaving one word alone on its last line.
-    // Guide exercise names (.item-btn) come from a database and cannot be text-wrapped.
     if (block.closest('h1, h2, h3, .title, button, [role="button"], .btn-primary') && root.contains(block)
-      && !block.closest('.item-btn')
       && lines.length > 1 && lines.at(-1).words.filter(isWord).length === 1) {
-      faults.push(`one word alone on the last line: "${label(block)}"`);
+      const words = lines.reduce((n, l) => n + l.words.filter(isWord).length, 0);
+      faults.push(`${lines.length === 2 && words === 3 ? 'note: three words on two lines, ' : ''}one word alone on the last line: "${label(block)}"`);
     }
     // Text running out of its box, sideways, when the box does not clip it.
     const s = style(block), box = block.getBoundingClientRect();

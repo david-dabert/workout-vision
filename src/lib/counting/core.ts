@@ -2,15 +2,21 @@
  * Counting core — pure function, no DOM, no detection.
  *
  * In:  timestamped world landmarks (from MediaPipe PoseLandmarker) and a lift name.
- * Out: rep count, per-rep detail (start/end time, ROM, durations), arm used, confidence.
+ * Out: rep count, per-rep detail (start/end time, ROM, durations), side used, confidence.
  *
- * Joint angles (world-landmark 3D vectors):
- *   curl, bench_press, overhead_press, lat_pulldown → elbow angle
- *   lateral_raise → shoulder abduction (hip–shoulder–elbow)
+ * One joint angle per lift, from world-landmark 3D vectors (LIFTS below):
+ *   elbow    shoulder–elbow–wrist   curl, rows, triceps pushdown, bench and overhead press, lat pulldown
+ *   shoulder hip–shoulder–elbow     lateral raise
+ *   knee     hip–knee–ankle         squat, leg press, leg extension, leg curl, lunge
+ *   hip      shoulder–hip–knee      Romanian deadlift, hip thrust
+ * Which joint moves each lift, and which phase lifts the load (concentric) or
+ * yields to it (eccentric), is standard kinesiology (Neumann, Kinesiology of the
+ * Musculoskeletal System, 3rd ed., 2017). No per-lift parameter is set.
  *
- * Arm selection: the arm whose shoulder (11/12), elbow (13/14) and wrist (15/16)
- * have the highest average visibility across the set. Short dropouts (< bridgeGap)
- * are filled with the last valid angle; the arm never alternates frame-by-frame.
+ * Side selection: the side whose three joint landmarks have the highest average
+ * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
+ * valid angle; the side never alternates frame by frame. The alternating curl
+ * counts both arms and joins them (countBothSides).
  *
  * Signal conditioning pipeline: outlier removal → bridge dropouts → Savitzky–Golay.
  * Outlier removal nulls samples that deviate from their local median by more
@@ -18,10 +24,12 @@
  * attenuating shallow reps). SG smoothing then operates on clean data.
  * All windows are defined in seconds and converted to samples at runtime.
  *
- * Rep detection: smoothed angle crosses a low threshold (from extended/abducted)
- * and a high threshold (from flexed/adducted) derived from the set's own
- * 10th/90th percentile range. A rep is one full cycle whose duration falls
- * within [minRepSec, maxRepSec].
+ * Rep detection: smoothed angle crosses a low and a high threshold derived from the
+ * set's own 10th/90th percentile range, leaving the rest end and coming back to it.
+ * A rep is one full cycle whose duration falls within [minRepSec, maxRepSec].
+ * Its reported start and end are then placed where the angle leaves and regains
+ * its rest level (placeBoundaries), so a rest that hovers near a threshold does
+ * not move them; its range and phases are measured between them.
  *
  * Every parameter is in seconds or degrees, never frames.
  *
@@ -30,8 +38,9 @@
  *     explosive concentrics across standard resistance exercises (Schoenfeld,
  *     Ogborn & Krieger, "Effect of Repetition Duration During Resistance
  *     Training on Muscle Hypertrophy", Sports Medicine 2015; 45(4):577-85).
- *   Savitzky–Golay window and outlier parameters: unvalidated starting values.
- *     Not derived from a specific published recommendation.
+ *   Savitzky–Golay window, outlier parameters, the rest band and the overlap
+ *     that joins two arms: unvalidated starting values. Not derived from a
+ *     specific published recommendation.
  */
 
 // ─── Types ───
@@ -52,20 +61,54 @@ export interface RepDetail {
   romDegrees: number;   // range of motion in degrees (peak-to-trough within this rep)
   concentricSec: number;
   eccentricSec: number;
+  side?: 'left' | 'right' | 'both'; // alternating curl only: the arm that did it
 }
 
 export interface CountResult {
   count: number;
   reps: RepDetail[];
-  arm: 'left' | 'right';
+  arm: 'left' | 'right' | 'both'; // the side tracked; 'both' for the alternating curl
   confidence: number;   // 0–1
   angles: (number | null)[];          // raw angle per sample
   smoothedAngles: (number | null)[];  // after SG + bridge
   lowThreshold: number;
   highThreshold: number;
+  sides?: { left: CountResult; right: CountResult }; // alternating curl only
 }
 
-export type Lift = 'bicep_curl' | 'bench_press' | 'overhead_press' | 'lat_pulldown' | 'lateral_raise';
+export type Joint = 'elbow' | 'shoulder' | 'knee' | 'hip';
+
+export interface LiftDefinition {
+  joint: Joint;
+  /** Where the angle rests between reps: at the high end (extended) or the low end. */
+  rest: 'high' | 'low';
+  /** The phase that leaves the rest: lifting the load (concentric) or yielding to it (eccentric). */
+  first: 'concentric' | 'eccentric';
+  /** Both sides counted and joined, one rep per arm (the alternating curl). */
+  bothSides?: boolean;
+}
+
+export const LIFTS = {
+  bicep_curl: { joint: 'elbow', rest: 'high', first: 'concentric' },
+  bicep_curl_alternating: { joint: 'elbow', rest: 'high', first: 'concentric', bothSides: true },
+  lat_pulldown: { joint: 'elbow', rest: 'high', first: 'concentric' },
+  seated_row: { joint: 'elbow', rest: 'high', first: 'concentric' },
+  dumbbell_row: { joint: 'elbow', rest: 'high', first: 'concentric' },
+  triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
+  // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
+  bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
+  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
+  lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
+  squat: { joint: 'knee', rest: 'high', first: 'eccentric' },
+  leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
+  leg_extension: { joint: 'knee', rest: 'low', first: 'concentric' },
+  leg_curl: { joint: 'knee', rest: 'high', first: 'concentric' },
+  lunge: { joint: 'knee', rest: 'high', first: 'eccentric' },
+  romanian_deadlift: { joint: 'hip', rest: 'high', first: 'eccentric' },
+  hip_thrust: { joint: 'hip', rest: 'low', first: 'concentric' },
+} as const satisfies Record<string, LiftDefinition>;
+
+export type Lift = keyof typeof LIFTS;
 
 // ─── Constants ───
 
@@ -74,6 +117,16 @@ const L_SHOULDER = 11, R_SHOULDER = 12;
 const L_ELBOW = 13, R_ELBOW = 14;
 const L_WRIST = 15, R_WRIST = 16;
 const L_HIP = 23, R_HIP = 24;
+const L_KNEE = 25, R_KNEE = 26;
+const L_ANKLE = 27, R_ANKLE = 28;
+
+// Each joint's three landmarks (first point, vertex, last point), per side.
+const JOINT_POINTS: Record<Joint, { left: [number, number, number]; right: [number, number, number] }> = {
+  elbow: { left: [L_SHOULDER, L_ELBOW, L_WRIST], right: [R_SHOULDER, R_ELBOW, R_WRIST] },
+  shoulder: { left: [L_HIP, L_SHOULDER, L_ELBOW], right: [R_HIP, R_SHOULDER, R_ELBOW] },
+  knee: { left: [L_HIP, L_KNEE, L_ANKLE], right: [R_HIP, R_KNEE, R_ANKLE] },
+  hip: { left: [L_SHOULDER, L_HIP, L_KNEE], right: [R_SHOULDER, R_HIP, R_KNEE] },
+};
 
 // Savitzky–Golay quadratic kernels (symmetric, preserves peaks)
 // Selected at runtime from SG_WINDOW_SEC and actual sample rate.
@@ -97,6 +150,11 @@ const PERCENTILE_HIGH = 90;
 const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
 const MIN_ROM_DEGREES = 20;       // minimum ROM to accept a rep
 const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
+const REST_BAND_FRACTION = 0.10;  // a rep leaves its rest when the angle is this share of the set's range away from it
+const REST_BAND_MIN_DEG = 3;      // … and never less than this many degrees
+const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives the rest level; below it, the extreme is used
+const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
+const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
 
 // ─── Public API ───
 
@@ -105,30 +163,38 @@ export function countReps(
   timestamps: number[],
   lift: Lift,
 ): CountResult {
-  // 1. Select arm
-  const arm = selectArm(worldLandmarks, lift);
+  const def: LiftDefinition = LIFTS[lift] ?? LIFTS.bicep_curl;
+  if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
+  return countSide(worldLandmarks, timestamps, def, selectSide(worldLandmarks, def.joint));
+}
 
-  // 2. Extract raw angle per sample
+function countSide(
+  worldLandmarks: WorldLandmarkFrame[],
+  timestamps: number[],
+  def: LiftDefinition,
+  arm: 'left' | 'right',
+): CountResult {
+  // 1. Extract raw angle per sample
   const rawAngles = worldLandmarks.map(wl => {
     if (!wl) return null;
-    return extractAngle(wl, lift, arm);
+    return extractAngle(wl, def.joint, arm);
   });
 
-  // 3. Estimate sample rate from timestamps
+  // 2. Estimate sample rate from timestamps
   const sampleRate = estimateSampleRate(timestamps);
 
-  // 4. Remove outliers (before bridging, so spikes don't propagate)
+  // 3. Remove outliers (before bridging, so spikes don't propagate)
   const outlierSize = secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
   const cleaned = removeOutliers(rawAngles, outlierSize, OUTLIER_DEVIATION_DEG);
 
-  // 5. Bridge short dropouts
+  // 4. Bridge short dropouts
   const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
 
-  // 6. Smooth with Savitzky–Golay (window in seconds)
+  // 5. Smooth with Savitzky–Golay (window in seconds)
   const sgSize = secToOddSamples(SG_WINDOW_SEC, sampleRate);
   const smoothed = savitzkyGolay(bridged, sgSize);
 
-  // 7. Compute thresholds from the set's own range
+  // 6. Compute thresholds from the set's own range
   const validAngles = smoothed.filter((a): a is number => a !== null);
   if (validAngles.length < 3) {
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
@@ -147,10 +213,12 @@ export function countReps(
   const lowThreshold = pLow + margin;
   const highThreshold = pHigh - margin;
 
-  // 8. Detect reps via threshold crossings
-  const reps = detectReps(smoothed, timestamps, lowThreshold, highThreshold, lift);
+  // 7. Detect reps via threshold crossings, then place their boundaries at the rest
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest);
+  const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
+  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
 
-  // 9. Confidence: fraction of samples with a detected pose on the tracked arm
+  // 8. Confidence: fraction of samples with a detected pose on the tracked side
   const totalSamples = worldLandmarks.length;
   const detectedSamples = rawAngles.filter(a => a !== null).length;
   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
@@ -158,20 +226,64 @@ export function countReps(
   return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
 }
 
-// ─── Arm selection ───
+// ─── Both arms: the alternating curl ───
 
-function selectArm(worldLandmarks: WorldLandmarkFrame[], lift: Lift): 'left' | 'right' {
+/**
+ * Each arm is counted on its own, then the two lists are joined in time order:
+ * a rep of one arm that overlaps a rep of the other by more than TOGETHER_OVERLAP
+ * of the shorter is the same rep done with both arms together and counts once;
+ * every other rep counts for its arm (David, 27 September: one rep per arm).
+ * The count needs both arms in view, so the confidence is the lower of the two.
+ */
+function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition): CountResult {
+  const left = countSide(worldLandmarks, timestamps, def, 'left');
+  const right = countSide(worldLandmarks, timestamps, def, 'right');
+  const all = [
+    ...left.reps.map(r => ({ ...r, side: 'left' as const })),
+    ...right.reps.map(r => ({ ...r, side: 'right' as const })),
+  ].sort((a, b) => a.startTime - b.startTime);
+  const joined: RepDetail[] = [];
+  for (const r of all) {
+    const last = joined[joined.length - 1];
+    if (last && last.side !== 'both' && last.side !== r.side) {
+      const overlap = Math.min(last.endTime, r.endTime) - Math.max(last.startTime, r.startTime);
+      const shorter = Math.min(last.endTime - last.startTime, r.endTime - r.startTime);
+      if (overlap > TOGETHER_OVERLAP * shorter) {
+        last.side = 'both';
+        last.startTime = Math.min(last.startTime, r.startTime);
+        last.endTime = Math.max(last.endTime, r.endTime);
+        last.romDegrees = Math.max(last.romDegrees, r.romDegrees);
+        continue;
+      }
+    }
+    joined.push({ ...r });
+  }
+  joined.forEach((r, i) => { r.index = i + 1; });
+  const primary = left.reps.length >= right.reps.length ? left : right;
+  return {
+    count: joined.length,
+    reps: joined,
+    arm: 'both',
+    confidence: Math.min(left.confidence, right.confidence),
+    angles: primary.angles,
+    smoothedAngles: primary.smoothedAngles,
+    lowThreshold: primary.lowThreshold,
+    highThreshold: primary.highThreshold,
+    sides: { left, right },
+  };
+}
+
+// ─── Side selection ───
+
+function selectSide(worldLandmarks: WorldLandmarkFrame[], joint: Joint): 'left' | 'right' {
+  const [la, lb, lc] = JOINT_POINTS[joint].left;
+  const [ra, rb, rc] = JOINT_POINTS[joint].right;
   let lVis = 0, rVis = 0, count = 0;
   for (const wl of worldLandmarks) {
     if (!wl) continue;
     count++;
-    if (lift === 'lateral_raise') {
-      lVis += vis(wl[L_HIP]) + vis(wl[L_SHOULDER]) + vis(wl[L_ELBOW]);
-      rVis += vis(wl[R_HIP]) + vis(wl[R_SHOULDER]) + vis(wl[R_ELBOW]);
-    } else {
-      lVis += vis(wl[L_SHOULDER]) + vis(wl[L_ELBOW]) + vis(wl[L_WRIST]);
-      rVis += vis(wl[R_SHOULDER]) + vis(wl[R_ELBOW]) + vis(wl[R_WRIST]);
-    }
+    lVis += vis(wl[la]) + vis(wl[lb]) + vis(wl[lc]);
+    rVis += vis(wl[ra]) + vis(wl[rb]) + vis(wl[rc]);
   }
   if (count === 0) return 'left';
   return lVis >= rVis ? 'left' : 'right';
@@ -183,24 +295,12 @@ function vis(p: WorldLandmark): number {
 
 // ─── Angle extraction ───
 
-function extractAngle(wl: WorldLandmark[], lift: Lift, arm: 'left' | 'right'): number | null {
-  let a: WorldLandmark, b: WorldLandmark, c: WorldLandmark;
-  if (lift === 'lateral_raise') {
-    const hip = arm === 'left' ? wl[L_HIP] : wl[R_HIP];
-    const shoulder = arm === 'left' ? wl[L_SHOULDER] : wl[R_SHOULDER];
-    const elbow = arm === 'left' ? wl[L_ELBOW] : wl[R_ELBOW];
-    a = hip; b = shoulder; c = elbow;
-  } else {
-    const shoulder = arm === 'left' ? wl[L_SHOULDER] : wl[R_SHOULDER];
-    const elbow = arm === 'left' ? wl[L_ELBOW] : wl[R_ELBOW];
-    const wrist = arm === 'left' ? wl[L_WRIST] : wl[R_WRIST];
-    a = shoulder; b = elbow; c = wrist;
-  }
-
+function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right'): number | null {
+  const [ia, ib, ic] = JOINT_POINTS[joint][arm];
+  const a = wl[ia], b = wl[ib], c = wl[ic];
   if (vis(a) < VIS_THRESHOLD || vis(b) < VIS_THRESHOLD || vis(c) < VIS_THRESHOLD) {
     return null;
   }
-
   return angleDeg(a, b, c);
 }
 
@@ -310,21 +410,23 @@ function savitzkyGolay(angles: (number | null)[], windowSize: number): (number |
 // ─── Rep detection ───
 
 /**
- * For elbow-angle lifts (curl, bench, overhead, pulldown), a rep cycle is:
- *   extended (high angle) → flexed (low angle) → extended (high angle)
- *
- * For lateral raise (shoulder abduction), a rep cycle is:
- *   adducted (low angle) → abducted (high angle) → adducted
+ * A rep leaves the rest end and comes back to it, crossing both thresholds:
+ *   rest high (curl, rows, presses, pulldown, squat…): high → low → high
+ *   rest low (lateral raise, triceps pushdown, leg extension, hip thrust): low → high → low
+ * Returns each accepted cycle as sample indices: where the state machine entered
+ * the rep, and where it completed it. Which cycles count is decided here alone.
  */
+interface Cycle { enter: number; complete: number }
+
 function detectReps(
   smoothed: (number | null)[],
   timestamps: number[],
   lowThreshold: number,
   highThreshold: number,
-  lift: Lift,
-): RepDetail[] {
-  const isAbduction = lift === 'lateral_raise';
-  const reps: RepDetail[] = [];
+  rest: 'high' | 'low',
+): Cycle[] {
+  const restsLow = rest === 'low';
+  const cycles: Cycle[] = [];
   let state: 'waiting' | 'inRep' = 'waiting';
   let repStartIdx = -1;
   let peakAngle = -Infinity;
@@ -335,7 +437,7 @@ function detectReps(
     const angle = smoothed[i];
     if (angle === null) continue;
 
-    if (isAbduction) {
+    if (restsLow) {
       if (state === 'waiting') {
         if (angle > lowThreshold) {
           state = 'inRep';
@@ -352,14 +454,7 @@ function detectReps(
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
           if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
-            reps.push({
-              index: reps.length + 1,
-              startTime: timestamps[repStartIdx],
-              endTime: timestamps[i],
-              romDegrees: rom,
-              concentricSec: timestamps[crossIdx] - timestamps[repStartIdx],
-              eccentricSec: timestamps[i] - timestamps[crossIdx],
-            });
+            cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
         }
@@ -381,14 +476,7 @@ function detectReps(
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
           if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
-            reps.push({
-              index: reps.length + 1,
-              startTime: timestamps[repStartIdx],
-              endTime: timestamps[i],
-              romDegrees: rom,
-              concentricSec: timestamps[crossIdx] - timestamps[repStartIdx],
-              eccentricSec: timestamps[i] - timestamps[crossIdx],
-            });
+            cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
         }
@@ -396,5 +484,133 @@ function detectReps(
     }
   }
 
+  return cycles;
+}
+
+// ─── Rep boundaries (step 3c) ───
+
+/**
+ * Where a counted rep starts and ends, and what it measured. The state machine
+ * enters a rep where the angle first crosses a threshold, which a rest hovering
+ * near that threshold moves with every flicker of noise. Here each rep is anchored
+ * on its working half instead: the samples past the midpoint of the two thresholds.
+ * - Start: walking back from the first of them, the last sample still within
+ *   `band` of the rest level before it (the median of the rest-side samples since
+ *   the previous rep, or their extreme when the set barely pauses).
+ * - End: walking on from the last of them, the first sample back within `band`
+ *   of the rest level after it (looked for over at most RETURN_WINDOW_SEC).
+ * - Range: from the working extreme to the furthest rest-side level of the rep,
+ *   the level it left or the fullest return it reached, so no boundary sample
+ *   decides it.
+ * - Phases: the first runs from the start to the moment the angle comes within
+ *   `band` of the working extreme, the second from the moment it leaves that band
+ *   to the end; a pause at the working end belongs to neither. Which phase is
+ *   concentric depends on the lift.
+ */
+function placeBoundaries(
+  cycles: Cycle[],
+  smoothed: (number | null)[],
+  timestamps: number[],
+  lowThreshold: number,
+  highThreshold: number,
+  band: number,
+  def: LiftDefinition,
+): RepDetail[] {
+  const restsLow = def.rest === 'low';
+  const mid = (lowThreshold + highThreshold) / 2;
+  const working = (a: number) => (restsLow ? a > mid : a < mid);
+  const near = (a: number, level: number) => (restsLow ? a <= level + band : a >= level - band);
+  const furtherOut = (a: number, b: number) => (restsLow ? Math.min(a, b) : Math.max(a, b));
+  const sampleRate = estimateSampleRate(timestamps);
+  const returnWindow = Math.max(1, Math.round(RETURN_WINDOW_SEC * sampleRate));
+
+  // The working half of each cycle: its first and last samples past the midpoint.
+  const halves = cycles.map(c => {
+    let first = -1, last = -1;
+    for (let i = c.enter; i <= c.complete; i++) {
+      const a = smoothed[i];
+      if (a === null || !working(a)) continue;
+      if (first < 0) first = i;
+      last = i;
+    }
+    return first < 0 ? { first: c.enter, last: c.complete } : { first, last };
+  });
+
+  const restLevel = (from: number, to: number): number | null => {
+    const side: number[] = [];
+    for (let i = Math.max(0, from); i < Math.min(smoothed.length, to); i++) {
+      const a = smoothed[i];
+      if (a !== null && !working(a)) side.push(a);
+    }
+    if (!side.length) return null;
+    side.sort((x, y) => x - y);
+    if (side.length >= REST_LEVEL_MIN_SEC * sampleRate) return side[Math.floor(side.length / 2)];
+    return restsLow ? side[0] : side[side.length - 1];
+  };
+
+  const reps: RepDetail[] = [];
+  let previousEnd = 0;
+  cycles.forEach((c, k) => {
+    const { first, last } = halves[k];
+    const nextFirst = k + 1 < halves.length ? halves[k + 1].first : smoothed.length;
+
+    // The working extreme
+    let work = smoothed[first] ?? 0;
+    for (let i = first; i <= last; i++) {
+      const a = smoothed[i];
+      if (a !== null && (restsLow ? a > work : a < work)) work = a;
+    }
+
+    // Start: leaving the rest level
+    let start = c.enter;
+    const left = restLevel(previousEnd, first);
+    if (left !== null) {
+      for (let i = first - 1; i >= previousEnd; i--) {
+        const a = smoothed[i];
+        if (a !== null && near(a, left)) { start = i; break; }
+      }
+    }
+
+    // End: back at the rest level; the fullest return reached on the way
+    const windowEnd = Math.min(nextFirst, last + 1 + returnWindow);
+    let end = c.complete, reached: number | null = null;
+    const after = restLevel(last + 1, windowEnd);
+    for (let i = last + 1; i < windowEnd; i++) {
+      const a = smoothed[i];
+      if (a === null || working(a)) continue;
+      if (reached === null || (restsLow ? a < reached : a > reached)) reached = a;
+    }
+    if (after !== null) {
+      for (let i = last + 1; i < windowEnd; i++) {
+        const a = smoothed[i];
+        if (a !== null && near(a, after)) { end = i; break; }
+      }
+    }
+    if (end <= start) { start = c.enter; end = c.complete; }
+
+    // The working end: from first reaching the band around the extreme to leaving it
+    let workFrom = -1, workTo = -1;
+    for (let i = start; i <= end; i++) {
+      const a = smoothed[i];
+      if (a === null || (restsLow ? a < work - band : a > work + band)) continue;
+      if (workFrom < 0) workFrom = i;
+      workTo = i;
+    }
+    if (workFrom < 0) { workFrom = first; workTo = last; }
+
+    const outer = [left, reached].filter((v): v is number => v !== null).reduce(furtherOut, restsLow ? Infinity : -Infinity);
+    const rom = Number.isFinite(outer) ? Math.abs(outer - work) : Math.abs((smoothed[start] ?? work) - work);
+    const firstSec = timestamps[workFrom] - timestamps[start];
+    const secondSec = timestamps[end] - timestamps[workTo];
+    reps.push({
+      index: reps.length + 1,
+      startTime: timestamps[start],
+      endTime: timestamps[end],
+      romDegrees: rom,
+      concentricSec: def.first === 'concentric' ? firstSec : secondSec,
+      eccentricSec: def.first === 'concentric' ? secondSec : firstSec,
+    });
+    previousEnd = end;
+  });
   return reps;
 }

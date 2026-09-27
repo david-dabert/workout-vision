@@ -22,3 +22,5 @@
 .wv-experience .guide-credit a { color: var(--lamp); display: inline-block; padding-block: 12px; }
 .wv-experience .guide-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .wv-experience .item-name { color: var(--bone); }
+/* Rule 7: a name balanced over its lines leaves no word alone on the last one. */
+.wv-experience .item-name { text-wrap: balance; }

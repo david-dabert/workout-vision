@@ -22,7 +22,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const REAL_PHONE_DIR = join(ROOT, 'test', 'real-phone');
 const CLIPS_DIR = join(REAL_PHONE_DIR, 'clips');
+const EXAM_DIR = join(REAL_PHONE_DIR, 'exam');
 const MANIFEST_PATH = join(REAL_PHONE_DIR, 'manifest.json');
+
+// PLAN.md, exam rule: the lifts on offer (APPROVED_LIFTS in src/lib/coreAnalysis.js)
+// take exam sets only; any other lift takes its first four sets to build with, its
+// next four as its exam, then alternates. Each set's role is fixed on arrival, from
+// the sets already received for its lift, before anyone runs it. Exam sets are kept
+// in their own folder; nothing but the exam script opens them.
+const OFFERED = ['bicep_curl', 'lateral_raise', 'lat_pulldown'];
+function roleFor(manifest, exercise) {
+  if (OFFERED.includes(exercise)) return 'exam';
+  const earlier = manifest.clips.filter(c => c.exercise === exercise && c.role).length;
+  if (earlier < 4) return 'build';
+  if (earlier < 8) return 'exam';
+  return earlier % 2 === 0 ? 'build' : 'exam';
+}
 
 const args = process.argv.slice(2);
 let port = 3333;
@@ -31,6 +46,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 mkdirSync(CLIPS_DIR, { recursive: true });
+mkdirSync(EXAM_DIR, { recursive: true });
 
 // Get local IP
 function getLocalIP() {
@@ -138,18 +154,29 @@ const HTML = `<!DOCTYPE html>
 <div class="field">
   <label>Exercise</label>
   <select id="exercise">
-    <optgroup label="Launch lifts">
-      <option value="bench_press">Bench press</option>
-      <option value="bicep_curl">Bicep curl</option>
+    <optgroup label="On offer (exam sets)">
+      <option value="bicep_curl">Bicep curl (one arm, or both together)</option>
       <option value="lateral_raise">Lateral raise</option>
-      <option value="overhead_press">Shoulder press</option>
       <option value="lat_pulldown">Lat pulldown</option>
     </optgroup>
-    <optgroup label="Other validated">
+    <optgroup label="Next, in order">
+      <option value="bench_press">Bench press</option>
+      <option value="overhead_press">Shoulder press</option>
       <option value="squat">Squat</option>
+      <option value="leg_press">Leg press</option>
+      <option value="leg_extension">Leg extension</option>
+      <option value="leg_curl">Leg curl</option>
+      <option value="lunge">Lunge</option>
+      <option value="seated_row">Seated row</option>
+      <option value="dumbbell_row">Dumbbell row</option>
+      <option value="triceps_pushdown">Triceps pushdown</option>
+      <option value="romanian_deadlift">Romanian deadlift</option>
+      <option value="hip_thrust">Hip thrust</option>
+      <option value="bicep_curl_alternating">Alternating curl (both arms in view)</option>
+    </optgroup>
+    <optgroup label="Other">
       <option value="pull_up">Pull-up</option>
       <option value="push_up">Push-up</option>
-      <option value="lunge">Lunge</option>
       <option value="front_raise">Front raise</option>
       <option value="sit_up">Sit-up</option>
       <option value="battle_rope">Battle rope</option>
@@ -172,6 +199,19 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
+<div class="row">
+  <div class="field">
+    <label>Filmed</label>
+    <select id="person">
+      <option value="david">Me</option>
+      <option value="other">Someone else</option>
+    </select>
+  </div>
+  <div class="field" id="consentField" style="display:none">
+    <label><input type="checkbox" id="consent"> They agreed to its use</label>
+  </div>
+</div>
+
 <button class="submit" id="sendBtn" disabled>Send clip</button>
 
 <div class="progress" id="progress"><div class="progress-bar" id="progressBar"></div></div>
@@ -188,6 +228,10 @@ const exercise = document.getElementById('exercise');
 const reps = document.getElementById('reps');
 const repsNote = document.getElementById('repsNote');
 const view = document.getElementById('view');
+const person = document.getElementById('person');
+const consent = document.getElementById('consent');
+const consentField = document.getElementById('consentField');
+person.addEventListener('change', () => { consentField.style.display = person.value === 'other' ? '' : 'none'; });
 const sendBtn = document.getElementById('sendBtn');
 const statusEl = document.getElementById('status');
 const progressEl = document.getElementById('progress');
@@ -245,10 +289,19 @@ sendBtn.addEventListener('click', async () => {
 
   const ext = selectedFile.name.split('.').pop() || 'mov';
   const repsVal = reps.value ? reps.value : '0';
+  if (person.value === 'other' && !consent.checked) {
+    statusEl.className = 'status err';
+    statusEl.textContent = 'A set filmed of someone else needs their agreement first.';
+    sendBtn.disabled = false;
+    progressEl.classList.remove('active');
+    return;
+  }
   const params = new URLSearchParams({
     exercise: exercise.value,
     reps: repsVal,
     view: view.value,
+    person: person.value,
+    consent: consent.checked ? 'yes' : 'no',
     ext: ext,
     type: isImage ? 'image' : 'video',
   });
@@ -273,9 +326,9 @@ sendBtn.addEventListener('click', async () => {
     });
 
     statusEl.className = 'status ok';
-    statusEl.textContent = '\\u2713 Saved: ' + result.file + ' (' + result.totalClips + ' clips total)';
+    statusEl.textContent = '\\u2713 Saved as a ' + result.role + ' set: ' + result.file + ' (' + result.totalClips + ' clips total)';
 
-    sent.unshift({ exercise: exercise.value, reps: repsVal, view: view.value, file: result.file, type: isImage ? 'image' : 'video' });
+    sent.unshift({ exercise: exercise.value, reps: repsVal, view: view.value, role: result.role, file: result.file, type: isImage ? 'image' : 'video' });
     renderHistory();
 
     // Reset for next file
@@ -302,7 +355,7 @@ function renderHistory() {
   if (sent.length === 0) { historyEl.innerHTML = ''; return; }
   let html = '<h2>Sent this session</h2>';
   for (const c of sent) {
-    const info = c.type === 'image' ? 'image · ' + c.view : c.reps + ' reps · ' + c.view;
+    const info = c.type === 'image' ? 'image · ' + c.view : c.reps + ' reps · ' + c.view + ' · ' + c.role;
     html += '<div class="clip-row"><span class="clip-name">' + c.exercise.replace(/_/g, ' ') + '</span><span class="clip-info">' + info + '</span></div>';
   }
   historyEl.innerHTML = html;
@@ -329,17 +382,25 @@ const server = createServer(async (req, res) => {
     const view = url.searchParams.get('view') || 'front';
     const ext = url.searchParams.get('ext') || 'mov';
     const fileType = url.searchParams.get('type') || 'video';
+    const person = url.searchParams.get('person') === 'other' ? 'other' : 'david';
+    const consent = url.searchParams.get('consent') === 'yes';
 
     if (!exercise || (fileType === 'video' && reps < 1)) {
       res.writeHead(400, { 'Content-Type': 'text/plain' });
       res.end('Missing exercise or reps');
       return;
     }
+    if (person === 'other' && !consent) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('A set filmed of someone else needs their agreement');
+      return;
+    }
+    const role = fileType === 'video' ? roleFor(loadManifest(), exercise) : 'image';
 
     // Generate filename: exercise_reps_view_timestamp.ext
     const ts = Date.now().toString(36);
     const filename = `${exercise}_${reps}_${view}_${ts}.${ext}`;
-    const filepath = join(CLIPS_DIR, filename);
+    const filepath = join(role === 'exam' ? EXAM_DIR : CLIPS_DIR, filename);
 
     // The clip is written under a temporary name and takes its own only once it is
     // whole on disk; only then does the manifest name it. A failed or stopped upload
@@ -366,8 +427,12 @@ const server = createServer(async (req, res) => {
       exercise,
       reps,
       view,
+      role,
+      person,
+      ...(person === 'other' ? { consent } : {}),
       source: 'david-phone',
       addedAt: new Date().toISOString().slice(0, 10),
+      receivedAt: new Date().toISOString(),
       sizeBytes: bytes,
     });
     manifest.clips.sort((a, b) => a.file.localeCompare(b.file));
@@ -378,7 +443,7 @@ const server = createServer(async (req, res) => {
     console.log(`  ✓ ${filename} (${sizeMB} MB) — ${label}`);
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, file: filename, totalClips: manifest.clips.length }));
+    res.end(JSON.stringify({ ok: true, file: filename, role, totalClips: manifest.clips.length }));
 
     return;
   }
@@ -404,6 +469,7 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`  │  http://${ip}:${port}`.padEnd(45) + `│`);
   console.log(`  │                                          │`);
   console.log(`  │  Clips → test/real-phone/clips/          │`);
+  console.log(`  │  Exam sets → test/real-phone/exam/       │`);
   console.log(`  │  Manifest → test/real-phone/manifest.json│`);
   console.log(`  │                                          │`);
   console.log(`  │  Ctrl+C to stop                          │`);

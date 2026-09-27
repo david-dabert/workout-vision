@@ -138,7 +138,9 @@ function AppInner() {
       setPage(next);
     };
     const target = LAZY[next];
-    if (!target || target.loaded()) show(); else target.warm().then(() => { if (target.loaded()) show(); });
+    // A screen whose code failed to load is shown all the same: its error screen
+    // offers Reload, where staying put would leave a tap that does nothing.
+    if (!target || target.loaded()) show(); else target.warm().then(show);
   };
 
   // The profile is created in the background; no screen waits for it.

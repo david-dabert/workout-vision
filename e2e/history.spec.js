@@ -110,6 +110,19 @@ test.describe('the history at 375 px', () => {
     await page.getByRole('button', { name: /Vos séries/ }).click();
     await expect(page.locator('.hist-btn')).toHaveCount(2);
     await page.waitForTimeout(1600); // the rows' reveal animation has settled
-    expect(await page.evaluate(layoutFaults)).toEqual([]);
+    expect((await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '))).toEqual([]);
+  });
+});
+
+// A screen whose code cannot load: the tap leads to the error screen and its
+// Reload, never to a tap that does nothing.
+test.describe('the next screen failing to load', () => {
+  test.use({ serviceWorkers: 'block' });
+  test('leads to the error screen', async ({ page }) => {
+    await savedSet(page);
+    await page.route(/\/assets\/History-[^/]+\.js$/, route => route.abort());
+    await page.reload();
+    await page.getByRole('button', { name: /Vos séries/ }).click();
+    await expect(page.getByRole('button', { name: 'Recharger' })).toBeVisible({ timeout: 10000 });
   });
 });
