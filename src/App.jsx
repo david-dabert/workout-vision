@@ -15,6 +15,7 @@ import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
 import ScreenFade from './components/experience/ScreenFade';
 import { loadSets } from './components/experience/sets';
+import { COUNTING_PAUSED } from './lib/countingPause';
 
 // Dynamic GPU capability detection: disable backdrop-filter on weak devices
 (() => {
@@ -64,7 +65,7 @@ const Analyze = lazyScreen(() => import('./components/CoreUpload'));
 const ExerciseGuide = lazyScreen(() => import('./components/experience/Guide'));
 const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
 const History = lazyScreen(() => import('./components/experience/History'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History };
+const LAZY = { film: ExperienceFilm, analyze: COUNTING_PAUSED ? null : Analyze, exercises: ExerciseGuide, history: History };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -97,7 +98,7 @@ function AppInner() {
 
   // Warm the next screens while the visitor reads, so none waits on a download.
   useEffect(() => {
-    const a = setTimeout(() => { ExperienceFilm.warm(); Analyze.warm(); }, 1200);
+    const a = setTimeout(() => { ExperienceFilm.warm(); if (!COUNTING_PAUSED) Analyze.warm(); }, 1200);
     const b = setTimeout(() => { ExerciseGuide.warm(); History.warm(); }, 3000);
     return () => { clearTimeout(a); clearTimeout(b); };
   }, []);
@@ -146,7 +147,7 @@ function AppInner() {
   // The profile is created in the background; no screen waits for it.
   const chooseLift = lift => {
     // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
-    fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
+    if (!COUNTING_PAUSED) fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
     go('film', () => { setSelectedLift(lift); setVideoFile(null); });
   };
   const backToChoice = () => go('dashboard', () => { setSelectedLift(''); setVideoFile(null); });
@@ -155,8 +156,8 @@ function AppInner() {
   let key, screen;
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
-    screen = <ExperienceFilm lift={selectedLift} onBack={backToChoice} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
-  } else if (page === 'analyze' && selectedLift && videoFile) {
+    screen = <ExperienceFilm lift={selectedLift} onBack={backToChoice} onGuide={() => go('exercises')} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
+  } else if (page === 'analyze' && selectedLift && videoFile && !COUNTING_PAUSED) {
     key = `analyze:${fileSerial.current}`;
     screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
   } else if (page === 'exercises') {

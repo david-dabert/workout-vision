@@ -50,3 +50,4 @@
   .wv-experience .steps li { font-size: 15px; line-height: 1.4; }
   .wv-experience .actions { margin-top: 14px; }
 }
+.wv-experience .paused-note { margin: 10px 0 0; font-size: 16px; line-height: 1.5; color: var(--bone-2); }
