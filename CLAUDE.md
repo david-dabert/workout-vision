@@ -8,6 +8,7 @@ Never modify a label. Never delete a test clip. Never set or adjust a label from
 
 **R2. Measure every counting change.**
 Any change that can affect a rep count is run through npm run scoreboard before and after, and the per-clip diff is shown in the report. A change ships only if the real-phone exact count does not decrease and no clip becomes a catastrophic error (off by 3 or more).
+Not yet built (27 September 2026): no scoreboard script exists. Until it does, the rules for counting changes are those in PLAN.md on counter-core.
 
 **R3. Prove before you claim.**
 Never write "fixed", "passing", "working" or "deployed" without pasting the command output that proves it. "Build passes" proves the code compiles, nothing more. Any change visible to users is confirmed by David on his iPhone before it is called done.
@@ -20,6 +21,7 @@ git checkout -- ., git reset --hard, git clean, rm -rf, force push, deleting fil
 
 **R6. Main is production.**
 Merge to main only when CI is green, including the real-phone gate, and David has confirmed on his iPhone.
+Not yet built (27 September 2026): no CI workflow runs the real-phone clips. Until it exists, main moves as PLAN.md on counter-core states.
 
 **R7. Scope freeze.**
 New ideas go into BACKLOG.md with a date. They are not built until the current phase is complete.
