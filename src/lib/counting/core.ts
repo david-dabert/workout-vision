@@ -154,6 +154,7 @@ const REST_BAND_FRACTION = 0.10;  // a rep leaves its rest when the angle is thi
 const REST_BAND_MIN_DEG = 3;      // … and never less than this many degrees
 const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives the rest level; below it, the extreme is used
 const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
+const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample
 const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
 
 // ─── Public API ───
@@ -523,6 +524,13 @@ function placeBoundaries(
   const furtherOut = (a: number, b: number) => (restsLow ? Math.min(a, b) : Math.max(a, b));
   const sampleRate = estimateSampleRate(timestamps);
   const returnWindow = Math.max(1, Math.round(RETURN_WINDOW_SEC * sampleRate));
+  // One sample is the least stable point of the curve; two browsers decoding the same video
+  // disagree most there. An end of the range is the mean of the most extreme third of a second.
+  const hold = Math.max(1, Math.round(EXTREME_HOLD_SEC * sampleRate));
+  const heldExtreme = (values: number[], lowest: boolean): number => {
+    const most = [...values].sort((x, y) => (lowest ? x - y : y - x)).slice(0, hold);
+    return most.reduce((sum, v) => sum + v, 0) / most.length;
+  };
 
   // The working half of each cycle: its first and last samples past the midpoint.
   const halves = cycles.map(c => {
@@ -554,12 +562,13 @@ function placeBoundaries(
     const { first, last } = halves[k];
     const nextFirst = k + 1 < halves.length ? halves[k + 1].first : smoothed.length;
 
-    // The working extreme
-    let work = smoothed[first] ?? 0;
+    // The working extreme, held
+    const workValues: number[] = [];
     for (let i = first; i <= last; i++) {
       const a = smoothed[i];
-      if (a !== null && (restsLow ? a > work : a < work)) work = a;
+      if (a !== null) workValues.push(a);
     }
+    const work = workValues.length ? heldExtreme(workValues, !restsLow) : smoothed[first] ?? 0;
 
     // Start: leaving the rest level
     let start = c.enter;
@@ -573,13 +582,14 @@ function placeBoundaries(
 
     // End: back at the rest level; the fullest return reached on the way
     const windowEnd = Math.min(nextFirst, last + 1 + returnWindow);
-    let end = c.complete, reached: number | null = null;
+    let end = c.complete;
     const after = restLevel(last + 1, windowEnd);
+    const returned: number[] = [];
     for (let i = last + 1; i < windowEnd; i++) {
       const a = smoothed[i];
-      if (a === null || working(a)) continue;
-      if (reached === null || (restsLow ? a < reached : a > reached)) reached = a;
+      if (a !== null && !working(a)) returned.push(a);
     }
+    const reached = returned.length ? heldExtreme(returned, restsLow) : null;
     if (after !== null) {
       for (let i = last + 1; i < windowEnd; i++) {
         const a = smoothed[i];
