@@ -179,15 +179,14 @@ export function reportPdf(sheet) {
   };
   [sheet.corrected, sheet.arm].filter(Boolean).forEach(sheetLine);
 
-  // The reps, as the table on screen (.sh-table): fixed columns, the first 12% of the
-  // column and the four measures alike, no left padding. With collapsed borders each
-  // row holds half of the 1 px rule above it and below it: the heading row is
-  // 6 + 13.5 + 6 + 0.5 high, a rep's row 0.5 + 5 + 17.25 + 5 + 0.5, and the table
-  // ends half a rule below its last line. A row that does not fit opens a page,
-  // which repeats the heading.
+  // The reps table: Rep (8%), Tempo (32%), Range (20%), Peak (20%), Mean (20%).
+  // With collapsed borders each row holds half of the 1 px rule above it and
+  // below it: the heading row is 6 + 13.5 + 6 + 0.5 high, a rep's row
+  // 0.5 + 5 + 17.25 + 5 + 0.5, and the table ends half a rule below its last
+  // line. A row that does not fit opens a page, which repeats the heading.
   if (sheet.rows?.length) {
-    const first = COLUMN * 0.12, rest = (COLUMN - first) / 4;
-    const colX = k => MARGIN + (k === 0 ? 0 : first + (k - 1) * rest);
+    const widths = [COLUMN * 0.08, COLUMN * 0.32, COLUMN * 0.20, COLUMN * 0.20, COLUMN * 0.20];
+    const colX = k => MARGIN + widths.slice(0, k).reduce((a, b) => a + b, 0);
     const HEAD = 26, ROW = 28.25;
     const hline = (at, color) => { doc.setDrawColor(color); doc.setLineWidth(1); doc.line(MARGIN, at, MARGIN + COLUMN, at); };
     const heading = () => {
@@ -206,6 +205,7 @@ export function reportPdf(sheet) {
     y += 0.5 + GAP;
   }
   if (sheet.summary) sheetLine(sheet.summary);
+  if (sheet.shortRepNote) sheetLine(sheet.shortRepNote);
 
   // Notes, then the foot. The notes label keeps its first line, and the foot
   // never stands alone on a page: it takes the last two lines of notes with it.

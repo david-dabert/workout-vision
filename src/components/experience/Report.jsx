@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { META } from './lift-scenes';
 import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
+import { knownSets, setTime } from './sets';
+import { LIFTS } from '../../lib/counting/core';
 import './Report.css';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
@@ -31,7 +33,20 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const when = useRef(date ? new Date(date) : new Date()).current;
 
   const liftName = META[lift]?.[lang] || tExercise(lift);
-  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, reps, source });
+  const first = LIFTS[lift]?.first || 'concentric';
+  // The previous saved set of the same lift, if any, for comparison.
+  const prevRef = useRef(undefined);
+  if (prevRef.current === undefined) {
+    const all = knownSets();
+    if (all) {
+      const prev = all.filter(w => (w.exercise || w.exerciseKey) === lift && w.repDetails?.length && w.repDetailsVersion >= 2)
+        .sort((a, b) => setTime(b) - setTime(a))[0];
+      prevRef.current = prev ? { count: prev.reps, reps: prev.repDetails, date: new Date(prev.createdAt ?? prev.date) } : null;
+    } else {
+      prevRef.current = null;
+    }
+  }
+  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, reps, source, first, previousSet: prevRef.current });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -143,6 +158,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
           <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
         </table>}
         {sheet.summary && <p className="sh-line">{sheet.summary}</p>}
+        {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
         <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>
         <p className="sh-foot">{sheet.foot}</p>
       </article>

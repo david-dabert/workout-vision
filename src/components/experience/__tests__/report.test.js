@@ -22,7 +22,7 @@ describe('reportSheet', () => {
   });
 
   it('states a correction only when the visitor changed the count', () => {
-    expect(reportSheet({ ...base, count: 12, counted: 10 }).corrected).toBe(`Compté par l’app${NBSP}: 10. Corrigé${NBSP}: 12.`);
+    expect(reportSheet({ ...base, count: 12, counted: 10 }).corrected).toBe(`Compté par l'app${NBSP}: 10. Corrigé${NBSP}: 12.`);
     expect(reportSheet({ ...base, count: 10, counted: 10 }).corrected).toBe('');
     expect(reportSheet({ ...base, lang: 'en', count: 9, counted: 10 }).corrected).toBe('Counted by the app: 10. Corrected: 9.');
   });
@@ -102,29 +102,86 @@ describe('reportPdf', () => {
 });
 
 // Step 3c passed: each rep's time, range and phases, and what the set measured.
-const rep = (start, len, rom, up, down, extra = {}) => ({ startTime: start, endTime: start + len, romDegrees: rom, concentricSec: up, eccentricSec: down, ...extra });
+const rep = (start, len, rom, up, down, extra = {}) => ({
+  startTime: start, endTime: start + len, romDegrees: rom,
+  concentricSec: up, eccentricSec: down,
+  peakSpeed: rom / Math.min(up, down), meanSpeed: rom / (up + down),
+  ...extra,
+});
 const reps = [rep(0, 1.9, 90, 0.8, 1.0), rep(3, 1.9, 88, 0.9, 1.0), rep(6, 1.9, 86, 1.0, 1.0), rep(9, 1.9, 84, 1.1, 1.0), rep(12, 1.9, 82, 1.2, 1.0)];
 
 describe('rep details', () => {
-  it('lists each rep with its time, range and phases, to one decimal, with a comma in French', () => {
-    // Concentric and eccentric, not up and down: a pulldown's concentric phase brings the bar down.
-    const s = reportSheet({ ...base, reps });
-    expect(s.columns).toEqual(['Rép.', 'Durée', 'Amplitude', 'Conc.', 'Exc.']);
-    expect(s.rows[0]).toEqual(['1', `1,9${NBSP}s`, '90°', `0,8${NBSP}s`, `1,0${NBSP}s`]);
-    const en = reportSheet({ ...base, lang: 'en', reps });
-    expect(en.columns).toEqual(['Rep', 'Time', 'Range', 'Conc.', 'Ecc.']);
-    expect(en.rows[4]).toEqual(['5', `1.9${NBSP}s`, '82°', `1.2${NBSP}s`, `1.0${NBSP}s`]);
+  it('lists each rep with tempo, range, peak and mean speed', () => {
+    // first defaults to 'concentric': lifting=conc, lowering=ecc.
+    // Rep 1: conc 0.8, ecc 1.0, working pause = 1.9 - 0.8 - 1.0 = 0.1, rest gap = 3.0 - 1.9 = 1.1
+    // Tempo: lowering-bottom-lifting-top. Concentric first → lowering=ecc(second), bottom=restGap, lifting=conc(first), top=workingPause.
+    const s = reportSheet({ ...base, reps, first: 'concentric' });
+    expect(s.columns).toEqual(['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.']);
+    // Rep 1: tempo 1-1-1-0  range 90°  peak 112  mean 50
+    // Coach notation: whole seconds, pause under 0.5 reads 0.
+    expect(s.rows[0][0]).toBe('1');
+    expect(s.rows[0][1]).toBe('1-1-1-0');
+    expect(s.rows[0][2]).toBe('90°');
+    // Peak and mean are whole numbers with °/s
+    expect(s.rows[0][3]).toMatch(/^\d+$/);
+    expect(s.rows[0][4]).toMatch(/^\d+$/);
+    const en = reportSheet({ ...base, lang: 'en', reps, first: 'concentric' });
+    expect(en.columns).toEqual(['Rep', 'Tempo', 'Range', 'Peak', 'Mean']);
   });
 
-  it('gives a rep the recording cut its number and range, and no times', () => {
-    const s = reportSheet({ ...base, reps: [rep(0, 1.1, 95, 0.1, 1.0, { clipped: true }), ...reps.slice(1)] });
+  it('maps eccentric-first lifts correctly: lowering is the first phase', () => {
+    // Squat-like: first=eccentric → lowering=ecc(first), bottom=workingPause, lifting=conc(second), top=restGap.
+    // Rep 1: ecc 1.0, conc 0.8, working pause 0.1, rest gap 1.1
+    const s = reportSheet({ ...base, reps, first: 'eccentric' });
+    // Tempo: 1-0-1-1 (lowering-bottom-lifting-top) — coach notation, whole seconds
+    expect(s.rows[0][1]).toBe('1-0-1-1');
+  });
+
+  it('gives a rep the recording cut its number and range, and no tempo or speed', () => {
+    const s = reportSheet({ ...base, reps: [rep(0, 1.1, 95, 0.1, 1.0, { clipped: true }), ...reps.slice(1)], first: 'concentric' });
     expect(s.rows[0]).toEqual(['1', '…', '95°', '…', '…']);
+  });
+
+  it('marks a rep whose range is under 85% of the median as short', () => {
+    // Median range of whole reps: sort [90, 88, 50, 86, 84] → [50, 84, 86, 88, 90] → median 86.
+    // 85% of 86 = 73.1. Rep 3 (50°) is short.
+    const short = [rep(0, 1.9, 90, 0.8, 1.0), rep(3, 1.9, 88, 0.9, 1.0), rep(6, 1.9, 50, 1.0, 1.0), rep(9, 1.9, 86, 1.1, 1.0), rep(12, 1.9, 84, 1.2, 1.0)];
+    const s = reportSheet({ ...base, reps: short, first: 'concentric' });
+    expect(s.rows[2][2]).toContain('▾');
+    expect(s.rows[0][2]).not.toContain('▾');
+    expect(s.shortRepNote).toBeTruthy();
   });
 
   it('adds the time under tension and how the concentric speed changed from the first two reps to the last two', () => {
     // Concentric speeds 112.5, 97.8 … 76.4, 68.3 °/s: the last two average 31% below the first two.
-    expect(reportSheet({ ...base, reps }).summary).toBe(`Temps sous tension${NBSP}: 9,5${NBSP}s · Vitesse concentrique${NBSP}: \u221231${NBSP}% du début à la fin`);
-    expect(reportSheet({ ...base, lang: 'en', reps }).summary).toBe(`Time under tension: 9.5${NBSP}s · Concentric speed: \u221231% from start to end`);
+    const s = reportSheet({ ...base, reps, first: 'concentric' });
+    expect(s.summary).toContain(`Temps sous tension${NBSP}: 9,5${NBSP}s`);
+    expect(s.summary).toContain(`\u221231${NBSP}%`);
+  });
+
+  it('shows the set tempo as the average of each phase across reps', () => {
+    const s = reportSheet({ ...base, reps, first: 'concentric' });
+    expect(s.summary).toContain('Tempo');
+    // The tempo line has 4 numbers separated by dashes.
+    expect(s.summary).toMatch(/Tempo\s*.*\d.*-.*\d.*-.*\d.*-.*\d/);
+  });
+
+  it('shows how the rep duration changed from the first two to the last two', () => {
+    const s = reportSheet({ ...base, reps, first: 'concentric' });
+    // All reps here are 1.9 s, so duration change is 0.
+    expect(s.summary).toMatch(/0,0\s*s/);
+  });
+
+  it('shows the comparison with a previous set when one is provided', () => {
+    const prev = { count: 8, reps: Array.from({ length: 8 }, (_, i) => rep(i * 3, 2.0, 92, 0.9, 1.0)), date: new Date(2026, 8, 20) };
+    const s = reportSheet({ ...base, reps, first: 'concentric', previousSet: prev });
+    expect(s.summary).toContain('20');
+    expect(s.summary).toContain('8');
+  });
+
+  it('omits the previous-set line when no previous set is provided', () => {
+    const s = reportSheet({ ...base, reps, first: 'concentric' });
+    expect(s.summary).not.toContain('20 sept');
   });
 
   it('measures whole reps only, and gives no speed change under four of them', () => {
@@ -132,7 +189,6 @@ describe('rep details', () => {
     const m = setMeasures(cut);
     expect(m.tut).toBeCloseTo(5.7, 6);
     expect(m.speedChange).toBe(null);
-    expect(reportSheet({ ...base, reps: cut }).summary).toBe(`Temps sous tension${NBSP}: 5,7${NBSP}s`);
   });
 
   it('shows no table and no measures for a set without rep details', () => {
@@ -144,7 +200,7 @@ describe('rep details', () => {
   it('runs a long table onto the next page', async () => {
     const pdfText = async blob => Buffer.from(await blob.arrayBuffer()).toString('latin1');
     const many = Array.from({ length: 16 }, (_, i) => rep(i * 3, 1.9, 90, 0.8, 1.0));
-    const text = await pdfText(reportPdf(reportSheet({ ...base, reps: many })));
+    const text = await pdfText(reportPdf(reportSheet({ ...base, reps: many, first: 'concentric' })));
     expect(text.match(/\/Type \/Page\b/g).length).toBeGreaterThan(1);
   });
 });

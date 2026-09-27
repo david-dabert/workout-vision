@@ -61,6 +61,8 @@ export interface RepDetail {
   romDegrees: number;   // range of motion in degrees (peak-to-trough within this rep)
   concentricSec: number;
   eccentricSec: number;
+  peakSpeed: number;    // highest frame-to-frame angular speed within the rep, degrees/second
+  meanSpeed: number;    // average frame-to-frame angular speed within the rep, degrees/second
   side?: 'left' | 'right' | 'both'; // alternating curl only: the arm that did it
   clipped?: boolean;    // the video starts or ends inside this rep: counted, but its times are not whole
 }
@@ -256,6 +258,8 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
         last.startTime = Math.min(last.startTime, r.startTime);
         last.endTime = Math.max(last.endTime, r.endTime);
         last.romDegrees = Math.max(last.romDegrees, r.romDegrees);
+        last.peakSpeed = Math.max(last.peakSpeed, r.peakSpeed);
+        last.meanSpeed = Math.max(last.meanSpeed, r.meanSpeed);
         continue;
       }
     }
@@ -622,6 +626,18 @@ function placeBoundaries(
     const firstSec = timestamps[workFrom] - timestamps[start];
     const secondSec = timestamps[end] - timestamps[workTo];
     const clipped = left === null || after === null || start <= firstValid || end >= lastValid;
+    // Angular speed from the smoothed angle, frame to frame.
+    let peak = 0, speedSum = 0, speedN = 0;
+    for (let i = start; i < end; i++) {
+      const a0 = smoothed[i], a1 = smoothed[i + 1];
+      if (a0 === null || a1 === null) continue;
+      const dt = timestamps[i + 1] - timestamps[i];
+      if (dt <= 0) continue;
+      const s = Math.abs(a1 - a0) / dt;
+      if (s > peak) peak = s;
+      speedSum += s;
+      speedN++;
+    }
     reps.push({
       index: reps.length + 1,
       startTime: timestamps[start],
@@ -629,6 +645,8 @@ function placeBoundaries(
       romDegrees: rom,
       concentricSec: def.first === 'concentric' ? firstSec : secondSec,
       eccentricSec: def.first === 'concentric' ? secondSec : firstSec,
+      peakSpeed: peak,
+      meanSpeed: speedN > 0 ? speedSum / speedN : 0,
       ...(clipped ? { clipped: true } : {}),
     });
     previousEnd = end;

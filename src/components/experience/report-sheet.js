@@ -1,7 +1,7 @@
 // The words of the coach's report. The sheet on screen and the PDF both read
 // them from here, so what the visitor sees is what the coach receives.
 
-const NBSP = ' ';
+const NBSP = '\u00A0';
 const clean = s => (s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
 
 export const NAME_MAX = 60;
@@ -39,6 +39,25 @@ export function setMeasures(all) {
 }
 
 /**
+ * Per-rep tempo: lowering, bottom pause, lifting, top pause.
+ * Lowering = eccentric phase; lifting = concentric phase.
+ * The two pauses depend on which phase comes first:
+ *   eccentric first → bottom pause = working pause, top pause = rest gap
+ *   concentric first → top pause = working pause, bottom pause = rest gap
+ * Working pause = total rep time minus both phases.
+ * Rest gap = time from this rep's end to the next rep's start (0 for the last rep).
+ */
+function repTempo(r, nextStart, first) {
+  const total = r.endTime - r.startTime;
+  const workPause = Math.max(0, total - r.concentricSec - r.eccentricSec);
+  const restGap = nextStart != null ? Math.max(0, nextStart - r.endTime) : 0;
+  if (first === 'eccentric') {
+    return { lowering: r.eccentricSec, bottom: workPause, lifting: r.concentricSec, top: restGap };
+  }
+  return { lowering: r.eccentricSec, bottom: restGap, lifting: r.concentricSec, top: workPause };
+}
+
+/**
  * @param {object} o
  * @param {'fr'|'en'} o.lang
  * @param {Date} o.date          when the set was recorded
@@ -49,14 +68,43 @@ export function setMeasures(all) {
  * @param {number} o.count       the number the visitor confirmed or corrected
  * @param {number} [o.counted]   the number the app counted, when it differs
  * @param {'left'|'right'} [o.arm]
- * @param {Array<{startTime:number,endTime:number,romDegrees:number,concentricSec:number,eccentricSec:number}>} [o.reps]
- *   the app's reps, when their details were measured with step 3c's boundaries
+ * @param {'concentric'|'eccentric'} [o.first]  which phase leaves the rest end
+ * @param {Array} [o.reps]       the app's reps with step 3c boundaries
+ * @param {object} [o.previousSet]  the previous saved set of the same lift
+ * @param {number} [o.previousSet.count]
+ * @param {Array} [o.previousSet.reps]
+ * @param {Date} [o.previousSet.date]
  */
-export function reportSheet({ lang, date, client, coach, notes, liftName, count, counted, arm, source, reps }) {
+export function reportSheet({ lang, date, client, coach, notes, liftName, count, counted, arm, source, reps, first, previousSet }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
   const measures = setMeasures(reps);
+  const wholeReps = (reps || []).filter(r => !r.clipped);
+  const allReps = reps || [];
+  const liftFirst = first || 'concentric';
+
+  // Short rep: range under 85% of the set's median.
+  const ranges = wholeReps.map(r => r.romDegrees).sort((a, b) => a - b);
+  const medianRange = ranges.length ? ranges[Math.floor(ranges.length / 2)] : 0;
+  const shortThreshold = medianRange * 0.85;
+  const isShort = r => !r.clipped && r.romDegrees < shortThreshold;
+  const hasShort = allReps.some(isShort);
+
+  // Per-rep tempo in coach notation: whole seconds, pause under 0.5 reads 0.
+  const tempoSec = v => String(Math.round(v));
+  const tempoStr = t => [t.lowering, t.bottom, t.lifting, t.top].map(tempoSec).join('-');
+
+  // Build rows: Rep | Tempo | Range | Peak | Mean
+  const rows = allReps.map((r, i) => {
+    if (r.clipped) return [String(i + 1), '…', `${Math.round(r.romDegrees)}°`, '…', '…'];
+    const nextStart = i + 1 < allReps.length ? allReps[i + 1].startTime : null;
+    const t = repTempo(r, nextStart, liftFirst);
+    const range = `${Math.round(r.romDegrees)}°${isShort(r) ? `${NBSP}▾` : ''}`;
+    return [String(i + 1), tempoStr(t), range, String(Math.round(r.peakSpeed || 0)), String(Math.round(r.meanSpeed || 0))];
+  });
+
+  // Summary lines
   let summary = '';
   if (measures) {
     summary = (fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut);
@@ -67,7 +115,47 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
         ? ` · Vitesse concentrique${colon}${signed}${NBSP}% du début à la fin`
         : ` · Concentric speed${colon}${signed}% from start to end`;
     }
+
+    // Set tempo: average of each phase across whole reps.
+    if (wholeReps.length) {
+      const avg = { lowering: 0, bottom: 0, lifting: 0, top: 0 };
+      wholeReps.forEach((r, i) => {
+        const nextStart = i + 1 < wholeReps.length ? wholeReps[i + 1].startTime : null;
+        const t = repTempo(r, nextStart, liftFirst);
+        avg.lowering += t.lowering; avg.bottom += t.bottom; avg.lifting += t.lifting; avg.top += t.top;
+      });
+      const n = wholeReps.length;
+      avg.lowering /= n; avg.bottom /= n; avg.lifting /= n; avg.top /= n;
+      summary += ` · Tempo${colon}${tempoStr(avg)}`;
+    }
+
+    // Duration change: average of last two minus average of first two.
+    if (wholeReps.length >= 4) {
+      const dur = r => r.endTime - r.startTime;
+      const firstAvg = (dur(wholeReps[0]) + dur(wholeReps[1])) / 2;
+      const lastAvg = (dur(wholeReps[wholeReps.length - 2]) + dur(wholeReps[wholeReps.length - 1])) / 2;
+      const diff = lastAvg - firstAvg;
+      const sign = diff < -0.05 ? MINUS : diff > 0.05 ? '+' : '';
+      summary += fr
+        ? ` · ${fr ? 'Durée' : 'Duration'}${colon}${sign}${decimal(Math.abs(diff), fr)}${NBSP}s du début à la fin`
+        : ` · Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`;
+    }
+
+    // Previous set comparison.
+    if (previousSet && previousSet.reps?.length) {
+      const prevWhole = previousSet.reps.filter(r => !r.clipped);
+      if (prevWhole.length) {
+        const prevDate = previousSet.date instanceof Date ? previousSet.date : new Date(previousSet.date);
+        const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
+        const prevAvgRange = Math.round(prevWhole.reduce((s, r) => s + r.romDegrees, 0) / prevWhole.length);
+        const prevAvgDur = prevWhole.reduce((s, r) => s + (r.endTime - r.startTime), 0) / prevWhole.length;
+        summary += fr
+          ? ` · Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`
+          : ` · Set of ${day}${colon}${previousSet.count}${NBSP}reps, avg range ${prevAvgRange}°, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`;
+      }
+    }
   }
+
   return {
     fr,
     brand: 'Workout Vision',
@@ -81,18 +169,16 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
     word: fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps'),
     lift: liftName,
     corrected: counted != null && counted !== count
-      ? (fr ? `Compté par l’app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
+      ? (fr ? `Compté par l'app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
       : '',
     arm: arm === 'left' || arm === 'right'
       ? (fr ? 'Bras suivi' : 'Arm tracked') + colon + (arm === 'left' ? (fr ? 'gauche' : 'left') : (fr ? 'droit' : 'right'))
       : '',
-    // Concentric and eccentric, not up and down: a pulldown's concentric phase brings the bar down.
-    columns: fr ? ['Rép.', 'Durée', 'Amplitude', 'Conc.', 'Exc.'] : ['Rep', 'Time', 'Range', 'Conc.', 'Ecc.'],
-    // A rep the recording cut keeps its number and range; its times read "…".
-    rows: (reps || []).map((r, i) => r.clipped
-      ? [String(i + 1), '…', `${Math.round(r.romDegrees)}°`, '…', '…']
-      : [String(i + 1), sec(r.endTime - r.startTime), `${Math.round(r.romDegrees)}°`, sec(r.concentricSec), sec(r.eccentricSec)]),
+    // Tempo replaces time and phases; peak and mean angular speed in °/s.
+    columns: fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'],
+    rows,
     summary,
+    shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim() || '…',
     foot: source === 'manual'
