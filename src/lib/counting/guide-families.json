@@ -1,0 +1,1762 @@
+{
+  "bench_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "incline_bench_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "incline_dumbbell_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "dumbbell_bench_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "decline_bench_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "machine_chest_press": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "The chest machine starts with bent elbows; pressing extends them against resistance."
+  },
+  "pec_deck": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "cable_fly": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "weighted_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "overhead_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first. Confirmed on its build set of 27 September."
+  },
+  "seated_dumbbell_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first. Follows overhead_press; to be confirmed on its own build set."
+  },
+  "arnold_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first. Follows overhead_press; to be confirmed on its own build set."
+  },
+  "lateral_raise": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Abduction lifts the upper arm away from the torso, opening hip-shoulder-elbow."
+  },
+  "cable_lateral_raise": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Abduction lifts the upper arm away from the torso, opening hip-shoulder-elbow."
+  },
+  "front_raise": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Forward arm elevation opens hip-shoulder-elbow from the arm-down start."
+  },
+  "rear_delt_fly": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "reverse_pec_deck": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "face_pull": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Pulling toward the face flexes extended elbows against cable or band resistance."
+  },
+  "upright_row": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Raising the elbows laterally opens hip-shoulder-elbow as the bar rises."
+  },
+  "deadlift": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the load from the flexed deadlift start."
+  },
+  "romanian_deadlift": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "barbell_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "t_bar_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "dumbbell_bent_over_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "one_arm_dumbbell_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "chest_supported_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "seated_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "machine_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "lat_pulldown": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "close_grip_lat_pulldown": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "straight_arm_pulldown": {
+    "joint": "shoulder",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Lats pull the raised upper arms toward the torso, closing hip-shoulder-elbow."
+  },
+  "pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "assisted_pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "weighted_pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "chin_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "shrug": {
+    "joint": null,
+    "why": "Scapular elevation or retraction drives the rep without a reliable tracked joint cycle."
+  },
+  "squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "front_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "hack_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "leg_press": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "bulgarian_split_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "walking_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "bothSides": true,
+    "why": "Walking lunges alternate legs as each loaded knee bends then straightens."
+  },
+  "step_up": {
+    "joint": "knee",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "The foot starts on the step with the working knee bent; extension raises the body."
+  },
+  "leg_extension": {
+    "joint": "knee",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Quadriceps straighten the bent knee against the machine pad."
+  },
+  "leg_curl": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hamstrings bend the extended knee against machine resistance or sliding bodyweight."
+  },
+  "seated_leg_curl": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hamstrings bend the extended knee against machine resistance or sliding bodyweight."
+  },
+  "hip_thrust": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "glute_bridge": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "good_morning": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "standing_calf_raise": {
+    "joint": null,
+    "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."
+  },
+  "seated_calf_raise": {
+    "joint": null,
+    "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."
+  },
+  "bicep_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "hammer_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "preacher_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "cable_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "reverse_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "wrist_curl": {
+    "joint": null,
+    "why": "Forearm muscles move the wrist while the tracked elbow stays nearly fixed."
+  },
+  "tricep_pushdown": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+  },
+  "overhead_tricep_extension": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+  },
+  "skull_crusher": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From straight arms above the chest, elbow flexion lowers the skullcrusher load."
+  },
+  "close_grip_bench_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "dip": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "assisted_dip": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "plank": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "side_plank": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "hanging_leg_raise": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs or torso rise against gravity."
+  },
+  "cable_crunch": {
+    "joint": null,
+    "why": "Abdominal spinal flexion or pelvic curling does not give a reliable hip-angle cycle."
+  },
+  "ab_wheel": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Rolling out opens hip-shoulder-elbow under bodyweight; pulling back closes it."
+  },
+  "running": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "walking": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "cycling": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "rowing": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "stair_climber": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "dumbbell_fly": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "incline_cable_fly": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "decline_dumbbell_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "smith_machine_bench_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "landmine_press": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "The angled bar press extends the elbow from the shoulder-height start."
+  },
+  "chest_dip": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "weighted_dip": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "machine_shoulder_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first. Follows overhead_press; to be confirmed on its own build set. Likeliest with push_press to rest at the shoulders."
+  },
+  "standing_dumbbell_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first. Follows overhead_press; to be confirmed on its own build set."
+  },
+  "push_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first. Follows overhead_press; to be confirmed on its own build set. Likeliest with machine_shoulder_press to rest at the shoulders."
+  },
+  "machine_lateral_raise": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Abduction lifts the upper arm away from the torso, opening hip-shoulder-elbow."
+  },
+  "cable_front_raise": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Forward arm elevation opens hip-shoulder-elbow from the arm-down start."
+  },
+  "plate_front_raise": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Forward arm elevation opens hip-shoulder-elbow from the arm-down start."
+  },
+  "bent_over_rear_delt_raise": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "cable_rear_delt_fly": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "pendlay_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "inverted_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "meadows_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "single_arm_cable_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "wide_grip_lat_pulldown": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "neutral_grip_pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "assisted_chin_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "weighted_chin_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "rack_pull": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the load from the flexed deadlift start."
+  },
+  "back_extension": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "With the pelvis supported, glutes and hamstrings extend the hip to raise the torso."
+  },
+  "dumbbell_shrug": {
+    "joint": null,
+    "why": "Scapular elevation or retraction drives the rep without a reliable tracked joint cycle."
+  },
+  "goblet_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "smith_machine_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "belt_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "sumo_deadlift": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the load from the flexed deadlift start."
+  },
+  "trap_bar_deadlift": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the load from the flexed deadlift start."
+  },
+  "lying_leg_curl": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hamstrings bend the extended knee against machine resistance or sliding bodyweight."
+  },
+  "nordic_hamstring_curl": {
+    "joint": "knee",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From kneeling, the knee opens as hamstrings yield to the forward bodyweight descent."
+  },
+  "single_leg_romanian_deadlift": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "reverse_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "split_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "cable_kickback": {
+    "joint": null,
+    "why": "Glute kickback near hip extension can cross 180 degrees, making this unsigned angle ambiguous."
+  },
+  "hip_abduction_machine": {
+    "joint": null,
+    "why": "Seated transverse-plane hip motion keeps shoulder-hip-knee near a right angle."
+  },
+  "single_leg_glute_bridge": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "barbell_glute_bridge": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "dumbbell_glute_bridge": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "dumbbell_hip_thrust": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "smith_machine_hip_thrust": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "smith_machine_romanian_deadlift": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "dumbbell_romanian_deadlift": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "kettlebell_romanian_deadlift": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "cable_pull_through": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From standing lockout, the cable draws the hips into flexion before glute extension."
+  },
+  "machine_glute_kickback": {
+    "joint": null,
+    "why": "Glute kickback near hip extension can cross 180 degrees, making this unsigned angle ambiguous."
+  },
+  "cable_standing_hip_abduction": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+  },
+  "cable_standing_hip_adduction": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Adductors pull the abducted leg toward alignment, opening shoulder-hip-knee."
+  },
+  "hip_adduction_machine": {
+    "joint": null,
+    "why": "Seated transverse-plane hip motion keeps shoulder-hip-knee near a right angle."
+  },
+  "smith_machine_bulgarian_split_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "smith_machine_reverse_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "smith_machine_split_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "heel_elevated_goblet_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "dumbbell_sumo_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "dumbbell_sumo_deadlift": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the load from the flexed deadlift start."
+  },
+  "front_foot_elevated_split_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "deficit_reverse_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "dumbbell_lateral_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The lateral or diagonal lunge bends the loaded knee before pushing back up."
+  },
+  "dumbbell_curtsy_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The lateral or diagonal lunge bends the loaded knee before pushing back up."
+  },
+  "landmine_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "landmine_romanian_deadlift": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+  },
+  "kettlebell_swing": {
+    "joint": null,
+    "why": "The ballistic swing combines momentum and a variable start; no reliable single phase convention."
+  },
+  "glute_focused_back_extension": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "With the pelvis supported, glutes and hamstrings extend the hip to raise the torso."
+  },
+  "reverse_hyperextension": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "donkey_calf_raise": {
+    "joint": null,
+    "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."
+  },
+  "leg_press_calf_raise": {
+    "joint": null,
+    "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."
+  },
+  "wall_sit": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "jump_squat": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting."
+  },
+  "incline_dumbbell_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "concentration_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "ez_bar_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "spider_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "rope_hammer_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "drag_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "rope_tricep_pushdown": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+  },
+  "dumbbell_skull_crusher": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From straight arms above the chest, elbow flexion lowers the skullcrusher load."
+  },
+  "single_dumbbell_skullcrusher": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From straight arms above the chest, elbow flexion lowers the skullcrusher load."
+  },
+  "dumbbell_overhead_tricep_extension": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+  },
+  "single_arm_dumbbell_tricep_extension": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+  },
+  "bench_dip": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "tricep_kickback": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+  },
+  "wrist_extension": {
+    "joint": null,
+    "why": "Forearm muscles move the wrist while the tracked elbow stays nearly fixed."
+  },
+  "farmer_carry": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "crunch": {
+    "joint": null,
+    "why": "Abdominal spinal flexion or pelvic curling does not give a reliable hip-angle cycle."
+  },
+  "reverse_crunch": {
+    "joint": null,
+    "why": "Abdominal spinal flexion or pelvic curling does not give a reliable hip-angle cycle."
+  },
+  "russian_twist": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "bicycle_crunch": {
+    "joint": null,
+    "why": "Alternating hip motion and trunk rotation make the intended crunch rep ambiguous."
+  },
+  "mountain_climber": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "dead_bug": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "bothSides": true,
+    "why": "Alternating bent hips extend as each leg lowers, then flex to return."
+  },
+  "bird_dog": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "bothSides": true,
+    "why": "From quadruped, alternating hip extension lifts each leg behind the body."
+  },
+  "pallof_press": {
+    "joint": null,
+    "why": "The core resists rotation; elbow travel does not identify a load-lifting phase reliably."
+  },
+  "cable_woodchop": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "half_kneeling_pallof_press": {
+    "joint": null,
+    "why": "The core resists rotation; elbow travel does not identify a load-lifting phase reliably."
+  },
+  "cable_pallof_hold": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "hanging_knee_raise": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs or torso rise against gravity."
+  },
+  "captains_chair_knee_raise": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs or torso rise against gravity."
+  },
+  "decline_sit_up": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs or torso rise against gravity."
+  },
+  "weighted_crunch": {
+    "joint": null,
+    "why": "Abdominal spinal flexion or pelvic curling does not give a reliable hip-angle cycle."
+  },
+  "weighted_russian_twist": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "dumbbell_side_bend": {
+    "joint": null,
+    "why": "Trunk lateral flexion drives the exercise without a reliable isolated tracked joint cycle."
+  },
+  "elliptical": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "swimming": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "jump_rope": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "assault_bike": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "skierg": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "hiking": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "treadmill_incline_walk": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "battle_ropes": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "incline_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "knee_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "wide_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "diamond_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "decline_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "pike_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "feet_elevated_pike_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "archer_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "bothSides": true,
+    "why": "Archer push-ups alternate the loaded arm, bending its elbow during descent."
+  },
+  "typewriter_push_up": {
+    "joint": null,
+    "why": "Side-to-side shifts within a bent-arm push-up do not define one elbow cycle per rep."
+  },
+  "explosive_push_up": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting."
+  },
+  "hindu_push_up": {
+    "joint": null,
+    "why": "The sweeping push-up has variable return paths and no reliable single angle-phase cycle."
+  },
+  "scapular_push_up": {
+    "joint": null,
+    "why": "Scapular elevation or retraction drives the rep without a reliable tracked joint cycle."
+  },
+  "push_up_shoulder_tap": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The push-up bends then extends both elbows; alternating taps do not alternate the loaded rep."
+  },
+  "wall_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "wall_walk": {
+    "joint": null,
+    "why": "Several hand or foot steps form one movement, so one tracked angle cycle is not one rep."
+  },
+  "wall_handstand_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "handstand_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "chair_dip": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+  },
+  "doorway_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "towel_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "prone_y_raise": {
+    "joint": null,
+    "why": "Prone Y elevation has a small, technique-dependent hip-shoulder-elbow change; uncertain signal."
+  },
+  "prone_t_raise": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "superman": {
+    "joint": null,
+    "why": "Spinal extension dominates and hip-angle travel is small and technique-dependent."
+  },
+  "superman_hold": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "reverse_snow_angel": {
+    "joint": null,
+    "why": "The prone arm sweep holds elevation while changing direction; a load-lifting phase is unclear."
+  },
+  "dead_hang": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "active_hang": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "scapular_pull_up": {
+    "joint": null,
+    "why": "Scapular elevation or retraction drives the rep without a reliable tracked joint cycle."
+  },
+  "negative_pull_up": {
+    "joint": null,
+    "why": "Only the lowering phase is performed; the assisted reset is not a full loaded joint cycle."
+  },
+  "commando_pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Both elbows flex together to lift the body, even when the head alternates sides of the bar."
+  },
+  "l_sit_pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "towel_pull_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "bodyweight_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "pistol_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "assisted_pistol_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "shrimp_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "cossack_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The lateral or diagonal lunge bends the loaded knee before pushing back up."
+  },
+  "sissy_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "forward_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "lateral_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The lateral or diagonal lunge bends the loaded knee before pushing back up."
+  },
+  "curtsy_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The lateral or diagonal lunge bends the loaded knee before pushing back up."
+  },
+  "skater_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "single_leg_box_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "step_down": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The supporting knee bends to lower the other foot off the step, then extends."
+  },
+  "calf_raise": {
+    "joint": null,
+    "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."
+  },
+  "single_leg_calf_raise": {
+    "joint": null,
+    "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."
+  },
+  "glute_bridge_march": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "bothSides": true,
+    "why": "With the pelvis held high, alternating hip flexion lifts each knee."
+  },
+  "frog_pump": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "donkey_kick": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "From quadruped hip flexion, glutes extend the thigh to lift the bent leg."
+  },
+  "fire_hydrant": {
+    "joint": null,
+    "why": "Abducting a flexed hip keeps shoulder-hip-knee nearly perpendicular; rotation adds ambiguity."
+  },
+  "clamshell": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "hip_airplane": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "side_lying_hip_abduction": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+  },
+  "side_lying_leg_raise": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+  },
+  "lying_hamstring_walkout": {
+    "joint": null,
+    "why": "Several hand or foot steps form one movement, so one tracked angle cycle is not one rep."
+  },
+  "towel_hamstring_curl": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hamstrings bend the extended knee against machine resistance or sliding bodyweight."
+  },
+  "stability_ball_hamstring_curl": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hamstrings bend the extended knee against machine resistance or sliding bodyweight."
+  },
+  "banded_glute_bridge": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "banded_hip_thrust": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "banded_frog_pump": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+  },
+  "banded_clamshell": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "banded_lateral_walk": {
+    "joint": null,
+    "why": "Several hand or foot steps form one movement, so one tracked angle cycle is not one rep."
+  },
+  "banded_monster_walk": {
+    "joint": null,
+    "why": "Several hand or foot steps form one movement, so one tracked angle cycle is not one rep."
+  },
+  "banded_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+  },
+  "banded_donkey_kick": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "From quadruped hip flexion, glutes extend the thigh to lift the bent leg."
+  },
+  "banded_fire_hydrant": {
+    "joint": null,
+    "why": "Abducting a flexed hip keeps shoulder-hip-knee nearly perpendicular; rotation adds ambiguity."
+  },
+  "banded_kickback": {
+    "joint": null,
+    "why": "Glute kickback near hip extension can cross 180 degrees, making this unsigned angle ambiguous."
+  },
+  "banded_standing_hip_abduction": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+  },
+  "banded_seated_hip_abduction": {
+    "joint": null,
+    "why": "Seated transverse-plane hip motion keeps shoulder-hip-knee near a right angle."
+  },
+  "band_pull_apart": {
+    "joint": null,
+    "why": "Horizontal shoulder adduction or abduction leaves hip-shoulder-elbow nearly constant."
+  },
+  "banded_face_pull": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "Pulling toward the face flexes extended elbows against cable or band resistance."
+  },
+  "banded_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "banded_lat_pulldown": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+  },
+  "banded_pallof_press": {
+    "joint": null,
+    "why": "The core resists rotation; elbow travel does not identify a load-lifting phase reliably."
+  },
+  "banded_woodchop": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "banded_dead_bug": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "bothSides": true,
+    "why": "Alternating bent hips extend as each leg lowers, then flex to return."
+  },
+  "hollow_body_hold": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "hollow_rock": {
+    "joint": null,
+    "why": "The rigid hollow-body hold rocks without appreciably changing a tracked joint angle."
+  },
+  "v_up": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs or torso rise against gravity."
+  },
+  "flutter_kick": {
+    "joint": null,
+    "why": "Small alternating flutter kicks lack a clear rest and reliable full hip-angle rep."
+  },
+  "lying_leg_raise": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs or torso rise against gravity."
+  },
+  "toe_touch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "heel_tap": {
+    "joint": null,
+    "why": "Abdominal spinal flexion or pelvic curling does not give a reliable hip-angle cycle."
+  },
+  "plank_shoulder_tap": {
+    "joint": null,
+    "why": "The plank is held while hands tap; no tracked joint reliably describes the core task."
+  },
+  "plank_jack": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "bear_plank": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "bear_crawl": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "crab_walk": {
+    "joint": null,
+    "why": "Several hand or foot steps form one movement, so one tracked angle cycle is not one rep."
+  },
+  "inchworm": {
+    "joint": null,
+    "why": "Several hand or foot steps form one movement, so one tracked angle cycle is not one rep."
+  },
+  "l_sit_hold": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "seated_knee_tuck": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "From extended legs, hip flexion draws the knees toward the seated torso."
+  },
+  "side_plank_hip_dip": {
+    "joint": null,
+    "why": "Trunk lateral flexion drives the exercise without a reliable isolated tracked joint cycle."
+  },
+  "copenhagen_plank": {
+    "joint": null,
+    "why": "This is an isometric hold or carry, without a repeated tracked joint cycle."
+  },
+  "dragon_flag": {
+    "joint": null,
+    "why": "The torso and legs stay rigid; shoulder support and trunk stabilization drive the movement."
+  },
+  "burpee": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "half_burpee": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "squat_thrust": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "high_knees": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "jumping_jack": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "skater_hop": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "lateral_shuffle": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "fast_feet": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "sprawl": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "seal_jack": {
+    "joint": null,
+    "why": "Cardio or jumping involves locomotion rather than one supported resistance-rep cycle."
+  },
+  "cat_cow_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "arm_circles": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening."
+  },
+  "worlds_greatest_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "leg_swings_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "torso_twist_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "doorway_chest_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "childs_pose": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "kneeling_hip_flexor_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "hamstring_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "standing_quad_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "seated_forward_fold_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "cross_body_shoulder_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "wall_calf_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "butterfly_stretch": {
+    "joint": null,
+    "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  }
+}
