@@ -75,9 +75,16 @@ async function processFile(file) {
     MAX_FRAMES,
     MAX_LONG_SIDE,
     async (canvas, frameIndex, timestamp) => {
-      // Run MediaPipe detection
+      // Match the app's worker path: read pixels from the extraction canvas
+      // and write them onto an OffscreenCanvas before inference. The roundtrip
+      // is lossless, but using the same path as the worker ensures the harness
+      // and the app hand identical pixel data to the landmarker.
+      const pxData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      const inferCanvas = new OffscreenCanvas(canvas.width, canvas.height);
+      inferCanvas.getContext('2d').putImageData(pxData, 0, 0);
+
       const deterministicTs = frameIndex * (1000 / TARGET_FPS);
-      const result = detectPoseImage(landmarker, canvas, deterministicTs);
+      const result = detectPoseImage(landmarker, inferCanvas, deterministicTs);
 
       let lm = null;
       let wlm = null;

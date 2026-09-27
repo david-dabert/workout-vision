@@ -1,0 +1,17 @@
+{
+  "clip": "bicep_curl_7_side_mufhf3wy",
+  "harnessSamples": 341,
+  "appSamples": 341,
+  "appCount": 7,
+  "world": {
+    "firstDiff": -1,
+    "totalDiffs": 0,
+    "detail": null
+  },
+  "image": {
+    "firstDiff": -1,
+    "totalDiffs": 0,
+    "detail": null
+  },
+  "verdict": "MATCH"
+}
