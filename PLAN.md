@@ -26,6 +26,11 @@ RULES
 - A check or a test is never loosened to pass. A fault it finds is fixed, or listed as open in the STOP report.
 - An instruction that cannot be followed stops the work. Report it; never work around it.
 
+MM-FIT SUPPLEMENTARY BUILD DATA (27 September)
+- MM-Fit is admitted only as supplementary build data, never exam data. A set is admitted only when both wrists and both ankles are visible together in at least 90% of all samples; the rest are excluded from build use but remain in every results table. Visibility uses the existing harness convention: each of landmarks 15, 16, 27 and 28 has visibility >= 0.5 and image x,y within [0,1]. Missing poses remain in the denominator.
+- Credit: David Strömbäck, Sangxia Huang and Valentin Radu, MM-Fit Dataset, [Zenodo record](https://zenodo.org/records/7672767), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Paper: MM-Fit: Multimodal Deep Learning for Automatic Exercise Logging Across Sensing Devices, IMWUT (2020).
+- Modification: labelled frame intervals are extracted, their timelines reset, and the source MPEG-4 Part 2 video is converted to H.264 with libx264 CRF 18 (lossy). Original files and labels are preserved. Dimensions, frame rate, pixel format and aspect ratio are preserved; no crop, rotation or overlay is added. Conversion commands and source/output metadata accompany the run.
+
 METHOD
 - Two foreground sub-agents are part of every step. Their briefs are .claude/agents/wv-reviewer.md and .claude/agents/wv-verifier.md. Only David changes them.
 - wv-reviewer reads each change before it is committed. Give it only the goal of the change, in one sentence.

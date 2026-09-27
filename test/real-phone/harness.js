@@ -15,6 +15,13 @@ import { extractFramesStreaming } from '../../src/lib/frameExtractor.js';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from '../../src/lib/extractionConfig.js';
 import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, selectSubjectPose } from '../../src/lib/poseAnalysis.js';
 
+// Match the app worker: TFLite sends this informational startup line to stderr.
+const originalError = console.error.bind(console);
+console.error = (...args) => {
+  if (args.length === 1 && args[0] === 'INFO: Created TensorFlow Lite XNNPACK delegate for CPU.') console.info(...args);
+  else originalError(...args);
+};
+
 const log = document.getElementById('log');
 function appendLog(msg) {
   log.textContent += '\n' + msg;
