@@ -8,6 +8,7 @@ Where a planning document disagrees with the code, the disagreement is listed at
 
 WorkoutVision is a static, client-only web app (React 19, Vite 5), served from GitHub Pages under `/workout-vision/`.
 A person picks a lift, chooses a video of one set, and the phone counts the reps.
+Since 27 September 2026 counting is paused (`COUNTING_PAUSED` in `src/lib/countingPause.js`): the Film screen offers no video and says why.
 Pose inference, counting, storage and the PDF report all run on the device.
 The video is never uploaded.
 

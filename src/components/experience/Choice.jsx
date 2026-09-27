@@ -83,7 +83,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         <p className="foot">{COUNTING_PAUSED
-          ? (fr ? 'Le comptage est en pause pendant que chaque exercice est testé sur de nouvelles vidéos.' : 'Counting is paused while each exercise is tested on new videos.')
+          ? (fr ? 'Le comptage est suspendu le temps de tester chaque exercice sur de nouvelles vidéos.' : 'Counting is paused while each exercise is tested on new videos.')
           : (fr ? 'Trois mouvements sont comptés pour l’instant.' : 'Three movements are counted for now.')}</p>
       </div>
     </section>

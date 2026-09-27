@@ -6,9 +6,9 @@ import { test, expect } from '@playwright/test';
 if (process.env.PW_CHROMIUM) test.use({ launchOptions: { executablePath: process.env.PW_CHROMIUM } });
 test.use({ viewport: { width: 390, height: 664 }, serviceWorkers: 'block' });
 
-for (const [lang, lift, note, guide, foot] of [
-  ['en', 'Biceps curl', 'Counting is paused while each exercise is tested on new videos. The guide remains available.', 'Open the guide', 'Counting is paused while each exercise is tested on new videos.'],
-  ['fr', 'Curl biceps', 'Le comptage est en pause pendant que chaque exercice est testé sur de nouvelles vidéos. Le guide reste disponible.', 'Ouvrir le guide', 'Le comptage est en pause pendant que chaque exercice est testé sur de nouvelles vidéos.'],
+for (const [lang, lift, note, guide, foot, tag, counted, record, film] of [
+  ['en', 'Biceps curl', 'Counting is paused while each exercise is tested on new videos. The guide remains available.', 'Open the guide', 'Counting is paused while each exercise is tested on new videos.', 'Counting paused', 'Counted', 'Record a set', 'Film this exercise'],
+  ['fr', 'Curl biceps', 'Le comptage est suspendu le temps de tester chaque exercice sur de nouvelles vidéos. Le guide reste disponible.', 'Ouvrir le guide', 'Le comptage est suspendu le temps de tester chaque exercice sur de nouvelles vidéos.', 'Comptage suspendu', 'Compté', 'Filmer une série', 'Filmer cet exercice'],
 ]) {
   test(`counting paused (${lang})`, async ({ page }) => {
     const errors = [], model = [], analysis = [];
@@ -23,6 +23,13 @@ for (const [lang, lift, note, guide, foot] of [
     await expect(page.locator('.film-screen input[type=file]')).toHaveCount(0);
     await page.getByRole('button', { name: guide }).click();
     await expect(page).toHaveURL(/#exercises$/, { timeout: 20000 });
+    // The guide no longer says the three lifts are counted.
+    await expect(page.getByText(tag, { exact: true }).first()).toBeAttached({ timeout: 20000 });
+    await expect(page.getByText(counted, { exact: true })).toHaveCount(0);
+    // Opening a paused lift says so and offers no filming.
+    await page.locator('.item', { hasText: tag }).first().locator('.item-btn').click();
+    await expect(page.getByText(`${tag}.`, { exact: true })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole('button', { name: film })).toHaveCount(0);
     // Back from the guide returns to the Film screen of the same lift.
     await page.goBack();
     await expect(page.getByText(note, { exact: true })).toBeVisible({ timeout: 20000 });
@@ -31,5 +38,12 @@ for (const [lang, lift, note, guide, foot] of [
     expect(analysis).toEqual([]);
     expect(model).toEqual([]);
     expect(errors).toEqual([]);
+  });
+
+  test(`history offers no recording while paused (${lang})`, async ({ page }) => {
+    await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
+    await page.goto('/workout-vision/#history');
+    await expect(page.locator('.hist-empty')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole('button', { name: record })).toHaveCount(0);
   });
 }

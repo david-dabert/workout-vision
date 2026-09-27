@@ -3,6 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { META } from './lift-scenes';
 import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
+import { COUNTING_PAUSED } from '../../lib/countingPause';
 import './History.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -93,7 +94,7 @@ export default function History({ onClose }) {
         {problem && <p className="hist-error" role="alert">{problem}</p>}
         {sets && !sets.length && !problem && <div className="hist-empty" data-reveal style={{ '--i': 2 }}>
           <p>{fr ? 'Aucune série enregistrée pour l’instant.' : 'No set saved yet.'}</p>
-          <button className="btn-primary press" onClick={onClose}>{fr ? 'Filmer une série' : 'Record a set'}</button>
+          {!COUNTING_PAUSED && <button className="btn-primary press" onClick={onClose}>{fr ? 'Filmer une série' : 'Record a set'}</button>}
         </div>}
         {days.map((day, i) => <section key={day.key} className="hist-day" data-reveal style={{ '--i': Math.min(i + 2, 6) }}>
           <h2 className="hist-head">{day.label}</h2>

@@ -37,7 +37,7 @@ export default function Film({ lift, onBack, onFile, onGuide }) {
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{META[lift]?.[lang] || lift}</h2>
       {COUNTING_PAUSED && <p className="paused-note" role="status" data-reveal style={{ '--i': 1 }}>{fr
-        ? 'Le comptage est en pause pendant que chaque exercice est testé sur de nouvelles vidéos. Le guide reste disponible.'
+        ? 'Le comptage est suspendu le temps de tester chaque exercice sur de nouvelles vidéos. Le guide reste disponible.'
         : 'Counting is paused while each exercise is tested on new videos. The guide remains available.'}</p>}
       <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh }}>
         <canvas ref={canvas} aria-hidden="true" />
