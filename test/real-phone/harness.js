@@ -60,6 +60,7 @@ async function processFile(file) {
   const imageLandmarks = [];   // per-sample: array of 33 landmarks (normalised) or null
   const worldLandmarksArr = []; // per-sample: array of 33 world landmarks (metres) or null
   const timestamps = [];
+  const pixelHashes = [];      // per-sample SHA-256 hex of the pixel buffer handed to the landmarker
   let lockedSubjectIdx = null;
   let sampleCount = 0;
   let midFrameDataURL = null;
@@ -82,6 +83,10 @@ async function processFile(file) {
       const pxData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
       const inferCanvas = new OffscreenCanvas(canvas.width, canvas.height);
       inferCanvas.getContext('2d').putImageData(pxData, 0, 0);
+
+      // Hash the pixel buffer handed to the landmarker (for parity checks).
+      const hashBuf = await crypto.subtle.digest('SHA-256', pxData.data.buffer);
+      pixelHashes.push(Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join(''));
 
       const deterministicTs = frameIndex * (1000 / TARGET_FPS);
       const result = detectPoseImage(landmarker, inferCanvas, deterministicTs);
@@ -205,7 +210,7 @@ async function processFile(file) {
 
   disposeAllLandmarkers();
 
-  return { metadata, imageLandmarks, worldLandmarks: worldLandmarksArr, timestamps, midFrameDataURL };
+  return { metadata, imageLandmarks, worldLandmarks: worldLandmarksArr, timestamps, pixelHashes, midFrameDataURL };
 }
 
 // Expose to Playwright

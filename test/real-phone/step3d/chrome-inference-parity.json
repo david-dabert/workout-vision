@@ -1,17 +1,80 @@
 {
-  "clip": "bicep_curl_7_side_mufhf3wy",
-  "harnessSamples": 341,
-  "appSamples": 341,
-  "appCount": 7,
-  "world": {
-    "firstDiff": -1,
-    "totalDiffs": 0,
-    "detail": null
-  },
-  "image": {
-    "firstDiff": -1,
-    "totalDiffs": 0,
-    "detail": null
-  },
-  "verdict": "MATCH"
+  "clips": [
+    {
+      "clip": "bicep_curl_7_side_mufhf3wy",
+      "lift": "bicep_curl",
+      "harnessSamples": 341,
+      "appSamples": 341,
+      "appCount": 7,
+      "pixels": {
+        "harnessHashes": 341,
+        "appHashes": 341,
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "note": "All pixel hashes match"
+      },
+      "world": {
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "detail": null
+      },
+      "image": {
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "detail": null
+      },
+      "landmarkVerdict": "MATCH"
+    },
+    {
+      "clip": "lateral_raise_10_front_mufhhbun",
+      "lift": "lateral_raise",
+      "harnessSamples": 439,
+      "appSamples": 439,
+      "appCount": 10,
+      "pixels": {
+        "harnessHashes": 439,
+        "appHashes": 439,
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "note": "All pixel hashes match"
+      },
+      "world": {
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "detail": null
+      },
+      "image": {
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "detail": null
+      },
+      "landmarkVerdict": "MATCH"
+    },
+    {
+      "clip": "lat_pulldown_10_front_mufhlh4o",
+      "lift": "lat_pulldown",
+      "harnessSamples": 609,
+      "appSamples": 609,
+      "appCount": 10,
+      "pixels": {
+        "harnessHashes": 609,
+        "appHashes": 609,
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "note": "All pixel hashes match"
+      },
+      "world": {
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "detail": null
+      },
+      "image": {
+        "firstDiff": -1,
+        "totalDiffs": 0,
+        "detail": null
+      },
+      "landmarkVerdict": "MATCH"
+    }
+  ],
+  "verdict": "ALL_MATCH"
 }
