@@ -14,6 +14,20 @@
 
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+// Route the demuxer's FFmpeg log lines to console.info so they don't
+// appear as errors. The web-demuxer WASM prints container metadata
+// (Duration, Stream, bitrate, codec lines) to stderr, which the browser
+// delivers as console.error. These are informational, not failures.
+const _originalError = console.error.bind(console);
+const _ffmpegLineRe = /^\[?(mov|mp4|m4a|3gp|3g2|mj2|matroska|webm|avi|flv|ogg|hls|mpegts|aac|h264|hevc|vp9|av1)[, @]|^(Input #|Duration:|Stream #|Avi:|frame=|bitrate:)/i;
+console.error = (...args) => {
+  if (args.length === 1 && typeof args[0] === 'string' && _ffmpegLineRe.test(args[0])) {
+    console.info('[demuxer]', args[0]);
+  } else {
+    _originalError(...args);
+  }
+};
+
 /**
  * Hash a file for cache keying. Returns first 16 hex chars of SHA-256.
  *
