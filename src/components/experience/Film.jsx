@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { createLiftScene, META, liftView, restBox } from './lift-scenes';
-import { COUNTING_PAUSED } from '../../lib/countingPause';
 import './Film.css';
 
-export default function Film({ lift, onBack, onFile, onGuide }) {
+export default function Film({ lift, onBack, onFile }) {
   const { lang } = useT(), fr = lang === 'fr';
   const canvas = useRef(null);
   const fileRef = useRef(null);
@@ -36,9 +35,6 @@ export default function Film({ lift, onBack, onFile, onGuide }) {
       </div>
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{META[lift]?.[lang] || lift}</h2>
-      {COUNTING_PAUSED && <p className="paused-note" role="status" data-reveal style={{ '--i': 1 }}>{fr
-        ? 'Le comptage est suspendu le temps de tester chaque exercice sur de nouvelles vidéos. Le guide reste disponible.'
-        : 'Counting is paused while each exercise is tested on new videos. The guide remains available.'}</p>}
       <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh }}>
         <canvas ref={canvas} aria-hidden="true" />
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -46,17 +42,12 @@ export default function Film({ lift, onBack, onFile, onGuide }) {
         </svg>
         <i className="scan" aria-hidden="true" />
       </div>
-      {!COUNTING_PAUSED && <>
       <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
       <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
         <li><span className="n">2</span><span>{fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.'}</span></li>
         <li><span className="n">3</span><span>{fr ? 'Une série, puis arrêtez la vidéo.' : 'One set, then stop recording.'}</span></li>
       </ol>
-      </>}
-      {COUNTING_PAUSED ? <div className="actions" data-reveal style={{ '--i': 5 }}>
-        <button className="btn-primary press" onClick={onGuide}>{fr ? 'Ouvrir le guide' : 'Open the guide'}</button>
-      </div> : <>
       <div className="actions" data-reveal style={{ '--i': 5 }}>
         <label className="btn-primary tactile" role="button" tabIndex="0">
           <input ref={fileRef} type="file" accept="video/*,.mov" capture="environment" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
@@ -72,7 +63,6 @@ export default function Film({ lift, onBack, onFile, onGuide }) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
         <span>{fr ? 'La vidéo reste sur votre téléphone.' : 'The video stays on your phone.'}</span>
       </p>
-      </>}
     </div></section>
   </div>;
 }

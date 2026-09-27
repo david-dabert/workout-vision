@@ -3,7 +3,6 @@ import { useT } from '../../lib/LanguageContext';
 import { getAllGuideExercises } from '../../lib/exerciseGuide';
 import { Body, mapPose, DPR } from './entry-scene';
 import entry from './entry-pose.json';
-import { COUNTING_PAUSED } from '../../lib/countingPause';
 import './Guide.css';
 
 const CATALOGUE = getAllGuideExercises();
@@ -72,10 +71,10 @@ export default function Guide({ onClose, onChoose }) {
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
           <span className="thumb"><img src={e.frames[0]} loading="lazy" width="56" height="56" alt="" /></span>
           <span><span className="item-name">{fr ? e.fr : e.name}</span><span className="item-sub">{fr ? e.name : e.fr} · {fr ? EQUIPMENT[e.equipment] : e.equipment}</span></span>
-          <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? (COUNTING_PAUSED ? (fr ? 'Comptage suspendu' : 'Counting paused') : (fr ? 'Compté' : 'Counted')) : 'Guide'}</span>
+          <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? (fr ? 'Compté' : 'Counted') : 'Guide'}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? (COUNTING_PAUSED ? (fr ? 'Comptage suspendu.' : 'Counting paused.') : (fr ? 'Cet exercice peut être compté.' : 'This exercise can be counted.')) : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}</p>
-          {countedLift(e) && !COUNTING_PAUSED && <button className="guide-action press" onClick={() => onChoose(countedLift(e))}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>}
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? (fr ? 'Cet exercice peut être compté.' : 'This exercise can be counted.') : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}</p>
+          {countedLift(e) && <button className="guide-action press" onClick={() => onChoose(countedLift(e))}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>}
           <button className="guide-action press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}
       </li>)}</ul>

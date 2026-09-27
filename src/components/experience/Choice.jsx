@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { LIFTS, META, createLiftScene, liftView } from './lift-scenes';
 import { useSets } from './sets';
-import { COUNTING_PAUSED } from '../../lib/countingPause';
 import './Choice.css';
 
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
@@ -82,9 +81,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        <p className="foot">{COUNTING_PAUSED
-          ? (fr ? 'Le comptage est suspendu le temps de tester chaque exercice sur de nouvelles vidéos.' : 'Counting is paused while each exercise is tested on new videos.')
-          : (fr ? 'Trois mouvements sont comptés pour l’instant.' : 'Three movements are counted for now.')}</p>
+        <p className="foot">{fr ? 'Trois mouvements sont comptés pour l’instant.' : 'Three movements are counted for now.'}</p>
       </div>
     </section>
   </div>;
