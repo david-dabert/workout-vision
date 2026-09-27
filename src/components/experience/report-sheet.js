@@ -183,15 +183,11 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim() || '…',
-    foot: (source === 'manual'
-      ? (fr ? 'Saisie manuelle sur le téléphone.' : 'Entered manually on the phone.')
+    foot: source === 'manual'
+      ? (fr ? 'Saisie manuelle sur le téléphone. Version de test. Aucun score de forme.' : 'Entered manually on the phone. Test version. No form score.')
       : fr
-      ? 'Comptage automatique sur le téléphone.'
-      : 'Counted automatically on the phone.')
-      + ' '
-      + (fr
-        ? 'Les pauses du tempo incluent le ralentissement à moins de 10\u00A0% de l\'amplitude de chaque extrémité. Version de test. Aucun score de forme.'
-        : 'Tempo pauses include the slowing within 10\u00A0% of the range of each end. Test version. No form score.'),
+      ? 'Comptage automatique sur le téléphone. Version de test. Aucun score de forme.'
+      : 'Counted automatically on the phone. Test version. No form score.',
   };
 }
 

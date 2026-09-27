@@ -18,7 +18,7 @@ describe('reportSheet', () => {
     expect(s.title).toBe('Rapport de séance');
     expect(s.word).toBe('répétitions');
     expect(s.arm).toBe(`Bras suivi${NBSP}: droit`);
-    expect(s.foot).toBe(`Comptage automatique sur le téléphone. Les pauses du tempo incluent le ralentissement à moins de 10${NBSP}% de l'amplitude de chaque extrémité. Version de test. Aucun score de forme.`);
+    expect(s.foot).toBe('Comptage automatique sur le téléphone. Version de test. Aucun score de forme.');
   });
 
   it('states a correction only when the visitor changed the count', () => {
