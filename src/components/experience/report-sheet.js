@@ -91,9 +91,11 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
   const isShort = r => !r.clipped && r.romDegrees < shortThreshold;
   const hasShort = allReps.some(isShort);
 
-  // Per-rep tempo in coach notation: whole seconds, pause under 0.5 reads 0.
-  const tempoSec = v => String(Math.round(v));
-  const tempoStr = t => [t.lowering, t.bottom, t.lifting, t.top].map(tempoSec).join('-');
+  // Per-rep tempo in coach notation: moving phases (lowering, lifting) to one
+  // decimal so they never read 0; pauses (bottom, top) in whole seconds.
+  const phase = v => decimal(v, fr);
+  const pause = v => String(Math.round(v));
+  const tempoStr = t => [phase(t.lowering), pause(t.bottom), phase(t.lifting), pause(t.top)].join('-');
 
   // Build rows: Rep | Tempo | Range | Peak | Mean
   const rows = allReps.map((r, i) => {

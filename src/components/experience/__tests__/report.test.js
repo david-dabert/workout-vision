@@ -117,10 +117,10 @@ describe('rep details', () => {
     // Tempo: lowering-bottom-lifting-top. Concentric first → lowering=ecc(second), bottom=restGap, lifting=conc(first), top=workingPause.
     const s = reportSheet({ ...base, reps, first: 'concentric' });
     expect(s.columns).toEqual(['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.']);
-    // Rep 1: tempo 1-1-1-0  range 90°  peak 112  mean 50
-    // Coach notation: whole seconds, pause under 0.5 reads 0.
+    // Rep 1: lowering=ecc 1.0, bottom=restGap 1.1, lifting=conc 0.8, top=workPause 0.1.
+    // Moving phases to one decimal (comma in French); pauses in whole seconds.
     expect(s.rows[0][0]).toBe('1');
-    expect(s.rows[0][1]).toBe('1-1-1-0');
+    expect(s.rows[0][1]).toBe('1,0-1-0,8-0');
     expect(s.rows[0][2]).toBe('90°');
     // Peak and mean are whole numbers with °/s
     expect(s.rows[0][3]).toMatch(/^\d+$/);
@@ -133,8 +133,20 @@ describe('rep details', () => {
     // Squat-like: first=eccentric → lowering=ecc(first), bottom=workingPause, lifting=conc(second), top=restGap.
     // Rep 1: ecc 1.0, conc 0.8, working pause 0.1, rest gap 1.1
     const s = reportSheet({ ...base, reps, first: 'eccentric' });
-    // Tempo: 1-0-1-1 (lowering-bottom-lifting-top) — coach notation, whole seconds
-    expect(s.rows[0][1]).toBe('1-0-1-1');
+    // Tempo: 1,0-0-0,8-1 (lowering-bottom-lifting-top) — phases one decimal, pauses whole
+    expect(s.rows[0][1]).toBe('1,0-0-0,8-1');
+  });
+
+  it('never shows 0 for a moving phase: a 0.6 s lift reads 0,6, not 0', () => {
+    const short = [rep(0, 2.0, 90, 0.6, 0.9), rep(3, 2.0, 88, 0.6, 0.9)];
+    const s = reportSheet({ ...base, reps: short, first: 'concentric' });
+    // Lifting = concentric = 0.6 s → must read '0,6', not '0' or '1'.
+    const tempo = s.rows[0][1];
+    const parts = tempo.split('-');
+    expect(parts[2]).toBe('0,6');
+    // English: dot
+    const en = reportSheet({ ...base, lang: 'en', reps: short, first: 'concentric' });
+    expect(en.rows[0][1].split('-')[2]).toBe('0.6');
   });
 
   it('gives a rep the recording cut its number and range, and no tempo or speed', () => {
