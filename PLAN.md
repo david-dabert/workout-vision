@@ -110,11 +110,97 @@ Frame and layout checks, on counter-core, after the verification of the second r
 
 Three corrections to the frame and layout checks, on counter-core, after the third round's verification. A screen whose code failed to load had come to leave the tap doing nothing; it leads again to the error screen and its Reload (e2e/history.spec.js aborts the history's code). The guide's exercise names had been exempted from the one-word rule; the exemption is removed, and each name is balanced over its lines, which leaves no word alone at 390 px and two three-word names at 375 px. Three words on two lines always leave one alone, whatever the break: the check lists such cases apart for David instead of failing, and this replaces the tour's list of the prototype's two titles.
 
-Lifts for the public, from 27 September. The app serves beginners, intermediates, experts and coaches, so the lifts come in the order the public trains, not the order of David's footage: bench press and shoulder press; then squat, leg press, leg extension, leg curl and lunge; then seated row, dumbbell row and triceps pushdown; then Romanian deadlift and hip thrust; then the variants within each family. The alternating curl joins when its sets pass. The core defines each lift by its joint, the end it rests at and the phase that comes first (LIFTS in src/lib/counting/core.ts), with synthetic tests (src/lib/counting/__tests__/lifts.test.ts); the app offers a lift only once its exam passes.
-- Filming, first session, 20 sets: curl, lateral raise and lat pulldown, four exam sets each, filmed as the app shows (the curl from the side, one arm or both together, never alternating); bench press, four build sets, two from the side and two from three-quarters; shoulder press, four build sets from the front.
-- Second session, 8 sets: four exam sets each of bench press and shoulder press, from the position their build sets choose.
+Lifts for the public, from 27 September. Every exercise in the guide is offered, not a handful. The guide's 302 exercises fall into 182 countable entries grouped by 20 patterns of joint, rest, first and view (guide-families.json), plus 120 entries with no joint. Each pattern takes four build sets and four exam sets, spread over its most different variants; a variant is offered once its pattern's exam passes. A pattern holding a bothSides entry takes at least one exam set of it, since both sides are counted differently. The core defines each lift by its joint, the end it rests at and the phase that comes first (LIFTS in src/lib/counting/core.ts), with synthetic tests (src/lib/counting/__tests__/lifts.test.ts and guide-families.test.ts). Curl, lateral raise and lat pulldown stay on offer while their patterns' exams are filmed.
+
+The 20 countable patterns, in the order the public trains, with exercise count, exam variants that must be covered, and bothSides entries:
+
+Chest and pressing (45 exercises, 3 patterns):
+  1. elbow/high/eccentric/side (30): bench press, push-ups, dips, skull crushers. Exam covers: bench_press, push_up, dip, skull_crusher. One build clip on disk (bench_press_7_angle); three more build sets still to film to choose the position. 3 build + 4 exam = 7 sets.
+  2. elbow/low/concentric/side (8): machine chest press, tricep pushdown, overhead extension, kickback. Exam covers: machine_chest_press, tricep_pushdown, overhead_tricep_extension, tricep_kickback. 4 build + 4 exam = 8 sets.
+  3. elbow/high/eccentric/front (7): overhead press, shoulder press variants, archer push-up. Exam covers: overhead_press, push_press, machine_shoulder_press, archer_push_up (bothSides; at least one exam set). One build clip on disk (overhead_press_10_front) that settled the rest position; three more build sets still to film. push_press and machine_shoulder_press flagged as likeliest to differ from overhead_press. 3 build + 4 exam = 7 sets.
+
+Shoulders (7 exercises, 2 patterns):
+  4. shoulder/low/concentric/front (4): lateral raise, cable lateral raise, upright row, machine lateral raise. Exam covers all four. One build clip on disk (lateral_raise_10_front). 3 build + 4 exam = 7 sets.
+  5. shoulder/low/concentric/side (3): front raise, cable front raise, plate front raise. Exam covers: front_raise, cable_front_raise, plate_front_raise, plus one repeat. 4 build + 4 exam = 8 sets.
+
+Legs — quadriceps dominant (36 exercises, 3 patterns):
+  6. knee/high/eccentric/side (29): squat, leg press, lunges, split squats. Exam covers: squat, bulgarian_split_squat, forward_lunge, walking_lunge (bothSides; at least one exam set). 4 build + 4 exam = 8 sets.
+  7. knee/high/eccentric/front (5): lateral lunge, curtsy lunge, cossack squat. Exam covers: dumbbell_lateral_lunge, cossack_squat, curtsy_lunge, lateral_lunge. 4 build + 4 exam = 8 sets.
+  8. knee/low/concentric/side (2): leg extension, step-up. Exam covers both, two sets each. 4 build + 4 exam = 8 sets.
+
+Legs — hamstring dominant (6 exercises, 2 patterns):
+  9. knee/high/concentric/side (5): leg curl, seated leg curl, lying leg curl, towel and stability-ball curl. Exam covers: leg_curl, seated_leg_curl, lying_leg_curl, towel_hamstring_curl. 4 build + 4 exam = 8 sets.
+  10. knee/low/eccentric/side (1): nordic hamstring curl. Exam covers nordic_hamstring_curl, four sets. 4 build + 4 exam = 8 sets.
+
+Back and rows (43 exercises, 3 patterns):
+  11. elbow/high/concentric/side (25): rows and curls. Exam covers: bicep_curl, barbell_row, preacher_curl, one_arm_dumbbell_row. One build clip on disk (bicep_curl_7_side). 3 build + 4 exam = 7 sets.
+  12. elbow/high/concentric/front (16): lat pulldown, pull-ups, face pulls. Exam covers: lat_pulldown, pull_up, chin_up, face_pull. One build clip on disk (lat_pulldown_10_front). 3 build + 4 exam = 7 sets.
+  13. shoulder/high/concentric/side (1): straight-arm pulldown. Exam covers straight_arm_pulldown, four sets. 4 build + 4 exam = 8 sets.
+
+Posterior chain (30 exercises, 2 patterns):
+  14. hip/low/concentric/side (22): deadlift, hip thrust, glute bridge, back extension, donkey kick. Exam covers: deadlift, hip_thrust, glute_bridge, bird_dog (bothSides; at least one exam set). 4 build + 4 exam = 8 sets.
+  15. hip/high/eccentric/side (8): Romanian deadlift, good morning, cable pull-through. Exam covers: romanian_deadlift, good_morning, single_leg_romanian_deadlift, cable_pull_through. 4 build + 4 exam = 8 sets.
+
+Core (11 exercises, 3 patterns):
+  16. hip/high/concentric/side (8): hanging leg raise, knee raise, v-up, decline sit-up, lying leg raise. Exam covers: hanging_leg_raise, v_up, decline_sit_up, glute_bridge_march (bothSides; at least one exam set). 4 build + 4 exam = 8 sets.
+  17. hip/low/eccentric/side (2): dead bug, banded dead bug. Both are bothSides; every exam set tests it. Exam covers: dead_bug, banded_dead_bug, two sets each. 4 build + 4 exam = 8 sets.
+  18. shoulder/low/eccentric/side (1): ab wheel. Exam covers ab_wheel, four sets. 4 build + 4 exam = 8 sets.
+
+Hip isolation (5 exercises, 2 patterns):
+  19. hip/high/concentric/front (4): standing hip abduction, side-lying leg raise. Exam covers: cable_standing_hip_abduction, side_lying_hip_abduction, side_lying_leg_raise, banded_standing_hip_abduction. 4 build + 4 exam = 8 sets.
+  20. hip/low/concentric/front (1): cable standing hip adduction. Exam covers cable_standing_hip_adduction, four sets. 4 build + 4 exam = 8 sets.
+
+Total: 20 patterns, 182 exercises, 155 sets to film (5 patterns have one clip on disk, saving one build set each; 15 patterns need the full 8).
+
+The 120 null-joint entries, in four groups that sum to 120 with no entry in more than one:
+
+A. Isometric holds to be timed (12): plank, side_plank, wall_sit, farmer_carry, cable_pallof_hold, superman_hold, dead_hang, active_hang, hollow_body_hold, bear_plank, l_sit_hold, copenhagen_plank. These need a timer, not a rep counter. They stay in the guide and gain a timer once it is built.
+
+B. Movements needing a new tracked joint or angle not among the four (22): horizontal shoulder plane (pec_deck, cable_fly, rear_delt_fly, reverse_pec_deck, dumbbell_fly, incline_cable_fly, bent_over_rear_delt_raise, cable_rear_delt_fly, prone_t_raise, band_pull_apart — 10); ankle (standing_calf_raise, seated_calf_raise, donkey_calf_raise, leg_press_calf_raise, calf_raise, single_leg_calf_raise — 6); scapula (shrug, dumbbell_shrug, scapular_push_up, scapular_pull_up — 4); wrist (wrist_curl, wrist_extension — 2). These stay in the guide without a count until their tracked joint is added.
+
+C. Movements on a tracked joint that need a different counting rule (45): seated transverse hip (hip_abduction_machine, hip_adduction_machine, banded_seated_hip_abduction — 3); trunk rotation (russian_twist, cable_woodchop, weighted_russian_twist, clamshell, hip_airplane, banded_clamshell, banded_woodchop — 7); abdominal spinal flexion (cable_crunch, crunch, reverse_crunch, weighted_crunch, heel_tap — 5); multi-step per rep (wall_walk, lying_hamstring_walkout, banded_lateral_walk, banded_monster_walk, crab_walk, inchworm — 6); glute kickback across 180° (cable_kickback, machine_glute_kickback, banded_kickback — 3); flexed-hip abduction (fire_hydrant, banded_fire_hydrant — 2); trunk lateral flexion (dumbbell_side_bend, side_plank_hip_dip — 2); anti-rotation (pallof_press, half_kneeling_pallof_press, banded_pallof_press — 3); airborne (jump_squat, explosive_push_up — 2); eccentric-only (negative_pull_up — 1); ballistic (kettlebell_swing — 1); and ten single-reason entries (bicycle_crunch, typewriter_push_up, hindu_push_up, prone_y_raise, superman, reverse_snow_angel, hollow_rock, flutter_kick, plank_shoulder_tap, dragon_flag). These stay in the guide without a count until their counting rule is built.
+
+D. No rep to count (41): stretches and mobility drills (toe_touch, cat_cow_stretch, worlds_greatest_stretch, leg_swings_stretch, torso_twist_stretch, doorway_chest_stretch, childs_pose, kneeling_hip_flexor_stretch, hamstring_stretch, standing_quad_stretch, seated_forward_fold_stretch, cross_body_shoulder_stretch, wall_calf_stretch, butterfly_stretch — 14); cardio and locomotion (running, walking, cycling, rowing, stair_climber, mountain_climber, elliptical, swimming, jump_rope, assault_bike, skierg, hiking, treadmill_incline_walk, battle_ropes, plank_jack, bear_crawl, burpee, half_burpee, squat_thrust, high_knees, jumping_jack, skater_hop, lateral_shuffle, fast_feet, sprawl, seal_jack — 26); arm_circles (1). These stay in the guide permanently without a count.
+
+Filming order by body region, 155 sets across six sessions:
+
+Session 1 — chest and shoulders (22 sets):
+  Pattern 1 elbow/high/eccentric/side: 3 build + 4 exam = 7.
+  Pattern 2 elbow/low/concentric/side: 4 build + 4 exam = 8.
+  Pattern 3 elbow/high/eccentric/front: 3 build + 4 exam = 7.
+
+Session 2 — shoulders and front raises (15 sets):
+  Pattern 4 shoulder/low/concentric/front: 3 build + 4 exam = 7.
+  Pattern 5 shoulder/low/concentric/side: 4 build + 4 exam = 8.
+
+Session 3 — back (22 sets):
+  Pattern 11 elbow/high/concentric/side: 3 build + 4 exam = 7.
+  Pattern 12 elbow/high/concentric/front: 3 build + 4 exam = 7.
+  Pattern 13 shoulder/high/concentric/side: 4 build + 4 exam = 8.
+
+Session 4 — legs (32 sets):
+  Pattern 6 knee/high/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 7 knee/high/eccentric/front: 4 build + 4 exam = 8.
+  Pattern 8 knee/low/concentric/side: 4 build + 4 exam = 8.
+  Pattern 9 knee/high/concentric/side: 4 build + 4 exam = 8.
+
+Session 5 — posterior chain and hamstring (24 sets):
+  Pattern 10 knee/low/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 14 hip/low/concentric/side: 4 build + 4 exam = 8.
+  Pattern 15 hip/high/eccentric/side: 4 build + 4 exam = 8.
+
+Session 6 — core and hip isolation (40 sets):
+  Pattern 16 hip/high/concentric/side: 4 build + 4 exam = 8.
+  Pattern 17 hip/low/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 18 shoulder/low/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 19 hip/high/concentric/front: 4 build + 4 exam = 8.
+  Pattern 20 hip/low/concentric/front: 4 build + 4 exam = 8.
+
+Grand total: 22 + 15 + 22 + 32 + 24 + 40 = 155 sets.
+
 - Every set: phone upright and still, whole body in frame, sent through the clip collector (scripts/collect-clips.mjs) with the lift, the count a coach would give, the view and who was filmed. The collector fixes each set's role on arrival and keeps exam sets in test/real-phone/exam/.
 - An exam for the public needs other people: other bodies, levels, gyms and camera placements. Their sets join every exam as they come, Luc and his clients first. A set of someone else is used only with their agreement, recorded by the collector; it stays on David's Mac.
+- The alternating curl (bicep_curl_alternating) joins when its sets pass; it is the only bothSides elbow entry filmed from the side and is not part of a pattern.
 
 Rep details on the result and in the report, on counter-core, once 3c passed. The result's marks stand as tall as each rep's range, as in the prototype; under them a line gives the set's average range and duration, or, for the mark touched, that rep's time, range, lifting time and lowering time. The whole row of marks is one target, so no target is under 44 points. The coach's report and its PDF add the prototype's table of reps, then two measures that are not in the prototype: the time under tension, and how the lifting speed changed from the first two reps to the last two (velocity loss within a set: Sánchez-Medina and González-Badillo, Med Sci Sports Exerc 2011). The core marks a rep that the recording started or stopped inside, without changing any count (lifts.test.ts); such a rep keeps its number and range, and its times read "…". Sets saved before this round show no rep details. The table, the measures and the line under the marks are for David to approve on his phone.
 
