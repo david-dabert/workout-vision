@@ -8,7 +8,7 @@ const PAGE_W = 419.53, PAGE_H = 595.28;          // A5, in points
 const COLUMN = 310;                               // the sheet's text column on a 390 px phone
 const MARGIN = (PAGE_W - COLUMN) / 2;
 const GAP = 12;                                   // .sheet { gap }
-const COLOR = { paper: '#FBF7EF', ink: '#1D1812', ash: '#6B6256', rule: '#E4DCCD', count: '#8A6630' };
+const COLOR = { paper: '#FBF7EF', ink: '#1D1812', ash: '#6B6256', rule: '#E4DCCD', rowRule: '#F0EADF', count: '#8A6630' };
 const FACE = { serif: 'InstrumentSerif-Regular', sans: 'Geist-Regular', sansMedium: 'Geist-Medium', mono: 'GeistMono-Regular' };
 const SANS_CSS = 'Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 
@@ -172,11 +172,40 @@ export function reportPdf(sheet) {
   y = Math.max(top + above - bNum + 58 * 0.9, wordTop + 19.5 + 18 * lift.lines.length) + GAP;
 
   // What the app counted, when the visitor corrected it, and the arm it followed.
-  for (const text of [sheet.corrected, sheet.arm].filter(Boolean)) {
+  const sheetLine = text => {
     const block = lines(text, 12, COLUMN);
-    block.lines.forEach(line => { drawLine(line, block.raster, MARGIN, y, 12, 1.5, COLOR.ash); y += 18; });
+    block.lines.forEach(line => { if (room() < 18 && y > MARGIN) newPage(); drawLine(line, block.raster, MARGIN, y, 12, 1.5, COLOR.ash); y += 18; });
     y += GAP;
+  };
+  [sheet.corrected, sheet.arm].filter(Boolean).forEach(sheetLine);
+
+  // The reps, as the table on screen (.sh-table): fixed columns, the first 12% of the
+  // column and the four measures alike, no left padding. With collapsed borders each
+  // row holds half of the 1 px rule above it and below it: the heading row is
+  // 6 + 13.5 + 6 + 0.5 high, a rep's row 0.5 + 5 + 17.25 + 5 + 0.5, and the table
+  // ends half a rule below its last line. A row that does not fit opens a page,
+  // which repeats the heading.
+  if (sheet.rows?.length) {
+    const first = COLUMN * 0.12, rest = (COLUMN - first) / 4;
+    const colX = k => MARGIN + (k === 0 ? 0 : first + (k - 1) * rest);
+    const HEAD = 26, ROW = 28.25;
+    const hline = (at, color) => { doc.setDrawColor(color); doc.setLineWidth(1); doc.line(MARGIN, at, MARGIN + COLUMN, at); };
+    const heading = () => {
+      sheet.columns.forEach((c, k) => write(upper(c), colX(k), y + 6, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12));
+      hline(y + HEAD, COLOR.rule);
+      y += HEAD;
+    };
+    if (room() < HEAD + ROW + 0.5 && y > MARGIN) newPage();
+    heading();
+    sheet.rows.forEach(row => {
+      if (room() < ROW + 0.5) { newPage(); heading(); }
+      row.forEach((v, k) => write(v, colX(k), y + 0.5 + 5, 'mono', 11.5, 1.5, COLOR.ink));
+      hline(y + ROW, COLOR.rowRule);
+      y += ROW;
+    });
+    y += 0.5 + GAP;
   }
+  if (sheet.summary) sheetLine(sheet.summary);
 
   // Notes, then the foot. The notes label keeps its first line, and the foot
   // never stands alone on a page: it takes the last two lines of notes with it.

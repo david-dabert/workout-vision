@@ -68,6 +68,15 @@ describe('Counting core — lifts by joint', () => {
     });
   }
 
+  it('a recording that starts inside a rep counts it and marks it as cut; a rep completed at the last frame is whole', () => {
+    // Six curls; the video starts halfway down the first and stops as the last one ends.
+    const sps = 30, full = sample(cycles({ rest: 170, work: 50, reps: 6 }), 170, sps);
+    const angles = full.slice(Math.round(1.3 * sps), full.length - Math.round(0.8 * sps));
+    const result = countReps(frames('elbow', angles), timestamps(angles.length, sps), 'bicep_curl');
+    expect(result.count).toBe(6);
+    expect(result.reps.map(r => !!r.clipped)).toEqual([true, false, false, false, false, false]);
+  });
+
   it('squat: tracks the side whose hip, knee and ankle are visible', () => {
     const sps = 15;
     const angles = sample(cycles({ rest: 175, work: 80, reps: 6 }), 175, sps);

@@ -62,6 +62,7 @@ export interface RepDetail {
   concentricSec: number;
   eccentricSec: number;
   side?: 'left' | 'right' | 'both'; // alternating curl only: the arm that did it
+  clipped?: boolean;    // the video starts or ends inside this rep: counted, but its times are not whole
 }
 
 export interface CountResult {
@@ -503,6 +504,9 @@ function detectReps(
  * - Range: from the working extreme to the furthest rest-side level of the rep,
  *   the level it left or the fullest return it reached, so no boundary sample
  *   decides it.
+ * - Clipped: a rep with no rest before it or after it inside the video (the
+ *   recording started or stopped during it) is counted, but its times are marked
+ *   as not whole.
  * - Phases: the first runs from the start to the moment the angle comes within
  *   `band` of the working extreme, the second from the moment it leaves that band
  *   to the end; a pause at the working end belongs to neither. Which phase is
@@ -555,6 +559,10 @@ function placeBoundaries(
     if (side.length >= REST_LEVEL_MIN_SEC * sampleRate) return side[Math.floor(side.length / 2)];
     return restsLow ? side[0] : side[side.length - 1];
   };
+
+  let firstValid = 0, lastValid = smoothed.length - 1;
+  while (firstValid < smoothed.length && smoothed[firstValid] === null) firstValid++;
+  while (lastValid > 0 && smoothed[lastValid] === null) lastValid--;
 
   const reps: RepDetail[] = [];
   let previousEnd = 0;
@@ -612,6 +620,7 @@ function placeBoundaries(
     const rom = Number.isFinite(outer) ? Math.abs(outer - work) : Math.abs((smoothed[start] ?? work) - work);
     const firstSec = timestamps[workFrom] - timestamps[start];
     const secondSec = timestamps[end] - timestamps[workTo];
+    const clipped = left === null || after === null || start <= firstValid || end >= lastValid;
     reps.push({
       index: reps.length + 1,
       startTime: timestamps[start],
@@ -619,6 +628,7 @@ function placeBoundaries(
       romDegrees: rom,
       concentricSec: def.first === 'concentric' ? firstSec : secondSec,
       eccentricSec: def.first === 'concentric' ? secondSec : firstSec,
+      ...(clipped ? { clipped: true } : {}),
     });
     previousEnd = end;
   });

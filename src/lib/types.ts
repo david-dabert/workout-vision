@@ -281,6 +281,7 @@ export interface WorkoutRecord {
   source?: string;
   arm?: 'left' | 'right';
   repDetails?: unknown[];
+  repDetailsVersion?: number;
   corrected?: boolean;
 }
 

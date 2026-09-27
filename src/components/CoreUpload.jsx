@@ -88,7 +88,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
         {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={showReport && !reportLeaving} onClose={onClose} onReport={openReport} onNewSet={onClose} onRefilm={refilm} />}
       </ScreenFade>
-      {view === 'result' && showReport && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} leaving={reportLeaving} onBack={closeReport} />}
+      {view === 'result' && showReport && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} leaving={reportLeaving} onBack={closeReport} />}
     </>;
   }
 

@@ -15,8 +15,9 @@ export function warmReportPdf() {
 /**
  * The coach's report for one saved set.
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
+ * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
-export default function Report({ lift, count, counted, arm, date, source, leaving, onBack }) {
+export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const [client, setClient] = useState('');
   const [coach, setCoach] = useState('');
@@ -30,7 +31,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const when = useRef(date ? new Date(date) : new Date()).current;
 
   const liftName = META[lift]?.[lang] || tExercise(lift);
-  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, source });
+  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, reps, source });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -137,6 +138,11 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         </div>
         {sheet.corrected && <p className="sh-line">{sheet.corrected}</p>}
         {sheet.arm && <p className="sh-line">{sheet.arm}</p>}
+        {sheet.rows.length > 0 && <table className="sh-table">
+          <thead><tr>{sheet.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
+          <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
+        </table>}
+        {sheet.summary && <p className="sh-line">{sheet.summary}</p>}
         <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>
         <p className="sh-foot">{sheet.foot}</p>
       </article>

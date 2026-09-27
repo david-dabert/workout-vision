@@ -126,6 +126,7 @@ export default function History({ onClose }) {
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
-      date={setTime(report)} source={report.source} leaving={leaving} onBack={closeReport} />}
+      date={setTime(report)} source={report.source} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
+      leaving={leaving} onBack={closeReport} />}
   </>;
 }

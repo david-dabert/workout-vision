@@ -6,6 +6,7 @@ import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
 import { refreshSets } from './sets';
+import { decimal } from './report-sheet';
 import './Result.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -96,6 +97,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
   const [shown, setShown] = useState(reduced ? result.count : 0);
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
+  const [sel, setSel] = useState(-1); // the rep whose details are shown, or none
   const saving = useRef(false);
   const rootRef = useRef(null);
   const reportRef = useRef(null);
@@ -114,6 +116,39 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
   const armLabel = fr ? `bras ${side}` : `${side} arm`;
   const seconds = Math.round(result.metadata?.duration || 0);
   const count = result.count;
+
+  // Each rep's mark is as tall as its range, as in the prototype; touching the marks
+  // shows the nearest rep's details. A rep the recording cut shows its range only.
+  const reps = result.reps || [];
+  const maxRom = Math.max(1, ...reps.map(r => r.romDegrees || 0));
+  const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
+  const whole = reps.filter(r => !r.clipped);
+  // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
+  let detail = '', detailHead = '';
+  if (sel >= 0 && reps[sel]) {
+    const r = reps[sel];
+    detailHead = `${fr ? 'Rép.' : 'Rep'} ${sel + 1} · `;
+    detail = r.clipped
+      ? `${Math.round(r.romDegrees)}° · ${fr ? 'filmée en partie' : 'partly filmed'}`
+      : `${sec(r.endTime - r.startTime)} · ${Math.round(r.romDegrees)}° · ${fr ? 'montée' : 'up'} ${sec(r.concentricSec)} · ${fr ? 'descente' : 'down'} ${sec(r.eccentricSec)}`;
+  } else if ((asked || step !== 'ask') && whole.length) {
+    const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
+    const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
+    detail = fr ? `Amplitude moyenne ${Math.round(rom)}° · durée moyenne ${sec(dur)}` : `Average range ${Math.round(rom)}° · average duration ${sec(dur)}`;
+  }
+  const marksRef = useRef(null);
+  function pick(e) {
+    const marks = [...(marksRef.current?.children || [])];
+    let best = -1, gap = Infinity;
+    marks.forEach((m, i) => { const r = m.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - e.clientX); if (d < gap) { gap = d; best = i; } });
+    if (best >= 0) setSel(s => (s === best ? -1 : best));
+  }
+  function keys(e) {
+    const n = reps.length, go = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (go) { e.preventDefault(); setSel(s => (s < 0 ? (go > 0 ? 0 : n - 1) : Math.min(n - 1, Math.max(0, s + go)))); }
+    else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); setSel(e.key === 'Home' ? 0 : n - 1); }
+    else if (e.key === 'Escape') setSel(-1);
+  }
 
   // The count rises one rep at a time, lighting one mark per rep; the question follows.
   useEffect(() => {
@@ -152,6 +187,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
         // What the app counted stays apart from what the visitor kept.
         machineResult: { reps: count, confidence: result.confidence ?? null },
         correctedResult: n !== count ? { reps: n } : null,
+        // Rep details measured with step 3c's boundaries; older sets' details are not shown.
+        repDetailsVersion: 2,
       });
       refreshSets();
       setStep('saved');
@@ -213,9 +250,11 @@ export default function Result({ result, lift, covered, onClose, onReport, onNew
       <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (shown === 1 ? 'Rep' : 'Reps')}</p>
       <p className="sr" role="status">{asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
-      {count > 0 && <div className="bars" aria-hidden="true">
-        {result.reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}`}><i /></div>)}
+      {count > 0 && <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
+        {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': fr ? 'Répétitions, une par marque' : 'Reps, one per mark', onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
+        {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': Math.max(0, rep.romDegrees || 0) / maxRom }}><i /></div>)}
       </div>}
+      {count > 0 && <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>}
 
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
