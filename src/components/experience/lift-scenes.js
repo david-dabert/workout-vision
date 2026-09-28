@@ -28,7 +28,7 @@ export function createLiftScene(canvas, lift, mode = 'loop') {
   const ctx = canvas.getContext('2d'), body = new Body(mode === 'loop' ? (LITE ? 700 : 1000) : 1100, mode === 'loop' ? 100 + k : 21);
   const frames = data.loop.f.map(decodeFrame), buf = new Float32Array(66), out = new Float32Array(66);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let frame, disposed = false;
+  let frame, disposed = false, running = !reduced;
   function draw(now) {
     const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : now / 1000;
     ctx.clearRect(0, 0, W, H);
@@ -43,10 +43,17 @@ export function createLiftScene(canvas, lift, mode = 'loop') {
     }
   }
   function size() { canvas.width = Math.max(1, Math.round(canvas.clientWidth * DPR)); canvas.height = Math.max(1, Math.round(canvas.clientHeight * DPR)); draw(performance.now()); }
-  function loop(now) { if (disposed) return; draw(now); frame = requestAnimationFrame(loop); }
+  function loop(now) { if (disposed || !running) return; draw(now); frame = requestAnimationFrame(loop); }
   const observer = new ResizeObserver(size); observer.observe(canvas); size();
   if (!reduced) frame = requestAnimationFrame(loop);
-  return () => { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); };
+  const dispose = () => { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); };
+  // A card off the centre stops drawing and keeps its last frame; it resumes where the loop is.
+  dispose.setRunning = on => {
+    if (reduced || mode !== 'loop' || disposed || on === running) return;
+    running = on;
+    if (on) frame = requestAnimationFrame(loop); else cancelAnimationFrame(frame);
+  };
+  return dispose;
 }
 export const liftView = lift => poses[lift].view;
 // The reference framing's size, for the phone outline on the filming screen.

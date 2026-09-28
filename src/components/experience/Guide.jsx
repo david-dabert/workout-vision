@@ -66,7 +66,6 @@ export default function Guide({ onClose, onChoose }) {
         </div>
       </div>
       <div className="guide-tools"><button className="guide-action press" onClick={() => { setZone(null); setQuery(''); setOpen(null); }}>{fr ? 'Tous les exercices' : 'All exercises'}</button><button className="guide-action press" onClick={() => setLang(fr ? 'en' : 'fr')}>{fr ? 'English' : 'Français'}</button></div>
-      <p className="guide-credit">Illustrations: Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
       <p className="list-head" role="status">{list.length} / {CATALOGUE.length} {fr ? 'exercices' : 'exercises'}</p>
       <ul className="list">{list.map(e => <li key={e.key} className="item" data-exercise={e.key}>
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
@@ -80,6 +79,7 @@ export default function Guide({ onClose, onChoose }) {
         </div>}
       </li>)}</ul>
       {!list.length && <p className="empty">{fr ? 'Aucun exercice trouvé.' : 'No exercises found.'}</p>}
+      <p className="guide-credit">Illustrations: Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
     </div></section>
   </div>;
 }

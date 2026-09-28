@@ -18,7 +18,8 @@
 .wv-experience .guide-frames img.active { opacity: 1; }
 .wv-experience .guide-detail p { color: var(--ash); }
 .wv-experience .guide-action { min-height: 44px; padding: 10px 16px; border: 1px solid var(--hair-2); border-radius: 14px; color: var(--lamp); }
-.wv-experience .guide-credit { margin: 18px 0; color: var(--ash); font-size: 12px; }
+/* The licence credit closes the guide, after the last exercise: small and quiet, words and links unchanged. */
+.wv-experience .guide-credit { margin: 32px 0 8px; color: var(--ash); font-size: 11px; line-height: 1.5; opacity: 0.8; }
 .wv-experience .guide-credit a { color: var(--lamp); display: inline-block; padding-block: 12px; }
 .wv-experience .guide-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 .wv-experience .item-name { color: var(--bone); }

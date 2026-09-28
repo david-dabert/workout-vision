@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 // leaving screen is frozen as it last rendered and cannot be touched.
 // All layers sit in one keyed list, so React keeps the leaving screen's
 // instance (and its DOM) instead of mounting a copy.
-export default function ScreenFade({ screenKey, children }) {
+export default function ScreenFade({ screenKey, children, viaTransition = false }) {
   const [shownKey, setShownKey] = useState(screenKey);
   const [leaving, setLeaving] = useState([]);
   const [instant, setInstant] = useState(null);
@@ -14,7 +14,8 @@ export default function ScreenFade({ screenKey, children }) {
     const prev = last.current;
     setShownKey(screenKey);
     // After a browser back or forward (the iOS swipe animates on its own), no second transition.
-    const fromHistory = performance.now() - (window.__wvHistoryNav || -1e9) < 250;
+    // A View Transition animates the change itself (viaTransition, set by App): no fade layer on top of it.
+    const fromHistory = viaTransition || performance.now() - (window.__wvHistoryNav || -1e9) < 250;
     setLeaving(list => (fromHistory ? [] : [...list.filter(l => l.key !== prev.key && l.key !== screenKey), prev]));
     setInstant(fromHistory ? screenKey : null);
   }

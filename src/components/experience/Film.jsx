@@ -1,14 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { createLiftScene, META, liftView, restBox } from './lift-scenes';
 import { LIFTS as CORE_LIFTS } from '../../lib/counting/core';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
 import './Film.css';
 
-export default function Film({ lift, onBack, onFile }) {
+export default function Film({ lift, onBack, onFile, hero: arrivedByTransition = false }) {
   const { lang } = useT(), fr = lang === 'fr';
   const canvas = useRef(null);
   const fileRef = useRef(null);
+  // The frame takes the chosen card's name only for the View Transition that brings it in, then drops it,
+  // so a Film screen still fading out never shares the name with the next one.
+  const [hero, setHero] = useState(arrivedByTransition);
+  useEffect(() => { if (!hero) return undefined; const t = setTimeout(() => setHero(false), 700); return () => clearTimeout(t); }, [hero]);
   const view = liftView(lift);
 
   const [bw, bh] = restBox(lift);
@@ -42,7 +46,7 @@ export default function Film({ lift, onBack, onFile }) {
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{META[lift]?.[lang] || lift}</h2>
       {TIERS[lift] && <p className={`tier tier-${TIERS[lift]}`} data-reveal style={{ '--i': 1 }}>{tierLabel(TIERS[lift], fr)}</p>}
-      <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh }}>
+      <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
         <canvas ref={canvas} aria-hidden="true" />
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 9V0h9M91 0h9v9M100 91v9h-9M9 100H0v-9" fill="none" stroke="currentColor" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />

@@ -1,6 +1,6 @@
 /* Choice styles ported from the approved prototype. */
 .wv-experience .welcome { margin-top: 18px; }.wv-experience .welcome-l1 { margin: 0; font-family: var(--serif); font-style: italic; font-size: 27px; line-height: 1.1; color: var(--lamp); }.wv-experience .welcome-l2 { margin: 4px 0 0; font-size: 14px; color: var(--ash); }.wv-experience .choose-screen .title { margin-top: 22px; }.wv-experience .choose-screen .sub { margin-top: 12px; }.wv-experience .rail {
-  display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+  display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; touch-action: pan-x pan-y;
   margin: 24px calc(var(--gut) * -1) 0; padding: 4px var(--gut) 8px; scrollbar-width: none;
 }.wv-experience .rail::-webkit-scrollbar { display: none; }.wv-experience .altar {
   position: relative; display: block; flex: 0 0 min(80%, 340px); height: clamp(390px, 58vh, 500px); scroll-snap-align: center;
@@ -15,7 +15,7 @@
 /* Card layout that holds at every phone height: the figure takes the space
    above the text instead of running under it, and the card leaves room for
    the dots and the "Un autre exercice" row on a 664 px Safari screen. */
-.wv-experience .altar { display: flex; flex-direction: column; height: clamp(300px, calc(100svh - 346px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); scroll-snap-stop: always; }
+.wv-experience .altar { display: flex; flex-direction: column; height: clamp(300px, calc(100svh - 346px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
 .wv-experience .altar canvas { position: static; flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
 .wv-experience .altar-meta { position: static; flex: none; padding: 12px 22px 22px; }
 .wv-experience .altar-name { font-size: min(37px, 9.4vw); white-space: nowrap; }

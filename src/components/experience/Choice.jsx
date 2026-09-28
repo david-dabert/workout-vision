@@ -1,20 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { LIFTS, META, createLiftScene, liftView } from './lift-scenes';
 import { useSets } from './sets';
+import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
 import './Choice.css';
 
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
 let returning = null;
 
+// On the rail, only the card in the centre animates; the others keep their last frame.
 export function LiftCanvas({ lift, mode }) {
   const canvas = useRef(null);
-  useEffect(() => createLiftScene(canvas.current, lift, mode), [lift, mode]);
+  useEffect(() => {
+    const el = canvas.current, scene = createLiftScene(el, lift, mode), rail = el.closest('.rail');
+    if (!rail || !scene.setRunning || typeof IntersectionObserver === 'undefined') return scene;
+    const io = new IntersectionObserver(entries => scene.setRunning(entries[entries.length - 1].intersectionRatio >= 0.6), { root: rail, threshold: [0, 0.6] });
+    io.observe(el);
+    return () => { io.disconnect(); scene(); };
+  }, [lift, mode]);
   return <canvas ref={canvas} aria-hidden="true" />;
 }
 
-export function HapticButton({ children, onClick, className, label }) {
+// The dot of the centred card lights, and the stage holds still while the rail moves:
+// observers and a passive listener only, so a swipe reads no layout and renders nothing.
+function useRail(rail, dots) {
+  useEffect(() => {
+    const el = rail.current;
+    if (!el) return undefined;
+    let timer = 0;
+    const onScroll = () => { holdStage(true); clearTimeout(timer); timer = setTimeout(() => holdStage(false), 160); };
+    const onEnd = () => { clearTimeout(timer); holdStage(false); };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    el.addEventListener('scrollend', onEnd);
+    // Every card's visible share is kept; the dot goes to the most visible card, the one in the centre.
+    const ratios = new Map();
+    const io = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
+      for (const e of entries) ratios.set(e.target, e.intersectionRatio);
+      let best = -1, top = 0;
+      [...el.children].forEach((c, i) => { const r = ratios.get(c) || 0; if (r > top) { top = r; best = i; } });
+      if (best >= 0) dots.current?.querySelectorAll('i').forEach((d, j) => d.classList.toggle('on', j === best));
+    }, { root: el, threshold: [0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] });
+    [...el.children].forEach(c => io?.observe(c));
+    return () => { el.removeEventListener('scroll', onScroll); el.removeEventListener('scrollend', onEnd); clearTimeout(timer); holdStage(false); io?.disconnect(); };
+  });
+}
+
+export function HapticButton({ children, onClick, className, label, cardRef }) {
   const fired = useRef(false);
   function fire() {
     if (fired.current) return;
@@ -23,7 +55,7 @@ export function HapticButton({ children, onClick, className, label }) {
     onClick();
     requestAnimationFrame(() => { fired.current = false; });
   }
-  return <label className={`${className} tactile`} role="button" tabIndex={0} aria-label={label}
+  return <label ref={cardRef} className={`${className} tactile`} role="button" tabIndex={0} aria-label={label}
     onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fire(); } }}>
     <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={fire} />
     {children}
@@ -32,7 +64,10 @@ export function HapticButton({ children, onClick, className, label }) {
 
 export default function Choice({ onChoose, onGuide, onHistory }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
-  const [active, setActive] = useState(0);
+  const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
+  useRail(railRef, dotsRef);
+  // The chosen card carries the name the filming screen's frame takes, so it grows into it (View Transitions).
+  const choose = (lift, i) => { cards.current.forEach((c, j) => { if (c) c.style.viewTransitionName = j === i ? 'lift-hero' : ''; }); onChoose(lift); };
   // Give storage a moment before showing the choice; late results still expose history.
   const sets = useSets();
   if (sets === undefined) return <div className="wv-experience" aria-busy="true" />;
@@ -53,14 +88,8 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
       </div>
-      <div className="rail" data-reveal style={{ '--i': 2 }} onScroll={event => {
-        // The dot follows the card nearest the centre, as in the prototype.
-        const rail = event.currentTarget, mid = rail.scrollLeft + rail.clientWidth / 2;
-        let best = 0, bd = Infinity;
-        [...rail.children].forEach((c, i) => { const d = Math.abs(c.offsetLeft + c.clientWidth / 2 - mid); if (d < bd) { bd = d; best = i; } });
-        setActive(best);
-      }}>
-        {LIFTS.map((lift, i) => <HapticButton key={lift} className="altar" label={META[lift][lang]} onClick={() => onChoose(lift)}>
+      <div className="rail" ref={railRef} data-reveal style={{ '--i': 2 }}>
+        {LIFTS.map((lift, i) => <HapticButton key={lift} className="altar" label={META[lift][lang]} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
           <LiftCanvas lift={lift} />
           <span className="altar-meta">
             <span className="altar-idx">{String(i + 1).padStart(2, '0')} / {String(LIFTS.length).padStart(2, '0')}</span>
@@ -71,7 +100,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           </span>
         </HapticButton>)}
       </div>
-      <div className="dots" aria-hidden="true" data-reveal style={{ '--i': 3 }}>{LIFTS.map((lift, i) => <i key={lift} className={active === i ? 'on' : ''} />)}</div>
+      <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{LIFTS.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>
         <button className="row-link press" onClick={onGuide}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="4.5" r="2" /><path d="M4.5 9.5L12 8l7.5 1.5" /><path d="M12 8v6" /><path d="M12 14l-3.5 7" /><path d="M12 14l3.5 7" /></svg></span>

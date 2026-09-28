@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react';
+import { flushSync } from 'react-dom';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
@@ -87,6 +88,8 @@ function AppInner() {
   const [page, setPage] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
   const [videoFile, setVideoFile] = useState(null);
+  // The page a View Transition brought in; its screen change needs no fade of its own.
+  const [transitionPage, setTransitionPage] = useState(null);
   const fileSerial = useRef(0);
   // Run storage schema migration on mount
   // The saved sets are read once the records are migrated, while the entry plays,
@@ -134,7 +137,18 @@ function AppInner() {
     const ticket = ++waiting.current, from = pageRef.current;
     const show = () => {
       if (ticket !== waiting.current || pageRef.current !== from) return;
+      // Into the filming screen, the chosen card grows into its frame where the browser has
+      // View Transitions (Safari 18, Chrome 111); elsewhere, and under Reduce Motion, the fade.
+      if (next === 'film' && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // The update runs a frame later: if a tap or the browser moved the page meanwhile, it changes nothing.
+        document.startViewTransition(() => {
+          if (ticket !== waiting.current || pageRef.current !== from) return;
+          flushSync(() => { apply?.(); setTransitionPage(next); setPage(next); });
+        });
+        return;
+      }
       apply?.();
+      setTransitionPage(null);
       setPage(next);
     };
     const target = LAZY[next];
@@ -155,7 +169,7 @@ function AppInner() {
   let key, screen;
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
-    screen = <ExperienceFilm lift={selectedLift} onBack={backToChoice} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
+    screen = <ExperienceFilm lift={selectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
     screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
@@ -174,7 +188,7 @@ function AppInner() {
 
   return <>
     <Stage />
-    <ScreenFade screenKey={key}>
+    <ScreenFade screenKey={key} viaTransition={transitionPage === page}>
       <ErrorBoundary>
         <Suspense fallback={LazyFallback}>{screen}</Suspense>
       </ErrorBoundary>

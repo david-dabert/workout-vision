@@ -15,6 +15,9 @@ for (const [lang, beta, exp, squat, bench, whole] of [
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    // Choosing a lift prefetches the pose model; no analysis runs here, and a fresh test context
+    // cannot cache the 9 MB file (net::ERR_CACHE_WRITE_FAILURE), so it is answered empty.
+    await page.route('**/pose_landmarker_full.task', r => r.fulfill({ status: 200, body: '' }));
     await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
     await page.goto('/workout-vision/');
     await expect(page.locator('.altar')).toHaveCount(8, { timeout: 20000 });

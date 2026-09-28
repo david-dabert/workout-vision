@@ -4,15 +4,17 @@
 import { drawDust, DPR } from './entry-scene';
 
 const layers = new Set();
-let dust = 0.5, canvas = null, ctx = null, raf = 0, reduced = false;
+let dust = 0.5, canvas = null, ctx = null, raf = 0, reduced = false, held = false;
 
 export function setDust(k) { dust = k; }
+// While the lift cards are being swiped, the stage keeps its last frame: the scroll gets the frame budget.
+export function holdStage(on) { held = on; }
 export function addLayer(draw) { layers.add(draw); return () => layers.delete(draw); }
 export function stageReduced() { return reduced; }
 
 function frame(now) {
   raf = requestAnimationFrame(frame);
-  if (!canvas || document.hidden) return;
+  if (!canvas || document.hidden || held) return;
   const w = Math.max(1, Math.round(canvas.clientWidth * DPR)), h = Math.max(1, Math.round(canvas.clientHeight * DPR));
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   const t = reduced ? 1.5 : now / 1000;
