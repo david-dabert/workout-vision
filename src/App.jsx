@@ -18,25 +18,15 @@ import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
 import ScreenFade from './components/experience/ScreenFade';
 import { loadSets } from './components/experience/sets';
+import { whenQuiet } from './lib/whenQuiet';
 
-// Dynamic GPU capability detection: disable backdrop-filter on weak devices
+// Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
+// screen under 812 points). No WebGL context is made to decide it: making one held up the first
+// frame of every visit, and on an iPhone the renderer it reports is only "Apple GPU".
 (() => {
   try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) { document.documentElement.classList.add('no-glass'); return; }
-    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
-    const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '';
-    // Detect low-end mobile GPUs that choke on backdrop-filter compositing
-    const isLowEnd = /SwiftShader|llvmpipe|Software|Mali-4|Adreno\s[23]\d{2}/i.test(renderer);
-    // Also detect iOS devices with < 4GB RAM (approximation via device pixel ratio + screen)
     const isOldiOS = /iPad|iPhone/.test(navigator.userAgent) && window.devicePixelRatio <= 2 && screen.height < 812;
-    if (isLowEnd || isOldiOS) {
-      document.documentElement.classList.add('no-glass');
-    }
-    // Clean up GL context
-    const ext = gl.getExtension('WEBGL_lose_context');
-    if (ext) ext.loseContext();
+    if (isOldiOS) document.documentElement.classList.add('no-glass');
   } catch { /* silent fallback: keep glass */ }
 })();
 
@@ -100,12 +90,10 @@ function AppInner() {
     checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err)).then(() => loadSets()).catch(() => {});
   }, []);
 
-  // Warm the next screens while the visitor reads, so none waits on a download.
-  useEffect(() => {
-    const a = setTimeout(() => { ExperienceFilm.warm(); Analyze.warm(); }, 1200);
-    const b = setTimeout(() => { ExerciseGuide.warm(); History.warm(); }, 3000);
-    return () => { clearTimeout(a); clearTimeout(b); };
-  }, []);
+  // Warm the next screens while the visitor reads, so none waits on a download: one at a time,
+  // and only in a pause of 700 ms without a touch or a scroll, never in the middle of a swipe.
+  // Filming first, then the analysis, the guide and the saved sets.
+  useEffect(() => whenQuiet([ExperienceFilm.warm, Analyze.warm, ExerciseGuide.warm, History.warm]), []);
 
   // Auto-create default profile for first-time users and skip straight to dashboard
   const autoCreatedRef = useRef(false);

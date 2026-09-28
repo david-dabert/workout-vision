@@ -19,7 +19,6 @@
 .wv-experience .altar canvas { position: static; flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
 .wv-experience .altar-meta { position: static; flex: none; padding: 12px 22px 22px; }
 .wv-experience .altar-name { font-size: min(37px, 9.4vw); white-space: nowrap; }
-.wv-experience .altar:active { scale: none; }
 .wv-experience .rail { padding-top: 6px; margin-top: 22px; }
 @media (max-height: 760px) {
   .wv-experience .choose-screen .title { margin-top: 16px; }

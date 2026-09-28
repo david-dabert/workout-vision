@@ -37,39 +37,56 @@ if ('serviceWorker' in navigator) {
 }
 
 // Touch: a warm light follows the finger on every control, as in the prototype.
-// On the swipeable lift cards the press waits 80 ms without movement, so a swipe does not dip
-// the card, and it is cancelled the moment the rail scrolls.
+// Every screen scrolls, so under a finger the press waits 80 ms without movement, as a native
+// list does: a swipe or a scroll that starts on a control never dips or lights it, and a scroll
+// cancels a press at once. A tap shorter than the wait still lights the control, briefly, after
+// the finger lifts. A mouse presses at once; a pen, which can scroll too, waits like a finger.
+// The :active state is never used for this: iOS Safari applies it the moment a finger lands,
+// also at the start of a swipe.
+const PRESSABLE = '.wv-experience .press, .wv-experience .tactile';
 let pendingPress = null;
+const pressed = new Set();
+const light = (el, x, y) => {
+  const r = el.getBoundingClientRect();
+  el.style.setProperty('--px', `${x - r.left}px`);
+  el.style.setProperty('--py', `${y - r.top}px`);
+  el.classList.add('is-pressed');
+  pressed.add(el);
+};
+const unlight = (el) => { el.classList.remove('is-pressed'); pressed.delete(el); };
 const clearPress = () => {
   if (pendingPress) { clearTimeout(pendingPress.timer); pendingPress = null; }
-  document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed'));
-};
-// A tap shorter than the delay still lights the card, briefly.
-const releasePress = () => {
-  const p = pendingPress;
-  clearPress();
-  if (p && !p.moved) { p.el.classList.add('is-pressed'); setTimeout(() => p.el.classList.remove('is-pressed'), 140); }
+  pressed.forEach(unlight);
 };
 document.addEventListener('pointerdown', (e) => {
-  const el = e.target.closest?.('.wv-experience .press, .wv-experience .tactile');
+  const el = e.target.closest?.(PRESSABLE);
   if (!el) return;
-  const r = el.getBoundingClientRect();
-  el.style.setProperty('--px', `${e.clientX - r.left}px`);
-  el.style.setProperty('--py', `${e.clientY - r.top}px`);
-  if (el.closest('.rail')) pendingPress = { el, x: e.clientX, y: e.clientY, moved: false, timer: setTimeout(() => { el.classList.add('is-pressed'); pendingPress = null; }, 80) };
-  else el.classList.add('is-pressed');
+  clearPress();
+  if (e.pointerType === 'mouse') { light(el, e.clientX, e.clientY); return; }
+  const press = { el, x: e.clientX, y: e.clientY, timer: 0 };
+  press.timer = setTimeout(() => { if (pendingPress === press) { pendingPress = null; light(el, press.x, press.y); } }, 80);
+  pendingPress = press;
 }, { passive: true });
 document.addEventListener('pointermove', (e) => {
   if (pendingPress && Math.hypot(e.clientX - pendingPress.x, e.clientY - pendingPress.y) > 8) clearPress();
 }, { passive: true });
-document.addEventListener('pointerup', releasePress, { passive: true });
-for (const type of ['pointercancel', 'pointerleave']) document.addEventListener(type, clearPress, { passive: true });
-// Scroll events do not bubble; captured here, a moving rail drops any press on its cards.
+document.addEventListener('pointerup', () => {
+  const tap = pendingPress;
+  clearPress();
+  if (tap) { light(tap.el, tap.x, tap.y); setTimeout(() => unlight(tap.el), 140); }
+}, { passive: true });
+document.addEventListener('pointercancel', clearPress, { passive: true });
+// After a touch the browser also sends pointerleave to every ancestor, the document included:
+// only a mouse that leaves cancels the press, so the brief light of a tap stays for its 140 ms.
+document.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') clearPress(); }, { passive: true });
+// Scroll events do not bubble; captured here, whatever scrolls drops the presses inside it.
+// Nothing pressed, nothing to do: a scroll costs no lookup.
 document.addEventListener('scroll', (e) => {
-  const rail = e.target?.classList?.contains('rail') ? e.target : null;
-  if (!rail) return;
-  if (pendingPress && rail.contains(pendingPress.el)) { clearTimeout(pendingPress.timer); pendingPress = null; }
-  rail.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed'));
+  if (!pendingPress && !pressed.size) return;
+  const scroller = e.target === document ? document.documentElement : e.target;
+  if (!scroller?.contains) return;
+  if (pendingPress && scroller.contains(pendingPress.el)) { clearTimeout(pendingPress.timer); pendingPress = null; }
+  pressed.forEach(el => { if (scroller.contains(el)) unlight(el); });
 }, { passive: true, capture: true });
 
 createRoot(document.getElementById('root')).render(

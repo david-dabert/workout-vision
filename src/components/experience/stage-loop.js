@@ -2,13 +2,22 @@
 // prototype: drifting dust, plus whatever the current screen asks to draw
 // (the live body during analysis, the ghost of the lift behind the result).
 import { drawDust, DPR } from './entry-scene';
+import { stillClock } from './still-clock';
 
 const layers = new Set();
 let dust = 0.5, canvas = null, ctx = null, raf = 0, reduced = false, held = false;
+// The stage's time stands still while it is held, so the dust moves on from where it stood.
+const clock = stillClock();
 
 export function setDust(k) { dust = k; }
-// While the lift cards are being swiped, the stage keeps its last frame: the scroll gets the frame budget.
-export function holdStage(on) { held = on; }
+// While the lift cards are being swiped, the stage keeps its last frame: the scroll gets the frame
+// budget. At the end of the swipe the dust moves on from that frame, with no jump.
+export function holdStage(on) {
+  if (on === held) return;
+  held = on;
+  const now = performance.now();
+  if (on) clock.pause(now); else clock.resume(now);
+}
 export function addLayer(draw) { layers.add(draw); return () => layers.delete(draw); }
 export function stageReduced() { return reduced; }
 
@@ -17,7 +26,7 @@ function frame(now) {
   if (!canvas || document.hidden || held) return;
   const w = Math.max(1, Math.round(canvas.clientWidth * DPR)), h = Math.max(1, Math.round(canvas.clientHeight * DPR));
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-  const t = reduced ? 1.5 : now / 1000;
+  const t = reduced ? 1.5 : clock.at(now) / 1000;
   ctx.clearRect(0, 0, w, h);
   drawDust(ctx, w, h, t, dust);
   for (const draw of layers) draw(ctx, w, h, t, now);

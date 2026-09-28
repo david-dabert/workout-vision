@@ -23,14 +23,19 @@ function lerpPose(frames, fi, out) {
 
 export { LIFTS, META } from './lift-meta';
 import { LIFTS } from './lift-meta';
-export function createLiftScene(canvas, lift, mode = 'loop') {
+import { stillClock } from './still-clock';
+export function createLiftScene(canvas, lift, mode = 'loop', { paused = false } = {}) {
   const k = LIFTS.indexOf(lift), data = poses[lift];
   const ctx = canvas.getContext('2d'), body = new Body(mode === 'loop' ? (LITE ? 700 : 1000) : 1100, mode === 'loop' ? 100 + k : 21);
   const frames = data.loop.f.map(decodeFrame), buf = new Float32Array(66), out = new Float32Array(66);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let frame, disposed = false, running = !reduced;
+  // A looping scene made paused (a card of the rail away from the centre) draws once and waits.
+  let frame, disposed = false, drawn = false, running = !reduced && !(paused && mode === 'loop');
+  // The scene's own clock stands still while the scene is paused, so a card that becomes the
+  // centre moves on from the pose it kept, instead of jumping to where its loop would have been.
+  const clock = stillClock(performance.now(), !running);
   function draw(now) {
-    const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : now / 1000;
+    const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : clock.at(now) / 1000;
     ctx.clearRect(0, 0, W, H);
     if (mode === 'loop') {
       const n = frames.length, fi = reduced ? n * 0.55 : (t * 15 + k * 9) % n;
@@ -42,16 +47,24 @@ export function createLiftScene(canvas, lift, mode = 'loop') {
       body.draw(ctx, out, { alpha: 0.9, time: t, dpr: DPR, size: 0.8, stars: 0.8 });
     }
   }
-  function size() { canvas.width = Math.max(1, Math.round(canvas.clientWidth * DPR)); canvas.height = Math.max(1, Math.round(canvas.clientHeight * DPR)); draw(performance.now()); }
+  // Setting a canvas's size clears it, even to the same size: the first observation of the
+  // ResizeObserver, which repeats the size already set, neither clears nor redraws the figure.
+  function size() {
+    const w = Math.max(1, Math.round(canvas.clientWidth * DPR)), h = Math.max(1, Math.round(canvas.clientHeight * DPR));
+    if (drawn && canvas.width === w && canvas.height === h) return;
+    canvas.width = w; canvas.height = h; drawn = true;
+    draw(performance.now());
+  }
   function loop(now) { if (disposed || !running) return; draw(now); frame = requestAnimationFrame(loop); }
   const observer = new ResizeObserver(size); observer.observe(canvas); size();
-  if (!reduced) frame = requestAnimationFrame(loop);
+  if (running) frame = requestAnimationFrame(loop);
   const dispose = () => { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); };
-  // A card off the centre stops drawing and keeps its last frame; it resumes where the loop is.
+  // A card off the centre stops drawing and keeps its last frame; it resumes from that frame.
   dispose.setRunning = on => {
     if (reduced || mode !== 'loop' || disposed || on === running) return;
     running = on;
-    if (on) frame = requestAnimationFrame(loop); else cancelAnimationFrame(frame);
+    const now = performance.now();
+    if (on) { clock.resume(now); frame = requestAnimationFrame(loop); } else { clock.pause(now); cancelAnimationFrame(frame); }
   };
   return dispose;
 }

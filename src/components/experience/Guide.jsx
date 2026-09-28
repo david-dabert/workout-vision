@@ -23,7 +23,7 @@ function BodyMap() {
   useEffect(() => {
     const c = canvas.current, ctx = c.getContext('2d'), body = new Body(1500, 31), out = new Float32Array(66);
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let frame, stopped = false;
+    let frame, stopped = false, seen = true;
     function draw(now) {
       const W = c.width, H = c.height;
       ctx.clearRect(0, 0, W, H);
@@ -31,10 +31,18 @@ function BodyMap() {
       body.draw(ctx, out, { alpha: 0.72, time: reduced ? 1.5 : now / 1000, dpr: DPR, size: 0.75, stars: 0.6 });
     }
     function resize() { c.width = c.clientWidth * DPR; c.height = c.clientHeight * DPR; draw(performance.now()); }
-    function loop(now) { if (stopped) return; draw(now); frame = requestAnimationFrame(loop); }
+    function loop(now) { if (stopped || !seen) return; draw(now); frame = requestAnimationFrame(loop); }
     const observer = new ResizeObserver(resize); observer.observe(c); resize();
     if (!reduced) frame = requestAnimationFrame(loop);
-    return () => { stopped = true; cancelAnimationFrame(frame); observer.disconnect(); };
+    // Scrolled out of view, the figure stops drawing: the list scrolls with the whole frame budget.
+    const io = reduced || typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
+      const visible = entries[entries.length - 1].isIntersecting;
+      if (visible === seen) return;
+      seen = visible;
+      if (seen) frame = requestAnimationFrame(loop); else cancelAnimationFrame(frame);
+    });
+    io?.observe(c);
+    return () => { stopped = true; cancelAnimationFrame(frame); observer.disconnect(); io?.disconnect(); };
   }, []);
   return <canvas ref={canvas} aria-hidden="true" />;
 }

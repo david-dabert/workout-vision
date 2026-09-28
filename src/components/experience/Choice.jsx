@@ -9,15 +9,29 @@ import './Choice.css';
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
 let returning = null;
 
-// On the rail, only the card in the centre animates; the others keep their last frame.
+// On the rail, a card's figure is made only when the card comes within one rail's width of
+// the view, so opening the choice draws two or three figures, not all of them. Only the card in the
+// centre animates; the others keep their last frame, and a card that becomes the centre moves
+// on from the pose it kept.
 export function LiftCanvas({ lift, mode }) {
   const canvas = useRef(null);
   useEffect(() => {
-    const el = canvas.current, scene = createLiftScene(el, lift, mode), rail = el.closest('.rail');
-    if (!rail || !scene.setRunning || typeof IntersectionObserver === 'undefined') return scene;
-    const io = new IntersectionObserver(entries => scene.setRunning(entries[entries.length - 1].intersectionRatio >= 0.6), { root: rail, threshold: [0, 0.6] });
-    io.observe(el);
-    return () => { io.disconnect(); scene(); };
+    const el = canvas.current, rail = el.closest('.rail');
+    if (!rail || typeof IntersectionObserver === 'undefined') return createLiftScene(el, lift, mode);
+    let scene = null, centred = false;
+    const near = new IntersectionObserver(entries => {
+      if (scene || !entries[entries.length - 1].isIntersecting) return;
+      scene = createLiftScene(el, lift, mode, { paused: true });
+      scene.setRunning(centred);
+      near.disconnect();
+    }, { root: rail, rootMargin: '0px 100%' });
+    // A separate observer without margin: a card's share of the view decides the centre.
+    const centre = new IntersectionObserver(entries => {
+      centred = entries[entries.length - 1].intersectionRatio >= 0.6;
+      scene?.setRunning(centred);
+    }, { root: rail, threshold: [0, 0.6] });
+    near.observe(el); centre.observe(el);
+    return () => { near.disconnect(); centre.disconnect(); scene?.(); };
   }, [lift, mode]);
   return <canvas ref={canvas} aria-hidden="true" />;
 }

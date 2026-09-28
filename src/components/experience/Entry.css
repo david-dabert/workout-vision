@@ -72,7 +72,10 @@
 .wv-experience .title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(38px, 10.6vw, 50px); line-height: 0.98; letter-spacing: -0.012em; text-wrap: balance; }
 .wv-experience .sub { margin: 0; color: var(--ash); font-size: 15px; line-height: 1.55; max-width: 36ch; }
 .wv-experience .press, .wv-experience .tactile { position: relative; transition: scale 0.22s var(--ease), background-color 0.2s, border-color 0.2s; }
-.wv-experience .press:active, .wv-experience .tactile:active, .wv-experience .is-pressed { scale: 0.975; }
+/* Only .is-pressed dips a control (main.jsx sets it after 80 ms under a finger, at once under a
+   mouse). Never :active: iOS Safari applies it the moment a finger lands, also on a swipe or a
+   scroll that starts on the control. */
+.wv-experience .is-pressed { scale: 0.975; }
 .wv-experience .press::after, .wv-experience .tactile::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: radial-gradient(170px circle at var(--px, 50%) var(--py, 50%), rgba(247, 220, 174, 0.2), transparent 65%);
@@ -116,7 +119,7 @@
 
 .wv-experience { position: fixed; inset: 0; z-index: 100; isolation: isolate; }
 .wv-experience .entry-stage { position: absolute; }
-.wv-experience .tactile:active { transition-duration: 0.06s; }
+.wv-experience .tactile.is-pressed { transition-duration: 0.06s; }
 @media (prefers-reduced-motion: reduce) {
  .wv-experience *, .wv-experience *::before, .wv-experience *::after { animation: none !important; transition: none !important; }
  .wv-experience .entry .brand, .wv-experience .entry-l3, .wv-experience .entry-test, .wv-experience .enter { opacity: 1; }
