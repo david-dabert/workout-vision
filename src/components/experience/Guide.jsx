@@ -3,6 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { getAllGuideExercises } from '../../lib/exerciseGuide';
 import { Body, mapPose, DPR } from './entry-scene';
 import entry from './entry-pose.json';
+import { TIERS, tierLabel, tierTag } from '../../lib/liftTiers';
 import './Guide.css';
 
 const CATALOGUE = getAllGuideExercises();
@@ -15,7 +16,7 @@ const MUSCLES = { shoulders: ['Shoulders', 'Rear Delts'], chest: ['Chest'], bice
 const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids du corps', Box: 'Banc / box', Cable: 'Poulie', Cardio: 'Cardio', Chair: 'Chaise', Doorway: 'Encadrement de porte', Dumbbell: 'Haltères', Kettlebell: 'Kettlebell', Machine: 'Machine', Plate: 'Disque', 'Pull-up Bar': 'Barre de traction', 'Resistance Band': 'Élastique', 'Stability Ball': 'Ballon', Towel: 'Serviette', Wall: 'Mur' };
 const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const inZone = (e, zone) => !zone || e.muscles.some(m => MUSCLES[zone].includes(m));
-const countedLift = e => ({ 'bicep-curl': 'bicep_curl', 'lateral-raise': 'lateral_raise', 'lat-pulldown': 'lat_pulldown' })[e.slug];
+const countedLift = e => (TIERS[e.key] ? e.key : undefined);
 
 function BodyMap() {
   const canvas = useRef(null);
@@ -71,9 +72,9 @@ export default function Guide({ onClose, onChoose }) {
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
           <span className="thumb"><img src={e.frames[0]} loading="lazy" width="56" height="56" alt="" /></span>
           <span><span className="item-name">{fr ? e.fr : e.name}</span><span className="item-sub">{fr ? e.name : e.fr} · {fr ? EQUIPMENT[e.equipment] : e.equipment}</span></span>
-          <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? (fr ? 'Compté' : 'Counted') : 'Guide'}</span>
+          <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? tierTag(TIERS[e.key], fr) : 'Guide'}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? (fr ? 'Cet exercice peut être compté.' : 'This exercise can be counted.') : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}</p>
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(TIERS[e.key], fr)}.` : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}</p>
           {countedLift(e) && <button className="guide-action press" onClick={() => onChoose(countedLift(e))}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>}
           <button className="guide-action press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}

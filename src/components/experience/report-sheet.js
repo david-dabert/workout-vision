@@ -68,6 +68,7 @@ function repTempo(r, nextStart, first) {
  * @param {number} o.count       the number the visitor confirmed or corrected
  * @param {number} [o.counted]   the number the app counted, when it differs
  * @param {'left'|'right'} [o.arm]
+ * @param {'elbow'|'shoulder'|'knee'|'hip'} [o.joint]  the joint that counts the lift (core.ts)
  * @param {'concentric'|'eccentric'} [o.first]  which phase leaves the rest end
  * @param {Array} [o.reps]       the app's reps with step 3c boundaries
  * @param {object} [o.previousSet]  the previous saved set of the same lift
@@ -75,7 +76,7 @@ function repTempo(r, nextStart, first) {
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
  */
-export function reportSheet({ lang, date, client, coach, notes, liftName, count, counted, arm, source, reps, first, previousSet }) {
+export function reportSheet({ lang, date, client, coach, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -174,7 +175,9 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
       ? (fr ? `Compté par l'app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
       : '',
     arm: arm === 'left' || arm === 'right'
-      ? (fr ? 'Bras suivi' : 'Arm tracked') + colon + (arm === 'left' ? (fr ? 'gauche' : 'left') : (fr ? 'droit' : 'right'))
+      // The tracked limb follows the joint that counts the lift: arm, leg (knee) or side (hip).
+      ? (joint === 'knee' ? (fr ? 'Jambe suivie' : 'Leg tracked') : joint === 'hip' ? (fr ? 'Côté suivi' : 'Side tracked') : (fr ? 'Bras suivi' : 'Arm tracked'))
+        + colon + (arm === 'left' ? (fr ? 'gauche' : 'left') : fr ? (joint === 'knee' ? 'droite' : 'droit') : 'right')
       : '',
     // Tempo replaces time and phases; peak and mean angular speed in °/s.
     columns: fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'],

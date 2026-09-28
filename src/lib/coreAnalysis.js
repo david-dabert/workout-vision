@@ -2,7 +2,10 @@ import { countReps } from './counting/core';
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
-export const APPROVED_LIFTS = ['bicep_curl', 'lateral_raise', 'lat_pulldown'];
+import { TIERS } from './liftTiers';
+
+// Every lift with a tier (Beta or Experimental) is offered; see liftTiers.js and PLAN.md.
+export const APPROVED_LIFTS = Object.keys(TIERS);
 
 export function summarizeCount(worldLandmarks, timestamps, lift) {
   const core = countReps(worldLandmarks, timestamps, lift);

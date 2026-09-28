@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { createLiftScene, META, liftView, restBox } from './lift-scenes';
+import { LIFTS as CORE_LIFTS } from '../../lib/counting/core';
+import { TIERS, tierLabel } from '../../lib/liftTiers';
 import './Film.css';
 
 export default function Film({ lift, onBack, onFile }) {
@@ -21,7 +23,11 @@ export default function Film({ lift, onBack, onFile }) {
     if (f) onFile(f);
   }
 
-  const step1 = view === 'side'
+  // Knee and hip lifts are filmed with the whole body in frame; arm lifts from head to hips.
+  const wholeBody = ['knee', 'hip'].includes(CORE_LIFTS[lift]?.joint);
+  const step1 = wholeBody
+    ? (fr ? 'Posez le téléphone à la verticale, sur le côté, pour qu\u2019il vous voie de profil.' : 'Stand the phone upright at your side, so it sees you in profile.')
+    : view === 'side'
     ? (fr ? 'Posez le téléphone sur le côté, le bras qui travaille face à l\u2019objectif.' : 'Stand the phone at your side, working arm facing the lens.')
     : (fr ? 'Posez le téléphone face à vous, à la verticale.' : 'Stand the phone upright, facing you.');
 
@@ -35,6 +41,7 @@ export default function Film({ lift, onBack, onFile }) {
       </div>
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{META[lift]?.[lang] || lift}</h2>
+      {TIERS[lift] && <p className={`tier tier-${TIERS[lift]}`} data-reveal style={{ '--i': 1 }}>{tierLabel(TIERS[lift], fr)}</p>}
       <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh }}>
         <canvas ref={canvas} aria-hidden="true" />
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -45,7 +52,7 @@ export default function Film({ lift, onBack, onFile }) {
       <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
       <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
-        <li><span className="n">2</span><span>{fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.'}</span></li>
+        <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.')}</span></li>
         <li><span className="n">3</span><span>{fr ? 'Une série, puis arrêtez la vidéo.' : 'One set, then stop recording.'}</span></li>
       </ol>
       <div className="actions" data-reveal style={{ '--i': 5 }}>

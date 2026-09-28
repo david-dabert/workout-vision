@@ -7,12 +7,15 @@ import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
 import { refreshSets } from './sets';
 import { decimal } from './report-sheet';
+import { TIERS, tierLabel, reportWrongCountUrl } from '../../lib/liftTiers';
+import { limbLabel } from './lift-meta';
+import { LIFTS as CORE_LIFTS, JOINT_POINTS } from '../../lib/counting/core';
 import './Result.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-// The three joints the counting core measures for each lift (core.ts), by arm.
-const CORE_JOINTS = { lateral_raise: ['hip', 'shoulder', 'elbow'], bicep_curl: ['shoulder', 'elbow', 'wrist'], lat_pulldown: ['shoulder', 'elbow', 'wrist'] };
-const JOINT_INDEX = { left: { shoulder: 11, elbow: 13, wrist: 15, hip: 23 }, right: { shoulder: 12, elbow: 14, wrist: 16, hip: 24 } };
+// The three landmarks the counting core measures for each lift (JOINT_POINTS in core.ts), by side.
+const HIPS = new Set([23, 24]);
+const coreIndices = (lift, side) => JOINT_POINTS[CORE_LIFTS[lift]?.joint || 'elbow'][side];
 
 // Why a set was refused, read from the same joints the core uses rather than assumed.
 function refusal(result, lift) {
@@ -20,16 +23,16 @@ function refusal(result, lift) {
   const posed = frames.filter(Boolean);
   if (!frames.length || posed.length < frames.length / 2) return { cause: 'nobody' };
   const arm = result.arm === 'left' ? 'left' : 'right';
-  let joint = null, missing = -1;
-  for (const name of CORE_JOINTS[lift] || CORE_JOINTS.bicep_curl) {
-    const i = JOINT_INDEX[arm][name], n = posed.filter(f => f[i].visibility < 0.5).length;
-    if (n > missing) { missing = n; joint = name; }
+  let i = -1, missing = -1;
+  for (const k of coreIndices(lift, arm)) {
+    const n = posed.filter(f => f[k].visibility < 0.5).length;
+    if (n > missing) { missing = n; i = k; }
   }
   if (missing <= posed.length / 2) return { cause: 'unclear' };
-  const i = JOINT_INDEX[arm][joint], hidden = posed.filter(f => f[i].visibility < 0.5);
+  const hidden = posed.filter(f => f[i].visibility < 0.5);
   const outside = hidden.filter(f => f[i].x < 0 || f[i].x > 1 || f[i].y < 0 || f[i].y > 1).length > hidden.length / 2;
   const xs = posed.map(f => f[i].x).sort((a, b) => a - b);
-  return { cause: outside ? 'outside' : 'hidden', hips: joint === 'hip', exitLeft: xs[xs.length >> 1] < 0.5 };
+  return { cause: outside ? 'outside' : 'hidden', hips: HIPS.has(i), exitLeft: xs[xs.length >> 1] < 0.5 };
 }
 
 // The user's own body at the top of the first rep, faint behind the number.
@@ -141,8 +144,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   }, [covered]);
 
   const liftName = META[lift]?.[lang] || lift;
-  const side = result.arm === 'left' ? (fr ? 'gauche' : 'left') : (fr ? 'droit' : 'right');
-  const armLabel = fr ? `bras ${side}` : `${side} arm`;
+  const limb = limbLabel(lift, result.arm === 'left' ? 'left' : 'right', fr), armLabel = limb.text, e = limb.feminine ? 'e' : '';
+  const legs = CORE_LIFTS[lift]?.joint === 'knee';
   const seconds = Math.round(result.metadata?.duration || 0);
   const count = result.count;
 
@@ -239,13 +242,15 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             ? (fr ? 'Vos hanches sont restées hors du cadre pendant la plus grande partie de la série.' : 'Your hips stayed out of the frame for most of the set.')
             : (fr ? 'Vos hanches étaient cachées pendant la plus grande partie de la série.' : 'Your hips were hidden for most of the set.'))
           : (why.cause === 'outside'
-            ? (fr ? `Votre ${armLabel} est sorti du cadre pendant la plus grande partie de la série.` : `Your ${armLabel} left the frame for most of the set.`)
-            : (fr ? `Votre ${armLabel} était caché pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`));
+            ? (fr ? `Votre ${armLabel} est sorti${e} du cadre pendant la plus grande partie de la série.` : `Your ${armLabel} left the frame for most of the set.`)
+            : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`));
     const fix = why.hips
       ? (fr ? 'Reculez pour que vos hanches soient dans l\u2019image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
         ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l\u2019image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
-        : (fr ? 'Placez-vous au centre de l\u2019image, bras compris, puis refilmez.' : 'Stand in the middle of the picture, arms included, then record again.');
+        : legs
+          ? (fr ? 'Placez-vous au centre de l\u2019image, pieds compris, puis refilmez.' : 'Stand in the middle of the picture, feet included, then record again.')
+          : (fr ? 'Placez-vous au centre de l\u2019image, bras compris, puis refilmez.' : 'Stand in the middle of the picture, arms included, then record again.');
     // The replay shows where the tracking lost the body; under it, this screen is out of reach.
     return <div className="wv-experience" inert={covered ? true : undefined}>
       <section className="screen is-active result-screen"><div className="wrap">
@@ -276,6 +281,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
       <div className="res-head">
         <p className="eyebrow">{liftName}</p>
+        {TIERS[lift] && <p className={`tier tier-${TIERS[lift]}`}>{tierLabel(TIERS[lift], fr)}</p>}
         <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
       </div>
       <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>
@@ -331,6 +337,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
+      {step === 'saved' && trueN !== count && <a className="text-btn report-wrong" href={reportWrongCountUrl({ lift, counted: count, userCount: trueN, version: typeof __GIT_HASH__ === 'undefined' ? '' : __GIT_HASH__ })} target="_blank" rel="noreferrer">{fr ? 'Signaler un comptage faux' : 'Report a wrong count'}</a>}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
     </div></section>
   </div>;

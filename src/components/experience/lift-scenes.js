@@ -21,12 +21,8 @@ function lerpPose(frames, fi, out) {
 }
 
 
-export const LIFTS = ['lateral_raise', 'bicep_curl', 'lat_pulldown'];
-export const META = {
-  lateral_raise: { fr: 'Élévations latérales', en: 'Lateral raise', aliasFr: 'Élévation latérale · Lateral raise', aliasEn: 'Side raise · Élévations latérales' },
-  bicep_curl: { fr: 'Curl biceps', en: 'Biceps curl', aliasFr: 'Curl haltère · Biceps curl', aliasEn: 'Dumbbell curl · Curl biceps' },
-  lat_pulldown: { fr: 'Tirage vertical', en: 'Lat pulldown', aliasFr: 'Tirage poitrine · Lat pulldown', aliasEn: 'Pulldown · Tirage vertical' }
-};
+export { LIFTS, META } from './lift-meta';
+import { LIFTS } from './lift-meta';
 export function createLiftScene(canvas, lift, mode = 'loop') {
   const k = LIFTS.indexOf(lift), data = poses[lift];
   const ctx = canvas.getContext('2d'), body = new Body(mode === 'loop' ? (LITE ? 700 : 1000) : 1100, mode === 'loop' ? 100 + k : 21);

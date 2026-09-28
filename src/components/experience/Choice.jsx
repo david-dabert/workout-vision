@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { LIFTS, META, createLiftScene, liftView } from './lift-scenes';
 import { useSets } from './sets';
+import { TIERS, tierLabel } from '../../lib/liftTiers';
 import './Choice.css';
 
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
@@ -50,7 +51,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
             : `Last set: ${lastName}, ${last.reps} ${last.reps === 1 ? 'rep' : 'reps'}.`}</p>
         </div>}
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>
-        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour voir les trois.' : 'Choose the movement you recognise. Swipe to see all three.'}</p>
+        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
       </div>
       <div className="rail" data-reveal style={{ '--i': 2 }} onScroll={event => {
         // The dot follows the card nearest the centre, as in the prototype.
@@ -64,6 +65,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="altar-meta">
             <span className="altar-idx">{String(i + 1).padStart(2, '0')} / {String(LIFTS.length).padStart(2, '0')}</span>
             <span className="altar-name">{META[lift][lang]}</span>
+            {TIERS[lift] && <span className={`tier tier-${TIERS[lift]}`}>{tierLabel(TIERS[lift], fr)}</span>}
             <span className="altar-alias">{META[lift][fr ? 'aliasFr' : 'aliasEn']}</span>
             <span className="altar-view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7.5h3.2l2-2.5h7.6l2 2.5H21v11H3z" /><circle cx="12" cy="13" r="3.5" /></svg>{liftView(lift) === 'front' ? (fr ? 'Filmé de face' : 'Filmed from the front') : (fr ? 'Filmé de profil' : 'Filmed from the side')}</span>
           </span>
@@ -81,7 +83,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        <p className="foot">{fr ? 'Trois mouvements sont comptés pour l’instant.' : 'Three movements are counted for now.'}</p>
+        <p className="foot">{fr ? 'Chaque comptage reste à confirmer : ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are in Beta or Experimental.'}</p>
       </div>
     </section>
   </div>;

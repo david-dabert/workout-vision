@@ -46,7 +46,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       prevRef.current = null;
     }
   }
-  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, reps, source, first, previousSet: prevRef.current });
+  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, joint: LIFTS[lift]?.joint, reps, source, first, previousSet: prevRef.current });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 

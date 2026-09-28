@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { META } from './lift-scenes';
+import { limbLabel } from './lift-meta';
 import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
 import './History.css';
@@ -35,7 +36,7 @@ export default function History({ onClose }) {
   }, []);
 
   const liftName = w => META[w.exercise]?.[lang] || tExercise(w.exercise || w.exerciseKey);
-  const armLabel = w => w.arm === 'left' ? (fr ? 'bras gauche' : 'left arm') : w.arm === 'right' ? (fr ? 'bras droit' : 'right arm') : '';
+  const armLabel = w => (w.arm === 'left' || w.arm === 'right') ? limbLabel(w.exercise || w.exerciseKey, w.arm, fr).text : '';
 
   function toggle(id) {
     setConfirm(null);
