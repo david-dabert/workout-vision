@@ -128,7 +128,7 @@ videoInput.addEventListener('change', async () => {
     // 4. Build payload and compress
     const payload = setPayload({
       worldLandmarks, timestamps, lift, count, view, sha256,
-      frameWidth, frameHeight, version: VERSION,
+      frameWidth, frameHeight, version: VERSION, extractor: metadata,
     });
     const json = JSON.stringify(payload);
     const blob = await gzipBlob(json);

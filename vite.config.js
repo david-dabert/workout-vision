@@ -43,7 +43,7 @@ export default defineConfig({
     minify: 'esbuild',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        index: resolve(__dirname, 'index.html'),
         collect: resolve(__dirname, 'collect.html'),
       },
       output: {

@@ -40,8 +40,10 @@ export function issueUrl({ lift, count, view, sha256 }) {
 /**
  * The JSON payload saved inside the .json.gz file.
  * No app count is included: the page shows no count.
+ * `extractor` is what extractFramesStreaming returned; it is recorded under `metadata` with the
+ * names the committed clips use (test/real-phone/landmarks), so each set says how it was decoded.
  */
-export function setPayload({ worldLandmarks, timestamps, lift, count, view, sha256, frameWidth, frameHeight, version }) {
+export function setPayload({ worldLandmarks, timestamps, lift, count, view, sha256, frameWidth, frameHeight, version, extractor = {} }) {
   return {
     lift,
     count,
@@ -51,6 +53,17 @@ export function setPayload({ worldLandmarks, timestamps, lift, count, view, sha2
     timestamps,
     frame: { width: frameWidth, height: frameHeight },
     extraction: { fps: TARGET_FPS, maxLongSide: MAX_LONG_SIDE },
+    metadata: {
+      extractionMethod: extractor.method,
+      extractedWidth: extractor.width,
+      extractedHeight: extractor.height,
+      duration: extractor.duration,
+      sampleCount: extractor.frameCount,
+      targetFps: TARGET_FPS,
+      maxLongSide: MAX_LONG_SIDE,
+      peakOpenFrames: extractor.peakOpenFrames,
+      rotationDecision: extractor.rotationDecision,
+    },
     version,
   };
 }

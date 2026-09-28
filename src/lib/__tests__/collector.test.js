@@ -68,6 +68,22 @@ describe('collector', () => {
       expect(payload.version).toBe('1.4.0');
     });
 
+    it('records the extractor\'s metadata as the committed clips carry it, the decoder included', () => {
+      const extractor = { width: 360, height: 640, fps: 15, duration: 22.77, frameCount: 3, method: 'webcodecs', peakOpenFrames: 1, rotationDecision: 'manual rotation=90° from container' };
+      const payload = setPayload({ worldLandmarks: landmarks, timestamps, ...meta, extractor });
+      expect(payload.metadata).toEqual({
+        extractionMethod: 'webcodecs',
+        extractedWidth: 360,
+        extractedHeight: 640,
+        duration: 22.77,
+        sampleCount: 3,
+        targetFps: 15,
+        maxLongSide: 640,
+        peakOpenFrames: 1,
+        rotationDecision: 'manual rotation=90° from container',
+      });
+    });
+
     it('does not include a count from the counter', () => {
       const payload = setPayload({ worldLandmarks: landmarks, timestamps, ...meta });
       expect(payload).not.toHaveProperty('appCount');
