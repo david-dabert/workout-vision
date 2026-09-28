@@ -422,6 +422,21 @@ function savitzkyGolay(angles: (number | null)[], windowSize: number): (number |
  *   rest low (lateral raise, triceps pushdown, leg extension, hip thrust): low → high → low
  * Returns each accepted cycle as sample indices: where the state machine entered
  * the rep, and where it completed it. Which cycles count is decided here alone.
+ * A cycle counts only if it lasts MIN_REP_SEC to MAX_REP_SEC and covers MIN_ROM_DEGREES from
+ * the level of the rest the rep left to the level of its working end, not from the threshold
+ * where it was first seen to leave the rest.
+ * - The rest's level is the median of the samples at rest (past the rest threshold) since the
+ *   last cycle ended, or their fullest point when they add up to less than REST_LEVEL_MIN_SEC.
+ *   A hold beyond the rest threshold is thus not taken for the rest; a pause that stays within
+ *   it, and outlasts the rest the rep left, still is.
+ * - The working end's level is the mean of its most extreme EXTREME_HOLD_SEC of consecutive
+ *   samples, so one-sample flickers apart from each other do not add up. On a hold, the most
+ *   extreme stretch is still picked from the noise, which reads a held rep a little long.
+ * When the video starts at the first rep, or during it, less than REST_LEVEL_MIN_SEC of the rest
+ * it left may be in view; the rest it comes back to then stands in, if it is fuller. Later reps
+ * are measured from the rest they left alone, so a fuller rest after the set, such as an arm let
+ * hang straight after curls, does not lengthen a last partial. An excursion that comes back to
+ * the rest without reaching the working end is not a rep, and the rest it left goes on.
  */
 interface Cycle { enter: number; complete: number }
 
@@ -434,11 +449,55 @@ function detectReps(
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
+  const sampleRate = estimateSampleRate(timestamps);
+  const hold = Math.max(1, Math.round(EXTREME_HOLD_SEC * sampleRate));
+  const atRest = (a: number) => (restsLow ? a <= lowThreshold : a >= highThreshold);
+  const values = (from: number, to: number, keep: (a: number) => boolean) => {
+    const out: number[] = [];
+    for (let k = Math.max(0, from); k < Math.min(smoothed.length, to); k++) {
+      const a = smoothed[k];
+      if (a !== null && keep(a)) out.push(a);
+    }
+    return out;
+  };
+  const restLevel = (atRestSamples: number[]): number => {
+    atRestSamples.sort((x, y) => x - y);
+    if (atRestSamples.length >= REST_LEVEL_MIN_SEC * sampleRate) return atRestSamples[Math.floor(atRestSamples.length / 2)];
+    return restsLow ? atRestSamples[0] : atRestSamples[atRestSamples.length - 1];
+  };
+  const workLevel = (span: number[]): number => {
+    const w = Math.min(hold, span.length);
+    let sum = 0;
+    for (let q = 0; q < w; q++) sum += span[q];
+    let most = sum;
+    for (let q = w; q < span.length; q++) {
+      sum += span[q] - span[q - w];
+      most = restsLow ? Math.max(most, sum) : Math.min(most, sum);
+    }
+    return most / w;
+  };
+  // The range a rep is checked on: from the rest it left, since the last cycle ended, to its
+  // working end. Before the first cycle, the start of the video may have cut that rest short:
+  // with less than REST_LEVEL_MIN_SEC of it in view, the rest the rep comes back to, until the
+  // angle leaves it again, stands in when it is fuller.
+  const rangeFromRest = (restFrom: number, enter: number, complete: number): number => {
+    const rested = values(restFrom, enter, atRest);
+    let rest = rested.length ? restLevel(rested) : null;
+    if (restFrom === 0 && rested.length < REST_LEVEL_MIN_SEC * sampleRate) {
+      let next = complete;
+      while (next < smoothed.length && (smoothed[next] === null || atRest(smoothed[next] as number))) next++;
+      const after = restLevel(values(complete, next, atRest));
+      rest = rest === null ? after : restsLow ? Math.min(rest, after) : Math.max(rest, after);
+    }
+    return Math.abs(workLevel(values(enter, complete + 1, () => true)) - (rest as number));
+  };
   let state: 'waiting' | 'inRep' = 'waiting';
   let repStartIdx = -1;
-  let peakAngle = -Infinity;
-  let troughAngle = Infinity;
   let crossIdx = -1;
+  // Where the rest the next rep leaves began: where the last cycle through both thresholds ended,
+  // counted or not, or the start of the video. A move that comes back without reaching the
+  // working end does not end that rest.
+  let restFrom = 0;
 
   for (let i = 0; i < smoothed.length; i++) {
     const angle = smoothed[i];
@@ -449,23 +508,19 @@ function detectReps(
         if (angle > lowThreshold) {
           state = 'inRep';
           repStartIdx = i;
-          peakAngle = angle;
-          troughAngle = angle;
           crossIdx = -1;
         }
       } else {
-        peakAngle = Math.max(peakAngle, angle);
-        troughAngle = Math.min(troughAngle, angle);
         if (angle >= highThreshold) crossIdx = i;
         if (angle < lowThreshold && crossIdx > -1) {
-          const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
+          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rangeFromRest(restFrom, repStartIdx, i) >= MIN_ROM_DEGREES) {
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
+          restFrom = i;
         } else if (angle < lowThreshold) {
-          state = 'waiting'; // back at rest without reaching the working end: not a rep
+          state = 'waiting'; // back at rest without reaching the working end: not a rep, and the rest goes on
         }
       }
     } else {
@@ -473,23 +528,19 @@ function detectReps(
         if (angle < highThreshold) {
           state = 'inRep';
           repStartIdx = i;
-          peakAngle = angle;
-          troughAngle = angle;
           crossIdx = -1;
         }
       } else {
-        peakAngle = Math.max(peakAngle, angle);
-        troughAngle = Math.min(troughAngle, angle);
         if (angle <= lowThreshold) crossIdx = i;
         if (angle > highThreshold && crossIdx > -1) {
-          const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
+          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rangeFromRest(restFrom, repStartIdx, i) >= MIN_ROM_DEGREES) {
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
+          restFrom = i;
         } else if (angle > highThreshold) {
-          state = 'waiting'; // back at rest without reaching the working end: not a rep
+          state = 'waiting'; // back at rest without reaching the working end: not a rep, and the rest goes on
         }
       }
     }

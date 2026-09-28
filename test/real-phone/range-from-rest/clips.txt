@@ -1,0 +1,97 @@
+David's five clips (test/real-phone/landmarks), replayed by the clip test of src/lib/counting/__tests__/core.test.ts:
+bun test src/lib/counting/__tests__/core.test.ts -t David, its printed lines kept. Build data; nothing was chosen from it.
+
+== core of bf50199, sha256 5514f77b2b570a824e01d22425a29008d34ce8f2a36b5b3174394743f9f5d5d3
+bench_press | expected=7 | hotfix=5 | new=3 | arm=right | confidence=39.0% | low=97.7° | high=140.8°
+  rep 1: 2.60s–8.93s, ROM=82.6°, conc=1.13s, ecc=4.47s
+  rep 2: 16.13s–18.07s, ROM=64.9°, conc=1.00s, ecc=0.47s
+  rep 3: 18.40s–20.20s, ROM=55.3°, conc=0.40s, ecc=0.47s
+bicep_curl | expected=7 | hotfix=11 | new=7 | arm=left | confidence=95.9% | low=96.2° | high=153.7°
+  rep 1: 0.00s–1.13s, ROM=86.5°, conc=0.07s, ecc=0.47s
+  rep 2: 3.53s–5.00s, ROM=88.4°, conc=0.33s, ecc=0.67s
+  rep 3: 6.93s–8.40s, ROM=102.9°, conc=0.27s, ecc=0.67s
+  rep 4: 10.07s–11.47s, ROM=100.8°, conc=0.33s, ecc=0.60s
+  rep 5: 13.33s–14.93s, ROM=117.3°, conc=0.33s, ecc=0.73s
+  rep 6: 16.20s–17.87s, ROM=104.1°, conc=0.47s, ecc=0.60s
+  rep 7: 19.40s–21.07s, ROM=108.4°, conc=0.40s, ecc=0.53s
+lat_pulldown | expected=10 | hotfix=11 | new=10 | arm=right | confidence=97.5% | low=112.3° | high=141.6°
+  rep 1: 1.93s–4.33s, ROM=52.7°, conc=0.47s, ecc=1.27s
+  rep 2: 5.47s–7.60s, ROM=48.9°, conc=0.33s, ecc=1.00s
+  rep 3: 8.60s–10.87s, ROM=54.1°, conc=0.33s, ecc=1.13s
+  rep 4: 11.93s–14.40s, ROM=52.6°, conc=0.33s, ecc=1.27s
+  rep 5: 15.47s–17.67s, ROM=52.7°, conc=0.33s, ecc=1.13s
+  rep 6: 18.93s–21.20s, ROM=52.4°, conc=0.40s, ecc=0.87s
+  rep 7: 22.54s–24.80s, ROM=52.8°, conc=0.40s, ecc=1.07s
+  rep 8: 26.14s–28.34s, ROM=53.6°, conc=0.47s, ecc=0.93s
+  rep 9: 30.00s–32.60s, ROM=51.5°, conc=0.47s, ecc=1.40s
+  rep 10: 34.87s–37.53s, ROM=49.6°, conc=0.87s, ecc=0.87s
+lateral_raise | expected=10 | hotfix=11 | new=10 | arm=right | confidence=100.0% | low=34.0° | high=82.6°
+  rep 1: 1.07s–3.47s, ROM=77.5°, conc=0.60s, ecc=1.33s
+  rep 2: 4.67s–6.37s, ROM=82.0°, conc=0.53s, ecc=0.77s
+  rep 3: 7.23s–9.10s, ROM=83.6°, conc=0.60s, ecc=0.87s
+  rep 4: 10.16s–11.77s, ROM=83.2°, conc=0.47s, ecc=0.73s
+  rep 5: 12.77s–14.43s, ROM=86.1°, conc=0.53s, ecc=0.67s
+  rep 6: 15.43s–16.90s, ROM=85.0°, conc=0.53s, ecc=0.67s
+  rep 7: 17.90s–19.43s, ROM=86.7°, conc=0.53s, ecc=0.67s
+  rep 8: 20.50s–22.23s, ROM=85.0°, conc=0.60s, ecc=0.80s
+  rep 9: 23.23s–24.63s, ROM=91.2°, conc=0.53s, ecc=0.47s
+  rep 10: 25.70s–27.43s, ROM=85.5°, conc=0.60s, ecc=0.73s
+overhead_press | expected=10 | hotfix=22 | new=9 | arm=left | confidence=88.5% | low=109.9° | high=142.4°
+  rep 1: 0.09s–5.94s, ROM=84.6°, conc=3.87s, ecc=0.45s
+  rep 2: 8.28s–11.21s, ROM=68.9°, conc=1.33s, ecc=1.13s
+  rep 3: 12.22s–14.69s, ROM=58.5°, conc=0.40s, ecc=0.47s
+  rep 4: 15.89s–18.69s, ROM=59.6°, conc=0.40s, ecc=0.47s
+  rep 5: 19.69s–22.29s, ROM=59.8°, conc=1.40s, ecc=0.47s
+  rep 6: 23.16s–25.30s, ROM=57.5°, conc=0.67s, ecc=0.67s
+  rep 7: 26.23s–28.47s, ROM=52.4°, conc=1.30s, ecc=0.47s
+  rep 8: 29.40s–31.54s, ROM=61.3°, conc=0.80s, ecc=1.14s
+  rep 9: 36.27s–38.28s, ROM=50.7°, conc=1.20s, ecc=0.67s
+
+== this change, sha256 33300a79b3147825bae4dbad3e681c920eab8dd1d0e4dab1a773ed9c0fa03412
+bench_press | expected=7 | hotfix=5 | new=3 | arm=right | confidence=39.0% | low=97.7° | high=140.8°
+  rep 1: 2.60s–8.93s, ROM=82.6°, conc=1.13s, ecc=4.47s
+  rep 2: 16.13s–18.07s, ROM=64.9°, conc=1.00s, ecc=0.47s
+  rep 3: 18.40s–20.20s, ROM=55.3°, conc=0.40s, ecc=0.47s
+bicep_curl | expected=7 | hotfix=11 | new=7 | arm=left | confidence=95.9% | low=96.2° | high=153.7°
+  rep 1: 0.00s–1.13s, ROM=86.5°, conc=0.07s, ecc=0.47s
+  rep 2: 3.53s–5.00s, ROM=88.4°, conc=0.33s, ecc=0.67s
+  rep 3: 6.93s–8.40s, ROM=102.9°, conc=0.27s, ecc=0.67s
+  rep 4: 10.07s–11.47s, ROM=100.8°, conc=0.33s, ecc=0.60s
+  rep 5: 13.33s–14.93s, ROM=117.3°, conc=0.33s, ecc=0.73s
+  rep 6: 16.20s–17.87s, ROM=104.1°, conc=0.47s, ecc=0.60s
+  rep 7: 19.40s–21.07s, ROM=108.4°, conc=0.40s, ecc=0.53s
+lat_pulldown | expected=10 | hotfix=11 | new=10 | arm=right | confidence=97.5% | low=112.3° | high=141.6°
+  rep 1: 1.93s–4.33s, ROM=52.7°, conc=0.47s, ecc=1.27s
+  rep 2: 5.47s–7.60s, ROM=48.9°, conc=0.33s, ecc=1.00s
+  rep 3: 8.60s–10.87s, ROM=54.1°, conc=0.33s, ecc=1.13s
+  rep 4: 11.93s–14.40s, ROM=52.6°, conc=0.33s, ecc=1.27s
+  rep 5: 15.47s–17.67s, ROM=52.7°, conc=0.33s, ecc=1.13s
+  rep 6: 18.93s–21.20s, ROM=52.4°, conc=0.40s, ecc=0.87s
+  rep 7: 22.54s–24.80s, ROM=52.8°, conc=0.40s, ecc=1.07s
+  rep 8: 26.14s–28.34s, ROM=53.6°, conc=0.47s, ecc=0.93s
+  rep 9: 30.00s–32.60s, ROM=51.5°, conc=0.47s, ecc=1.40s
+  rep 10: 34.87s–37.53s, ROM=49.6°, conc=0.87s, ecc=0.87s
+lateral_raise | expected=10 | hotfix=11 | new=10 | arm=right | confidence=100.0% | low=34.0° | high=82.6°
+  rep 1: 1.07s–3.47s, ROM=77.5°, conc=0.60s, ecc=1.33s
+  rep 2: 4.67s–6.37s, ROM=82.0°, conc=0.53s, ecc=0.77s
+  rep 3: 7.23s–9.10s, ROM=83.6°, conc=0.60s, ecc=0.87s
+  rep 4: 10.16s–11.77s, ROM=83.2°, conc=0.47s, ecc=0.73s
+  rep 5: 12.77s–14.43s, ROM=86.1°, conc=0.53s, ecc=0.67s
+  rep 6: 15.43s–16.90s, ROM=85.0°, conc=0.53s, ecc=0.67s
+  rep 7: 17.90s–19.43s, ROM=86.7°, conc=0.53s, ecc=0.67s
+  rep 8: 20.50s–22.23s, ROM=85.0°, conc=0.60s, ecc=0.80s
+  rep 9: 23.23s–24.63s, ROM=91.2°, conc=0.53s, ecc=0.47s
+  rep 10: 25.70s–27.43s, ROM=85.5°, conc=0.60s, ecc=0.73s
+overhead_press | expected=10 | hotfix=22 | new=9 | arm=left | confidence=88.5% | low=109.9° | high=142.4°
+  rep 1: 0.09s–5.94s, ROM=84.6°, conc=3.87s, ecc=0.45s
+  rep 2: 8.28s–11.21s, ROM=68.9°, conc=1.33s, ecc=1.13s
+  rep 3: 12.22s–14.69s, ROM=58.5°, conc=0.40s, ecc=0.47s
+  rep 4: 15.89s–18.69s, ROM=59.6°, conc=0.40s, ecc=0.47s
+  rep 5: 19.69s–22.29s, ROM=59.8°, conc=1.40s, ecc=0.47s
+  rep 6: 23.16s–25.30s, ROM=57.5°, conc=0.67s, ecc=0.67s
+  rep 7: 26.23s–28.47s, ROM=52.4°, conc=1.30s, ecc=0.47s
+  rep 8: 29.40s–31.54s, ROM=61.3°, conc=0.80s, ecc=1.14s
+  rep 9: 36.27s–38.28s, ROM=50.7°, conc=1.20s, ecc=0.67s
+
+== diff of the two
+(none)
