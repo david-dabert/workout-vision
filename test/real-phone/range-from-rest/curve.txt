@@ -1,7 +1,7 @@
 6000 synthetic sets, 15 samples per second. A cycle of 21° or more must count, one under 19° must not.
 core-bf50199: sha256 5514f77b2b570a824e01d22425a29008d34ce8f2a36b5b3174394743f9f5d5d3
 core-c3681b8: sha256 e47923978ebc230657bfcdccb052f93481d08872cff0d4fab3e57ce7457159e6
-core: sha256 4d9f897e350a99a10c5f3e12c5536c24c12ec937f2bee16bffebe0e5c3ae5710
+core: sha256 00c852b84fe96d83a321eec5bf42cc416c268c215749172a751c29aaca904d36
 Reference for further and closer: core-bf50199.
 
 core              right  under (reps)  over (reps)  off by 3+  further  closer  counted reps shown under 20°

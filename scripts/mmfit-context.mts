@@ -90,11 +90,15 @@ function ownWindow(p: Pose, s: number, e: number, margin: number, arm: string, b
   return { worldLandmarks, timestamps, margins: [(s - from) / 30, (to - e) / 30] };
 }
 
+// A missing folder would turn every MediaPipe cell into "no count" without a word: stop instead.
+const landmarksDir = join(root, 'all-sets-final/landmarks');
+if (!existsSync(landmarksDir)) throw new Error(`No MediaPipe landmarks folder at ${landmarksDir}: check MMFIT_ROOT.`);
 const rows: any[] = [];
+const noLandmarks: string[] = []; // sets that name a lift but have no MediaPipe landmarks file
 for (const r of sets) {
   const [w, , s0, e0] = r.id.split('-');
   const s = +s0, e = +e0;
-  const file = join(root, 'all-sets-final/landmarks', `${r.id}.json.gz`);
+  const file = join(landmarksDir, `${r.id}.json.gz`);
   const mp = existsSync(file) ? JSON.parse(gunzipSync(readFileSync(file)).toString()) : null;
   const row: any = { id: r.id, lift: r.lift, expected: r.expected, admitted: r.admitted, counts: [] };
   if (!r.lift) { // a movement the app does not count: no count, in every column
@@ -102,11 +106,14 @@ for (const r of sets) {
     rows.push(row);
     continue;
   }
+  if (!mp) noLandmarks.push(r.id);
   const p = pose(w);
   for (const m of modules) {
     const mpResult = mp ? m.countReps(mp.worldLandmarks, mp.timestamps, r.lift) : null;
     // MM-Fit's pose has no visibility: the arm the counter tracks on the MediaPipe landmarks is kept.
-    // Without MediaPipe landmarks, both arms are shown and the counter chooses.
+    // Without MediaPipe landmarks, both arms get full visibility: a lift counted on one arm then
+    // takes the left one, as selectSide in core.ts breaks a tie to the left; a lift counted on
+    // both arms takes both.
     const arm = mpResult ? mpResult.arm : 'both';
     const both = arm === 'both';
     const c: any = { mediapipe_cut: mpResult ? mpResult.count : null };
@@ -156,5 +163,6 @@ cores.forEach((core, k) => {
 table.push('');
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, 'results.json'), JSON.stringify({ cores: cores.map(c => ({ path: c, sha256: sha(c) })), columns, setsFrom: 'test/real-phone/mmfit/results.json', rows }, null, 1) + '\n');
-writeFileSync(join(out, 'table.md'), '# MM-Fit sets, exact counts\n\nEach cell: sets counted exactly (sets over, sets under, sets with no count). Every MM-Fit set is in every table, as PLAN.md requires. Admitted sets are build data; excluded sets are excluded from build use; sets with no lift the app counts have no count, a failure. Supplementary build data, never exam data.\n\n' + table.join('\n'));
-console.log(table.join('\n'));
+const missingNote = `Sets that name a lift but have no MediaPipe landmarks file: ${noLandmarks.length}${noLandmarks.length ? ` (${noLandmarks.join(', ')})` : ''}; their mediapipe_cut cells have no count.`;
+writeFileSync(join(out, 'table.md'), '# MM-Fit sets, exact counts\n\nEach cell: sets counted exactly (sets over, sets under, sets with no count). Every MM-Fit set is in every table, as PLAN.md requires. Admitted sets are build data; excluded sets are excluded from build use; sets with no lift the app counts have no count, a failure. Supplementary build data, never exam data.\n\n' + missingNote + '\n\n' + table.join('\n'));
+console.log(missingNote + '\n\n' + table.join('\n'));

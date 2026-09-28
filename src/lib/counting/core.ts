@@ -437,12 +437,13 @@ function savitzkyGolay(angles: (number | null)[], windowSize: number): (number |
  * - The working end's level is the mean of its most extreme EXTREME_HOLD_SEC of consecutive
  *   samples, so one-sample flickers apart from each other do not add up. On a hold, the most
  *   extreme stretch is still picked from the noise, which reads a held rep a little long.
- * When the video starts at the first rep, or during it, less than REST_LEVEL_MIN_SEC of the rest
- * it left may be in view; the rest it comes back to, over its first REST_BEFORE_SEC and until the
- * angle leaves it, then stands in if it is fuller. Later reps are measured from the rest they
- * left alone, so a fuller rest after the set, such as an arm let hang straight after curls, does
- * not lengthen a last partial. An excursion that comes back to the rest without reaching the
- * working end is not a rep, and the rest it left goes on.
+ * When the first rep begins less than REST_LEVEL_MIN_SEC after the first sample with a pose, the
+ * start of the video may have cut the rest it left short; the rest it comes back to, over its
+ * first REST_BEFORE_SEC and until the angle leaves it, then stands in if it is fuller. A first rep
+ * that begins later is measured from the rest before it, however short: the video did not cut it.
+ * Later reps are measured from the rest they left alone, so a fuller rest after the set, such as
+ * an arm let hang straight after curls, does not lengthen a last partial. An excursion that comes
+ * back to the rest without reaching the working end is not a rep, and the rest it left goes on.
  */
 interface Cycle { enter: number; complete: number }
 
@@ -483,14 +484,19 @@ function detectReps(
     }
     return most / w;
   };
+  // The first sample with a pose: where the video lets the rest before the first rep begin.
+  let firstPose = 0;
+  while (firstPose < smoothed.length && smoothed[firstPose] === null) firstPose++;
   // The range a rep is checked on: from the rest it left, over its last REST_BEFORE_SEC since the
-  // last cycle ended, to its working end. Before the first cycle, the start of the video may have
-  // cut that rest short: with less than REST_LEVEL_MIN_SEC of it in view, the rest the rep comes
-  // back to, over its first REST_BEFORE_SEC and until the angle leaves it, stands in when fuller.
+  // last cycle ended, to its working end. A first rep that begins less than REST_LEVEL_MIN_SEC
+  // after the first sample with a pose may have had that rest cut short by the start of the
+  // video: the rest it comes back to, over its first REST_BEFORE_SEC and until the angle leaves
+  // it, then stands in when fuller. Only a rep entered on the first sample with a pose has no
+  // sample at rest before it, and that one always takes the rest it comes back to.
   const rangeFromRest = (restFrom: number, enter: number, complete: number): number => {
     const rested = values(restFrom, enter, atRest);
     let rest = rested.length ? restLevel(rested.slice(-before)) : null;
-    if (restFrom === 0 && rested.length < REST_LEVEL_MIN_SEC * sampleRate) {
+    if (restFrom === 0 && timestamps[enter] - timestamps[firstPose] < REST_LEVEL_MIN_SEC) {
       let next = complete;
       while (next < smoothed.length && (smoothed[next] === null || atRest(smoothed[next] as number))) next++;
       const after = restLevel(values(complete, next, atRest).slice(0, before));

@@ -1,7 +1,7 @@
 Sets counted wrong, 15 samples per second, a curl and a lateral raise each.
 core-bf50199: sha256 5514f77b2b570a824e01d22425a29008d34ce8f2a36b5b3174394743f9f5d5d3
 core-d7f6e02: sha256 92e3678cb4b81f62dc8a14f88e56869832c97dbb9856be2bc11f8c2515e38498
-core: sha256 4d9f897e350a99a10c5f3e12c5536c24c12ec937f2bee16bffebe0e5c3ae5710
+core: sha256 00c852b84fe96d83a321eec5bf42cc416c268c215749172a751c29aaca904d36
 
 1. Four 18° partials, the last after 2 s held fuller and 0.5 s back at the rest (200 seeds each)
                                               core-bf50199  core-d7f6e02          core

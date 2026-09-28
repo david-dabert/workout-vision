@@ -6,11 +6,12 @@
  * short measure (the review of 28 September: noisy sets of 22 to 30° further from the truth).
  * The range is now measured from the level of the rest the rep left, over its last second, to the
  * level of its working end (detectReps in core.ts says how each is found).
- * - The first fourteen tests fail on bf50199. From the raises after a false start on, they also
- *   pin documented choices, and four guards pin more (the flickers, the rest that moves, the
- *   fuller pause and the fuller rest after a partial): code that differs from a choice on that
- *   point fails the test that names it (the third review of 28 September: nothing pinned them;
- *   the sixth: nothing told the last second of rest from the last second of time).
+ * - The first fifteen tests fail on bf50199. From the raises after a false start on, they also
+ *   pin documented choices, and five guards pin more (the flickers, the rest that moves, the
+ *   fuller pause, the fuller rest after a partial and the weights held out at the start): code
+ *   that differs from a choice on that point fails the test that names it (the third review of
+ *   28 September: nothing pinned them; the sixth: nothing told the last second of rest from the
+ *   last second of time; the seventh: the first rep's stand-in ignored how long the video had run).
  * - The five tests after them fail on d7f6e02, the draft before this one. It left out of the rest
  *   any pause held further than a band from the rest's last stay: noise broke such a pause up,
  *   so a fuller one still lengthened a partial (the fifth review of 28 September), and on slow
@@ -291,6 +292,13 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
     expect(curls(sample(p, 160, SPS).slice(1)).count).toBe(10);
   });
 
+  it('ten 22° curls in a clip whose first second has no pose, then starts one sample into the first curl, count 10: the start of the video is its first sample with a pose', () => {
+    const p: Segment[] = [];
+    for (let r = 0; r < 10; r++) p.push({ to: 138, sec: 0.8 }, { hold: 138, sec: 0.3 }, { to: 160, sec: 0.8 }, { hold: 160, sec: 1 });
+    const frames = [...Array(SPS).fill(null), ...sample(p, 160, SPS).slice(1).map(x => jointFrame('elbow', { left: x }))];
+    expect(countReps(frames, timestamps(frames.length, SPS), 'bicep_curl').count).toBe(10);
+  });
+
   // The third review of 28 September, unchanged: a pause still at rest, 3.5° out, outlasted the
   // rest the rep left and was taken for it. The rest is now taken over its last second.
   it('holding the dumbbells 3.5° out for 4 s, then 0.4 s fully down, before a set of 23° raises does not cost the first raise', () => {
@@ -409,6 +417,21 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
       p.push({ to: 134, sec: 0.8 }, { hold: 134, sec: 0.3 }, { to: 160, sec: 0.8 }, { hold: 160, sec: 0.8 });
     }
     expect(curls(sample(p, 160, SPS)).count).toBe(10);
+  });
+
+  it('an 18° partial after the weights are held 10° out for the first 3 s of the clip, then 0.1 s back 3.5° short of the rest, does not count: the first rep takes the rest it comes back to only when the start of the video cut its rest short', () => {
+    // The seventh review of 28 September: the stand-in applied however long the video had run,
+    // so the partial was measured from the fuller rest after it, 7 for 6. bf50199 counted 6.
+    for (const restsLow of [false, true]) {
+      const rest = restsLow ? 20 : 160, dir = restsLow ? 1 : -1, from = rest + dir * 3.5;
+      const p: Segment[] = [{ hold: rest + dir * 10, sec: 3 }, { to: from, sec: 0.3 }, { hold: from, sec: 0.1 }, { to: from + dir * 18, sec: 0.8 }, { hold: from + dir * 18, sec: 1.5 }, { to: rest, sec: 0.8 }, { hold: rest, sec: 1 }];
+      for (let r = 0; r < 6; r++) p.push({ to: rest + dir * 25, sec: 1 }, { hold: rest + dir * 25, sec: 0.3 }, { to: rest, sec: 1 }, { hold: rest, sec: 1 });
+      const r = countHeld(sample(p, rest + dir * 10, SPS), restsLow);
+      // The partial reaches the working threshold, so only the range check can refuse it.
+      if (restsLow) expect(r.highThreshold).toBeLessThan(from + 18);
+      else expect(r.lowThreshold).toBeGreaterThan(from - 18);
+      expect(r.count).toBe(6);
+    }
   });
 
   it('holding the dumbbells 9° out for 4 s before the set does not cost the first raise', () => {
