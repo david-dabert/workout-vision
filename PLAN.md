@@ -102,6 +102,7 @@ STOP.
 - Route the demuxer's FFmpeg log lines to console.info with a [demuxer] prefix, as you did for XNNPACK. Console errors remain a failure.
 - index.html now allows unsafe-eval. Offset it: remove https://cdn.jsdelivr.net, https://unpkg.com and https://storage.googleapis.com from script-src and connect-src if a search proves nothing loads from them. Paste the search.
 STOP.
+- 3d approved on 28 September on the preview built from b2e5e0e: on David's iPhone the lateral raise and the curl counted correctly (lat pulldown not retested). The earlier count of 4 for a lateral raise of 10 on the 3d preview remains unexplained and stays open. main fast-forwarded to b2e5e0e and pushed (git ls-remote: refs/heads/main b2e5e0ed3349).
 
 4. PREVIEW. Done outside the repository on 25 September. The counter-core preview is https://workout-vision-next.vercel.app, built from GitHub on Azélie's Vercel account under the same /workout-vision/ path as the live site, so the base path needs no change. It does not rebuild on push; after each push to counter-core, David has it rebuilt. Step 5 still requires David's approval of the preview on his phone.
 
