@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { LIFTS, META, createLiftScene, liftView } from './lift-scenes';
+import { LIFTS, META, createLiftScene } from './lift-scenes';
 import { useSets } from './sets';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
@@ -85,6 +85,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
   const lastName = last && (META[last.exercise]?.[lang] || tExercise(last.exercise || last.exerciseKey)).toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
   return <div className="wv-experience">
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
+      <div className="choose-hero">
       <div className="wrap">
         <div className="topbar"><span className="brand-sm">Workout Vision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
         {last && <div className="welcome">
@@ -100,15 +101,14 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         {LIFTS.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
           <LiftCanvas lift={lift} />
           <span className="altar-meta">
-            <span className="altar-idx">{String(i + 1).padStart(2, '0')} / {String(LIFTS.length).padStart(2, '0')}</span>
             <span className="altar-name">{META[lift][lang]}</span>
             {TIERS[lift] && <span className={`tier tier-${TIERS[lift]}`}>{tierLabel(TIERS[lift], fr)}</span>}
             <span className="altar-alias">{META[lift][fr ? 'aliasFr' : 'aliasEn']}</span>
-            <span className="altar-view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7.5h3.2l2-2.5h7.6l2 2.5H21v11H3z" /><circle cx="12" cy="13" r="3.5" /></svg>{liftView(lift) === 'front' ? (fr ? 'Filmé de face' : 'Filmed from the front') : (fr ? 'Filmé de profil' : 'Filmed from the side')}</span>
           </span>
         </LiftCard>)}
       </div>
       <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{LIFTS.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
+      </div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>
         <button className="row-link press" onClick={onGuide}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="4.5" r="2" /><path d="M4.5 9.5L12 8l7.5 1.5" /><path d="M12 8v6" /><path d="M12 14l-3.5 7" /><path d="M12 14l3.5 7" /></svg></span>

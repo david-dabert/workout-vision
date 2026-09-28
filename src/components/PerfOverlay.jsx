@@ -17,14 +17,29 @@ export default function PerfOverlay() {
   const out = useRef(null);
   useEffect(() => {
     const L = fr()
-      ? { fps: 'i/s', swipe: 'images perdues au dernier balayage', noSwipe: 'aucune', none: 'aucun', touched: 'touché', within: 'dans', colon: '\u00A0: ' }
-      : { fps: 'fps', swipe: 'frames dropped on the last swipe', noSwipe: 'none', none: 'none', touched: 'touched', within: 'in', colon: ': ' };
+      ? { fps: 'i/s', swipe: 'images perdues au dernier balayage', noSwipe: 'aucune', none: 'aucun', touched: 'touché', within: 'dans', colon: '\u00A0: ', browser: 'navigateur', standalone: 'écran d’accueil' }
+      : { fps: 'fps', swipe: 'frames dropped on the last swipe', noSwipe: 'none', none: 'none', touched: 'touched', within: 'in', colon: ': ', browser: 'browser', standalone: 'home screen' };
+    // The screen the page is given, as the layout sees it: the window, the small and dynamic
+    // viewport heights, the safe-area insets at the top and bottom, and whether it runs in a browser
+    // or from the home screen. Read from a hidden probe, so the numbers are the CSS ones.
+    const probe = document.createElement('div');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;height:100svh;max-height:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box';
+    const dyn = document.createElement('div');
+    dyn.setAttribute('aria-hidden', 'true');
+    dyn.style.cssText = 'position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;height:100dvh';
+    document.body.append(probe, dyn);
+    const screenLine = () => {
+      const cs = getComputedStyle(probe), top = Math.round(parseFloat(cs.paddingTop)), bottom = Math.round(parseFloat(cs.paddingBottom));
+      const mode = matchMedia('(display-mode: standalone)').matches || navigator.standalone ? L.standalone : L.browser;
+      return `${innerWidth}×${innerHeight} · svh ${Math.round(parseFloat(cs.height))} · dvh ${dyn.offsetHeight} · safe ${top}/${bottom} · ${mode}`;
+    };
     let raf = 0, last = 0, count = 0, windowStart = performance.now(), fps = 0;
     const gaps = [];
     let touch = null, lastSwipe = L.noSwipe, target = L.none, idle = 0;
     // The display's frame interval: the median of recent frame gaps outside any swipe.
     const interval = () => { if (gaps.length < 10) return 1000 / 60; const s = [...gaps].sort((a, b) => a - b); return s[s.length >> 1]; };
-    const show = () => { if (out.current) out.current.textContent = `${fps} ${L.fps} · ${L.swipe}${L.colon}${lastSwipe}\n${L.touched}${L.colon}${target}`; };
+    const show = () => { if (out.current) out.current.textContent = `${fps} ${L.fps} · ${L.swipe}${L.colon}${lastSwipe}\n${L.touched}${L.colon}${target}\n${screenLine()}`; };
     const tick = now => {
       if (last && !document.hidden) {
         const gap = now - last;
@@ -62,6 +77,7 @@ export default function PerfOverlay() {
       cancelAnimationFrame(raf); clearTimeout(idle);
       for (const t of ['touchstart', 'scroll', 'touchend', 'touchcancel']) document.removeEventListener(t, t === 'touchstart' ? onStart : t === 'scroll' ? onScroll : onEnd, { capture: true });
       document.removeEventListener('visibilitychange', onVisibility);
+      probe.remove(); dyn.remove();
     };
   }, []);
   return <pre ref={out} className="wv-perf" data-testid="perf-overlay" aria-hidden="true"

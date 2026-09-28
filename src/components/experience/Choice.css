@@ -12,33 +12,40 @@
 
 .wv-experience .title, .wv-experience .altar-name { color: var(--bone); }
 
-/* Card layout that holds at every phone height: the figure takes the space
-   above the text instead of running under it, and the card leaves room for
-   the dots and the "Un autre exercice" row on a 664 px Safari screen. */
-.wv-experience .altar { display: flex; flex-direction: column; height: clamp(300px, calc(100svh - 346px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
+/* The choice fills the screen it is given. The heading, the rail and the dots form one block as
+   tall as the visible screen, less a reserve at the bottom for the floating bar of the browser
+   (Safari and the in-app browsers of iOS 26 lay it over the page); the card takes whatever
+   height the heading leaves, whatever the phone, the language or the greeting. The figure takes
+   the card's height above the name. */
+.wv-experience .choose-screen { --reserve: 80px; }
+.wv-experience .choose-hero { display: flex; flex-direction: column; min-height: min(900px, calc(100svh - env(safe-area-inset-top, 0px) - 10px - var(--reserve))); }
+.wv-experience .rail { flex: 1 0 auto; min-height: 262px; max-height: 580px; padding-top: 6px; margin-top: 22px; }
+.wv-experience .altar { display: flex; flex-direction: column; height: auto; }
 .wv-experience .altar canvas { position: static; flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
-.wv-experience .altar-meta { position: static; flex: none; padding: 12px 22px 22px; }
+/* The card is the figure and three lines: the name, the tier, the other names. Its place in
+   the rail is the dots' to show, and how it is filmed the filming screen's. */
+.wv-experience .altar-meta { position: static; flex: none; padding: 6px 20px 20px; }
 .wv-experience .altar-name { font-size: min(37px, 9.4vw); white-space: nowrap; }
-.wv-experience .rail { padding-top: 6px; margin-top: 22px; }
 @media (max-height: 760px) {
   .wv-experience .choose-screen .title { margin-top: 16px; }
   .wv-experience .choose-screen .sub { margin-top: 10px; }
+  .wv-experience .welcome { margin-top: 10px; }
   .wv-experience .rail { margin-top: 16px; }
   .wv-experience .dots { margin-top: 12px; }
   .wv-experience .row-link { margin-top: 16px; }
-  .wv-experience .altar { height: clamp(300px, calc(100svh - 320px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
 }
-
-/* A return opens on the prototype's greeting; the cards give up its height, so
-   they still end above the fold of a 664 px Safari screen. */
-.wv-experience .choose-screen.has-welcome .altar { height: clamp(300px, calc(100svh - 346px - 73px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
-@media (max-height: 760px) {
-  .wv-experience .welcome { margin-top: 10px; }
-  .wv-experience .choose-screen.has-welcome .altar { height: clamp(300px, calc(100svh - 320px - 65px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
-}
-/* On the shortest screens (iPhone SE in Safari) the cards shrink a little more under the greeting. */
-@media (max-height: 600px) {
-  .wv-experience .choose-screen.has-welcome .altar { height: clamp(250px, calc(100svh - 320px - 65px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 500px); }
+/* Short screens (a 4.7-inch iPhone in Safari or in an app's browser): the heading gives the
+   figure more room. */
+@media (max-height: 640px) {
+  .wv-experience .choose-screen .title { font-size: 32px; margin-top: 10px; }
+  .wv-experience .choose-screen .sub { font-size: 14px; line-height: 1.45; margin-top: 6px; }
+  .wv-experience .welcome { margin-top: 4px; }
+  .wv-experience .welcome-l1 { font-size: 22px; }
+  .wv-experience .welcome-l2 { display: none; }
+  /* A returning visitor has swiped the cards before: the instruction gives its lines to the figure. */
+  .wv-experience .choose-screen.has-welcome .sub { display: none; }
+  .wv-experience .rail { margin-top: 12px; }
+  .wv-experience .altar-name { font-size: min(32px, 8.6vw); }
 }
 /* The row to the saved sets sits under the first row and shares its rule. */
 .wv-experience .row-link + .row-link { margin-top: 0; border-top: 0; }

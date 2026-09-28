@@ -1,33 +1,31 @@
 // Boot scripts — moved out of inline <script> tags to comply with CSP
 // (script-src does not include 'unsafe-inline')
 
-// 1. Crash reporter: show JS errors on screen instead of black void.
-// Only fires if React hasn't mounted yet (root is empty). Once React is
-// running, its own error boundary handles display. This prevents a stray
-// network timeout from nuking the entire running app.
-window.onerror = function(msg, src, line, col, err) {
-  var d = document.getElementById('root');
-  if (d && d.children.length === 0) {
-    d.innerHTML = '<div style="padding:40px 20px;text-align:center">'
-      + '<h2 style="color:#fff;margin-bottom:12px;font-family:system-ui">Something went wrong</h2>'
-      + '<p style="color:#888;font-family:system-ui;margin-bottom:20px">WorkoutVision encountered an error. Please reload to try again.</p>'
-      + '<button onclick="location.reload()" style="padding:12px 24px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold;font-size:1rem;cursor:pointer">Reload App</button>'
-      + '</div>';
-  }
-};
+// 1 and 2. The two screens shown when the app cannot start, in the app's colours and language.
+// The page's CSP has no 'unsafe-inline', which blocks onclick attributes, so the button's click
+// is bound here; with onclick="location.reload()" it did nothing.
+function wvBootScreen(kind) {
+  var root = document.getElementById('root');
+  if (!root || root.children.length !== 0) return;
+  var fr = false;
+  try { var saved = localStorage.getItem('wv_lang'); fr = saved ? saved === 'fr' : /^fr/i.test(navigator.language || ''); } catch (e) { fr = /^fr/i.test(navigator.language || ''); }
+  var t = kind === 'crash'
+    ? (fr ? ['Un problème est survenu.', 'Rechargez l’application pour réessayer.', 'Recharger'] : ['Something went wrong.', 'Reload the app to try again.', 'Reload'])
+    : (fr ? ['L’application ne s’est pas chargée.', 'Vérifiez votre connexion, puis rechargez.', 'Recharger'] : ['The app did not load.', 'Check your connection, then reload.', 'Reload']);
+  root.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 24px;text-align:center;background:#080706;color:#EFE8DC">'
+    + '<h2 style="margin:0;font:400 32px/1.1 \'Instrument Serif\',\'Iowan Old Style\',Georgia,serif;color:#EFE8DC">' + t[0] + '</h2>'
+    + '<p style="margin:0;max-width:30ch;font:400 15px/1.5 system-ui,-apple-system,sans-serif;color:#A49B8D">' + t[1] + '</p>'
+    + '<button type="button" style="margin-top:12px;height:52px;min-width:180px;padding:0 28px;border:0;border-radius:18px;background:linear-gradient(180deg,#F6DAAA 0%,#E3B170 55%,#C98F48 100%);color:#150F08;font:600 16px system-ui,-apple-system,sans-serif;cursor:pointer">' + t[2] + '</button>'
+    + '</div>';
+  root.querySelector('button').addEventListener('click', function () { location.reload(); });
+}
 
-// 2. Watchdog: if React hasn't mounted after 8s, show diagnostic
-setTimeout(function() {
-  var r = document.getElementById('root');
-  if (r && r.children.length === 0) {
-    r.innerHTML = '<div style="color:#ffb836;padding:20px;font:14px monospace">'
-      + '<h2 style="color:#fff;margin-bottom:12px">WorkoutVision</h2>'
-      + '<p>App did not load within 8 seconds.</p>'
-      + '<p style="color:#888;margin-top:8px">This may be a network issue or JavaScript error.</p>'
-      + '<button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00f5d4;color:#000;border:none;border-radius:8px;font-weight:bold">Retry</button>'
-      + '</div>';
-  }
-}, 8000);
+// 1. Crash reporter: an error before React mounts (the root is still empty). Once React is
+// running, its own error boundary handles display, so a stray error cannot replace the app.
+window.onerror = function () { wvBootScreen('crash'); };
+
+// 2. Watchdog: if React has not mounted after 8 s.
+setTimeout(function () { wvBootScreen('watchdog'); }, 8000);
 
 // Fonts are bundled locally by src/main.jsx.
 
