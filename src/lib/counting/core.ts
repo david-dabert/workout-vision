@@ -89,12 +89,6 @@ export interface LiftDefinition {
   first: 'concentric' | 'eccentric';
   /** Both sides counted and joined, one rep per arm (the alternating curl). */
   bothSides?: boolean;
-  /**
-   * The rest is a lockout overhead: the wrist above the shoulder. The elbow is as straight with the
-   * arms hanging at the sides, so a return to the rest angle with the wrist below the shoulder
-   * (lowering the weights after the set, or before it) is not a rep.
-   */
-  lockoutOverhead?: boolean;
 }
 
 export const LIFTS = {
@@ -106,7 +100,7 @@ export const LIFTS = {
   triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
-  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric', lockoutOverhead: true },
+  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
   squat: { joint: 'knee', rest: 'high', first: 'eccentric' },
   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
@@ -210,14 +204,7 @@ function countSide(
   if (validAngles.length < 3) {
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
   }
-  // A lift that locks out overhead takes its range from the samples with the wrist above the
-  // shoulder: arms hanging, before the set, after it or between, are not part of the press.
-  const overhead = def.lockoutOverhead ? wristOverShoulder(worldLandmarks, timestamps, arm) : null;
-  const pressing = overhead ? smoothed.filter((a, i): a is number => a !== null && overhead[i] !== false) : validAngles;
-  if (pressing.length < 3) {
-    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
-  }
-  const sorted = [...pressing].sort((a, b) => a - b);
+  const sorted = [...validAngles].sort((a, b) => a - b);
   const p = (pct: number) => sorted[Math.floor(sorted.length * pct / 100)];
   const pLow = p(PERCENTILE_LOW);
   const pHigh = p(PERCENTILE_HIGH);
@@ -232,7 +219,7 @@ function countSide(
   const highThreshold = pHigh - margin;
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, overhead);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
 
@@ -242,22 +229,6 @@ function countSide(
   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
 
   return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
-}
-
-/**
- * Per sample, whether the tracked wrist is above its shoulder (world y points down), from the
- * nearest sample within BRIDGE_GAP_SEC where both are seen; null where neither side of the gap is.
- */
-function wristOverShoulder(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], arm: 'left' | 'right'): (boolean | null)[] {
-  const [s, , w] = JOINT_POINTS.elbow[arm];
-  const own = worldLandmarks.map(wl => (wl && vis(wl[s]) >= VIS_THRESHOLD && vis(wl[w]) >= VIS_THRESHOLD ? wl[w].y < wl[s].y : null));
-  return own.map((v, i) => {
-    if (v !== null) return v;
-    let best: boolean | null = null, gap = BRIDGE_GAP_SEC;
-    for (let j = i - 1; j >= 0 && timestamps[i] - timestamps[j] <= gap; j--) if (own[j] !== null) { best = own[j]; gap = timestamps[i] - timestamps[j]; break; }
-    for (let j = i + 1; j < own.length && timestamps[j] - timestamps[i] <= gap; j++) if (own[j] !== null) { best = own[j]; break; }
-    return best;
-  });
 }
 
 // ─── Both arms: the alternating curl ───
@@ -460,7 +431,6 @@ function detectReps(
   lowThreshold: number,
   highThreshold: number,
   rest: 'high' | 'low',
-  overhead: (boolean | null)[] | null = null,
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -514,8 +484,7 @@ function detectReps(
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          const locked = !overhead || overhead[i] !== false;
-          if (locked && duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
+          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
