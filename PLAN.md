@@ -223,3 +223,5 @@ LIFT TIERS, from 28 September, by David's decision. Beta and Experimental are ex
   - hip thrust, Romanian deadlift, leg press: no clip, no dataset.
   - overhead press (added 28 September, by David's decision): David's build clip overhead_press_10_front counts 9 for 10 on the current core, which fails the Beta condition that no build clip of the lift fails; MM-Fit 49 of 60 sets exact, 60 of 60 within one (test/real-phone/mmfit/results.json). Filmed from the front; its figure comes from that clip (scripts/make-clip-pose.mjs).
 - The figures of the five new lifts on the choice card and the filming screen are drawings (scripts/make-lift-poses.mjs), not recorded poses; nothing is measured from them.
+
+Approved on 28 September on the preview built from 51024ef: on David's iPhone, the swipe of the lift cards and one analysis. main fast-forwarded to 51024ef and pushed (git ls-remote: refs/heads/main 51024ef2b119). main thereby takes the commits from 9b9ddd0 to 51024ef: the interruption guard, the lift tiers, the tactility pass, the removal of every switch with the ?perf=1 instrument, overhead press as Experimental, and the smoothness pass.
