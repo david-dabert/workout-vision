@@ -25,3 +25,19 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  e2e:
+    name: Browser tests (Chromium and WebKit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright --version
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      # One worker, as the timing checks of the touch tests were measured.
+      - run: npx playwright test --retries=0 --workers=1

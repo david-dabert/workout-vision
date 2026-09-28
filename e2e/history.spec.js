@@ -1,7 +1,14 @@
-import { test, expect, devices } from '@playwright/test';
+import { test, expect, devices, webkit } from '@playwright/test';
+import { existsSync } from 'node:fs';
 import { layoutFaults } from '../test/real-phone/checks.mjs';
 
-test.use({ ...devices['iPhone 14'], browserName: 'webkit' });
+// These tests run in WebKit, the iPhone's engine. Where Playwright's WebKit is not installed they
+// skip and say why, except in CI, which installs it.
+const hasWebKit = (() => { try { return existsSync(webkit.executablePath()); } catch { return false; } })();
+// In CI WebKit must be there: a missing browser fails the job instead of skipping these tests.
+test.skip(!hasWebKit && !process.env.CI, 'WebKit is not installed here (npx playwright install webkit)');
+// launchOptions are reset: a PW_CHROMIUM path from the environment names a Chromium binary.
+test.use({ ...devices['iPhone 14'], browserName: 'webkit', launchOptions: {} });
 
 async function savedSet(page, lang = 'fr') {
   await page.addInitScript(lang => {
