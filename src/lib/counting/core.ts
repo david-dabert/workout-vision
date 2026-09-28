@@ -89,6 +89,12 @@ export interface LiftDefinition {
   first: 'concentric' | 'eccentric';
   /** Both sides counted and joined, one rep per arm (the alternating curl). */
   bothSides?: boolean;
+  /**
+   * The rest is a lockout overhead: the wrist above the shoulder. The elbow is as straight with the
+   * arms hanging at the sides, so a return to the rest angle with the wrist below the shoulder
+   * (lowering the weights after the set, or before it) is not a rep.
+   */
+  lockoutOverhead?: boolean;
 }
 
 export const LIFTS = {
@@ -100,7 +106,7 @@ export const LIFTS = {
   triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
-  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
+  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric', lockoutOverhead: true },
   lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
   squat: { joint: 'knee', rest: 'high', first: 'eccentric' },
   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
@@ -204,7 +210,11 @@ function countSide(
   if (validAngles.length < 3) {
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
   }
-  const sorted = [...validAngles].sort((a, b) => a - b);
+  // The set's range from its own samples: the clip less its still head and tail, where the angle
+  // has not yet moved, or no longer moves, a rep's minimum range from where the clip starts or ends
+  // (standing, or arms hanging, before walking in and after putting the weights down).
+  const active = activeSpan(smoothed, MIN_ROM_DEGREES);
+  const sorted = active.sort((x, y) => x - y);
   const p = (pct: number) => sorted[Math.floor(sorted.length * pct / 100)];
   const pLow = p(PERCENTILE_LOW);
   const pHigh = p(PERCENTILE_HIGH);
@@ -219,7 +229,8 @@ function countSide(
   const highThreshold = pHigh - margin;
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest);
+  const overhead = def.lockoutOverhead ? wristOverShoulder(worldLandmarks, timestamps, arm) : null;
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, overhead);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
 
@@ -229,6 +240,35 @@ function countSide(
   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
 
   return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
+}
+
+/**
+ * Per sample, whether the tracked wrist is above its shoulder (world y points down), from the
+ * nearest sample within BRIDGE_GAP_SEC where both are seen; null where neither side of the gap is.
+ */
+function wristOverShoulder(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], arm: 'left' | 'right'): (boolean | null)[] {
+  const [s, , w] = JOINT_POINTS.elbow[arm];
+  const own = worldLandmarks.map(wl => (wl && vis(wl[s]) >= VIS_THRESHOLD && vis(wl[w]) >= VIS_THRESHOLD ? wl[w].y < wl[s].y : null));
+  return own.map((v, i) => {
+    if (v !== null) return v;
+    let best: boolean | null = null, gap = BRIDGE_GAP_SEC;
+    for (let j = i - 1; j >= 0 && timestamps[i] - timestamps[j] <= gap; j--) if (own[j] !== null) { best = own[j]; gap = timestamps[i] - timestamps[j]; break; }
+    for (let j = i + 1; j < own.length && timestamps[j] - timestamps[i] <= gap; j++) if (own[j] !== null) { best = own[j]; break; }
+    return best;
+  });
+}
+
+/** The smoothed angles between the clip's first and last moves of `span` degrees from its ends. */
+function activeSpan(smoothed: (number | null)[], span: number): number[] {
+  const valid: number[] = [];
+  for (const a of smoothed) if (a !== null) valid.push(a);
+  if (!valid.length) return valid;
+  const first = valid[0], last = valid[valid.length - 1];
+  const from = valid.findIndex(a => Math.abs(a - first) >= span);
+  let to = -1;
+  for (let i = valid.length - 1; i >= 0; i--) if (Math.abs(valid[i] - last) >= span) { to = i; break; }
+  if (from < 0 || to < 0 || to <= from) return valid;
+  return valid.slice(from, to + 1);
 }
 
 // ─── Both arms: the alternating curl ───
@@ -431,6 +471,7 @@ function detectReps(
   lowThreshold: number,
   highThreshold: number,
   rest: 'high' | 'low',
+  overhead: (boolean | null)[] | null = null,
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -464,6 +505,8 @@ function detectReps(
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
+        } else if (angle < lowThreshold) {
+          state = 'waiting'; // back at rest without reaching the working end: not a rep
         }
       }
     } else {
@@ -482,10 +525,13 @@ function detectReps(
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
+          const locked = !overhead || overhead[i] !== false;
+          if (locked && duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
+        } else if (angle > highThreshold) {
+          state = 'waiting'; // back at rest without reaching the working end: not a rep
         }
       }
     }
