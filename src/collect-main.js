@@ -8,7 +8,8 @@
  */
 import { extractFramesStreaming } from './lib/frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './lib/extractionConfig';
-import { setFileName, issueUrl, setPayload, hashVideoContent, gzipBlob } from './lib/collector';
+import { setFileName, issueUrl, setPayload, hashVideoContent, gzipBlob, sampleSet, setIsWhole } from './lib/collector';
+import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 
@@ -47,6 +48,9 @@ const issueLinkEl = $('issue-link');
 const resetBtn = $('reset');
 
 let busy = false;
+// Locked while a set is processed: the file keeps what was chosen when the video was picked.
+const fields = [liftSelect, $('count'), $('view')];
+const lock = on => { for (const f of fields) f.disabled = on; };
 
 pickBtn.addEventListener('click', () => {
   if (busy) return;
@@ -58,26 +62,41 @@ videoInput.addEventListener('change', async () => {
   if (!file || busy) return;
 
   const lift = liftSelect.value;
-  const count = parseInt($('count').value, 10);
+  const typed = $('count').value.trim();
   const view = $('view').value;
 
-  if (isNaN(count) || count < 0) {
-    statusEl.textContent = 'Enter the number of reps you counted.';
+  // The count is David's label: a whole number from 0 to 99, never cut or rounded to one.
+  if (!/^\d{1,2}$/.test(typed)) {
+    statusEl.textContent = 'Enter the number of reps you counted, as a whole number from 0 to 99.';
+    videoInput.value = '';
     return;
   }
+  const count = Number(typed);
 
   busy = true;
   pickBtn.disabled = true;
+  lock(true);
+  // As in the app (src/lib/interruption.js): a set processed while the page was hidden is not
+  // trusted, so the run waits for the page to be visible, keeps the screen awake, stops when the
+  // page is hidden or unloaded, and offers no file after an interruption.
+  const controller = new AbortController();
+  let unwatch = () => {}, release = async () => {};
   resultEl.style.display = 'none';
   barEl.style.width = '0%';
 
   try {
+    await whenVisible({ signal: controller.signal });
+    unwatch = watchInterruption(controller);
+    release = holdScreenAwake();
+
     // 1. Hash the video content
     statusEl.textContent = 'Hashing video…';
     const sha256 = await hashVideoContent(file);
     statusEl.textContent = `SHA-256: ${sha256.slice(0, 16)}…`;
 
     // 2. Init the pose worker
+    // A hide during hashing stops here, before any worker exists to be left running.
+    controller.signal.throwIfAborted();
     statusEl.textContent = 'Loading pose model…';
     const worker = new Worker(new URL('./lib/corePoseWorker.js', import.meta.url));
     let reqId = 0;
@@ -96,12 +115,19 @@ videoInput.addEventListener('change', async () => {
       pending.set(id, { resolve, reject, timer });
       worker.postMessage({ ...msg, id }, transfer);
     });
-    await send({ type: 'init' });
+    controller.signal.throwIfAborted();
+    const aborted = new Promise((_, reject) => controller.signal.addEventListener('abort', () => reject(controller.signal.reason), { once: true }));
+    aborted.catch(() => {});
+    try {
+      await Promise.race([send({ type: 'init' }), aborted]);
+    } catch (err) {
+      worker.terminate();
+      throw err;
+    }
 
     // 3. Extract frames and run pose detection
     statusEl.textContent = 'Extracting landmarks…';
-    const worldLandmarks = [];
-    const timestamps = [];
+    const set = sampleSet();
     let frameWidth = 0, frameHeight = 0;
 
     const metadata = await extractFramesStreaming(
@@ -110,18 +136,30 @@ videoInput.addEventListener('change', async () => {
         frameWidth = canvas.width;
         frameHeight = canvas.height;
         const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer;
-        const result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: index * 1000 / TARGET_FPS }, [pixels]);
-        worldLandmarks.push(result.world);
-        timestamps.push(timestamp);
+        let result;
+        try {
+          result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: index * 1000 / TARGET_FPS }, [pixels]);
+        } catch (err) {
+          set.fail(index);
+          throw err;
+        }
+        set.add(index, result.world, timestamp);
       },
       pct => {
         barEl.style.width = `${Math.round(pct * 100)}%`;
         statusEl.textContent = `Extracting landmarks… ${Math.round(pct * 100)}%`;
       },
-      { deterministic: true },
-    );
-
-    worker.terminate();
+      { deterministic: true, signal: controller.signal },
+    ).finally(() => worker.terminate());
+    // A set hidden at any moment before this point offers no file.
+    controller.signal.throwIfAborted();
+    const worldLandmarks = set.world, timestamps = set.timestamps;
+    // The file carries the count for the whole video, so its landmarks must cover all of it.
+    if (!setIsWhole({ samples: worldLandmarks.length, duration: metadata.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES, failed: set.failed, posed: set.posed })) {
+      throw new Error(set.posed === 0 && worldLandmarks.length
+        ? 'no body was found in any frame of the video. No file is offered. Film the whole body in the frame.'
+        : `the video was not read to the end (${worldLandmarks.length} of ${Math.floor(metadata.duration * TARGET_FPS)} samples${set.failed ? `, ${set.failed} unread` : ''}). No file is offered. Pick the video again.`);
+    }
     barEl.style.width = '100%';
     statusEl.textContent = `Done: ${worldLandmarks.length} samples from ${metadata.method}.`;
 
@@ -134,7 +172,8 @@ videoInput.addEventListener('change', async () => {
     const blob = await gzipBlob(json);
     const name = setFileName(lift, count, view, sha256);
 
-    // 5. Offer download and issue link
+    // 5. Offer download and issue link, only if the page stayed visible to the end.
+    controller.signal.throwIfAborted();
     saveLinkEl.href = URL.createObjectURL(blob);
     saveLinkEl.download = name;
     fileNameEl.textContent = name;
@@ -142,11 +181,18 @@ videoInput.addEventListener('change', async () => {
     resultEl.style.display = 'block';
 
   } catch (err) {
-    statusEl.textContent = `Error: ${err.message}`;
-    console.error(err);
+    if (isInterruption(controller.signal.reason)) {
+      statusEl.textContent = 'The set was interrupted: the page was hidden. No file is offered. Keep the screen on and pick the video again.';
+    } else {
+      statusEl.textContent = `Error: ${err.message}`;
+      console.error(err);
+    }
   } finally {
+    unwatch();
+    await release();
     busy = false;
     pickBtn.disabled = false;
+    lock(false);
     videoInput.value = '';
   }
 });

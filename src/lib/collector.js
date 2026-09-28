@@ -87,3 +87,44 @@ export async function gzipBlob(jsonString) {
   const stream = new Blob([jsonString]).stream().pipeThrough(new CompressionStream('gzip'));
   return new Response(stream).blob();
 }
+
+/**
+ * The samples of one set, in the order the extractor gives them. When the decoder starts again
+ * from the first frame (extractFramesStreaming falls back from WebCodecs to playback), what came
+ * before is dropped, failures included, so no sample is kept twice. `fail(index)` records a
+ * sample whose pose could not be read, since the playback path swallows that error; a later
+ * successful read of the same index clears it. `posed` counts the samples with a pose.
+ */
+export function sampleSet() {
+  let world = [], timestamps = [], failed = new Set();
+  return {
+    add(index, landmarks, timestamp) {
+      if (index === 0) {
+        if (world.length) { world = []; timestamps = []; }
+        failed = new Set();
+      }
+      failed.delete(index);
+      world.push(landmarks);
+      timestamps.push(timestamp);
+    },
+    fail(index) { failed.add(index); },
+    get world() { return world; },
+    get timestamps() { return timestamps; },
+    get failed() { return failed.size; },
+    get posed() { return world.filter(w => w != null).length; },
+  };
+}
+
+/**
+ * True only when the samples cover the whole video: the extractor takes floor(duration x fps)
+ * samples (frameExtractor.js, totalPossibleFrames), as the five committed clips show exactly.
+ * A set that ended early, lost a sample, or was cut by the frame cap would carry the whole
+ * set's count over part of it, so it is refused, and so is a set in which no sample has a pose.
+ * Status: convention, from the extractor's own sampling rule; no tolerance is allowed. How many
+ * samples without a pose a set may hold is David's decision (the committed bench_press_7_angle
+ * clip has 151 of 331).
+ */
+export function setIsWhole({ samples, posed = samples, duration, fps, maxFrames, failed }) {
+  const expected = Math.floor(duration * fps);
+  return failed === 0 && posed > 0 && expected > 0 && expected <= maxFrames && samples === expected;
+}
