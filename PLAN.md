@@ -218,8 +218,8 @@ LIFT TIERS, from 28 September, by David's decision. Beta and Experimental are ex
 - Beta (label "Beta" / « Bêta »):
   - squat: MM-Fit, all 64 sets through the counter at dfe4d43, 60 counted exactly and 63 within one (test/real-phone/mmfit/results.json). No clip of David's.
   - biceps curl, lateral raise, lat pulldown: the three lifts already offered; each keeps its place and shows Beta until its exam passes. Their build clips count 7, 10 and 10 (test/real-phone/step3d/build-compare.json).
-- Experimental (label "Experimental: we are still learning this exercise" / « Expérimental : nous apprenons encore cet exercice »), offered from their existing LIFTS entries in core.ts, with no evidence of their own:
+- Experimental (label "Experimental: we are still learning this exercise" / « Expérimental : nous apprenons encore cet exercice »), offered from their existing LIFTS entries in core.ts; each is listed with the evidence it has:
   - bench press: David's build clip bench_press_7_angle counts 2 for 7 on the current core (run on 28 September).
   - hip thrust, Romanian deadlift, leg press: no clip, no dataset.
-- Not offered: overhead press. MM-Fit counts 49 of 60 sets exactly and 60 of 60 within one, but David's build clip overhead_press_10_front counts 9 for 10 on the current core (run on 28 September), and the condition for Beta was that it count exactly.
+  - overhead press (added 28 September, by David's decision): David's build clip overhead_press_10_front counts 9 for 10 on the current core, which fails the Beta condition that no build clip of the lift fails; MM-Fit 49 of 60 sets exact, 60 of 60 within one (test/real-phone/mmfit/results.json). Filmed from the front; its figure comes from that clip (scripts/make-clip-pose.mjs).
 - The figures of the five new lifts on the choice card and the filming screen are drawings (scripts/make-lift-poses.mjs), not recorded poses; nothing is measured from them.

@@ -10,10 +10,9 @@ describe('lift tiers', () => {
     expect([...APPROVED_LIFTS].sort()).toEqual(Object.keys(TIERS).sort());
     for (const lift of APPROVED_LIFTS) expect(CORE_LIFTS[lift], lift).toBeTruthy();
   });
-  it('puts squat and the three built lifts in Beta, and four lifts in Experimental', () => {
+  it('puts squat and the three built lifts in Beta, and five lifts in Experimental', () => {
     expect(Object.keys(TIERS).filter(l => TIERS[l] === 'beta').sort()).toEqual(['bicep_curl', 'lat_pulldown', 'lateral_raise', 'squat']);
-    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'experimental').sort()).toEqual(['bench_press', 'hip_thrust', 'leg_press', 'romanian_deadlift']);
-    expect(TIERS.overhead_press).toBeUndefined();
+    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'experimental').sort()).toEqual(['bench_press', 'hip_thrust', 'leg_press', 'overhead_press', 'romanian_deadlift']);
   });
   it('gives every offered lift a card, names in both languages and a figure', () => {
     expect([...SCREEN_LIFTS].sort()).toEqual([...APPROVED_LIFTS].sort());

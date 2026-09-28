@@ -5,11 +5,10 @@ function visibleFrame() {
   return Array.from({ length: 33 }, (_, i) => ({ x: i / 33, y: 0, z: 0, visibility: 1 }));
 }
 describe('Step 3 analysis boundary', () => {
-  // 28 September: David moved bench press to Experimental; overhead press stays parked
-  // (it counted 9 of 10 on his build clip). See PLAN.md, "Lift tiers".
-  it('does not allow Automatic or the parked overhead press', async () => {
-    expect([...APPROVED_LIFTS].sort()).toEqual(['bench_press', 'bicep_curl', 'hip_thrust', 'lat_pulldown', 'lateral_raise', 'leg_press', 'romanian_deadlift', 'squat']);
-    for (const lift of ['__auto__', 'overhead_press']) {
+  // 28 September: David moved bench press, then overhead press, to Experimental. See PLAN.md, "Lift tiers".
+  it('does not allow Automatic or a lift without a tier', async () => {
+    expect([...APPROVED_LIFTS].sort()).toEqual(['bench_press', 'bicep_curl', 'hip_thrust', 'lat_pulldown', 'lateral_raise', 'leg_press', 'overhead_press', 'romanian_deadlift', 'squat']);
+    for (const lift of ['__auto__', 'triceps_pushdown']) {
       await expect(analyzeCoreVideo(null, lift)).rejects.toThrow('Choose an approved lift');
     }
   });

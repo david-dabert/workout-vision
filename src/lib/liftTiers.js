@@ -1,6 +1,7 @@
 // The lifts on offer and how far each is trusted (PLAN.md, "Lift tiers", 28 September 2026).
 // Beta: counted on committed evidence, not yet through its exam. Experimental: offered with
-// no evidence of its own yet. Both always ask the user to confirm or correct the count.
+// no evidence, or evidence that fails the Beta condition (PLAN.md lists each). Both always ask
+// the user to confirm or correct the count.
 export const TIERS = {
   lateral_raise: 'beta',
   bicep_curl: 'beta',
@@ -10,6 +11,8 @@ export const TIERS = {
   hip_thrust: 'experimental',
   romanian_deadlift: 'experimental',
   leg_press: 'experimental',
+  // 28 September: counts 9 for 10 on David's build clip; MM-Fit 49 of 60 exact, 60 of 60 within one.
+  overhead_press: 'experimental',
 };
 
 export const tierLabel = (tier, fr) => tier === 'beta'

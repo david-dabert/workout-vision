@@ -15,13 +15,13 @@ test('rail, card and transition', async ({ page }) => {
   await page.route('**/pose_landmarker_full.task', r => r.fulfill({ status: 200, body: '' }));
   await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'en'); });
   await page.goto('/workout-vision/');
-  await expect(page.locator('.altar')).toHaveCount(8, { timeout: 20000 });
+  await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
   const rail = await page.locator('.rail').evaluate(el => ({ touch: getComputedStyle(el).touchAction, snap: getComputedStyle(el.children[0]).scrollSnapStop }));
   expect(rail).toEqual({ touch: 'pan-x pan-y', snap: 'normal' });
   // No switch input may sit in the rail: on iOS Safari it takes the horizontal drag for its thumb.
   await expect(page.locator('.rail input[switch]')).toHaveCount(0);
   await expect(page.locator('.rail input')).toHaveCount(0);
-  await expect(page.locator('.rail > button.altar')).toHaveCount(8);
+  await expect(page.locator('.rail > button.altar')).toHaveCount(9);
   // Without ?perf=1 there is no instrument.
   await expect(page.locator('[data-testid="perf-overlay"]')).toHaveCount(0);
   // Only the centred card draws: a card off screen keeps the same pixels over time.
@@ -77,7 +77,7 @@ test('a vertical drag that starts on a card scrolls a short screen', async ({ br
   const page = await context.newPage();
   await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'en'); });
   await page.goto('/workout-vision/');
-  await expect(page.locator('.altar')).toHaveCount(8, { timeout: 20000 });
+  await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
   await page.waitForTimeout(1200);
   const box = await page.locator('.altar').first().boundingBox();
   const cdp = await context.newCDPSession(page);
@@ -149,7 +149,7 @@ test('a card press waits 80 ms and a rail scroll cancels it, leaving other press
   const page = await context.newPage();
   await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'en'); });
   await page.goto('/workout-vision/');
-  await expect(page.locator('.altar')).toHaveCount(8, { timeout: 20000 });
+  await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
   await page.waitForTimeout(1200);
   const cdp = await context.newCDPSession(page);
   const box = await page.locator('.altar').first().boundingBox();

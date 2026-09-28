@@ -11,7 +11,7 @@ async function reachChoice(page) {
   ]);
   // The button takes taps once the entry has started to play; click() waits for that.
   if (await enter.isVisible().catch(() => false)) await enter.click();
-  await expect(lifts).toHaveCount(8, { timeout: 15_000 }); // eight lifts on offer since 28 September (PLAN.md, Lift tiers)
+  await expect(lifts).toHaveCount(9, { timeout: 15_000 }); // nine lifts on offer since 28 September (PLAN.md, Lift tiers)
 }
 
 test('app loads and shows the choice of lift', async ({ page }) => {
@@ -69,6 +69,6 @@ test('app loads offline after service worker precache', async ({ page, context }
   // 5. Reload — should serve entirely from SW cache
   await page.reload({ waitUntil: 'domcontentloaded' });
 
-  // 6. The full app renders, not just the shell: the eight lifts on the choice screen
-  await expect(page.locator('.altar')).toHaveCount(8, { timeout: 10_000 });
+  // 6. The full app renders, not just the shell: the nine lifts on the choice screen
+  await expect(page.locator('.altar')).toHaveCount(9, { timeout: 10_000 });
 });
