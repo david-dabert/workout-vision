@@ -1,0 +1,43 @@
+Sets counted wrong, 15 samples per second, a curl and a lateral raise each.
+core-bf50199: sha256 5514f77b2b570a824e01d22425a29008d34ce8f2a36b5b3174394743f9f5d5d3
+core-d7f6e02: sha256 92e3678cb4b81f62dc8a14f88e56869832c97dbb9856be2bc11f8c2515e38498
+core: sha256 4d9f897e350a99a10c5f3e12c5536c24c12ec937f2bee16bffebe0e5c3ae5710
+
+1. Four 18° partials, the last after 2 s held fuller and 0.5 s back at the rest (200 seeds each)
+                                              core-bf50199  core-d7f6e02          core
+no pause, curl                                           0             2             3
+no pause, raise                                          1             4             7
+3.5° fuller, curl                                        5            36            10
+3.5° fuller, raise                                       3            44             9
+5° fuller, curl                                          5             8            13
+5° fuller, raise                                         3             6            12
+8° fuller, curl                                          5             3            14
+8° fuller, raise                                         3             4            18
+
+2. A pause at another level before the fourth test rep, over timings (100 seeds per case)
+                                              core-bf50199  core-d7f6e02          core
+fuller by 3.5°                                           3           108            59
+fuller by 5°                                             3            26            62
+fuller by 8°                                             3            18            66
+less full by 3.5°                                     1464             7             0
+less full by 5°                                       1471            10             0
+less full by 8°                                       1472             6             0
+back at the rest 0.3 s                                1132            50            62
+back at the rest 0.5 s                                1124            58            50
+back at the rest 0.8 s                                1084            38            39
+back at the rest 1.2 s                                1076            29            36
+moves of 0.8 s                                        1108           120            94
+moves of 1.5 s                                        1607            30            72
+moves of 2.5 s                                        1701            25            21
+all 14400 sets                                        4416           175           187
+
+3. Eight slow reps, 2 to 4 s per move (200 seeds per lift)
+                                              core-bf50199  core-d7f6e02          core
+21.5°, pauses of 0 to 0.3 s (400 sets)                 397           174           168
+22.5°, pauses of 0 to 0.3 s (400 sets)                 376            47            13
+24°, pauses of 0 to 0.3 s (400 sets)                   194             4             0
+26°, pauses of 0 to 0.3 s (400 sets)                     0             0             0
+21.5°, pauses of 0 to 1.5 s (400 sets)                 395            71           147
+22.5°, pauses of 0 to 1.5 s (400 sets)                 348            15             8
+24°, pauses of 0 to 1.5 s (400 sets)                   153             1             0
+26°, pauses of 0 to 1.5 s (400 sets)                     0             0             0
