@@ -34,6 +34,22 @@ export function jointFrame(joint: Joint, angles: Partial<Record<Side, number>>):
   return frame;
 }
 
+/**
+ * A left arm pressing overhead: the forearm upright, the upper arm level with the shoulder at an
+ * elbow of 90°, below level under it and rising to upright as the elbow straightens, so the wrist
+ * stays above the shoulder, as in every press (world y points down).
+ */
+export function pressFrame(angle: number): WorldLandmarkFrame {
+  const frame: WorldLandmark[] = Array.from({ length: 33 }, hidden);
+  const phi = ((angle - 90) * Math.PI) / 180; // the upper arm's rise above level
+  const s = { x: -0.2, y: -0.3, z: 0 };
+  const e = { x: s.x - 0.3 * Math.cos(phi), y: s.y - 0.3 * Math.sin(phi), z: 0 };
+  frame[11] = { ...s, visibility: 0.99 };
+  frame[13] = { ...e, visibility: 0.99 };
+  frame[15] = { x: e.x, y: e.y - 0.3, z: 0, visibility: 0.99 };
+  return frame;
+}
+
 /** A seeded generator (mulberry32), so a failing seed can be replayed. */
 export function seeded(seed: number): () => number {
   let s = seed >>> 0;

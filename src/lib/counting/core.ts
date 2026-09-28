@@ -464,6 +464,8 @@ function detectReps(
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
+        } else if (angle < lowThreshold) {
+          state = 'waiting'; // back at rest without reaching the working end: not a rep
         }
       }
     } else {
@@ -486,6 +488,8 @@ function detectReps(
             cycles.push({ enter: repStartIdx, complete: i });
           }
           state = 'waiting';
+        } else if (angle > highThreshold) {
+          state = 'waiting'; // back at rest without reaching the working end: not a rep
         }
       }
     }
