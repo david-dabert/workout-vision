@@ -93,6 +93,26 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
   </div>;
 }
 
+// Shown when the page was hidden during the analysis (screen locked, app left).
+// The run was stopped and nothing it measured is shown.
+export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
+  const { lang } = useT(), fr = lang === 'fr';
+  return <div className="wv-experience">
+    <section className="screen is-active result-screen"><div className="wrap">
+      <Topbar fr={fr} onClose={onClose} />
+      <p className="eyebrow refused-eyebrow">{META[lift]?.[lang] || lift}</p>
+      <h2 className="title refused-title">{fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.'}</h2>
+      <p className="body-text">{fr
+        ? 'L’écran s’est éteint ou vous avez quitté l’app. Gardez l’écran allumé pendant l’analyse, puis recommencez.'
+        : 'The screen turned off or you left the app. Keep the screen on during the analysis, then start again.'}</p>
+      <div className="actions result-actions">
+        <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
+        <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
+      </div>
+    </div></section>
+  </div>;
+}
+
 /**
  * covered: the screen open over the result ('report' or 'replay'), or nothing.
  * onReplay: opens the replay; absent when the video is not at hand.

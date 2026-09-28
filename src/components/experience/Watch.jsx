@@ -156,6 +156,7 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
           <span>{fr ? 'Analysé sur votre téléphone. Rien n’est envoyé.' : 'Analysed on your phone. Nothing is sent.'}</span>
         </p>
+        <p className="privacy keep-on">{fr ? 'Gardez l’écran allumé jusqu’au résultat.' : 'Keep the screen on until the result.'}</p>
         <button className="text-btn press" type="button" onClick={onSkip}>{fr ? 'Annuler' : 'Cancel'}</button>
       </div>
     </section>

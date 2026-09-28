@@ -3,7 +3,8 @@ import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 import Watch from './experience/Watch';
-import Result, { AnalysisError } from './experience/Result';
+import Result, { AnalysisError, AnalysisInterrupted } from './experience/Result';
+import { watchInterruption, whenVisible, settleRun, holdScreenAwake, isInterruption } from '../lib/interruption';
 import Report from './experience/Report';
 import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
@@ -19,6 +20,8 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   const [phase, setPhase] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  // The page was hidden during the run (screen locked, app left): no count is shown.
+  const [interrupted, setInterrupted] = useState(false);
   // The screen open over the result: 'report' or 'replay'; it fades out before it goes.
   const [overlay, setOverlay] = useState(null);
   const [overlayLeaving, setOverlayLeaving] = useState(false);
@@ -46,14 +49,19 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
 
   async function run(controller) {
     const mine = () => abort.current === controller;
-    setBusy(true); setResult(null); setError(''); setProgress(0);
+    setBusy(true); setResult(null); setError(''); setInterrupted(false); setProgress(0); setLandmarks(null); setFrameSize(null);
+    let release = () => {}, wake = async () => {};
     try {
+      // A video chosen while the page is still hidden (back from the camera) waits for it.
+      await whenVisible({ signal: controller.signal });
+      release = watchInterruption(controller);
+      wake = holdScreenAwake();
       const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase: p => { if (mine()) setPhase(p); }, onLandmarks: (lm, w, h) => { if (mine()) { setLandmarks(lm); setFrameSize([w, h]); } } });
-      // A beat at 100 %, then the result, as in the prototype.
+      // A beat at 100 %, then the result, as in the prototype; a run hidden meanwhile shows no count.
       setProgress(100);
-      if (initialFile && !matchMedia('(prefers-reduced-motion: reduce)').matches) await new Promise(r => setTimeout(r, 380));
-      controller.signal.throwIfAborted();
-      if (mine()) setResult(output);
+      const settled = await settleRun(controller.signal, output, initialFile && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 380 : 0);
+      release();
+      if (mine()) setResult(settled);
       // In experience mode (initialFile), Result component handles saving
       if (!initialFile && !output.refused) {
         try {
@@ -63,8 +71,9 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
         }
       }
     } catch (e) {
-      if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); }
-    } finally { if (mine()) { setBusy(false); abort.current = null; } }
+      if (isInterruption(controller.signal.reason)) { if (mine()) setInterrupted(true); }
+      else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); }
+    } finally { release(); wake(); if (mine()) { setBusy(false); abort.current = null; } }
   }
 
   const refilm = onRefilm || onClose;
@@ -86,11 +95,12 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
 
   // Experience mode: analysis, then the result (or what went wrong), crossfaded.
   if (initialFile) {
-    const view = result ? 'result' : error ? 'error' : 'watch';
+    const view = result ? 'result' : interrupted ? 'interrupted' : error ? 'error' : 'watch';
     return <>
       <ScreenFade screenKey={view}>
         {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); refilm(); }} />}
         {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
+        {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} />}
       </ScreenFade>
       {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} leaving={overlayLeaving} onBack={closeOverlay} />}
