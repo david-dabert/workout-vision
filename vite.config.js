@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
+import { resolve } from 'path'
 
 const certDir = path.resolve(__dirname, '.certs')
 const httpsConfig = fs.existsSync(path.join(certDir, 'key.pem'))
@@ -41,6 +42,10 @@ export default defineConfig({
     modulePreload: false,
     minify: 'esbuild',
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        collect: resolve(__dirname, 'collect.html'),
+      },
       output: {
         manualChunks(id) {
           // Only split modules that have NO circular cross-references.
