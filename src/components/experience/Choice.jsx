@@ -46,20 +46,14 @@ function useRail(rail, dots) {
   });
 }
 
-export function HapticButton({ children, onClick, className, label, cardRef }) {
-  const fired = useRef(false);
-  function fire() {
-    if (fired.current) return;
-    fired.current = true;
-    navigator.vibrate?.(10);
-    onClick();
-    requestAnimationFrame(() => { fired.current = false; });
-  }
-  return <label ref={cardRef} className={`${className} tactile`} role="button" tabIndex={0} aria-label={label}
-    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fire(); } }}>
-    <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={fire} />
+// A lift card is a plain button. No switch input covers it: on iOS Safari a native switch
+// takes horizontal drags for its thumb, so a swipe that began on a card never reached the rail.
+// iOS gives no haptic tick without that switch; navigator.vibrate ticks where it exists (Android).
+function LiftCard({ children, onClick, label, cardRef }) {
+  return <button type="button" ref={cardRef} className="altar tactile" aria-label={label}
+    onClick={() => { navigator.vibrate?.(10); onClick(); }}>
     {children}
-  </label>;
+  </button>;
 }
 
 export default function Choice({ onChoose, onGuide, onHistory }) {
@@ -89,7 +83,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
       </div>
       <div className="rail" ref={railRef} data-reveal style={{ '--i': 2 }}>
-        {LIFTS.map((lift, i) => <HapticButton key={lift} className="altar" label={META[lift][lang]} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
+        {LIFTS.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
           <LiftCanvas lift={lift} />
           <span className="altar-meta">
             <span className="altar-idx">{String(i + 1).padStart(2, '0')} / {String(LIFTS.length).padStart(2, '0')}</span>
@@ -98,7 +92,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
             <span className="altar-alias">{META[lift][fr ? 'aliasFr' : 'aliasEn']}</span>
             <span className="altar-view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7.5h3.2l2-2.5h7.6l2 2.5H21v11H3z" /><circle cx="12" cy="13" r="3.5" /></svg>{liftView(lift) === 'front' ? (fr ? 'Filmé de face' : 'Filmed from the front') : (fr ? 'Filmé de profil' : 'Filmed from the side')}</span>
           </span>
-        </HapticButton>)}
+        </LiftCard>)}
       </div>
       <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{LIFTS.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>

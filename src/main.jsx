@@ -37,7 +37,8 @@ if ('serviceWorker' in navigator) {
 }
 
 // Touch: a warm light follows the finger on every control, as in the prototype.
-// On the swipeable lift cards the press waits a moment, so a swipe does not dip the card.
+// On the swipeable lift cards the press waits 80 ms without movement, so a swipe does not dip
+// the card, and it is cancelled the moment the rail scrolls.
 let pendingPress = null;
 const clearPress = () => {
   if (pendingPress) { clearTimeout(pendingPress.timer); pendingPress = null; }
@@ -55,7 +56,7 @@ document.addEventListener('pointerdown', (e) => {
   const r = el.getBoundingClientRect();
   el.style.setProperty('--px', `${e.clientX - r.left}px`);
   el.style.setProperty('--py', `${e.clientY - r.top}px`);
-  if (el.closest('.rail')) pendingPress = { el, x: e.clientX, y: e.clientY, moved: false, timer: setTimeout(() => { el.classList.add('is-pressed'); pendingPress = null; }, 90) };
+  if (el.closest('.rail')) pendingPress = { el, x: e.clientX, y: e.clientY, moved: false, timer: setTimeout(() => { el.classList.add('is-pressed'); pendingPress = null; }, 80) };
   else el.classList.add('is-pressed');
 }, { passive: true });
 document.addEventListener('pointermove', (e) => {
@@ -63,6 +64,13 @@ document.addEventListener('pointermove', (e) => {
 }, { passive: true });
 document.addEventListener('pointerup', releasePress, { passive: true });
 for (const type of ['pointercancel', 'pointerleave']) document.addEventListener(type, clearPress, { passive: true });
+// Scroll events do not bubble; captured here, a moving rail drops any press on its cards.
+document.addEventListener('scroll', (e) => {
+  const rail = e.target?.classList?.contains('rail') ? e.target : null;
+  if (!rail) return;
+  if (pendingPress && rail.contains(pendingPress.el)) { clearTimeout(pendingPress.timer); pendingPress = null; }
+  rail.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed'));
+}, { passive: true, capture: true });
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

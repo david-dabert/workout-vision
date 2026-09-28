@@ -11,6 +11,8 @@ import { checkAndMigrateSchema } from './lib/storage';
 // import TabBar from './components/TabBar';
 
 import ErrorBoundary from './components/ErrorBoundary';
+import PerfOverlay from './components/PerfOverlay';
+import { perfRequested } from './lib/perfFlag';
 import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
@@ -203,21 +205,27 @@ function EntryGate({ children }) {
   </ScreenFade>;
 }
 
+// The on-device instrument, only with ?perf=1 (read once at start; nothing is sent).
+const SHOW_PERF = perfRequested();
+
 function App() {
   // Hidden: ?validate URL param entry point
   return (
-    <ErrorBoundary>
-      <LanguageProvider>
-        {/* The profile loads during the entry, so nothing waits for it after. */}
-        <ProfileProvider>
-          <EntryGate>
-            <ErrorBoundary>
-              <AppInner />
-            </ErrorBoundary>
-          </EntryGate>
-        </ProfileProvider>
-      </LanguageProvider>
-    </ErrorBoundary>
+    <>
+      {SHOW_PERF && <PerfOverlay />}
+      <ErrorBoundary>
+        <LanguageProvider>
+          {/* The profile loads during the entry, so nothing waits for it after. */}
+          <ProfileProvider>
+            <EntryGate>
+              <ErrorBoundary>
+                <AppInner />
+              </ErrorBoundary>
+            </EntryGate>
+          </ProfileProvider>
+        </LanguageProvider>
+      </ErrorBoundary>
+    </>
   );
 }
 

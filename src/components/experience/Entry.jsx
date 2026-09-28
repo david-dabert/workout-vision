@@ -48,7 +48,7 @@ export default function Entry({ onEnter }) {
   function enter() {
     if (leaving.current) return;
     leaving.current = true;
-    // The actual checkbox change supplies Safari's switch tick; no synthetic click.
+    // No switch input: on iOS Safari it takes drags that begin on it. The tick is navigator.vibrate where it exists.
     navigator.vibrate?.(10);
     scene.current?.leave();
     setPhase('play leaving');
@@ -69,11 +69,9 @@ export default function Entry({ onEnter }) {
         <h1 className="entry-l1"><span className="mask"><span>{text[0]}</span></span></h1>
         <p className="entry-l2"><span className="mask"><span>{text[1]}</span></span></p>
         <p className="entry-l3">{text[2]}</p>
-        <label className="enter tactile" role="button" tabIndex={0} aria-label={text[3]}
-          onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); enter(); } }}>
-          <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={enter} />
+        <button type="button" className="enter tactile" aria-label={text[3]} onClick={enter}>
           <span>{text[3]}</span>
-        </label>
+        </button>
         <p className="entry-test">{text[5]}</p>
       </div>
     </section>

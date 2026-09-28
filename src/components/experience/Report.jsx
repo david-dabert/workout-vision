@@ -165,14 +165,12 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
 
       <div className="share-bar">
         <p className="share-note" role="status">{note}</p>
-        <label className={`btn-primary press${busy ? ' is-busy' : ''}`} role="button" tabIndex={0} aria-disabled={busy || undefined}
-          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); share(); } }}>
-          <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={share} />
+        <button type="button" className={`btn-primary press${busy ? ' is-busy' : ''}`} aria-disabled={busy || undefined} onClick={share}>
           {status === 'ready' && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>}
           <span>{status === 'ready' ? (fr ? 'Partager le PDF' : 'Share the PDF')
             : busy ? (fr ? 'Préparation du PDF…' : 'Preparing the PDF…')
               : (fr ? 'Réessayer' : 'Try again')}</span>
-        </label>
+        </button>
       </div>
     </div></section>
   </div>;

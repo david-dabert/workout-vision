@@ -297,11 +297,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <div className="glass appear" data-testid="ask-card">
           <p className="ask-q">{fr ? `Nous avons compté ${count}. Est-ce juste ?` : `We counted ${count}. Is that right?`}</p>
           <div className="ask-row">
-            <label className="btn-primary press" role="button" tabIndex={0}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSave(count, false); } }}>
-              <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={() => doSave(count, false)} />
+            <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>
               <span>{fr ? 'Oui, c’est juste' : 'Yes, that’s right'}</span>
-            </label>
+            </button>
             <button className="btn-ghost press" onClick={() => setStep('fix')}>{fr ? 'Non' : 'No'}</button>
           </div>
         </div>
@@ -315,11 +313,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             <span className="stepper-n" aria-live="polite">{trueN}</span>
             <button className="round press" disabled={trueN >= 99} onClick={() => setTrueN(n => Math.min(99, n + 1))} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
-          <label className="btn-primary press" role="button" tabIndex={0}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSave(trueN, true); } }}>
-            <input type="checkbox" {...{ switch: '' }} className="hx" tabIndex={-1} aria-hidden="true" onChange={() => doSave(trueN, true)} />
+          <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
             <span>{fr ? 'Enregistrer' : 'Save'}</span>
-          </label>
+          </button>
         </div>
       )}
 
