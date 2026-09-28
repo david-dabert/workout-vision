@@ -2,7 +2,7 @@
  * A phone clip holds more than the set (28 September 2026). The filming screen asks for "one set,
  * then stop recording", so the clip also holds walking in, picking the weights up and putting them
  * down. MM-Fit's own 3D poses, replayed with the seconds around each labelled set, showed the
- * counter losing reps to it (test/real-phone/mmfit-context/). The first three tests each model one
+ * counter losing reps to it (test/real-phone/mmfit-context/). The first four tests each model one
  * mechanism found there and fail on c3681b8; the last three guard what a fix could break.
  */
 import { describe, it, expect } from 'vitest';
@@ -53,6 +53,17 @@ describe('A phone clip holds more than the set', () => {
       { path: [{ hold: 172, sec: 1 }, { to: 90, sec: 1.2 }], start: 172, frame: hangFrame },
       { path: [{ hold: 90, sec: 0.5 }, ...presses(160), { to: 90, sec: 1 }], start: 90, frame: pressFrame },
       { path: [{ to: 172, sec: 1.2 }, { hold: 172, sec: 1 }], start: 90, frame: hangFrame },
+    ]);
+    expect(countReps(frames, ts, 'overhead_press').count).toBe(10);
+  });
+
+  it('arms hanging after an overhead press, then another move before the clip ends, do not move its thresholds', () => {
+    // The reviewer's finding on the first version (28 September): after the set the arms hang for
+    // 8 s, then the lifter moves again, bringing a weight halfway up, before the clip stops.
+    const { frames, ts } = build([
+      { path: [{ hold: 172, sec: 1 }, { to: 90, sec: 1.2 }], start: 172, frame: hangFrame },
+      { path: [{ hold: 90, sec: 0.5 }, ...presses(150), { to: 90, sec: 1 }], start: 90, frame: pressFrame },
+      { path: [{ to: 172, sec: 1.2 }, { hold: 172, sec: 8 }, { to: 110, sec: 1 }, { to: 172, sec: 1 }, { hold: 172, sec: 1 }], start: 90, frame: hangFrame },
     ]);
     expect(countReps(frames, ts, 'overhead_press').count).toBe(10);
   });

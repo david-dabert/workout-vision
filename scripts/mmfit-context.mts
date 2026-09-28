@@ -121,6 +121,17 @@ cores.forEach((core, k) => {
   }
   table.push('');
 });
+// Sets off by 3 or more (CLAUDE.md R2 calls this a catastrophic error), and how many of them each
+// later core adds against the first one given.
+const far = (r: any, k: number, col: string) => Math.abs(r.counts[k][col] - r.expected) >= 3;
+table.push('### Sets off by 3 or more', '', '| Core | ' + columns.join(' | ') + ' |', '|---|' + columns.map(() => '---:').join('|') + '|');
+cores.forEach((core, k) => {
+  table.push(`| ${core} | ` + columns.map(col => {
+    const n = rows.filter(r => far(r, k, col)).length;
+    return k === 0 ? `${n}` : `${n} (${rows.filter(r => far(r, k, col) && !far(r, 0, col)).length} new)`;
+  }).join(' | ') + ' |');
+});
+table.push('');
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, 'results.json'), JSON.stringify({ cores: cores.map(c => ({ path: c, sha256: sha(c) })), columns, admittedFrom: 'test/real-phone/mmfit/results.json', rows }, null, 1) + '\n');
 writeFileSync(join(out, 'table.md'), '# MM-Fit admitted sets, exact counts\n\nEach cell: sets counted exactly (sets over, sets under). Supplementary build data, never exam data.\n\n' + table.join('\n'));

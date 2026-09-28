@@ -210,11 +210,14 @@ function countSide(
   if (validAngles.length < 3) {
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
   }
-  // The set's range from its own samples: the clip less its still head and tail, where the angle
-  // has not yet moved, or no longer moves, a rep's minimum range from where the clip starts or ends
-  // (standing, or arms hanging, before walking in and after putting the weights down).
-  const active = activeSpan(smoothed, MIN_ROM_DEGREES);
-  const sorted = active.sort((x, y) => x - y);
+  // A lift that locks out overhead takes its range from the samples with the wrist above the
+  // shoulder: arms hanging, before the set, after it or between, are not part of the press.
+  const overhead = def.lockoutOverhead ? wristOverShoulder(worldLandmarks, timestamps, arm) : null;
+  const pressing = overhead ? smoothed.filter((a, i): a is number => a !== null && overhead[i] !== false) : validAngles;
+  if (pressing.length < 3) {
+    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
+  }
+  const sorted = [...pressing].sort((a, b) => a - b);
   const p = (pct: number) => sorted[Math.floor(sorted.length * pct / 100)];
   const pLow = p(PERCENTILE_LOW);
   const pHigh = p(PERCENTILE_HIGH);
@@ -229,7 +232,6 @@ function countSide(
   const highThreshold = pHigh - margin;
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const overhead = def.lockoutOverhead ? wristOverShoulder(worldLandmarks, timestamps, arm) : null;
   const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, overhead);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
@@ -256,19 +258,6 @@ function wristOverShoulder(worldLandmarks: WorldLandmarkFrame[], timestamps: num
     for (let j = i + 1; j < own.length && timestamps[j] - timestamps[i] <= gap; j++) if (own[j] !== null) { best = own[j]; break; }
     return best;
   });
-}
-
-/** The smoothed angles between the clip's first and last moves of `span` degrees from its ends. */
-function activeSpan(smoothed: (number | null)[], span: number): number[] {
-  const valid: number[] = [];
-  for (const a of smoothed) if (a !== null) valid.push(a);
-  if (!valid.length) return valid;
-  const first = valid[0], last = valid[valid.length - 1];
-  const from = valid.findIndex(a => Math.abs(a - first) >= span);
-  let to = -1;
-  for (let i = valid.length - 1; i >= 0; i--) if (Math.abs(valid[i] - last) >= span) { to = i; break; }
-  if (from < 0 || to < 0 || to <= from) return valid;
-  return valid.slice(from, to + 1);
 }
 
 // ─── Both arms: the alternating curl ───
