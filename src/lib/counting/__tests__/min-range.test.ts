@@ -509,4 +509,26 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
     for (let r = 0; r < 10; r++) p.push({ to: 138, sec: 0.8 }, { hold: 138, sec: 0.3 }, { to: 160, sec: 0.8 });
     expect(curls(sample(p, 160, SPS)).count).toBe(10);
   });
+
+  // The reviewer's test from the first version of this step (28 September 2026), added unchanged as a guard.
+  it('an 18° partial 3 s into the clip, after the dumbbells are held 10° out and 0.1 s at rest, does not count although the rest after it is 3° fuller', () => {
+    const p: Segment[] = [{ hold: 30, sec: 3 }, { to: 20, sec: 0.1 }, { hold: 20, sec: 0.1 }, { to: 38, sec: 0.8 }, { hold: 38, sec: 1.5 }, { to: 17, sec: 0.8 }, { hold: 17, sec: 1 }];
+    for (let r = 0; r < 6; r++) p.push({ to: 42, sec: 1 }, { hold: 42, sec: 0.3 }, { to: 17, sec: 1 }, { hold: 17, sec: 1 });
+    expect(raises(sample(p, 30, SPS)).count).toBe(6);
+  });
+
+  // The second version's reviewer's test (28 September 2026), added unchanged. It fails on core 00c852b8
+  // (7 for 6 on both lifts) and passes on bf50199: the rest window reaches back across a pose dropout.
+  it('an 18° partial after the arm hung 12° fuller, the pose lost 0.5 s while it came back, then 0.3 s seen at rest, does not count', () => {
+    for (const restsLow of [false, true]) {
+      const rest = restsLow ? 20 : 160, dir = restsLow ? 1 : -1, joint = restsLow ? 'shoulder' : 'elbow';
+      const p: Segment[] = [{ hold: rest, sec: 1 }];
+      for (let r = 0; r < 6; r++) p.push({ to: rest + dir * 22, sec: 1 }, { hold: rest + dir * 22, sec: 0.3 }, { to: rest, sec: 1 }, { hold: rest, sec: 1 });
+      p.push({ to: rest - dir * 12, sec: 0.5 }, { hold: rest - dir * 12, sec: 2 });
+      const seenBefore = sample(p, rest, SPS);
+      const seenAfter = sample([{ hold: rest, sec: 0.3 }, { to: rest + dir * 18, sec: 0.8 }, { hold: rest + dir * 18, sec: 1.5 }, { to: rest, sec: 0.8 }, { hold: rest, sec: 1 }], rest, SPS);
+      const frames = [...seenBefore.map(x => jointFrame(joint, { left: x })), ...Array(8).fill(null), ...seenAfter.map(x => jointFrame(joint, { left: x }))];
+      expect(countReps(frames, timestamps(frames.length, SPS), restsLow ? 'lateral_raise' : 'bicep_curl').count).toBe(6);
+    }
+  });
 });
