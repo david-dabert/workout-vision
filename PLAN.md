@@ -225,3 +225,5 @@ LIFT TIERS, from 28 September, by David's decision. Beta and Experimental are ex
 - The figures of the five new lifts on the choice card and the filming screen are drawings (scripts/make-lift-poses.mjs), not recorded poses; nothing is measured from them.
 
 Approved on 28 September on the preview built from 51024ef: on David's iPhone, the swipe of the lift cards and one analysis. main fast-forwarded to 51024ef and pushed (git ls-remote: refs/heads/main 51024ef2b119). main thereby takes the commits from 9b9ddd0 to 51024ef: the interruption guard, the lift tiers, the tactility pass, the removal of every switch with the ?perf=1 instrument, overhead press as Experimental, and the smoothness pass.
+
+Approved on 28 September on the preview built from b4c28b9, on David's iPhone. main fast-forwarded to b4c28b9 and pushed (git ls-remote: refs/heads/main b4c28b95a4f9). main thereby takes 6489d8a, the record above, and b4c28b9: small screens, the app icon, the install details and the startup screens.
