@@ -6,10 +6,11 @@
  * short measure (the review of 28 September: noisy sets of 22 to 30° further from the truth).
  * The range is now measured from the level of the rest the rep left to the level of its working
  * end (detectReps in core.ts says how each is found).
- * - The first eight tests fail on bf50199. Five of them, from the curls that turn at the rest on,
- *   also pin one documented choice each, and two guards pin two more (the flickers, and the
- *   partial before a fuller rest): code that differs from the choice on that point fails that
- *   test (the third review of 28 September: nothing pinned them).
+ * - The first ten tests fail on bf50199. Seven of them, from the curls that turn at the rest on,
+ *   also pin documented choices, and four guards pin more (the flickers, the rest that moves,
+ *   the fuller pause and the fuller rest after a partial): code that differs from a choice on
+ *   that point fails the test that names it (the third review of 28 September: nothing pinned
+ *   them). The first test also fails if single samples beyond the band are left out.
  * - The guards pass on bf50199. Each partial in them crosses both thresholds, so it reaches the
  *   range check, and every partial guard fails with the check removed (the second review of 28
  *   September: the first guards never reached it). The part-way holds come from that review.
@@ -20,8 +21,8 @@
  *     5:1688; status: literature).
  *   - A partial held at the top reads a little long in noise: the most extreme third of a second
  *     is picked from the hold.
- *   - A pause inside the rest band that outlasts the rest the rep left is taken for the rest, and
- *     a turn at the rest without a pause, once it lasts REST_LEVEL_MIN_SEC, is taken at its
+ *   - A pause within the band of the rest's last stay stays in the rest, and can outweigh it.
+ *   - A turn at the rest without a pause, once it lasts REST_LEVEL_MIN_SEC, is taken at its
  *     median, inside its fullest point (the third review of 28 September).
  *   test/real-phone/range-from-rest/curve.txt records the first two, by true range.
  */
@@ -138,7 +139,7 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
     expect(curls(sample(p, 160, SPS)).count).toBe(10);
   });
 
-  it('five raises from 3.5° out, the fifth lowered fully, then five from fully down count 5: each rep is measured from the rest since the last cycle', () => {
+  it('five raises from 3.5° out, the fifth lowered fully, then five from fully down count 5: a rep is measured from the rest it left, not the one it comes back to', () => {
     // The first five cover 19.5° from the rest they left; the last five 23°.
     const p: Segment[] = [{ hold: 23.5, sec: 2 }];
     for (let r = 0; r < 4; r++) p.push({ to: 43, sec: 0.8 }, { hold: 43, sec: 0.3 }, { to: 23.5, sec: 0.8 }, { hold: 23.5, sec: 2 });
@@ -164,6 +165,27 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
     const p: Segment[] = [];
     for (let r = 0; r < 10; r++) p.push({ to: 138, sec: 0.8 }, { hold: 138, sec: 0.3 }, { to: 160, sec: 0.8 }, { hold: 160, sec: 1 });
     expect(curls(sample(p, 160, SPS).slice(1)).count).toBe(10);
+  });
+
+  // The third review of 28 September, unchanged: a pause still at rest, 3.5° out, outlasted the
+  // rest the rep left and was taken for it. A pause more than the band from the last stay is left out.
+  it('holding the dumbbells 3.5° out for 4 s, then 0.4 s fully down, before a set of 23° raises does not cost the first raise', () => {
+    const p: Segment[] = [{ hold: 23.5, sec: 4 }, { to: 20, sec: 0.5 }, { hold: 20, sec: 0.4 }];
+    for (let r = 0; r < 10; r++) p.push({ to: 43, sec: 0.8 }, { hold: 43, sec: 0.3 }, { to: 20, sec: 0.8 }, { hold: 20, sec: 0.8 });
+    const r = raises(sample(p, 23.5, SPS));
+    expect(r.lowThreshold).toBeGreaterThan(23.5);
+    expect(r.count).toBe(10);
+  });
+
+  it('a curl paused 3.5° short of straight for 3 s, then straightened for 0.8 s, before the fifth 23° curl does not cost it', () => {
+    const p: Segment[] = [{ hold: 160, sec: 1 }];
+    for (let r = 0; r < 10; r++) {
+      if (r === 4) p.push({ to: 156.5, sec: 0.5 }, { hold: 156.5, sec: 3 }, { to: 160, sec: 0.5 }, { hold: 160, sec: 0.8 });
+      p.push({ to: 137, sec: 0.8 }, { hold: 137, sec: 0.3 }, { to: 160, sec: 0.8 }, { hold: 160, sec: 0.8 });
+    }
+    const r = curls(sample(p, 160, SPS));
+    expect(r.highThreshold).toBeLessThan(156.5);
+    expect(r.count).toBe(10);
   });
 
   // Guards: they pass on bf50199.
@@ -200,6 +222,33 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
       p.push({ to: rest + dir * 18, sec: 0.8 }, { hold: rest + dir * 18, sec: 0.8 }, { to: rest - dir * 6, sec: 1 }, { hold: rest - dir * 6, sec: 4 });
       expect(countHeld(sample(p, rest, SPS), restsLow).count).toBe(8);
     }
+  });
+
+  it('18.5° partials after the rest moves 2° out, following six 25° reps with 2 s rests, do not count: each rep is measured from the rest since the last cycle, not the whole video', () => {
+    for (const restsLow of [false, true]) {
+      const rest = restsLow ? 20 : 160, dir = restsLow ? 1 : -1, moved = rest + dir * 2;
+      const p: Segment[] = [{ hold: rest, sec: 2 }];
+      for (let r = 0; r < 6; r++) p.push({ to: rest + dir * 25, sec: 1 }, { hold: rest + dir * 25, sec: 0.3 }, { to: r < 5 ? rest : moved, sec: 1 }, { hold: r < 5 ? rest : moved, sec: 2 });
+      for (let r = 0; r < 4; r++) p.push({ to: moved + dir * 18.5, sec: 0.8 }, { hold: moved + dir * 18.5, sec: 1.5 }, { to: moved, sec: 0.8 }, { hold: moved, sec: 1 });
+      expect(countHeld(sample(p, rest, SPS), restsLow).count).toBe(6);
+    }
+  });
+
+  it('18° partials after 2 s held 3.5°, 5° or 8° fuller than the rest, then 0.5 s back at it, do not count: a pause the rep did not leave does not lengthen it', () => {
+    // The fourth review of 28 September: the pause outweighed the rest the partial left.
+    const wrong: string[] = [];
+    for (const restsLow of [false, true]) for (const out of [3.5, 5, 8]) {
+      const rest = restsLow ? 20 : 160, dir = restsLow ? 1 : -1;
+      const p: Segment[] = [{ hold: rest, sec: 1 }];
+      for (let r = 0; r < 6; r++) p.push({ to: rest + dir * 25, sec: 1 }, { hold: rest + dir * 25, sec: 0.3 }, { to: rest, sec: 1 }, { hold: rest, sec: 1 });
+      for (let r = 0; r < 4; r++) {
+        if (r === 3) p.push({ to: rest - dir * out, sec: 0.5 }, { hold: rest - dir * out, sec: 2 }, { to: rest, sec: 0.5 }, { hold: rest, sec: 0.5 });
+        p.push({ to: rest + dir * 18, sec: 0.8 }, { hold: rest + dir * 18, sec: 1.5 }, { to: rest, sec: 0.8 }, { hold: rest, sec: 1 });
+      }
+      const count = countHeld(sample(p, rest, SPS), restsLow).count;
+      if (count !== 6) wrong.push(`${restsLow ? 'rest low' : 'rest high'}, ${out}° fuller: ${count}`);
+    }
+    expect(wrong).toEqual([]);
   });
 
   // The second review of 28 September: a hold part way out of the rest was taken for the rest.
@@ -245,25 +294,11 @@ describe('Counting core — a rep\'s range is measured from its rest', () => {
     expect(wrong).toEqual([]);
   });
 
-  it.fails('holding the dumbbells 3.5° out for 4 s, then 0.4 s fully down, before a set of 23° raises does not cost the first raise', () => {
-    // The third review of 28 September, unchanged: the pause is inside the rest band.
-    const p: Segment[] = [{ hold: 23.5, sec: 4 }, { to: 20, sec: 0.5 }, { hold: 20, sec: 0.4 }];
-    for (let r = 0; r < 10; r++) p.push({ to: 43, sec: 0.8 }, { hold: 43, sec: 0.3 }, { to: 20, sec: 0.8 }, { hold: 20, sec: 0.8 });
-    const r = raises(sample(p, 23.5, SPS));
-    expect(r.lowThreshold).toBeGreaterThan(23.5);
-    expect(r.count).toBe(10);
-  });
-
-  it.fails('a curl paused 3.5° short of straight for 3 s, then straightened for 0.8 s, before the fifth 23° curl does not cost it', () => {
-    // The third review of 28 September, unchanged.
-    const p: Segment[] = [{ hold: 160, sec: 1 }];
-    for (let r = 0; r < 10; r++) {
-      if (r === 4) p.push({ to: 156.5, sec: 0.5 }, { hold: 156.5, sec: 3 }, { to: 160, sec: 0.5 }, { hold: 160, sec: 0.8 });
-      p.push({ to: 137, sec: 0.8 }, { hold: 137, sec: 0.3 }, { to: 160, sec: 0.8 }, { hold: 160, sec: 0.8 });
-    }
-    const r = curls(sample(p, 160, SPS));
-    expect(r.highThreshold).toBeLessThan(156.5);
-    expect(r.count).toBe(10);
+  it.fails('holding the dumbbells 2.5° out for 4 s, then 0.4 s fully down, before ten 22° raises does not cost the first raise', () => {
+    // A pause within the band of the last stay stays in the rest and outweighs it.
+    const p: Segment[] = [{ hold: 22.5, sec: 4 }, { to: 20, sec: 0.5 }, { hold: 20, sec: 0.4 }];
+    for (let r = 0; r < 10; r++) p.push({ to: 42, sec: 0.8 }, { hold: 42, sec: 0.3 }, { to: 20, sec: 0.8 }, { hold: 20, sec: 0.8 });
+    expect(raises(sample(p, 22.5, SPS)).count).toBe(10);
   });
 
   it.fails('ten 22° curls that turn at the rest without pausing, 0.8 s each way, count 10', () => {

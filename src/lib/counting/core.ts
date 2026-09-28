@@ -219,8 +219,8 @@ function countSide(
   const highThreshold = pHigh - margin;
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, band);
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
 
   // 8. Confidence: fraction of samples with a detected pose on the tracked side
@@ -427,8 +427,12 @@ function savitzkyGolay(angles: (number | null)[], windowSize: number): (number |
  * where it was first seen to leave the rest.
  * - The rest's level is the median of the samples at rest (past the rest threshold) since the
  *   last cycle ended, or their fullest point when they add up to less than REST_LEVEL_MIN_SEC.
- *   A hold beyond the rest threshold is thus not taken for the rest; a pause that stays within
- *   it, and outlasts the rest the rep left, still is.
+ *   A hold beyond the rest threshold is thus not taken for the rest. Nor is a pause held further
+ *   than the rest band (`band`) from the rest's last stay for REST_LEVEL_MIN_SEC or more: the
+ *   rep left the last stay, so the pause's samples are left out. The last stay is the latest
+ *   REST_LEVEL_MIN_SEC of consecutive samples at rest lying within the band of their median.
+ *   Single samples beyond the band are noise and stay in. A pause within the band can still
+ *   move the level.
  * - The working end's level is the mean of its most extreme EXTREME_HOLD_SEC of consecutive
  *   samples, so one-sample flickers apart from each other do not add up. On a hold, the most
  *   extreme stretch is still picked from the noise, which reads a held rep a little long.
@@ -446,11 +450,13 @@ function detectReps(
   lowThreshold: number,
   highThreshold: number,
   rest: 'high' | 'low',
+  band: number, // how far the angle may stray from a level and still be at it, as in placeBoundaries
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
   const sampleRate = estimateSampleRate(timestamps);
   const hold = Math.max(1, Math.round(EXTREME_HOLD_SEC * sampleRate));
+  const stay = Math.ceil(REST_LEVEL_MIN_SEC * sampleRate);
   const atRest = (a: number) => (restsLow ? a <= lowThreshold : a >= highThreshold);
   const values = (from: number, to: number, keep: (a: number) => boolean) => {
     const out: number[] = [];
@@ -476,17 +482,47 @@ function detectReps(
     }
     return most / w;
   };
+  // The last stay at rest in [from, to): the median of the latest `stay` consecutive samples at
+  // rest that all lie within the band of it. null when there is no such stretch.
+  const lastStay = (from: number, to: number): number | null => {
+    for (let end = Math.min(smoothed.length, to); end - stay >= Math.max(0, from); end--) {
+      const w = smoothed.slice(end - stay, end);
+      if (w.some(a => a === null || !atRest(a))) continue;
+      const sorted = (w as number[]).sort((x, y) => x - y);
+      const median = sorted[Math.floor(stay / 2)];
+      if (sorted[0] >= median - band && sorted[stay - 1] <= median + band) return median;
+    }
+    return null;
+  };
+  // The level of the rest in [from, to), leaving out any pause held further than the band from
+  // its last stay for `stay` samples or more; single samples out there are noise and stay in.
+  // null when no sample there is at rest.
+  const levelOf = (from: number, to: number): number | null => {
+    const lo = Math.max(0, from), hi = Math.min(smoothed.length, to);
+    const last = lastStay(lo, hi);
+    const kept: number[] = [];
+    let pause: number[] = [];
+    const flush = () => { if (pause.length < stay) kept.push(...pause); pause = []; };
+    for (let k = lo; k < hi; k++) {
+      const a = smoothed[k];
+      if (a === null || !atRest(a)) { flush(); continue; }
+      if (last !== null && Math.abs(a - last) > band) { pause.push(a); continue; }
+      flush();
+      kept.push(a);
+    }
+    flush();
+    return kept.length ? restLevel(kept) : null;
+  };
   // The range a rep is checked on: from the rest it left, since the last cycle ended, to its
   // working end. Before the first cycle, the start of the video may have cut that rest short:
   // with less than REST_LEVEL_MIN_SEC of it in view, the rest the rep comes back to, until the
   // angle leaves it again, stands in when it is fuller.
   const rangeFromRest = (restFrom: number, enter: number, complete: number): number => {
-    const rested = values(restFrom, enter, atRest);
-    let rest = rested.length ? restLevel(rested) : null;
-    if (restFrom === 0 && rested.length < REST_LEVEL_MIN_SEC * sampleRate) {
+    let rest = levelOf(restFrom, enter);
+    if (restFrom === 0 && values(restFrom, enter, atRest).length < REST_LEVEL_MIN_SEC * sampleRate) {
       let next = complete;
       while (next < smoothed.length && (smoothed[next] === null || atRest(smoothed[next] as number))) next++;
-      const after = restLevel(values(complete, next, atRest));
+      const after = levelOf(complete, next) as number;
       rest = rest === null ? after : restsLow ? Math.min(rest, after) : Math.max(rest, after);
     }
     return Math.abs(workLevel(values(enter, complete + 1, () => true)) - (rest as number));
