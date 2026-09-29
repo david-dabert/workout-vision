@@ -101,3 +101,28 @@ describe('a set of no reps holds no record (review, 29 September)', () => {
     expect(p[0].bests.reps).toEqual({ value: 1, id: 'b' });
   });
 });
+
+describe('a count no one confirmed holds no record (review, 29 September)', () => {
+  it('an old upload counted by the old engine stays in the trend but takes no best', () => {
+    const p = exerciseProgress(newestFirst([set('a', 'bicep_curl', 40, { source: 'upload', weight: 30 }), set('b', 'bicep_curl', 12, { source: 'counter-core', machineResult: { reps: 12 }, corrected: false })]));
+    expect(p[0].trend).toEqual([40, 12]);
+    expect(p[0].bests.reps).toEqual({ value: 12, id: 'b' });
+    expect(p[0].bests.load).toBeNull();
+  });
+  it('an old upload the user corrected is their count, and can hold one', () => {
+    const p = exerciseProgress(newestFirst([set('a', 'bicep_curl', 14, { source: 'upload', repsOverridden: true }), set('b', 'bicep_curl', 12)]));
+    expect(p[0].bests.reps).toEqual({ value: 14, id: 'a' });
+  });
+});
+describe('confirmed means seen by the user, whatever the source (review, 29 September)', () => {
+  it('a counter-core set saved without the question holds no record', () => {
+    // As storage.saveWorkout keeps them: it adds machineResult to every set, so only "corrected",
+    // saved by the result screen's question, tells a confirmed set apart.
+    const p = exerciseProgress(newestFirst([set('a', 'bicep_curl', 40, { source: 'counter-core', machineResult: { reps: 40, confidence: null }, correctedResult: null }), set('b', 'bicep_curl', 12, { source: 'counter-core', machineResult: { reps: 12 }, correctedResult: null, corrected: false })]));
+    expect(p[0].bests.reps).toEqual({ value: 12, id: 'b' });
+  });
+  it('a set entered by hand, or from before sources were saved, is the user\'s own count', () => {
+    const p = exerciseProgress(newestFirst([set('a', 'squat', 9, { source: 'manual' }), set('b', 'squat', 7)]));
+    expect(p[0].bests.reps).toEqual({ value: 9, id: 'a' });
+  });
+});

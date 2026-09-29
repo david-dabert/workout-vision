@@ -170,14 +170,29 @@ test.describe('the history at 375 px', () => {
           id: 'corrected-left', exercise: 'bicep_curl', reps: 12, arm: 'left', duration: 31, createdAt: Date.now() - 60000,
           source: 'counter-core', machineResult: { reps: 11, confidence: 0.8 }, correctedResult: { reps: 12 },
         }, 'corrected-left');
+        // Eight squats with loads: the longest French record lines beside eight bars (review, 29 September).
+        [[60, 10], [60, 8], [70, 5], [60, 9], [60, 7], [65, 6], [60, 8], [70, 4]].forEach(([weight, reps], i) => tx.objectStore('workouts').put({
+          id: `sq-${i}`, exercise: 'squat', reps, weight, source: 'manual', createdAt: Date.now() - (10 - i) * 3600000,
+        }, `sq-${i}`));
         tx.oncomplete = () => { db.close(); resolve(); };
         tx.onerror = () => reject(tx.error);
       };
     }));
     await page.reload();
     await page.getByRole('button', { name: /Vos séries/ }).click();
-    await expect(page.locator('.hist-btn')).toHaveCount(2);
+    await expect(page.locator('.hist-btn')).toHaveCount(10);
+    await expect(page.locator('.hist-prog')).toContainText('Record à 60 kg : 10 répétitions');
     await page.waitForTimeout(1600); // the rows' reveal animation has settled
+    // The page's layout check reads text against text; a record line over the bars is checked here.
+    const hits = await page.evaluate(() => [...document.querySelectorAll('.prog-item')].flatMap(item => {
+      const bars = item.querySelector('.prog-bars')?.getBoundingClientRect();
+      if (!bars) return [];
+      return [...item.querySelectorAll('.prog-meta > span, .prog-name')].filter(el => {
+        const r = el.getBoundingClientRect();
+        return r.left < bars.right && r.right > bars.left && r.top < bars.bottom && r.bottom > bars.top;
+      }).map(el => el.textContent);
+    }));
+    expect(hits).toEqual([]);
     expect((await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '))).toEqual([]);
   });
 });

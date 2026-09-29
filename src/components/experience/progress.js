@@ -16,6 +16,15 @@ export const liftKey = w => w.exercise || w.exerciseKey;
 // saves a "load" field.
 export const storedLoad = w => (typeof w.weight === 'number' && Number.isFinite(w.weight) && w.weight > 0 ? w.weight : null);
 
+// A count the user saw: entered by hand; answered on the result screen, which saves "corrected" as
+// true or false (storage.saveWorkout adds machineResult to every set, so that field proves nothing);
+// or corrected. The old app's uploads, and counter-core sets saved without the question (25-26
+// September, and the collector's path), were saved as the engine gave them.
+export function confirmed(w) {
+  if (typeof w.corrected === 'boolean' || w.correctedResult || w.repsOverridden) return true;
+  return w.source !== 'upload' && w.source !== 'counter-core';
+}
+
 // A record is taken by beating it, not by equalling it: on a tie the set that reached it first
 // keeps it. Status: convention (how gym and sport records are kept).
 const better = (value, best) => !best || value > best.value;
@@ -26,6 +35,8 @@ function bestsOf(sets) {
   for (const w of sets) {
     // A set of no reps (a clip corrected to 0) lifted nothing: it holds no record.
     if (!(w.reps > 0)) continue;
+    // A count no one confirmed stays in the trend but holds no record (CLAUDE.md R8).
+    if (!confirmed(w)) continue;
     if (better(w.reps, reps)) reps = { value: w.reps, id: w.id };
     const kg = storedLoad(w);
     if (kg === null) continue;

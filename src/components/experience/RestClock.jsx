@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { restClock, nextTick, restText, restSpoken } from './rest-clock';
 
 /**
- * The rest after the set, counted up from one tap; another tap stops it. It sets no length to reach
+ * The rest after the set, counted up from the moment the set is saved, or from a tap; a tap stops it. It sets no length to reach
  * and says nothing of how long to rest (rest-clock.js). The time is drawn on each whole second and
  * again the moment the page comes back into view, so a phone that slept shows the right time at once.
  */
-export default function RestClock({ fr }) {
-  const [clock] = useState(restClock);
-  const [running, setRunning] = useState(false);
+export default function RestClock({ fr, autoStart = false }) {
+  // Started with the saved set, the clock runs from that moment: the rest has begun, no tap needed.
+  const [clock] = useState(() => { const c = restClock(); if (autoStart) c.start(); return c; });
+  const [running, setRunning] = useState(autoStart);
   const [, redraw] = useState(0);
   // The button that replaces the one tapped takes the focus, so the keyboard and screen readers stay in place.
   const buttonRef = useRef(null), moved = useRef(false);

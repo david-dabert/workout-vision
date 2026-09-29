@@ -158,7 +158,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
-    // One sentence that sums up the set, as at the top of the result (set-opener.js); none on an unknown count.
+    // One sentence that sums up the set (set-opener.js); none on an unknown count. The result screen carries none: its numeral and account say it.
     opener: setOpener({ reps, fr, count, counted }) || '',
     // Only what the user filled in (step 1, 29 September 2026): no coach is assumed.
     people: people({ fr, name, context, partner, level }),

@@ -34,7 +34,12 @@
 .wv-experience .hist-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .wv-experience .hist-tag.is-best { border-color: var(--lamp); color: var(--lamp); }
 /* Progress per exercise: the name, the last sets' reps as bars from zero, the bests in mono. */
-.wv-experience .prog-item { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; }
+/* The name and its bars on one line, as a ledger; the records below across the full width, so no
+   line runs under the bars on a narrow phone (design pass and review, 29 September). */
+.wv-experience .prog-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; row-gap: 6px; align-items: end; padding: 14px 0; }
+.wv-experience .prog-item > .prog-name { grid-column: 1; grid-row: 1; }
+.wv-experience .prog-item > .prog-meta { grid-column: 1 / -1; grid-row: 2; }
+.wv-experience .prog-item > .prog-line { grid-column: 2; grid-row: 1; align-self: end; }
 .wv-experience .prog-name { font-family: var(--serif); font-size: 23px; line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
 .wv-experience .prog-line { display: block; line-height: 0; }
 .wv-experience .prog-bars rect { fill: var(--ash); opacity: 0.55; }

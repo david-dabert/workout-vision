@@ -1,0 +1,2 @@
+saved: PASS clock running=1 note="Merci. Série enregistrée sur votre téléphone."
+save refused: PASS clock running=1 note="Résultat affiché, mais non enregistré."

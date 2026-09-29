@@ -9,8 +9,7 @@ the rest clock in RestClock.jsx and rest-clock.js.
 It measures nothing new: the count, and what set-account.js already derives (the ▾ reps at the 85 % threshold,
 experimental; the slowdown from four whole reps). It states one fact, the first that holds, in this order:
 a correction, no rep, the ▾ reps, the slowdown, none shorter, the count alone.
-No opener on a refused set or an unknown count (rule 8). On the result screen it shows under the lift's name once
-the count has risen; in the report, under the title, on the screen and on the PDF.
+No opener on a refused set or an unknown count (rule 8). Design pass, 29 September: shown on the coach report only; the result screen's numeral and account already say it. In the report, under the title, on the screen and on the PDF.
 
 | key | FR | EN | where |
 |---|---|---|---|
@@ -28,12 +27,12 @@ the count has risen; in the report, under the title, on the screen and on the PD
 
 ## C2. The rest clock
 
-It counts the rest up from a tap and sets no length, so it makes no claim (the "Conseils généraux" note on rest stays
-as approved). On the result screen, once the count has risen, under the question or the saved card.
+It counts the rest up from the moment the set is saved (a tap restarts it after a stop) and sets no length, so it makes no claim (the "Conseils généraux" note on rest stays
+as approved). On the result screen, in the saved card under "Merci", above the report and the challenge.
 
 | key | FR | EN | where |
 |---|---|---|---|
-| rest.start | Lancer le repos | Start rest | result, button |
+| rest.start | Lancer le repos | Start rest | result, button, after the clock was stopped (the clock also runs when the phone could not save the set) |
 | rest.label | Repos | Rest | result, above the running clock |
 | rest.stop | Arrêter le repos | Stop rest | result, button under the clock |
 | rest.spoken | 1 minute 30 secondes (heure, minute, seconde; zéro et un au singulier) | 1 minute 30 seconds (hour, minute, second) | result, read by screen readers in place of 1:30 |

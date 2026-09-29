@@ -7,7 +7,7 @@ const NB = ' ';
 
 // Bars from zero, so their heights compare as the counts do; the last set's bar is lit.
 function Bars({ values }) {
-  const max = Math.max(...values, 1), w = 6, gap = 4, h = 24;
+  const max = Math.max(...values, 1), w = 10, gap = 6, h = 40; // read at a glance on the bench (design pass, 29 September)
   return <svg className="prog-bars" viewBox={`0 0 ${values.length * (w + gap) - gap} ${h}`} width={values.length * (w + gap) - gap} height={h} aria-hidden="true">
     {values.map((v, i) => {
       const bh = v > 0 ? Math.max(1, (v / max) * h) : 0; // a 0 draws no bar, not a small one

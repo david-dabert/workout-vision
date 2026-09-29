@@ -8,7 +8,6 @@ import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
-import { setOpener } from './set-opener';
 import RestClock from './RestClock';
 import { NOTES } from './set-notes';
 import { decimal } from './report-sheet';
@@ -197,9 +196,6 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
-  // The opener sums the set up in one sentence (set-opener.js): the app's count until the user saves a
-  // correction, then theirs; none on a refused set.
-  const opener = setOpener({ reps, fr, count: step === 'saved' ? trueN : count, counted: count, refused: !!result.refused });
   const marksRef = useRef(null);
   function pick(e) {
     const marks = [...(marksRef.current?.children || [])];
@@ -338,8 +334,6 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
         <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
       </div>
-      {/* Its room is kept while the count rises, and it shows once the count is reached. */}
-      {opener && <p className={`res-opener${asked ? ' is-in' : ''}`} data-testid="set-opener" aria-hidden={asked ? undefined : true}>{opener}</p>}
       <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (shown === 1 ? 'Rep' : 'Reps')}</p>
       <p className="sr" role="status">{asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
@@ -381,6 +375,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
+          {/* The rest begins as the set is saved: its clock runs at once, above the report and the
+              challenge, since the next thing done on the bench is to rest (design pass, 29 September).
+              The result screen carries no opener: its numeral and account already say it; the report does. */}
+          <div className="rest-slot"><RestClock fr={fr} autoStart /></div>
           <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
@@ -394,10 +392,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
-      {/* The rest after the set, counted up from a tap (RestClock.jsx). */}
-      {asked && <div className="rest-slot"><RestClock fr={fr} /></div>}
       {report && <ReportCount fr={fr} report={report} />}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
+      {/* A set the phone could not save is still done: the rest runs all the same (review, 29 September). */}
+      {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} autoStart /></div>}
       {count > 0 && asked && <div className="set-account appear" data-testid="set-account">
         {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
         <p className="acc-tip">{account.tip}</p>
