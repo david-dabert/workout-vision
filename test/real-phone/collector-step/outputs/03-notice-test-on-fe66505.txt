@@ -1,0 +1,10 @@
+  ✓  1 e2e/collect.spec.js:35:3 › a set interrupted by hidden offers no file, even once the page is back (1.4s)
+  ✓  2 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.2s)
+  ✓  3 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (243ms)
+  ✓  4 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (702ms)
+  ✓  5 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (714ms)
+  ✘  6 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (5.2s)
+    Error: expect(locator).toBeVisible() failed
+    Error: element(s) not found
+  1 failed
+  5 passed (11.0s)

@@ -132,3 +132,27 @@ export function setIsWhole({ samples, posed = samples, duration, fps, maxFrames,
   const expected = Math.floor(duration * fps);
   return failed === 0 && posed > 0 && expected > 0 && expected <= maxFrames && samples === expected;
 }
+
+
+/**
+ * Why no file is offered, or null when the set is whole (setIsWhole). Each clause states only
+ * what is known (29 September 2026, David's decision and its review): "no body was found" only
+ * when every sample was read and none has a pose; a sample the pose model could not read is
+ * reported as unread. The extractor does not report whether it reached the end of the video (on
+ * the playback path, captures can fall behind playback) and a failed first pass can leave its
+ * samples behind, so the page gives the counts it holds and never names a cause.
+ */
+export function refusal({ samples, posed = samples, duration, fps, maxFrames, failed }) {
+  if (setIsWhole({ samples, posed, duration, fps, maxFrames, failed })) return null;
+  const expected = Math.floor(duration * fps);
+  if (!Number.isFinite(expected) || expected <= 0) return 'the length of the video could not be read. No file is offered. Pick the video again.';
+  if (expected > maxFrames) return `the video is longer than the ${maxFrames} samples the page can read. No file is offered. Film a shorter set.`;
+  if (failed === 0 && samples === expected) {
+    return 'no body was found in any frame of the video. No file is offered. Film the whole body in the frame.';
+  }
+  const parts = [samples > expected
+    ? `${samples} samples were read where the video holds ${expected}`
+    : `only ${samples} of the ${expected} samples of the video were read`];
+  if (failed > 0) parts.push(`the pose model could not read ${failed} sample${failed === 1 ? '' : 's'}`);
+  return `${parts.join('; ')}. No file is offered. Pick the video again.`;
+}

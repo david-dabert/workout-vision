@@ -1,0 +1,1 @@
+The navigation and tactility browser tests run in WebKit with the iPhone profile as well as in Chromium, and none of them is weakened.

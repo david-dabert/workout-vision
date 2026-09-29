@@ -8,7 +8,7 @@
  */
 import { extractFramesStreaming } from './lib/frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './lib/extractionConfig';
-import { setFileName, issueUrl, setPayload, hashVideoContent, gzipBlob, sampleSet, setIsWhole } from './lib/collector';
+import { setFileName, issueUrl, setPayload, hashVideoContent, gzipBlob, sampleSet, refusal } from './lib/collector';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
@@ -155,11 +155,8 @@ videoInput.addEventListener('change', async () => {
     controller.signal.throwIfAborted();
     const worldLandmarks = set.world, imageLandmarks = set.image, timestamps = set.timestamps;
     // The file carries the count for the whole video, so its landmarks must cover all of it.
-    if (!setIsWhole({ samples: worldLandmarks.length, duration: metadata.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES, failed: set.failed, posed: set.posed })) {
-      throw new Error(set.posed === 0 && worldLandmarks.length
-        ? 'no body was found in any frame of the video. No file is offered. Film the whole body in the frame.'
-        : `the video was not read to the end (${worldLandmarks.length} of ${Math.floor(metadata.duration * TARGET_FPS)} samples${set.failed ? `, ${set.failed} unread` : ''}). No file is offered. Pick the video again.`);
-    }
+    const refused = refusal({ samples: worldLandmarks.length, duration: metadata.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES, failed: set.failed, posed: set.posed });
+    if (refused) throw new Error(refused);
     barEl.style.width = '100%';
     statusEl.textContent = `Done: ${worldLandmarks.length} samples from ${metadata.method}.`;
 

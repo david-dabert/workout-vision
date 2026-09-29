@@ -1,0 +1,124 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+3:38:41 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+3:38:41 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/__tests__/collector.test.js (34 tests | 6 failed) 30ms
+       × does not say no body was found when fewer samples were read, even with no pose so far 11ms
+       × never claims the video was not read to the end, which the extractor cannot tell 1ms
+       × does not say no body was found when a sample could not be read 2ms
+       × reports a sample that failed as unread 1ms
+       × adds no count of its own when a failed first pass left samples behind 1ms
+       × says the length could not be read when the duration is missing or endless 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/collector.test.js > collector > refusal > does not say no body was found when fewer samples were read, even with no pose so far
+AssertionError: expected 'the video was not read to the end (18…' to contain 'only 180 of the 341 samples of the vi…'
+
+Expected: "only 180 of the 341 samples of the video were read"
+Received: "the video was not read to the end (180 of 341 samples). No file is offered. Pick the video again."
+
+ ❯ src/lib/__tests__/collector.test.js:209:20
+    207|       expect(text).not.toContain('no body');
+    208|       expect(text).not.toContain('Film the whole body');
+    209|       expect(text).toContain('only 180 of the 341 samples of the video…
+       |                    ^
+    210|     });
+    211|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/lib/__tests__/collector.test.js > collector > refusal > never claims the video was not read to the end, which the extractor cannot tell
+AssertionError: expected 'the video was not read to the end (20…' not to contain 'not read to the end'
+
+Expected: "not read to the end"
+Received: "the video was not read to the end (200 of 341 samples). No file is offered. Pick the video again."
+
+ ❯ src/lib/__tests__/collector.test.js:214:48
+    212|     it('never claims the video was not read to the end, which the extr…
+    213|       for (const c of [{ samples: 200, posed: 200, failed: 0 }, { samp…
+    214|         expect(refusal({ ...base, ...c })).not.toContain('not read to …
+       |                                                ^
+    215|       }
+    216|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/lib/__tests__/collector.test.js > collector > refusal > does not say no body was found when a sample could not be read
+AssertionError: expected '1 of 341 samples could not be read by…' to contain 'the pose model could not read 1 sample'
+
+Expected: "the pose model could not read 1 sample"
+Received: "1 of 341 samples could not be read by the pose model. No file is offered. Pick the video again."
+
+ ❯ src/lib/__tests__/collector.test.js:221:20
+    219|       const text = refusal({ ...base, samples: 340, posed: 0, failed: …
+    220|       expect(text).not.toContain('no body');
+    221|       expect(text).toContain('the pose model could not read 1 sample');
+       |                    ^
+    222|     });
+    223|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/lib/__tests__/collector.test.js > collector > refusal > reports a sample that failed as unread
+AssertionError: expected '1 of 341 samples could not be read by…' to contain 'only 340 of the 341 samples of the vi…'
+
+Expected: "only 340 of the 341 samples of the video were read"
+Received: "1 of 341 samples could not be read by the pose model. No file is offered. Pick the video again."
+
+ ❯ src/lib/__tests__/collector.test.js:226:20
+    224|     it('reports a sample that failed as unread', () => {
+    225|       const text = refusal({ ...base, samples: 340, posed: 300, failed…
+    226|       expect(text).toContain('only 340 of the 341 samples of the video…
+       |                    ^
+    227|       expect(text).toContain('the pose model could not read 1 sample');
+    228|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/lib/__tests__/collector.test.js > collector > refusal > adds no count of its own when a failed first pass left samples behind
+AssertionError: expected '2 of 15 samples could not be read by …' not to contain '7 of 15'
+
+Expected: "7 of 15"
+Received: "2 of 15 samples could not be read by the pose model; the video was not read to the end (7 of 15 samples). No file is offered. Pick the video again."
+
+ ❯ src/lib/__tests__/collector.test.js:235:24
+    233|       set.fail(5); set.fail(0);
+    234|       const text = refusal({ samples: set.world.length, posed: set.pos…
+    235|       expect(text).not.toContain('7 of 15');
+       |                        ^
+    236|       expect(text).not.toContain('2 of 15');
+    237|       expect(text).toContain('only 5 of the 15 samples of the video we…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/lib/__tests__/collector.test.js > collector > refusal > says the length could not be read when the duration is missing or endless
+AssertionError: expected 'the video was not read to the end (30…' to contain 'the length of the video could not be …'
+
+Expected: "the length of the video could not be read"
+Received: "the video was not read to the end (300 of Infinity samples). No file is offered. Pick the video again."
+
+ ❯ src/lib/__tests__/collector.test.js:249:22
+    247|       for (const duration of [0, NaN, Infinity]) {
+    248|         const text = refusal({ samples: 300, posed: 300, failed: 0, du…
+    249|         expect(text).toContain('the length of the video could not be r…
+       |                      ^
+    250|         expect(text).not.toContain('Infinity');
+    251|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 28 passed (34)
+   Start at  03:38:41
+   Duration  336ms (transform 101ms, setup 0ms, import 120ms, tests 30ms, environment 0ms)
+

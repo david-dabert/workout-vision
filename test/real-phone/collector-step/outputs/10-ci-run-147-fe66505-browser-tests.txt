@@ -1,0 +1,10 @@
+2026-09-29T03:06:15.1523039Z WebKit 26.6 (playwright webkit v2359) downloaded to /home/runner/.cache/ms-playwright/webkit-2359
+2026-09-29T03:06:38.6658206Z ##[group]Run npx playwright test --retries=0 --workers=1
+2026-09-29T03:06:38.6658512Z [36;1mnpx playwright test --retries=0 --workers=1[0m
+2026-09-29T03:06:38.6693764Z shell: /usr/bin/bash -e {0}
+2026-09-29T03:06:38.6693982Z ##[endgroup]
+2026-09-29T03:06:39.8173505Z 
+2026-09-29T03:06:39.8174705Z Running 70 tests using 1 worker
+2026-09-29T03:08:38.9335740Z ······°°°°°°°°°°°°°°°·············································°···
+2026-09-29T03:08:38.9338890Z   16 skipped
+2026-09-29T03:08:38.9339121Z   54 passed (2.0m)

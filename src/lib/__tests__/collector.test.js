@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { setFileName, issueUrl, setPayload, sampleSet, setIsWhole } from '../collector';
+import { setFileName, issueUrl, setPayload, sampleSet, setIsWhole, refusal } from '../collector';
 
 describe('collector', () => {
   describe('setFileName', () => {
@@ -180,6 +180,90 @@ describe('collector', () => {
 
     it('refuses a set with no duration', () => {
       expect(setIsWhole({ samples: 0, duration: 0, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
+    });
+  });
+
+  // The page tells David why no file is offered, and says only what happened (29 September 2026):
+  // "no body was found" only when every sample was read; a sample the pose model could not read is
+  // reported as unread, never as an early end. The extractor does not say whether it reached the
+  // end of the video (on the playback path, captures can fall behind playback), and a failed first
+  // pass can leave its samples behind, so the page states counts, never a cause (review of
+  // 29 September 2026).
+  describe('refusal', () => {
+    const base = { duration: 22.766666999999998, fps: 15, maxFrames: 10000 };
+
+    it('offers the file, with no message, when the set is whole', () => {
+      expect(refusal({ ...base, samples: 341, posed: 341, failed: 0 })).toBeNull();
+    });
+
+    it('says no body was found when every sample was read and none has a pose', () => {
+      const text = refusal({ ...base, samples: 341, posed: 0, failed: 0 });
+      expect(text).toContain('no body was found in any frame of the video');
+      expect(text).toContain('Film the whole body');
+    });
+
+    it('does not say no body was found when fewer samples were read, even with no pose so far', () => {
+      const text = refusal({ ...base, samples: 180, posed: 0, failed: 0 });
+      expect(text).not.toContain('no body');
+      expect(text).not.toContain('Film the whole body');
+      expect(text).toContain('only 180 of the 341 samples of the video were read');
+    });
+
+    it('never claims the video was not read to the end, which the extractor cannot tell', () => {
+      for (const c of [{ samples: 200, posed: 200, failed: 0 }, { samples: 340, posed: 300, failed: 1 }, { samples: 100, posed: 90, failed: 2 }]) {
+        expect(refusal({ ...base, ...c })).not.toContain('not read to the end');
+      }
+    });
+
+    it('does not say no body was found when a sample could not be read', () => {
+      const text = refusal({ ...base, samples: 340, posed: 0, failed: 1 });
+      expect(text).not.toContain('no body');
+      expect(text).toContain('the pose model could not read 1 sample');
+    });
+
+    it('reports a sample that failed as unread', () => {
+      const text = refusal({ ...base, samples: 340, posed: 300, failed: 1 });
+      expect(text).toContain('only 340 of the 341 samples of the video were read');
+      expect(text).toContain('the pose model could not read 1 sample');
+    });
+
+    it('adds no count of its own when a failed first pass left samples behind', () => {
+      const set = sampleSet();
+      for (let i = 0; i < 5; i++) set.add(i, [1], i / 15);
+      set.fail(5); set.fail(0);
+      const text = refusal({ samples: set.world.length, posed: set.posed, failed: set.failed, duration: 1, fps: 15, maxFrames: Infinity });
+      expect(text).not.toContain('7 of 15');
+      expect(text).not.toContain('2 of 15');
+      expect(text).toContain('only 5 of the 15 samples of the video were read');
+    });
+
+    it('says the video is too long when it holds more samples than the page may take', () => {
+      const text = refusal({ samples: 100, posed: 100, failed: 0, duration: 10, fps: 15, maxFrames: 100 });
+      expect(text).toContain('longer than the 100 samples the page can read');
+      expect(text).not.toContain('only');
+    });
+
+    it('says the length could not be read when the duration is missing or endless', () => {
+      for (const duration of [0, NaN, Infinity]) {
+        const text = refusal({ samples: 300, posed: 300, failed: 0, duration, fps: 15, maxFrames: Infinity });
+        expect(text).toContain('the length of the video could not be read');
+        expect(text).not.toContain('Infinity');
+      }
+    });
+
+    it('refuses exactly the sets setIsWhole refuses', () => {
+      const cases = [
+        { samples: 341, posed: 341, failed: 0 }, { samples: 341, posed: 0, failed: 0 },
+        { samples: 180, posed: 0, failed: 0 }, { samples: 340, posed: 300, failed: 1 },
+        { samples: 342, posed: 342, failed: 0 },
+      ];
+      for (const c of cases) expect(refusal({ ...base, ...c }) === null).toBe(setIsWhole({ ...base, ...c }));
+    });
+
+    it('never uses an em dash', () => {
+      for (const c of [{ samples: 341, posed: 0, failed: 0 }, { samples: 100, posed: 90, failed: 2 }, { samples: 342, posed: 342, failed: 0 }]) {
+        expect(refusal({ ...base, ...c })).not.toContain('\u2014');
+      }
     });
   });
 });

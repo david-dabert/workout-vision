@@ -1,0 +1,3 @@
+A file the collector offers never carries a count its landmarks do not support.
+
+Scope, by David's order: only the changes made since the second review, which are these, uncommitted in the working tree: in src/lib/collector.js, sampleSet (failures kept by sample index and cleared by a later read of that index or by a restart from the first frame; `posed`; the image landmarks kept beside the world landmarks), setIsWhole (`posed > 0`) and setPayload (imageLandmarks); in src/collect-main.js, set.fail(index), set.add with result.image, the refusal message for a set with no pose, the abort check before the pose worker is created, and imageLandmarks in the payload; and their tests in src/lib/__tests__/collector.test.js.

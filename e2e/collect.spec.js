@@ -69,3 +69,14 @@ for (const typed of ['7.5', '100']) {
     await expect(page.locator('#status')).not.toContainText('Loading pose model');
   });
 }
+
+test('the page says it is for David\'s own sets, and where a set of anyone else goes', async ({ page }) => {
+  await open(page);
+  const note = page.locator('#own-sets');
+  await expect(note).toBeVisible();
+  await expect(note).toContainText("For David's own sets only.");
+  // Whose set it is, not who filmed it: a set of anyone else, even filmed by David, stays on the Mac.
+  await expect(note).toContainText('A set of anyone else, whoever films it,');
+  await expect(note).toContainText('scripts/collect-clips.mjs');
+  expect(await note.textContent()).not.toContain('—');
+});
