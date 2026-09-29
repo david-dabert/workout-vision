@@ -6,7 +6,9 @@ import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
-import { refreshSets } from './sets';
+import { refreshSets, loadSets, knownSets } from './sets';
+import { setAccount } from './set-account';
+import { NOTES } from './set-notes';
 import { decimal } from './report-sheet';
 import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
@@ -155,6 +157,15 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
     detail = fr ? `Amplitude moyenne ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average range ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
   }
+  // Step 3: the account of the set, one tip and a word of encouragement (set-account.js). The sets of
+  // this exercise already saved give the last set's reps and this set's rank once it is saved.
+  const mine = list => (list || []).filter(w => (w.exercise || w.exerciseKey) === lift);
+  // Unknown (null) until read; a failed read is tried again once the set is saved, and until then the
+  // screen states no rank and no comparison rather than a false one (review 01 of step 3).
+  const [before, setBefore] = useState(() => { const k = knownSets(); return k ? mine(k) : null; });
+  useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
+  const shortSet = new Set(account.short);
   const marksRef = useRef(null);
   function pick(e) {
     const marks = [...(marksRef.current?.children || [])];
@@ -210,6 +221,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         repDetailsVersion: 2,
       });
       refreshSets();
+      // The sets were never read: read them now, the one just saved first, and count the others.
+      if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
       setStep('saved');
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
@@ -294,7 +307,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       <p className="sr" role="status">{asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
       {count > 0 && <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
         {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': fr ? 'Répétitions, une par marque' : 'Reps, one per mark', onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
-        {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': Math.max(0, rep.romDegrees || 0) / maxRom }}><i /></div>)}
+        {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': Math.max(0, rep.romDegrees || 0) / maxRom }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>}
       {count > 0 && <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>}
 
@@ -345,6 +358,19 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
       {report && <ReportCount fr={fr} report={report} />}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
+      {count > 0 && asked && <div className="set-account appear" data-testid="set-account">
+        {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
+        <p className="acc-tip">{account.tip}</p>
+        {step === 'saved' && account.cheer && <p className="acc-cheer">{account.cheer}</p>}
+        <details className="acc-notes">
+          <summary className="text-btn press">{fr ? 'En savoir plus' : 'Learn more'}</summary>
+          {NOTES[fr ? 'fr' : 'en'].map(n => <section key={n.title}>
+            <h3 className="eyebrow">{n.title}</h3>
+            {n.lead && <p className="acc-lead">{n.lead}</p>}
+            {n.lines.map(l => <p key={l}>{l}</p>)}
+          </section>)}
+        </details>
+      </div>}
     </div></section>
   </div>;
 }

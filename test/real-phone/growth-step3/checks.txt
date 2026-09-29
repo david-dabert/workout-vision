@@ -1,0 +1,7 @@
+oxlint exit=0
+tsc exit=0
+ Test Files  37 passed (37)
+      Tests  844 passed | 4 expected fail (848)
+build exit=0
+  48 skipped
+  56 passed (1.1m)

@@ -1,0 +1,24 @@
+fr: ask card bottom 706 of 664
+fr: [
+  'Tempo moyen : 2-1-1-0.',
+  'La répétition 3 a été plus courte que les autres.',
+  'Vos deux dernières répétitions ont été 25 % plus lentes que les deux premières.',
+  'La prochaine fois, visez la même amplitude sur toutes les répétitions.',
+  '1re série de curl biceps dans votre historique. La régularité fera le reste.'
+]
+fr: short marks 1 errors []
+en: ask card bottom 673 of 664
+en: [
+  'Average tempo: 2-1-1-0.',
+  'Rep 3 was shorter than the others.',
+  'Your last two reps were 25% slower than your first two.',
+  'Next time, aim for the same range on every rep.',
+  'Your 1st set of biceps curl in your history. Consistency will do the rest.'
+]
+en: short marks 1 errors []
+fr-clipped: ask card bottom 706 of 664
+fr-clipped: [
+  'Quand toutes vos répétitions restent amples et contrôlées, ajoutez une répétition ou un peu de charge.',
+  '1re série de curl biceps dans votre historique. La régularité fera le reste.'
+]
+fr-clipped: short marks 0 errors []

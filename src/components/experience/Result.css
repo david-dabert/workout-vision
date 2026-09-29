@@ -80,3 +80,17 @@
 .wv-experience .report-count > span { width: 100%; text-align: center; }
 .wv-experience .saved .share-note { margin: 0; text-align: center; font-size: 13px; line-height: 1.45; color: var(--ash); }
 .wv-experience .saved .share-note:empty { display: none; }
+
+/* Step 3: the ▾ mark above a short rep, in the room its shorter mark leaves, and the account of the set under the cards (29 September). */
+.wv-experience .bar { position: relative; }
+.wv-experience .bar .short-mark { position: absolute; bottom: calc(18px + 72px * var(--r, 1) + 4px); left: 50%; translate: -50% 0; font-size: 11px; line-height: 1; font-weight: 400; color: var(--lamp); }
+.wv-experience .set-account { margin: 26px 0 0; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.wv-experience .set-account p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--bone, inherit); }
+.wv-experience .set-account .acc-tip { margin-top: 8px; }
+.wv-experience .set-account .acc-cheer { color: var(--lamp); }
+.wv-experience .acc-notes { margin-top: 8px; }
+.wv-experience .acc-notes summary { list-style: none; cursor: pointer; }
+.wv-experience .acc-notes summary::-webkit-details-marker { display: none; }
+.wv-experience .acc-notes section { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.wv-experience .acc-notes h3 { margin: 0; }
+.wv-experience .acc-notes p, .wv-experience .acc-notes .acc-lead { font-size: 14px; color: var(--ash); }
