@@ -4,6 +4,8 @@ import { exerciseName } from './exercise-info';
 import { limbLabel } from './lift-meta';
 import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
+import { exerciseProgress, recordsOf } from './progress';
+import ExerciseProgress from './ExerciseProgress';
 import './History.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -78,6 +80,8 @@ export default function History({ onClose }) {
     if (days.at(-1)?.key !== key) days.push({ key, label: dayLabel(d, fr), sets: [] });
     days.at(-1).sets.push(w);
   }
+  // Per exercise, the reps of the last sets and the personal bests; a set holding one is marked.
+  const progress = exerciseProgress(sets), records = recordsOf(progress);
   const time = w => new Date(setTime(w)).toLocaleTimeString(fr ? 'fr-FR' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
 
   return <>
@@ -96,6 +100,7 @@ export default function History({ onClose }) {
           <p>{fr ? 'Aucune série enregistrée pour l’instant.' : 'No set saved yet.'}</p>
           <button className="btn-primary press" onClick={onClose}>{fr ? 'Filmer une série' : 'Record a set'}</button>
         </div>}
+        <ExerciseProgress progress={progress} name={liftName} fr={fr} style={{ '--i': 2 }} />
         {days.map((day, i) => <section key={day.key} className="hist-day" data-reveal style={{ '--i': Math.min(i + 2, 6) }}>
           <h2 className="hist-head">{day.label}</h2>
           <ul className="hist-list">{day.sets.map(w => {
@@ -109,7 +114,10 @@ export default function History({ onClose }) {
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds} s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
-                {counted !== w.reps && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
+                {(counted !== w.reps || records.has(w.id)) && <span className="hist-tags">
+                  {records.has(w.id) && <span className="hist-tag is-best">{fr ? 'Record' : 'Best'}</span>}
+                  {counted !== w.reps && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
+                </span>}
               </button>
               {shown && <div className="hist-detail appear">
                 {counted !== w.reps && <p className="hist-corr">{fr ? `Compté par l’app : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
