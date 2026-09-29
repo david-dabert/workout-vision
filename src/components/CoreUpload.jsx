@@ -3,7 +3,7 @@ import { useT } from '../lib/LanguageContext';
 import { analyzeCoreVideo, APPROVED_LIFTS } from '../lib/coreAnalysis';
 import { saveWorkout } from '../lib/storage';
 import Watch from './experience/Watch';
-import Result, { AnalysisError, AnalysisInterrupted } from './experience/Result';
+import Result, { AnalysisError, AnalysisInterrupted, AnalysisIncomplete } from './experience/Result';
 import { watchInterruption, whenVisible, settleRun, holdScreenAwake, isInterruption } from '../lib/interruption';
 import Report from './experience/Report';
 import Replay from './experience/Replay';
@@ -22,6 +22,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   const [error, setError] = useState('');
   // The page was hidden during the run (screen locked, app left): no count is shown.
   const [interrupted, setInterrupted] = useState(false);
+  const [incomplete, setIncomplete] = useState(null); // { read, expected } when the phone read part of the video
   // The screen open over the result: 'report' or 'replay'; it fades out before it goes.
   const [overlay, setOverlay] = useState(null);
   const [overlayLeaving, setOverlayLeaving] = useState(false);
@@ -49,7 +50,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
 
   async function run(controller) {
     const mine = () => abort.current === controller;
-    setBusy(true); setResult(null); setError(''); setInterrupted(false); setProgress(0); setLandmarks(null); setFrameSize(null);
+    setBusy(true); setResult(null); setError(''); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
     let release = () => {}, wake = async () => {};
     try {
       // A video chosen while the page is still hidden (back from the camera) waits for it.
@@ -72,6 +73,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       }
     } catch (e) {
       if (isInterruption(controller.signal.reason)) { if (mine()) setInterrupted(true); }
+      else if (e.name === 'PartialReadError') { if (mine()) setIncomplete({ read: e.read, expected: e.expected }); }
       else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); }
     } finally { release(); wake(); if (mine()) { setBusy(false); abort.current = null; } }
   }
@@ -95,11 +97,12 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
 
   // Experience mode: analysis, then the result (or what went wrong), crossfaded.
   if (initialFile) {
-    const view = result ? 'result' : interrupted ? 'interrupted' : error ? 'error' : 'watch';
+    const view = result ? 'result' : interrupted ? 'interrupted' : incomplete ? 'incomplete' : error ? 'error' : 'watch';
     return <>
       <ScreenFade screenKey={view}>
         {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); refilm(); }} />}
         {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
+        {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} />}
       </ScreenFade>
@@ -126,6 +129,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       <button className="btn btn-ghost" onClick={() => abort.current?.abort()}>{fr ? 'Annuler' : 'Cancel'}</button>
     </div>}
     {error && <p role="alert">{error}</p>}
+    {incomplete && <p role="alert">{fr ? 'La vidéo n’a pas été lue en entier. Aucun compte n’est affiché. Recommencez l’analyse.' : 'The video was not read in full. No count is shown. Start the analysis again.'}</p>}
     {result && <section data-testid="core-result" aria-live="polite">
       <h2>{tExercise(result.exercise)}</h2>
       {result.refused ? <p>{fr ? 'Impossible de compter : les articulations nécessaires sont cachées pendant la majeure partie de la série. Filmez avec le bras entier visible.' : 'Cannot count: the required joints are hidden for most of the set. Film with the whole arm visible.'}</p> : <>

@@ -80,6 +80,33 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
   </div>;
 }
 
+// What was read, without naming a cause the app cannot see (review 01 of the partial-read fix).
+function partialLine(read, expected, fr) {
+  const share = expected ? Math.round((Math.min(read, expected) / expected) * 100) : null;
+  if (expected && read > expected) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
+  return share === null
+    ? (fr ? 'La durée de la vidéo n’a pas pu être lue. Nous n’affichons pas un compte incertain. Recommencez l’analyse.' : 'The length of the video could not be read. We do not show an uncertain count. Start the analysis again.')
+    : (fr ? `Seuls ${share}\u00A0% de la vidéo ont été analysés. Nous n’affichons pas un compte partiel. Recommencez l’analyse.` : `Only ${share}% of the video was analysed. We do not show a partial count. Start the analysis again.`);
+}
+
+// Shown when the phone read only part of the video: no count, since it would be the count of part
+// of the set (29 September: 181 of 439 samples read, 2 of 10 reps counted).
+export function AnalysisIncomplete({ lift, read, expected, onClose, onRestart, onRefilm }) {
+  const { lang } = useT(), fr = lang === 'fr';
+  return <div className="wv-experience">
+    <section className="screen is-active result-screen"><div className="wrap">
+      <Topbar fr={fr} onClose={onClose} />
+      <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
+      <h2 className="title refused-title">{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
+      <p className="body-text">{partialLine(read, expected, fr)}</p>
+      <div className="actions result-actions">
+        <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
+        <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
+      </div>
+    </div></section>
+  </div>;
+}
+
 // Shown when the page was hidden during the analysis (screen locked, app left).
 // The run was stopped and nothing it measured is shown.
 export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {

@@ -1,0 +1,1 @@
+Goal: when the phone reads fewer samples of the video than it holds (David's iPhone read 181 of 439 and the app showed 2 reps of 10), the app shows no count and offers to restart the analysis, while a video read in full is counted exactly as before.
