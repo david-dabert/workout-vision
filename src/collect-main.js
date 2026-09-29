@@ -16,11 +16,12 @@ import catalogue from './lib/guide-catalog.json';
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 
 // The exercises: the same as the app offers (src/lib/offer.js, PLAN.md, GROWTH, step 2), by their
-// guide names in English and French, in alphabetical order.
+// guide names in French and English, in French alphabetical order.
 const byKey = new Map(catalogue.map(e => [e.key, e]));
 const LIFTS = OFFERED.map(key => byKey.get(key)).filter(Boolean)
-  .map(e => ({ key: e.key, label: `${e.name} / ${e.fr}` }))
-  .sort((a, b) => a.label.localeCompare(b.label, 'en'));
+  .map(e => ({ key: e.key, label: `${e.fr} / ${e.name}` }))
+  // French name first, sorted in French, so that every « Rowing … » sits together (David, 29 September).
+  .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 
 const $ = id => document.getElementById(id);
 
