@@ -11,12 +11,13 @@ let bad = 0;
 try {
   await new Promise(r => setTimeout(r, 6000));
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM });
-  for (const ms of [0, 150, 400]) {
+  for (const [ms, q] of [[0, ''], [150, ''], [400, ''], [150, '&twice']]) {
     const p = await browser.newPage();
-    await p.goto(`http://localhost:5199/workout-vision/zz-harness.html?ms=${ms}`);
+    await p.goto(`http://localhost:5199/workout-vision/zz-harness.html?ms=${ms}${q}`);
     await p.waitForFunction(() => window.__out, null, { timeout: 180000 });
     const out = await p.evaluate(() => window.__out);
-    const ok = !out.error && out.read === out.expected;
+    const ok = !out.error && (out.twice ? out.identical : out.read === out.expected);
+    delete out.times;
     if (!ok) bad++;
     console.log(`analysis ${ms} ms a frame: ${JSON.stringify(out)} ${ok ? 'whole' : 'NOT WHOLE'}`);
     await p.close();

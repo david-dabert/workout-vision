@@ -171,7 +171,8 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
     // 1.5x is the safe ceiling on iOS; 3x works on desktop Chrome/Firefox.
     // Since 29 September the video also waits while each frame is analysed, and plays at 1x: faster,
     // it can run more than one sampling interval between two frame callbacks and lose samples
-    // (test/real-phone/decoder/02-after.txt: every sample read at 1x).
+    // (test/real-phone/decoder/02-after.txt: every sample read at 1x). Status: unvalidated starting
+    // value (RULES L16): measured on a synthetic video in desktop Chromium only, not yet on an iPhone.
     video.playbackRate = 1;
 
     let extractedCount = startFrame;

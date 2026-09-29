@@ -1,2 +1,3 @@
+$ npm run build && PW_CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npx playwright test   (playwright.config.js, Chromium project, before commit 5c3a5af)
   48 skipped
   56 passed (1.1m)
