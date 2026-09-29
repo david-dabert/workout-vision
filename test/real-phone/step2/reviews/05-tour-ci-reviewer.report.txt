@@ -1,0 +1,36 @@
+Two defects, both would reach main without anything failing; the first makes the new CI job unable to run at all.
+
+Defect 1: the tour job dies before running a single tour. .github/workflows/ci.yml, "Run the tour at every setting", lines 68 to 72.
+The step has no shell set, so GitHub runs it with bash -e. In
+  dir="test/real-phone/tour-ci/$1x$2$([ "$3" = 1 ] && echo -reduce)$([ "$4" = light ] && echo -light)"
+an assignment's exit status is that of its last command substitution. With "dark", [ dark = light ] is false, the assignment returns 1, and bash -e aborts the step.
+Failing scenario: on the first setting ("390 664 0 dark") the step exits 1 before node tour.mjs runs once. The tour job is red on every push, with no shots and no results.json; nothing in the job checks "Filmer ma série" in view.
+Smallest failing test:
+  bash -e -c 'for cfg in "390 664 0 dark"; do set -- $cfg; dir="x/$1x$2$([ "$3" = 1 ] && echo -reduce)$([ "$4" = light ] && echo -light)"; echo "ran $dir"; done'; echo "exit=$?"
+  Expected: ran x/390x664 then exit=0. Actual (run): exit=1, the echo never runs.
+Minimal fix: || true on each substitution, or build dir with if statements.
+
+Defect 2: the goal is not met for 64 of the 181 filming screens, and the tour cannot see it. src/components/experience/Film.css lines 31 to 36; test/real-phone/tour-ci/tour.mjs lines 115 to 123.
+The CSS comment says "Filmer ma série" is "in view without scrolling at 664 px and taller". The 472 px budget is fixed and was measured only on the nine card lifts (film-button-after.txt). List exercises use the same title style (clamp(38px, 10.6vw, 50px)); at 390 px a long French name wraps to 2 or 3 lines, and the frame does not shrink to compensate.
+The tour opens only "Fente avant" (one line; button bottom 656 of 664) and .altar.first().
+Measured (dist built after the CSS change, vite preview port 4199, iPhone 14 profile, fr-FR, Reduce Motion, Chromium; WebKit not downloadable):
+  forward_lunge: title 41 px (1 line), button bottom 656 at 390x664, 656 at 390x745
+  cable_pull_through, bird_dog, smith_machine_romanian_deadlift: 81 px (2 lines), 696, 696
+  dumbbell_overhead_tricep_extension, banded_donkey_kick: 122 px (3 lines), 737, 737
+All 181 offered exercises at 390x664: 64 have the button below the fold. At 390x745 the 3-line titles end 8 px from the bottom. Among the 64: dumbbell_bench_press, dumbbell_romanian_deadlift, trap_bar_deadlift.
+Failing scenario: iPhone 14 in Safari (about 664 px of page), search "extension triceps", tap: "Filmer ma série" is below the fold.
+Smallest failing test: in tour.mjs open [data-exercise="dumbbell_overhead_tricep_extension"] from the list and inView the .film-screen .actions .btn-primary at 390x664: bottom about 737 > 664. The tour should open the longest name, not the shortest.
+
+Minor
+- film-button-after.txt has no generating script in the repo; the CSS comment's "four lifts" rests on an output nobody can rerun, and says nothing about list exercises.
+- tour.mjs writes shots and results.json into test/real-phone/tour-ci/<setting>/, not covered by .gitignore; a local run leaves untracked folders of screen captures (not video frames).
+
+No defect found in
+- PLAN.md: the dumbbell row and lunge numbers match outputs/37-mmfit-row-lunge-squat.txt.
+- wv-verifier.md: points 9 and 10 read consistently and number correctly.
+- Language: no new app strings; no em dash in the added text.
+- Privacy: no new host, no video or video frame added.
+- Test setup: expect used as in the Mac tour; 181 items matches the walking lunge's removal; base path matches WV_BASE; the backgrounded preview server survives into later steps.
+- Short screen: at 375x548 the frame floors at 88 px, matching the "short scroll" claim for the cards.
+
+Process note: the reviewer created node_modules/.m-review.mjs by mistake (git-ignored) and deleted it at once; its scripts were in the scratchpad; it stopped the preview on port 4199.

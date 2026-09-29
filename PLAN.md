@@ -17,7 +17,7 @@ RULES
 - Sampling stays at 15 per second unless a clip shows a rep that 15 cannot resolve.
 - Paste evidence for every claim; mark anything unchecked as unverified.
 - At each STOP, confirm no video file is tracked, push counter-core to GitHub, and wait for David's reply.
-- If git reports a lock or a damaged index, stop and tell David. Never run read-tree, checkout-index, reset --hard or any command that overwrites working files.
+- If git reports a lock or a damaged index, stop and tell David. Never run read-tree, checkout-index, reset --hard or any command that overwrites working files, with one exception (David's order, 29 September): in its own checkout, the cloud session may restore a file from its committed version to undo its own mistake, and it never overwrites work it did not write.
 - From now on a parameter changes only through a synthetic test that fails first. Never try parameter settings against David's clips.
 - Stage files by path. Never run git add -A or git add .
 - Never run npm run deploy or push to gh-pages.
@@ -224,6 +224,7 @@ LIFT TIERS, from 28 September, by David's decision. Beta and Experimental are ex
 - Experimental (label "Experimental: we are still learning this exercise" / « Expérimental : nous apprenons encore cet exercice »), offered from their existing LIFTS entries in core.ts; each is listed with the evidence it has:
   - bench press: David's build clip bench_press_7_angle counts 2 for 7 on the current core (run on 28 September).
   - hip thrust, Romanian deadlift, leg press: no clip, no dataset.
+  - dumbbell row and lunge stay Experimental (David's decision, 29 September): in test/real-phone/mmfit/results.json the dumbbell row counts 38 of 64 sets exactly and 55 within one, the lunge 38 of 62 and 47 within one, far below the squat's 60 of 63 (printed by the command in test/real-phone/step2/outputs/37-mmfit-row-lunge-squat.txt).
   - overhead press (added 28 September, by David's decision): David's build clip overhead_press_10_front counts 9 for 10 on the current core, which fails the Beta condition that no build clip of the lift fails; MM-Fit 49 of 60 sets exact, 60 of 60 within one (test/real-phone/mmfit/results.json). Filmed from the front; its figure comes from that clip (scripts/make-clip-pose.mjs).
 - The figures of the five new lifts on the choice card and the filming screen are drawings (scripts/make-lift-poses.mjs), not recorded poses; nothing is measured from them.
 

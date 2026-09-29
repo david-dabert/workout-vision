@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { createLiftScene, hasFigure, restBox } from './lift-scenes';
 import { liftDefinition } from '../../lib/counting/core';
@@ -22,6 +22,25 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
   const tier = tierOf(lift);
   const [bw, bh] = figure ? restBox(lift) : [1, 1];
 
+  // The frame takes the height left once everything else on the screen down to "Filmer ma série" is
+  // laid out: a long name wraps to three lines, the guide's credit to three more (review 05 of step 2,
+  // 29 September). That rest does not depend on the frame, so measuring it again settles at once.
+  const screen = useRef(null), frame = useRef(null), action = useRef(null);
+  useLayoutEffect(() => {
+    const root = screen.current, f = frame.current, a = action.current;
+    if (!root || !f || !a) return undefined;
+    const top = el => { let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return y; };
+    const set = () => root.style.setProperty('--rest-h', `${top(a) + a.offsetHeight - f.offsetHeight}px`);
+    set();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(set);
+    // The section is at least a screen high and may not change when the text above the frame does,
+    // so its content is watched as well (review 06).
+    ro.observe(root);
+    if (root.firstElementChild) ro.observe(root.firstElementChild);
+    return () => ro.disconnect();
+  }, [lift, lang]);
+
   useEffect(() => {
     if (!canvas.current) return;
     return createLiftScene(canvas.current, lift, 'rest');
@@ -43,7 +62,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
     : (fr ? 'Posez le téléphone face à vous, à la verticale.' : 'Stand the phone upright, facing you.');
 
   return <div className="wv-experience">
-    <section className="screen is-active film-screen"><div className="wrap">
+    <section ref={screen} className="screen is-active film-screen"><div className="wrap">
       <div className="topbar">
         <button className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
@@ -53,7 +72,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{exerciseName(lift, lang)}</h2>
       {tier && <p className={`tier tier-${tier}`} data-reveal style={{ '--i': 1 }}>{tierLabel(tier, fr)}</p>}
-      <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
+      <div ref={frame} className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
         {figure ? <canvas ref={canvas} aria-hidden="true" /> : guide && <GuideFrames exercise={guide} />}
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 9V0h9M91 0h9v9M100 91v9h-9M9 100H0v-9" fill="none" stroke="currentColor" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
@@ -69,7 +88,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         <li><span className="n">3</span><span>{fr ? 'Une série, puis arrêtez la vidéo.' : 'One set, then stop recording.'}</span></li>
       </ol>
       <div className="actions" data-reveal style={{ '--i': 5 }}>
-        <label className="btn-primary tactile" role="button" tabIndex="0">
+        <label ref={action} className="btn-primary tactile" role="button" tabIndex="0">
           <input ref={fileRef} type="file" accept="video/*,.mov" capture="environment" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
           <span>{fr ? 'Filmer ma série' : 'Record my set'}</span>

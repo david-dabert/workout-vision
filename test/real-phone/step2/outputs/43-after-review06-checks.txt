@@ -1,0 +1,7 @@
+
+ Test Files  36 passed (36)
+      Tests  829 passed | 4 expected fail (833)
+  48 skipped
+  56 passed (1.1m)
+npx oxlint: exit=0 (warnings only, none in changed files)
+npx tsc --noEmit: exit=0

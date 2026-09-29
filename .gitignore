@@ -67,3 +67,6 @@ public/guide/
 
 # Exam sets: opened by the exam script only (PLAN.md)
 test/real-phone/exam/
+
+# Shots and results.json written by a local run of the tour in CI (test/real-phone/tour-ci/tour.mjs).
+test/real-phone/tour-ci/*/

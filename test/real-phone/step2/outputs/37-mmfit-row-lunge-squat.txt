@@ -1,0 +1,12 @@
+$ python3 -c "
+import json
+rows = json.load(open(\"test/real-phone/mmfit/results.json\"))[\"rows\"]
+for lift in [\"squat\", \"dumbbell_row\", \"lunge\"]:
+    r = [x for x in rows if x.get(\"lift\") == lift and x.get(\"count\") is not None]
+    exact = sum(x[\"count\"] == x[\"expected\"] for x in r)
+    within = sum(abs(x[\"count\"] - x[\"expected\"]) <= 1 for x in r)
+    print(f\"{lift}: {len(r)} sets, {exact} exact, {within} within one\")
+"
+squat: 63 sets, 60 exact, 63 within one
+dumbbell_row: 64 sets, 38 exact, 55 within one
+lunge: 62 sets, 38 exact, 47 within one

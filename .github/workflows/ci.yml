@@ -41,3 +41,48 @@ jobs:
       - run: npm run build
       # One worker, as the timing checks of the touch tests were measured.
       - run: npx playwright test --retries=0 --workers=1
+
+  # The tour (PLAN.md, GROWTH, after step 1): every screen reached without a video, on the production
+  # build, in WebKit with the iPhone profile, at 390x664, 390x745 and 375x548, and at 390x664 with
+  # Reduce Motion and with the light appearance. Its own checks fail the job; its shots and each
+  # setting's results.json (with the srcHash) are kept as the run's artifacts for five days, and the
+  # results are printed in the log. The screens that need David's clips run on the Mac.
+  tour:
+    name: Tour (WebKit, iPhone profile, three sizes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - run: npm run build
+      - name: Serve the production build
+        run: |
+          npx vite preview --port 4175 --strictPort &
+          npx --yes wait-on@8 http://127.0.0.1:4175/workout-vision/ --timeout 60000
+      - name: Run the tour at every setting
+        run: |
+          status=0
+          for cfg in "390 664 0 dark" "390 745 0 dark" "375 548 0 dark" "390 664 1 dark" "390 664 0 light"; do
+            set -- $cfg
+            dir="test/real-phone/tour-ci/$1x$2"
+            if [ "$3" = 1 ]; then dir="$dir-reduce"; fi
+            if [ "$4" = light ]; then dir="$dir-light"; fi
+            WV_W=$1 WV_H=$2 WV_REDUCED=$3 WV_SCHEME=$4 WV_DIR="$dir" node test/real-phone/tour-ci/tour.mjs || status=1
+          done
+          exit $status
+      - name: Keep "Filmer ma série" in view for every exercise
+        if: always()
+        run: node test/real-phone/tour-ci/film-button.mjs
+      - name: Keep the shots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tour-${{ github.sha }}
+          path: |
+            test/real-phone/tour-ci/*/
+            test/real-phone/tour-ci/film-button-after.txt
+          retention-days: 5

@@ -29,9 +29,14 @@
 }
 
 /* The phone outline takes the reference clip's own proportions and shrinks
-   with the screen, down to 88 px wide, so "Filmer ma série" is reachable
-   without scrolling on every Safari screen from 548 px up. */
-.wv-experience .frame { width: max(88px, min(46%, 178px, calc((100svh - 428px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
+   with the screen, down to 88 px wide, so "Filmer ma série" is in view without scrolling at 664 px
+   and taller (tour in CI, 29 September). Film.jsx measures into --rest-h the height of everything down
+   to that button except the frame itself (title of one to three lines, Beta or Experimental label,
+   caption, steps), measured from the top of the page, so the top safe area is in it already
+   (review 06); 472 px, the card lifts' rest, holds until the first measure. 8 px and the bottom safe
+   area keep the button off the screen's edge. At 548 px some exercises still need a short scroll
+   (test/real-phone/tour-ci/film-button.mjs writes film-button-after.txt). */
+.wv-experience .frame { width: max(88px, min(46%, 178px, calc((100svh - var(--rest-h, 472px) - 8px - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
 @media (max-height: 760px) {
   .wv-experience .film-screen .eyebrow { margin-top: 8px; }
   .wv-experience .film-screen .title { margin-top: 8px; }

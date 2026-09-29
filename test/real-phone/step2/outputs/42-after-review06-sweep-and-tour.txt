@@ -1,0 +1,18 @@
+$ WV_BROWSER=chromium node test/real-phone/tour-ci/film-button.mjs   (after review 06)
+390x664: 181 exercises, 0 below the fold
+390x745: 181 exercises, 0 below the fold
+375x548: 181 exercises, 70 below the fold
+exit=0
+# Chromium, iPhone 14 profile, fr-FR, Reduce Motion
+
+# The tour at the five settings (after review 06)
+test/real-phone/tour-ci/390x664 exit=0
+ srcHash eebf4cf34649 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/390x745 exit=0
+ srcHash eebf4cf34649 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/375x548 exit=0
+ srcHash eebf4cf34649 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/390x664-reduce exit=0
+ srcHash eebf4cf34649 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/390x664-light exit=0
+ srcHash eebf4cf34649 shots 21 faults [] errors [] failed [] pass True

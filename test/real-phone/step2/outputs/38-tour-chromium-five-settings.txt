@@ -1,0 +1,10 @@
+test/real-phone/tour-ci/390x664 exit=0
+ srcHash e092cfdcf6a9 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/390x745 exit=0
+ srcHash e092cfdcf6a9 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/375x548 exit=0
+ srcHash e092cfdcf6a9 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/390x664-reduce exit=0
+ srcHash e092cfdcf6a9 shots 21 faults [] errors [] failed [] pass True
+test/real-phone/tour-ci/390x664-light exit=0
+ srcHash e092cfdcf6a9 shots 21 faults [] errors [] failed [] pass True

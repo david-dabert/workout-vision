@@ -1,0 +1,27 @@
+One defect no test can catch, and two gaps in what was proven.
+
+Defect 1: the top safe area is subtracted twice. src/components/experience/Film.css line 38.
+  .wv-experience .frame { width: max(88px, min(46%, 178px, calc((100svh - var(--rest-h, 472px) - 8px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
+Cause: --rest-h is measured in Film.jsx (lines 28-39) as top(a) + a.offsetHeight - f.offsetHeight. top() sums offsetTop to the page, so it already includes the .screen top padding, calc(env(safe-area-inset-top) + 10px) (Entry.css line 53). The rule subtracts env(safe-area-inset-top) a second time. The old constant 428px did not hold the inset, which is why subtracting it used to be right.
+When it bites: only in the installed home-screen app (manifest display: standalone; index.html black-translucent and viewport-fit=cover); the top inset is about 47 px on an iPhone 14. In a Safari tab in portrait the inset is 0.
+Effect: the frame is 47 px shorter than intended and the button sits about 55 px above the bottom edge, not 8 px; the CSS comment "8 px keep the button off the screen's edge" is false there.
+  Card lift (--ar 0.5625), iPhone 14 standalone (844 px): frame about 133 px wide instead of about 159 (estimate from the rule).
+  Emulated at 390x664 in Chromium (.screen top padding 57 px, env() swapped for 47px), close_grip_lat_pulldown: rest-h 495 -> 542. Without the second subtraction, frame 114 px, button bottom 656 of 664. As written, frame 88 px (floor), button bottom 630.
+Smallest failing test: Playwright cannot emulate env(safe-area-inset-*). A source check fails today: the .frame width rule must not contain env(safe-area-inset-top while --rest-h is measured from the page top. On the phone: installed app, iPhone 14, squat's filming screen, gap below "Filmer ma série": expected about 8 px plus the bottom inset; today about 47 px more.
+
+Gap 2: WebKit was never run. outputs/38 and 39 are Chromium (WV_BROWSER=chromium); the only browser here is chromium-1194. The goal's "WebKit with the iPhone profile" rests only on the CI YAML, not yet run. The committed test/real-phone/tour-ci/film-button-after.txt is Chromium output and neither the file nor the README says so.
+
+Gap 3: the sweep's gate is weaker than the goal. test/real-phone/tour-ci/film-button.mjs: below = all.filter(l => l.bottom > l.H) checks only the bottom edge; a button above the top (box.y < 0) passes. It never checks that it opened 181 exercises (covered only by tour.mjs asserting 181 list items in the same job). A button box y = -30, bottom = 20 passes the gate.
+
+Low severity: Film.jsx line 37 ro.observe(root) observes the <section>, whose min-height is 100dvh. With the frame at its 178 px cap and content shorter than the screen (390x745, bench_press, button bottom 673), a later height change of the other content (web font swap, Dynamic Type) does not resize the section, so --rest-h is not measured again. No case found that pushes the button out of view: the fallback font wraps more, so after the swap the button moves up.
+
+Checked and cleared
+- Guide to Film under Reduce Motion or without View Transitions (startViewTransition deleted, as iOS 16 and 17): leaving layer 0 px high, rest-h 495px, frame 161 px, button bottom 656 in all three settings.
+- Film.jsx: effect dependencies (lift, lang), cleanup on unmount, missing ResizeObserver, view transition hero (layout effect inside flushSync), leaving Film layer, rotation (width change fires the watch).
+- Fail-first: reverting fails tour 08b-film-longest (output 39) and the sweep (64 below the fold with the title-only budget).
+- CI: preview binds through server.host: true; .certs untracked, plain HTTP; a failed tour does not skip the sweep (if: always()); exit codes propagate; wait-on@8 from the npm registry.
+- Privacy and repository: shot folders ignored; no video or frame; seeded history is fake; no new host (www.google.com connections came from Chromium itself).
+- Language: no user-visible string added.
+- Claims: PLAN.md figures (row 38/64 and 55, lunge 38/62 and 47, squat 60/63) match output 37.
+
+The reviewer changed no repository file; scratch scripts in the session scratchpad (guide-film.mjs, inset.mjs).

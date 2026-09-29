@@ -1,0 +1,8 @@
+src/components/Validate.jsx:560:25: warning eslint(no-unused-vars): Parameter 'i' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/components/Dashboard.jsx:77:24: warning react(purity): Cannot call impure function during render help: `Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component re-renders
+src/components/Dashboard.jsx:447:17: warning react(purity): Cannot call impure function during render help: `Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component re-renders
+> workout-vision@1.4.0 typecheck
+> tsc --noEmit
+
+ Test Files  35 passed (35)
+      Tests  826 passed | 4 expected fail (830)
