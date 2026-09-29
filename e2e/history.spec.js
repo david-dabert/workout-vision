@@ -59,6 +59,8 @@ for (const lang of ['fr', 'en']) {
     // The report names no app (David, 29 September).
     await expect(page.locator('.sheet')).toBeVisible();
     await expect(page.locator('.sheet')).not.toContainText('Workout Vision');
+    // The opener under the title sums up the set; a set entered by hand has only its count (set-opener.js).
+    await expect(page.locator('.sh-opener')).toHaveText(lang === 'fr' ? 'Série de 7 répétitions.' : 'A set of 7 reps.');
     // The date stays on the right, as on the PDF (review of the one-line report).
     const top = await page.locator('.sh-top').boundingBox(), date = await page.locator('.sh-top span').last().boundingBox();
     expect(Math.abs((top.x + top.width) - (date.x + date.width))).toBeLessThan(2);

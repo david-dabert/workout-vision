@@ -10,11 +10,31 @@ const mean = xs => xs.reduce((a, x) => a + x, 0) / xs.length;
 // Status: experimental, UNSOURCED threshold set by David (texts.md, "seuil de 85 %, expérimental").
 export const SHORT_RATIO = 0.85;
 export function shortReps(reps) {
+  return whole(reps).filter(isShortIn(reps)).map(r => r.index);
+}
+
+/** The rule of shortReps as a test of one rep, so the report's ▾ marks the same reps (review, 29 September). */
+export function isShortIn(reps) {
   const w = whole(reps);
-  if (w.length < 2) return [];
+  if (w.length < 2) return () => false;
   const sorted = w.map(r => r.romDegrees).sort((a, b) => a - b), m = sorted.length >> 1;
   const median = sorted.length % 2 ? sorted[m] : (sorted[m - 1] + sorted[m]) / 2;
-  return w.filter(r => r.romDegrees < SHORT_RATIO * median).map(r => r.index);
+  return r => !r.clipped && r.romDegrees < SHORT_RATIO * median;
+}
+
+/**
+ * The change of concentric speed (range over concentric time) from the first two whole reps to
+ * the last two, in whole percent; null under four reps or without a concentric time. The report
+ * prints it; the opener checks against it (source in report-sheet.js, setMeasures).
+ */
+export function speedChange(reps) {
+  const w = whole(reps);
+  if (w.length < 4) return null;
+  const speed = r => (r.concentricSec > 0 ? r.romDegrees / r.concentricSec : null);
+  const pair = [w[0], w[1], w[w.length - 2], w[w.length - 1]].map(speed);
+  if (!pair.every(v => v !== null)) return null;
+  const first = (pair[0] + pair[1]) / 2, last = (pair[2] + pair[3]) / 2;
+  return Math.round(((last - first) / first) * 100);
 }
 
 // The average tempo, eccentric-pause-concentric-pause, in whole seconds as tempo is written.

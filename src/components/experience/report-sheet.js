@@ -1,5 +1,7 @@
 // The words of the session report. The sheet on screen and the PDF both read
 // them from here, so what the visitor sees is what the reader receives.
+import { setOpener } from './set-opener';
+import { isShortIn, speedChange } from './set-account';
 
 const NBSP = '\u00A0';
 const clean = s => (s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
@@ -26,16 +28,7 @@ export function setMeasures(all) {
   const reps = (all || []).filter(r => !r.clipped);
   if (!reps.length) return null;
   const tut = reps.reduce((sum, r) => sum + (r.endTime - r.startTime), 0);
-  let speedChange = null;
-  if (reps.length >= 4) {
-    const speed = r => (r.concentricSec > 0 ? r.romDegrees / r.concentricSec : null);
-    const pair = [reps[0], reps[1], reps[reps.length - 2], reps[reps.length - 1]].map(speed);
-    if (pair.every(v => v !== null)) {
-      const first = (pair[0] + pair[1]) / 2, last = (pair[2] + pair[3]) / 2;
-      speedChange = Math.round(((last - first) / first) * 100);
-    }
-  }
-  return { tut, speedChange };
+  return { tut, speedChange: speedChange(all) };
 }
 
 /**
@@ -87,11 +80,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const allReps = reps || [];
   const liftFirst = first || 'concentric';
 
-  // Short rep: range under 85% of the set's median.
-  const ranges = wholeReps.map(r => r.romDegrees).sort((a, b) => a - b);
-  const medianRange = ranges.length ? ranges[Math.floor(ranges.length / 2)] : 0;
-  const shortThreshold = medianRange * 0.85;
-  const isShort = r => !r.clipped && r.romDegrees < shortThreshold;
+  // Short rep: range under 85% of the set's median, by the rule the result screen and the
+  // opener use (set-account.js), so the three never disagree on an even number of reps.
+  const isShort = isShortIn(reps);
   const hasShort = allReps.some(isShort);
 
   // Per-rep tempo in coach notation: moving phases (lowering, lifting) to one
@@ -167,6 +158,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
+    // One sentence that sums up the set, as at the top of the result (set-opener.js); none on an unknown count.
+    opener: setOpener({ reps, fr, count, counted }) || '',
     // Only what the user filled in (step 1, 29 September 2026): no coach is assumed.
     people: people({ fr, name, context, partner, level }),
     count: String(count),

@@ -77,6 +77,15 @@ describe('reportSheet', () => {
     expect(s.notes).toBe('Tempo lent.\nCoudes fléchis.');
   });
 
+  // The opener: one sentence at the top that sums up the set (set-opener.js), and none on a count that does not stand.
+  it('opens with one sentence that sums up the set, the user\'s count when they corrected it', () => {
+    expect(reportSheet(base).opener).toBe('Série de 10 répétitions.');
+    expect(reportSheet({ ...base, lang: 'en' }).opener).toBe('A set of 10 reps.');
+    expect(reportSheet({ ...base, count: 12, counted: 10 }).opener).toBe('Vous avez compté 12 répétitions.');
+    expect(reportSheet({ ...base, lang: 'en', count: 12, counted: 10 }).opener).toBe('You counted 12 reps.');
+    expect(reportSheet({ ...base, count: null }).opener).toBe('');
+  });
+
   it('leaves the arm out when the set does not say which', () => {
     expect(reportSheet({ ...base, arm: undefined }).arm).toBe('');
     expect(reportSheet({ ...base, lang: 'en', arm: 'left' }).arm).toBe('Arm tracked: left');
@@ -217,6 +226,37 @@ describe('rep details', () => {
     const lines = reportSheet({ ...base, reps, first: 'concentric', previousSet: prev }).summary;
     expect(lines.map(l => l.split(`${NBSP}:`)[0])).toEqual(['Temps sous tension', 'Vitesse concentrique', 'Tempo', 'Durée', 'Série du 20 sept.']);
     for (const l of lines) expect(l).not.toContain(' · ');
+  });
+
+  it('opens on what the reps showed, from the same derivation as the result screen', () => {
+    // Concentric phases 0.8 … 1.2 s: the last two reps took longer to lift than the first two.
+    expect(reportSheet({ ...base, count: 5, counted: 5, reps, first: 'concentric' }).opener).toBe('5 répétitions, les deux dernières plus lentes que les deux premières.');
+    expect(reportSheet({ ...base, lang: 'en', count: 5, counted: 5, reps, first: 'concentric' }).opener).toBe('5 reps, the last two slower than the first two.');
+  });
+
+  // Review, 29 September: the opener never contradicts the table or the summary of the same sheet.
+  it('counts the short reps as the table marks them, with an even number of reps', () => {
+    const even = [rep(0, 3, 100, 1, 2), rep(3, 3, 100, 1, 2), rep(6, 3, 80, 1, 2), rep(9, 3, 60, 1, 2)];
+    const s = reportSheet({ ...base, lang: 'en', count: 4, counted: 4, reps: even, first: 'concentric' });
+    const marked = s.rows.filter(r => r[2].includes('▾')).length;
+    expect(marked).toBe(1); // median 90, so only the 60° rep is under 85 %
+    expect(s.opener).toBe('4 reps, one of them shorter than the others.');
+  });
+  it('never says "as fast" beside a speed that changed, nor slower or faster against its sign', () => {
+    const shallower = [100, 100, 100, 100, 90, 90].map((rom, i) => rep(i * 3, 2, rom, 1, 1));
+    const s = reportSheet({ ...base, lang: 'en', count: 6, counted: 6, reps: shallower, first: 'concentric' });
+    expect(s.summary.some(l => /Concentric speed: −10%/.test(l))).toBe(true);
+    expect(s.opener).not.toMatch(/as fast as|faster than/);
+    const quicker = [100, 100, 100, 100, 70, 70].map((rom, i) => rep(i * 3, 2, rom, 1, i >= 4 ? 0.8 : 1));
+    const q = reportSheet({ ...base, lang: 'en', count: 6, counted: 6, reps: quicker, first: 'concentric' });
+    expect(q.opener).not.toMatch(/faster than/);
+  });
+
+  it('sets the opener on the PDF without running the sheet onto another page', async () => {
+    const pages = async sheet => Buffer.from(await reportPdf(sheet).arrayBuffer()).toString('latin1').match(/\/Type \/Page\b/g).length;
+    for (const s of [reportSheet(base), reportSheet({ ...base, count: 5, counted: 5, reps, first: 'concentric' })]) {
+      expect(await pages(s)).toBe(await pages({ ...s, opener: '' }));
+    }
   });
 
   it('shows the set tempo as the average of each phase across reps', () => {

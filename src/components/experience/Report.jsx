@@ -149,6 +149,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       <article className="sheet" aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
         <div className="sh-top">{sheet.brand && <span>{sheet.brand}</span>}<span>{sheet.date}</span></div>
         <h3 className="sh-title">{sheet.title}</h3>
+        {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
         {sheet.people.length > 0 && <div className="sh-people">
           {sheet.people.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
