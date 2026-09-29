@@ -11,13 +11,15 @@ Register: vous, as on every other screen. Each line: where it shows, the French,
 
 ## The challenge message (sent by the user to a friend)
 - "Élévations latérales : 8 répétitions, comptées par Workout Vision sur mon téléphone. Vous relevez le défi ?"
-- After a correction: "Élévations latérales : 10 répétitions, filmées avec Workout Vision sur mon téléphone. Vous relevez le défi ?" / "Lateral raise: 10 reps, filmed with Workout Vision on my phone. Can you beat it?"
+- After a correction: "Élévations latérales : 10 répétitions (Workout Vision en a compté 8 sur mon téléphone). Vous relevez le défi ?" / "Lateral raise: 10 reps (Workout Vision counted 8 on my phone). Can you beat it?" (the app neither filmed, since the video may come from the library, nor counted the corrected 10)
 - English: "Lateral raise: 8 reps, counted by Workout Vision on my phone. Can you beat it?"
 - Question for David: between friends, "tu" may read more naturally ("Tu relèves le défi ?"); the app uses "vous" everywhere else.
 
 ## The report e-mail (the user writes it to pr.dabertdavid@gmail.com)
 - Subject: "Workout Vision : Élévations latérales, compté 8, vous 10"
 - Body: "Exercice : …", "Compté par l’app : 8", "Votre compte : 10", "Version de l’app : 1.4.0 (…)", "Aucune vidéo, image ni point du corps n’est joint.", "Votre message :"
+- A refused set: subject "Workout Vision : Élévations latérales, série non comptée"; "Compté par l’app : rien, la série a été refusée"; "Votre compte :" left for the user to fill.
+- The refused screen also offers "Signaler ce comptage", "Par e-mail", "Sur GitHub".
 - The GitHub issue is in English for every user.
 
 ## Report screen (in History too)

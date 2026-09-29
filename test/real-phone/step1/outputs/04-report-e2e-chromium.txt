@@ -1,8 +1,11 @@
 
-Running 3 tests using 1 worker
+Running 5 tests using 1 worker
 
-  ✓  1 e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes (1.6s)
-  ✓  2 e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer (1.8s)
+  ✓  1 e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes (1.7s)
+  ✓  2 e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer (2.0s)
   ✓  3 e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px (1.7s)
+  ✓  4 e2e/shared/report.tests.js:92:3 › Chromium › a partner's name typed for one answer is not kept for another (1.7s)
+  ✓  5 e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does (1.6s)
 
-  3 passed (6.6s)
+  5 passed (10.6s)
+exit 0

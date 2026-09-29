@@ -1,13 +1,13 @@
 
 Running 81 tests using 1 worker
 
-  ✓   1 e2e/boot.spec.js:9:1 › if the app cannot start, the screen speaks the page language and its button reloads (432ms)
+  ✓   1 e2e/boot.spec.js:9:1 › if the app cannot start, the screen speaks the page language and its button reloads (413ms)
   ✓   2 e2e/collect.spec.js:35:3 › a set interrupted by hidden offers no file, even once the page is back (1.4s)
-  ✓   3 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.3s)
-  ✓   4 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (260ms)
-  ✓   5 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (778ms)
-  ✓   6 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (780ms)
-  ✓   7 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (241ms)
+  ✓   3 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.2s)
+  ✓   4 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (280ms)
+  ✓   5 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (735ms)
+  ✓   6 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (731ms)
+  ✓   7 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (202ms)
   -   8 e2e/core-app.spec.js:23:3 › bicep_curl
   -   9 e2e/core-app.spec.js:23:3 › lateral_raise
   -  10 e2e/core-app.spec.js:23:3 › lat_pulldown
@@ -24,8 +24,8 @@ Running 81 tests using 1 worker
   -  21 e2e/decode-clips.spec.js:135:5 › Step 1: Determinism › determinism lateral_raise
   -  22 e2e/decode-clips.spec.js:135:5 › Step 1: Determinism › determinism overhead_press
   ✓  23 e2e/offline.spec.js:17:1 › app loads and shows the choice of lift (1.7s)
-  ✓  24 e2e/offline.spec.js:22:1 › service worker registers successfully (1.7s)
-  ✓  25 e2e/offline.spec.js:42:1 › app loads offline after service worker precache (5.1s)
+  ✓  24 e2e/offline.spec.js:22:1 › service worker registers successfully (1.8s)
+  ✓  25 e2e/offline.spec.js:42:1 › app loads offline after service worker precache (5.2s)
   -  26 e2e/history.spec.js:33:1 › saved history remains reachable after a slow IndexedDB open
   -  27 e2e/history.spec.js:53:3 › manual set report identifies manual entry in fr
   -  28 e2e/history.spec.js:53:3 › manual set report identifies manual entry in en
@@ -33,13 +33,13 @@ Running 81 tests using 1 worker
   -  30 e2e/history.spec.js:71:5 › the next screen still loading › keeps the current screen until it is ready (no-preference)
   -  31 e2e/history.spec.js:100:3 › the history at 375 px › leaves no word alone and nothing overlapping
   -  32 e2e/history.spec.js:128:3 › the next screen failing to load › leads to the error screen
-  ✓  33 e2e/interrupted.spec.js:24:5 › interrupted by hidden (en) (749ms)
-  ✓  34 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (en) (628ms)
-  ✓  35 e2e/interrupted.spec.js:24:5 › interrupted by hidden (fr) (696ms)
-  ✓  36 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (fr) (710ms)
-  ✓  37 e2e/shared/navigation-race.tests.js:9:3 › Chromium › a navigation in the frame before a card's transition updates wins over it (932ms)
+  ✓  33 e2e/interrupted.spec.js:24:5 › interrupted by hidden (en) (814ms)
+  ✓  34 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (en) (721ms)
+  ✓  35 e2e/interrupted.spec.js:24:5 › interrupted by hidden (fr) (772ms)
+  ✓  36 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (fr) (712ms)
+  ✓  37 e2e/shared/navigation-race.tests.js:9:3 › Chromium › a navigation in the frame before a card's transition updates wins over it (967ms)
   ✓  38 e2e/shared/navigation-race.tests.js:32:5 › Chromium › with Reduce Motion, where a screen already loaded changes at once › a tap made after the browser moved, before React rendered the move, does not undo it (2.7s)
-  ✓  39 e2e/shared/navigation-race.tests.js:47:3 › Chromium › a navigation announced but not yet rendered also wins over a card's held transition (843ms)
+  ✓  39 e2e/shared/navigation-race.tests.js:47:3 › Chromium › a navigation announced but not yet rendered also wins over a card's held transition (850ms)
   ✓  40 e2e/shared/navigation-race.tests.js:67:3 › Chromium › back then forward while a card waits for its screen's code cancels the card (2.6s)
   -  41 e2e/shared/navigation-race.tests.js:9:3 › WebKit, iPhone profile › a navigation in the frame before a card's transition updates wins over it
   -  42 e2e/shared/navigation-race.tests.js:32:5 › WebKit, iPhone profile › with Reduce Motion, where a screen already loaded changes at once › a tap made after the browser moved, before React rendered the move, does not undo it
@@ -48,8 +48,8 @@ Running 81 tests using 1 worker
   ✓  45 e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes (1.7s)
   ✓  46 e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer (1.8s)
   ✓  47 e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px (1.8s)
-  ✓  48 e2e/shared/report.tests.js:92:3 › Chromium › a partner's name typed for one answer is not kept for another (1.7s)
-  ✓  49 e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does (1.5s)
+  ✓  48 e2e/shared/report.tests.js:92:3 › Chromium › a partner's name typed for one answer is not kept for another (1.8s)
+  ✓  49 e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does (1.6s)
   -  50 e2e/shared/report.tests.js:34:3 › WebKit, iPhone profile › with nothing filled in, the sheet names no client and no coach, and shows no notes
   -  51 e2e/shared/report.tests.js:43:3 › WebKit, iPhone profile › the sheet shows exactly the answers given, and a second tap clears an answer
   -  52 e2e/shared/report.tests.js:64:3 › WebKit, iPhone profile › in French, the form and the sheet say the same, and the screen holds together at 375 px
@@ -58,17 +58,17 @@ Running 81 tests using 1 worker
   ✓  55 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (en) (1.9s)
   ✓  56 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (fr) (1.8s)
   ✓  57 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (fr, returning) (2.0s)
-  ✓  58 e2e/small-screens.spec.js:48:1 › on every phone size the first card clears a floating browser bar and keeps its height (8.9s)
-  ✓  59 e2e/small-screens.spec.js:57:1 › with ?perf=1 the instrument reads out the screen the page is given (1.0s)
+  ✓  58 e2e/small-screens.spec.js:48:1 › on every phone size the first card clears a floating browser bar and keeps its height (9.1s)
+  ✓  59 e2e/small-screens.spec.js:57:1 › with ?perf=1 the instrument reads out the screen the page is given (1.1s)
   ✓  60 e2e/smoothness.spec.js:15:1 › only the press dips a lift card, never :active (1.3s)
-  ✓  61 e2e/smoothness.spec.js:34:1 › in a scrolling list the press waits 80 ms, and a scroll cancels it (2.4s)
-  ✓  62 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
-  ✓  63 e2e/smoothness.spec.js:83:1 › opening the choice makes only the figures near the view; a swipe brings the next ones (1.3s)
+  ✓  61 e2e/smoothness.spec.js:34:1 › in a scrolling list the press waits 80 ms, and a scroll cancels it (2.6s)
+  ✓  62 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.4s)
+  ✓  63 e2e/smoothness.spec.js:83:1 › opening the choice makes only the figures near the view; a swipe brings the next ones (1.4s)
   ✓  64 e2e/smoothness.spec.js:106:1 › the guide figure stops drawing once scrolled out of view, and starts again (2.8s)
-  ✓  65 e2e/smoothness.spec.js:124:1 › the scan line of the filming screen moves by translation, never by top (559ms)
-  ✓  66 e2e/smoothness.spec.js:137:1 › no WebGL context is made before the first frame (389ms)
-  ✓  67 e2e/smoothness.spec.js:149:1 › the next screens load in a pause, never while a finger moves (5.6s)
-  ✓  68 e2e/shared/tactility.tests.js:7:3 › Chromium › rail, card and transition (5.7s)
+  ✓  65 e2e/smoothness.spec.js:124:1 › the scan line of the filming screen moves by translation, never by top (650ms)
+  ✓  66 e2e/smoothness.spec.js:137:1 › no WebGL context is made before the first frame (358ms)
+  ✓  67 e2e/smoothness.spec.js:149:1 › the next screens load in a pause, never while a finger moves (5.1s)
+  ✓  68 e2e/shared/tactility.tests.js:7:3 › Chromium › rail, card and transition (5.6s)
   ✓  69 e2e/shared/tactility.tests.js:75:5 › Chromium › a vertical drag that starts on a card scrolls a short screen (2.3s)
   ✓  70 e2e/shared/tactility.tests.js:96:5 › Chromium › the ?perf=1 instrument shows frames per second and the element touched, and sends nothing (2.0s)
   ✓  71 e2e/shared/tactility.tests.js:126:5 › Chromium › the instrument speaks French, follows the phone language and uses no em dash (1.2s)

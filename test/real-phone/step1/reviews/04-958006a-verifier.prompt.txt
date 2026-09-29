@@ -1,0 +1,3 @@
+Step: GROWTH step 1, feedback and sharing (PLAN.md).
+Commit range: 366271a..958006a (branch counter-core).
+Evidence folders: test/real-phone/step1/

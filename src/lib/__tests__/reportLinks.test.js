@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { REPORT_EMAIL, reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge } from '../reportLinks';
+import { REPORT_EMAIL, reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, reportFor } from '../reportLinks';
 
 // Step 1 (PLAN.md, GROWTH): every result offers a report by email to pr.dabertdavid@gmail.com,
 // prefilled with the lift, the app's count, the user's count, the app version and room for the
@@ -51,6 +51,27 @@ describe('reportEmailUrl', () => {
   });
 });
 
+// Verifier of 29 September: every result offers the report, a refused one and one whose save failed included.
+describe('the report of a refused set', () => {
+  it('says the app counted nothing and leaves the user\'s count for them to write', () => {
+    const { subject, body } = mail(reportEmailUrl({ ...set, counted: null, userCount: null, fr: false }));
+    expect(subject).toBe('Workout Vision: Lateral raise, set not counted');
+    expect(body).toContain('Counted by the app: none, the set was refused');
+    expect(body).toMatch(/Your count: \r\n/);
+    expect(body).not.toContain('null');
+  });
+
+  it('does so in French, and on GitHub', () => {
+    const { subject, body } = mail(reportEmailUrl({ ...set, liftName: 'Squat', counted: null, userCount: null, fr: true }));
+    expect(subject).toBe('Workout Vision\u00A0: Squat, série non comptée');
+    expect(body).toContain('Compté par l’app\u00A0: rien, la série a été refusée');
+    const issue = new URL(reportIssueUrl({ ...set, counted: null, userCount: null }));
+    expect(issue.searchParams.get('title')).toBe('Count report: lateral_raise, set refused');
+    expect(issue.searchParams.get('body')).toContain('Counted by the app: none, the set was refused');
+    expect(issue.searchParams.get('body')).not.toContain('null');
+  });
+});
+
 describe('reportIssueUrl', () => {
   it('opens a new issue on this repository with the same report, and nothing else about the user', () => {
     const url = new URL(reportIssueUrl(set));
@@ -91,12 +112,28 @@ describe('challengeShare', () => {
     const kept = challengeShare({ liftName: 'Squat', count: 8, counted: 8, fr: false, url: 'x' }).text;
     expect(kept).toContain('counted by Workout Vision');
     const fixed = challengeShare({ liftName: 'Squat', count: 10, counted: 8, fr: false, url: 'x' }).text;
-    expect(fixed).toContain('Squat: 10 reps');
-    expect(fixed).not.toContain('counted by');
-    expect(fixed).toContain('filmed with Workout Vision');
+    // The app neither filmed (the video may come from the library) nor counted nor analysed the
+    // corrected 10: the message gives both numbers (reviews of 29 September).
+    expect(fixed).toBe('Squat: 10 reps (Workout Vision counted 8 on my phone). Can you beat it?');
     const fr = challengeShare({ liftName: 'Squat', count: 10, counted: 8, fr: true, url: 'x' }).text;
-    expect(fr).not.toContain('comptées par');
-    expect(fr).toContain('filmées avec Workout Vision');
+    expect(fr).toBe('Squat\u00A0: 10 répétitions (Workout Vision en a compté 8 sur mon téléphone). Vous relevez le défi\u00A0?');
+    for (const t of [fixed, fr]) expect(t).not.toMatch(/filmed|filmées|analysed|analysées/);
+  });
+});
+
+// Which report a result offers (Result.jsx): every result, a refused one and one whose save failed
+// included (verifier and review of 29 September).
+describe('reportFor', () => {
+  const base = { lift: 'squat', liftName: 'Squat', count: 8, trueN: 10, version: 'v', fr: false };
+  it('offers the refused set\'s report on a refused result', () => {
+    expect(reportFor({ ...base, refused: true })).toEqual({ lift: 'squat', liftName: 'Squat', counted: null, userCount: null, version: 'v', fr: false });
+  });
+  it('offers the count\'s report once the set is saved, or when its save failed, and not before', () => {
+    expect(reportFor({ ...base, step: 'saved' })).toMatchObject({ counted: 8, userCount: 10 });
+    expect(reportFor({ ...base, step: 'ask', saveError: 'x' })).toMatchObject({ counted: 8, userCount: 10 });
+    expect(reportFor({ ...base, step: 'fix', saveError: 'x' })).toMatchObject({ counted: 8, userCount: 10 });
+    expect(reportFor({ ...base, step: 'ask' })).toBeNull();
+    expect(reportFor({ ...base, step: 'fix' })).toBeNull();
   });
 });
 

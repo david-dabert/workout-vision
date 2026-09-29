@@ -86,17 +86,17 @@ dist/assets/Report-BEOvZxSW.css                                     5.08 kB │ 
 dist/assets/Guide-BVrY01-N.css                                      5.37 kB │ gzip:   1.53 kB
 dist/assets/CoreUpload-DD_AYKfq.css                                11.21 kB │ gzip:   2.76 kB
 dist/assets/index-N9hkWmuE.css                                    105.36 kB │ gzip:  19.64 kB
-dist/assets/Film-Bo_RfjLN.js                                        4.58 kB │ gzip:   1.77 kB
-dist/assets/History-DBOvqOsY.js                                     5.58 kB │ gzip:   2.42 kB
+dist/assets/Film-DYn4mYRC.js                                        4.58 kB │ gzip:   1.77 kB
+dist/assets/History-QRVVvkLV.js                                     5.58 kB │ gzip:   2.42 kB
 dist/assets/collect-DnqAJE8z.js                                     6.37 kB │ gzip:   2.98 kB
 dist/assets/interruption-BIR5b-eU.js                                8.20 kB │ gzip:   3.43 kB
-dist/assets/Report-BHUa9CeL.js                                     12.99 kB │ gzip:   5.48 kB
+dist/assets/Report-B7JYKpya.js                                     12.99 kB │ gzip:   5.48 kB
 dist/assets/purify.es-BYftNTi7.js                                  29.40 kB │ gzip:  11.31 kB
 dist/assets/localforage-PdTnf9Ao.js                                29.67 kB │ gzip:   9.66 kB
-dist/assets/CoreUpload-BV9GSaRR.js                                 38.62 kB │ gzip:  14.36 kB
-dist/assets/Guide-D0Wcr3Fw.js                                      82.20 kB │ gzip:  15.75 kB
+dist/assets/CoreUpload-DPufEkll.js                                 39.24 kB │ gzip:  14.54 kB
+dist/assets/Guide-DNMQjqIK.js                                      82.20 kB │ gzip:  15.75 kB
 dist/assets/i18n-bODm5fAR.js                                       83.63 kB │ gzip:  28.84 kB
-dist/assets/index-DDTEq2t-.js                                      94.78 kB │ gzip:  38.51 kB
+dist/assets/index-BsgdnmfE.js                                      94.78 kB │ gzip:  38.51 kB
 dist/assets/fr-CKvoBbcP.js                                        109.69 kB │ gzip:  37.11 kB
 dist/assets/web-demuxer-weuWD7o4.js                               112.56 kB │ gzip:  43.51 kB
 dist/assets/index.es-CxKRLoR6.js                                  150.88 kB │ gzip:  51.63 kB
@@ -108,6 +108,6 @@ dist/assets/report-pdf-wlNFKgxH.js                                535.00 kB │ 
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 5.01s
-[inject-sw-precache] Injected 25 assets into SW (cache: wv-v21145584) — all assertions passed
+✓ built in 5.80s
+[inject-sw-precache] Injected 25 assets into SW (cache: wv-vc67534d3) — all assertions passed
 build exit 0

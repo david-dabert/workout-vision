@@ -1,0 +1,54 @@
+saved fr: mailto:pr.dabertdavid@gmail.com?subject=Workout Vision : Élévations latérales, compté 8, vous 8&body=Exercice : Élévations latérales (lateral_raise)
+Compté par l’app : 8
+Votre compte : 8
+Version de l’app : 1.4.0 (958006a)
+
+Aucune vidéo, image ni point du corps n’est joint.
+
+Votre message : 
+
+  https://github.com/david-dabert/workout-vision/issues/new?title=Count+report:+lateral_raise,+app+8,+user+8&body=Lift:+Élévations+latérales+(lateral_raise)
+Counted+by+the+app:+8
+Your+count:+8
+App+version:+1.4.0+(958006a)
+
+No+video,+frame+or+landmark+is+attached.
+
+Your+message:
+
+saved en: mailto:pr.dabertdavid@gmail.com?subject=Workout Vision: Lateral raise, counted 8, you 8&body=Lift: Lateral raise (lateral_raise)
+Counted by the app: 8
+Your count: 8
+App version: 1.4.0 (958006a)
+
+No video, frame or landmark is attached.
+
+Your message:
+
+  https://github.com/david-dabert/workout-vision/issues/new?title=Count+report:+lateral_raise,+app+8,+user+8&body=Lift:+Lateral+raise+(lateral_raise)
+Counted+by+the+app:+8
+Your+count:+8
+App+version:+1.4.0+(958006a)
+
+No+video,+frame+or+landmark+is+attached.
+
+Your+message:
+
+refused fr: mailto:pr.dabertdavid@gmail.com?subject=Workout Vision : Élévations latérales, série non comptée&body=Exercice : Élévations latérales (lateral_raise)
+Compté par l’app : rien, la série a été refusée
+Votre compte : 
+Version de l’app : 1.4.0 (958006a)
+
+Aucune vidéo, image ni point du corps n’est joint.
+
+Votre message : 
+
+  https://github.com/david-dabert/workout-vision/issues/new?title=Count+report:+lateral_raise,+set+refused&body=Lift:+Élévations+latérales+(lateral_raise)
+Counted+by+the+app:+none,+the+set+was+refused
+Your+count:+
+App+version:+1.4.0+(958006a)
+
+No+video,+frame+or+landmark+is+attached.
+
+Your+message:
+

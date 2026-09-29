@@ -1,0 +1,8 @@
+Lines of CI run 151 on 958006a, job "Browser tests (Chromium and WebKit)", read through the GitHub API (job 109258078230).
+2026-09-29T04:39:31.2959342Z ##[group]Run npx playwright test --retries=0 --workers=1
+2026-09-29T04:39:32.8487825Z Running 81 tests using 1 worker
+2026-09-29T04:41:53.4123573Z ·······°°°°°°°°°°°°°°°·······················································°··
+2026-09-29T04:41:53.5859505Z ·
+2026-09-29T04:41:53.5864872Z   16 skipped
+2026-09-29T04:41:53.5865510Z   65 passed (2.4m)
+The job "Lint, typecheck, tests and production build" of the same run concluded "success" (job 109258078183).

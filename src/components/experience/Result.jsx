@@ -8,7 +8,7 @@ import { warmReportPdf } from './Report';
 import { refreshSets } from './sets';
 import { decimal } from './report-sheet';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
-import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion } from '../../lib/reportLinks';
+import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel } from './lift-meta';
 import { LIFTS as CORE_LIFTS, JOINT_POINTS } from '../../lib/counting/core';
 import './Result.css';
@@ -226,6 +226,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         repDetailsVersion: 2,
       });
       refreshSets();
+      setSaveError(''); // a retry that saves takes back "not saved"
       setStep('saved');
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
     } catch {
@@ -243,7 +244,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       else if (out === 'unavailable') setShareNote(fr ? 'Le partage n’est pas disponible dans ce navigateur.' : 'Sharing is not available in this browser.');
     });
   }
-  const report = { lift, liftName, counted: count, userCount: trueN, version: appVersion(), fr };
+  const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError });
 
   if (result.refused) {
     const why = refusal(result, lift);
@@ -284,6 +285,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
           <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
         </div>
+        <ReportCount fr={fr} report={report} />
       </div></section>
     </div>;
   }
@@ -352,12 +354,18 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
-      {step === 'saved' && <p className="report-count" data-testid="report-count">
-        <span>{fr ? 'Signaler ce comptage' : 'Report this count'}</span>
-        <a className="text-btn" href={reportEmailUrl(report)}>{fr ? 'Par e-mail' : 'By email'}</a>
-        <a className="text-btn" href={reportIssueUrl(report)} target="_blank" rel="noreferrer">{fr ? 'Sur GitHub' : 'On GitHub'}</a>
-      </p>}
+      {report && <ReportCount fr={fr} report={report} />}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
     </div></section>
   </div>;
+}
+
+// Every result offers a report of its count, a refused one and one whose save failed included
+// (PLAN.md, GROWTH, step 1): by e-mail, or as a GitHub issue for users who have an account.
+function ReportCount({ fr, report }) {
+  return <p className="report-count" data-testid="report-count">
+    <span>{fr ? 'Signaler ce comptage' : 'Report this count'}</span>
+    <a className="text-btn" href={reportEmailUrl(report)}>{fr ? 'Par e-mail' : 'By email'}</a>
+    <a className="text-btn" href={reportIssueUrl(report)} target="_blank" rel="noreferrer">{fr ? 'Sur GitHub' : 'On GitHub'}</a>
+  </p>;
 }
