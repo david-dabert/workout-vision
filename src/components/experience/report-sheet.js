@@ -1,5 +1,5 @@
-// The words of the coach's report. The sheet on screen and the PDF both read
-// them from here, so what the visitor sees is what the coach receives.
+// The words of the session report. The sheet on screen and the PDF both read
+// them from here, so what the visitor sees is what the reader receives.
 
 const NBSP = '\u00A0';
 const clean = s => (s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
@@ -61,8 +61,10 @@ function repTempo(r, nextStart, first) {
  * @param {object} o
  * @param {'fr'|'en'} o.lang
  * @param {Date} o.date          when the set was recorded
- * @param {string} o.client
- * @param {string} o.coach
+ * @param {string} [o.name]      the user's name, optional
+ * @param {''|'alone'|'friend'|'coach'} [o.context]  whom the user trained with, if they said
+ * @param {string} [o.partner]   the friend's or the coach's name, optional
+ * @param {''|'beginner'|'intermediate'|'expert'} [o.level]
  * @param {string} o.notes
  * @param {string} o.liftName
  * @param {number} o.count       the number the visitor confirmed or corrected
@@ -76,7 +78,7 @@ function repTempo(r, nextStart, first) {
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
  */
-export function reportSheet({ lang, date, client, coach, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -164,10 +166,8 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
     brand: 'Workout Vision',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
-    clientLabel: 'Client',
-    coachLabel: 'Coach',
-    client: clean(client) || '…',
-    coach: clean(coach) || '…',
+    // Only what the user filled in (step 1, 29 September 2026): no coach is assumed.
+    people: people({ fr, name, context, partner, level }),
     count: String(count),
     word: fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps'),
     lift: liftName,
@@ -185,7 +185,7 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
     summary,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     notesLabel: 'Notes',
-    notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim() || '…',
+    notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim(),
     foot: source === 'manual'
       ? (fr ? 'Saisie manuelle sur le téléphone. Version de test. Aucun score de forme.' : 'Entered manually on the phone. Test version. No form score.')
       : fr
@@ -194,10 +194,28 @@ export function reportSheet({ lang, date, client, coach, notes, liftName, count,
   };
 }
 
-// An ASCII file name the coach can read in any mail or chat: rapport-seance-camille-martin-2026-09-26.pdf
+const CONTEXT = {
+  alone: ['En solo', 'Alone'],
+  friend: ['En binôme', 'With a friend'],
+  coach: ['Avec un coach', 'With a coach'],
+};
+const PARTNER = { friend: ['Partenaire', 'Friend'], coach: ['Coach', 'Coach'] };
+const LEVEL = { beginner: ['Débutant', 'Beginner'], intermediate: ['Intermédiaire', 'Intermediate'], expert: ['Confirmé', 'Expert'] };
+
+/** The sheet's people and level, as [label, value] pairs, in the order the form asks for them. */
+function people({ fr, name, context, partner, level }) {
+  const k = fr ? 0 : 1, out = [];
+  if (clean(name)) out.push([fr ? 'Nom' : 'Name', clean(name)]);
+  if (CONTEXT[context]) out.push([fr ? 'Entraînement' : 'Training', CONTEXT[context][k]]);
+  if (PARTNER[context] && clean(partner)) out.push([PARTNER[context][k], clean(partner)]);
+  if (LEVEL[level]) out.push([fr ? 'Niveau' : 'Level', LEVEL[level][k]]);
+  return out;
+}
+
+// An ASCII file name anyone can read in any mail or chat: rapport-seance-camille-martin-2026-09-26.pdf
 const LETTERS = { æ: 'ae', œ: 'oe', ø: 'o', ß: 'ss', ł: 'l', đ: 'd', ð: 'd', þ: 'th', ı: 'i' };
-export function reportFileName({ lang, date, client }) {
-  let slug = clean(client).toLowerCase().replace(/[æœøßłđðþı]/g, c => LETTERS[c])
+export function reportFileName({ lang, date, name }) {
+  let slug = clean(name).toLowerCase().replace(/[æœøßłđðþı]/g, c => LETTERS[c])
     .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   if (slug.length > 40) { const cut = slug.slice(0, 41).lastIndexOf('-'); slug = slug.slice(0, cut > 0 ? cut : 40); }
   const pad = n => String(n).padStart(2, '0');

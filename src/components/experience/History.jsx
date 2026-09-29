@@ -115,7 +115,7 @@ export default function History({ onClose }) {
                 {counted !== w.reps && <p className="hist-corr">{fr ? `Compté par l’app : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
                 <button className="btn-line press" onClick={() => { setLeaving(false); setReport(w); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
-                  <span>{fr ? 'Rapport pour mon coach' : 'Report for my coach'}</span>
+                  <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
                 </button>
                 <button className={`text-btn press${confirm === w.id ? ' is-armed' : ''}`} onClick={() => remove(w)}>
                   {confirm === w.id ? (fr ? 'Toucher encore pour supprimer' : 'Tap again to delete') : (fr ? 'Supprimer cette série' : 'Delete this set')}

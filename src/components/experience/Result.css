@@ -76,4 +76,7 @@
 }
 .wv-experience .rp-open svg { width: 12px; height: 12px; }
 
-.wv-experience .report-wrong { display: block; margin: 14px auto 0; text-align: center; }
+.wv-experience .report-count { margin: 14px 0 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 6px; font-size: 13px; color: var(--ash); }
+.wv-experience .report-count > span { width: 100%; text-align: center; }
+.wv-experience .saved .share-note { margin: 0; text-align: center; font-size: 13px; line-height: 1.45; color: var(--ash); }
+.wv-experience .saved .share-note:empty { display: none; }

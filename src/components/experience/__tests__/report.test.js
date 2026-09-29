@@ -1,5 +1,5 @@
 /**
- * The coach's report: its words (shared by the sheet on screen and the PDF),
+ * The session report: its words (shared by the sheet on screen and the PDF),
  * its file name, its line breaking, and the PDF itself.
  */
 import { describe, it, expect } from 'vitest';
@@ -7,18 +7,51 @@ import { reportSheet, reportFileName, setMeasures } from '../report-sheet';
 import { reportPdf, wrapText } from '../report-pdf';
 
 const day = new Date(2026, 8, 26, 14, 32);
-const base = { lang: 'fr', date: day, client: '', coach: '', notes: '', liftName: 'Élévations latérales', count: 10, counted: 10, arm: 'right' };
+const base = { lang: 'fr', date: day, name: '', context: '', partner: '', level: '', notes: '', liftName: 'Élévations latérales', count: 10, counted: 10, arm: 'right' };
 const NBSP = ' ';
 
 describe('reportSheet', () => {
-  it('writes the prototype’s words, with a long date and an ellipsis where nothing was typed', () => {
+  it('writes the prototype’s words, with a long date, and nothing where nothing was filled in', () => {
     const s = reportSheet(base);
     expect(s.date).toBe('26 septembre 2026');
-    expect([s.client, s.coach, s.notes]).toEqual(['…', '…', '…']);
+    expect(s.people).toEqual([]);
+    expect(s.notes).toBe('');
     expect(s.title).toBe('Rapport de séance');
     expect(s.word).toBe('répétitions');
     expect(s.arm).toBe(`Bras suivi${NBSP}: droit`);
     expect(s.foot).toBe('Comptage automatique sur le téléphone. Version de test. Aucun score de forme.');
+    expect(JSON.stringify(s)).not.toContain('…');
+  });
+
+  // Step 1 (PLAN.md, GROWTH): the sheet no longer assumes a coach. The user says whether they
+  // trained alone, with a friend or with a coach, and at which level; every name is optional, and
+  // the sheet shows only what was filled in.
+  it('assumes no coach: it names only the people and the level the user gave', () => {
+    expect(reportSheet({ ...base, name: 'Anaïs Lefèvre' }).people).toEqual([['Nom', 'Anaïs Lefèvre']]);
+    expect(reportSheet({ ...base, context: 'alone' }).people).toEqual([['Entraînement', 'En solo']]);
+    expect(reportSheet({ ...base, lang: 'en', context: 'alone' }).people).toEqual([['Training', 'Alone']]);
+    expect(reportSheet({ ...base, context: 'friend' }).people).toEqual([['Entraînement', 'En binôme']]);
+    expect(reportSheet({ ...base, lang: 'en', context: 'coach', partner: 'Luc' }).people).toEqual([['Training', 'With a coach'], ['Coach', 'Luc']]);
+    expect(reportSheet({ ...base, context: 'friend', partner: 'Sam' }).people).toEqual([['Entraînement', 'En binôme'], ['Partenaire', 'Sam']]);
+    expect(reportSheet({ ...base, lang: 'en', context: 'friend', partner: 'Sam' }).people).toEqual([['Training', 'With a friend'], ['Friend', 'Sam']]);
+  });
+
+  it('gives the level in the user\'s words, and leaves it out when none was chosen', () => {
+    expect(reportSheet({ ...base, level: 'beginner' }).people).toEqual([['Niveau', 'Débutant']]);
+    expect(reportSheet({ ...base, level: 'intermediate' }).people).toEqual([['Niveau', 'Intermédiaire']]);
+    expect(reportSheet({ ...base, level: 'expert' }).people).toEqual([['Niveau', 'Confirmé']]);
+    expect(reportSheet({ ...base, lang: 'en', level: 'expert' }).people).toEqual([['Level', 'Expert']]);
+    expect(reportSheet({ ...base, level: 'other' }).people).toEqual([]);
+  });
+
+  it('keeps no partner\'s name for a set trained alone or with no answer', () => {
+    expect(reportSheet({ ...base, context: 'alone', partner: 'Luc' }).people).toEqual([['Entraînement', 'En solo']]);
+    expect(reportSheet({ ...base, partner: 'Luc' }).people).toEqual([]);
+  });
+
+  it('orders everything filled in: name, training, partner, level', () => {
+    expect(reportSheet({ ...base, lang: 'en', name: 'Ana', context: 'coach', partner: 'Luc', level: 'beginner' }).people)
+      .toEqual([['Name', 'Ana'], ['Training', 'With a coach'], ['Coach', 'Luc'], ['Level', 'Beginner']]);
   });
 
   it('states a correction only when the visitor changed the count', () => {
@@ -35,9 +68,8 @@ describe('reportSheet', () => {
   });
 
   it('tidies the names and keeps the lines of the notes', () => {
-    const s = reportSheet({ ...base, client: '  Anaïs   Lefèvre ', coach: 'Luc\n', notes: '  Tempo lent.\r\nCoudes fléchis.  ' });
-    expect(s.client).toBe('Anaïs Lefèvre');
-    expect(s.coach).toBe('Luc');
+    const s = reportSheet({ ...base, name: '  Anaïs   Lefèvre ', context: 'coach', partner: 'Luc\n', notes: '  Tempo lent.\r\nCoudes fléchis.  ' });
+    expect(s.people).toEqual([['Nom', 'Anaïs Lefèvre'], ['Entraînement', 'Avec un coach'], ['Coach', 'Luc']]);
     expect(s.notes).toBe('Tempo lent.\nCoudes fléchis.');
   });
 
@@ -48,15 +80,15 @@ describe('reportSheet', () => {
 });
 
 describe('reportFileName', () => {
-  it('names the file in ASCII after the client and the day', () => {
-    expect(reportFileName({ lang: 'fr', date: day, client: 'Camille Martin' })).toBe('rapport-seance-camille-martin-2026-09-26.pdf');
-    expect(reportFileName({ lang: 'fr', date: day, client: 'Anaïs Lefèvre-Dubœuf' })).toBe('rapport-seance-anais-lefevre-duboeuf-2026-09-26.pdf');
-    expect(reportFileName({ lang: 'en', date: day, client: '' })).toBe('session-report-2026-09-26.pdf');
-    expect(reportFileName({ lang: 'fr', date: day, client: 'Жанна' })).toBe('rapport-seance-2026-09-26.pdf');
+  it('names the file in ASCII after the user and the day', () => {
+    expect(reportFileName({ lang: 'fr', date: day, name: 'Camille Martin' })).toBe('rapport-seance-camille-martin-2026-09-26.pdf');
+    expect(reportFileName({ lang: 'fr', date: day, name: 'Anaïs Lefèvre-Dubœuf' })).toBe('rapport-seance-anais-lefevre-duboeuf-2026-09-26.pdf');
+    expect(reportFileName({ lang: 'en', date: day, name: '' })).toBe('session-report-2026-09-26.pdf');
+    expect(reportFileName({ lang: 'fr', date: day, name: 'Жанна' })).toBe('rapport-seance-2026-09-26.pdf');
   });
 
   it('shortens a long name at a word, never in the middle of one', () => {
-    expect(reportFileName({ lang: 'fr', date: day, client: 'Marie-Christine de La Rochefoucauld-Montmorency' }))
+    expect(reportFileName({ lang: 'fr', date: day, name: 'Marie-Christine de La Rochefoucauld-Montmorency' }))
       .toBe('rapport-seance-marie-christine-de-la-rochefoucauld-2026-09-26.pdf');
   });
 });
@@ -87,10 +119,15 @@ describe('reportPdf', () => {
   const pdfText = async blob => Buffer.from(await blob.arrayBuffer()).toString('latin1');
 
   it('sets one A5 page in the app’s four faces', async () => {
-    const text = await pdfText(reportPdf(reportSheet({ ...base, client: 'Camille Martin', coach: 'Luc', count: 12 })));
+    const text = await pdfText(reportPdf(reportSheet({ ...base, name: 'Camille Martin', context: 'coach', partner: 'Luc', level: 'intermediate', count: 12 })));
     expect(text.startsWith('%PDF-')).toBe(true);
     expect(text).toMatch(/\/MediaBox \[0 0 419\.5[23]\d* 595\.2[78]\d*\]/); // A5, as jsPDF prints it
     for (const face of ['InstrumentSerif-Regular', 'Geist-Regular', 'Geist-Medium', 'GeistMono-Regular']) expect(text).toContain(`/BaseFont /${face}`);
+    expect(text.match(/\/Type \/Page\b/g)).toHaveLength(1);
+  });
+
+  it('sets a sheet with nothing filled in on one page', async () => {
+    const text = await pdfText(reportPdf(reportSheet(base)));
     expect(text.match(/\/Type \/Page\b/g)).toHaveLength(1);
   });
 

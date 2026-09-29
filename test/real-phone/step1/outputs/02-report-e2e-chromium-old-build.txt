@@ -1,0 +1,96 @@
+
+Running 3 tests using 1 worker
+
+  ✘  1 e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes (5.6s)
+  ✘  2 e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer (5.6s)
+  ✘  3 e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px (5.6s)
+
+
+  1) e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.hist-detail .btn-line')
+    Expected: "Session report"
+    Received: "Report for my coach"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.hist-detail .btn-line') with timeout 5000ms
+      - waiting for locator('.hist-detail .btn-line')
+        14 × locator resolved to <button class="btn-line press">…</button>
+           - unexpected value "Report for my coach"
+
+
+      26 |   await page.getByRole('button', { name: lang === 'fr' ? /Vos séries/ : /Your sets/ }).click();
+      27 |   await page.locator('.hist-btn').click();
+    > 28 |   await expect(page.locator('.hist-detail .btn-line')).toHaveText(lang === 'fr' ? 'Rapport de séance' : 'Session report');
+         |                                                        ^
+      29 |   await page.locator('.hist-detail .btn-line').click();
+      30 |   await expect(page.locator('.sheet')).toBeVisible();
+      31 | }
+        at openReport (/home/user/workout-vision/e2e/shared/report.tests.js:28:56)
+        at /home/user/workout-vision/e2e/shared/report.tests.js:35:5
+
+    Error Context: test-results/report-Chromium-with-nothi-5fc5b-no-coach-and-shows-no-notes/error-context.md
+
+  2) e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.hist-detail .btn-line')
+    Expected: "Session report"
+    Received: "Report for my coach"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.hist-detail .btn-line') with timeout 5000ms
+      - waiting for locator('.hist-detail .btn-line')
+        14 × locator resolved to <button class="btn-line press">…</button>
+           - unexpected value "Report for my coach"
+
+
+      26 |   await page.getByRole('button', { name: lang === 'fr' ? /Vos séries/ : /Your sets/ }).click();
+      27 |   await page.locator('.hist-btn').click();
+    > 28 |   await expect(page.locator('.hist-detail .btn-line')).toHaveText(lang === 'fr' ? 'Rapport de séance' : 'Session report');
+         |                                                        ^
+      29 |   await page.locator('.hist-detail .btn-line').click();
+      30 |   await expect(page.locator('.sheet')).toBeVisible();
+      31 | }
+        at openReport (/home/user/workout-vision/e2e/shared/report.tests.js:28:56)
+        at /home/user/workout-vision/e2e/shared/report.tests.js:44:5
+
+    Error Context: test-results/report-Chromium-the-sheet--7e279-second-tap-clears-an-answer/error-context.md
+
+  3) e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.hist-detail .btn-line')
+    Expected: "Rapport de séance"
+    Received: "Rapport pour mon coach"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.hist-detail .btn-line') with timeout 5000ms
+      - waiting for locator('.hist-detail .btn-line')
+        14 × locator resolved to <button class="btn-line press">…</button>
+           - unexpected value "Rapport pour mon coach"
+
+
+      26 |   await page.getByRole('button', { name: lang === 'fr' ? /Vos séries/ : /Your sets/ }).click();
+      27 |   await page.locator('.hist-btn').click();
+    > 28 |   await expect(page.locator('.hist-detail .btn-line')).toHaveText(lang === 'fr' ? 'Rapport de séance' : 'Session report');
+         |                                                        ^
+      29 |   await page.locator('.hist-detail .btn-line').click();
+      30 |   await expect(page.locator('.sheet')).toBeVisible();
+      31 | }
+        at openReport (/home/user/workout-vision/e2e/shared/report.tests.js:28:56)
+        at /home/user/workout-vision/e2e/shared/report.tests.js:66:5
+
+    Error Context: test-results/report-Chromium-in-French--f684c-en-holds-together-at-375-px/error-context.md
+
+  3 failed
+    e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes 
+    e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer 
+    e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px 

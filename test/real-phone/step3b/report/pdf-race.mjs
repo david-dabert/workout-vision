@@ -67,7 +67,7 @@ try {
   await expect(savedCard).toBeVisible({ timeout: 15000 });
 
   // Open report
-  const reportBtn = page.locator('.btn-line');
+  const reportBtn = page.locator('[data-testid="saved-card"] .btn-line').first();
   await reportBtn.click();
   const reportScreen = page.locator('.report-screen');
   await expect(reportScreen).toBeVisible({ timeout: 5000 });
@@ -80,8 +80,8 @@ try {
     process.exit(1);
   }
 
-  // Type into Client meanwhile, one character at a time.
-  const clientInput = page.locator('#fClient');
+  // Type the name meanwhile, one character at a time.
+  const clientInput = page.locator('#fName');
   await clientInput.click();
   await clientInput.pressSequentially('Alice Durand', { delay: 80 });
   await page.locator('#fNotes').pressSequentially('Tempo lent, puis repos.', { delay: 20 });

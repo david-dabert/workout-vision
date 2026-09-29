@@ -1,4 +1,4 @@
-// The coach's PDF: the sheet on the report screen, set on an A5 page in the
+// The session report's PDF: the sheet on the report screen, set on an A5 page in the
 // app's own type. One CSS pixel of the sheet is one point of the page, and the
 // measures below are the sheet's own (Report.css), so the two read alike.
 import { jsPDF } from 'jspdf';
@@ -149,15 +149,18 @@ export function reportPdf(sheet) {
   write(sheet.title, MARGIN, y, 'serif', 30, 1, COLOR.ink);
   y += 30 + GAP;
 
-  // Client and coach, in two columns 8 apart.
+  // What the user filled in about themselves, two to a row, in two columns 8 apart; nothing when
+  // nothing was filled in (step 1: no coach is assumed).
   const colW = (COLUMN - 8) / 2;
-  const who = [sheet.client, sheet.coach].map(name => lines(name, 12, colW));
-  who.forEach((block, i) => {
-    const x = MARGIN + i * (colW + 8);
-    label(i ? sheet.coachLabel : sheet.clientLabel, x, y);
-    block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
-  });
-  y += 13.5 + 18 * Math.max(who[0].lines.length, who[1].lines.length) + GAP;
+  for (let r = 0; r < sheet.people.length; r += 2) {
+    const row = sheet.people.slice(r, r + 2).map(([name, value]) => ({ name, block: lines(value, 12, colW) }));
+    row.forEach(({ name, block }, i) => {
+      const x = MARGIN + i * (colW + 8);
+      label(name, x, y);
+      block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
+    });
+    y += 13.5 + 18 * Math.max(...row.map(c => c.block.lines.length)) + GAP;
+  }
 
   // The count: a rule, then the numeral and its words on one baseline.
   rule();
@@ -207,20 +210,22 @@ export function reportPdf(sheet) {
   if (sheet.summary) sheetLine(sheet.summary);
   if (sheet.shortRepNote) sheetLine(sheet.shortRepNote);
 
-  // Notes, then the foot. The notes label keeps its first line, and the foot
-  // never stands alone on a page: it takes the last two lines of notes with it.
+  // Notes, when the user wrote any, then the foot. The notes label keeps its first line, and the
+  // foot never stands alone on a page: it takes the last two lines of notes with it.
   const foot = wrapText(sheet.foot, COLUMN, s => width(s, 'sans', 10));
   const footH = GAP + 1 + 10 + 15 * foot.length;
-  const notes = lines(sheet.notes, 12.5, COLUMN), NL = 12.5 * 1.5;
-  const need = i => { const left = notes.lines.length - i; return left <= 2 ? left * NL + footH : NL; };
-  if (room() < 13.5 + 4 + need(0) && y > MARGIN) newPage();
-  label(sheet.notesLabel, MARGIN, y);
-  y += 13.5 + 4;
-  notes.lines.forEach((line, i) => {
-    if (room() < need(i) && y > MARGIN) newPage();
-    drawLine(line, notes.raster, MARGIN, y, 12.5, 1.5, COLOR.ink);
-    y += NL;
-  });
+  if (sheet.notes) {
+    const notes = lines(sheet.notes, 12.5, COLUMN), NL = 12.5 * 1.5;
+    const need = i => { const left = notes.lines.length - i; return left <= 2 ? left * NL + footH : NL; };
+    if (room() < 13.5 + 4 + need(0) && y > MARGIN) newPage();
+    label(sheet.notesLabel, MARGIN, y);
+    y += 13.5 + 4;
+    notes.lines.forEach((line, i) => {
+      if (room() < need(i) && y > MARGIN) newPage();
+      drawLine(line, notes.raster, MARGIN, y, 12.5, 1.5, COLOR.ink);
+      y += NL;
+    });
+  } else if (room() < footH && y > MARGIN) newPage();
   y += GAP;
   rule();
   y += 1 + 10;

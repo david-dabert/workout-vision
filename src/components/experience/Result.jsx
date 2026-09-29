@@ -7,7 +7,8 @@ import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
 import { refreshSets } from './sets';
 import { decimal } from './report-sheet';
-import { TIERS, tierLabel, reportWrongCountUrl } from '../../lib/liftTiers';
+import { TIERS, tierLabel } from '../../lib/liftTiers';
+import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion } from '../../lib/reportLinks';
 import { limbLabel } from './lift-meta';
 import { LIFTS as CORE_LIFTS, JOINT_POINTS } from '../../lib/counting/core';
 import './Result.css';
@@ -128,6 +129,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [shown, setShown] = useState(reduced ? result.count : 0);
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
+  const [shareNote, setShareNote] = useState('');
   const [sel, setSel] = useState(-1); // the rep whose details are shown, or none
   const saving = useRef(false);
   const rootRef = useRef(null);
@@ -231,6 +233,18 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     } finally { saving.current = false; }
   }
 
+  // The challenge opens the phone's share sheet inside the tap, with the result and a link to the
+  // app; where the sheet is missing or refuses the message, the message is copied for the user to paste.
+  function challenge() {
+    const data = challengeShare({ liftName, count: trueN, counted: count, fr, url: new URL(import.meta.env.BASE_URL, location.origin).href });
+    setShareNote('');
+    shareChallenge(data, { share: navigator.share ? d => navigator.share(d) : null, clipboard: navigator.clipboard }).then(out => {
+      if (out === 'copied') setShareNote(fr ? 'Message copié. Collez-le dans une conversation.' : 'Message copied. Paste it into a chat.');
+      else if (out === 'unavailable') setShareNote(fr ? 'Le partage n’est pas disponible dans ce navigateur.' : 'Sharing is not available in this browser.');
+    });
+  }
+  const report = { lift, liftName, counted: count, userCount: trueN, version: appVersion(), fr };
+
   if (result.refused) {
     const why = refusal(result, lift);
     const text = why.cause === 'nobody'
@@ -327,13 +341,22 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
           <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
-            <span>{fr ? 'Rapport pour mon coach' : 'Report for my coach'}</span>
+            <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
           </button>
+          <button className="btn-line press" onClick={challenge}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
+            <span>{fr ? 'Défier un ami' : 'Challenge a friend'}</span>
+          </button>
+          <p className="share-note" role="status">{shareNote}</p>
           <button className="text-btn press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
         </div>
       )}
 
-      {step === 'saved' && trueN !== count && <a className="text-btn report-wrong" href={reportWrongCountUrl({ lift, counted: count, userCount: trueN, version: typeof __GIT_HASH__ === 'undefined' ? '' : __GIT_HASH__ })} target="_blank" rel="noreferrer">{fr ? 'Signaler un comptage faux' : 'Report a wrong count'}</a>}
+      {step === 'saved' && <p className="report-count" data-testid="report-count">
+        <span>{fr ? 'Signaler ce comptage' : 'Report this count'}</span>
+        <a className="text-btn" href={reportEmailUrl(report)}>{fr ? 'Par e-mail' : 'By email'}</a>
+        <a className="text-btn" href={reportIssueUrl(report)} target="_blank" rel="noreferrer">{fr ? 'Sur GitHub' : 'On GitHub'}</a>
+      </p>}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
     </div></section>
   </div>;

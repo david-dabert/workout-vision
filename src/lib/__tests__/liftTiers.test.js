@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TIERS, tierLabel, reportWrongCountUrl } from '../liftTiers';
+import { TIERS, tierLabel } from '../liftTiers';
 import { APPROVED_LIFTS } from '../coreAnalysis';
 import { LIFTS as CORE_LIFTS } from '../counting/core';
 import { LIFTS as SCREEN_LIFTS, META } from '../../components/experience/lift-meta';
@@ -30,19 +30,7 @@ describe('lift tiers', () => {
   });
 });
 
-describe('reportWrongCountUrl', () => {
-  it('opens a new issue on this repository with the lift and both counts, and nothing else about the user', () => {
-    const url = new URL(reportWrongCountUrl({ lift: 'squat', counted: 8, userCount: 10 }));
-    expect(url.origin + url.pathname).toBe('https://github.com/david-dabert/workout-vision/issues/new');
-    const title = url.searchParams.get('title'), body = url.searchParams.get('body');
-    expect(title).toContain('squat');
-    expect(body).toContain('Lift: squat');
-    expect(body).toContain("App's count: 8");
-    expect(body).toContain("User's count: 10");
-    expect(body).toContain('No video');
-    expect([...url.searchParams.keys()].sort()).toEqual(['body', 'title']);
-  });
-});
+// The GitHub report moved to src/lib/reportLinks.js (step 1), with its test.
 
 import { limbLabel } from '../../components/experience/lift-meta';
 import { reportSheet } from '../../components/experience/report-sheet';

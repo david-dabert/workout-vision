@@ -15,21 +15,24 @@ export function warmReportPdf() {
 }
 
 /**
- * The coach's report for one saved set.
+ * The session report for one saved set. It assumes no coach (step 1): the user says, if they
+ * wish, their name, whom they trained with and at which level, and the sheet shows only that.
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
 export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
-  const [client, setClient] = useState('');
-  const [coach, setCoach] = useState('');
+  const [name, setName] = useState('');
+  const [context, setContext] = useState(''); // '' | alone | friend | coach
+  const [partner, setPartner] = useState('');
+  const [level, setLevel] = useState(''); // '' | beginner | intermediate | expert
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState(kit ? 'ready' : 'preparing'); // ready | preparing | error
   const [note, setNote] = useState('');
   const failures = useRef(0);
   const noteTimer = useRef(0);
   const sharing = useRef(false);
-  const backRef = useRef(null), coachRef = useRef(null), notesRef = useRef(null);
+  const backRef = useRef(null), partnerRef = useRef(null), notesRef = useRef(null);
   const when = useRef(date ? new Date(date) : new Date()).current;
 
   const liftName = META[lift]?.[lang] || tExercise(lift);
@@ -46,7 +49,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       prevRef.current = null;
     }
   }
-  const sheet = reportSheet({ lang, date: when, client, coach, notes, liftName, count, counted, arm, joint: LIFTS[lift]?.joint, reps, source, first, previousSet: prevRef.current });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: LIFTS[lift]?.joint, reps, source, first, previousSet: prevRef.current });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -98,16 +101,16 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       setNote(fr ? 'Le PDF n’a pas pu être préparé. Réessayez.' : 'The PDF could not be prepared. Try again.');
       return;
     }
-    const name = reportFileName({ lang, date: when, client });
-    const file = new File([blob], name, { type: 'application/pdf' });
+    const fileName = reportFileName({ lang, date: when, name });
+    const file = new File([blob], fileName, { type: 'application/pdf' });
     if (navigator.canShare?.({ files: [file] })) {
       sharing.current = true;
       navigator.share({ files: [file], title: sheet.title })
-        .catch(e => { if (e.name !== 'AbortError' && e.name !== 'InvalidStateError') download(blob, name); })
+        .catch(e => { if (e.name !== 'AbortError' && e.name !== 'InvalidStateError') download(blob, fileName); })
         .finally(() => { sharing.current = false; });
       return;
     }
-    download(blob, name);
+    download(blob, fileName);
   }
 
   const next = target => e => { if (e.key === 'Enter') { e.preventDefault(); target.current?.focus(); } };
@@ -121,19 +124,22 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
-      <h2 className="title">{fr ? 'Rapport pour votre coach' : 'Report for your coach'}</h2>
-      <div className="form-grid">
-        <div className="field">
-          <label htmlFor="fClient">Client</label>
-          <input id="fClient" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
-            placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={client} onChange={e => setClient(e.target.value)} onKeyDown={next(coachRef)} />
-        </div>
-        <div className="field">
-          <label htmlFor="fCoach">Coach</label>
-          <input id="fCoach" ref={coachRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
-            placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={coach} onChange={e => setCoach(e.target.value)} onKeyDown={next(notesRef)} />
-        </div>
+      <h2 className="title">{fr ? 'Rapport de séance' : 'Session report'}</h2>
+      <p className="report-sub">{fr ? 'Chaque réponse est facultative et n’apparaît sur le PDF que si vous la remplissez.' : 'Every answer is optional and appears on the PDF only if you fill it in.'}</p>
+      <div className="field">
+        <label htmlFor="fName">{fr ? 'Votre nom' : 'Your name'}</label>
+        <input id="fName" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
+          placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={name} onChange={e => setName(e.target.value)} onKeyDown={next(notesRef)} />
       </div>
+      <Choice id="fWith" label={fr ? 'Entraînement' : 'Training'} value={context} onChange={v => { setContext(v); setPartner(''); }}
+        options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach']]} />
+      {(context === 'friend' || context === 'coach') && <div className="field appear">
+        <label htmlFor="fPartner">{context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
+        <input id="fPartner" ref={partnerRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
+          placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={partner} onChange={e => setPartner(e.target.value)} onKeyDown={next(notesRef)} />
+      </div>}
+      <Choice id="fLevel" label={fr ? 'Niveau' : 'Level'} value={level} onChange={setLevel}
+        options={[['beginner', fr ? 'Débutant' : 'Beginner'], ['intermediate', fr ? 'Intermédiaire' : 'Intermediate'], ['expert', fr ? 'Confirmé' : 'Expert']]} />
       <div className="field">
         <label htmlFor="fNotes">Notes</label>
         <textarea id="fNotes" ref={notesRef} rows="3" autoCapitalize="sentences" maxLength={NOTES_MAX}
@@ -143,10 +149,9 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       <article className="sheet" aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
         <div className="sh-top"><span>{sheet.brand}</span><span>{sheet.date}</span></div>
         <h3 className="sh-title">{sheet.title}</h3>
-        <div className="sh-people">
-          <span><em>{sheet.clientLabel}</em><span>{sheet.client}</span></span>
-          <span><em>{sheet.coachLabel}</em><span>{sheet.coach}</span></span>
-        </div>
+        {sheet.people.length > 0 && <div className="sh-people">
+          {sheet.people.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
+        </div>}
         <div className="sh-count">
           <span className="sh-n">{sheet.count}</span>
           <span className="sh-nl"><b>{sheet.word}</b><span>{sheet.lift}</span></span>
@@ -159,7 +164,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         </table>}
         {sheet.summary && <p className="sh-line">{sheet.summary}</p>}
         {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
-        <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>
+        {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
         <p className="sh-foot">{sheet.foot}</p>
       </article>
 
@@ -173,5 +178,16 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         </button>
       </div>
     </div></section>
+  </div>;
+}
+
+// One answer among a few, or none: a second tap on the chosen one clears it, since every answer is optional.
+function Choice({ id, label, value, onChange, options }) {
+  return <div className="field">
+    <span className="field-label" id={id}>{label}</span>
+    <div className="report-seg" role="group" aria-labelledby={id}>
+      {options.map(([key, text]) => <button key={key} type="button" className="press" aria-pressed={value === key}
+        onClick={() => onChange(value === key ? '' : key)}>{text}</button>)}
+    </div>
   </div>;
 }

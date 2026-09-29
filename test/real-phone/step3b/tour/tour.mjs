@@ -150,8 +150,8 @@ try {
   await shot('06-saved');
 
   // ── 7. Open Coach Report ──
-  const reportBtn = page.locator('.btn-line');
-  await expect(reportBtn).toContainText('Rapport pour mon coach');
+  const reportBtn = page.locator('[data-testid="saved-card"] .btn-line').first();
+  await expect(reportBtn).toContainText('Rapport de séance');
   await reportBtn.click();
   await between('t07-to-report');
   await page.waitForTimeout(800);
@@ -160,8 +160,9 @@ try {
   await expect(reportScreen).toBeVisible({ timeout: 5000 });
 
   // Fill in names
-  await page.locator('#fClient').fill('Marie Test');
-  await page.locator('#fCoach').fill('Coach Test');
+  await page.locator('#fName').fill('Marie Test');
+  await page.getByRole('button', { name: 'Avec un coach' }).click();
+  await page.locator('#fPartner').fill('Coach Test');
   await page.waitForTimeout(300);
   await shot('07-report');
 

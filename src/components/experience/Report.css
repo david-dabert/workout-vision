@@ -1,4 +1,4 @@
-/* Report screen — coach report form and paper sheet preview.
+/* Report screen: the session report form and paper sheet preview.
    Same position override as other experience screens. */
 .wv-experience:has(.report-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
 .wv-experience .report-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
@@ -17,6 +17,13 @@
 .wv-experience .field input:focus,
 .wv-experience .field textarea:focus { border-color: rgba(232, 189, 126, 0.6); }
 .wv-experience .field ::placeholder { color: var(--ash-2); }
+.wv-experience .field .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .report-sub { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--ash); text-wrap: pretty; }
+.wv-experience .report-screen .report-sub + .field { margin-top: 20px; }
+/* Three answers side by side, as the guide's front and back switch; a long French answer wraps inside its button. */
+.wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: 14px; background: var(--basalt); border: 1px solid var(--hair); }
+.wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: 13px; font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
+.wv-experience .report-seg button[aria-pressed="true"] { background: var(--lamp); color: var(--ink); }
 
 /* Paper sheet */
 .wv-experience .sheet {
