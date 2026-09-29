@@ -1,14 +1,14 @@
 
 Running 104 tests using 1 worker
 
-  ✓    1 e2e/boot.spec.js:9:1 › if the app cannot start, the screen speaks the page language and its button reloads (372ms)
-  ✓    2 e2e/collect.spec.js:35:3 › a set interrupted by hidden offers no file, even once the page is back (1.3s)
-  ✓    3 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.3s)
-  ✓    4 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (255ms)
-  ✓    5 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (712ms)
-  ✓    6 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (730ms)
-  ✓    7 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (225ms)
-  ✓    8 e2e/collect.spec.js:86:1 › the collector offers the 181 exercises the app counts, by their names in both languages (215ms)
+  ✓    1 e2e/boot.spec.js:9:1 › if the app cannot start, the screen speaks the page language and its button reloads (376ms)
+  ✓    2 e2e/collect.spec.js:35:3 › a set interrupted by hidden offers no file, even once the page is back (1.4s)
+  ✓    3 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.2s)
+  ✓    4 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (228ms)
+  ✓    5 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (715ms)
+  ✓    6 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (732ms)
+  ✓    7 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (239ms)
+  ✓    8 e2e/collect.spec.js:86:1 › the collector offers the 181 exercises the app counts, by their names in both languages (192ms)
   -    9 e2e/core-app.spec.js:23:3 › bicep_curl
   -   10 e2e/core-app.spec.js:23:3 › lateral_raise
   -   11 e2e/core-app.spec.js:23:3 › lat_pulldown
@@ -24,20 +24,20 @@ Running 104 tests using 1 worker
   -   21 e2e/decode-clips.spec.js:135:5 › Step 1: Determinism › determinism lat_pulldown
   -   22 e2e/decode-clips.spec.js:135:5 › Step 1: Determinism › determinism lateral_raise
   -   23 e2e/decode-clips.spec.js:135:5 › Step 1: Determinism › determinism overhead_press
-  ✓   24 e2e/offline.spec.js:17:1 › app loads and shows the choice of lift (1.6s)
-  ✓   25 e2e/offline.spec.js:22:1 › service worker registers successfully (1.8s)
-  ✓   26 e2e/offline.spec.js:42:1 › app loads offline after service worker precache (5.1s)
-  ✓   27 e2e/shared/exercises.tests.js:15:3 › Chromium › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta (755ms)
-  ✓   28 e2e/shared/exercises.tests.js:29:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches (504ms)
-  ✓   29 e2e/shared/exercises.tests.js:40:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide (644ms)
-  ✓   30 e2e/shared/exercises.tests.js:54:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label (2.3s)
-  ✓   31 e2e/shared/exercises.tests.js:64:3 › Chromium › the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines (1.4s)
-  ✓   32 e2e/shared/exercises.tests.js:78:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included (641ms)
-  ✓   33 e2e/shared/exercises.tests.js:88:3 › Chromium › the French search finds exercises by their muscles in French (693ms)
+  ✓   24 e2e/offline.spec.js:17:1 › app loads and shows the choice of lift (1.7s)
+  ✓   25 e2e/offline.spec.js:22:1 › service worker registers successfully (1.7s)
+  ✓   26 e2e/offline.spec.js:42:1 › app loads offline after service worker precache (4.9s)
+  ✓   27 e2e/shared/exercises.tests.js:15:3 › Chromium › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta (557ms)
+  ✓   28 e2e/shared/exercises.tests.js:29:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches (453ms)
+  ✓   29 e2e/shared/exercises.tests.js:40:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide (634ms)
+  ✓   30 e2e/shared/exercises.tests.js:54:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label (661ms)
+  ✓   31 e2e/shared/exercises.tests.js:64:3 › Chromium › the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines (1.3s)
+  ✓   32 e2e/shared/exercises.tests.js:78:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included (2.2s)
+  ✓   33 e2e/shared/exercises.tests.js:88:3 › Chromium › the French search finds exercises by their muscles in French (740ms)
   ✓   34 e2e/shared/exercises.tests.js:96:3 › Chromium › if the list cannot load, the nine cards still show (1.8s)
-  ✓   35 e2e/shared/exercises.tests.js:106:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key (502ms)
-  ✓   36 e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in French, no name takes more than two lines (639ms)
-  ✓   37 e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in English, no name takes more than two lines (470ms)
+  ✓   35 e2e/shared/exercises.tests.js:106:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key (480ms)
+  ✓   36 e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in French, no name takes more than two lines (418ms)
+  ✓   37 e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in English, no name takes more than two lines (416ms)
   -   38 e2e/shared/exercises.tests.js:15:3 › WebKit, iPhone profile › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta
   -   39 e2e/shared/exercises.tests.js:29:3 › WebKit, iPhone profile › the search finds an exercise by its French or English name, and says when none matches
   -   40 e2e/shared/exercises.tests.js:40:3 › WebKit, iPhone profile › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide
@@ -56,23 +56,23 @@ Running 104 tests using 1 worker
   -   53 e2e/history.spec.js:71:5 › the next screen still loading › keeps the current screen until it is ready (no-preference)
   -   54 e2e/history.spec.js:100:3 › the history at 375 px › leaves no word alone and nothing overlapping
   -   55 e2e/history.spec.js:128:3 › the next screen failing to load › leads to the error screen
-  ✓   56 e2e/interrupted.spec.js:24:5 › interrupted by hidden (en) (742ms)
-  ✓   57 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (en) (702ms)
-  ✓   58 e2e/interrupted.spec.js:24:5 › interrupted by hidden (fr) (623ms)
-  ✓   59 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (fr) (730ms)
-  ✓   60 e2e/shared/navigation-race.tests.js:9:3 › Chromium › a navigation in the frame before a card's transition updates wins over it (873ms)
-  ✓   61 e2e/shared/navigation-race.tests.js:32:5 › Chromium › with Reduce Motion, where a screen already loaded changes at once › a tap made after the browser moved, before React rendered the move, does not undo it (617ms)
-  ✓   62 e2e/shared/navigation-race.tests.js:47:3 › Chromium › a navigation announced but not yet rendered also wins over a card's held transition (812ms)
-  ✓   63 e2e/shared/navigation-race.tests.js:67:3 › Chromium › back then forward while a card waits for its screen's code cancels the card (2.6s)
+  ✓   56 e2e/interrupted.spec.js:24:5 › interrupted by hidden (en) (679ms)
+  ✓   57 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (en) (620ms)
+  ✓   58 e2e/interrupted.spec.js:24:5 › interrupted by hidden (fr) (652ms)
+  ✓   59 e2e/interrupted.spec.js:24:5 › interrupted by pagehide (fr) (638ms)
+  ✓   60 e2e/shared/navigation-race.tests.js:9:3 › Chromium › a navigation in the frame before a card's transition updates wins over it (962ms)
+  ✓   61 e2e/shared/navigation-race.tests.js:32:5 › Chromium › with Reduce Motion, where a screen already loaded changes at once › a tap made after the browser moved, before React rendered the move, does not undo it (641ms)
+  ✓   62 e2e/shared/navigation-race.tests.js:47:3 › Chromium › a navigation announced but not yet rendered also wins over a card's held transition (907ms)
+  ✓   63 e2e/shared/navigation-race.tests.js:67:3 › Chromium › back then forward while a card waits for its screen's code cancels the card (2.5s)
   -   64 e2e/shared/navigation-race.tests.js:9:3 › WebKit, iPhone profile › a navigation in the frame before a card's transition updates wins over it
   -   65 e2e/shared/navigation-race.tests.js:32:5 › WebKit, iPhone profile › with Reduce Motion, where a screen already loaded changes at once › a tap made after the browser moved, before React rendered the move, does not undo it
   -   66 e2e/shared/navigation-race.tests.js:47:3 › WebKit, iPhone profile › a navigation announced but not yet rendered also wins over a card's held transition
   -   67 e2e/shared/navigation-race.tests.js:67:3 › WebKit, iPhone profile › back then forward while a card waits for its screen's code cancels the card
   ✓   68 e2e/shared/report.tests.js:34:3 › Chromium › with nothing filled in, the sheet names no client and no coach, and shows no notes (1.7s)
   ✓   69 e2e/shared/report.tests.js:43:3 › Chromium › the sheet shows exactly the answers given, and a second tap clears an answer (1.9s)
-  ✓   70 e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px (1.8s)
-  ✓   71 e2e/shared/report.tests.js:92:3 › Chromium › a partner's name typed for one answer is not kept for another (1.8s)
-  ✓   72 e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does (1.7s)
+  ✓   70 e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px (869ms)
+  ✓   71 e2e/shared/report.tests.js:92:3 › Chromium › a partner's name typed for one answer is not kept for another (1.7s)
+  ✓   72 e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does (1.6s)
   -   73 e2e/shared/report.tests.js:34:3 › WebKit, iPhone profile › with nothing filled in, the sheet names no client and no coach, and shows no notes
   -   74 e2e/shared/report.tests.js:43:3 › WebKit, iPhone profile › the sheet shows exactly the answers given, and a second tap clears an answer
   -   75 e2e/shared/report.tests.js:64:3 › WebKit, iPhone profile › in French, the form and the sheet say the same, and the screen holds together at 375 px
@@ -80,31 +80,31 @@ Running 104 tests using 1 worker
   -   77 e2e/shared/report.tests.js:102:3 › WebKit, iPhone profile › the note under the title claims only what the form does
   ✓   78 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (en) (1.8s)
   ✓   79 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (fr) (1.8s)
-  ✓   80 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (fr, returning) (2.0s)
+  ✓   80 e2e/small-screens.spec.js:40:3 › a 4.7-inch iPhone in an app's browser shows the whole first card above the bar (fr, returning) (1.9s)
   ✓   81 e2e/small-screens.spec.js:48:1 › on every phone size the first card clears a floating browser bar and keeps its height (8.8s)
   ✓   82 e2e/small-screens.spec.js:57:1 › with ?perf=1 the instrument reads out the screen the page is given (1.0s)
   ✓   83 e2e/smoothness.spec.js:15:1 › only the press dips a lift card, never :active (1.4s)
   ✓   84 e2e/smoothness.spec.js:34:1 › in a scrolling list the press waits 80 ms, and a scroll cancels it (2.5s)
-  ✓   85 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.3s)
+  ✓   85 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
   ✓   86 e2e/smoothness.spec.js:89:1 › opening the choice makes only the figures near the view; a swipe brings the next ones (1.3s)
   ✓   87 e2e/smoothness.spec.js:112:1 › the guide figure stops drawing once scrolled out of view, and starts again (2.9s)
-  ✓   88 e2e/smoothness.spec.js:130:1 › the scan line of the filming screen moves by translation, never by top (639ms)
-  ✓   89 e2e/smoothness.spec.js:143:1 › no WebGL context is made before the first frame (426ms)
-  ✓   90 e2e/smoothness.spec.js:155:1 › the next screens load in a pause, never while a finger moves (5.2s)
-  ✓   91 e2e/shared/tactility.tests.js:7:3 › Chromium › rail, card and transition (5.4s)
+  ✓   88 e2e/smoothness.spec.js:130:1 › the scan line of the filming screen moves by translation, never by top (534ms)
+  ✓   89 e2e/smoothness.spec.js:143:1 › no WebGL context is made before the first frame (264ms)
+  ✓   90 e2e/smoothness.spec.js:155:1 › the next screens load in a pause, never while a finger moves (5.1s)
+  ✓   91 e2e/shared/tactility.tests.js:7:3 › Chromium › rail, card and transition (6.2s)
   ✓   92 e2e/shared/tactility.tests.js:75:5 › Chromium › a vertical drag that starts on a card scrolls a short screen (2.1s)
-  ✓   93 e2e/shared/tactility.tests.js:96:5 › Chromium › the ?perf=1 instrument shows frames per second and the element touched, and sends nothing (1.9s)
-  ✓   94 e2e/shared/tactility.tests.js:126:5 › Chromium › the instrument speaks French, follows the phone language and uses no em dash (1.2s)
-  ✓   95 e2e/shared/tactility.tests.js:148:3 › Chromium › the Enter button keeps its size, weight and colour (256ms)
-  ✓   96 e2e/shared/tactility.tests.js:156:5 › Chromium › a card press waits 80 ms and a rail scroll cancels it, leaving other presses alone (2.1s)
+  ✓   93 e2e/shared/tactility.tests.js:96:5 › Chromium › the ?perf=1 instrument shows frames per second and the element touched, and sends nothing (1.8s)
+  ✓   94 e2e/shared/tactility.tests.js:126:5 › Chromium › the instrument speaks French, follows the phone language and uses no em dash (1.1s)
+  ✓   95 e2e/shared/tactility.tests.js:148:3 › Chromium › the Enter button keeps its size, weight and colour (254ms)
+  ✓   96 e2e/shared/tactility.tests.js:156:5 › Chromium › a card press waits 80 ms and a rail scroll cancels it, leaving other presses alone (2.2s)
   -   97 e2e/shared/tactility.tests.js:7:3 › WebKit, iPhone profile › rail, card and transition
   -   98 e2e/shared/tactility.tests.js:148:3 › WebKit, iPhone profile › the Enter button keeps its size, weight and colour
   -   99 e2e/shared/tactility.tests.js:195:5 › WebKit, iPhone profile › open in WebKit: a vertical drag that starts on a card scrolls a short screen
   -  100 e2e/shared/tactility.tests.js:199:5 › WebKit, iPhone profile › the ?perf=1 instrument shows frames per second and the element tapped (Playwright tap), and sends nothing
   -  101 e2e/shared/tactility.tests.js:222:7 › WebKit, iPhone profile › on a French phone › the instrument speaks French, follows the phone language and uses no em dash (Playwright tap)
   -  102 e2e/shared/tactility.tests.js:238:5 › WebKit, iPhone profile › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not
-  ✓  103 e2e/tiers.spec.js:14:3 › tiers on the cards, the filming screen and the guide (en) (1.9s)
-  ✓  104 e2e/tiers.spec.js:14:3 › tiers on the cards, the filming screen and the guide (fr) (1.7s)
+  ✓  103 e2e/tiers.spec.js:14:3 › tiers on the cards, the filming screen and the guide (en) (1.8s)
+  ✓  104 e2e/tiers.spec.js:14:3 › tiers on the cards, the filming screen and the guide (fr) (1.8s)
 
   48 skipped
   56 passed (1.7m)

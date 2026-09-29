@@ -12,33 +12,11 @@ import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel } from './lift-meta';
-import { liftDefinition, JOINT_POINTS } from '../../lib/counting/core';
+import { liftDefinition } from '../../lib/counting/core';
+import { refusal } from './refusal';
 import './Result.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-// The three landmarks the counting core measures for each lift (JOINT_POINTS in core.ts), by side.
-const HIPS = new Set([23, 24]);
-const coreIndices = (lift, side) => JOINT_POINTS[liftDefinition(lift)?.joint || 'elbow'][side];
-
-// Why a set was refused, read from the same joints the core uses rather than assumed.
-function refusal(result, lift) {
-  const frames = result.imageLandmarks || [];
-  const posed = frames.filter(Boolean);
-  if (!frames.length || posed.length < frames.length / 2) return { cause: 'nobody' };
-  // A both-sides set is refused for the worse of its two sides.
-  const arms = result.arm === 'both' ? ['left', 'right'] : [result.arm === 'left' ? 'left' : 'right'];
-  let i = -1, missing = -1;
-  for (const k of arms.flatMap(a => coreIndices(lift, a))) {
-    const n = posed.filter(f => f[k].visibility < 0.5).length;
-    if (n > missing) { missing = n; i = k; }
-  }
-  if (missing <= posed.length / 2) return { cause: 'unclear' };
-  const hidden = posed.filter(f => f[i].visibility < 0.5);
-  const outside = hidden.filter(f => f[i].x < 0 || f[i].x > 1 || f[i].y < 0 || f[i].y > 1).length > hidden.length / 2;
-  const xs = posed.map(f => f[i].x).sort((a, b) => a - b);
-  return { cause: outside ? 'outside' : 'hidden', hips: HIPS.has(i), exitLeft: xs[xs.length >> 1] < 0.5 };
-}
-
 // The user's own body at the top of the first rep, faint behind the number.
 function ghostSource(result, lift) {
   const rep = result.reps?.[0], frames = result.imageLandmarks, ts = result.timestamps;
@@ -149,7 +127,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   }, [covered]);
 
   const liftName = exerciseName(lift, lang);
-  const limb = limbLabel(lift, result.arm === 'both' ? 'both' : result.arm === 'left' ? 'left' : 'right', fr), armLabel = limb.text, e = limb.feminine ? 'e' : '';
+  // A refused set speaks of the limbs that were out of sight (refusal.js); a counted one, of the limbs it counted.
+  const why = result.refused ? refusal(result, lift) : null;
+  const limb = limbLabel(lift, why ? why.side : result.arm === 'both' ? 'both' : result.arm === 'left' ? 'left' : 'right', fr), armLabel = limb.text, e = limb.feminine ? 'e' : '';
   const many = !!limb.plural, ee = limb.feminine ? 'es' : 's';
   const legs = liftDefinition(lift)?.joint === 'knee';
   const seconds = Math.round(result.metadata?.duration || 0);
@@ -251,7 +231,6 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError });
 
   if (result.refused) {
-    const why = refusal(result, lift);
     const text = why.cause === 'nobody'
       ? (fr ? 'Nous ne vous avons pas trouvé dans la vidéo.' : 'We could not find you in the video.')
       : why.cause === 'unclear'

@@ -28,5 +28,11 @@ Step 2 changes src/lib/counting, so it keeps the full method (PLAN.md, METHOD, t
 - outputs/26 to 29: David's changes to the list (181 exercises; Beta-only tags and the line under the title; no name over two lines at 375 px), tests before and after.
 - src/lib/__tests__/coreAnalysis.test.js and liftTiers.test.js pinned the offer to the nine lifts of LIFT TIERS; they now check step 2's rule (the 181, the nine among them, none without a joint), by David's decision of 29 September.
 
+## The verifier's findings (commit "Step 2, verifier's findings")
+- outputs/32, 33: src/components/experience/__tests__/refusal.test.js before (the old refusal named both legs when one was hidden: 2 failed) and after (5 passed).
+- outputs/34: the result screen of exercises without a card, rendered by harness/results.mjs from harness/result-harness.jsx (a fixed set, 8 reps, 26 s): names, tiers, limbs, and the refusal sentences with one leg hidden.
+- outputs/35, 36: the tests written for review 04 (a side lost as the core loses it, when any of its landmarks is hidden; one hip of a both-sides set is its side, not "your hips"), before and after.
+- Unverified, since they need a real video: the analysis screen (Watch) and the replay (Replay) for an exercise without a card. Their code takes the name from exercise-info.js and the joint from liftDefinition, as the result does.
+
 ## Open
 - Review 01, risk: five of the six both-sides patterns are filmed from the side, where the far limb is hidden; the core then counts the near side's reps only, with confidence 0. No real clip of a both-sides guide exercise exists to measure it.
