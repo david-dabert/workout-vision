@@ -9,10 +9,11 @@ import '@fontsource/geist/600.css';
 import '@fontsource/geist-mono/400.css';
 import './Entry.css';
 
-// The approved prototype's three lines, unchanged in both languages.
+// The approved prototype's three lines, unchanged in both languages. The last, the way to the
+// example (Demo.jsx), awaits David's approval (test/real-phone/swarm/copy-B.md).
 const COPY = {
-  fr: ['Votre corps est\u00A0un\u00A0temple.', 'Il est ici observé avec soin.', 'Rien ne quitte votre téléphone.', 'Entrer', 'Afficher l’entrée sans attendre', 'Version de test'],
-  en: ['Your body is a\u00A0temple.', 'Here it is observed with care.', 'Nothing leaves your phone.', 'Enter', 'Show the entry now', 'Test version'],
+  fr: ['Votre corps est\u00A0un\u00A0temple.', 'Il est ici observé avec soin.', 'Rien ne quitte votre téléphone.', 'Entrer', 'Afficher l’entrée sans attendre', 'Version de test', 'Voir un exemple'],
+  en: ['Your body is a\u00A0temple.', 'Here it is observed with care.', 'Nothing leaves your phone.', 'Enter', 'Show the entry now', 'Test version', 'See an example'],
 };
 
 export function shouldShowEntry() {
@@ -27,6 +28,9 @@ export default function Entry({ onEnter }) {
   const brand = useRef(null), copy = useRef(null);
   const [phase, setPhase] = useState('');
   const [skipped, setSkipped] = useState(false);
+  // The example's screen, loaded at the tap and shown only once its code is in.
+  const [Demo, setDemo] = useState(null);
+  const demoBtn = useRef(null), demoLoading = useRef(false);
   const reduced = useRef(matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   useEffect(() => {
@@ -45,6 +49,19 @@ export default function Entry({ onEnter }) {
     return () => { cancelled = true; clearTimeout(fontTimer.current); clearTimeout(leaveTimer.current); scene.current?.dispose(); };
   }, []);
 
+  function openDemo() {
+    if (demoLoading.current) return;
+    demoLoading.current = true;
+    import('./Demo').then(m => setDemo(() => m.default), err => {
+      // As a screen whose code cannot load: the error screen and its Reload, never a dead tap.
+      setDemo(() => () => { throw err; });
+    }).finally(() => { demoLoading.current = false; });
+  }
+  function closeDemo() {
+    setDemo(null);
+    requestAnimationFrame(() => demoBtn.current?.focus({ preventScroll: true }));
+  }
+
   function enter() {
     if (leaving.current) return;
     leaving.current = true;
@@ -62,7 +79,7 @@ export default function Entry({ onEnter }) {
   return <div className="entry-experience wv-experience">
     <canvas ref={canvas} className="entry-stage" aria-hidden="true" />
     <div className="vignette" aria-hidden="true" />
-    <section className={`screen entry is-active ${phase} ${skipped ? 'skip' : ''}`} aria-label="Workout Vision">
+    <section className={`screen entry is-active ${phase} ${skipped ? 'skip' : ''}${Demo ? ' demo-open' : ''}`} aria-label="Workout Vision" inert={Demo ? true : undefined}>
       <button className="entry-skip" type="button" aria-label={text[4]} onClick={() => { scene.current?.skip(); setSkipped(true); }} />
       <p className="brand" ref={brand}>Workout Vision</p>
       <div className="entry-copy" ref={copy}>
@@ -72,8 +89,10 @@ export default function Entry({ onEnter }) {
         <button type="button" className="enter tactile" aria-label={text[3]} onClick={enter}>
           <span>{text[3]}</span>
         </button>
+        <button type="button" className="entry-demo" ref={demoBtn} onClick={openDemo}>{text[6]}</button>
         <p className="entry-test">{text[5]}</p>
       </div>
     </section>
+    {Demo && <Demo onClose={closeDemo} onStart={enter} />}
   </div>;
 }
