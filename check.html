@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Count check</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee; padding: 1rem; max-width: 520px; margin: 0 auto; }
+    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    p.note { font-size: 0.85rem; color: #999; margin-bottom: 0.75rem; }
+    #verdict { margin: 0.75rem 0 1rem; padding: 0.75rem; border-radius: 10px; background: #222; font-weight: 600; }
+    #verdict.ok { background: #14532d; }
+    #verdict.bad { background: #7f1d1d; }
+    .clip { border: 1px solid #333; border-radius: 10px; padding: 0.75rem; margin-bottom: 0.75rem; }
+    .clip h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .clip .want { font-size: 0.85rem; color: #aaa; }
+    .clip button { margin-top: 0.5rem; width: 100%; padding: 0.7rem; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-size: 0.95rem; font-weight: 600; }
+    .clip button:disabled { opacity: 0.4; }
+    .clip .out { margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.45; white-space: pre-line; }
+    .clip.ok { border-color: #16a34a; }
+    .clip.bad { border-color: #dc2626; }
+    #version { font-size: 0.75rem; color: #666; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Count check</h1>
+  <p class="note">Pick each of David's five labelled videos from the library. Each is counted by the live code of this app, on this phone, and compared with the count its committed landmarks give. Nothing is uploaded.</p>
+  <p class="note">No release that touches analysis goes out unless every row reads "as before". Keep the screen on while a video is analysed.</p>
+  <div id="verdict">0 of 5 checked.</div>
+  <div id="clips"></div>
+  <p id="version"></p>
+  <script type="module" src="/src/check-main.js"></script>
+</body>
+</html>

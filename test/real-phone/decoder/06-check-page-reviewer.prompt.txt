@@ -1,0 +1,1 @@
+Goal: on David's iPhone, a check page counts his five labelled videos, picked from the library, with the live analysis code of the app, and compares each count with the count their committed landmarks give, showing the samples read and the decoder, so that no release touching analysis ships unless every row is as before.

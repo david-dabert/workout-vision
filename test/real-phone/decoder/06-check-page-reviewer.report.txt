@@ -1,0 +1,13 @@
+Reviewer, check page, 29 September. Three defects; the 7 new tests passed and could see none of them.
+1. The check ignored the app's refusal: bench_press_7_angle is refused by summarizeCount (129 of 331 angles visible)
+   yet the page read "As before. Counted 3 · before 3". A release changing refusal would pass every row.
+2. The summary kept an old pass after the same row failed again (interrupted, worker timeout): "5 of 5 as before."
+   in green over a red row.
+3. The new strings are English only; collect.html is English only too; David decides.
+No defect: fresh file size per run; double tap; background handling and cleanup; partial reads flagged, including
+too many samples; wake lock; samples and decoder as unreadSamples; baseline counts and sizes match the committed
+landmarks; no new host, nothing uploaded; no em dash; build entry correct.
+Fixes: 1. the baseline records refused (bench press true, the four others false), tied by a test to summarizeCount;
+rowVerdict fails a change of refusal either way (test failed first); the row shows "Refused (the app shows no
+number)". 2. a new run of a row forgets its last verdict before it starts. 3. left English, as the collector, for
+David's decision.

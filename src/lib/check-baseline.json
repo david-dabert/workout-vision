@@ -1,0 +1,50 @@
+{
+  "note": "David's five labelled clips (test/real-phone/landmarks): label, file size, and the count the live core gives on their committed landmarks, and whether the app refuses the set (summarizeCount). check-baseline.test.ts keeps the counts equal to the core's.",
+  "clips": [
+    {
+      "lift": "bicep_curl",
+      "label": 7,
+      "view": "side",
+      "fileSize": 71735378,
+      "before": 7,
+      "file": "bicep_curl_7_side_mufhf3wy.json.gz",
+      "refused": false
+    },
+    {
+      "lift": "lateral_raise",
+      "label": 10,
+      "view": "front",
+      "fileSize": 93100828,
+      "before": 10,
+      "file": "lateral_raise_10_front_mufhhbun.json.gz",
+      "refused": false
+    },
+    {
+      "lift": "lat_pulldown",
+      "label": 10,
+      "view": "front",
+      "fileSize": 37013204,
+      "before": 10,
+      "file": "lat_pulldown_10_front_mufhlh4o.json.gz",
+      "refused": false
+    },
+    {
+      "lift": "overhead_press",
+      "label": 10,
+      "view": "front",
+      "fileSize": 78374114,
+      "before": 9,
+      "file": "overhead_press_10_front_mufhjkku.json.gz",
+      "refused": false
+    },
+    {
+      "lift": "bench_press",
+      "label": 7,
+      "view": "angle",
+      "fileSize": 68482222,
+      "before": 3,
+      "file": "bench_press_7_angle_mufhcy60.json.gz",
+      "refused": true
+    }
+  ]
+}

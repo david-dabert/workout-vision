@@ -45,6 +45,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, 'index.html'),
         collect: resolve(__dirname, 'collect.html'),
+        check: resolve(__dirname, 'check.html'),
       },
       output: {
         manualChunks(id) {
