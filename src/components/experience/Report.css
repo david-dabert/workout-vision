@@ -35,7 +35,7 @@
   box-shadow: 0 50px 80px -40px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04);
   display: flex; flex-direction: column; gap: 12px;
 }
-.wv-experience .sh-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-ash); }
+.wv-experience .sh-top { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: normal; color: var(--paper-ink); }
 .wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); overflow-wrap: anywhere; }
 .wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
@@ -45,9 +45,11 @@
 .wv-experience .sh-nl b { font-weight: 500; color: var(--paper-ink); font-size: 13px; }
 .wv-experience .sh-line { margin: 0; font-size: 12px; color: var(--paper-ash); }
 .wv-experience .sh-table { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; table-layout: fixed; }
-/* Fixed columns, so the PDF can set the same table: Rep 8%, Tempo 32%, Range/Peak/Mean 20% each. */
-.wv-experience .sh-table th:first-child { width: 8%; }
+/* Fixed columns, so the PDF can set the same table: Rep 11%, Tempo 32%, Range 21%, Peak and Mean 18% each. */
+.wv-experience .sh-table th:first-child { width: 11%; }
 .wv-experience .sh-table th:nth-child(2) { width: 32%; }
+.wv-experience .sh-table th:nth-child(3) { width: 21%; }
+.wv-experience .sh-table th:nth-child(4), .wv-experience .sh-table th:nth-child(5) { width: 18%; }
 .wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--paper-rule); }
 .wv-experience .sh-table td { padding: 5px 4px 5px 0; border-bottom: 1px solid #F0EADF; font-family: var(--mono); }
 .wv-experience .sh-notes em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }

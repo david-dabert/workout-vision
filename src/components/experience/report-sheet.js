@@ -109,16 +109,16 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     return [String(i + 1), tempoStr(t), range, String(Math.round(r.peakSpeed || 0)), String(Math.round(r.meanSpeed || 0))];
   });
 
-  // Summary lines
-  let summary = '';
+  // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
+  const summary = [];
   if (measures) {
-    summary = (fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut);
+    summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
     const c = measures.speedChange;
     if (c !== null) {
       const signed = c < 0 ? `${MINUS}${-c}` : c > 0 ? `+${c}` : '0';
-      summary += fr
-        ? ` · Vitesse concentrique${colon}${signed}${NBSP}% du début à la fin`
-        : ` · Concentric speed${colon}${signed}% from start to end`;
+      summary.push(fr
+        ? `Vitesse concentrique${colon}${signed}${NBSP}% du début à la fin`
+        : `Concentric speed${colon}${signed}% from start to end`);
     }
 
     // Set tempo: average of each phase across whole reps.
@@ -131,7 +131,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       });
       const n = wholeReps.length;
       avg.lowering /= n; avg.bottom /= n; avg.lifting /= n; avg.top /= n;
-      summary += ` · Tempo${colon}${tempoStr(avg)}`;
+      summary.push(`Tempo${colon}${tempoStr(avg)}`);
     }
 
     // Duration change: average of last two minus average of first two.
@@ -141,9 +141,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       const lastAvg = (dur(wholeReps[wholeReps.length - 2]) + dur(wholeReps[wholeReps.length - 1])) / 2;
       const diff = lastAvg - firstAvg;
       const sign = diff < -0.05 ? MINUS : diff > 0.05 ? '+' : '';
-      summary += fr
-        ? ` · ${fr ? 'Durée' : 'Duration'}${colon}${sign}${decimal(Math.abs(diff), fr)}${NBSP}s du début à la fin`
-        : ` · Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`;
+      summary.push(fr
+        ? `Durée${colon}${sign}${decimal(Math.abs(diff), fr)}${NBSP}s du début à la fin`
+        : `Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`);
     }
 
     // Previous set comparison.
@@ -154,16 +154,17 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
         const prevAvgRange = Math.round(prevWhole.reduce((s, r) => s + r.romDegrees, 0) / prevWhole.length);
         const prevAvgDur = prevWhole.reduce((s, r) => s + (r.endTime - r.startTime), 0) / prevWhole.length;
-        summary += fr
-          ? ` · Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`
-          : ` · Set of ${day}${colon}${previousSet.count}${NBSP}reps, avg range ${prevAvgRange}°, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`;
+        summary.push(fr
+          ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`
+          : `Set of ${day}${colon}${previousSet.count}${NBSP}reps, avg range ${prevAvgRange}°, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`);
       }
     }
   }
 
   return {
     fr,
-    brand: 'Workout Vision',
+    // The app is named once, discreetly, at the foot (David, 29 September): no brand at the top.
+    brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
     // Only what the user filled in (step 1, 29 September 2026): no coach is assumed.
@@ -186,11 +187,10 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim(),
+    // Each report a coach sends is how the app reaches people who do not have it: one discreet line.
     foot: source === 'manual'
-      ? (fr ? 'Saisie manuelle sur le téléphone. Version de test. Aucun score de forme.' : 'Entered manually on the phone. Test version. No form score.')
-      : fr
-      ? 'Comptage automatique sur le téléphone. Version de test. Aucun score de forme.'
-      : 'Counted automatically on the phone. Test version. No form score.',
+      ? (fr ? 'Saisi avec Workout Vision' : 'Entered with Workout Vision')
+      : (fr ? 'Analysé avec Workout Vision' : 'Analysed with Workout Vision'),
   };
 }
 

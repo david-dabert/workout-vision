@@ -56,8 +56,11 @@ for (const lang of ['fr', 'en']) {
     await page.getByRole('button', { name: lang === 'fr' ? /Vos séries/ : /Your sets/ }).click();
     await page.locator('.hist-btn').click();
     await page.locator('.hist-detail .btn-line').click();
-    await expect(page.locator('.sh-foot')).toContainText(lang === 'fr' ? 'Saisie manuelle' : 'Entered manually');
-    await expect(page.locator('.sh-foot')).not.toContainText(lang === 'fr' ? 'Comptage automatique' : 'Counted automatically');
+    await expect(page.locator('.sh-foot')).toHaveText(lang === 'fr' ? 'Saisi avec Workout Vision' : 'Entered with Workout Vision');
+    await expect(page.locator('.sh-foot')).not.toContainText(lang === 'fr' ? 'Analysé' : 'Analysed');
+    // The date stays on the right, as on the PDF (review of the one-line report).
+    const top = await page.locator('.sh-top').boundingBox(), date = await page.locator('.sh-top span').last().boundingBox();
+    expect(Math.abs((top.x + top.width) - (date.x + date.width))).toBeLessThan(2);
   });
 }
 

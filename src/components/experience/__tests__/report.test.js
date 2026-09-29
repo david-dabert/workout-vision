@@ -19,7 +19,11 @@ describe('reportSheet', () => {
     expect(s.title).toBe('Rapport de séance');
     expect(s.word).toBe('répétitions');
     expect(s.arm).toBe(`Bras suivi${NBSP}: droit`);
-    expect(s.foot).toBe('Comptage automatique sur le téléphone. Version de test. Aucun score de forme.');
+    // A discreet line, the only mention of the app (David, 29 September): a coach's client reads the coach's report.
+    expect(s.foot).toBe('Analysé avec Workout Vision');
+    expect(s.brand).toBe('');
+    expect(reportSheet({ ...base, source: 'manual' }).foot).toBe('Saisi avec Workout Vision');
+    expect(reportSheet({ ...base, lang: 'en', source: 'manual' }).foot).toBe('Entered with Workout Vision');
     expect(JSON.stringify(s)).not.toContain('…');
   });
 
@@ -204,33 +208,40 @@ describe('rep details', () => {
   it('adds the time under tension and how the concentric speed changed from the first two reps to the last two', () => {
     // Concentric speeds 112.5, 97.8 … 76.4, 68.3 °/s: the last two average 31% below the first two.
     const s = reportSheet({ ...base, reps, first: 'concentric' });
-    expect(s.summary).toContain(`Temps sous tension${NBSP}: 9,5${NBSP}s`);
-    expect(s.summary).toContain(`\u221231${NBSP}%`);
+    expect(s.summary.join('\n')).toContain(`Temps sous tension${NBSP}: 9,5${NBSP}s`);
+    expect(s.summary.join('\n')).toContain(`\u221231${NBSP}%`);
+  });
+
+  it('gives one item per line, as a client who is not a coach reads it (Luc, 29 September)', () => {
+    const prev = { count: 8, reps: Array.from({ length: 8 }, (_, i) => rep(i * 3, 2.0, 92, 0.9, 1.0)), date: new Date(2026, 8, 20) };
+    const lines = reportSheet({ ...base, reps, first: 'concentric', previousSet: prev }).summary;
+    expect(lines.map(l => l.split(`${NBSP}:`)[0])).toEqual(['Temps sous tension', 'Vitesse concentrique', 'Tempo', 'Durée', 'Série du 20 sept.']);
+    for (const l of lines) expect(l).not.toContain(' · ');
   });
 
   it('shows the set tempo as the average of each phase across reps', () => {
     const s = reportSheet({ ...base, reps, first: 'concentric' });
-    expect(s.summary).toContain('Tempo');
+    expect(s.summary.join('\n')).toContain('Tempo');
     // The tempo line has 4 numbers separated by dashes.
-    expect(s.summary).toMatch(/Tempo\s*.*\d.*-.*\d.*-.*\d.*-.*\d/);
+    expect(s.summary.join('\n')).toMatch(/Tempo\s*.*\d.*-.*\d.*-.*\d.*-.*\d/);
   });
 
   it('shows how the rep duration changed from the first two to the last two', () => {
     const s = reportSheet({ ...base, reps, first: 'concentric' });
     // All reps here are 1.9 s, so duration change is 0.
-    expect(s.summary).toMatch(/0,0\s*s/);
+    expect(s.summary.join('\n')).toMatch(/0,0\s*s/);
   });
 
   it('shows the comparison with a previous set when one is provided', () => {
     const prev = { count: 8, reps: Array.from({ length: 8 }, (_, i) => rep(i * 3, 2.0, 92, 0.9, 1.0)), date: new Date(2026, 8, 20) };
     const s = reportSheet({ ...base, reps, first: 'concentric', previousSet: prev });
-    expect(s.summary).toContain('20');
-    expect(s.summary).toContain('8');
+    expect(s.summary.join('\n')).toContain('20');
+    expect(s.summary.join('\n')).toContain('8');
   });
 
   it('omits the previous-set line when no previous set is provided', () => {
     const s = reportSheet({ ...base, reps, first: 'concentric' });
-    expect(s.summary).not.toContain('20 sept');
+    expect(s.summary.join('\n')).not.toContain('20 sept');
   });
 
   it('measures whole reps only, and gives no speed change under four of them', () => {
@@ -243,7 +254,7 @@ describe('rep details', () => {
   it('shows no table and no measures for a set without rep details', () => {
     const s = reportSheet(base);
     expect(s.rows).toEqual([]);
-    expect(s.summary).toBe('');
+    expect(s.summary).toEqual([]);
   });
 
   it('runs a long table onto the next page', async () => {

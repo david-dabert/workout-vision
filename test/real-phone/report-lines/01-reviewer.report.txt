@@ -1,0 +1,13 @@
+Reviewer, one-line report, 29 September. Two defects, three lower-severity points; nothing edited.
+1. e2e/history.spec.js still expected "Saisie manuelle" / "Entered manually" in the foot of a manual set (runs in
+   WebKit only, so skipped on a machine without it); no unit test covered the manual foot. test/real-phone/step3b/
+   report/evidence.mjs (an old step's evidence runner) asserts the old foot too.
+2. With no brand, the date alone in .sh-top (flex, space-between) sat on the left on screen, while the PDF keeps it
+   on the right.
+Lower: the Tempo column cut from 32 % to 29 % no longer fits 13 to 14 character tempos (10 s phases); the CSS comment
+still said 8/32/20; "about 90 %" is 86 % for cubic-bezier(0.4,0,1,1) at 150 ms, and the stage drawing still fades
+linearly; the PDF metadata still named the app (creator).
+No defect: summary lines, keys, gaps; both languages, no em dash; headings apart; reduced motion; no new host.
+Fixes: the manual foot tested in both languages (unit) and in the e2e spec, which also checks the date stays right;
+.sh-top aligns to the end; Tempo back to 32 %, Range 21 % (AMPLITUDE still fits); comment corrected to 86 %; the PDF
+creator removed; the column comment updated. The old step3b evidence runner is left as the record of that step.

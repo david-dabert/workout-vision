@@ -147,7 +147,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       </div>
 
       <article className="sheet" aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
-        <div className="sh-top"><span>{sheet.brand}</span><span>{sheet.date}</span></div>
+        <div className="sh-top">{sheet.brand && <span>{sheet.brand}</span>}<span>{sheet.date}</span></div>
         <h3 className="sh-title">{sheet.title}</h3>
         {sheet.people.length > 0 && <div className="sh-people">
           {sheet.people.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
@@ -162,7 +162,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
           <thead><tr>{sheet.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
           <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
         </table>}
-        {sheet.summary && <p className="sh-line">{sheet.summary}</p>}
+        {sheet.summary.map(line => <p key={line} className="sh-line">{line}</p>)}
         {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
         {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
         <p className="sh-foot">{sheet.foot}</p>

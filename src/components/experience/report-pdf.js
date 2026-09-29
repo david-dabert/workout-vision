@@ -65,7 +65,8 @@ export function reportPdf(sheet) {
     doc.addFileToVFS(font.file, font.data);
     doc.addFont(font.file, FACE[key], 'normal', 'normal', 'Identity-H');
   }
-  doc.setProperties({ title: sheet.title, creator: 'Workout Vision' });
+  // The app is named only in the foot line (David, 29 September), not in the file's properties.
+  doc.setProperties({ title: sheet.title });
   doc.setLanguage(sheet.fr ? 'fr-FR' : 'en-GB');
   const upper = s => s.toLocaleUpperCase(sheet.fr ? 'fr-FR' : 'en-GB');
 
@@ -141,7 +142,7 @@ export function reportPdf(sheet) {
 
   // Brand and date: mono 9.5, tracked 0.2 em, in capitals, on one baseline.
   const track = 9.5 * 0.2, date = upper(sheet.date);
-  write(upper(sheet.brand), MARGIN, y, 'mono', 9.5, 1.5, COLOR.ash, track);
+  if (sheet.brand) write(upper(sheet.brand), MARGIN, y, 'mono', 9.5, 1.5, COLOR.ash, track);
   write(date, MARGIN + COLUMN - width(date, 'mono', 9.5, track), y, 'mono', 9.5, 1.5, COLOR.ash, track);
   y += 9.5 * 1.5 + GAP;
 
@@ -182,13 +183,14 @@ export function reportPdf(sheet) {
   };
   [sheet.corrected, sheet.arm].filter(Boolean).forEach(sheetLine);
 
-  // The reps table: Rep (8%), Tempo (32%), Range (20%), Peak (20%), Mean (20%).
+  // The reps table: Rep (11%), Tempo (32%), Range (21%), Peak (18%), Mean (18%): wide enough that no
+  // heading runs into the next ("RÉP.TEMPO", "AMPLITUDEPIC" on David's report of 29 September).
   // With collapsed borders each row holds half of the 1 px rule above it and
   // below it: the heading row is 6 + 13.5 + 6 + 0.5 high, a rep's row
   // 0.5 + 5 + 17.25 + 5 + 0.5, and the table ends half a rule below its last
   // line. A row that does not fit opens a page, which repeats the heading.
   if (sheet.rows?.length) {
-    const widths = [COLUMN * 0.08, COLUMN * 0.32, COLUMN * 0.20, COLUMN * 0.20, COLUMN * 0.20];
+    const widths = [COLUMN * 0.11, COLUMN * 0.32, COLUMN * 0.21, COLUMN * 0.18, COLUMN * 0.18];
     const colX = k => MARGIN + widths.slice(0, k).reduce((a, b) => a + b, 0);
     const HEAD = 26, ROW = 28.25;
     const hline = (at, color) => { doc.setDrawColor(color); doc.setLineWidth(1); doc.line(MARGIN, at, MARGIN + COLUMN, at); };
@@ -207,7 +209,8 @@ export function reportPdf(sheet) {
     });
     y += 0.5 + GAP;
   }
-  if (sheet.summary) sheetLine(sheet.summary);
+  // One item per line, each its own paragraph (Luc, 29 September).
+  sheet.summary.forEach(sheetLine);
   if (sheet.shortRepNote) sheetLine(sheet.shortRepNote);
 
   // Notes, when the user wrote any, then the foot. The notes label keeps its first line, and the

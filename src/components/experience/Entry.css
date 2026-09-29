@@ -167,7 +167,10 @@ html, body { background: #080706; color-scheme: dark; }
 .wv-experience .screen.is-active [data-reveal] { animation-delay: calc(0.08s + var(--i, 0) * 0.07s); }
 /* Both layers stay above the stage and its vignette while they cross. */
 .wv-current, .wv-leaving { position: relative; z-index: 2; }
-.wv-leaving { opacity: 0; transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+/* The leaving screen starts its fade gently, so it is still about 86 % there 150 ms after the tap while the new
+   screen appears over it: with the prototype's fast-start curve both were near 15 % at that moment and the stage
+   flashed nearly blank (tour, t04-back-to-choice, twice on 29 September). Same 0.5 s. */
+.wv-leaving { opacity: 0; transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1); pointer-events: none; }
 /* After a browser back swipe the screen is simply there: Safari already animated it. */
 .wv-instant .screen.is-active, .wv-instant [data-reveal] { animation: none !important; opacity: 1; }
 /* A report on its way out still takes the taps, so a double tap on Back cannot fall through. */
