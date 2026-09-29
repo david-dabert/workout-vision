@@ -133,7 +133,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       </div>
       <Choice id="fWith" label={fr ? 'Entraînement' : 'Training'} value={context} onChange={v => { setContext(v); setPartner(''); }}
         options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach']]} />
-      {(context === 'friend' || context === 'coach') && <div className="field appear">
+      {(context === 'friend' || context === 'coach') && <div className="field fade-in">
         <label htmlFor="fPartner">{context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
         <input id="fPartner" ref={partnerRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
           placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={partner} onChange={e => setPartner(e.target.value)} onKeyDown={next(notesRef)} />

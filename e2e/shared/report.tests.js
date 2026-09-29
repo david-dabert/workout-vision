@@ -67,6 +67,19 @@ export default function reportTests(test, expect) {
     await expect(page.locator('.report-screen h2.title')).toHaveText('Rapport de séance');
     await page.getByRole('group', { name: 'Entraînement' }).getByRole('button', { name: 'En binôme' }).click();
     await expect(page.locator('label[for="fPartner"]')).toHaveText('Nom du partenaire');
+    // The field that appears must never pass over the level below it (CI run 149): the layout is
+    // checked with its animation held at 20 ms, when it had just begun to show, and at 150 ms.
+    for (const t of [20, 150]) {
+      const faults = await page.evaluate(async ([src, t]) => {
+        const check = eval(`(${src})`);
+        const finite = document.getAnimations().filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime));
+        finite.forEach(a => { a.pause(); a.currentTime = t; });
+        const out = check().filter(f => !f.startsWith('note: '));
+        finite.forEach(a => a.play());
+        return out;
+      }, [layoutFaults.toString(), t]);
+      expect(faults, `at ${t} ms`).toEqual([]);
+    }
     await page.fill('#fPartner', 'Sam');
     await page.getByRole('group', { name: 'Niveau' }).getByRole('button', { name: 'Confirmé' }).click();
     await expect(page.locator('.sh-people > span')).toHaveText(['EntraînementEn binôme', 'PartenaireSam', 'NiveauConfirmé']);

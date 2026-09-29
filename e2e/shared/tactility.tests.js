@@ -235,7 +235,7 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
       });
     });
 
-    test('the press logic, fed synthetic pointer events: 80 ms wait, rail scroll cancels, other presses stay', async ({ page }) => {
+    test('the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not', async ({ page }) => {
       await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'en'); });
       await page.goto('/workout-vision/');
       await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
@@ -244,24 +244,44 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
       const box = await card.boundingBox();
       const at = { clientX: Math.round(box.x + box.width / 2), clientY: Math.round(box.y + 60) };
       const finger = { pointerType: 'touch', isPrimary: true, pointerId: 1, ...at };
+      // Every time is measured inside the page from the pointerdown itself: two separate Playwright
+      // calls leave an unbounded gap that eats the 80 ms (CI run 148, 29 September 2026).
+      const press = (scrollAt, where = '.rail') => page.evaluate(([f, scrollAt, where]) => new Promise(resolve => {
+        const card = document.querySelector('.altar'), scroller = document.querySelector(where);
+        const lit = () => document.querySelectorAll('.rail .is-pressed').length;
+        const t0 = performance.now(), out = {};
+        card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true, ...f }));
+        setTimeout(() => { out.at40 = lit(); }, 40);
+        if (scrollAt != null) {
+          scroller.addEventListener('scroll', () => { out.scrolledAt = performance.now() - t0; }, { once: true });
+          setTimeout(() => { if (where === '.rail') scroller.scrollLeft = 292; else scroller.scrollTop = 100; }, scrollAt);
+        }
+        setTimeout(() => { out.at150 = lit(); resolve(out); }, 150);
+      }), [finger, scrollAt, where]);
       // Held still, the press appears after 80 ms, not before.
-      await card.dispatchEvent('pointerdown', finger);
-      const early = await page.evaluate(() => new Promise(r => setTimeout(() => r(document.querySelectorAll('.rail .is-pressed').length), 40)));
-      await page.waitForTimeout(150);
-      expect(early).toBe(0);
-      expect(await page.locator('.rail .is-pressed').count()).toBe(1);
+      const still = await press(null);
+      expect(still.at40).toBe(0);
+      expect(still.at150).toBe(1);
       await card.dispatchEvent('pointercancel', finger);
       await page.waitForTimeout(50);
       // A second touch: the rail scrolls before the 80 ms are up, and the press never appears.
-      await card.dispatchEvent('pointerdown', finger);
-      await page.evaluate(() => {
-        document.querySelector('.row-link')?.classList.add('is-pressed');
-        return new Promise(r => setTimeout(() => { document.querySelector('.rail').scrollLeft = 292; r(); }, 40));
-      });
-      await page.waitForTimeout(120);
-      expect(await page.locator('.rail .is-pressed').count()).toBe(0); // the scroll cancelled it
-      expect(await page.locator('.row-link.is-pressed').count()).toBe(1); // a press elsewhere stays
+      const scrolled = await press(10);
+      expect(scrolled.scrolledAt).toBeLessThan(80); // the scroll did come first
+      expect(scrolled.at150).toBe(0); // the scroll cancelled it
       await card.dispatchEvent('pointercancel', finger);
+      await page.waitForTimeout(50);
+      // A third: a region that does not hold the card scrolls, and the press still appears.
+      await page.evaluate(() => {
+        const box = Object.assign(document.createElement('div'), { id: 'other-scroller' });
+        box.style.cssText = 'position:fixed;left:0;top:0;width:40px;height:40px;overflow:auto;opacity:0.01';
+        box.innerHTML = '<div style="height:400px"></div>';
+        document.body.appendChild(box);
+      });
+      const elsewhere = await press(10, '#other-scroller');
+      expect(elsewhere.scrolledAt).toBeLessThan(80);
+      expect(elsewhere.at150).toBe(1); // only a scroll that holds the card cancels its press
+      await card.dispatchEvent('pointercancel', finger);
+      await page.evaluate(() => document.getElementById('other-scroller').remove());
     });
   }
 }

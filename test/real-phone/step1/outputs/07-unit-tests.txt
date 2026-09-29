@@ -5,8 +5,8 @@
 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
   - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
-3:59:03 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
-3:59:03 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+4:20:36 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+4:20:36 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
 Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
 [copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
 [copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
@@ -17,7 +17,7 @@ Both esbuild and oxc options were set. oxc options will be used and esbuild opti
 
  Test Files  31 passed (31)
       Tests  787 passed | 4 expected fail (791)
-   Start at  03:59:04
-   Duration  4.43s (transform 2.00s, setup 0ms, import 3.78s, tests 4.06s, environment 3ms)
+   Start at  04:20:36
+   Duration  4.47s (transform 2.62s, setup 0ms, import 4.28s, tests 3.91s, environment 3ms)
 
 test exit 0

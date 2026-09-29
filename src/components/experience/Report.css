@@ -24,6 +24,10 @@
 .wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: 14px; background: var(--basalt); border: 1px solid var(--hair); }
 .wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: 13px; font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
 .wv-experience .report-seg button[aria-pressed="true"] { background: var(--lamp); color: var(--ink); }
+/* The partner's field fades in where it stands: a field that rose into place would pass over the level below it (CI run 149). */
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.wv-experience .fade-in { animation: fade-in 0.4s var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { .wv-experience .fade-in { animation: none; } }
 
 /* Paper sheet */
 .wv-experience .sheet {
