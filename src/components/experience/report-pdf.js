@@ -65,7 +65,7 @@ export function reportPdf(sheet) {
     doc.addFileToVFS(font.file, font.data);
     doc.addFont(font.file, FACE[key], 'normal', 'normal', 'Identity-H');
   }
-  // The app is named only in the foot line (David, 29 September), not in the file's properties.
+  // The report names no app (David, 29 September), not even in the file's properties.
   doc.setProperties({ title: sheet.title });
   doc.setLanguage(sheet.fr ? 'fr-FR' : 'en-GB');
   const upper = s => s.toLocaleUpperCase(sheet.fr ? 'fr-FR' : 'en-GB');
@@ -215,8 +215,8 @@ export function reportPdf(sheet) {
 
   // Notes, when the user wrote any, then the foot. The notes label keeps its first line, and the
   // foot never stands alone on a page: it takes the last two lines of notes with it.
-  const foot = wrapText(sheet.foot, COLUMN, s => width(s, 'sans', 10));
-  const footH = GAP + 1 + 10 + 15 * foot.length;
+  const foot = sheet.foot ? wrapText(sheet.foot, COLUMN, s => width(s, 'sans', 10)) : [];
+  const footH = foot.length ? GAP + 1 + 10 + 15 * foot.length : 0;
   if (sheet.notes) {
     const notes = lines(sheet.notes, 12.5, COLUMN), NL = 12.5 * 1.5;
     const need = i => { const left = notes.lines.length - i; return left <= 2 ? left * NL + footH : NL; };
@@ -229,10 +229,12 @@ export function reportPdf(sheet) {
       y += NL;
     });
   } else if (room() < footH && y > MARGIN) newPage();
-  y += GAP;
-  rule();
-  y += 1 + 10;
-  foot.forEach(line => { write(line, MARGIN, y, 'sans', 10, 1.5, COLOR.ash); y += 15; });
+  if (foot.length) {
+    y += GAP;
+    rule();
+    y += 1 + 10;
+    foot.forEach(line => { write(line, MARGIN, y, 'sans', 10, 1.5, COLOR.ash); y += 15; });
+  }
 
   return doc.output('blob');
 }

@@ -50,14 +50,15 @@ test('saved history remains reachable after a slow IndexedDB open', async ({ pag
 });
 
 for (const lang of ['fr', 'en']) {
-  test(`manual set report identifies manual entry in ${lang}`, async ({ page }) => {
+  test(`manual set report names no app and keeps its date on the right in ${lang}`, async ({ page }) => {
     await savedSet(page, lang);
     await page.reload();
     await page.getByRole('button', { name: lang === 'fr' ? /Vos séries/ : /Your sets/ }).click();
     await page.locator('.hist-btn').click();
     await page.locator('.hist-detail .btn-line').click();
-    await expect(page.locator('.sh-foot')).toHaveText(lang === 'fr' ? 'Saisi avec Workout Vision' : 'Entered with Workout Vision');
-    await expect(page.locator('.sh-foot')).not.toContainText(lang === 'fr' ? 'Analysé' : 'Analysed');
+    // The report names no app (David, 29 September).
+    await expect(page.locator('.sheet')).toBeVisible();
+    await expect(page.locator('.sheet')).not.toContainText('Workout Vision');
     // The date stays on the right, as on the PDF (review of the one-line report).
     const top = await page.locator('.sh-top').boundingBox(), date = await page.locator('.sh-top span').last().boundingBox();
     expect(Math.abs((top.x + top.width) - (date.x + date.width))).toBeLessThan(2);

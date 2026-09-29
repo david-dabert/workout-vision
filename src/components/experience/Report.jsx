@@ -165,7 +165,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         {sheet.summary.map(line => <p key={line} className="sh-line">{line}</p>)}
         {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
         {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
-        <p className="sh-foot">{sheet.foot}</p>
+        {sheet.foot && <p className="sh-foot">{sheet.foot}</p>}
       </article>
 
       <div className="share-bar">

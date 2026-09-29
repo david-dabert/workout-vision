@@ -163,7 +163,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
 
   return {
     fr,
-    // The app is named once, discreetly, at the foot (David, 29 September): no brand at the top.
+    // No brand: the report names no app (David, 29 September).
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
@@ -187,10 +187,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim(),
-    // Each report a coach sends is how the app reaches people who do not have it: one discreet line.
-    foot: source === 'manual'
-      ? (fr ? 'Saisi avec Workout Vision' : 'Entered with Workout Vision')
-      : (fr ? 'Analysé avec Workout Vision' : 'Analysed with Workout Vision'),
+    // The report names no app (David, 29 September: the name is not final, and the tool spreads by being useful).
+    foot: '',
   };
 }
 

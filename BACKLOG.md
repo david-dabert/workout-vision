@@ -11,7 +11,7 @@ several videos a week, and a coach turns them into feedback.
 - The client's name; the coach analyses one video after another, each saved under that client on the phone.
 - One report for the client: every exercise with its count and tempo, and the coach's note, instead of one PDF per
   video. Built from the sets the app already keeps on the phone, not by uploading PDFs back into the app.
-- The report keeps one discreet line, "Analysé avec Workout Vision": each report a coach sends is how the app reaches
-  people who do not have it. Whether coaches would pay to remove it is David's first question to them.
+- The report names no app (David, 29 September): the name is not final, and the tool spreads by being useful to the
+  people and coaches who use it.
 
 Before any code: David shows the one-line report to Luc and to coaches he knows, with this idea (David, 29 September).

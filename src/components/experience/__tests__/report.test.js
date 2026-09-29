@@ -19,11 +19,11 @@ describe('reportSheet', () => {
     expect(s.title).toBe('Rapport de séance');
     expect(s.word).toBe('répétitions');
     expect(s.arm).toBe(`Bras suivi${NBSP}: droit`);
-    // A discreet line, the only mention of the app (David, 29 September): a coach's client reads the coach's report.
-    expect(s.foot).toBe('Analysé avec Workout Vision');
+    // The report names no app (David, 29 September: the name is not final; the tool spreads by being useful).
+    expect(s.foot).toBe('');
     expect(s.brand).toBe('');
-    expect(reportSheet({ ...base, source: 'manual' }).foot).toBe('Saisi avec Workout Vision');
-    expect(reportSheet({ ...base, lang: 'en', source: 'manual' }).foot).toBe('Entered with Workout Vision');
+    expect(reportSheet({ ...base, source: 'manual' }).foot).toBe('');
+    expect(JSON.stringify(reportSheet({ ...base, lang: 'en', source: 'manual' }))).not.toContain('Workout Vision');
     expect(JSON.stringify(s)).not.toContain('…');
   });
 
