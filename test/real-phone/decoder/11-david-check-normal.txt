@@ -1,0 +1,9 @@
+David's run of the check page on his iPhone, preview 1.4.0 (cf773be), normal path, 29 September 2026, as he pasted it:
+Chemin normal : 5 sur 5 contrôlées, 0 comme avant ; pas comme avant : Curl biceps, Hip thrust, Presse à cuisses, Soulevé de terre roumain, Développé couché. Lecture forcée : 0 sur 5 contrôlées, 0 comme avant.
+Curl biceps: Pas comme avant : autre vidéo (son empreinte diffère). Compté 4 · avant 4 · votre compte 5 · 168 échantillons lus sur 168 · décodeur webcodecs
+Hip thrust: Pas comme avant : autre vidéo (son empreinte diffère). Compté 6 · avant 6 · votre compte 6 · 221 échantillons lus sur 221 · décodeur webcodecs
+Presse à cuisses: Pas comme avant : autre vidéo (son empreinte diffère). Compté 12 · avant 12 · votre compte 13 · 445 échantillons lus sur 445 · décodeur webcodecs
+Soulevé de terre roumain: Pas comme avant : autre vidéo (son empreinte diffère). Compté 8 · avant 8 · votre compte 8 · 379 échantillons lus sur 379 · décodeur webcodecs
+Développé couché: Pas comme avant : autre vidéo (son empreinte diffère). Compté 5 · avant 5 · votre compte 7 · 330 échantillons lus sur 330 · décodeur webcodecs
+Reading: every count and every sample count equals the committed read; only the SHA-256 differs (Photos hands the page a re-encoded file).
+The forced playback run was not in the paste (0 of 5).

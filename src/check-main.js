@@ -8,7 +8,6 @@ import { analyzeCoreVideo } from './lib/coreAnalysis';
 import { TARGET_FPS } from './lib/extractionConfig';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { rowVerdict } from './lib/check';
-import { hashVideoContent } from './lib/collector';
 import baseline from './lib/check-baseline.json';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
@@ -25,7 +24,7 @@ const VIEW = { side: fr ? 'de profil' : 'side view', front: fr ? 'de face' : 'fr
 const why = w => !fr ? w : w
   .replace(/^read (\d+) of (.+) samples$/, (_, a, b) => `${a} échantillons lus sur ${b === 'an unknown number of' ? 'un nombre inconnu' : b}`)
   .replace(/^counted (\d+), before (\d+)$/, 'compté $1, avant $2')
-  .replace('another video (its fingerprint differs)', 'autre vidéo (son empreinte diffère)')
+  .replace(/^another video \(([\d.]+) s where the set lasts ([\d.]+) s\)$/, (_, a, b) => `autre vidéo (${a.replace('.', ',')}${NB}s, la série dure ${b.replace('.', ',')}${NB}s)`)
   .replace('refused now, counted before', 'refusée maintenant, comptée avant')
   .replace('counted now, refused before', 'comptée maintenant, refusée avant')
   .replace('no count', 'aucun compte')
@@ -35,7 +34,7 @@ if (fr) {
   document.title = 'Contrôle du comptage';
   document.querySelector('h1').textContent = 'Contrôle du comptage';
   const notes = document.querySelectorAll('p.note');
-  notes[0].textContent = 'Choisissez dans la photothèque chacune des cinq séries du 29 septembre retenues pour le contrôle (curl biceps, hip thrust, presse à cuisses, soulevé de terre roumain, développé couché). Chacune est comptée par le code en ligne de l’app, sur ce téléphone, et comparée au compte que donnent ses repères enregistrés. La vidéo est reconnue par son empreinte. Rien n’est envoyé.';
+  notes[0].textContent = 'Choisissez dans la photothèque chacune des cinq séries du 29 septembre retenues pour le contrôle (curl biceps, hip thrust, presse à cuisses, soulevé de terre roumain, développé couché). Chacune est comptée par le code en ligne de l’app, sur ce téléphone, et comparée au compte que donnent ses repères enregistrés. La vidéo est reconnue par sa durée. Rien n’est envoyé.';
   notes[1].textContent = 'Aucune version qui touche à l’analyse ne sort si les cinq ne sont pas «' + NB + 'comme avant' + NB + '» sur le chemin normal ; le correctif du décodeur demande aussi les cinq «' + NB + 'comme avant' + NB + '» avec la lecture forcée. Gardez l’écran allumé pendant l’analyse.';
   document.querySelector('label.force').lastChild.textContent = ' Forcer la lecture (sans WebCodecs), pour tester le correctif';
 }
@@ -86,17 +85,14 @@ for (const clip of baseline.clips) {
       await whenVisible({ signal: controller.signal });
       unwatch = watchInterruption(controller);
       release = holdScreenAwake();
-      out.textContent = fr ? 'Vérification de la vidéo…' : 'Checking the video…';
-      const sha256 = await hashVideoContent(file);
-      controller.signal.throwIfAborted();
       out.textContent = fr ? `Analyse… 0${NB}%` : 'Analysing… 0%';
       let row;
       try {
         const r = await analyzeCoreVideo(file, clip.lift, { signal: controller.signal, ...(forced ? { path: 'rvfc' } : {}), onProgress: p => { out.textContent = fr ? `Analyse… ${Math.round(p)}${NB}%` : `Analysing… ${Math.round(p)}%`; } });
-        row = { count: r.count, refused: !!r.refused, read: r.timestamps.length, expected: Math.floor(r.metadata.duration * TARGET_FPS), sha256, decoder: r.metadata.method };
+        row = { count: r.count, refused: !!r.refused, read: r.timestamps.length, expected: Math.floor(r.metadata.duration * TARGET_FPS), duration: r.metadata.duration, decoder: r.metadata.method };
       } catch (e) {
         if (e?.name !== 'PartialReadError') throw e;
-        row = { count: null, read: e.read, expected: e.expected, sha256, decoder: e.decoder };
+        row = { count: null, read: e.read, expected: e.expected, decoder: e.decoder };
       }
       const v = rowVerdict(clip, row);
       done[mode].set(clip.lift, v);

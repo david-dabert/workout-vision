@@ -1,5 +1,5 @@
 {
-  "note": "The five sets of 29 September David chose for the check (biceps curl, hip thrust, leg press, Romanian deadlift, bench press), collected on his iPhone (test/real-phone/sets-29sep): his count, the video's SHA-256, and what the live core gives on their landmarks: the count and whether the app refuses the set (summarizeCount). check-baseline.test.ts keeps them equal to the core's.",
+  "note": "The five sets of 29 September David chose for the check (biceps curl, hip thrust, leg press, Romanian deadlift, bench press), collected on his iPhone (test/real-phone/sets-29sep): his count, the video's SHA-256 (recorded, not matched: Photos hands the page another file), the samples and length of the collected read, and what the live core gives on their landmarks: the count and whether the app refuses the set (summarizeCount). check-baseline.test.ts keeps them equal to the core's.",
   "clips": [
     {
       "lift": "bicep_curl",
@@ -8,7 +8,9 @@
       "file": "bicep_curl_5_side_f5e5bdf2.json.gz",
       "sha256": "f5e5bdf22373394105769dfa6782557280a71adc97bb4bf780a4ba42eff54ed2",
       "before": 4,
-      "refused": false
+      "refused": false,
+      "samples": 168,
+      "duration": 11.206667
     },
     {
       "lift": "hip_thrust",
@@ -17,7 +19,9 @@
       "file": "hip_thrust_6_side_cf8c21d7.json.gz",
       "sha256": "cf8c21d7f118740af490bc555d2c2453231f0f5702d5561d9548d8369f854795",
       "before": 6,
-      "refused": false
+      "refused": false,
+      "samples": 221,
+      "duration": 14.774999999999999
     },
     {
       "lift": "leg_press",
@@ -26,7 +30,9 @@
       "file": "leg_press_13_side_1ee0ae47.json.gz",
       "sha256": "1ee0ae476d1eb775ed45ae412528cd3cb3f6b0b1688fff524a70ba586dd496e4",
       "before": 12,
-      "refused": false
+      "refused": false,
+      "samples": 445,
+      "duration": 29.711667
     },
     {
       "lift": "romanian_deadlift",
@@ -35,7 +41,9 @@
       "file": "romanian_deadlift_8_side_b3dc2c9e.json.gz",
       "sha256": "b3dc2c9e7b26125afb5092c1c0de86520dcd87f83ef50b6e9af9264ac9575f0e",
       "before": 8,
-      "refused": false
+      "refused": false,
+      "samples": 379,
+      "duration": 25.331667
     },
     {
       "lift": "bench_press",
@@ -44,7 +52,9 @@
       "file": "bench_press_7_side_24cc4f0b.json.gz",
       "sha256": "24cc4f0b86dce186435a2b34f41cce4cbacfffffd3cb49f62ad7381efbbf3aca",
       "before": 5,
-      "refused": false
+      "refused": false,
+      "samples": 330,
+      "duration": 22.061667
     }
   ]
 }

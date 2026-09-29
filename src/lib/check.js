@@ -3,13 +3,17 @@
 // touches analysis goes out unless every row is as before (David's order, 29 September 2026).
 
 /**
- * A row is as before when the whole video was read, from the same file, refused or not as before, and counted the same.
- * @param {{ before: number, sha256: string, refused?: boolean }} clip
- * @param {{ count: number | null, refused?: boolean | null, read: number, expected: number | null, sha256: string }} row
+ * A row is as before when the whole video was read, from the same set, refused or not as before, and counted the same.
+ * @param {{ before: number, samples: number, duration: number, refused?: boolean }} clip
+ * @param {{ count: number | null, refused?: boolean | null, read: number, expected: number | null, duration?: number | null }} row
  */
-export function rowVerdict(clip, { count, refused = null, read, expected, sha256 }) {
+export function rowVerdict(clip, { count, refused = null, read, expected, duration = null }) {
   const why = [];
-  if (sha256 !== clip.sha256) why.push('another video (its fingerprint differs)');
+  // The same set is known by its length: Photos hands the page a re-encoded file whose fingerprint differs
+  // from the collector's, but whose length reads the same (David's run of 29 September, 5 of 5:
+  // test/real-phone/decoder/11-david-check-normal.txt). Within 0.1 s, so that a reported length a few
+  // milliseconds off, across a sample boundary, is still the same set (review 11). Status: convention.
+  if (Number.isFinite(duration) && Math.abs(duration - clip.duration) > 0.1) why.push(`another video (${duration.toFixed(2)} s where the set lasts ${clip.duration.toFixed(2)} s)`);
   if (!(Number.isFinite(expected) && read === expected)) why.push(`read ${read} of ${expected ?? 'an unknown number of'} samples`);
   // What the app shows: a refused set shows no number, so a change of refusal is a change (review 01).
   if (refused != null && refused !== clip.refused) why.push(refused ? 'refused now, counted before' : 'counted now, refused before');
