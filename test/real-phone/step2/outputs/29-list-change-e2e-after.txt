@@ -1,0 +1,21 @@
+
+Running 16 tests using 1 worker
+
+  ✓   1 e2e/collect.spec.js:35:3 › a set interrupted by hidden offers no file, even once the page is back (1.4s)
+  ✓   2 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.3s)
+  ✓   3 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (252ms)
+  ✓   4 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (737ms)
+  ✓   5 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (737ms)
+  ✓   6 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (213ms)
+  ✓   7 e2e/collect.spec.js:86:1 › the collector offers the 181 exercises the app counts, by their names in both languages (230ms)
+  ✓   8 e2e/shared/exercises.tests.js:15:3 › Chromium › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta (608ms)
+  ✓   9 e2e/shared/exercises.tests.js:29:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches (572ms)
+  ✓  10 e2e/shared/exercises.tests.js:40:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide (772ms)
+  ✓  11 e2e/shared/exercises.tests.js:54:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label (675ms)
+  ✓  12 e2e/shared/exercises.tests.js:64:3 › Chromium › the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines (1.4s)
+  ✓  13 e2e/shared/exercises.tests.js:77:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included (629ms)
+  ✓  14 e2e/shared/exercises.tests.js:87:3 › Chromium › the French search finds exercises by their muscles in French (681ms)
+  ✓  15 e2e/shared/exercises.tests.js:95:3 › Chromium › if the list cannot load, the nine cards still show (1.8s)
+  ✓  16 e2e/shared/exercises.tests.js:105:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key (492ms)
+
+  16 passed (15.5s)

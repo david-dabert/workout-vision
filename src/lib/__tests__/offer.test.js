@@ -5,13 +5,15 @@ import catalogue from '../guide-catalog.json';
 import families from '../counting/guide-families.json';
 import { liftDefinition } from '../counting/core';
 
-// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide, 182 in all; Beta marks the
+// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 181; Beta marks the
 // exercises with evidence and Experimental all the others, so that the label stays true.
 describe('the exercises the app offers', () => {
-  it('are the 182 countable exercises of the guide, the lifts of LIFT TIERS among them, and no other', () => {
+  // David's decision of 29 September: the walking lunge is not offered, since the lifter walks out of a fixed frame.
+  it('are the countable exercises of the guide but the walking lunge, 181, the lifts of LIFT TIERS among them', () => {
     const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
     expect(countable).toHaveLength(182);
-    expect([...OFFERED].sort()).toEqual([...countable].sort());
+    expect([...OFFERED].sort()).toEqual(countable.filter(k => k !== 'walking_lunge').sort());
+    expect(isOffered('walking_lunge')).toBe(false);
     for (const key of Object.keys(TIERS)) expect(isOffered(key), key).toBe(true);
     expect(isOffered('pec_deck')).toBe(false);
     expect(isOffered('bicep_curl_alternating')).toBe(false); // in the core's LIFTS, not in the guide

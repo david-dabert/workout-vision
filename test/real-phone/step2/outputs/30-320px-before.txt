@@ -1,0 +1,40 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in French, no name takes more than two lines (668ms)
+  ✓  2 e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in English, no name takes more than two lines (721ms)
+
+
+  1) e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in French, no name takes more than two lines 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 10
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "lines": 3,
+    +     "name": "Extension de hanche à quatre pattes avec élastique",
+    +   },
+    +   Object {
+    +     "lines": 3,
+    +     "name": "Extension triceps au-dessus de la tête avec haltère",
+    +   },
+    + ]
+
+      125 |       await page.evaluate(() => document.fonts.ready);
+      126 |       const lines = await page.$$eval('.all-exercises .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
+    > 127 |       expect(lines.filter(l => l.lines > 2)).toEqual([]);
+          |                                              ^
+      128 |     });
+      129 |   }
+      130 | }
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:127:46
+
+    Error Context: test-results/exercises-Chromium-at-320--5c7ed-e-takes-more-than-two-lines/error-context.md
+
+  1 failed
+    e2e/shared/exercises.tests.js:122:5 › Chromium › at 320 px, in French, no name takes more than two lines 
+  1 passed (4.4s)

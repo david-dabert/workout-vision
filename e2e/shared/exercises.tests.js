@@ -1,4 +1,4 @@
-// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide, 182 in all, in a searchable list
+// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 181 in all, in a searchable list
 // below the nine cards, each labelled Beta or Experimental; a tap opens its filming screen, which
 // names it, labels it and shows how to film it. Run in Chromium (exercises.spec.js) and in WebKit
 // with the iPhone profile (exercises.webkit.spec.js).
@@ -8,16 +8,18 @@ async function openChoice(page, expect, lang) {
   await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
   await page.goto('/workout-vision/');
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
-  await expect(page.locator('.all-exercises .item')).toHaveCount(182, { timeout: 20000 });
+  await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
-  test('the 182 counted exercises are listed under the nine cards, the four with evidence in Beta', async ({ page }) => {
+  test('the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta', async ({ page }) => {
     await openChoice(page, expect, 'en');
     const rail = await page.locator('.rail').boundingBox(), list = await page.locator('.all-exercises').boundingBox();
     expect(list.y).toBeGreaterThan(rail.y + rail.height);
     await expect(page.locator('.all-exercises .tier-beta')).toHaveCount(4);
-    await expect(page.locator('.all-exercises .tier-experimental')).toHaveCount(178);
+    await expect(page.locator('.all-exercises .item .tag')).toHaveCount(4);
+    await expect(page.locator('.all-exercises .all-note')).toHaveText('Unless marked Beta, these exercises are experimental: we are still learning to count them.');
+    await expect(page.locator('.all-exercises [data-exercise="walking_lunge"]')).toHaveCount(0);
     for (const key of ['lateral_raise', 'bicep_curl', 'lat_pulldown', 'squat']) {
       await expect(page.locator(`.all-exercises [data-exercise="${key}"] .tag`)).toHaveText('Beta');
     }
@@ -39,9 +41,9 @@ export default function exercisesTests(test, expect) {
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     await openChoice(page, expect, 'en');
-    await page.fill('#all-search', 'walking lunge');
-    await page.locator('.all-exercises [data-exercise="walking_lunge"] .item-btn').click();
-    await expect(page.locator('.film-screen h2.title')).toHaveText('Walking Lunge', { timeout: 10000 });
+    await page.fill('#all-search', 'forward lunge');
+    await page.locator('.all-exercises [data-exercise="forward_lunge"] .item-btn').click();
+    await expect(page.locator('.film-screen h2.title')).toHaveText('Forward Lunge', { timeout: 10000 });
     await expect(page.locator('.film-screen .tier')).toHaveText('Experimental: we are still learning this exercise');
     await expect(page.locator('.film-screen .guide-frames img')).toHaveCount(3);
     await expect(page.locator('.film-screen .caption')).toContainText('CC BY-SA 4.0');
@@ -59,9 +61,13 @@ export default function exercisesTests(test, expect) {
     await expect(page.locator('.film-screen .guide-frames')).toHaveCount(0);
   });
 
-  test('the choice screen with its list holds together at 375 px, in French', async ({ page }) => {
+  test('the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await openChoice(page, expect, 'fr');
+    await expect(page.locator('.all-exercises .all-note')).toHaveText('Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.');
+    await page.evaluate(() => document.fonts.ready); // the names' face, not the fallback's
+    const lines = await page.$$eval('.all-exercises .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
+    expect(lines.filter(l => l.lines > 2)).toEqual([]);
     await page.locator('.all-exercises').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
     expect((await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '))).toEqual([]);
@@ -110,4 +116,15 @@ export default function exercisesTests(test, expect) {
     await expect(page.locator('.welcome-l2')).toContainText('développé incliné', { timeout: 10000 });
     await expect(page.locator('.welcome-l2')).not.toContainText('incline_dumbbell_press');
   });
+
+  // Review 03: an iPhone SE, or a mini with Display Zoom, renders the page 320 px wide.
+  for (const lang of ['fr', 'en']) {
+    test(`at 320 px, in ${lang === 'fr' ? 'French' : 'English'}, no name takes more than two lines`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 568 });
+      await openChoice(page, expect, lang);
+      await page.evaluate(() => document.fonts.ready);
+      const lines = await page.$$eval('.all-exercises .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
+      expect(lines.filter(l => l.lines > 2)).toEqual([]);
+    });
+  }
 }

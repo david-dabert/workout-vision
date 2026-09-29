@@ -5,9 +5,9 @@ import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
 import { EQUIPMENT, norm } from './Guide';
 
-// Every exercise the app counts, 182 in all, searchable, under the nine cards (PLAN.md, GROWTH,
-// step 2, David's choice of 29 September). Each carries its label, Beta or Experimental; a tap opens
-// its filming screen. Loaded after the choice, so the catalogue stays out of the first screen.
+// Every exercise the app counts, 181 in all, searchable, under the nine cards (PLAN.md, GROWTH,
+// step 2, David's choices of 29 September). Only the Beta ones carry a tag; one line under the title
+// says the rest are experimental, so the names take the row's width. A tap opens its filming screen. Loaded after the choice, so the catalogue stays out of the first screen.
 const ENTRIES = OFFERED.map(guideExercise).filter(Boolean);
 // The equipment's name never breaks, so no word of it stands alone on the row's last line.
 const keep = s => (s || '').replace(/ /g, '\u00A0');
@@ -31,6 +31,7 @@ export default function ExerciseList({ onChoose }) {
     .sort((a, b) => name(a).localeCompare(name(b), fr ? 'fr' : 'en'));
   return <section className="all-exercises" aria-labelledby="all-exercises-title">
     <h2 id="all-exercises-title" className="all-title">{fr ? 'Tous les exercices comptés' : 'Every exercise we count'}</h2>
+    <p className="all-note">{fr ? 'Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.' : 'Unless marked Beta, these exercises are experimental: we are still learning to count them.'}</p>
     <div className="search"><label className="sr" htmlFor="all-search">{fr ? 'Rechercher un exercice' : 'Search exercises'}</label>
       <input id="all-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={fr ? 'Nom, muscle, matériel…' : 'Name, muscle, equipment…'} /></div>
     <p className="list-head" role="status">{list.length} / {ENTRIES.length} {fr ? 'exercices' : 'exercises'}</p>
@@ -38,7 +39,7 @@ export default function ExerciseList({ onChoose }) {
       <button className="item-btn press" onClick={() => onChoose(e.key)}>
         <span className="thumb"><img src={e.frames[0]} loading="lazy" width="56" height="56" alt="" /></span>
         <span><span className="item-name">{name(e)}</span><span className="item-sub">{fr ? e.name : e.fr} · {keep(fr ? EQUIPMENT[e.equipment] : e.equipment)}</span></span>
-        <span className={`tag tier-tag tier-${tierOf(e.key)}`}>{tierTag(tierOf(e.key), fr)}</span>
+        {tierOf(e.key) === 'beta' && <span className="tag tier-tag tier-beta">{tierTag('beta', fr)}</span>}
       </button>
     </li>)}</ul>
     {!list.length && <p className="empty">{fr ? 'Aucun exercice trouvé.' : 'No exercises found.'}</p>}

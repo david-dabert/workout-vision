@@ -6,13 +6,13 @@ function visibleFrame() {
 }
 describe('Step 3 analysis boundary', () => {
   // 28 September: David moved bench press, then overhead press, to Experimental. See PLAN.md, "Lift tiers".
-  // Step 2 (David's decision, 29 September 2026): the 182 countable exercises of the guide are offered,
+  // Step 2 (David's decisions, 29 September 2026): the countable exercises of the guide but the walking lunge, 181, are offered,
   // the nine lifts of LIFT TIERS among them; Automatic, an exercise without a joint and a core-only
   // lift still are not.
   it('does not allow Automatic, an exercise the guide cannot count, or a lift the guide does not hold', async () => {
-    expect(APPROVED_LIFTS).toHaveLength(182);
+    expect(APPROVED_LIFTS).toHaveLength(181);
     for (const lift of ['bench_press', 'bicep_curl', 'hip_thrust', 'lat_pulldown', 'lateral_raise', 'leg_press', 'overhead_press', 'romanian_deadlift', 'squat']) expect(APPROVED_LIFTS, lift).toContain(lift);
-    for (const lift of ['__auto__', 'triceps_pushdown', 'pec_deck', 'bicep_curl_alternating']) {
+    for (const lift of ['__auto__', 'triceps_pushdown', 'pec_deck', 'bicep_curl_alternating', 'walking_lunge']) {
       await expect(analyzeCoreVideo(null, lift)).rejects.toThrow('Choose an approved lift');
     }
   });

@@ -85,24 +85,24 @@ dist/assets/Film-Dp5a9T_a.css                                       2.82 kB │ 
 dist/assets/Report-BEOvZxSW.css                                     5.08 kB │ gzip:   1.45 kB
 dist/assets/Guide-BVrY01-N.css                                      5.37 kB │ gzip:   1.53 kB
 dist/assets/CoreUpload-DD_AYKfq.css                                11.21 kB │ gzip:   2.76 kB
-dist/assets/index-C8S4sQho.css                                    105.58 kB │ gzip:  19.67 kB
-dist/assets/offer-C2W91uXL.js                                       0.21 kB │ gzip:   0.18 kB
+dist/assets/index-APXP-8u5.css                                    105.94 kB │ gzip:  19.75 kB
+dist/assets/offer-CGBohu4V.js                                       0.26 kB │ gzip:   0.21 kB
 dist/assets/exerciseGuide-BVIzW_Mx.js                               0.57 kB │ gzip:   0.37 kB
-dist/assets/ExerciseList-BAy9Yhrb.js                                3.08 kB │ gzip:   1.57 kB
-dist/assets/Film-Cjuh-DQe.js                                        5.19 kB │ gzip:   2.02 kB
-dist/assets/History-Cir_cZQu.js                                     5.79 kB │ gzip:   2.50 kB
-dist/assets/collect-DowxGx9-.js                                     6.15 kB │ gzip:   2.88 kB
-dist/assets/Guide-Cdtsg5dB.js                                       7.36 kB │ gzip:   3.15 kB
+dist/assets/ExerciseList-CXObUczZ.js                                3.32 kB │ gzip:   1.68 kB
+dist/assets/Film-Bp2oRqM1.js                                        5.19 kB │ gzip:   2.02 kB
+dist/assets/History-CV0Kil4L.js                                     5.79 kB │ gzip:   2.50 kB
+dist/assets/collect-DtbJZe5R.js                                     6.15 kB │ gzip:   2.88 kB
+dist/assets/Guide-C5eQ5YAy.js                                       7.36 kB │ gzip:   3.16 kB
 dist/assets/interruption-BIR5b-eU.js                                8.20 kB │ gzip:   3.43 kB
 dist/assets/liftTiers-BHDGVcsT.js                                   8.80 kB │ gzip:   2.12 kB
-dist/assets/Report-DuCJgLOn.js                                     13.00 kB │ gzip:   5.48 kB
+dist/assets/Report-DN4s7Mhe.js                                     13.00 kB │ gzip:   5.48 kB
 dist/assets/purify.es-BYftNTi7.js                                  29.40 kB │ gzip:  11.31 kB
 dist/assets/localforage-PdTnf9Ao.js                                29.67 kB │ gzip:   9.66 kB
-dist/assets/CoreUpload-Bum96uC0.js                                 39.87 kB │ gzip:  14.73 kB
-dist/assets/exercise-info-IECQbCaE.js                              45.90 kB │ gzip:   6.35 kB
+dist/assets/CoreUpload-CmumYNXi.js                                 39.87 kB │ gzip:  14.73 kB
+dist/assets/exercise-info-UHryWsw4.js                              45.90 kB │ gzip:   6.35 kB
 dist/assets/guide-catalog-CU45ChfJ.js                              74.55 kB │ gzip:  12.44 kB
 dist/assets/i18n-bODm5fAR.js                                       83.63 kB │ gzip:  28.84 kB
-dist/assets/index-BE5lIfdF.js                                      95.45 kB │ gzip:  38.75 kB
+dist/assets/index-Cz_F4ZAt.js                                      95.45 kB │ gzip:  38.75 kB
 dist/assets/fr-CKvoBbcP.js                                        109.69 kB │ gzip:  37.11 kB
 dist/assets/web-demuxer-weuWD7o4.js                               112.56 kB │ gzip:  43.51 kB
 dist/assets/index.es-CxKRLoR6.js                                  150.88 kB │ gzip:  51.63 kB
@@ -114,6 +114,6 @@ dist/assets/report-pdf-wlNFKgxH.js                                535.00 kB │ 
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 4.61s
-[inject-sw-precache] Injected 31 assets into SW (cache: wv-vee368fae) — all assertions passed
+✓ built in 5.15s
+[inject-sw-precache] Injected 31 assets into SW (cache: wv-v51a3e47f) — all assertions passed
 build exit 0

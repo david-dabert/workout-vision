@@ -52,4 +52,10 @@
 /* Every counted exercise, under the cards (step 2): the guide's search and rows. */
 .wv-experience .all-exercises { margin-top: 28px; }
 .wv-experience .all-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.05; color: var(--bone); }
+.wv-experience .all-note { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: var(--ash); text-wrap: pretty; }
 .wv-experience .all-exercises .search { margin-top: 14px; }
+/* Without a tag, a row's name takes the width the tag held (David's choice, 29 September). */
+.wv-experience .all-exercises .item-btn { grid-template-columns: 56px minmax(0, 1fr); }
+.wv-experience .all-exercises .item-btn:has(.tag) { grid-template-columns: 56px minmax(0, 1fr) auto; }
+/* The longest French names keep to two lines down to 320 px (an iPhone SE, or a mini with Display Zoom). */
+.wv-experience .all-exercises .item-name { font-size: clamp(20px, 6.2vw, 23px); }

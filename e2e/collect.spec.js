@@ -83,10 +83,11 @@ test('the page says it is for David\'s own sets, and where a set of anyone else 
 
 // Step 2 (PLAN.md, GROWTH): the collector offers the same exercises as the app, so that a set of any
 // of them can be collected.
-test('the collector offers the 182 exercises the app counts, by their names in both languages', async ({ page }) => {
+test('the collector offers the 181 exercises the app counts, by their names in both languages', async ({ page }) => {
   await open(page);
-  await expect(page.locator('#lift option')).toHaveCount(182);
-  await expect(page.locator('#lift option[value="walking_lunge"]')).toHaveText('Walking Lunge / Fente marchée');
+  await expect(page.locator('#lift option')).toHaveCount(181);
+  await expect(page.locator('#lift option[value="forward_lunge"]')).toHaveText('Forward Lunge / Fente avant');
+  await expect(page.locator('#lift option[value="walking_lunge"]')).toHaveCount(0);
   await expect(page.locator('#lift option[value="lateral_raise"]')).toHaveCount(1);
   await expect(page.locator('#lift option[value="pec_deck"]')).toHaveCount(0);
 });

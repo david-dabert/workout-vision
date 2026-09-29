@@ -1,0 +1,268 @@
+
+Running 16 tests using 1 worker
+
+  ✓   1 e2e/collect.spec.js:35:3 › a set interrupted by hidden offers no file, even once the page is back (1.4s)
+  ✓   2 e2e/collect.spec.js:35:3 › a set interrupted by pagehide offers no file, even once the page is back (1.3s)
+  ✓   3 e2e/collect.spec.js:50:1 › the exercise, the count and the view are locked while a set is processed (243ms)
+  ✓   4 e2e/collect.spec.js:62:3 › a count of 7.5 is refused, not cut to a whole number of reps (733ms)
+  ✓   5 e2e/collect.spec.js:62:3 › a count of 100 is refused, not cut to a whole number of reps (738ms)
+  ✓   6 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (216ms)
+  ✘   7 e2e/collect.spec.js:86:1 › the collector offers the 181 exercises the app counts, by their names in both languages (5.2s)
+  ✘   8 e2e/shared/exercises.tests.js:15:3 › Chromium › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta (20.5s)
+  ✘   9 e2e/shared/exercises.tests.js:29:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches (20.3s)
+  ✘  10 e2e/shared/exercises.tests.js:40:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide (20.4s)
+  ✘  11 e2e/shared/exercises.tests.js:54:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label (20.4s)
+  ✘  12 e2e/shared/exercises.tests.js:64:3 › Chromium › the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines (20.5s)
+  ✘  13 e2e/shared/exercises.tests.js:77:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included (20.4s)
+  ✘  14 e2e/shared/exercises.tests.js:87:3 › Chromium › the French search finds exercises by their muscles in French (20.4s)
+  ✓  15 e2e/shared/exercises.tests.js:95:3 › Chromium › if the list cannot load, the nine cards still show (1.9s)
+  ✓  16 e2e/shared/exercises.tests.js:105:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key (437ms)
+
+
+  1) e2e/collect.spec.js:86:1 › the collector offers the 181 exercises the app counts, by their names in both languages 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#lift option')
+    Expected: 181
+    Received: 182
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#lift option') with timeout 5000ms
+      - waiting for locator('#lift option')
+        14 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+      86 | test('the collector offers the 181 exercises the app counts, by their names in both languages', async ({ page }) => {
+      87 |   await open(page);
+    > 88 |   await expect(page.locator('#lift option')).toHaveCount(181);
+         |                                              ^
+      89 |   await expect(page.locator('#lift option[value="forward_lunge"]')).toHaveText('Forward Lunge / Fente avant');
+      90 |   await expect(page.locator('#lift option[value="walking_lunge"]')).toHaveCount(0);
+      91 |   await expect(page.locator('#lift option[value="lateral_raise"]')).toHaveCount(1);
+        at /home/user/workout-vision/e2e/collect.spec.js:88:46
+
+    Error Context: test-results/collect-the-collector-offe-32f73-eir-names-in-both-languages/error-context.md
+
+  2) e2e/shared/exercises.tests.js:15:3 › Chromium › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        - locator resolved to 0 elements
+        - unexpected value "0"
+        42 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:16:5
+
+    Error Context: test-results/exercises-Chromium-the-181-08bcc-h-evidence-carry-a-tag-Beta/error-context.md
+
+  3) e2e/shared/exercises.tests.js:29:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        4 × locator resolved to 0 elements
+          - unexpected value "0"
+        39 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:30:5
+
+    Error Context: test-results/exercises-Chromium-the-sea-0b3b1--and-says-when-none-matches/error-context.md
+
+  4) e2e/shared/exercises.tests.js:40:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        2 × locator resolved to 0 elements
+          - unexpected value "0"
+        41 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:43:5
+
+    Error Context: test-results/exercises-Chromium-a-tap-o-21742-ed-and-drawn-from-the-guide/error-context.md
+
+  5) e2e/shared/exercises.tests.js:54:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        2 × locator resolved to 0 elements
+          - unexpected value "0"
+        41 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:55:5
+
+    Error Context: test-results/exercises-Chromium-a-card--48e0a-s-figure-and-its-Beta-label/error-context.md
+
+  6) e2e/shared/exercises.tests.js:64:3 › Chromium › the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        2 × locator resolved to 0 elements
+          - unexpected value "0"
+        41 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:66:5
+
+    Error Context: test-results/exercises-Chromium-the-cho-a1894-e-takes-more-than-two-lines/error-context.md
+
+  7) e2e/shared/exercises.tests.js:77:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        - locator resolved to 0 elements
+        - unexpected value "0"
+        42 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:78:5
+
+    Error Context: test-results/exercises-Chromium-an-exer-5e6cd-e-front-whole-body-included/error-context.md
+
+  8) e2e/shared/exercises.tests.js:87:3 › Chromium › the French search finds exercises by their muscles in French 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.all-exercises .item')
+    Expected: 181
+    Received: 182
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.all-exercises .item') with timeout 20000ms
+      - waiting for locator('.all-exercises .item')
+        4 × locator resolved to 0 elements
+          - unexpected value "0"
+        39 × locator resolved to 182 elements
+           - unexpected value "182"
+
+
+       9 |   await page.goto('/workout-vision/');
+      10 |   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+    > 11 |   await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+         |                                                      ^
+      12 | }
+      13 |
+      14 | export default function exercisesTests(test, expect) {
+        at openChoice (/home/user/workout-vision/e2e/shared/exercises.tests.js:11:54)
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:88:5
+
+    Error Context: test-results/exercises-Chromium-the-Fre-54f2d--by-their-muscles-in-French/error-context.md
+
+  8 failed
+    e2e/collect.spec.js:86:1 › the collector offers the 181 exercises the app counts, by their names in both languages 
+    e2e/shared/exercises.tests.js:15:3 › Chromium › the 181 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta 
+    e2e/shared/exercises.tests.js:29:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches 
+    e2e/shared/exercises.tests.js:40:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide 
+    e2e/shared/exercises.tests.js:54:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label 
+    e2e/shared/exercises.tests.js:64:3 › Chromium › the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines 
+    e2e/shared/exercises.tests.js:77:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included 
+    e2e/shared/exercises.tests.js:87:3 › Chromium › the French search finds exercises by their muscles in French 
+  8 passed (2.7m)
