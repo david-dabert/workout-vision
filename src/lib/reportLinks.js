@@ -17,13 +17,31 @@ export function appVersion() {
 // the line is left for them to fill in. The lines are the user's own words to David.
 const refusedLine = fr => (fr ? 'rien, la série a été refusée' : 'none, the set was refused');
 
-function reportLines({ lift, liftName, counted, userCount, version, fr }) {
+// A set the phone read in part is not counted (coreAnalysis.js, unreadSamples).
+const partialLine = fr => (fr ? 'rien, la vidéo n’a pas été lue en entier' : 'none, the video was not read in full');
+
+// What the phone read: the decoder and the samples read out of the video's (29 September, David's order).
+function readLines({ decoder, read, fr, c }) {
+  const out = [];
+  if (decoder) out.push(`${fr ? 'Décodeur' : 'Decoder'}${c}${decoder}`);
+  if (read && Number.isFinite(read.read)) {
+    // A share only when it is one: more samples than the video holds is a read made twice, not 110 %.
+    const pct = read.expected && read.read <= read.expected ? Math.round((read.read / read.expected) * 100) : null;
+    const of = read.expected ? (fr ? ` sur ${read.expected}` : ` of ${read.expected}`) : '';
+    const share = pct === null ? '' : (fr ? ` (${pct}${NBSP}%)` : ` (${pct}%)`);
+    out.push(fr ? `Vidéo lue${c}${read.read} échantillons${of}${share}` : `Video read${c}${read.read}${of} samples${share}`);
+  }
+  return out;
+}
+
+function reportLines({ lift, liftName, counted, userCount, version, fr, partial = false, decoder = '', read = null }) {
   const c = fr ? `${NBSP}: ` : ': ';
   return [
     `${fr ? 'Exercice' : 'Lift'}${c}${liftName} (${lift})`,
-    `${fr ? 'Compté par l’app' : 'Counted by the app'}${c}${counted == null ? refusedLine(fr) : counted}`,
+    `${fr ? 'Compté par l’app' : 'Counted by the app'}${c}${counted == null ? (partial ? partialLine(fr) : refusedLine(fr)) : counted}`,
     `${fr ? 'Compté par moi' : 'Counted by me'}${c}${userCount ?? ''}`,
     ...(version ? [`${fr ? 'Version de l’app' : 'App version'}${c}${version}`] : []),
+    ...readLines({ decoder, read, fr, c }),
     '',
     fr ? 'Ce message ne contient ni vidéo ni image.' : 'This message contains no video and no image.',
     '',
@@ -36,21 +54,21 @@ function reportLines({ lift, liftName, counted, userCount, version, fr }) {
  * A mailto: link to pr.dabertdavid@gmail.com. Every reserved character is percent-encoded and
  * lines end in CR LF (RFC 6068), so the mail app shows the message as written.
  */
-export function reportEmailUrl({ lift, liftName = lift, counted, userCount, version = '', fr = false }) {
+export function reportEmailUrl({ lift, liftName = lift, counted, userCount, version = '', fr = false, partial = false, decoder = '', read = null }) {
   // Written by the user to David, in the first person (David's copy, 29 September 2026). A refused
   // set has no count of the app's, and the user's is theirs to write.
   const app = counted == null ? (fr ? 'rien' : 'none') : counted, me = userCount ?? (fr ? `${NBSP}?` : '?');
   const subject = fr
     ? `Workout Vision${NBSP}: ${liftName}, l’app ${app}, moi${userCount == null ? me : ` ${me}`}`
     : `Workout Vision: ${liftName}, the app ${app}, me${userCount == null ? me : ` ${me}`}`;
-  const body = reportLines({ lift, liftName, counted, userCount, version, fr }).join('\r\n');
+  const body = reportLines({ lift, liftName, counted, userCount, version, fr, partial, decoder, read }).join('\r\n');
   return `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 /** The same report as a new GitHub issue, in English, for users who have an account. */
-export function reportIssueUrl({ lift, liftName = lift, counted, userCount, version = '' }) {
-  const body = reportLines({ lift, liftName, counted, userCount, version, fr: false }).join('\n');
-  const title = counted == null ? `Count report: ${lift}, set refused` : `Count report: ${lift}, app ${counted}, user ${userCount}`;
+export function reportIssueUrl({ lift, liftName = lift, counted, userCount, version = '', partial = false, decoder = '', read = null }) {
+  const body = reportLines({ lift, liftName, counted, userCount, version, fr: false, partial, decoder, read }).join('\n');
+  const title = counted == null ? `Count report: ${lift}, ${partial ? 'video not read in full' : 'set refused'}` : `Count report: ${lift}, app ${counted}, user ${userCount}`;
   const q = new URLSearchParams({ title, body });
   return `${REPO}/issues/new?${q}`;
 }
@@ -78,10 +96,11 @@ export function challengeShare({ liftName, count, counted = count, fr, url }) {
  * counted one offers the report of its count once it is saved, or when its save failed, so that
  * every result has one (PLAN.md, GROWTH, step 1).
  */
-export function reportFor({ lift, liftName, count, trueN, version, fr, refused = false, step, saveError = '' }) {
-  if (refused) return { lift, liftName, counted: null, userCount: null, version, fr };
+export function reportFor({ lift, liftName, count, trueN, version, fr, refused = false, step, saveError = '', decoder = '', read = null }) {
+  const how = { ...(decoder ? { decoder } : {}), ...(read ? { read } : {}) };
+  if (refused) return { lift, liftName, counted: null, userCount: null, version, fr, ...how };
   if (step !== 'saved' && !saveError) return null;
-  return { lift, liftName, counted: count, userCount: trueN, version, fr };
+  return { lift, liftName, counted: count, userCount: trueN, version, fr, ...how };
 }
 
 /**

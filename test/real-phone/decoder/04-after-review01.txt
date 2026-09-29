@@ -1,0 +1,3 @@
+analysis 0 ms a frame: {"expected":90,"read":90,"duration":6.009833} whole
+analysis 150 ms a frame: {"expected":90,"read":90,"duration":6.0004} whole
+analysis 400 ms a frame: {"expected":90,"read":90,"duration":6.004267} whole

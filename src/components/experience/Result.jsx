@@ -16,6 +16,7 @@ import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVers
 import { limbLabel } from './lift-meta';
 import { liftDefinition } from '../../lib/counting/core';
 import { refusal } from './refusal';
+import { TARGET_FPS } from '../../lib/extractionConfig';
 import './Result.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -91,7 +92,7 @@ function partialLine(read, expected, fr) {
 
 // Shown when the phone read only part of the video: no count, since it would be the count of part
 // of the set (29 September: 181 of 439 samples read, 2 of 10 reps counted).
-export function AnalysisIncomplete({ lift, read, expected, onClose, onRestart, onRefilm }) {
+export function AnalysisIncomplete({ lift, read, expected, decoder, onClose, onRestart, onRefilm }) {
   const { lang } = useT(), fr = lang === 'fr';
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
@@ -99,6 +100,7 @@ export function AnalysisIncomplete({ lift, read, expected, onClose, onRestart, o
       <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title">{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
       <p className="body-text">{partialLine(read, expected, fr)}</p>
+      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected } }} />
       <div className="actions result-actions">
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
@@ -268,7 +270,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       else if (out === 'unavailable') setShareNote(fr ? 'Le partage n’est pas disponible dans ce navigateur.' : 'Sharing is not available in this browser.');
     });
   }
-  const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError });
+  // What the phone read, for the report: the decoder and the samples read out of the video's.
+  const read = { read: result.timestamps?.length ?? null, expected: Number.isFinite(result.metadata?.duration) ? Math.floor(result.metadata.duration * TARGET_FPS) : null };
+  const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError, decoder: result.metadata?.method || '', read });
 
   if (result.refused) {
     const text = why.cause === 'nobody'

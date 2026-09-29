@@ -176,3 +176,32 @@ describe('shareChallenge', () => {
     expect(await shareChallenge(data, { clipboard: { writeText: async () => { throw new Error('denied'); } } })).toBe('unavailable');
   });
 });
+
+// 29 September: the report states the decoder and the share of the video read (David's order).
+describe('the report names the decoder and what was read', () => {
+  const body = url => decodeURIComponent(url.split('&body=')[1]);
+  it('French, a partial read: no count, the decoder and 181 of 439', () => {
+    const b = body(reportEmailUrl({ lift: 'lateral_raise', liftName: 'Élévations latérales', counted: null, partial: true, userCount: null, fr: true, decoder: 'rvfc', read: { read: 181, expected: 439 } }));
+    expect(b).toContain('Compté par l’app : rien, la vidéo n’a pas été lue en entier');
+    expect(b).toContain('Décodeur : rvfc');
+    expect(b).toContain('Vidéo lue : 181 échantillons sur 439 (41 %)');
+  });
+  it('English, a whole read', () => {
+    const b = body(reportEmailUrl({ lift: 'squat', liftName: 'Squat', counted: 8, userCount: 8, fr: false, decoder: 'webcodecs', read: { read: 439, expected: 439 } }));
+    expect(b).toContain('Decoder: webcodecs');
+    expect(b).toContain('Video read: 439 of 439 samples (100%)');
+  });
+});
+
+describe('review 01 of the decoder fix', () => {
+  it('the GitHub title of a partial read does not say the set was refused', () => {
+    const title = new URL(reportIssueUrl({ lift: 'squat', counted: null, userCount: null, partial: true })).searchParams.get('title');
+    expect(title).not.toContain('refused');
+    expect(title).toContain('not read in full');
+  });
+  it('a read with more samples than the video holds gives no share', () => {
+    const b = decodeURIComponent(reportEmailUrl({ lift: 'squat', counted: null, partial: true, userCount: null, fr: true, decoder: 'rvfc après échec de webcodecs', read: { read: 481, expected: 439 } }).split('&body=')[1]);
+    expect(b).toContain('Vidéo lue : 481 échantillons sur 439');
+    expect(b).not.toContain('110');
+  });
+});

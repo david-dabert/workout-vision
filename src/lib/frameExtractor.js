@@ -93,7 +93,7 @@ export async function hashLandmarks(landmarks) {
  * @param {number} [options.startFrame] - Frame index to start from (for resume)
  * @returns {Promise<{width, height, fps, duration, frameCount}>}
  */
-async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
+export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const { signal, startFrame = 0 } = options;
   const url = URL.createObjectURL(file);
   const video = document.createElement('video');
@@ -169,7 +169,10 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
     // iOS HEVC hardware decoder can't sustain 3x on large files -- frames drop
     // and rVFC callbacks fire without new decoded frames, causing stalls.
     // 1.5x is the safe ceiling on iOS; 3x works on desktop Chrome/Firefox.
-    video.playbackRate = IS_IOS ? 1.5 : 3.0;
+    // Since 29 September the video also waits while each frame is analysed, and plays at 1x: faster,
+    // it can run more than one sampling interval between two frame callbacks and lose samples
+    // (test/real-phone/decoder/02-after.txt: every sample read at 1x).
+    video.playbackRate = 1;
 
     let extractedCount = startFrame;
     let nextCaptureTime = startTime;
@@ -247,6 +250,11 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
         if (mediaTime >= nextCaptureTime - 0.001) {
           // Skip duplicate frames (same media time as last capture)
           if (Math.abs(mediaTime - lastCapturedTime) >= 0.01) {
+            // The video waits while the frame is analysed, so a slow phone reads every sample
+            // instead of letting the video run past them (test/real-phone/decoder: 11 of 90 read before
+            // with 150 ms of analysis a frame, 89 of 89 after). Measured in desktop Chromium only.
+            // The frame on screen is this callback's until the task ends, so it is drawn at once.
+            video.pause();
             try {
               ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
 
@@ -289,7 +297,10 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
                 }
               }
 
+              // The watchdog waits for the analysis too: a slow phone is not a stalled video (review 01).
+              clearTimeout(stallTimeout);
               await onFrame(canvas, extractedCount, mediaTime);
+              if (!resolved) resetStallTimeout();
               extractedCount++;
               lastCapturedTime = mediaTime;
 
@@ -305,8 +316,21 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
           nextCaptureTime = (extractedCount) * interval;
         }
 
-        // Register next callback
+        // Register next callback, then let the video run again if it waited.
         video.requestVideoFrameCallback(onVideoFrame);
+        if (!resolved && video.paused && !video.ended) {
+          video.play().catch((err) => {
+            // A pause() of the next sample interrupts this play() with an AbortError: not a failure,
+            // the next sample plays again (review 01). A cancel comes through the signal.
+            if (err?.name === 'AbortError' && !signal?.aborted) return;
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              if (signal) signal.removeEventListener('abort', onAbort);
+              reject(err);
+            }
+          });
+        }
       };
 
       // Handle video ending
@@ -338,6 +362,7 @@ async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, 
       video.requestVideoFrameCallback(onVideoFrame);
       resetStallTimeout(); // Start the stall watchdog
       video.play().catch((err) => {
+        if (err?.name === 'AbortError' && !signal?.aborted) return; // interrupted by the first sample's pause
         if (!resolved) {
           resolved = true;
           cleanup();
@@ -631,15 +656,22 @@ function isHEVC(codec) {
 export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const errors = [];
 
+  // How many samples each path handed on: a path that fails part-way leaves its samples behind, and
+  // the method then names both (review 01 of the decoder fix).
+  let handed = 0;
+  const counted = (canvas, index, timestamp) => { handed++; return onFrame(canvas, index, timestamp); };
+  let before = '';
+
   // Step 1: Try WebCodecs (sequential, deterministic, handles rotation)
   if (typeof VideoDecoder !== 'undefined') {
     try {
-      const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+      const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
       return { ...result, method: 'webcodecs' };
     } catch (err) {
       if (err.name === 'AbortError') throw err;
       console.error('[frameExtractor] WebCodecs failed:', err?.message || String(err));
       errors.push(`WebCodecs: ${err?.message || String(err)}`);
+      before = `webcodecs failed after ${handed} samples (${err?.message || String(err)}), then `;
     }
   } else {
     errors.push('WebCodecs: VideoDecoder API not available');
@@ -648,8 +680,8 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   // Step 2: Try RVFC (playback-based, works on older browsers)
   if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
     try {
-      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
-      return { ...result, method: 'rvfc' };
+      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
+      return { ...result, method: `${before}rvfc` };
     } catch (err) {
       if (err.name === 'AbortError') throw err;
       console.error('[frameExtractor] RVFC failed:', err?.message || String(err));

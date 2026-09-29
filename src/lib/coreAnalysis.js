@@ -30,7 +30,7 @@ export function unreadSamples({ samples, duration, fps, maxFrames }) {
 }
 
 export class PartialReadError extends Error {
-  constructor({ read, expected }) { super(`${read} samples read where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; }
+  constructor({ read, expected, decoder = '' }) { super(`${read} samples read where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; }
 }
 
 export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {} } = {}) {
@@ -76,7 +76,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     }, onProgress, { deterministic: true, signal });
     signal?.throwIfAborted();
     const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
-    if (missed) throw new PartialReadError(missed);
+    if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
