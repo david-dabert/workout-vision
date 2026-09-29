@@ -77,7 +77,7 @@ const LazyFallback = <div className="wv-experience" aria-busy="true" />;
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
-  const [page, setPage] = useHashRouter();
+  const [page, setPage, browserMoves, browserPending] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
   const [videoFile, setVideoFile] = useState(null);
   // The page a View Transition brought in; its screen change needs no fade of its own.
@@ -124,15 +124,20 @@ function AppInner() {
   useLayoutEffect(() => { pageRef.current = page; }, [page]);
   const waiting = useRef(0);
   const go = (next, apply) => {
-    const ticket = ++waiting.current, from = pageRef.current;
+    // A navigation by the browser changes the address at once and is rendered later. Any such move
+    // after the tap, announced or not, even back to the same page, cancels the change still waiting.
+    const ticket = ++waiting.current, from = pageRef.current, moves = browserMoves();
+    // A tap made while the browser's own move is not yet rendered gives way to that move.
+    if (browserPending()) return;
+    const stale = () => ticket !== waiting.current || pageRef.current !== from || browserMoves() !== moves;
     const show = () => {
-      if (ticket !== waiting.current || pageRef.current !== from) return;
+      if (stale()) return;
       // Into the filming screen, the chosen card grows into its frame where the browser has
       // View Transitions (Safari 18, Chrome 111); elsewhere, and under Reduce Motion, the fade.
       if (next === 'film' && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
         // The update runs a frame later: if a tap or the browser moved the page meanwhile, it changes nothing.
         document.startViewTransition(() => {
-          if (ticket !== waiting.current || pageRef.current !== from) return;
+          if (stale()) return;
           flushSync(() => { apply?.(); setTransitionPage(next); setPage(next); });
         });
         return;
