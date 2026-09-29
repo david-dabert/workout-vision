@@ -94,3 +94,24 @@
 .wv-experience .acc-notes section { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
 .wv-experience .acc-notes h3 { margin: 0; }
 .wv-experience .acc-notes p, .wv-experience .acc-notes .acc-lead { font-size: 14px; color: var(--ash); }
+
+/* The opener: one sentence under the lift's name that sums up the set (set-opener.js). Its room is kept
+   while the count rises, so the number does not move when it shows. */
+.wv-experience .res-opener { margin: 6px auto 0; max-width: 34ch; text-align: center; font-size: 14px; line-height: 1.35; color: var(--bone-2); text-wrap: balance; opacity: 0; transition: opacity 0.6s var(--ease); }
+.wv-experience .res-opener.is-in { opacity: 1; }
+/* The opener takes the numeral’s top margin, so the screen grows by its line alone. */
+.wv-experience .res-opener + .numeral { margin-top: 0; }
+
+/* The rest clock: counted up from a tap, readable at arm's length on the bench (RestClock.jsx). */
+.wv-experience .rest-slot { margin-top: 14px; display: flex; flex-direction: column; }
+.wv-experience .rest-clock { padding: 16px 18px 18px; border-radius: 22px; border: 1px solid var(--hair); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.wv-experience .rest-label { color: var(--ash); }
+.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: clamp(56px, 18vw, 76px); line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .rest-stop { margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  .wv-experience .res-opener { transition: none; }
+}
+@media (max-height: 600px) {
+  .wv-experience .res-opener { margin-top: 4px; font-size: 13px; }
+  .wv-experience .rest-time { font-size: 52px; }
+}

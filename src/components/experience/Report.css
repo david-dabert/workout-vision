@@ -37,6 +37,8 @@
 }
 .wv-experience .sh-top { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: normal; color: var(--paper-ink); }
+/* The opener: one sentence that sums up the set, under the title (set-opener.js). */
+.wv-experience .sh-opener { margin: 0; font-size: 13px; line-height: 1.5; color: var(--paper-ink); text-wrap: pretty; }
 .wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); overflow-wrap: anywhere; }
 .wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }

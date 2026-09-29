@@ -150,6 +150,13 @@ export function reportPdf(sheet) {
   write(sheet.title, MARGIN, y, 'serif', 30, 1, COLOR.ink);
   y += 30 + GAP;
 
+  // The opener: sans 13 in ink, as .sh-opener, one sentence under the title.
+  if (sheet.opener) {
+    const block = lines(sheet.opener, 13, COLUMN);
+    block.lines.forEach(line => { drawLine(line, block.raster, MARGIN, y, 13, 1.5, COLOR.ink); y += 13 * 1.5; });
+    y += GAP;
+  }
+
   // What the user filled in about themselves, two to a row, in two columns 8 apart; nothing when
   // nothing was filled in (step 1: no coach is assumed).
   const colW = (COLUMN - 8) / 2;

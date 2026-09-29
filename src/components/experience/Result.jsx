@@ -8,6 +8,8 @@ import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
+import { setOpener } from './set-opener';
+import RestClock from './RestClock';
 import { NOTES } from './set-notes';
 import { decimal } from './report-sheet';
 import { tierLabel } from '../../lib/liftTiers';
@@ -195,6 +197,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
+  // The opener sums the set up in one sentence (set-opener.js): the app's count until the user saves a
+  // correction, then theirs; none on a refused set.
+  const opener = setOpener({ reps, fr, count: step === 'saved' ? trueN : count, counted: count, refused: !!result.refused });
   const marksRef = useRef(null);
   function pick(e) {
     const marks = [...(marksRef.current?.children || [])];
@@ -333,6 +338,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
         <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
       </div>
+      {/* Its room is kept while the count rises, and it shows once the count is reached. */}
+      {opener && <p className={`res-opener${asked ? ' is-in' : ''}`} data-testid="set-opener" aria-hidden={asked ? undefined : true}>{opener}</p>}
       <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (shown === 1 ? 'Rep' : 'Reps')}</p>
       <p className="sr" role="status">{asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
@@ -387,6 +394,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
+      {/* The rest after the set, counted up from a tap (RestClock.jsx). */}
+      {asked && <div className="rest-slot"><RestClock fr={fr} /></div>}
       {report && <ReportCount fr={fr} report={report} />}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
       {count > 0 && asked && <div className="set-account appear" data-testid="set-account">

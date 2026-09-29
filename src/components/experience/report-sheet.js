@@ -1,5 +1,6 @@
 // The words of the session report. The sheet on screen and the PDF both read
 // them from here, so what the visitor sees is what the reader receives.
+import { setOpener } from './set-opener';
 
 const NBSP = '\u00A0';
 const clean = s => (s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
@@ -167,6 +168,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
+    // One sentence that sums up the set, as at the top of the result (set-opener.js); none on an unknown count.
+    opener: setOpener({ reps, fr, count, counted }) || '',
     // Only what the user filled in (step 1, 29 September 2026): no coach is assumed.
     people: people({ fr, name, context, partner, level }),
     count: String(count),
