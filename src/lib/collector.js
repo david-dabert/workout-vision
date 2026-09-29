@@ -43,13 +43,14 @@ export function issueUrl({ lift, count, view, sha256 }) {
  * `extractor` is what extractFramesStreaming returned; it is recorded under `metadata` with the
  * names the committed clips use (test/real-phone/landmarks), so each set says how it was decoded.
  */
-export function setPayload({ worldLandmarks, timestamps, lift, count, view, sha256, frameWidth, frameHeight, version, extractor = {} }) {
+export function setPayload({ worldLandmarks, imageLandmarks, timestamps, lift, count, view, sha256, frameWidth, frameHeight, version, extractor = {} }) {
   return {
     lift,
     count,
     view,
     videoSha256: sha256,
     worldLandmarks,
+    imageLandmarks,
     timestamps,
     frame: { width: frameWidth, height: frameHeight },
     extraction: { fps: TARGET_FPS, maxLongSide: MAX_LONG_SIDE },
@@ -86,4 +87,48 @@ export async function hashVideoContent(file) {
 export async function gzipBlob(jsonString) {
   const stream = new Blob([jsonString]).stream().pipeThrough(new CompressionStream('gzip'));
   return new Response(stream).blob();
+}
+
+/**
+ * The samples of one set, in the order the extractor gives them. When the decoder starts again
+ * from the first frame (extractFramesStreaming falls back from WebCodecs to playback), what came
+ * before is dropped, failures included, so no sample is kept twice. `fail(index)` records a
+ * sample whose pose could not be read, since the playback path swallows that error; a later
+ * successful read of the same index clears it. `posed` counts the samples with a pose. The image
+ * landmarks are kept beside the world landmarks, as the committed clips hold both.
+ */
+export function sampleSet() {
+  let world = [], image = [], timestamps = [], failed = new Set();
+  return {
+    add(index, landmarks, timestamp, imageLandmarks = null) {
+      if (index === 0) {
+        if (world.length) { world = []; image = []; timestamps = []; }
+        failed = new Set();
+      }
+      failed.delete(index);
+      world.push(landmarks);
+      image.push(imageLandmarks);
+      timestamps.push(timestamp);
+    },
+    fail(index) { failed.add(index); },
+    get world() { return world; },
+    get image() { return image; },
+    get timestamps() { return timestamps; },
+    get failed() { return failed.size; },
+    get posed() { return world.filter(w => w != null).length; },
+  };
+}
+
+/**
+ * True only when the samples cover the whole video: the extractor takes floor(duration x fps)
+ * samples (frameExtractor.js, totalPossibleFrames), as the five committed clips show exactly.
+ * A set that ended early, lost a sample, or was cut by the frame cap would carry the whole
+ * set's count over part of it, so it is refused, and so is a set in which no sample has a pose.
+ * Status: convention, from the extractor's own sampling rule; no tolerance is allowed. How many
+ * samples without a pose a set may hold is David's decision (the committed bench_press_7_angle
+ * clip has 151 of 331).
+ */
+export function setIsWhole({ samples, posed = samples, duration, fps, maxFrames, failed }) {
+  const expected = Math.floor(duration * fps);
+  return failed === 0 && posed > 0 && expected > 0 && expected <= maxFrames && samples === expected;
 }

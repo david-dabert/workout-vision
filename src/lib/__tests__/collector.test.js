@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { setFileName, issueUrl, setPayload } from '../collector';
+import { setFileName, issueUrl, setPayload, sampleSet, setIsWhole } from '../collector';
 
 describe('collector', () => {
   describe('setFileName', () => {
@@ -84,10 +84,102 @@ describe('collector', () => {
       });
     });
 
+    it('keeps the image landmarks of each sample, as the committed clips hold them', () => {
+      const image = [[{ x: 0.5, y: 0.4, z: 0, visibility: 0.9 }], null, [{ x: 0.6, y: 0.4, z: 0, visibility: 0.8 }]];
+      const payload = setPayload({ worldLandmarks: landmarks, imageLandmarks: image, timestamps, ...meta });
+      expect(payload.imageLandmarks).toBe(image);
+    });
+
     it('does not include a count from the counter', () => {
       const payload = setPayload({ worldLandmarks: landmarks, timestamps, ...meta });
       expect(payload).not.toHaveProperty('appCount');
       expect(payload).not.toHaveProperty('reps');
+    });
+  });
+
+  // A file carries David's count for the whole video, so its landmarks must cover the whole video
+  // (28 September 2026). The extractor can end early, drop a sample or start again from the first
+  // frame without throwing; none of these may reach a file.
+  describe('sampleSet', () => {
+    it('keeps the samples in order', () => {
+      const set = sampleSet();
+      set.add(0, 'a', 0); set.add(1, 'b', 0.0667);
+      expect(set.world).toEqual(['a', 'b']);
+      expect(set.timestamps).toEqual([0, 0.0667]);
+      expect(set.failed).toBe(0);
+    });
+
+    it('starts again from nothing when the decoder starts again from the first frame', () => {
+      const set = sampleSet();
+      for (const i of [0, 1, 2]) set.add(i, `first${i}`, i / 15);
+      for (const i of [0, 1, 2, 3, 4]) set.add(i, `second${i}`, i / 15);
+      expect(set.world).toEqual(['second0', 'second1', 'second2', 'second3', 'second4']);
+      expect(set.timestamps).toEqual([0, 1 / 15, 2 / 15, 3 / 15, 4 / 15]);
+    });
+
+    it('counts a sample whose pose could not be read', () => {
+      const set = sampleSet();
+      set.add(0, 'a', 0); set.fail(1);
+      expect(set.failed).toBe(1);
+    });
+
+    it('forgets a failure once the same sample is read on a later try', () => {
+      const set = sampleSet();
+      set.add(0, 'a', 0); set.fail(1); set.add(1, 'b', 1 / 15);
+      expect(set.failed).toBe(0);
+    });
+
+    it('forgets a failure before the decoder started again from the first frame', () => {
+      const set = sampleSet();
+      set.fail(0);
+      for (const i of [0, 1, 2, 3, 4]) set.add(i, 'x', i / 15);
+      expect(set.failed).toBe(0);
+    });
+
+    it('keeps the image landmarks beside the world landmarks, sample by sample', () => {
+      const set = sampleSet();
+      set.add(0, 'w0', 0, 'i0'); set.add(1, null, 1 / 15, null);
+      for (const i of [0, 1, 2]) set.add(i, `w${i}`, i / 15, `i${i}`);
+      expect(set.image).toEqual(['i0', 'i1', 'i2']);
+      expect(set.world).toEqual(['w0', 'w1', 'w2']);
+    });
+
+    it('counts the samples with a pose', () => {
+      const set = sampleSet();
+      set.add(0, null, 0); set.add(1, 'b', 1 / 15); set.add(2, null, 2 / 15);
+      expect(set.posed).toBe(1);
+    });
+  });
+
+  describe('setIsWhole', () => {
+    // The extractor samples floor(duration x 15) times; the five committed clips match it exactly
+    // (test/real-phone/landmarks: 331, 341, 609, 439 and 620 samples).
+    it('accepts a set whose samples cover the whole video', () => {
+      expect(setIsWhole({ samples: 341, duration: 22.766666999999998, fps: 15, maxFrames: 10000, failed: 0 })).toBe(true);
+    });
+
+    it('refuses a set that ended early', () => {
+      expect(setIsWhole({ samples: 180, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
+    });
+
+    it('refuses a set missing one sample', () => {
+      expect(setIsWhole({ samples: 608, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
+    });
+
+    it('refuses a set with a sample whose pose could not be read', () => {
+      expect(setIsWhole({ samples: 341, duration: 22.766666999999998, fps: 15, maxFrames: 10000, failed: 1 })).toBe(false);
+    });
+
+    it('refuses a video longer than the samples the extractor may take', () => {
+      expect(setIsWhole({ samples: 100, duration: 10, fps: 15, maxFrames: 100, failed: 0 })).toBe(false);
+    });
+
+    it('refuses a set in which no sample has a pose', () => {
+      expect(setIsWhole({ samples: 341, posed: 0, duration: 22.766666999999998, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
+    });
+
+    it('refuses a set with no duration', () => {
+      expect(setIsWhole({ samples: 0, duration: 0, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
     });
   });
 });
