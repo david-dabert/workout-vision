@@ -1,0 +1,245 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+7:44:19 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+7:44:19 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts (22 tests | 2 failed) 347ms
+     × gives no count for an exercise without a joint, or a key it does not know 71ms
+     × reads the same patterns as guide-families.json, and nothing else 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > gives no count for an exercise without a joint, or a key it does not know
+AssertionError: pec_deck: expected 10 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 10
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts:52:28
+     50|     for (const key of ['pec_deck', 'bicep_curls', '']) {
+     51|       const r = countReps(frames, ts, key);
+     52|       expect(r.count, key).toBe(0);
+       |                            ^
+     53|       expect(r.reps, key).toEqual([]);
+     54|       expect(r.confidence, key).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > reads the same patterns as guide-families.json, and nothing else
+AssertionError: expected {} to deeply equal { …(182) }
+
+- Expected
++ Received
+
+- {
+-   "ab_wheel": "shoulder/low/eccentric",
+-   "archer_push_up": "elbow/high/eccentric/both",
+-   "arnold_press": "elbow/high/eccentric",
+-   "assisted_chin_up": "elbow/high/concentric",
+-   "assisted_dip": "elbow/high/eccentric",
+-   "assisted_pistol_squat": "knee/high/eccentric",
+-   "assisted_pull_up": "elbow/high/concentric",
+-   "back_extension": "hip/low/concentric",
+-   "banded_dead_bug": "hip/low/eccentric/both",
+-   "banded_donkey_kick": "hip/low/concentric",
+-   "banded_face_pull": "elbow/high/concentric",
+-   "banded_frog_pump": "hip/low/concentric",
+-   "banded_glute_bridge": "hip/low/concentric",
+-   "banded_hip_thrust": "hip/low/concentric",
+-   "banded_lat_pulldown": "elbow/high/concentric",
+-   "banded_row": "elbow/high/concentric",
+-   "banded_squat": "knee/high/eccentric",
+-   "banded_standing_hip_abduction": "hip/high/concentric",
+-   "barbell_glute_bridge": "hip/low/concentric",
+-   "barbell_row": "elbow/high/concentric",
+-   "belt_squat": "knee/high/eccentric",
+-   "bench_dip": "elbow/high/eccentric",
+-   "bench_press": "elbow/high/eccentric",
+-   "bicep_curl": "elbow/high/concentric",
+-   "bird_dog": "hip/low/concentric/both",
+-   "bodyweight_squat": "knee/high/eccentric",
+-   "bulgarian_split_squat": "knee/high/eccentric",
+-   "cable_curl": "elbow/high/concentric",
+-   "cable_front_raise": "shoulder/low/concentric",
+-   "cable_lateral_raise": "shoulder/low/concentric",
+-   "cable_pull_through": "hip/high/eccentric",
+-   "cable_standing_hip_abduction": "hip/high/concentric",
+-   "cable_standing_hip_adduction": "hip/low/concentric",
+-   "captains_chair_knee_raise": "hip/high/concentric",
+-   "chair_dip": "elbow/high/eccentric",
+-   "chest_dip": "elbow/high/eccentric",
+-   "chest_supported_row": "elbow/high/concentric",
+-   "chin_up": "elbow/high/concentric",
+-   "close_grip_bench_press": "elbow/high/eccentric",
+-   "close_grip_lat_pulldown": "elbow/high/concentric",
+-   "commando_pull_up": "elbow/high/concentric",
+-   "concentration_curl": "elbow/high/concentric",
+-   "cossack_squat": "knee/high/eccentric",
+-   "curtsy_lunge": "knee/high/eccentric",
+-   "dead_bug": "hip/low/eccentric/both",
+-   "deadlift": "hip/low/concentric",
+-   "decline_bench_press": "elbow/high/eccentric",
+-   "decline_dumbbell_press": "elbow/high/eccentric",
+-   "decline_push_up": "elbow/high/eccentric",
+-   "decline_sit_up": "hip/high/concentric",
+-   "deficit_reverse_lunge": "knee/high/eccentric",
+-   "diamond_push_up": "elbow/high/eccentric",
+-   "dip": "elbow/high/eccentric",
+-   "donkey_kick": "hip/low/concentric",
+-   "doorway_row": "elbow/high/concentric",
+-   "drag_curl": "elbow/high/concentric",
+-   "dumbbell_bench_press": "elbow/high/eccentric",
+-   "dumbbell_bent_over_row": "elbow/high/concentric",
+-   "dumbbell_curtsy_lunge": "knee/high/eccentric",
+-   "dumbbell_glute_bridge": "hip/low/concentric",
+-   "dumbbell_hip_thrust": "hip/low/concentric",
+-   "dumbbell_lateral_lunge": "knee/high/eccentric",
+-   "dumbbell_overhead_tricep_extension": "elbow/low/concentric",
+-   "dumbbell_romanian_deadlift": "hip/high/eccentric",
+-   "dumbbell_skull_crusher": "elbow/high/eccentric",
+-   "dumbbell_sumo_deadlift": "hip/low/concentric",
+-   "dumbbell_sumo_squat": "knee/high/eccentric",
+-   "ez_bar_curl": "elbow/high/concentric",
+-   "face_pull": "elbow/high/concentric",
+-   "feet_elevated_pike_push_up": "elbow/high/eccentric",
+-   "forward_lunge": "knee/high/eccentric",
+-   "frog_pump": "hip/low/concentric",
+-   "front_foot_elevated_split_squat": "knee/high/eccentric",
+-   "front_raise": "shoulder/low/concentric",
+-   "front_squat": "knee/high/eccentric",
+-   "glute_bridge": "hip/low/concentric",
+-   "glute_bridge_march": "hip/high/concentric/both",
+-   "glute_focused_back_extension": "hip/low/concentric",
+-   "goblet_squat": "knee/high/eccentric",
+-   "good_morning": "hip/high/eccentric",
+-   "hack_squat": "knee/high/eccentric",
+-   "hammer_curl": "elbow/high/concentric",
+-   "handstand_push_up": "elbow/high/eccentric",
+-   "hanging_knee_raise": "hip/high/concentric",
+-   "hanging_leg_raise": "hip/high/concentric",
+-   "heel_elevated_goblet_squat": "knee/high/eccentric",
+-   "hip_thrust": "hip/low/concentric",
+-   "incline_bench_press": "elbow/high/eccentric",
+-   "incline_dumbbell_curl": "elbow/high/concentric",
+-   "incline_dumbbell_press": "elbow/high/eccentric",
+-   "incline_push_up": "elbow/high/eccentric",
+-   "inverted_row": "elbow/high/concentric",
+-   "kettlebell_romanian_deadlift": "hip/high/eccentric",
+-   "knee_push_up": "elbow/high/eccentric",
+-   "l_sit_pull_up": "elbow/high/concentric",
+-   "landmine_press": "elbow/low/concentric",
+-   "landmine_romanian_deadlift": "hip/high/eccentric",
+-   "landmine_squat": "knee/high/eccentric",
+-   "lat_pulldown": "elbow/high/concentric",
+-   "lateral_lunge": "knee/high/eccentric",
+-   "lateral_raise": "shoulder/low/concentric",
+-   "leg_curl": "knee/high/concentric",
+-   "leg_extension": "knee/low/concentric",
+-   "leg_press": "knee/high/eccentric",
+-   "lying_leg_curl": "knee/high/concentric",
+-   "lying_leg_raise": "hip/high/concentric",
+-   "machine_chest_press": "elbow/low/concentric",
+-   "machine_lateral_raise": "shoulder/low/concentric",
+-   "machine_row": "elbow/high/concentric",
+-   "machine_shoulder_press": "elbow/high/eccentric",
+-   "meadows_row": "elbow/high/concentric",
+-   "neutral_grip_pull_up": "elbow/high/concentric",
+-   "nordic_hamstring_curl": "knee/low/eccentric",
+-   "one_arm_dumbbell_row": "elbow/high/concentric",
+-   "overhead_press": "elbow/high/eccentric",
+-   "overhead_tricep_extension": "elbow/low/concentric",
+-   "pendlay_row": "elbow/high/concentric",
+-   "pike_push_up": "elbow/high/eccentric",
+-   "pistol_squat": "knee/high/eccentric",
+-   "plate_front_raise": "shoulder/low/concentric",
+-   "preacher_curl": "elbow/high/concentric",
+-   "pull_up": "elbow/high/concentric",
+-   "push_press": "elbow/high/eccentric",
+-   "push_up": "elbow/high/eccentric",
+-   "push_up_shoulder_tap": "elbow/high/eccentric",
+-   "rack_pull": "hip/low/concentric",
+-   "reverse_curl": "elbow/high/concentric",
+-   "reverse_hyperextension": "hip/low/concentric",
+-   "reverse_lunge": "knee/high/eccentric",
+-   "romanian_deadlift": "hip/high/eccentric",
+-   "rope_hammer_curl": "elbow/high/concentric",
+-   "rope_tricep_pushdown": "elbow/low/concentric",
+-   "seated_dumbbell_press": "elbow/high/eccentric",
+-   "seated_knee_tuck": "hip/high/concentric",
+-   "seated_leg_curl": "knee/high/concentric",
+-   "seated_row": "elbow/high/concentric",
+-   "shrimp_squat": "knee/high/eccentric",
+-   "side_lying_hip_abduction": "hip/high/concentric",
+-   "side_lying_leg_raise": "hip/high/concentric",
+-   "single_arm_cable_row": "elbow/high/concentric",
+-   "single_arm_dumbbell_tricep_extension": "elbow/low/concentric",
+-   "single_dumbbell_skullcrusher": "elbow/high/eccentric",
+-   "single_leg_box_squat": "knee/high/eccentric",
+-   "single_leg_glute_bridge": "hip/low/concentric",
+-   "single_leg_romanian_deadlift": "hip/high/eccentric",
+-   "sissy_squat": "knee/high/eccentric",
+-   "skater_squat": "knee/high/eccentric",
+-   "skull_crusher": "elbow/high/eccentric",
+-   "smith_machine_bench_press": "elbow/high/eccentric",
+-   "smith_machine_bulgarian_split_squat": "knee/high/eccentric",
+-   "smith_machine_hip_thrust": "hip/low/concentric",
+-   "smith_machine_reverse_lunge": "knee/high/eccentric",
+-   "smith_machine_romanian_deadlift": "hip/high/eccentric",
+-   "smith_machine_split_squat": "knee/high/eccentric",
+-   "smith_machine_squat": "knee/high/eccentric",
+-   "spider_curl": "elbow/high/concentric",
+-   "split_squat": "knee/high/eccentric",
+-   "squat": "knee/high/eccentric",
+-   "stability_ball_hamstring_curl": "knee/high/concentric",
+-   "standing_dumbbell_press": "elbow/high/eccentric",
+-   "step_down": "knee/high/eccentric",
+-   "step_up": "knee/low/concentric",
+-   "straight_arm_pulldown": "shoulder/high/concentric",
+-   "sumo_deadlift": "hip/low/concentric",
+-   "t_bar_row": "elbow/high/concentric",
+-   "towel_hamstring_curl": "knee/high/concentric",
+-   "towel_pull_up": "elbow/high/concentric",
+-   "towel_row": "elbow/high/concentric",
+-   "trap_bar_deadlift": "hip/low/concentric",
+-   "tricep_kickback": "elbow/low/concentric",
+-   "tricep_pushdown": "elbow/low/concentric",
+-   "upright_row": "shoulder/low/concentric",
+-   "v_up": "hip/high/concentric",
+-   "walking_lunge": "knee/high/eccentric/both",
+-   "wall_handstand_push_up": "elbow/high/eccentric",
+-   "wall_push_up": "elbow/high/eccentric",
+-   "weighted_chin_up": "elbow/high/concentric",
+-   "weighted_dip": "elbow/high/eccentric",
+-   "weighted_pull_up": "elbow/high/concentric",
+-   "weighted_push_up": "elbow/high/eccentric",
+-   "wide_grip_lat_pulldown": "elbow/high/concentric",
+-   "wide_push_up": "elbow/high/eccentric",
+- }
++ {}
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts:64:26
+     62|       if (f.joint) expected[key] = [f.joint, f.rest, f.first, ...(f.bo…
+     63|     }
+     64|     expect(patternsJson).toEqual(expected);
+       |                          ^
+     65|   });
+     66|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 20 passed (22)
+   Start at  07:44:19
+   Duration  896ms (transform 307ms, setup 0ms, import 350ms, tests 347ms, environment 0ms)
+

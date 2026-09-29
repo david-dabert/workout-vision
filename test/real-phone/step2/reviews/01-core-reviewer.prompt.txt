@@ -1,0 +1,1 @@
+The counting core counts every countable exercise of the guide by its pattern in guide-families.json, and counts the lifts already in LIFTS exactly as before.

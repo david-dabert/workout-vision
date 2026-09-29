@@ -1,0 +1,1 @@
+guide-patterns.json: 182 exercises

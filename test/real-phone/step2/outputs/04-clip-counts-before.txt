@@ -1,0 +1,80 @@
+bench_press_7_angle_mufhcy60.json.gz bench_press count=3 arm=right 2.600-8.933:82.58 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz bicep_curl count=3 arm=right 2.600-8.933:82.58 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz bicep_curl_alternating count=5 arm=both 2.600-8.933:82.58 5.933-7.933:143.45 9.133-10.800:111.60 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz dumbbell_row count=3 arm=right 2.600-8.933:82.58 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz hip_thrust count=1 arm=right 12.533-13.867:102.51
+bench_press_7_angle_mufhcy60.json.gz lat_pulldown count=3 arm=right 2.600-8.933:82.58 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz lateral_raise count=4 arm=right 0.000-4.067:100.73 7.467-9.200:74.56 10.667-11.400:91.89 12.133-18.800:118.99
+bench_press_7_angle_mufhcy60.json.gz leg_curl count=2 arm=right 7.467-10.333:81.67 10.667-12.533:46.19
+bench_press_7_angle_mufhcy60.json.gz leg_extension count=2 arm=right 9.867-10.800:44.66 12.200-14.467:49.97
+bench_press_7_angle_mufhcy60.json.gz leg_press count=2 arm=right 7.467-10.333:81.67 10.667-12.533:46.19
+bench_press_7_angle_mufhcy60.json.gz lunge count=2 arm=right 7.467-10.333:81.67 10.667-12.533:46.19
+bench_press_7_angle_mufhcy60.json.gz overhead_press count=3 arm=right 2.600-8.933:82.58 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz romanian_deadlift count=3 arm=right 0.000-2.867:105.89 8.467-13.133:87.79 13.533-14.467:101.60
+bench_press_7_angle_mufhcy60.json.gz seated_row count=3 arm=right 2.600-8.933:82.58 16.133-18.067:64.92 18.400-20.200:55.31
+bench_press_7_angle_mufhcy60.json.gz squat count=2 arm=right 7.467-10.333:81.67 10.667-12.533:46.19
+bench_press_7_angle_mufhcy60.json.gz triceps_pushdown count=3 arm=right 0.000-3.800:84.07 17.733-18.800:51.80 19.867-21.200:52.91
+bicep_curl_7_side_mufhf3wy.json.gz bench_press count=7 arm=left 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.400:102.87 10.067-11.467:100.77 13.333-14.933:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz bicep_curl count=7 arm=left 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.400:102.87 10.067-11.467:100.77 13.333-14.933:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz bicep_curl_alternating count=7 arm=both 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.467:102.87 10.067-11.467:100.77 12.200-16.400:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz dumbbell_row count=7 arm=left 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.400:102.87 10.067-11.467:100.77 13.333-14.933:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz hip_thrust count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz lat_pulldown count=7 arm=left 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.400:102.87 10.067-11.467:100.77 13.333-14.933:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz lateral_raise count=7 arm=left 0.000-1.067:27.73 3.533-5.000:38.40 7.000-8.333:33.49 10.133-11.267:26.55 13.333-14.400:24.52 16.533-17.400:38.97 19.400-20.533:35.23
+bicep_curl_7_side_mufhf3wy.json.gz leg_curl count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz leg_extension count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz leg_press count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz lunge count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz overhead_press count=7 arm=left 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.400:102.87 10.067-11.467:100.77 13.333-14.933:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz romanian_deadlift count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz seated_row count=7 arm=left 0.000-1.133:86.48 3.533-5.000:88.41 6.933-8.400:102.87 10.067-11.467:100.77 13.333-14.933:117.27 16.200-17.867:104.13 19.400-21.067:108.43
+bicep_curl_7_side_mufhf3wy.json.gz squat count=0 arm=left 
+bicep_curl_7_side_mufhf3wy.json.gz triceps_pushdown count=6 arm=left 0.667-3.867:86.46 4.467-7.133:102.40 8.000-10.400:102.26 10.867-13.667:113.92 14.267-16.600:106.22 17.467-19.733:106.90
+lat_pulldown_10_front_mufhlh4o.json.gz bench_press count=10 arm=right 1.933-4.333:52.68 5.467-7.600:48.91 8.600-10.867:54.10 11.933-14.400:52.62 15.468-17.668:52.73 18.935-21.202:52.38 22.535-24.802:52.80 26.135-28.335:53.56 30.002-32.602:51.48 34.868-37.535:49.64
+lat_pulldown_10_front_mufhlh4o.json.gz bicep_curl count=10 arm=right 1.933-4.333:52.68 5.467-7.600:48.91 8.600-10.867:54.10 11.933-14.400:52.62 15.468-17.668:52.73 18.935-21.202:52.38 22.535-24.802:52.80 26.135-28.335:53.56 30.002-32.602:51.48 34.868-37.535:49.64
+lat_pulldown_10_front_mufhlh4o.json.gz bicep_curl_alternating count=10 arm=both 1.867-4.333:72.13 5.467-7.600:66.36 8.600-10.867:71.72 11.933-14.400:68.20 15.468-17.735:66.66 18.935-21.202:65.92 22.535-24.802:66.27 26.135-28.468:62.99 30.002-32.668:63.66 34.868-37.535:59.64
+lat_pulldown_10_front_mufhlh4o.json.gz dumbbell_row count=10 arm=right 1.933-4.333:52.68 5.467-7.600:48.91 8.600-10.867:54.10 11.933-14.400:52.62 15.468-17.668:52.73 18.935-21.202:52.38 22.535-24.802:52.80 26.135-28.335:53.56 30.002-32.602:51.48 34.868-37.535:49.64
+lat_pulldown_10_front_mufhlh4o.json.gz hip_thrust count=0 arm=right 
+lat_pulldown_10_front_mufhlh4o.json.gz lat_pulldown count=10 arm=right 1.933-4.333:52.68 5.467-7.600:48.91 8.600-10.867:54.10 11.933-14.400:52.62 15.468-17.668:52.73 18.935-21.202:52.38 22.535-24.802:52.80 26.135-28.335:53.56 30.002-32.602:51.48 34.868-37.535:49.64
+lat_pulldown_10_front_mufhlh4o.json.gz lateral_raise count=11 arm=right 0.000-2.333:61.50 3.200-5.800:66.73 6.533-8.933:60.44 9.667-12.333:65.62 13.067-15.935:61.55 16.535-19.402:60.15 20.002-23.002:57.56 23.668-26.602:54.98 27.202-30.468:57.12 31.202-35.602:54.82 36.602-39.468:72.33
+lat_pulldown_10_front_mufhlh4o.json.gz leg_curl count=8 arm=right 3.200-5.733:18.10 5.800-6.467:25.83 8.933-9.600:25.17 10.000-12.267:22.97 13.133-16.402:21.76 16.535-23.668:28.36 23.735-26.335:24.56 26.735-27.268:13.08
+lat_pulldown_10_front_mufhlh4o.json.gz leg_extension count=10 arm=right 0.000-2.867:24.18 2.933-4.267:22.75 6.333-6.933:20.39 8.600-9.133:24.05 9.467-10.800:22.94 12.000-12.600:19.04 12.800-13.533:17.06 15.602-17.002:24.81 26.268-27.068:13.00 27.135-27.935:20.88
+lat_pulldown_10_front_mufhlh4o.json.gz leg_press count=8 arm=right 3.200-5.733:18.10 5.800-6.467:25.83 8.933-9.600:25.17 10.000-12.267:22.97 13.133-16.402:21.76 16.535-23.668:28.36 23.735-26.335:24.56 26.735-27.268:13.08
+lat_pulldown_10_front_mufhlh4o.json.gz lunge count=8 arm=right 3.200-5.733:18.10 5.800-6.467:25.83 8.933-9.600:25.17 10.000-12.267:22.97 13.133-16.402:21.76 16.535-23.668:28.36 23.735-26.335:24.56 26.735-27.268:13.08
+lat_pulldown_10_front_mufhlh4o.json.gz overhead_press count=10 arm=right 1.933-4.333:52.68 5.467-7.600:48.91 8.600-10.867:54.10 11.933-14.400:52.62 15.468-17.668:52.73 18.935-21.202:52.38 22.535-24.802:52.80 26.135-28.335:53.56 30.002-32.602:51.48 34.868-37.535:49.64
+lat_pulldown_10_front_mufhlh4o.json.gz romanian_deadlift count=0 arm=right 
+lat_pulldown_10_front_mufhlh4o.json.gz seated_row count=10 arm=right 1.933-4.333:52.68 5.467-7.600:48.91 8.600-10.867:54.10 11.933-14.400:52.62 15.468-17.668:52.73 18.935-21.202:52.38 22.535-24.802:52.80 26.135-28.335:53.56 30.002-32.602:51.48 34.868-37.535:49.64
+lat_pulldown_10_front_mufhlh4o.json.gz squat count=8 arm=right 3.200-5.733:18.10 5.800-6.467:25.83 8.933-9.600:25.17 10.000-12.267:22.97 13.133-16.402:21.76 16.535-23.668:28.36 23.735-26.335:24.56 26.735-27.268:13.08
+lat_pulldown_10_front_mufhlh4o.json.gz triceps_pushdown count=10 arm=right 0.000-2.333:49.60 3.600-5.733:52.40 6.867-8.867:50.68 9.933-12.200:52.83 13.333-15.802:53.55 16.602-19.268:51.41 20.402-22.868:54.96 23.868-26.468:52.34 27.468-30.335:55.85 31.602-35.602:52.81
+lateral_raise_10_front_mufhhbun.json.gz bench_press count=10 arm=right 0.000-1.467:51.34 3.333-4.867:39.22 5.800-7.698:44.27 8.432-10.432:41.08 11.165-13.232:44.04 13.832-15.765:36.59 16.432-18.363:37.57 18.897-20.897:39.57 21.563-23.697:43.01 24.230-26.097:43.69
+lateral_raise_10_front_mufhhbun.json.gz bicep_curl count=10 arm=right 0.000-1.467:51.34 3.333-4.867:39.22 5.800-7.698:44.27 8.432-10.432:41.08 11.165-13.232:44.04 13.832-15.765:36.59 16.432-18.363:37.57 18.897-20.897:39.57 21.563-23.697:43.01 24.230-26.097:43.69
+lateral_raise_10_front_mufhhbun.json.gz bicep_curl_alternating count=10 arm=both 0.000-1.467:56.27 2.600-4.867:51.11 5.800-7.698:46.64 8.432-10.498:50.29 11.165-13.232:53.98 13.832-15.765:47.95 16.432-18.363:48.45 18.897-20.897:46.44 21.563-23.697:51.75 24.230-26.097:52.41
+lateral_raise_10_front_mufhhbun.json.gz dumbbell_row count=10 arm=right 0.000-1.467:51.34 3.333-4.867:39.22 5.800-7.698:44.27 8.432-10.432:41.08 11.165-13.232:44.04 13.832-15.765:36.59 16.432-18.363:37.57 18.897-20.897:39.57 21.563-23.697:43.01 24.230-26.097:43.69
+lateral_raise_10_front_mufhhbun.json.gz hip_thrust count=10 arm=left 0.000-1.467:28.83 2.533-5.133:34.31 5.667-7.765:31.82 8.365-10.565:29.06 11.098-13.165:29.85 13.832-15.832:28.82 16.298-18.363:28.75 18.897-20.897:28.35 21.497-23.697:26.36 24.230-26.230:30.51
+lateral_raise_10_front_mufhhbun.json.gz lat_pulldown count=10 arm=right 0.000-1.467:51.34 3.333-4.867:39.22 5.800-7.698:44.27 8.432-10.432:41.08 11.165-13.232:44.04 13.832-15.765:36.59 16.432-18.363:37.57 18.897-20.897:39.57 21.563-23.697:43.01 24.230-26.097:43.69
+lateral_raise_10_front_mufhhbun.json.gz lateral_raise count=10 arm=right 1.067-3.467:77.48 4.667-6.365:82.02 7.232-9.098:83.55 10.165-11.765:83.19 12.765-14.432:86.14 15.432-16.898:85.04 17.898-19.430:86.73 20.497-22.230:85.01 23.230-24.630:91.20 25.697-27.430:85.47
+lateral_raise_10_front_mufhhbun.json.gz leg_curl count=0 arm=right 
+lateral_raise_10_front_mufhhbun.json.gz leg_extension count=0 arm=right 
+lateral_raise_10_front_mufhhbun.json.gz leg_press count=0 arm=right 
+lateral_raise_10_front_mufhhbun.json.gz lunge count=0 arm=right 
+lateral_raise_10_front_mufhhbun.json.gz overhead_press count=10 arm=right 0.000-1.467:51.34 3.333-4.867:39.22 5.800-7.698:44.27 8.432-10.432:41.08 11.165-13.232:44.04 13.832-15.765:36.59 16.432-18.363:37.57 18.897-20.897:39.57 21.563-23.697:43.01 24.230-26.097:43.69
+lateral_raise_10_front_mufhhbun.json.gz romanian_deadlift count=10 arm=left 1.267-3.200:32.80 4.733-6.232:33.95 7.432-8.698:29.76 10.232-11.498:28.39 12.898-14.232:25.68 15.498-16.765:28.63 18.098-19.297:30.28 20.697-21.963:27.84 23.363-24.563:28.23 25.830-27.097:32.86
+lateral_raise_10_front_mufhhbun.json.gz seated_row count=10 arm=right 0.000-1.467:51.34 3.333-4.867:39.22 5.800-7.698:44.27 8.432-10.432:41.08 11.165-13.232:44.04 13.832-15.765:36.59 16.432-18.363:37.57 18.897-20.897:39.57 21.563-23.697:43.01 24.230-26.097:43.69
+lateral_raise_10_front_mufhhbun.json.gz squat count=0 arm=right 
+lateral_raise_10_front_mufhhbun.json.gz triceps_pushdown count=10 arm=right 1.067-3.800:49.40 4.533-6.565:38.47 7.165-9.165:43.73 10.098-11.832:43.09 12.632-14.565:43.70 15.298-17.098:35.53 17.765-19.497:41.20 20.363-22.230:38.63 23.163-24.897:44.70 25.430-27.497:44.85
+overhead_press_10_front_mufhjkku.json.gz bench_press count=9 arm=left 0.087-5.943:84.61 8.278-11.215:68.90 12.217-14.685:58.48 15.887-18.690:59.58 19.690-22.293:59.78 23.160-25.297:57.54 26.230-28.467:52.43 29.400-31.537:61.31 36.275-38.277:50.73
+overhead_press_10_front_mufhjkku.json.gz bicep_curl count=9 arm=left 0.087-5.943:84.61 8.278-11.215:68.90 12.217-14.685:58.48 15.887-18.690:59.58 19.690-22.293:59.78 23.160-25.297:57.54 26.230-28.467:52.43 29.400-31.537:61.31 36.275-38.277:50.73
+overhead_press_10_front_mufhjkku.json.gz bicep_curl_alternating count=11 arm=both 0.087-6.543:84.61 7.745-11.215:68.90 11.882-14.952:58.48 15.753-18.757:59.58 19.490-22.293:59.78 23.027-25.297:57.54 26.163-28.467:52.43 29.000-31.670:61.31 32.337-35.273:32.86 36.073-38.343:50.73 39.143-40.745:37.69
+overhead_press_10_front_mufhjkku.json.gz dumbbell_row count=9 arm=left 0.087-5.943:84.61 8.278-11.215:68.90 12.217-14.685:58.48 15.887-18.690:59.58 19.690-22.293:59.78 23.160-25.297:57.54 26.230-28.467:52.43 29.400-31.537:61.31 36.275-38.277:50.73
+overhead_press_10_front_mufhjkku.json.gz hip_thrust count=12 arm=left 0.737-4.742:42.95 4.875-6.277:44.69 8.012-11.282:43.44 12.483-14.952:51.40 16.420-18.557:36.02 20.225-22.293:41.57 23.093-25.297:41.97 26.297-27.498:49.51 28.867-31.670:36.45 32.603-34.940:39.92 36.007-37.877:44.35 39.545-40.945:59.83
+overhead_press_10_front_mufhjkku.json.gz lat_pulldown count=9 arm=left 0.087-5.943:84.61 8.278-11.215:68.90 12.217-14.685:58.48 15.887-18.690:59.58 19.690-22.293:59.78 23.160-25.297:57.54 26.230-28.467:52.43 29.400-31.537:61.31 36.275-38.277:50.73
+overhead_press_10_front_mufhjkku.json.gz lateral_raise count=7 arm=left 6.010-13.483:84.95 14.152-17.022:63.06 18.155-23.962:63.02 24.362-27.232:80.33 27.632-33.872:70.56 34.072-37.208:72.66 37.542-40.078:98.32
+overhead_press_10_front_mufhjkku.json.gz leg_curl count=0 arm=right 
+overhead_press_10_front_mufhjkku.json.gz leg_extension count=1 arm=right 1.872-5.943:83.82
+overhead_press_10_front_mufhjkku.json.gz leg_press count=0 arm=right 
+overhead_press_10_front_mufhjkku.json.gz lunge count=0 arm=right 
+overhead_press_10_front_mufhjkku.json.gz overhead_press count=9 arm=left 0.087-5.943:84.61 8.278-11.215:68.90 12.217-14.685:58.48 15.887-18.690:59.58 19.690-22.293:59.78 23.160-25.297:57.54 26.230-28.467:52.43 29.400-31.537:61.31 36.275-38.277:50.73
+overhead_press_10_front_mufhjkku.json.gz romanian_deadlift count=14 arm=left 0.000-1.072:39.55 6.077-7.210:42.26 7.478-8.078:36.86 8.678-12.883:50.50 14.152-15.753:43.32 15.887-17.755:42.53 18.022-19.623:38.36 19.690-20.425:27.94 22.160-23.762:36.19 24.762-26.898:58.09 28.032-29.333:47.96 31.268-32.737:38.14 34.138-36.208:44.24 37.742-40.078:42.21
+overhead_press_10_front_mufhjkku.json.gz seated_row count=9 arm=left 0.087-5.943:84.61 8.278-11.215:68.90 12.217-14.685:58.48 15.887-18.690:59.58 19.690-22.293:59.78 23.160-25.297:57.54 26.230-28.467:52.43 29.400-31.537:61.31 36.275-38.277:50.73
+overhead_press_10_front_mufhjkku.json.gz squat count=0 arm=right 
+overhead_press_10_front_mufhjkku.json.gz triceps_pushdown count=9 arm=left 5.743-8.880:69.45 10.748-12.550:62.85 14.352-16.087:54.41 18.288-19.890:62.50 21.760-23.362:56.85 24.963-26.430:49.82 27.165-30.068:63.11 31.068-36.408:54.19 38.010-39.412:52.71

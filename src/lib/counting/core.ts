@@ -4,7 +4,8 @@
  * In:  timestamped world landmarks (from MediaPipe PoseLandmarker) and a lift name.
  * Out: rep count, per-rep detail (start/end time, ROM, durations), side used, confidence.
  *
- * One joint angle per lift, from world-landmark 3D vectors (LIFTS below):
+ * One joint angle per lift, from world-landmark 3D vectors (LIFTS below; every other countable
+ * guide exercise by its pattern, liftDefinition):
  *   elbow    shoulder–elbow–wrist   curl, rows, triceps pushdown, bench and overhead press, lat pulldown
  *   shoulder hip–shoulder–elbow     lateral raise
  *   knee     hip–knee–ankle         squat, leg press, leg extension, leg curl, lunge
@@ -15,8 +16,9 @@
  *
  * Side selection: the side whose three joint landmarks have the highest average
  * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
- * valid angle; the side never alternates frame by frame. The alternating curl
- * counts both arms and joins them (countBothSides).
+ * valid angle; the side never alternates frame by frame. The alternating curl, and every guide
+ * exercise whose pattern counts both sides (liftDefinition), count both sides and join them
+ * (countBothSides).
  *
  * Signal conditioning pipeline: outlier removal → bridge dropouts → Savitzky–Golay.
  * Outlier removal nulls samples that deviate from their local median by more
@@ -43,6 +45,8 @@
  *     specific published recommendation.
  */
 
+import guidePatterns from './guide-patterns.json';
+
 // ─── Types ───
 
 export interface WorldLandmark {
@@ -63,20 +67,20 @@ export interface RepDetail {
   eccentricSec: number;
   peakSpeed: number;    // highest frame-to-frame angular speed within the rep, degrees/second
   meanSpeed: number;    // average frame-to-frame angular speed within the rep, degrees/second
-  side?: 'left' | 'right' | 'both'; // alternating curl only: the arm that did it
+  side?: 'left' | 'right' | 'both'; // both-sides lifts only: the side that did it
   clipped?: boolean;    // the video starts or ends inside this rep: counted, but its times are not whole
 }
 
 export interface CountResult {
   count: number;
   reps: RepDetail[];
-  arm: 'left' | 'right' | 'both'; // the side tracked; 'both' for the alternating curl
+  arm: 'left' | 'right' | 'both'; // the side tracked; 'both' for a both-sides lift
   confidence: number;   // 0–1
   angles: (number | null)[];          // raw angle per sample
   smoothedAngles: (number | null)[];  // after SG + bridge
   lowThreshold: number;
   highThreshold: number;
-  sides?: { left: CountResult; right: CountResult }; // alternating curl only
+  sides?: { left: CountResult; right: CountResult }; // both-sides lifts only
 }
 
 export type Joint = 'elbow' | 'shoulder' | 'knee' | 'hip';
@@ -87,7 +91,7 @@ export interface LiftDefinition {
   rest: 'high' | 'low';
   /** The phase that leaves the rest: lifting the load (concentric) or yielding to it (eccentric). */
   first: 'concentric' | 'eccentric';
-  /** Both sides counted and joined, one rep per arm (the alternating curl). */
+  /** Both sides counted and joined, one rep per side (the alternating curl, walking lunge, dead bug…). */
   bothSides?: boolean;
 }
 
@@ -112,6 +116,23 @@ export const LIFTS = {
 } as const satisfies Record<string, LiftDefinition>;
 
 export type Lift = keyof typeof LIFTS;
+
+// Every countable exercise of the guide, by its pattern (PLAN.md, GROWTH, step 2, 29 September
+// 2026): its joint, the end it rests at, the phase that leaves the rest and whether both sides
+// count, from guide-families.json through guide-patterns.json (scripts/make-guide-patterns.mjs),
+// which holds the patterns alone. No counting parameter depends on the exercise; a pattern only
+// chooses the joint, the side logic and which phase is concentric. Status: experimental: the
+// catalogue's own reading of each exercise's anatomy (guide-families.test.ts cites Neumann 2017,
+// "exercise-specific interpretations, not measurements"); not measured per exercise.
+const PATTERNS = guidePatterns as Record<string, string>;
+
+/** The definition an exercise is counted by: its LIFTS entry, else its guide pattern; null if it has none. */
+export function liftDefinition(key: string): LiftDefinition | null {
+  if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
+  if (!Object.hasOwn(PATTERNS, key)) return null;
+  const [joint, rest, first, both] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
+  return { joint, rest, first, ...(both ? { bothSides: true } : {}) };
+}
 
 // ─── Constants ───
 
@@ -166,9 +187,12 @@ const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of
 export function countReps(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
-  lift: Lift,
+  lift: Lift | string,
 ): CountResult {
-  const def: LiftDefinition = LIFTS[lift] ?? LIFTS.bicep_curl;
+  // An exercise with no definition (no joint in the guide, or a key the core does not know) gets no
+  // count: never another lift's (review of 29 September 2026).
+  const def = liftDefinition(lift);
+  if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
   if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
   return countSide(worldLandmarks, timestamps, def, selectSide(worldLandmarks, def.joint));
 }
@@ -231,7 +255,7 @@ function countSide(
   return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
 }
 
-// ─── Both arms: the alternating curl ───
+// ─── Both sides: the alternating curl and the guide's both-sides exercises ───
 
 /**
  * Each arm is counted on its own, then the two lists are joined in time order:

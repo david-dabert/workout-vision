@@ -1,0 +1,145 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+7:36:21 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+7:36:21 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts (20 tests | 18 failed) 133ms
+     × defines each exercise from LIFTS when it is there, from its family otherwise, and none without a joint 3ms
+     × elbow/high/eccentric (incline_bench_press): ten cycles count 10, the eccentric phase first 18ms
+     × elbow/low/concentric (machine_chest_press): ten cycles count 10, the concentric phase first 11ms
+     × shoulder/low/concentric (cable_lateral_raise): ten cycles count 10, the concentric phase first 10ms
+     × hip/low/concentric (deadlift): ten cycles count 10, the concentric phase first 5ms
+     × shoulder/high/concentric (straight_arm_pulldown): ten cycles count 10, the concentric phase first 5ms
+     × knee/high/eccentric (front_squat): ten cycles count 10, the eccentric phase first 7ms
+     × knee/high/eccentric/bothSides (walking_lunge): five reps per side, alternated, count 10 on both sides 6ms
+     × knee/low/concentric (step_up): ten cycles count 10, the concentric phase first 6ms
+     × knee/high/concentric (seated_leg_curl): ten cycles count 10, the concentric phase first 9ms
+     × hip/high/eccentric (good_morning): ten cycles count 10, the eccentric phase first 5ms
+     × hip/high/concentric (hanging_leg_raise): ten cycles count 10, the concentric phase first 4ms
+     × shoulder/low/eccentric (ab_wheel): ten cycles count 10, the eccentric phase first 3ms
+     × knee/low/eccentric (nordic_hamstring_curl): ten cycles count 10, the eccentric phase first 5ms
+     × hip/low/eccentric/bothSides (dead_bug): five reps per side, alternated, count 10 on both sides 3ms
+     × hip/low/concentric/bothSides (bird_dog): five reps per side, alternated, count 10 on both sides 4ms
+     × elbow/high/eccentric/bothSides (archer_push_up): five reps per side, alternated, count 10 on both sides 7ms
+     × hip/high/concentric/bothSides (glute_bridge_march): five reps per side, alternated, count 10 on both sides 3ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > defines each exercise from LIFTS when it is there, from its family otherwise, and none without a joint
+TypeError: liftDefinition is not a function
+ ❯ src/lib/counting/__tests__/patterns.test.ts:38:12
+     36|
+     37|   it('defines each exercise from LIFTS when it is there, from its fami…
+     38|     expect(liftDefinition('bicep_curl')).toEqual(LIFTS.bicep_curl);
+       |            ^
+     39|     expect(liftDefinition('walking_lunge')).toEqual({ joint: 'knee', r…
+     40|     expect(liftDefinition('nordic_hamstring_curl')).toEqual({ joint: '…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > elbow/high/eccentric (incline_bench_press): ten cycles count 10, the eccentric phase first
+AssertionError: expected 0.6000000000000001 to be greater than 0.8999999999999999
+ ❯ src/lib/counting/__tests__/patterns.test.ts:56:28
+     54|         const firstPhase = median(result.reps.map(r => (f.first === 'c…
+     55|         const secondPhase = median(result.reps.map(r => (f.first === '…
+     56|         expect(firstPhase).toBeGreaterThan(secondPhase);
+       |                            ^
+     57|       });
+     58|     } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > elbow/low/concentric (machine_chest_press): ten cycles count 10, the concentric phase first
+AssertionError: expected 0.5 to be greater than 0.6666666666666667
+ ❯ src/lib/counting/__tests__/patterns.test.ts:56:28
+     54|         const firstPhase = median(result.reps.map(r => (f.first === 'c…
+     55|         const secondPhase = median(result.reps.map(r => (f.first === '…
+     56|         expect(firstPhase).toBeGreaterThan(secondPhase);
+       |                            ^
+     57|       });
+     58|     } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > shoulder/low/concentric (cable_lateral_raise): ten cycles count 10, the concentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > hip/low/concentric (deadlift): ten cycles count 10, the concentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > shoulder/high/concentric (straight_arm_pulldown): ten cycles count 10, the concentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > knee/high/eccentric (front_squat): ten cycles count 10, the eccentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > knee/low/concentric (step_up): ten cycles count 10, the concentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > knee/high/concentric (seated_leg_curl): ten cycles count 10, the concentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > hip/high/eccentric (good_morning): ten cycles count 10, the eccentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > hip/high/concentric (hanging_leg_raise): ten cycles count 10, the concentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > shoulder/low/eccentric (ab_wheel): ten cycles count 10, the eccentric phase first
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > knee/low/eccentric (nordic_hamstring_curl): ten cycles count 10, the eccentric phase first
+AssertionError: expected +0 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 0
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts:53:30
+     51|         const a = sample(cycles({ rest, work, firstSec: 1.2, secondSec…
+     52|         const result = countReps(a.map(x => jointFrame(f.joint!, { lef…
+     53|         expect(result.count).toBe(10);
+       |                              ^
+     54|         const firstPhase = median(result.reps.map(r => (f.first === 'c…
+     55|         const secondPhase = median(result.reps.map(r => (f.first === '…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > knee/high/eccentric/bothSides (walking_lunge): five reps per side, alternated, count 10 on both sides
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > hip/low/eccentric/bothSides (dead_bug): five reps per side, alternated, count 10 on both sides
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > hip/low/concentric/bothSides (bird_dog): five reps per side, alternated, count 10 on both sides
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > hip/high/concentric/bothSides (glute_bridge_march): five reps per side, alternated, count 10 on both sides
+AssertionError: expected +0 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 0
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts:71:30
+     69|         const frames = side.left.map((l, i) => jointFrame(f.joint!, { …
+     70|         const result = countReps(frames, timestamps(n, sps), key);
+     71|         expect(result.count).toBe(10);
+       |                              ^
+     72|         expect(result.arm).toBe('both');
+     73|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  src/lib/counting/__tests__/patterns.test.ts > every countable exercise is counted by its pattern > elbow/high/eccentric/bothSides (archer_push_up): five reps per side, alternated, count 10 on both sides
+AssertionError: expected 5 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 5
+
+ ❯ src/lib/counting/__tests__/patterns.test.ts:71:30
+     69|         const frames = side.left.map((l, i) => jointFrame(f.joint!, { …
+     70|         const result = countReps(frames, timestamps(n, sps), key);
+     71|         expect(result.count).toBe(10);
+       |                              ^
+     72|         expect(result.arm).toBe('both');
+     73|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 2 passed (20)
+   Start at  07:36:21
+   Duration  605ms (transform 275ms, setup 0ms, import 301ms, tests 133ms, environment 0ms)
+
