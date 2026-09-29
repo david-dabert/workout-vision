@@ -1,0 +1,177 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+7:20:10 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+7:20:10 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/__tests__/reportLinks.test.js (18 tests | 7 failed) 52ms
+     × writes to pr.dabertdavid@gmail.com with the lift, both counts and the version 17ms
+     × leaves room for the user's own words, at the end of the message 3ms
+     × speaks French on a French phone, in the user's own voice 6ms
+     × works when the count was right 3ms
+     × says the app counted nothing and leaves the user's count for them to write 2ms
+     × does so in French, and on GitHub 5ms
+     × opens a new issue on this repository with the same report, and nothing else about the user 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportEmailUrl > writes to pr.dabertdavid@gmail.com with the lift, both counts and the version
+AssertionError: expected 'Workout Vision: Lateral raise, counte…' to be 'Workout Vision: Lateral raise, the ap…' // Object.is equality
+
+Expected: "Workout Vision: Lateral raise, the app 8, me 10"
+Received: "Workout Vision: Lateral raise, counted 8, you 10"
+
+ ❯ src/lib/__tests__/reportLinks.test.js:19:21
+     17|     expect(REPORT_EMAIL).toBe('pr.dabertdavid@gmail.com');
+     18|     expect(keys).toEqual(['body', 'subject']);
+     19|     expect(subject).toBe('Workout Vision: Lateral raise, the app 8, me…
+       |                     ^
+     20|     expect(body).toContain('Lift: Lateral raise (lateral_raise)');
+     21|     expect(body).toContain('Counted by the app: 8');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportEmailUrl > leaves room for the user's own words, at the end of the message
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/lib/__tests__/reportLinks.test.js:28:52
+     26|   it('leaves room for the user\'s own words, at the end of the message…
+     27|     const { body } = mail(reportEmailUrl({ ...set, fr: false }));
+     28|     expect(body.trimEnd().endsWith('My message:')).toBe(true);
+       |                                                    ^
+     29|     expect(body).toContain('This message contains no video and no imag…
+     30|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportEmailUrl > speaks French on a French phone, in the user's own voice
+AssertionError: expected 'Exercice : Élévations latérales (late…' to contain 'Compté par moi : 10'
+
+- Expected
++ Received
+
+- Compté par moi : 10
++ Exercice : Élévations latérales (lateral_raise)
++ Compté par l’app : 8
++ Votre compte : 10
++ Version de l’app : 1.4.0 (366271a)
++ 
++ Aucune vidéo, image ni point du corps n’est joint.
++ 
++ Votre message : 
++
+
+ ❯ src/lib/__tests__/reportLinks.test.js:37:18
+     35|     expect(body).toContain('Exercice : Élévations latérales (lateral_r…
+     36|     expect(body).toContain('Compté par l’app : 8');
+     37|     expect(body).toContain('Compté par moi : 10');
+       |                  ^
+     38|     expect(subject).toBe('Workout Vision : Élévations latérales, l’app…
+     39|     expect(body).toContain('Ce message ne contient ni vidéo ni image.'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportEmailUrl > works when the count was right
+AssertionError: expected 'Lift: Lateral raise (lateral_raise)\r…' to contain 'Counted by me: 8'
+
+- Expected
++ Received
+
+- Counted by me: 8
++ Lift: Lateral raise (lateral_raise)
++ Counted by the app: 8
++ Your count: 8
++ App version: 1.4.0 (366271a)
++ 
++ No video, frame or landmark is attached.
++ 
++ Your message:
++
+
+ ❯ src/lib/__tests__/reportLinks.test.js:54:18
+     52|     const { body } = mail(reportEmailUrl({ ...set, userCount: 8, fr: f…
+     53|     expect(body).toContain('Counted by the app: 8');
+     54|     expect(body).toContain('Counted by me: 8');
+       |                  ^
+     55|   });
+     56| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > the report of a refused set > says the app counted nothing and leaves the user's count for them to write
+AssertionError: expected 'Workout Vision: Lateral raise, set no…' to be 'Workout Vision: Lateral raise, the ap…' // Object.is equality
+
+Expected: "Workout Vision: Lateral raise, the app none, me ?"
+Received: "Workout Vision: Lateral raise, set not counted"
+
+ ❯ src/lib/__tests__/reportLinks.test.js:62:21
+     60|   it('says the app counted nothing and leaves the user\'s count for th…
+     61|     const { subject, body } = mail(reportEmailUrl({ ...set, counted: n…
+     62|     expect(subject).toBe('Workout Vision: Lateral raise, the app none,…
+       |                     ^
+     63|     expect(body).toContain('Counted by the app: none, the set was refu…
+     64|     expect(body).toMatch(/Counted by me: \r\n/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > the report of a refused set > does so in French, and on GitHub
+AssertionError: expected 'Workout Vision : Squat, série non com…' to be 'Workout Vision : Squat, l’app rien, m…' // Object.is equality
+
+Expected: "Workout Vision : Squat, l’app rien, moi ?"
+Received: "Workout Vision : Squat, série non comptée"
+
+ ❯ src/lib/__tests__/reportLinks.test.js:70:21
+     68|   it('does so in French, and on GitHub', () => {
+     69|     const { subject, body } = mail(reportEmailUrl({ ...set, liftName: …
+     70|     expect(subject).toBe('Workout Vision : Squat, l’app rien, moi ?');
+       |                     ^
+     71|     expect(body).toContain('Compté par l’app\u00A0: rien, la série a é…
+     72|     const issue = new URL(reportIssueUrl({ ...set, counted: null, user…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportIssueUrl > opens a new issue on this repository with the same report, and nothing else about the user
+AssertionError: expected 'Lift: Lateral raise (lateral_raise)\n…' to contain 'Counted by me: 10'
+
+- Expected
++ Received
+
+- Counted by me: 10
++ Lift: Lateral raise (lateral_raise)
++ Counted by the app: 8
++ Your count: 10
++ App version: 1.4.0 (366271a)
++
++ No video, frame or landmark is attached.
++
++ Your message:
++
+
+ ❯ src/lib/__tests__/reportLinks.test.js:88:18
+     86|     expect(body).toContain('Lift: Lateral raise (lateral_raise)');
+     87|     expect(body).toContain('Counted by the app: 8');
+     88|     expect(body).toContain('Counted by me: 10');
+       |                  ^
+     89|     expect(body).toContain('App version: 1.4.0 (366271a)');
+     90|     expect(body).toContain('This message contains no video and no imag…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 11 passed (18)
+   Start at  07:20:10
+   Duration  359ms (transform 66ms, setup 0ms, import 97ms, tests 52ms, environment 0ms)
+

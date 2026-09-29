@@ -71,10 +71,16 @@ test('a quick tap lights the control for a moment after the finger lifts', async
   const box = await chip.boundingBox();
   const at = { x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2) };
   const cdp = await context.newCDPSession(page);
+  // The 50 ms is timed in the page from the pointerup itself: a timer started by a later Playwright
+  // call counts the gap between the calls against the light's 140 ms (as in CI run 148; local run of
+  // 29 September).
+  await page.evaluate(() => {
+    window.__litAfterUp = new Promise(r => document.addEventListener('pointerup', () => setTimeout(() => r(document.querySelectorAll('.chip.is-pressed').length), 50), { once: true }));
+  });
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [at] });
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   // After a touch the browser sends pointerleave to the document; the light must outlive it.
-  expect(await page.evaluate(() => new Promise(r => setTimeout(() => r(document.querySelectorAll('.chip.is-pressed').length), 50)))).toBe(1);
+  expect(await page.evaluate(() => window.__litAfterUp)).toBe(1);
   await page.waitForTimeout(400);
   expect(await page.locator('.chip.is-pressed').count()).toBe(0);
   await context.close();

@@ -101,6 +101,6 @@ export default function reportTests(test, expect) {
 
   test('the note under the title claims only what the form does', async ({ page }) => {
     await openReport(page, expect, 'fr');
-    await expect(page.locator('.report-sub')).toHaveText('Chaque réponse est facultative et n’apparaît sur le PDF que si vous la remplissez.');
+    await expect(page.locator('.report-sub')).toHaveText('Tout est facultatif : seul ce que vous remplissez apparaît sur le PDF.');
   });
 }

@@ -16,25 +16,29 @@ describe('reportEmailUrl', () => {
     const { subject, body, keys } = mail(reportEmailUrl({ ...set, fr: false }));
     expect(REPORT_EMAIL).toBe('pr.dabertdavid@gmail.com');
     expect(keys).toEqual(['body', 'subject']);
-    expect(subject).toContain('Lateral raise');
+    expect(subject).toBe('Workout Vision: Lateral raise, the app 8, me 10');
     expect(body).toContain('Lift: Lateral raise (lateral_raise)');
     expect(body).toContain('Counted by the app: 8');
-    expect(body).toContain('Your count: 10');
+    expect(body).toContain('Counted by me: 10');
     expect(body).toContain('App version: 1.4.0 (366271a)');
   });
 
   it('leaves room for the user\'s own words, at the end of the message', () => {
     const { body } = mail(reportEmailUrl({ ...set, fr: false }));
-    expect(body.trimEnd().endsWith('Your message:')).toBe(true);
-    expect(body).toContain('No video, frame or landmark is attached.');
+    expect(body.trimEnd().endsWith('My message:')).toBe(true);
+    expect(body).toContain('This message contains no video and no image.');
   });
 
-  it('speaks French on a French phone', () => {
-    const { body } = mail(reportEmailUrl({ ...set, liftName: 'Élévations latérales', fr: true }));
+  // David's copy of 29 September: the user writes to David, in the first person.
+  it('speaks French on a French phone, in the user\'s own voice', () => {
+    const { subject, body } = mail(reportEmailUrl({ ...set, liftName: 'Élévations latérales', fr: true }));
     expect(body).toContain('Exercice : Élévations latérales (lateral_raise)');
     expect(body).toContain('Compté par l’app : 8');
-    expect(body).toContain('Votre compte : 10');
-    expect(body.trimEnd().endsWith('Votre message :')).toBe(true);
+    expect(body).toContain('Compté par moi : 10');
+    expect(subject).toBe('Workout Vision : Élévations latérales, l’app 8, moi 10');
+    expect(body).toContain('Ce message ne contient ni vidéo ni image.');
+    expect(body).not.toMatch(/Votre|vous/);
+    expect(body.trimEnd().endsWith('Mon message :')).toBe(true);
   });
 
   it('breaks lines as mail programs expect, CR LF, and encodes every reserved character', () => {
@@ -47,7 +51,7 @@ describe('reportEmailUrl', () => {
   it('works when the count was right', () => {
     const { body } = mail(reportEmailUrl({ ...set, userCount: 8, fr: false }));
     expect(body).toContain('Counted by the app: 8');
-    expect(body).toContain('Your count: 8');
+    expect(body).toContain('Counted by me: 8');
   });
 });
 
@@ -55,15 +59,15 @@ describe('reportEmailUrl', () => {
 describe('the report of a refused set', () => {
   it('says the app counted nothing and leaves the user\'s count for them to write', () => {
     const { subject, body } = mail(reportEmailUrl({ ...set, counted: null, userCount: null, fr: false }));
-    expect(subject).toBe('Workout Vision: Lateral raise, set not counted');
+    expect(subject).toBe('Workout Vision: Lateral raise, the app none, me?');
     expect(body).toContain('Counted by the app: none, the set was refused');
-    expect(body).toMatch(/Your count: \r\n/);
+    expect(body).toMatch(/Counted by me: \r\n/);
     expect(body).not.toContain('null');
   });
 
   it('does so in French, and on GitHub', () => {
     const { subject, body } = mail(reportEmailUrl({ ...set, liftName: 'Squat', counted: null, userCount: null, fr: true }));
-    expect(subject).toBe('Workout Vision\u00A0: Squat, série non comptée');
+    expect(subject).toBe('Workout Vision : Squat, l’app rien, moi ?');
     expect(body).toContain('Compté par l’app\u00A0: rien, la série a été refusée');
     const issue = new URL(reportIssueUrl({ ...set, counted: null, userCount: null }));
     expect(issue.searchParams.get('title')).toBe('Count report: lateral_raise, set refused');
@@ -81,9 +85,9 @@ describe('reportIssueUrl', () => {
     expect(title).toBe('Count report: lateral_raise, app 8, user 10');
     expect(body).toContain('Lift: Lateral raise (lateral_raise)');
     expect(body).toContain('Counted by the app: 8');
-    expect(body).toContain('Your count: 10');
+    expect(body).toContain('Counted by me: 10');
     expect(body).toContain('App version: 1.4.0 (366271a)');
-    expect(body).toContain('No video, frame or landmark is attached.');
+    expect(body).toContain('This message contains no video and no image.');
   });
 });
 

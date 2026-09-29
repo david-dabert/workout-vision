@@ -1,0 +1,16 @@
+== main.jsx as committed, 10 runs
+
+Running 10 tests using 1 worker
+
+  ✓   1 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   2 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   3 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   4 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   5 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   6 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   7 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   8 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓   9 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.2s)
+  ✓  10 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (2.3s)
+
+  10 passed (32.0s)

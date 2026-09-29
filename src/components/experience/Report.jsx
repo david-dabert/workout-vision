@@ -125,7 +125,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <h2 className="title">{fr ? 'Rapport de séance' : 'Session report'}</h2>
-      <p className="report-sub">{fr ? 'Chaque réponse est facultative et n’apparaît sur le PDF que si vous la remplissez.' : 'Every answer is optional and appears on the PDF only if you fill it in.'}</p>
+      <p className="report-sub">{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
       <div className="field">
         <label htmlFor="fName">{fr ? 'Votre nom' : 'Your name'}</label>
         <input id="fName" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}

@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does (8.4s)
+
+
+  1) e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('.report-sub')
+    Expected: "Tout est facultatif : seul ce que vous remplissez apparaît sur le PDF."
+    Received: "Chaque réponse est facultative et n’apparaît sur le PDF que si vous la remplissez."
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" locator('.report-sub') with timeout 5000ms
+      - waiting for locator('.report-sub')
+        14 × locator resolved to <p class="report-sub">Chaque réponse est facultative et n’apparaît sur …</p>
+           - unexpected value "Chaque réponse est facultative et n’apparaît sur le PDF que si vous la remplissez."
+
+
+      102 |   test('the note under the title claims only what the form does', async ({ page }) => {
+      103 |     await openReport(page, expect, 'fr');
+    > 104 |     await expect(page.locator('.report-sub')).toHaveText('Tout est facultatif : seul ce que vous remplissez apparaît sur le PDF.');
+          |                                               ^
+      105 |   });
+      106 | }
+      107 |
+        at /home/user/workout-vision/e2e/shared/report.tests.js:104:47
+
+    Error Context: test-results/report-Chromium-the-note-u-d6834-ims-only-what-the-form-does/error-context.md
+
+  1 failed
+    e2e/shared/report.tests.js:102:3 › Chromium › the note under the title claims only what the form does 

@@ -7,6 +7,9 @@
 - outputs/15: the press test of 9299f0f with main.jsx's scroll scoping removed (it failed).
 - outputs/16, 17: the press test after CI run 150, run in Chromium with the iPhone's touch settings: 10 times with main.jsx as committed, and once each with a part of main.jsx's scroll handling removed for the run (each fails; the diff heads each file). WebKit itself runs in CI.
 - outputs/03 to 08: build, report browser tests, lint, typecheck, unit tests and all browser tests (Chromium) on the step's code.
+- outputs/24 to 26: David's copy of 29 September (the e-mail in the first person, the two sentences), tests before and after, and the subtitle's browser test on the previous build.
+- outputs/29, 30: the English subject of a refused set without a space before "?" (review 06), before and after.
+- outputs/27, 28: e2e/smoothness.spec.js "a quick tap lights the control", which failed once locally for the same cause as CI run 148: with the light cut to 20 ms for the run it fails, and as committed it passes 10 of 10.
 - outputs/22, 23: the tests written for review 05 (the challenge after a correction gives both numbers; which report a result offers), before and after.
 - outputs/18, 19: the tests written for the verifier's findings (a refused set's report; "analysed", not "filmed"), before and after.
 - outputs/20: the links on each result screen shot by harness/shoot.mjs, as the page carries them.
@@ -20,6 +23,7 @@
 Not tested here: the share sheet (headless Chromium has none; the copy fallback ran) and the mail app. Both are for David's iPhone.
 
 ## Open
+- Review 06, D1, for David: "Tout est facultatif : seul ce que vous remplissez apparaît sur le PDF." is David's approved wording; the PDF also always shows the date, the count, the lift, the rep table and the foot, which the user does not fill in.
 - No screenshot shows the result after a failed save; which report it offers is tested in reportFor (src/lib/__tests__/reportLinks.test.js), and the retry that clears "not saved" is untested (Result is not rendered by any test).
 - The analysis error and interrupted screens offer no report: they have no count. Whether PLAN.md's "every result" includes them is David's call.
 - Nothing tests the result screen's new buttons in the app itself: a saved card needs a real analysis, and the clips are not in CI. The link and share logic is tested as functions (src/lib/__tests__/reportLinks.test.js). The tour in CI, after this step, is where it belongs.

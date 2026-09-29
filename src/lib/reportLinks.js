@@ -14,7 +14,7 @@ export function appVersion() {
 }
 
 // A refused set has no count (counted: null), and its user has not given one (userCount: null):
-// the line is left for them to fill in.
+// the line is left for them to fill in. The lines are the user's own words to David.
 const refusedLine = fr => (fr ? 'rien, la série a été refusée' : 'none, the set was refused');
 
 function reportLines({ lift, liftName, counted, userCount, version, fr }) {
@@ -22,12 +22,12 @@ function reportLines({ lift, liftName, counted, userCount, version, fr }) {
   return [
     `${fr ? 'Exercice' : 'Lift'}${c}${liftName} (${lift})`,
     `${fr ? 'Compté par l’app' : 'Counted by the app'}${c}${counted == null ? refusedLine(fr) : counted}`,
-    `${fr ? 'Votre compte' : 'Your count'}${c}${userCount ?? ''}`,
+    `${fr ? 'Compté par moi' : 'Counted by me'}${c}${userCount ?? ''}`,
     ...(version ? [`${fr ? 'Version de l’app' : 'App version'}${c}${version}`] : []),
     '',
-    fr ? 'Aucune vidéo, image ni point du corps n’est joint.' : 'No video, frame or landmark is attached.',
+    fr ? 'Ce message ne contient ni vidéo ni image.' : 'This message contains no video and no image.',
     '',
-    fr ? `Votre message${c}` : 'Your message:',
+    fr ? `Mon message${c}` : 'My message:',
     '',
   ];
 }
@@ -37,11 +37,12 @@ function reportLines({ lift, liftName, counted, userCount, version, fr }) {
  * lines end in CR LF (RFC 6068), so the mail app shows the message as written.
  */
 export function reportEmailUrl({ lift, liftName = lift, counted, userCount, version = '', fr = false }) {
-  const subject = counted == null
-    ? (fr ? `Workout Vision${NBSP}: ${liftName}, série non comptée` : `Workout Vision: ${liftName}, set not counted`)
-    : fr
-      ? `Workout Vision${NBSP}: ${liftName}, compté ${counted}, vous ${userCount}`
-      : `Workout Vision: ${liftName}, counted ${counted}, you ${userCount}`;
+  // Written by the user to David, in the first person (David's copy, 29 September 2026). A refused
+  // set has no count of the app's, and the user's is theirs to write.
+  const app = counted == null ? (fr ? 'rien' : 'none') : counted, me = userCount ?? (fr ? `${NBSP}?` : '?');
+  const subject = fr
+    ? `Workout Vision${NBSP}: ${liftName}, l’app ${app}, moi${userCount == null ? me : ` ${me}`}`
+    : `Workout Vision: ${liftName}, the app ${app}, me${userCount == null ? me : ` ${me}`}`;
   const body = reportLines({ lift, liftName, counted, userCount, version, fr }).join('\r\n');
   return `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
