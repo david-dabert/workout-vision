@@ -235,7 +235,7 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
       });
     });
 
-    test('the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not', async ({ page }) => {
+    test('the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not', async ({ page }) => {
       await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'en'); });
       await page.goto('/workout-vision/');
       await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
@@ -245,19 +245,20 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
       const at = { clientX: Math.round(box.x + box.width / 2), clientY: Math.round(box.y + 60) };
       const finger = { pointerType: 'touch', isPrimary: true, pointerId: 1, ...at };
       // Every time is measured inside the page from the pointerdown itself: two separate Playwright
-      // calls leave an unbounded gap that eats the 80 ms (CI run 148, 29 September 2026).
-      const press = (scrollAt, where = '.rail') => page.evaluate(([f, scrollAt, where]) => new Promise(resolve => {
+      // calls leave an unbounded gap that eats the 80 ms (CI run 148). WebKit delivers a real scroll
+      // event at its next rendering update, which on CI came more than 140 ms after the scroll (run
+      // 150), after the 80 ms. So the scroll that must cancel the waiting press is a scroll event sent
+      // 10 ms after the touch, which reaches main.jsx's capturing listener as a real one does; a real
+      // scroll is checked apart, for its arrival and its effect once it arrives (review, 29 September).
+      const press = (sendAt, where = '.rail') => page.evaluate(([f, sendAt, where]) => new Promise(resolve => {
         const card = document.querySelector('.altar'), scroller = document.querySelector(where);
         const lit = () => document.querySelectorAll('.rail .is-pressed').length;
-        const t0 = performance.now(), out = {};
+        const out = {};
         card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true, ...f }));
         setTimeout(() => { out.at40 = lit(); }, 40);
-        if (scrollAt != null) {
-          scroller.addEventListener('scroll', () => { out.scrolledAt = performance.now() - t0; }, { once: true });
-          setTimeout(() => { if (where === '.rail') scroller.scrollLeft = 292; else scroller.scrollTop = 100; }, scrollAt);
-        }
+        if (sendAt != null) setTimeout(() => scroller.dispatchEvent(new Event('scroll')), sendAt);
         setTimeout(() => { out.at150 = lit(); resolve(out); }, 150);
-      }), [finger, scrollAt, where]);
+      }), [finger, sendAt, where]);
       // Held still, the press appears after 80 ms, not before.
       const still = await press(null);
       expect(still.at40).toBe(0);
@@ -266,11 +267,21 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
       await page.waitForTimeout(50);
       // A second touch: the rail scrolls before the 80 ms are up, and the press never appears.
       const scrolled = await press(10);
-      expect(scrolled.scrolledAt).toBeLessThan(80); // the scroll did come first
-      expect(scrolled.at150).toBe(0); // the scroll cancelled it
+      expect(scrolled.at150).toBe(0);
       await card.dispatchEvent('pointercancel', finger);
       await page.waitForTimeout(50);
-      // A third: a region that does not hold the card scrolls, and the press still appears.
+      // A third: a real scroll of the rail arrives, whenever WebKit sends it, and leaves no press shown.
+      const real = await page.evaluate(f => new Promise(resolve => {
+        const card = document.querySelector('.altar'), rail = document.querySelector('.rail');
+        card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true, ...f }));
+        rail.addEventListener('scroll', () => setTimeout(() => resolve({ afterScroll: document.querySelectorAll('.rail .is-pressed').length }), 100), { once: true });
+        setTimeout(() => { rail.scrollLeft = rail.scrollLeft ? 0 : 292; }, 10);
+        setTimeout(() => resolve({}), 3000); // no scroll event at all: afterScroll stays undefined
+      }), finger);
+      expect(real.afterScroll).toBe(0);
+      await card.dispatchEvent('pointercancel', finger);
+      await page.waitForTimeout(50);
+      // A fourth: a region that does not hold the card scrolls, and the press still appears.
       await page.evaluate(() => {
         const box = Object.assign(document.createElement('div'), { id: 'other-scroller' });
         box.style.cssText = 'position:fixed;left:0;top:0;width:40px;height:40px;overflow:auto;opacity:0.01';
@@ -278,7 +289,6 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
         document.body.appendChild(box);
       });
       const elsewhere = await press(10, '#other-scroller');
-      expect(elsewhere.scrolledAt).toBeLessThan(80);
       expect(elsewhere.at150).toBe(1); // only a scroll that holds the card cancels its press
       await card.dispatchEvent('pointercancel', finger);
       await page.evaluate(() => document.getElementById('other-scroller').remove());

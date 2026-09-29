@@ -1,15 +1,16 @@
+== Chromium with iPhone touch settings, main.jsx as committed, 10 runs
 
 Running 10 tests using 1 worker
 
-  ✓   1 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.2s)
-  ✓   2 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.1s)
-  ✓   3 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.2s)
-  ✓   4 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.1s)
-  ✓   5 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.1s)
-  ✓   6 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.2s)
-  ✓   7 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.1s)
-  ✓   8 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.1s)
-  ✓   9 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.2s)
-  ✓  10 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.2s)
+  ✓   1 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.4s)
+  ✓   2 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.4s)
+  ✓   3 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.3s)
+  ✓   4 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.4s)
+  ✓   5 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.3s)
+  ✓   6 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.4s)
+  ✓   7 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.3s)
+  ✓   8 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.3s)
+  ✓   9 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.4s)
+  ✓  10 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.4s)
 
-  10 passed (32.1s)
+  10 passed (34.5s)

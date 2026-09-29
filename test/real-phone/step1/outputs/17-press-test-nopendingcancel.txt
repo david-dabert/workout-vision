@@ -1,0 +1,39 @@
+== nopendingcancel, Chromium with iPhone touch settings, main.jsx changed for this run only:
+diff --git a/src/main.jsx b/src/main.jsx
+index 2357512..1806fcd 100644
+--- a/src/main.jsx
++++ b/src/main.jsx
+@@ -85,7 +85,6 @@ document.addEventListener('scroll', (e) => {
+   if (!pendingPress && !pressed.size) return;
+   const scroller = e.target === document ? document.documentElement : e.target;
+   if (!scroller?.contains) return;
+-  if (pendingPress && scroller.contains(pendingPress.el)) { clearTimeout(pendingPress.timer); pendingPress = null; }
+   pressed.forEach(el => { if (scroller.contains(el)) unlight(el); });
+ }, { passive: true, capture: true });
+ 
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.0s)
+
+
+  1) e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      268 |       // A second touch: the rail scrolls before the 80 ms are up, and the press never appears.
+      269 |       const scrolled = await press(10);
+    > 270 |       expect(scrolled.at150).toBe(0);
+          |                              ^
+      271 |       await card.dispatchEvent('pointercancel', finger);
+      272 |       await page.waitForTimeout(50);
+      273 |       // A third: a real scroll of the rail arrives, whenever WebKit sends it, and leaves no press shown.
+        at /home/user/workout-vision/e2e/shared/tactility.tests.js:270:30
+
+    Error Context: test-results/zz-portable-check-portable-726b3-a-scroll-elsewhere-does-not/error-context.md
+
+  1 failed
+    e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not 

@@ -4,7 +4,8 @@
 - outputs/02: the report browser tests on the build of the previous commit (they fail: the old screen names a coach).
 - outputs/09 to 12: the tests written for the review's findings, before and after the fix.
 - outputs/13, 14: CI run 149's overlap, reproduced by holding the partner field's animation at 20 ms, before and after the fix (a fade in place of a rise).
-- outputs/15, 16: the WebKit press test run in Chromium with the iPhone's touch settings: with main.jsx's scroll scoping removed for the run (it fails), then 10 times with main.jsx as committed (CI run 148's fix; WebKit itself runs in CI).
+- outputs/15: the press test of 9299f0f with main.jsx's scroll scoping removed (it failed).
+- outputs/16, 17: the press test after CI run 150, run in Chromium with the iPhone's touch settings: 10 times with main.jsx as committed, and once each with a part of main.jsx's scroll handling removed for the run (each fails; the diff heads each file). WebKit itself runs in CI.
 - outputs/03 to 08: build, report browser tests, lint, typecheck, unit tests and all browser tests (Chromium) on the step's code.
 - screens/: Chromium at 390×664, 2x, taken before the review's fixes. The report's sheet from a saved set in the history (the subtitle and the partner reset changed after it). The result screen's saved card was rendered by a temporary page that is not committed (a saved card needs a real analysis); it shows the card's buttons and links, not the screen's top.
 - french-copy.md: the new French copy, for David's approval.
