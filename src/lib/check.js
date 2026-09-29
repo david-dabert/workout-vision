@@ -4,12 +4,12 @@
 
 /**
  * A row is as before when the whole video was read, from the same file, refused or not as before, and counted the same.
- * @param {{ before: number, fileSize: number, refused?: boolean }} clip
- * @param {{ count: number | null, refused?: boolean | null, read: number, expected: number | null, size: number }} row
+ * @param {{ before: number, sha256: string, refused?: boolean }} clip
+ * @param {{ count: number | null, refused?: boolean | null, read: number, expected: number | null, sha256: string }} row
  */
-export function rowVerdict(clip, { count, refused = null, read, expected, size }) {
+export function rowVerdict(clip, { count, refused = null, read, expected, sha256 }) {
   const why = [];
-  if (size !== clip.fileSize) why.push(`another file: ${size} bytes, the clip has ${clip.fileSize}`);
+  if (sha256 !== clip.sha256) why.push('another video (its fingerprint differs)');
   if (!(Number.isFinite(expected) && read === expected)) why.push(`read ${read} of ${expected ?? 'an unknown number of'} samples`);
   // What the app shows: a refused set shows no number, so a change of refusal is a change (review 01).
   if (refused != null && refused !== clip.refused) why.push(refused ? 'refused now, counted before' : 'counted now, refused before');

@@ -663,8 +663,11 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   const counted = (canvas, index, timestamp) => { handed++; return onFrame(canvas, index, timestamp); };
   let before = '';
 
-  // Step 1: Try WebCodecs (sequential, deterministic, handles rotation)
-  if (typeof VideoDecoder !== 'undefined') {
+  // Step 1: Try WebCodecs (sequential, deterministic, handles rotation). The check page can skip it
+  // (options.path === 'rvfc') to test the playback path on a phone where WebCodecs works.
+  if (options.path === 'rvfc') {
+    errors.push('WebCodecs: skipped, playback path forced');
+  } else if (typeof VideoDecoder !== 'undefined') {
     try {
       const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
       return { ...result, method: 'webcodecs' };

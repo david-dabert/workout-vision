@@ -1,0 +1,12 @@
+Reviewer, rebased check page, 29 September. Two defects, one risk.
+1. The baseline holds the Romanian deadlift where c5a8ccf's "five sets" had the squat; the page note did not say
+   which five. (Builder: deliberate, the five David sent for the check; the note now names them.)
+2. A run with the playback path forced counted toward the release gate: "5 of 5 as before" could mix forced and
+   normal runs; the switch was not disabled during a run. (Builder: each path keeps its own verdicts and line; the
+   normal path is the release gate, the forced path tests the decoder fix; the switch is disabled during a run; an
+   unfinished run counts as not as before.)
+Risk: the SHA-256 of a video picked twice from Photos may differ if the picker re-encodes; nothing shows it stable.
+Open: to be seen on the phone; a differing fingerprint is shown as "another video".
+No defect: WebCodecs skipped only when path is 'rvfc'; the app never passes path; abort and hide during hashing;
+the picker opens from the tap; verdict tests fail on revert; baseline counts, refusals and hashes match; every lift
+offered and named; no new host; no em dash; statements true of the code. The playback switch has no test.

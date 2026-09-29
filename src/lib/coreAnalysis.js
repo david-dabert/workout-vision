@@ -33,7 +33,7 @@ export class PartialReadError extends Error {
   constructor({ read, expected, decoder = '' }) { super(`${read} samples read where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; }
 }
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {} } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
   let id = 0;
@@ -73,7 +73,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
       onLandmarks(result.image, canvas.width, canvas.height);
-    }, onProgress, { deterministic: true, signal });
+    }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}) });
     signal?.throwIfAborted();
     const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
     if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
