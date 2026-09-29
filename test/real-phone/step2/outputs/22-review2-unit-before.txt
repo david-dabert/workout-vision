@@ -1,0 +1,39 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+8:02:39 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+8:02:39 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/__tests__/liftTiers.test.js (7 tests | 1 failed) 34ms
+     × names both limbs for an exercise counted on both sides 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/liftTiers.test.js > the tracked limb follows the lift > names both limbs for an exercise counted on both sides
+AssertionError: expected 'right leg' to be 'both legs' // Object.is equality
+
+Expected: "both legs"
+Received: "right leg"
+
+ ❯ src/lib/__tests__/liftTiers.test.js:50:60
+     48|   // Review 02 of step 2: a both-sides exercise names both limbs, neve…
+     49|   it('names both limbs for an exercise counted on both sides', () => {
+     50|     expect(limbLabel('walking_lunge', 'both', false).text).toBe('both …
+       |                                                            ^
+     51|     expect(limbLabel('walking_lunge', 'both', true).text).toBe('les de…
+     52|     expect(limbLabel('archer_push_up', 'both', true).text).toBe('les d…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  08:02:40
+   Duration  600ms (transform 338ms, setup 0ms, import 371ms, tests 34ms, environment 0ms)
+

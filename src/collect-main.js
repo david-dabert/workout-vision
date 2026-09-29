@@ -10,21 +10,17 @@ import { extractFramesStreaming } from './lib/frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './lib/extractionConfig';
 import { setFileName, issueUrl, setPayload, hashVideoContent, gzipBlob, sampleSet, refusal } from './lib/collector';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
+import { OFFERED } from './lib/offer';
+import catalogue from './lib/guide-catalog.json';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 
-// Lift list: same as the app's choice screen
-const LIFTS = [
-  { key: 'lateral_raise', label: 'Lateral raise / Élévations latérales' },
-  { key: 'bicep_curl', label: 'Biceps curl / Curl biceps' },
-  { key: 'lat_pulldown', label: 'Lat pulldown / Tirage vertical' },
-  { key: 'squat', label: 'Squat' },
-  { key: 'bench_press', label: 'Bench press / Développé couché' },
-  { key: 'hip_thrust', label: 'Hip thrust' },
-  { key: 'romanian_deadlift', label: 'Romanian deadlift / Soulevé de terre roumain' },
-  { key: 'leg_press', label: 'Leg press / Presse à cuisses' },
-  { key: 'overhead_press', label: 'Overhead press / Développé militaire' },
-];
+// The exercises: the same as the app offers (src/lib/offer.js, PLAN.md, GROWTH, step 2), by their
+// guide names in English and French, in alphabetical order.
+const byKey = new Map(catalogue.map(e => [e.key, e]));
+const LIFTS = OFFERED.map(key => byKey.get(key)).filter(Boolean)
+  .map(e => ({ key: e.key, label: `${e.name} / ${e.fr}` }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'en'));
 
 const $ = id => document.getElementById(id);
 

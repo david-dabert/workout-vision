@@ -2,10 +2,10 @@ import { countReps } from './counting/core';
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
-import { TIERS } from './liftTiers';
+import { OFFERED, isOffered } from './offer';
 
-// Every lift with a tier (Beta or Experimental) is offered; see liftTiers.js and PLAN.md.
-export const APPROVED_LIFTS = Object.keys(TIERS);
+// Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
+export const APPROVED_LIFTS = OFFERED;
 
 export function summarizeCount(worldLandmarks, timestamps, lift) {
   const core = countReps(worldLandmarks, timestamps, lift);
@@ -16,7 +16,7 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
 }
 
 export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {} } = {}) {
-  if (!APPROVED_LIFTS.includes(lift)) throw new Error('Choose an approved lift');
+  if (!isOffered(lift)) throw new Error('Choose an approved lift');
   const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
   let id = 0;
   const pending = new Map();

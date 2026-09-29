@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { META, restPose } from './lift-scenes';
+import { restPose } from './lift-scenes';
+import { exerciseName } from './exercise-info';
 import { Body, mapPose, SPR, DPR, LITE } from './entry-scene';
 import { addLayer, setDust, stageReduced, presence } from './stage-loop';
 import './Watch.css';
@@ -36,7 +37,7 @@ function drawTrail(ctx, tr, alpha) {
 
 export default function Watch({ lift, progress, phase, landmarks, frameSize, onSkip }) {
   const { lang } = useT(), fr = lang === 'fr';
-  const title = META[lift]?.[lang] || lift;
+  const title = exerciseName(lift, lang);
   // Loading until the first body arrives; a later frame without a person does not count as loading.
   const seenBody = useRef(false);
   if (landmarks) seenBody.current = true;

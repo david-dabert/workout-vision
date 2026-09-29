@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { META } from './lift-scenes';
+import { exerciseName } from './exercise-info';
 import { limbLabel } from './lift-meta';
 import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
@@ -35,8 +35,8 @@ export default function History({ onClose }) {
     return () => { clearTimeout(t.confirm); clearTimeout(t.close); };
   }, []);
 
-  const liftName = w => META[w.exercise]?.[lang] || tExercise(w.exercise || w.exerciseKey);
-  const armLabel = w => (w.arm === 'left' || w.arm === 'right') ? limbLabel(w.exercise || w.exerciseKey, w.arm, fr).text : '';
+  const liftName = w => (w.exercise && exerciseName(w.exercise, lang) !== w.exercise ? exerciseName(w.exercise, lang) : tExercise(w.exercise || w.exerciseKey));
+  const armLabel = w => (w.arm === 'left' || w.arm === 'right' || w.arm === 'both') ? limbLabel(w.exercise || w.exerciseKey, w.arm, fr).text : '';
 
   function toggle(id) {
     setConfirm(null);

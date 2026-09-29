@@ -1,4 +1,5 @@
 import poses from './lift-poses.json';
+import entry from './entry-pose.json';
 import { Body, mapPose, DPR, LITE } from './entry-scene';
 const DIG = '0123456789abcdefghijklmnopqrstuvwxyz';
 function decodeFrame(s) {
@@ -68,16 +69,24 @@ export function createLiftScene(canvas, lift, mode = 'loop', { paused = false } 
   };
   return dispose;
 }
+// Only the nine card lifts have a figure of their own; every other exercise is drawn from the guide.
+export const hasFigure = lift => Object.hasOwn(poses, lift);
 export const liftView = lift => poses[lift].view;
 // The reference framing's size, for the phone outline on the filming screen.
 export const restBox = lift => poses[lift].rest.vb;
 // The reference pose at rest, as flat [x0, y0, x1, y1, ...] in its own box.
 export function restPose(lift) {
+  if (!hasFigure(lift)) return standing();
   const r = poses[lift].rest;
   return { p: new Float32Array(r.p.map(v => (v < 0 ? NaN : v))), vb: r.vb };
 }
 // The reference pose at the top of the movement, when the data has one.
 export function topPose(lift) {
+  if (!hasFigure(lift)) return standing();
   const d = poses[lift], src = d.top || d.rest;
   return { p: new Float32Array(src.p.map(v => (v < 0 ? NaN : v))), vb: src.vb };
+}
+// The app's standing figure (the guide's body map), for an exercise without a figure of its own.
+function standing() {
+  return { p: new Float32Array(entry.p.map(v => (v < 0 ? NaN : v))), vb: entry.vb };
 }

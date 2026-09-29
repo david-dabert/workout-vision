@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { createLiftScene, META, liftView, restBox } from './lift-scenes';
-import { LIFTS as CORE_LIFTS } from '../../lib/counting/core';
-import { TIERS, tierLabel } from '../../lib/liftTiers';
+import { createLiftScene, hasFigure, restBox } from './lift-scenes';
+import { liftDefinition } from '../../lib/counting/core';
+import { tierLabel } from '../../lib/liftTiers';
+import { tierOf } from '../../lib/offer';
+import { exerciseName, filmView, guideExercise } from './exercise-info';
+import { GuideFrames } from './Guide';
 import './Film.css';
 
 export default function Film({ lift, onBack, onFile, hero: arrivedByTransition = false }) {
@@ -13,9 +16,11 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
   // so a Film screen still fading out never shares the name with the next one.
   const [hero, setHero] = useState(arrivedByTransition);
   useEffect(() => { if (!hero) return undefined; const t = setTimeout(() => setHero(false), 700); return () => clearTimeout(t); }, [hero]);
-  const view = liftView(lift);
-
-  const [bw, bh] = restBox(lift);
+  const view = filmView(lift);
+  // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
+  const figure = hasFigure(lift), guide = figure ? null : guideExercise(lift);
+  const tier = tierOf(lift);
+  const [bw, bh] = figure ? restBox(lift) : [1, 1];
 
   useEffect(() => {
     if (!canvas.current) return;
@@ -28,8 +33,10 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
   }
 
   // Knee and hip lifts are filmed with the whole body in frame; arm lifts from head to hips.
-  const wholeBody = ['knee', 'hip'].includes(CORE_LIFTS[lift]?.joint);
-  const step1 = wholeBody
+  const wholeBody = ['knee', 'hip'].includes(liftDefinition(lift)?.joint);
+  // A knee or hip exercise filmed from the front (a lateral lunge, a standing hip abduction) is filmed facing
+  // the phone, as its view says; the whole body stays in frame either way (review of 29 September).
+  const step1 = wholeBody && view === 'side'
     ? (fr ? 'Posez le téléphone à la verticale, sur le côté, pour qu\u2019il vous voie de profil.' : 'Stand the phone upright at your side, so it sees you in profile.')
     : view === 'side'
     ? (fr ? 'Posez le téléphone sur le côté, le bras qui travaille face à l\u2019objectif.' : 'Stand the phone at your side, working arm facing the lens.')
@@ -44,16 +51,18 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
-      <h2 className="title" data-reveal style={{ '--i': 1 }}>{META[lift]?.[lang] || lift}</h2>
-      {TIERS[lift] && <p className={`tier tier-${TIERS[lift]}`} data-reveal style={{ '--i': 1 }}>{tierLabel(TIERS[lift], fr)}</p>}
+      <h2 className="title" data-reveal style={{ '--i': 1 }}>{exerciseName(lift, lang)}</h2>
+      {tier && <p className={`tier tier-${tier}`} data-reveal style={{ '--i': 1 }}>{tierLabel(tier, fr)}</p>}
       <div className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
-        <canvas ref={canvas} aria-hidden="true" />
+        {figure ? <canvas ref={canvas} aria-hidden="true" /> : guide && <GuideFrames exercise={guide} />}
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 9V0h9M91 0h9v9M100 91v9h-9M9 100H0v-9" fill="none" stroke="currentColor" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
         </svg>
         <i className="scan" aria-hidden="true" />
       </div>
-      <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
+      {figure
+        ? <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
+        : <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
       <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
         <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.')}</span></li>

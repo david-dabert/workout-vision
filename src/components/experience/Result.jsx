@@ -1,31 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { META, topPose } from './lift-scenes';
+import { topPose } from './lift-scenes';
+import { exerciseName } from './exercise-info';
 import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { warmReportPdf } from './Report';
 import { refreshSets } from './sets';
 import { decimal } from './report-sheet';
-import { TIERS, tierLabel } from '../../lib/liftTiers';
+import { tierLabel } from '../../lib/liftTiers';
+import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel } from './lift-meta';
-import { LIFTS as CORE_LIFTS, JOINT_POINTS } from '../../lib/counting/core';
+import { liftDefinition, JOINT_POINTS } from '../../lib/counting/core';
 import './Result.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The three landmarks the counting core measures for each lift (JOINT_POINTS in core.ts), by side.
 const HIPS = new Set([23, 24]);
-const coreIndices = (lift, side) => JOINT_POINTS[CORE_LIFTS[lift]?.joint || 'elbow'][side];
+const coreIndices = (lift, side) => JOINT_POINTS[liftDefinition(lift)?.joint || 'elbow'][side];
 
 // Why a set was refused, read from the same joints the core uses rather than assumed.
 function refusal(result, lift) {
   const frames = result.imageLandmarks || [];
   const posed = frames.filter(Boolean);
   if (!frames.length || posed.length < frames.length / 2) return { cause: 'nobody' };
-  const arm = result.arm === 'left' ? 'left' : 'right';
+  // A both-sides set is refused for the worse of its two sides.
+  const arms = result.arm === 'both' ? ['left', 'right'] : [result.arm === 'left' ? 'left' : 'right'];
   let i = -1, missing = -1;
-  for (const k of coreIndices(lift, arm)) {
+  for (const k of arms.flatMap(a => coreIndices(lift, a))) {
     const n = posed.filter(f => f[k].visibility < 0.5).length;
     if (n > missing) { missing = n; i = k; }
   }
@@ -82,7 +85,7 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
-      <p className="eyebrow refused-eyebrow">{META[lift]?.[lang] || lift}</p>
+      <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title">{model
         ? (fr ? 'L’analyse n’a pas pu démarrer.' : 'The analysis could not start.')
         : (fr ? 'Nous n’avons pas pu lire cette vidéo.' : 'We could not read this video.')}</h2>
@@ -104,7 +107,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
-      <p className="eyebrow refused-eyebrow">{META[lift]?.[lang] || lift}</p>
+      <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title">{fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.'}</h2>
       <p className="body-text">{fr
         ? 'L’écran s’est éteint ou vous avez quitté l’app. Gardez l’écran allumé pendant l’analyse, puis recommencez.'
@@ -145,9 +148,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     wasCovered.current = covered;
   }, [covered]);
 
-  const liftName = META[lift]?.[lang] || lift;
-  const limb = limbLabel(lift, result.arm === 'left' ? 'left' : 'right', fr), armLabel = limb.text, e = limb.feminine ? 'e' : '';
-  const legs = CORE_LIFTS[lift]?.joint === 'knee';
+  const liftName = exerciseName(lift, lang);
+  const limb = limbLabel(lift, result.arm === 'both' ? 'both' : result.arm === 'left' ? 'left' : 'right', fr), armLabel = limb.text, e = limb.feminine ? 'e' : '';
+  const many = !!limb.plural, ee = limb.feminine ? 'es' : 's';
+  const legs = liftDefinition(lift)?.joint === 'knee';
   const seconds = Math.round(result.metadata?.duration || 0);
   const count = result.count;
 
@@ -251,14 +255,20 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     const text = why.cause === 'nobody'
       ? (fr ? 'Nous ne vous avons pas trouvé dans la vidéo.' : 'We could not find you in the video.')
       : why.cause === 'unclear'
-        ? (fr ? `Votre ${armLabel} n\u2019était pas assez visible pour compter les répétitions.` : `Your ${armLabel} was not visible enough to count the reps.`)
+        ? (many
+          ? (fr ? `Vos ${limb.noun} n\u2019étaient pas assez visibles pour compter les répétitions.` : `Your ${limb.noun} were not visible enough to count the reps.`)
+          : (fr ? `Votre ${armLabel} n\u2019était pas assez visible pour compter les répétitions.` : `Your ${armLabel} was not visible enough to count the reps.`))
         : why.hips
           ? (why.cause === 'outside'
             ? (fr ? 'Vos hanches sont restées hors du cadre pendant la plus grande partie de la série.' : 'Your hips stayed out of the frame for most of the set.')
             : (fr ? 'Vos hanches étaient cachées pendant la plus grande partie de la série.' : 'Your hips were hidden for most of the set.'))
           : (why.cause === 'outside'
-            ? (fr ? `Votre ${armLabel} est sorti${e} du cadre pendant la plus grande partie de la série.` : `Your ${armLabel} left the frame for most of the set.`)
-            : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`));
+            ? (many
+              ? (fr ? `Vos ${limb.noun} sont sorti${ee} du cadre pendant la plus grande partie de la série.` : `Your ${limb.noun} left the frame for most of the set.`)
+              : (fr ? `Votre ${armLabel} est sorti${e} du cadre pendant la plus grande partie de la série.` : `Your ${armLabel} left the frame for most of the set.`))
+            : (many
+              ? (fr ? `Vos ${limb.noun} étaient caché${ee} pendant la plus grande partie de la série.` : `Your ${limb.noun} were hidden for most of the set.`)
+              : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`)));
     const fix = why.hips
       ? (fr ? 'Reculez pour que vos hanches soient dans l\u2019image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
@@ -297,7 +307,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
       <div className="res-head">
         <p className="eyebrow">{liftName}</p>
-        {TIERS[lift] && <p className={`tier tier-${TIERS[lift]}`}>{tierLabel(TIERS[lift], fr)}</p>}
+        {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
         <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
       </div>
       <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>

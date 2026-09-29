@@ -49,3 +49,7 @@
 }
 /* The row to the saved sets sits under the first row and shares its rule. */
 .wv-experience .row-link + .row-link { margin-top: 0; border-top: 0; }
+/* Every counted exercise, under the cards (step 2): the guide's search and rows. */
+.wv-experience .all-exercises { margin-top: 28px; }
+.wv-experience .all-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.05; color: var(--bone); }
+.wv-experience .all-exercises .search { margin-top: 14px; }

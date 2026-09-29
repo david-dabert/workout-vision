@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { META } from './lift-scenes';
+import { exerciseName } from './exercise-info';
 import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, setTime } from './sets';
-import { LIFTS } from '../../lib/counting/core';
+import { liftDefinition } from '../../lib/counting/core';
 import './Report.css';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
@@ -21,7 +21,7 @@ export function warmReportPdf() {
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
 export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps }) {
-  const { lang, tExercise } = useT(), fr = lang === 'fr';
+  const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach
   const [partner, setPartner] = useState('');
@@ -35,8 +35,8 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const backRef = useRef(null), partnerRef = useRef(null), notesRef = useRef(null);
   const when = useRef(date ? new Date(date) : new Date()).current;
 
-  const liftName = META[lift]?.[lang] || tExercise(lift);
-  const first = LIFTS[lift]?.first || 'concentric';
+  const liftName = exerciseName(lift, lang);
+  const first = liftDefinition(lift)?.first || 'concentric';
   // The previous saved set of the same lift, if any, for comparison.
   const prevRef = useRef(undefined);
   if (prevRef.current === undefined) {
@@ -49,7 +49,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       prevRef.current = null;
     }
   }
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: LIFTS[lift]?.joint, reps, source, first, previousSet: prevRef.current });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: prevRef.current });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 

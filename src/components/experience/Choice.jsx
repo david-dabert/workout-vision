@@ -1,10 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { LIFTS, META, createLiftScene } from './lift-scenes';
 import { useSets } from './sets';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
 import './Choice.css';
+
+// The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
+// If its code cannot load (offline, after an update), the choice shows without it: the cards stay.
+const ExerciseList = lazy(() => import('./ExerciseList').catch(() => ({ default: () => null })));
 
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
 let returning = null;
@@ -73,6 +77,10 @@ function LiftCard({ children, onClick, label, cardRef }) {
 export default function Choice({ onChoose, onGuide, onHistory }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
+  // The guide's names load after the choice; until then a set of an exercise without a card is not
+  // named, so the welcome never shows an internal key (review of 29 September).
+  const [nameOf, setNameOf] = useState(null);
+  useEffect(() => { import('./exercise-info').then(m => setNameOf(() => m.exerciseName), () => {}); }, []);
   useRail(railRef, dotsRef);
   // The chosen card carries the name the filming screen's frame takes, so it grows into it (View Transitions).
   const choose = (lift, i) => { cards.current.forEach((c, j) => { if (c) c.style.viewTransitionName = j === i ? 'lift-hero' : ''; }); onChoose(lift); };
@@ -82,7 +90,9 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
   if (returning === null && sets) returning = sets.length > 0;
   const last = returning && sets?.[0];
   const n = sets?.length || 0;
-  const lastName = last && (META[last.exercise]?.[lang] || tExercise(last.exercise || last.exerciseKey)).toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
+  const lastKey = last && (last.exercise || last.exerciseKey);
+  const lastRaw = last && (META[lastKey]?.[lang] || nameOf?.(lastKey, lang) || (tExercise(lastKey) !== lastKey ? tExercise(lastKey) : ''));
+  const lastName = lastRaw && lastRaw.toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
   return <div className="wv-experience">
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
       <div className="choose-hero">
@@ -90,9 +100,9 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         <div className="topbar"><span className="brand-sm">Workout Vision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
         {last && <div className="welcome">
           <p className="welcome-l1">{fr ? 'Bon retour.' : 'Welcome back.'}</p>
-          <p className="welcome-l2">{fr
+          {lastName && <p className="welcome-l2">{fr
             ? `Dernière série\u00A0: ${lastName}, ${last.reps} ${last.reps > 1 ? 'répétitions' : 'répétition'}.`
-            : `Last set: ${lastName}, ${last.reps} ${last.reps === 1 ? 'rep' : 'reps'}.`}</p>
+            : `Last set: ${lastName}, ${last.reps} ${last.reps === 1 ? 'rep' : 'reps'}.`}</p>}
         </div>}
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
@@ -120,6 +130,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
         <p className="foot">{fr ? 'Chaque comptage reste à confirmer : ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are in Beta or Experimental.'}</p>
       </div>
     </section>

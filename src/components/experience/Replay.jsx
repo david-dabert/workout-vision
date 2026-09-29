@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { META } from './lift-scenes';
-import { LIFTS, JOINT_POINTS } from '../../lib/counting/core';
+import { exerciseName } from './exercise-info';
+import { liftDefinition, JOINT_POINTS } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { SEEN, poseAt, repAt, phaseAt } from './replay-track';
 import './Replay.css';
@@ -15,7 +15,7 @@ const DOTS = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
 const BONE = 'rgba(239, 232, 220, 0.85)', SHADE = 'rgba(8, 7, 6, 0.4)', LAMP = '#F7DCAE';
 
 export default function Replay({ file, result, lift, leaving, onBack }) {
-  const { lang, tExercise } = useT(), fr = lang === 'fr';
+  const { lang } = useT(), fr = lang === 'fr';
   const videoRef = useRef(null), canvasRef = useRef(null), backRef = useRef(null), lineRef = useRef(null);
   const drag = useRef(null);
   const [url, setUrl] = useState(null);
@@ -26,12 +26,12 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
 
   // A refused set shows no reps here either: the result said it could not count them.
   const frames = result.imageLandmarks || [], times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
-  const def = LIFTS[lift];
+  const def = liftDefinition(lift);
   const sides = !def ? [] : result.arm === 'both' ? ['left', 'right'] : [result.arm === 'right' ? 'right' : 'left'];
   const meta = result.metadata || {};
   const fw = meta.width || meta.extractedWidth || 9, fh = meta.height || meta.extractedHeight || 16;
   const [length, setLength] = useState(meta.duration || times[times.length - 1] || 1);
-  const liftName = META[lift]?.[lang] || tExercise(lift);
+  const liftName = exerciseName(lift, lang);
 
   // The file is read where it lies on the phone; its address lives as long as the screen.
   useEffect(() => {
