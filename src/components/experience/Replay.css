@@ -56,3 +56,9 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .rp-rep { transition: none; }
 }
+
+/* Step 4: the video with its overlay, prepared then shared (29 September). */
+.wv-experience .rp-export { flex: none; margin-top: 10px; display: flex; flex-direction: column; }
+.wv-experience .rp-export .btn-line { width: 100%; justify-content: center; text-decoration: none; }
+.wv-experience .rp-export .btn-line:disabled { opacity: 0.7; cursor: default; }
+.wv-experience .rp-export-note { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: var(--ash); text-align: center; }

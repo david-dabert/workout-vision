@@ -1,0 +1,1 @@
+Goal: on the replay, the user prepares on the phone a video of the set with its overlay, the skeleton, the lit joint and the reps counted so far, and shares it through the share sheet on Safari on iPhone, or saves it where the share sheet cannot take the file, with nothing sent anywhere by the app.

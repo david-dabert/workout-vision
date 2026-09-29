@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
-import { liftDefinition, JOINT_POINTS } from '../../lib/counting/core';
+import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
-import { SEEN, poseAt, repAt, phaseAt } from './replay-track';
+import { poseAt, repAt, phaseAt } from './replay-track';
+import { drawSkeleton, litSides } from './replay-draw';
+import { canExport, exportSetVideo } from './video-export';
 import './Replay.css';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
 // The video is read from the phone and sent nowhere.
-
-const BONES = [[11, 12], [11, 23], [12, 24], [23, 24], [11, 13], [13, 15], [12, 14], [14, 16], [23, 25], [25, 27], [24, 26], [26, 28], [27, 31], [28, 32]];
-const DOTS = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
-const BONE = 'rgba(239, 232, 220, 0.85)', SHADE = 'rgba(8, 7, 6, 0.4)', LAMP = '#F7DCAE';
 
 export default function Replay({ file, result, lift, leaving, onBack }) {
   const { lang } = useT(), fr = lang === 'fr';
@@ -27,11 +25,31 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   // A refused set shows no reps here either: the result said it could not count them.
   const frames = result.imageLandmarks || [], times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
   const def = liftDefinition(lift);
-  const sides = !def ? [] : result.arm === 'both' ? ['left', 'right'] : [result.arm === 'right' ? 'right' : 'left'];
+  const sides = litSides(def, result.arm);
   const meta = result.metadata || {};
   const fw = meta.width || meta.extractedWidth || 9, fh = meta.height || meta.extractedHeight || 16;
   const [length, setLength] = useState(meta.duration || times[times.length - 1] || 1);
   const liftName = exerciseName(lift, lang);
+
+  // Step 4: the video with its overlay, prepared on a first tap and shared on a second, since the share
+  // sheet opens only inside a tap and the recording takes as long as the set.
+  const [made, setMade] = useState({ state: 'idle', progress: 0, file: null, link: null });
+  const abort = useRef(null);
+  useEffect(() => () => { abort.current?.abort(); }, []);
+  useEffect(() => () => { if (made.link) URL.revokeObjectURL(made.link); }, [made.link]);
+  const exportable = !broken && !result.refused && canExport();
+  function prepare() {
+    videoRef.current?.pause();
+    abort.current = new AbortController();
+    setMade({ state: 'making', progress: 0, file: null, link: null });
+    exportSetVideo({ file, result, lift, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
+      .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out) }))
+      .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null }); });
+  }
+  const sharable = made.file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [made.file] });
+  function share() {
+    navigator.share({ files: [made.file] }).catch(() => {});
+  }
 
   // The file is read where it lies on the phone; its address lives as long as the screen.
   useEffect(() => {
@@ -63,32 +81,8 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
       if (!lm) return;
       // The picture sits in its box as object-fit: contain places it.
       const vw = video.videoWidth || fw, vh = video.videoHeight || fh;
-      const s = Math.min(cw / vw, ch / vh), ox = (cw - vw * s) / 2, oy = (ch - vh * s) / 2;
-      const at = k => [ox + lm[k].x * vw * s, oy + lm[k].y * vh * s];
-      const seen = k => lm[k] && lm[k].visibility >= SEEN;
-      const line = (pts, width, colour) => {
-        ctx.lineWidth = width; ctx.strokeStyle = colour;
-        ctx.beginPath(); pts.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke();
-      };
-      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      const bones = BONES.filter(([a, b]) => seen(a) && seen(b)).map(([a, b]) => [at(a), at(b)]);
-      for (const b of bones) line(b, 4, SHADE);
-      for (const b of bones) line(b, 2, BONE);
-      ctx.fillStyle = BONE;
-      for (const k of DOTS) if (seen(k)) { const [x, y] = at(k); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill(); }
-      // The measured joint, lit. Its angle is not written on the picture: the core measures it
-      // in 3D, and at the top of a curl filmed from the side the two can differ by tens of degrees.
-      for (const side of sides) {
-        const [a, v, b] = JOINT_POINTS[def.joint][side];
-        if (!seen(a) || !seen(v) || !seen(b)) continue;
-        const pts = [at(a), at(v), at(b)];
-        line(pts, 6, SHADE);
-        ctx.shadowColor = 'rgba(247, 220, 174, 0.75)'; ctx.shadowBlur = 10;
-        line(pts, 3.5, LAMP);
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = LAMP;
-        ctx.beginPath(); ctx.arc(pts[1][0], pts[1][1], 4.5, 0, Math.PI * 2); ctx.fill();
-      }
+      const s = Math.min(cw / vw, ch / vh);
+      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def);
     };
     // The screen's words follow the video about ten times a second, and at once when it stops.
     const tell = (t, force) => {
@@ -247,9 +241,19 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
         </button>
         <button className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`} aria-pressed={slow} disabled={broken} onClick={() => setSlow(s => !s)}>{fr ? 'Ralenti' : 'Slow motion'}</button>
       </div>
+      {exportable && <div className="rp-export">
+        {(made.state === 'idle' || made.state === 'failed') && <button className="btn-line press" onClick={prepare}>{fr ? 'Préparer la vidéo à partager' : 'Prepare the video to share'}</button>}
+        {made.state === 'making' && <button className="btn-line" disabled aria-live="polite">{fr ? `Préparation de la vidéo… ${Math.round(made.progress * 100)} %` : `Preparing the video… ${Math.round(made.progress * 100)}%`}</button>}
+        {made.state === 'ready' && (sharable
+          ? <button className="btn-line press" onClick={share}>{fr ? 'Partager la vidéo' : 'Share the video'}</button>
+          : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? 'Enregistrer la vidéo' : 'Save the video'}</a>)}
+        {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled'
+          ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’app ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
+          : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
+      </div>}
       <p className="rp-note">{fr
-        ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte pas votre téléphone.'
-        : 'In gold, the joint whose angle counts the reps. The video does not leave your phone.'}</p>
+        ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte votre téléphone que si vous la partagez.'
+        : 'In gold, the joint whose angle counts the reps. The video leaves your phone only if you share it.'}</p>
     </div></section>
   </div>;
 }

@@ -1,0 +1,25 @@
+Reviewer, step 4, 29 September. Three defects, three smaller issues. Nothing run on WebKit or an iPhone.
+
+D1. Preparation hangs for good when the hidden video stops before its end: it settled only on ended, recorder
+    onstop, video error, a rejected play() or an abort; no pause, stall or visibility handling, no timeout.
+    Scenario: 60 s set, auto-lock at 30 s, or the user switches app: Safari pauses the hidden video, "Préparation
+    … 47 %" stays forever with no cancel or retry, and the recorder keeps adding chunks. Also: play() was called
+    from loadeddata, outside the tap, and WebKit may refuse or never load a hidden video outside a tap.
+D2. On error the recorder was never stopped (only on abort); the canvas capture track was never stopped; the
+    failed state was final, with no retry.
+D3. A throw inside the loadeddata handler (captureStream, the MediaRecorder constructor, start) left the promise
+    pending forever.
+Smaller: "La vidéo ne quitte pas votre téléphone." sits under "Partager la vidéo" and needs rewording (R10);
+the burned-in number counts reps begun, as the replay chip does; the unit tests covered pure helpers only and the
+harness is manual, Chromium only, with a fixed wait. Memory at 6 Mbps is about 45 MB a minute.
+No defect: share() inside the click; double taps; unmount aborts; object URLs revoked; mediaTime keeps the overlay
+in sync; no new host; every string in both languages, no em dash; drawSkeleton and litSides behave as the inline
+code they replace. The committed PNGs are screens of a synthetic video made in the page, not a user clip.
+
+Fixes (this session): the video plays inside the tap; a pause before the end rejects 'interrupted', five seconds
+without progress rejects 'stalled', a refused play() or a throw in the setup rejects; the recorder and the capture
+track are stopped on every path; the failed state offers the prepare button again, with a message that says to
+keep the screen on and the app open. Five tests failed first, then 9 of 9 passed (video-export.test.js). The note
+now reads "La vidéo ne quitte votre téléphone que si vous la partagez.", for David's approval. The number stays
+"reps begun", as on the replay. Bitrate 4 Mbps (about 30 MB a minute). The harness waits for the progress, not a
+fixed time.

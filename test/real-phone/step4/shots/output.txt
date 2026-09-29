@@ -1,0 +1,3 @@
+input: synthetic WebM, 360x640, 3 s (37061 bytes)
+output: {"gold":513,"label":"Enregistrer la vidéo","name":"workoutvision-bicep-curl.mp4","type":"video/mp4","bytes":82850,"width":360,"height":640,"duration":3}
+page errors: []
