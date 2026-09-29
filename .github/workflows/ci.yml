@@ -76,7 +76,8 @@ jobs:
           exit $status
       - name: Keep "Filmer ma série" in view for every exercise
         if: always()
-        run: node test/real-phone/tour-ci/film-button.mjs
+        # The two gated heights only: 548 px is recorded by a local run, never gated (David, 29 September: weigh every run's cost).
+        run: WV_SIZES=390x664,390x745 node test/real-phone/tour-ci/film-button.mjs
       - name: Keep the shots and results
         if: always()
         uses: actions/upload-artifact@v4
