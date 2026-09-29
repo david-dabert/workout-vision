@@ -44,6 +44,14 @@ METHOD
 - A STOP report carries the verifier's table and verdict unchanged. On FAIL, fix, push and run it again. After a second FAIL, stop and report the unmet rows.
 - A row that can only be met by breaking another rule is not fixed. Report it to David as a conflict.
 - The tour writes the output of node scripts/src-hash.mjs into its results.json as srcHash, so the verifier can tell whether the evidence comes from the code under review.
+- Lean steps and the order of the remaining budget (David's order, 29 September, after CI run 157). It prevails over the lines above where they differ.
+  The app is for coaches and for everyone who trains, alone, with a friend or with a coach; there is no choice to make between them, and the business model waits for the investment stage.
+  The experimental exercises stay offered and labelled, since every use of them can come back to us through the report button.
+  From now on, every step runs lean: one reviewer pass, CI, and David's check on the iPhone; the verifier runs only on a change to counting.
+  1. Step 1 ships as soon as David approves a239503 on his iPhone; step 2 then goes to counter-core, and he checks it on the preview.
+  2. Step 3, the longer analysis, is built from the texts David approves, since it answers the feedback his users gave most often.
+  3. The scoreboard and the exam harness wait until David has filmed the exam sets, so that they are built against real sets.
+  Usage measurement, the single list, the synthetic video and the load per set wait.
 
 0. FREEZE. Stop every background agent. Commit all uncommitted work, on whatever branch it sits, to a branch named park-<date>; delete nothing. Then create counter-core from hotfix-ios and commit this message to it as PLAN.md at the repository root. List every branch with its last commit and one line on what it holds, including where the five-layer rebuild lives, and say which commit the live site serves. Confirm no video file appears anywhere in the repository's history; if one does, tell David and rewrite nothing. STOP.
 
