@@ -65,6 +65,61 @@ for (const lang of ['fr', 'en']) {
   });
 }
 
+// Progress per exercise: bars and bests from the stored counts only; the set holding
+// a record is marked; an exercise with a single set says only that it is the first.
+test('shows each exercise’s progress and marks its record', async ({ page }) => {
+  await savedSet(page);
+  await page.evaluate(() => new Promise((resolve, reject) => {
+    const request = indexedDB.open('workoutVision');
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction('workouts', 'readwrite'), store = tx.objectStore('workouts'), now = Date.now();
+      store.put({ id: 'curl-10', exercise: 'bicep_curl', reps: 10, source: 'manual', weight: 12, createdAt: now - 3 * 60000 }, 'curl-10');
+      store.put({ id: 'curl-9', exercise: 'bicep_curl', reps: 9, source: 'manual', weight: 12, createdAt: now - 2 * 60000 }, 'curl-9');
+      store.put({ id: 'squat-1', exercise: 'squat', reps: 5, source: 'manual', createdAt: now - 60 * 60000 }, 'squat-1');
+      tx.oncomplete = () => { db.close(); resolve(); };
+      tx.onerror = () => reject(tx.error);
+    };
+  }));
+  await page.reload();
+  await page.getByRole('button', { name: /Vos séries/ }).click();
+  const block = page.locator('.hist-prog');
+  await expect(block).toContainText('Vos progrès');
+  await expect(block.locator('.prog-item')).toHaveCount(2);
+  await expect(block.locator('.prog-item').first().locator('rect')).toHaveCount(3);
+  await expect(block).toContainText('Record : 10 répétitions');
+  await expect(block).toContainText('Charge max : 12 kg × 10');
+  await expect(block).not.toContainText('Record à 12'); // the same set, said once
+  await expect(block).toContainText('Première série de cet exercice.');
+  await expect(page.locator('.hist-tag.is-best')).toHaveCount(1);
+  await expect(page.locator('.hist-btn', { has: page.locator('.hist-tag.is-best') }).locator('.hist-n')).toHaveText('10');
+});
+
+// The row shows the reps, not the load: a set whose only record is its load carries no
+// tag there, or the row would contradict the line "Record : N répétitions" (review, 29 September).
+test('marks in the list only the set holding the reps record', async ({ page }) => {
+  await savedSet(page);
+  await page.evaluate(() => new Promise((resolve, reject) => {
+    const request = indexedDB.open('workoutVision');
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction('workouts', 'readwrite'), store = tx.objectStore('workouts'), now = Date.now();
+      store.put({ id: 'sq-40', exercise: 'squat', reps: 10, source: 'manual', weight: 40, createdAt: now - 3 * 60000 }, 'sq-40');
+      store.put({ id: 'sq-70', exercise: 'squat', reps: 5, source: 'manual', weight: 70, createdAt: now - 2 * 60000 }, 'sq-70');
+      tx.oncomplete = () => { db.close(); resolve(); };
+      tx.onerror = () => reject(tx.error);
+    };
+  }));
+  await page.reload();
+  await page.getByRole('button', { name: /Vos séries/ }).click();
+  await expect(page.locator('.hist-prog')).toContainText('Charge max : 70 kg × 5');
+  const tagged = page.locator('.hist-btn', { has: page.locator('.hist-tag.is-best') });
+  await expect(tagged).toHaveCount(1);
+  await expect(tagged.locator('.hist-n')).toHaveText('10');
+});
+
 // Rule 8: a tap never leaves the bare stage while the next screen's code loads.
 // The history's code is held back 1.5 s, as on a slow phone before the app has
 // warmed it; from the tap until the history shows, no frame may show the loading

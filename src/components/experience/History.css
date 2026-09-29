@@ -30,3 +30,14 @@
 .wv-experience .hist-empty { margin-top: 28px; display: flex; flex-direction: column; gap: 18px; }
 .wv-experience .hist-empty p { margin: 0; font-size: 15px; color: var(--ash); }
 .wv-experience .hist-error { margin: 18px 0 0; font-size: 14px; line-height: 1.5; color: var(--lamp); }
+/* A set may carry two tags, a record and a correction, one above the other. */
+.wv-experience .hist-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.wv-experience .hist-tag.is-best { border-color: var(--lamp); color: var(--lamp); }
+/* Progress per exercise: the name, the last sets' reps as bars from zero, the bests in mono. */
+.wv-experience .prog-item { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; }
+.wv-experience .prog-name { font-family: var(--serif); font-size: 23px; line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
+.wv-experience .prog-line { display: block; line-height: 0; }
+.wv-experience .prog-bars rect { fill: var(--ash); opacity: 0.55; }
+.wv-experience .prog-bars rect.is-last { fill: var(--lamp); opacity: 1; }
+.wv-experience .prog-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .prog-meta > span { white-space: nowrap; }
