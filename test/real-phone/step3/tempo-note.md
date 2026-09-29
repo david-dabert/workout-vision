@@ -1,3 +1,5 @@
+Superseded on 29 September 2026 by test/real-phone/growth-step3/texts.md, which carries David's changes to this note and the other texts of GROWTH step 3. Kept, since files under test/ are not deleted without David's approval (CLAUDE.md R5).
+
 # Tempo note, draft for David's approval (GROWTH step 3, CLAUDE.md R9 and R10)
 
 Shown under the rep table of each analysis. Register: vous. No em dash.
