@@ -86,7 +86,7 @@ test('the page says it is for David\'s own sets, and where a set of anyone else 
 test('the collector offers the 181 exercises the app counts, by their names in both languages', async ({ page }) => {
   await open(page);
   await expect(page.locator('#lift option')).toHaveCount(181);
-  await expect(page.locator('#lift option[value="forward_lunge"]')).toHaveText('Forward Lunge / Fente avant');
+  await expect(page.locator('#lift option[value="forward_lunge"]')).toHaveText('Fente avant / Forward Lunge');
   await expect(page.locator('#lift option[value="walking_lunge"]')).toHaveCount(0);
   await expect(page.locator('#lift option[value="lateral_raise"]')).toHaveCount(1);
   await expect(page.locator('#lift option[value="pec_deck"]')).toHaveCount(0);
