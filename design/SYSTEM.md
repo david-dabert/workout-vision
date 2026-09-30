@@ -144,6 +144,10 @@ None adds user-facing words; #24 is a no-break space.
 
 ## 4. Status
 
-See the commit messages on the branch for what was implemented. Paper values (9.5, 12, 12.5, 13, 11.5,
+Implemented (30 September): section 1 on every screen, the thirty rows of section 2, and section 3
+changes 1 to 4. The body map now takes the full width, so every spot keeps a 44 x 44 target (visual
+gate). Not done: section 3 change 5 (the demo in particles, the watch's pose carried into the result).
+#25 (`focusVisible: false`) takes effect in Safari and Firefox; Chromium 141 ignores the option and
+shows the ring only when the screen opens without a tap. Paper values (9.5, 12, 12.5, 13, 11.5,
 10) stay as they are, since they mirror `report-pdf.js`; the level feature's 16 px beginner account and
 its per-rep table (11.5 mono) are the level's own sizes.
