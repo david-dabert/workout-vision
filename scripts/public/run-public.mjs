@@ -19,6 +19,7 @@ import { promisify } from 'node:util';
 import { gzipSync } from 'node:zlib';
 import { chromium } from '@playwright/test';
 import { splitOf } from './split.mjs';
+import { cutOf } from './cut.mjs';
 
 const run = promisify(execFile);
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -49,12 +50,16 @@ async function fpsOf(video) {
 // lossless (CRF 18, as scripts/run-mmfit.mjs used for H.264): the app's own extraction then scales it, as it
 // scales a phone's video. Every frame is kept at its own time, and the frame count is checked.
 async function transcode(set, fps, clip) {
-  const trim = set.trimFrames ? ['-ss', String(set.trimFrames[0] / fps), '-frames:v', String(set.trimFrames[1] - set.trimFrames[0])] : [];
+  // A cut in frames (MM-Fit) or in seconds (Countix), checked exactly or to one frame (cut.mjs).
+  const c = cutOf(set, fps), cut = c && [c.from, c.to];
+  const whole = await frames(set.video);
+  if (cut && whole < cut[1] - 1) throw new Error(`the video holds ${whole} frames; its label ends at frame ${cut[1]}`);
+  const trim = cut ? ['-ss', String(cut[0] / fps), '-frames:v', String(cut[1] - cut[0])] : [];
   await run(FFMPEG, ['-v', 'error', '-nostdin', '-y', ...trim.slice(0, 2), '-i', set.video, ...trim.slice(2), '-map', '0:v:0', '-an',
     '-c:v', 'libvpx-vp9', '-deadline', 'good', '-cpu-used', '4', '-row-mt', '1', '-b:v', '0', '-crf', '18', '-fps_mode', 'passthrough', clip], { timeout: 1800000 });
-  const expected = set.trimFrames ? set.trimFrames[1] - set.trimFrames[0] : await frames(set.video);
+  const expected = cut ? Math.min(cut[1], whole) - cut[0] : whole;
   const got = await frames(clip);
-  if (got !== expected) throw new Error(`transcoded ${got} frames where the source holds ${expected}`);
+  if (!c || c.exact ? got !== expected : Math.abs(got - expected) > 1) throw new Error(cut ? `the video holds ${got} frames of the ${expected} its label spans` : `transcoded ${got} frames where the source holds ${expected}`);
 }
 
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort', '--host', '127.0.0.1'], { cwd: REPO, stdio: 'ignore' });
@@ -65,8 +70,21 @@ for (let i = 0; ; i++) {
   await new Promise(r => setTimeout(r, 500));
 }
 const browser = await chromium.launch({ executablePath: CHROMIUM });
-const half = s => splitOf(s.group ?? s.id);
+// A set's half: its own when the adapter set one (a video the counter has seen), else its video's.
+const half = s => s.split ?? splitOf(s.group ?? s.id);
 const pending = manifest.filter(s => !existsSync(join(OUT, s.dataset, half(s), `${s.id}.json.gz`))).slice(0, LIMIT);
+// The record of every set of the manifest, per dataset (<dataset>/sets.json), joined with earlier runs and
+// written after each set, so a run that stops keeps it: written, failed or left out, and why. The
+// scoreboard reads it, so a set with no file is never silent.
+function record(dataset, id, entry) {
+  const file = join(OUT, dataset, 'sets.json');
+  const all = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+  all[id] = entry;
+  mkdirSync(join(OUT, dataset), { recursive: true });
+  writeFileSync(file, JSON.stringify(all, null, 2) + '\n');
+}
+for (const s of skipped) record(s.dataset, s.id, { status: 'left out', reason: s.reason });
+for (const s of manifest) if (existsSync(join(OUT, s.dataset, half(s), `${s.id}.json.gz`))) record(s.dataset, s.id, { split: half(s), status: 'written' });
 const log = [];
 let next = 0;
 
@@ -90,7 +108,7 @@ async function worker() {
         page.evaluate(() => window._fetchAndProcess('/workout-vision/public-sample.webm')),
         new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('extraction took over 20 minutes')), 1200000); }),
       ]).finally(() => clearTimeout(timer));
-      const shift = set.trimFrames ? set.trimFrames[0] : 0;
+      const shift = cutOf(set, fps)?.from ?? 0;
       const samples = data.imageLandmarks.length;
       // PLAN.md's rule for MM-Fit: both wrists and both ankles (15, 16, 27, 28) seen together.
       const seen = data.imageLandmarks.filter(lm => lm && [15, 16, 27, 28].every(i => visible(lm[i]))).length;
@@ -105,9 +123,11 @@ async function worker() {
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, gzipSync(JSON.stringify(out)));
       log.push({ id: set.id, split, samples, visibleShare: out.visibleShare, errors });
+      record(set.dataset, set.id, { split, status: 'written' });
       console.log(`${log.length}/${pending.length} ${set.dataset}/${split}/${set.id} ${samples} samples`);
     } catch (err) {
       log.push({ id: set.id, split, error: err.message, errors });
+      record(set.dataset, set.id, { split, status: 'failed', reason: err.message });
       console.log(`${log.length}/${pending.length} ${set.id} FAILED: ${err.message}`);
     } finally {
       await context.close();
@@ -117,20 +137,6 @@ async function worker() {
 }
 try { await Promise.all(Array.from({ length: WORKERS }, worker)); }
 finally { await browser.close(); server.kill(); }
-// The record of every set of the manifest, per dataset, joined with earlier runs: written, failed or left
-// out, and why. The scoreboard reads it, so a set with no file is never silent.
-for (const ds of new Set([...manifest.map(s => s.dataset), ...skipped.map(s => s.dataset)])) {
-  const file = join(OUT, ds, 'sets.json');
-  const record = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
-  for (const s of manifest.filter(m => m.dataset === ds)) {
-    const l = log.find(x => x.id === s.id);
-    if (l) record[s.id] = { split: half(s), status: l.error ? 'failed' : 'written', ...(l.error ? { reason: l.error } : {}) };
-    else record[s.id] ??= { split: half(s), status: 'written' };
-  }
-  for (const s of skipped.filter(m => m.dataset === ds)) record[s.id] = { status: 'left out', reason: s.reason };
-  mkdirSync(join(OUT, ds), { recursive: true });
-  writeFileSync(file, JSON.stringify(record, null, 2) + '\n');
-}
 const failed = log.filter(l => l.error);
 writeFileSync(join(OUT, `run-${new Date().toISOString().replace(/[:.]/g, '-')}.json`), JSON.stringify({ manifest: args[0], sets: pending.length, failed: failed.length, log }, null, 2));
 console.log(`${pending.length - failed.length} written, ${failed.length} failed.`);

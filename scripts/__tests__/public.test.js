@@ -70,3 +70,56 @@ describe('a video is split whole', () => {
     expect(sets[0].group).toBe('train9');
   });
 });
+
+describe('Countix labels', () => {
+  it('trims each clip to its labelled repetitions and maps its class to the lift the app counts', async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const { countixManifest, parseCountix } = await import('../public/countix.mjs');
+    const dir = mkdtempSync(join(tmpdir(), 'countix'));
+    mkdirSync(join(dir, 'squat')); mkdirSync(join(dir, 'push up'));
+    writeFileSync(join(dir, 'squat', 'abc_000017_000027.mp4'), '');
+    const rows = parseCountix('video_id,class,kinetics_start,kinetics_end,repetition_start,repetition_end,count\nabc,squat,17,27,18.500000,26.000000,4\nxyz,push up,5,15,5.0,15.0,7\nqqq,slicing onion,0,10,0,10,5\n');
+    const { sets, skipped } = countixManifest(rows, { videoDir: dir });
+    expect(sets).toEqual([{ id: 'abc_000017_1500', group: 'abc', dataset: 'countix', video: join(dir, 'squat', 'abc_000017_000027.mp4'), lift: 'squat', count: 4, repFrames: [], trimSeconds: [1.5, 9] }]);
+    expect(skipped).toEqual([
+      { dataset: 'countix', id: 'xyz_000005_0', reason: 'its video is not in the Kinetics mirror' },
+      { dataset: 'countix', id: 'qqq_000000_0', reason: 'slicing onion is not a lift the app counts' },
+    ]);
+  });
+});
+
+describe('Countix windows', () => {
+  it('names apart two labelled windows of one clip', async () => {
+    const { countixManifest, parseCountix } = await import('../public/countix.mjs');
+    const rows = parseCountix('video_id,class,kinetics_start,kinetics_end,repetition_start,repetition_end,count\nabc,slicing onion,17,27,17.0,24.7,10\nabc,slicing onion,17,27,25.07,26.97,3\n');
+    expect(countixManifest(rows, { videoDir: '/v' }).skipped.map(s => s.id)).toEqual(['abc_000017_0', 'abc_000017_8070']);
+  });
+});
+
+describe('the cut of a set', () => {
+  it('turns a label in seconds into frames at the video rate, and keeps a label in frames as it is', async () => {
+    const { cutOf } = await import('../public/cut.mjs');
+    expect(cutOf({ trimSeconds: [1.5, 9] }, 29.97)).toEqual({ from: 45, to: 270, exact: false });
+    expect(cutOf({ trimFrames: [4040, 4500] }, 30)).toEqual({ from: 4040, to: 4500, exact: true });
+    expect(cutOf({}, 30)).toBeNull();
+  });
+});
+
+describe('videos the counter was built on', () => {
+  it('go to the build half, whatever their hash', async () => {
+    const { countixManifest, parseCountix } = await import('../public/countix.mjs');
+    const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const dir = mkdtempSync(join(tmpdir(), 'countix'));
+    mkdirSync(join(dir, 'squat'));
+    // FyYRvnHdOgU hashes to the held-out half; it is one of the 43 clips of benchmark/manifest.json.
+    writeFileSync(join(dir, 'squat', 'FyYRvnHdOgU_000003_000013.mp4'), '');
+    expect(splitOf('FyYRvnHdOgU')).toBe('holdout');
+    const rows = parseCountix('video_id,class,kinetics_start,kinetics_end,repetition_start,repetition_end,count\nFyYRvnHdOgU,squat,3,13,3.7,10.0,5\n');
+    const { sets } = countixManifest(rows, { videoDir: dir, seen: new Set(['FyYRvnHdOgU']) });
+    expect(sets[0].split).toBe('build');
+  });
+});
