@@ -257,15 +257,38 @@ Approved by David on 30 September: main moved to e84ab32 on his order ("Push it 
 
 David's orders of 30 September, in his words.
 - "A label counts the reps the video shows whole, from rest back to rest."
-- "I will watch the four cut sets myself and send their counts."
-- "Counter-core and main move to 84e020a once I approve that preview."
 - "Every step gets one reviewer pass, as I ordered on 29 September, except a counting change, which gets three at most."
 - "If the third pass still finds a miscount, the change is withdrawn."
 - "A finding that cannot put a wrong count or a wrong label into a file is listed as open, not fixed."
-- "Bench press and overhead press stay parked until I film new press sets."
-- "Nothing new starts before my check and the exam sets."
 - "Your reports keep to five lines: the commit, what to check on my iPhone, and what only I can decide."
 - "CI on 84e020a finished green at 11:33, the WebKit tour included, and that result stays on the commit."
 - "The preview is built from 84e020a and does not rebuild on a push."
 - "An order that is not in PLAN.md does not survive the session."
-- "Once I approve the preview, counter-core and main move to 84e020a exactly, and counter-core then takes the two PLAN.md commits."
+Replaced by David's second message below: "I will watch the four cut sets myself and send their counts."; "Counter-core and main move to 84e020a once I approve that preview."; "Bench press and overhead press stay parked until I film new press sets."; "Nothing new starts before my check and the exam sets."; "Once I approve the preview, counter-core and main move to 84e020a exactly, and counter-core then takes the two PLAN.md commits."
+
+David's orders of 30 September, second message, in his words. They prevail over the first message where they differ.
+- "You now run the work without waiting on my other session."
+- "Build the agents you need for review and control, beside the reviewer and the verifier, and keep rolling."
+- "This replaces my order that nothing new starts before my check and the exam sets."
+- "The control agent checks every claim against GitHub and CI before it reaches me, and checks that counter-core and main move only as PLAN.md says."
+- "Once committed, the new briefs change only by my order, like the other two."
+- "When two lines of PLAN.md conflict, my latest order prevails; record the choice in PLAN.md and continue."
+- "Stop only for my iPhone check of a preview, French copy, a label, a gate that fails twice, or anything that cannot be undone."
+- "You cannot build the preview, so when counter-core holds a step for my iPhone, your five lines give the commit and my other session builds it."
+- "The five lines are your message to me, not the evidence."
+- "The STOP report keeps the verifier's table, every reviewer report is saved in the evidence folder as lines 44 and 250 say, and your message gives their paths."
+- "Save this pass's report that way, in its own commit."
+- "The label rule applies to every labelled set whose video starts or ends inside a rep, not to four of them."
+- "Checking only the sets the app gets wrong would move the labels toward its count, which R1 forbids."
+- "Send me that list from the diagnosis, each set with the seconds to watch at its edges, those the app counts right included."
+- "I will watch them and send every count."
+- "Move counter-core to the head of this branch now, since steps land on counter-core, as I corrected on 28 September."
+- "Main moves to 84e020a exactly once I approve the preview."
+- "Bench press and overhead press stay offered as Experimental, as PLAN.md says."
+- "By "parked" I meant no counting work on either until I film new press sets."
+- "Record these lines in PLAN.md in my words, in place of those they replace on the presses, the cut sets and the move of counter-core."
+
+Choices recorded under the order that David's latest order prevails (30 September):
+- Line 4 and METHOD allow two sub-agents only. A third is added by his order: wv-control, whose brief is .claude/agents/wv-control.md. It reads each message to David before it is sent and checks its claims against git, GitHub and CI, and the moves of counter-core and main against this plan. Its brief, like the other two, changes only by David's order.
+- Line 44 and the five-line order: the five lines are the message to David; the STOP report with the verifier's table, and every reviewer report, are saved under test/real-phone/ and the message gives their paths.
+- The earlier order that counter-core and main move to 84e020a together: counter-core moves now, by fast-forward, to the head of claude/generate-architecture-md-inw479 once this record and its reviewer report are pushed; the commit it reaches is recorded here with git ls-remote in the next PLAN.md commit. main alone moves to 84e020a exactly, on David's approval of its preview.

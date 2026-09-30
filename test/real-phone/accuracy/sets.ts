@@ -28,3 +28,7 @@ export function labelledSets() {
   }
   return { sets, unreadable };
 }
+
+// A set's name with its count taken out: sets-29sep/leg_press_13_side_1ee0ae47.json.gz reads
+// sets-29sep/leg_press side 1ee0ae47.
+export const blind = (name: string) => name.replace(/\.json\.gz$/, '').replace(/^(.*\/)?(?:set\d+_)?(.+?)_\d+_([a-z]+)_([0-9a-z]+)$/, '$1$2 $3 $4');
