@@ -3,6 +3,8 @@ import { useT } from '../../lib/LanguageContext';
 import { liftDefinition } from '../../lib/counting/core';
 import { demoSet, demoResult, countAt, DEMO_LIFT } from './demo-set';
 import { drawSkeleton, litSides } from './replay-draw';
+import { Body, LITE } from './entry-scene';
+import { fitFigure, figurePoints, litOnly, grainSize } from './demo-figure';
 import { poseAt } from './replay-track';
 import './Demo.css';
 
@@ -76,6 +78,10 @@ export default function Demo({ onClose, onStart }) {
   useEffect(() => {
     const el = canvas.current, ctx = el.getContext('2d'), def = liftDefinition(DEMO_LIFT), sides = litSides(def, result.arm);
     const dpr = Math.min(2, window.devicePixelRatio || 1);
+    // The app's one body: the particle figure of the entry and the watch screen (design/SYSTEM.md, change 5).
+    // Fewer grains than the entry's full-screen figure: the example's body is about half its height, and
+    // additive grains packed into a smaller figure burn to white.
+    const body = new Body(LITE ? 900 : 1300, 7), out = new Float32Array(66);
     let raf = 0, key = '';
     function draw(at) {
       const w = Math.max(1, Math.round(el.clientWidth * dpr)), h = Math.max(1, Math.round(el.clientHeight * dpr));
@@ -83,19 +89,11 @@ export default function Demo({ onClose, onStart }) {
       ctx.clearRect(0, 0, w, h);
       const lm = poseAt(set.image, set.timestamps, at);
       if (!lm) return;
-      // The drawing's box, fitted to the canvas and centred.
-      const [bw, bh] = set.vb, k = Math.min(w / bw, h / bh);
-      const box = { ox: (w - bw * k) / 2, oy: (h - bh * k) / 2, w: bw * k, h: bh * k };
-      // A head, which the replay's skeleton leaves out: a ring about the ears, so the drawing reads as a body.
-      const hx = box.ox + (lm[7].x + lm[8].x) / 2 * box.w, hy = box.oy + (lm[7].y + lm[8].y) / 2 * box.h;
-      const r = Math.hypot((lm[11].x - lm[7].x) * box.w, (lm[11].y - lm[7].y) * box.h) * 0.45;
-      ctx.lineWidth = 2 * dpr; ctx.strokeStyle = 'rgba(239, 232, 220, 0.85)';
-      ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI * 2); ctx.stroke();
-      // The far limbs faint, the near ones whole, so the figure reads as one body in profile, not a
-      // doubled wireframe (critic, 30 September). MediaPipe: left points odd, right even, from 11.
-      const nearLeft = sides.includes('left'), far = k => k >= 11 && (k % 2 === 1) !== nearLeft;
-      ctx.globalAlpha = 0.28; drawSkeleton(ctx, lm, box, [], null, dpr);
-      ctx.globalAlpha = 1; drawSkeleton(ctx, lm.map((p, k) => (far(k) ? { ...p, visibility: 0 } : p)), box, sides, def, dpr);
+      // The drawing fitted to the canvas, with room for the particle head (demo-figure.js).
+      const box = fitFigure(set.vb, w, h);
+      body.draw(ctx, figurePoints(lm, box, out), { alpha: 0.85, size: grainSize(box, dpr), time: reduced ? 1.5 : performance.now() / 1000, dpr, stars: 1 });
+      // The measured joint drawn lit over the body, as the replay lights it.
+      drawSkeleton(ctx, litOnly(lm, def.joint, sides[0]), box, sides, def, dpr);
     }
     // The canvas is redrawn at its new size whenever the layout changes it (the result appearing
     // under the figure shrinks it), at the moment last drawn.

@@ -2,7 +2,11 @@
  * The entry's example (feature B): a drawn squat, counted by the real counting core. The number
  * the example shows is the core's count of the committed sequence, never a number typed in.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// The particle body paints sprites when its module loads, which needs a DOM; these tests render the
+// screen's markup only and draw nothing.
+vi.mock('../entry-scene', () => ({ Body: class { draw() {} }, LITE: false }));
 import { renderToString } from 'react-dom/server';
 import { createElement } from 'react';
 import { countReps } from '../../../lib/counting/core';
