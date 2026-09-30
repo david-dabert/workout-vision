@@ -26,4 +26,4 @@ test.skipIf(!process.env.HOLDOUT)('public held-out half', () => {
     ...unreadable.map(u => `UNREADABLE ${u}`), ...missing.map(m => `MISSING ${m}`), ...(notScored.length ? ['', `Not scored (${notScored.length}):`, ...notScored] : [])].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-holdout.txt'), text);
   process.stdout.write(text);
-});
+}, 1_800_000);

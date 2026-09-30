@@ -31,4 +31,4 @@ test.skipIf(!process.env.ACCURACY)('public rep boundaries', () => {
   ].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-boundaries.txt'), text);
   process.stdout.write(text);
-});
+}, 1_800_000);

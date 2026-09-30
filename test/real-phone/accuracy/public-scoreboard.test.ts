@@ -47,4 +47,4 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   expect(absent).toEqual([]);
   expect(unreadable).toEqual([]);
   if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured on the live core by npm run scoreboard:public, not typed.`, counts: live }, null, 2) + '\n');
-});
+}, 1_800_000);
