@@ -1,0 +1,52 @@
+Review of the uncommitted change to /home/user/workout-vision/PLAN.md, lines 257-271: 14 added lines under "David's orders of 30 September, in his words." Nothing is staged. The branch is claude/generate-architecture-md-inw479, one commit (d6cf471) ahead of origin. counter-core and main on origin are both at e84ab32.
+
+I found no defect in the text itself as a document edit. I could not check the goal's main claim, and I found five defects in what the record does, or fails to do, once it is committed.
+
+0. The "verbatim" claim cannot be checked.
+Nothing in the repository holds David's message of 30 September. I searched for "cut sets", "11:33" and "from rest back to rest": the only hit outside PLAN.md is Film.jsx and the prototype, for the rest-to-rest wording. Line 258 says "in his words", but only the session transcript can prove it. Two things should be checked against his message:
+- Whether David wrote in English. If he wrote in French and these are translations, "in his words" is false.
+- Whether lines 261 and 271 were really two separate orders or one order entered twice. Both say counter-core and main move to 84e020a after approval.
+
+1. PLAN.md lines 250 and 271: "the two PLAN.md commits" clashes with the evidence rule.
+- Line 250 (David, 29 September) requires every reviewer report to be saved under test/real-phone/ and committed with the step. That includes this report.
+- Line 271 has counter-core take exactly "the two PLAN.md commits" (d6cf471 plus the one about to be made).
+- Failing scenario, either way:
+  - If this report goes into the same commit, that commit is no longer a PLAN.md commit.
+  - If it goes into a third commit, a later session applying line 271 either leaves the evidence off counter-core or moves counter-core to something other than what David named.
+- Smallest check that fails today: after the caller's commit, `git log --format=%h -- PLAN.md 84e020a..HEAD` should list two commits, and `git diff --name-only 84e020a..HEAD` should list only PLAN.md. Both can hold only if line 250 is broken.
+
+2. Line 265 ("Bench press and overhead press stay parked") contradicts lines 233 and 236 and the live app.
+- Lines 233 and 236 offer bench press and overhead press as Experimental. STATE.md and src/lib/liftTiers.js still list both as offered.
+- Line 68 defines "parked" as "not offered": the selector hides them.
+- Failing scenario: a new session reads PLAN.md top to bottom and finds both "offered as Experimental" and "parked". It either hides two lifts on the live site that users now have, a visible change nobody ordered, or it ignores the order.
+- Unlike line 47 ("It prevails over the lines above where they differ"), the new block says nothing about which line wins. PLAN.md line 1 says to ask David when a message conflicts with the plan, but here both lines sit inside the plan.
+- Check: grep PLAN.md for "overhead press"; lines 236 and 265 both match and disagree.
+
+3. Line 267 (five-line reports) conflicts with line 44, line 24 and CLAUDE.md R3 and R11.
+- Line 44 says a STOP report carries the verifier's table and verdict unchanged.
+- Line 24 and R3 require pasted command output for every number and claim.
+- R11 requires the DIRECTIVES.md Part 5 format.
+- Failing scenario: the next STOP after a counting change needs the verifier's table, which alone runs past five lines. The session breaks either the new order or line 44, with nothing in PLAN.md to say which wins.
+
+4. Lines 260 and 266 name sets that nothing in the repository identifies.
+- The four sets in "the four cut sets" are not named anywhere. test/real-phone/accuracy/diagnosis.txt flags "STARTS INSIDE A REP" or "ENDS INSIDE A REP" on at least five sets-29sep sets: bench_press_7_side, bicep_curl_5_side, hip_thrust_6_side, leg_press_13_side and overhead_press_4_front_cefdaa82.
+- Failing scenario: in a later session, David sends counts "for the four cut sets", or the session has to hold back work that touches them. The session cannot tell which four files he means.
+- The risk: line 259 defines a label as the reps shown whole, from rest back to rest. Combined with the diagnosis flags, that invites the session to settle the labels itself, which CLAUDE.md R1 forbids.
+- "that preview" on line 261 is only resolved by line 269, which does not give the URL. PLAN.md line 118 does.
+
+5. The orders do not reach the copy of PLAN.md that prevails.
+- CLAUDE.md line 1 and PLAN.md line 4 make counter-core the prevailing copy. counter-core is at e84ab32 and will not get these lines until David approves the preview (line 271).
+- d6cf471 is not pushed, and this change is not committed.
+- Failing scenario: the session ends or is compacted before approval. The next session reads PLAN.md on counter-core, as line 1 of CLAUDE.md tells it to, and finds none of the 13 orders. Line 270 itself says such orders do not survive the session.
+- The minimum for the stated goal is to commit and push this branch, and to say in the report where the orders live until approval.
+- Check: `git show origin/counter-core:PLAN.md | grep -c "orders of 30 September"` prints 0.
+
+What I checked:
+- git diff and git diff --cached. I read PLAN.md in full, the top of STATE.md, and CLAUDE.md.
+- Ancestry: 84e020a's parent is e84ab32 and d6cf471's parent is 84e020a, so the moves in lines 261 and 271 are fast-forwards.
+- No em dash in the added lines; quote style matches the file.
+- No new host, no video, no landmark, and no user data added.
+- The CI time on line 268 (11:33) could not be checked: gh is not installed. It fits 84e020a's commit time (09:13 UTC) if 11:33 is Paris time, but the line gives no time zone.
+- No code, tests or user-facing strings changed, so the device, input, timing, language and test items do not apply.
+
+Relevant files: /home/user/workout-vision/PLAN.md, /home/user/workout-vision/CLAUDE.md, /home/user/workout-vision/STATE.md, /home/user/workout-vision/test/real-phone/accuracy/diagnosis.txt
