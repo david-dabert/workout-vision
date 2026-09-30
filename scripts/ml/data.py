@@ -54,6 +54,25 @@ def features(pos, seen):
     return np.concatenate([(x - mu) / sd, seen[:, None]], 1).astype(np.float32)
 
 
+def on_timebase(pos, seen, ts, rate=15.0):
+    """A set moved onto one timebase, `rate` samples per second from its first timestamp: each position
+    interpolated linearly between the two samples around it, a sample seen only if both of them were
+    (review of 30 September: the public clips were decoded at 8 to 20 per second; the app samples at 15).
+    Returns positions, seen mask and the new timestamps."""
+    ts = np.asarray(ts, np.float64)
+    grid = np.arange(ts[0], ts[-1] + 1e-9, 1.0 / rate)
+    j = np.clip(np.searchsorted(ts, grid, side='right') - 1, 0, len(ts) - 1)
+    k = np.clip(j + 1, 0, len(ts) - 1)
+    span = np.where(ts[k] > ts[j], ts[k] - ts[j], 1.0)
+    w = np.clip((grid - ts[j]) / span, 0, 1)[:, None, None].astype(np.float32)
+    out = pos[j] * (1 - w) + pos[k] * w
+    # A grid point on an original sample (within a thousandth of the gap, for float32 timestamps) takes that
+    # sample's own flag; between two samples, both must have been seen (review of 30 September).
+    wf = w[:, 0, 0]
+    ok = np.where(wf < 1e-3, seen[j] > 0, np.where(wf > 1 - 1e-3, seen[k] > 0, (seen[j] > 0) & (seen[k] > 0)))
+    return out.astype(np.float32), ok.astype(np.float32), grid.astype(np.float32)
+
+
 def load(dataset, split='build'):
     """Sets of one public dataset's half: features, label, the sample range the label covers, lift, id, group."""
     out = []
@@ -63,6 +82,8 @@ def load(dataset, split='build'):
             continue
         pos, seen = positions(d['worldLandmarks'])
         ts = np.array(d['timestamps'], np.float32)
+        if os.environ.get('TIMEBASE', '0') == '1':
+            pos, seen, ts = on_timebase(pos, seen, ts)
         w = d.get('window') or [0, float(ts[-1]) + 1]
         inside = (ts >= w[0]) & (ts <= w[1])
         out.append(dict(pos=pos, seen=seen, count=d['count'], inside=inside.astype(np.float32), lift=d['lift'],

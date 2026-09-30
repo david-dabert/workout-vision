@@ -197,6 +197,10 @@ def core_counts():
 
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'cv'
+    # A variant run carries a tag, so it never overwrites the reference scores or the app's weights.
+    variant = {k: os.environ.get(k, '0') for k in ('LENGTHEN', 'TIMEBASE')}
+    if any(v == '1' for v in variant.values()) and not os.environ.get('TAG'):
+        sys.exit(f'a variant run ({variant}) needs TAG=<name>')
     sets = data.load('countix-whole')
     for s in sets:
         s['group'] = s['id'].rsplit('_', 2)[0]
@@ -207,7 +211,7 @@ if __name__ == '__main__':
         pr = predict(p, david)
         lines = [f'{os.path.basename(s["name"])[:40]:40s} label {s["count"]:2d} learned {v:5.2f} -> {round(v)}' for s, v in zip(david, pr)]
         e = score(pr, david)
-        lines.append(f'David: learned exact {e[0]}/{e[2]}, within one {e[1]}')
+        lines.append(f'David: learned exact {e[0]}/{e[2]}, within one {e[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")} TIMEBASE={os.environ.get("TIMEBASE", "0")}')
         print('\n'.join(lines))
         out = {'note': 'Weights of the learned counter (scripts/ml/train.py fit), trained on the Countix build half only.',
                'channels': CH, 'kernel': K, 'dilations': DIL, 'inputs': IN,
@@ -246,7 +250,7 @@ if __name__ == '__main__':
             tot_core += ce
             lines.append(f'fold {k}: learned exact {e[0]}/{e[2]} within one {e[1]}; with 2 s still at each end, exact {eh[0]} within one {eh[1]}; core exact {ce[0]} within one {ce[1]}')
             print(lines[-1], flush=True)
-        lines.append(f'all: learned exact {tot[0]}/{tot[2]} within one {tot[1]}; with 2 s still at each end, exact {tot_held[0]} within one {tot_held[1]}; core exact {tot_core[0]} within one {tot_core[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")}')
+        lines.append(f'all: learned exact {tot[0]}/{tot[2]} within one {tot[1]}; with 2 s still at each end, exact {tot_held[0]} within one {tot_held[1]}; core exact {tot_core[0]} within one {tot_core[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")} TIMEBASE={os.environ.get("TIMEBASE", "0")}')
         print(lines[-1])
         tag = os.environ.get('TAG', '')
         suffix = f'-{tag}' if tag else ''
