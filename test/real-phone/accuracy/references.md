@@ -1,0 +1,3 @@
+# Published results cited beside our own
+
+- RepNet (Dwibedi et al., "Counting Out Time: Class Agnostic Video Repetition Counting in the Wild", CVPR 2020, https://arxiv.org/abs/2006.15418), on the Countix test split, all classes, as later papers quote it (for example IVAC-P2L, https://arxiv.org/pdf/2403.11959): mean absolute error 0.3641, normalised by the true count, and off-by-one error 0.3034, the share of clips off by more than one rep. Not yet checked against the paper's own table. Our figures are counts in reps on the build half of seven lift classes of Countix's train and validation splits: not a like-for-like comparison.
