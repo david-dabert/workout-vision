@@ -3,25 +3,25 @@
 .wv-experience.demo-experience { z-index: 110; background: transparent; }
 .wv-experience .demo-screen { z-index: 3; background: var(--void); }
 .wv-experience .demo-wrap { min-height: 100%; }
-.wv-experience .demo-tag { color: var(--lamp); border-color: rgba(232, 189, 126, 0.5); }
-.wv-experience .demo-eyebrow { margin-top: 10px; }
-.wv-experience .demo-sub { margin: 8px 0 0; color: var(--ash); font-size: 15px; line-height: 1.5; max-width: 36ch; }
-/* The figure takes what the words and the count leave. */
-/* A fixed height, so the body does not shrink by half as the result appears (critic, 30 September). */
-.wv-experience .demo-figure { position: relative; flex: 0 0 auto; height: clamp(120px, calc(100svh - 470px), 320px); margin-top: 10px; }
+.wv-experience .demo-tag { color: var(--lamp); border-color: var(--lamp-line); }
+.wv-experience .demo-eyebrow { margin-top: var(--s-4); }
+/* The example's line leads in serif, as a heading does on every screen (#21); at the name size, so the figure keeps its room. */
+.wv-experience .demo-sub { margin: var(--s-2) 0 0; color: var(--bone); font-family: var(--serif); font-size: var(--fs-name); line-height: 1.15; text-wrap: balance; }
+/* A fixed height, so the body does not shrink as the result appears (critic, 30 September); the figure
+   takes what the words, the count and the held result leave. */
+.wv-experience .demo-figure { position: relative; flex: 0 0 auto; height: clamp(120px, calc(100svh - 510px), 300px); margin-top: var(--s-2); }
 .wv-experience .demo-figure canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wv-experience .demo-count { display: flex; align-items: baseline; justify-content: center; gap: 12px; margin-top: 6px; }
-/* The count in the result screen's gold, so the example looks like what the user will get. */
-.wv-experience .demo-numeral { font-family: var(--serif); font-size: clamp(88px, 26vw, 112px); line-height: 1; background: linear-gradient(180deg, var(--lamp-hi), var(--ember)); -webkit-background-clip: text; background-clip: text; color: transparent; animation: demo-tick 0.34s var(--ease); }
-.wv-experience .demo-word { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ash); }
-@keyframes demo-tick { from { opacity: 0.2; translate: 0 8px; } }
-.wv-experience .demo-result { margin-top: 12px; text-align: center; }
-.wv-experience .demo-times-label { margin-top: 4px; }
-.wv-experience .demo-times { margin: 6px 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 13px; color: var(--bone-2); }
+/* The count as the result screen sets it: numeral, then its word under it, in the gold of measured counts (#20). */
+.wv-experience .demo-count { display: flex; flex-direction: column; align-items: center; gap: 0; margin-top: var(--s-1); }
+.wv-experience .demo-numeral { font-family: var(--serif); font-size: var(--fs-number); line-height: 0.9; font-variant-numeric: lining-nums tabular-nums; background: var(--gold-num); -webkit-background-clip: text; background-clip: text; color: transparent; animation: res-tick var(--d-tick) var(--ease); }
+.wv-experience .demo-count .demo-word { margin-top: var(--s-2); }
+.wv-experience .demo-result { margin-top: var(--s-2); text-align: center; }
+.wv-experience .demo-result.is-held { visibility: hidden; }
+.wv-experience .demo-times-label { margin-top: 0; text-align: center; }
+.wv-experience .demo-times { margin: var(--s-2) 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; color: var(--bone-2); }
 .wv-experience .demo-times span { white-space: nowrap; }
-.wv-experience .demo-actions { margin-top: 16px; }
+.wv-experience .demo-actions { margin-top: var(--s-4); }
 @media (max-height: 700px) {
-  .wv-experience .demo-numeral { font-size: 80px; }
   .wv-experience .demo-actions { margin-top: 12px; }
   .wv-experience .demo-actions .btn-primary { height: 52px; }
   .wv-experience .demo-actions .btn-ghost { height: 48px; }

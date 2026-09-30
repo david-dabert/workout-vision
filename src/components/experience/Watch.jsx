@@ -67,9 +67,13 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
     const ro = new ResizeObserver(measure);
     if (topRef.current) ro.observe(topRef.current.closest('.watch-screen'));
 
+    // Only a digit that changed is marked new, so it alone rolls in (design/SYSTEM.md, section 3, change 4).
+    let lastDigits = '';
     const writePct = (n) => {
       const el = pctRef.current; if (!el) return;
-      const digits = String(n).split('').map(d => `<span class="d">${d}</span>`).join('');
+      const s = String(n), was = lastDigits.padStart(s.length, ' ');
+      const digits = s.split('').map((d, i) => `<span class="d${lastDigits && was[i] !== d ? ' is-new' : ''}">${d}</span>`).join('');
+      lastDigits = s;
       el.innerHTML = `${digits}<span class="u">${fr ? ' %' : '%'}</span>`;
     };
 

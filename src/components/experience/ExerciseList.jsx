@@ -32,7 +32,7 @@ export default function ExerciseList({ onChoose }) {
   return <section className="all-exercises" aria-labelledby="all-exercises-title">
     <h2 id="all-exercises-title" className="all-title">{fr ? 'Tous les exercices comptés' : 'Every exercise we count'}</h2>
     <p className="all-note">{fr ? 'Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.' : 'Unless marked Beta, these exercises are experimental: we are still learning to count them.'}</p>
-    <div className="search"><label className="sr" htmlFor="all-search">{fr ? 'Rechercher un exercice' : 'Search exercises'}</label>
+    <div className="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg><label className="sr" htmlFor="all-search">{fr ? 'Rechercher un exercice' : 'Search exercises'}</label>
       <input id="all-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={fr ? 'Nom, muscle, matériel…' : 'Name, muscle, equipment…'} /></div>
     <p className="list-head" role="status">{list.length} / {ENTRIES.length} {fr ? 'exercices' : 'exercises'}</p>
     <ul className="list">{list.map(e => <li key={e.key} className="item" data-exercise={e.key}>

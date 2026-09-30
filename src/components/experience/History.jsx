@@ -9,6 +9,7 @@ import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
 import LevelPick from './LevelPick';
 import { readLevel, writeLevel } from './level';
+import { useCondensingTopbar } from './topbar';
 import './History.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -34,6 +35,9 @@ export default function History({ onClose }) {
   const [level, setLevel] = useState(readLevel);
   const timers = useRef({});
   const rowRefs = useRef({});
+  // The title condenses into the topbar as the sets scroll under it (section 3, change 1).
+  const screenRef = useRef(null);
+  useCondensingTopbar(screenRef, [lang]);
 
   useEffect(() => {
     loadSets().then(setSets, () => { setSets([]); setProblem(fr ? 'Vos séries n’ont pas pu être lues sur ce téléphone.' : 'Your sets could not be read on this phone.'); });
@@ -92,7 +96,7 @@ export default function History({ onClose }) {
 
   return <>
     <div className="wv-experience" inert={report && !leaving ? true : undefined}>
-      <section className="screen is-active history-screen"><div className="wrap">
+      <section ref={screenRef} className="screen is-active history-screen"><div className="wrap">
         <div className="topbar">
           <button className="icon-btn press" onClick={onClose} aria-label={fr ? 'Retour' : 'Back'}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>

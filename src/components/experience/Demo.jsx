@@ -39,22 +39,24 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
         </button>
         <span className="pill demo-tag">{c.tag}</span>
       </div>
-      <p className="eyebrow demo-eyebrow">{c.eyebrow}</p>
-      <p className="demo-sub">{c.sub}</p>
-      <div className="demo-figure"><canvas ref={canvasRef} aria-hidden="true" /></div>
+      <p className="eyebrow demo-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
+      <p className="demo-sub" data-reveal style={{ '--i': 1 }}>{c.sub}</p>
+      <div className="demo-figure" data-reveal style={{ '--i': 2 }}><canvas ref={canvasRef} aria-hidden="true" /></div>
+      {/* The count as the result screen sets it: the numeral, then its word under it. */}
       <div className="demo-count" data-count={shown}>
-        <span key={shown} className="demo-numeral mono" aria-hidden="true">{shown}</span>
-        <span className="demo-word">{c.word(shown)}</span>
+        <span key={shown} className="demo-numeral" aria-hidden="true">{shown}</span>
+        <span className="res-label demo-word">{c.word(shown)}</span>
       </div>
       <p className="sr" role="status">{done ? c.done(result.count) : ''}</p>
-      {done && <div className="demo-result appear" data-testid="demo-result">
-        <p className="eyebrow demo-times-label">{c.times}</p>
-        <p className="demo-times mono">{result.reps.map(r => <span key={r.index}>{`${secs.format(r.endTime - r.startTime)} s`}</span>)}</p>
+      {/* Until the set ends, the result's place is held, hidden, so nothing moves when it lands. */}
+      <div className={`demo-result${done ? ' appear' : ' is-held'}`} {...(done ? { 'data-testid': 'demo-result' } : { 'aria-hidden': true, inert: true })}>
+        <p className="section-head demo-times-label">{c.times}</p>
+        <p className="demo-times">{result.reps.map(r => <span key={r.index}>{`${secs.format(r.endTime - r.startTime)} s`}</span>)}</p>
         <div className="actions demo-actions">
           <button type="button" className="btn-primary press" onClick={onStart}>{c.go}</button>
           {onReplay && <button type="button" className="btn-ghost press" onClick={onReplay}>{c.again}</button>}
         </div>
-      </div>}
+      </div>
     </div></section>
   </div>;
 }
@@ -122,7 +124,7 @@ export default function Demo({ onClose, onStart }) {
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') onClose(); };
     addEventListener('keydown', onKey);
-    document.querySelector('.demo-screen .icon-btn')?.focus({ preventScroll: true });
+    document.querySelector('.demo-screen .icon-btn')?.focus({ preventScroll: true, focusVisible: false });
     return () => removeEventListener('keydown', onKey);
   }, [onClose]);
 

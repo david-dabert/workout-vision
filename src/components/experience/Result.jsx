@@ -9,6 +9,7 @@ import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
 import RestClock from './RestClock';
+import Digits from './Digits';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
@@ -70,14 +71,14 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
-      <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
-      <h2 className="title refused-title">{model
+      <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
+      <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{model
         ? (fr ? 'L’analyse n’a pas pu démarrer.' : 'The analysis could not start.')
         : (fr ? 'Nous n’avons pas pu lire cette vidéo.' : 'We could not read this video.')}</h2>
-      <p className="body-text">{model
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{model
         ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
         : (fr ? 'Essayez une autre vidéo, ou filmez à nouveau avec l’appareil photo.' : 'Try another video, or record again with the camera.')}</p>
-      <div className="actions result-actions">
+      <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
@@ -101,14 +102,14 @@ export function AnalysisIncomplete({ lift, read, expected, decoder, onClose, onR
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
-      <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
-      <h2 className="title refused-title">{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
-      <p className="body-text">{partialLine(read, expected, fr)}</p>
-      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected } }} />
-      <div className="actions result-actions">
+      <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
+      <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr)}</p>
+      <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
+      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected } }} />
     </div></section>
   </div>;
 }
@@ -120,12 +121,12 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
-      <p className="eyebrow refused-eyebrow">{exerciseName(lift, lang)}</p>
-      <h2 className="title refused-title">{fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.'}</h2>
-      <p className="body-text">{fr
+      <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
+      <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.'}</h2>
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{fr
         ? 'L’écran s’est éteint ou vous avez quitté l’app. Gardez l’écran allumé pendant l’analyse, puis recommencez.'
         : 'The screen turned off or you left the app. Keep the screen on during the analysis, then start again.'}</p>
-      <div className="actions result-actions">
+      <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
@@ -157,6 +158,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const replayRef = useRef(null);
   const coveredRef = useRef(covered);
   coveredRef.current = covered;
+  // Once the question is answered the ghost steps back, so it never sits on the cards' words (#8).
+  const stepRef = useRef(step);
+  useEffect(() => { stepRef.current = step; }, [step]);
 
   // Back from the report or the replay, the keyboard and screen readers return to the button that opened it.
   const wasCovered = useRef(covered);
@@ -250,7 +254,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       const here = presence(rootRef.current, now, memo);
       if (coveredRef.current || here <= 0) return;
       mapPose(src.p, src.vb, { x: W * 0.04, y: H * 0.04, w: W * 0.92, h: H * 0.66 }, out);
-      body.draw(ctx, out, { alpha: 0.2 * here, time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
+      body.draw(ctx, out, { alpha: 0.2 * here * (stepRef.current === 'ask' ? 1 : 0.3), time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -323,18 +327,18 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     return <div className="wv-experience" inert={covered ? true : undefined}>
       <section className="screen is-active result-screen"><div className="wrap">
         <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
-        <p className="eyebrow refused-eyebrow">{liftName}</p>
-        <h2 className="title refused-title">{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2>
-        {why.cause === 'outside' && <div className="frame">
+        <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{liftName}</p>
+        <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2>
+        {why.cause === 'outside' && <div className="frame" data-reveal style={{ '--i': 2 }}>
           <i className="edge" style={why.exitLeft ? { left: 0 } : { right: 0 }} aria-hidden="true" />
           <span className="edge-label" style={{ textAlign: why.exitLeft ? 'left' : 'right' }}>{fr ? 'Hors cadre' : 'Out of frame'}</span>
         </div>}
-        <p className="body-text">{text}</p>
-        <div className="fix-note">
+        <p className="body-text" data-reveal style={{ '--i': 2 }}>{text}</p>
+        <div className="fix-note" data-reveal style={{ '--i': 3 }}>
           <p className="eyebrow">{fr ? 'La correction' : 'The fix'}</p>
           <p className="fix-text">{fix}</p>
         </div>
-        <div className="actions result-actions">
+        <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
           <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
           <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
         </div>
@@ -380,7 +384,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     card: <div key="card">
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
-          <p className="ask-q">{fr ? `Nous avons compté ${count}. Est-ce juste ?` : `We counted ${count}. Is that right?`}</p>
+          <p className="ask-q">{fr ? `Nous avons compté ${count}. Est-ce juste ?` : `We counted ${count}. Is that right?`}</p>
           <div className="ask-row">
             <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>
               <span>{fr ? 'Oui, c’est juste' : 'Yes, that’s right'}</span>
@@ -395,7 +399,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
           <div className="stepper">
             <button className="round press" disabled={trueN <= 0} onClick={() => setTrueN(n => Math.max(0, n - 1))} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
-            <span className="stepper-n" aria-live="polite">{trueN}</span>
+            <span className="stepper-n" aria-live="polite"><Digits text={trueN} /></span>
             <button className="round press" disabled={trueN >= 99} onClick={() => setTrueN(n => Math.min(99, n + 1))} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
           <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
@@ -418,7 +422,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
           </button>
-          <button className="btn-line is-quiet press" onClick={challenge}>
+          <button className="btn-ghost press" onClick={challenge}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
             <span>{fr ? 'Défier un ami' : 'Challenge a friend'}</span>
           </button>
@@ -455,12 +459,14 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   };
   // Under the report, the result is out of reach of taps, the keyboard and screen readers.
   return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
-    <section className={`screen is-active result-screen lv-${view.level}`} data-level={view.level}><div className="wrap">
+    <section className={`screen is-active result-screen lv-${view.level}${step === 'saved' ? ' is-saved' : ''}`} data-level={view.level}><div className="wrap">
       <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
-      <div className="res-head">
+      <div className="res-head" data-reveal style={{ '--i': 0 }}>
         <p className="eyebrow">{liftName}</p>
-        {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
-        <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
+        <div className="res-sub">
+          {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
+          <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
+        </div>
       </div>
       {resultBlocks(view.level).map(b => blocks[b] || null)}
       {/* The support links come after what the app measured (critic, 30 September). */}

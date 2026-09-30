@@ -6,32 +6,34 @@
 .wv-experience .report-screen .wrap { padding: 0; }
 
 /* Form grid */
-.wv-experience .form-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.wv-experience .field { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.wv-experience .form-grid { margin-top: var(--s-5); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.wv-experience .field { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-3); }
 .wv-experience .form-grid .field { margin-top: 0; }
-.wv-experience .field label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .field label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
 .wv-experience .field input,
-.wv-experience .field textarea { width: 100%; border-radius: 14px; background: var(--basalt); border: 1px solid var(--hair); color: var(--bone); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
+.wv-experience .field textarea { width: 100%; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--hair); color: var(--bone); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
 .wv-experience .field input { height: 50px; padding: 0 14px; }
 .wv-experience .field textarea { padding: 12px 14px; line-height: 1.45; resize: none; }
 .wv-experience .field input:focus,
-.wv-experience .field textarea:focus { border-color: rgba(232, 189, 126, 0.6); }
+.wv-experience .field textarea:focus { border-color: var(--lamp-line-strong); }
 .wv-experience .field ::placeholder { color: var(--ash-2); }
-.wv-experience .field .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
-.wv-experience .report-sub { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--ash); text-wrap: pretty; }
-.wv-experience .report-screen .report-sub + .field { margin-top: 20px; }
+.wv-experience .field .field-label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
+/* The screen's h1 16 px under the topbar, and its sub at the sub size, as on every screen (#11). */
+.wv-experience .report-screen .title { margin-top: var(--s-4); }
+.wv-experience .report-sub { margin: var(--s-3) 0 0; font-size: var(--fs-body); line-height: 1.55; color: var(--ash); text-wrap: pretty; }
+.wv-experience .report-screen .report-sub + .field { margin-top: var(--s-5); }
 /* Three answers side by side, as the guide's front and back switch; a long French answer wraps inside its button. */
-.wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: 14px; background: var(--basalt); border: 1px solid var(--hair); }
-.wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: 13px; font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
+.wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--hair); }
+.wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
 .wv-experience .report-seg button[aria-pressed="true"] { background: var(--lamp); color: var(--ink); }
 /* The partner's field fades in where it stands: a field that rose into place would pass over the level below it (CI run 149). */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-.wv-experience .fade-in { animation: fade-in 0.4s var(--ease) both; }
+.wv-experience .fade-in { animation: fade-in var(--d-ui) var(--ease) both; }
 @media (prefers-reduced-motion: reduce) { .wv-experience .fade-in { animation: none; } }
 
 /* Paper sheet */
 .wv-experience .sheet {
-  margin-top: 20px; background: var(--paper); color: var(--paper-ink); border-radius: 6px; padding: 22px 20px 18px;
+  margin-top: var(--s-5); background: var(--paper); color: var(--paper-ink); border-radius: var(--r-paper); padding: 22px 20px 18px;
   box-shadow: 0 50px 80px -40px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04);
   display: flex; flex-direction: column; gap: 12px;
 }
@@ -42,7 +44,7 @@
 .wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); overflow-wrap: anywhere; }
 .wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
-.wv-experience .sh-n { font-family: var(--serif); font-size: 58px; line-height: 0.9; color: #8A6630; font-variant-numeric: lining-nums; }
+.wv-experience .sh-n { font-family: var(--serif); font-size: 58px; line-height: 0.9; color: var(--paper-gold); font-variant-numeric: lining-nums; }
 .wv-experience .sh-nl { display: flex; flex-direction: column; font-size: 12px; color: var(--paper-ash); }
 .wv-experience .sh-nl b { font-weight: 500; color: var(--paper-ink); font-size: 13px; }
 .wv-experience .sh-line { margin: 0; font-size: 12px; color: var(--paper-ash); }
@@ -52,8 +54,10 @@
 .wv-experience .sh-table th:nth-child(2) { width: 32%; }
 .wv-experience .sh-table th:nth-child(3) { width: 21%; }
 .wv-experience .sh-table th:nth-child(4), .wv-experience .sh-table th:nth-child(5) { width: 18%; }
-.wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--paper-rule); }
-.wv-experience .sh-table td { padding: 5px 4px 5px 0; border-bottom: 1px solid #F0EADF; font-family: var(--mono); }
+.wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--paper-rule);
+  /* A French head no longer runs into the next column ("AMPLITUDE" into "PIC", #12). */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wv-experience .sh-table td { padding: 5px 4px 5px 0; border-bottom: 1px solid var(--paper-rule-2); font-family: var(--mono); }
 .wv-experience .sh-notes em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sh-notes p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .wv-experience .sh-foot { padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 10px; line-height: 1.5; color: var(--paper-ash); }
@@ -67,7 +71,7 @@
   padding: 12px 0 calc(env(safe-area-inset-bottom, 0px) + 16px);
   background: linear-gradient(to bottom, rgba(8, 7, 6, 0), var(--void) 22px);
 }
-.wv-experience .share-note { margin: 0 0 10px; text-align: center; font-size: 13px; line-height: 1.45; color: var(--ash); text-wrap: balance; }
+.wv-experience .share-note { margin: 0 0 10px; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
 /* Empty, it takes no room but stays a live region, so a message is announced. */
 .wv-experience .share-note:empty { margin: 0; }
 /* A message sits on the solid part of the bar, below its fade, never over the sheet. */
