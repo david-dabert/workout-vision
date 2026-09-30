@@ -1,0 +1,41 @@
+I found three defects and one gap in test coverage. The unit tests pass (`npx vitest run scripts/__tests__/public.test.js`: 8 passed), but none of them covers the problems below.
+
+What I read: the full diff and every changed or new file in full (`scripts/public/countix.mjs`, `fetch-countix.sh`, `manifest.mjs`, `run-public.mjs`, `scripts/__tests__/public.test.js`). I also read `admission.mjs`, `split.mjs`, `repcount.mjs`, `mmfit.mjs`, `test/real-phone/accuracy/public-scoreboard.test.ts`, `sets.ts`, the app's lift keys and `benchmark/manifest.json`.
+
+Under `test/real-phone/public/` and `~/wv-datasets` I only listed directories. To check the data I streamed the Countix labels and Kinetics `val.csv` from s3.amazonaws.com into memory; nothing was written to disk.
+
+**1. Held-out half is contaminated by the 43 Countix benchmark clips** (`/home/user/workout-vision/scripts/public/countix.mjs:38`, `group: r.video_id`)
+- The split puts each set in build or holdout by the SHA-256 of its YouTube id.
+- 30 of the Countix lift videos this change adds are also in `/home/user/workout-vision/benchmark/manifest.json`. That is the 43-clip Countix set already used to develop and gate the counter (DIRECTIVES 1.3 and 1.4), and its landmarks are in `benchmark/landmark-cache`.
+- 17 of these 30 fall in holdout: 04s5S8V2Rx0, 5DHKLIb6QpI, CnXUdZq7bBc, E9KZOVuBRfA, FyYRvnHdOgU, G3HrMXGn4k0, HmwfLUgHZIc, JWPJRoehLxg, MLLbKM7T41Y, QQPv17nfR_E, SQ_4MVrxuH8, VO3ts38ZCTk, aiJcIGNepAM, dptApZvEt5Y, gWszV_R2qsk, hVI6VQIS2Yo, rRUaSaoVlBc, y2OiEe3K-8c.
+- So the "held-out half no tool opens until its one run" already holds clips the counter was tuned on, and its one-time result will look better than it should.
+- Smallest failing test: take the `video_id`s in `benchmark/manifest.json`, run `countixManifest` on rows with those ids, and expect every resulting set to have `splitOf(s.group) === 'build'` (or to be left out with a reason). It fails today for all 17 ids above.
+
+**2. Resume check skips missing clips, which are then recorded with a false reason** (`/home/user/workout-vision/scripts/public/fetch-countix.sh:31` and `:33`)
+- Val and train clips of one class are extracted into the same folder, `videos/$cls`. Line 31 compares the file count of that folder (both splits) with the size of one split's list.
+- Line 33 ends in `|| true`, so a cut or failed curl stream looks the same as the expected tar "Not found in archive" errors.
+- Scenario: first run, push up. Val extracts 40 clips, then the train stream is cut after 80 of 115 clips (network drop or Ctrl-C). On the rerun the train check sees 120 ≥ 115 and skips the train tar for good. The val check on any rerun is also always satisfied once train is present.
+- The 35 missing sets then reach `sets.json` as "its video is not in the Kinetics mirror", which is not true.
+- A clip truncated mid-stream is also counted and kept. It later fails with "the video holds N frames of the M its label spans", which blames the label instead of the download.
+- Line 10 has the same weakness: if the labels download is cut, the `countix/` folder exists but is partly written, and a rerun never downloads it again. A truncated last row can become "label not readable" or a shortened count.
+- Smallest failing test: a script test with a stub `curl` that serves half of a tar and then exits non-zero, run twice. Expect the second run to request the train tar again, or the manifest reason to differ from "not in the Kinetics mirror". It fails today.
+
+**3. The seconds-based trim in run-public has no test** (`/home/user/workout-vision/scripts/public/run-public.mjs:53-59` and `:95`)
+- If this change to `run-public.mjs` were reverted, each Countix set would be transcoded as the whole 10 s clip. The frame check would pass against the whole video, and the count for the labelled window would be scored against the whole clip. No test would fail.
+- The ±1-frame tolerance and the `set.trimFrames || !cut` branch are not covered either.
+- Smallest failing test: pull the cut computation out as a pure function and assert that `{trimSeconds: [1.5, 9]}` at fps 29.97 gives `-ss 1.5015…` and `-frames:v 225`. Asserting that a reverted `transcode` receives no `-ss` would also do.
+
+**4. Minor, same area**
+- `manifest.mjs:14`: the usage message still lists only repcount and mmfit.
+- `fetch-countix.sh:39` swallows a scoreboard failure with `|| true`.
+
+**Checked and found correct:**
+- The tar indices computed from `val.csv` (033, 217, 306, 454, 461, 497, 577) match the tars the running extraction used.
+- The seven lift keys exist in `LIFTS` or `guide-patterns.json`.
+- No two lift windows share an id. The id collisions I found in train and val are all in classes the app does not count.
+- No lift window starts before or ends after its clip.
+- Two YouTube videos appear in both train and val; grouping by `video_id` keeps each in one half.
+- `countix_test.csv` has no class column, so leaving the test split out is expected.
+- The only new host is s3.amazonaws.com (pip for imageio-ffmpeg was already used by `fetch-and-run.sh`), and no video enters the repository.
+- The new tests would fail on revert, because they import the new `countix.mjs`.
+- The iPhone, typing, UI-string and French/English checklist items do not apply: the change touches only offline Node and shell scripts, with no app code or user-visible strings.
