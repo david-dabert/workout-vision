@@ -1,0 +1,6 @@
+fold 0: learned exact 39/87 within one 72; with 2 s still at each end, exact 28 within one 73; core exact 33 within one 56
+fold 1: learned exact 49/91 within one 80; with 2 s still at each end, exact 32 within one 77; core exact 30 within one 60
+fold 2: learned exact 52/90 within one 80; with 2 s still at each end, exact 18 within one 62; core exact 23 within one 57
+fold 3: learned exact 46/89 within one 75; with 2 s still at each end, exact 32 within one 73; core exact 24 within one 51
+fold 4: learned exact 43/90 within one 77; with 2 s still at each end, exact 25 within one 73; core exact 24 within one 55
+all: learned exact 229/447 within one 384; with 2 s still at each end, exact 135 within one 358; core exact 134 within one 279; LENGTHEN=0

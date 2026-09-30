@@ -1,0 +1,15 @@
+bench_press_7_angle_mufhcy60.json.gz     label  7 learned  7.30 -> 7
+bicep_curl_7_side_mufhf3wy.json.gz       label  7 learned  7.08 -> 7
+lat_pulldown_10_front_mufhlh4o.json.gz   label 10 learned 10.26 -> 10
+lateral_raise_10_front_mufhhbun.json.gz  label 10 learned 10.40 -> 10
+overhead_press_10_front_mufhjkku.json.gz label 10 learned 11.53 -> 12
+bench_press_7_side_24cc4f0b.json.gz      label  7 learned  8.13 -> 8
+bicep_curl_5_side_f5e5bdf2.json.gz       label  5 learned  5.30 -> 5
+hip_thrust_6_side_cf8c21d7.json.gz       label  6 learned  7.04 -> 7
+lateral_raise_9_front_43e71b40.json.gz   label  9 learned  8.36 -> 8
+leg_press_13_side_1ee0ae47.json.gz       label 13 learned 14.41 -> 14
+overhead_press_4_front_cefdaa82.json.gz  label  4 learned  3.66 -> 4
+overhead_press_4_front_f75638cc.json.gz  label  4 learned  4.59 -> 5
+romanian_deadlift_8_side_b3dc2c9e.json.g label  8 learned  7.98 -> 8
+squat_7_side_21fd7ccf.json.gz            label  7 learned 10.84 -> 11
+David: learned exact 7/14, within one 12
