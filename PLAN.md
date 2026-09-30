@@ -254,3 +254,18 @@ GROWTH, from 28 September, by David's decision. People are using the app; users 
 5. Count on the iPhone (David's order, 29 September, after his iPhone read 181 of the 439 samples of his lateral raise clip and the app showed 2 reps of 10; test/real-phone/partial-read/00-source.txt). Nothing else ships, and step 4 waits, until the count is right on an iPhone. (a) A video read in part shows no count (eca34b7): David passed it on his iPhone, approved its four French lines and ordered it shipped; main moved to eca34b7 on 29 September. (b) The playback path reads every sample however slow the phone, measured on David's iPhone before it ships; a change to decoding, so the full gate. (c) The report e-mail states the decoder used and the share of the video read. (d) The check page (check.html): David's five labelled videos, picked from his iPhone's library, counted by the live code and compared with the count and refusal their committed landmarks give, with the share read and the decoder shown; no release that touches analysis goes out unless that page shows every row as before. The incomplete-read screen and the check page are not in the prototype: the first is approved as above, the second is an internal page. (b) passed on David's iPhone on 29 September with the check page (79bfa55): normal path 5 of 5 as before; playback path forced, Low Power Mode on, 5 of 5 as before; David approved the decoder fix over the verifier's second failure and ordered it shipped on green CI. Step 1's time rule and the playback path, David's decision of 29 September: "A correct count comes before a fast one: on the playback path, the analysis may take longer than the clip, and the screen shows its progress; the time rule of Step 1 holds for WebCodecs."
 
 Approved by David on 30 September: main moved to e84ab32 on his order ("Push it and make it live", then "Push"), and pushed (git ls-remote: refs/heads/main e84ab3261aab). main thereby takes the commits from daf191a to e84ab32: progress per exercise and personal bests, the one-sentence opener and the rest clock, the example set on the entry, the export of the saved sets as two spreadsheet files, the levels, one set tempo for the app, and every screen on one design system (design/SYSTEM.md).
+
+David's orders of 30 September, in his words.
+- "A label counts the reps the video shows whole, from rest back to rest."
+- "I will watch the four cut sets myself and send their counts."
+- "Counter-core and main move to 84e020a once I approve that preview."
+- "Every step gets one reviewer pass, as I ordered on 29 September, except a counting change, which gets three at most."
+- "If the third pass still finds a miscount, the change is withdrawn."
+- "A finding that cannot put a wrong count or a wrong label into a file is listed as open, not fixed."
+- "Bench press and overhead press stay parked until I film new press sets."
+- "Nothing new starts before my check and the exam sets."
+- "Your reports keep to five lines: the commit, what to check on my iPhone, and what only I can decide."
+- "CI on 84e020a finished green at 11:33, the WebKit tour included, and that result stays on the commit."
+- "The preview is built from 84e020a and does not rebuild on a push."
+- "An order that is not in PLAN.md does not survive the session."
+- "Once I approve the preview, counter-core and main move to 84e020a exactly, and counter-core then takes the two PLAN.md commits."
