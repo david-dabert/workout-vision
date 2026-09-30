@@ -17,7 +17,8 @@ import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
 import ScreenFade from './components/experience/ScreenFade';
-import { loadSets } from './components/experience/sets';
+import { loadSets, knownSets } from './components/experience/sets';
+import { levelView, readLevel } from './components/experience/level';
 import { whenQuiet } from './lib/whenQuiet';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
@@ -153,10 +154,17 @@ function AppInner() {
   };
 
   // The profile is created in the background; no screen waits for it.
-  const chooseLift = lift => {
+  // A beginner sees the guide's page of the exercise before filming, until three sets are saved (level.js);
+  // from that page, "Filmer cet exercice" goes on to the filming screen.
+  const [guideLift, setGuideLift] = useState('');
+  const chooseLift = (lift, guided = false) => {
     // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
     fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
-    go('film', () => { setSelectedLift(lift); setVideoFile(null); });
+    if (!guided && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
+      go('exercises', () => setGuideLift(lift));
+      return;
+    }
+    go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
   };
   const backToChoice = () => go('dashboard', () => { setSelectedLift(''); setVideoFile(null); });
   const backToFilm = () => go('film', () => setVideoFile(null));
@@ -169,8 +177,8 @@ function AppInner() {
     key = `analyze:${fileSerial.current}`;
     screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
   } else if (page === 'exercises') {
-    key = 'guide';
-    screen = <ExerciseGuide onClose={() => go('dashboard')} onChoose={chooseLift} />;
+    key = guideLift ? `guide:${guideLift}` : 'guide';
+    screen = <ExerciseGuide lift={guideLift} onClose={() => go('dashboard', () => setGuideLift(''))} onChoose={l => chooseLift(l, true)} />;
   } else if (page === 'history') {
     key = 'history';
     screen = <History onClose={() => go('dashboard')} />;
@@ -178,7 +186,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // live and the dashboard. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={chooseLift} onGuide={() => go('exercises')} onHistory={() => go('history')} />;
+    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => go('exercises', () => setGuideLift(''))} onHistory={() => go('history')} />;
   }
 
   return <>

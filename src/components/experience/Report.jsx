@@ -25,7 +25,10 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach
   const [partner, setPartner] = useState('');
-  const [level, setLevel] = useState(''); // '' | beginner | intermediate | expert
+  // '' | beginner | intermediate | expert, prefilled from the level stored on this phone (level.js).
+  // Empty until chosen here: the screen promises that only what the user fills in appears on the PDF,
+  // so the level stored for the result screen is not written on the sheet by itself (review, 30 September).
+  const [level, setLevel] = useState('');
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState(kit ? 'ready' : 'preparing'); // ready | preparing | error
   const [note, setNote] = useState('');

@@ -6,6 +6,7 @@ import entry from './entry-pose.json';
 import { tierLabel, tierTag } from '../../lib/liftTiers';
 import { isOffered, tierOf } from '../../lib/offer';
 import './Guide.css';
+import './Level.css';
 
 const CATALOGUE = getAllGuideExercises();
 const ZONES = { front: ['shoulders', 'chest', 'biceps', 'abs', 'quads'], back: ['back', 'triceps', 'lowerback', 'glutes', 'hamstrings', 'calves'] };
@@ -56,9 +57,32 @@ export function GuideFrames({ exercise }) {
   }, [exercise]);
   return <div className="guide-frames">{exercise.frames.map((src, i) => <img key={src} className={i === active ? 'active' : ''} src={src} width="320" height="320" loading="lazy" alt={`${exercise.fr} / ${exercise.name} - ${i + 1}`} />)}</div>;
 }
-export default function Guide({ onClose, onChoose }) {
+/**
+ * lift: the exercise a beginner is about to film (level.js, until three sets are saved): the guide
+ * opens on that one exercise, its drawings and the way on to filming; the whole guide is one tap away.
+ */
+export default function Guide({ onClose, onChoose, lift }) {
   const { lang, setLang } = useT(), fr = lang === 'fr';
   const [query, setQuery] = useState(''), [zone, setZone] = useState(null), [view, setView] = useState('front'), [open, setOpen] = useState(null);
+  const [focus, setFocus] = useState(() => { const e = lift ? CATALOGUE.find(x => x.key === lift) : null; return e && countedLift(e) ? e : null; });
+  // An exercise the guide does not hold goes straight on to filming, never to the whole catalogue.
+  const [missing] = useState(() => !!lift && !focus);
+  useEffect(() => { if (missing) onChoose(lift); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  if (missing) return <div className="wv-experience" aria-busy="true" />;
+  if (focus) return <div className="wv-experience">
+    <section className="screen is-active guide-screen"><div className="wrap">
+      <div className="topbar"><button className="icon-btn press" onClick={onClose} aria-label={fr ? 'Retour' : 'Back'}>←</button><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
+      <h1 className="title">{fr ? 'Le geste, avant de filmer.' : 'The movement, before you film.'}</h1>
+      <p className="sub">{fr ? 'Regardez le mouvement, puis filmez votre série. Ce guide s’affiche avant vos trois premières séries.' : 'Watch the movement, then film your set. This guide shows before your first three sets.'}</p>
+      <div className="guide-focus" data-testid="guide-focus">
+        <p className="item-name">{fr ? focus.fr : focus.name}</p>
+        <GuideFrames exercise={focus} />
+        <button className="btn-primary press" onClick={() => onChoose(focus.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
+        <button className="guide-action press" onClick={() => setFocus(null)}>{fr ? 'Tous les exercices' : 'All exercises'}</button>
+      </div>
+      <p className="guide-credit">Illustrations: Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
+    </div></section>
+  </div>;
   const q = norm(query.trim());
   const list = CATALOGUE.filter(e => inZone(e, zone)).filter(e => !q || norm([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...Object.keys(MUSCLES).filter(z => inZone(e, z)).flatMap(z => [ZONE_NAMES.fr[z], ZONE_NAMES.en[z]]), ...e.muscles].join(' ')).includes(q));
   function pickZone(z) { setZone(previous => previous === z ? null : z); setOpen(null); }

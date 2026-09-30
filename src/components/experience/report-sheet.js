@@ -51,6 +51,43 @@ function repTempo(r, nextStart, first) {
 }
 
 /**
+ * The per-rep table as the report prints it: Rep | Tempo | Range | Peak | Mean (peak and mean
+ * angular speed in °/s). The result screen shows the same rows to an expert (level.js).
+ */
+export function repTable({ reps, first, fr }) {
+  const allReps = reps || [];
+  const liftFirst = first || 'concentric';
+  // Short rep: range under 85% of the set's median, by the rule the result screen and the
+  // opener use (set-account.js), so the three never disagree on an even number of reps.
+  const isShort = isShortIn(reps);
+  // Per-rep tempo in coach notation: moving phases (lowering, lifting) to one
+  // decimal so they never read 0; pauses (bottom, top) in whole seconds.
+  const phase = v => decimal(v, fr);
+  const pause = v => String(Math.round(v));
+  const tempoStr = t => [phase(t.lowering), pause(t.bottom), phase(t.lifting), pause(t.top)].join('-');
+  const rows = allReps.map((r, i) => {
+    if (r.clipped) return [String(i + 1), '…', `${Math.round(r.romDegrees)}°`, '…', '…'];
+    const nextStart = i + 1 < allReps.length ? allReps[i + 1].startTime : null;
+    const t = repTempo(r, nextStart, liftFirst);
+    const range = `${Math.round(r.romDegrees)}°${isShort(r) ? `${NBSP}▾` : ''}`;
+    return [String(i + 1), tempoStr(t), range, String(Math.round(r.peakSpeed || 0)), String(Math.round(r.meanSpeed || 0))];
+  });
+  const columns = fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'];
+  return { columns, rows, tempoStr };
+}
+
+// The concentric speed change (setMeasures) as the report writes it; '' when there is none.
+function speedLine(c, fr) {
+  if (c === null || c === undefined) return '';
+  const colon = fr ? `${NBSP}: ` : ': ';
+  const signed = c < 0 ? `${MINUS}${-c}` : c > 0 ? `+${c}` : '0';
+  return fr ? `Vitesse concentrique${colon}${signed}${NBSP}% du début à la fin` : `Concentric speed${colon}${signed}% from start to end`;
+}
+
+/** The report's line on the set's concentric speed change, or '' under four whole reps. */
+export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedChange ?? null, fr);
+
+/**
  * @param {object} o
  * @param {'fr'|'en'} o.lang
  * @param {Date} o.date          when the set was recorded
@@ -97,37 +134,15 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const allReps = reps || [];
   const liftFirst = first || 'concentric';
 
-  // Short rep: range under 85% of the set's median, by the rule the result screen and the
-  // opener use (set-account.js), so the three never disagree on an even number of reps.
-  const isShort = isShortIn(reps);
-  const hasShort = allReps.some(isShort);
-
-  // Per-rep tempo in coach notation: moving phases (lowering, lifting) to one
-  // decimal so they never read 0; pauses (bottom, top) in whole seconds.
-  const phase = v => decimal(v, fr);
-  const pause = v => String(Math.round(v));
-  const tempoStr = t => [phase(t.lowering), pause(t.bottom), phase(t.lifting), pause(t.top)].join('-');
-
-  // Build rows: Rep | Tempo | Range | Peak | Mean
-  const rows = allReps.map((r, i) => {
-    if (r.clipped) return [String(i + 1), '…', `${Math.round(r.romDegrees)}°`, '…', '…'];
-    const nextStart = i + 1 < allReps.length ? allReps[i + 1].startTime : null;
-    const t = repTempo(r, nextStart, liftFirst);
-    const range = `${Math.round(r.romDegrees)}°${isShort(r) ? `${NBSP}▾` : ''}`;
-    return [String(i + 1), tempoStr(t), range, String(Math.round(r.peakSpeed || 0)), String(Math.round(r.meanSpeed || 0))];
-  });
+  const hasShort = allReps.some(isShortIn(reps));
+  const { columns, rows, tempoStr } = repTable({ reps, first: liftFirst, fr });
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
   if (measures) {
     summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
-    const c = measures.speedChange;
-    if (c !== null) {
-      const signed = c < 0 ? `${MINUS}${-c}` : c > 0 ? `+${c}` : '0';
-      summary.push(fr
-        ? `Vitesse concentrique${colon}${signed}${NBSP}% du début à la fin`
-        : `Concentric speed${colon}${signed}% from start to end`);
-    }
+    const speed = speedLine(measures.speedChange, fr);
+    if (speed) summary.push(speed);
 
     // Set tempo: average of each phase across whole reps (setTempo, which the spreadsheet uses too).
     const tempo = setTempo(reps, liftFirst, fr);
@@ -182,7 +197,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         + colon + (arm === 'left' ? (fr ? 'gauche' : 'left') : fr ? (joint === 'knee' ? 'droite' : 'droit') : 'right')
       : '',
     // Tempo replaces time and phases; peak and mean angular speed in °/s.
-    columns: fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'],
+    columns,
     rows,
     summary,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',

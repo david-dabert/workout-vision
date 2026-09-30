@@ -11,7 +11,9 @@ import { setAccount } from './set-account';
 import RestClock from './RestClock';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
-import { decimal } from './report-sheet';
+import { decimal, repTable, speedChangeLine } from './report-sheet';
+import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
+import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
@@ -201,6 +203,16 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
+  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
+  const [view] = useState(() => levelView(readLevel()));
+  const perRep = view.perRep ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: speedChangeLine(reps, fr) } : null;
+  const table = perRep?.table, speedLine = perRep?.speed || '';
+  // The question on the level: offered once, after a saved set, when none is stored.
+  const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
+  const [chosen, setChosen] = useState('');
+  const offerLevel = shouldAskLevel({ step, ...levelBefore });
+  useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
+  function chooseLevel(l) { writeLevel(l); setChosen(l); }
   const marksRef = useRef(null);
   function pick(e) {
     const marks = [...(marksRef.current?.children || [])];
@@ -331,28 +343,44 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     </div>;
   }
 
+  // The account (A) and the tip (B); the cheer (C) and the notes, which a beginner finds open.
+  const plain = <>
+    {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
+    <p className="acc-tip">{account.tip}</p>
+  </>;
+  const more = <>
+    {step === 'saved' && account.cheer && <p className="acc-cheer">{account.cheer}</p>}
+    <details className="acc-notes" open={view.notesOpen || undefined}>
+      <summary className="text-btn press">{fr ? 'En savoir plus' : 'Learn more'}</summary>
+      {NOTES[fr ? 'fr' : 'en'].map(n => <section key={n.title}>
+        <h3 className="eyebrow">{n.title}</h3>
+        {n.lead && <p className="acc-lead">{n.lead}</p>}
+        {n.lines.map(l => <p key={l}>{l}</p>)}
+      </section>)}
+    </details>
+  </>;
   const one = shown <= 1;
-  // Under the report, the result is out of reach of taps, the keyboard and screen readers.
-  return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
-    <section className="screen is-active result-screen"><div className="wrap">
-      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
-      <div className="res-head">
-        <p className="eyebrow">{liftName}</p>
-        {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
-        <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
-      </div>
+  const measured = count > 0 && asked;
+  // The level chosen before this set sets the screen; one chosen on it applies from the next set.
+  const blocks = {
+    count: <div key="count" className="res-count">
       <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (shown === 1 ? 'Rep' : 'Reps')}</p>
       <p className="sr" role="status">{asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
-      {count > 0 && <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
+    </div>,
+    bars: count > 0 && <div key="bars">
+      <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
         {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': fr ? 'Répétitions, une par marque' : 'Reps, one per mark', onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': Math.max(0, rep.romDegrees || 0) / maxRom }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
-      </div>}
-      {count > 0 && <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>}
-
+      </div>
+      <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
+    </div>,
+    // Expert: the set's concentric speed change, the report's own line (report-sheet.js).
+    speed: measured && speedLine && <p key="speed" className="lv-speed" data-testid="level-speed">{speedLine}</p>,
+    card: <div key="card">
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
-          <p className="ask-q">{fr ? `Nous avons compté ${count}. Est-ce juste ?` : `We counted ${count}. Is that right?`}</p>
+          <p className="ask-q">{fr ? `Nous avons compté ${count}. Est-ce juste ?` : `We counted ${count}. Is that right?`}</p>
           <div className="ask-row">
             <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>
               <span>{fr ? 'Oui, c’est juste' : 'Yes, that’s right'}</span>
@@ -364,7 +392,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
       {step === 'fix' && (
         <div className="glass appear" data-testid="fix-card">
-          <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
+          <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
           <div className="stepper">
             <button className="round press" disabled={trueN <= 0} onClick={() => setTrueN(n => Math.max(0, n - 1))} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
             <span className="stepper-n" aria-live="polite">{trueN}</span>
@@ -378,7 +406,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
-          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app : ${count}. Corrigé : ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
+          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app : ${count}. Corrigé : ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
@@ -396,25 +424,45 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           </button>
           <p className="share-note" role="status">{shareNote}</p>
           <button className="text-btn press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
+          {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
+          {offerLevel && <div className="level-ask appear" data-testid="level-ask">
+            <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>
+            <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
+            {chosen && <p className="level-note" role="status">{fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans l’historique.' : 'Noted. The screen adapts from your next set. You can change it in your history.'}</p>}
+          </div>}
         </div>
       )}
 
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
       {/* A set the phone could not save is still done: the rest runs all the same (review, 29 September). */}
       {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} clock={rest} /></div>}
-      {count > 0 && asked && <div className="set-account appear" data-testid="set-account">
-        {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
-        <p className="acc-tip">{account.tip}</p>
-        {step === 'saved' && account.cheer && <p className="acc-cheer">{account.cheer}</p>}
-        <details className="acc-notes">
-          <summary className="text-btn press">{fr ? 'En savoir plus' : 'Learn more'}</summary>
-          {NOTES[fr ? 'fr' : 'en'].map(n => <section key={n.title}>
-            <h3 className="eyebrow">{n.title}</h3>
-            {n.lead && <p className="acc-lead">{n.lead}</p>}
-            {n.lines.map(l => <p key={l}>{l}</p>)}
-          </section>)}
-        </details>
-      </div>}
+    </div>,
+    // Expert: the report's per-rep table, compact, under the question so the question stays in view.
+    table: measured && table && <div key="table" className="lv-table-wrap" data-testid="level-table">
+      <table className="lv-table">
+        <thead><tr>{table.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
+        <tbody>{table.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
+      </table>
+      <p className="lv-units">{fr ? 'Tempo : descente-pause-montée-pause, en secondes. Pic et Moy. : vitesse angulaire, en °/s.' : 'Tempo: lowering-pause-lifting-pause, in seconds. Peak and Mean: angular speed, in °/s.'}</p>
+    </div>,
+    account: measured && <div key="account" className="set-account appear" data-testid="set-account">
+      {plain}
+      {more}
+    </div>,
+    // Beginner: the account and the tip lead, from the first frame.
+    plain: count > 0 && <div key="plain" className="set-account" data-testid="set-account">{plain}</div>,
+    more: measured && <div key="more" className="set-account acc-more appear">{more}</div>,
+  };
+  // Under the report, the result is out of reach of taps, the keyboard and screen readers.
+  return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
+    <section className={`screen is-active result-screen lv-${view.level}`} data-level={view.level}><div className="wrap">
+      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
+      <div className="res-head">
+        <p className="eyebrow">{liftName}</p>
+        {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
+        <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
+      </div>
+      {resultBlocks(view.level).map(b => blocks[b] || null)}
       {/* The support links come after what the app measured (critic, 30 September). */}
       {report && <ReportCount fr={fr} report={report} />}
     </div></section>
