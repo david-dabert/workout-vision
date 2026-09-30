@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-// node scripts/public/run-public.mjs <manifest.json> [--workers 4] [--limit N]
+// node scripts/public/run-public.mjs <manifest.json> [--workers 4] [--limit N] [--split build|holdout]
 // Public labelled videos to landmark files, through the app's own extraction (test/real-phone/harness.js,
 // the modules and settings the app runs), in the Chromium installed here. A manifest ({ sets, skipped },
 // scripts/public/manifest.mjs) holds sets { id, group, dataset, video, lift, count, repFrames:
 // [[start, end], ...], trimFrames?: [start, end] }. Each set is written once, to
 // test/real-phone/public/<dataset>/<build|holdout>/<id>.json.gz, in the half of its video's group
 // (scripts/public/split.mjs), with its labels unchanged, the rep marks in seconds, and the world landmarks
-// and timestamps the core counts. No video or frame is kept. Every set of the manifest, written, failed or
-// left out, is recorded with its reason in <dataset>/sets.json, so none is dropped quietly. Resumable.
+// and timestamps the core counts, and a whole clip's labelled window (countix-whole). No video or frame
+// is kept. Every set of the manifest, written, failed or left out, is recorded with its reason in
+// <dataset>/sets.json, so none is dropped quietly. Resumable.
 import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -54,6 +55,8 @@ async function transcode(set, fps, clip) {
   const c = cutOf(set, fps), cut = c && [c.from, c.to];
   const whole = await frames(set.video);
   if (cut && whole < cut[1] - 1) throw new Error(`the video holds ${whole} frames; its label ends at frame ${cut[1]}`);
+  const end = set.window && Math.round(set.window[1] * fps);
+  if (end && whole < end - 1) throw new Error(`the video holds ${whole} frames; its label ends at frame ${end}`);
   const trim = cut ? ['-ss', String(cut[0] / fps), '-frames:v', String(cut[1] - cut[0])] : [];
   await run(FFMPEG, ['-v', 'error', '-nostdin', '-y', ...trim.slice(0, 2), '-i', set.video, ...trim.slice(2), '-map', '0:v:0', '-an',
     '-c:v', 'libvpx-vp9', '-deadline', 'good', '-cpu-used', '4', '-row-mt', '1', '-b:v', '0', '-crf', '18', '-fps_mode', 'passthrough', clip], { timeout: 1800000 });
@@ -72,7 +75,10 @@ for (let i = 0; ; i++) {
 const browser = await chromium.launch({ executablePath: CHROMIUM });
 // A set's half: its own when the adapter set one (a video the counter has seen), else its video's.
 const half = s => s.split ?? splitOf(s.group ?? s.id);
-const pending = manifest.filter(s => !existsSync(join(OUT, s.dataset, half(s), `${s.id}.json.gz`))).slice(0, LIMIT);
+// --split build: only the build half this run (the held-out half waits for its one run).
+const ONLY = args.includes('--split') ? args[args.indexOf('--split') + 1] : null;
+if (ONLY !== null && ONLY !== 'build' && ONLY !== 'holdout') throw new Error(`--split takes build or holdout, not ${ONLY}`);
+const pending = manifest.filter(s => (!ONLY || half(s) === ONLY) && !existsSync(join(OUT, s.dataset, half(s), `${s.id}.json.gz`))).slice(0, LIMIT);
 // The record of every set of the manifest, per dataset (<dataset>/sets.json), joined with earlier runs and
 // written after each set, so a run that stops keeps it: written, failed or left out, and why. The
 // scoreboard reads it, so a set with no file is never silent.
@@ -115,6 +121,7 @@ async function worker() {
       const out = {
         dataset: set.dataset, id: set.id, split, lift: set.lift, count: set.count,
         reps: set.repFrames.map(([a, b]) => [round((a - shift) / fps), round((b - shift) / fps)]),
+        ...(set.window ? { window: set.window } : {}),
         fps, samples, visibleShare: samples ? round(seen / samples) : 0,
         admitted: admitted(set.dataset, samples ? seen / samples : 0),
         worldLandmarks: data.worldLandmarks.map(f => f && f.map(p => ({ x: round(p.x), y: round(p.y), z: round(p.z), visibility: round(p.visibility) }))),

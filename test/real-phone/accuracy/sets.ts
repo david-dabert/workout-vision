@@ -36,7 +36,14 @@ export const blind = (name: string) => name.replace(/\.json\.gz$/, '').replace(/
 // Public labelled sets (scripts/public/run-public.mjs): test/real-phone/public/<dataset>/<build|holdout>/.
 // The scoreboard and the diagnoses read the build half; the held-out half is read only by its own script,
 // run with HOLDOUT=1 (scripts/public/split.mjs).
-export type PublicSet = LabelledSet & { dataset: string; reps: [number, number][]; visibleShare: number };
+export type PublicSet = LabelledSet & { dataset: string; reps: [number, number][]; visibleShare: number; window?: [number, number] };
+
+// A set kept whole with its labelled window beside it (countix-whole): only the counted reps whose middle
+// falls inside the window are its count, as the label counts only the reps inside it.
+export function countInWindow(reps: { startTime: number; endTime: number }[], window?: [number, number]) {
+  if (!window) return reps.length;
+  return reps.filter(r => { const m = (r.startTime + r.endTime) / 2; return m >= window[0] && m <= window[1]; }).length;
+}
 export const PUBLIC = resolve(ROOT, 'public');
 
 // Each dataset's record (<dataset>/sets.json, written by run-public.mjs) names every set of its manifest:
@@ -64,8 +71,10 @@ export function publicSets(split: 'build' | 'holdout' = 'build') {
       try { d = JSON.parse(gunzipSync(readFileSync(resolve(dir, f))).toString()); }
       catch { unreadable.push(name); continue; }
       if (!d.lift || !Number.isInteger(d.count) || !Array.isArray(d.worldLandmarks) || !Array.isArray(d.reps) || d.split !== split) { unreadable.push(name); continue; }
+      // A whole clip is scored inside its labelled window: without one, it would be scored on the whole clip.
+      if (ds.endsWith('-whole') && !(Array.isArray(d.window) && d.window.length === 2)) { unreadable.push(name); continue; }
       if (d.admitted === false) { notScored.push(`${name}: not admitted: wrists and ankles seen together in ${Math.round(100 * d.visibleShare)}% of samples`); continue; }
-      sets.push({ name, dataset: ds, lift: d.lift, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, reps: d.reps, visibleShare: d.visibleShare });
+      sets.push({ name, dataset: ds, lift: d.lift, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, reps: d.reps, visibleShare: d.visibleShare, ...(d.window ? { window: d.window } : {}) });
     }
   }
   return { sets, unreadable, missing, notScored };

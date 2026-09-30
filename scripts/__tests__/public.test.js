@@ -123,3 +123,19 @@ describe('videos the counter was built on', () => {
     expect(sets[0].split).toBe('build');
   });
 });
+
+describe('Countix whole clips', () => {
+  it('keeps the whole clip and stores the labelled window beside it', async () => {
+    const { countixManifest, parseCountix } = await import('../public/countix.mjs');
+    const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const dir = mkdtempSync(join(tmpdir(), 'countix'));
+    mkdirSync(join(dir, 'squat'));
+    writeFileSync(join(dir, 'squat', 'abc_000017_000027.mp4'), '');
+    const rows = parseCountix('video_id,class,kinetics_start,kinetics_end,repetition_start,repetition_end,count\nabc,squat,17,27,18.5,26.0,4\n');
+    const [set] = countixManifest(rows, { videoDir: dir, whole: true }).sets;
+    expect(set).toMatchObject({ dataset: 'countix-whole', window: [1.5, 9], count: 4 });
+    expect(set.trimSeconds).toBeUndefined();
+  });
+});

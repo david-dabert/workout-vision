@@ -7,7 +7,7 @@ import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { publicSets } from './sets';
+import { countInWindow, publicSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
@@ -20,7 +20,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   let exactNow = 0, exactBefore = 0, became = 0, added = 0;
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
-    const now = r.refused ? 'refused' : r.count, before = base[s.name];
+    const now = r.refused ? 'refused' : countInWindow(r.reps, s.window), before = base[s.name];
     live[s.name] = now;
     const key = `${s.dataset} ${s.lift}`, g = groups.get(key) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0 };
     g.n++; if (now === 'refused') g.refused++; else if (off(now, s.label) === 0) g.exact++; else if (off(now, s.label) === 1) g.one++; else if (off(now, s.label) >= 3) g.bad++;
