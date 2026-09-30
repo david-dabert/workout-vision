@@ -53,13 +53,14 @@ export default function Entry({ onEnter }) {
     // Once "Entrer" is tapped the entry is leaving: a late tap, or a late load, opens nothing (review, 29 September).
     if (demoLoading.current || leaving.current) return;
     demoLoading.current = true;
-    import('./Demo').then(m => { if (!leaving.current) setDemo(() => m.default); }, err => {
+    import('./Demo').then(m => { if (!leaving.current) { scene.current?.pause(); setDemo(() => m.default); } }, err => {
       // As a screen whose code cannot load: the error screen and its Reload, never a dead tap.
       setDemo(() => () => { throw err; });
     }).finally(() => { demoLoading.current = false; });
   }
   function closeDemo() {
     setDemo(null);
+    scene.current?.resume();
     requestAnimationFrame(() => demoBtn.current?.focus({ preventScroll: true }));
   }
 
@@ -68,6 +69,7 @@ export default function Entry({ onEnter }) {
     leaving.current = true;
     // No switch input: on iOS Safari it takes drags that begin on it. The tick is navigator.vibrate where it exists.
     navigator.vibrate?.(10);
+    scene.current?.resume(); // from the example's "À vous": the figure leaves as from the entry
     scene.current?.leave();
     setPhase('play leaving');
     try { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_seen_landing', 'true'); } catch { /* storage unavailable */ }

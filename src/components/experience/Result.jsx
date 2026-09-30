@@ -9,6 +9,7 @@ import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
 import RestClock from './RestClock';
+import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
 import { decimal } from './report-sheet';
 import { tierLabel } from '../../lib/liftTiers';
@@ -142,6 +143,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [shown, setShown] = useState(reduced ? result.count : 0);
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
+  const [rest] = useState(restClock), restBegun = useRef(false);
   const [shareNote, setShareNote] = useState('');
   const [sel, setSel] = useState(-1); // the rep whose details are shown, or none
   const saving = useRef(false);
@@ -240,6 +242,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   async function doSave(n, corrected) {
     if (saving.current) return;
     saving.current = true;
+    // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
+    if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
       await saveWorkout({
         exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
@@ -378,7 +382,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           {/* The rest begins as the set is saved: its clock runs at once, above the report and the
               challenge, since the next thing done on the bench is to rest (design pass, 29 September).
               The result screen carries no opener: its numeral and account already say it; the report does. */}
-          <div className="rest-slot"><RestClock fr={fr} autoStart /></div>
+          <div className="rest-slot"><RestClock fr={fr} clock={rest} /></div>
           <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
@@ -395,7 +399,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       {report && <ReportCount fr={fr} report={report} />}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
       {/* A set the phone could not save is still done: the rest runs all the same (review, 29 September). */}
-      {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} autoStart /></div>}
+      {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} clock={rest} /></div>}
       {count > 0 && asked && <div className="set-account appear" data-testid="set-account">
         {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
         <p className="acc-tip">{account.tip}</p>

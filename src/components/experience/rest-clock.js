@@ -6,7 +6,8 @@
 export function restClock() {
   let startedAt = null;
   return {
-    start() { startedAt = Date.now(); },
+    // From now, or from a given moment.
+    start(at = Date.now()) { startedAt = at; },
     stop() { startedAt = null; },
     get running() { return startedAt !== null; },
     // Whole seconds since the start; never negative, should the phone's clock be set back.

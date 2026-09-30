@@ -1,2 +1,3 @@
 saved: PASS clock running=1 note="Merci. Série enregistrée sur votre téléphone."
 save refused: PASS clock running=1 note="Résultat affiché, mais non enregistré."
+stopped, then retried and saved: PASS timers=0 start button=1

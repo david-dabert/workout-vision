@@ -120,3 +120,21 @@ test('the example does not skip the set after a pause of the page', async ({ bro
   expect(after - before).toBeLessThanOrEqual(1);
   await context.close();
 });
+
+// Review, 30 September: under the example the entry's figure is not drawn (its canvas holds still),
+// and once the example closes it moves again.
+test('the entry figure holds still under the example and moves again after it', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const { context, page } = await first(browser, { width: 390, height: 664 }, 'fr');
+  const shot = () => page.evaluate(() => document.querySelector('.entry-stage').toDataURL());
+  await page.getByRole('button', { name: WORDS.fr.open }).click();
+  await expect(page.locator('.demo-screen')).toHaveCount(1);
+  await page.waitForTimeout(200);
+  const a = await shot(); await page.waitForTimeout(600); const b = await shot();
+  expect(a === b).toBe(true);
+  await page.getByRole('button', { name: WORDS.fr.close }).click();
+  await expect(page.locator('.demo-screen')).toHaveCount(0);
+  const c = await shot(); await page.waitForTimeout(600); const d = await shot();
+  expect(c === d).toBe(false);
+  await context.close();
+});

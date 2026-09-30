@@ -17,3 +17,20 @@ describe('the rest clock after a saved set', () => {
     expect(html).toContain('Start rest');
   });
 });
+
+// Review, 30 September: the result screen holds one clock for the set, whichever card shows it, so a
+// rest the user stopped or restarted before a retried save is the rest the saved card shows.
+describe('the rest clock shared across a retried save', () => {
+  it('shows a stopped shared clock as stopped', async () => {
+    const { restClock } = await import('../rest-clock');
+    const shared = restClock(); shared.start(Date.now() - 90000); shared.stop();
+    const html = renderToStaticMarkup(<RestClock fr clock={shared} />);
+    expect(html).not.toContain('role="timer"');
+    expect(html).toContain('Lancer le repos');
+  });
+  it('shows a restarted shared clock from its restart', async () => {
+    const { restClock } = await import('../rest-clock');
+    const shared = restClock(); shared.start(Date.now() - 30000);
+    expect(renderToStaticMarkup(<RestClock fr clock={shared} />)).toContain('0:30');
+  });
+});

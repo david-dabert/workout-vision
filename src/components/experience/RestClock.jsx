@@ -6,10 +6,11 @@ import { restClock, nextTick, restText, restSpoken } from './rest-clock';
  * and says nothing of how long to rest (rest-clock.js). The time is drawn on each whole second and
  * again the moment the page comes back into view, so a phone that slept shows the right time at once.
  */
-export default function RestClock({ fr, autoStart = false }) {
-  // Started with the saved set, the clock runs from that moment: the rest has begun, no tap needed.
-  const [clock] = useState(() => { const c = restClock(); if (autoStart) c.start(); return c; });
-  const [running, setRunning] = useState(autoStart);
+export default function RestClock({ fr, autoStart = false, clock: shared }) {
+  // The result screen passes the set's one clock (started as the set is saved), so the card that shows
+  // it after a failed save and the saved card show the same rest. Alone, autoStart starts its own.
+  const [clock] = useState(() => { if (shared) return shared; const c = restClock(); if (autoStart) c.start(); return c; });
+  const [running, setRunning] = useState(() => clock.running);
   const [, redraw] = useState(0);
   // The button that replaces the one tapped takes the focus, so the keyboard and screen readers stay in place.
   const buttonRef = useRef(null), moved = useRef(false);

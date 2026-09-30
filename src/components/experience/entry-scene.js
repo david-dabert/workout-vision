@@ -165,9 +165,12 @@ export function createEntryScene(canvas, reduced, bounds) {
   const big = new Body(LITE ? 1700 : 2600, 7);
   const pose = new Float32Array(entry.p), P2 = new Float32Array(66);
   const stage = { entryStart: performance.now(), explodeAt: 0 };
-  let frame = 0, disposed = false;
-  function draw(now) {
+  let frame = 0, disposed = false, pausedAt = 0, away = 0;
+  function draw(wall) {
     if (disposed) return;
+    // The scene's own time: the wall clock less the time it spent covered, so all of it goes on from
+    // where it stopped (review, 30 September).
+    const now = wall - away;
     const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : now / 1000;
     ctx.clearRect(0, 0, W, H);
     drawDust(ctx, W, H, t, 1);
@@ -187,14 +190,22 @@ export function createEntryScene(canvas, reduced, bounds) {
     measure();
     draw(performance.now());
   }
-  function loop(now) { draw(now); if (!disposed) frame = requestAnimationFrame(loop); }
+  function loop(now) { draw(now); if (!disposed && !pausedAt) frame = requestAnimationFrame(loop); }
   const observer = new ResizeObserver(size);
   observer.observe(canvas); size();
   if (!reduced) frame = requestAnimationFrame(loop);
   return {
-    skip() { stage.entryStart = performance.now() - 6000; draw(performance.now()); },
+    skip() { stage.entryStart = performance.now() - away - 6000; draw(performance.now()); },
     remeasure() { measure(); },
-    leave() { if (!reduced) stage.explodeAt = performance.now(); },
+    leave() { if (!reduced) stage.explodeAt = performance.now() - away; },
+    // Covered by the example: no frame is drawn, and on return the figure goes on where it stopped
+    // (reviews of 29 and 30 September).
+    pause() { if (reduced || disposed || pausedAt) return; pausedAt = performance.now(); cancelAnimationFrame(frame); },
+    resume() {
+      if (!pausedAt || disposed) return;
+      away += performance.now() - pausedAt;
+      pausedAt = 0; frame = requestAnimationFrame(loop);
+    },
     dispose() { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); }
   };
 function drawDoor(ctx, W, H, e, rect, now) {
