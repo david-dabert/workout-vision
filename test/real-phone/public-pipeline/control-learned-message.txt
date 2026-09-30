@@ -1,0 +1,39 @@
+I found four defects in the draft. The first one alone means it cannot go out as written.
+
+**Defect 1 (blocking): commit 4fc1f3f does not exist.**
+- Claim: "commits 4fc1f3f and eb51fd3".
+- Source: `git cat-file -t 4fc1f3f` returns "fatal: Not a valid object name 4fc1f3f", after `git fetch origin`.
+- `git log --oneline -3 origin/claude/generate-architecture-md-inw479` shows the right commits: `eb51fd3` (reviewer report) on top of `6aade11` ("A learned rep counter, measured and not wired into the app"). The learned counter, the weights and every `learned-*` evidence file are in 6aade11 (`git show --stat 6aade11`). The draft should say 6aade11.
+
+**Defect 2: the network refusal of zenodo.org is on no record, and the draft leaves out that MM-Fit has already been run.**
+- Claim (line 3): MM-Fit's 616 sets are on zenodo.org, "which this environment's network refuses". Line 4 then asks David to allow zenodo.org as the way to train on real gym sets.
+- Source, refusal: no committed file records a refusal. `git grep -i zenodo` on the branch, filtered for 403, refus, denied, block, network, proxy or unreach, returns nothing. Commit 4ff738a only says the fetch "needs network access to ... zenodo.org". Save the command output that shows the refusal in an evidence folder, or drop the claim.
+- Source, earlier run: commit dfe4d43 (27 September, on main, counter-core and this branch) already ran all 616 MM-Fit sets through the counter. `test/real-phone/mmfit/run.txt` ends with `{"sets":616,"pass":332,"fail":284,"admitted":287,"excluded":329}`.
+- `test/real-phone/mmfit/results.json` shows the videos were read from a local copy at `/Users/azeliebernard/Datasets/MM-Fit/` (`git show dfe4d43:test/real-phone/mmfit/results.json | head`). So the data is already on a Mac. Opening zenodo.org here is not the only route, and the decision as worded misleads David.
+- Source, the number 616: under PLAN.md line 30 (MM-Fit visibility rule), only 287 of the 616 are admitted as build data and 329 are excluded (`test/real-phone/mmfit/table.md`, run.txt). "616 labelled gym sets" to train on overstates what PLAN.md allows.
+
+**Defect 3: the gate failure rests on a press set, which PLAN.md says decides nothing.**
+- Claim (line 2): "one press counted 7 for 4, so it fails your gate".
+- The count itself is right: `learned-david.txt` has `overhead_press_4_front_f75638cc` at label 4, learned 7, and the core gets that set exact in `scoreboard.txt`.
+- But PLAN.md on the branch (paragraph after line 294; `git show origin/claude/generate-architecture-md-inw479:PLAN.md | sed -n 280,320p`) says: "Bench press and overhead press sets are measured but decide nothing, since no counting work is done on either until David films new press sets."
+- Leaving out the press sets, no learned count is off by 3 or more. The worst are squat 9 for 7 and bench_press_7_side 9 for 7, both off by 2.
+- The draft needs a reason from the record for keeping the counter out that is not the press. Two exist: the core's squat 7 of 7 becomes 9, and the variant reaches only 2 of 14. Or it must say the press fails only the letter of CLAUDE.md R2, a set PLAN.md excludes from decisions.
+
+**Defect 4 (minor): the reviewer report is cited without saying what it found.**
+- Line 1 says "review test/real-phone/public-pipeline/review-6-learned.txt".
+- That report lists four defects, one of them blocking (LENGTHEN on by default), plus one minor inaccuracy.
+- On the branch they appear addressed: train.py line 114 now reads `os.environ.get('LENGTHEN', '0')`, the learned.ts header says "not yet run on the held-out half", the features.json mention is gone from data.py, `__pycache__/` is in .gitignore, and the 15 per second sentence is corrected.
+- No second review of those fixes is recorded. David reading the report would see open defects the draft does not mention. The report was committed in eb51fd3, after the fixes in 6aade11.
+
+**Checks that passed:**
+- **eb51fd3 and 84e020a:** both exist on origin. `git ls-remote` shows the branch head at eb51fd385df2. 84e020a is on origin/main, counter-core and the branch.
+- **counter-core and main:** `git ls-remote` shows counter-core at c044f6feb9ae and main at 84e020a000e7. Both match the last moves PLAN.md records ("counter-core moved ... to c044f6f"; "main fast-forwarded from e84ab32 to 84e020a", on David's approval). counter-core is an ancestor of the branch head (`git merge-base --is-ancestor`). No unrecorded move. "main stays at 84e020a" is true.
+- **CI:** the draft makes no CI claim. For the record, no workflow run exists for eb51fd3 or 6aade11. The latest run on the branch is 36699281497, success, on 24f89fa (`list_workflow_runs`, branch filter).
+- **Numbers in `learned-cv.txt`:** 447 clips, 229 exact vs 134, 384 within one vs 279. All match the "all:" line.
+- **Numbers on David's sets:** `learned-david.txt` gives 8/14. The core's 7 matches `scoreboard.txt` and STATE.md line 12 ("7 exact"). 14 sets matches. "2 of 14" matches `learned-david-lengthen.txt` ("exact 2/14").
+- **"10-second YouTube clips":** supported by `review-2-countix.txt` line 24 ("the whole 10 s clip") and PLAN.md (Countix comes from YouTube through Kinetics).
+- **Evidence paths:** `review-6-learned.txt` is in eb51fd3. `learned-cv.txt`, `learned-david.txt` and `learned-david-lengthen.txt` are in 6aade11. Each holds what the draft says.
+- **Rules relied on:** "your gate" is CLAUDE.md R2, subject to Defect 3. Writing only for approval is PLAN.md ("write to me only when my iPhone or my approval is needed"), and the draft does ask for approvals. Privacy and French copy approval are CLAUDE.md R10 and PLAN.md line 276.
+- **Format:** five lines, a commit (wrong, see Defect 1), iPhone line ("nothing to check"), decisions for David. No unsupported "fixed", "passing", "working" or "deployed".
+
+Files: /home/user/workout-vision/PLAN.md, /home/user/workout-vision/test/real-phone/accuracy/learned-cv.txt, /home/user/workout-vision/test/real-phone/accuracy/learned-david.txt, /home/user/workout-vision/test/real-phone/accuracy/learned-david-lengthen.txt, /home/user/workout-vision/test/real-phone/accuracy/scoreboard.txt, /home/user/workout-vision/test/real-phone/public-pipeline/review-6-learned.txt, /home/user/workout-vision/test/real-phone/mmfit/run.txt, /home/user/workout-vision/test/real-phone/mmfit/results.json
