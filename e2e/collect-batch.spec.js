@@ -65,3 +65,30 @@ test('a restart from set 1 is not undone by another open tab holding the old num
   await a.locator('#videos').setInputFiles([video('n.mov')]);
   await expect(a.locator('.set-head b')).toHaveText(['Set 1']);
 });
+
+test('all the counts typed on one line fill the sets in order, and a line that does not match fills nothing', async ({ page }) => {
+  await open(page);
+  await page.locator('#videos').setInputFiles([video('a.mov'), video('b.mov'), video('c.mov')]);
+  await expect(page.locator('#all')).toBeVisible();
+  await page.fill('#all-counts', '8 10');
+  await page.click('#fill');
+  await expect(page.locator('#summary')).toContainText('Nothing filled: 3 sets to count, 2 counts typed.');
+  await expect(page.locator('#count0')).toHaveValue('');
+  await page.fill('#all-counts', '8, 10 7');
+  await page.click('#fill');
+  await expect(page.locator('#count0')).toHaveValue('8');
+  await expect(page.locator('#count1')).toHaveValue('10');
+  await expect(page.locator('#count2')).toHaveValue('7');
+});
+
+test('after the counts are filled from the line, an exercise chosen on the first set still carries to the others', async ({ page }) => {
+  await open(page);
+  await page.locator('#videos').setInputFiles([video('a.mov'), video('b.mov'), video('c.mov')]);
+  await expect(page.locator('#all-counts')).toHaveAttribute('inputmode', 'text');
+  await page.fill('#all-counts', '8 10 7');
+  await page.click('#fill');
+  await page.selectOption('#lift0', { index: 1 });
+  const chosen = await page.locator('#lift0').inputValue();
+  await expect(page.locator('#lift1')).toHaveValue(chosen);
+  await expect(page.locator('#lift2')).toHaveValue(chosen);
+});

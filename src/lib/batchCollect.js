@@ -36,7 +36,8 @@ export function carryChoice(rows, from, key, value) {
   for (let j = from + 1; j < rows.length; j++) {
     // The first set the user has worked on (any field chosen by hand, or its count typed) ends the carry:
     // the sets below it follow that one (reviews, 30 September).
-    if (Object.keys(rows[j].touched || {}).length || String(rows[j].count ?? '').trim() !== '') break;
+    // A count filled from the one-line box (row.lineCount) was not typed on the set: it does not stop the carry.
+    if (Object.keys(rows[j].touched || {}).length || (String(rows[j].count ?? '').trim() !== '' && !rows[j].lineCount)) break;
     if (rows[j].state === 'done') continue;
     rows[j][key] = value;
   }
@@ -110,4 +111,21 @@ export function appendRows(rows, files, first = 1) {
   const fresh = files.filter(file => !rows.some(r => sameFile(r.file, file)));
   const added = rowsFor(fresh, last ? { lift: last.lift, view: last.view } : undefined).map((r, i) => ({ ...r, set: next + i }));
   return [...rows, ...added];
+}
+
+/**
+ * All the counts of a batch typed on one line, in the order of the sets ("8 10 7" or "8, 10, 7"): each set
+ * still to collect takes the next one; a collected set keeps its own. Nothing is filled unless the line holds
+ * exactly one whole number from 0 to 99 per set still to collect: a count is David's label, never guessed
+ * (CLAUDE.md R1).
+ */
+export function countsFromLine(rows, line) {
+  // A comma or semicolon separates only when a space follows it: "9,5" is nine and a half in French, not two counts.
+  const typed = String(line).replace(/[,;]\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  const bad = typed.find(t => !/^\d{1,2}$/.test(t));
+  if (bad !== undefined) return { counts: null, error: `${bad} is not a whole number from 0 to 99` };
+  const open = rows.filter(r => r.state !== 'done' && r.state !== 'duplicate');
+  if (typed.length !== open.length) return { counts: null, error: `${open.length} set${open.length === 1 ? '' : 's'} to count, ${typed.length} count${typed.length === 1 ? '' : 's'} typed` };
+  let k = 0;
+  return { counts: rows.map(r => (r.state !== 'done' && r.state !== 'duplicate' ? typed[k++] : r.count)), error: null };
 }

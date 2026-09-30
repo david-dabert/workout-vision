@@ -141,3 +141,37 @@ describe('a set chosen by hand, on any field', () => {
     expect(mergeMemory({ gen: 0, next: 6 }, null)).toEqual({ gen: 0, next: 6 });
   });
 });
+
+describe('all the counts on one line', () => {
+  it('fills the sets not yet collected, in order, from whole numbers typed with spaces or commas', async () => {
+    const { countsFromLine } = await import('../batchCollect');
+    const rows = rowsFor([f('a', 1), f('b', 2), f('c', 3)]);
+    rows[0].state = 'done'; rows[0].count = '9';
+    expect(countsFromLine(rows, '8, 12')).toEqual({ counts: ['9', '8', '12'], error: null });
+  });
+  it('fills nothing when the line holds more or fewer counts than the sets, or anything but whole numbers from 0 to 99', async () => {
+    const { countsFromLine } = await import('../batchCollect');
+    const rows = rowsFor([f('a', 1), f('b', 2)]);
+    expect(countsFromLine(rows, '8').error).toBe('2 sets to count, 1 count typed');
+    expect(countsFromLine(rows, '8 9 10').error).toBe('2 sets to count, 3 counts typed');
+    expect(countsFromLine(rows, '8 9.5').error).toBe('9.5 is not a whole number from 0 to 99');
+    expect(countsFromLine(rows, '8 100').error).toBe('100 is not a whole number from 0 to 99');
+    expect(countsFromLine(rows, '8 9').counts).toEqual(['8', '9']);
+  });
+});
+
+describe('counts filled from the line', () => {
+  it('do not stop an exercise carried from above, as a count typed on the set does', async () => {
+    const { countsFromLine, carryChoice } = await import('../batchCollect');
+    const rows = rowsFor([f('a', 1), f('b', 2), f('c', 3)], { lift: 'squat', view: 'side' });
+    const { counts } = countsFromLine(rows, '8 10 7');
+    rows.forEach((r, i) => { r.count = counts[i]; r.lineCount = true; });
+    carryChoice(rows, 0, 'lift', 'bench_press');
+    expect(rows.map(r => r.lift)).toEqual(['squat', 'bench_press', 'bench_press']);
+  });
+  it('read a comma followed by a space as a separator, and a comma inside a number as no whole count', async () => {
+    const { countsFromLine } = await import('../batchCollect');
+    expect(countsFromLine(rowsFor([f('a', 1), f('b', 2)]), '9,5').error).toBe('9,5 is not a whole number from 0 to 99');
+    expect(countsFromLine(rowsFor([f('a', 1), f('b', 2)]), '9, 5').counts).toEqual(['9', '5']);
+  });
+});

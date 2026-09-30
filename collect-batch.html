@@ -39,11 +39,16 @@
 </head>
 <body>
   <h1>Batch collector</h1>
-  <p class="note">Pick all the videos of a session at once. Each becomes a numbered set, by the files' dates (a later pick is added after), shown with its picture and length. Choose its exercise and view, enter the reps you counted, then collect them all. No video is uploaded. No count is shown.</p>
+  <p class="note">Pick all the videos of a session at once. Each becomes a numbered set, by the files' dates (a later pick is added after), shown with its picture and length. Choose the exercise once (it carries to the sets below until you change one), type all the reps on one line, then collect them all. No video is uploaded. No count is shown.</p>
   <p class="note">For David's own sets only. Keep the screen on and this page open until the last set is done.</p>
 
   <button class="btn" id="pick">Pick videos</button>
   <input type="file" id="videos" accept="video/*,.mov" multiple hidden>
+
+  <div id="all" hidden>
+    <label for="all-counts">All the reps, in the order of the sets (for example 8 10 7)</label>
+    <div class="row"><div><input id="all-counts" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="8 10 7"></div><div><button class="btn quiet" id="fill">Fill the counts</button></div></div>
+  </div>
 
   <div id="sets"></div>
 

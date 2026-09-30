@@ -5,7 +5,7 @@
  * downloaded. No video is uploaded and no count is shown.
  */
 import { collectSet } from './lib/collectSet';
-import { rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory } from './lib/batchCollect';
+import { rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory, countsFromLine } from './lib/batchCollect';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { OFFERED } from './lib/offer';
 import catalogue from './lib/guide-catalog.json';
@@ -72,7 +72,7 @@ function render() {
     const choose = (key, value) => { row[key] = value; row.touched = { ...row.touched, [key]: true }; carryChoice(rows, i, key, value); sync(key); recheck(); };
     lift.addEventListener('change', () => choose('lift', lift.value));
     view.addEventListener('change', () => choose('view', view.value));
-    count.addEventListener('input', () => { row.count = count.value; recheck(); });
+    count.addEventListener('input', () => { row.count = count.value; row.lineCount = false; recheck(); });
     row.el = box;
     paint(row);
     return box;
@@ -87,6 +87,7 @@ function render() {
   $('share').textContent = `Share ${done.length} file${done.length > 1 ? 's' : ''}`;
   $('download').textContent = `Download ${done.length} file${done.length > 1 ? 's' : ''}`;
   $('pick').disabled = busy;
+  $('all').hidden = busy || !rows.some(open);
   $('restart').hidden = busy || recall().next <= 1;
   // Where numbering starts, shown before a pick, so a reset is seen: Safari deletes a site's storage after
   // seven days without a visit, unless the page is on the home screen (WebKit, "Full Third-Party Cookie
@@ -118,6 +119,16 @@ function paint(row, pct) {
 }
 
 $('pick').addEventListener('click', () => { if (!busy) $('videos').click(); });
+
+// All the counts on one line (batchCollect.js, countsFromLine): filled only when there is one per set.
+$('fill').addEventListener('click', () => {
+  if (busy) return;
+  const { counts, error } = countsFromLine(rows, $('all-counts').value);
+  if (error) { summaryEl.textContent = `Nothing filled: ${error}.`; return; }
+  rows.forEach((r, i) => { if (r.count !== counts[i]) { r.count = counts[i]; r.lineCount = true; } });
+  sync('count'); recheck();
+  summaryEl.textContent = 'Counts filled. Check each set against its picture, then collect.';
+});
 $('videos').addEventListener('change', () => {
   const files = [...($('videos').files || [])];
   $('videos').value = '';
