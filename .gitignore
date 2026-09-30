@@ -71,3 +71,6 @@ test/real-phone/exam/**/*.json.gz
 
 # Shots and results.json written by a local run of the tour in CI (test/real-phone/tour-ci/tour.mjs).
 test/real-phone/tour-ci/*/
+
+# Public held-out half: read only by its own run (test/real-phone/accuracy/public-holdout.test.ts), never committed.
+test/real-phone/public/*/holdout/
