@@ -1,0 +1,49 @@
+I found two defects in the change and one test gap. The change is unstaged edits to /home/user/workout-vision/scripts/ml/data.py (new `on_timebase`, and a `TIMEBASE` switch in `load`) and /home/user/workout-vision/scripts/ml/test_objective.py. I did not run train.py. I ran `on_timebase` directly on synthetic sets and on the 447 files in test/real-phone/public/countix-whole/build.
+
+**Defect 1: a set already at 15 per second does not come out unchanged. Its unseen mask roughly doubles, so training no longer matches what the app computes.**
+- **Where:** data.py lines 64-65 and 69:
+  ```
+  j = np.clip(np.searchsorted(ts, grid, side='right') - 1, 0, len(ts) - 1)
+  k = np.clip(j + 1, 0, len(ts) - 1)
+  ...
+  ok = (seen[j] > 0) & (seen[k] > 0)
+  ```
+- **Why:** when a grid point falls on an original sample (or just before it, from float rounding), there is no gap to interpolate across. Still, `k` is always the next sample and must also be seen. So a sample that was seen is marked unseen whenever the sample after it was missed.
+- **Scenario:** a clip at exactly 15 per second, as `load()` passes it (float32 timestamps, line 81), with pose missed on samples 20, 50 and 80:
+  - the result has unseen samples 19, 20, 49, 50, 51, 80 and 81;
+  - with float64 timestamps it has 19, 20, 49, 50, 79 and 80;
+  - the positions are unchanged (largest difference 2.4e-5).
+- **App side:** `learnedFeatures` in /home/user/workout-vision/src/lib/counting/learned.ts sets the mask to 0 only on the missed frame itself. So one missed frame is one unseen sample in the app, but two or three in training.
+- **Real data:** on the admitted public build sets, the unseen share goes from 12.48% (62,991 samples) to 15.87% (63,144 samples). That is about 27% more unseen samples, which the network learns from on the mask channel (channel 37).
+- **At 8 per second** (gaps of 0.125 s), one missed frame becomes 3 or 4 unseen samples. That follows the "both neighbours" rule, but the grid points that fall on a sample are the part that is wrong.
+- **Why the test misses it:** the "a set already at 15 comes out unchanged" check (test_objective.py lines 64-66) only asserts the length, with an all-seen mask and float64 timestamps.
+- **Smallest test that fails today:**
+  ```
+  t = np.arange(0, 2.0001, 1/15); m = np.ones(len(t), np.float32); m[10] = 0
+  _, s, _ = data.on_timebase(np.zeros((len(t), 12, 3), np.float32), m, t)
+  assert (s == m).all()   # fails: s is 0 at indices 9 and 10
+  ```
+  Adding a float32 version (`t.astype(np.float32)`) covers what `load()` actually passes.
+
+**Defect 2: a TIMEBASE=1 run is not recorded, and it overwrites the committed scores and the app's weights.**
+- **Where:** train.py lines 249 and 251-254 (cv), 215-222 (fit), and the docstring at lines 11-14. None of these changed, but `load()` now reads `TIMEBASE` behind them.
+- **cv:** the summary line records `LENGTHEN=` but not `TIMEBASE`. Without `TAG`, `TIMEBASE=1 python3 scripts/ml/train.py cv` overwrites test/real-phone/accuracy/learned-cv.json and learned-cv.txt with the timebase run's scores, and nothing in the files shows which data they came from.
+- **fit:** `TIMEBASE=1 ... fit` without `TAG` overwrites src/lib/counting/learned-weights.json and learned-david.txt.
+- **Result:** a variant that was measured but not kept replaces the reference numbers, and they can no longer be compared with the default run. That breaks rule R13 (public numbers come only from the latest scoreboard output).
+- **Smallest check that fails today:** `grep -n TIMEBASE /home/user/workout-vision/scripts/ml/train.py` returns nothing. The cv summary line should carry `TIMEBASE=...`, or the run should refuse to start without `TAG`.
+
+**Test gap: nothing tests the TIMEBASE path in `load()`.**
+- Reverting data.py lines 82-83 alone (the env switch) still passes every assert.
+- Nothing checks that the label window (`inside`) is recomputed on the grid rather than on the old timestamps. I checked it by hand and it is correct: the window's share per set stays between 0.97 and 1.03 of the original.
+- **Smallest test:** write a small `.json.gz` fixture to a temporary directory with 10 per second timestamps and a window of [0.5, 1.5]. With `TIMEBASE=1`, assert that `load()` returns 15 per second and that `inside.sum()` equals the number of 15 per second grid points in [0.5, 1.5] (16).
+
+**Checked, no defect found:**
+- **Timestamps:** in seconds, starting at 0, strictly increasing, no duplicates, at 8 to 20 per second (median 14.93), largest gap 0.125 s. The grid ends at or before the last timestamp, so there is no extrapolation.
+- **Interpolation:** correct on the ramp. Positions around a missed sample are consistent with the carry-forward in `positions()`.
+- **Label window:** every file has a window, and the fallback still works.
+- **Loss and the rest of train.py:** `count_loss`, `held` and `lengthen` assume 15 per second, which the timebase now makes true for public sets.
+- **David's sets:** already at 15 per second, not resampled, and they stay that way.
+- **App inference:** learned.ts receives 15 per second and has no resampling, so there is nothing to mirror.
+- **Existing tests:** the new tests would fail if the change were reverted, since `data.on_timebase` would no longer exist.
+- **Privacy:** no new host and no video added.
+- **Language:** no user-facing string changed, so there is nothing to translate.
