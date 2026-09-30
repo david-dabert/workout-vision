@@ -6,6 +6,7 @@ import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
 import { exerciseProgress, recordsOf } from './progress';
 import ExerciseProgress from './ExerciseProgress';
+import ExportSets from './ExportSets';
 import './History.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -97,6 +98,7 @@ export default function History({ onClose }) {
         </div>
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Vos séries.' : 'Your sets.'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Elles restent sur ce téléphone.' : 'They stay on this phone.'}{sets?.length ? (fr ? ' Touchez une série pour en faire le rapport.' : ' Tap a set to make its report.') : ''}</p>
+        <ExportSets sets={sets} lang={lang} name={liftName} style={{ '--i': 1 }} />
         {problem && <p className="hist-error" role="alert">{problem}</p>}
         {sets && !sets.length && !problem && <div className="hist-empty" data-reveal style={{ '--i': 2 }}>
           <p>{fr ? 'Aucune série enregistrée pour l’instant.' : 'No set saved yet.'}</p>

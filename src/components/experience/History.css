@@ -53,3 +53,9 @@
 .wv-experience .prog-meta > span { white-space: nowrap; }
 /* The last count, centred on the last bar, may pass the drawing's right edge by a pixel or two. */
 .wv-experience .prog-bars { overflow: visible; }
+/* The export: a quiet line under the subtitle, the Guide's text button with a small icon. */
+.wv-experience .hist-export { margin-top: 12px; }
+.wv-experience .hist-export .text-btn { display: inline-flex; align-items: center; gap: 8px; margin-left: -2px; padding: 0 2px; border-radius: 999px; color: var(--bone-2); }
+.wv-experience .hist-export .text-btn svg { width: 16px; height: 16px; color: var(--lamp); }
+.wv-experience .hist-export-note { margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .hist-export-note:not(:empty) { margin-top: 4px; }

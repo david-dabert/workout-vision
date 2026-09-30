@@ -71,6 +71,23 @@ function repTempo(r, nextStart, first) {
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
  */
+/**
+ * The set's tempo in coach notation, the average of each phase across whole reps: moving phases to one
+ * decimal, pauses in whole seconds; null without a whole rep. The report and the spreadsheet both write
+ * this one (review, 30 September: they had differed).
+ */
+export function setTempo(reps, first = 'concentric', fr = false) {
+  const whole = (reps || []).filter(r => !r.clipped);
+  if (!whole.length) return null;
+  const avg = { lowering: 0, bottom: 0, lifting: 0, top: 0 };
+  whole.forEach((r, i) => {
+    const t = repTempo(r, i + 1 < whole.length ? whole[i + 1].startTime : null, first);
+    avg.lowering += t.lowering; avg.bottom += t.bottom; avg.lifting += t.lifting; avg.top += t.top;
+  });
+  const n = whole.length;
+  return [decimal(avg.lowering / n, fr), String(Math.round(avg.bottom / n)), decimal(avg.lifting / n, fr), String(Math.round(avg.top / n))].join('-');
+}
+
 export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
@@ -112,18 +129,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         : `Concentric speed${colon}${signed}% from start to end`);
     }
 
-    // Set tempo: average of each phase across whole reps.
-    if (wholeReps.length) {
-      const avg = { lowering: 0, bottom: 0, lifting: 0, top: 0 };
-      wholeReps.forEach((r, i) => {
-        const nextStart = i + 1 < wholeReps.length ? wholeReps[i + 1].startTime : null;
-        const t = repTempo(r, nextStart, liftFirst);
-        avg.lowering += t.lowering; avg.bottom += t.bottom; avg.lifting += t.lifting; avg.top += t.top;
-      });
-      const n = wholeReps.length;
-      avg.lowering /= n; avg.bottom /= n; avg.lifting /= n; avg.top /= n;
-      summary.push(`Tempo${colon}${tempoStr(avg)}`);
-    }
+    // Set tempo: average of each phase across whole reps (setTempo, which the spreadsheet uses too).
+    const tempo = setTempo(reps, liftFirst, fr);
+    if (tempo) summary.push(`Tempo${colon}${tempo}`);
 
     // Duration change: average of last two minus average of first two.
     if (wholeReps.length >= 4) {
