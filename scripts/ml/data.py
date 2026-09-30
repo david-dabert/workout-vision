@@ -44,9 +44,38 @@ def positions(frames):
     return out, seen
 
 
+# NORM=body (review of 30 September): no per-set rescaling, which can amplify the noise of a nearly still
+# body; the positions, already in torso lengths relative to the mid-hip, are divided by one fixed scale per
+# channel, taken over the training sets (set_body_scale). Off by default until measured.
+BODY_SCALE = None
+
+
+def set_body_scale(sets):
+    """One scale per joint for the horizontal plane (x and z share it, so turning the camera about the
+    vertical axis does not change a feature's size) and one for the vertical axis (y), over the training
+    sets' seen samples (review of 30 September)."""
+    global BODY_SCALE
+    p = np.concatenate([s['pos'][s['seen'] > 0] for s in sets])  # (N, 12, 3)
+    horizontal = np.sqrt((p[:, :, 0].var(0) + p[:, :, 2].var(0)) / 2)
+    vertical = p[:, :, 1].std(0)
+    BODY_SCALE = (np.stack([horizontal, vertical, horizontal], 1).reshape(-1) + 1e-3).astype(np.float32)
+
+
+def norm_mode():
+    """NORM: unset or 'set' for per-set standardisation, 'body' for the fixed body scale; anything else stops."""
+    v = os.environ.get('NORM', 'set')
+    if v not in ('set', 'body'):
+        raise SystemExit(f'NORM takes set or body, not {v!r}')
+    return v
+
+
 def features(pos, seen):
-    """(T, 37): the 36 position channels centred and scaled over the set, then the mask."""
+    """(T, 37): the 36 position channels centred and scaled over the set (or, with NORM=body, divided by the
+    fixed training scale), then the mask."""
     x = pos.reshape(len(pos), -1)
+    if norm_mode() == 'body':
+        # Clipped: a frame with a nearly collapsed torso length would otherwise reach tens of units.
+        return np.concatenate([np.clip(x / BODY_SCALE, -10, 10), seen[:, None]], 1).astype(np.float32)
     m = seen.astype(bool)
     ref = x[m] if m.any() else x
     mu = ref.mean(0)

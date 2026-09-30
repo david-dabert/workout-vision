@@ -199,6 +199,7 @@ if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'cv'
     # A variant run carries a tag, so it never overwrites the reference scores or the app's weights.
     variant = {k: os.environ.get(k, '0') for k in ('LENGTHEN', 'TIMEBASE')}
+    variant['NORM'] = '1' if data.norm_mode() == 'body' else '0'
     if any(v == '1' for v in variant.values()) and not os.environ.get('TAG'):
         sys.exit(f'a variant run ({variant}) needs TAG=<name>')
     sets = data.load('countix-whole')
@@ -206,12 +207,13 @@ if __name__ == '__main__':
         s['group'] = s['id'].rsplit('_', 2)[0]
     if mode == 'fit':
         # The whole build half, then David's sets, never trained on, and the weights for the app.
+        data.set_body_scale(sets)
         p = train(sets, steps=int(os.environ.get('STEPS', 3000)))
         david = data.load_david()
         pr = predict(p, david)
         lines = [f'{os.path.basename(s["name"])[:40]:40s} label {s["count"]:2d} learned {v:5.2f} -> {round(v)}' for s, v in zip(david, pr)]
         e = score(pr, david)
-        lines.append(f'David: learned exact {e[0]}/{e[2]}, within one {e[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")} TIMEBASE={os.environ.get("TIMEBASE", "0")}')
+        lines.append(f'David: learned exact {e[0]}/{e[2]}, within one {e[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")} TIMEBASE={os.environ.get("TIMEBASE", "0")} NORM={data.norm_mode()}')
         print('\n'.join(lines))
         out = {'note': 'Weights of the learned counter (scripts/ml/train.py fit), trained on the Countix build half only.',
                'channels': CH, 'kernel': K, 'dilations': DIL, 'inputs': IN,
@@ -237,6 +239,7 @@ if __name__ == '__main__':
         lines = []
         for k in range(5):
             tr = [s for s in sets if fold_of[s['group']] != k]
+            data.set_body_scale(tr)
             va = [s for s in sets if fold_of[s['group']] == k]
             p = train(tr, steps=int(os.environ.get('STEPS', 3000)))
             pr = predict(p, va)
@@ -250,7 +253,7 @@ if __name__ == '__main__':
             tot_core += ce
             lines.append(f'fold {k}: learned exact {e[0]}/{e[2]} within one {e[1]}; with 2 s still at each end, exact {eh[0]} within one {eh[1]}; core exact {ce[0]} within one {ce[1]}')
             print(lines[-1], flush=True)
-        lines.append(f'all: learned exact {tot[0]}/{tot[2]} within one {tot[1]}; with 2 s still at each end, exact {tot_held[0]} within one {tot_held[1]}; core exact {tot_core[0]} within one {tot_core[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")} TIMEBASE={os.environ.get("TIMEBASE", "0")}')
+        lines.append(f'all: learned exact {tot[0]}/{tot[2]} within one {tot[1]}; with 2 s still at each end, exact {tot_held[0]} within one {tot_held[1]}; core exact {tot_core[0]} within one {tot_core[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")} TIMEBASE={os.environ.get("TIMEBASE", "0")} NORM={data.norm_mode()}')
         print(lines[-1])
         tag = os.environ.get('TAG', '')
         suffix = f'-{tag}' if tag else ''

@@ -90,4 +90,24 @@ data.ROOT = root
 assert len(fx['pos']) == 31, len(fx['pos'])
 grid = np.arange(0, 2.0 + 1e-9, 1 / 15)
 assert fx['inside'].sum() == ((grid >= 0.5) & (grid <= 1.5)).sum(), fx['inside'].sum()
+# NORM=body: turning the camera about the vertical axis leaves each joint's horizontal scale alone; features
+# are clipped; any NORM but set or body stops.
+rng2 = np.random.default_rng(3)
+body = [dict(pos=(rng2.normal(size=(200, 12, 3)) * np.array([1.0, 0.5, 2.0])).astype(np.float32), seen=np.ones(200, np.float32))]
+data.set_body_scale(body)
+a60 = np.pi / 3
+rot = np.array([[np.cos(a60), 0, np.sin(a60)], [0, 1, 0], [-np.sin(a60), 0, np.cos(a60)]], np.float32)
+turned = [dict(pos=body[0]['pos'] @ rot.T, seen=body[0]['seen'])]
+before = data.BODY_SCALE.copy()
+data.set_body_scale(turned)
+assert np.allclose(before, data.BODY_SCALE, rtol=1e-2), 'the scale must not depend on the camera turning'
+os.environ['NORM'] = 'body'
+f = data.features(np.full((5, 12, 3), 1e3, np.float32), np.ones(5, np.float32))
+assert f[:, :36].max() == 10
+os.environ['NORM'] = '1'
+try:
+    data.norm_mode(); raise AssertionError('NORM=1 must stop')
+except SystemExit:
+    pass
+os.environ.pop('NORM')
 print('objective checks passed')
