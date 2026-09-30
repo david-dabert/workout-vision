@@ -1,0 +1,8 @@
+lunge n=69 under=45 over=2 mean=-1.03
+squat n=37 under=19 over=0 mean=-0.89
+triceps_pushdown n=67 under=47 over=2 mean=-0.88
+push_up n=69 under=42 over=1 mean=-1.29
+pull_up n=53 under=34 over=3 mean=-0.94
+front_raise n=70 under=45 over=0 mean=-1.17
+bench_press n=27 under=12 over=3 mean=-1.30
+all n=392 under=244 over=11 exact=137
