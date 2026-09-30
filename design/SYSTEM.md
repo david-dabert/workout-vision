@@ -146,7 +146,13 @@ None adds user-facing words; #24 is a no-break space.
 
 Implemented (30 September): section 1 on every screen, the thirty rows of section 2, and section 3
 changes 1 to 4. The body map now takes the full width, so every spot keeps a 44 x 44 target (visual
-gate). Not done: section 3 change 5 (the demo in particles, the watch's pose carried into the result).
+gate). Section 3 change 5, first half: the demo draws the particle body (3178815). Second half not
+done: the watch's pose carried into the result. A first version was withdrawn at review (30 September):
+the app keeps the watch screen drawing for its 520 ms fade (ScreenFade), so the watched body faded in
+place while a faint copy moved, a crossfade, not a carry. Doing it needs a hand-off of the stage: the
+watch stops drawing its body the moment the result takes it, the carried body keeps the watch's alpha
+rather than the result's presence, the kept pose expires with the watch's own fade, and the check runs
+inside ScreenFade, not on a bare switch.
 #25 (`focusVisible: false`) takes effect in Safari and Firefox; Chromium 141 ignores the option and
 shows the ring only when the screen opens without a tap. Paper values (9.5, 12, 12.5, 13, 11.5,
 10) stay as they are, since they mirror `report-pdf.js`; the level feature's 16 px beginner account and
