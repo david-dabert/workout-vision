@@ -26,6 +26,11 @@
   .wv-experience .demo-actions .btn-primary { height: 52px; }
   .wv-experience .demo-actions .btn-ghost { height: 48px; }
 }
+/* An iPhone SE in Safari: a shorter line and figure, so the example's two actions stay in reach. */
+@media (max-height: 600px) {
+  .wv-experience .demo-sub { font: 400 var(--fs-body)/1.5 var(--sans); color: var(--bone-2); }
+  .wv-experience .demo-figure { height: 96px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .demo-numeral { animation: none; }
 }
