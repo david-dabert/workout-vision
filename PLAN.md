@@ -300,3 +300,4 @@ David's orders of 30 September, third message, in his words.
 - "Move main to 84e020a."
 - "The fourteen counts and the batch collector test come with the exam sets; nothing waits on them."
 - "Until then, write to me only when my iPhone or my approval is needed."
+- counter-core moved on 30 September, by fast-forward from 24f89fa, to 75669b5, the head of claude/generate-architecture-md-inw479, since steps land on counter-core (git ls-remote: refs/heads/counter-core 75669b5c1d31). It takes README.md and STATE.md brought up to date, and the import of set files (scripts/import-sets.mjs). main stays at 84e020a.
