@@ -1,4 +1,4 @@
-Public scoreboard 2026-09-30: 447 build sets, 137 exact (31%). Of the 0 in the baseline, 0 exact now, 0 before; 0 became off by 3 or more; 447 new since.
+Public scoreboard 2026-09-30: 894 build sets, 271 exact (30%). Of the 447 in the baseline, 137 exact now, 137 before; 0 became off by 3 or more; 447 new since.
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
@@ -9,9 +9,16 @@ Public scoreboard 2026-09-30: 447 build sets, 137 exact (31%). Of the 0 in the b
 | countix push_up | 77 | 26 | 20 | 11 | 8 |
 | countix squat | 46 | 18 | 12 | 2 | 9 |
 | countix triceps_pushdown | 73 | 18 | 37 | 2 | 6 |
+| countix-whole bench_press | 38 | 10 | 10 | 5 | 11 |
+| countix-whole front_raise | 75 | 23 | 24 | 8 | 8 |
+| countix-whole lunge | 78 | 22 | 28 | 4 | 11 |
+| countix-whole pull_up | 60 | 17 | 20 | 4 | 11 |
+| countix-whole push_up | 77 | 23 | 22 | 17 | 9 |
+| countix-whole squat | 46 | 17 | 10 | 2 | 11 |
+| countix-whole triceps_pushdown | 73 | 22 | 31 | 2 | 8 |
 
 
-Not scored (4977), each with its reason:
+Not scored (5032), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts
 public/countix/AaTvErday_s_000121_900: left out: battle rope training is not a lift the app counts
 public/countix/AnEm66_ZHvQ_000020_1001: left out: battle rope training is not a lift the app counts
@@ -4989,3 +4996,58 @@ public/countix/nKr-2IIH-f4_000004_0: failed: the video holds 51 frames; its labe
 public/countix/u2hqoZGgWow_000001_0: failed: the video holds 79 frames; its label ends at frame 270
 public/countix/6vSxpNUlSYU_000000_0: failed: the video holds 111 frames; its label ends at frame 200
 public/countix/9vJvCg9q2Lo_000010_0: failed: the video holds 162 frames; its label ends at frame 257
+public/countix-whole/FyYRvnHdOgU_000003_701: failed: the video holds 55 frames; its label ends at frame 212
+public/countix-whole/GBKkhCC_RB0_000036_0: failed: the video holds 142 frames; its label ends at frame 299
+public/countix-whole/HytyY6-U2Cs_000062_0: failed: the video holds 84 frames; its label ends at frame 173
+public/countix-whole/QOGgOFMWd-A_000001_6133: failed: the video holds 96 frames; its label ends at frame 300
+public/countix-whole/Q8hAgtaL-5s_000002_0: failed: the video holds 61 frames; its label ends at frame 86
+public/countix-whole/fo1u8bJGqGs_000170_2336: failed: the video holds 68 frames; its label ends at frame 299
+public/countix-whole/nFCFpSgazyU_000034_233: failed: the video holds 282 frames; its label ends at frame 300
+public/countix-whole/EvYK2eA7xVw_000005_4958: failed: the video holds 111 frames; its label ends at frame 240
+public/countix-whole/JzLzI-R03ds_000000_4037: failed: the video holds 163 frames; its label ends at frame 299
+public/countix-whole/KFKXbf3-Vg8_000011_0: failed: the video holds 146 frames; its label ends at frame 299
+public/countix-whole/P-6nG5rM7YQ_000000_333: failed: the video holds 146 frames; its label ends at frame 183
+public/countix-whole/P-6nG5rM7YQ_000000_6800: failed: the video holds 146 frames; its label ends at frame 300
+public/countix-whole/T46_ndLYFe4_000000_0: failed: the video holds 233 frames; its label ends at frame 300
+public/countix-whole/dBCmbYuAK7w_000007_967: failed: the video holds 77 frames; its label ends at frame 269
+public/countix-whole/f0EJIyEqKDg_000003_0: failed: the video holds 57 frames; its label ends at frame 262
+public/countix-whole/nTi6Els5h9c_000002_0: failed: the video holds 146 frames; its label ends at frame 232
+public/countix-whole/0hhwLMwIwWk_000002_0: failed: the video holds 101 frames; its label ends at frame 149
+public/countix-whole/2DH_P9OCgU4_000011_83: failed: the video holds 199 frames; its label ends at frame 299
+public/countix-whole/4Kln9AqLRAA_000011_0: failed: the video holds 75 frames; its label ends at frame 262
+public/countix-whole/7TXkYHlaftI_000000_0: failed: the video holds 165 frames; its label ends at frame 300
+public/countix-whole/-8k3AnXTBD8_000047_0: failed: the video holds 128 frames; its label ends at frame 245
+public/countix-whole/FxODAaxkNtM_000000_1036: failed: the video holds 203 frames; its label ends at frame 299
+public/countix-whole/M6DZ0Dca17w_000077_0: failed: the video holds 186 frames; its label ends at frame 299
+public/countix-whole/NBMVGHRo4Zs_000002_0: failed: the video holds 131 frames; its label ends at frame 195
+public/countix-whole/SQ_4MVrxuH8_000000_960: failed: the video holds 135 frames; its label ends at frame 250
+public/countix-whole/hxHW9ZsmUgU_000022_3904: failed: the video holds 86 frames; its label ends at frame 233
+public/countix-whole/o_I48i00oMk_000001_0: failed: the video holds 133 frames; its label ends at frame 299
+public/countix-whole/3iNTdJuNOVE_000016_2603: failed: the video holds 207 frames; its label ends at frame 299
+public/countix-whole/4AtRu93NbrI_000005_4304: failed: the video holds 234 frames; its label ends at frame 299
+public/countix-whole/4g8ibZpZSGY_000032_5183: failed: the video holds 95 frames; its label ends at frame 300
+public/countix-whole/5DHKLIb6QpI_000002_0: failed: the video holds 217 frames; its label ends at frame 300
+public/countix-whole/5j12XCKC_io_000002_433: failed: the video holds 157 frames; its label ends at frame 300
+public/countix-whole/7FO4D58mENc_000030_0: failed: the video holds 254 frames; its label ends at frame 298
+public/countix-whole/Fy2fOJBuLuc_000009_0: failed: the video holds 116 frames; its label ends at frame 239
+public/countix-whole/HesycfeXGkY_000002_0: failed: the video holds 202 frames; its label ends at frame 299
+public/countix-whole/JjfhAAxftEQ_000000_0: failed: the video holds 126 frames; its label ends at frame 299
+public/countix-whole/YWVwDBOHAIY_000010_0: failed: the video holds 178 frames; its label ends at frame 300
+public/countix-whole/iKIKRztPIpQ_000016_0: failed: the video holds 217 frames; its label ends at frame 300
+public/countix-whole/onNF_bQxOMg_000020_3604: failed: the video holds 56 frames; its label ends at frame 290
+public/countix-whole/C7eF-MQdX1E_000097_0: failed: the video holds 185 frames; its label ends at frame 239
+public/countix-whole/YU0gWh72a3k_000015_0: failed: the video holds 71 frames; its label ends at frame 239
+public/countix-whole/biEC7Pji7Bg_000014_1735: failed: the video holds 274 frames; its label ends at frame 285
+public/countix-whole/d8b9uhan7Iw_000000_0: failed: the video holds 271 frames; its label ends at frame 273
+public/countix-whole/gKIatQ9Op4k_000001_2803: failed: the video holds 196 frames; its label ends at frame 299
+public/countix-whole/mL2Nd80FrL8_000015_1200: failed: the video holds 75 frames; its label ends at frame 275
+public/countix-whole/1ByGCqjw_wk_000003_0: failed: the video holds 153 frames; its label ends at frame 295
+public/countix-whole/2-m13VKbJbU_000005_7842: failed: the video holds 120 frames; its label ends at frame 239
+public/countix-whole/-WTRl_h5XKg_000118_0: failed: the video holds 229 frames; its label ends at frame 255
+public/countix-whole/KInIza0qH5g_000029_0: failed: the video holds 46 frames; its label ends at frame 298
+public/countix-whole/U9rGYSZfitg_000000_0: failed: the video holds 75 frames; its label ends at frame 298
+public/countix-whole/bG1upRmc218_000012_0: failed: the video holds 87 frames; its label ends at frame 199
+public/countix-whole/nKr-2IIH-f4_000004_0: failed: the video holds 51 frames; its label ends at frame 260
+public/countix-whole/u2hqoZGgWow_000001_0: failed: the video holds 79 frames; its label ends at frame 270
+public/countix-whole/6vSxpNUlSYU_000000_0: failed: the video holds 111 frames; its label ends at frame 200
+public/countix-whole/9vJvCg9q2Lo_000010_0: failed: the video holds 162 frames; its label ends at frame 257
