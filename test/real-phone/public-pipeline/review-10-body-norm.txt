@@ -1,0 +1,42 @@
+Review of the NORM=body change. Files: /home/user/workout-vision/scripts/ml/data.py and /home/user/workout-vision/scripts/ml/train.py (unstaged; nothing is staged). I did not run train.py. The only thing I ran was a read-only `nice` python snippet that imports data.py (load, then set_body_scale) to get the channel statistics quoted below.
+
+DEFECTS
+
+1. Mistyping the flag replaces the app's weights, and the report then names the wrong mode. train.py:202, 216 and 256.
+The variant is recognised only when `NORM` is exactly the string `body`. The other two flags are switched on with `=1` (`LENGTHEN=1`, `TIMEBASE=1`), so `NORM=1 python3 scripts/ml/train.py fit` is a likely mistake, as are `NORM=Body` and `NORM=body ` with a trailing space. In each case:
+- `variant['NORM']` becomes '0', so no TAG is required.
+- `features()` quietly uses the per-set normalisation.
+- `fit` overwrites src/lib/counting/learned-weights.json, learned-david.txt and learned-parity.json. `cv` overwrites the reference learned-cv.json and learned-cv.txt.
+- The report line prints the raw environment value (`NORM=1`), so the reference report reads as if the body variant produced it.
+This breaks the goal's "requiring a TAG" and "recorded in every report", and the TAG rule exists to prevent exactly this ("never overwrites the reference scores or the app's weights").
+Smallest failing test: set `NORM=1` with no TAG, run the variant/TAG check from line 201 on and assert it exits. Today it does not exit. Second assertion: the report line should print the mode `features()` actually used (`set`); today it prints `1`.
+Fix: parse NORM once, reject any value other than unset, `set` or `body` with sys.exit, and print that parsed value in both reports.
+
+2. Keeping the variant is impossible as written: the scale is never saved. train.py:218-225.
+`fit` puts CH, K, DIL, IN and params in `out`, but not `data.BODY_SCALE`. The TAG report also leaves out the 36 scale values, so a measured run cannot be reproduced from what it wrote. The TAG requirement means `fit` currently exits before writing weights, so nothing ships wrong today. If the variant is kept, all of the following are needed:
+- `body_scale` (36 floats) and a `norm: 'body'` field in learned-weights.json.
+- In src/lib/counting/learned.ts, `features()` (lines 39-43) must skip the centring and divide by those constants, branching on the field. Otherwise the app keeps normalising per set and counts with weights trained on different inputs.
+- learned-parity.json regenerated and learned.test.ts rerun.
+- The scale must come from the same TIMEBASE setting as the weights, because set_body_scale runs on the sets as loaded.
+
+3. The fixed per-axis scale depends on the camera's yaw, which the augmentation is meant to make irrelevant. data.py:53-56, used from train.py:86.
+The scale is the std of the un-augmented positions, computed separately for x, y and z. Training inputs are rotated by up to ±60 degrees about the vertical axis, which mixes x with z, and x and z have different spreads. Measured on the 447 build sets, the std of a 60-degree rotated channel divided by its BODY_SCALE ranges from 0.76 to 1.31. For example: left knee x 0.79 and z 1.24, right ankle x 0.76 and z 1.31. So with NORM=body, turning the camera changes each channel's feature magnitude by up to about 30%. Per-set standardisation re-scales after rotation and has no such effect.
+If the aim is only "no per-set rescaling", one scale shared by x and z for each joint (or a single scalar) would keep the yaw invariance. As written, a cv result for NORM=body mixes "fixed vs per-set" with "yaw-dependent vs not".
+Test: rotate a build set's positions by 60 degrees and compare the per-channel std of `features()` before and after. Under NORM=body the ratios are far from 1.
+
+4. Outlier frames are no longer bounded. data.py:64.
+There is no centring and no clipping, and the hip channels have scale 0.14 (x) and 0.05 (y). Frames with a nearly degenerate torso length give feature values up to 77. This happens in 4 build sets:
+- ExiJ7qKakH4_000000_0 (4 frames)
+- LlhMJGUP2W8_000000_1602 (3 frames)
+- ehSg3cfjj6s_000611_5439 (1 frame)
+- sw7V8nTj3Ro_000020_272 (5 frames)
+On David's sets the maximum is 12.7, with 9 of 5278 frames above 10. Per-set standardisation limited such frames within their set; the new path passes them straight to a network initialised for inputs of about unit scale. A CV score for this variant should be read with this in mind, or the features clipped.
+
+CHECKED, NO DEFECT FOUND
+- Where the scale comes from. In cv, `set_body_scale(tr)` runs per fold on the training groups only, before `train`. `predict(va)` and `held(va)` use that fold's scale, and the next fold replaces it only after both. In fit, only the Countix build half (`sets`) is used; David's sets are loaded after the scale is set and never enter it. The held-out half is not loaded.
+- Masks. The scale uses only samples with `seen>0`, and the mask channel is passed through unchanged. Samples padded before the first pose, and the holds from `lengthen`/`held`, are divided by the same scale. The loss (`count_loss` with inside/pad) and `score` are unchanged.
+- The default path (NORM unset) is identical to before. set_body_scale also runs when NORM is off but has no effect then. Nothing else calls `data.features` (grep), so BODY_SCALE is never None while in use.
+- Reports: correct when NORM=body is set exactly (both cv and fit append NORM). The TAG gate works for exactly `body`.
+- Privacy, repository and host: no new files, hosts or data. No UI strings are added, so French/English and em dashes are not affected.
+- Tests: there are no Python tests for scripts/ml, and no test covers NORM. Reverting the change would fail nothing, so the tests suggested in points 1 and 3 are the smallest ones that would fail today.
+- Minor inaccuracy: the train.py module docstring (lines 11-14) still lists only LENGTHEN and TAG, and data.py's header still describes only per-set scaling.
