@@ -1,122 +1,165 @@
-/* Result screen — count reveal and confirmation.
-   Same position override as other experience screens. */
-/* The screen pads itself (Entry.css .screen); the column adds no second gutter. */
-.wv-experience .res-head { margin-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
-.wv-experience .res-meta { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+/* Result screen — count reveal and confirmation. Sizes, spaces, radii and timings are the tokens of
+   Entry.css (design/SYSTEM.md). The screen pads itself (Entry.css .screen); the column adds no second gutter. */
+
+/* The topbar: Close, the replay in the centre, the test-version mark; with no replay, Close and the mark (#26). */
+.wv-experience .result-screen .topbar { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; }
+.wv-experience .result-screen .topbar .rp-open { justify-self: center; }
+.wv-experience .result-screen .topbar .pill { grid-column: 3; }
+
+/* The head: the lift's name, then one row of the tier and the set's length and limb (#14). */
+.wv-experience .res-head { margin-top: var(--s-3); display: flex; flex-direction: column; align-items: center; gap: var(--s-1); text-align: center; }
+.wv-experience .res-sub { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; }
+.wv-experience .res-sub .tier { margin: 0; }
+.wv-experience .res-meta { margin: 0; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); }
 .wv-experience .numeral {
   display: block; margin: 6px auto 0; text-align: center;
-  font-family: var(--serif); font-weight: 400; font-size: clamp(120px, min(56vw, 30svh), 260px); line-height: 0.84; letter-spacing: -0.04em;
+  font-family: var(--serif); font-weight: 400; font-size: var(--fs-display); line-height: 0.84; letter-spacing: -0.04em;
   font-variant-numeric: lining-nums tabular-nums;
-  background: linear-gradient(180deg, #FFF3DC 0%, #F0CB8E 46%, #B9823F 100%);
+  background: var(--gold-num);
   -webkit-background-clip: text; background-clip: text; color: transparent;
   filter: drop-shadow(0 0 42px rgba(232, 189, 126, 0.3));
+  transform-origin: 50% 0;
+  transition: scale 0.7s var(--ease), margin 0.7s var(--ease);
 }
-.wv-experience .numeral.tick { animation: res-tick 0.34s var(--ease); }
-@keyframes res-tick { from { scale: 1.07; opacity: 0.55; } to { scale: 1; opacity: 1; } }
-.wv-experience .res-label { margin: 8px 0 0; text-align: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; color: var(--ash); }
-.wv-experience .bars { display: flex; justify-content: center; align-items: flex-end; height: 40px; margin-top: 20px; }
-.wv-experience .bar { height: 40px; display: flex; align-items: flex-end; justify-content: center; }
-.wv-experience .bar i { display: block; width: 6px; height: 28px; border-radius: 3px; background: rgba(232, 189, 126, 0.16); transition: background 0.5s var(--ease), box-shadow 0.5s var(--ease), opacity 0.3s, width 0.3s var(--ease); }
+.wv-experience .numeral.tick { animation: res-tick var(--d-tick) var(--ease); }
+/* .res-label and res-tick are in Entry.css: the entry's example uses them before this file loads. */
+
+/* One mark per counted rep, as tall as its range (18 px + 72 px × range / the largest), at the prototype's rhythm. */
+.wv-experience .bars { display: flex; justify-content: center; align-items: flex-end; height: 104px; margin-top: 18px; gap: 0; border-radius: 12px; outline-offset: 4px; }
+.wv-experience .bars[role="group"] { cursor: pointer; }
+.wv-experience .bar { position: relative; flex: 0 1 36px; min-width: 0; height: 104px; display: flex; align-items: flex-end; justify-content: center; }
+.wv-experience .bar i { display: block; width: min(6px, calc(100% - 3px)); height: calc(18px + 72px * var(--r, 1)); border-radius: 3px; background: rgba(232, 189, 126, 0.16); transition: background 0.5s var(--ease), box-shadow 0.5s var(--ease), opacity 0.3s, width 0.3s var(--ease); }
 .wv-experience .bar.lit i { background: linear-gradient(to top, rgba(232, 189, 126, 0.15), var(--lamp-hi)); box-shadow: 0 0 14px rgba(247, 220, 174, 0.5); }
+.wv-experience .bars.has-sel .bar:not(.sel) i { opacity: 0.3; }
+.wv-experience .bar.sel i { width: min(9px, calc(100% - 1px)); }
+.wv-experience .bar .short-mark { position: absolute; bottom: calc(18px + 72px * var(--r, 1) + 4px); left: 50%; translate: -50% 0; font-size: 11px; line-height: 1; font-weight: 400; color: var(--lamp); }
+/* A sentence of measures: sans, figures tabular (mono is for labels and numerals only, #10). */
+.wv-experience .res-detail { min-height: 19px; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
+
+/* The user's turn: glass (the surface system, Entry.css). */
 .wv-experience .glass {
-  margin-top: 22px; padding: 22px 20px; border-radius: 26px; display: flex; flex-direction: column; gap: 16px;
+  margin-top: var(--s-5); padding: 22px 20px; border-radius: var(--r-l); display: flex; flex-direction: column; gap: var(--s-4);
   background: rgba(20, 17, 13, 0.56); border: 1px solid var(--hair);
+  -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15);
 }
-.wv-experience .glass { -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15); }
 .no-glass .wv-experience .glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
-.wv-experience .ask-q { margin: 0; text-align: center; font-family: var(--serif); font-size: 31px; line-height: 1.08; text-wrap: balance; }
+.wv-experience .ask-q { margin: 0; text-align: center; font-family: var(--serif); font-size: var(--fs-heading); line-height: 1.08; text-wrap: balance; }
+/* Yes and No side by side, one height (#2). */
 .wv-experience .ask-row { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 10px; }
+.wv-experience .ask-row > * { height: 58px; }
 .wv-experience .result-screen .hx { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 3; cursor: pointer; }
 .wv-experience .stepper { display: flex; align-items: center; justify-content: center; gap: 22px; }
 .wv-experience .round { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--hair-2); font-size: 24px; line-height: 1; display: grid; place-items: center; color: var(--bone); min-height: 44px; cursor: pointer; }
-.wv-experience .stepper-n { min-width: 90px; text-align: center; font-family: var(--serif); font-size: 74px; line-height: 1; font-variant-numeric: tabular-nums; }
-.wv-experience .saved { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
-.wv-experience .saved-msg { margin: 0 0 6px; text-align: center; color: var(--bone-2); font-size: 15px; line-height: 1.5; }
-/* Refused state */
-.wv-experience .result-screen .refused-eyebrow { margin-top: 16px; }
-.wv-experience .result-screen .refused-title { margin-top: 10px; font-size: clamp(34px, 9.4vw, 44px); }
+.wv-experience .round:disabled { opacity: 0.35; cursor: default; }
+.wv-experience .stepper-n { min-width: 90px; text-align: center; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; font-variant-numeric: tabular-nums; }
+
+/* Saved. */
+.wv-experience .saved { margin-top: var(--s-5); display: flex; flex-direction: column; gap: 10px; }
+.wv-experience .saved-msg { margin: 0 0 6px; text-align: center; color: var(--bone-2); font-size: var(--fs-body); line-height: 1.5; }
+.wv-experience .saved-corr { text-align: center; margin-bottom: 4px; }
+.wv-experience .save-error { color: var(--lamp); text-align: center; margin: var(--s-3) 0 0; }
+.wv-experience .saved .share-note { margin: 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
+.wv-experience .saved .share-note:empty { display: none; }
+.wv-experience .result-screen .text-btn { border-radius: var(--r-pill); }
+
+/* The result as a staged moment (design/SYSTEM.md, section 3, change 2): once the set is saved, the
+   numeral docks at a third of its size, under the lift's name, and the rest clock takes the stage.
+   The beginner's numeral is small already and stays. -0.487em is the 58 % the scale gives back,
+   of a line 0.84 em high. */
+.wv-experience .result-screen.is-saved:not(.lv-beginner) .numeral { scale: 0.42; margin-bottom: -0.487em; }
+.wv-experience .result-screen.is-saved .bars { opacity: 0.55; transition: opacity 0.7s var(--ease); }
+
+/* The rest clock: counted up from the saved set, readable at arm's length on the bench (RestClock.jsx). */
+.wv-experience .rest-slot { margin: 4px 0 6px; display: flex; flex-direction: column; }
+.wv-experience .rest-clock { padding: 6px 0 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wv-experience .rest-label { color: var(--ash); }
+.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .rest-stop { margin-top: 2px; }
+
+/* Refused, incomplete, interrupted, error: the screen's own h1 size (#27), its own frame (#4). */
+.wv-experience .result-screen .refused-eyebrow { margin-top: var(--s-4); }
+.wv-experience .result-screen .refused-title { margin-top: var(--s-3); }
+.wv-experience .result-screen .frame {
+  position: relative; width: 112px; aspect-ratio: 9 / 16; margin: var(--s-5) auto 0;
+  border-radius: var(--r-l); border: 1px solid var(--hair-2); background: var(--well); overflow: hidden;
+  box-shadow: inset 0 0 0 5px #0C0A08;
+}
 .wv-experience .edge { position: absolute; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--lamp) 0 6px, transparent 6px 12px); }
-.wv-experience .edge-label { position: absolute; top: 18px; left: 14px; right: 14px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lamp); }
-.wv-experience .body-text { margin: 22px 0 0; font-size: 16px; line-height: 1.55; color: var(--bone-2); }
-.wv-experience .fix-note { margin-top: 18px; padding: 18px; border-radius: 20px; border: 1px solid var(--hair); display: flex; flex-direction: column; gap: 8px; }
-.wv-experience .fix-text { margin: 0; font-family: var(--serif); font-size: 26px; line-height: 1.15; }
+.wv-experience .edge-label { position: absolute; top: 16px; left: 12px; right: 12px; white-space: nowrap; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--lamp); }
+.wv-experience .body-text { margin: var(--s-5) 0 0; font-size: var(--fs-body); line-height: 1.55; color: var(--bone-2); }
+/* The fix is the user's turn: glass. */
+.wv-experience .fix-note {
+  margin-top: var(--s-5); padding: 18px 20px; border-radius: var(--r-l); border: 1px solid var(--hair); display: flex; flex-direction: column; gap: var(--s-2);
+  background: rgba(20, 17, 13, 0.56); -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15);
+}
+.no-glass .wv-experience .fix-note { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
+.wv-experience .fix-text { margin: 0; font-family: var(--serif); font-size: var(--fs-heading); line-height: 1.15; }
+.wv-experience .result-actions { display: flex; flex-direction: column; gap: 12px; margin-top: var(--s-5); }
+
+/* Replay: between Close and the test-version mark, a full-height target. */
+.wv-experience .rp-open {
+  height: 44px; padding: 0 16px 0 13px; border-radius: var(--r-pill); display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--lamp-line); color: var(--lamp-hi);
+  background: radial-gradient(120% 140% at 50% 125%, rgba(232, 189, 126, 0.16), transparent 60%);
+  font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.wv-experience .rp-open svg { width: 12px; height: 12px; }
+
+/* The support links: after what the app measured, never underlined, in the actions' order (#3). */
+.wv-experience .report-count { margin: var(--s-4) 0 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 6px; font-size: var(--fs-caption); color: var(--ash); }
+.wv-experience .report-count > span { width: 100%; text-align: center; }
+.wv-experience .report-count a.text-btn { display: inline-flex; align-items: center; text-decoration: none; color: var(--bone-2); font-size: var(--fs-caption); }
+
+/* The account of the set: information, so a hairline card (the surface system) when it follows the question (#19). */
+.wv-experience .set-account { margin: var(--s-5) 0 0; display: flex; flex-direction: column; gap: var(--s-2); text-align: left; }
+.wv-experience .set-account.appear { padding: 18px 20px; border: 1px solid var(--hair); border-radius: var(--r-l); }
+.wv-experience .set-account p { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--bone, inherit); }
+.wv-experience .set-account .acc-tip { margin-top: var(--s-2); }
+.wv-experience .set-account .acc-cheer { color: var(--lamp); }
+.wv-experience .acc-notes { margin-top: var(--s-1); }
+.wv-experience .acc-notes summary { list-style: none; cursor: pointer; }
+.wv-experience .acc-notes summary::-webkit-details-marker { display: none; }
+/* The summary's label lines up with the text above it. */
+.wv-experience .acc-notes summary.text-btn { display: flex; align-items: center; width: max-content; padding-inline: 0; }
+.wv-experience .acc-notes section { margin-top: var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .acc-notes h3 { margin: 0; }
+.wv-experience .acc-notes p, .wv-experience .acc-notes .acc-lead { font-size: var(--fs-caption); line-height: 1.5; color: var(--ash); }
+
+/* The tier under the centred lift name. */
+.wv-experience .result-screen .tier { align-self: center; }
 
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .numeral.tick { animation: none; }
   .wv-experience .bar i { transition: none; }
 }
-
-/* One mark per counted rep, as tall as its range (18 px + 72 px × range / the largest), at the prototype's rhythm. */
-.wv-experience .bars { height: 104px; margin-top: 18px; gap: 0; border-radius: 12px; outline-offset: 4px; }
-.wv-experience .bars[role="group"] { cursor: pointer; }
-.wv-experience .bar { flex: 0 1 36px; min-width: 0; height: 104px; }
-.wv-experience .bar i { width: min(6px, calc(100% - 3px)); height: calc(18px + 72px * var(--r, 1)); }
-.wv-experience .bars.has-sel .bar:not(.sel) i { opacity: 0.3; }
-.wv-experience .bar.sel i { width: min(9px, calc(100% - 1px)); }
-.wv-experience .res-detail { min-height: 20px; margin: 14px 0 0; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--ash); text-wrap: balance; }
-.wv-experience .saved-corr { text-align: center; margin-bottom: 4px; }
-.wv-experience .save-error { color: var(--lamp); text-align: center; margin: 12px 0 0; }
-.wv-experience .result-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 26px; }
-.wv-experience .round:disabled { opacity: 0.35; cursor: default; }
-.wv-experience .result-screen .text-btn { border-radius: 999px; }
-@media (max-height: 600px) {
-  .wv-experience .bars, .wv-experience .bar { height: 60px; }
-  .wv-experience .bar i { height: calc(9px + 41px * var(--r, 1)); }
-  .wv-experience .res-detail { margin-top: 6px; }
-  .wv-experience .result-screen .glass { margin-top: 16px; padding: 18px; gap: 12px; }
-  .wv-experience .result-screen .ask-q { font-size: 27px; }
-}
-
-/* Replay: between Close and the test-version mark, a full-height target. */
-.wv-experience .rp-open {
-  height: 44px; padding: 0 16px 0 13px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px;
-  border: 1px solid rgba(232, 189, 126, 0.5); color: var(--lamp-hi);
-  background: radial-gradient(120% 140% at 50% 125%, rgba(232, 189, 126, 0.16), transparent 60%);
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
-}
-.wv-experience .rp-open svg { width: 12px; height: 12px; }
-
-.wv-experience .report-count { margin: 14px 0 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 6px; font-size: 13px; color: var(--ash); }
-.wv-experience .report-count > span { width: 100%; text-align: center; }
-.wv-experience .saved .share-note { margin: 0; text-align: center; font-size: 13px; line-height: 1.45; color: var(--ash); }
-.wv-experience .saved .share-note:empty { display: none; }
-
-/* Step 3: the ▾ mark above a short rep, in the room its shorter mark leaves, and the account of the set under the cards (29 September). */
-.wv-experience .bar { position: relative; }
-.wv-experience .bar .short-mark { position: absolute; bottom: calc(18px + 72px * var(--r, 1) + 4px); left: 50%; translate: -50% 0; font-size: 11px; line-height: 1; font-weight: 400; color: var(--lamp); }
-.wv-experience .set-account { margin: 26px 0 0; display: flex; flex-direction: column; gap: 8px; text-align: left; }
-.wv-experience .set-account p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--bone, inherit); }
-.wv-experience .set-account .acc-tip { margin-top: 8px; }
-.wv-experience .set-account .acc-cheer { color: var(--lamp); }
-.wv-experience .acc-notes { margin-top: 8px; }
-.wv-experience .acc-notes summary { list-style: none; cursor: pointer; }
-.wv-experience .acc-notes summary::-webkit-details-marker { display: none; }
-.wv-experience .acc-notes section { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
-.wv-experience .acc-notes h3 { margin: 0; }
-.wv-experience .acc-notes p, .wv-experience .acc-notes .acc-lead { font-size: 14px; color: var(--ash); }
-
-/* The rest clock: counted up from the saved set, readable at arm's length on the bench (RestClock.jsx). */
-.wv-experience .rest-slot { margin: 4px 0 6px; display: flex; flex-direction: column; }
-/* No frame around the time: one number, the loudest thing once the set is saved (critic, 30 September). */
-.wv-experience .rest-clock { padding: 6px 0 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.wv-experience .rest-label { color: var(--ash); }
-.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: clamp(72px, 22vw, 96px); line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
-.wv-experience .rest-stop { margin-top: 2px; }
-@media (max-height: 600px) {
-  .wv-experience .rest-time { font-size: 64px; }
-}
-/* The tier pill under the centred lift name (critic, 30 September). */
-.wv-experience .result-screen .tier { align-self: center; }
-/* One gold outline after the set (the report); the challenge is the same button, in a hairline and bone
-   (critic, 30 September). A ghost button would not size its icon. */
-.wv-experience .result-screen .btn-line.is-quiet { border-color: var(--hair-2); color: var(--bone-2); }
-/* On short screens the mark sits on the shorter bar; after the base rule, which it overrides (critic and review, 30 September). */
-@media (max-height: 600px) {
-  .wv-experience .bar .short-mark { bottom: calc(9px + 41px * var(--r, 1) + 4px); }
-}
-
-/* At 390x664 the numeral left "Oui, c'est juste" 19 px under the fold (harness levels.mjs, 30 September,
-   measured on the screen as it was): on screens under 700 px high it takes 26 % of the height, not 30 %. */
+/* Under 700 px high (a 390x664 Safari), the numeral takes 26 % of the height, not 30 %, so
+   "Oui, c'est juste" stays in view (harness levels.mjs). */
 @media (max-height: 700px) {
   .wv-experience .result-screen .numeral { font-size: clamp(120px, min(56vw, 26svh), 260px); }
+}
+/* Under 600 px (an iPhone SE in Safari): shorter marks, a smaller numeral, a tighter card. */
+@media (max-height: 600px) {
+  .wv-experience .result-screen .numeral { font-size: clamp(100px, 22svh, 140px); }
+  .wv-experience .result-screen .res-head { margin-top: var(--s-1); }
+  .wv-experience .bars, .wv-experience .bar { height: 60px; }
+  .wv-experience .bar i { height: calc(9px + 41px * var(--r, 1)); }
+  .wv-experience .bar .short-mark { bottom: calc(9px + 41px * var(--r, 1) + 4px); }
+  .wv-experience .res-detail { margin-top: 6px; }
+  .wv-experience .result-screen .glass { margin-top: var(--s-4); padding: 18px; gap: var(--s-3); }
+  .wv-experience .result-screen .ask-q { font-size: 27px; }
+}
+/* The refused frame beside its sentence (design review, 30 September): a figure and its caption. */
+.wv-experience .refused-why { display: grid; grid-template-columns: 92px minmax(0, 1fr); column-gap: var(--s-4); align-items: center; margin-top: var(--s-5); }
+.wv-experience .refused-why .frame { width: 92px; margin: 0; }
+/* In the narrow frame the label may take two lines, clear of the dashed edge on either side (review, 30 September). */
+.wv-experience .refused-why .edge-label { top: 12px; left: 10px; right: 10px; font-size: 9px; letter-spacing: 0.06em; line-height: 1.35; white-space: normal; overflow-wrap: normal; }
+.wv-experience .refused-why .body-text { margin: 0; text-wrap: pretty; }
+@media (max-height: 700px) {
+  .wv-experience .result-screen .fix-text { font-size: var(--fs-name); }
+  .wv-experience .refused-why .frame { width: 76px; }
+  .wv-experience .refused-why { grid-template-columns: 76px minmax(0, 1fr); }
+}
+@media (max-height: 600px) {
+  .wv-experience .refused-why, .wv-experience .result-screen .fix-note { margin-top: var(--s-4); }
+  .wv-experience .result-screen .fix-note { padding: 14px 18px; }
 }

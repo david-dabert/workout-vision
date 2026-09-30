@@ -5,31 +5,33 @@
 .wv-experience:has(.history-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }
 .wv-experience .history-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
 .wv-experience .history-screen .wrap { padding: 0; }
-.wv-experience .history-screen .title { margin-top: 16px; color: var(--bone); }
-.wv-experience .history-screen .sub { margin-top: 10px; }
-.wv-experience .hist-day { margin-top: 26px; }
-.wv-experience .hist-head { margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--hair); font-family: var(--mono); font-weight: 400; font-size: 10.5px; line-height: 1.5; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .history-screen .title { margin-top: var(--s-4); color: var(--bone); }
+.wv-experience .history-screen .sub { margin-top: var(--s-3); }
+/* Every section 32 px from the one before; the head is the shared section head (Entry.css). */
+.wv-experience .hist-day { margin-top: var(--s-6); }
+.wv-experience .hist-head { margin: 0; }
 .wv-experience .hist-list { list-style: none; margin: 0; padding: 0; }
-.wv-experience .hist-item { border-bottom: 1px solid rgba(239, 232, 220, 0.07); }
+.wv-experience .hist-item { border-bottom: 1px solid var(--hair-0); }
 .wv-experience .hist-btn { width: 100%; min-height: 44px; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; text-align: left; }
-.wv-experience .hist-n { font-family: var(--serif); font-size: 44px; line-height: 0.9; text-align: center; color: var(--lamp); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .hist-n { font-family: var(--serif); font-size: min(var(--fs-title), 44px); line-height: 0.9; text-align: center; color: var(--lamp); font-variant-numeric: lining-nums tabular-nums; }
 .wv-experience .hist-txt { display: flex; flex-direction: column; min-width: 0; }
-.wv-experience .hist-name { font-family: var(--serif); font-size: 23px; line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
-.wv-experience .hist-meta { margin-top: 5px; overflow: hidden; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .hist-name { font-family: var(--serif); font-size: var(--fs-name); line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
+/* Time, length and limb: a caption in sans, its figures tabular (mono is for labels and numerals only, #10). */
+.wv-experience .hist-meta { margin-top: 4px; overflow: hidden; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); }
 /* Time, length and arm break only between one another, never inside one; the
    dot before each is as wide as " · " was, and the one that opens a line sits
    in the margin the outer span clips. */
-.wv-experience .hist-meta > span { display: flex; flex-wrap: wrap; margin-left: calc(-3ch - 0.24em); }
+.wv-experience .hist-meta > span { display: flex; flex-wrap: wrap; margin-left: -1.3em; }
 .wv-experience .hist-meta > span > span { white-space: nowrap; }
-.wv-experience .hist-meta > span > span::before { content: '\00B7'; content: '\00B7' / ''; display: inline-block; width: calc(3ch + 0.24em); text-align: center; }
-.wv-experience .hist-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 9px 4px; border-radius: 999px; border: 1px solid var(--hair-2); color: var(--ash); }
+.wv-experience .hist-meta > span > span::before { content: '\00B7'; content: '\00B7' / ''; display: inline-block; width: 1.3em; text-align: center; }
+.wv-experience .hist-tag { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 10px 4px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); color: var(--ash); }
 .wv-experience .hist-detail { display: flex; flex-direction: column; gap: 10px; padding: 0 0 20px 70px; }
-.wv-experience .hist-corr { margin: 0; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--ash); }
-.wv-experience .hist-detail .text-btn { align-self: flex-start; padding: 0 2px; border-radius: 999px; }
+.wv-experience .hist-corr { margin: 0; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); }
+.wv-experience .hist-detail .text-btn { align-self: flex-start; padding: 0; border-radius: var(--r-pill); }
 .wv-experience .hist-detail .text-btn.is-armed { color: var(--lamp); }
-.wv-experience .hist-empty { margin-top: 28px; display: flex; flex-direction: column; gap: 18px; }
-.wv-experience .hist-empty p { margin: 0; font-size: 15px; color: var(--ash); }
-.wv-experience .hist-error { margin: 18px 0 0; font-size: 14px; line-height: 1.5; color: var(--lamp); }
+.wv-experience .hist-empty { margin-top: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); }
+.wv-experience .hist-empty p { margin: 0; font-size: var(--fs-body); color: var(--ash); }
+.wv-experience .hist-error { margin: var(--s-4) 0 0; font-size: var(--fs-body); line-height: 1.5; color: var(--lamp); }
 /* A set may carry two tags, a record and a correction, one above the other. */
 .wv-experience .hist-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .wv-experience .hist-tag.is-best { border-color: var(--lamp); color: var(--lamp); }
@@ -40,22 +42,23 @@
 .wv-experience .prog-item > .prog-name { grid-column: 1; grid-row: 1; }
 .wv-experience .prog-item > .prog-meta { grid-column: 1 / -1; grid-row: 2; }
 .wv-experience .prog-item > .prog-line { grid-column: 2; grid-row: 1; align-self: end; }
-.wv-experience .prog-name { font-family: var(--serif); font-size: 23px; line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
+.wv-experience .prog-name { font-family: var(--serif); font-size: var(--fs-name); line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
 .wv-experience .prog-line { display: block; line-height: 0; }
 .wv-experience .prog-bars rect { fill: var(--ash); opacity: 0.55; }
 .wv-experience .prog-bars rect.is-last { fill: var(--lamp); opacity: 1; }
 /* Read at arm's length on the bench (critic, 30 September). */
-.wv-experience .prog-meta { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13.5px; letter-spacing: 0; color: var(--bone-2); }
-.wv-experience .prog-bars .prog-last { font-family: var(--mono); font-size: 11px; fill: var(--lamp); }
+.wv-experience .prog-meta { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: var(--fs-caption); letter-spacing: 0; color: var(--bone-2); }
+.wv-experience .prog-bars .prog-last { font-family: var(--mono); font-size: var(--fs-label); fill: var(--lamp); }
 /* Progress is its own block, headed in the prototype's eyebrow gold, apart from the days. */
-.wv-experience .hist-prog { margin-bottom: 36px; }
+/* No extra gap under the progress: the next day's 32 px is the section step (#18). */
+.wv-experience .hist-prog { margin-bottom: 0; }
 .wv-experience .hist-prog .hist-head { color: var(--lamp); }
 .wv-experience .prog-meta > span { white-space: nowrap; }
 /* The last count, centred on the last bar, may pass the drawing's right edge by a pixel or two. */
 .wv-experience .prog-bars { overflow: visible; }
 /* The export: a quiet line under the subtitle, the Guide's text button with a small icon. */
-.wv-experience .hist-export { margin-top: 12px; }
-.wv-experience .hist-export .text-btn { display: inline-flex; align-items: center; gap: 8px; margin-left: -2px; padding: 0 2px; border-radius: 999px; color: var(--bone-2); }
+.wv-experience .hist-export { margin-top: var(--s-3); }
+.wv-experience .hist-export .text-btn { display: inline-flex; align-items: center; gap: 8px; padding: 0; border-radius: var(--r-pill); color: var(--bone-2); }
 .wv-experience .hist-export .text-btn svg { width: 16px; height: 16px; color: var(--lamp); }
-.wv-experience .hist-export-note { margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; letter-spacing: 0.08em; color: var(--ash); }
+.wv-experience .hist-export-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
 .wv-experience .hist-export-note:not(:empty) { margin-top: 4px; }

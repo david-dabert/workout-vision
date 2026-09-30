@@ -4,6 +4,7 @@ import { exerciseName } from './exercise-info';
 import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
+import { useCondensingTopbar } from './topbar';
 import './Report.css';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
@@ -35,6 +36,9 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const failures = useRef(0);
   const noteTimer = useRef(0);
   const sharing = useRef(false);
+  // The title condenses into the topbar as the form scrolls under it (section 3, change 1).
+  const screenRef = useRef(null);
+  useCondensingTopbar(screenRef, [lang]);
   const backRef = useRef(null), partnerRef = useRef(null), notesRef = useRef(null);
   const when = useRef(date ? new Date(date) : new Date()).current;
 
@@ -70,7 +74,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   }
 
   useEffect(() => {
-    backRef.current?.focus({ preventScroll: true });
+    backRef.current?.focus({ preventScroll: true, focusVisible: false });
     if (!kit) prepare();
     // One build in advance, once the screen has settled, so the first share is as quick as the next.
     const t = setTimeout(() => {
@@ -122,15 +126,15 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const busy = status === 'preparing';
 
   return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
-    <section className="screen is-active report-screen"><div className="wrap">
+    <section ref={screenRef} className="screen is-active report-screen"><div className="wrap">
       <div className="topbar">
         <button ref={backRef} className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
-      <h2 className="title">{fr ? 'Rapport de séance' : 'Session report'}</h2>
-      <p className="report-sub">{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
+      <h2 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Rapport de séance' : 'Session report'}</h2>
+      <p className="report-sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
       <div className="field">
         <label htmlFor="fName">{fr ? 'Votre nom' : 'Your name'}</label>
         <input id="fName" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
@@ -151,7 +155,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
           placeholder={fr ? 'Observations, consignes pour la prochaine séance…' : 'Observations, instructions for the next session…'} value={notes} onChange={e => setNotes(e.target.value)} />
       </div>
 
-      <article className="sheet" aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
+      <article className="sheet" data-reveal style={{ '--i': 3 }} aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
         <div className="sh-top">{sheet.brand && <span>{sheet.brand}</span>}<span>{sheet.date}</span></div>
         <h3 className="sh-title">{sheet.title}</h3>
         {sheet.people.length > 0 && <div className="sh-people">

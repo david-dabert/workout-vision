@@ -1,18 +1,18 @@
 /* The level: one control in the history, one quiet question after a saved set, and what each level
    changes on the result screen (level.js). Tokens of Entry.css; the control is the report's three-answer switch. */
 .wv-experience .level-pick { display: flex; flex-direction: column; gap: 8px; }
-.wv-experience .level-label { color: var(--ash); letter-spacing: 0.16em; }
-.wv-experience .level-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: 14px; background: var(--basalt); border: 1px solid var(--hair); }
-.wv-experience .level-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: 13px; font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
+.wv-experience .level-label { color: var(--ash); }
+.wv-experience .level-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--hair); }
+.wv-experience .level-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
 .wv-experience .level-seg button[aria-pressed="true"] { background: var(--lamp); color: var(--ink); }
-.wv-experience .level-note { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ash); }
+.wv-experience .level-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
 
 /* History: the control under the page's line, above the progress. */
-.wv-experience .history-screen .level-pick { margin-top: 22px; }
+.wv-experience .history-screen .level-pick { margin-top: var(--s-5); }
 
 /* Result: the question after the save, in hairline, never a card that asks for attention. */
 .wv-experience .level-ask { margin-top: 14px; padding: 16px 0 0; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 10px; }
-.wv-experience .level-ask .level-q { margin: 0; font-size: 14px; line-height: 1.45; color: var(--bone-2); }
+.wv-experience .level-ask .level-q { margin: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--bone-2); }
 
 /* Beginner: the words first, the number smaller and after them (numbers secondary). */
 .wv-experience .result-screen.lv-beginner .set-account { margin-top: 18px; }
@@ -25,16 +25,16 @@
 .wv-experience .result-screen.lv-beginner .acc-more { margin-top: 22px; }
 
 /* Expert: the speed change under the bars, the per-rep table under the question, both compact. */
-.wv-experience .lv-speed { margin: 6px 0 0; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--bone-2); }
+.wv-experience .lv-speed { margin: 6px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--bone-2); }
 .wv-experience .lv-table-wrap { margin-top: 20px; }
 .wv-experience .lv-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; color: var(--bone-2); }
 .wv-experience .lv-table th:first-child { width: 11%; }
 .wv-experience .lv-table th:nth-child(2) { width: 32%; }
 .wv-experience .lv-table th:nth-child(3) { width: 21%; }
 .wv-experience .lv-table th:nth-child(4), .wv-experience .lv-table th:nth-child(5) { width: 18%; }
-.wv-experience .lv-table th { text-align: left; font-weight: 400; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ash); padding: 0 4px 6px 0; border-bottom: 1px solid var(--hair-2); }
+.wv-experience .lv-table th { text-align: left; font-weight: 400; font-size: 9px; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; color: var(--ash); padding: 0 4px 6px 0; border-bottom: 1px solid var(--hair-2); }
 .wv-experience .lv-table td { padding: 4px 4px 4px 0; border-bottom: 1px solid var(--hair); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wv-experience .lv-units { margin: 8px 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; color: var(--ash); }
+.wv-experience .lv-units { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
 
 @media (max-height: 700px) {
   .wv-experience .result-screen.lv-beginner .set-account > p { font-size: 15px; }
@@ -48,10 +48,11 @@
 }
 
 /* Guide, before a beginner's first sets: the one exercise, its drawings and the way on to filming. */
-.wv-experience .guide-focus { margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+.wv-experience .guide-focus { margin-top: var(--s-5); display: flex; flex-direction: column; gap: 12px; }
 .wv-experience .guide-focus .guide-frames { margin: 0 auto; width: min(100%, 240px, 34svh); }
-.wv-experience .guide-focus .item-name { font-family: var(--serif); font-size: 26px; line-height: 1.1; text-align: center; }
+.wv-experience .guide-focus .item-name { font-family: var(--serif); font-size: var(--fs-heading); line-height: 1.1; text-align: center; }
 .wv-experience .guide-focus .btn-primary { margin-top: 8px; }
+.wv-experience .guide-focus > .btn-ghost.is-s { align-self: center; }
 
 /* Expert on a screen under 700 px high: the speed line takes a row, so the numeral and the marks give it back,
    and "Oui, c'est juste" stays in view at 390x664 (harness levels.mjs). */

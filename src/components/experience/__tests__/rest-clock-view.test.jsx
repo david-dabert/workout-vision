@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import RestClock from '../RestClock';
 
+// The time is drawn digit by digit (Digits.jsx, design/SYSTEM.md): its text is read without the tags.
+const text = html => html.replace(/<[^>]+>/g, '');
+
 // Design pass, 29 September: once the set is saved the rest is under way, so the clock runs from
 // that moment without a tap; the tap is kept only to start it again after stopping it.
 describe('the rest clock after a saved set', () => {
   it('runs from its first frame when started with the saved set', () => {
     const html = renderToStaticMarkup(<RestClock fr autoStart />);
     expect(html).toContain('role="timer"');
-    expect(html).toContain('0:00');
+    expect(text(html)).toContain('0:00');
     expect(html).toContain('Arrêter le repos');
   });
   it('waits for a tap otherwise', () => {
@@ -31,6 +34,6 @@ describe('the rest clock shared across a retried save', () => {
   it('shows a restarted shared clock from its restart', async () => {
     const { restClock } = await import('../rest-clock');
     const shared = restClock(); shared.start(Date.now() - 30000);
-    expect(renderToStaticMarkup(<RestClock fr clock={shared} />)).toContain('0:30');
+    expect(text(renderToStaticMarkup(<RestClock fr clock={shared} />))).toContain('0:30');
   });
 });

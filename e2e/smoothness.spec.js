@@ -67,6 +67,8 @@ test('a quick tap lights the control for a moment after the finger lifts', async
   await page.goto('/workout-vision/#exercises');
   const chip = page.locator('.chip').first();
   await expect(chip).toBeVisible({ timeout: 20000 });
+  // The zones sit under the full-width body map (design pass, 30 September): the chip is brought into view first.
+  await chip.scrollIntoViewIfNeeded();
   await page.waitForTimeout(1200);
   const box = await chip.boundingBox();
   const at = { x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2) };

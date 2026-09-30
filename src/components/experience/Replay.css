@@ -8,7 +8,7 @@
 .wv-experience .rp-stage { flex: 1 1 0; min-height: 180px; margin-top: 10px; container-type: size; display: grid; place-items: center; }
 /* The frame has the video's own shape, as large as the stage allows. */
 .wv-experience .rp-frame {
-  position: relative; overflow: hidden; border-radius: 18px; background: #000;
+  position: relative; overflow: hidden; border-radius: var(--r-l); background: #000;
   width: min(100cqw, 100cqh * var(--ar, 0.5625)); height: min(100cqh, 100cqw / var(--ar, 0.5625));
   box-shadow: 0 0 0 1px var(--hair);
 }
@@ -20,32 +20,33 @@
 .wv-experience .rp-chip {
   position: absolute; top: 8px; left: 8px; pointer-events: none;
   display: flex; flex-direction: column; gap: 2px;
-  padding: 5px 9px 6px; border-radius: 12px; background: rgba(8, 7, 6, 0.55);
+  padding: 5px 10px 6px; border-radius: var(--r-s); background: rgba(8, 7, 6, 0.55);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
 .wv-experience .rp-count { display: flex; align-items: baseline; gap: 4px; }
 .wv-experience .rp-n {
   font-family: var(--serif); font-size: 26px; line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
-  background: linear-gradient(180deg, #FFF3DC 0%, #F0CB8E 46%, #B9823F 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  background: var(--gold-num); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.wv-experience .rp-of { font-family: var(--mono); font-size: 10px; color: var(--ash); }
+.wv-experience .rp-of { font-family: var(--mono); font-size: var(--fs-label); color: var(--ash); }
 /* As wide as its longest word, so the chip keeps its size from phase to phase. */
-.wv-experience .rp-phase { min-width: 13.4ch; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lamp); }
-.wv-experience .rp-broken { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-size: 15px; line-height: 1.5; color: var(--bone-2); background: rgba(8, 7, 6, 0.7); text-wrap: balance; }
+/* The phase word at the label size: 8.5 px was below reading size (#28). */
+.wv-experience .rp-phase { min-width: 11.6ch; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--lamp); }
+.wv-experience .rp-broken { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: var(--bone-2); background: rgba(8, 7, 6, 0.7); text-wrap: balance; }
 
 /* The set's time line: one mark per rep; the lit one is on screen. */
 .wv-experience .rp-line { position: relative; height: 44px; margin-top: 8px; cursor: pointer; touch-action: none; border-radius: 10px; flex: none; }
 .wv-experience .rp-line::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px; background: var(--hair-2); }
-.wv-experience .rp-rep { position: absolute; top: 50%; height: 10px; margin-top: -5px; border-radius: 5px; background: rgba(232, 189, 126, 0.34); transition: background 0.3s var(--ease), box-shadow 0.3s var(--ease); }
+.wv-experience .rp-rep { position: absolute; top: 50%; height: 10px; margin-top: -5px; border-radius: 5px; background: rgba(232, 189, 126, 0.34); transition: background var(--d-fast) var(--ease), box-shadow var(--d-fast) var(--ease); }
 .wv-experience .rp-rep.is-on { background: var(--lamp-hi); box-shadow: 0 0 12px rgba(247, 220, 174, 0.55); }
 .wv-experience .rp-now { position: absolute; top: 9px; bottom: 9px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bone); pointer-events: none; }
-.wv-experience .rp-detail { flex: none; min-height: 18px; margin: 2px 0 0; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--ash); }
+.wv-experience .rp-detail { flex: none; min-height: 19px; margin: 2px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
 
-.wv-experience .rp-controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 12px; }
+.wv-experience .rp-controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: var(--s-3); }
 .wv-experience .rp-controls .btn-primary, .wv-experience .rp-controls .btn-ghost { height: 52px; }
-.wv-experience .rp-slow.is-on { border-color: rgba(232, 189, 126, 0.6); color: var(--lamp-hi); background: rgba(232, 189, 126, 0.08); }
+.wv-experience .rp-slow.is-on { border-color: var(--lamp-line-strong); color: var(--lamp-hi); background: rgba(232, 189, 126, 0.08); }
 .wv-experience .rp-controls :disabled { opacity: 0.4; cursor: default; }
-.wv-experience .rp-note { flex: none; margin: 12px 0 0; text-align: center; font-size: 12.5px; line-height: 1.45; color: var(--ash); text-wrap: balance; }
+.wv-experience .rp-note { flex: none; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
 
 @media (max-height: 600px) {
   .wv-experience .rp-stage { margin-top: 6px; }
@@ -61,4 +62,4 @@
 .wv-experience .rp-export { flex: none; margin-top: 10px; display: flex; flex-direction: column; }
 .wv-experience .rp-export .btn-line { width: 100%; justify-content: center; text-decoration: none; }
 .wv-experience .rp-export .btn-line:disabled { opacity: 0.7; cursor: default; }
-.wv-experience .rp-export-note { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: var(--ash); text-align: center; }
+.wv-experience .rp-export-note { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.4; color: var(--ash); text-align: center; }

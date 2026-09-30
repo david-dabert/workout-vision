@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { restClock, nextTick, restText, restSpoken } from './rest-clock';
+import Digits from './Digits';
 
 /**
  * The rest after the set, counted up from the moment the set is saved, or from a tap; a tap stops it. It sets no length to reach
@@ -31,7 +32,7 @@ export default function RestClock({ fr, autoStart = false, clock: shared }) {
   function stop() { clock.stop(); moved.current = true; setRunning(false); }
 
   if (!running) {
-    return <button ref={buttonRef} type="button" className="btn-line is-quiet press rest-start" onClick={start}>
+    return <button ref={buttonRef} type="button" className="btn-ghost press rest-start" onClick={start}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 1.5" /><path d="M10 2.5h4" /></svg>
       <span>{fr ? 'Lancer le repos' : 'Start rest'}</span>
     </button>;
@@ -41,7 +42,7 @@ export default function RestClock({ fr, autoStart = false, clock: shared }) {
     <p className="eyebrow rest-label" id="rest-label">{fr ? 'Repos' : 'Rest'}</p>
     {/* A timer is not announced each second; its words are read when the reader reaches it. */}
     <p className="rest-time" role="timer" aria-labelledby="rest-label">
-      <span aria-hidden="true">{restText(s)}</span><span className="sr">{restSpoken(s, fr)}</span>
+      <span aria-hidden="true"><Digits text={restText(s)} /></span><span className="sr">{restSpoken(s, fr)}</span>
     </p>
     <button ref={buttonRef} type="button" className="text-btn press rest-stop" onClick={stop}>{fr ? 'Arrêter le repos' : 'Stop rest'}</button>
   </div>;

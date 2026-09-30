@@ -57,7 +57,8 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
     setUrl(address);
     return () => URL.revokeObjectURL(address);
   }, [file]);
-  useEffect(() => { backRef.current?.focus({ preventScroll: true }); }, []);
+  // Focus goes to Back for the keyboard and screen readers, without painting the ring on a touch (#25).
+  useEffect(() => { backRef.current?.focus({ preventScroll: true, focusVisible: false }); }, []);
   useEffect(() => { if (leaving) videoRef.current?.pause(); }, [leaving]);
   useEffect(() => { if (videoRef.current) videoRef.current.playbackRate = slow ? 0.5 : 1; }, [slow]);
 
@@ -205,7 +206,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
         </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
-      <div className="rp-stage">
+      <div className="rp-stage" data-reveal style={{ '--i': 0 }}>
         <div className="rp-frame" style={{ '--ar': fw / fh }}>
           <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
             aria-label={fr ? 'Votre série, avec le squelette suivi par l’app' : 'Your set, with the skeleton the app tracked'}
@@ -232,7 +233,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
         <i className="rp-now" style={{ left: `${Math.min(100, (now / length) * 100)}%` }} />
       </div>
       <p className="rp-detail" aria-live={playing ? 'off' : 'polite'}>{head && <span className="sr">{head}</span>}{detail}</p>
-      <div className="rp-controls">
+      <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
         <button className="btn-primary press rp-play" onClick={toggle} disabled={broken}>
           {playing
             ? <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
@@ -251,7 +252,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’app ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
       </div>}
-      <p className="rp-note">{fr
+      <p className="rp-note" data-reveal style={{ '--i': 3 }}>{fr
         ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte votre téléphone que si vous la partagez.'
         : 'In gold, the joint whose angle counts the reps. The video leaves your phone only if you share it.'}</p>
     </div></section>
