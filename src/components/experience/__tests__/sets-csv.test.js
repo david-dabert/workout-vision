@@ -103,7 +103,7 @@ describe('setsCsv', () => {
   it('writes the coach report\'s tempo (setTempo) and the speed change of setMeasures', () => {
     const [, row] = lines(setsCsv([counted], { lang: 'en' }));
     const f = row.split(',');
-    expect(f[8]).toBe(setTempo(REPS, liftDefinition('bicep_curl').first, false));
+    expect(f[8]).toBe(setTempo(REPS, liftDefinition('bicep_curl').first));
     const change = setMeasures(REPS).speedChange;
     expect(change).not.toBeNull();
     expect(f[9]).toBe(String(change));

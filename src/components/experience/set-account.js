@@ -1,6 +1,7 @@
 // Step 3, the account of a counted set: what the app measured, one tip for the next session and a word
 // of encouragement, in the words David approved on 29 September (test/real-phone/growth-step3/texts.md).
 // Pure functions of the counted reps, so the result screen and the tests read the same numbers.
+import { setTempo } from './tempo';
 
 const NB = ' ';
 const whole = reps => (reps || []).filter(r => !r.clipped);
@@ -37,22 +38,6 @@ export function speedChange(reps) {
   return Math.round(((last - first) / first) * 100);
 }
 
-// The average tempo, eccentric-pause-concentric-pause, in whole seconds as tempo is written.
-// The pause at the turn is what a rep lasts beyond its two phases; the pause between reps sits
-// where the lift rests, after the eccentric phase when the lift starts with the concentric one
-// (a curl) and after the concentric phase when it starts with the eccentric one (a squat).
-// A phase that took place reads at least 1 (convention: tempo is written in whole seconds).
-export function averageTempo(reps, first) {
-  const w = whole(reps);
-  if (!w.length) return null;
-  const phase = x => (x > 0 ? Math.max(1, Math.round(x)) : 0);
-  const conc = mean(w.map(r => r.concentricSec)), ecc = mean(w.map(r => r.eccentricSec));
-  const turn = mean(w.map(r => Math.max(0, r.endTime - r.startTime - r.concentricSec - r.eccentricSec)));
-  const gaps = w.slice(1).map((r, i) => Math.max(0, r.startTime - w[i].endTime));
-  const between = gaps.length ? mean(gaps) : 0;
-  const [afterEcc, afterConc] = first === 'eccentric' ? [turn, between] : [between, turn];
-  return [phase(ecc), Math.round(afterEcc), phase(conc), Math.round(afterConc)];
-}
 
 // From four whole reps: how much longer the last two reps' concentric phase took than the first two's,
 // in whole percent (negative: faster). App measure; what it means is in the tempo note (source 5).
@@ -86,8 +71,9 @@ const de = name => (/^([aeiouyàâéèêëîïôûü]|halt)/i.test(name) ? `d’
  */
 export function setAccount({ reps, first, fr, name, count, previous, nth }) {
   const lines = [];
-  const tempo = averageTempo(reps, first);
-  if (tempo) lines.push(fr ? `Tempo moyen${NB}: ${tempo.join('-')}.` : `Average tempo: ${tempo.join('-')}.`);
+  // The tempo as the coach report and the spreadsheet write it (tempo.js), one rule for the app.
+  const tempo = setTempo(reps, first);
+  if (tempo) lines.push(fr ? `Tempo moyen${NB}: ${tempo}.` : `Average tempo: ${tempo}.`);
   const short = shortReps(reps);
   if (short.length === 1) lines.push(fr ? `La répétition ${short[0]} a été plus courte que les autres.` : `Rep ${short[0]} was shorter than the others.`);
   else if (short.length > 1) lines.push(fr ? `Les répétitions ${list(short, true)} ont été plus courtes que les autres.` : `Reps ${list(short, false)} were shorter than the others.`);

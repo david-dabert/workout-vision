@@ -35,7 +35,7 @@ Both are UTF-8 with a byte order mark, so Excel reads the accents. In the French
 | col.confirmed | Confirmée | Confirmed | oui / non (yes / no): confirmed() in progress.js |
 | col.load | Charge (kg) | Load (kg) | The load entered, only when above 0 (storedLoad() in progress.js) |
 | col.duration | Durée (s) | Duration (s) | The stored duration of the set, one decimal, only when above 0 |
-| col.tempo | Tempo moyen | Average tempo | setTempo() in report-sheet.js, the coach report's tempo, e.g. 1,5-0-1,3-0; only for reps measured with step 3c (repDetailsVersion 2) |
+| col.tempo | Tempo moyen | Average tempo | setTempo() in tempo.js, the set tempo of the result screen and the report, whole seconds, e.g. 2-1-1-0; only for reps measured with step 3c (repDetailsVersion 2) |
 | col.speed | Variation de vitesse concentrique (%) | Concentric speed change (%) | setMeasures().speedChange in report-sheet.js; only with four whole reps |
 | val.yes / val.no | oui / non | yes / no | |
 

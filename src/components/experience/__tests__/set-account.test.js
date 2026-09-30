@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { shortReps, averageTempo, slowdown, setAccount, ordinal } from '../set-account';
+import { shortReps, slowdown, setAccount, ordinal } from '../set-account';
+import { setTempo } from '../tempo';
 
 // A rep: start, duration, range, concentric and eccentric seconds.
 const rep = (i, start, dur, rom, conc, ecc, extra = {}) => ({ index: i, startTime: start, endTime: start + dur, romDegrees: rom, concentricSec: conc, eccentricSec: ecc, peakSpeed: 0, meanSpeed: 0, ...extra });
@@ -17,18 +18,30 @@ describe('the ▾ mark: a whole rep under 85 % of the set\'s median range', () =
   });
 });
 
-describe('the average tempo, eccentric-pause-concentric-pause, in whole seconds', () => {
+// One set tempo for the app (tempo.js): the result screen, the report's summary and the spreadsheet.
+// Written as David approved it on 29 September (texts.md): whole seconds, a phase that took place
+// reads at least 1; the pause between reps averaged over the gaps, not over the reps (review, 30 September).
+describe('the average tempo, lowering-bottom-lifting-top, in whole seconds', () => {
   it('a curl starts with the lift: the pause between reps is at the bottom, after the eccentric phase', () => {
-    expect(averageTempo(even(4, { conc: 1, ecc: 2, gap: 1 }), 'concentric')).toEqual([2, 1, 1, 0]);
+    expect(setTempo(even(4, { conc: 1, ecc: 2, gap: 1 }), 'concentric')).toBe('2-1-1-0');
   });
   it('a squat starts going down: the pause between reps is at the top, after the concentric phase', () => {
-    expect(averageTempo(even(4, { conc: 1, ecc: 2, gap: 1 }), 'eccentric')).toEqual([2, 0, 1, 1]);
+    expect(setTempo(even(4, { conc: 1, ecc: 2, gap: 1 }), 'eccentric')).toBe('2-0-1-1');
+  });
+  it('a real rest at every rep reads as one: 0.6 s over three gaps, not over four reps', () => {
+    const reps = [0, 1, 2, 3].map(i => ({ index: i + 1, startTime: i * 3.6, endTime: i * 3.6 + 3, romDegrees: 100, concentricSec: 1, eccentricSec: 2 }));
+    expect(setTempo(reps, 'eccentric')).toBe('2-0-1-1');
+  });
+  it('the gap after the last whole rep counts when a cut rep follows it', () => {
+    const reps = [0, 1].map(i => ({ index: i + 1, startTime: i * 4, endTime: i * 4 + 3, romDegrees: 100, concentricSec: 1, eccentricSec: 2 }));
+    reps.push({ index: 3, startTime: 8, endTime: 9, romDegrees: 40, concentricSec: 0.5, eccentricSec: 0.5, clipped: true });
+    expect(setTempo(reps, 'eccentric')).toBe('2-0-1-1'); // gaps 1 and 1, both whole reps followed by a rep
   });
   it('a phase under half a second reads 1, never 0', () => {
-    expect(averageTempo(even(3, { conc: 0.4, ecc: 0.4, gap: 0 }), 'concentric')).toEqual([1, 0, 1, 0]);
+    expect(setTempo(even(3, { conc: 0.4, ecc: 0.4, gap: 0 }), 'concentric')).toBe('1-0-1-0');
   });
   it('no whole rep, no tempo', () => {
-    expect(averageTempo([], 'concentric')).toBeNull();
+    expect(setTempo([], 'concentric')).toBeNull();
   });
 });
 
@@ -109,5 +122,20 @@ describe('ordinals', () => {
   it('French and English', () => {
     expect([1, 2, 11].map(n => ordinal(n, true))).toEqual(['1re', '2e', '11e']);
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23].map(n => ordinal(n, false))).toEqual(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '23rd']);
+  });
+});
+
+// 30 September: one set tempo in the app. The result screen's line is the coach report's summary and
+// the spreadsheet's (tempo.js), in whole seconds as approved.
+describe('the tempo on the result screen, as the report writes it', () => {
+  it('equals the report summary\'s tempo, in French and English, for both lift orders', async () => {
+    const { reportSheet } = await import('../report-sheet');
+    for (const first of ['concentric', 'eccentric']) for (const fr of [true, false]) {
+      const reps = even(6); reps[4].concentricSec = 1.2; reps[5].concentricSec = 1.25;
+      const a = setAccount({ reps, first, fr, name: 'Squat', count: 6, previous: null, nth: null });
+      const sheet = reportSheet({ lang: fr ? 'fr' : 'en', date: new Date(), notes: '', liftName: 'x', count: 6, counted: 6, reps, first });
+      const tempo = sheet.summary.find(l => l.startsWith('Tempo')).replace(/^Tempo ?: /, '');
+      expect(a.lines[0]).toBe(fr ? `Tempo moyen : ${tempo}.` : `Average tempo: ${tempo}.`);
+    }
   });
 });

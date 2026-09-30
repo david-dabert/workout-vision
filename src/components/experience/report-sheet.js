@@ -2,6 +2,9 @@
 // them from here, so what the visitor sees is what the reader receives.
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
+import { decimal, repTempo, setTempo } from './tempo';
+
+export { setTempo };
 
 const NBSP = '\u00A0';
 const clean = s => (s || '').normalize('NFC').replace(/\s+/g, ' ').trim();
@@ -11,7 +14,7 @@ export const NOTES_MAX = 1000;
 
 const MINUS = '\u2212';
 // One decimal, with the comma in French: 1,2 s.
-export const decimal = (x, fr) => (fr ? x.toFixed(1).replace('.', ',') : x.toFixed(1));
+export { decimal } from './tempo';
 
 /**
  * What a set measured, from its whole reps (a rep the recording cut is counted but
@@ -31,24 +34,6 @@ export function setMeasures(all) {
   return { tut, speedChange: speedChange(all) };
 }
 
-/**
- * Per-rep tempo: lowering, bottom pause, lifting, top pause.
- * Lowering = eccentric phase; lifting = concentric phase.
- * The two pauses depend on which phase comes first:
- *   eccentric first → bottom pause = working pause, top pause = rest gap
- *   concentric first → top pause = working pause, bottom pause = rest gap
- * Working pause = total rep time minus both phases.
- * Rest gap = time from this rep's end to the next rep's start (0 for the last rep).
- */
-function repTempo(r, nextStart, first) {
-  const total = r.endTime - r.startTime;
-  const workPause = Math.max(0, total - r.concentricSec - r.eccentricSec);
-  const restGap = nextStart != null ? Math.max(0, nextStart - r.endTime) : 0;
-  if (first === 'eccentric') {
-    return { lowering: r.eccentricSec, bottom: workPause, lifting: r.concentricSec, top: restGap };
-  }
-  return { lowering: r.eccentricSec, bottom: restGap, lifting: r.concentricSec, top: workPause };
-}
 
 /**
  * The per-rep table as the report prints it: Rep | Tempo | Range | Peak | Mean (peak and mean
@@ -60,8 +45,8 @@ export function repTable({ reps, first, fr }) {
   // Short rep: range under 85% of the set's median, by the rule the result screen and the
   // opener use (set-account.js), so the three never disagree on an even number of reps.
   const isShort = isShortIn(reps);
-  // Per-rep tempo in coach notation: moving phases (lowering, lifting) to one
-  // decimal so they never read 0; pauses (bottom, top) in whole seconds.
+  // Per-rep tempo in coach notation: moving phases (lowering, lifting) to the tenth, so a 0.6 s
+  // lift reads 0,6 and not 1; pauses (bottom, top) in whole seconds.
   const phase = v => decimal(v, fr);
   const pause = v => String(Math.round(v));
   const tempoStr = t => [phase(t.lowering), pause(t.bottom), phase(t.lifting), pause(t.top)].join('-');
@@ -108,22 +93,6 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
  */
-/**
- * The set's tempo in coach notation, the average of each phase across whole reps: moving phases to one
- * decimal, pauses in whole seconds; null without a whole rep. The report and the spreadsheet both write
- * this one (review, 30 September: they had differed).
- */
-export function setTempo(reps, first = 'concentric', fr = false) {
-  const whole = (reps || []).filter(r => !r.clipped);
-  if (!whole.length) return null;
-  const avg = { lowering: 0, bottom: 0, lifting: 0, top: 0 };
-  whole.forEach((r, i) => {
-    const t = repTempo(r, i + 1 < whole.length ? whole[i + 1].startTime : null, first);
-    avg.lowering += t.lowering; avg.bottom += t.bottom; avg.lifting += t.lifting; avg.top += t.top;
-  });
-  const n = whole.length;
-  return [decimal(avg.lowering / n, fr), String(Math.round(avg.bottom / n)), decimal(avg.lifting / n, fr), String(Math.round(avg.top / n))].join('-');
-}
 
 export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
   const fr = lang === 'fr';
@@ -135,7 +104,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const liftFirst = first || 'concentric';
 
   const hasShort = allReps.some(isShortIn(reps));
-  const { columns, rows, tempoStr } = repTable({ reps, first: liftFirst, fr });
+  const { columns, rows } = repTable({ reps, first: liftFirst, fr });
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
@@ -145,7 +114,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     if (speed) summary.push(speed);
 
     // Set tempo: average of each phase across whole reps (setTempo, which the spreadsheet uses too).
-    const tempo = setTempo(reps, liftFirst, fr);
+    const tempo = setTempo(reps, liftFirst);
     if (tempo) summary.push(`Tempo${colon}${tempo}`);
 
     // Duration change: average of last two minus average of first two.

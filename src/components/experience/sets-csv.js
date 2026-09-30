@@ -63,7 +63,7 @@ export function setsCsv(sets, { lang, name, locale } = {}) {
   const rows = oldestFirst(sets).map(w => {
     const counted = byHand(w) ? null : countedBy(w);
     const reps = measuredReps(w);
-    const tempo = reps && setTempo(reps, liftDefinition(liftKey(w))?.first, f.dot === ',');
+    const tempo = reps && setTempo(reps, liftDefinition(liftKey(w))?.first);
     const change = reps && setMeasures(reps)?.speedChange;
     return [
       isoLocal(setTime(w)),
