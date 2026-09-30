@@ -1,0 +1,16 @@
+{
+ "landmarks/bench_press_7_angle_mufhcy60.json.gz": 7.156502723693848,
+ "landmarks/bicep_curl_7_side_mufhf3wy.json.gz": 7.2419352531433105,
+ "landmarks/lat_pulldown_10_front_mufhlh4o.json.gz": 10.17362117767334,
+ "landmarks/lateral_raise_10_front_mufhhbun.json.gz": 9.76718521118164,
+ "landmarks/overhead_press_10_front_mufhjkku.json.gz": 12.016425132751465,
+ "sets-29sep/bench_press_7_side_24cc4f0b.json.gz": 9.406963348388672,
+ "sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz": 5.220348834991455,
+ "sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz": 5.583096504211426,
+ "sets-29sep/lateral_raise_9_front_43e71b40.json.gz": 8.120633125305176,
+ "sets-29sep/leg_press_13_side_1ee0ae47.json.gz": 12.537996292114258,
+ "sets-29sep/overhead_press_4_front_cefdaa82.json.gz": 5.008569717407227,
+ "sets-29sep/overhead_press_4_front_f75638cc.json.gz": 6.767395973205566,
+ "sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz": 7.866539478302002,
+ "sets-29sep/squat_7_side_21fd7ccf.json.gz": 8.558478355407715
+}

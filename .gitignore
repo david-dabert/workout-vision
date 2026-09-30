@@ -74,3 +74,6 @@ test/real-phone/tour-ci/*/
 
 # Public held-out half: read only by its own run (test/real-phone/accuracy/public-holdout.test.ts), never committed.
 test/real-phone/public/*/holdout/
+
+# Python bytecode
+__pycache__/
