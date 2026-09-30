@@ -181,7 +181,7 @@ test.describe('the history at 375 px', () => {
     await page.reload();
     await page.getByRole('button', { name: /Vos séries/ }).click();
     await expect(page.locator('.hist-btn')).toHaveCount(10);
-    await expect(page.locator('.hist-prog')).toContainText('Record à 60 kg : 10 répétitions');
+    await expect(page.locator('.hist-prog')).toContainText('Record : 10 répétitions à 60 kg');
     await page.waitForTimeout(1600); // the rows' reveal animation has settled
     // The page's layout check reads text against text; a record line over the bars is checked here.
     const hits = await page.evaluate(() => [...document.querySelectorAll('.prog-item')].flatMap(item => {

@@ -12,6 +12,8 @@ In the French lines the space before ":" and between a number and its unit is a 
 | progress.first | Première série de cet exercice. | First set of this exercise. | History, progress block, an exercise with a single set (nothing else is shown for it) |
 | progress.trend.sr | Répétitions de vos {n} dernières séries : {8, 10, 12}. | Reps in your last {n} sets: {8, 10, 12}. | History, progress block, read by VoiceOver in place of the bars (not shown) |
 | progress.best.reps | Record : {n} répétitions (1 répétition) | Best: {n} reps (1 rep) | History, progress block, most reps in one set |
+| progress.best.repsAt | Record : {n} répétitions à {kg} kg | Best: {n} reps at {kg} kg | History, progress block, the most reps in one set when that set had a load and is not the heaviest set (30 September, after review: a bare "Record" beside "Charge max" read as a comparison) |
+| progress.best.unlogged | Record : {n} répétitions, charge non notée | Best: {n} reps, load not logged | History, progress block, the most reps in one set when that set had no load entered and another set of the lift did (30 September, after review) |
 | progress.best.load | Charge max : {kg} kg × {n} | Heaviest: {kg} kg × {n} | History, progress block, heaviest load entered, with the reps of the set that first lifted it; only where a load is stored |
 | progress.best.atLoad | Record à {kg} kg : {n} répétitions | Best at {kg} kg: {n} reps | History, progress block, most reps at one load, only for a load entered on two sets or more, not repeated when it is the heaviest set's own |
 | history.tag.best | Record | Best | History, list of sets, tag on a set that holds one of the records above |

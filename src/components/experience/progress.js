@@ -37,8 +37,10 @@ function bestsOf(sets) {
     if (!(w.reps > 0)) continue;
     // A count no one confirmed stays in the trend but holds no record (CLAUDE.md R8).
     if (!confirmed(w)) continue;
-    if (better(w.reps, reps)) reps = { value: w.reps, id: w.id };
     const kg = storedLoad(w);
+    // The reps record keeps the load it was lifted with, where one was entered: said without it,
+    // beside the heaviest load, it would read as a comparison the app does not make (critic, 30 September).
+    if (better(w.reps, reps)) reps = { value: w.reps, id: w.id, ...(kg !== null ? { load: kg } : {}) };
     if (kg === null) continue;
     if (better(kg, load)) load = { value: kg, reps: w.reps, id: w.id };
     const at = byLoad.get(kg) || { load: kg, sets: 0, best: null };
@@ -56,7 +58,7 @@ function bestsOf(sets) {
  * Per exercise, those with a trend first, then by the exercise trained last: { key, sets (oldest first), first, trend, bests }.
  * first: the exercise has a single set, and then there is no trend and no best (bests is null).
  * trend: the reps of the last TREND_SETS sets, oldest first.
- * bests: { reps: {value, id} or null, load: {value, reps, id} or null, atLoad: [{load, reps, id}] }.
+ * bests: { reps: {value, id, load if one was entered} or null, load: {value, reps, id} or null, atLoad: [{load, reps, id}] }.
  */
 export function exerciseProgress(sets) {
   const groups = new Map();
@@ -101,9 +103,18 @@ const reps = (n, fr) => (fr ? `${n}${NB}répétition${n > 1 ? 's' : ''}` : `${n}
 /** The words of each best, in the order the history shows them. */
 export function bestLines(bests, fr) {
   const lines = [];
-  if (bests.reps) lines.push(fr ? `Record${NB}: ${reps(bests.reps.value, true)}` : `Best: ${reps(bests.reps.value, false)}`);
+  const at = (load, n) => (fr ? `Record à ${kg(load, true)}${NB}: ${reps(n, true)}` : `Best at ${kg(load, false)}: ${reps(n, false)}`);
+  // The most reps in one set, with the load it was lifted at when that is not the heaviest set (whose
+  // load "Charge max" already gives), so it never reads as set against the heaviest (review, 30 September).
+  const repsAt = bests.reps?.load && bests.reps.id !== bests.load?.id ? bests.reps.load : null;
+  // A record set with no load entered, beside a heaviest load, says so: not "without load", which the
+  // app does not know of a filmed set (review, 30 September).
+  const unlogged = bests.reps && !bests.reps.load && bests.load && bests.reps.id !== bests.load.id;
+  if (unlogged) lines.push(fr ? `Record${NB}: ${reps(bests.reps.value, true)}, charge non notée` : `Best: ${reps(bests.reps.value, false)}, load not logged`);
+  else if (bests.reps) lines.push(repsAt ? (fr ? `Record${NB}: ${reps(bests.reps.value, true)} à ${kg(repsAt, true)}` : `Best: ${reps(bests.reps.value, false)} at ${kg(repsAt, false)}`) : (fr ? `Record${NB}: ${reps(bests.reps.value, true)}` : `Best: ${reps(bests.reps.value, false)}`));
   if (bests.load) lines.push(fr ? `Charge max${NB}: ${kg(bests.load.value, true)} × ${bests.load.reps}` : `Heaviest: ${kg(bests.load.value, false)} × ${bests.load.reps}`);
   // A best at the heaviest load held by the same set would say the same thing twice.
-  for (const a of bests.atLoad) if (a.id !== bests.load?.id || a.load !== bests.load.value) lines.push(fr ? `Record à ${kg(a.load, true)}${NB}: ${reps(a.reps, true)}` : `Best at ${kg(a.load, false)}: ${reps(a.reps, false)}`);
+  // Nor the reps record's own line again.
+  for (const a of bests.atLoad) if ((a.id !== bests.load?.id || a.load !== bests.load.value) && !(repsAt && a.id === bests.reps.id && a.load === repsAt)) lines.push(at(a.load, a.reps));
   return lines;
 }

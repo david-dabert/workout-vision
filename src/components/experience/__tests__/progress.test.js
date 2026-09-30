@@ -133,3 +133,39 @@ describe('the order of the progress block (critic, 30 September)', () => {
     expect(p.map(e => e.key)).toEqual(['squat', 'lateral_raise']);
   });
 });
+
+describe('the reps record of a weighted lift names its load (critic and review, 30 September)', () => {
+  it('says "Record : 10 répétitions à 60 kg", then the heaviest load, then the bests by load, heaviest first', async () => {
+    const { bestLines } = await import('../progress');
+    const p = exerciseProgress(newestFirst([set('a', 'squat', 10, { source: 'manual', weight: 60 }), set('b', 'squat', 5, { source: 'manual', weight: 70 }), set('c', 'squat', 6, { source: 'manual', weight: 70 })]));
+    expect(bestLines(p[0].bests, true)).toEqual(['Record\u00A0: 10\u00A0répétitions à 60\u00A0kg', 'Charge max\u00A0: 70\u00A0kg × 5', 'Record à 70\u00A0kg\u00A0: 6\u00A0répétitions']);
+    expect(bestLines(p[0].bests, false)).toEqual(['Best: 10\u00A0reps at 60\u00A0kg', 'Heaviest: 70\u00A0kg × 5', 'Best at 70\u00A0kg: 6\u00A0reps']);
+  });
+  it('does not say the reps record again as a best at its own load', async () => {
+    const { bestLines } = await import('../progress');
+    const p = exerciseProgress(newestFirst([set('a', 'squat', 10, { source: 'manual', weight: 60 }), set('b', 'squat', 8, { source: 'manual', weight: 60 }), set('c', 'squat', 5, { source: 'manual', weight: 70 })]));
+    expect(bestLines(p[0].bests, true)).toEqual(['Record\u00A0: 10\u00A0répétitions à 60\u00A0kg', 'Charge max\u00A0: 70\u00A0kg × 5']);
+  });
+  // Review, 30 September: a record set with no load entered (a filmed set, or a manual one left empty)
+  // is not bare beside a heaviest load, nor "sans charge", which the app does not know.
+  it('says the load was not logged when the record set has none and a heaviest load exists', async () => {
+    const { bestLines } = await import('../progress');
+    const p = exerciseProgress(newestFirst([set('a', 'squat', 12, { source: 'counter-core', corrected: false }), set('b', 'squat', 5, { source: 'manual', weight: 70 }), set('c', 'squat', 6, { source: 'manual', weight: 70 })]));
+    expect(bestLines(p[0].bests, true)).toEqual(['Record\u00A0: 12\u00A0répétitions, charge non notée', 'Charge max\u00A0: 70\u00A0kg × 5', 'Record à 70\u00A0kg\u00A0: 6\u00A0répétitions']);
+    expect(bestLines(p[0].bests, false)[0]).toBe('Best: 12\u00A0reps, load not logged');
+  });
+  it('keeps the bare line on a lift with no load anywhere', async () => {
+    const { bestLines } = await import('../progress');
+    const p = exerciseProgress(newestFirst([set('a', 'squat', 10, { source: 'manual' }), set('b', 'squat', 8, { source: 'manual' })]));
+    expect(bestLines(p[0].bests, true)).toEqual(['Record\u00A0: 10\u00A0répétitions']);
+  });
+});
+// The heaviest set holding the reps record too: two records of one set, each said once, the load in
+// "Charge max" (the reps line needs no load of its own there).
+describe('one set holding both records', () => {
+  it('says the reps record bare and the heaviest load with its reps', async () => {
+    const { bestLines } = await import('../progress');
+    const p = exerciseProgress(newestFirst([set('a', 'bicep_curl', 10, { source: 'manual', weight: 12 }), set('b', 'bicep_curl', 9, { source: 'manual', weight: 12 })]));
+    expect(bestLines(p[0].bests, true)).toEqual(['Record\u00A0: 10\u00A0répétitions', 'Charge max\u00A0: 12\u00A0kg × 10']);
+  });
+});
