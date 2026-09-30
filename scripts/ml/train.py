@@ -9,8 +9,9 @@ left for right, the camera turned about the body's vertical axis, and noise. The
 sets are never trained on.
 
 Both runs are deterministic (seed 0), with the committed model's settings by default: 3000 steps, no
-lengthening. LENGTHEN=1 adds the hold and join augmentations (measured and not kept); TAG=<name> with fit
-writes only test/real-phone/accuracy/learned-david-<name>.txt and leaves the app's weights untouched.
+lengthening. LENGTHEN=1 adds the hold and join augmentations; since 30 September an inserted hold is supervised as zero
+reps (the earlier LENGTHEN runs, measured and not kept, left holds unsupervised). TAG=<name> writes fit's
+report to learned-david-<name>.txt without touching the app's weights, and cv's to learned-cv-<name>.*.
 """
 import json
 import math
@@ -56,10 +57,16 @@ def forward(p, x):
     return jax.nn.softplus(conv(jax.nn.gelu(h), p['out_w'], p['out_b'])[..., 0])  # (B, T) density
 
 
-def loss_fn(p, x, inside, pad, count):
-    dens = forward(p, x) * pad
+def count_loss(dens, inside, count):
+    """The count loss: the density summed over the samples whose content is known (the labelled window, and
+    any inserted still hold, which holds no rep), against the label. Samples of unknown content (inside = 0:
+    footage outside a public clip's labelled window) do not enter it."""
     pred = (dens * inside).sum(1)
     return jnp.mean(jnp.abs(pred - count) / jnp.sqrt(count + 1.0)), pred
+
+
+def loss_fn(p, x, inside, pad, count):
+    return count_loss(forward(p, x) * pad, inside, count)
 
 
 def augment(s, rng):
@@ -94,7 +101,9 @@ def lengthen(s, sets, rng):
                 n = int(rng.uniform(0.5, 3.0) * 15)
                 seen_idx = np.flatnonzero(q['seen'])
                 k = (seen_idx[0] if end == 'before' else seen_idx[-1]) if len(seen_idx) else 0
-                hold = (np.repeat(q['pos'][k:k + 1], n, 0), np.ones(n, np.float32), np.zeros(n, np.float32))
+                # A still hold is known to hold no rep: it enters the count loss (inside = 1) and adds nothing to
+                # the count, so density there is penalised (Astra's review, 30 September).
+                hold = (np.repeat(q['pos'][k:k + 1], n, 0), np.ones(n, np.float32), np.ones(n, np.float32))
             else:
                 hold = None
             if end == 'before' and hold:
@@ -160,6 +169,21 @@ def predict(p, sets):
     return out
 
 
+def held(s, sec=2.0):
+    """A clip as a phone set is filmed: cut to its labelled window (footage outside it may hold reps the label
+    does not count), then held still for `sec` at each end, and scored as the app scores a set, over every
+    sample (review of 30 September). Measures counting during stillness."""
+    n = int(sec * 15)
+    w = np.flatnonzero(s['inside'])
+    lo, hi = (w[0], w[-1] + 1) if len(w) else (0, len(s['pos']))
+    pos, seen = s['pos'][lo:hi], s['seen'][lo:hi]
+    idx = np.flatnonzero(seen)
+    a, b = (idx[0], idx[-1]) if len(idx) else (0, len(pos) - 1)
+    pos = np.concatenate([np.repeat(pos[a:a + 1], n, 0), pos, np.repeat(pos[b:b + 1], n, 0)])
+    seen = np.concatenate([np.ones(n, np.float32), seen, np.ones(n, np.float32)])
+    return dict(pos=pos, seen=seen, inside=np.ones(len(pos), np.float32), count=s['count'], lift=s['lift'], name=s['name'])
+
+
 def score(pred, sets):
     c = np.array([round(v) for v in pred])
     y = np.array([s['count'] for s in sets])
@@ -205,6 +229,7 @@ if __name__ == '__main__':
         preds = {}
         tot = np.zeros(3, int)
         tot_core = np.zeros(3, int)
+        tot_held = np.zeros(3, int)
         lines = []
         for k in range(5):
             tr = [s for s in sets if fold_of[s['group']] != k]
@@ -213,13 +238,17 @@ if __name__ == '__main__':
             pr = predict(p, va)
             for s_, v in zip(va, pr): preds['public/countix-whole/build/' + os.path.basename(s_['name'])] = v
             e = score(pr, va)
+            eh = score(predict(p, [held(v) for v in va]), va)
+            tot_held += eh
             cc = [base.get('public/countix-whole/build/' + os.path.basename(s['name'])) for s in va]
             ce = (sum(1 for c, s in zip(cc, va) if c == s['count']), sum(1 for c, s in zip(cc, va) if c != 'refused' and c is not None and abs(c - s['count']) <= 1), len(va))
             tot += e
             tot_core += ce
-            lines.append(f'fold {k}: learned exact {e[0]}/{e[2]} within one {e[1]}; core exact {ce[0]} within one {ce[1]}')
+            lines.append(f'fold {k}: learned exact {e[0]}/{e[2]} within one {e[1]}; with 2 s still at each end, exact {eh[0]} within one {eh[1]}; core exact {ce[0]} within one {ce[1]}')
             print(lines[-1], flush=True)
-        lines.append(f'all: learned exact {tot[0]}/{tot[2]} within one {tot[1]}; core exact {tot_core[0]} within one {tot_core[1]}')
+        lines.append(f'all: learned exact {tot[0]}/{tot[2]} within one {tot[1]}; with 2 s still at each end, exact {tot_held[0]} within one {tot_held[1]}; core exact {tot_core[0]} within one {tot_core[1]}; LENGTHEN={os.environ.get("LENGTHEN", "0")}')
         print(lines[-1])
-        json.dump(preds, open(os.path.join(REPO, 'test', 'real-phone', 'accuracy', 'learned-cv.json'), 'w'), indent=1)
-        open(os.path.join(REPO, 'test', 'real-phone', 'accuracy', 'learned-cv.txt'), 'w').write('\n'.join(lines) + '\n')
+        tag = os.environ.get('TAG', '')
+        suffix = f'-{tag}' if tag else ''
+        json.dump(preds, open(os.path.join(REPO, 'test', 'real-phone', 'accuracy', f'learned-cv{suffix}.json'), 'w'), indent=1)
+        open(os.path.join(REPO, 'test', 'real-phone', 'accuracy', f'learned-cv{suffix}.txt'), 'w').write('\n'.join(lines) + '\n')
