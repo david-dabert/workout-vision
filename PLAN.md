@@ -293,3 +293,10 @@ Choices recorded under the order that David's latest order prevails (30 Septembe
 - Line 44 and the five-line order: the five lines are the message to David; the STOP report with the verifier's table, and every reviewer report, are saved under test/real-phone/ and the message gives their paths.
 - The earlier order that counter-core and main move to 84e020a together: counter-core moves now, by fast-forward, to the head of claude/generate-architecture-md-inw479 once this record and its reviewer report are pushed; the commit it reaches is recorded here with git ls-remote in the next PLAN.md commit. main alone moves to 84e020a exactly, on David's approval of its preview.
 - counter-core moved on 30 September, by fast-forward from e84ab32, to 24f89fa, the head of claude/generate-architecture-md-inw479 (git ls-remote: refs/heads/counter-core 24f89fab79cf). main stays at e84ab32.
+
+Approved on 30 September on the preview built from 84e020a, on David's iPhone, with filming step 3 as written ("Toute la série, du départ au retour au repos."). main fast-forwarded from e84ab32 to 84e020a and pushed (git ls-remote: refs/heads/main 84e020a000e7). main thereby takes 84e020a: the batch collector, the scoreboard, the diagnosis and the exam script, and the new filming step 3.
+David's orders of 30 September, third message, in his words.
+- "Approved: the preview at 84e020a, with filming step 3 as written."
+- "Move main to 84e020a."
+- "The fourteen counts and the batch collector test come with the exam sets; nothing waits on them."
+- "Until then, write to me only when my iPhone or my approval is needed."
