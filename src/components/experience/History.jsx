@@ -6,6 +6,8 @@ import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
 import { exerciseProgress, recordsOf } from './progress';
 import ExerciseProgress from './ExerciseProgress';
+import LevelPick from './LevelPick';
+import { readLevel, writeLevel } from './level';
 import './History.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -28,6 +30,7 @@ export default function History({ onClose }) {
   const [confirm, setConfirm] = useState(null); // the set whose deletion waits for a second tap
   const [report, setReport] = useState(null);
   const [leaving, setLeaving] = useState(false);
+  const [level, setLevel] = useState(readLevel);
   const timers = useRef({});
   const rowRefs = useRef({});
 
@@ -97,6 +100,10 @@ export default function History({ onClose }) {
         </div>
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Vos séries.' : 'Your sets.'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Elles restent sur ce téléphone.' : 'They stay on this phone.'}{sets?.length ? (fr ? ' Touchez une série pour en faire le rapport.' : ' Tap a set to make its report.') : ''}</p>
+        {/* The level, changeable here at any time: it sets how much the result screen shows (level.js). */}
+        <div data-reveal style={{ '--i': 2 }} data-testid="history-level">
+          <LevelPick id="hist-level" label={fr ? 'Votre niveau' : 'Your level'} value={level} onChange={l => { if (writeLevel(l)) setLevel(l); }} fr={fr} />
+        </div>
         {problem && <p className="hist-error" role="alert">{problem}</p>}
         {sets && !sets.length && !problem && <div className="hist-empty" data-reveal style={{ '--i': 2 }}>
           <p>{fr ? 'Aucune série enregistrée pour l’instant.' : 'No set saved yet.'}</p>

@@ -3,6 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, loadSets, previousSet } from './sets';
+import { readLevel } from './level';
 import { liftDefinition } from '../../lib/counting/core';
 import './Report.css';
 
@@ -25,7 +26,8 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach
   const [partner, setPartner] = useState('');
-  const [level, setLevel] = useState(''); // '' | beginner | intermediate | expert
+  // '' | beginner | intermediate | expert, prefilled from the level stored on this phone (level.js).
+  const [level, setLevel] = useState(readLevel);
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState(kit ? 'ready' : 'preparing'); // ready | preparing | error
   const [note, setNote] = useState('');

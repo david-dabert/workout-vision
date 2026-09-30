@@ -114,3 +114,9 @@
 @media (max-height: 600px) {
   .wv-experience .bar .short-mark { bottom: calc(9px + 41px * var(--r, 1) + 4px); }
 }
+
+/* At 390x664 the numeral left "Oui, c'est juste" 19 px under the fold (harness levels.mjs, 30 September,
+   measured on the screen as it was): on screens under 700 px high it takes 26 % of the height, not 30 %. */
+@media (max-height: 700px) {
+  .wv-experience .result-screen .numeral { font-size: clamp(120px, min(56vw, 26svh), 260px); }
+}

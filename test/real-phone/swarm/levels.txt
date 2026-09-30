@@ -1,0 +1,57 @@
+PASS fr beginner 390x664: "Oui, c’est juste" fully in view (top 538, bottom 596 of 664)
+PASS fr beginner 390x664: no overlap, no side scroll
+PASS fr beginner 390x664: screen at level beginner
+PASS fr beginner 390x664: account and tip first, then the number, the question, the bars; notes open
+PASS fr beginner 375x548: no overlap, no side scroll
+PASS fr beginner 375x548: "Oui, c’est juste" in view and uncovered once scrolled to
+PASS fr intermediate 390x664: "Oui, c’est juste" fully in view (top 603, bottom 661 of 664)
+PASS fr intermediate 390x664: no overlap, no side scroll
+PASS fr intermediate 390x664: screen at level intermediate
+PASS fr intermediate 390x664: today's order, notes closed, no table
+PASS fr intermediate 375x548: no overlap, no side scroll
+PASS fr intermediate 375x548: "Oui, c’est juste" in view and uncovered once scrolled to
+PASS fr expert 390x664: "Oui, c’est juste" fully in view (top 584, bottom 642 of 664)
+PASS fr expert 390x664: no overlap, no side scroll
+PASS fr expert 390x664: screen at level expert
+PASS fr expert 390x664: speed "Vitesse concentrique : −20 % du début à la fin" under the bars, 8 rows under the question
+PASS fr expert 375x548: no overlap, no side scroll
+PASS fr expert 375x548: "Oui, c’est juste" in view and uncovered once scrolled to
+PASS fr unset 390x664: "Oui, c’est juste" fully in view (top 603, bottom 661 of 664)
+PASS fr unset 390x664: no overlap, no side scroll
+PASS fr unset 390x664: screen at level intermediate
+PASS fr unset 390x664: today's order, notes closed, no table
+PASS fr unset 375x548: no overlap, no side scroll
+PASS fr unset 375x548: "Oui, c’est juste" in view and uncovered once scrolled to
+PASS en beginner 390x664: "Yes, that’s right" fully in view (top 515, bottom 573 of 664)
+PASS en beginner 390x664: no overlap, no side scroll
+PASS en beginner 390x664: screen at level beginner
+PASS en beginner 390x664: account and tip first, then the number, the question, the bars; notes open
+PASS en beginner 375x548: no overlap, no side scroll
+PASS en beginner 375x548: "Yes, that’s right" in view and uncovered once scrolled to
+PASS en intermediate 390x664: "Yes, that’s right" fully in view (top 603, bottom 661 of 664)
+PASS en intermediate 390x664: no overlap, no side scroll
+PASS en intermediate 390x664: screen at level intermediate
+PASS en intermediate 390x664: today's order, notes closed, no table
+PASS en intermediate 375x548: no overlap, no side scroll
+PASS en intermediate 375x548: "Yes, that’s right" in view and uncovered once scrolled to
+PASS en expert 390x664: "Yes, that’s right" fully in view (top 584, bottom 642 of 664)
+PASS en expert 390x664: no overlap, no side scroll
+PASS en expert 390x664: screen at level expert
+PASS en expert 390x664: speed "Concentric speed: −20% from start to end" under the bars, 8 rows under the question
+PASS en expert 375x548: no overlap, no side scroll
+PASS en expert 375x548: "Yes, that’s right" in view and uncovered once scrolled to
+PASS en unset 390x664: "Yes, that’s right" fully in view (top 603, bottom 661 of 664)
+PASS en unset 390x664: no overlap, no side scroll
+PASS en unset 390x664: screen at level intermediate
+PASS en unset 390x664: today's order, notes closed, no table
+PASS en unset 375x548: no overlap, no side scroll
+PASS en unset 375x548: "Yes, that’s right" in view and uncovered once scrolled to
+PASS fr beginner, 4 account lines, 390x664: "Oui, c’est juste" bottom 624 of 664, no overlap
+PASS en beginner, 4 account lines, 390x664: "Yes, that’s right" bottom 602 of 664, no overlap
+PASS no level question before the save
+PASS level chosen after the save: stored expert; "C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans l’historique."
+PASS the question is not offered a second time
+PASS history: level shown Débutant, changed to intermediate
+PASS guide page: "Filmer cet exercice" in view (bottom 601 of 664)
+PASS guide page: "Filmer cet exercice" goes on with the exercise
+ALL PASS
