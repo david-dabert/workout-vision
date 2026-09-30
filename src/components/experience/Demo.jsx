@@ -48,7 +48,6 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
       </div>
       <p className="sr" role="status">{done ? c.done(result.count) : ''}</p>
       {done && <div className="demo-result appear" data-testid="demo-result">
-        <p className="demo-done">{c.done(result.count)}</p>
         <p className="eyebrow demo-times-label">{c.times}</p>
         <p className="demo-times mono">{result.reps.map(r => <span key={r.index}>{`${secs.format(r.endTime - r.startTime)} s`}</span>)}</p>
         <div className="actions demo-actions">
@@ -90,7 +89,11 @@ export default function Demo({ onClose, onStart }) {
       const r = Math.hypot((lm[11].x - lm[7].x) * box.w, (lm[11].y - lm[7].y) * box.h) * 0.45;
       ctx.lineWidth = 2 * dpr; ctx.strokeStyle = 'rgba(239, 232, 220, 0.85)';
       ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI * 2); ctx.stroke();
-      drawSkeleton(ctx, lm, box, sides, def, dpr);
+      // The far limbs faint, the near ones whole, so the figure reads as one body in profile, not a
+      // doubled wireframe (critic, 30 September). MediaPipe: left points odd, right even, from 11.
+      const nearLeft = sides.includes('left'), far = k => k >= 11 && (k % 2 === 1) !== nearLeft;
+      ctx.globalAlpha = 0.28; drawSkeleton(ctx, lm, box, [], null, dpr);
+      ctx.globalAlpha = 1; drawSkeleton(ctx, lm.map((p, k) => (far(k) ? { ...p, visibility: 0 } : p)), box, sides, def, dpr);
     }
     // The canvas is redrawn at its new size whenever the layout changes it (the result appearing
     // under the figure shrinks it), at the moment last drawn.

@@ -1,0 +1,8 @@
+Before (a4190aa):
+FAIL short-rep mark 34.7 px above its bar at 375x548
+FAIL gold outlines on the saved card after a stop: 3
+FAIL report compares with: "Série du 30 sept. : 8 rép., amplitude moy. 96°, durée moy. 3,1 s" (expected 29 sept., 6 rép.)
+After:
+PASS short-rep mark 4.0 px above its bar at 375x548
+PASS gold outlines on the saved card after a stop: 1
+PASS report compares with: "Série du 29 sept. : 6 rép., amplitude moy. 95°, durée moy. 3,0 s" (expected 29 sept., 6 rép.)

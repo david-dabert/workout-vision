@@ -144,6 +144,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
   const [rest] = useState(restClock), restBegun = useRef(false);
+  const savedId = useRef(null), restRef = useRef(null);
+  // Once saved, the rest is what the user looks at on the bench: it is brought into view (critic, 30 September).
+  useEffect(() => { if (step === 'saved') restRef.current?.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }, [step]); // the report compares this set with the one before it, never with itself
   const [shareNote, setShareNote] = useState('');
   const [sel, setSel] = useState(-1); // the rep whose details are shown, or none
   const saving = useRef(false);
@@ -245,7 +248,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      await saveWorkout({
+      savedId.current = await saveWorkout({
         exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
         date: new Date().toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
         // What the app counted stays apart from what the visitor kept.
@@ -382,12 +385,12 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           {/* The rest begins as the set is saved: its clock runs at once, above the report and the
               challenge, since the next thing done on the bench is to rest (design pass, 29 September).
               The result screen carries no opener: its numeral and account already say it; the report does. */}
-          <div className="rest-slot"><RestClock fr={fr} clock={rest} /></div>
-          <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN)}>
+          <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
+          <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN, savedId.current)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
           </button>
-          <button className="btn-line press" onClick={challenge}>
+          <button className="btn-line is-quiet press" onClick={challenge}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
             <span>{fr ? 'Défier un ami' : 'Challenge a friend'}</span>
           </button>
@@ -396,7 +399,6 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
-      {report && <ReportCount fr={fr} report={report} />}
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
       {/* A set the phone could not save is still done: the rest runs all the same (review, 29 September). */}
       {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} clock={rest} /></div>}
@@ -413,6 +415,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           </section>)}
         </details>
       </div>}
+      {/* The support links come after what the app measured (critic, 30 September). */}
+      {report && <ReportCount fr={fr} report={report} />}
     </div></section>
   </div>;
 }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
-import { knownSets, setTime } from './sets';
+import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
 import './Report.css';
 
@@ -20,7 +20,7 @@ export function warmReportPdf() {
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
-export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps }) {
+export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps, setId }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach
@@ -37,19 +37,21 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
 
   const liftName = exerciseName(lift, lang);
   const first = liftDefinition(lift)?.first || 'concentric';
-  // The previous saved set of the same lift, if any, for comparison.
-  const prevRef = useRef(undefined);
-  if (prevRef.current === undefined) {
-    const all = knownSets();
-    if (all) {
-      const prev = all.filter(w => (w.exercise || w.exerciseKey) === lift && w.repDetails?.length && w.repDetailsVersion >= 2)
-        .sort((a, b) => setTime(b) - setTime(a))[0];
-      prevRef.current = prev ? { count: prev.reps, reps: prev.repDetails, date: new Date(prev.createdAt ?? prev.date) } : null;
-    } else {
-      prevRef.current = null;
-    }
-  }
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: prevRef.current });
+  // The previous saved set of the same lift, if any, for comparison: before this one, never this one.
+  // Just after a save the sets are being read again; the comparison then follows once they are in,
+  // rather than being left out for good (review, 30 September).
+  const previousOf = all => {
+    const prev = previousSet(all, lift, { id: setId, at: when.getTime() });
+    return prev ? { count: prev.reps, reps: prev.repDetails, date: new Date(prev.createdAt ?? prev.date) } : null;
+  };
+  const [previous, setPrevious] = useState(() => { const all = knownSets(); return all ? previousOf(all) : undefined; });
+  useEffect(() => {
+    if (previous !== undefined) return undefined;
+    let live = true;
+    loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
+    return () => { live = false; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: previous ?? null });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -149,7 +151,6 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
       <article className="sheet" aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
         <div className="sh-top">{sheet.brand && <span>{sheet.brand}</span>}<span>{sheet.date}</span></div>
         <h3 className="sh-title">{sheet.title}</h3>
-        {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
         {sheet.people.length > 0 && <div className="sh-people">
           {sheet.people.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
@@ -157,6 +158,8 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
           <span className="sh-n">{sheet.count}</span>
           <span className="sh-nl"><b>{sheet.word}</b><span>{sheet.lift}</span></span>
         </div>
+        {/* The numeral leads; the sentence is its caption (critic, 30 September). */}
+        {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
         {sheet.corrected && <p className="sh-line">{sheet.corrected}</p>}
         {sheet.arm && <p className="sh-line">{sheet.arm}</p>}
         {sheet.rows.length > 0 && <table className="sh-table">

@@ -29,6 +29,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   const [landmarks, setLandmarks] = useState(null);
   const [frameSize, setFrameSize] = useState(null);
   const trueNRef = useRef(null);
+  const savedIdRef = useRef(null);
   const abort = useRef(null);
   const closeTimer = useRef(null);
   useEffect(() => () => { abort.current?.abort(); clearTimeout(closeTimer.current); }, []);
@@ -90,8 +91,9 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
     setOverlayLeaving(false);
     setOverlay(name);
   }
-  function openReport(savedN) {
+  function openReport(savedN, savedId) {
     trueNRef.current = savedN;
+    savedIdRef.current = savedId ?? null;
     openOverlay('report');
   }
 
@@ -106,7 +108,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
         {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} />}
       </ScreenFade>
-      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} leaving={overlayLeaving} onBack={closeOverlay} />}
+      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} leaving={overlayLeaving} onBack={closeOverlay} />}
       {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} leaving={overlayLeaving} onBack={closeOverlay} />}
     </>;
   }

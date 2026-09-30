@@ -150,13 +150,6 @@ export function reportPdf(sheet) {
   write(sheet.title, MARGIN, y, 'serif', 30, 1, COLOR.ink);
   y += 30 + GAP;
 
-  // The opener: sans 13 in ink, as .sh-opener, one sentence under the title.
-  if (sheet.opener) {
-    const block = lines(sheet.opener, 13, COLUMN);
-    block.lines.forEach(line => { drawLine(line, block.raster, MARGIN, y, 13, 1.5, COLOR.ink); y += 13 * 1.5; });
-    y += GAP;
-  }
-
   // What the user filled in about themselves, two to a row, in two columns 8 apart; nothing when
   // nothing was filled in (step 1: no coach is assumed).
   const colW = (COLUMN - 8) / 2;
@@ -181,6 +174,13 @@ export function reportPdf(sheet) {
   const lift = lines(sheet.lift, 12, COLUMN - numW - 12);
   lift.lines.forEach((line, k) => drawLine(line, lift.raster, wx, wordTop + 19.5 + k * 18, 12, 1.5, COLOR.ash));
   y = Math.max(top + above - bNum + 58 * 0.9, wordTop + 19.5 + 18 * lift.lines.length) + GAP;
+
+  // The opener: sans 13 in ink, as .sh-opener, the caption of the count under it (critic, 30 September).
+  if (sheet.opener) {
+    const block = lines(sheet.opener, 13, COLUMN);
+    block.lines.forEach(line => { drawLine(line, block.raster, MARGIN, y, 13, 1.5, COLOR.ink); y += 13 * 1.5; });
+    y += GAP;
+  }
 
   // What the app counted, when the visitor corrected it, and the arm it followed.
   const sheetLine = text => {

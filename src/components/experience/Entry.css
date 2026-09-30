@@ -112,7 +112,7 @@
 /* The way to the example (Demo.jsx): a quiet second action under Enter, a full 44 px to tap. */
 .wv-experience .entry-demo {
   pointer-events: auto; position: relative; z-index: 2; margin-top: 8px; min-height: 44px; padding: 0 18px;
-  font-size: 14px; color: var(--bone-2); text-decoration: underline; text-decoration-color: var(--hair-2); text-underline-offset: 5px;
+  font-size: 14px; color: var(--ash); text-decoration: none; /* the prototype's quiet action, no web link (critic, 30 September) */
   opacity: 0;
 }
 .wv-experience .entry.play .entry-demo { animation: fade 1.2s var(--ease) 3.1s forwards; }

@@ -126,3 +126,10 @@ describe('confirmed means seen by the user, whatever the source (review, 29 Sept
     expect(p[0].bests.reps).toEqual({ value: 9, id: 'a' });
   });
 });
+
+describe('the order of the progress block (critic, 30 September)', () => {
+  it('lists exercises with a trend first, a single set last, even when trained last', () => {
+    const p = exerciseProgress(newestFirst([set('a', 'squat', 8), set('b', 'squat', 9), set('c', 'lateral_raise', 12)]));
+    expect(p.map(e => e.key)).toEqual(['squat', 'lateral_raise']);
+  });
+});

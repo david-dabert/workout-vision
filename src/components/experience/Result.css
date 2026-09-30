@@ -97,10 +97,20 @@
 
 /* The rest clock: counted up from the saved set, readable at arm's length on the bench (RestClock.jsx). */
 .wv-experience .rest-slot { margin: 4px 0 6px; display: flex; flex-direction: column; }
-.wv-experience .rest-clock { padding: 16px 18px 18px; border-radius: 22px; border: 1px solid var(--hair); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+/* No frame around the time: one number, the loudest thing once the set is saved (critic, 30 September). */
+.wv-experience .rest-clock { padding: 6px 0 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .wv-experience .rest-label { color: var(--ash); }
-.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: clamp(56px, 18vw, 76px); line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
-.wv-experience .rest-stop { margin-top: 8px; }
+.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: clamp(72px, 22vw, 96px); line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .rest-stop { margin-top: 2px; }
 @media (max-height: 600px) {
-  .wv-experience .rest-time { font-size: 52px; }
+  .wv-experience .rest-time { font-size: 64px; }
+}
+/* The tier pill under the centred lift name (critic, 30 September). */
+.wv-experience .result-screen .tier { align-self: center; }
+/* One gold outline after the set (the report); the challenge is the same button, in a hairline and bone
+   (critic, 30 September). A ghost button would not size its icon. */
+.wv-experience .result-screen .btn-line.is-quiet { border-color: var(--hair-2); color: var(--bone-2); }
+/* On short screens the mark sits on the shorter bar; after the base rule, which it overrides (critic and review, 30 September). */
+@media (max-height: 600px) {
+  .wv-experience .bar .short-mark { bottom: calc(9px + 41px * var(--r, 1) + 4px); }
 }

@@ -31,6 +31,18 @@ export async function removeSet(id) {
 
 export const setTime = w => new Date(w.createdAt ?? w.date).getTime();
 
+/**
+ * The set a report compares with: the last saved set of the same lift strictly before this one, whose
+ * reps were measured with step 3c's boundaries; never the set itself (just saved, it is the newest)
+ * nor a later one (a set opened from the history). self: { id, at } of the set reported.
+ */
+export function previousSet(all, lift, self) {
+  const prev = (all || []).filter(w => (w.exercise || w.exerciseKey) === lift && w.id !== self.id && setTime(w) < self.at
+    && w.repDetails?.length && w.repDetailsVersion >= 2)
+    .sort((a, b) => setTime(b) - setTime(a))[0];
+  return prev ?? null;
+}
+
 // What the app itself counted: kept apart since this version, and derivable
 // from the counted reps (or the old app's own field) for sets saved before.
 export function countedBy(w) {

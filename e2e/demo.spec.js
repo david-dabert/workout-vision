@@ -41,7 +41,10 @@ test('the example plays a set, ticking the count rep by rep, and ends on the cor
   }, { timeout: 30000, intervals: [100] }).toBe(5);
   expect(seen[0]).toBe(0);
   for (let i = 1; i < seen.length; i++) expect(seen[i] - seen[i - 1]).toBe(1);
-  await expect(page.getByTestId('demo-result')).toContainText(WORDS.fr.done);
+  // The end is said once on screen, by the numeral (critic, 30 September), and in words to screen readers.
+  await expect(page.getByTestId('demo-result')).toBeVisible();
+  await expect(page.locator('.demo-screen [role="status"]')).toHaveText(WORDS.fr.done);
+  await expect(page.locator('.demo-numeral')).toHaveText('5');
   await page.waitForTimeout(1000);
   expect(await faults(page)).toEqual([]);
   // Close: back to the entry. Then "À vous" leads on to the choice of lift.
@@ -63,7 +66,8 @@ for (const size of [{ width: 390, height: 664 }, { width: 390, height: 745 }, { 
       expect(await faults(page), 'entry').toEqual([]);
       await page.getByRole('button', { name: WORDS[lang].open }).click();
       // No playback: the count and the result are there at once.
-      await expect(page.getByTestId('demo-result')).toContainText(WORDS[lang].done, { timeout: 5000 });
+      await expect(page.getByTestId('demo-result')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('.demo-screen [role="status"]')).toHaveText(WORDS[lang].done);
       await expect(page.locator('.demo-count')).toHaveAttribute('data-count', '5');
       await expect(page.getByRole('button', { name: /Revoir|Watch again/ })).toHaveCount(0);
       expect(await faults(page), 'example').toEqual([]);

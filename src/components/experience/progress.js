@@ -53,7 +53,7 @@ function bestsOf(sets) {
 }
 
 /**
- * Per exercise, the exercise trained last first: { key, sets (oldest first), first, trend, bests }.
+ * Per exercise, those with a trend first, then by the exercise trained last: { key, sets (oldest first), first, trend, bests }.
  * first: the exercise has a single set, and then there is no trend and no best (bests is null).
  * trend: the reps of the last TREND_SETS sets, oldest first.
  * bests: { reps: {value, id} or null, load: {value, reps, id} or null, atLoad: [{load, reps, id}] }.
@@ -76,7 +76,8 @@ export function exerciseProgress(sets) {
       bests: first ? null : bestsOf(ordered),
     });
   }
-  return out.sort((a, b) => setTime(b.sets.at(-1)) - setTime(a.sets.at(-1)));
+  // An exercise with a single set has nothing to show yet: it comes after those with a trend (critic, 30 September).
+  return out.sort((a, b) => (a.first - b.first) || (setTime(b.sets.at(-1)) - setTime(a.sets.at(-1))));
 }
 
 /** The sets that hold a record, by id: the kinds they hold, among 'reps', 'load' and 'atLoad'. */
