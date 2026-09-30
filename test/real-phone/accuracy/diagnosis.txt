@@ -1,0 +1,70 @@
+OFF -2  sets-29sep/bench_press_7_side_24cc4f0b.json.gz  lift bench_press (rest high, eccentric first)  label 7  count 5  arm right
+   thresholds low 96.2 high 126.3; 330 samples over 22.0 s; excursions 16 (working 6)
+   counted: 0.2-4.4 12.1-13.6 14.1-15.3 17.5-18.8 19.2-20.4
+   STARTS INSIDE A REP: 0.2-4.2 s
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 21.6-22.0 s
+   SHALLOW (left rest, never reached working threshold): 7.6-8.5 s, 8.9-9.6 s, 10.0-10.0 s, 10.2-11.7 s, 12.0-12.1 s, 13.8-13.8 s, 15.5-15.6 s, 15.8-17.1 s, 18.9-19.0 s, 20.7-21.4 s
+   NOTE: 4 closed working excursions vs 5 counted (duration or ROM rule dropped some, or two reps merged)
+OFF -1  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  lift bicep_curl (rest high, concentric first)  label 5  count 4  arm left
+   thresholds low 82.6 high 147.2; 168 samples over 11.1 s; excursions 5 (working 5)
+   counted: 0.1-1.4 2.7-4.1 5.0-6.5 7.3-8.8
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 9.7-11.1 s
+EXACT  sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  lift hip_thrust (rest low, concentric first)  label 6  count 6  arm right
+   thresholds low 113.6 high 140.0; 221 samples over 14.7 s; excursions 7 (working 7)
+   counted: 0.0-1.2 1.9-3.2 3.9-5.2 6.0-7.3 8.0-9.2 9.8-11.1
+   STARTS INSIDE A REP: 0.0-0.9 s
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 11.7-14.7 s
+   NOTE: 5 closed working excursions vs 6 counted (duration or ROM rule dropped some, or two reps merged)
+OFF -1  sets-29sep/lateral_raise_9_front_43e71b40.json.gz  lift lateral_raise (rest low, concentric first)  label 9  count 8  arm right
+   thresholds low 35.6 high 89.6; 460 samples over 30.6 s; excursions 9 (working 8)
+   counted: 2.6-4.7 6.1-8.5 9.7-11.7 12.7-14.9 15.9-18.1 19.1-21.3 22.4-24.9 25.9-28.5
+   SHALLOW (left rest, never reached working threshold): 29.8-30.6 s
+OFF -1  sets-29sep/leg_press_13_side_1ee0ae47.json.gz  lift leg_press (rest high, eccentric first)  label 13  count 12  arm left
+   thresholds low 99.5 high 145.4; 445 samples over 29.6 s; excursions 14 (working 14)
+   counted: 1.5-4.1 4.8-6.9 7.7-10.3 10.9-13.2 13.7-15.5 15.9-17.7 17.9-19.7 19.9-21.6 21.9-23.4 23.7-25.3 25.6-26.9 27.3-28.7
+   STARTS INSIDE A REP: 0.0-0.4 s
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 29.1-29.6 s
+OFF +1  sets-29sep/overhead_press_4_front_cefdaa82.json.gz  lift overhead_press (rest high, eccentric first)  label 4  count 5  arm right
+   thresholds low 93.5 high 141.5; 254 samples over 16.9 s; excursions 6 (working 5)
+   counted: 0.1-2.9 3.9-6.1 7.3-9.7 10.7-13.5 14.4-16.6
+   STARTS INSIDE A REP: 0.0-2.8 s
+   SHALLOW (left rest, never reached working threshold): 14.3-14.3 s
+   NOTE: 4 closed working excursions vs 5 counted (duration or ROM rule dropped some, or two reps merged)
+EXACT  sets-29sep/overhead_press_4_front_f75638cc.json.gz  lift overhead_press (rest high, eccentric first)  label 4  count 4  arm right
+   thresholds low 106.3 high 143.5; 278 samples over 18.5 s; excursions 6 (working 5)
+   counted: 1.8-4.8 5.8-8.5 9.6-12.1 13.0-15.8
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 16.8-18.5 s
+   SHALLOW (left rest, never reached working threshold): 0.0-0.3 s
+EXACT  sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  lift romanian_deadlift (rest high, eccentric first)  label 8  count 8  arm right
+   thresholds low 85.2 high 146.1; 379 samples over 25.2 s; excursions 8 (working 8)
+   counted: 0.0-2.3 3.3-5.9 6.7-8.9 10.0-12.1 13.0-15.2 16.0-18.4 19.2-21.5 22.4-24.6
+   STARTS INSIDE A REP: 0.0-2.2 s
+   NOTE: 7 closed working excursions vs 8 counted (duration or ROM rule dropped some, or two reps merged)
+EXACT  sets-29sep/squat_7_side_21fd7ccf.json.gz  lift squat (rest high, eccentric first)  label 7  count 7  arm right
+   thresholds low 90.9 high 152.9; 403 samples over 26.8 s; excursions 7 (working 7)
+   counted: 0.6-3.2 4.5-6.7 8.1-10.2 11.3-13.6 14.8-17.1 18.7-21.0 22.6-25.0
+OFF -4  landmarks/bench_press_7_angle_mufhcy60.json.gz  lift bench_press (rest high, eccentric first)  label 7  count 3  arm right
+   thresholds low 97.7 high 140.8; 331 samples over 22.0 s; excursions 9 (working 4)
+   counted: 2.6-8.9 16.1-18.1 18.4-20.2
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 21.1-22.0 s
+   SHALLOW (left rest, never reached working threshold): 0.1-0.2 s, 2.7-2.9 s, 11.1-14.0 s, 14.8-16.1 s, 20.3-20.4 s
+EXACT  landmarks/bicep_curl_7_side_mufhf3wy.json.gz  lift bicep_curl (rest high, concentric first)  label 7  count 7  arm left
+   thresholds low 96.2 high 153.7; 341 samples over 22.7 s; excursions 8 (working 7)
+   counted: 0.0-1.1 3.5-5.0 6.9-8.4 10.1-11.5 13.3-14.9 16.2-17.9 19.4-21.1
+   STARTS INSIDE A REP: 0.0-1.1 s
+   SHALLOW (left rest, never reached working threshold): 21.7-21.7 s
+   NOTE: 6 closed working excursions vs 7 counted (duration or ROM rule dropped some, or two reps merged)
+EXACT  landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  lift lat_pulldown (rest high, concentric first)  label 10  count 10  arm right
+   thresholds low 112.3 high 141.6; 609 samples over 40.6 s; excursions 11 (working 10)
+   counted: 1.9-4.3 5.5-7.6 8.6-10.9 11.9-14.4 15.5-17.7 18.9-21.2 22.5-24.8 26.1-28.3 30.0-32.6 34.9-37.5
+   SHALLOW (left rest, never reached working threshold): 38.6-40.6 s
+EXACT  landmarks/lateral_raise_10_front_mufhhbun.json.gz  lift lateral_raise (rest low, concentric first)  label 10  count 10  arm right
+   thresholds low 34.0 high 82.6; 439 samples over 29.2 s; excursions 10 (working 10)
+   counted: 1.1-3.5 4.7-6.4 7.2-9.1 10.2-11.8 12.8-14.4 15.4-16.9 17.9-19.4 20.5-22.2 23.2-24.6 25.7-27.4
+OFF -1  landmarks/overhead_press_10_front_mufhjkku.json.gz  lift overhead_press (rest high, eccentric first)  label 10  count 9  arm left
+   thresholds low 109.9 high 142.4; 620 samples over 41.3 s; excursions 17 (working 10)
+   counted: 0.1-5.9 8.3-11.2 12.2-14.7 15.9-18.7 19.7-22.3 23.2-25.3 26.2-28.5 29.4-31.5 36.3-38.3
+   STARTS INSIDE A REP: 0.0-5.9 s
+   ENDS INSIDE A REP THAT REACHED ITS WORKING END: 39.1-41.3 s
+   SHALLOW (left rest, never reached working threshold): 6.0-6.5 s, 12.0-12.0 s, 19.5-19.6 s, 28.4-28.4 s, 32.5-32.6 s, 32.7-33.8 s, 33.9-35.2 s
+   NOTE: 8 closed working excursions vs 9 counted (duration or ROM rule dropped some, or two reps merged)

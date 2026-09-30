@@ -85,7 +85,8 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
       <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
         <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.')}</span></li>
-        <li><span className="n">3</span><span>{fr ? 'Une série, puis arrêtez la vidéo.' : 'One set, then stop recording.'}</span></li>
+        {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September). */}
+        <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
       </ol>
       <div className="actions" data-reveal style={{ '--i': 5 }}>
         <label ref={action} className="btn-primary tactile" role="button" tabIndex="0">

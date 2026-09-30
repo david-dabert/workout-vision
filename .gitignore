@@ -65,8 +65,9 @@ test/real-phone/landmarks/*.json
 # App-served guide artwork generated from the pinned package
 public/guide/
 
-# Exam sets: opened by the exam script only (PLAN.md)
-test/real-phone/exam/
+# Exam sets: opened by the exam script only (PLAN.md). The script and its protocol are tracked.
+test/real-phone/exam/*/
+test/real-phone/exam/**/*.json.gz
 
 # Shots and results.json written by a local run of the tour in CI (test/real-phone/tour-ci/tour.mjs).
 test/real-phone/tour-ci/*/

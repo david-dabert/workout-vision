@@ -28,7 +28,7 @@ const BASE = process.env.VITE_BASE || '/workout-vision/';
 
 // Read all built assets
 const assetFiles = readdirSync(ASSETS_DIR)
-  .filter(f => /\.(js|css)$/.test(f) && !f.startsWith('collect-'))
+  .filter(f => /\.(js|css)$/.test(f) && !/^collect/i.test(f)) // every collector chunk: collect-, collectBatch-, collectSet- (review, 30 September)
   .map(f => `${BASE}assets/${f}`);
 
 // Also include boot.js and cache-bust.js if present
