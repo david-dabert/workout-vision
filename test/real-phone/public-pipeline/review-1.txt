@@ -1,0 +1,42 @@
+I found 5 defects. The worst one breaks the goal's central promise: MM-Fit is split set by set rather than video by video, so all 21 workout videos end up with sets in both halves.
+
+I read everything with `git diff`. Nothing is staged. `package.json` and `test/real-phone/accuracy/sets.ts` are modified; `scripts/public/*`, `scripts/__tests__/public.test.js` and five new files under `test/real-phone/accuracy/` are untracked. I read all of them in full.
+
+**1. MM-Fit split per set, not per video.**
+- Where: `/home/user/workout-vision/scripts/public/mmfit.mjs:32` builds the id as `${workout}-${activity}-${start}-${end}`. `run-public.mjs:63` puts each set in a half with `splitOf(set.id)` (`split.mjs:8`). All sets of one workout come from one video, `${workout}_rgb.mp4`.
+- Scenario, checked: I hashed the 616 existing ids in `test/real-phone/mmfit/results.json`. Every workout, w00 to w20, has sets in both halves. The same person doing the same lift in the same session and the same frame is split across them: `w00-dumbbell_shoulder_press-17570-18127` goes to build, while `-15034-15545` and `-20482-20908` go to held-out.
+- Consequence: the held-out score is inflated by leakage from the build half, and the claim in `split.mjs` ("Each public video is put once") is false for MM-Fit.
+- Smallest failing test: in `scripts/__tests__/public.test.js`, write labels `4040,4500,10,squats`, `8770,9197,10,pushups`, `13620,14000,10,pushups` for `w00`. Then assert `new Set(sets.map(s => splitOf(s.id))).size === 1`. It fails today: the first two land in build, the third in held-out. The fix is to split by `workout` (the video), not by set id.
+
+**2. The MM-Fit visibility rule in PLAN.md is ignored.**
+- Where: PLAN.md line 30 admits an MM-Fit set as build data only when wrists and ankles (15, 16, 27, 28) are visible in at least 90% of samples. `run-public.mjs:79` measures `visibleShare` on different landmarks (11, 12, 23, 24). Nothing uses it: `publicSets` (`sets.ts:56-57`), `public-scoreboard.test.ts` and `public-holdout.test.ts` score every set.
+- Scenario: in `results.json`, 494 sets name a lift but only 237 are admitted. For example `w00-pushups-8770-9197` (visibility 0, not admitted) lands in build and now counts towards the public gate. The gate therefore rests on sets PLAN.md excludes from build use.
+- Smallest failing test: feed `publicSets` a build file with `visibleShare: 0` and expect it to be kept out of the gate's sets. Today it is included.
+
+**3. The held-out half sits in the tracked tree, guarded only by an environment variable.**
+- Where: `run-public.mjs:23,64` writes `test/real-phone/public/<ds>/holdout/*.json.gz`. `.gitignore` covers `test/real-phone/exam/` but has no entry for this folder.
+- Consequence: any `git add` commits the held-out landmarks and labels. After that, any script or agent can gunzip them directly, and "read only by its own run" rests only on `sets.ts:43` (`HOLDOUT=1`), which any caller can set.
+- Smallest failing test: `git check-ignore test/real-phone/public/repcount/holdout/x.json.gz` exits 1 today; it should exit 0.
+
+**4. Sets are dropped without a trace, despite the header of `sets.ts` ("A set is never dropped quietly").**
+- Where: `fetch-and-run.sh:45,49` runs `run-public.mjs ... || true`. A set whose transcode or extraction fails (`run-public.mjs:91-93`) never gets a file. The scoreboard sees only files, so it is neither `missing` nor `unreadable`. `manifest.mjs:12` sends left-out sets to stderr only.
+- Scenario: a RepCount video that Chromium cannot decode, or that exceeds the 600 s ffmpeg timeout. The same happens on an iPhone-style clip with mismatched count and marks. The set vanishes and the run then rewrites the baseline with `SCOREBOARD_UPDATE=1` (`fetch-and-run.sh:51`).
+- There is also no timeout on `page.evaluate` (`run-public.mjs:76`), so one decode that never finishes stalls a worker forever.
+- Smallest failing test: run `run-public.mjs` on a manifest with one non-existent video path, then run the scoreboard. It passes today and should fail on a manifest set with no file.
+
+**5. "Through the app's own extraction" is not what runs.**
+- Where: `run-public.mjs:42-46` first re-encodes every video to VP9 with `-deadline realtime -cpu-used 8 -crf 32`, and pre-scales it with ffmpeg to 640 px. The harness then receives an already reduced, lossy clip. The app downscales the original on its own canvas.
+- The earlier MM-Fit pipeline (`scripts/run-mmfit.mjs`) used crf 18 and checked the frame count (`nb_frames === end - start`) and the pixel format. Neither check is here.
+- Consequence: the public figures come from lower-quality input than the app sees and cannot be compared with `test/real-phone/mmfit/results.json`. This matters because PLAN.md lines 230 and 236 quote MM-Fit figures from that file.
+- A related false comment: `mmfit.mjs:5` says the labels are "read as scripts/run-mmfit.mjs reads them", but `pushups` now maps to `push_up`, where `run-mmfit.mjs` maps it to `bench_press`.
+- Smallest failing test: after transcoding one MM-Fit set, assert with ffprobe that its frame count equals `end - start`. Nothing checks this today.
+
+**Also checked, with no defect found:**
+- **Timing:** `countReps` reps and harness timestamps are both in seconds, and the rep marks are shifted by the trim start.
+- **Matching (`match-reps.ts`):** one-to-one matching and first, last and middle misses behave as described.
+- **Scoreboard gate:** the exact-count and off-by-3 comparisons use baseline sets only. A newly refused set counts as off by 3 or more. Missing baseline sets fail the gate.
+- **David's gate:** `scoreboard.test.ts` and `labelledSets` are unchanged, and "public" does not match the `^sets-` folder filter.
+- **Counting core:** no file under `src/` changed.
+- **Language:** no UI strings were added, so French/English and the em dash rule do not apply.
+- **Privacy:** no video is written to the repository, the temporary clip is removed in `finally`, and `*.webm` and `*.mp4` are gitignored. The new hosts (drive.google.com, zenodo.org) are reached only by the local fetch script, never by the app.
+- **Tests:** the new tests cover parsing, the split's determinism and balance, and matching. None covers the per-video split, the holdout guard, the visibility rule or dropped sets, so reverting fixes for 1 to 4 would not make any of them fail.
