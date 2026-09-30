@@ -1,0 +1,40 @@
+I found four defects. The change is three untracked files and nothing is staged: test/real-phone/accuracy/public-confidence.test.ts, public-confidence.txt and references.md. No app code or string changed and the counting code is untouched, so the iPhone, input, language and privacy checks do not apply. No new host and no video or video frame is added.
+
+To measure the defects I ran a copy of the test's loop from a separate folder in my scratchpad (it did not write to the repo): 0 unreadable and 0 missing sets; 392 counted sets for countix and 378 for countix-whole, which matches the committed table. I edited nothing and staged nothing.
+
+**D1. Groups 3 and 4 are split by file name, not by confidence, so the committed table shows a trend that is not in the data** (public-confidence.test.ts lines 24 to 28).
+- The core's confidence is only the share of samples with a pose (src/lib/counting/core.ts:251-253). For countix, 189 of the 392 counted sets are exactly 1.0; for countix-whole, 138 of 378.
+- So groups 3 and 4 (98 + 98 sets) are nearly all tied at 1.0. The sort is stable, so which tied set lands in group 3 or group 4 depends only on the file-name order from publicSets.
+- The header's claim "in four equal groups by the core's confidence" is therefore false for those groups, and the readings "0.99 to 1.00" against "1.00 to 1.00" separate nothing.
+- Measured: reversing the order of tied sets moves countix "Within one" for groups 3 and 4 from 77 / 84 to 80 / 81, and countix-whole from 66 / 79 to 73 / 72. Exact moves from 39 / 41 to 39 / 42 and from 33 / 39 to 36 / 36. The rise from group 3 to group 4 in the committed txt is an artifact of file order.
+- Smallest failing test: build the rows, sort once as is and once with the input reversed before the sort, cut both into quarters, and expect the per-group Exact and Within-one counts to be equal. It fails today on countix groups 3 and 4 (77 vs 80, 84 vs 81). Groups should be cut at confidence values (for example "1.0" against "below 1.0"), never by position inside a tie.
+
+**D2. Group 1 mixes in 10 sets that are not low-visibility sets** (public-confidence.test.ts lines 15 to 18; core.ts:228-238).
+- When the angle range is below MIN_ROM_DEGREES, or fewer than 3 angles are valid, the core returns `count: 0, confidence: 0`. summarizeCount does not refuse these sets, because refusal depends only on visible angles.
+- Measured: 10 countix sets and 10 countix-whole sets have confidence exactly 0. All counted 0 and none is exact.
+- For every other counted set, confidence is at least 0.5, since refusal is exactly "visible share under half" (0 sets fall between 0 and 0.5). The committed "0.00 to 0.83" lower bound comes only from these ROM failures, and they pull down group 1's Exact and Within one.
+- Smallest failing test: assert that every counted set with `r.confidence === 0` has `r.reps.length > 0` or a visible share under 0.5. It fails on 20 sets today.
+
+**D3. references.md misstates what RepNet published** (references.md line 3).
+- RepNet's Countix MAE (0.3641) is normalised by the true count (|predicted - true| / true). It is not in reps, but the note prints it next to our rep-count table with no qualifier.
+- RepNet reports off-by-one accuracy (OBOA) 0.6966. "Off-by-one error 0.3034" is our own subtraction (1 - 0.6966), presented as the paper's figure.
+- A reader would take the MAE as 0.36 reps. Fix the wording to "normalised MAE 0.3641, OBO accuracy 0.6966 (so off by more than one rep on about 30%)".
+- I recalled these figures and did not fetch the paper (arxiv 2006.15418). Check them against its Countix results table before committing.
+
+**D4. The test cannot fail, and it drops sets without saying so** (public-confidence.test.ts lines 12 to 34).
+- It has no `expect`, so reverting or breaking anything still passes. It passes even when publicSets returns nothing, and then writes a table with only the header.
+- It ignores `unreadable`, `missing` and `notScored` from publicSets. sets.ts:1-4 says "A set is never dropped quietly", and public-scoreboard.test.ts:46-48 fails on them.
+- It also leaves out how many sets were refused (55 countix, 69 countix-whole, from public-scoreboard.txt). The header's R8 question needs that number, because a refusal is the core saying it does not know.
+- Smallest failing test: point PUBLIC at a folder with one corrupt .json.gz. Today the test passes and the file is not mentioned; add `expect(unreadable).toEqual([]); expect(missing).toEqual([])` and print the refused count per dataset.
+
+**Minor: countix-whole confidence covers the wrong span** (test line 18).
+- Confidence is computed over the whole clip, while the error is scored only inside the labelled window through countInWindow.
+- So for that dataset the diagnostic compares visibility over the whole clip with an error measured inside the window. The header does not say so.
+
+**Also checked, no defect:**
+- The quarter slicing adds up (98 x 4; 94 + 95 + 94 + 95).
+- `[...by].sort()` orders countix before countix-whole.
+- The build half only: holdout is guarded by HOLDOUT.
+- The claim "train and validation splits" matches scripts/public/manifest.mjs.
+- No em dash.
+- No counting change: src is untouched and git diff is empty.
