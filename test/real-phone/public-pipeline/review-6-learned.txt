@@ -1,0 +1,38 @@
+I found four defects and one minor inaccuracy. Nothing was edited in the repo. The only runs I made used copies of the scripts in the scratchpad, reading the repo's data through symlinks.
+
+**Defect 1 (blocking): running the scripts as documented rebuilds the rejected model, not the one being committed.**
+- File: `/home/user/workout-vision/scripts/ml/train.py:191`:
+  `if aug and pool is not None and os.environ.get('LENGTHEN', '1') == '1':`
+- Lengthening is on unless you turn it off. The docstring (lines 85-86) says `python3 scripts/ml/train.py fit` writes `learned-weights.json`, and never mentions `LENGTHEN`.
+- I ran `fit` from a scratch copy, both ways, with the same seed:
+  - `LENGTHEN=0`: "David: learned exact 8/14, within one 10". The weights are byte-identical to the committed `/home/user/workout-vision/src/lib/counting/learned-weights.json` (checked with `cmp`).
+  - Default setting: "David: learned exact 2/14, within one 8", identical to `learned-david-lengthen.txt`, the variant the change calls "measured and not kept". Its `learned-parity.json` differs from the committed one.
+- **Failing scenario:** anyone who follows the docstring and runs `fit` silently overwrites the committed weights, `learned-david.txt` and `learned-parity.json` with the rejected model. The parity test still passes, because it is regenerated from those same weights.
+- The same applies to `cv`. The committed `learned-cv.txt` and `learned-cv.json` (229/447 exact, 384 within one; I recomputed this from the json) come from `LENGTHEN=0`. Running `cv` as documented gives the 217/398 run instead. None of the evidence files records which setting produced it.
+- **Smallest failing check:** from a clean copy, run `python3 scripts/ml/train.py fit`, then `cmp` the output against the committed `learned-weights.json`. It differs today.
+
+**Defect 2: a measured number is claimed that no file shows.**
+- File: `/home/user/workout-vision/src/lib/counting/learned.ts:7-8` says the model was "measured by cross-validation, the held-out half and David's sets".
+- Nothing ever runs the learned counter on `test/real-phone/public/countix/holdout`: no script reads it and no `learned-holdout*` file exists. The only evidence is CV on the countix-whole build half, plus David's 14 sets.
+- **Check that fails today:** search for "holdout" in `scripts/ml` and `test/real-phone/accuracy/learned-*`. There are zero hits, which contradicts the comment.
+
+**Defect 3: the docstring points to a parity file that does not exist.**
+- File: `/home/user/workout-vision/scripts/ml/data.py:8` says "features.json pins both to the same numbers".
+- No `features.json` exists anywhere, and no test compares features. `learned.test.ts` compares only the final summed counts, one per set, on David's 14 sets, against `learned-parity.json`. A feature mismatch that happened to cancel out in the sum would not be caught.
+- **Smallest failing test:** assert that the `features.json` the docstring names exists. It fails today.
+
+**Defect 4: a compiled Python file would be committed.**
+- `/home/user/workout-vision/scripts/ml/__pycache__/data.cpython-311.pyc` is untracked and not ignored (`git check-ignore` prints nothing). `git add scripts/ml` would commit it.
+
+**Minor inaccuracy: the 15 samples per second claim.**
+- File: `/home/user/workout-vision/scripts/ml/data.py:4` says the features are sampled at "15 per second, the app's rate".
+- About 100 of the 447 training sets are not at 15 Hz: 50 at 12.5 Hz, 30 at 12 Hz, and some at 8, 10 and 20 Hz. David's sets are all 15 Hz. The time-stretch in training partly covers this, but the sentence is not true of the training data.
+
+What I checked and found sound:
+- **Held-out half never trained on:** `data.load('countix-whole')` reads only `build/`. Its 447 files share no video IDs with `countix/holdout` (0 of 443).
+- **David's sets never trained on:** they are loaded only after training, in `fit`. In CV, the pool of sets used for lengthening is the training folds only. Folds are split by video, and `rsplit('_', 2)` handles video IDs that contain '_'.
+- **Choice of variant:** lengthening was dropped after being compared on David's sets, but CV alone (229 vs 217) already favoured dropping it, so no test data leaked into the choice.
+- **Feature and network parity, Python vs TypeScript:** the joint set, filling of frames with no pose (1 leading null and up to 151 null frames among David's sets, so that path is exercised), torso scaling, population std + 1e-3, the mask channel, SAME padding with dilation, tanh-GELU matching jax's default, and softplus all match. `npx vitest run src/lib/counting/__tests__/learned.test.ts`: 14 passed, within 5e-4 of the sums the training wrote.
+- **Numbers in the files:** `learned-david.txt` agrees with `learned-parity.json`. For the CV comparison, the 447 baseline counts all exist, and the core is scored inside the same labelled window (`countInWindow` in `public-scoreboard.test.ts`), so the comparison is fair.
+- **Not wired into the app:** `learned.ts` and the weights are imported only by the test. So there is no UI string, translation, iPhone, timing or privacy surface, and no new host. No video or frame was added, only landmark JSON that was already in the repo.
+- **Labels:** David's counts come from `count` in the file or from the filename, and they agree with `sets-29sep/counts.txt`. No label was modified.
