@@ -1,0 +1,21 @@
+Count reports on GitHub (david-dabert/workout-vision issues), read 2026-09-30: the app's count and the user's own, no landmarks attached.
+
+| Issue | Exercise | App | User | Off |
+|---:|---|---:|---:|---:|
+| #23 | bench_press | 4 | 7 | -3 |
+| #24 | machine_chest_press | 9 | 8 | +1 |
+| #25 | machine_chest_press | 1 | 6 | -5 |
+| #26 | push_up | 7 | 34 | -27 |
+| #27 | ez_bar_curl | 10 | 10 | +0 |
+| #28 | squat | 7 | 7 | +0 |
+| #29 | hip_thrust | 6 | 6 | +0 |
+| #30 | assisted_pull_up | 10 | 10 | +0 |
+| #31 | machine_shoulder_press | 11 | 11 | +0 |
+| #32 | barbell_glute_bridge | 6 | 6 | +0 |
+| #33 | assisted_chin_up | 10 | 10 | +0 |
+| #38 | lateral_raise | 8 | 8 | +0 |
+| #39 | bicep_curl | 4 | 5 | -1 |
+| #40 | bicep_curl | 11 | 9 | +2 |
+| #41 | bodyweight_squat | 9 | 9 | +0 |
+
+9 of 15 exact.
