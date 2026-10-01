@@ -15,3 +15,22 @@ several videos a week, and a coach turns them into feedback.
   people and coaches who use it.
 
 Before any code: David shows the one-line report to Luc and to coaches he knows, with this idea (David, 29 September).
+
+## 1 October 2026: design review of the live app (Astra, relayed by David), proposals only
+
+Checked against the code on main (84e020a) before entry. These are proposals, not accepted requirements; each waits until David opens it. Proposed wording is editorial judgement and needs David's approval (R10). The opening line ("Votre corps est un temple") is David's brand decision.
+
+- Result: "Oui, c'est juste" also saves; "Non" opens the correction. Proposed: "Confirmer et enregistrer" and "Corriger".
+- Result: saving starts the rest clock and scrolls to it, also for a video picked from the library (Result.jsx, doSave and the step effect). Proposed: a rest clock started by the user, no automatic scroll.
+- Result, saved: the report and "Défier un ami" are more prominent than "Nouvelle série". Proposed: "Nouvelle série" first; the challenge off this screen.
+- Result: the count rises before the question can be answered. Proposed: the final count and the actions at once.
+- Correction: only a stepper (7 to 34 takes 27 taps). Proposed: direct entry beside it, and "Je ne suis pas sûr" without a forced label.
+- Refused set: no manual route to keep a completed set. Proposed: replay and an optional count entered by hand.
+- Exercise choice: search sits below the carousel. Proposed: search at the top, recent exercises under it, one catalogue.
+- Filming screen: at 390 x 664 px, "Choisir une vidéo" falls below the first screen. Proposed: both actions in view; the full guide on demand for returning users.
+- Rep marks: narrow targets for a thumb. Proposed: "Répétition 3 sur 12" with large previous and next controls.
+- Report: the form comes before the preview; a single set is called "Rapport de séance". Proposed: preview first, options under "Personnaliser", "Bilan de la série".
+- Level question after saving. Proposed: an optional "Afficher les détails" instead.
+- First visit: the Enter button appears after 2.9 s (Entry.css), skippable by a tap; returning users never see it. A design choice, not a defect.
+- Accessibility to test on the iPhone: contrast in bright light, text at 200 %, VoiceOver, small uppercase metadata.
+- Not entered as defects: the report's zero peak and mean speeds and "Durée : 0,0 s" seen under Astra's injected test data, which may explain them.

@@ -16,6 +16,7 @@ import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
+import { MEASURES_SHOWN } from './measures';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel } from './lift-meta';
@@ -180,20 +181,26 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
   // Each rep's mark is as tall as its range, as in the prototype; touching the marks
   // shows the nearest rep's details. A rep the recording cut shows its range only.
+  // Without validated measures (measures.js) every mark has one height, and a rep's details are its
+  // number alone, with "partly filmed" where the recording cut it.
   const reps = result.reps || [];
   const maxRom = Math.max(1, ...reps.map(r => r.romDegrees || 0));
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
+  const corrected = step === 'saved' && trueN !== count;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
   let detail = '', detailHead = '';
   if (sel >= 0 && reps[sel]) {
     const r = reps[sel];
     detailHead = `${fr ? 'Rép.' : 'Rep'} ${sel + 1} · `;
-    detail = r.clipped
+    // After a correction the marks are the app's, not the saved set's reps: they are named so (review of 1 October).
+    const word = corrected ? (fr ? 'Marque de l’app' : 'App mark') : (fr ? 'Rép.' : 'Rep');
+    if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word} ${sel + 1}${r.clipped ? `${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}` : ''}`; }
+    else detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
-  } else if ((asked || step !== 'ask') && whole.length) {
+  } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
     detail = fr ? `Amplitude moyenne ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average range ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
@@ -209,7 +216,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
   const [view] = useState(() => levelView(readLevel()));
-  const perRep = view.perRep ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: speedChangeLine(reps, fr) } : null;
+  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: speedChangeLine(reps, fr) } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
@@ -366,19 +373,24 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       </section>)}
     </details>
   </>;
-  const one = shown <= 1;
+  // Once saved, the numeral is the count saved: the user's, when they corrected it; the app's stays
+  // beside it as "Compté par l'app" (review of 1 October). Before, it is the app's count rising.
+  const big = step === 'saved' ? trueN : shown;
+  const one = big <= 1;
   const measured = count > 0 && asked;
   // The level chosen before this set sets the screen; one chosen on it applies from the next set.
   const blocks = {
     count: <div key="count" className="res-count">
-      <span key={shown} className="numeral tick" aria-hidden="true">{shown}</span>
-      <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (shown === 1 ? 'Rep' : 'Reps')}</p>
-      <p className="sr" role="status">{asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
+      <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
+      <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}</p>
+      <p className="sr" role="status">{step === 'saved'
+        ? (fr ? `${trueN} ${trueN > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}.` : `${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved.`)
+        : asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
     </div>,
     bars: count > 0 && <div key="bars">
       <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
-        {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': fr ? 'Répétitions, une par marque' : 'Reps, one per mark', onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
-        {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': Math.max(0, rep.romDegrees || 0) / maxRom }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
+        {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': corrected ? (fr ? 'Répétitions repérées par l’app, une par marque' : 'Reps the app found, one per mark') : (fr ? 'Répétitions, une par marque' : 'Reps, one per mark'), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
+        {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
     </div>,

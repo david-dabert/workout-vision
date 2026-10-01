@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+// These tests check the measures as they read once validated: the flag is on here, and
+// measures-hidden.test.js checks that, while it is off, none is shown (measures.js).
+vi.mock('../measures', () => ({ MEASURES_SHOWN: true }));
 import { setOpener } from '../set-opener';
 
 // A rep: start, duration, range, concentric and eccentric seconds (as in set-account.test.js).

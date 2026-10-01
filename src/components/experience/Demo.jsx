@@ -7,6 +7,7 @@ import { Body, LITE } from './entry-scene';
 import { fitFigure, figurePoints, litOnly, grainSize } from './demo-figure';
 import { poseAt } from './replay-track';
 import './Demo.css';
+import { MEASURES_SHOWN } from './measures';
 
 // The entry's example (feature B): a drawn squat that the counting core counts as it plays. It is
 // labelled as an example throughout, so no one takes it for their own set. Words awaiting David's
@@ -52,8 +53,9 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
       <p className="sr" role="status">{done ? c.done(result.count) : ''}</p>
       {/* Until the set ends, the result's place is held, hidden, so nothing moves when it lands. */}
       <div className={`demo-result${done ? ' appear' : ' is-held'}`} {...(done ? { 'data-testid': 'demo-result' } : { 'aria-hidden': true, inert: true })}>
-        <p className="section-head demo-times-label">{c.times}</p>
-        <p className="demo-times">{result.reps.map(r => <span key={r.index}>{`${secs.format(r.endTime - r.startTime)} s`}</span>)}</p>
+        {/* Rep times are a measure not yet validated (measures.js): not shown, as on the user's own set. */}
+        {MEASURES_SHOWN && <p className="section-head demo-times-label">{c.times}</p>}
+        {MEASURES_SHOWN && <p className="demo-times">{result.reps.map(r => <span key={r.index}>{`${secs.format(r.endTime - r.startTime)} s`}</span>)}</p>}
         <div className="actions demo-actions">
           <button type="button" className="btn-primary press" onClick={onStart}>{c.go}</button>
           {onReplay && <button type="button" className="btn-ghost press" onClick={onReplay}>{c.again}</button>}

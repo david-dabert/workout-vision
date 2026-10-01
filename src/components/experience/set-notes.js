@@ -1,7 +1,8 @@
 // Step 3, "En savoir plus" / "Learn more": the notes David approved on 29 September
 // (test/real-phone/growth-step3/texts.md). Each line carries its source number in that file and its
 // status (CLAUDE.md R9): app measure, convention, or literature. Source 4 is no longer used.
-export const NOTES = {
+import { MEASURES_SHOWN } from './measures';
+const NOTES_ALL = {
   fr: [
     { title: 'Le tempo', lines: [
       'Chaque répétition a deux phases : vous soulevez la charge, c’est la phase concentrique ; vous la retenez en la ramenant, c’est la phase excentrique.', // convention
@@ -13,10 +14,10 @@ export const NOTES = {
       'L’app analyse 15 images par seconde : elle ne mesure rien plus finement qu’un quinzième de seconde.', // app measure
     ] },
     { title: 'L’amplitude', lines: [
-      'L’amplitude est l’angle que parcourt votre articulation à chaque répétition ; l’app la mesure en degrés.', // app measure
+      MEASURES_SHOWN ? 'L’amplitude est l’angle que parcourt votre articulation à chaque répétition ; l’app la mesure en degrés.' : 'L’amplitude est l’angle que parcourt votre articulation à chaque répétition.', // app measure; without validated measures, the definition alone (measures.js)
       'Aller au bout du mouvement fait gagner plus de force, et plus de muscle aux jambes.', // source 6, literature
       'Des répétitions partielles restent utiles, surtout quand le muscle est étiré.', // source 7, literature
-      'Une répétition marquée ▾ fait moins de 85 % de l’amplitude habituelle de votre série.', // app measure; 85 % threshold, experimental
+      MEASURES_SHOWN && 'Une répétition marquée ▾ fait moins de 85 % de l’amplitude habituelle de votre série.', // app measure; 85 % threshold, experimental; no ▾ is drawn without validated measures
     ] },
     { title: 'Le nombre de répétitions', lines: [
       'Lourd ou léger, le muscle grandit autant si la série va près de votre limite.', // source 8, literature
@@ -47,10 +48,10 @@ export const NOTES = {
       'The app analyses 15 frames per second: it measures nothing finer than a fifteenth of a second.', // app measure
     ] },
     { title: 'Range of motion', lines: [
-      'Range of motion is the angle your joint travels in each rep; the app measures it in degrees.', // app measure
+      MEASURES_SHOWN ? 'Range of motion is the angle your joint travels in each rep; the app measures it in degrees.' : 'Range of motion is the angle your joint travels in each rep.', // app measure; without validated measures, the definition alone (measures.js)
       'Going the full length of the movement builds more strength, and more leg muscle.', // source 6, literature
       'Partial reps remain useful, especially with the muscle stretched.', // source 7, literature
-      'A rep marked ▾ covers less than 85% of your set’s usual range.', // app measure; 85 % threshold, experimental
+      MEASURES_SHOWN && 'A rep marked ▾ covers less than 85% of your set’s usual range.', // app measure; 85 % threshold, experimental; no ▾ is drawn without validated measures
     ] },
     { title: 'Rep ranges', lines: [
       'Heavy or light, muscle grows as much when the set goes close to your limit.', // source 8, literature
@@ -71,3 +72,6 @@ export const NOTES = {
     ] },
   ],
 };
+
+// A line switched off with the measures is left out.
+export const NOTES = Object.fromEntries(Object.entries(NOTES_ALL).map(([k, v]) => [k, v.map(n => ({ ...n, lines: n.lines.filter(Boolean) }))]));

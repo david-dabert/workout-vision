@@ -1,4 +1,5 @@
-// The history's export for a coach: the saved sets as spreadsheet files (sets-csv.js), handed to the
+// The history's export for a coach: the saved sets as a spreadsheet file (sets-csv.js; a second file of
+// measured reps only once measures are validated, measures.js), handed to the
 // phone's share sheet where it takes files, else downloaded. Built and shared inside the tap, since
 // Safari opens the share sheet only from a gesture. Nothing is sent anywhere by the app itself.
 // The words are in test/real-phone/swarm/copy-export.md, for David's approval (CLAUDE.md R10).
@@ -49,7 +50,7 @@ export default function ExportSets({ sets, lang, name, style }) {
       navigator.share({ files, title: fr ? 'Vos séries' : 'Your sets' }).catch(e => {
         if (e.name === 'AbortError') return; // the user closed the sheet
         downloadNext.current = true;
-        setNote(fr ? 'Le partage n’a pas abouti. Touchez à nouveau pour télécharger vos fichiers.' : 'Sharing did not go through. Tap again to download your files.');
+        setNote(fr ? 'Le partage n’a pas abouti. Touchez à nouveau pour télécharger.' : 'Sharing did not go through. Tap again to download.');
       });
       return;
     }

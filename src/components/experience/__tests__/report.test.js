@@ -2,7 +2,10 @@
  * The session report: its words (shared by the sheet on screen and the PDF),
  * its file name, its line breaking, and the PDF itself.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+// These tests check the measures as they read once validated: the flag is on here, and
+// measures-hidden.test.js checks that, while it is off, none is shown (measures.js).
+vi.mock('../measures', () => ({ MEASURES_SHOWN: true }));
 import { reportSheet, reportFileName, setMeasures } from '../report-sheet';
 import { reportPdf, wrapText } from '../report-pdf';
 

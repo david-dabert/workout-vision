@@ -45,6 +45,8 @@ test('the example plays a set, ticking the count rep by rep, and ends on the cor
   await expect(page.getByTestId('demo-result')).toBeVisible();
   await expect(page.locator('.demo-screen [role="status"]')).toHaveText(WORDS.fr.done);
   await expect(page.locator('.demo-numeral')).toHaveText('5');
+  // No rep times: a measure not yet validated, not shown on the user's set either (measures.js, 1 October).
+  await expect(page.locator('.demo-times, .demo-times-label')).toHaveCount(0);
   await page.waitForTimeout(1000);
   expect(await faults(page)).toEqual([]);
   // Close: back to the entry. Then "À vous" leads on to the choice of lift.

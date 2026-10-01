@@ -7,6 +7,7 @@ import { poseAt, repAt, phaseAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
 import { canExport, exportSetVideo } from './video-export';
 import './Replay.css';
+import { MEASURES_SHOWN } from './measures';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
@@ -181,12 +182,15 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
-  const phase = current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
+  // The phase word follows the unvalidated phase boundaries: hidden with the measures (measures.js).
+  const phase = MEASURES_SHOWN && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
     head = `${fr ? 'Rép.' : 'Rep'} ${current + 1} · `;
-    detail = r.clipped
+    // Without validated measures (measures.js), the rep's number alone.
+    if (!MEASURES_SHOWN) { head = ''; detail = `${fr ? 'Rép.' : 'Rep'} ${current + 1}${r.clipped ? `${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}` : ''}`; }
+    else detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
   } else {

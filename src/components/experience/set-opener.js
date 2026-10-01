@@ -2,6 +2,7 @@
 // It measures nothing new: the count, and what set-account.js already derives from the reps (the
 // short reps, the slowdown). Wording awaiting David's approval (test/real-phone/swarm/copy-C.md).
 import { shortReps, slowdown, speedChange } from './set-account';
+import { MEASURES_SHOWN } from './measures';
 
 const reps = (n, fr) => (fr ? `${n} répétition${n > 1 ? 's' : ''}` : `${n} rep${n === 1 ? '' : 's'}`);
 
@@ -10,7 +11,7 @@ const reps = (n, fr) => (fr ? `${n} répétition${n > 1 ? 's' : ''}` : `${n} rep
  * counted, when it did (a set entered by hand has none). Returns null where the screen shows no count
  * (rule 8): a refused set, or a count that is not known.
  */
-export function setOpener({ reps: all, fr, count, counted, refused }) {
+export function setOpener({ reps: all, fr, count, counted, refused, measures = MEASURES_SHOWN }) {
   if (refused || !Number.isInteger(count) || count < 0) return null;
   // The user's count: the reps the app measured belong to another count, so they are not described.
   if (Number.isFinite(counted) && counted !== count) {
@@ -18,6 +19,8 @@ export function setOpener({ reps: all, fr, count, counted, refused }) {
     return fr ? `Vous avez compté ${reps(count, true)}.` : `You counted ${reps(count, false)}.`;
   }
   if (!count) return fr ? 'Aucune répétition comptée.' : 'No reps counted.';
+  // Without validated measures (measures.js), the opener says the count alone.
+  if (!measures) return count === 1 ? (fr ? 'Série d’une répétition.' : 'A set of one rep.') : (fr ? `Série de ${reps(count, true)}.` : `A set of ${reps(count, false)}.`);
   const whole = (all || []).filter(r => !r.clipped);
   // One fact, the first that holds: the short reps (the tip is about them), then the slowdown.
   // Status: the thresholds are set-account.js's (85 %, experimental; four whole reps); none is added here.

@@ -1,0 +1,62 @@
+pass  en: accepted, the numeral reads 7
+pass  en: accepted, a screen reader is told 7 saved
+pass  en: accepted, no correction line
+pass  en: corrected 7 to 8, the numeral reads 8
+pass  en: corrected, a screen reader is told 8 saved
+pass  en: corrected, the app's 7 kept as provenance
+pass  en: corrected, still the 7 marks the app found, none invented
+pass  en: corrected, the set is stored as 8 with the app's 7 apart
+pass  en: corrected 7 to 5, the numeral reads 5
+pass  en: corrected, the marks are named as the app's
+pass  en: corrected, the last mark reads as the app's mark 7, not rep 7 ("App mark 7 · partly filmed")
+pass  en: save failed, no saved card
+pass  en: save failed, a screen reader is not told it was saved
+pass  en: save failed, the numeral stays the app's 7
+pass  en, no level: no measure before saving
+pass  en, no level: every mark has one height
+pass  en, no level: no measure after saving
+pass  en, no level: the notes name no ▾ mark and no degrees
+pass  en, beginner: no measure before saving
+pass  en, beginner: every mark has one height
+pass  en, beginner: no measure after saving
+pass  en, beginner: the notes name no ▾ mark and no degrees
+pass  en, intermediate: no measure before saving
+pass  en, intermediate: every mark has one height
+pass  en, intermediate: no measure after saving
+pass  en, intermediate: the notes name no ▾ mark and no degrees
+pass  en, expert: no measure before saving
+pass  en, expert: every mark has one height
+pass  en, expert: no measure after saving
+pass  en, expert: the notes name no ▾ mark and no degrees
+pass  fr: accepted, the numeral reads 7
+pass  fr: accepted, a screen reader is told 7 saved
+pass  fr: accepted, no correction line
+pass  fr: corrected 7 to 8, the numeral reads 8
+pass  fr: corrected, a screen reader is told 8 saved
+pass  fr: corrected, the app's 7 kept as provenance
+pass  fr: corrected, still the 7 marks the app found, none invented
+pass  fr: corrected, the set is stored as 8 with the app's 7 apart
+pass  fr: corrected 7 to 5, the numeral reads 5
+pass  fr: corrected, the marks are named as the app's
+pass  fr: corrected, the last mark reads as the app's mark 7, not rep 7 ("Marque de l’app 7 · filmée en partie")
+pass  fr: save failed, no saved card
+pass  fr: save failed, a screen reader is not told it was saved
+pass  fr: save failed, the numeral stays the app's 7
+pass  fr, no level: no measure before saving
+pass  fr, no level: every mark has one height
+pass  fr, no level: no measure after saving
+pass  fr, no level: the notes name no ▾ mark and no degrees
+pass  fr, beginner: no measure before saving
+pass  fr, beginner: every mark has one height
+pass  fr, beginner: no measure after saving
+pass  fr, beginner: the notes name no ▾ mark and no degrees
+pass  fr, intermediate: no measure before saving
+pass  fr, intermediate: every mark has one height
+pass  fr, intermediate: no measure after saving
+pass  fr, intermediate: the notes name no ▾ mark and no degrees
+pass  fr, expert: no measure before saving
+pass  fr, expert: every mark has one height
+pass  fr, expert: no measure after saving
+pass  fr, expert: the notes name no ▾ mark and no degrees
+
+60 pass, 0 fail

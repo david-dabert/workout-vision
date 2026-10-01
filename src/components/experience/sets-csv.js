@@ -1,5 +1,6 @@
-// The saved sets as two spreadsheet files, for a coach or an expert: one row per set, and one row per
-// measured rep. Pure functions of what storage holds; every figure is one the app already shows,
+// The saved sets as spreadsheet files, for a coach or an expert: one row per set, and one row per
+// measured rep once measures are validated (measures.js; until then, the sets file alone, without
+// its tempo and speed columns). Pure functions of what storage holds; every figure is one the app already shows,
 // read through the functions that show it (sets.js, progress.js, set-account.js, report-sheet.js),
 // so the spreadsheet and the screens never disagree. No new metric (CLAUDE.md R8). A field a set
 // does not store is left empty, never guessed. The files leave the phone only through the user's
@@ -9,6 +10,7 @@ import { exerciseName } from './exercise-info';
 import { countedBy, setTime } from './sets';
 import { confirmed, storedLoad, liftKey } from './progress';
 import { setMeasures, setTempo } from './report-sheet';
+import { MEASURES_SHOWN } from './measures';
 
 // Spreadsheets (Excel above all) read a UTF-8 file as UTF-8 only when it starts with this mark.
 export const BOM = '﻿';
@@ -55,11 +57,13 @@ const byHand = w => w.source === 'manual';
  * One row per set, oldest first. lang: 'fr' or 'en'; name(set): the exercise's name as the screen
  * shows it (default: exercise-info.js in lang).
  */
-export function setsCsv(sets, { lang, name, locale } = {}) {
+export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } = {}) {
   const f = format(lang, locale), fr = lang === 'fr', label = nameOf(lang, name);
   const header = fr
     ? ['Date', 'Exercice', 'Répétitions', 'Comptées par l’app', 'Corrigée', 'Confirmée', 'Charge (kg)', 'Durée (s)', 'Tempo moyen', 'Variation de vitesse concentrique (%)']
     : ['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo', 'Concentric speed change (%)'];
+  // Without validated measures (measures.js), the tempo and speed columns are left out.
+  if (!measures) header.splice(-2);
   const rows = oldestFirst(sets).map(w => {
     const counted = byHand(w) ? null : countedBy(w);
     const reps = measuredReps(w);
@@ -76,13 +80,15 @@ export function setsCsv(sets, { lang, name, locale } = {}) {
       w.duration > 0 ? num(w.duration, 1, f) : '',
       tempo || '',
       Number.isFinite(change) ? String(change) : '',
-    ];
+    ].slice(0, header.length);
   });
   return table(header, rows, f.sep);
 }
 
 /** One row per measured rep, sets oldest first; null when no set holds measured reps. */
-export function repsCsv(sets, { lang, name, locale } = {}) {
+export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } = {}) {
+  // Every column of this file is a measure not yet validated (measures.js): no file.
+  if (!measures) return null;
   const f = format(lang, locale), fr = lang === 'fr', label = nameOf(lang, name);
   const header = fr
     ? ['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°)', 'Concentrique (s)', 'Excentrique (s)', 'Vitesse max (°/s)', 'Vitesse moyenne (°/s)', 'Coupée par la vidéo']
