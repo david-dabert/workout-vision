@@ -1,0 +1,14 @@
+Review 3 (wv-reviewer, 1 October 2026): measures restored under the experimental label (David's order; DIRECTIVES.md 3.3).
+1. Label waited for the question while the beginner account, the mark heights and ▾ showed during the count-up,
+   and sat far from the tempo line. Fixed: the label stands under the count from the first frame, every level.
+   Test: check.mjs, beginner without Reduce Motion, label present before the question.
+2. After a correction the account named "La répétition 3" and the report table was headed "Rép." over the app's
+   7 marks. Fixed: no rep named by number and no slowdown after a correction; the report table is headed
+   "Repère"/"Mark". Test: measures-hidden.test.js. Left: the reps CSV keeps "Rép." (one heading for every set).
+3. The label said "from the video" on the demo, which no one filmed. Fixed: "estimées par l'app".
+4. Plain space before ":" in the expert legend and the export message. Fixed with a non-breaking space; the
+   e2e test asserts the exact text.
+5. "(expérimental)" after feminine headings. Fixed: "(mesure expérimentale)" / "(experimental measure)".
+Also: exportFiles takes measures, and the switched-off export (one file) is tested; stale comments corrected.
+French for David's approval (R10): the label, "Repère", "(mesure expérimentale)".
+Evidence: vitest 1121 pass; build; check.mjs 66 pass; Chromium e2e 81 pass (retries off); scoreboard 7/14 unchanged.

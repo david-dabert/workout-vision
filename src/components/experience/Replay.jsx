@@ -7,7 +7,7 @@ import { poseAt, repAt, phaseAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
 import { canExport, exportSetVideo } from './video-export';
 import './Replay.css';
-import { MEASURES_SHOWN } from './measures';
+import { MEASURES_SHOWN, experimentalLabel } from './measures';
 import { isCorrected, markLabel, provenance } from './replay-labels';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
@@ -190,11 +190,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
-    head = `${fr ? 'Rép.' : 'Rep'} ${current + 1} · `;
+    const word = corrected ? markLabel({ index: current + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${current + 1}`;
+    const filmed = fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed';
+    head = `${word} · `;
     // Without validated measures (measures.js), the rep's number alone.
-    if (!MEASURES_SHOWN) { head = ''; detail = `${corrected ? markLabel({ index: current + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${current + 1}`}${r.clipped ? `${NB}· ${fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed'}` : ''}`; }
+    if (!MEASURES_SHOWN) { head = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else detail = r.clipped
-      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
+      ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
   } else {
     detail = reps.length
@@ -243,6 +245,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       </div>
       {note && <p className="rp-prov" data-testid="rp-prov">{note}</p>}
       <p className="rp-detail" aria-live={playing ? 'off' : 'polite'}>{head && <span className="sr">{head}</span>}{detail}</p>
+      {MEASURES_SHOWN && reps.length > 0 && <p className="rp-prov" data-testid="rp-exp">{experimentalLabel(fr)}</p>}
       <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
         <button className="btn-primary press rp-play" onClick={toggle} disabled={broken}>
           {playing

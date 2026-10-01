@@ -19,6 +19,7 @@
 .wv-experience .demo-result.is-held { visibility: hidden; }
 .wv-experience .demo-times-label { margin-top: 0; text-align: center; }
 .wv-experience .demo-times { margin: var(--s-2) 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; color: var(--bone-2); }
+.wv-experience .demo-exp { margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); font-style: italic; }
 .wv-experience .demo-times span { white-space: nowrap; }
 .wv-experience .demo-actions { margin-top: var(--s-4); }
 @media (max-height: 700px) {

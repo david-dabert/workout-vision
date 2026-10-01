@@ -52,6 +52,8 @@ const nameOf = (lang, name) => name || (w => exerciseName(liftKey(w), lang));
 const measuredReps = w => (w.repDetailsVersion === 2 && Array.isArray(w.repDetails) && w.repDetails.length ? w.repDetails : null);
 // A set typed in by hand was never counted by the app.
 const byHand = w => w.source === 'manual';
+// A measure's heading, marked experimental while no measure is validated (measures.js).
+const exp = (h, fr) => `${h} (${fr ? 'mesure expérimentale' : 'experimental measure'})`;
 
 /**
  * One row per set, oldest first. lang: 'fr' or 'en'; name(set): the exercise's name as the screen
@@ -62,8 +64,10 @@ export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
   const header = fr
     ? ['Date', 'Exercice', 'Répétitions', 'Comptées par l’app', 'Corrigée', 'Confirmée', 'Charge (kg)', 'Durée (s)', 'Tempo moyen', 'Variation de vitesse concentrique (%)']
     : ['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo', 'Concentric speed change (%)'];
-  // Without validated measures (measures.js), the tempo and speed columns are left out.
+  // Without validated measures (measures.js), the tempo and speed columns are left out; with them, each
+  // is marked experimental in its heading, since none is validated yet.
   if (!measures) header.splice(-2);
+  else for (const k of [header.length - 2, header.length - 1]) header[k] = exp(header[k], fr);
   const rows = oldestFirst(sets).map(w => {
     const counted = byHand(w) ? null : countedBy(w);
     const reps = measuredReps(w);
@@ -87,12 +91,14 @@ export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
 
 /** One row per measured rep, sets oldest first; null when no set holds measured reps. */
 export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } = {}) {
-  // Every column of this file is a measure not yet validated (measures.js): no file.
+  // Every measure column of this file is not yet validated (measures.js): no file while they are hidden,
+  // each heading marked experimental while they are shown.
   if (!measures) return null;
   const f = format(lang, locale), fr = lang === 'fr', label = nameOf(lang, name);
   const header = fr
     ? ['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°)', 'Concentrique (s)', 'Excentrique (s)', 'Vitesse max (°/s)', 'Vitesse moyenne (°/s)', 'Coupée par la vidéo']
     : ['Set date', 'Exercise', 'Rep', 'Range (°)', 'Concentric (s)', 'Eccentric (s)', 'Peak speed (°/s)', 'Mean speed (°/s)', 'Cut by the video'];
+  for (let k = 3; k <= 7; k++) header[k] = exp(header[k], fr);
   const rows = [];
   for (const w of oldestFirst(sets)) {
     const reps = measuredReps(w);
@@ -110,10 +116,10 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
 }
 
 /** The files to hand over: [{ name, text }], the reps file only when there are measured reps. */
-export function exportFiles(sets, { lang, name, locale, now = new Date() } = {}) {
+export function exportFiles(sets, { lang, name, locale, now = new Date(), measures = MEASURES_SHOWN } = {}) {
   const fr = lang === 'fr', day = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  const out = [{ name: `${fr ? 'series' : 'sets'}-${day}.csv`, text: setsCsv(sets, { lang, name, locale }) }];
-  const reps = repsCsv(sets, { lang, name, locale });
+  const out = [{ name: `${fr ? 'series' : 'sets'}-${day}.csv`, text: setsCsv(sets, { lang, name, locale, measures }) }];
+  const reps = repsCsv(sets, { lang, name, locale, measures });
   if (reps) out.push({ name: `${fr ? 'repetitions' : 'reps'}-${day}.csv`, text: reps });
   return out;
 }

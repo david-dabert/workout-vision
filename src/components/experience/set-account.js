@@ -70,16 +70,18 @@ const de = name => (/^([aeiouyàâéèêëîïôûü]|halt)/i.test(name) ? `d’
  * previous: the reps kept on the last saved set of this exercise, or null; nth: this set's rank in the history,
  * or null when the history could not be read, and then no encouragement rather than a false rank.
  */
-export function setAccount({ reps, first, fr, name, count, previous, nth, measures = MEASURES_SHOWN }) {
+export function setAccount({ reps, first, fr, name, count, previous, nth, measures = MEASURES_SHOWN, corrected = false }) {
   const lines = [];
   // The tempo as the coach report and the spreadsheet write it (tempo.js), one rule for the app.
   // Not validated: neither it, the short reps nor the slowdown is shown (measures.js).
   const tempo = measures ? setTempo(reps, first) : null;
   if (tempo) lines.push(fr ? `Tempo moyen${NB}: ${tempo}.` : `Average tempo: ${tempo}.`);
-  const short = measures ? shortReps(reps) : [];
+  // After a correction the app's reps are not the set's reps: none is named by its number, and the
+  // slowdown between the first and last two is not said (as the opener, set-opener.js).
+  const short = measures && !corrected ? shortReps(reps) : [];
   if (short.length === 1) lines.push(fr ? `La répétition ${short[0]} a été plus courte que les autres.` : `Rep ${short[0]} was shorter than the others.`);
   else if (short.length > 1) lines.push(fr ? `Les répétitions ${list(short, true)} ont été plus courtes que les autres.` : `Reps ${list(short, false)} were shorter than the others.`);
-  const p = measures ? slowdown(reps) : null;
+  const p = measures && !corrected ? slowdown(reps) : null;
   if (p !== null) {
     lines.push(p === 0
       ? (fr ? 'Vos deux dernières répétitions ont été aussi rapides que les deux premières.' : 'Your last two reps were as fast as your first two.')
