@@ -321,3 +321,5 @@ Labelling rules for phone collection, 1 October 2026, corrected the same day aft
 - Labels are entered before the app's count is shown, with "not sure" allowed (Astra's review of 1 October, anchoring). Status: convention.
 
 David's order of 1 October, which prevails over DIRECTIVES.md Part 4 ("councils, think tanks"): ask Astra for ideas to improve every aspect of the app. Ideas that come back go to BACKLOG.md with their date (R7) until David opens them.
+
+David's approval of 1 October 2026 (R10), in his word: "Approved". Approved French copy: the experimental label "Mesures expérimentales : estimées par l’app, pas encore validées.", "Repère" for the app's marks after a correction, "(mesure expérimentale)" in the CSV headings, and the wording listed in test/real-phone/result-count/review-1.txt and review-2.txt. Live through pull requests #43 and #45 (main at b9346de).
