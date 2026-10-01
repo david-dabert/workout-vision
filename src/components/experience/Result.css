@@ -35,6 +35,9 @@
 .wv-experience .bar .short-mark { position: absolute; bottom: calc(18px + 72px * var(--r, 1) + 4px); left: 50%; translate: -50% 0; font-size: 11px; line-height: 1; font-weight: 400; color: var(--lamp); }
 /* A sentence of measures: sans, figures tabular (mono is for labels and numerals only, #10). */
 .wv-experience .res-detail { min-height: 19px; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
+.wv-experience .res-sides { margin: var(--s-2) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
+.wv-experience .res-sides p { margin: 0; }
+.wv-experience .res-sides .res-sides-note { opacity: .8; }
 .wv-experience .res-exp { margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); font-style: italic; text-wrap: balance; }
 
 /* The user's turn: glass (the surface system, Entry.css). */

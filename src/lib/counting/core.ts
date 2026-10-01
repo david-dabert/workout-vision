@@ -256,7 +256,7 @@ function countSide(
 }
 
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
-function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
+export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
   const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm) : null));
   const sampleRate = estimateSampleRate(timestamps);
   const cleaned = removeOutliers(rawAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);

@@ -1,0 +1,21 @@
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Amplitude gauche 92° · droite 74° · écart 17 % |  | Mesuré de face. Sur des vidéos publiques, la mesure seule donne souvent des écarts jusqu’à 30 %.
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: experimental label on screen
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line within the 390 px width
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":92,"right":74,"si":-17,"reps":10}
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: line shown: Amplitude gauche 62° · droite 57° · écart 9 % |  | Mesuré de face. Sur des vidéos publiques, la mesure seule donne souvent des écarts jusqu’à 30 %.
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: experimental label on screen
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: line within the 390 px width
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: saved set carries the comparison {"left":62,"right":57,"si":-9,"reps":4}
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: no line
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Range left 92° · right 74° · 17% apart |  | Measured from the front. On public videos, measurement alone often gives gaps up to 30%.
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: experimental label on screen
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line within the 390 px width
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":92,"right":74,"si":-17,"reps":10}
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: line shown: Range left 62° · right 57° · 9% apart |  | Measured from the front. On public videos, measurement alone often gives gaps up to 30%.
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: experimental label on screen
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: line within the 390 px width
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: saved set carries the comparison {"left":62,"right":57,"si":-9,"reps":4}
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: no line
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
+all passed

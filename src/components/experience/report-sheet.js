@@ -4,6 +4,7 @@ import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
 import { decimal, repTempo, setTempo } from './tempo';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
+import { sidesLines } from './sides-line';
 
 export { setTempo };
 
@@ -95,7 +96,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, measures: shown = MEASURES_SHOWN }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, sides = null, measures: shown = MEASURES_SHOWN }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -138,6 +139,10 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         ? `Durée${colon}${sign}${decimal(Math.abs(diff), fr)}${NBSP}s du début à la fin`
         : `Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`);
     }
+
+    // Left against right, for a set filmed from the front (sides-line.js): the two ranges, then what a gap means.
+    const lr = sidesLines(sides, fr);
+    if (lr) summary.push(lr.line, lr.note);
 
     // Previous set comparison.
     if (previousSet && previousSet.reps?.length) {

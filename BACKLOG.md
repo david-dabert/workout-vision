@@ -34,3 +34,11 @@ Checked against the code on main (84e020a) before entry. These are proposals, no
 - First visit: the Enter button appears after 2.9 s (Entry.css), skippable by a tap; returning users never see it. A design choice, not a defect.
 - Accessibility to test on the iPhone: contrast in bright light, text at 200 %, VoiceOver, small uppercase metadata.
 - Not entered as defects: the report's zero peak and mean speeds and "Durée : 0,0 s" seen under Astra's injected test data, which may explain them.
+
+## 1 October 2026 (David): users and requests, not built in this phase
+- Users named: physiotherapists (kinésithérapeutes), online and in-person coaches, gym newcomers,
+  intermediates, experts, sport scientists, strength and conditioning coaches. One engine serves them all.
+- Invoicing for physiotherapists: not to be built. Reimbursed care is billed by electronic care sheet through
+  SESAM-Vitale approved software every practice already owns (Ordre des MK; Caducée, 1 September 2026 reform).
+- Medical use (EU MDR Rule 11, MDCG 2019-11): software that informs a care decision is class IIa or higher.
+  No reading may be framed as informing care until that route is decided.

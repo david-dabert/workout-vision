@@ -283,6 +283,8 @@ export interface WorkoutRecord {
   repDetails?: unknown[];
   repDetailsVersion?: number;
   corrected?: boolean;
+  // Front-view left/right comparison measured when the set was saved (counting/symmetry.ts); experimental.
+  sides?: { left: number; right: number; si: number; reps: number } | null;
 }
 
 export interface RepCounterDiagnostics {

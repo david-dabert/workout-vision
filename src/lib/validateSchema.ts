@@ -18,6 +18,8 @@ const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'workoutId',
   // The counting core's result screen writes these; reading them back keeps the arm and the app's own count.
   'source', 'arm', 'repDetails', 'repDetailsVersion', 'corrected',
+  // The front-view left/right comparison (counting/symmetry.ts), kept for the report.
+  'sides',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
