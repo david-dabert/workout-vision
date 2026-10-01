@@ -35,8 +35,9 @@ export const MIN_COMPARED_REPS = 3;
 // Status: convention. The app draws no verdict from it.
 export const GAP_SI = 15;
 // Share of public clips filmed from the front (lifters with no known asymmetry) whose index exceeds GAP_SI:
-// measured on the Countix clips in test/real-phone/symmetry/front.txt (1 October 2026), which the screen
-// states as "about a third". Descriptive of those clips only, not a threshold. Status: experimental.
+// 15 of 44 (34 %) on the Countix clips in test/real-phone/symmetry/front.txt (1 October 2026, partly filmed
+// reps not compared), which the screen states as "about a third". Descriptive of those clips only, not a
+// threshold. Status: experimental.
 export const NOISE_SHARE_OVER_GAP = 1 / 3;
 // Exercises whose two sides move together through the same range, the only ones compared. A one-arm or
 // one-leg exercise (one_arm_dumbbell_row, split_squat...), an alternating one, or a lunge would compare the

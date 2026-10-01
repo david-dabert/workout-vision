@@ -178,8 +178,6 @@
 .wv-experience .strip-key { font-size: var(--fs-caption); line-height: 1.4; color: var(--ash-2); }
 .wv-experience .strip-cols { position: relative; display: flex; }
 .wv-experience .strip-cols.mid::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--hair); }
-/* The band where a per-rep gap is common without asymmetry (GAP_SI), shaded around the midline. */
-.wv-experience .strip-cols.sides::after { content: ""; position: absolute; left: 0; right: 0; top: calc(50% - var(--band)); height: calc(2 * var(--band) + 1px); background: rgba(239, 232, 220, 0.035); border-radius: 2px; pointer-events: none; }
 .wv-experience .strip-col { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; transition: opacity 0.3s; }
 .wv-experience .strips.has-sel .strip-col:not(.sel) { opacity: 0.32; }
 .wv-experience .t-half { flex: 1; width: 100%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 1px; }
@@ -192,16 +190,16 @@
 .wv-experience .t-down.capped { border-radius: 0; border-bottom-width: 3px; }
 .wv-experience .strip-col.lit .t-up { background: linear-gradient(to bottom, var(--lamp-hi), rgba(232, 189, 126, 0.45)); }
 .wv-experience .strip-col.lit .t-down { border-color: var(--lamp); }
-/* The gap between sides: one solid bar, up for the right, down for the left; inside the band, faint. */
+/* The gap between sides: one solid bar, up for the right, down for the left, all of one weight. */
 .wv-experience .g-bar { background: rgba(232, 189, 126, 0.32); }
 .wv-experience .g-bar.up { border-radius: 3px 3px 0 0; }
 .wv-experience .g-bar.down { border-radius: 0 0 3px 3px; }
 .wv-experience .g-bar.capped { border-radius: 0; }
 .wv-experience .strip-col.lit .g-bar { background: var(--lamp); }
-.wv-experience .strip-col.lit .g-bar.in-band { background: rgba(232, 189, 126, 0.45); }
 .wv-experience .t-gap { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: 3px; height: 3px; border-radius: 50%; background: var(--hair-2); }
 .wv-experience .result-screen.is-saved .strips { opacity: 0.55; transition: opacity 0.7s var(--ease); }
 .wv-experience .res-strips .res-sides { margin-top: var(--s-4); }
+.wv-experience .strip-caption { margin: 0; min-height: 19px; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--bone-2); }
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .strip-col, .wv-experience .result-screen.is-saved .strips { transition: none; }
 }

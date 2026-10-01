@@ -53,6 +53,11 @@ try {
     const selBar = await page.locator('.bars .bar').evaluateAll(bs => bs.findIndex(x => x.classList.contains('sel')));
     const selCols = await page.locator('[data-testid="rep-strips"] .strip').evaluateAll(ss => ss.map(st => [...st.querySelectorAll('.strip-col')].findIndex(x => x.classList.contains('sel'))));
     check(selBar === 2 && selCols.every(i => i === 2), `${lang} ${s.file}: a tap on rep 3's column selects rep 3 in the marks and every strip (${selBar}, ${selCols})`);
+    // The tap answers where it was made: the caption under the strips names rep 3 and is on screen.
+    const cap = page.locator('[data-testid="strip-caption"]');
+    const cb = await cap.boundingBox().catch(() => null);
+    const ctext = (await cap.textContent().catch(() => '')) || '';
+    check(!!cb && cb.y >= 0 && cb.y + cb.height <= 664 && /3/.test(ctext), `${lang} ${s.file}: the caption is in view and names the rep: ${ctext}`);
     if (process.env.SHOTS) await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}-sel.png`) });
     await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     if (n) {
@@ -60,7 +65,7 @@ try {
       check(await page.locator('[data-testid="strip-sides"]').count() === 1, `${lang} ${s.file}: left/right strip drawn`);
       const box = await sides.boundingBox();
       check(box && box.x >= 0 && box.x + box.width <= 390, `${lang} ${s.file}: line within the 390 px width`);
-      const over = await page.locator('.res-strips').evaluate(e => [...e.querySelectorAll('*')].some(x => x.scrollWidth > x.clientWidth + 1 && getComputedStyle(x).overflow !== 'visible') || e.getBoundingClientRect().right > innerWidth);
+      const over = await page.locator('.res-strips').evaluate(e => [e, ...e.querySelectorAll('*')].some(x => { const r = x.getBoundingClientRect(); return r.width > 0 && (r.left < -0.5 || r.right > innerWidth + 0.5); }));
       check(!over, `${lang} ${s.file}: nothing in the strips overflows`);
       // Save, then read the stored set back the way the report does.
       await page.locator('[data-testid="ask-card"] .btn-primary').click();
@@ -76,6 +81,23 @@ try {
       check(!!stored && Number.isFinite(stored.si), `${lang} ${s.file}: saved set carries the comparison ${JSON.stringify(stored)}`);
     }
     await page.context().close();
+  }
+  // The beginner has no strips, but still sees the set's left/right line and its note under the marks.
+  for (const lang of ['fr', 'en']) for (const w of [320, 390]) {
+    const d = JSON.parse(gunzipSync(readFileSync(resolve(ROOT, 'test/real-phone', SETS[0].file))).toString());
+    const body = JSON.stringify({ lift: d.lift ?? SETS[0].lift, worldLandmarks: d.worldLandmarks, timestamps: d.timestamps });
+    for (const level of ['beginner', 'intermediate']) {
+      const page = await (await browser.newContext({ viewport: { width: w, height: 568 }, reducedMotion: 'reduce' })).newPage();
+      await page.route('**/set.json', r => r.fulfill({ contentType: 'application/json', body }));
+      await page.addInitScript(([l, lv]) => { localStorage.setItem('wv_lang', l); localStorage.setItem('wv_level', lv); }, [lang, level]);
+      await page.goto(URL);
+      await page.locator('[data-testid="ask-card"]').waitFor({ timeout: 60000 });
+      const strips = await page.locator('[data-testid="rep-strips"]').count(), line = await page.locator('[data-testid="res-sides"]').count();
+      check(line === 1 && strips === (level === 'beginner' ? 0 : 1), `${lang} ${level} ${w}px: line ${line}, strips ${strips}`);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+      check(!wide, `${lang} ${level} ${w}px: nothing wider than the screen`);
+      await page.context().close();
+    }
   }
   await browser.close();
 } finally {

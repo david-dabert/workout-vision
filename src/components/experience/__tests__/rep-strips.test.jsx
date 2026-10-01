@@ -8,8 +8,8 @@ const heights = (html, cls) => [...html.matchAll(new RegExp(`class="${cls}[^"]*"
 
 describe('per-rep strips', () => {
   it('draws each phase on a fixed scale, the same height for the same time on any set', () => {
-    const a = render({ reps: [rep(1), rep(2, { eccentricSec: 1 })] });
-    const b = render({ reps: [rep(1)] });
+    const a = render({ reps: [rep(1, { eccentricSec: 1.2 }), rep(2, { eccentricSec: 0.6 })] });
+    const b = render({ reps: [rep(1, { eccentricSec: 1.2 })] });
     expect(heights(a, 't-down')[0]).toBe(heights(b, 't-down')[0]);
     expect(heights(a, 't-down')[0]).toBe(2 * heights(a, 't-down')[1]);
     expect(render({ reps: [rep(1, { eccentricSec: TEMPO_FULL_SEC + 3 })] })).toContain('t-down capped');
@@ -18,15 +18,23 @@ describe('per-rep strips', () => {
     expect(render({ reps: [rep(1), rep(2)] }).replace(/<[^>]+>/g, '')).not.toMatch(/\d/);
     expect(render({ reps: [rep(1, { clipped: true })] })).toBe('');
   });
-  it('draws a side gap up for the right, down for the left, none for no gap, faint inside the band', () => {
+  it('draws a side gap up for the right, down for the left, none for no gap, every bar of one weight', () => {
     const reps = [rep(1), rep(2), rep(3), rep(4)];
     const sides = [{ at: 0, left: 80, right: 80 }, { at: 1, left: 70, right: 90 }, { at: 2, left: 90, right: 70 }, { at: 3, left: 80, right: 84 }];
     const html = render({ reps, sides });
     expect(html.match(/g-bar up/g)).toHaveLength(2);
     expect(html.match(/g-bar down/g)).toHaveLength(1);
-    expect(html.match(/in-band/g)).toHaveLength(1);
+    expect(html).not.toMatch(/in-band/);
     expect(repGap(sides[1])).toBeCloseTo(25, 6);
     expect(heights(html, 'g-bar up')[0]).toBeCloseTo((28 * 25) / GAP_FULL, 6);
+  });
+  it('captions the chosen rep with its phase times and its gap', () => {
+    const reps = [rep(1), rep(2, { concentricSec: 0.6, eccentricSec: 0.9 })];
+    const html = render({ reps, sel: 1, sides: [{ at: 1, left: 90, right: 70 }] });
+    expect(html.replace(/<[^>]+>/g, '')).toContain('Rép. 2\u00A0· conc.\u00A00,6\u00A0s\u00A0· exc.\u00A00,9\u00A0s\u00A0· gauche +25\u00A0%');
+    expect(render({ reps })).not.toContain('strip-caption');
+    // After a correction the column is named as the app's mark.
+    expect(render({ reps: [rep(1, { clipped: true }), rep(2)], sel: 0, markName: i => `Repère ${i + 1}` }).replace(/<[^>]+>/g, '')).toContain('Repère 1\u00A0· filmé en partie');
   });
   it('leaves a rep that was not compared blank', () => {
     const html = render({ reps: [rep(1), rep(2)], sides: [{ at: 1, left: 70, right: 90 }] });

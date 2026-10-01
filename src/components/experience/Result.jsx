@@ -27,7 +27,7 @@ import './Result.css';
 import { isCorrected, markLabel, marksLabel } from './replay-labels';
 import { compareSides } from '../../lib/counting/symmetry';
 import { sidesLines, sidesRecord } from './sides-line';
-import RepStrips from './RepStrips';
+import RepStrips, { hasStrips } from './RepStrips';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -393,6 +393,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const one = big <= 1;
   const measured = count > 0 && asked;
   // The level chosen before this set sets the screen; one chosen on it applies from the next set.
+  // The set's two ranges and what a gap means: under the strips, or under the marks for the beginner, who has no strips.
+  const sidesLine = measured && sidesText ? <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div> : null;
   const blocks = {
     count: <div key="count" className="res-count">
       <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
@@ -408,15 +410,16 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
+      {view.level === 'beginner' && sidesLine}
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
     </div>,
     // Expert: the set's concentric speed change, the report's own line (report-sheet.js).
     speed: measured && speedLine && <p key="speed" className="lv-speed" data-testid="level-speed">{speedLine}</p>,
     // Under the question (it stays on the first screen, level.js): each rep's tempo and, for a set filmed
     // from the front, its gap between sides, with the set's two ranges and what a gap means beside them.
-    strips: measured && MEASURES_SHOWN && <div key="strips" className="res-strips">
-      <RepStrips reps={reps} sel={sel} shown={shown} sides={corrected ? null : sidesPerRep} fr={fr} onPick={pick} />
-      {sidesText && <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div>}
+    strips: measured && MEASURES_SHOWN && (hasStrips(reps, corrected ? null : sidesPerRep) || sidesText) && <div key="strips" className="res-strips">
+      <RepStrips reps={reps} sel={sel} shown={shown} sides={corrected ? null : sidesPerRep} fr={fr} onPick={pick} markName={corrected ? i => markLabel({ index: i + 1, total: reps.length, fr, corrected }) : null} />
+      {sidesLine}
     </div>,
     card: <div key="card">
       {step === 'ask' && asked && (
