@@ -1,0 +1,181 @@
+# Counter agreement, Countix whole clips, build half (SPEC.md)
+
+447 clips from 435 source videos. Development results, not an untouched test.
+C core, L learned (out of fold), P period counter. A rule answers when its counters all answer with the same count.
+
+| Rule | Answered | Coverage (95% CI) | Exact | Exact when answered (95% CI) | Off by 3+ when answered | A counter refused |
+|---|---:|---|---:|---|---:|---:|
+| C | 378 | 85% (81% to 88%) | 134 | 35% (31% to 40%) | 42 (11%) | 69 |
+| L | 447 | 100% (100% to 100%) | 229 | 51% (46% to 56%) | 16 (4%) | 0 |
+| P | 248 | 55% (51% to 60%) | 133 | 54% (48% to 60%) | 22 (9%) | 199 |
+| CL | 145 | 32% (28% to 37%) | 93 | 64% (56% to 72%) | 1 (1%) | 69 |
+| CP | 116 | 26% (22% to 30%) | 75 | 65% (56% to 74%) | 2 (2%) | 222 |
+| LP | 113 | 25% (21% to 29%) | 80 | 71% (62% to 79%) | 3 (3%) | 199 |
+| CLP | 70 | 16% (13% to 19%) | 56 | 80% (70% to 89%) | 1 (1%) | 222 |
+
+## By exercise: answered / exact
+
+| Lift | Clips | C | L | P | CL | CP | LP | CLP |
+|---|---:|---|---|---|---|---|---|---|
+| lunge | 78 | 67/22 | 78/32 | 37/19 | 21/10 | 13/9 | 12/7 | 8/6 |
+| push_up | 77 | 68/23 | 77/39 | 48/26 | 22/15 | 20/15 | 21/14 | 12/10 |
+| front_raise | 75 | 67/23 | 75/51 | 41/28 | 31/21 | 28/20 | 27/24 | 20/18 |
+| triceps_pushdown | 73 | 65/22 | 73/38 | 50/20 | 28/15 | 30/14 | 18/11 | 15/9 |
+| pull_up | 60 | 49/17 | 60/29 | 35/16 | 20/13 | 10/5 | 16/10 | 6/5 |
+| squat | 46 | 35/17 | 46/25 | 16/10 | 11/11 | 7/5 | 9/7 | 3/3 |
+| bench_press | 38 | 27/10 | 38/15 | 21/14 | 12/8 | 8/7 | 10/7 | 6/5 |
+
+## Error correlation, on clips both counters answer
+
+| Pair | Both answer | Both wrong | Same wrong count | Phi of being wrong |
+|---|---:|---:|---:|---:|
+| CL | 378 | 134 | 52 | 0.23 |
+| CP | 225 | 85 | 41 | 0.45 |
+| LP | 248 | 64 | 33 | 0.16 |
+
+## Every agreed count that is wrong
+
+CL: 52
+  0PcNfBxvyC4_000000_300.json.gz lunge label 4 count 2 error -2
+  0Tx0CZMDs4c_000064_7574.json.gz push_up label 2 count 1 error -1
+  0_EeIVIi5vU_000012_6423.json.gz front_raise label 2 count 1 error -1
+  1K9rmdy5ZO4_000000_5038.json.gz lunge label 5 count 3 error -2
+  2BC4P5QWDSk_000008_200.json.gz pull_up label 4 count 3 error -1
+  2QFhwsnYNHY_000000_1583.json.gz lunge label 4 count 3 error -1
+  3MbLV9MjhUk_000003_500.json.gz bench_press label 6 count 5 error -1
+  59jzy3eVo30_000003_533.json.gz push_up label 6 count 4 error -2
+  5PMWFlIy43M_000005_3240.json.gz lunge label 4 count 3 error -1
+  5ttD_SCeNB0_000027_0.json.gz push_up label 5 count 2 error -3
+  6gdNjUNfctI_000026_0.json.gz front_raise label 6 count 4 error -2
+  Ad-2S8sAAgo_000002_0.json.gz triceps_pushdown label 4 count 3 error -1
+  B-SowXtl3gA_000000_0.json.gz triceps_pushdown label 4 count 3 error -1
+  B2JRvQf2BoM_000001_0.json.gz triceps_pushdown label 4 count 3 error -1
+  Beji0hbXCIs_000027_3270.json.gz triceps_pushdown label 2 count 1 error -1
+  C7Z0BjKVnWk_000000_4463.json.gz triceps_pushdown label 2 count 1 error -1
+  CQDBpBmzYaQ_000000_7007.json.gz front_raise label 3 count 1 error -2
+  GfjEjn5kPVQ_000007_0.json.gz lunge label 4 count 3 error -1
+  GkUrks0SGEU_000008_0.json.gz lunge label 3 count 4 error +1
+  HIt1RcdVapg_000005_0.json.gz front_raise label 2 count 1 error -1
+  I5_KLDtiTS4_000002_0.json.gz lunge label 2 count 1 error -1
+  Klxkpj7hBhM_000001_1802.json.gz lunge label 3 count 2 error -1
+  M66IyaT16AM_000015_0.json.gz front_raise label 2 count 1 error -1
+  NFcwjLi-rJI_000012_0.json.gz pull_up label 3 count 2 error -1
+  NdO9CtNi5O4_000113_0.json.gz push_up label 6 count 5 error -1
+  O13-DeCgkag_000000_6600.json.gz lunge label 2 count 1 error -1
+  OfiZWZVPyD8_000011_0.json.gz front_raise label 3 count 2 error -1
+  Pc584-1gHSM_000025_270.json.gz bench_press label 4 count 3 error -1
+  QkGng8veoS8_000001_67.json.gz bench_press label 2 count 3 error +1
+  RiZXMZhERqI_000005_0.json.gz bench_press label 2 count 3 error +1
+  SB5cHBrvR_k_000024_0.json.gz push_up label 3 count 2 error -1
+  SxNHZthT2ZY_000007_0.json.gz pull_up label 9 count 8 error -1
+  amSYFfO27WE_000005_0.json.gz triceps_pushdown label 9 count 8 error -1
+  asoaMCuZtA0_000009_0.json.gz triceps_pushdown label 5 count 4 error -1
+  d4G4-HxLnXY_000003_2269.json.gz push_up label 2 count 1 error -1
+  dSUqi2thxAE_000001_0.json.gz front_raise label 7 count 6 error -1
+  e6x3OqtXt90_000016_0.json.gz push_up label 5 count 4 error -1
+  fZrwazqph2g_000004_0.json.gz front_raise label 5 count 4 error -1
+  hOQwPQWcJH0_000002_0.json.gz triceps_pushdown label 5 count 4 error -1
+  iv-PDkv1Jhc_000033_900.json.gz lunge label 3 count 2 error -1
+  jacxhCrLN44_000050_1280.json.gz triceps_pushdown label 5 count 4 error -1
+  k0qDfiwd9ug_000001_0.json.gz lunge label 4 count 3 error -1
+  lHBWP_3ZoXw_000001_2936.json.gz triceps_pushdown label 3 count 2 error -1
+  mq1g4JeDNUE_000002_7567.json.gz pull_up label 2 count 1 error -1
+  of3i0vPTk8c_000009_100.json.gz front_raise label 2 count 1 error -1
+  of3i0vPTk8c_000009_6406.json.gz front_raise label 2 count 1 error -1
+  q9QerhiDQEE_000001_2202.json.gz pull_up label 3 count 2 error -1
+  t-CZwdY1UiQ_000015_7733.json.gz pull_up label 2 count 1 error -1
+  tyUrI8F0M-I_000011_0.json.gz triceps_pushdown label 4 count 5 error +1
+  vcBqlpTzvRU_000004_0.json.gz triceps_pushdown label 4 count 3 error -1
+  vjOefY0qd1Y_000000_1435.json.gz triceps_pushdown label 4 count 3 error -1
+  y2OiEe3K-8c_000003_0.json.gz pull_up label 7 count 5 error -2
+CP: 41
+  0zJGjSfj7e8_000028_0.json.gz pull_up label 4 count 3 error -1
+  1KKjEWgqx5M_000004_0.json.gz pull_up label 3 count 2 error -1
+  1oFfiHdWQCA_000002_0.json.gz lunge label 4 count 3 error -1
+  2RLoQCFdz4Y_000016_0.json.gz push_up label 4 count 3 error -1
+  2p19BDth7Zc_000003_5133.json.gz pull_up label 3 count 2 error -1
+  4asMwQOZGSU_000027_1667.json.gz front_raise label 3 count 2 error -1
+  4u1SX87_hHk_000008_434.json.gz front_raise label 4 count 2 error -2
+  5PMWFlIy43M_000005_3240.json.gz lunge label 4 count 3 error -1
+  5ttD_SCeNB0_000027_0.json.gz push_up label 5 count 2 error -3
+  77STyrHkwFM_000005_233.json.gz front_raise label 3 count 2 error -1
+  9HoXfT7GNcQ_000006_0.json.gz triceps_pushdown label 5 count 3 error -2
+  Ad-2S8sAAgo_000002_0.json.gz triceps_pushdown label 4 count 3 error -1
+  B2JRvQf2BoM_000001_0.json.gz triceps_pushdown label 4 count 3 error -1
+  DSdox52D3XY_000004_2970.json.gz squat label 3 count 2 error -1
+  GfjEjn5kPVQ_000007_0.json.gz lunge label 4 count 3 error -1
+  Jbc4UdG6NIQ_000005_467.json.gz lunge label 3 count 2 error -1
+  K2yPECMIm6k_000008_0.json.gz triceps_pushdown label 4 count 3 error -1
+  KX5nixbbMhg_000009_0.json.gz triceps_pushdown label 5 count 3 error -2
+  MG8V2O5qFxA_000017_0.json.gz triceps_pushdown label 6 count 5 error -1
+  OF9CU2XU5FM_000001_1802.json.gz front_raise label 4 count 3 error -1
+  Pc584-1gHSM_000025_270.json.gz bench_press label 4 count 3 error -1
+  SB5cHBrvR_k_000024_0.json.gz push_up label 3 count 2 error -1
+  T5D6C9egSko_000000_0.json.gz triceps_pushdown label 6 count 5 error -1
+  a5bgEjOgmnM_000003_0.json.gz triceps_pushdown label 5 count 4 error -1
+  amSYFfO27WE_000005_0.json.gz triceps_pushdown label 9 count 8 error -1
+  bgNO7y7rO9w_000001_0.json.gz push_up label 4 count 3 error -1
+  dSUqi2thxAE_000001_0.json.gz front_raise label 7 count 6 error -1
+  efQJ44Mk6BM_000002_1568.json.gz pull_up label 5 count 4 error -1
+  fZrwazqph2g_000004_0.json.gz front_raise label 5 count 4 error -1
+  fcbdbV8aXHc_000002_0.json.gz front_raise label 6 count 3 error -3
+  gg-31qQfOag_000001_0.json.gz triceps_pushdown label 5 count 4 error -1
+  hOQwPQWcJH0_000002_0.json.gz triceps_pushdown label 5 count 4 error -1
+  jwpSpB3jd6Y_000005_801.json.gz front_raise label 3 count 2 error -1
+  mESS6DKbbj8_000006_2840.json.gz squat label 3 count 2 error -1
+  nHal5q656nM_000013_0.json.gz push_up label 3 count 2 error -1
+  o08hRRttMIw_000004_0.json.gz triceps_pushdown label 5 count 4 error -1
+  o870GOGJG_k_000000_0.json.gz triceps_pushdown label 9 count 8 error -1
+  q9QerhiDQEE_000001_2202.json.gz pull_up label 3 count 2 error -1
+  s7G4GmlNR2o_000007_0.json.gz triceps_pushdown label 3 count 2 error -1
+  vcBqlpTzvRU_000004_0.json.gz triceps_pushdown label 4 count 3 error -1
+  vjOefY0qd1Y_000000_1435.json.gz triceps_pushdown label 4 count 3 error -1
+LP: 33
+  5PMWFlIy43M_000005_3240.json.gz lunge label 4 count 3 error -1
+  5ttD_SCeNB0_000027_0.json.gz push_up label 5 count 2 error -3
+  9VHz73p7Gfo_000026_0.json.gz pull_up label 6 count 5 error -1
+  Ad-2S8sAAgo_000002_0.json.gz triceps_pushdown label 4 count 3 error -1
+  B2JRvQf2BoM_000001_0.json.gz triceps_pushdown label 4 count 3 error -1
+  E0p8QDRa0Fg_000063_0.json.gz push_up label 8 count 7 error -1
+  ExiJ7qKakH4_000000_0.json.gz bench_press label 6 count 5 error -1
+  Fb1rrmg8lkc_000016_0.json.gz lunge label 3 count 2 error -1
+  GfjEjn5kPVQ_000007_0.json.gz lunge label 4 count 3 error -1
+  HAMAZ4bJ1bY_000000_1400.json.gz triceps_pushdown label 5 count 4 error -1
+  HmwfLUgHZIc_000000_0.json.gz pull_up label 5 count 4 error -1
+  IDkiffbx_YU_000041_0.json.gz lunge label 4 count 3 error -1
+  LlhMJGUP2W8_000000_1602.json.gz bench_press label 2 count 3 error +1
+  M065ZpAKuyY_000030_0.json.gz push_up label 6 count 5 error -1
+  OFQ5LvjA9m4_000000_33.json.gz front_raise label 10 count 9 error -1
+  Pc584-1gHSM_000025_270.json.gz bench_press label 4 count 3 error -1
+  SB5cHBrvR_k_000024_0.json.gz push_up label 3 count 2 error -1
+  Wyojc0Clzsk_000074_0.json.gz push_up label 7 count 3 error -4
+  YaHfRx04h4o_000171_0.json.gz pull_up label 3 count 2 error -1
+  amSYFfO27WE_000005_0.json.gz triceps_pushdown label 9 count 8 error -1
+  dSUqi2thxAE_000001_0.json.gz front_raise label 7 count 6 error -1
+  fZrwazqph2g_000004_0.json.gz front_raise label 5 count 4 error -1
+  hOQwPQWcJH0_000002_0.json.gz triceps_pushdown label 5 count 4 error -1
+  hVI6VQIS2Yo_000003_0.json.gz squat label 7 count 6 error -1
+  jkNsir4WeqU_000021_0.json.gz push_up label 2 count 3 error +1
+  kGDIhlrBW0M_000000_0.json.gz pull_up label 2 count 3 error +1
+  lRGqUTpAsnQ_000006_0.json.gz lunge label 6 count 5 error -1
+  q9QerhiDQEE_000001_2202.json.gz pull_up label 3 count 2 error -1
+  rRUaSaoVlBc_000007_0.json.gz squat label 8 count 3 error -5
+  u9XyJmAGV0c_000013_0.json.gz push_up label 6 count 5 error -1
+  vcBqlpTzvRU_000004_0.json.gz triceps_pushdown label 4 count 3 error -1
+  vjOefY0qd1Y_000000_1435.json.gz triceps_pushdown label 4 count 3 error -1
+  zHonAu4yl8I_000009_0.json.gz pull_up label 4 count 5 error +1
+CLP: 14
+  5PMWFlIy43M_000005_3240.json.gz lunge label 4 count 3 error -1
+  5ttD_SCeNB0_000027_0.json.gz push_up label 5 count 2 error -3
+  Ad-2S8sAAgo_000002_0.json.gz triceps_pushdown label 4 count 3 error -1
+  B2JRvQf2BoM_000001_0.json.gz triceps_pushdown label 4 count 3 error -1
+  GfjEjn5kPVQ_000007_0.json.gz lunge label 4 count 3 error -1
+  Pc584-1gHSM_000025_270.json.gz bench_press label 4 count 3 error -1
+  SB5cHBrvR_k_000024_0.json.gz push_up label 3 count 2 error -1
+  amSYFfO27WE_000005_0.json.gz triceps_pushdown label 9 count 8 error -1
+  dSUqi2thxAE_000001_0.json.gz front_raise label 7 count 6 error -1
+  fZrwazqph2g_000004_0.json.gz front_raise label 5 count 4 error -1
+  hOQwPQWcJH0_000002_0.json.gz triceps_pushdown label 5 count 4 error -1
+  q9QerhiDQEE_000001_2202.json.gz pull_up label 3 count 2 error -1
+  vcBqlpTzvRU_000004_0.json.gz triceps_pushdown label 4 count 3 error -1
+  vjOefY0qd1Y_000000_1435.json.gz triceps_pushdown label 4 count 3 error -1
