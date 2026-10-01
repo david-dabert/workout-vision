@@ -188,7 +188,7 @@ export function reportPdf(sheet) {
     block.lines.forEach(line => { if (room() < 18 && y > MARGIN) newPage(); drawLine(line, block.raster, MARGIN, y, 12, 1.5, COLOR.ash); y += 18; });
     y += GAP;
   };
-  [sheet.corrected, sheet.arm].filter(Boolean).forEach(sheetLine);
+  [sheet.corrected, sheet.arm, sheet.experimental].filter(Boolean).forEach(sheetLine);
 
   // The reps table: Rep (11%), Tempo (32%), Range (21%), Peak (18%), Mean (18%): wide enough that no
   // heading runs into the next ("RÉP.TEMPO", "AMPLITUDEPIC" on David's report of 29 September).

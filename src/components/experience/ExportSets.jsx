@@ -1,5 +1,5 @@
-// The history's export for a coach: the saved sets as a spreadsheet file (sets-csv.js; a second file of
-// measured reps only once measures are validated, measures.js), handed to the
+// The history's export for a coach: the saved sets as spreadsheet files (sets-csv.js; the second, of
+// measured reps, while measures are shown, measures.js), handed to the
 // phone's share sheet where it takes files, else downloaded. Built and shared inside the tap, since
 // Safari opens the share sheet only from a gesture. Nothing is sent anywhere by the app itself.
 // The words are in test/real-phone/swarm/copy-export.md, for David's approval (CLAUDE.md R10).
@@ -31,7 +31,7 @@ export default function ExportSets({ sets, lang, name, style }) {
     }
     // The browser may still block a file; the app says what it did, not what was saved.
     setNote(files.length > 1
-      ? (fr ? 'Téléchargement lancé : vos séries et le détail des répétitions.' : 'Download started: your sets and the rep-by-rep detail.')
+      ? (fr ? 'Téléchargement lancé\u00A0: vos séries et le détail des répétitions.' : 'Download started: your sets and the rep-by-rep detail.')
       : (fr ? 'Téléchargement de vos séries lancé.' : 'Download of your sets started.'));
   }
 

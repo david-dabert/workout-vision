@@ -3,7 +3,7 @@
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
 import { decimal, repTempo, setTempo } from './tempo';
-import { MEASURES_SHOWN } from './measures';
+import { MEASURES_SHOWN, experimentalLabel } from './measures';
 
 export { setTempo };
 
@@ -108,6 +108,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   // summary only the previous set's count.
   const hasShort = shown && allReps.some(isShortIn(reps));
   const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr }) : { columns: [], rows: [] };
+  // After a correction the rows are the marks the app detected, not the reps the user saved.
+  if (shown && counted != null && counted !== count && columns.length) columns[0] = fr ? 'Repère' : 'Mark';
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
@@ -178,6 +180,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     rows,
     summary,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
+    // Beside every measure printed, while none is validated (measures.js).
+    experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim(),
     // The report names no app (David, 29 September: the name is not final, and the tool spreads by being useful).

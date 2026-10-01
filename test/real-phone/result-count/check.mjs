@@ -2,7 +2,7 @@
 // node test/real-phone/result-count/check.mjs
 // The result screen, mounted alone (mount.jsx) in Chromium on the Vite dev server, on a known result of 7
 // reps, as a user drives it: accepted, corrected to 8, and with saving failing. It checks the numeral and
-// what a screen reader is told, and that no measure is shown at any level (measures.js). Writes check.txt.
+// what a screen reader is told, and that every measure shown stands under the experimental label (measures.js). Writes check.txt.
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -80,7 +80,7 @@ try {
     await page.locator('.bars').focus();
     await page.keyboard.press('End');
     const last = (await page.locator('.res-detail').textContent()).trim();
-    check(last === (fr ? 'Repère détecté 7 sur 7\u00A0· filmé en partie' : 'Detected mark 7 of 7\u00A0· partly filmed'), `${lang}: corrected, the last mark reads as a detected mark, not rep 7 ("${last}")`);
+    check(last.startsWith(fr ? 'Repère détecté 7 sur 7' : 'Detected mark 7 of 7') && last.endsWith(fr ? 'filmé en partie' : 'partly filmed'), `${lang}: corrected, the last mark reads as a detected mark, not rep 7 ("${last}")`);
     await page.context().close();
 
     // Saving fails: no claim of success.
@@ -98,16 +98,14 @@ try {
       const name = level || 'no level';
       await page.locator('.bars').click({ position: { x: 5, y: 5 } }).catch(() => {});
       const before = await shownText(page);
-      check(!MEASURE.test(before), `${lang}, ${name}: no measure before saving${MEASURE.test(before) ? `: "${before.match(MEASURE)[0]}"` : ''}`);
-      const heights = await page.locator('.bars .bar').evaluateAll(bs => [...new Set(bs.map(b => b.style.getPropertyValue('--r')))]);
-      check(heights.length === 1, `${lang}, ${name}: every mark has one height`);
+      const label = fr ? 'Mesures expérimentales\u00A0: estimées par l’app, pas encore validées.' : 'Experimental measures: estimated by the app, not yet validated.';
+      const exp = async () => (await page.locator('[data-testid="res-exp"]').count()) ? (await page.locator('[data-testid="res-exp"]').textContent()) : '';
+      check(!MEASURE.test(before.replace(label, '')) || (await exp()) === label, `${lang}, ${name}: any measure before saving stands under the experimental label`);
       await page.getByRole('button', { name: fr ? 'Oui, c’est juste' : 'Yes, that’s right' }).click();
       await page.locator('[data-testid="saved-card"]').waitFor();
       const after = await shownText(page);
-      check(!MEASURE.test(after), `${lang}, ${name}: no measure after saving${MEASURE.test(after) ? `: "${after.match(MEASURE)[0]}"` : ''}`);
-      // The notes explain; they must not describe a mark or a measure the screen no longer shows.
-      const notes = await page.locator('.acc-notes').evaluateAll(ns => ns.map(n => n.textContent).join(' '));
-      check(!/▾|degrés|degrees/.test(notes), `${lang}, ${name}: the notes name no ▾ mark and no degrees`);
+      check(!MEASURE.test(after.replace(label, '')) || (await exp()) === label, `${lang}, ${name}: any measure after saving stands under the experimental label`);
+
       await page.context().close();
     }
   }
@@ -137,7 +135,7 @@ try {
       const phase = (await page.locator('.rp-phase').textContent()).trim();
       if (saved === 8) {
         check(where === (fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: position reads as a detected mark ("${where}")`);
-        check(detail === (fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: detail reads as a detected mark ("${detail}")`);
+        check(detail.startsWith(fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: detail reads as a detected mark ("${detail}")`);
         check(prov === (fr ? 'L’app a détecté 7 répétitions. Vous avez enregistré 8.' : 'The app detected 7 reps. You saved 8.'), `${lang} replay, saved 8: both counts stated ("${prov}")`);
         // Past the last detection, the hint speaks of marks, not reps.
         await at(2.9);
@@ -148,10 +146,22 @@ try {
         check(where === (fr ? 'Répétition 3 sur 7' : 'Rep 3 of 7'), `${lang} replay, saved 7: position reads as a rep ("${where}")`);
         check(prov === '', `${lang} replay, saved 7: no provenance line`);
       }
-      check(!/Concentri|Excentri|Eccentri/.test(phase), `${lang} replay, saved ${saved}: no phase word ("${phase}")`);
+      check((await page.locator('[data-testid="rp-exp"]').count()) === 1, `${lang} replay, saved ${saved}: the experimental label stands under the replay's measures`);
       check(await page.locator('.rp-chip .rp-of').textContent() === '/\u00A07', `${lang} replay, saved ${saved}: the chip counts the 7 detected marks, none invented`);
       await page.context().close();
     }
+  }
+  // A beginner without Reduce Motion: the account and the marks show during the count-up, before the
+  // question; the experimental label must already be there (review of 1 October).
+  for (const lang of ['en', 'fr']) {
+    const page = await (await browser.newContext({ viewport: { width: 390, height: 664 } })).newPage();
+    await page.addInitScript(lang => { localStorage.setItem('wv_lang', lang); localStorage.setItem('wv_level', 'beginner'); }, lang);
+    await page.goto(URL);
+    await page.locator('.set-account').first().waitFor({ timeout: 30000 });
+    const early = await page.locator('[data-testid="ask-card"]').count() === 0;
+    const label = await page.locator('[data-testid="res-exp"]').count();
+    check(early && label === 1, `${lang}, beginner with motion: the label is there before the question (${early ? 'before' : 'after'} the question, ${label} label)`);
+    await page.context().close();
   }
   await browser.close();
 } finally {

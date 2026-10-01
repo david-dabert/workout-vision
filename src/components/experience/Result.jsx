@@ -16,7 +16,7 @@ import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
-import { MEASURES_SHOWN } from './measures';
+import { MEASURES_SHOWN, experimentalLabel } from './measures';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel } from './lift-meta';
@@ -194,14 +194,14 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   let detail = '', detailHead = '';
   if (sel >= 0 && reps[sel]) {
     const r = reps[sel];
-    detailHead = `${fr ? 'Rép.' : 'Rep'} ${sel + 1} · `;
+    const filmed = fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed';
     // After a correction the marks are the app's, not the saved set's reps: they are named so (replay-labels.js).
     const word = corrected ? markLabel({ index: sel + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${sel + 1}`;
     // "Repère" is masculine, "répétition" feminine: the clipped note agrees with the word before it.
-    if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed'}` : ''}`; }
-    else detail = r.clipped
-      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
-      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
+    if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
+    else { detailHead = `${word} · `; detail = r.clipped
+      ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
+      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
@@ -214,7 +214,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // screen states no rank and no comparison rather than a false one (review 01 of step 3).
   const [before, setBefore] = useState(() => { const k = knownSets(); return k ? mine(k) : null; });
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
+  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
   const [view] = useState(() => levelView(readLevel()));
@@ -386,6 +386,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     count: <div key="count" className="res-count">
       <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}</p>
+      {/* Under the count from the first frame: every measure on this screen (marks, account, table) is experimental (measures.js). */}
+      {MEASURES_SHOWN && count > 0 && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
       <p className="sr" role="status">{step === 'saved'
         ? (fr ? `${trueN} ${trueN > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}.` : `${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved.`)
         : asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
@@ -466,7 +468,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <thead><tr>{table.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
         <tbody>{table.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
       </table>
-      <p className="lv-units">{fr ? 'Tempo : descente-pause-montée-pause, en secondes. Pic et Moy. : vitesse angulaire, en °/s.' : 'Tempo: lowering-pause-lifting-pause, in seconds. Peak and Mean: angular speed, in °/s.'}</p>
+      <p className="lv-units">{fr ? 'Tempo\u00A0: descente-pause-montée-pause, en secondes. Pic et Moy.\u00A0: vitesse angulaire, en °/s.' : 'Tempo: lowering-pause-lifting-pause, in seconds. Peak and Mean: angular speed, in °/s.'}</p>
     </div>,
     account: measured && <div key="account" className="set-account appear" data-testid="set-account">
       {plain}

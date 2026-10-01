@@ -169,6 +169,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
         {sheet.corrected && <p className="sh-line">{sheet.corrected}</p>}
         {sheet.arm && <p className="sh-line">{sheet.arm}</p>}
+        {sheet.experimental && <p className="sh-line sh-exp" data-testid="sh-exp">{sheet.experimental}</p>}
         {sheet.rows.length > 0 && <table className="sh-table">
           <thead><tr>{sheet.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
           <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>

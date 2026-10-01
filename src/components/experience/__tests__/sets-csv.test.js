@@ -1,7 +1,4 @@
 import { describe, it, expect, vi } from 'vitest';
-// These tests check the measures as they read once validated: the flag is on here, and
-// measures-hidden.test.js checks that, while it is off, none is shown (measures.js).
-vi.mock('../measures', () => ({ MEASURES_SHOWN: true }));
 // exercise-info.js reaches the drawing code, which reads the screen and draws its sprites when it
 // loads; a stand-in that accepts every call lets the names load outside a browser.
 vi.hoisted(() => {
@@ -50,7 +47,7 @@ describe('setsCsv', () => {
     const text = setsCsv([counted], { lang: 'en' });
     expect(text.startsWith('\uFEFF')).toBe(true);
     expect(text.endsWith('\r\n')).toBe(true);
-    expect(lines(text)[0].split(',')).toEqual(['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo', 'Concentric speed change (%)']);
+    expect(lines(text)[0].split(',')).toEqual(['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo (experimental measure)', 'Concentric speed change (%) (experimental measure)']);
   });
 
   it('writes French with semicolons and decimal commas, English with commas and dots', () => {
@@ -134,7 +131,7 @@ describe('setsCsv', () => {
 describe('repsCsv', () => {
   it('writes one row per rep of the sets that hold measured reps', () => {
     const rows = lines(repsCsv([manual, counted, old], { lang: 'en' }));
-    expect(rows[0].split(',')).toEqual(['Set date', 'Exercise', 'Rep', 'Range (°)', 'Concentric (s)', 'Eccentric (s)', 'Peak speed (°/s)', 'Mean speed (°/s)', 'Cut by the video']);
+    expect(rows[0].split(',')).toEqual(['Set date', 'Exercise', 'Rep', 'Range (°) (experimental measure)', 'Concentric (s) (experimental measure)', 'Eccentric (s) (experimental measure)', 'Peak speed (°/s) (experimental measure)', 'Mean speed (°/s) (experimental measure)', 'Cut by the video']);
     expect(rows).toHaveLength(1 + REPS.length);
     const first = rows[1].split(',');
     expect(Date.parse(first[0])).toBe(AT);
@@ -143,7 +140,7 @@ describe('repsCsv', () => {
 
   it('writes French with semicolons and decimal commas', () => {
     const rows = lines(repsCsv([counted], { lang: 'fr' }));
-    expect(rows[0].split(';')).toEqual(['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°)', 'Concentrique (s)', 'Excentrique (s)', 'Vitesse max (°/s)', 'Vitesse moyenne (°/s)', 'Coupée par la vidéo']);
+    expect(rows[0].split(';')).toEqual(['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°) (mesure expérimentale)', 'Concentrique (s) (mesure expérimentale)', 'Excentrique (s) (mesure expérimentale)', 'Vitesse max (°/s) (mesure expérimentale)', 'Vitesse moyenne (°/s) (mesure expérimentale)', 'Coupée par la vidéo']);
     expect(rows[2].split(';').slice(1)).toEqual(['Curl biceps', '2', '118', '1,10', '1,50', '182', '93', 'non']);
   });
 
