@@ -27,6 +27,7 @@ import './Result.css';
 import { isCorrected, markLabel, marksLabel } from './replay-labels';
 import { compareSides } from '../../lib/counting/symmetry';
 import { sidesLines, sidesRecord } from './sides-line';
+import RepStrips from './RepStrips';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -191,8 +192,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
   // Left against right, for a set filmed from the front only (counting/symmetry.ts); measured once.
-  const [sides] = useState(() => (Array.isArray(result.worldLandmarks) && Array.isArray(result.timestamps)
-    ? sidesRecord(compareSides(result.worldLandmarks, result.timestamps, lift, reps)) : null));
+  const [compared] = useState(() => (Array.isArray(result.worldLandmarks) && Array.isArray(result.timestamps)
+    ? compareSides(result.worldLandmarks, result.timestamps, lift, reps) : null));
+  const sides = sidesRecord(compared);
+  const sidesPerRep = compared?.status === 'measured' ? compared.comparison.perRep : null;
   const corrected = step === 'saved' && isCorrected(trueN, count);
   const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr) : null;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
@@ -207,7 +210,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else { detailHead = `${word} · `; detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
-      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
+      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
+    // The rep's two sides, when the set was compared (RepStrips draws their gap).
+    const lr = !corrected && sidesPerRep?.find(x => x.at === sel);
+    if (lr) detail += `${NB}· ${fr ? 'G' : 'L'}${NB}${Math.round(lr.left)}° ${fr ? 'D' : 'R'}${NB}${Math.round(lr.right)}°`; }
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
@@ -405,6 +411,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
+      {measured && MEASURES_SHOWN && view.level !== 'beginner' && <RepStrips reps={reps} sel={sel} shown={shown} sides={corrected ? null : sidesPerRep} fr={fr} onPick={pick} />}
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
       {measured && sidesText && <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div>}
     </div>,

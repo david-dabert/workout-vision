@@ -167,3 +167,28 @@
   .wv-experience .refused-why, .wv-experience .result-screen .fix-note { margin-top: var(--s-4); }
   .wv-experience .result-screen .fix-note { padding: 14px 18px; }
 }
+
+/* Per-rep strips (RepStrips.jsx): the marks' columns continued downward; one hue, series told apart by
+   direction and fill. Captions are the section labels' mono, recessive. */
+.wv-experience .strips { margin-top: var(--s-5); display: flex; flex-direction: column; gap: var(--s-4); cursor: pointer; }
+.wv-experience .strip-head { margin: 0 0 6px; padding: 0 2px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.4; letter-spacing: 0.02em; color: var(--ash-2); white-space: nowrap; }
+.wv-experience .strip-head span:first-child { letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
+.wv-experience .strip-cols { position: relative; display: flex; justify-content: center; }
+.wv-experience .strip-cols.mid::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--hair); }
+.wv-experience .strip-col { position: relative; flex: 0 1 36px; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
+.wv-experience .strips.has-sel .strip-col:not(.sel) { opacity: 0.3; }
+.wv-experience .t-half { flex: 1; width: 100%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 1px; }
+.wv-experience .t-half.low { align-items: flex-start; padding: 1px 0 0; }
+.wv-experience .t-up, .wv-experience .t-down, .wv-experience .g-bar { display: block; width: min(6px, calc(100% - 3px)); box-sizing: border-box; }
+/* Concentric: solid, rising. Eccentric: hollow, falling. */
+.wv-experience .t-up { border-radius: 3px 3px 0 0; background: rgba(232, 189, 126, 0.28); }
+.wv-experience .t-down { border-radius: 0 0 3px 3px; border: 1px solid rgba(232, 189, 126, 0.35); border-top: 0; }
+.wv-experience .strip-col.lit .t-up { background: linear-gradient(to bottom, var(--lamp-hi), rgba(232, 189, 126, 0.35)); box-shadow: 0 0 10px rgba(247, 220, 174, 0.35); }
+.wv-experience .strip-col.lit .t-down { border-color: var(--lamp-line-strong); }
+/* The gap between sides: one solid bar, up for the right, down for the left. */
+.wv-experience .g-bar { background: rgba(232, 189, 126, 0.28); }
+.wv-experience .g-bar.up { border-radius: 3px 3px 0 0; }
+.wv-experience .g-bar.down { border-radius: 0 0 3px 3px; }
+.wv-experience .strip-col.lit .g-bar { background: var(--lamp); box-shadow: 0 0 8px rgba(247, 220, 174, 0.3); }
+.wv-experience .t-gap { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: 3px; height: 3px; border-radius: 50%; background: var(--hair-2); }
+.wv-experience .result-screen.is-saved .strips { opacity: 0.55; transition: opacity 0.7s var(--ease); }

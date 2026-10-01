@@ -78,6 +78,7 @@ export interface SideComparison {
   right: number;           // the same, right
   si: number;              // symmetry index (R - L) / mean(R, L) x 100 of the two medians above (Robinson, Herzog & Nigg 1987), so the three numbers shown agree
   reps: number;            // reps compared
+  perRep: { at: number; left: number; right: number }[]; // each compared rep's ranges; at = its position in the reps given
 }
 
 export type SymmetryResult =
@@ -103,8 +104,8 @@ export function compareSides(
     for (let i = i0; i <= i1; i++) { const a = xs[i]; if (a === null || a === undefined) continue; seen++; if (a < lo) lo = a; if (a > hi) hi = a; }
     return { rom: hi - lo, seen: seen / (i1 - i0 + 1) };
   };
-  const L: number[] = [], R: number[] = [];
-  for (const rep of reps) {
+  const L: number[] = [], R: number[] = [], perRep: SideComparison['perRep'] = [];
+  for (const [at, rep] of reps.entries()) {
     const i0 = timestamps.findIndex(t => t >= rep.startTime);
     let i1 = timestamps.findIndex(t => t >= rep.endTime);
     if (i1 < 0) i1 = timestamps.length - 1;
@@ -113,11 +114,11 @@ export function compareSides(
     if (a.seen < SIDES_SEEN || b.seen < SIDES_SEEN) continue;
     const mean = (a.rom + b.rom) / 2;
     if (!(mean > 0)) continue;
-    L.push(a.rom); R.push(b.rom);
+    L.push(a.rom); R.push(b.rom); perRep.push({ at, left: a.rom, right: b.rom });
   }
   if (L.length < MIN_COMPARED_REPS) return { status: 'too-few-reps' };
   const left = median(L), right = median(R);
   // One side barely moving while the other works is a one-sided set, whatever the exercise was called.
   if (Math.min(left, right) < COUNTABLE_RANGE_DEG) return { status: 'one-side-still' };
-  return { status: 'measured', comparison: { left, right, si: ((right - left) / ((left + right) / 2)) * 100, reps: L.length } };
+  return { status: 'measured', comparison: { left, right, si: ((right - left) / ((left + right) / 2)) * 100, reps: L.length, perRep } };
 }

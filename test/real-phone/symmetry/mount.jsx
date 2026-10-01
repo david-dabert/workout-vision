@@ -3,6 +3,8 @@
 import { createRoot } from 'react-dom/client';
 import { LanguageProvider } from '../../../src/lib/LanguageContext';
 import Result from '../../../src/components/experience/Result';
+// The app's own tokens and surfaces, so a screenshot shows the screen as the phone does.
+import '../../../src/components/experience/Entry.css';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
 
 const set = await (await fetch('/set.json')).json();
