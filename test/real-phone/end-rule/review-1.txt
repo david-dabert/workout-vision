@@ -1,0 +1,19 @@
+wv-reviewer, 1 October 2026, on H1 (end-of-recording rule). Findings, as reported:
+1. Overcount on David's hip thrust (sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz, label 6): a post-set hip lift
+   at about 12.0 to 13.6 s (peak 154 degrees, gap 0.97 median periods) is refused only by CUT_REP_MAX_RATIO (2.23x).
+   Cut at 12.48 to 13.70 s the set counts 7; from 13.90 s, 6. Failing test: first 205 samples, expect 6, gives 7.
+2. After-set movements count +1 at 15 and 30 sps: curl reach for the phone (8 -> 9), curl crossing the arms (8 -> 9),
+   lat pulldown hands to thighs (10 -> 11), leg curl sitting with knees bent (10 -> 11), leg extension standing up
+   (8 -> 9), hip thrust standing up (8 -> 9), deadlift standing after setting the bar down (5 -> 6). The existing
+   POST_SET and AFTER tests pass only because their holds are 2 to 3 s; at 1 s they fail.
+3. Gate B (Countix) cannot see this cost: its clips end mid-set, almost never at a lifter finishing.
+4. Per-row regressions hidden in the aggregate: pull_up LPQSm5megAo 3 -> 4 (label 3), pull_up bfQGBGK81JE 5 -> 6
+   (label 5, both variants), pull_up 0Mfq1D151S0 4 -> 5 (label 3), triceps_pushdown AFMmqsjcfis 6 -> 7 (label 5,
+   both variants). 6 rows worse, 51 better (31 pushdown, 11 pull-up, 9 front raise).
+5. Limits inside a dense cluster: accepted at duration ratio 0.50 and 0.52, gap 1.50; rejected at 0.47 to 0.49,
+   1.54 and gap 1.58.
+6. A cut rep can come back marked whole (clipped undefined) with a false eccentric time and speeds.
+7. edges.test.ts header and comments contradicted the change.
+8. The two added guard tests passed with the change reverted (margins too wide to pin it).
+9. R9: CUT_REP_MIN_RATIO had no status; none of the three constants named a source or UNSOURCED.
+Decision: withdrawn; counter restored to HEAD.
