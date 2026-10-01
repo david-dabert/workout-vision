@@ -24,6 +24,9 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls or
+      # any set is off by 3 or more (test/real-phone/accuracy/scoreboard.test.ts).
+      - run: npm run scoreboard
       - run: npm run build
 
   e2e:
