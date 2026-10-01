@@ -1,0 +1,96 @@
+diff --git a/src/lib/counting/core.ts b/src/lib/counting/core.ts
+index 812447b..5ef1f17 100644
+--- a/src/lib/counting/core.ts
++++ b/src/lib/counting/core.ts
+@@ -69,6 +69,11 @@ export interface RepDetail {
+   meanSpeed: number;    // average frame-to-frame angular speed within the rep, degrees/second
+   side?: 'left' | 'right' | 'both'; // both-sides lifts only: the side that did it
+   clipped?: boolean;    // the video starts or ends inside this rep: counted, but its times are not whole
++  // Each side's range over this rep's time, both measured the same way (highest minus lowest smoothed
++  // angle), when both sides were in view for at least SIDES_SEEN of the rep; absent otherwise.
++  // Status: experimental (not validated on phone video).
++  romLeft?: number;
++  romRight?: number;
+ }
+ 
+ export interface CountResult {
+@@ -181,6 +186,7 @@ const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives th
+ const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
+ const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample
+ const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
++const SIDES_SEEN = 0.8;           // share of a rep's samples each side must be seen in for the left/right comparison (convention, UNSOURCED)
+ 
+ // ─── Public API ───
+ 
+@@ -203,25 +209,8 @@ function countSide(
+   def: LiftDefinition,
+   arm: 'left' | 'right',
+ ): CountResult {
+-  // 1. Extract raw angle per sample
+-  const rawAngles = worldLandmarks.map(wl => {
+-    if (!wl) return null;
+-    return extractAngle(wl, def.joint, arm);
+-  });
+-
+-  // 2. Estimate sample rate from timestamps
+-  const sampleRate = estimateSampleRate(timestamps);
+-
+-  // 3. Remove outliers (before bridging, so spikes don't propagate)
+-  const outlierSize = secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
+-  const cleaned = removeOutliers(rawAngles, outlierSize, OUTLIER_DEVIATION_DEG);
+-
+-  // 4. Bridge short dropouts
+-  const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
+-
+-  // 5. Smooth with Savitzky–Golay (window in seconds)
+-  const sgSize = secToOddSamples(SG_WINDOW_SEC, sampleRate);
+-  const smoothed = savitzkyGolay(bridged, sgSize);
++  // 1–5. Raw angle per sample, outliers removed, short dropouts bridged, Savitzky–Golay smoothed.
++  const { rawAngles, smoothed } = sideAngles(worldLandmarks, timestamps, def, arm);
+ 
+   // 6. Compute thresholds from the set's own range
+   const validAngles = smoothed.filter((a): a is number => a !== null);
+@@ -247,6 +236,25 @@ function countSide(
+   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
+   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
+ 
++  // 7b. Both sides' range over each rep, for the left/right comparison (not for both-sides lifts,
++  // whose arms take turns).
++  if (!def.bothSides && reps.length) {
++    const other = sideAngles(worldLandmarks, timestamps, def, arm === 'left' ? 'right' : 'left').smoothed;
++    const range = (xs: (number | null)[], i0: number, i1: number) => {
++      let lo = Infinity, hi = -Infinity, seen = 0;
++      for (let i = i0; i <= i1; i++) { const a = xs[i]; if (a === null) continue; seen++; if (a < lo) lo = a; if (a > hi) hi = a; }
++      return { rom: hi - lo, seen: seen / Math.max(1, i1 - i0 + 1) };
++    };
++    for (const r of reps) {
++      const i0 = timestamps.findIndex(t => t >= r.startTime), i1 = timestamps.findIndex(t => t >= r.endTime);
++      if (i0 < 0 || i1 <= i0) continue;
++      const mine = range(smoothed, i0, i1), theirs = range(other, i0, i1);
++      if (mine.seen < SIDES_SEEN || theirs.seen < SIDES_SEEN) continue;
++      r.romLeft = arm === 'left' ? mine.rom : theirs.rom;
++      r.romRight = arm === 'left' ? theirs.rom : mine.rom;
++    }
++  }
++
+   // 8. Confidence: fraction of samples with a detected pose on the tracked side
+   const totalSamples = worldLandmarks.length;
+   const detectedSamples = rawAngles.filter(a => a !== null).length;
+@@ -255,6 +263,17 @@ function countSide(
+   return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
+ }
+ 
++/** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
++function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
++  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm) : null));
++  const sampleRate = estimateSampleRate(timestamps);
++  // Outliers before bridging, so spikes don't propagate.
++  const cleaned = removeOutliers(rawAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
++  const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
++  const smoothed = savitzkyGolay(bridged, secToOddSamples(SG_WINDOW_SEC, sampleRate));
++  return { rawAngles, smoothed };
++}
++
+ // ─── Both sides: the alternating curl and the guide's both-sides exercises ───
+ 
+ /**
