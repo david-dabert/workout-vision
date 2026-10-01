@@ -29,6 +29,10 @@
     .thumb { position: relative; margin-top: 0.5rem; }
     .thumb video { display: block; width: 96px; height: 128px; object-fit: cover; border-radius: 8px; background: #000; }
     .thumb em { position: absolute; left: 6px; bottom: 6px; font-style: normal; font-size: 0.75rem; background: rgba(0,0,0,0.6); padding: 1px 5px; border-radius: 4px; }
+    .set.open .thumb video { width: 100%; height: auto; max-height: 70vh; object-fit: contain; }
+    .set.open .thumb em { display: none; }
+    .close-video { display: none; margin-top: 0.4rem; min-height: 44px; padding: 0 1rem; border: 1px solid #555; border-radius: 8px; background: none; color: #ccc; font-size: 0.9rem; }
+    .set.open .close-video { display: block; }
     .state { margin-top: 0.5rem; font-size: 0.85rem; min-height: 1.2rem; color: #bbb; }
     .set.done .state { color: #86efac; }
     .set.failed .state { color: #fca5a5; }
@@ -41,6 +45,7 @@
   <h1>Batch collector</h1>
   <p class="note">Pick all the videos of a session at once. Each becomes a numbered set, by the files' dates (a later pick is added after), shown with its picture and length. Choose the exercise once (it carries to the sets below until you change one), type all the reps on one line, then collect them all. No video is uploaded. No count is shown.</p>
   <p class="note">For David's own sets only. Keep the screen on and this page open until the last set is done.</p>
+  <p class="note">Tap a video to watch it full size and count the set, then Close. If a large pick stalls, pick fewer videos at a time (about 20): the phone may prepare every picked video before handing it over.</p>
 
   <button class="btn" id="pick">Pick videos</button>
   <input type="file" id="videos" accept="video/*,.mov" multiple hidden>

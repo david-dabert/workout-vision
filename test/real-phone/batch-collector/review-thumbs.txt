@@ -1,0 +1,10 @@
+Review of the batch collector's thumbnails (wv-reviewer, 1 October 2026), after David's pick of 100 videos failed.
+D1. A repaint (paint, on every choice or Collect check) dropped the open class while controls stayed on.
+    Fixed: the open state is the row's (row.open); paint keeps it. Test: e2e "an open video stays open when its row is repainted".
+D2. Open videos were never released, so watching many sets piled them up again.
+    Fixed: one open row at a time; a row closed while off screen releases its video. Test: e2e opens 20 rows in turn,
+    one stays open, fewer than 15 videos loaded (failed at 22 before the off-screen release).
+D3. The note and the code comment named different causes. Fixed: the comment calls the many open videos one likely
+    cause; the note says a large pick may stall in the phone's picker and suggests about 20 per pick.
+    Not proven: that a pick of 100 now works on David's iPhone (only desktop Chromium with fake files was run);
+    whether a tap on an open iOS video reaches the page (a Close button is there either way).
