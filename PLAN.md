@@ -252,3 +252,72 @@ GROWTH, from 28 September, by David's decision. People are using the app; users 
 3. A longer analysis of each set, from what the app measures, rep by rep, to tips for the next session, encouragement, and advice on regularity, sleep and food. Its texts are drafted first, in French and in English, each statement with its source and status as CLAUDE.md R9 requires, and sent to David for approval before any code.
 4. The video of the set with the overlay drawn on it, encoded on the phone and saved to it.
 5. Count on the iPhone (David's order, 29 September, after his iPhone read 181 of the 439 samples of his lateral raise clip and the app showed 2 reps of 10; test/real-phone/partial-read/00-source.txt). Nothing else ships, and step 4 waits, until the count is right on an iPhone. (a) A video read in part shows no count (eca34b7): David passed it on his iPhone, approved its four French lines and ordered it shipped; main moved to eca34b7 on 29 September. (b) The playback path reads every sample however slow the phone, measured on David's iPhone before it ships; a change to decoding, so the full gate. (c) The report e-mail states the decoder used and the share of the video read. (d) The check page (check.html): David's five labelled videos, picked from his iPhone's library, counted by the live code and compared with the count and refusal their committed landmarks give, with the share read and the decoder shown; no release that touches analysis goes out unless that page shows every row as before. The incomplete-read screen and the check page are not in the prototype: the first is approved as above, the second is an internal page. (b) passed on David's iPhone on 29 September with the check page (79bfa55): normal path 5 of 5 as before; playback path forced, Low Power Mode on, 5 of 5 as before; David approved the decoder fix over the verifier's second failure and ordered it shipped on green CI. Step 1's time rule and the playback path, David's decision of 29 September: "A correct count comes before a fast one: on the playback path, the analysis may take longer than the clip, and the screen shows its progress; the time rule of Step 1 holds for WebCodecs."
+
+Approved by David on 30 September: main moved to e84ab32 on his order ("Push it and make it live", then "Push"), and pushed (git ls-remote: refs/heads/main e84ab3261aab). main thereby takes the commits from daf191a to e84ab32: progress per exercise and personal bests, the one-sentence opener and the rest clock, the example set on the entry, the export of the saved sets as two spreadsheet files, the levels, one set tempo for the app, and every screen on one design system (design/SYSTEM.md).
+
+David's orders of 30 September, in his words.
+- "A label counts the reps the video shows whole, from rest back to rest."
+- "Every step gets one reviewer pass, as I ordered on 29 September, except a counting change, which gets three at most."
+- "If the third pass still finds a miscount, the change is withdrawn."
+- "A finding that cannot put a wrong count or a wrong label into a file is listed as open, not fixed."
+- "Your reports keep to five lines: the commit, what to check on my iPhone, and what only I can decide."
+- "CI on 84e020a finished green at 11:33, the WebKit tour included, and that result stays on the commit."
+- "The preview is built from 84e020a and does not rebuild on a push."
+- "An order that is not in PLAN.md does not survive the session."
+Replaced by David's second message below: "I will watch the four cut sets myself and send their counts."; "Counter-core and main move to 84e020a once I approve that preview."; "Bench press and overhead press stay parked until I film new press sets."; "Nothing new starts before my check and the exam sets."; "Once I approve the preview, counter-core and main move to 84e020a exactly, and counter-core then takes the two PLAN.md commits."
+
+David's orders of 30 September, second message, in his words. They prevail over the first message where they differ.
+- "You now run the work without waiting on my other session."
+- "Build the agents you need for review and control, beside the reviewer and the verifier, and keep rolling."
+- "This replaces my order that nothing new starts before my check and the exam sets."
+- "The control agent checks every claim against GitHub and CI before it reaches me, and checks that counter-core and main move only as PLAN.md says."
+- "Once committed, the new briefs change only by my order, like the other two."
+- "When two lines of PLAN.md conflict, my latest order prevails; record the choice in PLAN.md and continue."
+- "Stop only for my iPhone check of a preview, French copy, a label, a gate that fails twice, or anything that cannot be undone."
+- "You cannot build the preview, so when counter-core holds a step for my iPhone, your five lines give the commit and my other session builds it."
+- "The five lines are your message to me, not the evidence."
+- "The STOP report keeps the verifier's table, every reviewer report is saved in the evidence folder as lines 44 and 250 say, and your message gives their paths."
+- "Save this pass's report that way, in its own commit."
+- "The label rule applies to every labelled set whose video starts or ends inside a rep, not to four of them."
+- "Checking only the sets the app gets wrong would move the labels toward its count, which R1 forbids."
+- "Send me that list from the diagnosis, each set with the seconds to watch at its edges, those the app counts right included."
+- "I will watch them and send every count."
+- "Move counter-core to the head of this branch now, since steps land on counter-core, as I corrected on 28 September."
+- "Main moves to 84e020a exactly once I approve the preview."
+- "Bench press and overhead press stay offered as Experimental, as PLAN.md says."
+- "By "parked" I meant no counting work on either until I film new press sets."
+- "Record these lines in PLAN.md in my words, in place of those they replace on the presses, the cut sets and the move of counter-core."
+
+Choices recorded under the order that David's latest order prevails (30 September):
+- Line 4 and METHOD allow two sub-agents only. A third is added by his order: wv-control, whose brief is .claude/agents/wv-control.md. It reads each message to David before it is sent and checks its claims against git, GitHub and CI, and the moves of counter-core and main against this plan. Its brief, like the other two, changes only by David's order.
+- Line 44 and the five-line order: the five lines are the message to David; the STOP report with the verifier's table, and every reviewer report, are saved under test/real-phone/ and the message gives their paths.
+- The earlier order that counter-core and main move to 84e020a together: counter-core moves now, by fast-forward, to the head of claude/generate-architecture-md-inw479 once this record and its reviewer report are pushed; the commit it reaches is recorded here with git ls-remote in the next PLAN.md commit. main alone moves to 84e020a exactly, on David's approval of its preview.
+- counter-core moved on 30 September, by fast-forward from e84ab32, to 24f89fa, the head of claude/generate-architecture-md-inw479 (git ls-remote: refs/heads/counter-core 24f89fab79cf). main stays at e84ab32.
+
+Approved on 30 September on the preview built from 84e020a, on David's iPhone, with filming step 3 as written ("Toute la série, du départ au retour au repos."). main fast-forwarded from e84ab32 to 84e020a and pushed (git ls-remote: refs/heads/main 84e020a000e7). main thereby takes 84e020a: the batch collector, the scoreboard, the diagnosis and the exam script, and the new filming step 3.
+David's orders of 30 September, third message, in his words.
+- "Approved: the preview at 84e020a, with filming step 3 as written."
+- "Move main to 84e020a."
+- "The fourteen counts and the batch collector test come with the exam sets; nothing waits on them."
+- "Until then, write to me only when my iPhone or my approval is needed."
+- counter-core moved on 30 September, by fast-forward from 24f89fa, to 75669b5, the head of claude/generate-architecture-md-inw479, since steps land on counter-core (git ls-remote: refs/heads/counter-core 75669b5c1d31). It takes README.md and STATE.md brought up to date, and the import of set files (scripts/import-sets.mjs). main stays at 84e020a.
+- counter-core moved on 30 September, by fast-forward from 75669b5, to c044f6f (git ls-remote: refs/heads/counter-core c044f6feb9ae). It takes the public dataset pipeline (scripts/public/, npm run scoreboard:public): RepCount-A and MM-Fit as build data, split by video into a build half and a held-out half, by David's order of 30 September to measure the counter on public labelled sets. main stays at 84e020a.
+- The rules "Do not use the YouTube benchmark for any decision" and "Tune nothing to any clip", and David's order of 30 September to download public labelled datasets and do the testing himself ("you can download and do the testing yourself and automate a process"; "you find a way around it and to the benchmark"): his latest order prevails. Countix, whose clips come from YouTube through Kinetics, and the other public datasets serve as measurement for counting changes: a change is measured on their build half and never tuned to a clip, and their held-out half is read once, after the change passes every gate. Bench press and overhead press sets are measured but decide nothing, since no counting work is done on either until David films new press sets. The full method of a counting change is unchanged: a synthetic test that fails first, three reviewer passes at most, the verifier, and David's iPhone before main.
+- counter-core moved on 30 September, by fast-forward from c044f6f, to 952fc87 (git ls-remote: refs/heads/counter-core 952fc87e0f02). It takes the Countix benchmark and its diagnostics, the learned counter (measured, not used by the app), the either-side change kept as withdrawn evidence, and the batch collector's one-line counts. main stays at 84e020a.
+
+Release gate of the learned counter, written on 30 September before any corrected result exists (Astra's review, relayed by David). The learned counter replaces the core's count in the app only if all of these hold:
+- On phone sessions held out from all training and all choices (new sets of David's, split by recording session), its exact count is at least the core's, and no set is off by 3 or more.
+- On David's 14 labelled sets, now a regression gate and no longer a test: its exact count is at least the core's, and no set becomes off by 3 or more.
+- Bench press and overhead press sets are measured and shown, and decide nothing, by David's order.
+- Refused sets are counted apart from wrong counts.
+- The objective is checked before any training run: the loss rises with density during a known still hold, and does not change with density in an unlabelled interval.
+- One variable changes per experiment: hold supervision, then one timebase, then normalisation.
+
+Labelling rules for phone collection, 1 October 2026, corrected the same day after Astra's review of the sources (relayed by David). The literature informs these conventions; it does not choose the counting target, which is David's.
+- An unfinished final attempt does not add a completed repetition. A prescribed partial-range repetition is a different case and is not excluded by this rule. Form is not part of the count. Source: the failure definitions of Refalo et al. 2023 (Sports Medicine - Open 9:10, doi 10.1186/s40798-023-00554-y) and Izquierdo et al. 2006 (J Appl Physiol 100:1647, doi 10.1152/japplphysiol.01400.2005), which note that definitions vary between studies. Status: convention, informed by literature.
+- Setup and putting the weight away do not count as repetitions. Source: consistent with the IPF Technical Rulebook 2026 procedures for the squat and bench press; not a general rule for every exercise. Status: convention.
+- Alternating lifts: the total of both arms, by David's order of 27 September (recorded under step 2). Its authority is that order.
+- Incomplete visual coverage: the human count is kept and the set is flagged. A body briefly hidden or outside the image is scored normally on the count the app returns. A recording that starts late or ends early records both the full set's count and the count the recording covers; if the covered count cannot be established, the set is kept as ambiguous and gets no invented label. Returned counts are scored against that target; refusals are reported apart, as coverage, never as correct or wrong. Status: convention (Astra's review of 1 October).
+- Labels are entered before the app's count is shown, with "not sure" allowed (Astra's review of 1 October, anchoring). Status: convention.
+
+David's order of 1 October, which prevails over DIRECTIVES.md Part 4 ("councils, think tanks"): ask Astra for ideas to improve every aspect of the app. Ideas that come back go to BACKLOG.md with their date (R7) until David opens them.

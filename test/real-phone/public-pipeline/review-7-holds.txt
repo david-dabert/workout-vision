@@ -1,0 +1,49 @@
+I found one defect that stops the change meeting its goal. The rest of the chain holds. I did not run train.py. I ran only data.load and one tiny forward pass, both under nice.
+
+**Defect: the new "2 s still at each end" score does not count every sample the way the app does**
+
+Files and lines:
+- /home/user/workout-vision/scripts/ml/train.py:180, in `held()`: `inside = np.concatenate([np.ones(n), s['inside'], np.ones(n)])`
+- /home/user/workout-vision/scripts/ml/train.py:167, in `predict()`: `(forward(p, X) * I).sum()`
+
+What goes wrong:
+- `held()` keeps the clip's own `inside` mask, which is 0 outside the labelled window.
+- `predict()` multiplies the density by that mask before summing.
+- So the score sums only the labelled window plus the two inserted holds. Everything outside the window is left out.
+- The app sums the density over every sample, with no mask (/home/user/workout-vision/src/lib/counting/learned.ts:81).
+- The docstring of `held()` (lines 172-174) and the report line (lines 244 and 246) both say the score counts every sample, as the app does. The code does not.
+
+How much of the data this affects:
+- I ran `data.load('countix-whole')`. 296 of the 447 build clips have footage outside their window, on average 31% of their samples.
+- On all of those clips, the reported score leaves that footage out.
+
+Concrete failing case:
+- A 60-sample clip whose `inside` is 20 zeros, then 20 ones, then 20 zeros.
+- Weights set so the density is a constant 0.1 per sample.
+- `held()` makes it 120 samples. The app would sum 12.0; `predict` returns 8.0. I ran this and got `120 7.999999046325684 12.0`.
+
+Smallest test that fails today:
+```
+p = init(PRNGKey(0)); p['out_w'] = 0; p['out_b'] = log(e**0.1 - 1)   # density 0.1 everywhere
+s = dict(pos=randn(60,12,3), seen=ones(60), inside=[0]*20+[1]*20+[0]*20, count=2, lift='squat', name='x')
+h = held(s)
+assert abs(predict(p, [h])[0] - 0.1 * len(h['pos'])) < 1e-3   # fails: 8.0 vs 12.0
+```
+`test_objective.py` never calls `held()`, so nothing catches this now.
+
+The fix is not simply to set the mask to all ones. Footage outside a Countix window can contain reps the label does not count, so summing it against the window's count would be wrong the other way. A score that is both true to the app and fair needs one of these:
+- cut each clip to its labelled window first, then add the holds and sum every sample; or
+- score only the 151 clips that have no footage outside their window.
+
+As written, the "with 2 s still at each end" numbers in learned-cv*.txt cannot be read as the count the app would give.
+
+**Checked and found correct**
+- **Loss:** `count_loss` sums density × inside × pad against the label, divided by √(count+1). The inserted holds are now marked known with no rep added, and `count` adds only the two sets' labels. Footage outside the window stays at 0 through `augment` (resampled with the same indices) and through padding in `batch`.
+- **Masks from data.py:** each Countix clip's mask is its labelled window. David's sets are all ones.
+- **Denominators:** `score(pred_held, va)` uses len(va). `tot_held` adds up the same folds as `tot`.
+- **test_objective.py fails if the change is reverted:** the `count_loss` import would fail, and the `lengthen` assertion fails when holds are 0 in the mask, because `n_extra > 0` in most of the 50 draws. The loss asserts do separate the known-hold case from the unknown-footage case.
+- **Gap in that test (not a failure):** it calls `lengthen(s, [s], rng)` with only one set, so a second set is never joined on (`o is not s`). That joining path, and the second set's own footage outside its window, is never exercised.
+- **Stale docs:**
+  - The module docstring (lines 11-13) still says TAG applies only to `fit`. `cv` now writes learned-cv-<tag>.* too.
+  - The comment "measured and not kept" at lines 12 and 120-121 refers to LENGTHEN runs made under the old objective, where holds were unknown, not zero-rep. LENGTHEN=1 now means something different.
+- **Scope:** no strings shown in the app, no new host, no video or frames added. Only train.py is modified, plus the new file test_objective.py.

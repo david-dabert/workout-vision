@@ -1,0 +1,42 @@
+Third review of the uncommitted change on claude/generate-architecture-md-inw479 (same goal). Read-only; I did not run the scoreboard. `npx vitest run src/lib/__tests__/batchCollect.test.js src/lib/counting/__tests__/edges.test.ts`: 70 passed. I did not run the Playwright spec. Film step 3 is left out, as asked.
+
+WHAT THIS ROUND CHANGED
+- Numbering now survives a reload: the next set number and each collected set's fingerprint and label are kept in localStorage.
+- A duplicate video whose label differs from its twin is now named with both labels, and David decides.
+- The Share tap guard is now time-based (`tapGate(1500)`), so the button cannot stay dead.
+- Old thumbnail videos are unloaded on re-render.
+- A new "Start again from set 1" button resets the numbering.
+
+DEFECTS
+
+1. A set is remembered as kept once collected, not once its file is saved, so a tab eviction before sharing loses those sets.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:146-148 records a set in `memory.collected` and moves `memory.next` as soon as it is collected. The file itself (`row.blob`) lives only in page memory until Share or Download.
+- Scenario: this is the very case the reload fix was built for. David collects 12 of 20 sets on his iPhone. iOS evicts the Safari tab (he switched to Photos to check a count) before he tapped Share. After the reload the 12 files no longer exist anywhere.
+  - He picks the 20 videos again. Each of the 12 now ends as "Same video as set N: not kept." (`twinOf` finds them in `memory.collected`, line 142-143). The page will not rebuild files it never handed over.
+  - His only way out is "Start again from set 1". Its confirm (line 184) tells him to "Keep the files of sets 1 to 12 first", which he cannot do because they are gone.
+  - The same refusal hits a deliberate re-collection of an old video on a later day, since the memory never expires.
+- Smallest failing test: an e2e test on collect-batch.html. Stub `collectSet` to return a fixed blob and sha256, for example through a `window.__collectSet` hook, or move the record rule into a pure function. Pick a.mov, collect, reload without sharing, pick a.mov again, collect. Expect the row to reach 'done', not the note "not kept".
+- Fix direction: push to `memory.collected` and advance `memory.next` only once the file is handed over (Share resolved, or Download tapped). Until then, keep only the numbers already given, so no new file takes a number an earlier file has.
+
+2. Two tabs overwrite each other's memory and hand out the same set numbers.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:29-30. `memory` is read once at load and written whole on each collected set.
+- Scenario: collect-batch.html is open in two Safari tabs. Tab A collects sets 1 to 5 and stores next=6. Tab B, loaded earlier with next=1, picks and numbers from 1, so it produces a second set01 to set05. B's writes then erase A's fingerprints.
+- Smallest failing test: two pages in one Playwright context, both opened, then a collect in A (needs the same stub as defect 1). B's next pick should start at "Set 6". Re-reading localStorage inside `appendRows` and before `remember()` would fix it.
+
+LOW
+- /home/user/workout-vision/src/collect-batch-main.js:173-179: with 20 files, the share sheet can take longer than 1.5 s to appear. A second tap after 1.5 s but before the sheet shows is let through. Safari rejects it with InvalidStateError, and the page says "Sharing did not go through" while the first sheet opens. The unit test for `tapGate` checks only the timing function, not this case.
+
+TESTS THAT DO NOT FAIL ON REVERT
+- Nothing tests the page's use of the saved memory once a set is collected: the push at line 146, the `earlier` argument at line 142, and the twin note path at line 143. Only the pure `twinOf` and `twinNote` are unit-tested. The e2e reload test seeds `collected: []`, and its fake videos never collect.
+- Removing the thumbnail unload at line 38 fails no test.
+- These fail on revert, and are sound:
+  - the unit tests for `appendRows(…, first)`, `twinOf` with `earlier`, `twinNote` and `tapGate`;
+  - the e2e reload-and-restart test (numbering from 13, then 1 after restart).
+
+CHECKED AND FOUND SOUND
+- `appendRows` numbers from the maximum of the saved next number and the last row plus 1. It never renumbers an existing row. A duplicate row or an uncollected row leaves a gap, but no number is used twice within one tab.
+- The Restart button is hidden while busy and asks for confirmation.
+- Broken or blocked localStorage falls back to this load only.
+- The saved memory holds only a fingerprint, a set number, a lift and a count, and stays on the phone. No new host and no video in the change.
+- The new strings are English only, on a page for David, with no em dash. The summary claim "numbered … after the sets already collected, even before a reload" matches the code.
+- Unchanged since my last report, and still sound: collectSet, collect-main, the precache filter, sets.ts, scoreboard, diagnose, edges, the exam script and .gitignore.

@@ -1,0 +1,21 @@
+Review 2: the replay and its video tell the saved count from the detected marks (wv-reviewer, 1 October 2026).
+
+D1. French agreement: "Repère détecté 7 sur 7 · filmée en partie". Fixed: "filmé en partie" after a
+    correction ("repère" is masculine), "filmée" otherwise. check.mjs now expects the masculine form.
+D2. Past the last mark, the replay said "Touchez une répétition sur la ligne" after a correction.
+    Fixed: "Touchez un repère sur la ligne pour le revoir." Test: check.mjs, saved 8, playhead past the marks.
+T1. The exported video's note was untested. Test added: video-export.test.js, saved 8 draws both counts,
+    saved 7 or none draws the count alone.
+T2. Not tested: CoreUpload passing the saved count to the replay (onSaved, saved). An end-to-end test
+    needs a real analysis; checked by reading the code.
+Latent, unreachable while measures are hidden: the screen-reader prefix "Rep N ·" in the measures branch.
+Left as is, low probability: an export started while the save is still writing records no note.
+Edge, left as is: a set counted 0 and corrected to N draws no overlay in the video (it claims nothing).
+Test fix of my own: the replay checks first seeked to a mark's start, which can land on the frame
+    before it; they now click inside the mark. Three consecutive runs: 80 pass, 0 fail.
+French for David's approval (R10), proposed by the review: "Repère détecté 3 sur 7", "Repères détectés
+    par l’app", "L’app a détecté 7 répétitions. Vous avez enregistré 8.", "Touchez un repère sur la ligne
+    pour le revoir.", "filmé en partie".
+
+Evidence: vitest 1120 pass; build passes; check.mjs 80 pass (check.txt); Chromium e2e 81 pass.
+WebKit and the iPhone not run here.

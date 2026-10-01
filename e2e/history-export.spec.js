@@ -1,5 +1,5 @@
-// The history's export (Chromium copy of history.spec.js's seeding): the saved sets leave as two
-// spreadsheet files, handed to the share sheet where it takes files, else downloaded; in French with
+// The history's export (Chromium copy of history.spec.js's seeding): the saved sets leave as one
+// spreadsheet file, with no measure beyond the count while none is validated (measures.js, 1 October), handed to the share sheet where it takes files, else downloaded; in French with
 // semicolons and decimal commas; and the action overlaps nothing on the small screens.
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
@@ -45,33 +45,31 @@ async function seeded(page, lang) {
 // A French phone: the file's separator and decimal mark follow the phone's locale (review, 30 September).
 test.describe('on a French phone', () => {
 test.use({ locale: 'fr-FR' });
-test('without a share sheet for files, the export downloads the sets and the reps (fr)', async ({ page }) => {
+test('without a share sheet for files, the export downloads the sets file and no reps file (fr)', async ({ page }) => {
   await seeded(page, 'fr');
   const got = [];
   page.on('download', d => got.push(d));
   await page.getByRole('button', { name: LABEL.fr }).click();
-  await expect.poll(() => got.length).toBe(2);
+  await expect.poll(() => got.length).toBe(1);
+  await page.waitForTimeout(1200);
+  expect(got).toHaveLength(1);
   const files = Object.fromEntries(await Promise.all(got.map(async d => [d.suggestedFilename(), await readFile(await d.path())])));
-  const names = Object.keys(files).sort();
-  expect(names[0]).toMatch(/^repetitions-\d{4}-\d\d-\d\d\.csv$/);
-  expect(names[1]).toMatch(/^series-\d{4}-\d\d-\d\d\.csv$/);
-  const sets = files[names[1]], reps = files[names[0]];
+  const names = Object.keys(files);
+  expect(names[0]).toMatch(/^series-\d{4}-\d\d-\d\d\.csv$/);
+  const sets = files[names[0]];
   // UTF-8 with its byte order mark.
   expect([...sets.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
   const setRows = sets.toString('utf8').slice(1).split('\r\n').filter(Boolean);
-  expect(setRows[0]).toBe('Date;Exercice;Répétitions;Comptées par l’app;Corrigée;Confirmée;Charge (kg);Durée (s);Tempo moyen;Variation de vitesse concentrique (%)');
+  expect(setRows[0]).toBe('Date;Exercice;Répétitions;Comptées par l’app;Corrigée;Confirmée;Charge (kg);Durée (s)');
   // Oldest first: the squat entered by hand, then the corrected curl.
   expect(setRows[1].split(';').slice(1, 8)).toEqual(['Squat', '8', '', '', 'oui', '62,5', '']);
-  expect(setRows[2].split(';').slice(1, 8)).toEqual(['Curl biceps', '5', '4', 'oui', 'oui', '', '18,4']);
-  const repRows = reps.toString('utf8').slice(1).split('\r\n').filter(Boolean);
-  expect(repRows).toHaveLength(6);
-  expect(repRows[1].split(';').slice(1)).toEqual(['Curl biceps', '1', '118', '1,00', '1,40', '200', '100', 'non']);
+  expect(setRows[2].split(';').slice(1)).toEqual(['Curl biceps', '5', '4', 'oui', 'oui', '', '18,4']);
   // The app cannot know what the browser saved; it says what it did (review, 30 September).
-  await expect(page.getByRole('status').filter({ hasText: 'Téléchargement lancé' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Téléchargement de vos séries lancé.' })).toBeVisible();
 });
 });
 
-test('with a share sheet for files, the export shares both files inside the tap and downloads nothing (en)', async ({ page }) => {
+test('with a share sheet for files, the export shares the sets file inside the tap and downloads nothing (en)', async ({ page }) => {
   await page.addInitScript(() => {
     window.__shared = null;
     navigator.canShare = data => Array.isArray(data?.files) && data.files.every(f => f instanceof File);
@@ -86,12 +84,11 @@ test('with a share sheet for files, the export shares both files inside the tap 
   await page.getByRole('button', { name: LABEL.en }).click();
   await expect.poll(() => page.evaluate(() => window.__shared)).not.toBeNull();
   const shared = await page.evaluate(() => window.__shared);
-  expect(shared.map(f => f.name)).toEqual([expect.stringMatching(/^sets-\d{4}-\d\d-\d\d\.csv$/), expect.stringMatching(/^reps-\d{4}-\d\d-\d\d\.csv$/)]);
+  expect(shared.map(f => f.name)).toEqual([expect.stringMatching(/^sets-\d{4}-\d\d-\d\d\.csv$/)]);
   expect(shared.every(f => f.type === 'text/csv')).toBe(true);
   const rows = shared[0].text.replace('﻿', '').split('\r\n').filter(Boolean);
-  expect(rows[0].split(',')[0]).toBe('Date');
+  expect(rows[0]).toBe('Date,Exercise,Reps,Counted by the app,Corrected,Confirmed,Load (kg),Duration (s)');
   expect(rows[1].split(',').slice(1, 7)).toEqual(['Squat', '8', '', '', 'yes', '62.5']);
-  expect(shared[1].text.split('\r\n').filter(Boolean)).toHaveLength(6);
   await page.waitForTimeout(500);
   expect(downloads).toBe(0);
 });
@@ -102,9 +99,9 @@ test('a double tap downloads each file once (fr)', async ({ page }) => {
   const got = [];
   page.on('download', d => got.push(d.suggestedFilename()));
   await page.getByRole('button', { name: LABEL.fr }).dblclick();
-  await expect.poll(() => got.length).toBe(2);
+  await expect.poll(() => got.length).toBe(1);
   await page.waitForTimeout(1200);
-  expect(got).toHaveLength(2);
+  expect(got).toHaveLength(1);
 });
 
 // Review, 30 September: a share sheet that never answers (the app sent to the background) does not
@@ -123,7 +120,7 @@ test('a share that never settles leaves the next tap a way to the files (en)', a
   await button.click();
   await expect(page.getByRole('status').filter({ hasText: 'Tap again' })).toBeVisible();
   await button.click();
-  await expect.poll(() => got.length).toBe(2);
+  await expect.poll(() => got.length).toBe(1);
 });
 
 for (const size of [{ width: 390, height: 664 }, { width: 375, height: 548 }]) {

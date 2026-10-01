@@ -3,6 +3,7 @@
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
 import { decimal, repTempo, setTempo } from './tempo';
+import { MEASURES_SHOWN } from './measures';
 
 export { setTempo };
 
@@ -94,7 +95,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, measures: shown = MEASURES_SHOWN }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -103,12 +104,19 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const allReps = reps || [];
   const liftFirst = first || 'concentric';
 
-  const hasShort = allReps.some(isShortIn(reps));
-  const { columns, rows } = repTable({ reps, first: liftFirst, fr });
+  // Without validated measures (measures.js): no per-rep table, no short-rep mark, and of the
+  // summary only the previous set's count.
+  const hasShort = shown && allReps.some(isShortIn(reps));
+  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr }) : { columns: [], rows: [] };
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
-  if (measures) {
+  if (!shown && previousSet && Number.isFinite(previousSet.count)) {
+    const prevDate = previousSet.date instanceof Date ? previousSet.date : new Date(previousSet.date);
+    const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
+    summary.push(fr ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép.` : `Set of ${day}${colon}${previousSet.count}${NBSP}reps`);
+  }
+  if (measures && shown) {
     summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
     const speed = speedLine(measures.speedChange, fr);
     if (speed) summary.push(speed);
@@ -151,7 +159,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: fr ? 'Rapport de séance' : 'Session report',
     // One sentence that sums up the set (set-opener.js); none on an unknown count. The result screen carries none: its numeral and account say it.
-    opener: setOpener({ reps, fr, count, counted }) || '',
+    opener: setOpener({ reps, fr, count, counted, measures: shown }) || '',
     // Only what the user filled in (step 1, 29 September 2026): no coach is assumed.
     people: people({ fr, name, context, partner, level }),
     count: String(count),

@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
+// These tests check the measures as they read once validated: the flag is on here, and
+// measures-hidden.test.js checks that, while it is off, none is shown (measures.js).
+vi.mock('../measures', () => ({ MEASURES_SHOWN: true }));
 // exercise-info.js reaches the drawing code, which reads the screen and draws its sprites when it
 // loads; a stand-in that accepts every call lets the names load outside a browser.
 vi.hoisted(() => {

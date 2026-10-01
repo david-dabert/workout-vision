@@ -7,12 +7,14 @@ import { poseAt, repAt, phaseAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
 import { canExport, exportSetVideo } from './video-export';
 import './Replay.css';
+import { MEASURES_SHOWN } from './measures';
+import { isCorrected, markLabel, provenance } from './replay-labels';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
 // The video is read from the phone and sent nowhere.
 
-export default function Replay({ file, result, lift, leaving, onBack }) {
+export default function Replay({ file, result, lift, saved = null, leaving, onBack }) {
   const { lang } = useT(), fr = lang === 'fr';
   const videoRef = useRef(null), canvasRef = useRef(null), backRef = useRef(null), lineRef = useRef(null);
   const drag = useRef(null);
@@ -30,6 +32,8 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   const fw = meta.width || meta.extractedWidth || 9, fh = meta.height || meta.extractedHeight || 16;
   const [length, setLength] = useState(meta.duration || times[times.length - 1] || 1);
   const liftName = exerciseName(lift, lang);
+  // After a correction the marks are the app's detections, beside the count the user saved (replay-labels.js).
+  const corrected = isCorrected(saved, result.count), note = provenance({ detected: result.count, saved, fr });
 
   // Step 4: the video with its overlay, prepared on a first tap and shared on a second, since the share
   // sheet opens only inside a tap and the recording takes as long as the set.
@@ -42,7 +46,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
     videoRef.current?.pause();
     abort.current = new AbortController();
     setMade({ state: 'making', progress: 0, file: null, link: null });
-    exportSetVideo({ file, result, lift, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
+    exportSetVideo({ file, result, lift, fr, saved, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
       .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out) }))
       .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null }); });
   }
@@ -181,17 +185,22 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
-  const phase = current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
+  // The phase word follows the unvalidated phase boundaries: hidden with the measures (measures.js).
+  const phase = MEASURES_SHOWN && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
     head = `${fr ? 'Rép.' : 'Rep'} ${current + 1} · `;
-    detail = r.clipped
+    // Without validated measures (measures.js), the rep's number alone.
+    if (!MEASURES_SHOWN) { head = ''; detail = `${corrected ? markLabel({ index: current + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${current + 1}`}${r.clipped ? `${NB}· ${fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed'}` : ''}`; }
+    else detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
   } else {
     detail = reps.length
-      ? (fr ? 'Touchez une répétition sur la ligne pour la revoir.' : 'Touch a rep on the line to see it again.')
+      ? (corrected
+        ? (fr ? 'Touchez un repère sur la ligne pour le revoir.' : 'Touch a mark on the line to see it again.')
+        : (fr ? 'Touchez une répétition sur la ligne pour la revoir.' : 'Touch a rep on the line to see it again.'))
       : result.refused
         ? (fr ? 'Cette série n’a pas pu être comptée.' : 'This set could not be counted.')
         : (fr ? 'Aucune répétition comptée dans cette vidéo.' : 'No rep counted in this video.');
@@ -224,7 +233,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
       <div ref={lineRef} className="rp-line" role="slider" tabIndex={0}
         aria-label={fr ? 'Position dans la vidéo' : 'Position in the video'}
         aria-valuemin={0} aria-valuemax={Math.round(length * 10) / 10} aria-valuenow={Math.round(now * 10) / 10}
-        aria-valuetext={current >= 0 ? (fr ? `Répétition ${current + 1} sur ${reps.length}` : `Rep ${current + 1} of ${reps.length}`) : sec(now)}
+        aria-valuetext={current >= 0 ? markLabel({ index: current + 1, total: reps.length, fr, corrected }) : sec(now)}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={() => { drag.current = null; }} onKeyDown={keys}>
         {reps.map((r, i) => {
           const from = Math.min(100, (r.startTime / length) * 100), to = Math.min(100, (r.endTime / length) * 100);
@@ -232,6 +241,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
         })}
         <i className="rp-now" style={{ left: `${Math.min(100, (now / length) * 100)}%` }} />
       </div>
+      {note && <p className="rp-prov" data-testid="rp-prov">{note}</p>}
       <p className="rp-detail" aria-live={playing ? 'off' : 'polite'}>{head && <span className="sr">{head}</span>}{detail}</p>
       <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
         <button className="btn-primary press rp-play" onClick={toggle} disabled={broken}>

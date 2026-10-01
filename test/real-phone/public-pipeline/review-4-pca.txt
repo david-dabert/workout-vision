@@ -1,0 +1,44 @@
+One defect: the whole-body signal is turned upside down on 67 of the 894 build sets, and no test catches it. The timeouts are fine and I found no privacy problem.
+
+Note: while I was reviewing, commit 0c7663d landed. It holds the countix-whole data and the regenerated public-scoreboard.txt. What is still uncommitted: the four test files that get a 1_800_000 ms timeout, the new pca-signal.ts, and the new files public-signal.txt and public-boundaries.txt.
+
+**DEFECT 1: the direction check measures the average angle, not the movement**
+File: /home/user/workout-vision/test/real-phone/accuracy/pca-signal.ts, lines 32-34.
+```
+let c = 0;
+sm.forEach((x, i) => { if (x !== null && angle[i] !== null) c += x * (angle[i] as number); });
+return c < 0 ? sm.map(x => (x === null ? null : -x)) : sm;
+```
+The body signal is centred, but the joint angle is not: it is a raw angle of about 90 to 180 degrees, always positive. So `c` works out to roughly (mean angle) × (sum of the body signal over the frames where the angle exists), plus the real covariance. The body signal only sums to zero over every frame where the body was seen. Whenever the angle is missing on some of those frames, the first term swamps the covariance, and the sign follows which frames were dropped rather than how the body moves. 337 of the 894 build sets have missing angles.
+
+- **Failing scenario (measured on the committed data, with no repository file changed):** I re-signed each set with centred angle and body signal.
+  - 67 of 894 sets get the opposite sign from the one pca-signal.ts chooses. The first examples are public/countix/build/-RNK2UiHf4Y_000015_0, 20J9Rj6ljus_000003_0, 8fT_bwJtgBA_000038_0 and DnMx7EjjmFo_000011_3160.
+  - On those sets `turningPoints` counts the wrong extreme (peaks where it should count troughs).
+  - The column "Whole-body signal exact (30%)" in public-signal.txt totals 244 (123 countix + 121 countix-whole). With centred signing it is 251.
+- **What is wrong for the reader:** the comment's claim "signed so that it moves with the lift's own joint angle" is false for those sets, and the diagnostic reports the wrong numbers.
+- **Smallest test that fails today:**
+  - Build 60 frames where all 12 joints move along one axis as x(t) = sin(2πt/20).
+  - Set angle[i] = 150 + 20·sin(2πi/20), exactly in phase, but make it null wherever sin > 0.
+  - Assert that the sum over non-null i of pcaSignal(wl, angle)[i] × (angle[i] − mean angle) is > 0.
+  - Today it fails: the uncentred sum is 150 × (sum of negative samples), which is below 0, so the output comes back inverted.
+- **Fix:** subtract the mean of both series over the shared non-null frames before the sum.
+
+**DEFECT 2: pcaSignal has no test**
+pca-signal.ts has no unit test (turning-points.ts has turning-points.test.ts). The only thing that calls it is public-signal.test.ts. That file is skipped without ACCURACY and asserts nothing: it only writes a text file. Reverting pca-signal.ts to any other signal, or keeping Defect 1, would fail no test.
+
+**DEFECT 3: the report's header no longer describes its table**
+File: /home/user/workout-vision/test/real-phone/accuracy/public-signal.test.ts, line 41.
+The header still says "the same smoothed joint angle read two ways". The table now has a third reading, the whole-body PCA signal, which is not a joint angle. That sentence in public-signal.txt is now false, and the file is committed as evidence.
+
+**Checked and found correct:**
+- **Timeouts:** 1_800_000 on public-boundaries, public-holdout, public-scoreboard and public-signal. The bodies are synchronous; Vitest 4.1.11 still enforces the limit after they return. A full public-signal-style pass took about 5.6 s here, so the 5 s default would fail.
+- **No counting change:** src/ is untouched, and pcaSignal only feeds a diagnostic column.
+- **Frame alignment:** smoothedAngles has the same length as wl on all 894 sets.
+- **Smoothing claim:** "five samples (a third of a second)" is true; samples are 0.0667 s apart.
+- **Missing landmarks:** if hip landmark 23 or 24 is missing, the row still returns null, because both are in JOINTS.
+- **Pooled columns:** the PCA exact count includes refused sets, the same as the turning-point columns.
+- **Holdout:** the countix-whole build ids share no id or YouTube video with the countix holdout.
+- **Privacy:** no new host, no video or frame added (only .json.gz landmarks, and *.mp4/*.mov/*.webm are ignored), no user data.
+- **Strings:** no app-facing strings, so no French or English strings and no em dash.
+
+Nothing in the app's UI, Safari or user-input paths is touched.

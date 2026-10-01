@@ -1,0 +1,15 @@
+Label watch list, 2026-09-30: every labelled set, with the seconds where its video starts or ends away from rest.
+sets-29sep/bench_press side 24cc4f0b  22.0 s long  start 0.2-4.2 s, end 21.6-22.0 s of 22.0 s
+sets-29sep/bicep_curl side f5e5bdf2  11.1 s long  end 9.7-11.1 s of 11.1 s
+sets-29sep/hip_thrust side cf8c21d7  14.7 s long  start 0.0-0.9 s, end 11.7-14.7 s of 14.7 s
+sets-29sep/lateral_raise front 43e71b40  30.6 s long  end 29.8-30.6 s of 30.6 s
+sets-29sep/leg_press side 1ee0ae47  29.6 s long  start 0.0-0.4 s, end 29.1-29.6 s of 29.6 s
+sets-29sep/overhead_press front cefdaa82  16.9 s long  start 0.0-2.8 s
+sets-29sep/overhead_press front f75638cc  18.5 s long  start 0.0-0.3 s, end 16.8-18.5 s of 18.5 s
+sets-29sep/romanian_deadlift side b3dc2c9e  25.2 s long  start 0.0-2.2 s
+sets-29sep/squat side 21fd7ccf  26.8 s long  no edge away from rest
+landmarks/bench_press angle mufhcy60  22.0 s long  end 21.1-22.0 s of 22.0 s
+landmarks/bicep_curl side mufhf3wy  22.7 s long  start 0.0-1.1 s
+landmarks/lat_pulldown front mufhlh4o  40.6 s long  end 38.6-40.6 s of 40.6 s
+landmarks/lateral_raise front mufhhbun  29.2 s long  no edge away from rest
+landmarks/overhead_press front mufhjkku  41.3 s long  start 0.0-5.9 s, end 39.1-41.3 s of 41.3 s

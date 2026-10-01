@@ -1,0 +1,5 @@
+2026-09-30T17:38:37Z
+https://zenodo.org/records/7672767 -> 000
+https://zenodo.org/api/records/7672767 -> 000
+zenodo.org:443 connect_rejected gateway answered 403 to CONNECT (policy denial or upstream failure)
+zenodo.org:443 connect_rejected gateway answered 403 to CONNECT (policy denial or upstream failure)

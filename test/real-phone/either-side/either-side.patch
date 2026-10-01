@@ -1,0 +1,215 @@
+diff --git a/scripts/make-guide-patterns.mjs b/scripts/make-guide-patterns.mjs
+index 5990421..281d253 100644
+--- a/scripts/make-guide-patterns.mjs
++++ b/scripts/make-guide-patterns.mjs
+@@ -1,5 +1,6 @@
+ // Writes src/lib/counting/guide-patterns.json from guide-families.json: for each countable exercise,
+-// its pattern as "joint/rest/first" with "/both" when both sides count, and nothing else. The core
++// its pattern as "joint/rest/first" with "/both" when both sides count, "/either" when either side does
++// the rep (the more worked side is read), and nothing else. The core
+ // imports this table, which loads with the first screen; the families' reasons stay out of it.
+ // Run after any change to guide-families.json: node scripts/make-guide-patterns.mjs
+ import { readFileSync, writeFileSync } from 'node:fs';
+@@ -7,7 +8,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
+ const families = JSON.parse(readFileSync(new URL('../src/lib/counting/guide-families.json', import.meta.url), 'utf8'));
+ const out = {};
+ for (const [key, f] of Object.entries(families)) {
+-  if (f.joint) out[key] = [f.joint, f.rest, f.first, ...(f.bothSides ? ['both'] : [])].join('/');
++  if (f.joint) out[key] = [f.joint, f.rest, f.first, ...(f.bothSides ? ['both'] : f.eitherSide ? ['either'] : [])].join('/');
+ }
+ writeFileSync(new URL('../src/lib/counting/guide-patterns.json', import.meta.url), JSON.stringify(out, null, 1) + '\n');
+ console.log(`guide-patterns.json: ${Object.keys(out).length} exercises`);
+diff --git a/src/lib/counting/__tests__/guide-families.test.ts b/src/lib/counting/__tests__/guide-families.test.ts
+index 5478aef..102610f 100644
+--- a/src/lib/counting/__tests__/guide-families.test.ts
++++ b/src/lib/counting/__tests__/guide-families.test.ts
+@@ -52,6 +52,12 @@ describe('guide counting families', () => {
+       expect(entry.bothSides).toBe(true);
+       fields.push('bothSides');
+     }
++    // Either side doing the rep (core.ts, eitherSide): only true, and never with both sides counted.
++    if (Object.hasOwn(entry, 'eitherSide')) {
++      expect(entry.eitherSide).toBe(true);
++      expect(Object.hasOwn(entry, 'bothSides')).toBe(false);
++      fields.push('eitherSide');
++    }
+     expect(Object.keys(entry).sort()).toEqual(fields.sort());
+   });
+ 
+diff --git a/src/lib/counting/__tests__/patterns.test.ts b/src/lib/counting/__tests__/patterns.test.ts
+index b553b4d..1e29f6e 100644
+--- a/src/lib/counting/__tests__/patterns.test.ts
++++ b/src/lib/counting/__tests__/patterns.test.ts
+@@ -13,7 +13,7 @@ import familiesJson from '../guide-families.json';
+ import patternsJson from '../guide-patterns.json';
+ import { jointFrame, cycles, sample, timestamps, type Side } from './synthetic';
+ 
+-type Family = { joint: Joint | null; rest?: 'high' | 'low'; first?: 'concentric' | 'eccentric'; bothSides?: boolean };
++type Family = { joint: Joint | null; rest?: 'high' | 'low'; first?: 'concentric' | 'eccentric'; bothSides?: boolean; eitherSide?: boolean };
+ const families = familiesJson as Record<string, Family>;
+ 
+ const combos = new Map<string, string>(); // pattern → the first exercise of it outside LIFTS
+@@ -59,7 +59,7 @@ describe('every countable exercise is counted by its pattern', () => {
+   it('reads the same patterns as guide-families.json, and nothing else', () => {
+     const expected: Record<string, string> = {};
+     for (const [key, f] of Object.entries(families)) {
+-      if (f.joint) expected[key] = [f.joint, f.rest, f.first, ...(f.bothSides ? ['both'] : [])].join('/');
++      if (f.joint) expected[key] = [f.joint, f.rest, f.first, ...(f.bothSides ? ['both'] : f.eitherSide ? ['either'] : [])].join('/');
+     }
+     expect(patternsJson).toEqual(expected);
+   });
+diff --git a/src/lib/counting/core.ts b/src/lib/counting/core.ts
+index 812447b..2a02dc8 100644
+--- a/src/lib/counting/core.ts
++++ b/src/lib/counting/core.ts
+@@ -93,6 +93,15 @@ export interface LiftDefinition {
+   first: 'concentric' | 'eccentric';
+   /** Both sides counted and joined, one rep per side (the alternating curl, walking lunge, dead bug…). */
+   bothSides?: boolean;
++  /**
++   * Either side does the rep, in turn or as the lifter chooses (the lunge, the front raise): one angle, at each
++   * sample the more worked of the two sides (the more bent knee, the higher arm), so a rep counts whichever
++   * limb did it and however the pose model names the two sides. Measured on the Countix build half, 30
++   * September 2026: lunge 44 to 58 exact of 156, front raise 49 to 63 of 150; lifts both sides do together
++   * keep the better-seen side (squat, push-up and pushdown lost 2 to 3 exact with it). Status: validated
++   * on public build sets (test/real-phone/accuracy/).
++   */
++  eitherSide?: boolean;
+ }
+ 
+ export const LIFTS = {
+@@ -110,7 +119,7 @@ export const LIFTS = {
+   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
+   leg_extension: { joint: 'knee', rest: 'low', first: 'concentric' },
+   leg_curl: { joint: 'knee', rest: 'high', first: 'concentric' },
+-  lunge: { joint: 'knee', rest: 'high', first: 'eccentric' },
++  lunge: { joint: 'knee', rest: 'high', first: 'eccentric', eitherSide: true },
+   romanian_deadlift: { joint: 'hip', rest: 'high', first: 'eccentric' },
+   hip_thrust: { joint: 'hip', rest: 'low', first: 'concentric' },
+ } as const satisfies Record<string, LiftDefinition>;
+@@ -130,8 +139,8 @@ const PATTERNS = guidePatterns as Record<string, string>;
+ export function liftDefinition(key: string): LiftDefinition | null {
+   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
+   if (!Object.hasOwn(PATTERNS, key)) return null;
+-  const [joint, rest, first, both] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
+-  return { joint, rest, first, ...(both ? { bothSides: true } : {}) };
++  const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
++  return { joint, rest, first, ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : {}) };
+ }
+ 
+ // ─── Constants ───
+@@ -194,6 +203,7 @@ export function countReps(
+   const def = liftDefinition(lift);
+   if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
+   if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
++  if (def.eitherSide) return countSide(worldLandmarks, timestamps, def, 'either');
+   return countSide(worldLandmarks, timestamps, def, selectSide(worldLandmarks, def.joint));
+ }
+ 
+@@ -201,12 +211,18 @@ function countSide(
+   worldLandmarks: WorldLandmarkFrame[],
+   timestamps: number[],
+   def: LiftDefinition,
+-  arm: 'left' | 'right',
++  side: 'left' | 'right' | 'either',
+ ): CountResult {
+-  // 1. Extract raw angle per sample
++  // An either-side lift reports both sides as tracked.
++  const arm = side === 'either' ? 'both' : side;
++  // 1. Extract raw angle per sample: one side's, or for an either-side lift the more worked of the two
++  // (the lower angle when the lift rests high, the higher when it rests low), or the one side seen.
+   const rawAngles = worldLandmarks.map(wl => {
+     if (!wl) return null;
+-    return extractAngle(wl, def.joint, arm);
++    if (side !== 'either') return extractAngle(wl, def.joint, side);
++    const l = extractAngle(wl, def.joint, 'left'), r = extractAngle(wl, def.joint, 'right');
++    if (l === null || r === null) return l ?? r;
++    return def.rest === 'high' ? Math.min(l, r) : Math.max(l, r);
+   });
+ 
+   // 2. Estimate sample rate from timestamps
+diff --git a/src/lib/counting/guide-families.json b/src/lib/counting/guide-families.json
+index 0ed885e..7022c3b 100644
+--- a/src/lib/counting/guide-families.json
++++ b/src/lib/counting/guide-families.json
+@@ -103,6 +103,7 @@
+     "rest": "low",
+     "first": "concentric",
+     "view": "side",
++    "eitherSide": true,
+     "why": "Forward arm elevation opens hip-shoulder-elbow from the arm-down start."
+   },
+   "rear_delt_fly": {
+diff --git a/src/lib/counting/guide-patterns.json b/src/lib/counting/guide-patterns.json
+index 5ea0078..b2e7b9b 100644
+--- a/src/lib/counting/guide-patterns.json
++++ b/src/lib/counting/guide-patterns.json
+@@ -12,7 +12,7 @@
+  "arnold_press": "elbow/high/eccentric",
+  "lateral_raise": "shoulder/low/concentric",
+  "cable_lateral_raise": "shoulder/low/concentric",
+- "front_raise": "shoulder/low/concentric",
++ "front_raise": "shoulder/low/concentric/either",
+  "face_pull": "elbow/high/concentric",
+  "upright_row": "shoulder/low/concentric",
+  "deadlift": "hip/low/concentric",
+diff --git a/src/lib/counting/__tests__/lunge.test.ts b/src/lib/counting/__tests__/lunge.test.ts
+new file mode 100644
+index 0000000..db18047
+--- /dev/null
++++ b/src/lib/counting/__tests__/lunge.test.ts
+@@ -0,0 +1,54 @@
++/**
++ * Alternating lunges (public benchmark, 30 September 2026). A lunge steps forward on one leg, then on the
++ * other: the front knee bends deep and the back knee less. Read on one knee, every other lunge is a
++ * shallow bend that the thresholds, set by the deep ones, do not count, and the set reads half. Each knee
++ * is counted on its own and the two are joined, as for the alternating curl: bends of both knees that
++ * overlap are one lunge. Status: measured on the Countix build half (test/real-phone/accuracy/).
++ */
++import { describe, it, expect } from 'vitest';
++import { countReps } from '../core';
++import { jointFrame, timestamps } from './synthetic';
++
++const SPS = 30;
++// n lunges of `sec` each, alternating legs: the front knee goes to 90°, the back knee to 130°, from 175°.
++function lunges(n: number, sec: number) {
++  const frames = [], per = Math.round(sec * SPS), pause = Math.round(0.6 * SPS);
++  for (let i = 0; i < pause; i++) frames.push(jointFrame('knee', { left: 175, right: 175 }));
++  for (let r = 0; r < n; r++) {
++    const front = r % 2 === 0 ? 'left' : 'right', back = front === 'left' ? 'right' : 'left';
++    for (let i = 0; i < per; i++) {
++      const k = Math.sin((Math.PI * i) / per);
++      frames.push(jointFrame('knee', { [front]: 175 - 85 * k, [back]: 175 - 45 * k }));
++    }
++    for (let i = 0; i < pause; i++) frames.push(jointFrame('knee', { left: 175, right: 175 }));
++  }
++  return frames;
++}
++
++describe('alternating lunges', () => {
++  for (const n of [6, 10]) {
++    it(`${n} lunges, legs alternating, count ${n}`, () => {
++      const f = lunges(n, 1.6);
++      expect(countReps(f, timestamps(f.length, SPS), 'lunge').count).toBe(n);
++    });
++  }
++});
++
++describe('either side does the rep', () => {
++  it('lunges whose two legs the pose model swaps every few lunges still count once each', () => {
++    // Hips, knees and ankles (23 to 28) swap left for right every 70 samples, as a side-on video can.
++    const pair = (j: number) => (j >= 23 && j <= 28 ? (j % 2 ? j + 1 : j - 1) : j);
++    const f = lunges(8, 1.6).map((frame, i) => (frame && Math.floor(i / 70) % 2 ? frame.map((_, j) => frame[pair(j)]) : frame));
++    expect(countReps(f, timestamps(f.length, SPS), 'lunge').count).toBe(8);
++  });
++  it('front raises done arm by arm count one per raise', () => {
++    const frames = [], per = Math.round(1.6 * SPS), pause = Math.round(0.6 * SPS);
++    for (let i = 0; i < pause; i++) frames.push(jointFrame('shoulder', { left: 15, right: 15 }));
++    for (let r = 0; r < 8; r++) {
++      const side = r % 2 === 0 ? 'left' : 'right', other = side === 'left' ? 'right' : 'left';
++      for (let i = 0; i < per; i++) frames.push(jointFrame('shoulder', { [side]: 15 + 80 * Math.sin((Math.PI * i) / per), [other]: 15 }));
++      for (let i = 0; i < pause; i++) frames.push(jointFrame('shoulder', { left: 15, right: 15 }));
++    }
++    expect(countReps(frames, timestamps(frames.length, SPS), 'front_raise').count).toBe(8);
++  });
++});

@@ -41,6 +41,7 @@
 .wv-experience .rp-rep.is-on { background: var(--lamp-hi); box-shadow: 0 0 12px rgba(247, 220, 174, 0.55); }
 .wv-experience .rp-now { position: absolute; top: 9px; bottom: 9px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bone); pointer-events: none; }
 .wv-experience .rp-detail { flex: none; min-height: 19px; margin: 2px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
+.wv-experience .rp-prov { flex: none; margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: inherit; text-wrap: balance; }
 
 .wv-experience .rp-controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: var(--s-3); }
 .wv-experience .rp-controls .btn-primary, .wv-experience .rp-controls .btn-ghost { height: 52px; }

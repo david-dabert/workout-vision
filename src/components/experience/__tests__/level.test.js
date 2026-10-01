@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+// These tests check the measures as they read once validated: the flag is on here, and
+// measures-hidden.test.js checks that, while it is off, none is shown (measures.js).
+vi.mock('../measures', () => ({ MEASURES_SHOWN: true }));
 import { LEVELS, LEVEL_KEY, readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks, GUIDED_SETS } from '../level';
 import { reportSheet, repTable, speedChangeLine } from '../report-sheet';
 import { setAccount } from '../set-account';

@@ -1,0 +1,26 @@
+Review 1 of the saved-count and hidden-measures change (wv-reviewer, 1 October 2026), and what was done.
+
+D1. The replay's phase word (Concentrique / Excentrique) followed the unvalidated phase boundaries.
+    Fixed: Replay.jsx computes no phase while MEASURES_SHOWN is off. Not covered by an automated test:
+    mounting the replay needs a video; checked by reading the code.
+D2. "En savoir plus" described the ▾ mark and "measured in degrees", which the screen no longer shows.
+    Fixed: set-notes.js keeps the definition of range and drops the ▾ line while the flag is off.
+    Test: check.mjs, every level, the notes name no ▾ and no degrees.
+D3. After a correction, the marks were still called "Reps, one per mark" and a mark read "Rep 7".
+    Fixed: after a correction the group reads "Reps the app found, one per mark" and a mark "App mark 7".
+    Test: check.mjs, corrected 7 to 5, label and last mark checked.
+D4. The demo showed per-rep times.
+    Fixed: Demo.jsx shows none while the flag is off. Test: e2e/demo.spec.js, no .demo-times.
+Minor, fixed: the export's "Tap again to download your files" now "Tap again to download"; header
+    comments of ExportSets.jsx and sets-csv.js describe one file while measures are hidden.
+Minor, left for David: the replay's "N / 7" and the shared replay video's burned-in "7 / 7" after a
+    correction to 8 show the app's count without saying so.
+Checked consistent by the reviewer: history list and detail, report from result and from history,
+    CSV, challenge text, e-mail and GitHub report links, accepting, failed save, expert level, refused
+    and partial screens; the five vi.mock files only switch the flag on.
+French for David's approval (R10): "{n} répétitions enregistrées." / "{n} répétition enregistrée.";
+    "Série du {jour} : {n} rép."; "Répétitions repérées par l’app, une par marque"; "Marque de l’app {n}";
+    "Touchez à nouveau pour télécharger."; the range note shortened to its first sentence.
+
+Evidence after the fixes: npx vitest run 1114 pass; npm run build passes; check.mjs 60 pass, 0 fail
+(check.txt); Chromium e2e 81 pass, 0 fail (WebKit specs not run here: no WebKit in this container).

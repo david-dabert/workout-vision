@@ -18,9 +18,17 @@ Curl, lateral raise, lat pulldown, squat. Four sets each: 16 sets.
 
 ## How to hand them over
 
-Open the collector (collect.html), choose the lift and the view, pick the video, enter your count.
-It gives a .json.gz file of landmarks only; no video leaves the phone. Send the files; they go into
-test/real-phone/exam/<lift>/ unopened, and only the exam script reads them:
+Open the batch collector (collect-batch.html), pick the session's videos, and for each set choose the
+lift and the view and enter your count; then collect, and share the files. Each is a .json.gz file of
+landmarks only; no video leaves the phone. A label counts the reps the video shows whole, from rest back
+to rest (PLAN.md, 30 September). The files are placed by their names alone, unopened, and the import
+stops if a name cannot be read or one video comes twice, here or already in a sets- folder or the exam.
+The five build clips of 25 September (test/real-phone/landmarks/) carry no fingerprint: never use those
+videos for the exam.
+
+    node scripts/import-sets.mjs <folder of the files> --exam --write
+
+Only the exam script reads them:
 
     EXAM=1 npx vitest run test/real-phone/exam/exam.test.ts
 

@@ -1,0 +1,37 @@
+I found three defects in the change and two smaller problems. The chain itself is consistent. The objective check passes, but nothing in it tests the tempo the change is built on. I did not run train.py.
+
+What is consistent: the labels, the masks and the loss. The app's inference sum matches the new score too. `slowed()` cuts the clip to its `inside` window and resamples `pos` and `seen` with the same index. It marks every sample known and sums all of them through `predict`, as `src/lib/counting/learned.ts:81` does. The score's denominator is `len(va)`, the same as the other scores. With SLOW off, the random draw is unchanged, so default runs stay reproducible.
+
+**1. The tempo comment is contradicted by the data, so the "gym tempo" score measures a slower tempo than any of David's sets.** Files: `/home/user/workout-vision/scripts/ml/train.py` lines 76-78 and 189-197.
+- The comment says public clips' reps "last about one" second. I measured the build half (447 clips, 15 samples per second): the labelled window divided by the count has a median of 33.5 samples per rep (2.2 s), 18 at p10 and 54 at p90.
+- David's sets run 33.6 to 69.5 samples per rep, holds included, so each figure is an upper bound. The squat the comment cites is 403 samples for 7 reps, which is 57.6 samples per rep, about 1.7 times the public median, not about 3 times.
+- At 2.5 times slower, the median public rep becomes 84 samples (5.6 s) and p90 becomes 135 samples. Both exceed David's slowest set, and training with SLOW=1 goes up to 3 times.
+- Result: the new score and the SLOW range are tuned to a tempo David does not lift at. Any "counts at a gym tempo" conclusion drawn from them is unsupported.
+- Smallest failing test, in `test_objective.py`: load `data.load('countix-whole')` and `data.load_david()`, then assert `2.5 * median(inside.sum()/count) <= max(len(pos)/count for David's sets)`. Today it gives 83.75 against 69.5 and fails.
+
+**2. At these stretch factors, some reps are longer than the network can see.** Same lines.
+- The network's input span is 1 + 4 × (1+2+4+8+16+1) = 129 samples (kernel 5, dilations `[1,2,4,8,16,1]`; every other convolution has width 1).
+- After `slowed(…, 2.5)`, 11.2% of validation clips have a mean rep longer than 129 samples. At the SLOW=1 maximum of 3.0, the share is 27.1%.
+- On those clips the new score partly measures the network's span, not how well it counts. Neither the change nor its output says so.
+- Smallest failing test: assert `(2.5 * inside.sum()/count <= 129).all()` over the build half. It fails today.
+
+**3. The stretch copies whole frames, so it does not look like a real slow set.** Lines 80 and 196.
+- The resampling rounds to the nearest frame (`np.round(np.linspace(...))`). At 2.5 times, every pose is repeated 2 or 3 times in a 2,3,2,3 pattern, which makes a flat step in every position channel. A slow set filmed at 15 samples per second moves smoothly.
+- SLOW=1 training uses the same method, so the slowed score is scored on exactly the distortion the model was trained on. Its gain over a SLOW=0 run can come from learning the steps, not the tempo. That would not carry over to a real slow set.
+- Smallest failing test: take a smooth 20-sample ramp `c`, run `slowed(c)`, and assert `(np.diff(sl['pos'][:, 0, 0]) != 0).all()`. It fails today because about 60% of the steps are zero. Interpolating between frames fixes it.
+
+**4. The new numbers have no status or source (rule R9).**
+- The 3.0 at line 78 cites a source whose premise is false (see 1) and has no status among validated, literature, convention or experimental.
+- The 2.5 in `slowed` at line 189 has neither a source nor a status.
+
+**5. A run's report does not always record SLOW, and results can be overwritten.**
+- The cv summary line records SLOW, but the fit report written to `learned-david*.txt` does not, and fit has no report line for LENGTHEN either.
+- `SLOW=1 python3 train.py cv` without TAG overwrites the committed `learned-cv.json`/`.txt`.
+- `SLOW=1 ... fit` without TAG overwrites the app's `src/lib/counting/learned-weights.json` and `learned-parity.json`, with nothing recording that SLOW was on.
+- Also, `step` is compiled per input length, and SLOW=1 roughly triples the range of batch lengths (about 120 to 450 samples, more with LENGTHEN). That means many more recompilations and a slower run on a CPU already shared by two runs.
+
+**On the tests:** the new checks in `/home/user/workout-vision/scripts/ml/test_objective.py` (lines 57-60) would fail if the change were reverted, because of the import. But with a constant density, they only prove the window cut and the sample count (20 to 50). None of defects 1-3 is visible to them.
+
+**Checked with no issue found:** the labels and the window-to-`inside` step in `data.load`; resampling of the mask in `augment` and `slowed`; the padding and `inside` masks in `batch`/`count_loss`; `predict` against `learned.ts`; the denominators in `score` and in the fold and overall totals; SLOW parsing, off by default; no new host and no clip added to the repository.
+
+Out of scope: iPhone Safari, input handling, the French and English copy and privacy do not apply here, because no app code or user-facing string changed.

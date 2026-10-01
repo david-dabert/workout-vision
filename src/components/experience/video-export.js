@@ -6,6 +6,7 @@
 import { liftDefinition } from '../../lib/counting/core';
 import { poseAt } from './replay-track';
 import { drawSkeleton, litSides, LAMP } from './replay-draw';
+import { overlayLines } from './replay-labels';
 
 const MIMES = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
 
@@ -33,7 +34,7 @@ export const canExport = () => typeof MediaRecorder !== 'undefined'
  * capture are stopped on every path (review 01 of step 4). Call it inside the tap: the video starts
  * playing there, since Safari on iPhone may load nothing, and may refuse to play, outside a tap.
  */
-export function exportSetVideo({ file, result, lift, onProgress, signal }) {
+export function exportSetVideo({ file, result, lift, fr = false, saved = null, onProgress, signal }) {
   return new Promise((resolve, reject) => {
     const mime = pickMime(m => MediaRecorder.isTypeSupported(m));
     if (!mime) { reject(new Error('no-format')); return; }
@@ -69,15 +70,25 @@ export function exportSetVideo({ file, result, lift, onProgress, signal }) {
       const lm = poseAt(frames, times, t);
       if (lm) drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u);
       if (reps.length) {
-        // The reps begun so far, as the replay's chip shows them: "3 / 8".
+        // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
+        // line says both counts, so the video explains itself away from the app (replay-labels.js).
         const begun = reps.filter(r => r.startTime <= t).length, pad = 16 * u;
+        const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
         ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
         ctx.textBaseline = 'top';
         ctx.fillStyle = 'rgba(8, 7, 6, 0.55)';
-        const label = `${begun} / ${reps.length}`, w = ctx.measureText(label).width;
+        const w = ctx.measureText(label).width;
         ctx.fillRect(pad - 10 * u, pad - 8 * u, w + 20 * u, 46 * u);
         ctx.fillStyle = LAMP;
         ctx.fillText(label, pad, pad);
+        if (note) {
+          ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
+          const nw = Math.min(ctx.measureText(note).width, W - 2 * pad);
+          ctx.fillStyle = 'rgba(8, 7, 6, 0.55)';
+          ctx.fillRect(pad - 10 * u, pad + 46 * u, nw + 20 * u, 26 * u);
+          ctx.fillStyle = LAMP;
+          ctx.fillText(note, pad, pad + 52 * u, W - 2 * pad);
+        }
       }
       onProgress?.(video.duration ? Math.min(1, t / video.duration) : 0);
     };
