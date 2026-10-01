@@ -19,24 +19,29 @@ centred, then phone moved half a metre to one side. If SI follows the phone, it 
 
 # Iteration 4, 1 October 2026: front view only (David's order: build it as an experimental measure)
 
-What changed from iteration 3: the view is decided from the body's orientation in the world landmarks
-(median angle of the shoulder line and of the hip line to the image plane, at most 20° and 25°), not from
-visibility, so a side view is refused even when the model reports the hidden limb visible
-(src/lib/counting/symmetry.ts). No count changes; the scoreboard is unchanged at 7/14.
+What changed from iteration 3 (src/lib/counting/symmetry.ts; no count changes, scoreboard 7/14):
+- The view is decided from the body's orientation in the world landmarks, not from visibility: shoulder and
+  hip lines within 20° and 25° of the image plane, and the person's left shoulder on +x in at least 80 % of
+  frames (facing the camera; a body seen from behind is refused).
+- Only exercises whose two sides move together are compared (BILATERAL); a set where one side moves less than
+  20° is refused as one-sided.
+- The gap shown is computed from the two ranges shown, so the three numbers agree.
+- No verdict: the screen states both ranges, the gap, and that on public front clips about a third of lifters
+  with no known asymmetry show a gap over 15 %.
+- After a corrected count, the comparison (measured over the app's marks) is neither shown nor saved.
 
-Evidence (front.txt, front.test.ts, run with ACCURACY=1; check.txt, check.mjs in Chromium):
-- Gate: every set David filmed from the side, and his angled and turned sets, is refused (14 of 14 correct
-  by his file names); the test fails if a side set is ever measured.
-- Bias: on 80 Countix clips filmed from the front (lifters with no known asymmetry), left is larger in 40 of
-  80, mean index -2 %. The pose model does not lean to one side on public video.
-- Noise: 80 % of those indices lie between -30 % and +29 %; 36 % pass the 15 % threshold often used in the
-  literature. A 15 % flag would mostly be measurement noise, so the app shows no verdict: it states both
-  ranges, the gap, and that measurement alone often gives gaps up to 30 % (NOISE_SI; the 10th percentile is -30.3 %).
-- David's five front sets all read left larger (-9 % to -36 %) while the public clips do not lean. His
-  pattern is therefore his body or his filming set-up (phone off-centre), not the model. The test of
-  iteration 3 still decides it: film one set with the phone centred, then moved half a metre to one side.
+Evidence (front.txt from front.test.ts, ACCURACY=1; check.txt from check.mjs, Chromium):
+- Gate: every set David filmed from the side or at an angle is refused; the test fails if a side set is
+  measured. His lat_pulldown_10_front is refused too (hips at 40°, back to the camera): 13 of 14 sets agree
+  with their file names, and the one that does not is refused, not mismeasured.
+- Public front clips: 54 measured. Left larger in 25 of 54, mean index +2 %. 16 of 54 (30 %, roughly
+  +/-13 points at 95 %) exceed 15 %. NOISE_SHARE_OVER_GAP ("about a third") describes these clips; the test
+  keeps it within 8 points of them.
+- David's five front sets all read left larger (-8 % to -38 %). The public clips do not lean, but they mix
+  cameras and possibly mirrored videos, which could cancel a lean, so this does not show that the model is
+  free of a lean on his phone. The test of iteration 3 still decides body against filming: one set with the
+  phone centred, then moved half a metre to one side.
 
 Not established: that a real asymmetry is detected. No clip on disk has a measured asymmetry. That needs
-sets of people with a known difference (a physiotherapist's patients, or a lifter shortening one side's
-range on purpose).
-Left and right are the filmed person's own; a mirrored front-camera video swaps them.
+sets of people with a known difference (a physiotherapist's patients, or a lifter shortening one side on
+purpose). A mirrored front-camera video swaps left and right; the app cannot tell.

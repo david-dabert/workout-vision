@@ -1,8 +1,8 @@
 // The front-view left/right comparison in words (counting/symmetry.ts), for the result screen and the
-// report. It states both ranges, the gap between them and how large a gap measurement alone gives on
-// public video; it draws no conclusion about the body (R8; EU MDR Rule 11: no reading meant to inform care).
+// report. It states both ranges, the gap between them (relative to their mean) and how often public video
+// of lifters with no known asymmetry shows a larger gap; it draws no conclusion about the body (R8; EU MDR Rule 11: no reading meant to inform care).
 // Copy for David's approval (R10). Status: experimental.
-import { NOISE_SI } from '../../lib/counting/symmetry';
+import { GAP_SI } from '../../lib/counting/symmetry';
 
 const NB = ' ';
 
@@ -20,7 +20,7 @@ export function sidesLines(sides, fr) {
   const pc = fr ? `${NB}%` : '%';
   return fr
     ? { line: `Amplitude gauche ${sides.left}°${NB}· droite ${sides.right}°${NB}· écart ${gap}${pc}`,
-        note: `Mesuré de face. Sur des vidéos publiques, la mesure seule donne souvent des écarts jusqu’à ${NOISE_SI}${pc}.` }
+        note: `Série filmée de face, gauche et droite de la personne filmée. Sur des vidéos publiques de sportifs sans asymétrie connue, environ un tiers dépassent ${GAP_SI}${pc} d’écart.` }
     : { line: `Range left ${sides.left}°${NB}· right ${sides.right}°${NB}· ${gap}${pc} apart`,
-        note: `Measured from the front. On public videos, measurement alone often gives gaps up to ${NOISE_SI}${pc}.` };
+        note: `Set filmed from the front; the filmed person’s left and right. On public videos of lifters with no known asymmetry, about a third show a gap over ${GAP_SI}${pc}.` };
 }

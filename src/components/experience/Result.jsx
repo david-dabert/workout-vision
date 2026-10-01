@@ -193,8 +193,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // Left against right, for a set filmed from the front only (counting/symmetry.ts); measured once.
   const [sides] = useState(() => (Array.isArray(result.worldLandmarks) && Array.isArray(result.timestamps)
     ? sidesRecord(compareSides(result.worldLandmarks, result.timestamps, lift, reps)) : null));
-  const sidesText = MEASURES_SHOWN ? sidesLines(sides, fr) : null;
   const corrected = step === 'saved' && isCorrected(trueN, count);
+  const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr) : null;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
   let detail = '', detailHead = '';
@@ -282,7 +282,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       savedId.current = await saveWorkout({
         exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
         date: new Date().toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
-        sides,
+        // Measured over the app's marks: kept only when the saved count is the app's.
+        sides: n === count ? sides : null,
         // What the app counted stays apart from what the visitor kept.
         machineResult: { reps: count, confidence: result.confidence ?? null },
         correctedResult: n !== count ? { reps: n } : null,
@@ -294,7 +295,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
       setStep('saved');
-      onSaved(n); // the replay states the saved count beside the detected marks
+      onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
     } catch {
       setSaveError(fr ? 'Résultat affiché, mais non enregistré.' : 'Result shown, but could not save it.');

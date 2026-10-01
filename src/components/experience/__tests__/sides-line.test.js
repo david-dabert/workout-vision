@@ -5,7 +5,7 @@ describe('sides line', () => {
   it('states both ranges and the gap, with no verdict', () => {
     const s = sidesRecord({ status: 'measured', comparison: { left: 90.4, right: 80.6, si: -11.4, reps: 8 } });
     expect(s).toEqual({ left: 90, right: 81, si: -11, reps: 8 });
-    expect(sidesLines(s, true)).toEqual({ line: 'Amplitude gauche 90° · droite 81° · écart 11 %', note: 'Mesuré de face. Sur des vidéos publiques, la mesure seule donne souvent des écarts jusqu’à 30 %.' });
+    expect(sidesLines(s, true)).toEqual({ line: 'Amplitude gauche 90° · droite 81° · écart 11 %', note: 'Série filmée de face, gauche et droite de la personne filmée. Sur des vidéos publiques de sportifs sans asymétrie connue, environ un tiers dépassent 15\u00A0% d’écart.' });
     expect(sidesLines(s, false).line).toBe('Range left 90° · right 81° · 11% apart');
   });
   it('says nothing for a set not measured', () => {
