@@ -36,30 +36,32 @@ try {
     const sides = page.locator('[data-testid="res-sides"]');
     const n = await sides.count();
     const text = n ? (await sides.innerText()).replace(/\n/g, ' | ') : '';
-    check(await page.locator('[data-testid="rep-strips"]').count() === 1, `${lang} ${s.file}: tempo strip drawn`);
+    check(await page.locator('[data-testid="strip-tempo"]').count() === 1, `${lang} ${s.file}: tempo strip drawn`);
     if (!s.front) check(await page.locator('[data-testid="strip-sides"]').count() === 0, `${lang} ${s.file}: no left/right strip`);
     check(s.front ? n === 1 : n === 0, `${lang} ${s.file}: ${s.front ? 'line shown' : 'no line'}${text ? `: ${text}` : ''}`);
+    // The question stays on the first screen: the strips sit under it, never between the count and it.
+    const ask = await page.locator('[data-testid="ask-card"]').boundingBox(), strips = await page.locator('[data-testid="rep-strips"]').boundingBox();
+    check(ask && strips && strips.y >= ask.y + ask.height, `${lang} ${s.file}: strips under the question`);
+    // A tap on a strip column selects that very rep in the marks and in every strip.
+    const area = page.locator('.res-strips');
+    await area.scrollIntoViewIfNeeded();
+    if (process.env.SHOTS) { await page.waitForTimeout(1200); await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}.png`) }); }
+    const col = page.locator('[data-testid="strip-tempo"] .strip-col').nth(2);
+    const b = await col.boundingBox();
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await page.waitForTimeout(400);
+    const selBar = await page.locator('.bars .bar').evaluateAll(bs => bs.findIndex(x => x.classList.contains('sel')));
+    const selCols = await page.locator('[data-testid="rep-strips"] .strip').evaluateAll(ss => ss.map(st => [...st.querySelectorAll('.strip-col')].findIndex(x => x.classList.contains('sel'))));
+    check(selBar === 2 && selCols.every(i => i === 2), `${lang} ${s.file}: a tap on rep 3's column selects rep 3 in the marks and every strip (${selBar}, ${selCols})`);
+    if (process.env.SHOTS) await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}-sel.png`) });
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     if (n) {
       check(await page.locator('[data-testid="res-exp"]').count() === 1, `${lang} ${s.file}: experimental label on screen`);
-      if (process.env.SHOTS) {
-        await page.locator('[data-testid="ask-card"] .btn-primary').scrollIntoViewIfNeeded();
-        await page.evaluate(() => document.body.style.background = '#080706');
-        const area = page.locator('[data-testid="rep-strips"]').locator('xpath=..');
-        await area.scrollIntoViewIfNeeded();
-        await page.waitForTimeout(1500);
-        await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}.png`) });
-        // One rep chosen: it stays lit in the marks and every strip, the others dim, and the line names it.
-        const col = page.locator('[data-testid="rep-strips"] .strip-col').nth(2);
-        const b = await col.boundingBox();
-        await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
-        await page.waitForTimeout(600);
-        check(await page.locator('.bars .bar.sel').count() === 1 && await page.locator('[data-testid="rep-strips"] .strip-col.sel').count() >= 1, `${lang} ${s.file}: a tap on a strip selects that rep everywhere`);
-        await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}-sel.png`) });
-        await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
-      }
       check(await page.locator('[data-testid="strip-sides"]').count() === 1, `${lang} ${s.file}: left/right strip drawn`);
       const box = await sides.boundingBox();
       check(box && box.x >= 0 && box.x + box.width <= 390, `${lang} ${s.file}: line within the 390 px width`);
+      const over = await page.locator('.res-strips').evaluate(e => [...e.querySelectorAll('*')].some(x => x.scrollWidth > x.clientWidth + 1 && getComputedStyle(x).overflow !== 'visible') || e.getBoundingClientRect().right > innerWidth);
+      check(!over, `${lang} ${s.file}: nothing in the strips overflows`);
       // Save, then read the stored set back the way the report does.
       await page.locator('[data-testid="ask-card"] .btn-primary').click();
       const stored = await page.waitForFunction(() => new Promise(res => {

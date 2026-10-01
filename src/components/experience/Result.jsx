@@ -210,10 +210,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else { detailHead = `${word} · `; detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
-      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
-    // The rep's two sides, when the set was compared (RepStrips draws their gap).
-    const lr = !corrected && sidesPerRep?.find(x => x.at === sel);
-    if (lr) detail += `${NB}· ${fr ? 'G' : 'L'}${NB}${Math.round(lr.left)}° ${fr ? 'D' : 'R'}${NB}${Math.round(lr.right)}°`; }
+      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
@@ -411,12 +408,16 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
-      {measured && MEASURES_SHOWN && view.level !== 'beginner' && <RepStrips reps={reps} sel={sel} shown={shown} sides={corrected ? null : sidesPerRep} fr={fr} onPick={pick} />}
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
-      {measured && sidesText && <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div>}
     </div>,
     // Expert: the set's concentric speed change, the report's own line (report-sheet.js).
     speed: measured && speedLine && <p key="speed" className="lv-speed" data-testid="level-speed">{speedLine}</p>,
+    // Under the question (it stays on the first screen, level.js): each rep's tempo and, for a set filmed
+    // from the front, its gap between sides, with the set's two ranges and what a gap means beside them.
+    strips: measured && MEASURES_SHOWN && <div key="strips" className="res-strips">
+      <RepStrips reps={reps} sel={sel} shown={shown} sides={corrected ? null : sidesPerRep} fr={fr} onPick={pick} />
+      {sidesText && <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div>}
+    </div>,
     card: <div key="card">
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">

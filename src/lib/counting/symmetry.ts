@@ -90,7 +90,7 @@ export function compareSides(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
   lift: string,
-  reps: Pick<RepDetail, 'startTime' | 'endTime'>[],
+  reps: (Pick<RepDetail, 'startTime' | 'endTime'> & { clipped?: boolean })[],
 ): SymmetryResult {
   const def = liftDefinition(lift);
   if (!def) return { status: 'no-lift' };
@@ -106,6 +106,8 @@ export function compareSides(
   };
   const L: number[] = [], R: number[] = [], perRep: SideComparison['perRep'] = [];
   for (const [at, rep] of reps.entries()) {
+    // A rep the recording cuts is not whole on either side: not compared (its tempo is withheld too).
+    if (rep.clipped) continue;
     const i0 = timestamps.findIndex(t => t >= rep.startTime);
     let i1 = timestamps.findIndex(t => t >= rep.endTime);
     if (i1 < 0) i1 = timestamps.length - 1;
