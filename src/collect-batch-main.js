@@ -52,7 +52,7 @@ function render() {
     // The video itself on each row, with its length: the set is labelled against what is seen, whatever
     // order the phone hands the files in (review, 30 September).
     box.innerHTML = `<div class="set-head"><b>Set ${row.set}</b><span></span></div>
-      <div class="thumb"><video muted playsinline preload="metadata"></video><em></em></div>
+      <div class="thumb"><video muted playsinline preload="metadata"></video><em></em><button type="button" class="close-video">Close the video</button></div>
       <label for="lift${i}">Exercise</label><select id="lift${i}"></select>
       <div class="row"><div><label for="count${i}">Reps you counted</label><input type="number" id="count${i}" min="0" max="99" inputmode="numeric" placeholder="0"></div>
       <div><label for="view${i}">Camera view</label><select id="view${i}"></select></div></div>
@@ -60,8 +60,21 @@ function render() {
     box.querySelector('.set-head span').textContent = row.file.name;
     const video = box.querySelector('video');
     row.url ??= URL.createObjectURL(row.file);
-    video.src = `${row.url}#t=0.5`;
-    video.addEventListener('loadedmetadata', () => { box.querySelector('.thumb em').textContent = Number.isFinite(video.duration) ? `${Math.round(video.duration)} s` : ''; }, { once: true });
+    // The video loads only while its row is near the screen (watchThumbs), so a large pick never holds
+    // dozens of videos at once; one likely cause of a pick of 100 failing on David's iPhone (1 October).
+    // The iOS picker preparing every file is another, which the note on the page answers.
+    video.dataset.src = `${row.url}#t=0.5`;
+    video.dataset.set = String(row.set);
+    if (row.seconds) box.querySelector('.thumb em').textContent = `${row.seconds} s`;
+    video.addEventListener('loadedmetadata', () => {
+      if (Number.isFinite(video.duration)) { row.seconds = Math.round(video.duration); box.querySelector('.thumb em').textContent = `${row.seconds} s`; }
+    });
+    // A tap opens the video full width with its controls, to watch the set and count it. One video is open
+    // at a time, so memory stays bounded however many are watched; Close (or a tap) closes it. The open
+    // state is the row's, so a repaint (paint) keeps it.
+    video.controls = !!row.open;
+    video.addEventListener('click', () => { if (!row.open) openRow(row); });
+    box.querySelector('.close-video').addEventListener('click', () => closeRow(row));
     const lift = box.querySelector('select[id^=lift]'), view = box.querySelector('select[id^=view]'), count = box.querySelector('input');
     lift.append(option('', 'Choose…'), ...LIFTS.map(l => option(l.key, l.label)));
     view.append(...VIEWS.map(([v, t]) => option(v, t)));
@@ -77,6 +90,7 @@ function render() {
     paint(row);
     return box;
   }));
+  watchThumbs();
   const left = rows.filter(open).length;
   $('collect').hidden = !rows.length || !left;
   $('collect').disabled = busy;
@@ -95,6 +109,21 @@ function render() {
   if (!rows.length) summaryEl.textContent = `The next set is set ${recall().next}. Safari forgets this after a week without a visit.`;
 }
 
+// Each row's video is loaded when the row comes near the screen and let go when it leaves, unless it is
+// open or playing, so a batch of any size holds only a few videos at once.
+let thumbs = null;
+function watchThumbs() {
+  thumbs?.disconnect();
+  if (typeof IntersectionObserver !== 'function') { for (const v of setsEl.querySelectorAll('video')) v.src = v.dataset.src; return; }
+  thumbs = new IntersectionObserver(entries => {
+    for (const { target: v, isIntersecting } of entries) {
+      if (isIntersecting) { if (!v.getAttribute('src')) v.src = v.dataset.src; }
+      else if (v.getAttribute('src') && !v.closest('.open')) { v.pause(); v.removeAttribute('src'); v.load(); }
+    }
+  }, { rootMargin: '300px 0px' });
+  for (const v of setsEl.querySelectorAll('video')) thumbs.observe(v);
+}
+
 // The rows' fields follow the rows after a choice carried.
 function sync(key) {
   rows.forEach((r, j) => { const el = r.el?.querySelector(`#${key}${j}`); if (el) el.value = r[key]; });
@@ -110,9 +139,29 @@ function recheck() {
   }
 }
 
+function openRow(row) {
+  for (const r of rows) if (r !== row && r.open) closeRow(r);
+  row.open = true;
+  paint(row);
+  const v = row.el?.querySelector('video');
+  if (v) { if (!v.getAttribute('src')) v.src = v.dataset.src; v.controls = true; }
+}
+
+function closeRow(row) {
+  row.open = false;
+  paint(row);
+  const v = row.el?.querySelector('video');
+  if (!v) return;
+  v.pause(); v.controls = false;
+  // Closed while off screen (another row opened further down), it is let go now: the observer fired
+  // when it left the screen, while it was still open.
+  const r = v.getBoundingClientRect(), margin = 300;
+  if (v.getAttribute('src') && (r.bottom < -margin || r.top > innerHeight + margin)) { v.removeAttribute('src'); v.load(); }
+}
+
 function paint(row, pct) {
   if (!row.el) return;
-  row.el.className = `set ${row.state === 'done' ? 'done' : row.state === 'failed' ? 'failed' : ''}`;
+  row.el.className = `set ${row.state === 'done' ? 'done' : row.state === 'failed' ? 'failed' : ''}${row.open ? ' open' : ''}`;
   row.el.querySelector('.state').textContent = row.note || '';
   if (pct !== undefined) row.el.querySelector('.bar-fill').style.width = `${Math.round(pct * 100)}%`;
   else if (row.state === 'done') row.el.querySelector('.bar-fill').style.width = '100%';

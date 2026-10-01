@@ -92,3 +92,47 @@ test('after the counts are filled from the line, an exercise chosen on the first
   await expect(page.locator('#lift1')).toHaveValue(chosen);
   await expect(page.locator('#lift2')).toHaveValue(chosen);
 });
+
+// David, 1 October 2026: a pick of 100 videos failed on his iPhone. The rows now load their video only
+// near the screen, so a batch of any size holds a few videos at once; a tap opens one to watch and count it.
+test('a hundred videos picked at once load only the rows near the screen, and a tap opens one', async ({ page }) => {
+  await open(page);
+  await page.locator('#videos').setInputFiles(Array.from({ length: 100 }, (_, i) => video(`v${String(i).padStart(3, '0')}.mov`)));
+  await expect(page.locator('.set')).toHaveCount(100);
+  const loaded = () => page.locator('.set video').evaluateAll(vs => vs.filter(v => v.getAttribute('src')).length);
+  await expect.poll(loaded).toBeGreaterThan(0);
+  await expect.poll(loaded).toBeLessThan(15);
+  await page.locator('.set').nth(80).scrollIntoViewIfNeeded();
+  await expect.poll(() => page.locator('.set').nth(80).locator('video').getAttribute('src')).toBeTruthy();
+  await expect.poll(() => page.locator('.set').nth(0).locator('video').getAttribute('src')).toBeNull();
+  await expect.poll(loaded).toBeLessThan(15);
+  const v = page.locator('.set').nth(80).locator('video');
+  await v.click();
+  await expect(page.locator('.set').nth(80)).toHaveClass(/open/);
+  expect(await v.evaluate(el => el.controls)).toBe(true);
+  await page.locator('.set').nth(80).getByRole('button', { name: 'Close the video' }).click();
+  await expect(page.locator('.set').nth(80)).not.toHaveClass(/open/);
+  expect(await v.evaluate(el => el.controls)).toBe(false);
+  // Watching many sets one after another keeps one video open, and the loaded ones bounded.
+  for (let i = 0; i < 100; i += 5) {
+    const row = page.locator('.set').nth(i);
+    await row.scrollIntoViewIfNeeded();
+    await row.locator('video').click();
+    await expect(row).toHaveClass(/open/);
+  }
+  await expect(page.locator('.set.open')).toHaveCount(1);
+  await expect.poll(loaded).toBeLessThan(15);
+});
+
+// Review of 1 October: a repaint (a choice made, Collect checking the rows) keeps an open video open.
+test('an open video stays open when its row is repainted', async ({ page }) => {
+  await open(page);
+  await page.locator('#videos').setInputFiles([video('a.mov'), video('b.mov')]);
+  await page.locator('.set').nth(0).locator('video').click();
+  await page.click('#collect');
+  await expect(page.locator('.set').nth(0)).toHaveClass(/open/);
+  await expect(page.locator('.set').nth(0)).toHaveClass(/failed/);
+  await page.selectOption('#lift0', { index: 1 });
+  await expect(page.locator('.set').nth(0)).toHaveClass(/open/);
+  expect(await page.locator('.set').nth(0).locator('video').evaluate(el => el.controls)).toBe(true);
+});

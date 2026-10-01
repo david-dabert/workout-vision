@@ -1,0 +1,16 @@
+Left/right range per set (mean over reps with both sides in view), symmetry index SI = (R - L) / mean x 100.
+
+sets-29sep/bench_press_7_side_24cc4f0b.json.gz  side  reps 5, 3 with both sides: left 39 deg, right 37 deg, SI -6 %
+sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  side  reps 4: no rep with both sides in view
+sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  side  reps 6, 6 with both sides: left 66 deg, right 43 deg, SI -41 %
+sets-29sep/lateral_raise_9_front_43e71b40.json.gz  front  reps 8, 8 with both sides: left 92 deg, right 84 deg, SI -9 %
+sets-29sep/leg_press_13_side_1ee0ae47.json.gz  side  reps 12: no rep with both sides in view
+sets-29sep/overhead_press_4_front_cefdaa82.json.gz  front  reps 5, 5 with both sides: left 77 deg, right 69 deg, SI -12 %
+sets-29sep/overhead_press_4_front_f75638cc.json.gz  front  reps 4, 4 with both sides: left 62 deg, right 57 deg, SI -7 %
+sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  side  reps 8: no rep with both sides in view
+sets-29sep/squat_7_side_21fd7ccf.json.gz  side  reps 7: no rep with both sides in view
+landmarks/bench_press_7_angle_mufhcy60.json.gz  angle  reps 3: no rep with both sides in view
+landmarks/bicep_curl_7_side_mufhf3wy.json.gz  side  reps 7, 3 with both sides: left 92 deg, right 36 deg, SI -87 %
+landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  front  reps 10, 10 with both sides: left 63 deg, right 47 deg, SI -29 %
+landmarks/lateral_raise_10_front_mufhhbun.json.gz  front  reps 10, 10 with both sides: left 89 deg, right 75 deg, SI -18 %
+landmarks/overhead_press_10_front_mufhjkku.json.gz  front  reps 9, 9 with both sides: left 61 deg, right 42 deg, SI -37 %
