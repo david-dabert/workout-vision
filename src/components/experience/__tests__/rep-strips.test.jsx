@@ -16,6 +16,7 @@ describe('per-rep strips', () => {
   });
   it('prints no number on the tempo strip, and nothing when no rep is whole', () => {
     expect(render({ reps: [rep(1), rep(2)] }).replace(/<[^>]+>/g, '')).not.toMatch(/\d/);
+    expect(render({ reps: [rep(1)], sel: 0, sides: [{ at: 0, left: 90, right: 90.5 }] }).replace(/<[^>]+>/g, '')).toContain('côtés\u00A0égaux');
     expect(render({ reps: [rep(1, { clipped: true })] })).toBe('');
   });
   it('draws a side gap up for the right, down for the left, none for no gap, every bar of one weight', () => {
@@ -31,8 +32,9 @@ describe('per-rep strips', () => {
   it('captions the chosen rep with its phase times and its gap', () => {
     const reps = [rep(1), rep(2, { concentricSec: 0.6, eccentricSec: 0.9 })];
     const html = render({ reps, sel: 1, sides: [{ at: 1, left: 90, right: 70 }] });
-    expect(html.replace(/<[^>]+>/g, '')).toContain('Rép. 2\u00A0· conc.\u00A00,6\u00A0s\u00A0· exc.\u00A00,9\u00A0s\u00A0· gauche +25\u00A0%');
-    expect(render({ reps })).not.toContain('strip-caption');
+    expect(html.replace(/<[^>]+>/g, '')).toContain('Rép.\u00A02\u00A0· conc.\u00A00,6\u00A0s\u00A0· exc.\u00A00,9\u00A0s\u00A0· gauche\u00A0+25\u00A0%');
+    // With no rep chosen the caption is present and empty, so choosing one moves nothing below it.
+    expect(render({ reps }).match(/<p class="strip-caption"[^>]*><\/p>/)).not.toBeNull();
     // After a correction the column is named as the app's mark.
     expect(render({ reps: [rep(1, { clipped: true }), rep(2)], sel: 0, markName: i => `Repère ${i + 1}` }).replace(/<[^>]+>/g, '')).toContain('Repère 1\u00A0· filmé en partie');
   });

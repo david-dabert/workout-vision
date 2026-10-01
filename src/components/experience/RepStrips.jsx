@@ -17,7 +17,8 @@ export const TEMPO_FULL_SEC = 1.5;
 // chosen from front.txt, whose middle 80 % of public front clips lies within about -21 % to +24 %, so
 // those fill about half the strip. Status: experimental.
 export const GAP_FULL = 40;
-// Smaller per-rep gaps draw no bar: below a degree's worth of difference on a 90° rep. Status: convention.
+// Smaller per-rep gaps draw no bar and read "sides equal": below a degree's worth of difference on a 90°
+// rep. Source: UNSOURCED. Status: experimental.
 const GAP_NONE = 1;
 
 const TEMPO_H = 34, GAP_H = 28; // px each side of the midline
@@ -67,7 +68,8 @@ export default function RepStrips({ reps, sel, shown, sides, fr, onPick, markNam
         })}
       </div>
     </div>}
-    {sel >= 0 && reps[sel] && <p className="strip-caption" aria-live="polite" data-testid="strip-caption">{caption(reps[sel], byAt.get(sel), sel, fr, markName)}</p>}
+    {/* Always present, so a tap moves nothing below; not live: the detail line under the marks already announces the rep. */}
+    <p className="strip-caption" data-testid="strip-caption">{sel >= 0 && reps[sel] ? caption(reps[sel], byAt.get(sel), sel, fr, markName) : ''}</p>
   </div>;
 }
 
@@ -76,9 +78,12 @@ export default function RepStrips({ reps, sel, shown, sides, fr, onPick, markNam
 // (replay-labels.js), with "filmé" agreeing with "Repère".
 function caption(r, s, i, fr, markName) {
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
-  const parts = [markName ? markName(i) : `${fr ? 'Rép.' : 'Rep'} ${i + 1}`];
+  const parts = [markName ? markName(i) : `${fr ? 'Rép.' : 'Rep'}${NB}${i + 1}`];
   if (r.clipped) parts.push(fr ? (markName ? 'filmé en partie' : 'filmée en partie') : 'partly filmed');
   else parts.push(`conc.${NB}${sec(r.concentricSec)}`, `${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`);
-  if (s) { const g = Math.round(repGap(s)); parts.push(g === 0 ? (fr ? 'côtés égaux' : 'sides equal') : fr ? `${g > 0 ? 'droite' : 'gauche'} +${Math.abs(g)}${NB}%` : `${g > 0 ? 'right' : 'left'} +${Math.abs(g)}%`); }
+  if (s) {
+    const raw = repGap(s), g = Math.round(raw);
+    parts.push(Math.abs(raw) < GAP_NONE ? (fr ? `côtés${NB}égaux` : `sides${NB}equal`) : fr ? `${g > 0 ? 'droite' : 'gauche'}${NB}+${Math.abs(g)}${NB}%` : `${g > 0 ? 'right' : 'left'}${NB}+${Math.abs(g)}%`);
+  }
   return parts.join(`${NB}· `);
 }
