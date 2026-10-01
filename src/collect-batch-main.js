@@ -5,7 +5,7 @@
  * downloaded. No video is uploaded and no count is shown.
  */
 import { collectSet } from './lib/collectSet';
-import { rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory, countsFromLine } from './lib/batchCollect';
+import { mismatchNote, flaggedSets, rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory, countsFromLine } from './lib/batchCollect';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { OFFERED } from './lib/offer';
 import catalogue from './lib/guide-catalog.json';
@@ -217,6 +217,9 @@ $('collect').addEventListener('click', async () => {
       if (twin) { row.state = 'duplicate'; row.note = twinNote(row, twin); continue; }
       row.blob = out.blob; row.baseName = out.name; row.sha256 = out.sha256;
       row.state = 'done'; row.note = `Done: ${out.samples} samples. ${batchFileName(row.set, row.baseName)}`;
+      // A video whose exercise joint barely moves is likely paired with the wrong label: said before sharing.
+      const warn = mismatchNote(row.set, LIFTS.find(l => l.key === row.lift)?.label ?? row.lift, out.jointRange);
+      if (warn) { row.mismatch = true; row.note = `${row.note} ${warn}`; }
     } catch (err) {
       row.state = 'failed';
       if (isInterruption(controller.signal.reason)) { row.note = 'Interrupted: the page was hidden. Collect again.'; stopped = true; }
@@ -231,11 +234,19 @@ $('collect').addEventListener('click', async () => {
   busy = false;
   const done = rows.filter(r => r.state === 'done').length, twins = rows.filter(r => r.state === 'duplicate').length;
   const kept = rows.length - twins, also = twins ? ` ${twins} duplicate video${twins > 1 ? 's' : ''} not kept.` : '';
+  const flagged = flaggedSets(rows);
+  const check = flagged.length ? ` Check set${flagged.length > 1 ? 's' : ''} ${flagged.join(', ')} before sharing: the app sees too little movement to count ${flagged.length > 1 ? 'them' : 'it'}.` : '';
   summaryEl.textContent = stopped
-    ? `Stopped: the page was hidden. ${done} of ${kept} sets collected; keep the screen on and collect the rest.${also}`
-    : `${done} of ${kept} sets collected.${done < kept ? ' Fix the others and collect again.' : ''}${also}`;
+    ? `Stopped: the page was hidden. ${done} of ${kept} sets collected; keep the screen on and collect the rest.${also}${check}`
+    : `${done} of ${kept} sets collected.${done < kept ? ' Fix the others and collect again.' : ''}${also}${check}`;
   render();
 });
+
+// Flagged sets leave the page only once David has said they are right.
+function flaggedOk() {
+  const flagged = flaggedSets(rows);
+  return !flagged.length || confirm(`Set${flagged.length > 1 ? 's' : ''} ${flagged.join(', ')}: the app sees too little movement to count ${flagged.length > 1 ? 'them' : 'it'}. Send anyway?`);
+}
 
 const files = () => rows.filter(r => r.state === 'done').map(r => new File([r.blob], batchFileName(r.set, r.baseName), { type: 'application/gzip' }));
 
@@ -245,6 +256,7 @@ const files = () => rows.filter(r => r.state === 'done').map(r => new File([r.bl
 const share = oneAtATime(10_000);
 $('share').addEventListener('click', async () => {
   const list = files();
+  if (!flaggedOk()) return;
   if (!navigator.canShare?.({ files: list })) { summaryEl.textContent = 'This browser cannot share these files: use Download.'; return; }
   if (!share.start(performance.now())) return;
   remember(numbersUsed(recall(), rows));
@@ -262,6 +274,7 @@ $('restart').addEventListener('click', () => {
 });
 
 $('download').addEventListener('click', () => {
+  if (!flaggedOk()) return;
   for (const file of files()) {
     const url = URL.createObjectURL(file);
     const a = Object.assign(document.createElement('a'), { href: url, download: file.name });

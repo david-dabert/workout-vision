@@ -255,6 +255,33 @@ function countSide(
   return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
 }
 
+/** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
+function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
+  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm) : null));
+  const sampleRate = estimateSampleRate(timestamps);
+  const cleaned = removeOutliers(rawAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
+  const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
+  return { rawAngles, smoothed: savitzkyGolay(bridged, secToOddSamples(SG_WINDOW_SEC, sampleRate)) };
+}
+
+/**
+ * How far the lift's own joint moves over the whole video, in degrees: the 95th minus the 5th percentile
+ * of the smoothed angle on the side the count tracks; NaN with no definition or no angle. Under
+ * MIN_ROM_DEGREES the count is 0 whatever the video (its 90th minus 10th percentile is smaller still), so the
+ * batch collector warns there: the video is likely not the labelled lift, or not filmed so the joint shows
+ * (1 October 2026: three of four sets paired with the wrong label read 11 to 22 degrees).
+ */
+export const COUNTABLE_RANGE_DEG = MIN_ROM_DEGREES;
+export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], lift: Lift | string): number {
+  const def = liftDefinition(lift);
+  // A both-sides lift counts each arm on its own: one still arm says nothing about the set.
+  if (!def || def.bothSides) return NaN;
+  const xs = sideAngles(worldLandmarks, timestamps, def, selectSide(worldLandmarks, def.joint)).smoothed
+    .filter((a): a is number => a !== null).sort((a, b) => a - b);
+  if (xs.length < 3) return NaN;
+  return xs[Math.floor(xs.length * 0.95)] - xs[Math.floor(xs.length * 0.05)];
+}
+
 // ─── Both sides: the alternating curl and the guide's both-sides exercises ───
 
 /**
