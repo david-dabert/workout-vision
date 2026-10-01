@@ -18,3 +18,7 @@ New videos whose movement fits their label: set06 bench_press, set07 romanian_de
 set13 leg_press (and set18). With the rows around them shifted, their counts' pairing is not trusted either.
 Nothing relabelled; nothing scored. Cause: labels typed in an order that is not the collector's row order,
 on a pick that also held old videos; the thumbnails that show each pairing failed on large picks.
+
+David, 1 October 2026: the hip thrust video was cut by the person filming before the set ended. He did 7 reps;
+the recording holds 6. Under the labelling rule (PLAN.md, 1 October: a recording that ends early is labelled with
+the reps it covers), sets-29sep/hip_thrust_6 keeps its label 6, and set10 (the same video labelled 7) is not used.
