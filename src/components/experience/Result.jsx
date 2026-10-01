@@ -25,6 +25,8 @@ import { refusal } from './refusal';
 import { TARGET_FPS } from '../../lib/extractionConfig';
 import './Result.css';
 import { isCorrected, markLabel, marksLabel } from './replay-labels';
+import { compareSides } from '../../lib/counting/symmetry';
+import { sidesLines, sidesRecord } from './sides-line';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -188,7 +190,11 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const maxRom = Math.max(1, ...reps.map(r => r.romDegrees || 0));
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
+  // Left against right, for a set filmed from the front only (counting/symmetry.ts); measured once.
+  const [sides] = useState(() => (Array.isArray(result.worldLandmarks) && Array.isArray(result.timestamps)
+    ? sidesRecord(compareSides(result.worldLandmarks, result.timestamps, lift, reps)) : null));
   const corrected = step === 'saved' && isCorrected(trueN, count);
+  const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr) : null;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
   let detail = '', detailHead = '';
@@ -276,6 +282,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       savedId.current = await saveWorkout({
         exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
         date: new Date().toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
+        // Measured over the app's marks: kept only when the saved count is the app's.
+        sides: n === count ? sides : null,
         // What the app counted stays apart from what the visitor kept.
         machineResult: { reps: count, confidence: result.confidence ?? null },
         correctedResult: n !== count ? { reps: n } : null,
@@ -287,7 +295,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
       setStep('saved');
-      onSaved(n); // the replay states the saved count beside the detected marks
+      onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
     } catch {
       setSaveError(fr ? 'Résultat affiché, mais non enregistré.' : 'Result shown, but could not save it.');
@@ -398,6 +406,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
+      {measured && sidesText && <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div>}
     </div>,
     // Expert: the set's concentric speed change, the report's own line (report-sheet.js).
     speed: measured && speedLine && <p key="speed" className="lv-speed" data-testid="level-speed">{speedLine}</p>,

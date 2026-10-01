@@ -2,6 +2,7 @@
  * The batch collector's rules (collect-batch.html): many sets picked at once, one row each, in the order
  * they were filmed. Pure, so the page and its tests share them.
  */
+import { COUNTABLE_RANGE_DEG } from './counting/core';
 
 /** The videos by their files' dates, then by name read as the phone numbers them (IMG_999 before IMG_1000).
  * On an iPhone the date may be when Photos handed the file over, so each row shows its video. */
@@ -20,6 +21,24 @@ export function rowErrors(row) {
   if (!row.lift) errors.push('choose the exercise');
   if (!/^\d{1,2}$/.test(String(row.count).trim())) errors.push('enter the reps you counted (0 to 99)');
   return errors;
+}
+
+/**
+ * A set whose own joint moves less than the counter's minimum range cannot be counted at all: the video is
+ * likely not the labelled exercise, or the joint did not show (1 October 2026: three of four mispaired sets read
+ * 11 to 22 degrees). The threshold is the counter's own (MIN_ROM_DEGREES, core.ts), so the warning never
+ * stands beside a count. Status: convention, tied to the counter's minimum range. On correctly labelled
+ * public clips, 6.4 % fall under 35 degrees (review of 1 October), which is why 35 was not kept.
+ */
+export const MISMATCH_RANGE_DEG = COUNTABLE_RANGE_DEG;
+export function mismatchNote(set, liftLabel, range) {
+  if (!(range < MISMATCH_RANGE_DEG)) return '';
+  return `Check set ${set}: the app sees too little movement of the joint that counts ${liftLabel} (${Math.round(range)}°) to count it. Is it the right video, filmed so that joint shows?`;
+}
+
+/** The flagged sets' numbers, said in the summary and before the files leave the page. */
+export function flaggedSets(rows) {
+  return rows.filter(r => r.state === 'done' && r.mismatch).map(r => r.set);
 }
 
 /** The file's name, led by its set number so the files sort as they were filmed: set07_<collector name>. */

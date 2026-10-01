@@ -9,6 +9,7 @@
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 import { setFileName, setPayload, hashVideoContent, gzipBlob, sampleSet, refusal } from './collector';
+import { jointRange } from './counting/core';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
 
@@ -80,5 +81,6 @@ export async function collectSet(file, { lift, count, view }, { signal, onStatus
   });
   const blob = await gzipBlob(JSON.stringify(payload));
   signal?.throwIfAborted();
-  return { blob, name: setFileName(lift, count, view, sha256), sha256, samples: worldLandmarks.length, method: metadata.method };
+  // How far the lift's own joint moves: small means the video is likely not the labelled lift (jointRange).
+  return { blob, name: setFileName(lift, count, view, sha256), sha256, samples: worldLandmarks.length, method: metadata.method, jointRange: jointRange(worldLandmarks, timestamps, lift) };
 }

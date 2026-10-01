@@ -175,3 +175,20 @@ describe('counts filled from the line', () => {
     expect(countsFromLine(rowsFor([f('a', 1), f('b', 2)]), '9, 5').counts).toEqual(['9', '5']);
   });
 });
+
+import { mismatchNote, flaggedSets, MISMATCH_RANGE_DEG } from '../batchCollect';
+describe('a video the app cannot count is flagged before it is shared (1 October 2026)', () => {
+  it('uses the counter\'s own minimum range, so it never stands beside a count', () => {
+    expect(MISMATCH_RANGE_DEG).toBe(20);
+    for (const r of [11, 15, 19.9]) expect(mismatchNote(16, 'Squat', r)).toMatch(/^Check set 16: the app sees too little movement of the joint that counts Squat \(\d+°\) to count it\./);
+    // Hip abduction at 30 degrees is counted, so it is not flagged (review of 1 October).
+    for (const r of [20, 22, 30, 51]) expect(mismatchNote(16, 'Hip abduction', r)).toBe('');
+  });
+  it('says nothing when the range is unknown', () => {
+    expect(mismatchNote(1, 'Curl', NaN)).toBe('');
+    expect(mismatchNote(1, 'Curl', undefined)).toBe('');
+  });
+  it('lists only collected, flagged sets', () => {
+    expect(flaggedSets([{ set: 1, state: 'done', mismatch: true }, { set: 2, state: 'done' }, { set: 3, state: 'failed', mismatch: true }])).toEqual([1]);
+  });
+});

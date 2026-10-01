@@ -1,0 +1,12 @@
+Review of the collector's label-mismatch warning (wv-reviewer, 1 October 2026), and what was done.
+D1. 35 degrees was called validated, but 57 of 894 correctly labelled public clips (6.4 %) fall under it.
+    Fixed: the threshold is the counter's own minimum range (20 degrees, MIN_ROM_DEGREES); status convention.
+D2. Legitimate small-range lifts (hip abduction at ~30 degrees) were counted and flagged at once.
+    Fixed by D1: a set under 20 degrees counts 0 by construction (p95-p5 >= p90-p10), so the warning never stands
+    beside a count; asserted on all 19 real sets (joint-range.test.ts). Both-sides lifts are not flagged.
+D3. The warning was buried in its row; Share and Download sent flagged files without a word.
+    Fixed: the summary names the flagged sets; Share and Download ask before sending them. Not covered by an e2e
+    test: a flag needs a real extraction, which fake files cannot give.
+D4. The comments said four sets; it catches three (set17 is a duplicate of a real curl and moves 117 degrees).
+    Fixed. At 20 degrees it catches two of the four (11 and 15; set20 reads 22).
+Minor: jointRange returns NaN with no definition, so no "0 degrees" warning; the string is English, like the page.

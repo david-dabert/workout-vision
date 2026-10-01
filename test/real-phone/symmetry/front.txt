@@ -1,0 +1,85 @@
+Front-view left/right comparison (src/lib/counting/symmetry.ts), run over the stored landmarks.
+Per set: each side's median range over the counted reps, SI = (R - L) / mean(R, L) x 100 of those medians; "flagged" when |SI| >= 15 %.
+
+Countix, both halves: 890 admitted clips; measured 54; not measured: one-side-lift 138, not-front 572, too-few-reps 124, one-side-still 2.
+These clips carry no measured asymmetry: "flagged" is the share of lifters not known to be asymmetric whose gap
+passes the threshold. It is not a false-alarm rate: some may be asymmetric, and with 54 clips its 95 % interval is about +/-13 points.
+all               n  54  flagged |SI| >= 15 %:  16 (30 %)  left larger: 25 of 54  mean SI +2 %  median +1 %  middle 80 %: -19 to +24 %
+bench_press       n   7  flagged |SI| >= 15 %:   6 (86 %)  left larger: 4 of 7  mean SI -11 %  median -19 %  middle 80 %: -70 to +31 %
+front_raise       n  21  flagged |SI| >= 15 %:   6 (29 %)  left larger: 10 of 21  mean SI +5 %  median +0 %  middle 80 %: -11 to +17 %
+pull_up           n  10  flagged |SI| >= 15 %:   1 (10 %)  left larger: 6 of 10  mean SI -1 %  median -3 %  middle 80 %: -11 to +22 %
+push_up           n   8  flagged |SI| >= 15 %:   1 (13 %)  left larger: 1 of 8  mean SI +7 %  median +8 %  middle 80 %: -13 to +24 %
+squat             n   5  flagged |SI| >= 15 %:   0 (0 %)  left larger: 3 of 5  mean SI +2 %  median -0 %  middle 80 %: -6 to +14 %
+triceps_pushdown  n   3  flagged |SI| >= 15 %:   2 (67 %)  left larger: 1 of 3  mean SI +3 %  median +5 %  middle 80 %: -51 to +54 %
+
+David's labelled sets:
+  sets-29sep/bench_press_7_side_24cc4f0b.json.gz           filmed side  shoulders 82 deg hips 79 deg  not-front
+  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz            filmed side  shoulders 80 deg hips 78 deg  not-front
+  sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz            filmed side  shoulders 87 deg hips 86 deg  not-front
+  sets-29sep/lateral_raise_9_front_43e71b40.json.gz        filmed front shoulders  4 deg hips  5 deg  SI -11 % over 8 reps (L 90, R 81)
+  sets-29sep/leg_press_13_side_1ee0ae47.json.gz            filmed side  shoulders 71 deg hips 72 deg  not-front
+  sets-29sep/overhead_press_4_front_cefdaa82.json.gz       filmed front shoulders  3 deg hips  3 deg  SI -10 % over 5 reps (L 75, R 68)
+  sets-29sep/overhead_press_4_front_f75638cc.json.gz       filmed front shoulders  2 deg hips  2 deg  SI -8 % over 4 reps (L 62, R 57)
+  sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz     filmed side  shoulders 81 deg hips 74 deg  not-front
+  sets-29sep/squat_7_side_21fd7ccf.json.gz                 filmed side  shoulders 71 deg hips 74 deg  not-front
+  landmarks/bench_press_7_angle_mufhcy60.json.gz           filmed angle shoulders 34 deg hips 35 deg  not-front
+  landmarks/bicep_curl_7_side_mufhf3wy.json.gz             filmed side  shoulders 42 deg hips 44 deg  not-front
+  landmarks/lat_pulldown_10_front_mufhlh4o.json.gz         filmed front shoulders 15 deg hips 40 deg  not-front
+  landmarks/lateral_raise_10_front_mufhhbun.json.gz        filmed front shoulders  4 deg hips  4 deg  SI -21 % over 10 reps (L 92, R 74) FLAGGED
+  landmarks/overhead_press_10_front_mufhjkku.json.gz       filmed front shoulders  9 deg hips  8 deg  SI -38 % over 9 reps (L 61, R 41) FLAGGED
+
+Each measured Countix clip:
+  0cie4Dag5NM_000005_0         front_raise       reps  3  L  45  R  70  SI  +45 %  FLAGGED
+  4ETgc4TrCQg_000014_0         triceps_pushdown  reps  7  L  58  R  61  SI   +5 %
+  6wpbwI5sbUo_000000_1533      pull_up           reps  3  L  89  R  93  SI   +5 %
+  97Ulov2NO30_000007_0         front_raise       reps  5  L  77  R  78  SI   +1 %
+  9U6RcrJd5TM_000026_0         push_up           reps  5  L  67  R  71  SI   +6 %
+  A1A40a9ADKE_000000_0         triceps_pushdown  reps  4  L  24  R  43  SI  +54 %  FLAGGED
+  DA6N2ebQ8WA_000013_0         push_up           reps  3  L  49  R  51  SI   +3 %
+  E0p8QDRa0Fg_000063_0         push_up           reps  4  L  28  R  35  SI  +24 %  FLAGGED
+  E9KZOVuBRfA_000035_0         bench_press       reps  5  L  55  R  39  SI  -33 %  FLAGGED
+  ExiJ7qKakH4_000000_0         bench_press       reps  4  L  39  R  52  SI  +28 %  FLAGGED
+  GjVPcCoTz5U_000009_0         pull_up           reps 10  L  68  R  64  SI   -6 %
+  Heid6l1GHOc_000000_450       front_raise       reps  3  L 141  R 142  SI   +0 %
+  NCEAhU2ZLbM_000013_0         squat             reps  4  L  93  R  93  SI   -0 %
+  NX5TcYEILhI_000000_0         bench_press       reps  3  L  30  R  35  SI  +14 %
+  QiJ1swCeKQQ_000046_806       bench_press       reps  3  L  39  R  33  SI  -19 %  FLAGGED
+  Uh9dsi8DgeU_000062_0         pull_up           reps  3  L  62  R  55  SI  -12 %
+  Wba1CfX_V-g_000005_0         push_up           reps  3  L  60  R  65  SI   +8 %
+  X86TOmc07sA_000001_0         front_raise       reps  3  L 123  R 113  SI   -9 %
+  b5fKZcvZ9xw_000000_0         front_raise       reps  3  L  63  R  74  SI  +17 %  FLAGGED
+  dptApZvEt5Y_000003_0         squat             reps  4  L  61  R  60  SI   -0 %
+  e3JvRiHmnI0_000003_767       front_raise       reps  4  L 116  R 104  SI  -11 %
+  eMRW1vKyy9o_000006_0         pull_up           reps  6  L  53  R  48  SI  -10 %
+  fZrwazqph2g_000004_0         front_raise       reps  4  L  88  R 104  SI  +16 %  FLAGGED
+  gWYAcOfnKys_000003_567       front_raise       reps  3  L 143  R 140  SI   -2 %
+  iDtN2lN7EPo_000009_0         front_raise       reps  3  L 101  R 100  SI   -1 %
+  k5fWvRy20r0_000013_0         bench_press       reps  3  L  63  R  30  SI  -70 %  FLAGGED
+  opoIUl4eXTU_000000_4167      pull_up           reps  5  L  43  R  53  SI  +22 %  FLAGGED
+  reraUbcS7RI_000000_0         front_raise       reps  4  L  61  R  71  SI  +16 %  FLAGGED
+  1AuqtFXflQ4_000014_167       front_raise       reps  3  L  89  R  82  SI   -9 %
+  55cNMNGtMVk_000002_0         front_raise       reps  4  L  67  R  71  SI   +6 %
+  Bjv2FKx880U_000006_2836      push_up           reps  3  L  39  R  44  SI  +10 %
+  DBXE6k9PP-g_000024_0         push_up           reps  5  L  48  R  42  SI  -13 %
+  FQG7XicPl3U_000014_5189      front_raise       reps  3  L  94  R  92  SI   -1 %
+  JEnp_xZbkxk_000000_4638      front_raise       reps  3  L  39  R  40  SI   +3 %
+  JfaMPeA-Yn4_000004_0         squat             reps  3  L  61  R  62  SI   +1 %
+  KsSPKSXkphg_000002_901       front_raise       reps  3  L 121  R 112  SI   -7 %
+  LUlt4tPj5SQ_000004_0         pull_up           reps  3  L  77  R  87  SI  +13 %
+  NCsAAUM_NTY_000010_0         front_raise       reps  5  L  36  R  40  SI   +9 %
+  Sn627y08nmw_000005_0         bench_press       reps  3  L  36  R  50  SI  +31 %  FLAGGED
+  VHj2sMZQ0fU_000000_2936      pull_up           reps  3  L  62  R  56  SI  -11 %
+  WGcw4dPg0Qs_000007_0         front_raise       reps  3  L  26  R  46  SI  +57 %  FLAGGED
+  XoEAo1jWHB4_000002_967       front_raise       reps  3  L 131  R 118  SI  -11 %
+  aN9PmVjbwqo_000005_0         front_raise       reps  4  L 152  R 123  SI  -21 %  FLAGGED
+  agsG7CFDxe4_000000_0         push_up           reps  6  L  52  R  53  SI   +2 %
+  ayf46kiTMe8_000000_0         bench_press       reps  3  L  72  R  54  SI  -29 %  FLAGGED
+  ci46dm87tfo_000000_33        front_raise       reps  4  L 114  R 111  SI   -2 %
+  jC4O7gWJjPk_000006_0         pull_up           reps  3  L  75  R  72  SI   -5 %
+  jhXmytynunU_000001_0         pull_up           reps  5  L  68  R  66  SI   -3 %
+  kORtpS8KbXU_000031_0         squat             reps  4  L 103  R  97  SI   -6 %
+  o-MFiXz3hYA_000012_0         push_up           reps  4  L  47  R  54  SI  +14 %
+  osdycpmcn00_000002_1835      squat             reps  3  L  76  R  87  SI  +14 %
+  reAv60s7fqY_000000_133       pull_up           reps  3  L  69  R  69  SI   +1 %
+  tcX2qWFCIik_000006_0         front_raise       reps  3  L  52  R  53  SI   +1 %
+  zf0U20qPqHE_000001_1283      triceps_pushdown  reps  3  L  54  R  32  SI  -51 %  FLAGGED
