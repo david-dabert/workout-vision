@@ -312,3 +312,10 @@ Release gate of the learned counter, written on 30 September before any correcte
 - Refused sets are counted apart from wrong counts.
 - The objective is checked before any training run: the loss rises with density during a known still hold, and does not change with density in an unlabelled interval.
 - One variable changes per experiment: hold supervision, then one timebase, then normalisation.
+
+Labelling rules for phone collection, 1 October 2026. David's order: "The responses are in the literature." Each rule carries its source and status (R9).
+- A repetition counts only when its concentric phase reaches full range of motion without deviation from the prescribed form; a partial final rep is not counted. Source: the definition of momentary muscular failure in resistance training studies (Refalo et al. 2023, PMC9908800; Izquierdo et al. 2006, J Appl Physiol, doi 10.1152/japplphysiol.01400.2005). Status: literature.
+- Unracking the bar and returning it to the rack are not repetitions; a set begins once the lifter is in the starting position and ends at the last completed rep. Source: IPF Technical Rulebook 2026, squat and bench press, the lift begins on the referee's signal after the bar leaves the racks. Status: convention.
+- Alternating lifts: unchanged, the total of both arms (David's order of 27 September, recorded under step 2). The literature prescribes unilateral work per side; that is how a set is prescribed, not how it is counted, and David's order stands.
+- A set with any rep partly outside the frame: the label is the reps David actually performed, never the reps visible; the set is flagged out of frame, kept in the denominator, and the app is scored wrong on it unless it refuses. Source: UNSOURCED (no counting dataset found that states a rule); follows Astra's review of 1 October, keep failures in the denominator. Status: experimental, for David to confirm.
+- Labels are entered before the app's count is shown, with "not sure" allowed (Astra's review of 1 October, anchoring). Status: convention.
