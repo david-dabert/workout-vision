@@ -24,6 +24,7 @@ import { liftDefinition } from '../../lib/counting/core';
 import { refusal } from './refusal';
 import { TARGET_FPS } from '../../lib/extractionConfig';
 import './Result.css';
+import { isCorrected, markLabel, marksLabel } from './replay-labels';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -139,7 +140,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
  * covered: the screen open over the result ('report' or 'replay'), or nothing.
  * onReplay: opens the replay; absent when the video is not at hand.
  */
-export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm }) {
+export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {} }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
@@ -187,16 +188,17 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const maxRom = Math.max(1, ...reps.map(r => r.romDegrees || 0));
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
-  const corrected = step === 'saved' && trueN !== count;
+  const corrected = step === 'saved' && isCorrected(trueN, count);
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
   let detail = '', detailHead = '';
   if (sel >= 0 && reps[sel]) {
     const r = reps[sel];
     detailHead = `${fr ? 'Rép.' : 'Rep'} ${sel + 1} · `;
-    // After a correction the marks are the app's, not the saved set's reps: they are named so (review of 1 October).
-    const word = corrected ? (fr ? 'Marque de l’app' : 'App mark') : (fr ? 'Rép.' : 'Rep');
-    if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word} ${sel + 1}${r.clipped ? `${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}` : ''}`; }
+    // After a correction the marks are the app's, not the saved set's reps: they are named so (replay-labels.js).
+    const word = corrected ? markLabel({ index: sel + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${sel + 1}`;
+    // "Repère" is masculine, "répétition" feminine: the clipped note agrees with the word before it.
+    if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed'}` : ''}`; }
     else detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? 'filmée en partie' : 'partly filmed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
@@ -285,6 +287,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
       setStep('saved');
+      onSaved(n); // the replay states the saved count beside the detected marks
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
     } catch {
       setSaveError(fr ? 'Résultat affiché, mais non enregistré.' : 'Result shown, but could not save it.');
@@ -389,7 +392,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     </div>,
     bars: count > 0 && <div key="bars">
       <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
-        {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': corrected ? (fr ? 'Répétitions repérées par l’app, une par marque' : 'Reps the app found, one per mark') : (fr ? 'Répétitions, une par marque' : 'Reps, one per mark'), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
+        {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>

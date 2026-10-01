@@ -84,3 +84,24 @@ describe('the export settles and cleans up (review 01 of step 4)', () => {
     await expect(out).rejects.toBeTruthy();
   });
 });
+
+// Review of 1 October: after a correction the video states both counts, so it explains itself away
+// from the app; without one it draws the count alone.
+describe('the exported overlay after a correction', () => {
+  const drawn = saved => {
+    const text = [];
+    const ctx = new Proxy({}, { get: (_, k) => (k === 'measureText' ? () => ({ width: 10 }) : k === 'fillText' ? t => text.push(t) : () => {}) });
+    document.createElement = tag => (tag === 'video' ? (video = new FakeVideo()) : { width: 390, height: 693, getContext: () => ctx, captureStream: () => ({ getTracks: () => [track] }) });
+    const reps = Array.from({ length: 7 }, (_, i) => ({ index: i + 1, startTime: i, endTime: i + 0.8 }));
+    exportSetVideo({ file: new Blob(['x']), result: { arm: 'left', count: 7, reps }, lift: 'bicep_curl', fr: false, saved }).catch(() => {});
+    video.dispatchEvent(new Event('ended'));
+    return text;
+  };
+  it('draws both counts when the user saved another count', () => {
+    expect(drawn(8)).toEqual(['7 / 7', 'The app detected 7 reps. You saved 8.']);
+  });
+  it('draws the count alone when the user kept the app\'s', () => {
+    expect(drawn(7)).toEqual(['7 / 7']);
+    expect(drawn(null)).toEqual(['7 / 7']);
+  });
+});

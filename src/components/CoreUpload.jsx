@@ -29,6 +29,8 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   const [landmarks, setLandmarks] = useState(null);
   const [frameSize, setFrameSize] = useState(null);
   const trueNRef = useRef(null);
+  // The count the user saved on the result, once saved: the replay states it beside the detected marks.
+  const [savedCount, setSavedCount] = useState(null);
   const savedIdRef = useRef(null);
   const abort = useRef(null);
   const closeTimer = useRef(null);
@@ -51,7 +53,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
 
   async function run(controller) {
     const mine = () => abort.current === controller;
-    setBusy(true); setResult(null); setError(''); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
+    setBusy(true); setResult(null); setSavedCount(null); setError(''); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
     let release = () => {}, wake = async () => {};
     try {
       // A video chosen while the page is still hidden (back from the camera) waits for it.
@@ -106,10 +108,10 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
         {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
         {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
-        {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} />}
+        {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} onSaved={setSavedCount} />}
       </ScreenFade>
       {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} leaving={overlayLeaving} onBack={closeOverlay} />}
-      {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} leaving={overlayLeaving} onBack={closeOverlay} />}
+      {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
     </>;
   }
 

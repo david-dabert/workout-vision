@@ -76,11 +76,11 @@ try {
     await page.locator('[data-testid="saved-card"]').waitFor();
     check(await numeral(page) === '5', `${lang}: corrected 7 to 5, the numeral reads 5`);
     const label = await page.locator('.bars').getAttribute('aria-label');
-    check(label === (fr ? 'Répétitions repérées par l’app, une par marque' : 'Reps the app found, one per mark'), `${lang}: corrected, the marks are named as the app's`);
+    check(label === (fr ? 'Repères détectés par l’app' : 'Marks the app detected'), `${lang}: corrected, the marks are named as the app's`);
     await page.locator('.bars').focus();
     await page.keyboard.press('End');
     const last = (await page.locator('.res-detail').textContent()).trim();
-    check(last === (fr ? 'Marque de l’app 7\u00A0· filmée en partie' : 'App mark 7\u00A0· partly filmed'), `${lang}: corrected, the last mark reads as the app's mark 7, not rep 7 ("${last}")`);
+    check(last === (fr ? 'Repère détecté 7 sur 7\u00A0· filmé en partie' : 'Detected mark 7 of 7\u00A0· partly filmed'), `${lang}: corrected, the last mark reads as a detected mark, not rep 7 ("${last}")`);
     await page.context().close();
 
     // Saving fails: no claim of success.
@@ -108,6 +108,48 @@ try {
       // The notes explain; they must not describe a mark or a measure the screen no longer shows.
       const notes = await page.locator('.acc-notes').evaluateAll(ns => ns.map(n => n.textContent).join(' '));
       check(!/▾|degrés|degrees/.test(notes), `${lang}, ${name}: the notes name no ▾ mark and no degrees`);
+      await page.context().close();
+    }
+  }
+  // The replay, on a drawn video and 7 fixed detections: saved as detected, then corrected to 8.
+  const REPLAY = URL.replace('mount.html', 'mount-replay.html');
+  for (const lang of ['en', 'fr']) {
+    const fr = lang === 'fr';
+    for (const saved of [7, 8]) {
+      const page = await (await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' })).newPage();
+      await page.addInitScript(lang => localStorage.setItem('wv_lang', lang), lang);
+      await page.goto(`${REPLAY}?saved=${saved}`);
+      const line = page.locator('.rp-line');
+      await line.waitFor({ timeout: 30000 });
+      await page.waitForFunction(() => document.querySelector('.rp-video')?.readyState >= 1, null, { timeout: 30000 });
+      await page.waitForFunction(() => Number.isFinite(document.querySelector('.rp-video')?.duration), null, { timeout: 30000 });
+      // Inside mark 3 (1.0 to 1.3 s), at its middle: a seek to a mark's very start may land on the frame
+      // before it, so the middle is where the position does not depend on the video's frame times.
+      const at = async t => {
+        const box = await line.boundingBox(), length = await page.evaluate(() => document.querySelector('.rp-video').duration);
+        await line.click({ position: { x: box.width * (t / length), y: box.height / 2 } });
+      };
+      await at(1.15);
+      await page.waitForFunction(() => / 3 (of|sur) 7$/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 10000 }).catch(() => {});
+      const where = await line.getAttribute('aria-valuetext');
+      const detail = (await page.locator('.rp-detail').textContent()).trim();
+      const prov = await page.locator('[data-testid="rp-prov"]').count() ? (await page.locator('[data-testid="rp-prov"]').textContent()).trim() : '';
+      const phase = (await page.locator('.rp-phase').textContent()).trim();
+      if (saved === 8) {
+        check(where === (fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: position reads as a detected mark ("${where}")`);
+        check(detail === (fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: detail reads as a detected mark ("${detail}")`);
+        check(prov === (fr ? 'L’app a détecté 7 répétitions. Vous avez enregistré 8.' : 'The app detected 7 reps. You saved 8.'), `${lang} replay, saved 8: both counts stated ("${prov}")`);
+        // Past the last detection, the hint speaks of marks, not reps.
+        await at(2.9);
+        await page.waitForFunction(() => !/sur 7|of 7/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 10000 }).catch(() => {});
+        const idle = (await page.locator('.rp-detail').textContent()).trim();
+        check(idle === (fr ? 'Touchez un repère sur la ligne pour le revoir.' : 'Touch a mark on the line to see it again.'), `${lang} replay, saved 8: past the marks, the hint names marks ("${idle}")`);
+      } else {
+        check(where === (fr ? 'Répétition 3 sur 7' : 'Rep 3 of 7'), `${lang} replay, saved 7: position reads as a rep ("${where}")`);
+        check(prov === '', `${lang} replay, saved 7: no provenance line`);
+      }
+      check(!/Concentri|Excentri|Eccentri/.test(phase), `${lang} replay, saved ${saved}: no phase word ("${phase}")`);
+      check(await page.locator('.rp-chip .rp-of').textContent() === '/\u00A07', `${lang} replay, saved ${saved}: the chip counts the 7 detected marks, none invented`);
       await page.context().close();
     }
   }
