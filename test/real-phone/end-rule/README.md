@@ -19,3 +19,12 @@ Withdrawn after review (review-1.txt):
 Physical conclusion: at the end of a recording, one joint angle cannot tell a rep cut on its way back from
 a movement after the set (the same flexion). The information is not in the signal. The remedy is at
 capture (a recording that ends at rest: Film step 3 already asks for it), not in the counter.
+
+## Iteration 2, same day: flag a recording that starts or ends inside a rep (rejected before code)
+
+From diagnosis.txt on David's 14 sets: an edge condition (start or end away from rest) is present on all 7
+misses and on 5 of the 7 exact sets (hip thrust, overhead press 4, Romanian deadlift, curl 7, lat pulldown).
+A warning on it would fire on 12 of 14 sets; it does not tell a wrong count from a right one. The narrower
+"ends inside a rep that reached its working end" holds on 5 misses and 2 exact sets. Not built.
+Correction: edges are common to almost every recording; they do not explain which sets the counter misses.
+With 7 misses, no further rule can be told apart from fitting these sets; the next step needs more labelled sets.
