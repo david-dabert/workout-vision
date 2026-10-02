@@ -130,7 +130,9 @@ export function layoutFaults() {
     }
     // Text cut off by a box that hides its overflow (a card), not by one that scrolls (the rail): the card name
     // "Soulevé de terre roumain" ran under the card's edge for two days unseen (David, 2 October 2026).
-    if (s.textOverflow !== 'ellipsis') {
+    // Text hidden on purpose for screen readers (.sr: a 1 px box, clipped) is not on screen to be cut off.
+    const forReaders = el => { for (let e = el; e && e !== document.documentElement; e = e.parentElement) { const r = e.getBoundingClientRect(); if (r.width <= 1 && r.height <= 1) return true; } return false; };
+    if (s.textOverflow !== 'ellipsis' && !forReaders(block)) {
       for (const l of onScreen) {
         let r = { left: l.left, right: l.right, top: l.top, bottom: l.bottom };
         for (let e = block; e && e !== document.documentElement; e = e.parentElement) {
