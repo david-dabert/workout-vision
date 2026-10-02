@@ -65,10 +65,16 @@
   .wv-experience .result-screen.lv-expert .bar .short-mark { bottom: calc(14px + 58px * var(--r, 1) + 4px); }
 }
 /* Intermediate (and no level stored) on a screen under 700 px high: the confirm button sat 8 px below a
-   390x664 Safari (harness levels.mjs, 1 October 2026). The marks give back 8 px and the card's gap 8 px. */
+   390x664 Safari (harness levels.mjs, 1 October 2026). The marks give back 8 px and the card's gap 8 px. A lift
+   outside the beta group carries the experimental line on two rows under its name (review, 2 October): the
+   head's top margin and the card's top padding give back 16 px more, at intermediate and expert alike. */
 @media (min-height: 601px) and (max-height: 700px) {
   .wv-experience .result-screen.lv-intermediate .bars, .wv-experience .result-screen.lv-intermediate .bar { height: 96px; }
   .wv-experience .result-screen.lv-intermediate .bar i { height: calc(17px + 66px * var(--r, 1)); }
   .wv-experience .result-screen.lv-intermediate .bar .short-mark { bottom: calc(17px + 66px * var(--r, 1) + 4px); }
   .wv-experience .result-screen.lv-intermediate .glass { margin-top: var(--s-4); }
+}
+@media (min-height: 601px) and (max-height: 700px) {
+  .wv-experience .result-screen:is(.lv-intermediate, .lv-expert) .res-head { margin-top: var(--s-1); }
+  .wv-experience .result-screen:is(.lv-intermediate, .lv-expert) .glass { padding-top: 14px; }
 }

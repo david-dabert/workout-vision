@@ -121,19 +121,14 @@ try {
       await line.waitFor({ timeout: 30000 });
       await page.waitForFunction(() => document.querySelector('.rp-video')?.readyState >= 1, null, { timeout: 30000 });
       await page.waitForFunction(() => Number.isFinite(document.querySelector('.rp-video')?.duration), null, { timeout: 30000 });
-      // Inside mark 3 (1.0 to 1.3 s), at its middle: a seek to a mark's very start may land on the frame
-      // before it, so the middle is where the position does not depend on the video's frame times.
+      // A tap at the middle of mark 3 (1.0 to 1.3 s); the replay seeks a frame inside its start (Replay.jsx, into),
+      // so the position names mark 3 whatever the video's frame times.
       const at = async t => {
         const box = await line.boundingBox(), length = await page.evaluate(() => document.querySelector('.rp-video').duration);
         await line.click({ position: { x: box.width * (t / length), y: box.height / 2 } });
       };
-      // A click made before the drawn video can seek is lost (1 October: 1 to 2 of 8 runs read "1,0 s"), so
-      // the click is repeated until the position names a mark, at most four times; a wrong label still fails.
-      for (let i = 0; i < 4; i++) {
-        await at(1.15);
-        const ok = await page.waitForFunction(() => / 3 (of|sur) 7$/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 5000 }).then(() => true, () => false);
-        if (ok) break;
-      }
+      await at(1.15);
+      await page.waitForFunction(() => / 3 (of|sur) 7$/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 10000 }).catch(() => {});
       const where = await line.getAttribute('aria-valuetext');
       const detail = (await page.locator('.rp-detail').textContent()).trim();
       const prov = await page.locator('[data-testid="rp-prov"]').count() ? (await page.locator('[data-testid="rp-prov"]').textContent()).trim() : '';

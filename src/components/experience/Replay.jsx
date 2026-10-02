@@ -225,7 +225,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
             aria-label={fr ? 'Votre série, avec le squelette suivi par l’app' : 'Your set, with the skeleton the app tracked'}
             onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setBroken(true)}
-            onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); seekTo(reps[0]?.startTime ?? 0); }}
+            onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); seekTo(reps[0] ? into(reps[0]) : 0); }}
             onClick={toggle} />
           <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
           {reps.length > 0 && <div className="rp-chip" aria-hidden="true">

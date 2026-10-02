@@ -43,12 +43,15 @@ try {
   await new Promise(r => setTimeout(r, 7000));
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM });
   const yes = { fr: 'Oui, c’est juste', en: 'Yes, that’s right' };
-  for (const lang of ['fr', 'en']) for (const level of ['beginner', 'intermediate', 'expert', '']) for (const [W, Ht] of [[390, 664], [375, 548]]) {
-    const tag = `${lang} ${level || 'unset'} ${W}x${Ht}`;
+  // bench_press: a lift outside the beta group, whose heading carries the experimental line on two rows
+  // (review, 2 October: the button ended 8 px lower there than on bicep_curl).
+  for (const lift of ['bicep_curl', 'bench_press']) for (const lang of ['fr', 'en']) for (const level of ['beginner', 'intermediate', 'expert', '']) for (const [W, Ht] of [[390, 664], [375, 548]]) {
+    if (lift !== 'bicep_curl' && W !== 390) continue;
+    const tag = `${lang} ${level || 'unset'} ${W}x${Ht}${lift === 'bicep_curl' ? '' : ` ${lift}`}`;
     const ctx = await browser.newContext({ viewport: { width: W, height: Ht }, reducedMotion: 'reduce' });
     const p = await ctx.newPage();
     await p.addInitScript(([l, lv]) => { localStorage.setItem('wv_lang', l); if (lv) localStorage.setItem('wv_level', lv); }, [lang, level]);
-    await p.goto(url());
+    await p.goto(url(lift === 'bicep_curl' ? '' : `?lift=${lift}`));
     await p.waitForSelector('[data-testid="ask-card"]', { timeout: 30000 });
     await p.waitForTimeout(700); // the cards' appear animation
     const btn = p.getByRole('button', { name: yes[lang] });
@@ -56,7 +59,7 @@ try {
     if (W === 390) say(box && box.y >= 0 && box.y + box.height <= Ht, `${tag}: "${yes[lang]}" fully in view (top ${box?.y.toFixed(0)}, bottom ${(box?.y + box?.height).toFixed(0)} of ${Ht})`);
     const { hits, wide } = await p.evaluate(layout);
     say(!hits.length && wide <= 0, `${tag}: no overlap${hits.length ? ` (${hits.join('; ')})` : ''}, ${wide > 0 ? `${wide} px too wide` : 'no side scroll'}`);
-    if (SHOTS) await p.screenshot({ path: `${SHOTS}/result-${lang}-${level || 'unset'}-${W}x${Ht}.png` });
+    if (SHOTS) await p.screenshot({ path: `${SHOTS}/result-${lang}-${level || 'unset'}-${W}x${Ht}-${lift}.png` });
     if (SHOTS && W === 390) { // the rest of the screen, below the question
       await p.locator('.result-screen .wrap > :last-child').evaluate(e => e.scrollIntoView({ block: 'end' }));
       await p.screenshot({ path: `${SHOTS}/result-${lang}-${level || 'unset'}-${W}x${Ht}-below.png` });
