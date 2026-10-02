@@ -1,8 +1,14 @@
 name: Deploy to GitHub Pages
 
+# Publication waits for the whole CI verdict on main: lint, types, tests, the browser tests in Chromium and
+# WebKit, the iPhone tour and the synthetic journeys (ci.yml). On 2 October main was published at 20:52 and its
+# WebKit tour failed at 21:02 (audit, FINDING-001). The commit published is the one CI passed.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,9 +21,12 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -25,8 +34,6 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - run: npm run test:benchmark
-        continue-on-error: true
       - run: npm run build
         env:
           VITE_FEEDBACK_URL: ${{ secrets.VITE_FEEDBACK_URL }}
