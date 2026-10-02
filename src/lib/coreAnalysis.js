@@ -12,7 +12,10 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   const core = countReps(worldLandmarks, timestamps, lift);
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).
-  const visible = core.angles.filter(angle => angle !== null).length;
+  // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
+  // (audit FINDING-012: one hidden arm let the other's reps through as the whole count).
+  const seen = angles => angles.filter(angle => angle !== null).length;
+  const visible = core.sides ? Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)) : seen(core.angles);
   const refused = visible < worldLandmarks.length / 2 || worldLandmarks.length === 0;
   // A fitness test is scored over its window (fitness-tests.js): the count and the marks are the reps in it.
   if (isTest(lift) && !refused) {

@@ -49,3 +49,21 @@ describe('a rep done with both arms keeps one arm\'s measurements (FINDING-013)'
     }
   });
 });
+
+import { summarizeCount } from '../../coreAnalysis';
+
+describe('a two-sided exercise needs both sides in sight (FINDING-012)', () => {
+  it('one arm hidden for the whole set: refused, not counted on the arm in sight', () => {
+    const a = sample(cycles({ rest: 165, work: 50, reps: 8, firstSec: 0.8, secondSec: 1, restSec: 0.6 }), 165, SPS);
+    const ts = timestamps(a.length, SPS);
+    const wl = a.map(x => jointFrame('elbow', { left: x }));
+    const r: { refused: boolean } = summarizeCount(wl, ts, 'bicep_curl_alternating');
+    expect(r.refused).toBe(true);
+  });
+  it('both arms in sight: counted', () => {
+    const a = sample(cycles({ rest: 165, work: 50, reps: 8, firstSec: 0.8, secondSec: 1, restSec: 0.6 }), 165, SPS);
+    const ts = timestamps(a.length, SPS);
+    const r: { refused: boolean } = summarizeCount(a.map(x => jointFrame('elbow', { left: x, right: x })), ts, 'bicep_curl_alternating');
+    expect(r.refused).toBe(false);
+  });
+});
