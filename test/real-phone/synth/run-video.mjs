@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // node test/real-phone/synth/run-video.mjs <out.mp4> '<params json>' — renders one synthetic set (synth.js,
-// P.video) and encodes it with ffmpeg (FFMPEG) as an H.264 MP4 a phone could have filmed, for driving the
+// P.video) and encodes it with ffmpeg (FFMPEG) as an H.264 MP4 a phone could have filmed (or VP9 for .webm), for driving the
 // app end to end (smoke.mjs). The set's truth is written beside it as <out>.truth.json.
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -32,7 +32,9 @@ try {
   const r = await page.evaluate(() => { const { truth, ...rest } = window.RESULT; return rest; });
   writeFileSync(`${out}.truth.json`, JSON.stringify(r));
   await browser.close();
-  const ff = spawnSync(process.env.FFMPEG, ['-y', '-loglevel', 'error', '-framerate', String(p.video.fps), '-i', join(dir, 'f%05d.jpg'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out]);
+  // H.264 in an MP4 as a phone films it; a .webm out is VP9, which the test Chromium decodes (it has no H.264).
+  const codec = out.endsWith('.webm') ? ['-c:v', 'libvpx-vp9', '-b:v', '2M', '-row-mt', '1'] : ['-c:v', 'libx264', '-movflags', '+faststart'];
+  const ff = spawnSync(process.env.FFMPEG, ['-y', '-loglevel', 'error', '-framerate', String(p.video.fps), '-i', join(dir, 'f%05d.jpg'), ...codec, '-pix_fmt', 'yuv420p', out]);
   if (ff.status !== 0) throw new Error(String(ff.stderr));
   rmSync(dir, { recursive: true, force: true });
   console.log(`${out}: ${n} frames, ${r.reps.length} reps`);
