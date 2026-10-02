@@ -133,6 +133,9 @@ for (const size of [{ width: 390, height: 664 }, { width: 375, height: 548 }]) {
       const page = await context.newPage();
       await seeded(page, lang);
       const button = page.getByRole('button', { name: LABEL[lang] });
+      // Since 2 October the data actions follow the sets, so the first set stays in view (tour, rule 6): the
+      // export is scrolled to, then checked where it stands.
+      await button.scrollIntoViewIfNeeded();
       await expect(button).toBeInViewport();
       await page.waitForTimeout(1200); // the reveal has settled
       const box = await button.boundingBox();

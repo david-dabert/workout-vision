@@ -58,7 +58,7 @@
 .wv-experience .prog-meta > span { white-space: nowrap; }
 /* The last count, centred on the last bar, may pass the drawing's right edge by a pixel or two. */
 .wv-experience .prog-bars { overflow: visible; }
-/* The export: a quiet line under the subtitle, the Guide's text button with a small icon. */
+/* The export: a quiet line in "Vos données", after the sets, the Guide's text button with a small icon. */
 .wv-experience .hist-export { margin-top: var(--s-3); }
 .wv-experience .hist-export .text-btn { display: inline-flex; align-items: center; gap: 8px; padding: 0; border-radius: var(--r-pill); color: var(--bone-2); }
 .wv-experience .hist-export .text-btn svg { width: 16px; height: 16px; color: var(--lamp); }
