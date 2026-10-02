@@ -139,3 +139,21 @@ describe('Countix whole clips', () => {
     expect(set.trimSeconds).toBeUndefined();
   });
 });
+
+// A public set is written only when the whole video was read, as the app requires before it counts
+// (coreAnalysis.js, unreadSamples): Astra's audit found the importer kept a whole-clip label on any read.
+import { unreadPublic } from '../public/whole-read.mjs';
+describe('a public video read in part is not written', () => {
+  const ts = n => Array.from({ length: n }, (_, i) => i / 15);
+  it('passes a whole read: floor(duration x 15) samples, each after the last', () => {
+    expect(unreadPublic({ timestamps: ts(150), duration: 10.02, fps: 15 })).toBeNull();
+  });
+  it('names a read with samples missing, or too many', () => {
+    expect(unreadPublic({ timestamps: ts(120), duration: 10.02, fps: 15 })).toBe('read 120 samples of the 150 the video holds');
+    expect(unreadPublic({ timestamps: ts(180), duration: 10.02, fps: 15 })).toBe('read 180 samples of the 150 the video holds');
+  });
+  it('names a read whose length is unknown, or whose samples go back in time', () => {
+    expect(unreadPublic({ timestamps: ts(10), duration: NaN, fps: 15 })).toBe('the video reports no length');
+    expect(unreadPublic({ timestamps: [...ts(5), 0.1, ...ts(144).slice(6)], duration: 10.02, fps: 15 })).toBe('samples out of time order');
+  });
+});
