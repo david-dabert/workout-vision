@@ -31,6 +31,7 @@ import {
 // Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mpVision from '@mediapipe/tasks-vision';
+import { isTheModel } from './model-hash';
 function getMediaPipeVision() {
   return mpVision;
 }
@@ -85,11 +86,12 @@ async function fetchModelBuffer() {
   // Try IndexedDB cache first (instant on repeat visits, works offline)
   try {
     const cached = await modelCache.getItem(MODEL_CACHE_KEY);
-    if (cached && cached.byteLength >= MIN_MODEL_BYTES) {
+    // The kept copy is used only if it is exactly the model the app was built with (audit FINDING-018).
+    if (cached && cached.byteLength >= MIN_MODEL_BYTES && await isTheModel(cached)) {
       return cached;
     }
     if (cached) {
-      console.warn(`[PoseAnalysis] Cached model too small (${(cached.byteLength / 1024 / 1024).toFixed(1)}MB), re-downloading`);
+      console.warn('[PoseAnalysis] Cached model is not the expected file, re-downloading');
       modelCache.removeItem(MODEL_CACHE_KEY).catch(() => {});
     }
   } catch (_) {}
@@ -126,12 +128,14 @@ async function fetchModelBuffer() {
       offset += chunk.length;
     }
 
+    if (!await isTheModel(buffer)) throw new Error('Pose model integrity mismatch');
     modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
     return buffer;
   }
 
   // Fallback: no Content-Length or no streaming body (older browsers)
   const buffer = await response.arrayBuffer();
+  if (!await isTheModel(buffer)) throw new Error('Pose model integrity mismatch');
   modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
   return buffer;
 }

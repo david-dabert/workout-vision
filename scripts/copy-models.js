@@ -48,7 +48,8 @@ const COPIES = [
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 
 // SHA-256 of the immutable float16/1 archive; checked before writing and on every build.
-const MODEL_SHA256 = '5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1';
+// The one fingerprint the app shares (src/lib/model-hash.json): build, service worker and analysis check the same.
+const MODEL_SHA256 = JSON.parse(readFileSync(new URL('../src/lib/model-hash.json', import.meta.url), 'utf8')).sha256;
 function verifyModel(buffer) {
   const actual = createHash('sha256').update(buffer).digest('hex');
   if (actual !== MODEL_SHA256) throw new Error(`Model SHA-256 mismatch: expected ${MODEL_SHA256}, received ${actual}`);
