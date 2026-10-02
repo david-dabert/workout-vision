@@ -76,6 +76,10 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
     const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp) => {
       signal?.throwIfAborted();
+      // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
+      // (frameExtractor.js): only the last pass is kept, so a short first pass can never make up for samples the
+      // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
+      if (index === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; }
       const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer;
       const result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: index * 1000 / TARGET_FPS }, [pixels]);
       imageLandmarks.push(result.image);
@@ -84,7 +88,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       onLandmarks(result.image, canvas.width, canvas.height);
     }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}) });
     signal?.throwIfAborted();
-    const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
+    // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
+    const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
+    const missed = unreadSamples({ samples: ordered ? timestamps.length : NaN, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
     if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.

@@ -54,7 +54,8 @@ import { vi } from 'vitest';
 vi.mock('../frameExtractor', () => ({
   extractFramesStreaming: async (_file, _fps, _max, _side, onFrame) => {
     const canvas = { width: 2, height: 2, getContext: () => ({ getImageData: () => ({ data: new Uint8ClampedArray(16) }) }) };
-    for (let i = 0; i < 181; i++) await onFrame(canvas, i, i / 15);
+    // Each pass starts again at sample 0, as the extractor's fallback does (frameExtractor.js).
+    for (const n of globalThis.__passes || [181]) for (let i = 0; i < n; i++) await onFrame(canvas, i, i / 15);
     return { duration: 29.328333 };
   },
 }));
@@ -68,5 +69,21 @@ describe('analyzeCoreVideo on a partial read', () => {
       addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
     };
     await expect(analyzeCoreVideo(new Blob(['x']), 'lateral_raise')).rejects.toMatchObject({ name: 'PartialReadError', read: 181, expected: 439 });
+  });
+});
+
+describe('a failed first pass and its fallback (audit FINDING-002)', () => {
+  it('the first pass is dropped: 30 then 409 of 439 is a partial read of 409, not a whole one', async () => {
+    const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 1 }));
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; }
+      postMessage(m) { setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id, ok: true } : { id: m.id, image: frame, world: frame } }), 0); }
+      terminate() {}
+      addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
+    };
+    globalThis.__passes = [30, 409];
+    try {
+      await expect(analyzeCoreVideo(new Blob(['x']), 'lateral_raise')).rejects.toMatchObject({ name: 'PartialReadError', read: 409, expected: 439 });
+    } finally { delete globalThis.__passes; }
   });
 });
