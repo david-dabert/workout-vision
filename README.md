@@ -7,14 +7,14 @@ The video is analysed on the phone and never leaves it.
 
 ## What it does
 
-- Counts the reps of 181 exercises. You choose the exercise; the app does not guess it. Four are Beta: lateral raise, biceps curl, lat pulldown and squat. All the others are Experimental, and say so on the result (src/lib/liftTiers.js, src/lib/offer.js); they are counted by their movement pattern (src/lib/counting/guide-patterns.json).
+- Counts the reps of 183 exercises, and scores two fitness tests over 30 seconds: the chair stand and the arm curl (src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Four are Beta: lateral raise, biceps curl, lat pulldown and squat. All the others are Experimental, and say so on the result (src/lib/liftTiers.js, src/lib/offer.js); they are counted by their movement pattern (src/lib/counting/guide-patterns.json).
 - Shows how to film each lift before you choose the video.
 - Shows the count and asks you to confirm it or enter the true number. When most of the set cannot be seen, it says so and counts nothing.
 - Replays the set with the tracked body drawn over the video, the counting joint lit, and each rep marked on a timeline.
 - Builds a coach report, on screen and as a PDF shared from the phone:
   - lift, date, client, coach, count and notes;
-  - per rep: range of motion in degrees, concentric and eccentric time, tempo, peak and mean angular speed in degrees per second, and a mark for short reps;
-  - per set: time under tension, change in concentric speed from the first two reps to the last two, average tempo, and a comparison with the previous saved set of the same lift.
+  - per rep, under an experimental label since none is validated on real phone video (src/components/experience/measures.js): range of motion in degrees, concentric and eccentric time, tempo, peak and mean angular speed in degrees per second, and a mark for short reps;
+  - per set: time under tension, average tempo, the angle over the whole set with each rep marked, and a comparison with the previous saved set of the same lift. The change in speed between the first and last reps is not stated: on synthetic sets it could not be told from noise.
 - Makes, on a tap, a video of the set with its overlay, handed to the phone's share sheet; nothing is sent unless the user shares it.
 - Lets the user report a wrong count by e-mail or GitHub issue, and challenge a friend through the share sheet, each on a tap.
 - Keeps saved sets in a history on the phone, with progress per exercise and personal bests, and exports them as two spreadsheet files for a coach.
@@ -57,4 +57,4 @@ Rules, steps and current state: [PLAN.md](PLAN.md).
 
 ## License
 
-MIT
+MIT: see [LICENSE](LICENSE). The bundled fonts and the MediaPipe pose model keep their own licences.

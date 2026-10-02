@@ -102,7 +102,7 @@ The live path uses only `getImageLandmarker` and `detectPoseImage`; it also pull
 |---|---|
 | `prebuild`: `scripts/copy-models.js` | Copies MediaPipe WASM from `node_modules` into `public/` and downloads `pose_landmarker_full.task` into `public/mediapipe/`, so nothing is fetched from a CDN at runtime. Also run by a Vite plugin at build start. |
 | `prebuild`: `scripts/copy-guide.js` | Copies and resizes guide artwork (CC BY-SA 4.0) from `@bryllim/workout-guide` into `public/guide/`. |
-| `vite build` | Target ES2022 and Safari 16; chunks `react-vendor`, `localforage`, `i18n`; injects `__APP_VERSION__`, `__GIT_HASH__`, `__BUILD_TIME__`, `__FEEDBACK_URL__`. Base path from `VITE_BASE`. |
+| `vite build` | Target ES2022 and Safari 16; chunks `react-vendor`, `localforage`, `i18n`; injects `__APP_VERSION__`, `__GIT_HASH__`, `__BUILD_TIME__`, `__FEEDBACK_URL__` (empty: the deploy no longer passes it, and the feedback panel is not reachable from the app). Base path from `VITE_BASE`. |
 | `scripts/inject-sw-precache.js` | Writes the hashed asset list into `dist/sw.js`, so the app works offline after the first visit. |
 
 `public/sw.js`: app shell precache, network-first for navigation, cache-first for assets and MediaPipe files.
@@ -163,10 +163,10 @@ Two pairs of files exist in both JavaScript and TypeScript (`SignalExtractor3D`,
 
 | Workflow | Trigger | Steps |
 |---|---|---|
-| `.github/workflows/ci.yml` | Push and pull request on `main` and `counter-core` | `npm ci`, lint, typecheck, unit tests, build. |
-| `.github/workflows/deploy.yml` | Push on `main` | Lint, unit tests, Countix benchmark (`continue-on-error: true`), build with `VITE_FEEDBACK_URL`, Playwright offline test, deploy to GitHub Pages. |
+| `.github/workflows/ci.yml` | Push and pull request on `main` and `counter-core` | Four jobs. Quality: lint, typecheck, unit tests, `npm run scoreboard` (the stored landmarks of the labelled real-phone sets), the 96 synthetic sets against `synth.txt`, build. Browser tests: Playwright in Chromium and WebKit on the production build. Tour: WebKit with the iPhone profile at three sizes. Journey: the production app driven end to end by three rendered synthetic videos, with an accessibility audit. |
+| `.github/workflows/deploy.yml` | CI succeeding on a push to `main`, or by hand | Checks out the commit CI passed; lint, unit tests, build, Playwright offline test, deploy to GitHub Pages. |
 
-Neither workflow runs the real-phone pipeline in a browser.
+No workflow decodes a real-phone video through the app on a phone: David's iPhone check stays the gate for that (CLAUDE.md R6).
 
 ## 8. Outside the app
 

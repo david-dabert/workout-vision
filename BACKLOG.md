@@ -79,3 +79,16 @@ measured (scoreboard, synth.txt); anything else waits for its measurement (R8, R
 - Online coaches (Luc): the client films, the coach receives one report per week (29 September entry).
 - Pivots worth testing with one real user each before any code: home-exercise adherence for kinés; team
   logging for S&C coaches; a privacy-first set logger for women who train alone.
+
+## 2 October 2026: remove the dormant code (Astra's audit, FINDING-035), David's decision
+
+`node scripts/unreachable.mjs` lists the source files no page of the app loads: on 2 October, 92 of 188 (non-test),
+among them the old upload, replay, coach report, injury, badge and feedback screens, and the old counters
+(SignalExtractor3D, valleyCounter, repCounter, hysteresisCounter). None reaches the bundle; 14 test files still
+test them (src/lib/__tests__/benchmark, biomechanics, coach, defense, exerciseDetector, hierarchicalDetector,
+hierarchicalValidation, pipeline, progressionScale, utils; counting hotfix_baseline and learned;
+test/real-phone/accuracy/learned-span, agreement/counts), so a green test run says less about the app than its size suggests.
+
+App.jsx says "Hidden, not deleted". Proposal: delete what David does not mean to bring back, keep the learned
+counter (research, PLAN.md), and run the script in CI so a file no page loads is named. Nothing is deleted until
+David chooses.
