@@ -10,3 +10,10 @@ export const MEASURES_SHOWN = true;
 export const experimentalLabel = fr => (fr
   ? 'Mesures expérimentales\u00A0: estimées par l’app, pas encore validées.'
   : 'Experimental measures: estimated by the app, not yet validated.');
+
+// Whether the speed change between the first and last reps is stated (account, opener, expert line, report).
+// Off since 2 October 2026 (David's standing order, PLAN.md; design review): on David's sets and the
+// synthetic ones the change moves by 5-15 % with no change in the movement, within the noise of phase
+// timing (test/real-phone/synth/synth.txt), so a sentence such as "6 % faster" stated noise as a finding (R8).
+// Back on once a set's change can be told from that noise. Status: not validated.
+export const SPEED_CHANGE_SHOWN = false;

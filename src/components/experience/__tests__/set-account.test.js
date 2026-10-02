@@ -64,7 +64,6 @@ describe('the account of the set, the tip and the encouragement', () => {
     expect(a.lines).toEqual([
       'Tempo moyen : 2-1-1-0.',
       'La répétition 3 a été plus courte que les autres.',
-      'Vos deux dernières répétitions ont été 20 % plus lentes que les deux premières.',
       '2 répétitions de plus que votre dernière série.',
     ]);
     expect(a.tip).toBe('La prochaine fois, visez la même amplitude sur toutes les répétitions.');
@@ -74,10 +73,9 @@ describe('the account of the set, the tip and the encouragement', () => {
     const a = setAccount({ reps: even(5), first: 'eccentric', fr: false, name: 'Squat', count: 5, previous: 6, nth: 1 });
     expect(a.lines).toEqual([
       'Average tempo: 2-0-1-1.',
-      'Your last two reps were as fast as your first two.',
       '1 fewer rep than your last set.',
     ]);
-    expect(a.tip).toBe('When all your reps stay full and controlled, add a rep or a little weight.');
+    expect(a.tip).toBe('To compare your sets, film them from the same spot each time.');
     expect(a.cheer).toBe('Your 1st set of squat in your history. Consistency will do the rest.');
   });
   it('several short reps, elision before a vowel, first set in French, no previous set', () => {

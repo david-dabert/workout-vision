@@ -3,7 +3,7 @@
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
 import { decimal, repTempo, setTempo } from './tempo';
-import { MEASURES_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
 import { sidesLines } from './sides-line';
 
 export { setTempo };
@@ -121,7 +121,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   }
   if (measures && shown) {
     summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
-    const speed = speedLine(measures.speedChange, fr);
+    const speed = SPEED_CHANGE_SHOWN ? speedLine(measures.speedChange, fr) : '';
     if (speed) summary.push(speed);
 
     // Set tempo: average of each phase across whole reps (setTempo, which the spreadsheet uses too).

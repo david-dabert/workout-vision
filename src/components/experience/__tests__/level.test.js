@@ -93,10 +93,12 @@ describe('the expert\'s table and speed line are the report\'s own, never a new 
       expect(t.columns).toEqual(sheet.columns);
       expect(t.rows).toEqual(sheet.rows);
     });
-    it(`gives the report's concentric speed line (${fr ? 'fr' : 'en'})`, () => {
+    // The speed change is not stated while SPEED_CHANGE_SHOWN is off (measures.js, 2 October): the line
+    // still derives, but neither the report nor the expert screen shows it.
+    it(`keeps the concentric speed line out of the report (${fr ? 'fr' : 'en'})`, () => {
       const line = speedChangeLine(eight, fr);
       expect(line).toBeTruthy();
-      expect(sheet.summary).toContain(line);
+      expect(sheet.summary).not.toContain(line);
     });
   }
   it('gives no speed line under four whole reps', () => {

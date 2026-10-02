@@ -46,7 +46,9 @@ try {
     check(ask && strips && strips.y >= ask.y + ask.height, `${lang} ${s.file}: strips under the question`);
     // A tap on a strip column selects that very rep in the marks and in every strip.
     const area = page.locator('.res-strips');
-    await area.scrollIntoViewIfNeeded();
+    // Centred, as a reader looks at them; 'if needed' leaves them flush with the bottom edge.
+    await area.evaluate(e => e.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(300);
     if (process.env.SHOTS) { await page.waitForTimeout(1200); await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}.png`) }); }
     const col = page.locator('[data-testid="strip-tempo"] .strip-col').nth(2);
     const b = await col.boundingBox();
@@ -59,7 +61,7 @@ try {
     const cap = page.locator('[data-testid="strip-caption"]');
     const cb = await cap.boundingBox().catch(() => null);
     const ctext = (await cap.textContent().catch(() => '')) || '';
-    check(!!cb && cb.y >= 0 && cb.y + cb.height <= 664 && /3/.test(ctext), `${lang} ${s.file}: the caption is in view and names the rep: ${ctext}`);
+    check(!!cb && cb.y >= 0 && cb.y + cb.height <= 664 && /3/.test(ctext), `${lang} ${s.file}: the caption is in view (top ${cb?.y.toFixed(0)}, bottom ${(cb?.y + cb?.height).toFixed(0)} of 664) and names the rep: ${ctext}`);
     if (process.env.SHOTS) await area.screenshot({ path: resolve(process.env.SHOTS, `${lang}-${s.lift}-sel.png`) });
     await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     if (n) {
@@ -99,7 +101,7 @@ try {
         const r = document.querySelector('.result-screen .rp-open')?.getBoundingClientRect(), pill = document.querySelector('.result-screen .topbar .pill')?.getBoundingClientRect();
         return { off: r ? Math.abs(r.left + r.width / 2 - innerWidth / 2) : null, pillH: pill?.height ?? null, overlap: r && pill ? r.right > pill.left : null };
       });
-      check(bar.off !== null && (w < 390 || lang === 'fr' || bar.off <= 2) && bar.pillH < 34 && !bar.overlap, `${lang} ${level} ${w}px: replay centred where there is room (${bar.off?.toFixed(1)} px off), test mark on one line (${bar.pillH?.toFixed(0)} px), no overlap`);
+      check(bar.off !== null && bar.off <= 2 && bar.pillH === null, `${lang} ${level} ${w}px: replay on the centre line (${bar.off?.toFixed(1)} px off), no test mark on the result`);
       const strips = await page.locator('[data-testid="rep-strips"]').count(), line = await page.locator('[data-testid="res-sides"]').count();
       check(line === 1 && strips === (level === 'beginner' ? 0 : 1), `${lang} ${level} ${w}px: line ${line}, strips ${strips}`);
       const wide = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);

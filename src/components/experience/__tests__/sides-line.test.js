@@ -5,8 +5,8 @@ describe('sides line', () => {
   it('states both ranges, the gap and the synthetic bounds as observations, with no verdict', () => {
     const s = sidesRecord({ status: 'measured', comparison: { left: 90.4, right: 80.6, si: -11.4, reps: 8 } });
     expect(s).toEqual({ left: 90, right: 81, si: -11, reps: 8, v: 2 });
-    expect(sidesLines(s, true, 'lateral_raise')).toEqual({ line: 'Amplitude gauche 90° · droite 81° · écart 11 %', note: 'Série filmée bien de face, gauche et droite de la personne filmée. Sur 6 séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à 9 points, et jusqu’à 14 d’une répétition à l’autre.' });
-    expect(sidesLines(s, false, 'lateral_raise').line).toBe('Range left 90° · right 81° · 11% apart');
+    expect(sidesLines(s, true, 'lateral_raise')).toEqual({ line: 'Amplitude de l’épaule\u00A0: gauche 90°\u00A0· droite 81°\u00A0· écart 11\u00A0%', note: 'Série filmée bien de face, gauche et droite de la personne filmée. Sur 6 séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à 9 points, et jusqu’à 14 d’une répétition à l’autre.' });
+    expect(sidesLines(s, false, 'lateral_raise').line).toBe('Shoulder range: left 90°\u00A0· right 81°\u00A0· 11% apart');
   });
   it('says nothing for a set not measured', () => {
     expect(sidesRecord({ status: 'not-front' })).toBeNull();

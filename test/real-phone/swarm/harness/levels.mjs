@@ -86,8 +86,9 @@ try {
         `${tag}: account and tip first, then the number, the question, the bars; notes open`);
       if (l === 'intermediate') say(shows.num < shows.bars && shows.bars < shows.card && shows.card < shows.acc && !shows.open && !shows.rows && !shows.speed,
         `${tag}: today's order, notes closed, no table`);
-      if (l === 'expert') say(shows.bars < shows.speedY && shows.speedY < shows.card && shows.card < shows.tableY && shows.rows === 8 && /(Vitesse concentrique|Concentric speed)/.test(shows.speed) && !shows.open,
-        `${tag}: speed "${shows.speed}" under the bars, ${shows.rows} rows under the question`);
+      // The speed line is off while SPEED_CHANGE_SHOWN is (measures.js, 2 October): none under the bars.
+      if (l === 'expert') say(shows.bars < shows.card && shows.card < shows.tableY && shows.rows === 8 && !shows.speed && !shows.open,
+        `${tag}: no speed line under the bars, ${shows.rows} rows under the question`);
     }
     await ctx.close();
   }
@@ -111,7 +112,8 @@ try {
     const lines = await p.locator('[data-testid="set-account"] .acc-line').count();
     const box = await p.getByRole('button', { name: yes[lang] }).boundingBox();
     const { hits } = await p.evaluate(layout);
-    say(lines === 4 && box.y + box.height <= 664 && !hits.length, `${lang} beginner, ${lines} account lines, 390x664: "${yes[lang]}" bottom ${(box.y + box.height).toFixed(0)} of 664, ${hits.length ? hits.join('; ') : 'no overlap'}`);
+    // Tempo, short rep, against the last set: three lines since the speed change went unsaid (2 October).
+    say(lines === 3 && box.y + box.height <= 664 && !hits.length, `${lang} beginner, ${lines} account lines, 390x664: "${yes[lang]}" bottom ${(box.y + box.height).toFixed(0)} of 664, ${hits.length ? hits.join('; ') : 'no overlap'}`);
     if (SHOTS) await p.screenshot({ path: `${SHOTS}/result-${lang}-beginner-4lines-390x664.png` });
     await ctx.close();
   }
