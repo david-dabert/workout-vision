@@ -135,3 +135,23 @@ test('a stop the phone cannot save says so, and contributing goes on (audit FIND
   expect(await page.evaluate(() => localStorage.getItem('wv_contribute'))).toBe('yes');
   await expect(box.getByRole('button', { name: 'Arrêter et effacer' })).toBeVisible();
 });
+
+test('a set deleted in the history leaves the file sent: the count and the file follow (audit of 2 October)', async ({ page }) => {
+  await open(page, 'yes', true);
+  await put(page, 'workouts', [{ id: 'w2', exercise: 'bicep_curl', reps: 8, source: 'counter-core', createdAt: Date.now() + 1000 }]);
+  // The file leaves out each set's key: the two are told apart by their count.
+  await put(page, 'contributions', [c('w1'), { ...c('w2'), count: 8 }]);
+  const box = await history(page);
+  await expect(box).toContainText('2 séries prêtes');
+  // The newest set, w2 (count 8), comes first and is deleted: only w1's contribution (count 7) is left.
+  await page.locator('.hist-btn').first().click();
+  await page.getByRole('button', { name: 'Supprimer cette série' }).click();
+  await page.getByRole('button', { name: 'Toucher encore pour supprimer' }).click();
+  await expect(page.locator('.hist-btn')).toHaveCount(1);
+  await expect(box).toContainText('1 série prête');
+  await page.evaluate(() => { window.__files = []; const s = navigator.share; navigator.share = d => { window.__files.push(d.files[0]); return s(d); }; });
+  await box.getByRole('button', { name: 'Envoyer' }).click();
+  await expect(box.locator('[role="status"]')).toHaveText('1 série partagée. Merci.');
+  const ids = await page.evaluate(async () => { const f = window.__files[0]; const t = f.name.endsWith('.gz') ? await new Response(f.stream().pipeThrough(new DecompressionStream('gzip'))).text() : await f.text(); return JSON.parse(t).sets.map(x => x.count); });
+  expect(ids).toEqual([7]);
+});

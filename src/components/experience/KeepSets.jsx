@@ -44,7 +44,7 @@ export default function KeepSets({ sets, fr, onRestored, style }) {
     e.target.value = '';
     if (!file) return;
     setNote('');
-    const r = await restoreFlow(await file.text(), fr, { list: () => { refreshSets(); return loadSets(); } });
+    const r = await restoreFlow(file.text(), fr, { list: () => { refreshSets(); return loadSets(); } });
     if (r.sets) onRestored?.(r.sets);
     setNote(r.note);
   }

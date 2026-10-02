@@ -31,3 +31,23 @@ describe('the backup file', () => {
     expect([...store.keys()]).toEqual(['a', 'b']);
   });
 });
+
+describe('a restore that stops part-way (audit of 2 October)', () => {
+  it('returns what it wrote and how many it could not', async () => {
+    const store = new Map();
+    const put = async w => { if (store.size === 1) throw new DOMException('full', 'QuotaExceededError'); if (store.has(w.id)) return false; store.set(w.id, w); return true; };
+    expect(await restoreBackup([set('a'), set('b'), set('c')], put)).toEqual({ added: 1, present: 0, failed: 2 });
+  });
+  it('throws when nothing at all could be written', async () => {
+    await expect(restoreBackup([set('a')], async () => { throw new Error('closed'); })).rejects.toThrow('closed');
+  });
+});
+
+describe('the backup file name', () => {
+  it('carries the phone\'s own date, not the UTC one', () => {
+    const tz = process.env.TZ;
+    process.env.TZ = 'Europe/Paris';
+    try { expect(backupFile([], new Date('2026-10-02T22:30:00Z')).name).toBe('workout-vision-series-2026-10-03.json'); }
+    finally { if (tz === undefined) delete process.env.TZ; else process.env.TZ = tz; }
+  });
+});

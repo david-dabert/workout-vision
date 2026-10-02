@@ -101,7 +101,9 @@ export async function forgetContributions(ids) { for (const id of ids) await sto
 export async function contributionsFile(list, now = new Date(), CS = globalThis.CompressionStream) {
   const sets = list.map(({ setId: _id, savedAt: _at, ...c }) => c);
   const text = JSON.stringify({ kind: `${CONTRIBUTION_KIND}s`, contributionVersion: CONTRIBUTION_VERSION, sets });
-  const base = `workout-vision-contributions-${now.toISOString().slice(0, 10)}-${list.length}`;
+  // The phone's own date: a file made at 00:30 in Paris carries that day, not the UTC one before it.
+  const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const base = `workout-vision-contributions-${day}-${list.length}`;
   if (typeof CS === 'function') {
     const gz = await new Response(new Blob([text]).stream().pipeThrough(new CS('gzip'))).blob();
     return new File([gz], `${base}.json.gz`, { type: 'application/gzip' });

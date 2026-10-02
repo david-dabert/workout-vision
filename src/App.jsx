@@ -114,7 +114,8 @@ function AppInner() {
         injuries: [],
         profileComplete: false,
       };
-      saveProfile(defaultProfile);
+      // A storage that refuses the write is recorded by the context (storageError); not left unhandled (audit of 2 October).
+      saveProfile(defaultProfile).catch(() => {});
     }
   }, [profileLoading, profile, saveProfile, setPage]);
 

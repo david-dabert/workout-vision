@@ -179,7 +179,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     word: fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps'),
     lift: liftName,
     corrected: counted != null && counted !== count
-      ? (fr ? `Compté par l'app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
+      ? (fr ? `Compté par l’app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
       : '',
     arm: arm === 'left' || arm === 'right'
       // The tracked limb follows the joint that counts the lift: arm, leg (knee) or side (hip).

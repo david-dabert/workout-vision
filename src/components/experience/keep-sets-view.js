@@ -2,11 +2,12 @@
 // tests can run them.
 import { readBackup, restoreBackup } from '../../lib/keep-sets';
 /** What a restore did, in the person's words; { unlisted } when the sets are written but could not be listed. */
-export function restoredLine({ added = 0, present = 0, skipped = 0, unlisted = false }, fr) {
+export function restoredLine({ added = 0, present = 0, skipped = 0, failed = 0, unlisted = false }, fr) {
   if (unlisted) return fr ? 'Rouvrez vos séries pour les voir.' : 'Open your sets again to see them.';
   const parts = [fr ? `${added} ${added > 1 ? 'séries restaurées' : 'série restaurée'}.` : `${added} ${added === 1 ? 'set' : 'sets'} restored.`];
   if (present) parts.push(fr ? `${present} ${present > 1 ? 'étaient déjà' : 'était déjà'} sur ce téléphone.` : `${present} ${present === 1 ? 'was' : 'were'} already on this phone.`);
   if (skipped) parts.push(fr ? `${skipped} ${skipped > 1 ? 'séries illisibles n’ont' : 'série illisible n’a'} pas été restaurée${skipped > 1 ? 's' : ''}.` : `${skipped} unreadable ${skipped === 1 ? 'set was' : 'sets were'} not restored.`);
+  if (failed) parts.push(fr ? `${failed} ${failed > 1 ? 'séries n’ont pas pu être restaurées' : 'série n’a pas pu être restaurée'}. Réessayez.` : `${failed} ${failed === 1 ? 'set' : 'sets'} could not be restored. Try again.`);
   return parts.join(' ');
 }
 
@@ -16,7 +17,12 @@ export function restoredLine({ added = 0, present = 0, skipped = 0, unlisted = f
  * as failed (review of 2 October). restore and list are the storage's own unless a test gives others.
  */
 export async function restoreFlow(text, fr, { restore = restoreBackup, list }) {
-  const r = readBackup(text);
+  // The file's text may still be on its way (File.text()): a file the phone cannot read, such as an iCloud file
+  // not downloaded, is said, not left silent (audit of 2 October).
+  let read;
+  try { read = await text; }
+  catch { return { note: fr ? 'Ce fichier n’a pas pu être lu. S’il est dans iCloud, téléchargez-le, puis réessayez.' : 'This file could not be read. If it is in iCloud, download it, then try again.' }; }
+  const r = readBackup(read);
   if (r.error) return { note: r.error === 'newer-version'
     ? (fr ? 'Cette sauvegarde vient d’une version plus récente de l’app. Mettez l’app à jour, puis réessayez.' : 'This backup comes from a newer version of the app. Update the app, then try again.')
     : (fr ? 'Ce fichier n’est pas une sauvegarde de vos séries.' : 'This file is not a backup of your sets.') };

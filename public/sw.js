@@ -4,6 +4,10 @@
 
 const CACHE_NAME = 'wv-v1';
 const MODEL_CACHE = 'wv-model-__MODEL_SHA256__';
+// MediaPipe's WASM and its loaders sit at unversioned addresses: they are kept apart, under a fingerprint of the
+// files themselves (scripts/inject-sw-precache.js), and looked up there only, so the previous version's cache can
+// never hand a new app the old library's WASM (audit of 2 October; src/lib/__tests__/sw-wasm.test.js).
+const WASM_CACHE = 'wv-wasm-__WASM_HASH__';
 const APP_SHELL = [
   '__SW_BASE__',
   '__SW_BASE__manifest.json',
@@ -35,7 +39,7 @@ self.addEventListener('activate', (event) => {
     const keep = [...(Array.isArray(seen) ? seen : []).filter((v) => v !== CACHE_NAME), CACHE_NAME].slice(-2);
     await meta.put('list', new Response(JSON.stringify(keep)));
     const keys = await caches.keys();
-    await Promise.all(keys.filter((k) => (k.startsWith('wv-v') && !keep.includes(k)) || (k.startsWith('wv-model-') && k !== MODEL_CACHE)).map((k) => caches.delete(k)));
+    await Promise.all(keys.filter((k) => (k.startsWith('wv-v') && !keep.includes(k)) || (k.startsWith('wv-model-') && k !== MODEL_CACHE) || (k.startsWith('wv-wasm-') && k !== WASM_CACHE)).map((k) => caches.delete(k)));
   })());
   self.clients.claim();
 });
@@ -71,19 +75,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // MediaPipe WASM files: cache-first
+  // MediaPipe WASM files: cache-first, from their own cache only.
   if (url.pathname.includes('/mediapipe/')) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      caches.open(WASM_CACHE).then((cache) => cache.match(request).then((cached) => {
         if (cached) return cached;
         return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
+          if (response.ok) cache.put(request, response.clone()).catch(() => {});
           return response;
         });
-      })
+      }), () => fetch(request))
     );
     return;
   }

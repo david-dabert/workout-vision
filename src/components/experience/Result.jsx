@@ -92,7 +92,10 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
         ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
         : (fr ? 'Essayez une autre vidéo, ou filmez à nouveau avec l’appareil photo.' : 'Try another video, or record again with the camera.')}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
-        <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October). */}
+        {model
+          ? <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+          : <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>}
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
     </div></section>
@@ -253,7 +256,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [askContribute] = useState(() => readChoice() === null && !contributeAsked());
   const showContribute = step === 'saved' && !offerLevel && askContribute;
   useEffect(() => { if (showContribute) markContributeAsked(); }, [showContribute]);
-  function chooseLevel(l) { writeLevel(l); setChosen(l); }
+  // "Noted" only when the phone stored it (audit of 2 October); otherwise the screen says it was not kept.
+  const [levelLost, setLevelLost] = useState(false);
+  function chooseLevel(l) { setLevelLost(!writeLevel(l)); setChosen(l); }
   const marksRef = useRef(null);
   function pick(e) {
     const marks = [...(marksRef.current?.children || [])];
@@ -301,7 +306,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The set saved, as a contribution, kept on this phone until the person sends or erases it.
-  const keepThis = n => { keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() })).catch(() => {}); };
+  // True once kept; a write the phone refuses is never taken for a kept set (audit of 2 October).
+  const keepThis = n => keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() }))
+    .then(() => true, e => { console.warn('[contribute] this set could not be kept', e); return false; });
 
   async function doSave(n, corrected) {
     if (saving.current) return;
@@ -525,7 +532,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'}</p>
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
-            {chosen && <p className="level-note" role="status">{fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans l’historique.' : 'Noted. The screen adapts from your next set. You can change it in your history.'}</p>}
+            {chosen && <p className="level-note" role="status">{levelLost
+              ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
+              : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans l’historique.' : 'Noted. The screen adapts from your next set. You can change it in your history.')}</p>}
           </div>}
         </div>
       )}

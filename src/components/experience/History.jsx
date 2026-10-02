@@ -159,7 +159,7 @@ export default function History({ onClose }) {
           <KeepSets sets={sets} fr={fr} onRestored={list => { setProblem(''); setSets(list); }} />
         </section>}
         {/* While helping, the section stays, so the person can always stop and erase, even with no set left. */}
-        {(sets?.length > 0 || readChoice() === 'yes') && <ContributeHistory fr={fr} style={{ '--i': 6 }} />}
+        {(sets?.length > 0 || readChoice() === 'yes') && <ContributeHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}

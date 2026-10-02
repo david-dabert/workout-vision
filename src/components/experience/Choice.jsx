@@ -132,9 +132,11 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</b><small>{fr ? 'Test de condition physique' : 'Fitness test'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>)}
-        {n > 0 && <button className="row-link press" onClick={onHistory}>
+        {/* Shown with no set too: after Safari erases the sets, or on a new phone, the history holds the restore
+            (audit of 2 October). */}
+        {Array.isArray(sets) && <button className="row-link press" onClick={onHistory}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6 7v10M10 7v10M14 7v10M18 7v10" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
+          <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>

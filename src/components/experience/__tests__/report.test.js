@@ -59,7 +59,7 @@ describe('reportSheet', () => {
   });
 
   it('states a correction only when the visitor changed the count', () => {
-    expect(reportSheet({ ...base, count: 12, counted: 10 }).corrected).toBe(`Compté par l'app${NBSP}: 10. Corrigé${NBSP}: 12.`);
+    expect(reportSheet({ ...base, count: 12, counted: 10 }).corrected).toBe(`Compté par l’app${NBSP}: 10. Corrigé${NBSP}: 12.`);
     expect(reportSheet({ ...base, count: 10, counted: 10 }).corrected).toBe('');
     expect(reportSheet({ ...base, lang: 'en', count: 9, counted: 10 }).corrected).toBe('Counted by the app: 10. Corrected: 9.');
   });

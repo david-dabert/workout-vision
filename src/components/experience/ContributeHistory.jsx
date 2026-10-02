@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { contributions, contributionsFile, eraseContributions, forgetContributions, readChoice, persistChoice } from '../../lib/contribute';
 import { CONTRIBUTE } from './contribute-copy';
 
-export default function ContributeHistory({ fr, style }) {
+export default function ContributeHistory({ fr, style, sets = null }) {
   const t = CONTRIBUTE[fr ? 'fr' : 'en'];
   const [choice, setChoice] = useState(readChoice);
   const [waiting, setWaiting] = useState(null);
@@ -14,13 +14,15 @@ export default function ContributeHistory({ fr, style }) {
   const [note, setNote] = useState('');
   const downloadNext = useRef(false), sharing = useRef(false), generation = useRef(0);
 
-  // The sets waiting, read when helping; their file prepared at once.
+  // The sets waiting, read when helping, and again whenever the saved sets change: a set deleted in the history
+  // takes its contribution with it, and the file prepared before is dropped (audit of 2 October). Their file is
+  // prepared at once.
   useEffect(() => {
     if (choice !== 'yes') return undefined;
     let live = true;
     contributions().then(l => { if (live) setWaiting(l); }, () => { if (live) setWaiting([]); });
     return () => { live = false; };
-  }, [choice]);
+  }, [choice, sets]);
   useEffect(() => {
     if (!waiting?.length) return undefined;
     const g = ++generation.current;
