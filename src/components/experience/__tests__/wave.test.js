@@ -90,3 +90,18 @@ describe('the kept wave keeps what was not seen (audit FINDING-027)', () => {
     expect(w.t.at(-1)).toBe(Math.round(t.at(-1) * 100) / 100);
   });
 });
+
+describe('per-rep details read back are checked (audit FINDING-015)', () => {
+  const base = { id: 'w1', exercise: 'bicep_curl', reps: 6, date: '2026-10-02T10:00:00Z', createdAt: 1, repDetailsVersion: 2 };
+  const rep = { index: 1, startTime: 0, endTime: 2, romDegrees: 80, concentricSec: 1, eccentricSec: 1, peakSpeed: 100, meanSpeed: 40 };
+  it('a list of reps with their numbers is kept', () => {
+    expect(validateWorkout({ ...base, repDetails: [rep] }).sanitized.repDetails).toEqual([rep]);
+  });
+  it('details that are not such a list are dropped, with their version', () => {
+    for (const bad of [{ 0: rep }, [{ ...rep, startTime: 'x' }], [null], 'reps']) {
+      const s = validateWorkout({ ...base, repDetails: bad }).sanitized;
+      expect(s.repDetails).toBe(null);
+      expect(s.repDetailsVersion).toBe(null);
+    }
+  });
+});
