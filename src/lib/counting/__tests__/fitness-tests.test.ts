@@ -53,7 +53,7 @@ describe('the halfway rule', () => {
     expect(scoreTest([rep(0, 1), rep(29.7, 0.4)], 40, 30).score).toBe(2);
     expect(scoreTest([rep(0, 1), rep(29.7, 0.8)], 40, 30).score).toBe(1);
   });
-  it('scores nothing without a rep', () => expect(scoreTest([], 40, 30)).toMatchObject({ score: 0, complete: false }));
+  it('scores nothing without a rep', () => expect(scoreTest([], 40, 30)).toMatchObject({ score: 0 }));
 });
 
 describe('the analysis of a test', () => {
@@ -69,5 +69,77 @@ describe('the analysis of a test', () => {
     const r: { count: number; test?: unknown } = summarizeCount(s.wl, s.ts, 'squat');
     expect(r.count).toBe(16);
     expect(r.test).toBeUndefined();
+  });
+});
+
+describe('review of 2 October: how a test really ends', () => {
+  // Seated 1 s; 11 stands (rise 0.8 s, sit 0.8 s, 0.8 s seated); a 12th rise, then standing until the end.
+  const path = [{ hold: 90, sec: 1 }, ...Array.from({ length: 11 }, () => [{ to: 170, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { to: 170, sec: 0.8 }, { hold: 170, sec: 6 }];
+  it('counts a last stand ended standing, as the protocol counts any stand past halfway up', () => {
+    const a = sample(path, 90, SPS), wl = a.map(x => jointFrame('knee', { left: x, right: x })), ts = timestamps(a.length, SPS);
+    const r: { count: number } = summarizeCount(wl, ts, 'chair_stand_test');
+    expect(r.count).toBe(12);
+  });
+  it('counts a last curl held at the top', () => {
+    const p2 = [{ hold: 165, sec: 1 }, ...Array.from({ length: 14 }, () => [{ to: 50, sec: 0.6 }, { to: 165, sec: 1.0 }, { hold: 165, sec: 0.4 }]).flat(), { to: 50, sec: 0.6 }, { hold: 50, sec: 4 }];
+    const a = sample(p2, 165, SPS), wl = a.map(x => jointFrame('elbow', { left: x, right: x })), ts = timestamps(a.length, SPS);
+    const r: { count: number } = summarizeCount(wl, ts, 'arm_curl_test');
+    expect(r.count).toBe(15);
+  });
+  it('a long video with no stand is not called short', () => expect(scoreTest([], 40, 30).complete).toBe(true));
+  it('a video shorter than 30 s with no stand is called short', () => expect(scoreTest([], 20, 30).complete).toBe(false));
+});
+
+describe('the open rise stays inside the window', () => {
+  it('a rise after the 30 s is not counted', () => {
+    // One stand from 1 s, then seated until 34 s, then a rise held to the end (standing up to stop the phone).
+    const path = [{ hold: 90, sec: 1 }, { to: 170, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 32 }, { to: 170, sec: 0.8 }, { hold: 170, sec: 3 }];
+    const a = sample(path, 90, SPS), wl = a.map(x => jointFrame('knee', { left: x, right: x })), ts = timestamps(a.length, SPS);
+    const r: { count: number; test?: { beyond: number; open: boolean } } = summarizeCount(wl, ts, 'chair_stand_test');
+    expect(r.count).toBe(1);
+    expect(r.test).toMatchObject({ beyond: 1, open: false });
+  });
+  it('a set that ends seated has no open rise', () => {
+    const path = [{ hold: 90, sec: 1 }, ...Array.from({ length: 10 }, () => [{ to: 170, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { hold: 90, sec: 10 }];
+    const a = sample(path, 90, SPS), wl = a.map(x => jointFrame('knee', { left: x, right: x })), ts = timestamps(a.length, SPS);
+    const r: { count: number; test?: { open: boolean } } = summarizeCount(wl, ts, 'chair_stand_test');
+    expect(r.count).toBe(10);
+    expect(r.test?.open).toBe(false);
+  });
+});
+
+describe('second review of 2 October', () => {
+  const run = (path: object[], rest: number, joint: 'knee' | 'elbow', lift: string) => {
+    const a = sample(path as never, rest, SPS), wl = a.map(x => jointFrame(joint, { left: x, right: x })), ts = timestamps(a.length, SPS);
+    return summarizeCount(wl, ts, lift) as { count: number; reps: { clipped?: boolean }[]; test?: { open: boolean; complete: boolean; t0: number } };
+  };
+  it('a still video scores 0', () => expect(run([{ hold: 90, sec: 35 }], 90, 'knee', 'chair_stand_test').count).toBe(0));
+  it('a still arm scores 0', () => expect(run([{ hold: 165, sec: 35 }], 165, 'elbow', 'arm_curl_test').count).toBe(0));
+  it('partial rises under the countable range score 0', () => {
+    const path = [{ hold: 90, sec: 1 }, ...Array.from({ length: 5 }, () => [{ to: 105, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { hold: 90, sec: 20 }];
+    expect(run(path, 90, 'knee', 'chair_stand_test').count).toBe(0);
+  });
+  it('the count is the marks: the open rise is a rep cut by the end', () => {
+    const path = [{ hold: 90, sec: 1 }, ...Array.from({ length: 11 }, () => [{ to: 170, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { to: 170, sec: 0.8 }, { hold: 170, sec: 6 }];
+    const r = run(path, 90, 'knee', 'chair_stand_test');
+    expect(r.reps.length).toBe(r.count);
+    expect(r.reps.at(-1)?.clipped).toBe(true);
+  });
+  it('one stand held to the end is one mark, and a whole video', () => {
+    const r = run([{ hold: 90, sec: 1 }, { to: 170, sec: 0.8 }, { hold: 170, sec: 31 }], 90, 'knee', 'chair_stand_test');
+    expect(r.count).toBe(1);
+    expect(r.reps.length).toBe(1);
+    expect(r.test?.complete).toBe(true);
+  });
+});
+
+describe('a lost pose breaks the open rise', () => {
+  it('a half rise in the window, the pose lost, then standing after it, is not counted', () => {
+    const path = [{ hold: 90, sec: 1 }, ...Array.from({ length: 10 }, () => [{ to: 170, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { hold: 90, sec: 3 }, { to: 140, sec: 0.6 }, { hold: 140, sec: 12 }, { to: 170, sec: 0.5 }, { hold: 170, sec: 3 }];
+    const a = sample(path, 90, SPS), ts = timestamps(a.length, SPS);
+    const wl = a.map((x, i) => (ts[i] > 29 && ts[i] < 40 ? null : jointFrame('knee', { left: x, right: x })));
+    const r: { count: number; test?: { open: boolean } } = summarizeCount(wl, ts, 'chair_stand_test');
+    expect(r.count).toBe(10);
+    expect(r.test?.open).toBe(false);
   });
 });

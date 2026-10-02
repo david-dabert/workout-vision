@@ -81,3 +81,4 @@ __pycache__/
 # The Journey job (ci.yml): rendered synthetic sets and their shots, never committed
 .journey-sets/
 journey/
+smoke-shots/

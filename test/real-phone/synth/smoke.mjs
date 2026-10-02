@@ -13,6 +13,8 @@ const [video, lift, card] = process.argv.slice(2);
 const SHOTS = process.env.SHOTS || 'smoke-shots', LANG = process.env.LANG_APP || 'fr', W = Number(process.env.W || 390), H = Number(process.env.H || 664);
 mkdirSync(SHOTS, { recursive: true });
 const truth = JSON.parse(readFileSync(`${video}.truth.json`, 'utf8'));
+// A timed test is judged on its protocol score (synth.js, P.window), every other set on its reps.
+const expected = Number.isFinite(truth.score) ? truth.score : truth.reps.length;
 const PORT = 4176, BASE = `http://127.0.0.1:${PORT}/workout-vision/`;
 const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore', detached: true });
 const faults = [], steps = [];
@@ -125,7 +127,7 @@ try {
       catch { ok(null); }
     };
   })) : null;
-  const out = { video, lift, delta, kept, stored, contributed, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
+  const out = { video, lift, delta, kept, stored, contributed, listed, audit, truth: expected, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
   // STRICT=1 (CI, the "Journey" job): the run fails unless the count equals the video's truth, every screen
   // of the journey was reached, a typed or stepped correction is the count saved, and no fault was seen
   // beyond the two known aborted requests: the page script refetched as the service worker takes over, and
@@ -136,7 +138,7 @@ try {
     const reached = new Set(steps.map(x => x.step));
     out.verdict = [
       core.refused && 'refused',
-      core.count !== truth.reps.length && `counted ${core.count} of ${truth.reps.length}`,
+      core.count !== expected && `counted ${core.count} of ${expected}`,
       ...['result', 'saved', 'replay', 'report', 'history'].filter(x => !reached.has(x)).map(x => `screen not reached: ${x}`),
       // The phone stored the kept count, marked corrected when it differs from the app's, beside the app's own.
       (!stored || stored.reps !== (want || core.count) || stored.machine !== core.count || stored.corrected !== !!want) && `stored ${JSON.stringify(stored)}, expected ${want || core.count} reps (app ${core.count}, corrected ${!!want})`,

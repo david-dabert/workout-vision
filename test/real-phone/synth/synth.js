@@ -82,6 +82,8 @@ const cap = s => s[0].toUpperCase() + s.slice(1);
 const neutralArms = () => { for (const side of ['left', 'right']) { const [up, fore] = sideDirs(S[side], 10 * D, 4 * D); aim(B[`${cap(side)}Arm`], B[`${cap(side)}ForeArm`], up); aim(B[`${cap(side)}ForeArm`], B[`${cap(side)}Hand`], fore); } };
 const neutralLegs = () => { for (const side of ['left', 'right']) { aim(B[`${cap(side)}UpLeg`], B[`${cap(side)}Leg`], v(S[side] * 0.12, -1, 0)); aim(B[`${cap(side)}Leg`], B[`${cap(side)}Foot`], v(S[side] * 0.05, -1, 0)); } };
 
+// P.seated: rest is the working end of the pose (a squat held low stands for sitting on a chair, there being no
+// chair in the scene), and each rep rises from it and returns: the 30-second chair stand.
 // The set's timeline: a still start, reps with jittered phases and peaks, a still end.
 const reps = [];
 let t = P.startRest ?? 1.0;
@@ -90,15 +92,21 @@ for (let i = 0; i < P.reps; i++) {
   reps.push({ start: t, top: t + out, hold: t + out + hold, end: t + out + hold + back, j: jit(1, 0.04) });
   t += out + hold + back + gap;
 }
+// P.endUp: the last rep stops at its working end and holds it to the end of the video (a 30-second test
+// whose time runs out with the person standing or the arm curled).
+if (P.endUp && reps.length) { const last = reps.at(-1); last.hold = last.end = Infinity; }
 const total = t + (P.endRest ?? 1.2);
+// P.window (seconds): the protocol's score of a timed test (fitness-tests.js), the reps whose rise is past
+// halfway within the window that opens at the first rise.
+const score = P.window ? reps.filter(r => r.start + (r.top - r.start) / 2 <= reps[0].start + P.window).length : undefined;
 const ease = x => (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, x)))) / 2;
 const progress = time => {
   for (const r of reps) {
     if (time < r.start || time > r.end) continue;
     const u = time < r.top ? ease((time - r.start) / (r.top - r.start)) : time < r.hold ? 1 : 1 - ease((time - r.hold) / (r.end - r.hold));
-    return { u, j: r.j };
+    return { u: P.seated ? 1 - u : u, j: r.j };
   }
-  return { u: 0, j: 1 };
+  return { u: P.seated ? 1 : 0, j: 1 };
 };
 
 // The counter's own three-point angles (core.ts JOINT_POINTS), read from the skeleton: the truth.
@@ -146,4 +154,4 @@ for (let i = 0; i < n; i++) {
   if (i === Math.floor(n / 3) && P.shot) window.SHOT = flat.toDataURL('image/jpeg', 0.8);
 }
 window.JPEGS = jpegs;
-window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), worldLandmarks: frames, truth, timestamps: ts, size: [W, H] };
+window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, truth, timestamps: ts, size: [W, H] };
