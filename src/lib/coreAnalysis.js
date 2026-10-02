@@ -18,7 +18,7 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   if (isTest(lift) && !refused) {
     const after = core.reps.length ? core.reps.at(-1).endTime : -Infinity;
     const open = openRise(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, after);
-    const t = scoreTest(core.reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open);  // count = reps kept, the open rise among them
+    const t = scoreTest(core.reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
     return { ...core, count: t.score, reps: t.reps, refused, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
   return { ...core, refused };
