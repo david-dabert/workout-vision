@@ -67,3 +67,17 @@ describe('a two-sided exercise needs both sides in sight (FINDING-012)', () => {
     expect(r.refused).toBe(false);
   });
 });
+
+describe('the side counted is the side that moves (FINDING-011)', () => {
+  // Expected to fail: the fix tried on 2 October cost 7 exact public sets and 19 off by 3 or more (TRIED.md).
+  it.fails('a still left arm slightly better seen does not take the count from the right arm curling', () => {
+    const a = sample(cycles({ rest: 165, work: 50, reps: 8, firstSec: 0.8, secondSec: 1, restSec: 0.6 }), 165, SPS);
+    const ts = timestamps(a.length, SPS);
+    const wl = a.map(x => {
+      const f = jointFrame('elbow', { left: 165, right: x })!;
+      for (const k of [12, 14, 16]) f[k] = { ...f[k], visibility: 0.9 };
+      return f;
+    });
+    expect(countReps(wl, ts, 'bicep_curl').count).toBe(8);
+  });
+});
