@@ -1,5 +1,5 @@
 import { countReps, liftDefinition } from './counting/core';
-import { FITNESS_TESTS, isTest, openRise, scoreTest } from './fitness-tests';
+import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
@@ -18,7 +18,10 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   if (isTest(lift) && !refused) {
     const after = core.reps.length ? core.reps.at(-1).endTime : -Infinity;
     const open = openRise(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, after);
-    const t = scoreTest(core.reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
+    // Each rep's halfway is where its angle passes half the movement, as the open rise's is (FINDING-014).
+    const halves = riseHalfTimes(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, core.reps);
+    const reps = core.reps.map((r, i) => ({ ...r, halfTime: halves[i] }));
+    const t = scoreTest(reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
     return { ...core, count: t.score, reps: t.reps, refused, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
   return { ...core, refused };
