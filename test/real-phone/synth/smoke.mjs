@@ -141,6 +141,8 @@ try {
       core.refused && 'refused',
       core.count !== expected && `counted ${core.count} of ${expected}`,
       ...['result', 'saved', 'replay', 'report', 'history'].filter(x => !reached.has(x)).map(x => `screen not reached: ${x}`),
+      // An accessibility violation found on any screen fails the run, as any other fault does (audit FINDING-023).
+      ...audit.map(x => `accessibility, ${x.step}: ${x.id} (${x.impact}, ${x.n}) ${x.target.join(', ')}`),
       // The report opened right after the set carries its wave (audit FINDING-026).
       reportWave === false && 'the report after the set has no wave',
       // The phone stored the kept count, marked corrected when it differs from the app's, beside the app's own.

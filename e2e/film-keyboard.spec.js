@@ -1,5 +1,5 @@
-// The filming screen's two actions are labels announced as buttons: Enter and Space click their file input, which
-// opens the camera or the video picker, as a tap does (audit FINDING-024: focusable, but no key did anything).
+// The filming screen's two actions are file inputs laid over their labels: reached by the keyboard, Enter and Space
+// open the camera or the video picker, as a tap does (audit FINDING-024: focusable, but no key did anything).
 import { test, expect } from '@playwright/test';
 
 if (process.env.PW_CHROMIUM) test.use({ launchOptions: { executablePath: process.env.PW_CHROMIUM } });
@@ -22,7 +22,8 @@ for (const key of ['Enter', ' ']) {
         window.__inputClicks = 0;
         document.querySelector(`.film-screen .actions ${sel} input`).addEventListener('click', e => { window.__inputClicks++; e.preventDefault(); });
       }, which);
-      await action.focus();
+      // The control is the file input laid over the label (Film.jsx): it is what the keyboard reaches.
+      await action.locator('input').focus();
       await page.keyboard.press(key);
       expect(await page.evaluate(() => window.__inputClicks)).toBe(1);
     });

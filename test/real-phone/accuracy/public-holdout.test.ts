@@ -2,19 +2,23 @@
 // The held-out half of the public sets (scripts/public/split.mjs), read only here, once a change has passed
 // every gate on the build half: the live core's exact share per dataset and lift, written with its date and
 // commit to public-holdout.txt. Nothing is tuned on these sets.
-import { test } from 'vitest';
+// Scored as the build half is, by the reps inside each set's labelled window (countInWindow; audit FINDING-019:
+// the whole clip's count was compared with the window's label). An incomplete run fails: no set read, or any set
+// missing or unreadable, so a green run means the whole held-out half was scored (FINDING-004). The accuracy
+// itself is reported, not gated here: the release criterion is PLAN.md's, read from the written table.
+import { expect, test } from 'vitest';
 import { execSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { publicSets } from './sets';
+import { countInWindow, publicSets } from './sets';
 
 test.skipIf(!process.env.HOLDOUT)('public held-out half', () => {
   const groups = new Map<string, { n: number; exact: number; one: number }>();
   const { sets, unreadable, missing, notScored } = publicSets('holdout');
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
-    const d = r.refused ? Infinity : Math.abs(r.count - s.label);
+    const d = r.refused ? Infinity : Math.abs(countInWindow(r.reps, s.window) - s.label);
     const key = `${s.dataset} ${s.lift}`, g = groups.get(key) ?? { n: 0, exact: 0, one: 0 };
     g.n++; if (d === 0) g.exact++; if (d <= 1) g.one++;
     groups.set(key, g);
@@ -24,6 +28,8 @@ test.skipIf(!process.env.HOLDOUT)('public held-out half', () => {
     '| Dataset, lift | Sets | Exact | Within one |', '|---|---:|---:|---:|',
     ...[...groups].sort().map(([k, g]) => `| ${k} | ${g.n} | ${g.exact} | ${g.one} |`),
     ...unreadable.map(u => `UNREADABLE ${u}`), ...missing.map(m => `MISSING ${m}`), ...(notScored.length ? ['', `Not scored (${notScored.length}):`, ...notScored] : [])].join('\n') + '\n';
-  writeFileSync(resolve(__dirname, 'public-holdout.txt'), text);
   process.stdout.write(text);
+  expect(sets.length, 'held-out sets read').toBeGreaterThan(0);
+  expect([...unreadable, ...missing], 'held-out sets missing or unreadable').toEqual([]);
+  writeFileSync(resolve(__dirname, 'public-holdout.txt'), text);
 }, 1_800_000);

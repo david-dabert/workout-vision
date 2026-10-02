@@ -2,7 +2,7 @@
 // The app's count, ranges, phase times and left/right gap on synthetic sets (synth.js), against their exact
 // truth. Writes synth.txt beside this file. Reads only the rendered sets' landmarks; changes no parameter.
 import { expect, test } from 'vitest';
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { countReps, liftDefinition } from '../../../src/lib/counting/core';
@@ -43,6 +43,8 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
       seen: r.worldLandmarks.filter(Boolean).length / ts.length, status: s.status, trueSI, appSI: s.status === 'measured' ? s.comparison.si : NaN });
   }
   expect(rows.length).toBeGreaterThan(0);
+  // The symmetry bound below is checked on at least one measured set, or it checks nothing (audit FINDING-021).
+  expect(rows.filter(r => r.status === 'measured').length, 'sets whose left/right gap was measured').toBeGreaterThan(0);
   // The bound the screen states for the left/right gap (sides-line.js) must hold on these sets.
   for (const r of rows.filter(r => r.status === 'measured')) expect(Math.abs(r.appSI - r.trueSI)).toBeLessThanOrEqual(GAP_ERROR_POINTS);
 
@@ -81,5 +83,23 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
   out.push('');
   out.push('Each set: id, true reps, app count, range error (deg), conc./ecc. error (s), pose found share, left/right status, true gap, app gap.');
   for (const r of rows) out.push(`  ${r.id.padEnd(40)} ${String(r.truth).padStart(2)} ${String(r.count).padStart(2)}  ${f0(r.romErr).padStart(4)}  ${f1(r.concErr).padStart(5)} ${f1(r.eccErr).padStart(5)}  ${(r.seen * 100).toFixed(0).padStart(3)} %  ${r.status.padEnd(14)} ${f0(r.trueSI).padStart(4)} ${f0(r.appSI).padStart(4)}`);
-  writeFileSync(resolve(__dirname, 'synth.txt'), out.join('\n') + '\n');
+  // A gate, not only a report (audit FINDING-021): against the committed synth.txt, on the same sets, the count
+  // may not lose an exact set or gain a set off by 3 or more, and the mean range and phase errors may not grow
+  // (by more than 1° and 0.05 s, the rounding of the file). The file is rewritten only when the run passes.
+  const file = resolve(__dirname, 'synth.txt');
+  const read = (txt: string, name: string) => {
+    const m = txt.split('\n').find(l => l.startsWith(name.padEnd(22)))?.match(/n\s+(\d+)\s+count exact\s+(\d+).*off >= 3: (\d+)\s+range error mean (-?\d+) deg.*conc\. (-?[\d.]+) s\s+ecc\. (-?[\d.]+) s/);
+    return m ? { n: +m[1], exact: +m[2], cat: +m[3], rom: Math.abs(+m[4]), conc: Math.abs(+m[5]), ecc: Math.abs(+m[6]) } : null;
+  };
+  const before = existsSync(file) ? readFileSync(file, 'utf8') : '', now = out.join('\n');
+  for (const name of ['all', 'all, guided view']) {
+    const b = read(before, name), a = read(now, name);
+    if (!b || !a || b.n !== a.n) continue;
+    expect(a.exact, `${name}: exact counts`).toBeGreaterThanOrEqual(b.exact);
+    expect(a.cat, `${name}: sets off by 3 or more`).toBeLessThanOrEqual(b.cat);
+    expect(a.rom, `${name}: mean range error (deg)`).toBeLessThanOrEqual(b.rom + 1);
+    expect(a.conc, `${name}: mean concentric error (s)`).toBeLessThanOrEqual(b.conc + 0.05);
+    expect(a.ecc, `${name}: mean eccentric error (s)`).toBeLessThanOrEqual(b.ecc + 0.05);
+  }
+  writeFileSync(file, now + '\n');
 }, 600_000);

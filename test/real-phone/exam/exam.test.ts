@@ -36,6 +36,8 @@ test.skipIf(!process.env.EXAM)('the exam', () => {
   const text = [`Exam ${new Date().toISOString().slice(0, 10)}: ${lifts.length - failed.length}/${lifts.length} lifts pass.`, ...lines].join('\n') + '\n';
   if (lifts.length) writeFileSync(resolve(DIR, 'exam-result.txt'), text);
   process.stdout.write(lifts.length ? text : 'No exam set yet.\n');
-  // A green run means every lift passed (CLAUDE.md R3): a failed lift fails it.
+  // A green run means every lift passed (CLAUDE.md R3): a failed lift fails it, and so does a run that examined
+  // nothing (audit FINDING-020: an empty exam folder passed).
+  expect(lifts.length, 'lifts examined').toBeGreaterThan(0);
   expect(failed, 'lifts that failed their exam').toEqual([]);
 });

@@ -27,6 +27,10 @@ jobs:
       # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls or
       # any set is off by 3 or more (test/real-phone/accuracy/scoreboard.test.ts).
       - run: npm run scoreboard
+      # The 96 synthetic sets (test/real-phone/synth/sets, rendered by run.mjs): the count may not lose an exact
+      # set, and the range and phase errors may not grow, against synth.txt (audit FINDING-021).
+      - run: SYNTH_DIR=test/real-phone/synth/sets npx vitest run --no-cache test/real-phone/synth/analyse.test.ts
+      - run: git diff --exit-code test/real-phone/synth/synth.txt
       - run: npm run build
 
   e2e:
@@ -138,15 +142,15 @@ jobs:
           path: .journey-sets
           key: ${{ steps.sets.outputs.cache-primary-key }}
       - name: Lateral raise from the front, corrected by typing 12, the contribution kept
-        run: STRICT=1 TYPE=12 CONTRIBUTE=1 SHOTS=journey/lateral-raise node test/real-phone/synth/smoke.mjs "$SETS/lateral_raise_front_8.webm" lateral_raise "Élévations latérales"
+        run: STRICT=1 AXE=node_modules/axe-core/axe.min.js TYPE=12 CONTRIBUTE=1 SHOTS=journey/lateral-raise node test/real-phone/synth/smoke.mjs "$SETS/lateral_raise_front_8.webm" lateral_raise "Élévations latérales"
       - name: Curl from the side, the count accepted
         if: always()
-        run: STRICT=1 SHOTS=journey/curl node test/real-phone/synth/smoke.mjs "$SETS/curl_side_6.webm" bicep_curl "Curl biceps"
+        run: STRICT=1 AXE=node_modules/axe-core/axe.min.js SHOTS=journey/curl node test/real-phone/synth/smoke.mjs "$SETS/curl_side_6.webm" bicep_curl "Curl biceps"
       # The 30-second chair stand (fitness-tests.js): starts seated, 15 stands, the last ending standing at about
       # 30 s, as a test usually ends; the score is the protocol's (synth.js, window), chosen from its row.
       - name: Chair stand test, 15 in 30 s, the last ended standing
         if: always()
-        run: STRICT=1 TEST=chair_stand_test SHOTS=journey/chair-stand node test/real-phone/synth/smoke.mjs "$SETS/chair_15.webm" chair_stand_test "-"
+        run: STRICT=1 AXE=node_modules/axe-core/axe.min.js TEST=chair_stand_test SHOTS=journey/chair-stand node test/real-phone/synth/smoke.mjs "$SETS/chair_15.webm" chair_stand_test "-"
       - name: Keep the shots
         if: always()
         uses: actions/upload-artifact@v4
