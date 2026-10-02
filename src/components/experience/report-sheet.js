@@ -5,6 +5,8 @@ import { isShortIn, speedChange } from './set-account';
 import { decimal, partialIn, repTempo, setTempo, timedReps } from './tempo';
 import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
 import { sidesLines } from './sides-line';
+import { liftDefinition } from '../../lib/counting/core';
+import { jointName } from './lift-meta';
 
 export { setTempo };
 
@@ -98,7 +100,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, sides = null, lift = '', measures: shown = MEASURES_SHOWN }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -189,6 +191,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     rows,
     summary,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
+    // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
+    wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr) } : null,
     partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',
     // Beside every measure printed, while none is validated (measures.js).
     experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',

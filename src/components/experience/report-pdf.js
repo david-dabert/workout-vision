@@ -3,12 +3,14 @@
 // measures below are the sheet's own (Report.css), so the two read alike.
 import { jsPDF } from 'jspdf';
 import { FONTS } from './pdf-fonts/fonts';
+import { repStrokes, waveGeometry } from './wave';
+import { partialIn } from './tempo';
 
 const PAGE_W = 419.53, PAGE_H = 595.28;          // A5, in points
 const COLUMN = 310;                               // the sheet's text column on a 390 px phone
 const MARGIN = (PAGE_W - COLUMN) / 2;
 const GAP = 12;                                   // .sheet { gap }
-const COLOR = { paper: '#FBF7EF', ink: '#1D1812', ash: '#6B6256', rule: '#E4DCCD', rowRule: '#F0EADF', count: '#8A6630' };
+const COLOR = { paper: '#FBF7EF', ink: '#1D1812', ash: '#6B6256', rule: '#E4DCCD', rowRule: '#F0EADF', count: '#8A6630', waveBack: '#CDB68E' };
 const FACE = { serif: 'InstrumentSerif-Regular', sans: 'Geist-Regular', sansMedium: 'Geist-Medium', mono: 'GeistMono-Regular' };
 const SANS_CSS = 'Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 
@@ -189,6 +191,34 @@ export function reportPdf(sheet) {
     y += GAP;
   };
   [sheet.corrected, sheet.arm, sheet.experimental].filter(Boolean).forEach(sheetLine);
+
+  // The wave (wave.js), as on the report screen: the measured angle as a hairline, each rep over it in the
+  // count's colour, its return lighter, a cut or partial rep in ash.
+  if (sheet.wave) {
+    const H = 60, label = upper(sheet.fr ? `Angle ${sheet.wave.jointWord}` : `${sheet.wave.jointWord} angle`);
+    if (room() < 13.5 + 16.5 + 8 + H && y > MARGIN) newPage();
+    write(label, MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12);
+    y += 13.5;
+    write(sheet.fr ? 'trait plein\u00A0: aller · léger\u00A0: retour' : 'solid: out · light: back', MARGIN, y, 'sans', 11, 1.5, COLOR.ash);
+    y += 16.5 + 8;
+    const geo = waveGeometry({ angles: sheet.wave.a, timestamps: sheet.wave.t, rest: sheet.wave.rest, width: COLUMN, height: H, pad: 2 });
+    const draw = (strokes, color, w) => {
+      doc.setDrawColor(color); doc.setLineWidth(w);
+      for (const s of strokes) for (let k = 1; k < s.length; k++) doc.line(MARGIN + s[k - 1][0], y + s[k - 1][1], MARGIN + s[k][0], y + s[k][1]);
+    };
+    if (geo) {
+      draw(geo.strokes(), COLOR.rule, 0.75);
+      const reps = sheet.wave.reps, partial = partialIn(reps);
+      repStrokes(geo, reps, { first: sheet.wave.first, isPartial: partial }).forEach((s, i) => {
+        const r = reps[i], a = geo.index(r.startTime), b = geo.index(r.endTime);
+        if (!s.whole) { doc.setLineDashPattern([2, 3], 0); draw(geo.strokes(a, b), COLOR.ash, 1); doc.setLineDashPattern([], 0); return; }
+        const leave = sheet.wave.first === 'concentric' ? r.concentricSec : r.eccentricSec, turn = geo.index(r.startTime + leave);
+        draw(geo.strokes(a, turn), COLOR.count, 1.6);
+        draw(geo.strokes(turn, b), COLOR.waveBack, 1.6);
+      });
+    }
+    y += H + GAP;
+  }
 
   // The reps table: Rep (11%), Tempo (32%), Range (21%), Peak (18%), Mean (18%): wide enough that no
   // heading runs into the next ("RÉP.TEMPO", "AMPLITUDEPIC" on David's report of 29 September).
