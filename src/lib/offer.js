@@ -8,8 +8,10 @@
 const NOT_FILMABLE = new Set(['walking_lunge']);
 import patterns from './counting/guide-patterns.json';
 import { TIERS } from './liftTiers';
+import { FITNESS_TESTS } from './fitness-tests';
 
-export const OFFERED = [...new Set([...Object.keys(TIERS), ...Object.keys(patterns)])].filter(key => !NOT_FILMABLE.has(key));
+// The fitness tests (fitness-tests.js) are offered too, experimental like every exercise without evidence.
+export const OFFERED = [...new Set([...Object.keys(TIERS), ...Object.keys(patterns), ...Object.keys(FITNESS_TESTS)])].filter(key => !NOT_FILMABLE.has(key));
 const offered = new Set(OFFERED);
 
 export const isOffered = key => offered.has(key);

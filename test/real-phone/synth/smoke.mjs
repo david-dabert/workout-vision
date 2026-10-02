@@ -54,7 +54,9 @@ try {
   // Past the entry, wherever it asks to begin.
   const begin = page.locator('button').filter({ hasText: /Commencer|Begin|Entrer|Enter|Start/i }).first();
   if (await begin.count()) { await begin.click(); await page.waitForTimeout(1200); await shot('after-entry'); }
-  await page.locator(`.rail > .altar[aria-label="${card}"]`).click();
+  // TEST=<key>: a fitness test, chosen from its row under the cards (Choice.jsx), not a card.
+  if (process.env.TEST) await page.locator(`[data-testid="choose-${process.env.TEST}"]`).click();
+  else await page.locator(`.rail > .altar[aria-label="${card}"]`).click();
   await page.waitForTimeout(1200); await shot('film');
   const inputs = page.locator('.film-screen input[type="file"]');
   await inputs.last().setInputFiles(video);

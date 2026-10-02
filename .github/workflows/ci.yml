@@ -130,6 +130,7 @@ jobs:
           export SYNTH_MODEL="$SETS/Michelle.glb" FFMPEG="$(command -v ffmpeg)"
           node test/real-phone/synth/run-video.mjs "$SETS/lateral_raise_front_8.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"v1","exercise":"lateral_raise","view":0,"reps":8,"peakL":95,"peakR":80,"seed":7}'
           node test/real-phone/synth/run-video.mjs "$SETS/curl_side_6.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"v3","exercise":"bicep_curl","view":90,"reps":6,"peakL":130,"peakR":130,"seed":12}'
+          node test/real-phone/synth/run-video.mjs "$SETS/chair_13.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"c1","exercise":"squat","view":90,"reps":13,"outSec":0.8,"backSec":0.8,"endRest":4,"peakL":95,"peakR":95,"seed":21}'
       - name: Keep the rendered sets
         if: steps.sets.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -141,6 +142,10 @@ jobs:
       - name: Curl from the side, the count accepted
         if: always()
         run: STRICT=1 SHOTS=journey/curl node test/real-phone/synth/smoke.mjs "$SETS/curl_side_6.webm" bicep_curl "Curl biceps"
+      # The 30-second chair stand (fitness-tests.js): 13 knee cycles within 30 s of the first, chosen from its row.
+      - name: Chair stand test, 13 within 30 s
+        if: always()
+        run: STRICT=1 TEST=chair_stand_test SHOTS=journey/chair-stand node test/real-phone/synth/smoke.mjs "$SETS/chair_13.webm" chair_stand_test "-"
       - name: Keep the shots
         if: always()
         uses: actions/upload-artifact@v4

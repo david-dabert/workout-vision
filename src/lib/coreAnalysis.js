@@ -1,4 +1,5 @@
 import { countReps } from './counting/core';
+import { FITNESS_TESTS, isTest, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
@@ -12,7 +13,13 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).
   const visible = core.angles.filter(angle => angle !== null).length;
-  return { ...core, refused: visible < worldLandmarks.length / 2 || worldLandmarks.length === 0 };
+  const refused = visible < worldLandmarks.length / 2 || worldLandmarks.length === 0;
+  // A fitness test is scored over its window (fitness-tests.js): the count and the marks are the reps in it.
+  if (isTest(lift) && !refused) {
+    const t = scoreTest(core.reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec);
+    return { ...core, count: t.score, reps: t.reps, refused, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, counted: core.count } };
+  }
+  return { ...core, refused };
 }
 
 /**

@@ -113,6 +113,10 @@ export const LIFTS = {
   lunge: { joint: 'knee', rest: 'high', first: 'eccentric' },
   romanian_deadlift: { joint: 'hip', rest: 'high', first: 'eccentric' },
   hip_thrust: { joint: 'hip', rest: 'low', first: 'concentric' },
+  // The fitness tests (fitness-tests.js), each counted by its movement. Chair stand: seated, the knee rests
+  // bent (low) and each rep rises to standing first. Arm curl: as the curl. No existing lift changes.
+  chair_stand_test: { joint: 'knee', rest: 'low', first: 'concentric' },
+  arm_curl_test: { joint: 'elbow', rest: 'high', first: 'concentric' },
 } as const satisfies Record<string, LiftDefinition>;
 
 export type Lift = keyof typeof LIFTS;
