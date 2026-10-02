@@ -119,3 +119,19 @@ test('deleting a set deletes its contribution, and stopping stays possible with 
   expect(await count(page, 'contributions')).toBe(0);
   await expect(page.getByTestId('contribute-history').getByRole('button', { name: 'Arrêter et effacer' })).toBeVisible();
 });
+
+test('a stop the phone cannot save says so, and contributing goes on (audit FINDING-016)', async ({ page }) => {
+  await open(page, 'yes', true);
+  await page.reload();
+  await page.locator('button, a').filter({ hasText: /Vos séries/ }).first().click();
+  const box = page.getByTestId('contribute-history');
+  await page.evaluate(() => {
+    const set = Storage.prototype.setItem, remove = Storage.prototype.removeItem;
+    Storage.prototype.setItem = function (k, v) { if (k === 'wv_contribute') throw new DOMException('full', 'QuotaExceededError'); return set.call(this, k, v); };
+    Storage.prototype.removeItem = function (k) { if (k === 'wv_contribute') throw new Error('refused'); return remove.call(this, k); };
+  });
+  await box.getByRole('button', { name: 'Arrêter et effacer' }).click();
+  await expect(box.locator('[role="status"]')).toHaveText('L’arrêt n’a pas pu être enregistré sur ce téléphone. Réessayez.');
+  expect(await page.evaluate(() => localStorage.getItem('wv_contribute'))).toBe('yes');
+  await expect(box.getByRole('button', { name: 'Arrêter et effacer' })).toBeVisible();
+});

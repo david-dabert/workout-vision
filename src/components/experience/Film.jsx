@@ -48,6 +48,10 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
     return createLiftScene(canvas.current, lift, 'rest');
   }, [lift]);
 
+  // The two actions are labels announced as buttons: Enter and Space open their picker, as a tap does
+  // (audit FINDING-024; KeepSets.jsx does the same for its restore label).
+  const keyOpens = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.querySelector('input')?.click(); } };
+
   function handleFile(e) {
     const f = e.target.files?.[0];
     if (f) onFile(f);
@@ -97,12 +101,12 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
       </ol>}
       <div className="actions" data-reveal style={{ '--i': 5 }}>
-        <label ref={action} className="btn-primary tactile" role="button" tabIndex="0">
+        <label ref={action} className="btn-primary tactile" role="button" tabIndex="0" onKeyDown={keyOpens}>
           <input ref={fileRef} type="file" accept="video/*,.mov" capture="environment" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
           <span>{test ? (fr ? 'Filmer le test' : 'Record the test') : (fr ? 'Filmer ma série' : 'Record my set')}</span>
         </label>
-        <label className="btn-ghost press" role="button" tabIndex="0">
+        <label className="btn-ghost press" role="button" tabIndex="0" onKeyDown={keyOpens}>
           <input type="file" accept="video/*,.mov" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
           <span>{fr ? 'Choisir une vidéo' : 'Choose a video'}</span>
         </label>

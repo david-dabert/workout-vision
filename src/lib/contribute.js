@@ -19,6 +19,16 @@ export function readChoice() {
 export function writeChoice(v) {
   try { localStorage.setItem(CHOICE_KEY, v); return true; } catch { return false; }
 }
+/**
+ * The choice saved, and read back: true only when the phone now holds it (audit FINDING-016: a stop the phone
+ * could not save showed as stopped, and the stored yes went on collecting). A no that cannot be written still
+ * holds if the yes can be removed, since only a stored yes collects.
+ */
+export function persistChoice(v) {
+  writeChoice(v);
+  if (v === 'no' && readChoice() === 'yes') { try { localStorage.removeItem(CHOICE_KEY); } catch { /* checked below */ } }
+  return v === 'yes' ? readChoice() === 'yes' : readChoice() !== 'yes';
+}
 // The question is shown once, answered or not, as the level question is (level.js).
 const ASKED_KEY = 'wv_contribute_asked';
 export function contributeAsked() { try { return localStorage.getItem(ASKED_KEY) === 'true'; } catch { return true; } }
