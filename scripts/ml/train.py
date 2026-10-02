@@ -243,6 +243,14 @@ if __name__ == '__main__':
             va = [s for s in sets if fold_of[s['group']] == k]
             p = train(tr, steps=int(os.environ.get('STEPS', 3000)))
             pr = predict(p, va)
+            # SAVE_FOLDS=<dir>: each fold's weights and its validation clips, so the app's inference can be
+            # measured out of fold (test/real-phone/accuracy/learned-span.test.ts).
+            if os.environ.get('SAVE_FOLDS'):
+                os.makedirs(os.environ['SAVE_FOLDS'], exist_ok=True)
+                json.dump({'channels': CH, 'kernel': K, 'dilations': DIL, 'inputs': IN,
+                           'params': jax.tree_util.tree_map(lambda a: np.round(np.asarray(a), 6).tolist(), p),
+                           'clips': ['public/countix-whole/build/' + os.path.basename(s_['name']) for s_ in va]},
+                          open(os.path.join(os.environ['SAVE_FOLDS'], f'fold{k}.json'), 'w'))
             for s_, v in zip(va, pr): preds['public/countix-whole/build/' + os.path.basename(s_['name'])] = v
             e = score(pr, va)
             eh = score(predict(p, [held(v) for v in va]), va)
