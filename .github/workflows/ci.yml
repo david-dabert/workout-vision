@@ -112,12 +112,14 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
+      # Restored and saved as two steps, so a render survives a journey that fails; the key holds the renderer,
+      # its parameters (this file) and the locked versions of three.js and Chromium (package-lock.json).
       - name: Restore the rendered sets
         id: sets
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .journey-sets
-          key: journey-sets-${{ hashFiles('test/real-phone/synth/synth.js', 'test/real-phone/synth/synth.html', 'test/real-phone/synth/run-video.mjs', '.github/workflows/ci.yml') }}
+          key: journey-sets-${{ hashFiles('test/real-phone/synth/synth.js', 'test/real-phone/synth/synth.html', 'test/real-phone/synth/run-video.mjs', '.github/workflows/ci.yml', 'package-lock.json') }}
       - name: Render the sets
         if: steps.sets.outputs.cache-hit != 'true'
         run: |
@@ -128,6 +130,12 @@ jobs:
           export SYNTH_MODEL="$SETS/Michelle.glb" FFMPEG="$(command -v ffmpeg)"
           node test/real-phone/synth/run-video.mjs "$SETS/lateral_raise_front_8.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"v1","exercise":"lateral_raise","view":0,"reps":8,"peakL":95,"peakR":80,"seed":7}'
           node test/real-phone/synth/run-video.mjs "$SETS/curl_side_6.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"v3","exercise":"bicep_curl","view":90,"reps":6,"peakL":130,"peakR":130,"seed":12}'
+      - name: Keep the rendered sets
+        if: steps.sets.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .journey-sets
+          key: ${{ steps.sets.outputs.cache-primary-key }}
       - name: Lateral raise from the front, corrected by typing 12
         run: STRICT=1 TYPE=12 SHOTS=journey/lateral-raise node test/real-phone/synth/smoke.mjs "$SETS/lateral_raise_front_8.webm" lateral_raise "Élévations latérales"
       - name: Curl from the side, the count accepted

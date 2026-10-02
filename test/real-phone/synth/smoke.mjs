@@ -26,7 +26,15 @@ try {
   const prefetch = (u, t = '') => /pose_landmarker_full\.task$/.test(u) && /ERR_CACHE_WRITE_FAILURE/.test(t);
   page.on('pageerror', e => faults.push(`pageerror: ${e.message}`));
   page.on('console', m => { if (m.type() === 'error' && !prefetch(m.location().url, m.text())) faults.push(`console: ${m.text()}`); });
-  page.on('requestfailed', r => { if (!prefetch(r.url(), r.failure()?.errorText)) faults.push(`failed: ${r.url()} ${r.failure()?.errorText}`); });
+  // A blob link aborted once the replay has opened is the replay's video released as it closes; any other is a fault.
+  let replayOpened = false;
+  const excused = [];
+  page.on('requestfailed', r => {
+    if (prefetch(r.url(), r.failure()?.errorText)) return;
+    const f = `failed: ${r.url()} ${r.failure()?.errorText}`;
+    faults.push(f);
+    if (replayOpened && /^blob:/.test(r.url()) && r.failure()?.errorText === 'net::ERR_ABORTED') excused.push(f);
+  });
   page.on('response', r => { if (r.status() >= 400) faults.push(`${r.status()} ${r.url()}`); });
   await page.addInitScript(l => { localStorage.setItem('wv_lang', l); window.addEventListener('wv:core-result', e => { window.__core = e.detail; }); }, LANG);
   let n = 0;
@@ -75,33 +83,51 @@ try {
     for (let i = 0; i < Math.abs(delta); i++) await page.locator('[data-testid="fix-card"] .round').nth(delta > 0 ? 1 : 0).click();
     await page.locator('[data-testid="fix-card"] .btn-primary').click();
   } else await page.locator('[data-testid="ask-card"] .btn-primary').click();
-  await page.waitForTimeout(1500); await shot('saved');
+  // Saved only once the saved card is there (a failed save keeps the question on screen).
+  let savedSeen = true;
+  await page.locator('[data-testid="saved-card"]').waitFor({ timeout: 20000 }).catch(() => { savedSeen = false; });
+  await page.waitForTimeout(800); if (savedSeen) await shot('saved');
   // What the saved card says the visitor kept (absent when the app's count was accepted).
   const kept = await page.locator('.saved-corr').count() ? (await page.locator('.saved-corr').textContent()).trim() : '';
   // The replay, from the top bar.
   const replay = page.locator('.rp-open').first();
-  if (await replay.count()) { await replay.click(); await page.waitForTimeout(2500); await shot('replay'); await page.locator('.replay-screen .icon-btn').first().click(); await page.waitForTimeout(1200); }
+  if (await replay.count()) { replayOpened = true; await replay.click(); await page.waitForTimeout(2500); await shot('replay'); await page.locator('.replay-screen .icon-btn').first().click(); await page.waitForTimeout(1200); }
   // The report.
   const report = page.locator('button').filter({ hasText: /Rapport|report/i }).first();
   if (await report.count()) { await report.click(); await page.waitForTimeout(2000); await shot('report'); }
   // The history: the saved set is listed with the saved count.
-  await page.goto(BASE); await page.waitForTimeout(1500);
+  await page.goto(BASE);
   const hist = page.locator('button, a').filter({ hasText: /Vos séries|Your sets|Historique|History/ }).first();
   let listed = null;
-  if (await hist.count()) { await hist.click(); await page.waitForTimeout(1500); await shot('history'); listed = (await page.locator('body').innerText()).slice(0, 400); }
-  const out = { video, lift, delta, kept, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
+  // The row appears once the sets are read from the phone's storage: waited for, not timed.
+  if (await hist.waitFor({ timeout: 20000 }).then(() => true, () => false)) { await hist.click(); await page.waitForTimeout(1500); await shot('history'); listed = (await page.locator('body').innerText()).slice(0, 400); }
+  // The count the phone stored for the newest set, read from its storage, not from the screen.
+  const stored = await page.evaluate(() => new Promise(ok => {
+    const r = indexedDB.open('workoutVision');
+    r.onerror = () => ok(null);
+    r.onsuccess = () => {
+      try {
+        const q = r.result.transaction('workouts').objectStore('workouts').getAll();
+        q.onsuccess = () => { const last = q.result.filter(w => w && typeof w === 'object').sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]; ok(last ? { reps: last.reps, corrected: !!last.corrected, machine: last.machineResult?.reps ?? null } : null); };
+        q.onerror = () => ok(null);
+      } catch { ok(null); }
+    };
+  }));
+  const out = { video, lift, delta, kept, stored, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
   // STRICT=1 (CI, the "Journey" job): the run fails unless the count equals the video's truth, every screen
   // of the journey was reached, a typed or stepped correction is the count saved, and no fault was seen
   // beyond the two known aborted requests: the page script refetched as the service worker takes over, and
   // the replay's video link released as the replay closes.
   if (process.env.STRICT) {
-    const known = f => /^failed: \S+\/assets\/index-[\w-]+\.js net::ERR_ABORTED$/.test(f) || /^failed: blob:\S+ net::ERR_ABORTED$/.test(f);
+    const known = f => /^failed: \S+\/assets\/index-[\w-]+\.js net::ERR_ABORTED$/.test(f) || excused.includes(f);
     const want = Number(process.env.TYPE || 0) || (delta ? core.count + delta : 0);
     const reached = new Set(steps.map(x => x.step));
     out.verdict = [
       core.refused && 'refused',
       core.count !== truth.reps.length && `counted ${core.count} of ${truth.reps.length}`,
       ...['result', 'saved', 'replay', 'report', 'history'].filter(x => !reached.has(x)).map(x => `screen not reached: ${x}`),
+      // The phone stored the kept count, marked corrected when it differs from the app's, beside the app's own.
+      (!stored || stored.reps !== (want || core.count) || stored.machine !== core.count || stored.corrected !== !!want) && `stored ${JSON.stringify(stored)}, expected ${want || core.count} reps (app ${core.count}, corrected ${!!want})`,
       want && !new RegExp(`(Corrigé|Corrected)\\s*:\\s*${want}\\.`).test(kept) && `correction to ${want} not saved ("${kept}")`,
       ...faults.filter(f => !known(f)).map(f => `fault: ${f}`),
     ].filter(Boolean);
