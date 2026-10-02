@@ -76,6 +76,8 @@ try {
     await page.locator('[data-testid="fix-card"] .btn-primary').click();
   } else await page.locator('[data-testid="ask-card"] .btn-primary').click();
   await page.waitForTimeout(1500); await shot('saved');
+  // What the saved card says the visitor kept (absent when the app's count was accepted).
+  const kept = await page.locator('.saved-corr').count() ? (await page.locator('.saved-corr').textContent()).trim() : '';
   // The replay, from the top bar.
   const replay = page.locator('.rp-open').first();
   if (await replay.count()) { await replay.click(); await page.waitForTimeout(2500); await shot('replay'); await page.locator('.replay-screen .icon-btn').first().click(); await page.waitForTimeout(1200); }
@@ -87,8 +89,25 @@ try {
   const hist = page.locator('button, a').filter({ hasText: /Vos séries|Your sets|Historique|History/ }).first();
   let listed = null;
   if (await hist.count()) { await hist.click(); await page.waitForTimeout(1500); await shot('history'); listed = (await page.locator('body').innerText()).slice(0, 400); }
-  const out = { video, lift, delta, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
+  const out = { video, lift, delta, kept, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
+  // STRICT=1 (CI, the "Journey" job): the run fails unless the count equals the video's truth, every screen
+  // of the journey was reached, a typed or stepped correction is the count saved, and no fault was seen
+  // beyond the two known aborted requests: the page script refetched as the service worker takes over, and
+  // the replay's video link released as the replay closes.
+  if (process.env.STRICT) {
+    const known = f => /^failed: \S+\/assets\/index-[\w-]+\.js net::ERR_ABORTED$/.test(f) || /^failed: blob:\S+ net::ERR_ABORTED$/.test(f);
+    const want = Number(process.env.TYPE || 0) || (delta ? core.count + delta : 0);
+    const reached = new Set(steps.map(x => x.step));
+    out.verdict = [
+      core.refused && 'refused',
+      core.count !== truth.reps.length && `counted ${core.count} of ${truth.reps.length}`,
+      ...['result', 'saved', 'replay', 'report', 'history'].filter(x => !reached.has(x)).map(x => `screen not reached: ${x}`),
+      want && !new RegExp(`(Corrigé|Corrected)\\s*:\\s*${want}\\.`).test(kept) && `correction to ${want} not saved ("${kept}")`,
+      ...faults.filter(f => !known(f)).map(f => `fault: ${f}`),
+    ].filter(Boolean);
+  }
   writeFileSync(resolve(SHOTS, 'summary.json'), JSON.stringify(out, null, 2));
   console.log(JSON.stringify(out));
   await browser.close();
+  if (out.verdict?.length) { console.error(`JOURNEY FAILED:\n- ${out.verdict.join('\n- ')}`); process.exitCode = 1; }
 } finally { try { process.kill(-server.pid); } catch {} }
