@@ -110,8 +110,6 @@ export default function History({ onClose }) {
         </div>
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Vos séries.' : 'Your sets.'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Enregistrées sur ce téléphone, elles n’en sortent que si vous les partagez.' : 'Saved on this phone, they leave it only if you share them.'}{sets?.length ? (fr ? ' Touchez une série pour en faire le rapport.' : ' Tap a set to make its report.') : ''}</p>
-        <ExportSets sets={sets} lang={lang} name={liftName} style={{ '--i': 1 }} />
-        <KeepSets sets={sets} fr={fr} onRestored={list => { setProblem(''); setSets(list); }} style={{ '--i': 1 }} />
         {/* The level, changeable here at any time: it sets how much the result screen shows (level.js). */}
         <div data-reveal style={{ '--i': 2 }} data-testid="history-level">
           <LevelPick id="hist-level" label={fr ? 'Votre niveau' : 'Your level'} value={level} onChange={l => { if (writeLevel(l)) setLevel(l); }} fr={fr} />
@@ -153,6 +151,13 @@ export default function History({ onClose }) {
             </li>;
           })}</ul>
         </section>)}
+        {/* The data, after the sets (the first set stays in view, PLAN.md rule 6): export, backup and restore,
+            restore offered even with no set, as on a new phone. */}
+        {sets && <section className="hist-data" data-reveal style={{ '--i': 6 }} data-testid="hist-data">
+          <h2 className="eyebrow">{fr ? 'Vos données' : 'Your data'}</h2>
+          <ExportSets sets={sets} lang={lang} name={liftName} />
+          <KeepSets sets={sets} fr={fr} onRestored={list => { setProblem(''); setSets(list); }} />
+        </section>}
         {/* While helping, the section stays, so the person can always stop and erase, even with no set left. */}
         {(sets?.length > 0 || readChoice() === 'yes') && <ContributeHistory fr={fr} style={{ '--i': 6 }} />}
       </div></section>

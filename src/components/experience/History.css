@@ -71,6 +71,11 @@
 .wv-experience .hist-keep label.text-btn { position: relative; }
 .wv-experience .hist-keep-why { margin: 8px 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
 
+/* The data: export, backup, restore, after the sets, under one eyebrow, as the contribution section below it. */
+.wv-experience .hist-data { margin-top: var(--s-5); padding-top: var(--s-3); border-top: 1px solid var(--hair); }
+.wv-experience .hist-data .eyebrow { margin: 0; }
+.wv-experience .hist-data .hist-export { margin-top: 10px; }
+
 /* Helping improve the count: a quiet section after the sets, an eyebrow, what is kept, the count waiting. */
 .wv-experience .hist-contribute { margin-top: var(--s-5); padding-top: var(--s-3); border-top: 1px solid var(--hair); }
 .wv-experience .hist-contribute .eyebrow { margin: 0 0 8px; }
