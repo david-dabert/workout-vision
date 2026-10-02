@@ -78,3 +78,6 @@
   .wv-experience .result-screen:is(.lv-intermediate, .lv-expert) .res-head { margin-top: var(--s-1); }
   .wv-experience .result-screen:is(.lv-intermediate, .lv-expert) .glass { padding-top: 14px; }
 }
+
+/* The contribution question on the saved card shares the level question's form; its answers sit on one line. */
+.wv-experience .contribute-row { display: flex; align-items: center; gap: 18px; }

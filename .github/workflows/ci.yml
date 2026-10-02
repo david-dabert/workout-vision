@@ -136,8 +136,8 @@ jobs:
         with:
           path: .journey-sets
           key: ${{ steps.sets.outputs.cache-primary-key }}
-      - name: Lateral raise from the front, corrected by typing 12
-        run: STRICT=1 TYPE=12 SHOTS=journey/lateral-raise node test/real-phone/synth/smoke.mjs "$SETS/lateral_raise_front_8.webm" lateral_raise "Élévations latérales"
+      - name: Lateral raise from the front, corrected by typing 12, the contribution kept
+        run: STRICT=1 TYPE=12 CONTRIBUTE=1 SHOTS=journey/lateral-raise node test/real-phone/synth/smoke.mjs "$SETS/lateral_raise_front_8.webm" lateral_raise "Élévations latérales"
       - name: Curl from the side, the count accepted
         if: always()
         run: STRICT=1 SHOTS=journey/curl node test/real-phone/synth/smoke.mjs "$SETS/curl_side_6.webm" bicep_curl "Curl biceps"

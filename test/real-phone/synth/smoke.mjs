@@ -36,7 +36,8 @@ try {
     if (replayOpened && /^blob:/.test(r.url()) && r.failure()?.errorText === 'net::ERR_ABORTED') excused.push(f);
   });
   page.on('response', r => { if (r.status() >= 400) faults.push(`${r.status()} ${r.url()}`); });
-  await page.addInitScript(l => { localStorage.setItem('wv_lang', l); window.addEventListener('wv:core-result', e => { window.__core = e.detail; }); }, LANG);
+  // CONTRIBUTE=1: the visitor has said yes to helping improve the count (contribute.js) before this set.
+  await page.addInitScript(([l, c]) => { localStorage.setItem('wv_lang', l); if (c) localStorage.setItem('wv_contribute', 'yes'); window.addEventListener('wv:core-result', e => { window.__core = e.detail; }); }, [LANG, !!process.env.CONTRIBUTE]);
   let n = 0;
   // AXE=<path to axe.min.js>: every screen is also audited (WCAG 2.1 A and AA rules); its violations are listed.
   const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null, audit = [];
@@ -113,7 +114,16 @@ try {
       } catch { ok(null); }
     };
   }));
-  const out = { video, lift, delta, kept, stored, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
+  // With CONTRIBUTE, the contribution kept for this set: its counts and how many pose samples it holds.
+  const contributed = process.env.CONTRIBUTE ? await page.evaluate(() => new Promise(ok => {
+    const r = indexedDB.open('workoutVision');
+    r.onerror = () => ok(null);
+    r.onsuccess = () => {
+      try { const q = r.result.transaction('contributions').objectStore('contributions').getAll(); q.onsuccess = () => ok(q.result.map(c => ({ count: c.count, appCount: c.appCount, samples: c.worldLandmarks.length, posed: c.worldLandmarks.filter(Boolean).length, timestamps: c.timestamps.length, video: 'video' in c }))); q.onerror = () => ok(null); }
+      catch { ok(null); }
+    };
+  })) : null;
+  const out = { video, lift, delta, kept, stored, contributed, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
   // STRICT=1 (CI, the "Journey" job): the run fails unless the count equals the video's truth, every screen
   // of the journey was reached, a typed or stepped correction is the count saved, and no fault was seen
   // beyond the two known aborted requests: the page script refetched as the service worker takes over, and
@@ -128,6 +138,8 @@ try {
       ...['result', 'saved', 'replay', 'report', 'history'].filter(x => !reached.has(x)).map(x => `screen not reached: ${x}`),
       // The phone stored the kept count, marked corrected when it differs from the app's, beside the app's own.
       (!stored || stored.reps !== (want || core.count) || stored.machine !== core.count || stored.corrected !== !!want) && `stored ${JSON.stringify(stored)}, expected ${want || core.count} reps (app ${core.count}, corrected ${!!want})`,
+      // With CONTRIBUTE: one contribution, holding the counts kept and the app's, and the pose of every sample.
+      process.env.CONTRIBUTE && !(contributed?.length === 1 && contributed[0].count === (want || core.count) && contributed[0].appCount === core.count && contributed[0].samples === core.samples && contributed[0].timestamps === core.samples && contributed[0].posed > 0 && !contributed[0].video) && `contribution ${JSON.stringify(contributed)}, expected one of ${want || core.count} over ${core.count} with ${core.samples} samples`,
       want && !new RegExp(`(Corrigé|Corrected)\\s*:\\s*${want}\\.`).test(kept) && `correction to ${want} not saved ("${kept}")`,
       ...faults.filter(f => !known(f)).map(f => `fault: ${f}`),
     ].filter(Boolean);

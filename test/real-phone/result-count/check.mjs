@@ -202,6 +202,51 @@ try {
     check(asked, 'saving a set asks the browser to keep the app\'s storage');
     await page.context().close();
   }
+  // Helping improve the count (contribute.js): asked once on the saved card when the level is already known;
+  // a yes keeps this set with the app's count, the count kept and the pose, never a video; no second ask.
+  for (const lang of ['fr', 'en']) {
+    const fr = lang === 'fr', page = await open(browser, { lang, level: 'intermediate' });
+    await page.locator('[data-testid="ask-card"] .btn-ghost').click();
+    await page.locator('[data-testid="fix-card"] .stepper-in').click();
+    await page.keyboard.type('9');
+    await page.locator('[data-testid="fix-card"] .btn-primary').click();
+    const ask = page.locator('[data-testid="contribute-ask"]');
+    const shown = await ask.waitFor({ timeout: 10000 }).then(() => true, () => false);
+    check(shown && (await ask.textContent()).includes(fr ? 'jamais la vidéo' : 'never the video'), `${lang}: the saved card asks once whether to help, saying the video never goes`);
+    await ask.getByRole('button', { name: fr ? 'Oui, aider' : 'Yes, help' }).click();
+    const kept = await page.waitForFunction(() => new Promise(ok => {
+      const r = indexedDB.open('workoutVision');
+      r.onsuccess = () => { try { const q = r.result.transaction('contributions').objectStore('contributions').getAll(); q.onsuccess = () => ok(q.result.length ? q.result : null); q.onerror = () => ok(null); } catch { ok(null); } };
+      r.onerror = () => ok(null);
+    }), null, { timeout: 5000 }).then(h => h.jsonValue(), () => null);
+    const c = kept?.[0];
+    check(kept?.length === 1 && c.count === 9 && c.appCount === 7 && c.corrected === true && Array.isArray(c.worldLandmarks) && Array.isArray(c.imageLandmarks) && c.metadata?.extractionMethod === 'fixture' && !('video' in c), `${lang}: a yes keeps this set: kept 9 over the app's 7, with the result's pose and decoder (${kept?.length ?? 0} kept)`);
+    check(await page.evaluate(() => localStorage.getItem('wv_contribute')) === 'yes', `${lang}: the yes is remembered`);
+    await page.context().close();
+    const again = await open(browser, { lang, level: 'intermediate' });
+    await again.addInitScript(() => localStorage.setItem('wv_contribute', 'yes'));
+    await again.reload();
+    await again.locator('[data-testid="ask-card"]').waitFor({ timeout: 30000 });
+    await again.locator('[data-testid="ask-card"] .btn-primary').click();
+    await again.locator('[data-testid="saved-card"]').waitFor({ timeout: 10000 });
+    check(await again.locator('[data-testid="contribute-ask"]').count() === 0, `${lang}: once answered, the saved card asks no more`);
+    await again.context().close();
+  }
+  // Asked once, answered or not (review of 2 October): a question left unanswered does not come back.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.addInitScript(() => { localStorage.setItem('wv_lang', 'fr'); localStorage.setItem('wv_level', 'intermediate'); });
+    await page.goto(URL);
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    const first = await page.locator('[data-testid="contribute-ask"]').waitFor({ timeout: 10000 }).then(() => true, () => false);
+    await page.reload();
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    await page.locator('[data-testid="saved-card"]').waitFor({ timeout: 10000 });
+    const second = await page.locator('[data-testid="contribute-ask"]').count();
+    check(first && second === 0, `the question shown once and left unanswered is not asked again (first ${first}, then ${second})`);
+    await ctx.close();
+  }
   // A beginner without Reduce Motion: the account and the marks show during the count-up, before the
   // question; the experimental label must already be there (review of 1 October).
   for (const lang of ['en', 'fr']) {

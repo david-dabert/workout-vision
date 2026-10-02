@@ -6,6 +6,8 @@ import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
+import { contribution, contributeAsked, keepContribution, markContributeAsked, readChoice } from '../../lib/contribute';
+import ContributeAsk from './ContributeAsk';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
@@ -243,6 +245,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [chosen, setChosen] = useState('');
   const offerLevel = shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
+  // Asked once, on a saved card that asks nothing else (the level question comes first); shown is asked.
+  const [askContribute] = useState(() => readChoice() === null && !contributeAsked());
+  const showContribute = step === 'saved' && !offerLevel && askContribute;
+  useEffect(() => { if (showContribute) markContributeAsked(); }, [showContribute]);
   function chooseLevel(l) { writeLevel(l); setChosen(l); }
   const marksRef = useRef(null);
   function pick(e) {
@@ -290,6 +296,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The set saved, as a contribution, kept on this phone until the person sends or erases it.
+  const keepThis = n => { keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() })).catch(() => {}); };
+
   async function doSave(n, corrected) {
     if (saving.current) return;
     saving.current = true;
@@ -310,6 +319,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
+      // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
+      if (readChoice() === 'yes') keepThis(n);
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
@@ -498,6 +509,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
           {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
+          {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
