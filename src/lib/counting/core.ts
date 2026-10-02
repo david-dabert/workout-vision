@@ -175,8 +175,16 @@ const PERCENTILE_HIGH = 90;
 const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
 const MIN_ROM_DEGREES = 20;       // minimum ROM to accept a rep
 const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
-const REST_BAND_FRACTION = 0.10;  // a rep leaves its rest when the angle is this share of the set's range away from it
-const REST_BAND_MIN_DEG = 3;      // … and never less than this many degrees
+// Rest band, 2 October 2026 (David's order on tempo, PLAN.md): 10 % and 3° timed only the fast middle of each
+// phase, so a 0.15 s hold at the turn read 0.53 s (median) and phases 0.7 s short on 96 synthetic sets
+// (test/real-phone/synth/synth.txt). 5 % and 2°: hold 0.40 s, phases 0.61 s short; David's real reps lengthen
+// by 5.5 % at the median and 19 % at most (1 % and 1° let pre-set movement into a bench rep: 1.5 s became 3.9 s).
+// Boundaries only: David's counts are unchanged (7/14); on the public build half the exact count holds at
+// 271/894, but one countix-whole push-up (label 3) went from 2 to 1, its rep's middle leaving the labelled
+// window (count-in-window). Three of David's sets now mark their first rep as cut by the video, which they
+// are (bicep_curl_5, both overhead_press 4/10 front). Status: experimental.
+const REST_BAND_FRACTION = 0.05;  // a rep leaves its rest when the angle is this share of the set's range away from it
+const REST_BAND_MIN_DEG = 2;      // … and never less than this many degrees
 const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives the rest level; below it, the extreme is used
 const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
 const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample

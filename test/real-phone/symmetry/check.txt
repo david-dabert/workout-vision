@@ -1,93 +1,101 @@
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: tempo strip drawn
-pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Amplitude gauche 92° · droite 74° · écart 21 % |  | Série filmée bien de face, gauche et droite de la personne filmée. Sur 6 séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à 9 points, et jusqu’à 14 d’une répétition à l’autre.
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Amplitude de l’épaule : gauche 96° · droite 80° · écart 18 % |  | Série filmée bien de face, gauche et droite de la personne filmée. Sur 6 séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à 10 points, et jusqu’à 12 d’une répétition à l’autre.
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: strips under the question
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
-pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,6 s · exc. 0,9 s · gauche +15 %
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: the caption is in view (top 391, bottom 410 of 664) and names the rep: Rép. 3 · conc. 0,7 s · exc. 1,1 s · gauche +15 %
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: experimental label on screen
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: left/right strip drawn
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line within the 390 px width
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: nothing in the strips overflows
-pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":92,"right":74,"si":-21,"reps":10,"v":2}
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":96,"right":80,"si":-18,"reps":10,"v":3}
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: tempo strip drawn
-pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: line shown: Amplitude gauche 90° · droite 81° · écart 11 % |  | Série filmée bien de face, gauche et droite de la personne filmée. Sur 6 séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à 9 points, et jusqu’à 14 d’une répétition à l’autre.
+pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: line shown: Amplitude de l’épaule : gauche 96° · droite 82° · écart 15 % |  | Série filmée bien de face, gauche et droite de la personne filmée. Sur 6 séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à 10 points, et jusqu’à 12 d’une répétition à l’autre.
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: strips under the question
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
-pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,6 s · exc. 0,7 s · gauche +14 %
+pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: the caption is in view (top 391, bottom 410 of 664) and names the rep: Rép. 3 · conc. 0,7 s · exc. 0,7 s · gauche +14 %
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: experimental label on screen
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: left/right strip drawn
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: line within the 390 px width
 pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: nothing in the strips overflows
-pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: saved set carries the comparison {"left":90,"right":81,"si":-11,"reps":8,"v":2}
+pass  fr sets-29sep/lateral_raise_9_front_43e71b40.json.gz: saved set carries the comparison {"left":96,"right":82,"si":-15,"reps":8,"v":3}
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: tempo strip drawn
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: no left/right strip
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: no line
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: strips under the question
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
-pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,5 s · exc. 0,7 s
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: the caption is in view (top 414, bottom 433 of 664) and names the rep: Rép. 3 · conc. 0,6 s · exc. 1,1 s
 pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: tempo strip drawn
 pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: no left/right strip
 pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: no line
 pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: strips under the question
 pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
-pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,7 s · exc. 0,6 s
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: the caption is in view (top 413, bottom 432 of 664) and names the rep: Rép. 3 · conc. 0,7 s · exc. 0,6 s
 pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: tempo strip drawn
 pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no left/right strip
 pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
 pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: strips under the question
 pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
-pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,3 s · exc. 0,7 s
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view (top 413, bottom 432 of 664) and names the rep: Rép. 3 · conc. 0,3 s · exc. 0,8 s
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: tempo strip drawn
-pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Range left 92° · right 74° · 21% apart |  | Set filmed square on; the filmed person’s left and right. On 6 synthetic sets with a known gap, the gap read was up to 9 points off, and up to 14 for a single rep.
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Shoulder range: left 96° · right 80° · 18% apart |  | Set filmed square on; the filmed person’s left and right. On 6 synthetic sets with a known gap, the gap read was up to 10 points off, and up to 12 for a single rep.
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: strips under the question
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
-pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.6 s · ecc. 0.9 s · left +15%
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: the caption is in view (top 400, bottom 419 of 664) and names the rep: Rep 3 · conc. 0.7 s · ecc. 1.1 s · left +15%
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: experimental label on screen
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: left/right strip drawn
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line within the 390 px width
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: nothing in the strips overflows
-pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":92,"right":74,"si":-21,"reps":10,"v":2}
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":96,"right":80,"si":-18,"reps":10,"v":3}
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: tempo strip drawn
-pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: line shown: Range left 90° · right 81° · 11% apart |  | Set filmed square on; the filmed person’s left and right. On 6 synthetic sets with a known gap, the gap read was up to 9 points off, and up to 14 for a single rep.
+pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: line shown: Shoulder range: left 96° · right 82° · 15% apart |  | Set filmed square on; the filmed person’s left and right. On 6 synthetic sets with a known gap, the gap read was up to 10 points off, and up to 12 for a single rep.
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: strips under the question
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
-pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.6 s · ecc. 0.7 s · left +14%
+pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: the caption is in view (top 400, bottom 419 of 664) and names the rep: Rep 3 · conc. 0.7 s · ecc. 0.7 s · left +14%
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: experimental label on screen
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: left/right strip drawn
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: line within the 390 px width
 pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: nothing in the strips overflows
-pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: saved set carries the comparison {"left":90,"right":81,"si":-11,"reps":8,"v":2}
+pass  en sets-29sep/lateral_raise_9_front_43e71b40.json.gz: saved set carries the comparison {"left":96,"right":82,"si":-15,"reps":8,"v":3}
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: tempo strip drawn
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: no left/right strip
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: no line
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: strips under the question
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
-pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.5 s · ecc. 0.7 s
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: the caption is in view (top 414, bottom 433 of 664) and names the rep: Rep 3 · conc. 0.6 s · ecc. 1.1 s
 pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: tempo strip drawn
 pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: no left/right strip
 pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: no line
 pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: strips under the question
 pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
-pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.7 s · ecc. 0.6 s
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: the caption is in view (top 413, bottom 432 of 664) and names the rep: Rep 3 · conc. 0.7 s · ecc. 0.6 s
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: tempo strip drawn
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no left/right strip
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: strips under the question
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
-pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.3 s · ecc. 0.7 s
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view (top 413, bottom 432 of 664) and names the rep: Rep 3 · conc. 0.3 s · ecc. 0.8 s
+pass  fr beginner 320px: replay on the centre line (0.0 px off), no test mark on the result
 pass  fr beginner 320px: line 1, strips 0
 pass  fr beginner 320px: nothing wider than the screen
+pass  fr intermediate 320px: replay on the centre line (0.0 px off), no test mark on the result
 pass  fr intermediate 320px: line 1, strips 1
 pass  fr intermediate 320px: nothing wider than the screen
+pass  fr beginner 390px: replay on the centre line (0.0 px off), no test mark on the result
 pass  fr beginner 390px: line 1, strips 0
 pass  fr beginner 390px: nothing wider than the screen
+pass  fr intermediate 390px: replay on the centre line (0.0 px off), no test mark on the result
 pass  fr intermediate 390px: line 1, strips 1
 pass  fr intermediate 390px: nothing wider than the screen
+pass  en beginner 320px: replay on the centre line (0.0 px off), no test mark on the result
 pass  en beginner 320px: line 1, strips 0
 pass  en beginner 320px: nothing wider than the screen
+pass  en intermediate 320px: replay on the centre line (0.0 px off), no test mark on the result
 pass  en intermediate 320px: line 1, strips 1
 pass  en intermediate 320px: nothing wider than the screen
+pass  en beginner 390px: replay on the centre line (0.0 px off), no test mark on the result
 pass  en beginner 390px: line 1, strips 0
 pass  en beginner 390px: nothing wider than the screen
+pass  en intermediate 390px: replay on the centre line (0.0 px off), no test mark on the result
 pass  en intermediate 390px: line 1, strips 1
 pass  en intermediate 390px: nothing wider than the screen
 all passed

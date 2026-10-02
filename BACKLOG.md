@@ -42,3 +42,13 @@ Checked against the code on main (84e020a) before entry. These are proposals, no
   SESAM-Vitale approved software every practice already owns (Ordre des MK; Caducée, 1 September 2026 reform).
 - Medical use (EU MDR Rule 11, MDCG 2019-11): software that informs a care decision is class IIa or higher.
   No reading may be framed as informing care until that route is decided.
+
+## 2 October 2026
+- Fit a five-rep session report on one A5 page with its opener (report-pdf.js): today it spills onto a second.
+- Name the joint in the per-rep table and the CSV headings, as the result screen now does.
+- Count from the side: synthetic curls and squats filmed from the side are exact on 4 of 6 each (synth.txt);
+  look into the armoured body's hidden elbow and the over-counted squats before trusting either.
+- Accessibility (axe, WCAG 2.1 AA, smoke run of 2 October): every screen of the journey passes except the
+  filming screen's two buttons, labels with role=button that hold the hidden file input (nested-interactive,
+  serious). The input sits under the finger on purpose, so iOS opens the camera from a real tap; rebuild it
+  only with an iPhone to check the camera and library still open.

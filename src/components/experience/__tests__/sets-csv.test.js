@@ -47,7 +47,7 @@ describe('setsCsv', () => {
     const text = setsCsv([counted], { lang: 'en' });
     expect(text.startsWith('\uFEFF')).toBe(true);
     expect(text.endsWith('\r\n')).toBe(true);
-    expect(lines(text)[0].split(',')).toEqual(['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo (experimental measure)', 'Concentric speed change (%) (experimental measure)']);
+    expect(lines(text)[0].split(',')).toEqual(['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo (experimental measure)']);
   });
 
   it('writes French with semicolons and decimal commas, English with commas and dots', () => {
@@ -97,30 +97,28 @@ describe('setsCsv', () => {
     expect(f[3]).toBe('10');
     expect(f[4]).toBe('no');
     expect(f[5]).toBe('no');
-    expect(f.slice(6)).toEqual(['', '', '', '']); // weight 0 is no load; no duration, no reps details
+    expect(f.slice(6)).toEqual(['', '', '']); // weight 0 is no load; no duration, no reps details (no speed column)
   });
 
-  it('writes the coach report\'s tempo (setTempo) and the speed change of setMeasures', () => {
-    const [, row] = lines(setsCsv([counted], { lang: 'en' }));
+  it('writes the coach report\'s tempo (setTempo), and no speed change while SPEED_CHANGE_SHOWN is off', () => {
+    const [head, row] = lines(setsCsv([counted], { lang: 'en' }));
     const f = row.split(',');
     expect(f[8]).toBe(setTempo(REPS, liftDefinition('bicep_curl').first));
-    const change = setMeasures(REPS).speedChange;
-    expect(change).not.toBeNull();
-    expect(f[9]).toBe(String(change));
+    expect(setMeasures(REPS).speedChange).not.toBeNull();
+    expect(f).toHaveLength(9);
+    expect(head).not.toMatch(/speed change/i);
   });
 
-  it('leaves the speed change empty under four whole reps', () => {
+  it('writes the tempo under four whole reps too', () => {
     const three = { ...counted, repDetails: REPS.slice(0, 3) };
-    expect(setMeasures(three.repDetails).speedChange).toBeNull();
     const f = lines(setsCsv([three], { lang: 'en' }))[1].split(',');
-    expect(f[9]).toBe('');
     expect(f[8]).not.toBe('');
   });
 
   it('ignores reps details measured before step 3c', () => {
     const before = { ...counted, repDetailsVersion: undefined };
     const f = lines(setsCsv([before], { lang: 'en' }))[1].split(',');
-    expect(f.slice(8)).toEqual(['', '']);
+    expect(f.slice(8)).toEqual(['']);
   });
 
   it('writes a header only when there is no set', () => {

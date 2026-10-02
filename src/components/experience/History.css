@@ -15,6 +15,8 @@
 .wv-experience .hist-btn { width: 100%; min-height: 44px; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; text-align: left; }
 .wv-experience .hist-n { font-family: var(--serif); font-size: min(var(--fs-title), 44px); line-height: 0.9; text-align: center; color: var(--lamp); font-variant-numeric: lining-nums tabular-nums; }
 .wv-experience .hist-txt { display: flex; flex-direction: column; min-width: 0; }
+/* A count the person corrected is theirs, not the app's measure: bone, not lamp (SYSTEM.md; design review, 2 October). */
+.wv-experience .hist-n.is-corrected { color: var(--bone); }
 .wv-experience .hist-name { font-family: var(--serif); font-size: var(--fs-name); line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
 /* Time, length and limb: a caption in sans, its figures tabular (mono is for labels and numerals only, #10). */
 .wv-experience .hist-meta { margin-top: 4px; overflow: hidden; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); }

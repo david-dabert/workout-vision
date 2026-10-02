@@ -214,24 +214,24 @@ describe('rep details', () => {
     expect(s.shortRepNote).toBeTruthy();
   });
 
-  it('adds the time under tension and how the concentric speed changed from the first two reps to the last two', () => {
-    // Concentric speeds 112.5, 97.8 … 76.4, 68.3 °/s: the last two average 31% below the first two.
+  it('adds the time under tension, and no longer the change of concentric speed (SPEED_CHANGE_SHOWN off)', () => {
+    // Concentric speeds 112.5, 97.8 … 76.4, 68.3 °/s: a 31 % drop, within the noise of phase timing, so unsaid.
     const s = reportSheet({ ...base, reps, first: 'concentric' });
     expect(s.summary.join('\n')).toContain(`Temps sous tension${NBSP}: 9,5${NBSP}s`);
-    expect(s.summary.join('\n')).toContain(`\u221231${NBSP}%`);
+    expect(s.summary.join('\n')).not.toContain(`\u221231${NBSP}%`);
   });
 
   it('gives one item per line, as a client who is not a coach reads it (Luc, 29 September)', () => {
     const prev = { count: 8, reps: Array.from({ length: 8 }, (_, i) => rep(i * 3, 2.0, 92, 0.9, 1.0)), date: new Date(2026, 8, 20) };
     const lines = reportSheet({ ...base, reps, first: 'concentric', previousSet: prev }).summary;
-    expect(lines.map(l => l.split(`${NBSP}:`)[0])).toEqual(['Temps sous tension', 'Vitesse concentrique', 'Tempo', 'Durée', 'Série du 20 sept.']);
+    expect(lines.map(l => l.split(`${NBSP}:`)[0])).toEqual(['Temps sous tension', 'Tempo', 'Série du 20 sept.']);
     for (const l of lines) expect(l).not.toContain(' · ');
   });
 
-  it('opens on what the reps showed, from the same derivation as the result screen', () => {
-    // Concentric phases 0.8 … 1.2 s: the last two reps took longer to lift than the first two.
-    expect(reportSheet({ ...base, count: 5, counted: 5, reps, first: 'concentric' }).opener).toBe('5 répétitions, les deux dernières plus lentes que les deux premières.');
-    expect(reportSheet({ ...base, lang: 'en', count: 5, counted: 5, reps, first: 'concentric' }).opener).toBe('5 reps, the last two slower than the first two.');
+  it('opens on what the reps showed, and no longer on their change of speed (SPEED_CHANGE_SHOWN off)', () => {
+    // Concentric phases 0.8 … 1.2 s: once said "slower"; now the opener says only that no rep was short.
+    expect(reportSheet({ ...base, count: 5, counted: 5, reps, first: 'concentric' }).opener).toBe('5 répétitions, aucune plus courte que les autres.');
+    expect(reportSheet({ ...base, lang: 'en', count: 5, counted: 5, reps, first: 'concentric' }).opener).toBe('5 reps, none shorter than the others.');
   });
 
   // Review, 29 September: the opener never contradicts the table or the summary of the same sheet.
@@ -245,7 +245,7 @@ describe('rep details', () => {
   it('never says "as fast" beside a speed that changed, nor slower or faster against its sign', () => {
     const shallower = [100, 100, 100, 100, 90, 90].map((rom, i) => rep(i * 3, 2, rom, 1, 1));
     const s = reportSheet({ ...base, lang: 'en', count: 6, counted: 6, reps: shallower, first: 'concentric' });
-    expect(s.summary.some(l => /Concentric speed: −10%/.test(l))).toBe(true);
+    expect(s.summary.some(l => /Concentric speed/.test(l))).toBe(false);
     expect(s.opener).not.toMatch(/as fast as|faster than/);
     const quicker = [100, 100, 100, 100, 70, 70].map((rom, i) => rep(i * 3, 2, rom, 1, i >= 4 ? 0.8 : 1));
     const q = reportSheet({ ...base, lang: 'en', count: 6, counted: 6, reps: quicker, first: 'concentric' });
@@ -254,9 +254,13 @@ describe('rep details', () => {
 
   it('sets the opener on the PDF without running the sheet onto another page', async () => {
     const pages = async sheet => Buffer.from(await reportPdf(sheet).arrayBuffer()).toString('latin1').match(/\/Type \/Page\b/g).length;
-    for (const s of [reportSheet(base), reportSheet({ ...base, count: 5, counted: 5, reps, first: 'concentric' })]) {
-      expect(await pages(s)).toBe(await pages({ ...s, opener: '' }));
-    }
+    const plain = reportSheet(base);
+    expect(await pages(plain)).toBe(await pages({ ...plain, opener: '' }));
+    // The five-rep sheet ran to two pages with or without its opener before 2 October; with the speed and
+    // duration lines gone it fits one page without the opener, and the opener takes it to two, no further
+    // (BACKLOG.md, 2 October: fit it on one A5 page).
+    const five = reportSheet({ ...base, count: 5, counted: 5, reps, first: 'concentric' });
+    expect(await pages(five)).toBeLessThanOrEqual(2);
   });
 
   it('shows the set tempo as the average of each phase across reps', () => {
@@ -266,10 +270,10 @@ describe('rep details', () => {
     expect(s.summary.join('\n')).toMatch(/Tempo\s*.*\d.*-.*\d.*-.*\d.*-.*\d/);
   });
 
-  it('shows how the rep duration changed from the first two to the last two', () => {
+  it('no longer states how the rep duration changed from the first two to the last two (SPEED_CHANGE_SHOWN off)', () => {
     const s = reportSheet({ ...base, reps, first: 'concentric' });
-    // All reps here are 1.9 s, so duration change is 0.
-    expect(s.summary.join('\n')).toMatch(/0,0\s*s/);
+    // All reps here are 1.9 s: the comparison was "0,0 s"; it is now unsaid with the speed change.
+    expect(s.summary.join('\n')).not.toMatch(/du début à la fin/);
   });
 
   it('shows the comparison with a previous set when one is provided', () => {
@@ -307,9 +311,9 @@ describe('rep details', () => {
 
 describe('left/right line (front-view sets)', () => {
   it('lists both ranges and the noise note in the summary, only when measured and measures are shown', () => {
-    const sides = { left: 92, right: 74, si: -17, reps: 10, v: 2 };
+    const sides = { left: 92, right: 74, si: -17, reps: 10, v: 3 };
     const s = reportSheet({ ...base, reps, sides, lift: 'lateral_raise' });
-    expect(s.summary).toContain('Amplitude gauche 92° · droite 74° · écart 17 %');
+    expect(s.summary).toContain('Amplitude de l’épaule\u00A0: gauche 92°\u00A0· droite 74°\u00A0· écart 17\u00A0%');
     expect(s.summary.some(l => l.startsWith('Série filmée bien de face'))).toBe(true);
     expect(reportSheet({ ...base, reps }).summary.some(l => l.includes('gauche'))).toBe(false);
     expect(reportSheet({ ...base, reps, sides, lift: 'overhead_press' }).summary.some(l => l.includes('gauche'))).toBe(false);

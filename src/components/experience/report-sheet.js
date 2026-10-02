@@ -3,7 +3,7 @@
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
 import { decimal, repTempo, setTempo } from './tempo';
-import { MEASURES_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
 import { sidesLines } from './sides-line';
 
 export { setTempo };
@@ -121,15 +121,16 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   }
   if (measures && shown) {
     summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
-    const speed = speedLine(measures.speedChange, fr);
+    const speed = SPEED_CHANGE_SHOWN ? speedLine(measures.speedChange, fr) : '';
     if (speed) summary.push(speed);
 
     // Set tempo: average of each phase across whole reps (setTempo, which the spreadsheet uses too).
     const tempo = setTempo(reps, liftFirst);
     if (tempo) summary.push(`Tempo${colon}${tempo}`);
 
-    // Duration change: average of last two minus average of first two.
-    if (wholeReps.length >= 4) {
+    // Duration change: average of last two minus average of first two. The same first-two against
+    // last-two comparison as the speed change, from the same boundaries: unsaid with it (SPEED_CHANGE_SHOWN).
+    if (SPEED_CHANGE_SHOWN && wholeReps.length >= 4) {
       const dur = r => r.endTime - r.startTime;
       const firstAvg = (dur(wholeReps[0]) + dur(wholeReps[1])) / 2;
       const lastAvg = (dur(wholeReps[wholeReps.length - 2]) + dur(wholeReps[wholeReps.length - 1])) / 2;

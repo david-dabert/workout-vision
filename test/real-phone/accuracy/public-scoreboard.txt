@@ -1,4 +1,4 @@
-Public scoreboard 2026-09-30: 894 build sets, 271 exact (30%). Of the 447 in the baseline, 137 exact now, 137 before; 0 became off by 3 or more; 447 new since.
+Public scoreboard 2026-10-02: 894 build sets, 271 exact (30%). Of the 894 in the baseline, 271 exact now, 271 before; 0 became off by 3 or more.
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
@@ -13,10 +13,11 @@ Public scoreboard 2026-09-30: 894 build sets, 271 exact (30%). Of the 447 in the
 | countix-whole front_raise | 75 | 23 | 24 | 8 | 8 |
 | countix-whole lunge | 78 | 22 | 28 | 4 | 11 |
 | countix-whole pull_up | 60 | 17 | 20 | 4 | 11 |
-| countix-whole push_up | 77 | 23 | 22 | 17 | 9 |
+| countix-whole push_up | 77 | 23 | 21 | 17 | 9 |
 | countix-whole squat | 46 | 17 | 10 | 2 | 11 |
 | countix-whole triceps_pushdown | 73 | 22 | 31 | 2 | 8 |
 
+-> public/countix-whole/build/ekhHO6lmWVM_000133_7700.json.gz  label 3  before 2  now 1
 
 Not scored (5032), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts

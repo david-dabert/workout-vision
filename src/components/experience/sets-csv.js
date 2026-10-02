@@ -10,7 +10,7 @@ import { exerciseName } from './exercise-info';
 import { countedBy, setTime } from './sets';
 import { confirmed, storedLoad, liftKey } from './progress';
 import { setMeasures, setTempo } from './report-sheet';
-import { MEASURES_SHOWN } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN } from './measures';
 
 // Spreadsheets (Excel above all) read a UTF-8 file as UTF-8 only when it starts with this mark.
 export const BOM = '﻿';
@@ -66,8 +66,12 @@ export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
     : ['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo', 'Concentric speed change (%)'];
   // Without validated measures (measures.js), the tempo and speed columns are left out; with them, each
   // is marked experimental in its heading, since none is validated yet.
+  // The speed-change column follows SPEED_CHANGE_SHOWN (measures.js): off, it is left out as on the screen.
   if (!measures) header.splice(-2);
-  else for (const k of [header.length - 2, header.length - 1]) header[k] = exp(header[k], fr);
+  else {
+    if (!SPEED_CHANGE_SHOWN) header.splice(-1);
+    for (let k = 8; k < header.length; k++) header[k] = exp(header[k], fr);
+  }
   const rows = oldestFirst(sets).map(w => {
     const counted = byHand(w) ? null : countedBy(w);
     const reps = measuredReps(w);

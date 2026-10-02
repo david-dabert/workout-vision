@@ -2,6 +2,8 @@
 // report. It states both ranges, the gap between them (relative to their mean) and how far the app's gap
 // lay from the true one on synthetic sets; it draws no conclusion about the body (R8; EU MDR Rule 11: no reading meant to inform care).
 // Copy for David's approval (R10). Status: experimental.
+import { liftDefinition } from '../../lib/counting/core';
+import { jointName } from './lift-meta';
 import { GAP_ERROR_POINTS, GAP_SYNTH_SETS, REP_GAP_ERROR_POINTS, SIDES_LIFTS, SIDES_VERSION } from '../../lib/counting/symmetry';
 
 const NB = ' ';
@@ -19,10 +21,11 @@ export function sidesLines(sides, fr, lift) {
   if (!sides || sides.v !== SIDES_VERSION || !SIDES_LIFTS.has(lift)) return null;
   if (!Number.isFinite(sides.left) || !Number.isFinite(sides.right) || !Number.isFinite(sides.si)) return null;
   const gap = Math.abs(Math.round(sides.si));
+  const joint = liftDefinition(lift)?.joint;
   const pc = fr ? `${NB}%` : '%';
   return fr
-    ? { line: `Amplitude gauche ${sides.left}°${NB}· droite ${sides.right}°${NB}· écart ${gap}${pc}`,
+    ? { line: `Amplitude ${jointName(joint, true)}${NB}: gauche ${sides.left}°${NB}· droite ${sides.right}°${NB}· écart ${gap}${pc}`,
         note: `Série filmée bien de face, gauche et droite de la personne filmée. Sur ${GAP_SYNTH_SETS}${NB}séries de synthèse à l’écart connu, l’écart lu s’en éloignait jusqu’à ${GAP_ERROR_POINTS}${NB}points, et jusqu’à ${REP_GAP_ERROR_POINTS} d’une répétition à l’autre.` }
-    : { line: `Range left ${sides.left}°${NB}· right ${sides.right}°${NB}· ${gap}${pc} apart`,
+    : { line: `${jointName(joint, false)[0].toUpperCase()}${jointName(joint, false).slice(1)} range: left ${sides.left}°${NB}· right ${sides.right}°${NB}· ${gap}${pc} apart`,
         note: `Set filmed square on; the filmed person’s left and right. On ${GAP_SYNTH_SETS} synthetic sets with a known gap, the gap read was up to ${GAP_ERROR_POINTS} points off, and up to ${REP_GAP_ERROR_POINTS} for a single rep.` };
 }

@@ -19,15 +19,12 @@ describe('the opener of a counted set', () => {
     expect(say({ reps: two, count: 10, counted: 10 }, false)).toBe('10 reps, 2 of them shorter than the others.');
   });
 
-  it('with no short rep, says how the last two reps went against the first two', () => {
+  it('with no short rep, says none was short, never how fast the last two went (SPEED_CHANGE_SHOWN off)', () => {
     const slower = even(6); slower[4].concentricSec = 1.25; slower[5].concentricSec = 1.25;
-    expect(say({ reps: slower, count: 6, counted: 6 }, true)).toBe('6 répétitions, les deux dernières plus lentes que les deux premières.');
-    expect(say({ reps: slower, count: 6, counted: 6 }, false)).toBe('6 reps, the last two slower than the first two.');
+    expect(say({ reps: slower, count: 6, counted: 6 }, true)).toBe('6 répétitions, aucune plus courte que les autres.');
+    expect(say({ reps: slower, count: 6, counted: 6 }, false)).toBe('6 reps, none shorter than the others.');
     const faster = even(6); faster[4].concentricSec = 0.8; faster[5].concentricSec = 0.8;
-    expect(say({ reps: faster, count: 6, counted: 6 }, true)).toBe('6 répétitions, les deux dernières plus rapides que les deux premières.');
-    expect(say({ reps: faster, count: 6, counted: 6 }, false)).toBe('6 reps, the last two faster than the first two.');
-    expect(say({ reps: even(6), count: 6, counted: 6 }, true)).toBe('6 répétitions, les deux dernières aussi rapides que les deux premières.');
-    expect(say({ reps: even(6), count: 6, counted: 6 }, false)).toBe('6 reps, the last two as fast as the first two.');
+    expect(say({ reps: faster, count: 6, counted: 6 }, false)).toBe('6 reps, none shorter than the others.');
   });
 
   it('under four whole reps, says only that none was shorter', () => {

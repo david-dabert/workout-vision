@@ -2,7 +2,7 @@
 // It measures nothing new: the count, and what set-account.js already derives from the reps (the
 // short reps, the slowdown). Wording awaiting David's approval (test/real-phone/swarm/copy-C.md).
 import { shortReps, slowdown, speedChange } from './set-account';
-import { MEASURES_SHOWN } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN } from './measures';
 
 const reps = (n, fr) => (fr ? `${n} répétition${n > 1 ? 's' : ''}` : `${n} rep${n === 1 ? '' : 's'}`);
 
@@ -35,7 +35,7 @@ export function setOpener({ reps: all, fr, count, counted, refused, measures = M
   // time). Where the two point different ways, or "as fast" meets a speed that changed, the opener
   // says neither, so it never contradicts the sheet below it (review, 29 September).
   const p = slowdown(all), v = speedChange(all);
-  const agrees = p !== null && (v === null || Math.sign(p) === -Math.sign(v));
+  const agrees = SPEED_CHANGE_SHOWN && p !== null && (v === null || Math.sign(p) === -Math.sign(v));
   if (agrees) {
     return fr
       ? `${reps(count, true)}, les deux dernières ${p > 0 ? 'plus lentes que' : p < 0 ? 'plus rapides que' : 'aussi rapides que'} les deux premières.`

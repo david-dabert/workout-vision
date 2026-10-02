@@ -2,7 +2,7 @@
 // of encouragement, in the words David approved on 29 September (test/real-phone/growth-step3/texts.md).
 // Pure functions of the counted reps, so the result screen and the tests read the same numbers.
 import { setTempo } from './tempo';
-import { MEASURES_SHOWN } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN } from './measures';
 
 const NB = ' ';
 const whole = reps => (reps || []).filter(r => !r.clipped);
@@ -81,7 +81,7 @@ export function setAccount({ reps, first, fr, name, count, previous, nth, measur
   const short = measures && !corrected ? shortReps(reps) : [];
   if (short.length === 1) lines.push(fr ? `La répétition ${short[0]} a été plus courte que les autres.` : `Rep ${short[0]} was shorter than the others.`);
   else if (short.length > 1) lines.push(fr ? `Les répétitions ${list(short, true)} ont été plus courtes que les autres.` : `Reps ${list(short, false)} were shorter than the others.`);
-  const p = measures && !corrected ? slowdown(reps) : null;
+  const p = measures && SPEED_CHANGE_SHOWN && !corrected ? slowdown(reps) : null;
   if (p !== null) {
     lines.push(p === 0
       ? (fr ? 'Vos deux dernières répétitions ont été aussi rapides que les deux premières.' : 'Your last two reps were as fast as your first two.')
@@ -98,7 +98,9 @@ export function setAccount({ reps, first, fr, name, count, previous, nth, measur
   // Convention (David's approved copy): one tip only.
   const tip = short.length
     ? (fr ? 'La prochaine fois, visez la même amplitude sur toutes les répétitions.' : 'Next time, aim for the same range on every rep.')
-    : (fr ? 'Quand toutes vos répétitions restent amples et contrôlées, ajoutez une répétition ou un peu de charge.' : 'When all your reps stay full and controlled, add a rep or a little weight.');
+    // Measurement, not load: the app cannot judge when to add weight (design review, 2 October: unsourced
+    // advice, R9). Filming from one spot keeps sets comparable. Status: convention.
+    : (fr ? 'Pour comparer vos séries, filmez-les toujours du même endroit.' : 'To compare your sets, film them from the same spot each time.');
   // Convention (David's approved copy).
   const cheer = !Number.isFinite(nth) ? null : fr
     ? `${ordinal(nth, true)} série ${de(inSentence(name))} dans votre historique. La régularité fera le reste.`

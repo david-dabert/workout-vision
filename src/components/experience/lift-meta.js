@@ -17,6 +17,14 @@ export const META = {
 
 // The limb whose joint counts the lift (core.ts): arm for elbow and shoulder lifts,
 // leg for knee lifts, side for hip lifts. `side` is 'left' or 'right'.
+/** The joint whose angle the counter measures, as a range is named after it: FR with its preposition
+ * ("du coude"), EN bare ("elbow"). Approved under David's standing order of 2 October 2026 (PLAN.md). */
+export function jointName(joint, fr) {
+  const names = { elbow: ['du coude', 'elbow'], shoulder: ['de l’épaule', 'shoulder'], knee: ['du genou', 'knee'], hip: ['de la hanche', 'hip'] };
+  const n = names[joint];
+  return n ? (fr ? n[0] : n[1]) : '';
+}
+
 export function limbLabel(lift, side, fr) {
   const joint = liftDefinition(lift)?.joint || 'elbow';
   // A both-sides exercise (walking lunge, dead bug…) is counted on both limbs, and says so.

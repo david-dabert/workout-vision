@@ -16,10 +16,10 @@ import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
-import { MEASURES_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
-import { limbLabel } from './lift-meta';
+import { limbLabel, jointName } from './lift-meta';
 import { liftDefinition } from '../../lib/counting/core';
 import { refusal } from './refusal';
 import { TARGET_FPS } from '../../lib/extractionConfig';
@@ -56,7 +56,7 @@ function ghostSource(result, lift) {
   return topPose(lift);
 }
 
-function Topbar({ fr, onClose, onReplay, replayRef }) {
+function Topbar({ fr, onClose, onReplay, replayRef, badge = true }) {
   return <div className="topbar">
     <button className="icon-btn press" onClick={onClose} aria-label={fr ? 'Fermer' : 'Close'}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
@@ -65,7 +65,9 @@ function Topbar({ fr, onClose, onReplay, replayRef }) {
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z" /></svg>
       <span>{fr ? 'Revoir' : 'Replay'}</span>
     </button>}
-    <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
+    {/* The test mark stays on the screens without a result; on the result it would push Revoir off the centre
+        line in French (David's standing order, 2 October 2026; design review). Only the counted result drops it. */}
+    {badge && <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>}
   </div>;
 }
 
@@ -214,7 +216,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
-    detail = fr ? `Amplitude moyenne ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average range ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
+    // The joint whose angle is measured is named, so a range is never read as another joint's (design review,
+    // 2 October: 64° read as shoulder flexion on a press). jointName (lift-meta.js).
+    detail = fr ? `Amplitude moyenne ${jointName(liftDefinition(lift)?.joint, true)}${NB}: ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average ${jointName(liftDefinition(lift)?.joint, false)} range: ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
   }
   // Step 3: the account of the set, one tip and a word of encouragement (set-account.js). The sets of
   // this exercise already saved give the last set's reps and this set's rank once it is saved.
@@ -227,7 +231,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
   const [view] = useState(() => levelView(readLevel()));
-  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: speedChangeLine(reps, fr) } : null;
+  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
@@ -272,7 +276,12 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       const here = presence(rootRef.current, now, memo);
       if (coveredRef.current || here <= 0) return;
       mapPose(src.p, src.vb, { x: W * 0.04, y: H * 0.04, w: W * 0.92, h: H * 0.66 }, out);
-      body.draw(ctx, out, { alpha: 0.2 * here * (stepRef.current === 'ask' ? 1 : 0.3), time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
+      // The ghost belongs to the count: it fades as the count scrolls away, so it never sits behind the
+      // charts and words below (design review, 2 October).
+      const num = rootRef.current?.querySelector('.res-count');
+      const seen = num ? Math.max(0, Math.min(1, num.getBoundingClientRect().bottom / (window.innerHeight * 0.5))) : 1;
+      if (seen <= 0) return;
+      body.draw(ctx, out, { alpha: 0.2 * here * seen * (stepRef.current === 'ask' ? 1 : 0.3), time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -424,7 +433,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     card: <div key="card">
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
-          <p className="ask-q">{fr ? `Nous avons compté ${count}. Est-ce juste ?` : `We counted ${count}. Is that right?`}</p>
+          <p className="ask-q">{fr ? `C’est bien ${count}\u00A0?` : `Was it ${count}?`}</p>
           <div className="ask-row">
             <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>
               <span>{fr ? 'Oui, c’est juste' : 'Yes, that’s right'}</span>
@@ -501,7 +510,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // Under the report, the result is out of reach of taps, the keyboard and screen readers.
   return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
     <section className={`screen is-active result-screen lv-${view.level}${step === 'saved' ? ' is-saved' : ''}`} data-level={view.level}><div className="wrap">
-      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
+      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
       <div className="res-head" data-reveal style={{ '--i': 0 }}>
         <p className="eyebrow">{liftName}</p>
         <div className="res-sub">
