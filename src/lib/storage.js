@@ -128,6 +128,17 @@ export async function saveWorkout(workout) {
   return id;
 }
 
+/**
+ * Put back a set read from a backup file (keep-sets.js), under its own id and dates, unless a set with that id
+ * is already on this phone: restoring the same file twice adds nothing.
+ * @returns {Promise<boolean>} whether the set was added
+ */
+export async function restoreWorkout(entry) {
+  if (!entry?.id || (await workoutStore.getItem(entry.id))) return false;
+  await workoutStore.setItem(entry.id, entry);
+  return true;
+}
+
 export async function getWorkout(id) {
   const record = await workoutStore.getItem(id);
   if (record) {

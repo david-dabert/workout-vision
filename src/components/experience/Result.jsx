@@ -5,6 +5,7 @@ import { exerciseName } from './exercise-info';
 import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
+import { askToKeep } from '../../lib/keep-sets';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
@@ -307,6 +308,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         repDetailsVersion: 2,
       });
       refreshSets();
+      // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
+      askToKeep();
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"

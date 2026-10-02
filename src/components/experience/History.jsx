@@ -7,6 +7,7 @@ import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
 import { exerciseProgress, recordsOf } from './progress';
 import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
+import KeepSets from './KeepSets';
 import LevelPick from './LevelPick';
 import { readLevel, writeLevel } from './level';
 import { useCondensingTopbar } from './topbar';
@@ -104,8 +105,9 @@ export default function History({ onClose }) {
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Vos séries.' : 'Your sets.'}</h1>
-        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Elles restent sur ce téléphone.' : 'They stay on this phone.'}{sets?.length ? (fr ? ' Touchez une série pour en faire le rapport.' : ' Tap a set to make its report.') : ''}</p>
+        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Elles ne quittent pas ce téléphone.' : 'They never leave this phone.'}{sets?.length ? (fr ? ' Touchez une série pour en faire le rapport.' : ' Tap a set to make its report.') : ''}</p>
         <ExportSets sets={sets} lang={lang} name={liftName} style={{ '--i': 1 }} />
+        <KeepSets sets={sets} fr={fr} onRestored={list => { setProblem(''); setSets(list); }} style={{ '--i': 1 }} />
         {/* The level, changeable here at any time: it sets how much the result screen shows (level.js). */}
         <div data-reveal style={{ '--i': 2 }} data-testid="history-level">
           <LevelPick id="hist-level" label={fr ? 'Votre niveau' : 'Your level'} value={level} onChange={l => { if (writeLevel(l)) setLevel(l); }} fr={fr} />

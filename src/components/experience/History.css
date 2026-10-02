@@ -64,3 +64,9 @@
 .wv-experience .hist-export .text-btn svg { width: 16px; height: 16px; color: var(--lamp); }
 .wv-experience .hist-export-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
 .wv-experience .hist-export-note:not(:empty) { margin-top: 4px; }
+/* Keeping the sets: backup and restore side by side, the reason above them when the phone may not keep them. */
+.wv-experience .hist-keep { margin-top: 10px; }
+.wv-experience .hist-keep-row { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.wv-experience .hist-keep .text-btn { cursor: pointer; }
+.wv-experience .hist-keep label.text-btn { position: relative; }
+.wv-experience .hist-keep-why { margin: 8px 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
