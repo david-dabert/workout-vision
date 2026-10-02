@@ -2,7 +2,7 @@
   "name": "workout-vision",
   "private": true,
   "version": "1.4.0",
-  "description": "On-device AI workout analysis \u2014 rep counting, form scoring, and biomechanical feedback from video. Runs entirely in-browser with MediaPipe.",
+  "description": "On-device AI workout analysis — rep counting, form scoring, and biomechanical feedback from video. Runs entirely in-browser with MediaPipe.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,6 +42,7 @@
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
     "sharp": "^0.35.4",
+    "three": "^0.170.0",
     "typescript": "^7.0.2",
     "vite": "^5.4.21",
     "vitest": "^4.1.11"
