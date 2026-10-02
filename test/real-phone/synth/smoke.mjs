@@ -7,7 +7,7 @@
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { chromium, devices } from 'playwright';
+import { chromium, devices } from '@playwright/test';
 
 const [video, lift, card] = process.argv.slice(2);
 const SHOTS = process.env.SHOTS || 'smoke-shots', LANG = process.env.LANG_APP || 'fr', W = Number(process.env.W || 390), H = Number(process.env.H || 664);
