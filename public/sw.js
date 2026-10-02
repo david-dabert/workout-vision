@@ -49,7 +49,9 @@ self.addEventListener('fetch', (event) => {
         const bytes = await response.clone().arrayBuffer();
         const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
         if (MODEL_CACHE !== `wv-model-${hash}`) throw new Error('Pose model integrity mismatch');
-        await cache.put(request, response.clone());
+        // Keeping the model offline is a convenience: when the phone refuses to store it (little space
+        // left, private browsing), the verified download is still handed to the analysis.
+        try { await cache.put(request, response.clone()); } catch { /* not kept offline */ }
       }
       return response;
     }));

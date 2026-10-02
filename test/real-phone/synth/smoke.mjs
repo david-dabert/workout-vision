@@ -59,7 +59,16 @@ try {
   await page.waitForTimeout(800); await shot('result-below');
   // CORRECT=+1 or -1: the visitor says No and saves the count corrected by that much.
   const delta = Number(process.env.CORRECT || 0);
-  if (delta) {
+  // TYPE=34: the visitor says No, taps the numeral and types the count instead.
+  if (process.env.TYPE) {
+    await page.locator('[data-testid="ask-card"] .btn-ghost').click();
+    await page.locator('[data-testid="fix-card"]').waitFor({ timeout: 10000 });
+    await shot('fix');
+    await page.locator('[data-testid="fix-card"] .stepper-in').click();
+    await page.keyboard.type(process.env.TYPE);
+    await page.waitForTimeout(500); await shot('fix-typed');
+    await page.locator('[data-testid="fix-card"] .btn-primary').click();
+  } else if (delta) {
     await page.locator('[data-testid="ask-card"] .btn-ghost').click();
     await page.locator('[data-testid="fix-card"]').waitFor({ timeout: 10000 });
     await shot('fix');

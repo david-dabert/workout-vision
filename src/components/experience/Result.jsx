@@ -150,6 +150,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
   const [trueN, setTrueN] = useState(result.count);
+  // The typed number while the numeral is being edited ('' once cleared); null when not typing.
+  const [typed, setTyped] = useState(null);
   const [shown, setShown] = useState(reduced ? result.count : 0);
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
@@ -447,12 +449,22 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <div className="glass appear" data-testid="fix-card">
           <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
           <div className="stepper">
-            <button className="round press" disabled={trueN <= 0} onClick={() => setTrueN(n => Math.max(0, n - 1))} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
-            {/* aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
-            <span className="stepper-n" aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
-            <button className="round press" disabled={trueN >= 99} onClick={() => setTrueN(n => Math.min(99, n + 1))} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
+            <button className="round press" disabled={trueN <= 0} onClick={() => { setTyped(null); setTrueN(n => Math.max(0, n - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
+            {/* The numeral is also a field: a tap opens the number pad and typing replaces the number, so 7 to 34
+                takes three taps, not 27 (design review of 1 October). The figures stay drawn by Digits underneath.
+                aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
+            <span className={`stepper-n${typed !== null ? ' is-typing' : ''}`}>
+              <span aria-live="polite" aria-atomic="true"><Digits text={typed === '' ? '–' : trueN} /></span>
+              <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done"
+                aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? String(trueN)}
+                onFocus={e => { setTyped(String(trueN)); e.target.select(); }}
+                onBlur={() => setTyped(null)}
+                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(-2); setTyped(d); if (d !== '') setTrueN(Number(d)); }}
+                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
+            </span>
+            <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
-          <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
+          <button type="button" className="btn-primary press" disabled={typed === ''} onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
             <span>{fr ? 'Enregistrer' : 'Save'}</span>
           </button>
         </div>
@@ -468,16 +480,15 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
               challenge, since the next thing done on the bench is to rest (design pass, 29 September).
               The result screen carries no opener: its numeral and account already say it; the report does. */}
           <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
-          <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN, savedId.current)}>
+          {/* After saving, the next things done in a gym are resting and the next set: the next set leads, the
+              report follows, the challenge stays as a quiet line (design review of 1 October). */}
+          <button className="btn-line press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
+          <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
           </button>
-          <button className="btn-ghost press" onClick={challenge}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
-            <span>{fr ? 'Défier un ami' : 'Challenge a friend'}</span>
-          </button>
+          <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
-          <button className="text-btn press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
           {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>

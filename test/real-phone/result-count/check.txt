@@ -62,7 +62,15 @@ pass  fr replay, saved 8: both counts stated ("L’app a détecté 7 répétitio
 pass  fr replay, saved 8: past the marks, the hint names marks ("Touchez un repère sur la ligne pour le revoir.")
 pass  fr replay, saved 8: the experimental label stands under the replay's measures
 pass  fr replay, saved 8: the chip counts the 7 detected marks, none invented
+pass  en: the correction numeral opens a number pad and is named
+pass  en: a cleared number cannot be saved
+pass  en: typing 34 draws 34
+pass  en: typed correction saved as 34
+pass  fr: the correction numeral opens a number pad and is named
+pass  fr: a cleared number cannot be saved
+pass  fr: typing 34 draws 34
+pass  fr: typed correction saved as 34
 pass  en, beginner with motion: the label is there before the question (before the question, 1 label)
 pass  fr, beginner with motion: the label is there before the question (before the question, 1 label)
 
-66 pass, 0 fail
+74 pass, 0 fail
