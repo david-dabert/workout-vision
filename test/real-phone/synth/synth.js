@@ -36,7 +36,7 @@ const body = gltf.scene;
 scene.add(body);
 const bone = n => body.getObjectByName(`mixamorig${n}`) || body.getObjectByName(`mixamorig:${n}`);
 const B = Object.fromEntries(['Hips', 'Spine', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightArm', 'RightForeArm', 'RightHand',
-  'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'RightUpLeg', 'RightLeg', 'RightFoot', 'LeftShoulder', 'RightShoulder'].map(n => [n, bone(n)]));
+  'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'RightUpLeg', 'RightLeg', 'RightFoot', 'LeftToeBase', 'RightToeBase', 'LeftShoulder', 'RightShoulder'].map(n => [n, bone(n)]));
 const rest = new Map();
 body.traverse(o => { if (o.isBone) rest.set(o, { q: o.quaternion.clone(), p: o.position.clone() }); });
 const resetPose = () => { for (const [o, r] of rest) { o.quaternion.copy(r.q); o.position.copy(r.p); } body.updateMatrixWorld(true); };
@@ -76,6 +76,8 @@ const POSE = {
   bicep_curl(side, u, peak) { const s = S[side], f = (8 + (peak - 8) * u) * D; aim(B[`${cap(side)}Arm`], B[`${cap(side)}ForeArm`], v(s * 0.12, -1, 0.06)); aim(B[`${cap(side)}ForeArm`], B[`${cap(side)}Hand`], v(s * 0.12, -Math.cos(f), Math.sin(f))); },
   // Pressing from the shoulders: the upper arm rises from 85° to the peak abduction, the forearm stays vertical.
   overhead_press(side, u, peak) { const s = S[side], a = (85 + (peak - 85) * (1 - u)) * D; aim(B[`${cap(side)}Arm`], B[`${cap(side)}ForeArm`], v(s * Math.sin(a), -Math.cos(a), 0.05)); aim(B[`${cap(side)}ForeArm`], B[`${cap(side)}Hand`], v(s * 0.04, 1, 0.02)); },
+  // A calf raise: the foot turns down about the ankle by up to the peak, toes kept on the floor (below).
+  calf_raise(side, u, peak) { const f = peak * u * D; aim(B[`${cap(side)}Foot`], B[`${cap(side)}ToeBase`], v(0, -0.45 * Math.cos(f) - Math.sin(f), Math.cos(f) - 0.45 * Math.sin(f))); },
   squat(side, u, peak) { const s = S[side], k = peak * u * D; aim(B[`${cap(side)}UpLeg`], B[`${cap(side)}Leg`], v(s * 0.14, -Math.cos(k / 2), Math.sin(k / 2))); aim(B[`${cap(side)}Leg`], B[`${cap(side)}Foot`], v(s * 0.06, -Math.cos(k / 2), -Math.sin(k / 2))); },
 };
 const cap = s => s[0].toUpperCase() + s.slice(1);
@@ -115,6 +117,7 @@ const truthAngles = () => ({
   elbow: { left: ang(wp(B.LeftArm), wp(B.LeftForeArm), wp(B.LeftHand)), right: ang(wp(B.RightArm), wp(B.RightForeArm), wp(B.RightHand)) },
   shoulder: { left: ang(wp(B.LeftUpLeg), wp(B.LeftArm), wp(B.LeftForeArm)), right: ang(wp(B.RightUpLeg), wp(B.RightArm), wp(B.RightForeArm)) },
   knee: { left: ang(wp(B.LeftUpLeg), wp(B.LeftLeg), wp(B.LeftFoot)), right: ang(wp(B.RightUpLeg), wp(B.RightLeg), wp(B.RightFoot)) },
+  ankle: { left: ang(wp(B.LeftLeg), wp(B.LeftFoot), wp(B.LeftToeBase)), right: ang(wp(B.RightLeg), wp(B.RightFoot), wp(B.RightToeBase)) },
 });
 
 // Camera: chest height, facing the body from the view angle (0 = front, 90 = the person's left side).
@@ -137,6 +140,13 @@ for (let i = 0; i < n; i++) {
   // A squat lowers the hips so the feet stay on the floor.
   // The drop is set in world space and taken back through the Hips' parent, which in these models is scaled
   // and turned (review, 2 October: dividing by the body's scale left the feet 0.3 m off the floor).
+  if (P.exercise === 'calf_raise') {
+    body.updateMatrixWorld(true);
+    const low = Math.min(wp(B.LeftToeBase).y, wp(B.RightToeBase).y);
+    const hips = wp(B.Hips); hips.y -= low - (P.toeY ??= low);
+    B.Hips.position.copy(B.Hips.parent.worldToLocal(hips));
+    body.updateMatrixWorld(true);
+  }
   if (P.exercise === 'squat') {
     body.updateMatrixWorld(true);
     const low = Math.min(wp(B.LeftFoot).y, wp(B.RightFoot).y);
