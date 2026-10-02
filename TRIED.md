@@ -34,4 +34,5 @@ Written 2 October 2026, after two proposals in one hour repeated closed work.
 - **Countix** (Kinetics clips, human counts): build half 894 scored sets (two readings of 447 clips); held-out half unread, reserved for one final run. `test/real-phone/public/`, `scripts/public/`.
 - **Synthetic bodies** (Michelle, Soldier; 96 sets with exact truth). Bound what the pipeline can do; not people. `test/real-phone/synth/`.
 - **Unreachable from this environment**: Zenodo, Hugging Face, Dataverse, Kaggle, the InfiniteRep bucket (network policy).
+- **Contributions from the app** (2 October): each count is kept or corrected after the app showed its own (`labelKind: 'after-app'`, `src/lib/contribute.js`). Weaker truth than a blind count; never admitted to a scoreboard, an exam or a training set as ground truth (R1; audit FINDING-008). Usable to find failures to examine, with David relabelling blind.
 - **David's batches of 1 October**: held, not scored; labels and videos paired out of order. Five new videos fit their exercise and wait only for David's confirmation of their counts. `test/real-phone/held-01oct/`.

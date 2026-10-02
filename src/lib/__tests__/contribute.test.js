@@ -71,3 +71,15 @@ describe('the contribution choice is saved before it is shown (audit FINDING-016
     expect(persistChoice('yes')).toBe(false);
   }));
 });
+
+describe('a contribution says how its count was given (audit FINDING-008)', () => {
+  it('the count was kept after the app showed its own: it is marked so, never as a blind label', async () => {
+    const { contribution: make, isBlindLabel } = await import('../contribute');
+    const c = make({ result: { count: 7, metadata: {} }, lift: 'bicep_curl', kept: 8, setId: 's', appVersion: 'v', device: {} });
+    expect(c.labelKind).toBe('after-app');
+    expect(c.contributionVersion).toBe(2);
+    expect(isBlindLabel(c)).toBe(false);
+    expect(isBlindLabel({ labelKind: 'blind' })).toBe(true);
+    expect(isBlindLabel({})).toBe(false);
+  });
+});

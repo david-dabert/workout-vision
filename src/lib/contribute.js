@@ -8,7 +8,15 @@ import localforage from 'localforage';
 import { TARGET_FPS, MAX_LONG_SIDE } from './extractionConfig';
 
 export const CONTRIBUTION_KIND = 'workout-vision-contribution';
-export const CONTRIBUTION_VERSION = 1;
+// Version 2 (2 October 2026): every record says how its count was given (labelKind).
+export const CONTRIBUTION_VERSION = 2;
+/**
+ * How a contribution's count was given. 'after-app': the person kept or corrected the count after the app showed
+ * its own, so the count leans toward the app's answer and is weaker truth than a count made without seeing it
+ * (audit FINDING-008). Such a count never enters a scoreboard, an exam or a training set as ground truth (R1);
+ * only a record marked 'blind' could, and the app makes none.
+ */
+export const isBlindLabel = rec => rec?.labelKind === 'blind';
 const CHOICE_KEY = 'wv_contribute';
 const store = localforage.createInstance({ name: 'workoutVision', storeName: 'contributions' });
 
@@ -61,6 +69,7 @@ export function contribution({ result, lift, kept, setId, appVersion, device = d
     savedAt: now.toISOString(),
     lift,
     count: kept,
+    labelKind: 'after-app',
     appCount: result?.count ?? null,
     corrected: kept !== result?.count,
     arm: result?.arm ?? null,
