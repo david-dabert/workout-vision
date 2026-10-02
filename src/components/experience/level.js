@@ -46,13 +46,13 @@ export function levelView(level, { saved = 0 } = {}) {
 
 /**
  * The order of the result screen's blocks under its head. count: the numeral; bars: the marks and their
- * line; card: the question, the correction or the saved card; account: the account, the tip, the cheer and
+ * line; wave: the measured angle over the set, each rep over it (RepWave.jsx); card: the question, the correction or the saved card; account: the account, the tip, the cheer and
  * the notes; plain: the account and the tip alone; more: the cheer and the notes; speed: the concentric
  * speed change; table: the per-rep table. The question stays within the first screen for every level.
  */
 export function resultBlocks(level) {
   const { level: l } = levelView(level);
-  if (l === 'beginner') return ['plain', 'count', 'card', 'bars', 'more'];
-  if (l === 'expert') return ['count', 'bars', 'speed', 'card', 'strips', 'table', 'account'];
-  return ['count', 'bars', 'card', 'strips', 'account'];
+  if (l === 'beginner') return ['plain', 'count', 'card', 'bars', 'wave', 'more'];
+  if (l === 'expert') return ['count', 'bars', 'speed', 'card', 'wave', 'strips', 'table', 'account'];
+  return ['count', 'bars', 'card', 'wave', 'strips', 'account'];
 }

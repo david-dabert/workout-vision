@@ -5,6 +5,23 @@
 
 export const decimal = (x, fr) => (fr ? x.toFixed(1).replace('.', ',') : x.toFixed(1));
 
+// A partial rep (David, 2 October 2026: a machine chest press report printed a tempo of 0.1-6-0.1-1 and 343°/s):
+// a rep the video holds whole, but whose range is under half the set's median, or one of whose moving phases is
+// under 0.2 s. It stays counted, with its range; its tempo and speeds are not shown and it leaves the set's tempo
+// and time under tension. Status: experimental, UNSOURCED thresholds (a rep shorter than 0.5 s is already
+// implausible, core.ts MIN_REP_SEC; a half-range rep is not the movement the set is made of).
+export const PARTIAL_RANGE_RATIO = 0.5;
+export const MIN_PHASE_SEC = 0.2;
+export function partialIn(reps) {
+  const whole = (reps || []).filter(r => !r.clipped);
+  const sorted = whole.map(r => r.romDegrees).sort((a, b) => a - b), m = sorted.length >> 1;
+  const median = sorted.length >= 3 ? (sorted.length % 2 ? sorted[m] : (sorted[m - 1] + sorted[m]) / 2) : null;
+  return r => !r.clipped && ((median !== null && r.romDegrees < PARTIAL_RANGE_RATIO * median)
+    || !(r.concentricSec >= MIN_PHASE_SEC) || !(r.eccentricSec >= MIN_PHASE_SEC));
+}
+/** The reps whose times are shown: held whole by the video and not partial. */
+export const timedReps = reps => { const partial = partialIn(reps); return (reps || []).filter(r => !r.clipped && !partial(r)); };
+
 /**
  * Per-rep tempo: lowering, bottom pause, lifting, top pause.
  * Lowering = eccentric phase; lifting = concentric phase.
@@ -35,7 +52,8 @@ export function repTempo(r, nextStart, first) {
  */
 export function setTempo(reps, first = 'concentric') {
   const all = reps || [];
-  const whole = all.map((r, i) => ({ r, next: all[i + 1] })).filter(({ r }) => !r.clipped);
+  const partial = partialIn(all);
+  const whole = all.map((r, i) => ({ r, next: all[i + 1] })).filter(({ r }) => !r.clipped && !partial(r));
   if (!whole.length) return null;
   const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
   const conc = mean(whole.map(({ r }) => r.concentricSec)), ecc = mean(whole.map(({ r }) => r.eccentricSec));

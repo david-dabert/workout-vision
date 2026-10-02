@@ -3,6 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
+import { partialIn } from './tempo';
 import { poseAt, repAt, phaseAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
 import { canExport, exportSetVideo } from './video-export';
@@ -200,6 +201,8 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     if (!MEASURES_SHOWN) { head = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
+      : partialIn(reps)(r)
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
   } else {
     detail = reps.length

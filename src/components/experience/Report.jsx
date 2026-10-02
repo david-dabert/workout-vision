@@ -6,6 +6,7 @@ import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
 import { useCondensingTopbar } from './topbar';
 import './Report.css';
+import RepWave from './RepWave';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
 // and is warmed as soon as a report is likely, so the share happens within the tap.
@@ -21,7 +22,7 @@ export function warmReportPdf() {
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
-export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps, setId, sides = null }) {
+export default function Report({ lift, count, counted, arm, date, source, leaving, onBack, reps, setId, sides = null, wave = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach
@@ -58,7 +59,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: previous ?? null, sides, lift });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: previous ?? null, sides, lift, wave });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -170,12 +171,14 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
         {sheet.corrected && <p className="sh-line">{sheet.corrected}</p>}
         {sheet.arm && <p className="sh-line">{sheet.arm}</p>}
         {sheet.experimental && <p className="sh-line sh-exp" data-testid="sh-exp">{sheet.experimental}</p>}
+        {sheet.wave && <div className="sh-wave" data-testid="sh-wave"><RepWave angles={sheet.wave.a} timestamps={sheet.wave.t} reps={sheet.wave.reps} rest={sheet.wave.rest} first={sheet.wave.first} sel={-1} shown={sheet.wave.reps.length} fr={fr} jointWord={sheet.wave.jointWord} onSelect={() => {}} /></div>}
         {sheet.rows.length > 0 && <table className="sh-table">
           <thead><tr>{sheet.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
           <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
         </table>}
         {sheet.summary.map(line => <p key={line} className="sh-line">{line}</p>)}
         {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
+        {sheet.partialRepNote && <p className="sh-line sh-short">{sheet.partialRepNote}</p>}
         {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
         {sheet.foot && <p className="sh-foot">{sheet.foot}</p>}
       </article>

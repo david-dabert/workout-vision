@@ -285,6 +285,8 @@ export interface WorkoutRecord {
   corrected?: boolean;
   // Front-view left/right comparison measured when the set was saved (counting/symmetry.ts); experimental.
   sides?: { left: number; right: number; si: number; reps: number } | null;
+  /** The measured angle over the set, at most 200 samples (wave.js, compactWave). */
+  wave?: { t: number[]; a: (number | null)[] } | null;
 }
 
 export interface RepCounterDiagnostics {

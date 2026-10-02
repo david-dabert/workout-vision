@@ -77,3 +77,16 @@
 /* A message sits on the solid part of the bar, below its fade, never over the sheet. */
 .wv-experience .share-bar:has(.share-note:not(:empty)) { padding-top: 30px; }
 .wv-experience .share-bar .btn-primary.is-busy { opacity: 0.6; cursor: default; pointer-events: none; }
+/* The wave on paper (RepWave.jsx, wave.js): the measured angle as a rule-coloured hairline, each rep in the
+   count's colour, its return lighter, as the PDF draws it (report-pdf.js). */
+.wv-experience .sh-wave .wave { cursor: default; }
+.wv-experience .sh-wave .strip-head { margin-bottom: 6px; }
+.wv-experience .sh-wave .strip-label { color: var(--paper-ash); }
+.wv-experience .sh-wave .strip-key { color: var(--paper-ash); }
+.wv-experience .sh-wave svg { height: 64px; }
+.wv-experience .sh-wave .w-line { stroke: var(--paper-rule); }
+.wv-experience .sh-wave .w-out { stroke: #8A6630; }
+.wv-experience .sh-wave .w-back { stroke: #CDB68E; }
+.wv-experience .sh-wave .w-rep.part .w-out { stroke: var(--paper-ash); }
+.wv-experience .sh-wave .wave { align-items: stretch; }
+.wv-experience .sh-wave .strip-head { align-items: flex-start; text-align: left; }

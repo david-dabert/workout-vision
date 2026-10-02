@@ -8,6 +8,7 @@
 // out (no verdict: R8, EU MDR Rule 11). A tapped rep's values appear under the strips. Every value is
 // experimental (measures.js).
 import { decimal } from './report-sheet';
+import { partialIn } from './tempo';
 
 // The time a phase bar reaches full height; a longer phase is drawn full, with a flat cap. Source: chosen
 // from David's labelled sets, whose phases run about 0.4-1.9 s, so a usual rep fills a third of the strip
@@ -31,6 +32,8 @@ export const hasStrips = (reps, sides) => reps.some(r => !r.clipped) || (sides |
 
 export default function RepStrips({ reps, sel, shown, sides, fr, onPick, markName = null }) {
   const whole = reps.filter(r => !r.clipped);
+  // A partial rep (tempo.js) shows no phase bars, as a cut one.
+  const partial = partialIn(reps);
   const byAt = new Map((sides || []).map(s => [s.at, s]));
   const hasSides = (sides || []).length > 0;
   if (!hasStrips(reps, sides)) return null;
@@ -43,7 +46,7 @@ export default function RepStrips({ reps, sel, shown, sides, fr, onPick, markNam
       <p className="strip-head"><span className="strip-label">Tempo</span><span className="strip-key">{fr ? `↑${NB}concentrique · ↓${NB}excentrique` : `↑${NB}concentric · ↓${NB}eccentric`}</span></p>
       <div className="strip-cols mid" style={{ ...width, height: 2 * TEMPO_H + 2 }}>
         {reps.map((r, i) => <div key={r.index} className={cls(i)}>
-          {r.clipped
+          {r.clipped || partial(r)
             ? <b className="t-gap" />
             : <>
               <span className="t-half"><i className={`t-up${r.concentricSec > TEMPO_FULL_SEC ? ' capped' : ''}`} style={{ height: h(r.concentricSec || 0, TEMPO_H) }} /></span>
@@ -69,17 +72,18 @@ export default function RepStrips({ reps, sel, shown, sides, fr, onPick, markNam
       </div>
     </div>}
     {/* Always present, so a tap moves nothing below; not live: the detail line under the marks already announces the rep. */}
-    <p className="strip-caption" data-testid="strip-caption">{sel >= 0 && reps[sel] ? caption(reps[sel], byAt.get(sel), sel, fr, markName) : ''}</p>
+    <p className="strip-caption" data-testid="strip-caption">{sel >= 0 && reps[sel] ? caption(reps[sel], byAt.get(sel), sel, fr, markName, partial(reps[sel])) : ''}</p>
   </div>;
 }
 
 // The chosen rep's values, under the strips, where the tap was made: its phase times and its gap between sides.
 // After a corrected count the columns are the app's marks, not the saved reps: markName names them so
 // (replay-labels.js), with "filmé" agreeing with "Repère".
-function caption(r, s, i, fr, markName) {
+function caption(r, s, i, fr, markName, isPartial = false) {
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const parts = [markName ? markName(i) : `${fr ? 'Rép.' : 'Rep'}${NB}${i + 1}`];
   if (r.clipped) parts.push(fr ? (markName ? 'filmé en partie' : 'filmée en partie') : 'partly filmed');
+  else if (isPartial) parts.push(fr ? (markName ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed');
   else parts.push(`conc.${NB}${sec(r.concentricSec)}`, `${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`);
   if (s) {
     const raw = repGap(s), g = Math.round(raw);

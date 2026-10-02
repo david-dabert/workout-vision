@@ -16,6 +16,9 @@ import Digits from './Digits';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
+import { partialIn } from './tempo';
+import RepWave from './RepWave';
+import { compactWave } from './wave';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -219,6 +222,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else { detailHead = `${word} · `; detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
+      : partialIn(reps)(r)
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
@@ -315,6 +320,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         correctedResult: n !== count ? { reps: n } : null,
         // Rep details measured with step 3c's boundaries; older sets' details are not shown.
         repDetailsVersion: 2,
+        // The measured angle over the set, compact, for the report's wave (wave.js).
+        wave: compactWave(result.smoothedAngles, result.timestamps),
       });
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
@@ -449,6 +456,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     strips: measured && MEASURES_SHOWN && (hasStrips(reps, corrected ? null : sidesPerRep) || sidesText) && <div key="strips" className="res-strips">
       <RepStrips reps={reps} sel={sel} shown={shown} sides={corrected ? null : sidesPerRep} fr={fr} onPick={pick} markName={corrected ? i => markLabel({ index: i + 1, total: reps.length, fr, corrected }) : null} />
       {sidesLine}
+    </div>,
+    // The measured angle over the set, each rep over it (RepWave.jsx), for every level: what was measured, drawn.
+    wave: MEASURES_SHOWN && count > 0 && result.smoothedAngles?.length > 1 && <div key="wave" className="res-wave">
+      <RepWave angles={result.smoothedAngles} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
     </div>,
     card: <div key="card">
       {step === 'ask' && asked && (
