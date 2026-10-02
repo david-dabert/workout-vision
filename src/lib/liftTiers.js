@@ -17,7 +17,7 @@ export const TIERS = {
 
 export const tierLabel = (tier, fr) => tier === 'beta'
   ? (fr ? 'Bêta' : 'Beta')
-  : (fr ? 'Expérimental : nous apprenons encore cet exercice' : 'Experimental: we are still learning this exercise');
+  : (fr ? 'Expérimental\u00A0: nous\u00A0apprenons encore cet exercice' : 'Experimental: we are still learning this exercise');
 
 /** The short form, for tags where the full sentence does not fit. */
 export const tierTag = (tier, fr) => tier === 'beta' ? (fr ? 'Bêta' : 'Beta') : (fr ? 'Expérimental' : 'Experimental');

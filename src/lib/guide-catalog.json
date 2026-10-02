@@ -2599,6 +2599,45 @@
     ]
   },
   {
+    "key": "barbell_curl",
+    "name": "Standing Barbell Curl",
+    "slug": "barbell-curl",
+    "drawing": "ez-bar-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ],
+    "fr": "Curl barre debout",
+    "aliases": [
+      "barbell curl",
+      "standing barbell curl",
+      "curl barre",
+      "curl barre debout",
+      "curl barre droite"
+    ]
+  },
+  {
+    "key": "lying_barbell_curl",
+    "name": "Lying Barbell Curl",
+    "slug": "lying-barbell-curl",
+    "drawing": "ez-bar-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ],
+    "fr": "Curl barre allongé",
+    "aliases": [
+      "lying barbell curl",
+      "lying curl",
+      "curl barre allongé",
+      "curl allongé"
+    ]
+  },
+  {
     "key": "spider_curl",
     "name": "Spider Curl",
     "slug": "spider-curl",

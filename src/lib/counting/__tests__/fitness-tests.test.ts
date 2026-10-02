@@ -143,3 +143,14 @@ describe('a lost pose breaks the open rise', () => {
     expect(r.test?.open).toBe(false);
   });
 });
+
+describe('a test filmed from standing (David, 2 October 2026: 9 stands, the app said 10)', () => {
+  it('the first sit-down is not a stand: 9 stands from standing score 9', () => {
+    // Standing 1 s, sit down, then 9 stands (rise 0.8 s, sit 0.8 s, 0.8 s seated), seated to the end.
+    const path = [{ hold: 165, sec: 1 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }, ...Array.from({ length: 9 }, () => [{ to: 165, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { hold: 90, sec: 2 }];
+    const a = sample(path, 165, SPS), wl = a.map(x => jointFrame('knee', { left: x, right: x })), ts = timestamps(a.length, SPS);
+    const r: { count: number; reps: unknown[] } = summarizeCount(wl, ts, 'chair_stand_test');
+    expect(r.count).toBe(9);
+    expect(r.reps.length).toBe(9);
+  });
+});

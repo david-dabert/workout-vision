@@ -296,3 +296,6 @@ html, body { background: #080706; color-scheme: dark; }
 /* A row reached by the keyboard or VoiceOver is scrolled clear of the sticky bar, not under it
    (review, 30 September). The bar is 44 px of buttons plus its padding and the safe area. */
 .wv-experience:has(.topbar.is-sticky) { scroll-padding-top: calc(76px + env(safe-area-inset-top, 0px)); }
+/* At 320 px the spaced name came within 4 px of the "Version de test" pill (2 October 2026): it tightens, the
+   pill keeps its size. */
+@media (max-width: 359px) { .wv-experience .topbar .brand-sm { letter-spacing: 0.3em; } }

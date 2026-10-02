@@ -78,8 +78,12 @@ export function openRise(smoothed, timestamps, low, high, rest, afterSec, minRan
  * opening at the first rise, the open rise (openRise) among them. `complete` is false when the video ends
  * before the window does; with no rise at all, the window is measured from the start of the video.
  */
-export function scoreTest(reps, videoEndSec, windowSec, openRep = null) {
-  const all = openRep ? [...reps, openRep] : reps;
+export function scoreTest(reps, videoEndSec, windowSec, openRep = null, videoStartSec = null) {
+  // The protocol starts seated (arm straight for the curl). A first rep the video starts inside is a person
+  // filmed from standing sitting down, not a stand (David, 2 October 2026: 9 stands, the app said 10): it is
+  // not scored, and the window opens at the first rise from rest.
+  const fromRest = Number.isFinite(videoStartSec) && reps.length && reps[0].clipped && reps[0].startTime <= videoStartSec + 0.05 ? reps.slice(1) : reps;
+  const all = openRep ? [...fromRest, openRep] : fromRest;
   if (!all.length) return { score: 0, reps: [], t0: null, open: false, complete: Number.isFinite(videoEndSec) && videoEndSec >= windowSec, beyond: 0 };
   const t0 = all[0].startTime, end = t0 + windowSec;
   const halfway = r => (Number.isFinite(r.halfTime) ? r.halfTime : Number.isFinite(r.concentricSec) ? r.startTime + r.concentricSec / 2 : (r.startTime + r.endTime) / 2);

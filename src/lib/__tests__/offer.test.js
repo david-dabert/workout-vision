@@ -5,13 +5,13 @@ import catalogue from '../guide-catalog.json';
 import families from '../counting/guide-families.json';
 import { liftDefinition } from '../counting/core';
 
-// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 181; Beta marks the
+// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 (181, and since 2 October the standing and lying barbell curls); Beta marks the
 // exercises with evidence and Experimental all the others, so that the label stays true.
 describe('the exercises the app offers', () => {
   // David's decision of 29 September: the walking lunge is not offered, since the lifter walks out of a fixed frame.
-  it('are the countable exercises of the guide but the walking lunge, 181, the lifts of LIFT TIERS among them', () => {
+  it('are the countable exercises of the guide but the walking lunge, 183, the lifts of LIFT TIERS among them', () => {
     const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
-    expect(countable).toHaveLength(182);
+    expect(countable).toHaveLength(184);
     // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.
     expect([...OFFERED].sort()).toEqual([...countable.filter(k => k !== 'walking_lunge'), 'chair_stand_test', 'arm_curl_test'].sort());
     expect(tierOf('chair_stand_test')).toBe('experimental');

@@ -61,7 +61,7 @@ export async function assessInjuryRisk() {
         value: acwr.ratio,
         detail: { acuteLoad: acwr.acute, chronicLoad: acwr.chronic },
         en: `Training load spiked to ${acwr.ratio.toFixed(1)}x your average. High injury risk zone (>1.5). Consider reducing volume this week.`,
-        fr: `Charge d'entraînement en pic : ${acwr.ratio.toFixed(1)}x votre moyenne. Zone de risque élevé (>1.5). Réduisez le volume cette semaine.`,
+        fr: `Charge d'entraînement en pic\u00A0: ${acwr.ratio.toFixed(1)}x votre moyenne. Zone de risque élevé (>1.5). Réduisez le volume cette semaine.`,
       });
     } else if (acwr.ratio > 1.3) {
       flags.push({
@@ -78,7 +78,7 @@ export async function assessInjuryRisk() {
         risk: RISK.LOW,
         value: acwr.ratio,
         en: `Training volume dropped to ${acwr.ratio.toFixed(1)}x average. Risk of detraining if sustained.`,
-        fr: `Volume en baisse : ${acwr.ratio.toFixed(1)}x la moyenne. Risque de désentraînement si prolongé.`,
+        fr: `Volume en baisse\u00A0: ${acwr.ratio.toFixed(1)}x la moyenne. Risque de désentraînement si prolongé.`,
       });
     }
   }

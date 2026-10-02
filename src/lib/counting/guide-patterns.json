@@ -116,6 +116,8 @@
  "incline_dumbbell_curl": "elbow/high/concentric",
  "concentration_curl": "elbow/high/concentric",
  "ez_bar_curl": "elbow/high/concentric",
+ "barbell_curl": "elbow/high/concentric",
+ "lying_barbell_curl": "elbow/high/concentric",
  "spider_curl": "elbow/high/concentric",
  "rope_hammer_curl": "elbow/high/concentric",
  "drag_curl": "elbow/high/concentric",

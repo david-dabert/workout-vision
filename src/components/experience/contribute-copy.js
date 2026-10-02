@@ -6,7 +6,7 @@ export const CONTRIBUTE = {
   fr: {
     title: 'Aider à améliorer le comptage',
     what: 'À chaque série, l’app garde sur ce téléphone son comptage, le vôtre, la position de vos articulations au fil de la série, jamais la vidéo, sa durée et le type de téléphone. Vous les envoyez quand vous voulez.',
-    ask: 'Aider à améliorer le comptage ?',
+    ask: 'Aider à améliorer le comptage\u00A0?',
     yes: 'Oui, aider',
     no: 'Non merci',
     thanks: 'Merci. Vous pourrez arrêter à tout moment dans vos séries.',

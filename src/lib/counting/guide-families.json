@@ -939,6 +939,20 @@
     "view": "side",
     "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
   },
+  "barbell_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+  },
+  "lying_barbell_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance, the body lying on a bench; the elbow angle is read the same way."
+  },
   "spider_curl": {
     "joint": "elbow",
     "rest": "high",

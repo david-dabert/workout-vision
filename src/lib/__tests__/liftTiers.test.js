@@ -29,7 +29,7 @@ describe('lift tiers', () => {
     expect(tierLabel('beta', false)).toBe('Beta');
     expect(tierLabel('beta', true)).toBe('Bêta');
     expect(tierLabel('experimental', false)).toBe('Experimental: we are still learning this exercise');
-    expect(tierLabel('experimental', true)).toBe('Expérimental : nous apprenons encore cet exercice');
+    expect(tierLabel('experimental', true)).toBe('Expérimental\u00A0: nous\u00A0apprenons encore cet exercice');
   });
 });
 

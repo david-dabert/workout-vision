@@ -138,7 +138,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
-        <p className="foot">{fr ? 'Chaque comptage reste à confirmer : ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are in Beta or Experimental.'}</p>
+        <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are in Beta or Experimental.'}</p>
       </div>
     </section>
   </div>;
