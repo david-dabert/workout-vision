@@ -184,6 +184,24 @@ try {
     check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app : 7. Corrigé : 34.' : 'Counted by the app: 7. Corrected: 34.'), `${lang}: typed correction saved as 34`);
     await page.context().close();
   }
+  // A saved set is worth keeping: saving asks the browser to keep the app's storage (keep-sets.js).
+  {
+    const page = await (await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' })).newPage();
+    await page.addInitScript(() => {
+      localStorage.setItem('wv_lang', 'fr'); localStorage.setItem('wv_level', 'intermediate');
+      window.__persistAsked = 0;
+      const st = navigator.storage;
+      st.persisted = async () => false;
+      st.persist = async () => { window.__persistAsked++; return true; };
+    });
+    await page.goto(URL);
+    await page.locator('[data-testid="ask-card"]').waitFor({ timeout: 30000 });
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    await page.locator('[data-testid="saved-card"]').waitFor({ timeout: 10000 });
+    const asked = await page.waitForFunction(() => window.__persistAsked > 0, null, { timeout: 5000 }).then(() => true, () => false);
+    check(asked, 'saving a set asks the browser to keep the app\'s storage');
+    await page.context().close();
+  }
   // A beginner without Reduce Motion: the account and the marks show during the count-up, before the
   // question; the experimental label must already be there (review of 1 October).
   for (const lang of ['en', 'fr']) {
