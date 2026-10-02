@@ -13,9 +13,9 @@
  *
  * Synthetic sets with an exact, built-in asymmetry (test/real-phone/synth/synth.txt, 2 October 2026: two rigged
  * bodies, four exercises, four camera angles) showed two limits, which the rules below enforce:
- * - only the lateral raise reads the gap within about 9 points when filmed square on; curls, presses and
- *   squats move the limbs toward the camera, whose depth a single camera reads poorly, and were off by 20 to
- *   40 points even from the front;
+ * - only the lateral raise reads the gap within about 9 points when filmed square on; curls and presses
+ *   move the limbs toward the camera, whose depth a single camera reads poorly, and were off by up to 55 and
+ *   28 points even square on;
  * - the body's turn read from the landmarks depends on the body: one body turned 30° read 10° at the
  *   shoulders, so the old 20° gate measured sets filmed at 30° and 60°, with errors of 25 to 40 points.
  *
@@ -27,8 +27,11 @@ const L_SHOULDER = 11, R_SHOULDER = 12, L_HIP = 23, R_HIP = 24;
 
 // Largest median angle, in degrees, between the shoulder line (and the hip line) and the image plane for the
 // set to count as filmed square on. Source: synthetic sets (synth.txt): filmed square on, both bodies read at
-// most 5° at the shoulders and 3° at the hips, as do David's front sets (4° and 5°); turned 30°, one body read
-// 9-12° at the shoulders and 17-20° at the hips. Status: experimental.
+// most 5° at the shoulders and 3° at the hips, and David's two front lateral raises 4-5°; the nearest bad case,
+// one body filmed at 60°, read 11.7° at the shoulders and 11-13° at the hips, so the margin is 3-4°. Some
+// real sets filmed from the front read above 8° (David's overhead press 10, 8.9°; a third of the Countix front
+// raises) and are refused: the gate errs toward refusing. Angles between 0° and 30° were not rendered.
+// Status: experimental.
 export const FRONT_SHOULDER_DEG = 8;
 export const FRONT_HIP_DEG = 8;
 // Share of a rep's samples in which each side's angle must be read for that rep to be compared.
@@ -38,13 +41,21 @@ export const SIDES_SEEN = 0.8;
 // Status: experimental.
 export const MIN_COMPARED_REPS = 3;
 // How far the app's gap lay from the true gap on the synthetic lateral raises filmed square on (synth.txt,
-// 2 October 2026: 6 sets, two bodies, true gaps -12 % to +21 %): at most 9 points. The screen states it beside
-// every gap. Status: experimental (synthetic bodies, not people).
+// 2 October 2026: 6 sets, two bodies, true gaps -12 % to +21 %): at most 8.9 points per set, and 13.7 points
+// per rep (4 of 42 reps beyond 9). Equal sides read -4.5 to -4.9 %: a bias toward the left on these bodies.
+// The screen states both bounds as observations, not as a guarantee. Status: experimental (synthetic bodies,
+// six sets; not people).
+export const GAP_SYNTH_SETS = 6;
 export const GAP_ERROR_POINTS = 9;
+export const REP_GAP_ERROR_POINTS = 14;
+// The rule a stored comparison was measured under: sets saved before 2 October 2026 compared every bilateral
+// lift with a 20°/25° gate and carry no version; their comparison is not shown again (sides-line.js).
+export const SIDES_VERSION = 2;
 // Exercises compared: those whose two sides move together in the plane the camera faces, and whose gap the
-// synthetic sets read within GAP_ERROR_POINTS. Only the lateral raise qualifies so far; curls, presses and
-// squats were off by 20 to 40 points (synth.txt). An exercise joins only once a synthetic run shows it reads
-// as well. Status: experimental.
+// synthetic sets read within GAP_ERROR_POINTS. Only the lateral raise qualifies so far. Square on, curls were
+// off by up to 55 points and presses by 11 to 28 (synth.txt); squats wait for a rerun, their synthetic render
+// having lifted the feet off the floor. An exercise joins only once a synthetic run shows it reads as well.
+// Status: experimental.
 export const SIDES_LIFTS = new Set(['lateral_raise']);
 
 const yawDeg = (a: { x: number; z: number }, b: { x: number; z: number }) =>

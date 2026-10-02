@@ -3,8 +3,6 @@ Per set: each side's median range over the counted reps, SI = (R - L) / mean(R, 
 
 Countix, both halves: 890 admitted clips; measured 0; not measured: not-compared-lift 890.
 None is compared: since 2 October only lateral raises filmed square on are, and Countix holds none (synth.txt).
-These clips carry no measured asymmetry: "flagged" is the share of lifters not known to be asymmetric whose gap
-passes the threshold. It is not a false-alarm rate: some may be asymmetric, and with 0 clips its 95 % interval is about +/-98 points.
 
 David's labelled sets:
   sets-29sep/bench_press_7_side_24cc4f0b.json.gz           filmed side  shoulders 82 deg hips 79 deg  not-compared-lift

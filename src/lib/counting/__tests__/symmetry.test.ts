@@ -4,14 +4,16 @@ import { compareSides, facing } from '../symmetry';
 
 // A synthetic lifter doing lateral raises: each arm rises in the frontal plane from 15° to its own peak,
 // 5 reps at 30 fps. side: the body turned a quarter (shoulder line along depth); back: seen from behind.
-function raises({ leftPeak = 90, rightPeak = 90, side = false, back = false, reps = 5, clipAt = -1 } = {}) {
+function raises({ leftPeak = 90, rightPeak = 90, side = false, back = false, reps = 5, turn = 0 } = {}) {
   const fps = 30, per = 2 * fps, frames: any[] = [], ts: number[] = [];
   for (let i = 0; i < reps * per + fps; i++) {
     const phase = i < fps / 2 || i >= reps * per + fps / 2 ? 0 : (1 - Math.cos((2 * Math.PI * (i - fps / 2)) / per)) / 2;
     const lm = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 1 }));
     const sx = (s: number) => (back ? -s : s);
     // A point s across the body (person's left positive) and y down: across x when square on, along z when turned.
-    const at = (s: number, y: number) => (side ? { x: 0, y, z: s, visibility: 1 } : { x: sx(s), y, z: 0, visibility: 1 });
+    // turn: the body rotated by that many degrees about the vertical.
+    const c = Math.cos((turn * Math.PI) / 180), sn = Math.sin((turn * Math.PI) / 180);
+    const at = (s: number, y: number) => (side ? { x: 0, y, z: s, visibility: 1 } : { x: sx(s) * c, y, z: s * sn, visibility: 1 });
     lm[11] = at(0.2, -0.5); lm[12] = at(-0.2, -0.5); lm[23] = at(0.15, 0); lm[24] = at(-0.15, 0);
     for (const [s, peak, e, w] of [[1, leftPeak, 13, 15], [-1, rightPeak, 14, 16]] as const) {
       const a = ((15 + (peak - 15) * phase) * Math.PI) / 180;
@@ -44,6 +46,10 @@ describe('front-view left/right comparison', () => {
   it('reads equal sides as near zero', () => {
     const r = run({});
     expect(r.status === 'measured' && Math.abs(r.comparison.si)).toBeLessThan(2);
+  });
+  it('refuses a body turned 15° (the 8° gate; a 20° gate would let it in)', () => {
+    expect(run({ turn: 15 }).status).toBe('not-front');
+    expect(run({ turn: 5 }).status).toBe('measured');
   });
   it('refuses a set filmed from the side or from behind', () => {
     expect(run({ side: true }).status).toBe('not-front');

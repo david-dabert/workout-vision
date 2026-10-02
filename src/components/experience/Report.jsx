@@ -58,7 +58,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: previous ?? null, sides });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, first, previousSet: previous ?? null, sides, lift });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 

@@ -127,7 +127,15 @@ for (let i = 0; i < n; i++) {
   const { u, j } = progress(time);
   for (const side of ['left', 'right']) POSE[P.exercise](side, u, (side === 'left' ? P.peakL : P.peakR) * j);
   // A squat lowers the hips so the feet stay on the floor.
-  if (P.exercise === 'squat') { body.updateMatrixWorld(true); const low = Math.min(wp(B.LeftFoot).y, wp(B.RightFoot).y); B.Hips.position.y -= (low - (P.footY ??= low)) / body.scale.y; body.updateMatrixWorld(true); }
+  // The drop is set in world space and taken back through the Hips' parent, which in these models is scaled
+  // and turned (review, 2 October: dividing by the body's scale left the feet 0.3 m off the floor).
+  if (P.exercise === 'squat') {
+    body.updateMatrixWorld(true);
+    const low = Math.min(wp(B.LeftFoot).y, wp(B.RightFoot).y);
+    const hips = wp(B.Hips); hips.y -= low - (P.footY ??= low);
+    B.Hips.position.copy(B.Hips.parent.worldToLocal(hips));
+    body.updateMatrixWorld(true);
+  }
   renderer.render(scene, camera);
   fctx.drawImage(renderer.domElement, 0, 0);
   if (P.video) { jpegs.push(flat.toDataURL('image/jpeg', 0.9)); truth.push(truthAngles()); ts.push(time); continue; }

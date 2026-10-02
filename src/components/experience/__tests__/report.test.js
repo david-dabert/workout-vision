@@ -307,11 +307,12 @@ describe('rep details', () => {
 
 describe('left/right line (front-view sets)', () => {
   it('lists both ranges and the noise note in the summary, only when measured and measures are shown', () => {
-    const sides = { left: 92, right: 74, si: -17, reps: 10 };
-    const s = reportSheet({ ...base, reps, sides });
+    const sides = { left: 92, right: 74, si: -17, reps: 10, v: 2 };
+    const s = reportSheet({ ...base, reps, sides, lift: 'lateral_raise' });
     expect(s.summary).toContain('Amplitude gauche 92° · droite 74° · écart 17 %');
     expect(s.summary.some(l => l.startsWith('Série filmée bien de face'))).toBe(true);
     expect(reportSheet({ ...base, reps }).summary.some(l => l.includes('gauche'))).toBe(false);
-    expect(reportSheet({ ...base, reps, sides, measures: false }).summary.some(l => l.includes('gauche'))).toBe(false);
+    expect(reportSheet({ ...base, reps, sides, lift: 'overhead_press' }).summary.some(l => l.includes('gauche'))).toBe(false);
+    expect(reportSheet({ ...base, reps, sides, lift: 'lateral_raise', measures: false }).summary.some(l => l.includes('gauche'))).toBe(false);
   });
 });

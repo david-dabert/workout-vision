@@ -197,7 +197,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const sides = sidesRecord(compared);
   const sidesPerRep = compared?.status === 'measured' ? compared.comparison.perRep : null;
   const corrected = step === 'saved' && isCorrected(trueN, count);
-  const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr) : null;
+  const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr, lift) : null;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
   let detail = '', detailHead = '';
