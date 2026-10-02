@@ -53,8 +53,8 @@ export const REP_GAP_ERROR_POINTS = 14;
 export const SIDES_VERSION = 2;
 // Exercises compared: those whose two sides move together in the plane the camera faces, and whose gap the
 // synthetic sets read within GAP_ERROR_POINTS. Only the lateral raise qualifies so far. Square on, curls were
-// off by up to 55 points and presses by 11 to 28 (synth.txt); squats wait for a rerun, their synthetic render
-// having lifted the feet off the floor. An exercise joins only once a synthetic run shows it reads as well.
+// off by up to 55 points and presses by 11 to 28 (synth.txt); squats filmed square on read the knee's range
+// 50-63° short, and one set counted 0, so their sides are not compared either. An exercise joins only once a synthetic run shows it reads as well.
 // Status: experimental.
 export const SIDES_LIFTS = new Set(['lateral_raise']);
 

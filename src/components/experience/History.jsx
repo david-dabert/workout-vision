@@ -123,7 +123,7 @@ export default function History({ onClose }) {
             const seconds = Math.round(w.duration || 0);
             return <li key={w.id} className="hist-item">
               <button ref={el => { rowRefs.current[w.id] = el; }} className="hist-btn press" aria-expanded={shown} onClick={() => toggle(w.id)}>
-                <span className="hist-n" aria-hidden="true">{w.reps}</span>
+                <span className={`hist-n${counted !== w.reps ? ' is-corrected' : ''}`} aria-hidden="true">{w.reps}</span>
                 <span className="hist-txt">
                   <span className="hist-name">{liftName(w)}</span>
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds} s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>

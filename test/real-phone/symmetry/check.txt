@@ -74,20 +74,28 @@ pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: strips under the question
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.3 s · ecc. 0.7 s
+pass  fr beginner 320px: replay centred where there is room (38.5 px off), test mark on one line (29 px), no overlap
 pass  fr beginner 320px: line 1, strips 0
 pass  fr beginner 320px: nothing wider than the screen
+pass  fr intermediate 320px: replay centred where there is room (38.5 px off), test mark on one line (29 px), no overlap
 pass  fr intermediate 320px: line 1, strips 1
 pass  fr intermediate 320px: nothing wider than the screen
+pass  fr beginner 390px: replay centred where there is room (11.9 px off), test mark on one line (29 px), no overlap
 pass  fr beginner 390px: line 1, strips 0
 pass  fr beginner 390px: nothing wider than the screen
+pass  fr intermediate 390px: replay centred where there is room (11.9 px off), test mark on one line (29 px), no overlap
 pass  fr intermediate 390px: line 1, strips 1
 pass  fr intermediate 390px: nothing wider than the screen
+pass  en beginner 320px: replay centred where there is room (25.5 px off), test mark on one line (29 px), no overlap
 pass  en beginner 320px: line 1, strips 0
 pass  en beginner 320px: nothing wider than the screen
+pass  en intermediate 320px: replay centred where there is room (25.5 px off), test mark on one line (29 px), no overlap
 pass  en intermediate 320px: line 1, strips 1
 pass  en intermediate 320px: nothing wider than the screen
+pass  en beginner 390px: replay centred where there is room (0.0 px off), test mark on one line (29 px), no overlap
 pass  en beginner 390px: line 1, strips 0
 pass  en beginner 390px: nothing wider than the screen
+pass  en intermediate 390px: replay centred where there is room (0.0 px off), test mark on one line (29 px), no overlap
 pass  en intermediate 390px: line 1, strips 1
 pass  en intermediate 390px: nothing wider than the screen
 all passed

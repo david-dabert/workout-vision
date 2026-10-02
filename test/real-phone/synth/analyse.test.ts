@@ -61,6 +61,13 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
   for (const l of Object.keys(JOINT)) summary(l, rows.filter(r => r.lift === l));
   for (const v of [0, 30, 60, 90]) summary(`view ${v} deg`, rows.filter(r => r.view === v));
   for (const m of ['michelle', 'soldier']) summary(m, rows.filter(r => r.model === m));
+  // Each lift at the view its filming guide asks for (lift-poses.json: lateral raise and press from the
+  // front, curl and squat from the side): the fair test of the count.
+  const REC: Record<string, number> = { lateral_raise: 0, overhead_press: 0, bicep_curl: 90, squat: 90 };
+  out.push('');
+  out.push('At the view the filming guide asks for:');
+  for (const l of Object.keys(JOINT)) summary(`${l} (${REC[l] ? 'side' : 'front'})`, rows.filter(r => r.lift === l && r.view === REC[l]));
+  summary('all, guided view', rows.filter(r => r.view === REC[r.lift]));
   out.push('');
   out.push('Left/right comparison (symmetry.ts): which views the gate measures, and the gap error where it does.');
   for (const v of [0, 30, 60, 90]) {

@@ -272,7 +272,12 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       const here = presence(rootRef.current, now, memo);
       if (coveredRef.current || here <= 0) return;
       mapPose(src.p, src.vb, { x: W * 0.04, y: H * 0.04, w: W * 0.92, h: H * 0.66 }, out);
-      body.draw(ctx, out, { alpha: 0.2 * here * (stepRef.current === 'ask' ? 1 : 0.3), time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
+      // The ghost belongs to the count: it fades as the count scrolls away, so it never sits behind the
+      // charts and words below (design review, 2 October).
+      const num = rootRef.current?.querySelector('.res-count');
+      const seen = num ? Math.max(0, Math.min(1, num.getBoundingClientRect().bottom / (window.innerHeight * 0.5))) : 1;
+      if (seen <= 0) return;
+      body.draw(ctx, out, { alpha: 0.2 * here * seen * (stepRef.current === 'ask' ? 1 : 0.3), time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

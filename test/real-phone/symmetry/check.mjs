@@ -94,6 +94,12 @@ try {
       await page.addInitScript(([l, lv]) => { localStorage.setItem('wv_lang', l); localStorage.setItem('wv_level', lv); }, [lang, level]);
       await page.goto(URL);
       await page.locator('[data-testid="ask-card"]').waitFor({ timeout: 60000 });
+      // The topbar: the replay on the screen's centre line, the test mark on one line (design review, 2 October).
+      const bar = await page.evaluate(() => {
+        const r = document.querySelector('.result-screen .rp-open')?.getBoundingClientRect(), pill = document.querySelector('.result-screen .topbar .pill')?.getBoundingClientRect();
+        return { off: r ? Math.abs(r.left + r.width / 2 - innerWidth / 2) : null, pillH: pill?.height ?? null, overlap: r && pill ? r.right > pill.left : null };
+      });
+      check(bar.off !== null && (w < 390 || lang === 'fr' || bar.off <= 2) && bar.pillH < 34 && !bar.overlap, `${lang} ${level} ${w}px: replay centred where there is room (${bar.off?.toFixed(1)} px off), test mark on one line (${bar.pillH?.toFixed(0)} px), no overlap`);
       const strips = await page.locator('[data-testid="rep-strips"]').count(), line = await page.locator('[data-testid="res-sides"]').count();
       check(line === 1 && strips === (level === 'beginner' ? 0 : 1), `${lang} ${level} ${w}px: line ${line}, strips ${strips}`);
       const wide = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
