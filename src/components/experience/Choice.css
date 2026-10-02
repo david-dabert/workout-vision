@@ -25,8 +25,11 @@
 /* The card is the figure and three lines: the name, the tier, the other names. Its place in
    the rail is the dots' to show, and how it is filmed the filming screen's. */
 .wv-experience .altar-meta { position: static; flex: none; padding: 6px 20px 20px; }
-/* Sized to the card: the longest French name ("Élévations latérales") fits one line at 390 px (#1). */
-.wv-experience .altar-name { font-size: min(34px, 8.4vw); white-space: nowrap; }
+/* Sized to the card. A name longer than the card ("Soulevé de terre roumain") takes two balanced lines at the
+   same size, never runs under the card's edge (David, 2 October 2026; e2e/card-names-fit.spec.js). The card's
+   other lines and the rows under it are balanced too, so no line ends on one word. */
+.wv-experience .altar-name { font-size: min(34px, 8.4vw); line-height: 1.02; text-wrap: balance; }
+.wv-experience .altar-meta .tier, .wv-experience .altar-alias, .wv-experience .row-txt small { text-wrap: balance; }
 @media (max-height: 700px) {
   .wv-experience .choose-screen .title { margin-top: 16px; }
   .wv-experience .choose-screen .sub { margin-top: 10px; }

@@ -57,7 +57,7 @@ try {
     await page.locator('[data-testid="saved-card"]').waitFor();
     check(await numeral(page) === '8', `${lang}: corrected 7 to 8, the numeral reads 8`);
     check(await status(page) === (fr ? '8 répétitions enregistrées.' : '8 reps saved.'), `${lang}: corrected, a screen reader is told 8 saved`);
-    check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app : 7. Corrigé : 8.' : 'Counted by the app: 7. Corrected: 8.'), `${lang}: corrected, the app's 7 kept as provenance`);
+    check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app\u00A0: 7. Corrigé\u00A0: 8.' : 'Counted by the app: 7. Corrected: 8.'), `${lang}: corrected, the app's 7 kept as provenance`);
     check(await page.locator('.bars .bar').count() === 7, `${lang}: corrected, still the 7 marks the app found, none invented`);
     const stored = await page.evaluate(() => new Promise((res, rej) => {
       const r = indexedDB.open('workoutVision');
@@ -181,7 +181,7 @@ try {
     check(await drawn(page) === '34', `${lang}: typing 34 draws 34`);
     await page.locator('[data-testid="fix-card"] .btn-primary').click();
     await page.locator('.saved-corr').waitFor({ timeout: 10000 });
-    check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app : 7. Corrigé : 34.' : 'Counted by the app: 7. Corrected: 34.'), `${lang}: typed correction saved as 34`);
+    check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app\u00A0: 7. Corrigé\u00A0: 34.' : 'Counted by the app: 7. Corrected: 34.'), `${lang}: typed correction saved as 34`);
     await page.context().close();
   }
   // A saved set is worth keeping: saving asks the browser to keep the app's storage (keep-sets.js).

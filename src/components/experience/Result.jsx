@@ -465,7 +465,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
       {step === 'fix' && (
         <div className="glass appear" data-testid="fix-card">
-          <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
+          <p className="ask-q">{fr ? 'Combien en avez-vous fait\u00A0?' : 'How many did you do?'}</p>
           <div className="stepper">
             <button className="round press" disabled={trueN <= 0} onClick={() => { setTyped(null); setTrueN(n => Math.max(0, n - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
             {/* The numeral is also a field: a tap opens the number pad and typing replaces the number, so 7 to 34
@@ -493,7 +493,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
-          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app : ${count}. Corrigé : ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
+          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app\u00A0: ${count}. Corrigé\u00A0: ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
@@ -513,8 +513,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
           {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
-            <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>
-            <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
+            <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'}</p>
+            <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
             {chosen && <p className="level-note" role="status">{fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans l’historique.' : 'Noted. The screen adapts from your next set. You can change it in your history.'}</p>}
           </div>}
         </div>

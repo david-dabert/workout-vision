@@ -96,6 +96,18 @@ try {
   await expect(page.locator('.all-exercises .item')).toHaveCount(183, { timeout: 10000 });
   await shot('02-choice');
   await inView('02-choice', page.locator('.altar'));
+  // Every card, not only the first: each is brought to the middle of the rail and the screen checked again
+  // ("Soulevé de terre roumain", the seventh, ran under its card's edge unseen; David, 2 October 2026).
+  for (let i = 1; i < 9; i++) {
+    const card = page.locator('.altar').nth(i);
+    await card.evaluate(c => c.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }));
+    await page.waitForTimeout(300);
+    const name = (await card.locator('.altar-name').textContent()).trim();
+    for (const f of await page.evaluate(layoutFaults)) if (!f.startsWith('note: ')) faults.push(`02-choice, card ${i + 1} (${name}): ${f}`);
+  }
+  await shot('02b-choice-last-card');
+  await page.locator('.altar').first().evaluate(c => c.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' }));
+  await page.waitForTimeout(300);
 
   // A card lift's filming screen, and back.
   await page.locator('.altar').first().click();

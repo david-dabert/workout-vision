@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
 if (process.env.PW_CHROMIUM) test.use({ launchOptions: { executablePath: process.env.PW_CHROMIUM } });
 test.use({ viewport: { width: 390, height: 664 }, serviceWorkers: 'block' });
 
-const EXP_EN = 'Experimental: we are still learning this exercise', EXP_FR = 'Expérimental : nous apprenons encore cet exercice';
+const EXP_EN = 'Experimental: we are still learning this exercise', EXP_FR = 'Expérimental\u00A0: nous\u00A0apprenons encore cet exercice';
 
 for (const [lang, beta, exp, squat, bench, whole, ohp, front, frontStep, armFrame] of [
   ['en', 'Beta', EXP_EN, 'Squat', 'Bench press', 'Your whole body in the frame, feet included.', 'Overhead press', 'Filmed from the front', 'Stand the phone upright, facing you.', 'At least head to hips in the frame, hands included.'],

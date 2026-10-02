@@ -128,6 +128,19 @@ export function layoutFaults() {
         if (l.right > box.right + 1 || l.left < box.left - 1) { faults.push(`text runs out of its box: "${label(block)}"`); break; }
       }
     }
+    // Text cut off by a box that hides its overflow (a card), not by one that scrolls (the rail): the card name
+    // "Soulevé de terre roumain" ran under the card's edge for two days unseen (David, 2 October 2026).
+    if (s.textOverflow !== 'ellipsis') {
+      for (const l of onScreen) {
+        let r = { left: l.left, right: l.right, top: l.top, bottom: l.bottom };
+        for (let e = block; e && e !== document.documentElement; e = e.parentElement) {
+          const o = style(e);
+          if (['auto', 'scroll'].includes(o.overflowX)) break;  // past a scroller, clipping is scrolling (a card at the rail's edge)
+          if (['hidden', 'clip'].includes(o.overflowX)) { const b = e.getBoundingClientRect(); r = { ...r, left: Math.max(r.left, b.left), right: Math.min(r.right, b.right) }; }
+        }
+        if (r.right - r.left < l.right - l.left - 1) { faults.push(`text cut off by its box: "${label(block)}"`); break; }
+      }
+    }
     // Lines as tall as their line-height, so that tight titles do not count as overlaps.
     const lh = lineHeight(block);
     for (const l of onScreen) {
