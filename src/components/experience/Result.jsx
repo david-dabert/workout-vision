@@ -16,7 +16,7 @@ import Digits from './Digits';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
-import { partialIn } from './tempo';
+import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
 import { compactWave } from './wave';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
@@ -226,11 +226,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
-    const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;
-    const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
+    const { rom, dur } = setAverages(reps);
     // The joint whose angle is measured is named, so a range is never read as another joint's (design review,
     // 2 October: 64° read as shoulder flexion on a press). jointName (lift-meta.js).
-    detail = fr ? `Amplitude moyenne ${jointName(liftDefinition(lift)?.joint, true)}${NB}: ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average ${jointName(liftDefinition(lift)?.joint, false)} range: ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
+    detail = fr ? `Amplitude moyenne ${jointName(liftDefinition(lift)?.joint, true)}${NB}: ${Math.round(rom)}°${dur === null ? '' : `${NB}· durée moyenne ${sec(dur)}`}` : `Average ${jointName(liftDefinition(lift)?.joint, false)} range: ${Math.round(rom)}°${dur === null ? '' : `${NB}· average duration ${sec(dur)}`}`;
   }
   // Step 3: the account of the set, one tip and a word of encouragement (set-account.js). The sets of
   // this exercise already saved give the last set's reps and this set's rank once it is saved.

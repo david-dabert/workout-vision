@@ -8,6 +8,7 @@ import { watchInterruption, whenVisible, settleRun, holdScreenAwake, isInterrupt
 import Report from './experience/Report';
 import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
+import { compactWave } from './experience/wave';
 
 export default function CoreUpload({ onClose, onRefilm, initialLift = '', initialFile = null }) {
   const { lang, tExercise } = useT();
@@ -112,7 +113,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
         {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
       </ScreenFade>
-      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} leaving={overlayLeaving} onBack={closeOverlay} />}
+      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} wave={compactWave(result.smoothedAngles, result.timestamps)} leaving={overlayLeaving} onBack={closeOverlay} />}
       {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
     </>;
   }

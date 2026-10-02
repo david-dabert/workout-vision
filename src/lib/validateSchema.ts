@@ -92,9 +92,9 @@ export function validateWorkout(record: unknown): ValidationResult {
       (sanitized as Record<string, unknown>)[key] = DEFAULTS[key];
     }
   }
-  // A wave that is not two arrays of equal length, up to 400 samples, numbers or null, is not drawn.
+  // A wave that is not two arrays of equal length, up to 401 samples (wave.js, compactWave), numbers or null, is not drawn.
   const w = sanitized.wave as { t?: unknown; a?: unknown } | null | undefined;
-  if (w != null && !(Array.isArray(w.t) && Array.isArray(w.a) && w.t.length === w.a.length && w.t.length <= 400
+  if (w != null && !(Array.isArray(w.t) && Array.isArray(w.a) && w.t.length === w.a.length && w.t.length <= 401
     && w.t.every(v => Number.isFinite(v)) && w.a.every(v => v === null || Number.isFinite(v)))) sanitized.wave = null;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;

@@ -2,7 +2,7 @@
 // them from here, so what the visitor sees is what the reader receives.
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
-import { decimal, partialIn, repTempo, setTempo, timedReps } from './tempo';
+import { decimal, partialIn, repTempo, setAverages, setTempo, timedReps } from './tempo';
 import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
 import { sidesLines } from './sides-line';
 import { liftDefinition } from '../../lib/counting/core';
@@ -156,11 +156,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       if (prevWhole.length) {
         const prevDate = previousSet.date instanceof Date ? previousSet.date : new Date(previousSet.date);
         const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
-        const prevAvgRange = Math.round(prevWhole.reduce((s, r) => s + r.romDegrees, 0) / prevWhole.length);
-        const prevAvgDur = prevWhole.reduce((s, r) => s + (r.endTime - r.startTime), 0) / prevWhole.length;
+        const avg = setAverages(previousSet.reps), prevAvgRange = Math.round(avg.rom), prevAvgDur = avg.dur;
+        const durFr = prevAvgDur === null ? '' : `, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`, durEn = prevAvgDur === null ? '' : `, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`;
         summary.push(fr
-          ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`
-          : `Set of ${day}${colon}${previousSet.count}${NBSP}reps, avg range ${prevAvgRange}°, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`);
+          ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°${durFr}`
+          : `Set of ${day}${colon}${previousSet.count}${NBSP}reps, avg range ${prevAvgRange}°${durEn}`);
       }
     }
   }

@@ -74,3 +74,19 @@ describe('the wave through storage', () => {
     expect(validateWorkout({ ...base, wave: { t: [0, 'x'], a: [90, 91] } }).sanitized.wave).toBe(null);
   });
 });
+
+describe('the kept wave keeps what was not seen (audit FINDING-027)', () => {
+  const t = Array.from({ length: 450 }, (_, i) => i / 15);
+  it('a lost sample between two kept ones still breaks the line', () => {
+    const a = t.map((x, i) => (i === 4 ? null : 90 + 40 * Math.sin(x)));
+    const w = compactWave(a, t);
+    expect(w.a).toContain(null);
+    expect(w.t.length).toBeLessThanOrEqual(400);
+    for (let k = 1; k < w.t.length; k++) expect(w.t[k]).toBeGreaterThanOrEqual(w.t[k - 1]);
+  });
+  it('keeps the last sample', () => {
+    const a = t.map(x => 90 + 40 * Math.sin(x));
+    const w = compactWave(a, t);
+    expect(w.t.at(-1)).toBe(Math.round(t.at(-1) * 100) / 100);
+  });
+});
