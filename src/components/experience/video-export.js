@@ -15,6 +15,13 @@ export function pickMime(supported) {
   return MIMES.find(m => { try { return supported(m); } catch { return false; } }) || '';
 }
 
+/**
+ * Whether a share that did not end well failed: a cancel (AbortError) or a second sheet asked while one is open
+ * (InvalidStateError) did not; anything else did, and the video is then offered to save (Astra's audit: a failed
+ * share said nothing).
+ */
+export const shareFailed = e => e?.name !== 'AbortError' && e?.name !== 'InvalidStateError';
+
 export const exportFileName = (lift, mime) => `workoutvision-${String(lift).replace(/_/g, '-')}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
 
 /** The recorded size: the picture's proportions, at most 1280 px on the long side, in even pixels. */

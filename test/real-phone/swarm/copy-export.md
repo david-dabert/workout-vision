@@ -57,3 +57,9 @@ Wording:
 Decided 30 September (David delegated the wording): "Exporter vos séries", without "(CSV)"; "Vitesse max",
 as the gym says it. The separator and decimal mark follow the phone's locale, the words the app's language.
 - "Corrigée" and "Confirmée" agree with "série"; "Comptées par l’app" with "répétitions".
+
+## Added 2 October 2026 (Astra's audit: a failed video share said nothing)
+
+| French | English | Where |
+|---|---|---|
+| Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers. | The share did not go through. Save the video, then share it from your files. | Replay, under "Enregistrer la vidéo", after a share the phone refused |
