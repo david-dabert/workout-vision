@@ -59,7 +59,7 @@ test('without a share sheet for files, the export downloads the sets and the rep
   // UTF-8 with its byte order mark.
   expect([...sets.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
   const setRows = sets.toString('utf8').slice(1).split('\r\n').filter(Boolean);
-  expect(setRows[0]).toBe('Date;Exercice;Répétitions;Comptées par l’app;Corrigée;Confirmée;Charge (kg);Durée (s);Tempo moyen (mesure expérimentale);Variation de vitesse concentrique (%) (mesure expérimentale)');
+  expect(setRows[0]).toBe('Date;Exercice;Répétitions;Comptées par l’app;Corrigée;Confirmée;Charge (kg);Durée (s);Tempo moyen (mesure expérimentale)');
   // Oldest first: the squat entered by hand, then the corrected curl.
   expect(setRows[1].split(';').slice(1, 8)).toEqual(['Squat', '8', '', '', 'oui', '62,5', '']);
   expect(setRows[2].split(';').slice(1, 8)).toEqual(['Curl biceps', '5', '4', 'oui', 'oui', '', '18,4']);
@@ -90,7 +90,7 @@ test('with a share sheet for files, the export shares both files inside the tap 
   expect(shared[1].text.split('\r\n').filter(Boolean)).toHaveLength(6);
   expect(shared.every(f => f.type === 'text/csv')).toBe(true);
   const rows = shared[0].text.replace('﻿', '').split('\r\n').filter(Boolean);
-  expect(rows[0]).toBe('Date,Exercise,Reps,Counted by the app,Corrected,Confirmed,Load (kg),Duration (s),Average tempo (experimental measure),Concentric speed change (%) (experimental measure)');
+  expect(rows[0]).toBe('Date,Exercise,Reps,Counted by the app,Corrected,Confirmed,Load (kg),Duration (s),Average tempo (experimental measure)');
   expect(rows[1].split(',').slice(1, 7)).toEqual(['Squat', '8', '', '', 'yes', '62.5']);
   await page.waitForTimeout(500);
   expect(downloads).toBe(0);
