@@ -40,6 +40,21 @@ describe('csvField: RFC 4180 quoting', () => {
     expect(csvField(null, ',')).toBe('');
     expect(csvField(undefined, ';')).toBe('');
   });
+  // A restored backup can carry any text (validateSchema.ts checks shapes, not words): a field a
+  // spreadsheet would run as a formula is written as text (OWASP, CSV injection; Astra's audit).
+  it('writes text a spreadsheet would run as a formula as plain text', () => {
+    expect(csvField('=HYPERLINK("http://x","clic")', ',')).toBe('"\'=HYPERLINK(""http://x"",""clic"")"');
+    expect(csvField('+1+cmd', ',')).toBe("'+1+cmd");
+    expect(csvField('-2+3', ';')).toBe("'-2+3");
+    expect(csvField('@SUM(A1)', ',')).toBe("'@SUM(A1)");
+    expect(csvField('\t=1', ',')).toBe("'\t=1");
+    expect(csvField('\r=1', ',')).toBe('"\'\r=1"');
+  });
+  it('leaves numbers the file writes untouched, a negative one included', () => {
+    expect(csvField(-12, ',')).toBe('-12');
+    expect(csvField('-0,8', ';')).toBe('-0,8');
+    expect(csvField('-0.8', ',')).toBe('-0.8');
+  });
 });
 
 describe('setsCsv', () => {

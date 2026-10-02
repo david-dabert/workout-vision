@@ -26,10 +26,17 @@ const format = (lang, locale = lang) => ({
   ...(lang === 'fr' ? { yes: 'oui', no: 'non' } : { yes: 'yes', no: 'no' }),
 });
 
-/** One field, quoted as RFC 4180 asks when it holds the separator, a quote or a line break. */
+// Text a spreadsheet would run as a formula: it starts with = + - @, a tab or a carriage return. A restored
+// backup can carry any text, so such a field is written as text, behind an apostrophe (OWASP, CSV injection).
+// A number the file writes (-12, -0,8) is left as it is. Status: convention.
+const FORMULA = /^[=+\-@\t\r]/;
+const NUMBER = /^-?\d+([.,]\d+)?$/;
+
+/** One field, quoted as RFC 4180 asks when it holds the separator, a quote or a line break; never a formula. */
 export function csvField(value, sep) {
   if (value === null || value === undefined) return '';
-  const s = String(value);
+  const raw = String(value);
+  const s = FORMULA.test(raw) && !NUMBER.test(raw) ? `'${raw}` : raw;
   return s.includes(sep) || /["\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
