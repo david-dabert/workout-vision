@@ -35,8 +35,9 @@ export const MIN_COMPARED_REPS = 3;
 // Status: convention. The app draws no verdict from it.
 export const GAP_SI = 15;
 // Share of public clips filmed from the front (lifters with no known asymmetry) whose index exceeds GAP_SI:
-// measured on the Countix clips in test/real-phone/symmetry/front.txt (1 October 2026), which the screen
-// states as "about a third". Descriptive of those clips only, not a threshold. Status: experimental.
+// 15 of 44 (34 %) on the Countix clips in test/real-phone/symmetry/front.txt (1 October 2026, partly filmed
+// reps not compared), which the screen states as "about a third". Descriptive of those clips only, not a
+// threshold. Status: experimental.
 export const NOISE_SHARE_OVER_GAP = 1 / 3;
 // Exercises whose two sides move together through the same range, the only ones compared. A one-arm or
 // one-leg exercise (one_arm_dumbbell_row, split_squat...), an alternating one, or a lunge would compare the
@@ -78,6 +79,7 @@ export interface SideComparison {
   right: number;           // the same, right
   si: number;              // symmetry index (R - L) / mean(R, L) x 100 of the two medians above (Robinson, Herzog & Nigg 1987), so the three numbers shown agree
   reps: number;            // reps compared
+  perRep: { at: number; left: number; right: number }[]; // each compared rep's ranges; at = its position in the reps given
 }
 
 export type SymmetryResult =
@@ -89,7 +91,7 @@ export function compareSides(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
   lift: string,
-  reps: Pick<RepDetail, 'startTime' | 'endTime'>[],
+  reps: (Pick<RepDetail, 'startTime' | 'endTime'> & { clipped?: boolean })[],
 ): SymmetryResult {
   const def = liftDefinition(lift);
   if (!def) return { status: 'no-lift' };
@@ -103,8 +105,10 @@ export function compareSides(
     for (let i = i0; i <= i1; i++) { const a = xs[i]; if (a === null || a === undefined) continue; seen++; if (a < lo) lo = a; if (a > hi) hi = a; }
     return { rom: hi - lo, seen: seen / (i1 - i0 + 1) };
   };
-  const L: number[] = [], R: number[] = [];
-  for (const rep of reps) {
+  const L: number[] = [], R: number[] = [], perRep: SideComparison['perRep'] = [];
+  for (const [at, rep] of reps.entries()) {
+    // A rep the recording cuts is not whole on either side: not compared (its tempo is withheld too).
+    if (rep.clipped) continue;
     const i0 = timestamps.findIndex(t => t >= rep.startTime);
     let i1 = timestamps.findIndex(t => t >= rep.endTime);
     if (i1 < 0) i1 = timestamps.length - 1;
@@ -113,11 +117,11 @@ export function compareSides(
     if (a.seen < SIDES_SEEN || b.seen < SIDES_SEEN) continue;
     const mean = (a.rom + b.rom) / 2;
     if (!(mean > 0)) continue;
-    L.push(a.rom); R.push(b.rom);
+    L.push(a.rom); R.push(b.rom); perRep.push({ at, left: a.rom, right: b.rom });
   }
   if (L.length < MIN_COMPARED_REPS) return { status: 'too-few-reps' };
   const left = median(L), right = median(R);
   // One side barely moving while the other works is a one-sided set, whatever the exercise was called.
   if (Math.min(left, right) < COUNTABLE_RANGE_DEG) return { status: 'one-side-still' };
-  return { status: 'measured', comparison: { left, right, si: ((right - left) / ((left + right) / 2)) * 100, reps: L.length } };
+  return { status: 'measured', comparison: { left, right, si: ((right - left) / ((left + right) / 2)) * 100, reps: L.length, perRep } };
 }

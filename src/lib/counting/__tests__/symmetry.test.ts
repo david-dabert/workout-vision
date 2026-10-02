@@ -66,3 +66,27 @@ describe('front-view left/right comparison', () => {
     expect(compareSides(frames, ts, 'no_such_lift', []).status).toBe('no-lift');
   });
 });
+
+describe('per-rep comparison', () => {
+  it('maps each compared rep to its position and skips a rep the recording cuts', () => {
+    const { frames, ts } = (() => {
+      // Same synthetic set as above, rebuilt here to keep this block standalone.
+      const fps = 30, per = 60, out: any[] = [], t: number[] = [];
+      for (let i = 0; i < 5 * per + fps; i++) {
+        const phase = i < fps / 2 || i >= 5 * per + fps / 2 ? 0 : (1 - Math.cos((2 * Math.PI * (i - fps / 2)) / per)) / 2;
+        const lm = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 1 }));
+        lm[11] = { x: 0.2, y: -0.5, z: 0, visibility: 1 }; lm[12] = { x: -0.2, y: -0.5, z: 0, visibility: 1 };
+        lm[23] = { x: 0.15, y: 0, z: 0, visibility: 1 }; lm[24] = { x: -0.15, y: 0, z: 0, visibility: 1 };
+        lm[13] = { x: 0.2, y: -0.2, z: 0, visibility: 1 }; lm[14] = { x: -0.2, y: -0.2, z: 0, visibility: 1 };
+        for (const [k, s] of [[15, 0.2], [16, -0.2]] as const) { const a = ((160 - 110 * phase) * Math.PI) / 180; lm[k] = { x: s, y: -0.2 - 0.25 * Math.cos(a), z: 0.25 * Math.sin(a), visibility: 1 }; }
+        out.push(lm); t.push(i / fps);
+      }
+      return { frames: out, ts: t };
+    })();
+    const reps = countReps(frames, ts, 'bicep_curl').reps.map((r, i) => (i === 1 ? { ...r, clipped: true } : r));
+    const r = compareSides(frames, ts, 'bicep_curl', reps);
+    expect(r.status).toBe('measured');
+    if (r.status !== 'measured') return;
+    expect(r.comparison.perRep.map(p => p.at)).toEqual(reps.map((_, i) => i).filter(i => i !== 1));
+  });
+});

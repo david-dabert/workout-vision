@@ -53,6 +53,6 @@ export function levelView(level, { saved = 0 } = {}) {
 export function resultBlocks(level) {
   const { level: l } = levelView(level);
   if (l === 'beginner') return ['plain', 'count', 'card', 'bars', 'more'];
-  if (l === 'expert') return ['count', 'bars', 'speed', 'card', 'table', 'account'];
-  return ['count', 'bars', 'card', 'account'];
+  if (l === 'expert') return ['count', 'bars', 'speed', 'card', 'strips', 'table', 'account'];
+  return ['count', 'bars', 'card', 'strips', 'account'];
 }

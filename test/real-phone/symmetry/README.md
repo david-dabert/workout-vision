@@ -34,10 +34,11 @@ Evidence (front.txt from front.test.ts, ACCURACY=1; check.txt from check.mjs, Ch
 - Gate: every set David filmed from the side or at an angle is refused; the test fails if a side set is
   measured. His lat_pulldown_10_front is refused too (hips at 40°, back to the camera): 13 of 14 sets agree
   with their file names, and the one that does not is refused, not mismeasured.
-- Public front clips: 54 measured. Left larger in 25 of 54, mean index +2 %. 16 of 54 (30 %, roughly
-  +/-13 points at 95 %) exceed 15 %. NOISE_SHARE_OVER_GAP ("about a third") describes these clips; the test
-  keeps it within 8 points of them.
-- David's five front sets all read left larger (-8 % to -38 %). The public clips do not lean, but they mix
+- Public front clips: 44 measured (partly filmed reps are not compared, so sets with fewer than 3 whole
+  reps drop out). Left larger in 21 of 44, mean index +1 %; middle 80 % from -21 % to +24 %. 15 of 44 (34 %,
+  roughly +/-15 points at 95 %) exceed 15 %. NOISE_SHARE_OVER_GAP ("about a third") describes these clips;
+  the test keeps it within 8 points of them.
+- David's five front sets all read left larger (front.txt). The public clips do not lean, but they mix
   cameras and possibly mirrored videos, which could cancel a lean, so this does not show that the model is
   free of a lean on his phone. The test of iteration 3 still decides body against filming: one set with the
   phone centred, then moved half a metre to one side.
@@ -45,3 +46,9 @@ Evidence (front.txt from front.test.ts, ACCURACY=1; check.txt from check.mjs, Ch
 Not established: that a real asymmetry is detected. No clip on disk has a measured asymmetry. That needs
 sets of people with a known difference (a physiotherapist's patients, or a lifter shortening one side on
 purpose). A mirrored front-camera video swaps left and right; the app cannot tell.
+
+Display (RepStrips.jsx, under the question, intermediate and expert levels): per rep, concentric time up
+and eccentric time down from a midline, and for front sets the gap between sides, up for the right and down
+for the left. Fixed scales (1.5 s, 40 %), no axis numbers, every gap bar of one weight (no rep singled out).
+A tapped rep's values appear in a caption under the strips. The beginner has no strips; the set's line and
+note stay under the marks for them.

@@ -71,14 +71,14 @@ describe('what each level shows, from the same measures', () => {
     expect(levelView('expert', { saved: 0 })).toEqual({ level: 'expert', plainFirst: false, notesOpen: false, guideFirst: false, perRep: true });
   });
   it('orders the result screen: today\'s order for the intermediate', () => {
-    expect(resultBlocks('intermediate')).toEqual(['count', 'bars', 'card', 'account']);
+    expect(resultBlocks('intermediate')).toEqual(['count', 'bars', 'card', 'strips', 'account']);
     expect(resultBlocks('')).toEqual(resultBlocks('intermediate'));
   });
   it('the beginner: the account and the tip lead, the numbers follow the question', () => {
     expect(resultBlocks('beginner')).toEqual(['plain', 'count', 'card', 'bars', 'more']);
   });
   it('the expert: the speed change under the bars, the table under the question', () => {
-    expect(resultBlocks('expert')).toEqual(['count', 'bars', 'speed', 'card', 'table', 'account']);
+    expect(resultBlocks('expert')).toEqual(['count', 'bars', 'speed', 'card', 'strips', 'table', 'account']);
   });
   it('every level keeps the question: "Oui, c\'est juste" is on every screen', () => {
     for (const l of LEVELS) expect(resultBlocks(l)).toContain('card');

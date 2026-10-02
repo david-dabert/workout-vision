@@ -1,21 +1,81 @@
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: tempo strip drawn
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Amplitude gauche 92° · droite 74° · écart 21 % |  | Série filmée de face, gauche et droite de la personne filmée. Sur des vidéos publiques de sportifs sans asymétrie connue, environ un tiers dépassent 15 % d’écart.
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: strips under the question
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,6 s · exc. 0,9 s · gauche +15 %
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: experimental label on screen
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: left/right strip drawn
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: line within the 390 px width
+pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: nothing in the strips overflows
 pass  fr landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":92,"right":74,"si":-21,"reps":10}
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: tempo strip drawn
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: line shown: Amplitude gauche 62° · droite 57° · écart 8 % |  | Série filmée de face, gauche et droite de la personne filmée. Sur des vidéos publiques de sportifs sans asymétrie connue, environ un tiers dépassent 15 % d’écart.
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: strips under the question
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,5 s · exc. 0,7 s · gauche +8 %
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: experimental label on screen
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: left/right strip drawn
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: line within the 390 px width
+pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: nothing in the strips overflows
 pass  fr sets-29sep/overhead_press_4_front_f75638cc.json.gz: saved set carries the comparison {"left":62,"right":57,"si":-8,"reps":4}
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: tempo strip drawn
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: no left/right strip
 pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: no line
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: strips under the question
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
+pass  fr sets-29sep/squat_7_side_21fd7ccf.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,7 s · exc. 0,6 s
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: tempo strip drawn
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no left/right strip
 pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: strips under the question
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
+pass  fr landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view and names the rep: Rép. 3 · conc. 0,3 s · exc. 0,7 s
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: tempo strip drawn
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line shown: Range left 92° · right 74° · 21% apart |  | Set filmed from the front; the filmed person’s left and right. On public videos of lifters with no known asymmetry, about a third show a gap over 15%.
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: strips under the question
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.6 s · ecc. 0.9 s · left +15%
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: experimental label on screen
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: left/right strip drawn
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: line within the 390 px width
+pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: nothing in the strips overflows
 pass  en landmarks/lateral_raise_10_front_mufhhbun.json.gz: saved set carries the comparison {"left":92,"right":74,"si":-21,"reps":10}
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: tempo strip drawn
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: line shown: Range left 62° · right 57° · 8% apart |  | Set filmed from the front; the filmed person’s left and right. On public videos of lifters with no known asymmetry, about a third show a gap over 15%.
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: strips under the question
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2,2)
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.5 s · ecc. 0.7 s · left +8%
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: experimental label on screen
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: left/right strip drawn
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: line within the 390 px width
+pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: nothing in the strips overflows
 pass  en sets-29sep/overhead_press_4_front_f75638cc.json.gz: saved set carries the comparison {"left":62,"right":57,"si":-8,"reps":4}
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: tempo strip drawn
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: no left/right strip
 pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: no line
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: strips under the question
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
+pass  en sets-29sep/squat_7_side_21fd7ccf.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.7 s · ecc. 0.6 s
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: tempo strip drawn
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no left/right strip
 pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: no line
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: strips under the question
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: a tap on rep 3's column selects rep 3 in the marks and every strip (2, 2)
+pass  en landmarks/bicep_curl_7_side_mufhf3wy.json.gz: the caption is in view and names the rep: Rep 3 · conc. 0.3 s · ecc. 0.7 s
+pass  fr beginner 320px: line 1, strips 0
+pass  fr beginner 320px: nothing wider than the screen
+pass  fr intermediate 320px: line 1, strips 1
+pass  fr intermediate 320px: nothing wider than the screen
+pass  fr beginner 390px: line 1, strips 0
+pass  fr beginner 390px: nothing wider than the screen
+pass  fr intermediate 390px: line 1, strips 1
+pass  fr intermediate 390px: nothing wider than the screen
+pass  en beginner 320px: line 1, strips 0
+pass  en beginner 320px: nothing wider than the screen
+pass  en intermediate 320px: line 1, strips 1
+pass  en intermediate 320px: nothing wider than the screen
+pass  en beginner 390px: line 1, strips 0
+pass  en beginner 390px: nothing wider than the screen
+pass  en intermediate 390px: line 1, strips 1
+pass  en intermediate 390px: nothing wider than the screen
 all passed
