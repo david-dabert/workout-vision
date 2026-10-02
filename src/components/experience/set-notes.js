@@ -8,7 +8,7 @@ const NOTES_ALL = {
       'Chaque répétition a deux phases : vous soulevez la charge, c’est la phase concentrique ; vous la retenez en la ramenant, c’est la phase excentrique.', // convention
       'Le tempo indique leur durée : 2-0-1-0, c’est deux secondes pour retenir la charge, une pour la soulever, sans pause.', // convention
       'Lent ou rapide, le muscle progresse autant : des répétitions de 0,5 à 8 secondes donnent les mêmes résultats.', // sources 1, 2, literature
-      'Ralentir la phase excentrique n’apporte pas plus de muscle.', // source 3, literature
+      'Ralentir la phase excentrique n’a pas montré plus de gain musculaire. Les études restent peu nombreuses.', // source 3, literature: g = 0.05, 90 % CI -0.22 to 0.33, very low to low certainty (GRADE); worded as not shown, not as no effect (Astra's audit, 2 October)
       'L’essentiel : garder le contrôle de la charge, sans la laisser tomber.', // convention
       'Quand votre vitesse baisse nettement au fil de la série, vous approchez de votre limite.', // source 5, literature
       'L’app analyse 15 images par seconde : elle ne mesure rien plus finement qu’un quinzième de seconde.', // app measure
@@ -42,7 +42,7 @@ const NOTES_ALL = {
       'Every rep has two phases: you lift the load, the concentric phase; you hold it back as it returns, the eccentric phase.', // convention
       'The tempo gives their lengths: 2-0-1-0 means two seconds to hold the load back, one to lift it, no pause.', // convention
       'Slow or fast, muscle grows the same: reps of 0.5 to 8 seconds give the same results.', // sources 1, 2, literature
-      'Slowing the eccentric phase does not build more muscle.', // source 3, literature
+      'Slowing the eccentric phase has not been shown to build more muscle. The studies are still few.', // source 3, literature: g = 0.05, 90 % CI -0.22 to 0.33, very low to low certainty (GRADE); worded as not shown, not as no effect (Astra's audit, 2 October)
       'What matters: keep the load under control, never let it drop.', // convention
       'When your speed drops clearly through a set, you are nearing your limit.', // source 5, literature
       'The app analyses 15 frames per second: it measures nothing finer than a fifteenth of a second.', // app measure

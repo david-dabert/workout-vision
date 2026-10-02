@@ -127,3 +127,11 @@ Sources were verified from each paper's published abstract or bibliographic reco
     Verified 29 September from the record (PubMed 33239350; NCBI Bookshelf NBK566048): adults "should also do muscle-strengthening activities at moderate or greater intensity that involve all major muscle groups on 2 or more days a week".
 15. Watson NF, Badr MS, Belenky G, et al. Recommended amount of sleep for a healthy adult: a joint consensus statement of the American Academy of Sleep Medicine and Sleep Research Society. Sleep. 2015;38(6):843-844. (adults: seven hours or more per night, on a regular basis)
     Verified 29 September from the record (PubMed 26039963; AASM consensus PDF): "Adults should sleep 7 or more hours per night on a regular basis to promote optimal health."
+
+## Amended 2 October 2026, for David's approval (R10)
+
+Line 3 of "Le tempo" / "Tempo" overstated source 3: the review finds g = 0.05 for hypertrophy (90 % CI -0.22 to 0.33) at very low to low certainty (GRADE), which shows no difference, not that there is none (Astra's audit). Now:
+
+« Ralentir la phase excentrique n'a pas montré plus de gain musculaire. Les études restent peu nombreuses. » [3, littérature]
+
+"Slowing the eccentric phase has not been shown to build more muscle. The studies are still few." [3, literature]
