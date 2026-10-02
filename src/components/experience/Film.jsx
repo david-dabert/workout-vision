@@ -51,7 +51,8 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
     if (f) onFile(f);
   }
 
-  // Knee and hip lifts are filmed with the whole body in frame; arm lifts from head to hips.
+  // Knee and hip lifts are filmed with the whole body in frame; arm lifts with at least head to hips, which is
+  // what their count needs (the figure shows the reference set's own, wider framing).
   const wholeBody = ['knee', 'hip'].includes(liftDefinition(lift)?.joint);
   // A knee or hip exercise filmed from the front (a lateral lunge, a standing hip abduction) is filmed facing
   // the phone, as its view says; the whole body stays in frame either way (review of 29 September).
@@ -84,7 +85,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         : <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
       <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
-        <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.')}</span></li>
+        <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'Au moins de la tête aux hanches dans le cadre, mains comprises.' : 'At least head to hips in the frame, hands included.')}</span></li>
         {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September). */}
         <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
       </ol>

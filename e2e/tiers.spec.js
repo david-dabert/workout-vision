@@ -7,9 +7,9 @@ test.use({ viewport: { width: 390, height: 664 }, serviceWorkers: 'block' });
 
 const EXP_EN = 'Experimental: we are still learning this exercise', EXP_FR = 'Expérimental : nous apprenons encore cet exercice';
 
-for (const [lang, beta, exp, squat, bench, whole, ohp, front, frontStep] of [
-  ['en', 'Beta', EXP_EN, 'Squat', 'Bench press', 'Your whole body in the frame, feet included.', 'Overhead press', 'Filmed from the front', 'Stand the phone upright, facing you.'],
-  ['fr', 'Bêta', EXP_FR, 'Squat', 'Développé couché', 'Le corps entier dans le cadre, pieds compris.', 'Développé militaire', 'Filmé de face', 'Posez le téléphone face à vous, à la verticale.'],
+for (const [lang, beta, exp, squat, bench, whole, ohp, front, frontStep, armFrame] of [
+  ['en', 'Beta', EXP_EN, 'Squat', 'Bench press', 'Your whole body in the frame, feet included.', 'Overhead press', 'Filmed from the front', 'Stand the phone upright, facing you.', 'At least head to hips in the frame, hands included.'],
+  ['fr', 'Bêta', EXP_FR, 'Squat', 'Développé couché', 'Le corps entier dans le cadre, pieds compris.', 'Développé militaire', 'Filmé de face', 'Posez le téléphone face à vous, à la verticale.', 'Au moins de la tête aux hanches dans le cadre, mains comprises.'],
 ]) {
   test(`tiers on the cards, the filming screen and the guide (${lang})`, async ({ page }) => {
     const errors = [];
@@ -37,6 +37,8 @@ for (const [lang, beta, exp, squat, bench, whole, ohp, front, frontStep] of [
     await expect(page.locator('.film-screen .tier')).toHaveText(exp, { timeout: 20000 });
     await expect(page.locator('.film-screen')).toContainText(front);
     await expect(page.getByText(frontStep, { exact: true })).toBeVisible();
+    // An arm lift's framing is stated as the least the count needs: the figure shows the reference set's wider frame.
+    await expect(page.getByText(armFrame, { exact: true })).toBeVisible();
     await page.goto('/workout-vision/#exercises');
     await expect(page.locator('[data-exercise="bench_press"] .tag')).toHaveText(lang === 'fr' ? 'Expérimental' : 'Experimental', { timeout: 20000 });
     await expect(page.locator('[data-exercise="squat"] .tag')).toHaveText(beta);
