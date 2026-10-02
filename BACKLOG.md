@@ -48,3 +48,7 @@ Checked against the code on main (84e020a) before entry. These are proposals, no
 - Name the joint in the per-rep table and the CSV headings, as the result screen now does.
 - Count from the side: synthetic curls and squats filmed from the side are exact on 4 of 6 each (synth.txt);
   look into the armoured body's hidden elbow and the over-counted squats before trusting either.
+- Accessibility (axe, WCAG 2.1 AA, smoke run of 2 October): every screen of the journey passes except the
+  filming screen's two buttons, labels with role=button that hold the hidden file input (nested-interactive,
+  serious). The input sits under the finger on purpose, so iOS opens the camera from a real tap; rebuild it
+  only with an iPhone to check the camera and library still open.

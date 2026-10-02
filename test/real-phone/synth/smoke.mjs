@@ -30,7 +30,15 @@ try {
   page.on('response', r => { if (r.status() >= 400) faults.push(`${r.status()} ${r.url()}`); });
   await page.addInitScript(l => { localStorage.setItem('wv_lang', l); window.addEventListener('wv:core-result', e => { window.__core = e.detail; }); }, LANG);
   let n = 0;
-  const shot = async name => { n++; const f = `${String(n).padStart(2, '0')}-${name}.png`; await page.screenshot({ path: resolve(SHOTS, f) }); steps.push({ step: name, at: ((Date.now() - t0) / 1000).toFixed(1) }); };
+  // AXE=<path to axe.min.js>: every screen is also audited (WCAG 2.1 A and AA rules); its violations are listed.
+  const axe = process.env.AXE ? readFileSync(process.env.AXE, 'utf8') : null, audit = [];
+  const shot = async name => {
+    n++; const f = `${String(n).padStart(2, '0')}-${name}.png`; await page.screenshot({ path: resolve(SHOTS, f) }); steps.push({ step: name, at: ((Date.now() - t0) / 1000).toFixed(1) });
+    if (axe) {
+      const v = await page.evaluate(async src => { if (!window.axe) (0, eval)(src); const r = await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }); return r.violations.map(x => ({ id: x.id, impact: x.impact, n: x.nodes.length, help: x.help, target: x.nodes.slice(0, 3).map(nd => nd.target.join(' ')) })); }, axe);
+      for (const x of v) audit.push({ step: name, ...x });
+    }
+  };
 
   await page.goto(BASE);
   await page.waitForTimeout(1500); await shot('entry');
@@ -70,7 +78,7 @@ try {
   const hist = page.locator('button, a').filter({ hasText: /Vos séries|Your sets|Historique|History/ }).first();
   let listed = null;
   if (await hist.count()) { await hist.click(); await page.waitForTimeout(1500); await shot('history'); listed = (await page.locator('body').innerText()).slice(0, 400); }
-  const out = { video, lift, delta, listed, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
+  const out = { video, lift, delta, listed, audit, truth: truth.reps.length, count: core.count, refused: core.refused, samples: core.samples, decoder: core.method, seconds: ((Date.now() - t0) / 1000).toFixed(0), steps, faults };
   writeFileSync(resolve(SHOTS, 'summary.json'), JSON.stringify(out, null, 2));
   console.log(JSON.stringify(out));
   await browser.close();
