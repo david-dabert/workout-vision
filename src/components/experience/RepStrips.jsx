@@ -13,9 +13,9 @@ import { decimal } from './report-sheet';
 // from David's labelled sets, whose phases run about 0.4-1.9 s, so a usual rep fills a third of the strip
 // or more. Status: experimental.
 export const TEMPO_FULL_SEC = 1.5;
-// The gap between sides a bar reaches full height; larger gaps are drawn full, with a flat cap. Source:
-// chosen from front.txt, whose middle 80 % of public front clips lies within about -21 % to +24 %, so
-// those fill about half the strip. Status: experimental.
+// The gap between sides a bar reaches full height; larger gaps are drawn full, with a flat cap. Source: the
+// per-rep gaps of the synthetic lateral raises filmed square on (synth.txt) lay within about ±35 %, and the
+// public front clips' middle 80 % within about -21 % to +24 % (front.txt of 1 October). Status: experimental.
 export const GAP_FULL = 40;
 // Smaller per-rep gaps draw no bar and read "sides equal": below a degree's worth of difference on a 90°
 // rep. Source: UNSOURCED. Status: experimental.

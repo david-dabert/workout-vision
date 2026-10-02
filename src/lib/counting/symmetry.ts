@@ -11,42 +11,52 @@
  * Left and right are the filmed person's own (MediaPipe names landmarks by the body's side). A mirrored
  * video, as a front camera may save, swaps them; the app cannot tell.
  *
- * Status: experimental. Not validated against a measured asymmetry; its false-alarm rate on front-view
- * public clips is in test/real-phone/symmetry/front.txt.
+ * Synthetic sets with an exact, built-in asymmetry (test/real-phone/synth/synth.txt, 2 October 2026: two rigged
+ * bodies, four exercises, four camera angles) showed two limits, which the rules below enforce:
+ * - only the lateral raise reads the gap within about 9 points when filmed square on; curls and presses
+ *   move the limbs toward the camera, whose depth a single camera reads poorly, and were off by up to 55 and
+ *   28 points even square on;
+ * - the body's turn read from the landmarks depends on the body: one body turned 30° read 10° at the
+ *   shoulders, so the old 20° gate measured sets filmed at 30° and 60°, with errors of 25 to 40 points.
+ *
+ * Status: experimental. Validated on synthetic bodies only, not against a person's measured asymmetry.
  */
 import { COUNTABLE_RANGE_DEG, liftDefinition, sideAngles, type RepDetail, type WorldLandmarkFrame } from './core';
 
 const L_SHOULDER = 11, R_SHOULDER = 12, L_HIP = 23, R_HIP = 24;
 
 // Largest median angle, in degrees, between the shoulder line (and the hip line) and the image plane for the
-// set to count as filmed from the front. Source: UNSOURCED, chosen so a body turned a quarter (45°) is
-// refused with margin. Status: experimental.
-export const FRONT_SHOULDER_DEG = 20;
-export const FRONT_HIP_DEG = 25;
+// set to count as filmed square on. Source: synthetic sets (synth.txt): filmed square on, both bodies read at
+// most 5° at the shoulders and 3° at the hips, and David's two front lateral raises 4-5°; the nearest bad case,
+// one body filmed at 60°, read 11.7° at the shoulders and 11-13° at the hips, so the margin is 3-4°. Some
+// real sets filmed from the front read above 8° (David's overhead press 10, 8.9°; a third of the Countix front
+// raises) and are refused: the gate errs toward refusing. Angles between 0° and 30° were not rendered.
+// Status: experimental.
+export const FRONT_SHOULDER_DEG = 8;
+export const FRONT_HIP_DEG = 8;
 // Share of a rep's samples in which each side's angle must be read for that rep to be compared.
 // Source: UNSOURCED (the withdrawn iteration 3 used the same share). Status: experimental.
 export const SIDES_SEEN = 0.8;
 // Fewest compared reps for a set's index: one or two reps give a single noisy reading. Source: UNSOURCED.
 // Status: experimental.
 export const MIN_COMPARED_REPS = 3;
-// The gap the screen uses to say how noisy the measure is: 10-15 % is the band most often used to call an
-// inter-limb asymmetry meaningful in performance tests (Bishop, Turner & Read 2018, J Sports Sci
-// 36(10):1135-1144, who note no threshold is universal); here applied to joint range, a different quantity.
-// Status: convention. The app draws no verdict from it.
-export const GAP_SI = 15;
-// Share of public clips filmed from the front (lifters with no known asymmetry) whose index exceeds GAP_SI:
-// 15 of 44 (34 %) on the Countix clips in test/real-phone/symmetry/front.txt (1 October 2026, partly filmed
-// reps not compared), which the screen states as "about a third". Descriptive of those clips only, not a
-// threshold. Status: experimental.
-export const NOISE_SHARE_OVER_GAP = 1 / 3;
-// Exercises whose two sides move together through the same range, the only ones compared. A one-arm or
-// one-leg exercise (one_arm_dumbbell_row, split_squat...), an alternating one, or a lunge would compare the
-// working limb with the resting one. Source: the exercises' own execution (convention). Status: convention.
-export const BILATERAL = new Set([
-  'bicep_curl', 'lat_pulldown', 'seated_row', 'triceps_pushdown', 'bench_press', 'overhead_press',
-  'lateral_raise', 'front_raise', 'squat', 'leg_press', 'leg_extension', 'leg_curl', 'romanian_deadlift',
-  'hip_thrust', 'pull_up', 'push_up',
-]);
+// How far the app's gap lay from the true gap on the synthetic lateral raises filmed square on (synth.txt,
+// 2 October 2026: 6 sets, two bodies, true gaps -12 % to +21 %): at most 8.9 points per set, and 13.7 points
+// per rep (4 of 42 reps beyond 9). Equal sides read -4.5 to -4.9 %: a bias toward the left on these bodies.
+// The screen states both bounds as observations, not as a guarantee. Status: experimental (synthetic bodies,
+// six sets; not people).
+export const GAP_SYNTH_SETS = 6;
+export const GAP_ERROR_POINTS = 9;
+export const REP_GAP_ERROR_POINTS = 14;
+// The rule a stored comparison was measured under: sets saved before 2 October 2026 compared every bilateral
+// lift with a 20°/25° gate and carry no version; their comparison is not shown again (sides-line.js).
+export const SIDES_VERSION = 2;
+// Exercises compared: those whose two sides move together in the plane the camera faces, and whose gap the
+// synthetic sets read within GAP_ERROR_POINTS. Only the lateral raise qualifies so far. Square on, curls were
+// off by up to 55 points and presses by 11 to 28 (synth.txt); squats wait for a rerun, their synthetic render
+// having lifted the feet off the floor. An exercise joins only once a synthetic run shows it reads as well.
+// Status: experimental.
+export const SIDES_LIFTS = new Set(['lateral_raise']);
 
 const yawDeg = (a: { x: number; z: number }, b: { x: number; z: number }) =>
   (Math.atan2(Math.abs(a.z - b.z), Math.abs(a.x - b.x)) * 180) / Math.PI;
@@ -84,7 +94,7 @@ export interface SideComparison {
 
 export type SymmetryResult =
   | { status: 'measured'; comparison: SideComparison }
-  | { status: 'not-front' | 'one-side-lift' | 'one-side-still' | 'too-few-reps' | 'no-lift' };
+  | { status: 'not-front' | 'not-compared-lift' | 'one-side-still' | 'too-few-reps' | 'no-lift' };
 
 /** Both sides' range per counted rep and the set's symmetry index; a reason instead when it cannot be measured. */
 export function compareSides(
@@ -95,8 +105,8 @@ export function compareSides(
 ): SymmetryResult {
   const def = liftDefinition(lift);
   if (!def) return { status: 'no-lift' };
-  // Alternating, one-arm and one-leg lifts work one side at a time: there is nothing to compare within a rep.
-  if (def.bothSides || !BILATERAL.has(lift)) return { status: 'one-side-lift' };
+  // Only exercises whose gap reads reliably (SIDES_LIFTS); alternating lifts work one side at a time.
+  if (def.bothSides || !SIDES_LIFTS.has(lift)) return { status: 'not-compared-lift' };
   if (!facing(worldLandmarks).front) return { status: 'not-front' };
   const l = sideAngles(worldLandmarks, timestamps, def, 'left').smoothed;
   const r = sideAngles(worldLandmarks, timestamps, def, 'right').smoothed;

@@ -96,7 +96,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, sides = null, measures: shown = MEASURES_SHOWN }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, sides = null, lift = '', measures: shown = MEASURES_SHOWN }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -141,7 +141,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     }
 
     // Left against right, for a set filmed from the front (sides-line.js): the two ranges, then what a gap means.
-    const lr = sidesLines(sides, fr);
+    const lr = sidesLines(sides, fr, lift);
     if (lr) summary.push(lr.line, lr.note);
 
     // Previous set comparison.

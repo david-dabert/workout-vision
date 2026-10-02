@@ -52,3 +52,18 @@ and eccentric time down from a midline, and for front sets the gap between sides
 for the left. Fixed scales (1.5 s, 40 %), no axis numbers, every gap bar of one weight (no rep singled out).
 A tapped rep's values appear in a caption under the strips. The beginner has no strips; the set's line and
 note stay under the marks for them.
+
+# Iteration 5, 2 October 2026: synthetic truth narrows the measure to lateral raises filmed square on
+
+Synthetic sets with an exact built-in asymmetry (test/real-phone/synth/, synth.txt: two rigged bodies, four
+exercises, four camera angles, 96 sets through the app's pose detection) showed:
+- Lateral raise, square on: the app's gap lay within 9 points of the true gap (6 sets, true gaps -12 % to +21 %).
+- Curls, presses and squats, even square on: off by 20 to 40 points. They move the limbs toward the camera,
+  whose depth a single camera reads poorly.
+- The old gate (20° shoulders, 25° hips) measured sets filmed at 30° and 60°: one body turned 30° read 10° at
+  the shoulders. Errors there were 25 to 40 points.
+
+So: only lateral raises are compared (SIDES_LIFTS), and the gate is 8° at both shoulders and hips (square-on
+sets read at most 5°, David's front sets 4-5°, the 30° set 17-20° at the hips). The note states the measured
+error instead of the public-clip share, which no longer applies (Countix holds no lateral raise). Still not
+validated on people with a measured asymmetry.

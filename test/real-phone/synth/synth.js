@@ -9,7 +9,9 @@ import { getImageLandmarker, detectPoseImage } from '../../../src/lib/poseAnalys
 import { TARGET_FPS, MAX_LONG_SIDE } from '../../../src/lib/extractionConfig.js';
 
 const P = window.SYNTH;
-const W = Math.round(MAX_LONG_SIDE * 9 / 16), H = MAX_LONG_SIDE;
+// P.video: render frames for a video file (run-video.mjs) at its own size and rate, without pose detection.
+const H = P.video ? P.video.h : MAX_LONG_SIDE, W = P.video ? P.video.w : Math.round(MAX_LONG_SIDE * 9 / 16);
+const FPS = P.video ? P.video.fps : TARGET_FPS;
 const D = Math.PI / 180;
 
 // Seeded random, so a set is reproducible from its seed.
@@ -114,23 +116,34 @@ camera.lookAt(0, 0.95, 0);
 
 const flat = document.createElement('canvas'); flat.width = W; flat.height = H;
 const fctx = flat.getContext('2d', { willReadFrequently: true });
-const model = await getImageLandmarker();
+const model = P.video ? null : await getImageLandmarker();
 const frames = [], truth = [], ts = [];
-const n = Math.floor(total * TARGET_FPS);
+const n = Math.floor(total * FPS);
+const jpegs = [];
 for (let i = 0; i < n; i++) {
-  const time = i / TARGET_FPS;
+  const time = i / FPS;
   resetPose();
   neutralArms(); neutralLegs();
   const { u, j } = progress(time);
   for (const side of ['left', 'right']) POSE[P.exercise](side, u, (side === 'left' ? P.peakL : P.peakR) * j);
   // A squat lowers the hips so the feet stay on the floor.
-  if (P.exercise === 'squat') { body.updateMatrixWorld(true); const low = Math.min(wp(B.LeftFoot).y, wp(B.RightFoot).y); B.Hips.position.y -= (low - (P.footY ??= low)) / body.scale.y; body.updateMatrixWorld(true); }
+  // The drop is set in world space and taken back through the Hips' parent, which in these models is scaled
+  // and turned (review, 2 October: dividing by the body's scale left the feet 0.3 m off the floor).
+  if (P.exercise === 'squat') {
+    body.updateMatrixWorld(true);
+    const low = Math.min(wp(B.LeftFoot).y, wp(B.RightFoot).y);
+    const hips = wp(B.Hips); hips.y -= low - (P.footY ??= low);
+    B.Hips.position.copy(B.Hips.parent.worldToLocal(hips));
+    body.updateMatrixWorld(true);
+  }
   renderer.render(scene, camera);
   fctx.drawImage(renderer.domElement, 0, 0);
+  if (P.video) { jpegs.push(flat.toDataURL('image/jpeg', 0.9)); truth.push(truthAngles()); ts.push(time); continue; }
   const res = detectPoseImage(model, flat, time * 1000);
   frames.push(res?.worldLandmarks?.[0] ? res.worldLandmarks[0].map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4), z: +p.z.toFixed(4), visibility: +(p.visibility ?? 1).toFixed(3) })) : null);
   truth.push(truthAngles());
   ts.push(time);
   if (i === Math.floor(n / 3) && P.shot) window.SHOT = flat.toDataURL('image/jpeg', 0.8);
 }
+window.JPEGS = jpegs;
 window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), worldLandmarks: frames, truth, timestamps: ts, size: [W, H] };
