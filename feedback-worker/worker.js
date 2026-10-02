@@ -22,11 +22,12 @@ function containsBannedField(obj, depth = 0) {
 }
 
 /** IP-based rate limiting using D1 as backing store. */
-async function isRateLimited(env, ip) {
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_SEC * 1000).toISOString();
+export async function isRateLimited(env, ip) {
+  // The window in SQLite's own format, as rows are inserted (datetime('now')): an ISO string with a T sorted
+  // after every same-day row and let all through (Astra's audit, FINDING-030; reproduced in SQLite: 5 rows, 0 counted).
   const result = await env.DB.prepare(
-    `SELECT COUNT(*) as cnt FROM feedback WHERE ip_hash = ? AND created_at > ?`
-  ).bind(ip, windowStart).first();
+    `SELECT COUNT(*) as cnt FROM feedback WHERE ip_hash = ? AND created_at > datetime('now', ?)`
+  ).bind(ip, `-${RATE_LIMIT_WINDOW_SEC} seconds`).first();
   return result && result.cnt >= RATE_LIMIT_MAX;
 }
 

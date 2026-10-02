@@ -30,12 +30,13 @@ for (let i = 0; i < args.length; i++) {
 
 // Find the latest landmark cache file
 if (!cachePath) {
-  // Check benchmark/landmark-cache/ directory first (prefer .json, fall back to .json.gz)
+  // Check benchmark/landmark-cache/ directory first: the newest cache by the date in its name, its .json
+  // before its .json.gz when both exist (Astra's audit, FINDING-029: any .json was taken before newer .json.gz).
   if (existsSync(CACHE_DIR)) {
-    const jsonFiles = readdirSync(CACHE_DIR).filter(f => f.endsWith('.json') && !f.endsWith('.json.gz')).sort().reverse();
-    const gzFiles = readdirSync(CACHE_DIR).filter(f => f.endsWith('.json.gz')).sort().reverse();
-    if (jsonFiles.length > 0) cachePath = join(CACHE_DIR, jsonFiles[0]);
-    else if (gzFiles.length > 0) cachePath = join(CACHE_DIR, gzFiles[0]);
+    const stem = f => f.replace(/\.gz$/, '');
+    const caches = readdirSync(CACHE_DIR).filter(f => f.endsWith('.json') || f.endsWith('.json.gz'))
+      .sort((a, b) => stem(b).localeCompare(stem(a)) || (a.endsWith('.gz') ? 1 : 0) - (b.endsWith('.gz') ? 1 : 0));
+    if (caches.length > 0) cachePath = join(CACHE_DIR, caches[0]);
   }
   // Then check ~/Downloads
   if (!cachePath) {
