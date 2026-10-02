@@ -9,18 +9,20 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { countReps } from '../../../src/lib/counting/core';
-import { GAP_SI, NOISE_SHARE_OVER_GAP, compareSides, facing } from '../../../src/lib/counting/symmetry';
+import { compareSides, facing } from '../../../src/lib/counting/symmetry';
 import { labelledSets, PUBLIC } from '../accuracy/sets';
 
 const fmt = (x: number) => (x >= 0 ? '+' : '') + x.toFixed(0);
+// The literature's band for a meaningful inter-limb gap (Bishop, Turner & Read 2018), used here only to
+// describe the public clips.
+const GAP_SI = 15;
 
 test.skipIf(!process.env.ACCURACY)('front-view left/right comparison', () => {
   const out: string[] = [];
   const rows: { lift: string; si: number }[] = [];
   const why: Record<string, number> = {};
   let seen = 0;
-  // Both halves of Countix. The view gate and GAP_SI were set without them; NOISE_SHARE_OVER_GAP describes
-  // these very clips (it is what the screen says of public video), so it is checked here, not validated here.
+  // Both halves of Countix. No parameter was set on them.
   for (const split of ['build', 'holdout']) {
     const dir = resolve(PUBLIC, 'countix', split);
     for (const f of readdirSync(dir).filter(f => f.endsWith('.json.gz')).sort()) {
@@ -44,9 +46,8 @@ test.skipIf(!process.env.ACCURACY)('front-view left/right comparison', () => {
     head.push(`${name.padEnd(17)} n ${String(n).padStart(3)}  flagged |SI| >= ${GAP_SI} %: ${String(flagged).padStart(3)} (${((100 * flagged) / n).toFixed(0)} %)  left larger: ${leftMore} of ${n}  mean SI ${fmt(mean)} %  median ${fmt(si[n >> 1])} %  middle 80 %: ${fmt(si[Math.floor(n * 0.1)])} to ${fmt(si[Math.floor(n * 0.9)])} %`);
   };
   sum(rows, 'all');
-  // The screen says "about a third" of public front clips exceed GAP_SI: it must stay true of them.
-  const over = rows.filter(r => Math.abs(r.si) > GAP_SI).length / rows.length;
-  expect(Math.abs(over - NOISE_SHARE_OVER_GAP)).toBeLessThan(0.08);
+  // Since 2 October only lateral raises filmed square on are compared (synth.txt); Countix holds none, so its
+  // rows are expected to be few or none.
   for (const lift of [...new Set(rows.map(r => r.lift))].sort()) sum(rows.filter(r => r.lift === lift), lift);
 
   const david: string[] = [];
@@ -57,6 +58,8 @@ test.skipIf(!process.env.ACCURACY)('front-view left/right comparison', () => {
     david.push(`  ${s.name.padEnd(56)} filmed ${view.padEnd(5)} shoulders ${f.shoulderDeg.toFixed(0).padStart(2)} deg hips ${f.hipDeg.toFixed(0).padStart(2)} deg  ${r.status === 'measured' ? `SI ${fmt(r.comparison.si)} % over ${r.comparison.reps} reps (L ${r.comparison.left.toFixed(0)}, R ${r.comparison.right.toFixed(0)})${Math.abs(r.comparison.si) >= GAP_SI ? ' FLAGGED' : ''}` : r.status}`);
     // The gate this measure exists for: no set David filmed from the side is measured.
     if (view === 'side') expect(r.status).not.toBe('measured');
+    // Only lateral raises are compared (symmetry.ts, SIDES_LIFTS).
+    if (r.status === 'measured') expect(s.lift).toBe('lateral_raise');
   }
 
   writeFileSync(resolve(__dirname, 'front.txt'), [
@@ -64,6 +67,7 @@ test.skipIf(!process.env.ACCURACY)('front-view left/right comparison', () => {
     `Per set: each side's median range over the counted reps, SI = (R - L) / mean(R, L) x 100 of those medians; "flagged" when |SI| >= ${GAP_SI} %.`,
     '',
     `Countix, both halves: ${seen} admitted clips; measured ${rows.length}; not measured: ${Object.entries(why).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
+    ...(rows.length ? [] : ['None is compared: since 2 October only lateral raises filmed square on are, and Countix holds none (synth.txt).']),
     'These clips carry no measured asymmetry: "flagged" is the share of lifters not known to be asymmetric whose gap',
     `passes the threshold. It is not a false-alarm rate: some may be asymmetric, and with ${rows.length} clips its 95 % interval is about +/-${Math.round(196 * Math.sqrt(0.25 / Math.max(1, rows.length)))} points.`,
     ...head, '',

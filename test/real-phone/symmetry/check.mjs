@@ -17,7 +17,9 @@ const out = [], fails = [];
 const check = (ok, what) => { out.push(`${ok ? 'pass' : 'FAIL'}  ${what}`); if (!ok) fails.push(what); };
 const SETS = [
   { file: 'landmarks/lateral_raise_10_front_mufhhbun.json.gz', lift: 'lateral_raise', front: true },
-  { file: 'sets-29sep/overhead_press_4_front_f75638cc.json.gz', lift: 'overhead_press', front: true },
+  { file: 'sets-29sep/lateral_raise_9_front_43e71b40.json.gz', lift: 'lateral_raise', front: true },
+  // Filmed from the front, but presses are not compared (symmetry.ts, SIDES_LIFTS): no line, no strip.
+  { file: 'sets-29sep/overhead_press_4_front_f75638cc.json.gz', lift: 'overhead_press', front: false },
   { file: 'sets-29sep/squat_7_side_21fd7ccf.json.gz', lift: 'squat', front: false },
   { file: 'landmarks/bicep_curl_7_side_mufhf3wy.json.gz', lift: 'bicep_curl', front: false },
 ];

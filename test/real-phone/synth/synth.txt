@@ -1,0 +1,120 @@
+Synthetic sets (test/real-phone/synth): 96 sets, two rigged bodies (Michelle, Soldier; three.js examples, Mixamo rigs),
+rendered at the app analysis size (360x640, 15 fps), each frame through the app pose detection, counted by core.ts.
+Truth from the skeleton joint positions with the counter three-point angles. Synthetic bodies are not people:
+these figures bound what the pipeline can do in clean conditions; they do not replace real-phone sets.
+
+all                    n  96  count exact  76 (79 %), off >= 3: 11  range error mean -29 deg (-29 %)  conc. -0.7 s  ecc. -0.7 s
+lateral_raise          n  24  count exact  22 (92 %), off >= 3: 0  range error mean -8 deg (-10 %)  conc. -0.6 s  ecc. -0.7 s
+bicep_curl             n  24  count exact  20 (83 %), off >= 3: 2  range error mean -44 deg (-36 %)  conc. -0.7 s  ecc. -0.9 s
+overhead_press         n  24  count exact  14 (58 %), off >= 3: 7  range error mean -38 deg (-45 %)  conc. -0.9 s  ecc. -0.7 s
+squat                  n  24  count exact  20 (83 %), off >= 3: 2  range error mean -26 deg (-27 %)  conc. -0.7 s  ecc. -0.5 s
+view 0 deg             n  24  count exact  20 (83 %), off >= 3: 2  range error mean -38 deg (-37 %)  conc. -0.7 s  ecc. -0.7 s
+view 30 deg            n  24  count exact  22 (92 %), off >= 3: 0  range error mean -25 deg (-27 %)  conc. -0.7 s  ecc. -0.7 s
+view 60 deg            n  24  count exact  19 (79 %), off >= 3: 4  range error mean -29 deg (-28 %)  conc. -0.7 s  ecc. -0.7 s
+view 90 deg            n  24  count exact  15 (63 %), off >= 3: 5  range error mean -23 deg (-25 %)  conc. -0.7 s  ecc. -0.8 s
+michelle               n  48  count exact  43 (90 %), off >= 3: 4  range error mean -20 deg (-20 %)  conc. -0.7 s  ecc. -0.7 s
+soldier                n  48  count exact  33 (69 %), off >= 3: 7  range error mean -38 deg (-38 %)  conc. -0.7 s  ecc. -0.7 s
+
+Left/right comparison (symmetry.ts): which views the gate measures, and the gap error where it does.
+view  0 deg: measured 6 of 24; gap error mean -3.0 points, mean absolute 5.6; side right in 4 of 4 sets with a true gap of 10 % or more; refused: not-compared-lift
+view 30 deg: measured 0 of 24; refused: not-compared-lift, not-front
+view 60 deg: measured 0 of 24; refused: not-compared-lift, not-front
+view 90 deg: measured 0 of 24; refused: not-compared-lift, not-front
+
+Each set: id, true reps, app count, range error (deg), conc./ecc. error (s), pose found share, left/right status, true gap, app gap.
+  michelle-bicep_curl-v0-a-10               7  7   -55   -0.5  -0.7  100 %  not-compared-lift  -11    -
+  michelle-bicep_curl-v0-a0                 8  8   -52   -0.6  -0.7  100 %  not-compared-lift   -0    -
+  michelle-bicep_curl-v0-a20                6  6   -48   -0.8  -1.0  100 %  not-compared-lift   18    -
+  michelle-bicep_curl-v30-a-10              8  8    -5   -0.4  -0.7  100 %  not-compared-lift  -11    -
+  michelle-bicep_curl-v30-a0                5  5   -12   -0.5  -0.6  100 %  not-compared-lift   -0    -
+  michelle-bicep_curl-v30-a20               7  7    -5   -0.5  -0.7  100 %  not-compared-lift   18    -
+  michelle-bicep_curl-v60-a-10              5  5   -20   -0.4  -0.6  100 %  not-compared-lift  -11    -
+  michelle-bicep_curl-v60-a0                6  6   -19   -0.4  -0.5  100 %  not-compared-lift   -0    -
+  michelle-bicep_curl-v60-a20               8  8   -13   -0.4  -0.6  100 %  not-compared-lift   19    -
+  michelle-bicep_curl-v90-a-10              6  6   -39   -0.6  -0.7  100 %  not-compared-lift  -11    -
+  michelle-bicep_curl-v90-a0                7  7   -35   -0.6  -0.8  100 %  not-compared-lift   -0    -
+  michelle-bicep_curl-v90-a20               5  5   -32   -0.4  -0.7  100 %  not-compared-lift   18    -
+  michelle-lateral_raise-v0-a-10            7  7    -2   -0.6  -0.7  100 %  measured        -12  -20
+  michelle-lateral_raise-v0-a0              8  8     1   -0.5  -0.6  100 %  measured         -0   -5
+  michelle-lateral_raise-v0-a20             6  6    -1   -0.5  -0.7  100 %  measured         21   12
+  michelle-lateral_raise-v30-a-10           8  8     6   -0.5  -0.7  100 %  not-front       -12    -
+  michelle-lateral_raise-v30-a0             5  5     6   -0.5  -0.6  100 %  not-front        -0    -
+  michelle-lateral_raise-v30-a20            7  7     6   -0.5  -0.7  100 %  not-front        21    -
+  michelle-lateral_raise-v60-a-10           5  5   -11   -0.5  -0.8  100 %  not-front       -12    -
+  michelle-lateral_raise-v60-a0             6  6    -9   -0.5  -0.7  100 %  not-front        -0    -
+  michelle-lateral_raise-v60-a20            8  8   -11   -0.6  -0.9  100 %  not-front        21    -
+  michelle-lateral_raise-v90-a-10           6  6     6   -0.8  -1.0   99 %  not-front       -12    -
+  michelle-lateral_raise-v90-a0             7  7     5   -0.8  -1.1   99 %  not-front        -0    -
+  michelle-lateral_raise-v90-a20            5  5     6   -0.8  -1.0   99 %  not-front        21    -
+  michelle-overhead_press-v0-a-10           7  7   -29   -0.7  -0.6  100 %  not-compared-lift  -22    -
+  michelle-overhead_press-v0-a0             8  8   -36   -0.6  -0.5  100 %  not-compared-lift   -0    -
+  michelle-overhead_press-v0-a20            6  6   -42   -0.6  -0.4  100 %  not-compared-lift    6    -
+  michelle-overhead_press-v30-a-10          8  8   -37   -0.9  -0.7  100 %  not-compared-lift  -22    -
+  michelle-overhead_press-v30-a0            5  5   -40   -0.9  -0.7  100 %  not-compared-lift   -0    -
+  michelle-overhead_press-v30-a20           7  7   -41   -0.9  -0.7  100 %  not-compared-lift    2    -
+  michelle-overhead_press-v60-a-10          5  5   -31   -1.0  -0.7  100 %  not-compared-lift  -22    -
+  michelle-overhead_press-v60-a0            6  6   -32   -1.1  -0.7  100 %  not-compared-lift   -0    -
+  michelle-overhead_press-v60-a20           8  8   -35   -1.0  -0.8  100 %  not-compared-lift    2    -
+  michelle-overhead_press-v90-a-10          6  0     -      -     -  100 %  not-compared-lift  -23    -
+  michelle-overhead_press-v90-a0            7  0     -      -     -  100 %  not-compared-lift   -0    -
+  michelle-overhead_press-v90-a20           5  0     -      -     -  100 %  not-compared-lift    6    -
+  michelle-squat-v0-a-10                    7  0     -      -     -   99 %  not-compared-lift  -11    -
+  michelle-squat-v0-a0                      8  8   -65   -0.9  -0.6   97 %  not-compared-lift    0    -
+  michelle-squat-v0-a20                     6  5   -64   -1.0  -0.7  100 %  not-compared-lift   19    -
+  michelle-squat-v30-a-10                   8  8   -18   -0.7  -0.5  100 %  not-compared-lift  -11    -
+  michelle-squat-v30-a0                     5  5   -18   -0.9  -0.5  100 %  not-compared-lift    0    -
+  michelle-squat-v30-a20                    7  7   -26   -0.7  -0.6  100 %  not-compared-lift   19    -
+  michelle-squat-v60-a-10                   5  5     0   -0.7  -0.5  100 %  not-compared-lift  -11    -
+  michelle-squat-v60-a0                     6  6    -1   -0.8  -0.5  100 %  not-compared-lift    0    -
+  michelle-squat-v60-a20                    8  8    -3   -0.7  -0.6  100 %  not-compared-lift   19    -
+  michelle-squat-v90-a-10                   6  6    -6   -0.7  -0.6  100 %  not-compared-lift  -11    -
+  michelle-squat-v90-a0                     7  7    -0   -0.6  -0.5  100 %  not-compared-lift    0    -
+  michelle-squat-v90-a20                    5  5    -4   -0.6  -0.6  100 %  not-compared-lift   19    -
+  soldier-bicep_curl-v0-a-10                7  7   -56   -0.9  -1.0  100 %  not-compared-lift  -11    -
+  soldier-bicep_curl-v0-a0                  8  8   -74   -0.8  -1.1  100 %  not-compared-lift    0    -
+  soldier-bicep_curl-v0-a20                 6  6  -104   -0.8  -1.0  100 %  not-compared-lift   18    -
+  soldier-bicep_curl-v30-a-10               8  8   -44   -0.7  -0.8  100 %  not-compared-lift  -11    -
+  soldier-bicep_curl-v30-a0                 5  5   -45   -0.6  -0.9  100 %  not-compared-lift    0    -
+  soldier-bicep_curl-v30-a20                7  7   -42   -0.7  -1.0  100 %  not-compared-lift   18    -
+  soldier-bicep_curl-v60-a-10               5  6   -86   -0.8  -1.0  100 %  not-compared-lift  -11    -
+  soldier-bicep_curl-v60-a0                 6  6   -94   -1.0  -1.1  100 %  not-compared-lift    0    -
+  soldier-bicep_curl-v60-a20                8 15  -110   -0.9  -1.2  100 %  not-compared-lift   18    -
+  soldier-bicep_curl-v90-a-10               6  2   -30   -0.7  -0.8  100 %  not-compared-lift  -11    -
+  soldier-bicep_curl-v90-a0                 7  6   -20   -1.0  -1.3  100 %  not-compared-lift    0    -
+  soldier-bicep_curl-v90-a20                5  5   -21   -0.8  -1.3  100 %  not-compared-lift   18    -
+  soldier-lateral_raise-v0-a-10             7  7    -8   -0.4  -0.6  100 %  measured        -12   -7
+  soldier-lateral_raise-v0-a0               8  8    -7   -0.5  -0.6  100 %  measured          0   -5
+  soldier-lateral_raise-v0-a20              6  6    -8   -0.5  -0.7  100 %  measured         21   23
+  soldier-lateral_raise-v30-a-10            8  8   -12   -0.4  -0.6  100 %  not-front       -12    -
+  soldier-lateral_raise-v30-a0              5  5   -14   -0.5  -0.7  100 %  not-front         0    -
+  soldier-lateral_raise-v30-a20             7  7    -6   -0.6  -0.8  100 %  not-front        21    -
+  soldier-lateral_raise-v60-a-10            5  5    12   -0.3  -0.6   94 %  not-front       -12    -
+  soldier-lateral_raise-v60-a0              6  6     7   -0.3  -0.5   95 %  not-front         0    -
+  soldier-lateral_raise-v60-a20             8  8     2   -0.4  -0.6   93 %  not-front        21    -
+  soldier-lateral_raise-v90-a-10            6  7   -53   -0.9  -1.0  100 %  not-front       -12    -
+  soldier-lateral_raise-v90-a0              7  7   -53   -0.9  -0.9  100 %  not-front         0    -
+  soldier-lateral_raise-v90-a20             5  4   -50   -0.9  -0.9  100 %  not-front        21    -
+  soldier-overhead_press-v0-a-10            7  7    -7   -0.6  -0.5  100 %  not-compared-lift  -23    -
+  soldier-overhead_press-v0-a0              8  8   -17   -0.7  -0.5  100 %  not-compared-lift   -0    -
+  soldier-overhead_press-v0-a20             6  6   -29   -0.8  -0.6  100 %  not-compared-lift    5    -
+  soldier-overhead_press-v30-a-10           8 10   -32   -1.0  -0.7   94 %  not-compared-lift  -22    -
+  soldier-overhead_press-v30-a0             5  5   -46   -1.0  -0.6   63 %  not-compared-lift   -0    -
+  soldier-overhead_press-v30-a20            7  9   -45   -0.7  -0.6   88 %  not-compared-lift    6    -
+  soldier-overhead_press-v60-a-10           5  0     -      -     -  100 %  not-compared-lift  -22    -
+  soldier-overhead_press-v60-a0             6  9   -57   -1.4  -0.8  100 %  not-compared-lift   -0    -
+  soldier-overhead_press-v60-a20            8 13   -66   -0.9  -0.8  100 %  not-compared-lift    3    -
+  soldier-overhead_press-v90-a-10           6  7   -49   -0.6  -0.8   90 %  not-compared-lift  -23    -
+  soldier-overhead_press-v90-a0             7 12   -48   -1.0  -0.8   90 %  not-compared-lift   -0    -
+  soldier-overhead_press-v90-a20            5  5   -47   -0.8  -0.5   91 %  not-compared-lift    2    -
+  soldier-squat-v0-a-10                     7  0     -      -     -  100 %  not-compared-lift  -11    -
+  soldier-squat-v0-a0                       8  6   -72   -0.9  -0.6  100 %  not-compared-lift   -0    -
+  soldier-squat-v0-a20                      6  6   -64   -0.7  -0.5  100 %  not-compared-lift   19    -
+  soldier-squat-v30-a-10                    8  8   -47   -0.8  -0.5  100 %  not-compared-lift  -11    -
+  soldier-squat-v30-a0                      5  5   -42   -0.5  -0.3  100 %  not-compared-lift   -0    -
+  soldier-squat-v30-a20                     7  7   -39   -0.7  -0.5   98 %  not-compared-lift   19    -
+  soldier-squat-v60-a-10                    5  5   -24   -0.8  -0.5  100 %  not-compared-lift  -11    -
+  soldier-squat-v60-a0                      6  6   -27   -0.9  -0.6  100 %  not-compared-lift   -0    -
+  soldier-squat-v60-a20                     8  8   -43   -0.7  -0.6  100 %  not-compared-lift   19    -
+  soldier-squat-v90-a-10                    6  6    -7   -0.6  -0.5  100 %  not-compared-lift  -11    -
+  soldier-squat-v90-a0                      7  7    -7   -0.7  -0.5  100 %  not-compared-lift   -0    -
+  soldier-squat-v90-a20                     5  5    -3   -0.6  -0.4  100 %  not-compared-lift   19    -

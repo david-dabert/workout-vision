@@ -310,7 +310,7 @@ describe('left/right line (front-view sets)', () => {
     const sides = { left: 92, right: 74, si: -17, reps: 10 };
     const s = reportSheet({ ...base, reps, sides });
     expect(s.summary).toContain('Amplitude gauche 92° · droite 74° · écart 17 %');
-    expect(s.summary.some(l => l.startsWith('Série filmée de face'))).toBe(true);
+    expect(s.summary.some(l => l.startsWith('Série filmée bien de face'))).toBe(true);
     expect(reportSheet({ ...base, reps }).summary.some(l => l.includes('gauche'))).toBe(false);
     expect(reportSheet({ ...base, reps, sides, measures: false }).summary.some(l => l.includes('gauche'))).toBe(false);
   });
