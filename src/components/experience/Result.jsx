@@ -16,6 +16,7 @@ import Digits from './Digits';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
+import { partialIn } from './tempo';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -219,6 +220,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else { detailHead = `${word} · `; detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
+      : partialIn(reps)(r)
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const rom = whole.reduce((a, r) => a + r.romDegrees, 0) / whole.length;

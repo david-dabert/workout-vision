@@ -1,7 +1,7 @@
 // Step 3, the account of a counted set: what the app measured, one tip for the next session and a word
 // of encouragement, in the words David approved on 29 September (test/real-phone/growth-step3/texts.md).
 // Pure functions of the counted reps, so the result screen and the tests read the same numbers.
-import { setTempo } from './tempo';
+import { setTempo, timedReps } from './tempo';
 import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN } from './measures';
 
 const NB = ' ';
@@ -30,7 +30,7 @@ export function isShortIn(reps) {
  * prints it; the opener checks against it (source in report-sheet.js, setMeasures).
  */
 export function speedChange(reps) {
-  const w = whole(reps);
+  const w = timedReps(reps);
   if (w.length < 4) return null;
   const speed = r => (r.concentricSec > 0 ? r.romDegrees / r.concentricSec : null);
   const pair = [w[0], w[1], w[w.length - 2], w[w.length - 1]].map(speed);
@@ -43,7 +43,7 @@ export function speedChange(reps) {
 // From four whole reps: how much longer the last two reps' concentric phase took than the first two's,
 // in whole percent (negative: faster). App measure; what it means is in the tempo note (source 5).
 export function slowdown(reps) {
-  const w = whole(reps);
+  const w = timedReps(reps);
   if (w.length < 4) return null;
   const a = mean(w.slice(0, 2).map(r => r.concentricSec)), b = mean(w.slice(-2).map(r => r.concentricSec));
   return a > 0 ? Math.round((b / a - 1) * 100) : null;

@@ -2,7 +2,7 @@
 // them from here, so what the visitor sees is what the reader receives.
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
-import { decimal, repTempo, setTempo } from './tempo';
+import { decimal, partialIn, repTempo, setTempo, timedReps } from './tempo';
 import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
 import { sidesLines } from './sides-line';
 
@@ -30,7 +30,7 @@ export { decimal } from './tempo';
  * no change.
  */
 export function setMeasures(all) {
-  const reps = (all || []).filter(r => !r.clipped);
+  const reps = timedReps(all);
   if (!reps.length) return null;
   const tut = reps.reduce((sum, r) => sum + (r.endTime - r.startTime), 0);
   return { tut, speedChange: speedChange(all) };
@@ -47,6 +47,7 @@ export function repTable({ reps, first, fr }) {
   // Short rep: range under 85% of the set's median, by the rule the result screen and the
   // opener use (set-account.js), so the three never disagree on an even number of reps.
   const isShort = isShortIn(reps);
+  const partial = partialIn(reps);
   // Per-rep tempo in coach notation: moving phases (lowering, lifting) to the tenth, so a 0.6 s
   // lift reads 0,6 and not 1; pauses (bottom, top) in whole seconds.
   const phase = v => decimal(v, fr);
@@ -54,9 +55,10 @@ export function repTable({ reps, first, fr }) {
   const tempoStr = t => [phase(t.lowering), pause(t.bottom), phase(t.lifting), pause(t.top)].join('-');
   const rows = allReps.map((r, i) => {
     if (r.clipped) return [String(i + 1), '…', `${Math.round(r.romDegrees)}°`, '…', '…'];
+    const range = `${Math.round(r.romDegrees)}°${isShort(r) ? `${NBSP}▾` : ''}`;
+    if (partial(r)) return [String(i + 1), '…', range, '…', '…'];
     const nextStart = i + 1 < allReps.length ? allReps[i + 1].startTime : null;
     const t = repTempo(r, nextStart, liftFirst);
-    const range = `${Math.round(r.romDegrees)}°${isShort(r) ? `${NBSP}▾` : ''}`;
     return [String(i + 1), tempoStr(t), range, String(Math.round(r.peakSpeed || 0)), String(Math.round(r.meanSpeed || 0))];
   });
   const columns = fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'];
@@ -108,6 +110,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   // Without validated measures (measures.js): no per-rep table, no short-rep mark, and of the
   // summary only the previous set's count.
   const hasShort = shown && allReps.some(isShortIn(reps));
+  const hasPartial = shown && allReps.some(partialIn(reps));
   const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr }) : { columns: [], rows: [] };
   // After a correction the rows are the marks the app detected, not the reps the user saved.
   if (shown && counted != null && counted !== count && columns.length) columns[0] = fr ? 'Repère' : 'Mark';
@@ -186,6 +189,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     rows,
     summary,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
+    partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',
     // Beside every measure printed, while none is validated (measures.js).
     experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',
     notesLabel: 'Notes',

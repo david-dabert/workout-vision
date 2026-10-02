@@ -219,6 +219,7 @@ export function reportPdf(sheet) {
   // One item per line, each its own paragraph (Luc, 29 September).
   sheet.summary.forEach(sheetLine);
   if (sheet.shortRepNote) sheetLine(sheet.shortRepNote);
+  if (sheet.partialRepNote) sheetLine(sheet.partialRepNote);
 
   // Notes, when the user wrote any, then the foot. The notes label keeps its first line, and the
   // foot never stands alone on a page: it takes the last two lines of notes with it.

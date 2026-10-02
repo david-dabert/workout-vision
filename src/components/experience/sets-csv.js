@@ -11,6 +11,7 @@ import { countedBy, setTime } from './sets';
 import { confirmed, storedLoad, liftKey } from './progress';
 import { setMeasures, setTempo } from './report-sheet';
 import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN } from './measures';
+import { partialIn } from './tempo';
 
 // Spreadsheets (Excel above all) read a UTF-8 file as UTF-8 only when it starts with this mark.
 export const BOM = '﻿';
@@ -108,9 +109,10 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
     const reps = measuredReps(w);
     if (!reps) continue;
     const when = isoLocal(setTime(w)), lift = label(w);
+    const partial = partialIn(reps);
     reps.forEach((r, i) => {
-      // A rep the video cut is counted, its range shown, its times and speeds not (as in the report).
-      const cut = !!r.clipped, whole = x => (cut ? null : x);
+      // A rep the video cut, or a partial one (tempo.js), is counted, its range shown, its times and speeds not (as in the report).
+      const cut = !!r.clipped, whole = x => (cut || partial(r) ? null : x);
       rows.push([when, lift, Number.isFinite(r.index) ? r.index : i + 1, num(r.romDegrees, 0, f),
         num(whole(r.concentricSec), 2, f), num(whole(r.eccentricSec), 2, f),
         num(whole(r.peakSpeed), 0, f), num(whole(r.meanSpeed), 0, f), cut ? f.yes : f.no]);

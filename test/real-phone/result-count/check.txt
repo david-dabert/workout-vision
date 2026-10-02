@@ -47,7 +47,7 @@ pass  en replay, saved 7: no provenance line
 pass  en replay, saved 7: the experimental label stands under the replay's measures
 pass  en replay, saved 7: the chip counts the 7 detected marks, none invented
 pass  en replay, saved 8: position reads as a detected mark ("Detected mark 3 of 7")
-pass  en replay, saved 8: detail reads as a detected mark ("Detected mark 3 of 7 · 0.3 s · 90° · conc. 0.1 s · ecc. 0.1 s")
+pass  en replay, saved 8: detail reads as a detected mark ("Detected mark 3 of 7 · 90° · partial, not timed")
 pass  en replay, saved 8: both counts stated ("The app detected 7 reps. You saved 8.")
 pass  en replay, saved 8: past the marks, the hint names marks ("Touch a mark on the line to see it again.")
 pass  en replay, saved 8: the experimental label stands under the replay's measures
@@ -57,7 +57,7 @@ pass  fr replay, saved 7: no provenance line
 pass  fr replay, saved 7: the experimental label stands under the replay's measures
 pass  fr replay, saved 7: the chip counts the 7 detected marks, none invented
 pass  fr replay, saved 8: position reads as a detected mark ("Repère détecté 3 sur 7")
-pass  fr replay, saved 8: detail reads as a detected mark ("Repère détecté 3 sur 7 · 0,3 s · 90° · conc. 0,1 s · exc. 0,1 s")
+pass  fr replay, saved 8: detail reads as a detected mark ("Repère détecté 3 sur 7 · 90° · partiel, non chronométré")
 pass  fr replay, saved 8: both counts stated ("L’app a détecté 7 répétitions. Vous avez enregistré 8.")
 pass  fr replay, saved 8: past the marks, the hint names marks ("Touchez un repère sur la ligne pour le revoir.")
 pass  fr replay, saved 8: the experimental label stands under the replay's measures
