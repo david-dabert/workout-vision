@@ -63,14 +63,16 @@ pass  fr replay, saved 8: past the marks, the hint names marks ("Touchez un rep√
 pass  fr replay, saved 8: the experimental label stands under the replay's measures
 pass  fr replay, saved 8: the chip counts the 7 detected marks, none invented
 pass  en: the correction numeral opens a number pad and is named
-pass  en: a cleared number cannot be saved
+pass  en: typing 5 replaces the 7 (drew 5)
+pass  en: a digit typed then deleted leaves the number it opened on (drew 5)
 pass  en: typing 34 draws 34
 pass  en: typed correction saved as 34
 pass  fr: the correction numeral opens a number pad and is named
-pass  fr: a cleared number cannot be saved
+pass  fr: typing 5 replaces the 7 (drew 5)
+pass  fr: a digit typed then deleted leaves the number it opened on (drew 5)
 pass  fr: typing 34 draws 34
 pass  fr: typed correction saved as 34
 pass  en, beginner with motion: the label is there before the question (before the question, 1 label)
 pass  fr, beginner with motion: the label is there before the question (before the question, 1 label)
 
-74 pass, 0 fail
+76 pass, 0 fail

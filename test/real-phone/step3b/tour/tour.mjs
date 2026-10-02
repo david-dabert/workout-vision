@@ -150,8 +150,8 @@ try {
   await shot('06-saved');
 
   // ── 7. Open Coach Report ──
-  const reportBtn = page.locator('[data-testid="saved-card"] .btn-line').first();
-  await expect(reportBtn).toContainText('Rapport de séance');
+  const reportBtn = page.locator('[data-testid="saved-card"] button', { hasText: 'Rapport de séance' });
+  await expect(reportBtn).toHaveCount(1);
   await reportBtn.click();
   await between('t07-to-report');
   await page.waitForTimeout(800);
@@ -239,7 +239,7 @@ try {
   await expect(savedCard).toBeVisible();
 
   // Tap "Nouvelle série" to go back to Choice
-  const newSetBtn = page.locator('.text-btn');
+  const newSetBtn = page.locator('[data-testid="saved-card"] button', { hasText: 'Nouvelle série' });
   await newSetBtn.click();
   await between('t08-to-choice');
   await page.waitForTimeout(SETTLE);

@@ -41,20 +41,25 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.endsWith('/mediapipe/pose_landmarker_full.task')) {
-    event.respondWith(caches.open(MODEL_CACHE).then(async (cache) => {
-      const cached = await cache.match(request);
-      if (cached) return cached;
+    // Keeping the model offline is a convenience: when the phone refuses to open, read or fill the store
+    // (little space left, private browsing), the verified download is still handed to the analysis
+    // (src/lib/__tests__/sw-model.test.js). A download whose fingerprint differs is never handed over.
+    event.respondWith((async () => {
+      let cache = null;
+      try {
+        cache = await caches.open(MODEL_CACHE);
+        const cached = await cache.match(request);
+        if (cached) return cached;
+      } catch { cache = null; }
       const response = await fetch(request);
       if (response.ok) {
         const bytes = await response.clone().arrayBuffer();
         const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
         if (MODEL_CACHE !== `wv-model-${hash}`) throw new Error('Pose model integrity mismatch');
-        // Keeping the model offline is a convenience: when the phone refuses to store it (little space
-        // left, private browsing), the verified download is still handed to the analysis.
-        try { await cache.put(request, response.clone()); } catch { /* not kept offline */ }
+        if (cache) { try { await cache.put(request, response.clone()); } catch { /* not kept offline */ } }
       }
       return response;
-    }));
+    })());
     return;
   }
 

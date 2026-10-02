@@ -154,19 +154,31 @@ try {
       await page.context().close();
     }
   }
-  // The numeral is a field: a tap, then typing 34, replaces the 7 (three taps, not 27); a cleared field cannot
-  // be saved; the number pad is numeric and the field is named for a screen reader.
+  // The numeral is a field: a tap, then typing, replaces the 7 wherever iOS leaves the caret (WebKit drops a
+  // select() made on focus; review of 2 October), so 7 to 34 is three taps, not 27. Typed then deleted, the
+  // number is the 7 it opened on. The number pad is numeric and the field is named for a screen reader.
+  const drawn = page => page.locator('[data-testid="fix-card"] .stepper-n [aria-live]').textContent();
   for (const lang of ['en', 'fr']) {
     const fr = lang === 'fr', page = await open(browser, { lang, level: 'intermediate' });
     await page.locator('[data-testid="ask-card"] .btn-ghost').click();
     const field = page.locator('[data-testid="fix-card"] .stepper-in');
     await field.waitFor({ timeout: 10000 });
     check(await field.getAttribute('inputmode') === 'numeric' && !!(await field.getAttribute('aria-label')), `${lang}: the correction numeral opens a number pad and is named`);
+    // A caret left inside the old number, as a tap on an iPhone leaves it.
     await field.click();
+    await field.evaluate(el => { try { el.setSelectionRange(el.value.length, el.value.length); } catch { /* empty field */ } });
+    await page.keyboard.type('5');
+    check(await drawn(page) === '5', `${lang}: typing 5 replaces the 7 (drew ${await drawn(page)})`);
+    await field.blur();
+    // Opened again on 5: a digit typed, then deleted, leaves the 5 it opened on.
+    await field.click();
+    await page.keyboard.type('3');
     await page.keyboard.press('Backspace');
-    check(await page.locator('[data-testid="fix-card"] .btn-primary').isDisabled(), `${lang}: a cleared number cannot be saved`);
+    check(await drawn(page) === '5', `${lang}: a digit typed then deleted leaves the number it opened on (drew ${await drawn(page)})`);
+    await field.blur();
+    await field.click();
     await page.keyboard.type('34');
-    check((await page.locator('[data-testid="fix-card"] .stepper-n [aria-live]').textContent()) === '34', `${lang}: typing 34 draws 34`);
+    check(await drawn(page) === '34', `${lang}: typing 34 draws 34`);
     await page.locator('[data-testid="fix-card"] .btn-primary').click();
     await page.locator('.saved-corr').waitFor({ timeout: 10000 });
     check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app : 7. Corrigé : 34.' : 'Counted by the app: 7. Corrected: 34.'), `${lang}: typed correction saved as 34`);

@@ -48,8 +48,10 @@ try {
     await p.locator('[data-testid="ask-card"] .btn-primary').click();
     await p.waitForSelector('[data-testid="saved-card"]');
     await p.getByRole('button', { name: 'Arrêter le repos' }).click();
-    const gold = await p.locator('[data-testid="saved-card"] .btn-line:not(.is-quiet)').count();
-    say(gold === 1, `gold outlines on the saved card after a stop: ${gold}`);
+    // One gold outline after a stop, and it is the next set's (design review of 1 October).
+    const gold = p.locator('[data-testid="saved-card"] .btn-line:not(.is-quiet)');
+    const goldN = await gold.count(), goldText = goldN === 1 ? (await gold.textContent()).trim() : '';
+    say(goldN === 1 && goldText === 'Nouvelle série', `gold outlines on the saved card after a stop: ${goldN} ("${goldText}")`);
     await p.getByRole('button', { name: 'Rapport de séance' }).click();
     await p.waitForSelector('.sheet', { timeout: 20000 });
     const text = await p.locator('.sheet').innerText();

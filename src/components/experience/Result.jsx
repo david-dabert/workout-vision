@@ -150,8 +150,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
   const [trueN, setTrueN] = useState(result.count);
-  // The typed number while the numeral is being edited ('' once cleared); null when not typing.
+  // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
+  // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
+  const typedFrom = useRef(0);
   const [shown, setShown] = useState(reduced ? result.count : 0);
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
@@ -454,17 +456,20 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
                 takes three taps, not 27 (design review of 1 October). The figures stay drawn by Digits underneath.
                 aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
             <span className={`stepper-n${typed !== null ? ' is-typing' : ''}`}>
-              <span aria-live="polite" aria-atomic="true"><Digits text={typed === '' ? '–' : trueN} /></span>
+              <span aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
+              {/* The field opens empty, so what is typed replaces the number wherever iOS leaves the caret (a
+                  select() on focus does not hold after a tap in WebKit: review of 2 October). Until a digit is
+                  typed, and if every digit is deleted, the number stays the one it opened on. */}
               <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done"
                 aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? String(trueN)}
-                onFocus={e => { setTyped(String(trueN)); e.target.select(); }}
+                onFocus={() => { typedFrom.current = trueN; setTyped(''); }}
                 onBlur={() => setTyped(null)}
-                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(-2); setTyped(d); if (d !== '') setTrueN(Number(d)); }}
+                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); setTrueN(d === '' ? typedFrom.current : Number(d)); }}
                 onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
             </span>
             <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
-          <button type="button" className="btn-primary press" disabled={typed === ''} onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
+          <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
             <span>{fr ? 'Enregistrer' : 'Save'}</span>
           </button>
         </div>
