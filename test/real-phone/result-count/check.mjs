@@ -154,6 +154,99 @@ try {
       await page.context().close();
     }
   }
+  // The numeral is a field: a tap, then typing, replaces the 7 wherever iOS leaves the caret (WebKit drops a
+  // select() made on focus; review of 2 October), so 7 to 34 is three taps, not 27. Typed then deleted, the
+  // number is the 7 it opened on. The number pad is numeric and the field is named for a screen reader.
+  const drawn = page => page.locator('[data-testid="fix-card"] .stepper-n [aria-live]').textContent();
+  for (const lang of ['en', 'fr']) {
+    const fr = lang === 'fr', page = await open(browser, { lang, level: 'intermediate' });
+    await page.locator('[data-testid="ask-card"] .btn-ghost').click();
+    const field = page.locator('[data-testid="fix-card"] .stepper-in');
+    await field.waitFor({ timeout: 10000 });
+    check(await field.getAttribute('inputmode') === 'numeric' && !!(await field.getAttribute('aria-label')), `${lang}: the correction numeral opens a number pad and is named`);
+    // A caret left inside the old number, as a tap on an iPhone leaves it.
+    await field.click();
+    await field.evaluate(el => { try { el.setSelectionRange(el.value.length, el.value.length); } catch { /* empty field */ } });
+    await page.keyboard.type('5');
+    check(await drawn(page) === '5', `${lang}: typing 5 replaces the 7 (drew ${await drawn(page)})`);
+    await field.blur();
+    // Opened again on 5: a digit typed, then deleted, leaves the 5 it opened on.
+    await field.click();
+    await page.keyboard.type('3');
+    await page.keyboard.press('Backspace');
+    check(await drawn(page) === '5', `${lang}: a digit typed then deleted leaves the number it opened on (drew ${await drawn(page)})`);
+    await field.blur();
+    await field.click();
+    await page.keyboard.type('34');
+    check(await drawn(page) === '34', `${lang}: typing 34 draws 34`);
+    await page.locator('[data-testid="fix-card"] .btn-primary').click();
+    await page.locator('.saved-corr').waitFor({ timeout: 10000 });
+    check((await page.locator('.saved-corr').textContent()) === (fr ? 'Compté par l’app : 7. Corrigé : 34.' : 'Counted by the app: 7. Corrected: 34.'), `${lang}: typed correction saved as 34`);
+    await page.context().close();
+  }
+  // A saved set is worth keeping: saving asks the browser to keep the app's storage (keep-sets.js).
+  {
+    const page = await (await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' })).newPage();
+    await page.addInitScript(() => {
+      localStorage.setItem('wv_lang', 'fr'); localStorage.setItem('wv_level', 'intermediate');
+      window.__persistAsked = 0;
+      const st = navigator.storage;
+      st.persisted = async () => false;
+      st.persist = async () => { window.__persistAsked++; return true; };
+    });
+    await page.goto(URL);
+    await page.locator('[data-testid="ask-card"]').waitFor({ timeout: 30000 });
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    await page.locator('[data-testid="saved-card"]').waitFor({ timeout: 10000 });
+    const asked = await page.waitForFunction(() => window.__persistAsked > 0, null, { timeout: 5000 }).then(() => true, () => false);
+    check(asked, 'saving a set asks the browser to keep the app\'s storage');
+    await page.context().close();
+  }
+  // Helping improve the count (contribute.js): asked once on the saved card when the level is already known;
+  // a yes keeps this set with the app's count, the count kept and the pose, never a video; no second ask.
+  for (const lang of ['fr', 'en']) {
+    const fr = lang === 'fr', page = await open(browser, { lang, level: 'intermediate' });
+    await page.locator('[data-testid="ask-card"] .btn-ghost').click();
+    await page.locator('[data-testid="fix-card"] .stepper-in').click();
+    await page.keyboard.type('9');
+    await page.locator('[data-testid="fix-card"] .btn-primary').click();
+    const ask = page.locator('[data-testid="contribute-ask"]');
+    const shown = await ask.waitFor({ timeout: 10000 }).then(() => true, () => false);
+    check(shown && (await ask.textContent()).includes(fr ? 'jamais la vidéo' : 'never the video'), `${lang}: the saved card asks once whether to help, saying the video never goes`);
+    await ask.getByRole('button', { name: fr ? 'Oui, aider' : 'Yes, help' }).click();
+    const kept = await page.waitForFunction(() => new Promise(ok => {
+      const r = indexedDB.open('workoutVision');
+      r.onsuccess = () => { try { const q = r.result.transaction('contributions').objectStore('contributions').getAll(); q.onsuccess = () => ok(q.result.length ? q.result : null); q.onerror = () => ok(null); } catch { ok(null); } };
+      r.onerror = () => ok(null);
+    }), null, { timeout: 5000 }).then(h => h.jsonValue(), () => null);
+    const c = kept?.[0];
+    check(kept?.length === 1 && c.count === 9 && c.appCount === 7 && c.corrected === true && Array.isArray(c.worldLandmarks) && Array.isArray(c.imageLandmarks) && c.metadata?.extractionMethod === 'fixture' && !('video' in c), `${lang}: a yes keeps this set: kept 9 over the app's 7, with the result's pose and decoder (${kept?.length ?? 0} kept)`);
+    check(await page.evaluate(() => localStorage.getItem('wv_contribute')) === 'yes', `${lang}: the yes is remembered`);
+    await page.context().close();
+    const again = await open(browser, { lang, level: 'intermediate' });
+    await again.addInitScript(() => localStorage.setItem('wv_contribute', 'yes'));
+    await again.reload();
+    await again.locator('[data-testid="ask-card"]').waitFor({ timeout: 30000 });
+    await again.locator('[data-testid="ask-card"] .btn-primary').click();
+    await again.locator('[data-testid="saved-card"]').waitFor({ timeout: 10000 });
+    check(await again.locator('[data-testid="contribute-ask"]').count() === 0, `${lang}: once answered, the saved card asks no more`);
+    await again.context().close();
+  }
+  // Asked once, answered or not (review of 2 October): a question left unanswered does not come back.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.addInitScript(() => { localStorage.setItem('wv_lang', 'fr'); localStorage.setItem('wv_level', 'intermediate'); });
+    await page.goto(URL);
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    const first = await page.locator('[data-testid="contribute-ask"]').waitFor({ timeout: 10000 }).then(() => true, () => false);
+    await page.reload();
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    await page.locator('[data-testid="saved-card"]').waitFor({ timeout: 10000 });
+    const second = await page.locator('[data-testid="contribute-ask"]').count();
+    check(first && second === 0, `the question shown once and left unanswered is not asked again (first ${first}, then ${second})`);
+    await ctx.close();
+  }
   // A beginner without Reduce Motion: the account and the marks show during the count-up, before the
   // question; the experimental label must already be there (review of 1 October).
   for (const lang of ['en', 'fr']) {

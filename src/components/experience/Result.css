@@ -59,7 +59,15 @@
 .wv-experience .stepper { display: flex; align-items: center; justify-content: center; gap: 22px; }
 .wv-experience .round { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--hair-2); font-size: 24px; line-height: 1; display: grid; place-items: center; color: var(--bone); min-height: 44px; cursor: pointer; }
 .wv-experience .round:disabled { opacity: 0.35; cursor: default; }
-.wv-experience .stepper-n { min-width: 90px; text-align: center; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; font-variant-numeric: tabular-nums; }
+.wv-experience .stepper-n { min-width: 90px; text-align: center; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; font-variant-numeric: tabular-nums; position: relative; }
+.wv-experience .stepper-in { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; color: transparent; caret-color: transparent; font-size: 16px; text-align: center; cursor: text; -webkit-tap-highlight-color: transparent; }
+.wv-experience .stepper-in::selection { background: transparent; }
+/* While typing: one lamp-coloured line under the figures says the number is open to the keyboard. It is
+   also the field's focus indicator (the field itself is invisible), so no ring is drawn around it. */
+.wv-experience .stepper-in:focus, .wv-experience .stepper-in:focus-visible { outline: none; }
+.wv-experience .stepper-n::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: -10px; height: 2px; border-radius: 1px; background: var(--lamp); opacity: 0; transition: opacity 160ms ease; }
+.wv-experience .stepper-n.is-typing::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .wv-experience .stepper-n::after { transition: none; } }
 
 /* Saved. */
 .wv-experience .saved { margin-top: var(--s-5); display: flex; flex-direction: column; gap: 10px; }

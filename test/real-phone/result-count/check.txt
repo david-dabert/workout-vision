@@ -62,7 +62,27 @@ pass  fr replay, saved 8: both counts stated ("L’app a détecté 7 répétitio
 pass  fr replay, saved 8: past the marks, the hint names marks ("Touchez un repère sur la ligne pour le revoir.")
 pass  fr replay, saved 8: the experimental label stands under the replay's measures
 pass  fr replay, saved 8: the chip counts the 7 detected marks, none invented
+pass  en: the correction numeral opens a number pad and is named
+pass  en: typing 5 replaces the 7 (drew 5)
+pass  en: a digit typed then deleted leaves the number it opened on (drew 5)
+pass  en: typing 34 draws 34
+pass  en: typed correction saved as 34
+pass  fr: the correction numeral opens a number pad and is named
+pass  fr: typing 5 replaces the 7 (drew 5)
+pass  fr: a digit typed then deleted leaves the number it opened on (drew 5)
+pass  fr: typing 34 draws 34
+pass  fr: typed correction saved as 34
+pass  saving a set asks the browser to keep the app's storage
+pass  fr: the saved card asks once whether to help, saying the video never goes
+pass  fr: a yes keeps this set: kept 9 over the app's 7, with the result's pose and decoder (1 kept)
+pass  fr: the yes is remembered
+pass  fr: once answered, the saved card asks no more
+pass  en: the saved card asks once whether to help, saying the video never goes
+pass  en: a yes keeps this set: kept 9 over the app's 7, with the result's pose and decoder (1 kept)
+pass  en: the yes is remembered
+pass  en: once answered, the saved card asks no more
+pass  the question shown once and left unanswered is not asked again (first true, then 0)
 pass  en, beginner with motion: the label is there before the question (before the question, 1 label)
 pass  fr, beginner with motion: the label is there before the question (before the question, 1 label)
 
-66 pass, 0 fail
+86 pass, 0 fail

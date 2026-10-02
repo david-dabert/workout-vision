@@ -5,6 +5,9 @@ import { exerciseName } from './exercise-info';
 import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
+import { askToKeep } from '../../lib/keep-sets';
+import { contribution, contributeAsked, keepContribution, markContributeAsked, readChoice } from '../../lib/contribute';
+import ContributeAsk from './ContributeAsk';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
@@ -150,6 +153,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
   const [trueN, setTrueN] = useState(result.count);
+  // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
+  // typing. The number it opened on is kept, so an empty field means "unchanged".
+  const [typed, setTyped] = useState(null);
+  const typedFrom = useRef(0);
   const [shown, setShown] = useState(reduced ? result.count : 0);
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
@@ -238,6 +245,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [chosen, setChosen] = useState('');
   const offerLevel = shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
+  // Asked once, on a saved card that asks nothing else (the level question comes first); shown is asked.
+  const [askContribute] = useState(() => readChoice() === null && !contributeAsked());
+  const showContribute = step === 'saved' && !offerLevel && askContribute;
+  useEffect(() => { if (showContribute) markContributeAsked(); }, [showContribute]);
   function chooseLevel(l) { writeLevel(l); setChosen(l); }
   const marksRef = useRef(null);
   function pick(e) {
@@ -285,6 +296,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The set saved, as a contribution, kept on this phone until the person sends or erases it.
+  const keepThis = n => { keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() })).catch(() => {}); };
+
   async function doSave(n, corrected) {
     if (saving.current) return;
     saving.current = true;
@@ -303,6 +317,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         repDetailsVersion: 2,
       });
       refreshSets();
+      // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
+      askToKeep();
+      // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
+      if (readChoice() === 'yes') keepThis(n);
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
@@ -407,7 +425,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const blocks = {
     count: <div key="count" className="res-count">
       <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
-      <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}</p>
+      <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{result.test ? (fr ? ` en ${result.test.windowSec}\u00A0secondes` : ` in ${result.test.windowSec} seconds`) : ''}</p>
+      {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
+      {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{fr ? `La vidéo s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`}</p>}
       {/* Under the count from the first frame: every measure on this screen (marks, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && count > 0 && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
       <p className="sr" role="status">{step === 'saved'
@@ -447,10 +467,23 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <div className="glass appear" data-testid="fix-card">
           <p className="ask-q">{fr ? 'Combien en avez-vous fait ?' : 'How many did you do?'}</p>
           <div className="stepper">
-            <button className="round press" disabled={trueN <= 0} onClick={() => setTrueN(n => Math.max(0, n - 1))} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
-            {/* aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
-            <span className="stepper-n" aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
-            <button className="round press" disabled={trueN >= 99} onClick={() => setTrueN(n => Math.min(99, n + 1))} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
+            <button className="round press" disabled={trueN <= 0} onClick={() => { setTyped(null); setTrueN(n => Math.max(0, n - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
+            {/* The numeral is also a field: a tap opens the number pad and typing replaces the number, so 7 to 34
+                takes three taps, not 27 (design review of 1 October). The figures stay drawn by Digits underneath.
+                aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
+            <span className={`stepper-n${typed !== null ? ' is-typing' : ''}`}>
+              <span aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
+              {/* The field opens empty, so what is typed replaces the number wherever iOS leaves the caret (a
+                  select() on focus does not hold after a tap in WebKit: review of 2 October). Until a digit is
+                  typed, and if every digit is deleted, the number stays the one it opened on. */}
+              <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done"
+                aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? String(trueN)}
+                onFocus={() => { typedFrom.current = trueN; setTyped(''); }}
+                onBlur={() => setTyped(null)}
+                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); setTrueN(d === '' ? typedFrom.current : Number(d)); }}
+                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
+            </span>
+            <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
           <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
             <span>{fr ? 'Enregistrer' : 'Save'}</span>
@@ -468,17 +501,17 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
               challenge, since the next thing done on the bench is to rest (design pass, 29 September).
               The result screen carries no opener: its numeral and account already say it; the report does. */}
           <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
-          <button ref={reportRef} className="btn-line press" onClick={() => onReport(trueN, savedId.current)}>
+          {/* After saving, the next things done in a gym are resting and the next set: the next set leads, the
+              report follows, the challenge stays as a quiet line (design review of 1 October). */}
+          <button className="btn-line press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
+          <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
           </button>
-          <button className="btn-ghost press" onClick={challenge}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
-            <span>{fr ? 'Défier un ami' : 'Challenge a friend'}</span>
-          </button>
+          <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
-          <button className="text-btn press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
           {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
+          {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />

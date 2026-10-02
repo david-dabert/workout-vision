@@ -12,7 +12,10 @@ describe('the exercises the app offers', () => {
   it('are the countable exercises of the guide but the walking lunge, 181, the lifts of LIFT TIERS among them', () => {
     const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
     expect(countable).toHaveLength(182);
-    expect([...OFFERED].sort()).toEqual(countable.filter(k => k !== 'walking_lunge').sort());
+    // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.
+    expect([...OFFERED].sort()).toEqual([...countable.filter(k => k !== 'walking_lunge'), 'chair_stand_test', 'arm_curl_test'].sort());
+    expect(tierOf('chair_stand_test')).toBe('experimental');
+    expect(tierOf('arm_curl_test')).toBe('experimental');
     expect(isOffered('walking_lunge')).toBe(false);
     for (const key of Object.keys(TIERS)) expect(isOffered(key), key).toBe(true);
     expect(isOffered('pec_deck')).toBe(false);

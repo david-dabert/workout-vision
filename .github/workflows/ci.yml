@@ -90,3 +90,67 @@ jobs:
             test/real-phone/tour-ci/*/
             test/real-phone/tour-ci/film-button-after.txt
           retention-days: 5
+
+  # The journey (test/real-phone/synth/smoke.mjs, STRICT): the production app driven end to end, in Chromium
+  # with the iPhone profile, by synthetic sets whose count is known exactly (test/real-phone/synth/README.md):
+  # the card, the film screen, the video, the analysis, the result, a correction typed or the count accepted,
+  # the replay, the report and the history. It fails when the count differs from the video's truth, a screen
+  # is not reached, the correction is not the count saved, or any fault is seen beyond the two known aborted
+  # requests. The videos are rendered once and kept in the cache, keyed on the renderer and the body model;
+  # no video is committed. The body model is three.js r170's Michelle.glb (MIT), checked by its SHA-256.
+  journey:
+    name: Journey (synthetic sets, production build)
+    runs-on: ubuntu-latest
+    env:
+      SETS: ${{ github.workspace }}/.journey-sets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      # Restored and saved as two steps, so a render survives a journey that fails; the key holds the renderer,
+      # its parameters (this file) and the locked versions of three.js and Chromium (package-lock.json).
+      - name: Restore the rendered sets
+        id: sets
+        uses: actions/cache/restore@v4
+        with:
+          path: .journey-sets
+          key: journey-sets-${{ hashFiles('test/real-phone/synth/synth.js', 'test/real-phone/synth/synth.html', 'test/real-phone/synth/run-video.mjs', '.github/workflows/ci.yml', 'package-lock.json') }}
+      - name: Render the sets
+        if: steps.sets.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          mkdir -p "$SETS"
+          curl -sSfL -o "$SETS/Michelle.glb" https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/models/gltf/Michelle.glb
+          echo "7a87e15a99ccbc5e5877be66e1e4ecae0a581adcafa0cce1a5569f49909e968e  $SETS/Michelle.glb" | sha256sum -c -
+          export SYNTH_MODEL="$SETS/Michelle.glb" FFMPEG="$(command -v ffmpeg)"
+          node test/real-phone/synth/run-video.mjs "$SETS/lateral_raise_front_8.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"v1","exercise":"lateral_raise","view":0,"reps":8,"peakL":95,"peakR":80,"seed":7}'
+          node test/real-phone/synth/run-video.mjs "$SETS/curl_side_6.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"v3","exercise":"bicep_curl","view":90,"reps":6,"peakL":130,"peakR":130,"seed":12}'
+          node test/real-phone/synth/run-video.mjs "$SETS/chair_15.webm" '{"video":{"w":720,"h":1280,"fps":30},"id":"c2","exercise":"squat","view":90,"reps":15,"outSec":0.8,"backSec":0.8,"endRest":4,"peakL":95,"peakR":95,"seed":21,"seated":true,"endUp":true,"window":30}'
+      - name: Keep the rendered sets
+        if: steps.sets.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .journey-sets
+          key: ${{ steps.sets.outputs.cache-primary-key }}
+      - name: Lateral raise from the front, corrected by typing 12, the contribution kept
+        run: STRICT=1 TYPE=12 CONTRIBUTE=1 SHOTS=journey/lateral-raise node test/real-phone/synth/smoke.mjs "$SETS/lateral_raise_front_8.webm" lateral_raise "Élévations latérales"
+      - name: Curl from the side, the count accepted
+        if: always()
+        run: STRICT=1 SHOTS=journey/curl node test/real-phone/synth/smoke.mjs "$SETS/curl_side_6.webm" bicep_curl "Curl biceps"
+      # The 30-second chair stand (fitness-tests.js): starts seated, 15 stands, the last ending standing at about
+      # 30 s, as a test usually ends; the score is the protocol's (synth.js, window), chosen from its row.
+      - name: Chair stand test, 15 in 30 s, the last ended standing
+        if: always()
+        run: STRICT=1 TEST=chair_stand_test SHOTS=journey/chair-stand node test/real-phone/synth/smoke.mjs "$SETS/chair_15.webm" chair_stand_test "-"
+      - name: Keep the shots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journey-${{ github.sha }}
+          path: journey/
+          retention-days: 5

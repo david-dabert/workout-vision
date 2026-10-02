@@ -6,18 +6,21 @@ import families from '../../lib/counting/guide-families.json';
 import { getGuideExercise } from '../../lib/exerciseGuide';
 import { META } from './lift-meta';
 import { hasFigure, liftView } from './lift-scenes';
+import { FITNESS_TESTS } from '../../lib/fitness-tests';
 
 const byKey = new Map(catalogue.map(e => [e.key, e]));
 
 /** The name people know the exercise by: the card's, else the guide's, in the screen's language. */
 export function exerciseName(key, lang) {
   if (META[key]) return META[key][lang === 'fr' ? 'fr' : 'en'];
+  if (FITNESS_TESTS[key]) return FITNESS_TESTS[key][lang === 'fr' ? 'fr' : 'en'];
   const e = byKey.get(key);
   return e ? (lang === 'fr' ? e.fr : e.name) : key;
 }
 
 /** 'side' or 'front': the card's reference set, else the guide's view of the exercise. */
-export const filmView = key => (hasFigure(key) ? liftView(key) : families[key]?.view === 'front' ? 'front' : 'side');
+export const filmView = key => (FITNESS_TESTS[key] ? FITNESS_TESTS[key].view : hasFigure(key) ? liftView(key) : families[key]?.view === 'front' ? 'front' : 'side');
 
 /** The guide's entry with its three drawings, or null. */
-export const guideExercise = key => getGuideExercise(key);
+// A fitness test is drawn with its movement's drawings (fitness-tests.js).
+export const guideExercise = key => getGuideExercise(FITNESS_TESTS[key]?.illustration ?? key);

@@ -13,6 +13,7 @@ import { checkAndMigrateSchema } from './lib/storage';
 import ErrorBoundary from './components/ErrorBoundary';
 import PerfOverlay from './components/PerfOverlay';
 import { perfRequested } from './lib/perfFlag';
+import { isTest } from './lib/fitness-tests';
 import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
@@ -160,7 +161,8 @@ function AppInner() {
   const chooseLift = (lift, guided = false) => {
     // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
     fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
-    if (!guided && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
+    // A fitness test has no guide page of its own: its protocol is on the filming screen (fitness-tests.js).
+    if (!guided && !isTest(lift) && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
       go('exercises', () => setGuideLift(lift));
       return;
     }

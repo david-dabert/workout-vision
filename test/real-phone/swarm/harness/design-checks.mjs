@@ -34,8 +34,10 @@ try {
     const { p, ctx } = await open('counted', 'fr', [390, 664]);
     await p.waitForSelector('[data-testid="ask-card"]');
     await p.locator('[data-testid="ask-card"] .btn-ghost').click();
-    const atomic = await p.locator('.stepper-n').getAttribute('aria-atomic');
-    say(atomic === 'true', `D1 stepper live region aria-atomic=${atomic}`);
+    // The live region is the numeral's drawn figures; the field typed into sits beside it, never inside it.
+    const live = p.locator('.stepper-n [aria-live]');
+    const atomic = await live.getAttribute('aria-atomic'), field = await live.locator('input').count();
+    say(atomic === 'true' && field === 0, `D1 stepper live region aria-atomic=${atomic}, field inside it=${field}`);
     await ctx.close();
   }
   for (const lang of ['fr', 'en']) for (const size of [[390, 664], [375, 548], [390, 745]]) { // D2

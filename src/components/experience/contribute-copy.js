@@ -1,0 +1,44 @@
+// The words of "Aider à améliorer le comptage" (contribute.js), in one place for David's approval (R10;
+// test/real-phone/swarm/copy-contribute.md lists them).
+import { REPORT_EMAIL } from '../../lib/reportLinks';
+
+export const CONTRIBUTE = {
+  fr: {
+    title: 'Aider à améliorer le comptage',
+    what: 'À chaque série, l’app garde sur ce téléphone son comptage, le vôtre, la position de vos articulations au fil de la série, jamais la vidéo, sa durée et le type de téléphone. Vous les envoyez quand vous voulez.',
+    ask: 'Aider à améliorer le comptage ?',
+    yes: 'Oui, aider',
+    no: 'Non merci',
+    thanks: 'Merci. Vous pourrez arrêter à tout moment dans vos séries.',
+    waiting: n => (n ? `${n} ${n > 1 ? 'séries prêtes' : 'série prête'} à envoyer, à ${REPORT_EMAIL}.` : 'Aucune série à envoyer pour l’instant.'),
+    send: 'Envoyer',
+    sent: n => `${n} ${n > 1 ? 'séries partagées' : 'série partagée'}. Merci.`,
+    prepareFailed: 'Le fichier n’a pas pu être préparé. Rouvrez vos séries pour réessayer.',
+    eraseFailed: 'Les séries en attente n’ont pas pu être effacées. Réessayez.',
+    downloaded: `Fichier téléchargé. Envoyez-le à ${REPORT_EMAIL}.`,
+    shareFailed: 'Le partage n’a pas abouti. Touchez à nouveau pour télécharger.',
+    stop: 'Arrêter et effacer',
+    stopped: 'C’est arrêté. Les séries en attente sont effacées.',
+    start: 'Aider',
+    shareTitle: 'Séries pour améliorer le comptage',
+  },
+  en: {
+    title: 'Help improve the count',
+    what: 'After each set, the app keeps on this phone its count, yours, the position of your joints through the set, never the video, its length and the kind of phone. You send them when you choose.',
+    ask: 'Help improve the count?',
+    yes: 'Yes, help',
+    no: 'No thanks',
+    thanks: 'Thank you. You can stop at any time in your sets.',
+    waiting: n => (n ? `${n} ${n === 1 ? 'set' : 'sets'} ready to send, to ${REPORT_EMAIL}.` : 'No set to send yet.'),
+    send: 'Send',
+    sent: n => `${n} ${n === 1 ? 'set' : 'sets'} shared. Thank you.`,
+    prepareFailed: 'The file could not be prepared. Open your sets again to retry.',
+    eraseFailed: 'The sets waiting could not be erased. Try again.',
+    downloaded: `File downloaded. Send it to ${REPORT_EMAIL}.`,
+    shareFailed: 'Sharing did not go through. Tap again to download.',
+    stop: 'Stop and erase',
+    stopped: 'Stopped. The sets waiting to be sent are erased.',
+    start: 'Help',
+    shareTitle: 'Sets to improve the count',
+  },
+};

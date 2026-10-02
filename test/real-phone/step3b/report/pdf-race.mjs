@@ -67,7 +67,7 @@ try {
   await expect(savedCard).toBeVisible({ timeout: 15000 });
 
   // Open report
-  const reportBtn = page.locator('[data-testid="saved-card"] .btn-line').first();
+  const reportBtn = page.locator('[data-testid="saved-card"] button').filter({ hasText: /Rapport de séance|Session report/ });
   await reportBtn.click();
   const reportScreen = page.locator('.report-screen');
   await expect(reportScreen).toBeVisible({ timeout: 5000 });

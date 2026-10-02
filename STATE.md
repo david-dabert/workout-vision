@@ -1,6 +1,8 @@
 PLAN.md on counter-core prevails over this file.
 # STATE
 
+Before proposing any counting, measurement or data idea, read TRIED.md: it lists what was tried and closed, with the evidence.
+
 Written 30 September 2026 from PLAN.md and git at claude/generate-architecture-md-inw479 0968d2e, and from GitHub (git ls-remote, GitHub Actions).
 A line marked (unconfirmed) could not be confirmed from the repository or from GitHub.
 

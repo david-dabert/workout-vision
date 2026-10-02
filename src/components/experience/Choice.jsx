@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { useT } from '../../lib/LanguageContext';
 import { LIFTS, META, createLiftScene } from './lift-scenes';
 import { useSets } from './sets';
@@ -125,6 +126,12 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>
+        {/* The fitness tests (fitness-tests.js): a count in 30 seconds, under a published protocol. */}
+        {['chair_stand_test', 'arm_curl_test'].map(key => <button key={key} className="row-link press" onClick={() => onChoose(key)} data-testid={`choose-${key}`}>
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13.5" r="7.5" /><path d="M12 13.5V9.5" /><path d="M10 3h4" /><path d="M12 3v3" /></svg></span>
+          <span className="row-txt"><b>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</b><small>{fr ? 'Test de condition physique' : 'Fitness test'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>)}
         {n > 0 && <button className="row-link press" onClick={onHistory}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6 7v10M10 7v10M14 7v10M18 7v10" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>

@@ -1,0 +1,33 @@
+The learned counter as the app would run it (learned-span.test.ts), 2 October 2026.
+
+Countix whole clips, build half, 447 clips, each cut to its labelled window and held still 2 s at each end, read by the fold model that never trained on its video:
+| Reading | Answered | Exact | Within one | Off by 3+ | Off by 3+ where the core was not |
+|---|---:|---:|---:|---:|---:|
+| core | 404 | 147 | 288 | 48 | 0 |
+| learned, whole clip | 447 | 136 | 359 | 25 | 12 |
+| learned, whole clip, refused where the core refuses | 404 | 125 | 328 | 20 | 12 |
+| learned, over the core's reps | 404 | 142 | 287 | 47 | 10 |
+
+David's labelled sets, 14, whole recordings, the app's weights (never trained on them):
+| Reading | Answered | Exact | Within one | Off by 3+ | Off by 3+ where the core was not |
+|---|---:|---:|---:|---:|---:|
+| core | 13 | 7 | 12 | 0 | 0 |
+| learned, whole clip | 14 | 8 | 10 | 1 | 1 |
+| learned, whole clip, refused where the core refuses | 13 | 7 | 9 | 1 | 1 |
+| learned, over the core's reps | 13 | 3 | 10 | 1 | 1 |
+
+Each of David's sets: label, core, learned over the whole set, learned over the core's reps.
+  sets-29sep/bench_press_7_side_24cc4f0b.json.gz              7  core       5  whole  9  span  9
+  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz               5  core       4  whole  5  span  5
+  sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz               6  core       6  whole  6  span  5
+  sets-29sep/lateral_raise_9_front_43e71b40.json.gz           9  core       8  whole  8  span  7
+  sets-29sep/leg_press_13_side_1ee0ae47.json.gz              13  core      12  whole 13  span 12
+  sets-29sep/overhead_press_4_front_cefdaa82.json.gz          4  core       5  whole  5  span  5
+  sets-29sep/overhead_press_4_front_f75638cc.json.gz          4  core       4  whole  7  span  7
+  sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz        8  core       8  whole  8  span  8
+  sets-29sep/squat_7_side_21fd7ccf.json.gz                    7  core       7  whole  9  span  8
+  landmarks/bench_press_7_angle_mufhcy60.json.gz              7  core refused  whole  7  span  -
+  landmarks/bicep_curl_7_side_mufhf3wy.json.gz                7  core       7  whole  7  span  7
+  landmarks/lat_pulldown_10_front_mufhlh4o.json.gz           10  core      10  whole 10  span  9
+  landmarks/lateral_raise_10_front_mufhhbun.json.gz          10  core      10  whole 10  span  9
+  landmarks/overhead_press_10_front_mufhjkku.json.gz         10  core       9  whole 12  span 11

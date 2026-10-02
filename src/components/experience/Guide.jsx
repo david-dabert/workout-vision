@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { norm } from './search-text';
 import { useT } from '../../lib/LanguageContext';
 import { getAllGuideExercises } from '../../lib/exerciseGuide';
 import { Body, mapPose, DPR } from './entry-scene';
@@ -17,7 +18,7 @@ const ZONE_NAMES = {
 };
 const MUSCLES = { shoulders: ['Shoulders', 'Rear Delts'], chest: ['Chest'], biceps: ['Biceps', 'Forearms', 'Grip'], abs: ['Core'], quads: ['Quads', 'Legs', 'Adductors', 'Groin', 'Hips'], back: ['Back', 'Lats', 'Upper Back'], triceps: ['Triceps'], lowerback: ['Lower Back', 'Posterior Chain'], glutes: ['Glutes'], hamstrings: ['Hamstrings'], calves: ['Calves'] };
 export const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids du corps', Box: 'Banc / box', Cable: 'Poulie', Cardio: 'Cardio', Chair: 'Chaise', Doorway: 'Encadrement de porte', Dumbbell: 'Haltères', Kettlebell: 'Kettlebell', Machine: 'Machine', Plate: 'Disque', 'Pull-up Bar': 'Barre de traction', 'Resistance Band': 'Élastique', 'Stability Ball': 'Ballon', Towel: 'Serviette', Wall: 'Mur' };
-export const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+export { norm };
 const inZone = (e, zone) => !zone || e.muscles.some(m => MUSCLES[zone].includes(m));
 const countedLift = e => (isOffered(e.key) ? e.key : undefined);
 

@@ -6,6 +6,7 @@ import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
 import { exerciseName, filmView, guideExercise } from './exercise-info';
 import { GuideFrames } from './Guide';
+import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import './Film.css';
 
 export default function Film({ lift, onBack, onFile, hero: arrivedByTransition = false }) {
@@ -17,6 +18,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
   const [hero, setHero] = useState(arrivedByTransition);
   useEffect(() => { if (!hero) return undefined; const t = setTimeout(() => setHero(false), 700); return () => clearTimeout(t); }, [hero]);
   const view = filmView(lift);
+  const test = FITNESS_TESTS[lift] ?? null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
   const figure = hasFigure(lift), guide = figure ? null : guideExercise(lift);
   const tier = tierOf(lift);
@@ -51,7 +53,8 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
     if (f) onFile(f);
   }
 
-  // Knee and hip lifts are filmed with the whole body in frame; arm lifts from head to hips.
+  // Knee and hip lifts are filmed with the whole body in frame; arm lifts with at least head to hips, which is
+  // what their count needs (the figure shows the reference set's own, wider framing).
   const wholeBody = ['knee', 'hip'].includes(liftDefinition(lift)?.joint);
   // A knee or hip exercise filmed from the front (a lateral lunge, a standing hip abduction) is filmed facing
   // the phone, as its view says; the whole body stays in frame either way (review of 29 September).
@@ -69,7 +72,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
-      <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
+      <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{test ? (fr ? 'Test de condition physique' : 'Fitness test') : fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{exerciseName(lift, lang)}</h2>
       {tier && <p className={`tier tier-${tier}`} data-reveal style={{ '--i': 1 }}>{tierLabel(tier, fr)}</p>}
       <div ref={frame} className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
@@ -81,18 +84,23 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
       </div>
       {figure
         ? <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
-        : <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
-      <ol className="steps" data-reveal style={{ '--i': 4 }}>
+        : <p className="caption" data-reveal style={{ '--i': 3 }}>{test
+          ? (fr ? 'Mouvement proche, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'A similar movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.')
+          : fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
+      {/* A fitness test is filmed as its protocol says (fitness-tests.js): its own three steps. */}
+      {test ? <ol className="steps" data-reveal style={{ '--i': 4 }}>
+        {test.steps[fr ? 'fr' : 'en'].map((t, i) => <li key={i}><span className="n">{i + 1}</span><span>{t}</span></li>)}
+      </ol> : <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
-        <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'De la tête aux hanches dans le cadre, mains comprises.' : 'Head to hips in the frame, hands included.')}</span></li>
+        <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'Au moins de la tête aux hanches dans le cadre, mains comprises.' : 'At least head to hips in the frame, hands included.')}</span></li>
         {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September). */}
         <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
-      </ol>
+      </ol>}
       <div className="actions" data-reveal style={{ '--i': 5 }}>
         <label ref={action} className="btn-primary tactile" role="button" tabIndex="0">
           <input ref={fileRef} type="file" accept="video/*,.mov" capture="environment" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
-          <span>{fr ? 'Filmer ma série' : 'Record my set'}</span>
+          <span>{test ? (fr ? 'Filmer le test' : 'Record the test') : (fr ? 'Filmer ma série' : 'Record my set')}</span>
         </label>
         <label className="btn-ghost press" role="button" tabIndex="0">
           <input type="file" accept="video/*,.mov" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />

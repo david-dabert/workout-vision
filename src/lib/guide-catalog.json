@@ -198,7 +198,9 @@
       "développé militaire",
       "overhead press",
       "développé militaire",
-      "military press"
+      "military press",
+      "développé épaules",
+      "shoulder press"
     ]
   },
   {
@@ -251,7 +253,9 @@
       "élévation latérale",
       "lateral raise",
       "élévation latérale",
-      "side raise"
+      "side raise",
+      "élévations latérales",
+      "latérales"
     ]
   },
   {
@@ -392,7 +396,9 @@
     "aliases": [
       "romanian deadlift",
       "soulevé de terre roumain",
-      "romanian deadlift"
+      "romanian deadlift",
+      "sdt roumain",
+      "rdl"
     ]
   },
   {
@@ -673,7 +679,8 @@
     "aliases": [
       "squat",
       "squat barre",
-      "squat"
+      "squat",
+      "back squat"
     ]
   },
   {
@@ -726,7 +733,8 @@
     "aliases": [
       "leg press",
       "presse à cuisses",
-      "leg press"
+      "leg press",
+      "leg press machine"
     ]
   },
   {
@@ -846,7 +854,9 @@
     "aliases": [
       "hip thrust",
       "hip thrust",
-      "hip thrust"
+      "hip thrust",
+      "pont de hanches chargé",
+      "barbell hip thrust"
     ]
   },
   {
@@ -932,7 +942,8 @@
       "curl biceps",
       "bicep curl",
       "curl haltère",
-      "biceps curl"
+      "biceps curl",
+      "dumbbell curl"
     ]
   },
   {

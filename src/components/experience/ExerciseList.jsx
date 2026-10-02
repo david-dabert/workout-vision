@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { OFFERED, tierOf } from '../../lib/offer';
+import { isTest } from '../../lib/fitness-tests';
 import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
 import { EQUIPMENT, norm } from './Guide';
@@ -8,7 +9,9 @@ import { EQUIPMENT, norm } from './Guide';
 // Every exercise the app counts, 181 in all, searchable, under the nine cards (PLAN.md, GROWTH,
 // step 2, David's choices of 29 September). Only the Beta ones carry a tag; one line under the title
 // says the rest are experimental, so the names take the row's width. A tap opens its filming screen. Loaded after the choice, so the catalogue stays out of the first screen.
-const ENTRIES = OFFERED.map(guideExercise).filter(Boolean);
+// The fitness tests have their own rows above (Choice.jsx); drawn from another exercise's guide entry, they
+// would list that exercise twice here.
+const ENTRIES = OFFERED.filter(k => !isTest(k)).map(guideExercise).filter(Boolean);
 // The equipment's name never breaks, so no word of it stands alone on the row's last line.
 const keep = s => (s || '').replace(/ /g, '\u00A0');
 // The catalogue names muscles in English; the French names people search for, so that the hint

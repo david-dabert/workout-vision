@@ -52,3 +52,30 @@ Checked against the code on main (84e020a) before entry. These are proposals, no
   filming screen's two buttons, labels with role=button that hold the hidden file input (nested-interactive,
   serious). The input sits under the finger on purpose, so iOS opens the camera from a real tap; rebuild it
   only with an iPhone to check the camera and library still open.
+
+## 2 October 2026: one instrument, every user (use-case map)
+What each user needs, what the engine measures today, and the smallest build that serves them. "Today" means
+measured (scoreboard, synth.txt); anything else waits for its measurement (R8, R13).
+- Everyone first: the count. Real-phone exact 7/14, public 30 %; the counter is the product's floor, not a feature.
+- Women (David, 2 October: they adopt tools fastest and are readiest to pay; UNSOURCED here):
+  - Privacy as a feature: video never leaves the phone, landmarks only; say it once, plainly, where the camera opens.
+  - Lower-body and glute lifts first in measurement order: hip thrust, Romanian deadlift, squat, lunge, glute bridge,
+    abduction. Today hip thrust and RDL are Experimental and exact on David's sets (1 each): they need exam sets.
+  - Figures and copy that do not assume a male body or a bodybuilding goal; no weight, no body measures asked.
+- Beginners: is my rep a rep? Show each counted rep on the replay, the range it reached, and say when a rep was
+  shallower than the set's others (relative, never a verdict, R8). Filming guide that cannot be misread.
+- Intermediates: progress over weeks for the same exercise filmed from the same spot: reps, tempo, range trend.
+  Needs the history to group by exercise and the "same spot" tip (shipped in #51).
+- Experts and sport scientists: per-rep table, CSV with joint names and units, method page with dated accuracy,
+  open definitions (rest band, phase timing). The honesty is the selling point to this group.
+- Strength and conditioning coaches: many athletes, one phone: athlete name on each set, one combined report per
+  athlete (the 29 September coach mode), CSV for the team sheet. Velocity-based training is out of reach: speed
+  change is within timing noise today (measures.js).
+- Kinésithérapeutes: home-exercise adherence, not diagnosis (MDR Rule 11): the patient films the prescribed
+  exercise at home; the report shows what was done (sets, reps, tempo, range as recorded) for the kiné to read.
+  Prescribed targets (reps, tempo) entered by the kiné on the patient's phone; no reading framed as clinical.
+  Range is underestimated 20-30 % on synthetic bodies: shown only as "as recorded", never as a measurement of
+  mobility, until a goniometer comparison exists.
+- Online coaches (Luc): the client films, the coach receives one report per week (29 September entry).
+- Pivots worth testing with one real user each before any code: home-exercise adherence for kinés; team
+  logging for S&C coaches; a privacy-first set logger for women who train alone.

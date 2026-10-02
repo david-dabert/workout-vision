@@ -58,9 +58,27 @@
 .wv-experience .prog-meta > span { white-space: nowrap; }
 /* The last count, centred on the last bar, may pass the drawing's right edge by a pixel or two. */
 .wv-experience .prog-bars { overflow: visible; }
-/* The export: a quiet line under the subtitle, the Guide's text button with a small icon. */
+/* The export: a quiet line in "Vos données", after the sets, the Guide's text button with a small icon. */
 .wv-experience .hist-export { margin-top: var(--s-3); }
 .wv-experience .hist-export .text-btn { display: inline-flex; align-items: center; gap: 8px; padding: 0; border-radius: var(--r-pill); color: var(--bone-2); }
 .wv-experience .hist-export .text-btn svg { width: 16px; height: 16px; color: var(--lamp); }
 .wv-experience .hist-export-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
 .wv-experience .hist-export-note:not(:empty) { margin-top: 4px; }
+/* Keeping the sets: backup and restore side by side, the reason above them when the phone may not keep them. */
+.wv-experience .hist-keep { margin-top: 10px; }
+.wv-experience .hist-keep-row { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.wv-experience .hist-keep .text-btn { cursor: pointer; }
+.wv-experience .hist-keep label.text-btn { position: relative; }
+.wv-experience .hist-keep-why { margin: 8px 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
+
+/* The data: export, backup, restore, after the sets, under one eyebrow, as the contribution section below it. */
+.wv-experience .hist-data { margin-top: var(--s-5); padding-top: var(--s-3); border-top: 1px solid var(--hair); }
+.wv-experience .hist-data .eyebrow { margin: 0; }
+.wv-experience .hist-data .hist-export { margin-top: 10px; }
+
+/* Helping improve the count: a quiet section after the sets, an eyebrow, what is kept, the count waiting. */
+.wv-experience .hist-contribute { margin-top: var(--s-5); padding-top: var(--s-3); border-top: 1px solid var(--hair); }
+.wv-experience .hist-contribute .eyebrow { margin: 0 0 8px; }
+.wv-experience .hist-contribute .hist-keep-why { margin: 0 0 8px; }
+.wv-experience .hist-contribute-n { margin: 0 0 6px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .hist-contribute-n:empty { display: none; }
