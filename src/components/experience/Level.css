@@ -64,3 +64,11 @@
   .wv-experience .result-screen.lv-expert .bar i { height: calc(14px + 58px * var(--r, 1)); }
   .wv-experience .result-screen.lv-expert .bar .short-mark { bottom: calc(14px + 58px * var(--r, 1) + 4px); }
 }
+/* Intermediate (and no level stored) on a screen under 700 px high: the confirm button sat 8 px below a
+   390x664 Safari (harness levels.mjs, 1 October 2026). The marks give back 8 px and the card's gap 8 px. */
+@media (min-height: 601px) and (max-height: 700px) {
+  .wv-experience .result-screen.lv-intermediate .bars, .wv-experience .result-screen.lv-intermediate .bar { height: 96px; }
+  .wv-experience .result-screen.lv-intermediate .bar i { height: calc(17px + 66px * var(--r, 1)); }
+  .wv-experience .result-screen.lv-intermediate .bar .short-mark { bottom: calc(17px + 66px * var(--r, 1) + 4px); }
+  .wv-experience .result-screen.lv-intermediate .glass { margin-top: var(--s-4); }
+}

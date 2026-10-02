@@ -138,6 +138,9 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     if (!video) return;
     if (video.paused || video.ended) play(); else video.pause();
   }
+  // A rep is reached a frame inside its start: a seek to the start itself may land on the frame before it,
+  // where the screen would name no rep (1 October 2026, check.mjs). 0.04 s is one frame at 25 fps.
+  const into = r => Math.min(r.startTime + 0.04, (r.startTime + r.endTime) / 2);
   function seekTo(t) {
     const video = videoRef.current;
     if (!video) return;
@@ -171,14 +174,14 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       const g = Math.abs(t - (r.startTime + r.endTime) / 2);
       if (g < gap) { gap = g; hit = i; }
     });
-    seekTo(hit >= 0 ? reps[hit].startTime : t);
+    seekTo(hit >= 0 ? into(reps[hit]) : t);
   }
   function keys(e) {
     const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
     if (step) {
       e.preventDefault();
       const next = step > 0 ? reps.findIndex(r => r.startTime > now + 0.05) : reps.map(r => r.startTime < now - 0.05).lastIndexOf(true);
-      seekTo(next >= 0 ? reps[next].startTime : step > 0 ? length : 0);
+      seekTo(next >= 0 ? into(reps[next]) : step > 0 ? length : 0);
     } else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); seekTo(e.key === 'Home' ? 0 : length); }
   }
 

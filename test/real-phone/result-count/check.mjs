@@ -127,8 +127,13 @@ try {
         const box = await line.boundingBox(), length = await page.evaluate(() => document.querySelector('.rp-video').duration);
         await line.click({ position: { x: box.width * (t / length), y: box.height / 2 } });
       };
-      await at(1.15);
-      await page.waitForFunction(() => / 3 (of|sur) 7$/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 10000 }).catch(() => {});
+      // A click made before the drawn video can seek is lost (1 October: 1 to 2 of 8 runs read "1,0 s"), so
+      // the click is repeated until the position names a mark, at most four times; a wrong label still fails.
+      for (let i = 0; i < 4; i++) {
+        await at(1.15);
+        const ok = await page.waitForFunction(() => / 3 (of|sur) 7$/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 5000 }).then(() => true, () => false);
+        if (ok) break;
+      }
       const where = await line.getAttribute('aria-valuetext');
       const detail = (await page.locator('.rp-detail').textContent()).trim();
       const prov = await page.locator('[data-testid="rp-prov"]').count() ? (await page.locator('[data-testid="rp-prov"]').textContent()).trim() : '';
@@ -138,7 +143,10 @@ try {
         check(detail.startsWith(fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: detail reads as a detected mark ("${detail}")`);
         check(prov === (fr ? 'L’app a détecté 7 répétitions. Vous avez enregistré 8.' : 'The app detected 7 reps. You saved 8.'), `${lang} replay, saved 8: both counts stated ("${prov}")`);
         // Past the last detection, the hint speaks of marks, not reps.
-        await at(2.9);
+        // The end of the video, by the End key: a tap near the end falls within mark 7's tap tolerance (0.3 s past
+        // its end at 2.9 s, beyond the 3 s video), and selects mark 7, as it should.
+        await line.focus();
+        await page.keyboard.press('End');
         await page.waitForFunction(() => !/sur 7|of 7/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 10000 }).catch(() => {});
         const idle = (await page.locator('.rp-detail').textContent()).trim();
         check(idle === (fr ? 'Touchez un repère sur la ligne pour le revoir.' : 'Touch a mark on the line to see it again.'), `${lang} replay, saved 8: past the marks, the hint names marks ("${idle}")`);
