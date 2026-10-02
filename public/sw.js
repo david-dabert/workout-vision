@@ -23,12 +23,20 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// The previous version's files stay one deploy longer: a page open since before the deploy still loads its own
+// chunks (the report's PDF module, on 2 October, was gone from the cache and from the site). The versions are
+// listed, oldest first, in the wv-meta cache; every older one is dropped (src/lib/__tests__/sw-versions.test.js).
+const META_CACHE = 'wv-meta';
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => (k.startsWith('wv-v') && k !== CACHE_NAME) || (k.startsWith('wv-model-') && k !== MODEL_CACHE)).map((k) => caches.delete(k)))
-    )
-  );
+  event.waitUntil((async () => {
+    const meta = await caches.open(META_CACHE);
+    let seen = [];
+    try { const r = await meta.match('list'); if (r) seen = await r.json(); } catch { seen = []; }
+    const keep = [...(Array.isArray(seen) ? seen : []).filter((v) => v !== CACHE_NAME), CACHE_NAME].slice(-2);
+    await meta.put('list', new Response(JSON.stringify(keep)));
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((k) => (k.startsWith('wv-v') && !keep.includes(k)) || (k.startsWith('wv-model-') && k !== MODEL_CACHE)).map((k) => caches.delete(k)));
+  })());
   self.clients.claim();
 });
 
