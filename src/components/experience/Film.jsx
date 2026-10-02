@@ -84,7 +84,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
       </div>
       {figure
         ? <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
-        : <p className="caption" data-reveal style={{ '--i': 3 }}>{test
+        : <p className="caption" data-reveal style={{ '--i': 3 }}>{test || guide?.similar
           ? (fr ? 'Mouvement proche, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'A similar movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.')
           : fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
       {/* A fitness test is filmed as its protocol says (fitness-tests.js): its own three steps. */}

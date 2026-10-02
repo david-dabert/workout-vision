@@ -93,7 +93,7 @@ try {
 
   // The choice and its nine cards.
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 10000 });
-  await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 10000 });
+  await expect(page.locator('.all-exercises .item')).toHaveCount(183, { timeout: 10000 });
   await shot('02-choice');
   await inView('02-choice', page.locator('.altar'));
 

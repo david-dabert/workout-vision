@@ -111,7 +111,7 @@ export default function Guide({ onClose, onChoose, lift }) {
           <span><span className="item-name">{fr ? e.fr : e.name}</span><span className="item-sub">{fr ? e.name : e.fr} · {fr ? EQUIPMENT[e.equipment] : e.equipment}</span></span>
           <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? tierTag(tierOf(e.key), fr) : 'Guide'}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key), fr)}.` : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}</p>
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key), fr)}.` : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
           {countedLift(e) && <button className="btn-line press" onClick={() => onChoose(countedLift(e))}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>}
           <button className="btn-ghost is-s press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}

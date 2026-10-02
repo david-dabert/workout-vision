@@ -13,7 +13,7 @@ const catalogueKeys = catalogue.map(exercise => exercise.key);
 // are exercise-specific interpretations, not measurements validated by the text.
 describe('guide counting families', () => {
   it('contains exactly one entry per catalogue key and no additional keys', () => {
-    expect(catalogueKeys).toHaveLength(302);
+    expect(catalogueKeys).toHaveLength(304);
     expect(new Set(catalogueKeys).size).toBe(catalogueKeys.length);
     expect(Object.keys(families).sort()).toEqual([...catalogueKeys].sort());
 
