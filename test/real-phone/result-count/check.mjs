@@ -121,8 +121,8 @@ try {
       await line.waitFor({ timeout: 30000 });
       await page.waitForFunction(() => document.querySelector('.rp-video')?.readyState >= 1, null, { timeout: 30000 });
       await page.waitForFunction(() => Number.isFinite(document.querySelector('.rp-video')?.duration), null, { timeout: 30000 });
-      // Inside mark 3 (1.0 to 1.3 s), at its middle: a seek to a mark's very start may land on the frame
-      // before it, so the middle is where the position does not depend on the video's frame times.
+      // A tap at the middle of mark 3 (1.0 to 1.3 s); the replay seeks a frame inside its start (Replay.jsx, into),
+      // so the position names mark 3 whatever the video's frame times.
       const at = async t => {
         const box = await line.boundingBox(), length = await page.evaluate(() => document.querySelector('.rp-video').duration);
         await line.click({ position: { x: box.width * (t / length), y: box.height / 2 } });
@@ -138,7 +138,10 @@ try {
         check(detail.startsWith(fr ? 'Repère détecté 3 sur 7' : 'Detected mark 3 of 7'), `${lang} replay, saved 8: detail reads as a detected mark ("${detail}")`);
         check(prov === (fr ? 'L’app a détecté 7 répétitions. Vous avez enregistré 8.' : 'The app detected 7 reps. You saved 8.'), `${lang} replay, saved 8: both counts stated ("${prov}")`);
         // Past the last detection, the hint speaks of marks, not reps.
-        await at(2.9);
+        // The end of the video, by the End key: a tap near the end falls within mark 7's tap tolerance (0.3 s past
+        // its end at 2.9 s, beyond the 3 s video), and selects mark 7, as it should.
+        await line.focus();
+        await page.keyboard.press('End');
         await page.waitForFunction(() => !/sur 7|of 7/.test(document.querySelector('.rp-line')?.getAttribute('aria-valuetext') || ''), null, { timeout: 10000 }).catch(() => {});
         const idle = (await page.locator('.rp-detail').textContent()).trim();
         check(idle === (fr ? 'Touchez un repère sur la ligne pour le revoir.' : 'Touch a mark on the line to see it again.'), `${lang} replay, saved 8: past the marks, the hint names marks ("${idle}")`);
