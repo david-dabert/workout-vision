@@ -21,8 +21,8 @@ export const META = {
  * ("du coude"), EN bare ("elbow"). Approved under David's standing order of 2 October 2026 (PLAN.md). */
 export function jointName(joint, fr) {
   const names = { elbow: ['du coude', 'elbow'], shoulder: ['de l’épaule', 'shoulder'], knee: ['du genou', 'knee'], hip: ['de la hanche', 'hip'] };
-  const n = names[joint] || names.elbow;
-  return fr ? n[0] : n[1];
+  const n = names[joint];
+  return n ? (fr ? n[0] : n[1]) : '';
 }
 
 export function limbLabel(lift, side, fr) {

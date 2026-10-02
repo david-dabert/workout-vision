@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { countReps, liftDefinition } from '../../../src/lib/counting/core';
-import { compareSides } from '../../../src/lib/counting/symmetry';
+import { compareSides, GAP_ERROR_POINTS } from '../../../src/lib/counting/symmetry';
 
 const DIR = process.env.SYNTH_DIR;
 const JOINT: Record<string, 'shoulder' | 'elbow' | 'knee'> = { lateral_raise: 'shoulder', bicep_curl: 'elbow', overhead_press: 'elbow', squat: 'knee' };
@@ -43,6 +43,8 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
       seen: r.worldLandmarks.filter(Boolean).length / ts.length, status: s.status, trueSI, appSI: s.status === 'measured' ? s.comparison.si : NaN });
   }
   expect(rows.length).toBeGreaterThan(0);
+  // The bound the screen states for the left/right gap (sides-line.js) must hold on these sets.
+  for (const r of rows.filter(r => r.status === 'measured')) expect(Math.abs(r.appSI - r.trueSI)).toBeLessThanOrEqual(GAP_ERROR_POINTS);
 
   const out: string[] = [];
   out.push(`Synthetic sets (test/real-phone/synth): ${rows.length} sets, two rigged bodies (Michelle, Soldier; three.js examples, Mixamo rigs),`);

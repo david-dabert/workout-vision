@@ -12,8 +12,9 @@ export const experimentalLabel = fr => (fr
   : 'Experimental measures: estimated by the app, not yet validated.');
 
 // Whether the speed change between the first and last reps is stated (account, opener, expert line, report).
-// Off since 2 October 2026 (David's standing order, PLAN.md; design review): on David's sets and the
-// synthetic ones the change moves by 5-15 % with no change in the movement, within the noise of phase
-// timing (test/real-phone/synth/synth.txt), so a sentence such as "6 % faster" stated noise as a finding (R8).
+// Off since 2 October 2026 (David's standing order, PLAN.md; design review): on 89 synthetic sets whose
+// reps were built alike, the change read 15 % at the median, 72 % at the 90th percentile and up to 180 %
+// (review of 7d30d29, from synth/out); David's sets read 0 to -33 %. Phase timing cannot tell a real
+// change from that noise, so a sentence such as "6 % faster" stated noise as a finding (R8).
 // Back on once a set's change can be told from that noise. Status: not validated.
 export const SPEED_CHANGE_SHOWN = false;

@@ -56,7 +56,7 @@ function ghostSource(result, lift) {
   return topPose(lift);
 }
 
-function Topbar({ fr, onClose, onReplay, replayRef }) {
+function Topbar({ fr, onClose, onReplay, replayRef, badge = true }) {
   return <div className="topbar">
     <button className="icon-btn press" onClick={onClose} aria-label={fr ? 'Fermer' : 'Close'}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
@@ -66,8 +66,8 @@ function Topbar({ fr, onClose, onReplay, replayRef }) {
       <span>{fr ? 'Revoir' : 'Replay'}</span>
     </button>}
     {/* The test mark stays on the screens without a result; on the result it would push Revoir off the centre
-        line in French (David's standing order, 2 October 2026; design review). */}
-    {!onReplay && <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>}
+        line in French (David's standing order, 2 October 2026; design review). Only the counted result drops it. */}
+    {badge && <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>}
   </div>;
 }
 
@@ -218,7 +218,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     const dur = whole.reduce((a, r) => a + (r.endTime - r.startTime), 0) / whole.length;
     // The joint whose angle is measured is named, so a range is never read as another joint's (design review,
     // 2 October: 64° read as shoulder flexion on a press). jointName (lift-meta.js).
-    detail = fr ? `Amplitude moyenne ${jointName(liftDefinition(lift)?.joint, true)} ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average ${jointName(liftDefinition(lift)?.joint, false)} range ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
+    detail = fr ? `Amplitude moyenne ${jointName(liftDefinition(lift)?.joint, true)}${NB}: ${Math.round(rom)}°${NB}· durée moyenne ${sec(dur)}` : `Average ${jointName(liftDefinition(lift)?.joint, false)} range: ${Math.round(rom)}°${NB}· average duration ${sec(dur)}`;
   }
   // Step 3: the account of the set, one tip and a word of encouragement (set-account.js). The sets of
   // this exercise already saved give the last set's reps and this set's rank once it is saved.
@@ -510,7 +510,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // Under the report, the result is out of reach of taps, the keyboard and screen readers.
   return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
     <section className={`screen is-active result-screen lv-${view.level}${step === 'saved' ? ' is-saved' : ''}`} data-level={view.level}><div className="wrap">
-      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
+      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
       <div className="res-head" data-reveal style={{ '--i': 0 }}>
         <p className="eyebrow">{liftName}</p>
         <div className="res-sub">

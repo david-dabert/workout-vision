@@ -13,7 +13,7 @@ import './Entry.css';
 // example (Demo.jsx), awaits David's approval (test/real-phone/swarm/copy-B.md).
 const COPY = {
   fr: ['Votre corps est\u00A0un\u00A0temple.', 'Il est ici observé avec soin.', 'Rien ne quitte votre téléphone sans votre accord.', 'Entrer', 'Afficher l’entrée sans attendre', 'Version de test', 'Voir un exemple'],
-  en: ['Your body is a\u00A0temple.', 'Here it is observed with care.', 'Nothing leaves your phone without your say.', 'Enter', 'Show the entry now', 'Test version', 'See an example'],
+  en: ['Your body is a\u00A0temple.', 'Here it is observed with care.', 'Nothing leaves your phone unless you share it.', 'Enter', 'Show the entry now', 'Test version', 'See an example'],
 };
 
 export function shouldShowEntry() {

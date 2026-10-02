@@ -128,8 +128,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     const tempo = setTempo(reps, liftFirst);
     if (tempo) summary.push(`Tempo${colon}${tempo}`);
 
-    // Duration change: average of last two minus average of first two.
-    if (wholeReps.length >= 4) {
+    // Duration change: average of last two minus average of first two. The same first-two against
+    // last-two comparison as the speed change, from the same boundaries: unsaid with it (SPEED_CHANGE_SHOWN).
+    if (SPEED_CHANGE_SHOWN && wholeReps.length >= 4) {
       const dur = r => r.endTime - r.startTime;
       const firstAvg = (dur(wholeReps[0]) + dur(wholeReps[1])) / 2;
       const lastAvg = (dur(wholeReps[wholeReps.length - 2]) + dur(wholeReps[wholeReps.length - 1])) / 2;

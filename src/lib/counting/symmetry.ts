@@ -41,16 +41,18 @@ export const SIDES_SEEN = 0.8;
 // Status: experimental.
 export const MIN_COMPARED_REPS = 3;
 // How far the app's gap lay from the true gap on the synthetic lateral raises filmed square on (synth.txt,
-// 2 October 2026: 6 sets, two bodies, true gaps -12 % to +21 %): at most 8.9 points per set, and 13.7 points
-// per rep (4 of 42 reps beyond 9). Equal sides read -4.5 to -4.9 %: a bias toward the left on these bodies.
+// 2 October 2026: 6 sets, two bodies, true gaps -12 % to +21 %), with the rest band of 5 % and 2° (core.ts):
+// at most 9.7 points per set, and 11.5 points per rep (5 of 42 reps beyond 9). Equal sides read -4.5 to
+// -6.7 %: a bias toward the left on these bodies. (With the earlier band: 8.9 and 13.7.)
 // The screen states both bounds as observations, not as a guarantee. Status: experimental (synthetic bodies,
 // six sets; not people).
 export const GAP_SYNTH_SETS = 6;
-export const GAP_ERROR_POINTS = 9;
-export const REP_GAP_ERROR_POINTS = 14;
+export const GAP_ERROR_POINTS = 10;
+export const REP_GAP_ERROR_POINTS = 12;
 // The rule a stored comparison was measured under: sets saved before 2 October 2026 compared every bilateral
-// lift with a 20°/25° gate and carry no version; their comparison is not shown again (sides-line.js).
-export const SIDES_VERSION = 2;
+// lift with a 20°/25° gate and carry no version; version 2 used the 10 % rest band, whose rep windows read
+// other ranges. Only the current version's comparison is shown again (sides-line.js).
+export const SIDES_VERSION = 3;
 // Exercises compared: those whose two sides move together in the plane the camera faces, and whose gap the
 // synthetic sets read within GAP_ERROR_POINTS. Only the lateral raise qualifies so far. Square on, curls were
 // off by up to 55 points and presses by 11 to 28 (synth.txt); squats filmed square on read the knee's range
