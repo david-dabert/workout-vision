@@ -230,6 +230,10 @@ html, body { background: #080706; color-scheme: dark; }
    screen appears over it: with the prototype's fast-start curve both were near 15 % at that moment and the stage
    flashed nearly blank (tour, t04-back-to-choice, twice on 29 September). Same 0.5 s. */
 .wv-leaving { opacity: 0; transition: opacity 0.5s var(--ease-exit, cubic-bezier(0.4, 0, 1, 1)); pointer-events: none; }
+/* A screen returned to is already there, its entrance not played again; the screen being left fades away on top
+   of it, so nothing between them is dark (ScreenFade.jsx; e2e/screen-return.spec.js). */
+.wv-return .screen.is-active, .wv-return [data-reveal] { animation: none !important; opacity: 1; }
+.wv-leaving:has(+ .wv-return) { z-index: 3; }
 /* After a browser back swipe the screen is simply there: Safari already animated it. */
 .wv-instant .screen.is-active, .wv-instant [data-reveal] { animation: none !important; opacity: 1; }
 /* A report on its way out still takes the taps, so a double tap on Back cannot fall through. */
