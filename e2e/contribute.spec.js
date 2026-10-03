@@ -155,3 +155,39 @@ test('a set deleted in the history leaves the file sent: the count and the file 
   const ids = await page.evaluate(async () => { const f = window.__files[0]; const t = f.name.endsWith('.gz') ? await new Response(f.stream().pipeThrough(new DecompressionStream('gzip'))).text() : await f.text(); return JSON.parse(t).sets.map(x => x.count); });
   expect(ids).toEqual([7]);
 });
+
+// Third audit C17 (3 October): an erase that fails says "Réessayez" and keeps the stop and erase to retry it;
+// with no set left and the choice stored as no, the section stays while contributions wait.
+test('an erase that fails keeps the stop to retry it, even after the history is opened again', async ({ page }) => {
+  await open(page, 'yes', true);
+  await put(page, 'contributions', [c('w1')]);
+  const box = await history(page);
+  await page.evaluate(() => {
+    const clear = IDBObjectStore.prototype.clear;
+    window.__failClear = 1;
+    IDBObjectStore.prototype.clear = function () { if (window.__failClear-- > 0) throw new DOMException('refused', 'UnknownError'); return clear.call(this); };
+  });
+  await box.getByRole('button', { name: 'Arrêter et effacer' }).click();
+  await expect(box.locator('[role="status"]')).toHaveText('Les séries en attente n’ont pas pu être effacées. Réessayez.');
+  expect(await page.evaluate(() => localStorage.getItem('wv_contribute'))).toBe('no');
+  expect(await count(page, 'contributions')).toBe(1);
+  await expect(box.getByRole('button', { name: 'Arrêter et effacer' })).toBeVisible();
+  // The last set deleted, the history opened again: the sets waiting can still be erased.
+  await page.locator('.hist-btn').first().click();
+  await page.getByRole('button', { name: 'Supprimer cette série' }).click();
+  await page.getByRole('button', { name: 'Touchez encore pour supprimer' }).click();
+  await expect(page.locator('.hist-btn')).toHaveCount(0);
+  // The page is not reloaded: its start script would store yes again.
+  await put(page, 'contributions', [c('w9')]);
+  await page.getByRole('button', { name: 'Retour' }).click();
+  // The history gone, not fading out, so it is opened afresh.
+  await expect(page.locator('.history-screen')).toHaveCount(0);
+  await page.getByRole('button', { name: /Vos séries/ }).click();
+  const again = page.getByTestId('contribute-history');
+  expect(await page.evaluate(() => localStorage.getItem('wv_contribute'))).toBe('no');
+  await again.getByRole('button', { name: 'Arrêter et effacer' }).click();
+  await expect(again.locator('[role="status"]')).toHaveText('C’est arrêté. Les séries en attente sont effacées.');
+  expect(await count(page, 'contributions')).toBe(0);
+  await expect(again.getByRole('button', { name: 'Arrêter et effacer' })).toHaveCount(0);
+  await expect(again.getByRole('button', { name: 'Aider' })).toBeVisible();
+});
