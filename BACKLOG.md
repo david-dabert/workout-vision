@@ -154,3 +154,22 @@ lift is Beta iff it is not a press (bench, overhead) and every one of David's la
 (squat: MM-Fit). Today: Beta are biceps curl, lat pulldown, squat, hip thrust and Romanian deadlift; lateral
 raise, leg press, bench and overhead press are Experimental (tiers.txt). The Beta lifts are pinned first on the
 cards and in the list. PLAN.md's list is for David to update.
+
+## 3 October 2026: live counting, what was left out of the first build
+
+Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was built on 3 October. Left for later:
+
+- Stop on stillness: end the set by itself after some seconds without movement, so the person need not walk to the
+  phone. Not built: the walk to the phone is already in every recorded video, and a pause between reps (a lifter
+  resting at the top of a curl) would end a set too early; needs a measured threshold (R9).
+- Usage counts that tell a live set from a video: today a live set sends film_start and the analysis_* events, as a
+  video. A live_start event needs the worker's list changed and deployed first (feedback-worker/usage-schema.js): a
+  batch with a name the deployed worker does not know is refused whole.
+- A pose model in VIDEO mode for live: the core's landmarks come from IMAGE mode (corePoseWorker.js), on which every
+  real-phone set was counted; VIDEO mode would track between frames and change the landmarks, so the count. Measure
+  before switching (R2).
+- The provisional count can run ahead of the final one: on David's overhead press (Experimental) it reached 10 before
+  the whole set settled on 9 (src/lib/__tests__/liveCounter.test.js). The result says so when they differ; a
+  provisional count that waits for the next rep before it shows one may be steadier. Measure on the real-phone sets.
+- Live replay is the skeleton alone; keeping a short low-resolution clip on the phone for the replay would need the
+  person's yes and a memory budget.

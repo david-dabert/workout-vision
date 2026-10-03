@@ -11,10 +11,12 @@ import './Replay.css';
 import { track } from '../../lib/events';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
 import { isCorrected, markLabel, provenance } from './replay-labels';
+import { replayClock } from './replay-clock';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
-// The video is read from the phone and sent nowhere.
+// The video is read from the phone and sent nowhere. A set counted live has no video (file is null): the skeleton
+// is replayed alone, on a clock that stands in for the video (replay-clock.js), and nothing offers a video to share.
 
 export default function Replay({ file, result, lift, saved = null, leaving, onBack }) {
   const { lang } = useT(), fr = lang === 'fr';
@@ -36,6 +38,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const liftName = exerciseName(lift, lang);
   // After a correction the marks are the app's detections, beside the count the user saved (replay-labels.js).
   const corrected = isCorrected(saved, result.count), note = provenance({ detected: result.count, saved, fr });
+  // Without a video, the clock stands in for it from the first render, so the effects below find it in videoRef.
+  const clock = useRef(null);
+  if (!file && !clock.current) clock.current = replayClock(length, { width: fw, height: fh });
+  if (!file) videoRef.current = clock.current;
 
   // Step 4: the video with its overlay, prepared on a first tap and shared on a second, since the share
   // sheet opens only inside a tap and the recording takes as long as the set.
@@ -43,7 +49,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const abort = useRef(null);
   useEffect(() => () => { abort.current?.abort(); }, []);
   useEffect(() => () => { if (made.link) URL.revokeObjectURL(made.link); }, [made.link]);
-  const exportable = !broken && !result.refused && canExport();
+  const exportable = !!file && !broken && !result.refused && canExport();
   function prepare() {
     videoRef.current?.pause();
     abort.current = new AbortController();
@@ -67,6 +73,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
 
   // The file is read where it lies on the phone; its address lives as long as the screen.
   useEffect(() => {
+    if (!file) return undefined;
     const address = URL.createObjectURL(file);
     setUrl(address);
     return () => URL.revokeObjectURL(address);
@@ -136,6 +143,19 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       if (resize) resize.disconnect(); else window.removeEventListener('resize', still);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The clock's events, as the <video> element's props would take them; declared after the drawing above, so its
+  // listeners are in place when the clock says it is ready and goes to the first rep.
+  useEffect(() => {
+    const c = clock.current;
+    if (file || !c) return undefined;
+    const on = () => setPlaying(true), off = () => setPlaying(false);
+    c.addEventListener('play', on); c.addEventListener('pause', off); c.addEventListener('ended', off);
+    c.loaded();
+    seekTo(reps[0] ? into(reps[0]) : 0);
+    return () => { c.removeEventListener('play', on); c.removeEventListener('pause', off); c.removeEventListener('ended', off); c.dispose(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (leaving) clock.current?.pause(); }, [leaving]);
 
   function play() {
     const video = videoRef.current;
@@ -234,11 +254,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       </div>
       <div className="rp-stage" data-reveal style={{ '--i': 0 }}>
         <div className="rp-frame" style={{ '--ar': fw / fh }}>
-          <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
+          {file ? <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
             aria-label={fr ? 'Votre série, avec le squelette suivi par l’app' : 'Your set, with the skeleton the app tracked'}
             onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setBroken(true)}
             onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); seekTo(reps[0] ? into(reps[0]) : 0); }}
             onClick={toggle} />
+            : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
+              aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’app' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
           <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
           {reps.length > 0 && <div className="rp-chip" aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
@@ -281,9 +303,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’app ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
       </div>}
-      <p className="rp-note" data-reveal style={{ '--i': 3 }}>{fr
-        ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte votre téléphone que si vous la partagez.'
-        : 'In gold, the joint whose angle counts the reps. The video leaves your phone only if you share it.'}</p>
+      <p className="rp-note" data-reveal style={{ '--i': 3 }}>{file
+        ? (fr
+          ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte votre téléphone que si vous la partagez.'
+          : 'In gold, the joint whose angle counts the reps. The video leaves your phone only if you share it.')
+        : (fr
+          ? 'En doré, l’articulation dont l’angle compte les répétitions. Série comptée en direct\u00A0: aucune vidéo n’a été enregistrée, seul le squelette est rejoué.'
+          : 'In gold, the joint whose angle counts the reps. Counted live: no video was recorded, only the skeleton is replayed.')}</p>
     </div></section>
   </div>;
 }

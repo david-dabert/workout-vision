@@ -7,10 +7,16 @@ import { tierOf } from '../../lib/offer';
 import { exerciseName, filmView, guideExercise } from './exercise-info';
 import { GuideFrames } from './Guide';
 import { FITNESS_TESTS } from '../../lib/fitness-tests';
+import { canOpenCamera, readFilmMode, writeFilmMode } from '../../lib/liveCamera';
 import './Film.css';
 
-export default function Film({ lift, onBack, onFile, hero: arrivedByTransition = false }) {
+export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTransition = false }) {
   const { lang } = useT(), fr = lang === 'fr';
+  // Live counting is offered where the browser can open the camera for the page (liveCamera.js).
+  const liveOffered = !!onLive && canOpenCamera();
+  const [mode, setModeState] = useState(() => (liveOffered ? readFilmMode() : 'video'));
+  const setMode = m => { setModeState(m); writeFilmMode(m); };
+  const live = liveOffered && mode === 'live';
   const canvas = useRef(null);
   const fileRef = useRef(null);
   // The frame takes the chosen card's name only for the View Transition that brings it in, then drops it,
@@ -41,7 +47,7 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
     ro.observe(root);
     if (root.firstElementChild) ro.observe(root.firstElementChild);
     return () => ro.disconnect();
-  }, [lift, lang]);
+  }, [lift, lang, live]);
 
   useEffect(() => {
     if (!canvas.current) return;
@@ -96,7 +102,13 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September). */}
         <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
       </ol>}
-      <div className="actions" data-reveal style={{ '--i': 5 }}>
+      {live ? <div className="actions" data-reveal style={{ '--i': 5 }}>
+        {/* Live: the camera opens on the next screen, inside the app; the count shows as the set goes (Live.jsx). */}
+        <button ref={action} className="btn-primary tactile" onClick={onLive} data-testid="film-live">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
+          <span>{fr ? 'Compter en direct' : 'Count live'}</span>
+        </button>
+      </div> : <div className="actions" data-reveal style={{ '--i': 5 }}>
         {/* Each action is its file input, laid over the label so a tap lands on it (the surest way to open the
             camera in Safari), named by the label's words, and reached and opened by the keyboard as any file input
             is: the label is not a second control around it (audit FINDING-024, axe nested-interactive). */}
@@ -109,10 +121,19 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
           <input type="file" accept="video/*,.mov" className="hx" onChange={handleFile} />
           <span>{fr ? 'Choisir une vidéo' : 'Choose a video'}</span>
         </label>
-      </div>
+      </div>}
+      {/* How to count, under the action, so the frame and the action keep their place on a short screen (fitness-tests.spec.js). */}
+      {liveOffered && <div className="film-mode" role="group" aria-label={fr ? 'Comment compter' : 'How to count'} data-reveal style={{ '--i': 5 }}>
+        <button type="button" aria-pressed={!live} className={`film-mode-opt press${!live ? ' is-on' : ''}`} onClick={() => setMode('video')} data-testid="mode-video">{fr ? 'Vidéo' : 'Video'}</button>
+        <button type="button" aria-pressed={live} className={`film-mode-opt press${live ? ' is-on' : ''}`} onClick={() => setMode('live')} data-testid="mode-live">
+          <i className="live-dot" aria-hidden="true" />{fr ? 'En direct' : 'Live'}
+        </button>
+      </div>}
       <p className="privacy" data-reveal style={{ '--i': 6 }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-        <span>{fr ? 'La vidéo reste sur votre téléphone.' : 'The video stays on your phone.'}</span>
+        <span>{live
+          ? (fr ? 'L’image reste sur votre téléphone\u00A0: rien n’est enregistré ni envoyé.' : 'The picture stays on your phone: nothing is recorded or sent.')
+          : (fr ? 'La vidéo reste sur votre téléphone.' : 'The video stays on your phone.')}</span>
       </p>
     </div></section>
   </div>;

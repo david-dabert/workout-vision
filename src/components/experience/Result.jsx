@@ -160,8 +160,9 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
 /**
  * covered: the screen open over the result ('report' or 'replay'), or nothing.
  * onReplay: opens the replay; absent when the video is not at hand.
+ * liveShown: for a set counted live (LiveSession.jsx), the last count the live screen showed, or null.
  */
-export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {} }) {
+export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {}, liveShown = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
@@ -380,7 +381,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
   if (result.refused) {
     const text = why.cause === 'nobody'
-      ? (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.')
+      ? (result.metadata?.live ? (fr ? 'Personne n’apparaît à l’image.' : 'We could not find you in the picture.') : (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.'))
       : why.cause === 'unclear'
         ? (many
           ? (fr ? `Vos ${limb.noun} n\u2019étaient pas assez visibles pour compter les répétitions.` : `Your ${limb.noun} were not visible enough to count the reps.`)
@@ -460,7 +461,15 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{result.test ? (fr ? ` en ${result.test.windowSec}\u00A0secondes` : ` in ${result.test.windowSec} seconds`) : ''}</p>
       {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
-      {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{fr ? `La vidéo s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`}</p>}
+      {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{result.metadata?.live
+        ? (fr ? `La série s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The set stops before ${result.test.windowSec} seconds: the score covers only what was filmed.`)
+        : (fr ? `La vidéo s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`)}</p>}
+      {/* A live set: the count shown during the set was the core on the set so far; this one is the core on all of it
+          (liveCounter.js). When they differ the screen says so, so the number heard during the set is not taken for a
+          second measure. Not shown for a set the app could not count: that screen asserts no number (R8). */}
+      {liveShown !== null && count > 0 && liveShown !== count && <p className="res-meta res-live" data-testid="res-live">{fr
+        ? `En direct, l’app affichait ${liveShown}. Le compte final relit toute la série.`
+        : `Live, the app showed ${liveShown}. The final count reads the whole set again.`}</p>}
       {/* Under the count from the first frame: every measure on this screen (marks, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && count > 0 && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
       <p className="sr" role="status">{step === 'saved'

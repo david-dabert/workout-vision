@@ -19,12 +19,14 @@ Entry ─► Choice ─┬─► Film ─► CoreUpload ─┬─► Watch   (an
   └─► Demo       │                       │     ├─► Report  (sheet + PDF, overlay)
                  │                       │     └─► Replay  (video with tracked body, overlay)
                  │                       └─► AnalysisError, AnalysisInterrupted, AnalysisIncomplete
+                 │        └─► LiveSession ─┬─► Live    (camera, countdown, provisional count; "En direct", 3 October)
+                 │                         └─► Result, Report, Replay (skeleton alone: no video)
                  ├─► Guide    (exercise guide; "Filmer cet exercice" goes on to Film)
                  └─► History  (saved sets, progress, export, backup, contributions; opens Report)
 ```
 
 Routing is a URL hash (`src/lib/useHashRouter.js`).
-`App.jsx` renders Film for `#film` once an exercise is chosen, CoreUpload for `#analyze` once a video is chosen, Guide for `#exercises` and History for `#history`; every other hash, and those two without their choice, shows Choice.
+`App.jsx` renders Film for `#film` once an exercise is chosen, CoreUpload for `#analyze` once a video is chosen, LiveSession for `#live` once live counting is started from Film, Guide for `#exercises` and History for `#history`; every other hash, and those two without their choice, shows Choice.
 Choosing an exercise warms the pose model and WASM files into the service worker's caches (`src/lib/pose-files.js`).
 A person whose level is beginner (`level.js`, `wv_level`) is shown the exercise's guide page before Film until `GUIDED_SETS` (3) sets are saved; a fitness test goes straight to Film.
 
@@ -54,6 +56,7 @@ Measured with `node scripts/unreachable.mjs` on 3 October 2026, which follows st
 | `Entry.jsx` + `entry-scene.js`, `entry-pose.json` | First-visit animation; skipped once `wv_seen_entry` is set, forced with `?entry`. `entry-scene.js` also exports the canvas body renderer used by other screens. Opens `Demo.jsx` on demand: a drawn squat that the counting core counts as it plays (`demo-set.js`, `demo-figure.js`). |
 | `Choice.jsx` + `lift-meta.js`, `lift-scenes.js`, `lift-poses.json` | The nine card lifts of `lift-meta.js` as animated cards, with their tier, Beta first (`CARD_ORDER`, derived from `TIERS`); below them "Another exercise" (Guide), the two fitness tests, "Your sets" (History) and `ExerciseList.jsx`, the searchable list of every offered exercise but the tests (181), the Beta ones pinned on top, loaded after the cards. |
 | `Film.jsx` + `exercise-info.js` | Filming instructions (the view from `filmView`: the card's reference view, a fitness test's, else `guide-families.json`'s), the guide's drawings, a test's protocol, and the file picker. |
+| `Live.jsx` + `Live.css`, `../LiveSession.jsx` | Live counting (added 3 October, not yet checked on an iPhone): Film's "En direct" mode opens the camera (`src/lib/liveCamera.js`, rear first, switchable), a 3-second countdown starts the set, and `src/lib/liveEngine.js` samples the picture at 15 Hz into the recorded path's pose worker; `src/lib/liveCounter.js` runs `summarizeCount` on the samples so far every 500 ms for the provisional count (no number before the first rep or out of frame) and on all of them at the end. A new count vibrates and is spoken by a phone-local voice only (`src/lib/liveVoice.js`). Hidden page: the camera closes and the set pauses. A backlog of 2 s of samples stops the set (phone too slow). LiveSession then shows the same Result, Report and Replay as CoreUpload; Replay plays the skeleton alone on `replay-clock.js`. |
 | `../CoreUpload.jsx` | Runs the analysis, holds the screen awake and aborts it if the page is hidden (`src/lib/interruption.js`), and switches between Watch, Result, the three error screens, and the Report or Replay overlay. |
 | `Watch.jsx` | Progress and the live tracked skeleton while frames are processed. |
 | `Result.jsx` | Count, rep details, one-tap correction, the rest clock; saves the set (section 4), asks once whether to keep contributions (`ContributeAsk.jsx`), and for the lateral raise filmed from the front compares left and right range (`src/lib/counting/symmetry.ts`). A "report this count" mail or GitHub link and a challenge share open only on the user's tap (`src/lib/reportLinks.js`). |
@@ -87,6 +90,8 @@ coreAnalysis.summarizeCount → counting/core.countReps     pure, no DOM
 CountResult { count, reps[], arm, confidence, angles, smoothedAngles, lowThreshold, highThreshold, sides?, refused, test? }
   + exercise, metadata, imageLandmarks, worldLandmarks, timestamps
 ```
+
+Live counting feeds the same worker from the camera instead of `frameExtractor` (`liveEngine.js`: each sample drawn at ≤ 640 px, read with `getImageData`, transferred, its timestamp the time since the set started) and builds the same result object with `metadata.method: 'live'` (`liveCounter.js`, `finish`).
 
 The image landmarks feed the Watch skeleton, the replay, the video export, the refusal reasons (`refusal.js`) and the contributions; only the world landmarks are counted.
 The model file is checked against `src/lib/model-hash.json` before use and kept in IndexedDB (`wv-model-cache`).
@@ -136,7 +141,7 @@ The live path uses only `getImageLandmarker` and `detectPoseImage`; it also pull
 | IndexedDB `medical`, `food`, `milestones`, `personalRecords`, `meta` | Declared in `storage.js`; only `meta` (schema version) is used by the live path. |
 | IndexedDB `wv-model-cache` | The pose model, used only if it matches `model-hash.json`. |
 | Cache Storage (`public/sw.js`) | `wv-v1`, `wv-model-<sha256>`, `wv-wasm-<hash>`, `wv-meta`. |
-| `localStorage` | `wv_lang`, `wv_seen_entry`, `wv_seen_landing`, `wv_level`, `wv_level_asked`, `wv_contribute`, `wv_contribute_asked`, `wv_count_off` (set only when the person turns the usage counts off). |
+| `localStorage` | `wv_lang`, `wv_seen_entry`, `wv_seen_landing`, `wv_level`, `wv_level_asked`, `wv_contribute`, `wv_contribute_asked`, `wv_count_off` (set only when the person turns the usage counts off), `wv_film_mode` (`live` when live counting was chosen last on Film), `wv_live_voice` (`off` when the spoken count is turned off). |
 
 After a set is saved, the app asks the browser to keep its storage (`navigator.storage.persist`, `keep-sets.js`).
 No network call leaves the device during use, apart from loading the app itself and the pose model from the same origin, and, only in a build with `VITE_EVENTS_URL` set, the anonymous usage counts (`src/lib/events.js`: an event name from `feedback-worker/usage-schema.js`, the lift and tier, a visit-length bucket, the app version and language; batched, sent by `navigator.sendBeacon`, never with an identifier; none under Global Privacy Control or Do Not Track, or once turned off under the choice of lift). The build adds that server's origin to `connect-src` (`vite.config.js`, `eventsCspPlugin`). Reports, challenges, exports, backups and contributions leave only through a link or share sheet the user taps.
