@@ -23,6 +23,7 @@ import { levelView, readLevel } from './components/experience/level';
 import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
 import { track } from './lib/events';
+import { liveBuild } from './lib/buildFlags';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
 // screen under 812 points). No WebGL context is made to decide it: making one held up the first
@@ -99,7 +100,8 @@ function AppInner() {
   // Warm the next screens while the visitor reads, so none waits on a download: one at a time,
   // and only in a pause of 700 ms without a touch or a scroll, never in the middle of a swipe.
   // Filming first, then the analysis, the guide and the saved sets.
-  useEffect(() => whenQuiet([ExperienceFilm.warm, Analyze.warm, ExerciseGuide.warm, History.warm, LiveSession.warm]), []);
+  // The live screen only in a build that offers it (buildFlags.js).
+  useEffect(() => whenQuiet([ExperienceFilm.warm, Analyze.warm, ExerciseGuide.warm, History.warm, ...(liveBuild() ? [LiveSession.warm] : [])]), []);
 
   // Auto-create default profile for first-time users and skip straight to dashboard
   const autoCreatedRef = useRef(false);
@@ -183,8 +185,8 @@ function AppInner() {
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
     screen = <ExperienceFilm lift={selectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => { track('film_start', { lift: selectedLift }); go('analyze', () => { fileSerial.current += 1; setVideoFile(f); }); }}
-      onLive={() => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; }); }} />;
-  } else if (page === 'live' && selectedLift) {
+      onLive={liveBuild() ? () => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; }); } : undefined} />;
+  } else if (page === 'live' && selectedLift && liveBuild()) {
     key = `live:${fileSerial.current}`;
     screen = <LiveSession lift={selectedLift} onClose={backToChoice} onRecord={backToFilm} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
@@ -198,7 +200,7 @@ function AppInner() {
     screen = <History onClose={() => go('dashboard')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
-    // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift too. Every other page falls through to the choice of lift.
+    // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
     screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} />;
   }

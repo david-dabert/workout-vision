@@ -60,3 +60,14 @@ before "?".
 For David: "téléphones … ce téléphone … du téléphone" repeats the word three times in `lead`. Any shorter wording
 must still name the three kinds of data kept (counts, joint positions, the phone's model) and "jamais la vidéo", or the
 one sentence would understate what the yes allows; the full list stays one tap away.
+
+## Added 3 October 2026 (WP0.4, build flags): pending David's approval (3 October)
+
+A build made without `VITE_CONTRIBUTE=1` (production, until Phase 2) pauses contributions (src/lib/buildFlags.js): the
+saved card never asks, no new set is kept, and the history offers neither "Aider" nor "Envoyer". For a phone that said
+yes, or that still holds sets waiting, the history section shows this line in place of `what`, with "Arrêter et
+effacer" (unchanged) below it, so what waits can be erased. Register "vous". A non-breaking space stands before ":".
+
+| Key | French | English | Where |
+|---|---|---|---|
+| paused | Les envois sont en pause pour l’instant : l’app ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer. | Sending is paused for now: the app keeps nothing new. The sets already kept stay on this phone, and you can erase them. | History, under "Aider à améliorer le comptage", in a build with contributions paused |

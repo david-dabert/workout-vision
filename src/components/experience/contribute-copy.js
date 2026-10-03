@@ -34,6 +34,9 @@ export const CONTRIBUTE = {
     keepFailed: 'Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone.',
     start: 'Aider',
     shareTitle: 'Séries pour améliorer le comptage',
+    // A build without VITE_CONTRIBUTE (production until Phase 2, WP0.4): nothing is asked, kept or sent, and what
+    // waits can still be erased. Pending David's approval (3 October; copy-contribute.md).
+    paused: 'Les envois sont en pause pour l’instant\u00A0: l’app ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer.',
   },
   en: {
     title: 'Help improve the count',
@@ -60,5 +63,6 @@ export const CONTRIBUTE = {
     keepFailed: 'Your choice is saved, but this set could not be kept on this phone.',
     start: 'Help',
     shareTitle: 'Sets to improve the count',
+    paused: 'Sending is paused for now: the app keeps nothing new. The sets already kept stay on this phone, and you can erase them.',
   },
 };

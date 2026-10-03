@@ -75,7 +75,10 @@ jobs:
       - run: npm ci
       - run: npx playwright --version
       - run: npx playwright install --with-deps chromium webkit
-      - run: npm run build
+      # Live counting and contributions are off in production (src/lib/buildFlags.js; deploy.yml leaves VITE_LIVE and
+      # VITE_CONTRIBUTE unset): this build switches both on, so their tests still run (live.spec.js, contribute*.spec.js).
+      # The production build itself is built and tested by playwright.config.js on port 4176 (e2e/build-flags.spec.js).
+      - run: npm run build:e2e
       # One worker, as the timing checks of the touch tests were measured.
       - run: npx playwright test --retries=0 --workers=1
 
@@ -145,7 +148,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run build
+      # The lateral raise's journey keeps a contribution (CONTRIBUTE=1, below): contributions, paused in production
+      # (src/lib/buildFlags.js, WP0.4), are switched on for this build so that path stays tested.
+      - run: VITE_CONTRIBUTE=1 npm run build
       # Restored and saved as two steps, so a render survives a journey that fails; the key holds the renderer,
       # its parameters (this file) and the locked versions of three.js and Chromium (package-lock.json).
       - name: Restore the rendered sets

@@ -5,9 +5,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { contributions, contributionsFile, eraseContributions, forgetContributions, readChoice, persistChoice } from '../../lib/contribute';
 import { CONTRIBUTE } from './contribute-copy';
+import { contributeBuild } from '../../lib/buildFlags';
 
 export default function ContributeHistory({ fr, style, sets = null }) {
   const t = CONTRIBUTE[fr ? 'fr' : 'en'];
+  // Contributions paused in this build (buildFlags.js, WP0.4): no "Aider", no "Envoyer", no file prepared; the stop
+  // and erase stays for a stored yes or sets still waiting, which stay on the phone until then.
+  const on = contributeBuild();
   const [choice, setChoice] = useState(readChoice);
   const [waiting, setWaiting] = useState(null);
   const [prepared, setPrepared] = useState(null); // { list, file }: the file prepared for that list
@@ -17,11 +21,11 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   // so the promise that stopping erases them holds (third audit C17, 3 October).
   const [leftover, setLeftover] = useState(false);
   useEffect(() => {
-    if (choice === 'yes') return undefined;
+    if (on && choice === 'yes') return undefined;
     let live = true;
     contributions().then(l => { if (live) setLeftover(l.length > 0); }, () => {});
     return () => { live = false; };
-  }, [choice, sets]);
+  }, [on, choice, sets]);
 
   // The sets waiting, read when helping, and again whenever the saved sets change: a set deleted in the history
   // takes its contribution with it, and the file prepared before is dropped (audit of 2 October). Their file is
@@ -29,11 +33,11 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   // The stored choice, not the one on screen, decides: after a stop whose erase failed the screen still reads yes
   // (so the stop can be retried), but nothing is read, prepared or sent again (review of the third audit's fixes).
   useEffect(() => {
-    if (choice !== 'yes' || readChoice() !== 'yes') return undefined;
+    if (!on || choice !== 'yes' || readChoice() !== 'yes') return undefined;
     let live = true;
     contributions().then(l => { if (live && readChoice() === 'yes') setWaiting(l); }, () => { if (live) setWaiting([]); });
     return () => { live = false; };
-  }, [choice, sets]);
+  }, [on, choice, sets]);
   useEffect(() => {
     if (!waiting?.length) return undefined;
     const g = ++generation.current;
@@ -44,7 +48,7 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   const file = prepared && prepared.list === waiting ? prepared.file : null;
 
   function send() {
-    if (!file || sharing.current || readChoice() !== 'yes') return;
+    if (!on || !file || sharing.current || readChoice() !== 'yes') return;
     setNote('');
     const list = waiting, f = file, g = generation.current;
     if (!downloadNext.current && typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] })) {
@@ -86,8 +90,15 @@ export default function ContributeHistory({ fr, style, sets = null }) {
 
   return <section className="hist-contribute" data-reveal style={style} data-testid="contribute-history">
     <h2 className="eyebrow">{t.title}</h2>
-    <p className="hist-keep-why">{t.what}</p>
-    {choice === 'yes'
+    {!on
+      ? <>
+        <p className="hist-keep-why" data-testid="contribute-paused">{t.paused}</p>
+        {(choice === 'yes' || leftover) && <div className="hist-keep-row">
+          <button type="button" className="text-btn press" onClick={stop}>{t.stop}</button>
+        </div>}
+      </>
+      : <p className="hist-keep-why">{t.what}</p>}
+    {!on ? null : choice === 'yes'
       ? <>
         <p className="hist-contribute-n">{waiting ? t.waiting(waiting.length) : ''}</p>
         <div className="hist-keep-row">

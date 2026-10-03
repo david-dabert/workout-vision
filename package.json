@@ -8,6 +8,7 @@
     "dev": "vite",
     "prebuild": "node scripts/copy-models.js && node scripts/copy-guide.js",
     "build": "vite build && node scripts/inject-sw-precache.js",
+    "build:e2e": "VITE_LIVE=1 VITE_CONTRIBUTE=1 npm run build",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",

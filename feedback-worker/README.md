@@ -58,7 +58,7 @@ npx wrangler d1 execute workout-vision-feedback --remote --file=migrations/0001_
 
 Then the app, so it sends the counts:
 
-1. In GitHub, Settings, Secrets and variables, Actions, Variables: add `VITE_EVENTS_URL` = `https://workout-vision-feedback.<you>.workers.dev/event`. The deploy workflow (`.github/workflows/deploy.yml`) passes it to the build.
+1. In GitHub, Settings, Secrets and variables, Actions, Variables: add `VITE_EVENTS_URL` = `https://workout-vision-feedback.<you>.workers.dev/event`. The deploy workflow (`.github/workflows/deploy.yml`) pins `VITE_EVENTS_URL` to `''` until David decides D6 (WP0.3, `docs/SPEC-production.md`): switching the counts on is the one line its comment names, `VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}` in the build job's `env`. Until then a deploy step (`scripts/check-dist-events.mjs`) fails if the built site holds any events URL, this variable's value included.
 2. Push to main (or re-run the deploy). The build adds the worker's origin to the page's `connect-src` (`vite.config.js`, `eventsCspPlugin`); a value that is not https fails the build. Without the variable, the app sends nothing and its policy is unchanged.
 3. On the iPhone: open the app, check the line under the choice of lift, then open `https://workout-vision-feedback.<you>.workers.dev/dashboard` and type the token in the form: today's row shows one Open.
 

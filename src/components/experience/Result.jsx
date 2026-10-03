@@ -8,6 +8,7 @@ import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
 import { contribution, contributeAsks, keepContribution, markContributeAsked, readChoice, shouldAskContribute } from '../../lib/contribute';
 import ContributeAsk from './ContributeAsk';
+import { contributeBuild } from '../../lib/buildFlags';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
@@ -353,11 +354,12 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
       // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
-      if (readChoice() === 'yes') keepThis(n);
+      // A build without VITE_CONTRIBUTE keeps none and never asks: contributions are paused (buildFlags.js, WP0.4).
+      if (contributeBuild() && readChoice() === 'yes') keepThis(n);
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       // The question on helping, from the number of sets now on the phone; unread, it is not asked.
-      loadSets().then(l => {
+      if (contributeBuild()) loadSets().then(l => {
         if (shouldAskContribute({ choice: readChoice(), ...contributeAsks(), saved: l.length })) setContributeAt(c => c ?? l.length);
       }, () => {});
       setSaveError(''); // a retry that saves takes back "not saved"

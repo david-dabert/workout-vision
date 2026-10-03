@@ -8,12 +8,14 @@ import { exerciseName, filmView, guideExercise } from './exercise-info';
 import { GuideFrames } from './Guide';
 import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { canOpenCamera, readFilmMode, writeFilmMode } from '../../lib/liveCamera';
+import { liveBuild } from '../../lib/buildFlags';
 import './Film.css';
 
 export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTransition = false }) {
   const { lang } = useT(), fr = lang === 'fr';
-  // Live counting is offered where the browser can open the camera for the page (liveCamera.js).
-  const liveOffered = !!onLive && canOpenCamera();
+  // Live counting is offered where the browser can open the camera for the page (liveCamera.js), and only by a
+  // build made with VITE_LIVE=1: production hides it until Phase 6 (buildFlags.js, WP0.3).
+  const liveOffered = liveBuild() && !!onLive && canOpenCamera();
   const [mode, setModeState] = useState(() => (liveOffered ? readFilmMode() : 'video'));
   const setMode = m => { setModeState(m); writeFilmMode(m); };
   const live = liveOffered && mode === 'live';

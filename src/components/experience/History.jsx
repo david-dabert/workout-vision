@@ -9,6 +9,7 @@ import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
 import KeepSets from './KeepSets';
 import ContributeHistory from './ContributeHistory';
+import { contributeBuild } from '../../lib/buildFlags';
 import { contributions, forgetContributions, readChoice } from '../../lib/contribute';
 import LevelPick from './LevelPick';
 import { readLevel, writeLevel } from './level';
@@ -189,8 +190,9 @@ export default function History({ onClose }) {
           <KeepSets sets={sets} fr={fr} onRestored={list => { setProblem(''); setSets(list); }} />
         </section>}
         {/* While helping, or while contributions wait, the section stays, so the person can always stop and erase,
-            even with no set left. */}
-        {(sets?.length > 0 || readChoice() === 'yes' || contributionsLeft) && <ContributeHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
+            even with no set left. A build with contributions paused (buildFlags.js, WP0.4) offers nothing to start:
+            the section shows only for a stored yes or sets still waiting, to stop and erase them. */}
+        {((contributeBuild() && sets?.length > 0) || readChoice() === 'yes' || contributionsLeft) && <ContributeHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
