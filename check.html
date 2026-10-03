@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="robots" content="noindex">
+    <!-- 'unsafe-eval' is needed: web-demuxer's loader evaluates code on this page; without it the WebCodecs path fails
+         and decoding falls back to playback (tried 3 October: the journey's decoding failed under the stricter policy). -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' blob:; img-src 'self' blob: data:; media-src 'self' blob:; worker-src 'self' blob:; child-src 'self' blob:" />
   <title>Count check</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
