@@ -337,7 +337,7 @@ try {
   const del = page.locator('.hist-detail .text-btn');
   await expect(del).toContainText('Supprimer cette série', { timeout: 5000 });
   await del.click();
-  await expect(del).toContainText('Toucher encore pour supprimer');
+  await expect(del).toContainText('Touchez encore pour supprimer');
   await shot('12-history-delete');
   await del.click();
   await expect(page.locator('.hist-empty')).toBeVisible({ timeout: 5000 });

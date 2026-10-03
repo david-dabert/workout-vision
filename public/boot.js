@@ -9,6 +9,8 @@ function wvBootScreen(kind) {
   if (!root || root.children.length !== 0) return;
   var fr = false;
   try { var saved = localStorage.getItem('wv_lang'); fr = saved ? saved === 'fr' : /^fr/i.test(navigator.language || ''); } catch (e) { fr = /^fr/i.test(navigator.language || ''); }
+  // The page declares the language of the words it shows, so VoiceOver reads them in the right voice (audit of 3 October).
+  try { document.documentElement.lang = fr ? 'fr' : 'en'; } catch (e) { /* no document */ }
   var t = kind === 'crash'
     ? (fr ? ['Un problème est survenu.', 'Rechargez l’application pour réessayer.', 'Recharger'] : ['Something went wrong.', 'Reload the app to try again.', 'Reload'])
     : (fr ? ['L’application ne s’est pas chargée.', 'Vérifiez votre connexion, puis rechargez.', 'Recharger'] : ['The app did not load.', 'Check your connection, then reload.', 'Reload']);

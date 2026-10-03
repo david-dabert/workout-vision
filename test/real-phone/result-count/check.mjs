@@ -212,7 +212,7 @@ try {
     await page.locator('[data-testid="fix-card"] .btn-primary').click();
     const ask = page.locator('[data-testid="contribute-ask"]');
     const shown = await ask.waitFor({ timeout: 10000 }).then(() => true, () => false);
-    check(shown && (await ask.textContent()).includes(fr ? 'jamais la vidéo' : 'never the video'), `${lang}: the saved card asks once whether to help, saying the video never goes`);
+    check(shown && (await ask.textContent()).includes(fr ? 'Jamais la vidéo' : 'Never the video'), `${lang}: the saved card asks once whether to help, saying the video never goes`);
     await ask.getByRole('button', { name: fr ? 'Oui, aider' : 'Yes, help' }).click();
     const kept = await page.waitForFunction(() => new Promise(ok => {
       const r = indexedDB.open('workoutVision');

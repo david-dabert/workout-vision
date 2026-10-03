@@ -30,3 +30,15 @@ Built in src/components/experience/KeepSets.jsx and keep-sets-view.js (history) 
 | Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone. | Your choice is saved, but this set could not be kept on this phone. | Saved card, after "Oui, aider" when the phone refuses to keep the set |
 | Votre niveau n’a pas pu être enregistré sur ce téléphone. | Your level could not be saved on this phone. | Saved card, after a level the phone refuses to store |
 | Recharger la page | Reload the page | "L’analyse n’a pas pu démarrer.", in place of "Refilmer" |
+
+## Changed 3 October 2026 (second audit), for David's approval (R10)
+
+| French | English | Where | Why |
+|---|---|---|---|
+| À chaque série, l’app garde sur ce téléphone l’exercice, son comptage, le vôtre, la position de vos articulations au fil de la série, la durée de la vidéo, le modèle de téléphone et de navigateur tels qu’ils se déclarent, et la version de l’app. Jamais la vidéo. Vous les envoyez quand vous voulez. | After each set, the app keeps on this phone the exercise, its count, yours, the position of your joints through the set, the length of the video, the phone and browser model as they state it, and the app version. Never the video. You send them when you choose. | Contribution question and history | The old sentence read as if it never kept the duration or the phone; it named less than the file holds |
+| Pour prendre du muscle, inutile de trop manger : un léger excédent de calories est la piste conseillée pour limiter la prise de gras, sans dose validée à ce jour. | To build muscle, there is no need to overeat: a slight calorie surplus is the advised approach to limit fat gain, though no amount has been validated yet. | Notes, general advice | Source 12 finds the surplus never validated in resistance training (R9) |
+| Personne n’apparaît dans la vidéo. | (unchanged) | Refused set, nobody found | "Nous ne vous avons pas trouvé" assumed a man |
+| Vous pouvez le changer dans Vos séries. | You can change it in Your sets. | After the level question | The screen is named "Vos séries", not "l’historique" |
+| Touchez encore pour supprimer | (unchanged) | History, delete | Every other prompt says "Touchez" |
+| Une erreur inattendue est survenue. Vous pouvez réessayer ou revenir à l’accueil. | An unexpected error occurred. You can try again or go back to the start. / Back to the start | Error screen | The app has no dashboard |
+| Illustrations : Everkinetic… | (unchanged) | Guide credits | Non-breaking space before the colon in French |

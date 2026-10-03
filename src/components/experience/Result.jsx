@@ -361,7 +361,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
   if (result.refused) {
     const text = why.cause === 'nobody'
-      ? (fr ? 'Nous ne vous avons pas trouvé dans la vidéo.' : 'We could not find you in the video.')
+      ? (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.')
       : why.cause === 'unclear'
         ? (many
           ? (fr ? `Vos ${limb.noun} n\u2019étaient pas assez visibles pour compter les répétitions.` : `Your ${limb.noun} were not visible enough to count the reps.`)
@@ -534,7 +534,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
             {chosen && <p className="level-note" role="status">{levelLost
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
-              : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans l’historique.' : 'Noted. The screen adapts from your next set. You can change it in your history.')}</p>}
+              : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
           </div>}
         </div>
       )}
@@ -567,7 +567,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <p className="eyebrow">{liftName}</p>
         <div className="res-sub">
           {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
-          <p className="res-meta">{seconds ? `${seconds} s · ${armLabel}` : armLabel}</p>
+          <p className="res-meta">{seconds ? `${seconds}\u00A0s · ${armLabel}` : armLabel}</p>
         </div>
       </div>
       {resultBlocks(view.level).map(b => blocks[b] || null)}

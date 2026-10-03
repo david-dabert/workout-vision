@@ -121,7 +121,8 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
       // A rep the video cut, or a partial one (tempo.js), is counted, its range shown, its times and speeds not (as in the report).
       const cut = !!r.clipped, whole = x => (cut || partial(r) ? null : x);
       rows.push([when, lift, Number.isFinite(r.index) ? r.index : i + 1, num(r.romDegrees, 0, f),
-        num(whole(r.concentricSec), 2, f), num(whole(r.eccentricSec), 2, f),
+        // Tenths, as on the screens: at 15 samples a second the app measures nothing finer (set-notes.js; audit of 3 October).
+        num(whole(r.concentricSec), 1, f), num(whole(r.eccentricSec), 1, f),
         num(whole(r.peakSpeed), 0, f), num(whole(r.meanSpeed), 0, f), cut ? f.yes : f.no]);
     });
   }

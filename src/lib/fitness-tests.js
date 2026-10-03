@@ -26,8 +26,8 @@ export const FITNESS_TESTS = {
     windowSec: 30, illustration: 'bicep_curl', view: 'side',
     fr: 'Flexions de bras, 30 secondes', en: '30-second arm curl',
     steps: {
-      fr: ['Posez le téléphone sur le côté, le bras qui travaille face à l’objectif.', 'Asseyez-vous dos droit, un haltère dans la main\u00A0: 2,3 kg pour une femme, 3,6 kg pour un homme.', 'Pliez puis tendez le bras en entier, le plus de fois possible en 30\u00A0secondes\u00A0; filmez quelques secondes de plus.'],
-      en: ['Stand the phone at your side, working arm facing the lens.', 'Sit up straight with a dumbbell in hand: 2.3 kg for a woman, 3.6 kg for a man.', 'Curl all the way up and down, as many times as you can in 30 seconds; keep filming a few seconds more.'],
+      fr: ['Posez le téléphone sur le côté, le bras qui travaille face à l’objectif.', 'Asseyez-vous dos droit, un haltère dans la main\u00A0: 2,3\u00A0kg pour une femme, 3,6\u00A0kg pour un homme.', 'Pliez puis tendez le bras en entier, le plus de fois possible en 30\u00A0secondes\u00A0; filmez quelques secondes de plus.'],
+      en: ['Stand the phone at your side, working arm facing the lens.', 'Sit up straight with a dumbbell in hand: 2.3\u00A0kg for a woman, 3.6\u00A0kg for a man.', 'Curl all the way up and down, as many times as you can in 30 seconds; keep filming a few seconds more.'],
     },
   },
 };

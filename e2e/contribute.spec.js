@@ -114,7 +114,7 @@ test('deleting a set deletes its contribution, and stopping stays possible with 
   await history(page);
   await page.locator('.hist-btn').first().click();
   await page.getByRole('button', { name: 'Supprimer cette série' }).click();
-  await page.getByRole('button', { name: 'Toucher encore pour supprimer' }).click();
+  await page.getByRole('button', { name: 'Touchez encore pour supprimer' }).click();
   await expect(page.locator('.hist-btn')).toHaveCount(0);
   expect(await count(page, 'contributions')).toBe(0);
   await expect(page.getByTestId('contribute-history').getByRole('button', { name: 'Arrêter et effacer' })).toBeVisible();
@@ -146,7 +146,7 @@ test('a set deleted in the history leaves the file sent: the count and the file 
   // The newest set, w2 (count 8), comes first and is deleted: only w1's contribution (count 7) is left.
   await page.locator('.hist-btn').first().click();
   await page.getByRole('button', { name: 'Supprimer cette série' }).click();
-  await page.getByRole('button', { name: 'Toucher encore pour supprimer' }).click();
+  await page.getByRole('button', { name: 'Touchez encore pour supprimer' }).click();
   await expect(page.locator('.hist-btn')).toHaveCount(1);
   await expect(box).toContainText('1 série prête');
   await page.evaluate(() => { window.__files = []; const s = navigator.share; navigator.share = d => { window.__files.push(d.files[0]); return s(d); }; });
