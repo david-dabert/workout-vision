@@ -87,14 +87,26 @@ export function flushEvents() {
   while (queue.length) post(JSON.stringify({ events: queue.splice(0, MAX_BATCH) }));
 }
 
-// As text/plain, which the browser sends with no preflight; the worker reads the body as JSON (usage.js). A beacon
-// outlives the page; where there is none, or it is refused, a keepalive fetch without credentials.
+// Whether this browser's fetch can outlive the page (keepalive): Safari and Chrome for years, Firefox since 133.
+const fetchKeepsAlive = () => {
+  try { return typeof globalThis.fetch === 'function' && typeof globalThis.Request === 'function' && 'keepalive' in globalThis.Request.prototype; } catch { return false; }
+};
+
+// As text/plain, which the browser sends with no preflight; the worker reads the body as JSON (usage.js).
+// First a keepalive fetch, which outlives the page as a beacon does, with credentials: 'omit', so no cookie of the
+// worker's site ever goes with a count, and no referrer. sendBeacon always sends the browser's cookies for the
+// worker's site (its credentials mode is "include", and it takes no option), so it is only the fallback, where fetch
+// cannot keep the request alive or throws at once (review finding N7). The worker sets no cookie either way.
+// A fetch that fails later is not sent again by beacon: it may have reached the worker, and a count must not double.
 function post(body) {
-  try { if (globalThis.navigator?.sendBeacon?.(ENDPOINT, body)) return; } catch { /* fall back to fetch */ }
-  try {
-    globalThis.fetch?.(ENDPOINT, { method: 'POST', body, keepalive: true, credentials: 'omit', referrerPolicy: 'no-referrer', headers: { 'Content-Type': 'text/plain;charset=UTF-8' } })
-      ?.catch?.(() => {});
-  } catch { /* a count lost is not an error */ }
+  if (fetchKeepsAlive()) {
+    try {
+      globalThis.fetch(ENDPOINT, { method: 'POST', body, keepalive: true, credentials: 'omit', referrerPolicy: 'no-referrer', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=UTF-8' } })
+        ?.catch?.(() => {});
+      return;
+    } catch { /* fall back to the beacon */ }
+  }
+  try { globalThis.navigator?.sendBeacon?.(ENDPOINT, body); } catch { /* a count lost is not an error */ }
 }
 
 let started = false;

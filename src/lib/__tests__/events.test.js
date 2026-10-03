@@ -7,7 +7,7 @@ const URL_ = 'https://events.example.workers.dev/event';
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.useRealTimers(); vi.resetModules(); });
 
 // A phone: storage, a navigator with a beacon, and the page's listeners. Every write to storage is recorded.
-function phone({ url = URL_, nav = {}, store = {} } = {}) {
+function phone({ url = URL_, nav = {}, store = {}, keepalive = true } = {}) {
   vi.useFakeTimers();
   if (url !== null) vi.stubEnv('VITE_EVENTS_URL', url);
   else vi.stubEnv('VITE_EVENTS_URL', '');
@@ -21,12 +21,18 @@ function phone({ url = URL_, nav = {}, store = {} } = {}) {
     removeItem: k => { writes.push(k); delete store[k]; },
   });
   vi.stubGlobal('navigator', { language: 'fr-FR', sendBeacon: (u, body) => { beacons.push({ u, body }); return true; }, ...nav });
-  vi.stubGlobal('fetch', (u, init) => { fetches.push({ u, init }); return Promise.resolve(new Response(null, { status: 204 })); });
+  if (keepalive !== null) {
+    vi.stubGlobal('fetch', (u, init) => { if (keepalive === 'throws') throw new TypeError('keepalive refused'); fetches.push({ u, init }); return Promise.resolve(new Response(null, { status: 204 })); });
+    // A Request whose prototype knows keepalive, or not (an older Firefox).
+    vi.stubGlobal('Request', keepalive === false ? class {} : class { get keepalive() { return true; } });
+  } else vi.stubGlobal('fetch', undefined);
   vi.stubGlobal('addEventListener', (type, fn) => { (listeners[type] ||= []).push(fn); });
   vi.stubGlobal('document', { visibilityState: 'visible', cookie: '', addEventListener: (type, fn) => { (listeners[`doc:${type}`] ||= []).push(fn); } });
   const fire = type => (listeners[type] || []).forEach(fn => fn());
   const sent = () => [...beacons.map(b => b.body), ...fetches.map(f => f.init.body)].flatMap(b => JSON.parse(b).events);
-  return { writes, beacons, fetches, fire, sent, store };
+  // Every request sent, by whichever way (fetch first, beacon as fallback): { u, body }.
+  const all = () => [...beacons, ...fetches.map(f => ({ u: f.u, body: f.init.body }))];
+  return { writes, beacons, fetches, fire, sent, store, get posts() { return all(); } };
 }
 const load = () => import('../events.js');
 
@@ -41,7 +47,7 @@ describe('track', () => {
     p.fire('pagehide');
     vi.runAllTimers();
     ev.flushEvents();
-    expect(p.beacons).toEqual([]);
+    expect(p.posts).toEqual([]);
     expect(p.fetches).toEqual([]);
     expect(p.writes).toEqual([]);
   });
@@ -66,8 +72,8 @@ describe('track', () => {
       for (const k of Object.keys(e)) expect(['event', ...COMMON_FIELDS, ...USAGE_EVENTS[e.event]]).toContain(k);
     }
     // The request is the batch alone: no other key beside the events.
-    expect(Object.keys(JSON.parse(p.beacons[0].body))).toEqual(['events']);
-    expect(p.beacons[0].u).toBe(URL_);
+    expect(Object.keys(JSON.parse(p.posts[0].body))).toEqual(['events']);
+    expect(p.posts[0].u).toBe(URL_);
   });
 
   it('stores no identifier: no write to storage, no cookie', async () => {
@@ -86,17 +92,17 @@ describe('track', () => {
     const ev = await load();
     ev.startEvents();
     ev.track('history_open');
-    expect(p.beacons).toHaveLength(0);
+    expect(p.posts).toHaveLength(0);
     vi.advanceTimersByTime(4000);
-    expect(p.beacons).toHaveLength(1);
+    expect(p.posts).toHaveLength(1);
     expect(p.sent().map(e => e.event)).toEqual(['open', 'history_open']);
     ev.track('guide_open');
     document.visibilityState = 'hidden';
     p.fire('doc:visibilitychange');
-    expect(p.beacons).toHaveLength(2);
+    expect(p.posts).toHaveLength(2);
     for (let i = 0; i < 20; i++) ev.track('guide_open');
-    expect(p.beacons).toHaveLength(3);
-    expect(JSON.parse(p.beacons[2].body).events).toHaveLength(20);
+    expect(p.posts).toHaveLength(3);
+    expect(JSON.parse(p.posts[2].body).events).toHaveLength(20);
   });
 
   it('stops after 200 events in a visit', async () => {
@@ -121,13 +127,28 @@ describe('track', () => {
     expect(ends).toEqual([{ event: 'session_end', durationBucket: '5-15', appVersion: expect.any(String), lang: 'fr' }]);
   });
 
-  it('falls back to a keepalive fetch without credentials when the beacon is refused', async () => {
-    const p = phone({ nav: { sendBeacon: () => false } });
+  it('sends by a keepalive fetch without credentials first, never by the beacon, which carries cookies (N7)', async () => {
+    const p = phone();
     const ev = await load();
     ev.track('open');
     ev.flushEvents();
     expect(p.fetches).toHaveLength(1);
-    expect(p.fetches[0].init).toMatchObject({ method: 'POST', keepalive: true, credentials: 'omit', referrerPolicy: 'no-referrer' });
+    expect(p.fetches[0].u).toBe(URL_);
+    expect(p.fetches[0].init).toMatchObject({ method: 'POST', keepalive: true, credentials: 'omit', referrerPolicy: 'no-referrer', headers: { 'Content-Type': 'text/plain;charset=UTF-8' } });
+    expect(p.beacons).toEqual([]);
+    expect(p.sent().map(e => e.event)).toEqual(['open']);
+  });
+
+  it('falls back to the beacon only where fetch cannot keep the request alive, or throws at once', async () => {
+    for (const keepalive of [false, null, 'throws']) {
+      vi.resetModules();
+      const p = phone({ keepalive });
+      const ev = await load();
+      ev.track('open');
+      ev.flushEvents();
+      expect(p.fetches, String(keepalive)).toEqual([]);
+      expect(p.beacons.map(b => JSON.parse(b.body).events.map(e => e.event)), String(keepalive)).toEqual([['open']]);
+    }
   });
 
   it('sends nothing when the browser asks not to be tracked', async () => {
@@ -138,7 +159,7 @@ describe('track', () => {
       ev.startEvents();
       expect(ev.track('choose_lift', { lift: 'squat' })).toBe(false);
       p.fire('pagehide');
-      expect(p.beacons).toEqual([]);
+      expect(p.posts).toEqual([]);
     }
   });
 
@@ -151,7 +172,7 @@ describe('track', () => {
     expect(ev.track('history_open')).toBe(false);
     vi.runAllTimers();
     ev.flushEvents();
-    expect(p.beacons).toEqual([]);
+    expect(p.posts).toEqual([]);
     ev.setCountingOff(false);
     expect(p.store.wv_count_off).toBeUndefined();
     expect(ev.track('history_open')).toBe(true);
@@ -164,7 +185,7 @@ describe('track', () => {
     const ev = await load();
     ev.startEvents();
     p.fire('pagehide');
-    expect(p.beacons).toEqual([]);
+    expect(p.posts).toEqual([]);
   });
 
   it('counts in the language the app shows', async () => {
