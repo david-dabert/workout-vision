@@ -1,0 +1,7 @@
+Core, and core with the state model where they differ by gap or more, 2026-10-03. Exact (off by 3 or more). Sets: public A 440, B 454, synthetic 96, David 14.
+  core alone  public A 144 (116)  B 127 ( 88)  synthetic  74 ( 13)  David   7 (  1)
+  gap 3       public A 146 (106)  B 127 ( 87)  synthetic  68 ( 22)  David   7 (  2)
+  gap 4       public A 144 (111)  B 127 ( 87)  synthetic  69 ( 22)  David   7 (  2)
+  gap 5       public A 144 (115)  B 127 ( 87)  synthetic  70 ( 19)  David   7 (  2)
+  gap 6       public A 144 (116)  B 127 ( 88)  synthetic  70 ( 18)  David   7 (  2)
+  gap 8       public A 144 (116)  B 127 ( 88)  synthetic  72 ( 15)  David   7 (  1)

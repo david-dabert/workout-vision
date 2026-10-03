@@ -72,6 +72,16 @@ export default function History({ onClose }) {
       setSets(list => list.filter(x => x.id !== w.id));
       setOpen(null);
       setConfirm(null);
+      // The delete button goes with its set: focus moves to the next set listed, or to the title when none is
+      // left, never to nothing (second audit, 3 October).
+      requestAnimationFrame(() => {
+        const a = document.activeElement;
+        if (a && a !== document.body && document.contains(a)) return;
+        const next = document.querySelector('.history-screen .hist-btn') || document.querySelector('.history-screen h1, .history-screen .title');
+        if (!next) return;
+        if (!next.matches('button') && !next.hasAttribute('tabindex')) next.setAttribute('tabindex', '-1');
+        next.focus({ preventScroll: true, focusVisible: false });
+      });
     } catch {
       setConfirm(null);
       setProblem(fr ? 'La série n’a pas pu être supprimée. Réessayez.' : 'The set could not be deleted. Try again.');

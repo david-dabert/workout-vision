@@ -105,3 +105,19 @@ describe('per-rep details read back are checked (audit FINDING-015)', () => {
     }
   });
 });
+
+// Second audit, 3 October: an exercise counted on both sides drew one side's angle under every rep, so the other
+// side's reps sat over a flat line. The line follows, during each rep, the side that made it.
+import { waveAngles } from '../wave';
+describe('the wave of an exercise counted on both sides', () => {
+  const t = [0, 1, 2, 3, 4, 5];
+  const left = { smoothedAngles: [170, 90, 170, 170, 170, 170] }, right = { smoothedAngles: [170, 170, 170, 90, 170, 170] };
+  const result = { smoothedAngles: left.smoothedAngles, timestamps: t, sides: { left, right },
+    reps: [{ startTime: 0, endTime: 2, side: 'left' }, { startTime: 2, endTime: 4, side: 'right' }] };
+  it('follows the side that made each rep', () => {
+    expect(waveAngles(result)).toEqual([170, 90, 170, 90, 170, 170]);
+  });
+  it('is the angle as counted for an exercise on one side', () => {
+    expect(waveAngles({ smoothedAngles: [1, 2], timestamps: [0, 1], reps: [] })).toEqual([1, 2]);
+  });
+});

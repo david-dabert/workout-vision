@@ -1,0 +1,27 @@
+State model against the core, 2026-10-03. Exact: the count equals the label.
+David's sets               n   14  exact core    7  hmm    7  only core   1  only hmm   1  McNemar chi2   0.50  off>=3 core   1  hmm   3
+Public build half          n  894  exact core  271  hmm  220  only core 132  only hmm  81  McNemar chi2  11.74  off>=3 core 204  hmm 123
+  public bench_press       n   76  exact core   22  hmm   20  only core  11  only hmm   9  McNemar chi2   0.05  off>=3 core  33  hmm  23
+  public front_raise       n  150  exact core   48  hmm   51  only core  13  only hmm  16  McNemar chi2   0.14  off>=3 core  28  hmm  15
+  public lunge             n  156  exact core   44  hmm   44  only core  20  only hmm  20  McNemar chi2   0.03  off>=3 core  31  hmm  16
+  public pull_up           n  120  exact core   33  hmm   29  only core  16  only hmm  12  McNemar chi2   0.32  off>=3 core  25  hmm  14
+  public push_up           n  154  exact core   49  hmm   29  only core  29  only hmm   9  McNemar chi2   9.50  off>=3 core  45  hmm  26
+  public squat             n   92  exact core   35  hmm   26  only core  20  only hmm  11  McNemar chi2   2.06  off>=3 core  24  hmm  10
+  public triceps_pushdown  n  146  exact core   40  hmm   21  only core  23  only hmm   4  McNemar chi2  12.00  off>=3 core  18  hmm  19
+Synthetic sets             n   96  exact core   74  hmm   59  only core  16  only hmm   1  McNemar chi2  11.53  off>=3 core  13  hmm  27
+
+David's sets, one by one (label, core, state model):
+  sets-29sep/bench_press_7_side_24cc4f0b.json.gz                 7       5   14
+  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz                  5       4    4
+  sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz                  6       6    8
+  sets-29sep/lateral_raise_9_front_43e71b40.json.gz              9       8    8
+  sets-29sep/leg_press_13_side_1ee0ae47.json.gz                 13      12   12
+  sets-29sep/overhead_press_4_front_cefdaa82.json.gz             4       5    4
+  sets-29sep/overhead_press_4_front_f75638cc.json.gz             4       4    4
+  sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz           8       8    8
+  sets-29sep/squat_7_side_21fd7ccf.json.gz                       7       7    7
+  landmarks/bench_press_7_angle_mufhcy60.json.gz                 7 refused    4
+  landmarks/bicep_curl_7_side_mufhf3wy.json.gz                   7       7    7
+  landmarks/lat_pulldown_10_front_mufhlh4o.json.gz              10      10   10
+  landmarks/lateral_raise_10_front_mufhhbun.json.gz             10      10   10
+  landmarks/overhead_press_10_front_mufhjkku.json.gz            10       9   22

@@ -48,6 +48,12 @@ describe('guide counting families', () => {
     expect(['concentric', 'eccentric']).toContain(entry.first);
     expect(['side', 'front']).toContain(entry.view);
     const fields = ['joint', 'rest', 'first', 'view', 'why'];
+    if (Object.hasOwn(entry, 'eitherSide')) {
+      // The side with more reps (core.ts), never with the joined count of both.
+      expect(entry.eitherSide).toBe(true);
+      expect(Object.hasOwn(entry, 'bothSides')).toBe(false);
+      fields.push('eitherSide');
+    }
     if (Object.hasOwn(entry, 'bothSides')) {
       expect(entry.bothSides).toBe(true);
       fields.push('bothSides');

@@ -18,7 +18,7 @@ import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
-import { compactWave } from './wave';
+import { compactWave, waveAngles } from './wave';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -158,6 +158,18 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
+  // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
+  // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
+  const cardRef = useRef(null), firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) { firstStep.current = false; return; }
+    const a = document.activeElement;
+    if (a && a !== document.body && document.contains(a)) return;
+    const target = cardRef.current?.querySelector('.ask-q, .saved-msg, .saved-corr');
+    if (!target) return;
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true, focusVisible: false });
+  }, [step]);
   const [trueN, setTrueN] = useState(result.count);
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
@@ -215,19 +227,23 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr, lift) : null;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
-  let detail = '', detailHead = '';
-  if (sel >= 0 && reps[sel]) {
-    const r = reps[sel];
+  // One rep's line: its name (spoken, not printed: the lit mark shows it) and its measures.
+  const repText = i => {
+    const r = reps[i];
     const filmed = fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed';
     // After a correction the marks are the app's, not the saved set's reps: they are named so (replay-labels.js).
-    const word = corrected ? markLabel({ index: sel + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${sel + 1}`;
+    const word = corrected ? markLabel({ index: i + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${i + 1}`;
     // "Repère" is masculine, "répétition" feminine: the clipped note agrees with the word before it.
-    if (!MEASURES_SHOWN) { detailHead = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
-    else { detailHead = `${word} · `; detail = r.clipped
+    if (!MEASURES_SHOWN) return { head: '', body: `${word}${r.clipped ? `${NB}· ${filmed}` : ''}` };
+    return { head: `${word} · `, body: r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
       : partialIn(reps)(r)
       ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
-      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`; }
+      : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}` };
+  };
+  let detail = '', detailHead = '';
+  if (sel >= 0 && reps[sel]) {
+    ({ head: detailHead, body: detail } = repText(sel));
   } else if (MEASURES_SHOWN && (asked || step !== 'ask') && whole.length) {
     const { rom, dur } = setAverages(reps);
     // The joint whose angle is measured is named, so a range is never read as another joint's (design review,
@@ -327,7 +343,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         // Rep details measured with step 3c's boundaries; older sets' details are not shown.
         repDetailsVersion: 2,
         // The measured angle over the set, compact, for the report's wave (wave.js).
-        wave: compactWave(result.smoothedAngles, result.timestamps),
+        wave: compactWave(waveAngles(result), result.timestamps),
       });
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
@@ -452,6 +468,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
         {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
       </div>
+      {/* VoiceOver on iPhone cannot move through the marks (they answer arrow keys and taps): every rep's line is
+          also in a list read in order, with the label of the measures before it (second audit, 3 October). */}
+      {asked && <ol className="sr" data-testid="res-reps-sr">{reps.map((_, i) => { const t = repText(i); return <li key={i}>{t.head}{t.body}</li>; })}</ol>}
       {view.level === 'beginner' && sidesLine}
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
     </div>,
@@ -465,9 +484,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     </div>,
     // The measured angle over the set, each rep over it (RepWave.jsx), for every level: what was measured, drawn.
     wave: MEASURES_SHOWN && count > 0 && result.smoothedAngles?.length > 1 && <div key="wave" className="res-wave">
-      <RepWave angles={result.smoothedAngles} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
+      <RepWave angles={waveAngles(result)} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
     </div>,
-    card: <div key="card">
+    card: <div key="card" ref={cardRef}>
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
           <p className="ask-q">{fr ? `C’est bien ${count}\u00A0?` : `Was it ${count}?`}</p>

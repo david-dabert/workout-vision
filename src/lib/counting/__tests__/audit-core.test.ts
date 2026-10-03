@@ -123,3 +123,41 @@ describe('a bridged gap makes no speed', () => {
     expect(gapped.reps[1].peakSpeed).toBeLessThan(whole.reps[1].peakSpeed * 1.25);
   });
 });
+
+// Second audit, 3 October: lateral lunges and Cossack squats alternating legs were counted on one knee, so a set
+// read half its reps. Only the loaded knee bends in these (the other leg stays straight), so both knees are
+// counted and joined; not for lunges where both knees bend (TRIED.md: doubles and refusals on the public clips).
+describe('a lunge set alternating legs', () => {
+  it('counts every rep, whichever leg made it', () => {
+    const left: number[] = [], right: number[] = [];
+    const one = (bend: 'left' | 'right') => sample([{ hold: 175, sec: 0.6 }, { to: 95, sec: 0.9 }, { hold: 95, sec: 0.2 }, { to: 175, sec: 0.9 }], 175, SPS)
+      .forEach(a => { left.push(bend === 'left' ? a : 175); right.push(bend === 'right' ? a : 175); });
+    for (let i = 0; i < 4; i++) { one('left'); one('right'); }
+    const ts = timestamps(left.length, SPS);
+    const wl = ts.map((_, i) => jointFrame('knee', { left: left[i], right: right[i] }));
+    expect(countReps(wl, ts, 'lateral_lunge').count).toBe(8);
+  });
+});
+
+// 3 October: in a forward or reverse lunge both knees bend on every rep, so either knee counts the set; the one
+// the camera serves worse can miss reps. The knee with more reps counts (public lunges: 44 to 54 exact, 31 to 8
+// off by 3 or more, none newly off by 3: TRIED.md).
+describe('a lunge counted on the knee with more reps', () => {
+  it('counts the set on the knee that sees every rep, when the other barely moves in the picture', () => {
+    const good = sample([{ hold: 175, sec: 1 }, ...cycles({ rest: 175, work: 95, reps: 6, firstSec: 0.9, secondSec: 0.9, restSec: 0.5 }), { hold: 175, sec: 1 }], 175, SPS);
+    const ts = timestamps(good.length, SPS);
+    // The far knee, half hidden: its angle reads nearly flat.
+    const wl = ts.map((_, i) => jointFrame('knee', { left: 175 - (175 - good[i]) * 0.1, right: good[i] }));
+    expect(countReps(wl, ts, 'forward_lunge').count).toBe(6);
+  });
+});
+
+describe('push-ups and front raises counted on the side with more reps', () => {
+  const run = (joint: 'elbow' | 'shoulder', rest: number, work: number, lift: string) => {
+    const good = sample([{ hold: rest, sec: 1 }, ...cycles({ rest, work, reps: 6, firstSec: 0.9, secondSec: 0.9, restSec: 0.5 }), { hold: rest, sec: 1 }], rest, SPS);
+    const ts = timestamps(good.length, SPS);
+    return countReps(ts.map((_, i) => jointFrame(joint, { left: rest + (good[i] - rest) * 0.1, right: good[i] })), ts, lift).count;
+  };
+  it('a push-up whose far elbow barely moves in the picture', () => expect(run('elbow', 170, 80, 'push_up')).toBe(6));
+  it('a front raise whose far arm barely moves in the picture', () => expect(run('shoulder', 20, 110, 'front_raise')).toBe(6));
+});

@@ -93,6 +93,12 @@ export interface LiftDefinition {
   first: 'concentric' | 'eccentric';
   /** Both sides counted and joined, one rep per side (the alternating curl, walking lunge, dead bug…). */
   bothSides?: boolean;
+  /**
+   * Both sides counted, the side with more reps kept: for a movement that bends both joints on every rep (a
+   * forward or reverse lunge), where the side the camera serves worse misses reps. Public build half's lunges,
+   * 3 October: 44 to 54 exact of 156, 31 to 8 off by 3 or more, none newly off by 3 (TRIED.md). Experimental.
+   */
+  eitherSide?: boolean;
 }
 
 export const LIFTS = {
@@ -110,7 +116,7 @@ export const LIFTS = {
   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
   leg_extension: { joint: 'knee', rest: 'low', first: 'concentric' },
   leg_curl: { joint: 'knee', rest: 'high', first: 'concentric' },
-  lunge: { joint: 'knee', rest: 'high', first: 'eccentric' },
+  lunge: { joint: 'knee', rest: 'high', first: 'eccentric', eitherSide: true },
   romanian_deadlift: { joint: 'hip', rest: 'high', first: 'eccentric' },
   hip_thrust: { joint: 'hip', rest: 'low', first: 'concentric' },
   // The fitness tests (fitness-tests.js), each counted by its movement. Chair stand: seated, the knee rests
@@ -134,8 +140,8 @@ const PATTERNS = guidePatterns as Record<string, string>;
 export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (!Object.hasOwn(PATTERNS, key)) return null;
-  const [joint, rest, first, both] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
-  return { joint, rest, first, ...(both ? { bothSides: true } : {}) };
+  const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
+  return { joint, rest, first, ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : {}) };
 }
 
 // ─── Constants ───
@@ -206,7 +212,13 @@ export function countReps(
   const def = liftDefinition(lift);
   if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
   if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
-  return countSide(worldLandmarks, timestamps, def, selectSide(worldLandmarks, def.joint));
+  const seen = selectSide(worldLandmarks, def.joint);
+  if (def.eitherSide) {
+    // The side with more reps; on a tie, the better seen.
+    const mine = countSide(worldLandmarks, timestamps, def, seen), other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left');
+    return other.count > mine.count ? other : mine;
+  }
+  return countSide(worldLandmarks, timestamps, def, seen);
 }
 
 function countSide(

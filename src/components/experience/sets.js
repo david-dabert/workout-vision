@@ -5,6 +5,14 @@ import { getWorkouts, deleteWorkout } from '../../lib/storage';
 
 let pending = null, known = null;
 
+// Two tabs of the app share one storage: a change in one tells the others to read the sets again, so a backup
+// or an export made in either holds them all (second audit, 3 October). Where the browser has no channel, each
+// tab keeps reading on its own, as before.
+let channel = null;
+try { channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('wv-sets') : null; } catch { channel = null; }
+if (channel) channel.onmessage = e => { if (e.data === 'changed') { pending = null; known = null; } };
+const tellOthers = () => { try { channel?.postMessage('changed'); } catch { /* the other tabs read on their own */ } };
+
 export function loadSets() {
   if (!pending) {
     const mine = pending = getWorkouts({ limit: Number.MAX_SAFE_INTEGER })
@@ -17,6 +25,7 @@ export function loadSets() {
 /** After a set is saved: read the sets again now, so the next screen has them at once. */
 export function refreshSets() {
   pending = null; known = null;
+  tellOthers();
   loadSets().catch(() => {});
 }
 
@@ -25,6 +34,7 @@ export const knownSets = () => known;
 
 export async function removeSet(id) {
   await deleteWorkout(id);
+  tellOthers();
   if (known) { known = known.filter(w => w.id !== id); pending = Promise.resolve(known); }
   else pending = null;
 }
