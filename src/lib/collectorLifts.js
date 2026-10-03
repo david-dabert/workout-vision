@@ -1,7 +1,9 @@
 // The exercises the set collectors list (collect.html, collect-batch.html): the same as the app offers
 // (src/lib/offer.js, PLAN.md, GROWTH, step 2), by their names in French and English, French name first and
-// sorted in French, so that every « Rowing … » sits together (David, 29 September). A fitness test has no guide
-// entry, so its names come from fitness-tests.js: the collectors dropped both tests until the third audit (C52).
+// sorted in French, so that every « Rowing … » sits together (David, 29 September), except the two fitness tests.
+// A test set could be labelled with its 30-second protocol score or with every rep in the video, and David has not
+// said which (third audit C52, and the review of its fix, 3 October): a set collected before he does could carry
+// a label of either meaning (R1, R12). So the collectors leave the tests out, and say so, until he decides.
 import { OFFERED } from './offer';
 import { FITNESS_TESTS, isTest } from './fitness-tests';
 import catalogue from './guide-catalog.json';
@@ -16,6 +18,6 @@ function namesOf(key) {
 }
 
 /** [{ key, label: 'French / English' }], in French alphabetical order. */
-export const COLLECTOR_LIFTS = OFFERED.map(key => ({ key, n: namesOf(key) })).filter(x => x.n)
+export const COLLECTOR_LIFTS = OFFERED.filter(key => !isTest(key)).map(key => ({ key, n: namesOf(key) })).filter(x => x.n)
   .map(({ key, n }) => ({ key, label: `${n.fr} / ${n.en}` }))
   .sort((a, b) => a.label.localeCompare(b.label, 'fr'));

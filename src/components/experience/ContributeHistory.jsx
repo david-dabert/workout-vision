@@ -26,10 +26,12 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   // The sets waiting, read when helping, and again whenever the saved sets change: a set deleted in the history
   // takes its contribution with it, and the file prepared before is dropped (audit of 2 October). Their file is
   // prepared at once.
+  // The stored choice, not the one on screen, decides: after a stop whose erase failed the screen still reads yes
+  // (so the stop can be retried), but nothing is read, prepared or sent again (review of the third audit's fixes).
   useEffect(() => {
-    if (choice !== 'yes') return undefined;
+    if (choice !== 'yes' || readChoice() !== 'yes') return undefined;
     let live = true;
-    contributions().then(l => { if (live) setWaiting(l); }, () => { if (live) setWaiting([]); });
+    contributions().then(l => { if (live && readChoice() === 'yes') setWaiting(l); }, () => { if (live) setWaiting([]); });
     return () => { live = false; };
   }, [choice, sets]);
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   const file = prepared && prepared.list === waiting ? prepared.file : null;
 
   function send() {
-    if (!file || sharing.current) return;
+    if (!file || sharing.current || readChoice() !== 'yes') return;
     setNote('');
     const list = waiting, f = file, g = generation.current;
     if (!downloadNext.current && typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] })) {
@@ -74,10 +76,11 @@ export default function ContributeHistory({ fr, style, sets = null }) {
     if (!persistChoice('no')) { setNote(t.stopFailed); return; }
     generation.current++; // a prepared or shared file of the erased sets is dropped
     setPrepared(null);
+    setWaiting(null); // nothing is offered for sending once the stop is stored, even if the erase then fails
     // The screen shows the stop only once the sets are erased: when the erase fails, the stop button stays, so
     // "Réessayez" has something to tap; nothing is collected meanwhile, as only a stored yes collects (third
     // audit C17, 3 October).
-    try { await eraseContributions(); setChoice('no'); setLeftover(false); setWaiting(null); setNote(t.stopped); }
+    try { await eraseContributions(); setChoice('no'); setLeftover(false); setNote(t.stopped); }
     catch { setNote(t.eraseFailed); }
   }
 

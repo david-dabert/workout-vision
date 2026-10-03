@@ -11,7 +11,7 @@ import { collectSet } from './lib/collectSet';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { COLLECTOR_LIFTS } from './lib/collectorLifts';
 
-// The exercises: the same as the app offers, fitness tests included (src/lib/collectorLifts.js; third audit, C52).
+// The exercises: the same as the app offers, but the fitness tests, until David says which count labels them (src/lib/collectorLifts.js).
 const LIFTS = COLLECTOR_LIFTS;
 
 const $ = id => document.getElementById(id);

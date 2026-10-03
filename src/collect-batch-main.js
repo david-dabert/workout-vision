@@ -9,7 +9,7 @@ import { mismatchNote, flaggedSets, rowErrors, batchFileName, carryChoice, appen
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { COLLECTOR_LIFTS } from './lib/collectorLifts';
 
-// The exercises the app offers, fitness tests included, as in the single collector (third audit, C52).
+// The exercises the app offers, but the fitness tests, as in the single collector (src/lib/collectorLifts.js).
 const LIFTS = COLLECTOR_LIFTS;
 const VIEWS = [['side', 'Side'], ['front', 'Front'], ['angle', 'Angle']];
 

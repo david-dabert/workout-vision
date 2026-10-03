@@ -177,6 +177,8 @@ test('an erase that fails keeps the stop to retry it, even after the history is 
   await page.getByRole('button', { name: 'Supprimer cette série' }).click();
   await page.getByRole('button', { name: 'Touchez encore pour supprimer' }).click();
   await expect(page.locator('.hist-btn')).toHaveCount(0);
+  // The sets changed after the stop was stored: nothing is offered for sending again (review of the fixes).
+  await expect(page.getByTestId('contribute-history').getByRole('button', { name: 'Envoyer' })).toHaveCount(0);
   // The page is not reloaded: its start script would store yes again.
   await put(page, 'contributions', [c('w9')]);
   await page.getByRole('button', { name: 'Retour' }).click();

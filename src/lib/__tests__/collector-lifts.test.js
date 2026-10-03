@@ -1,17 +1,17 @@
 /**
- * Third audit, C52 (3 October 2026): the set collectors list every exercise the app offers, the two fitness tests
- * included, which have no guide entry and were dropped from both dropdowns.
+ * Third audit, C52, and the review of its fix (3 October 2026): the set collectors list every exercise the app
+ * offers except the two fitness tests, left out until David says which count a test set is labelled with.
  */
 import { describe, expect, it } from 'vitest';
 import { COLLECTOR_LIFTS } from '../collectorLifts';
 import { OFFERED } from '../offer';
+import { isTest } from '../fitness-tests';
 
 describe('the collectors’ exercise list', () => {
-  it('holds every offered exercise, once', () => {
-    expect(COLLECTOR_LIFTS.map(l => l.key).sort()).toEqual([...OFFERED].sort());
+  it('holds every offered exercise but the fitness tests, once', () => {
+    expect(COLLECTOR_LIFTS.map(l => l.key).sort()).toEqual(OFFERED.filter(k => !isTest(k)).sort());
   });
-  it('names the fitness tests in French and English', () => {
-    expect(COLLECTOR_LIFTS.find(l => l.key === 'chair_stand_test')?.label).toBe('Lever de chaise, 30 secondes / 30-second chair stand');
-    expect(COLLECTOR_LIFTS.find(l => l.key === 'arm_curl_test')?.label).toBe('Flexions de bras, 30 secondes / 30-second arm curl');
+  it('leaves the fitness tests out', () => {
+    expect(COLLECTOR_LIFTS.some(l => l.key === 'chair_stand_test' || l.key === 'arm_curl_test')).toBe(false);
   });
 });
