@@ -80,6 +80,9 @@ export default function History({ onClose }) {
     // the list (third audit C13, 3 October).
     const order = (sets || []).map(x => x.id), at = order.indexOf(w.id);
     const neighbour = at < 0 ? undefined : order[at + 1] ?? order[at - 1];
+    // The deleted set's row: focus still inside it is lost focus, even when the frame below runs before React has
+    // removed the row (seen once under load in e2e/screen-focus.spec.js, 3 October: focus fell to nothing).
+    const gone = rowRefs.current[w.id]?.closest('li') ?? null;
     try {
       await removeSet(w.id);
       // A deleted set's contribution goes with it: it is never sent (contribute.js).
@@ -91,7 +94,7 @@ export default function History({ onClose }) {
       // left, never to nothing (second audit, 3 October).
       requestAnimationFrame(() => {
         const a = document.activeElement;
-        if (a && a !== document.body && document.contains(a)) return;
+        if (a && a !== document.body && document.contains(a) && !gone?.contains(a)) return;
         const row = neighbour === undefined ? null : rowRefs.current[neighbour];
         const next = (row && document.contains(row) ? row : null) || document.querySelector('.history-screen h1, .history-screen .title');
         if (!next) return;
