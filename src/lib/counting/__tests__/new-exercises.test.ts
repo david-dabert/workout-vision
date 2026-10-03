@@ -51,8 +51,9 @@ describe('the exercises added on 3 October', () => {
     });
   }
 
-  it('the press, the jump squat and the wall ball are offered, experimental like the overhead press', () => {
-    for (const key of ['behind_the_neck_press', 'barbell_jump_squat', 'wall_ball']) {
+  it('the press and the wall ball are offered, experimental like the overhead press; the jump squat is not yet', () => {
+    expect(isOffered('barbell_jump_squat')).toBe(false);
+    for (const key of ['behind_the_neck_press', 'wall_ball']) {
       expect(isOffered(key), key).toBe(true);
       expect(tierOf(key), key).toBe('experimental');
     }
@@ -81,6 +82,15 @@ describe('the exercises added on 3 October', () => {
   // about 111 degrees here, so a last landing that bends the knee past it reads as an eleventh rep.
   it.fails('a last jump-squat landing absorbed to 110 degrees adds no rep', () => {
     expect(count('barbell_jump_squat', knees(jumpSquats(10, 110), 170))).toBe(10);
+  });
+
+  // Review of 3 October: why the barbell jump squat is not offered (offer.js, NOT_YET_COUNTED). A lifter who stands
+  // between jumps lands into a knee bend that is not the next dip, and a landing absorbed past the working threshold
+  // counts as a rep: ten jumps read 20. Pinned as a known failure until a landing guard exists.
+  it.fails('ten jump squats with a stand after each landing absorbed to 110 degrees count ten', () => {
+    const path: Segment[] = [{ hold: 170, sec: 1 }];
+    for (let r = 0; r < 10; r++) path.push({ to: 95, sec: 0.7 }, { to: 175, sec: 0.3 }, { hold: 177, sec: 0.35 }, { to: 110, sec: 0.25 }, { to: 170, sec: 0.5 }, { hold: 170, sec: 0.8 });
+    expect(count('barbell_jump_squat', knees(path, 170))).toBe(10);
   });
 
   it('ten wall balls count ten, standing while the ball flies, or catching straight into the next squat', () => {

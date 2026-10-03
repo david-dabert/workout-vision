@@ -945,7 +945,7 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the bar from standing and the quadriceps extend it into the jump; the knee stays straight in the air, at the rest end, and the landing flows into the next dip. Experimental: added on 3 October 2026, not measured on any set; a synthetic set counts right when the last landing bends the knee no further than about 120 degrees (barbell-jump-squat.test.ts)."
+    "why": "Knee flexion lowers the bar from standing and the quadriceps extend it into the jump; the knee stays straight in the air, at the rest end, and the landing flows into the next dip. Experimental: added on 3 October 2026, not measured on any set; a synthetic set counts right when the last landing bends the knee no further than about 120 degrees, and a lifter who stands between jumps reads a landing absorbed past the working threshold as a rep (new-exercises.test.ts): not offered until a landing guard and a labelled set exist (offer.js, NOT_YET_COUNTED)."
   },
   "wall_ball": {
     "joint": "knee",

@@ -30,9 +30,17 @@ export const WITHDRAWN = Object.freeze({
   glute_bridge_march: 'Lying on the back, hips raised, in profile: the far hip and knee are hidden behind the body.',
 });
 
+// Added to the guide on 3 October 2026 but not offered: counted by its pattern, a barbell jump squat whose lifter
+// stands between jumps reads every landing absorbed past the working threshold as a rep (review of 3 October: ten
+// jumps, landings to 115 degrees or deeper, a 0.8 s stand after each, counted 20; new-exercises.test.ts). It needs
+// a landing guard and a labelled set first; the collectors list it so that set can be filmed (BACKLOG.md).
+export const NOT_YET_COUNTED = Object.freeze({
+  barbell_jump_squat: 'Each landing absorbed past the working threshold reads as a rep when the lifter stands between jumps.',
+});
+
 // The fitness tests (fitness-tests.js) are offered too, experimental like every exercise without evidence.
 export const OFFERED = [...new Set([...Object.keys(TIERS), ...Object.keys(patterns), ...Object.keys(FITNESS_TESTS)])]
-  .filter(key => !NOT_FILMABLE.has(key) && !Object.hasOwn(WITHDRAWN, key));
+  .filter(key => !NOT_FILMABLE.has(key) && !Object.hasOwn(WITHDRAWN, key) && !Object.hasOwn(NOT_YET_COUNTED, key));
 const offered = new Set(OFFERED);
 
 export const isOffered = key => offered.has(key);

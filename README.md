@@ -1,13 +1,13 @@
 # WorkoutVision
 
 Film one set on your phone. The phone counts the reps.
-The video is analysed on the phone and never leaves it.
+The video is analysed on the phone; the app sends it nowhere.
 
 **Live app (test version):** [david-dabert.github.io/workout-vision](https://david-dabert.github.io/workout-vision/)
 
 ## What it does
 
-- Counts the reps of 182 exercises, and scores two fitness tests over 30 seconds: the chair stand and the arm curl (src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Four are Beta: lateral raise, biceps curl, lat pulldown and squat. All the others are Experimental, and say so on the result (src/lib/liftTiers.js, src/lib/offer.js); they are counted by their movement pattern (src/lib/counting/guide-patterns.json). Four floor exercises counted on both sides (dead bug, banded dead bug, bird dog, glute bridge march) are withdrawn since 3 October: filmed in profile, the far side is hidden (src/lib/offer.js, BACKLOG.md). Three were added the same day, Experimental and measured on no set: the behind-the-neck press, the barbell jump squat and the wall ball.
+- Counts the reps of 181 exercises, and scores two fitness tests over 30 seconds: the chair stand and the arm curl (src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Four are Beta: lateral raise, biceps curl, lat pulldown and squat. All the others are Experimental, and say so on the result (src/lib/liftTiers.js, src/lib/offer.js); they are counted by their movement pattern (src/lib/counting/guide-patterns.json). Four floor exercises counted on both sides (dead bug, banded dead bug, bird dog, glute bridge march) are withdrawn since 3 October: filmed in profile, the far side is hidden (src/lib/offer.js, BACKLOG.md). Two were added the same day, Experimental and measured on no set: the behind-the-neck press and the wall ball; the barbell jump squat is in the guide but not counted yet (a lifter who stands between jumps can read each landing as a rep).
 - Shows how to film each lift before you choose the video.
 - Shows the count and asks you to confirm it or enter the true number. When most of the set cannot be seen, it says so and counts nothing.
 - Replays the set with the tracked body drawn over the video, the counting joint lit, and each rep marked on a timeline.
@@ -34,7 +34,7 @@ The video is analysed on the phone and never leaves it.
 ## Privacy
 
 Pose detection, counting, storage and the PDF all run in the browser on the phone.
-The video and its frames never leave the phone. Only what the user shares by a tap leaves it, through the phone's own share sheet, mail app or a downloaded file.
+The app never uploads the video, its frames or the landmarks to any server. Only what the user shares by a tap leaves the phone, through the phone's own share sheet, mail app or a downloaded file: that includes, if the user makes and shares it, the video of the set with its overlay (above).
 Saved sets stay in the phone's browser storage.
 
 "Help improve the count" is opt-in. The app asks once, on the saved card, and the answer can be changed in the history at any time; stopping erases the sets waiting to be sent (src/lib/contribute.js).
