@@ -18,7 +18,8 @@ import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
-import { compactWave, waveAngles } from './wave';
+import { waveAngles } from './wave';
+import { savedSet } from './saved-set';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -162,7 +163,12 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
 export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {} }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
-  const [step, setStep] = useState('ask'); // ask | fix | saved
+  // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
+  // empty set from reps it missed. The screen asserts no number, no measure and no mark, and opens on the
+  // question "How many did you do?"; the set is saved with the app's 0 beside the person's count, as a
+  // correction (3 October 2026). Status: convention, from R8.
+  const unsure = !result.refused && result.count === 0;
+  const [step, setStep] = useState(unsure ? 'fix' : 'ask'); // ask | fix | saved
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
   // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
   const cardRef = useRef(null), firstStep = useRef(true);
@@ -312,7 +318,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
   // The ghost of the lift behind the number.
   useEffect(() => {
-    if (result.refused) return undefined;
+    if (result.refused || unsure) return undefined;
     const body = new Body(LITE ? 1700 : 2600, 7), src = ghostSource(result, lift), out = new Float32Array(66), memo = {};
     return addLayer((ctx, W, H, t, now) => {
       const here = presence(rootRef.current, now, memo);
@@ -338,19 +344,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout({
-        exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
-        date: new Date().toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
-        // Measured over the app's marks: kept only when the saved count is the app's.
-        sides: n === count ? sides : null,
-        // What the app counted stays apart from what the visitor kept.
-        machineResult: { reps: count, confidence: result.confidence ?? null },
-        correctedResult: n !== count ? { reps: n } : null,
-        // Rep details measured with step 3c's boundaries; older sets' details are not shown.
-        repDetailsVersion: 2,
-        // The measured angle over the set, compact, for the report's wave (wave.js).
-        wave: compactWave(waveAngles(result), result.timestamps),
-      });
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
@@ -458,7 +452,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // The set's two ranges and what a gap means: under the strips, or under the marks for the beginner, who has no strips.
   const sidesLine = measured && sidesText ? <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div> : null;
   const blocks = {
-    count: <div key="count" className="res-count">
+    // No count to show: the words of the refused screen, and the question below them (unsure, above).
+    count: unsure && step !== 'saved' ? <h2 key="count" className="title refused-title" data-testid="res-uncounted">{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2> : <div key="count" className="res-count">
       <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{result.test ? (fr ? ` en ${result.test.windowSec}\u00A0secondes` : ` in ${result.test.windowSec} seconds`) : ''}</p>
       {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
@@ -527,7 +522,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             </span>
             <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
-          <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
+          {/* With no count from the app, the person's own count is saved, never the 0 the stepper opens on. */}
+          <button type="button" className="btn-primary press" disabled={unsure && trueN === 0} onClick={() => { if (unsure && trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true); }}>
             <span>{fr ? 'Enregistrer' : 'Save'}</span>
           </button>
         </div>
