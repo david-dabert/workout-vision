@@ -92,11 +92,15 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
         ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
         : (fr ? 'Essayez une autre vidéo, ou filmez à nouveau avec l’appareil photo.' : 'Try another video, or record again with the camera.')}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
-        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October). */}
+        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October).
+            One button per action: "Refilmer" goes back to the Film screen, where a video is filmed or chosen; a second
+            button doing the same under "Choisir une autre vidéo" opened no picker (third audit C14, 3 October). */}
         {model
-          ? <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+          ? <>
+            <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+            <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+          </>
           : <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>}
-        <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
     </div></section>
   </div>;
@@ -421,8 +425,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <p className="fix-text">{fix}</p>
         </div>
         <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
+          {/* One button: "Choisir une autre vidéo" beside it did the same, back to Film (third audit C14, 3 October). */}
           <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
-          <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
         </div>
         <ReportCount fr={fr} report={report} />
       </div></section>

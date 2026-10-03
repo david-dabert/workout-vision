@@ -13,6 +13,9 @@ test('a model that cannot load offers the reload its words ask for', async ({ pa
   await page.getByRole('button', { name: 'Curl biceps' }).first().click({ timeout: 20000 });
   await page.locator('.film-screen input[type=file]').nth(1).setInputFiles({ name: 'set.mov', mimeType: 'video/quicktime', buffer: Buffer.from('not a real video') });
   await expect(page.getByText('L’analyse n’a pas pu démarrer.', { exact: true })).toBeVisible({ timeout: 60000 });
+  // One button per action: back to Film is "Refilmer", once; no second button doing the same (third audit C14, 3 October).
+  await expect(page.getByRole('button', { name: 'Refilmer' })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Choisir une autre vidéo' })).toHaveCount(0);
   const before = loads;
   await page.getByRole('button', { name: 'Recharger la page' }).click();
   await expect.poll(() => loads).toBeGreaterThan(before);
