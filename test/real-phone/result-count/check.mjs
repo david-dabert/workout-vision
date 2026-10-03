@@ -232,6 +232,17 @@ try {
     check(await again.locator('[data-testid="contribute-ask"]').count() === 0, `${lang}: once answered, the saved card asks no more`);
     await again.context().close();
   }
+  // Focus follows the step: "Non" pressed from the keyboard goes with its card; focus lands on the next card's
+  // question, not on nothing (second audit, 3 October).
+  {
+    const page = await open(browser, { lang: 'fr', level: 'intermediate' });
+    await page.locator('[data-testid="ask-card"] .btn-ghost').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('[data-testid="fix-card"]').waitFor({ timeout: 10000 });
+    const where = await page.waitForFunction(() => { const a = document.activeElement; return a && a !== document.body ? (a.closest('[data-testid]')?.getAttribute('data-testid') || a.tagName) : null; }, null, { timeout: 3000 }).then(h => h.jsonValue(), () => 'nothing');
+    check(where === 'fix-card', `after "Non", focus is in the correction card (${where})`);
+    await page.context().close();
+  }
   // A level the phone cannot store is said, never "noted" (audit of 2 October).
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' });

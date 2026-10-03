@@ -18,7 +18,7 @@ import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
-import { compactWave } from './wave';
+import { compactWave, waveAngles } from './wave';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -158,6 +158,18 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   const [step, setStep] = useState('ask'); // ask | fix | saved
+  // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
+  // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
+  const cardRef = useRef(null), firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) { firstStep.current = false; return; }
+    const a = document.activeElement;
+    if (a && a !== document.body && document.contains(a)) return;
+    const target = cardRef.current?.querySelector('.ask-q, .saved-msg, .saved-corr');
+    if (!target) return;
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true, focusVisible: false });
+  }, [step]);
   const [trueN, setTrueN] = useState(result.count);
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
@@ -327,7 +339,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         // Rep details measured with step 3c's boundaries; older sets' details are not shown.
         repDetailsVersion: 2,
         // The measured angle over the set, compact, for the report's wave (wave.js).
-        wave: compactWave(result.smoothedAngles, result.timestamps),
+        wave: compactWave(waveAngles(result), result.timestamps),
       });
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
@@ -465,9 +477,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     </div>,
     // The measured angle over the set, each rep over it (RepWave.jsx), for every level: what was measured, drawn.
     wave: MEASURES_SHOWN && count > 0 && result.smoothedAngles?.length > 1 && <div key="wave" className="res-wave">
-      <RepWave angles={result.smoothedAngles} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
+      <RepWave angles={waveAngles(result)} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
     </div>,
-    card: <div key="card">
+    card: <div key="card" ref={cardRef}>
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
           <p className="ask-q">{fr ? `C’est bien ${count}\u00A0?` : `Was it ${count}?`}</p>

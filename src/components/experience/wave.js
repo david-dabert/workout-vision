@@ -3,6 +3,23 @@
 // own smoothed angle (core.ts), nothing computed for the picture: where the pose was lost, the line breaks.
 // Effort points up: for a lift that rests high (a curl rests with the elbow open), the angle is drawn inverted.
 
+/**
+ * The angle the wave draws. For an exercise counted on both sides (core.ts, countBothSides), the result's own
+ * angle is one side's: during each rep the line follows the side that made it, so the other side's reps are not
+ * drawn over a line that does not move (second audit, 3 October). Every value is a measured, smoothed angle.
+ */
+export function waveAngles(result) {
+  const base = result?.smoothedAngles || [];
+  if (!result?.sides) return base;
+  const ts = result.timestamps || [], out = [...base];
+  for (const r of result.reps || []) {
+    const side = r.side === 'left' || r.side === 'right' ? result.sides[r.side] : null;
+    if (!side?.smoothedAngles) continue;
+    for (let i = 0; i < out.length; i++) if (ts[i] >= r.startTime && ts[i] <= r.endTime) out[i] = side.smoothedAngles[i] ?? null;
+  }
+  return out;
+}
+
 /** Geometry of the wave in a width x height box (viewBox units). null without two measured samples. */
 export function waveGeometry({ angles, timestamps, rest = 'low', width = 320, height = 72, pad = 4 }) {
   const n = Math.min(angles?.length || 0, timestamps?.length || 0);
