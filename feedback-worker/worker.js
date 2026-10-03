@@ -1,6 +1,8 @@
 // Workout Vision Feedback Ingest Worker
-// Deploy: npx wrangler deploy
-// Dashboard: GET /dashboard
+// Deploy: npx wrangler deploy (README.md)
+// POST /ingest: structured feedback (dormant). POST /event: anonymous usage counts (usage.js).
+// GET /stats, GET /dashboard (usage) and GET /feedback (feedback aggregates): STATS_TOKEN only.
+import { handleEvent, handleStats, handleDashboard, authorised } from './usage.js';
 
 const SCHEMA_VERSION = 1;
 const MAX_PAYLOAD = 4096;
@@ -41,7 +43,7 @@ async function hashIP(ip) {
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, GET',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
@@ -55,8 +57,14 @@ export default {
       return new Response(null, { headers: corsHeaders() });
     }
 
-    // Dashboard (read-only)
-    if (request.method === 'GET' && url.pathname === '/dashboard') {
+    // Anonymous usage counts (usage.js)
+    if (request.method === 'POST' && url.pathname === '/event') return handleEvent(request, env, corsHeaders());
+    if (request.method === 'GET' && url.pathname === '/stats') return handleStats(request, env);
+    if (request.method === 'GET' && url.pathname === '/dashboard') return handleDashboard(request, env);
+
+    // Feedback aggregates (read-only). Behind the token since 3 October: it was open to anyone before.
+    if (request.method === 'GET' && url.pathname === '/feedback') {
+      if (!(await authorised(request, env))) return new Response('Unauthorized', { status: 401 });
       const stats = await env.DB.prepare(
         `SELECT kind, COUNT(*) as count,
          detected, corrected,
@@ -68,7 +76,7 @@ export default {
       ).all();
 
       return new Response(JSON.stringify(stats.results, null, 2), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() }
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
       });
     }
 

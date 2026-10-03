@@ -1,25 +1,6 @@
-CREATE TABLE IF NOT EXISTS feedback (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  kind TEXT NOT NULL,
-  app_version TEXT,
-  device_class TEXT,
-  detected TEXT,
-  corrected TEXT,
-  confidence REAL,
-  rep_count INTEGER,
-  rep_expected INTEGER,
-  message TEXT,
-  diag TEXT,
-  ip_hash TEXT,
-  created_at TEXT NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_feedback_kind ON feedback(kind);
-CREATE INDEX IF NOT EXISTS idx_feedback_detected ON feedback(detected, corrected);
-CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at);
-CREATE INDEX IF NOT EXISTS idx_feedback_ratelimit ON feedback(ip_hash, created_at);
-
--- Usage counts: the same as migrations/0001_usage.sql (a test checks they match).
+-- Anonymous usage counts (analytics, 3 October 2026). Apply to the existing database:
+--   npx wrangler d1 execute workout-vision-feedback --remote --file=migrations/0001_usage.sql
+-- One row per day and combination of fields, holding a count: no IP, no identifier, no time finer than the day.
 CREATE TABLE IF NOT EXISTS usage_daily (
   day TEXT NOT NULL,                       -- UTC day, YYYY-MM-DD
   event TEXT NOT NULL,                     -- a name from usage-schema.js

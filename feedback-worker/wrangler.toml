@@ -6,3 +6,7 @@ compatibility_date = "2024-01-01"
 binding = "DB"
 database_name = "workout-vision-feedback"
 database_id = "" # Fill after: npx wrangler d1 create workout-vision-feedback
+
+# Secrets, set with `npx wrangler secret put <NAME>`, never written here (README.md, Deploy):
+#   STATS_TOKEN  reads /stats, /dashboard and /feedback (at least 16 characters)
+#   RATE_SALT    salts the daily hash of the IP used only by the rate limit of /event
