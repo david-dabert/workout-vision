@@ -698,7 +698,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "split_squat": {
     "joint": "knee",
@@ -812,7 +813,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "smith_machine_split_squat": {
     "joint": "knee",
@@ -854,7 +856,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "dumbbell_lateral_lunge": {
     "joint": "knee",
@@ -1380,7 +1383,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "lateral_lunge": {
     "joint": "knee",
