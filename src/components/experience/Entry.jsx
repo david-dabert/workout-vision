@@ -83,7 +83,9 @@ export default function Entry({ onEnter }) {
     <canvas ref={canvas} className="entry-stage" aria-hidden="true" />
     <div className="vignette" aria-hidden="true" />
     <section className={`screen entry is-active ${phase} ${skipped ? 'skip' : ''}${Demo ? ' demo-open' : ''}`} aria-label="Workout Vision" inert={Demo ? true : undefined}>
-      <button className="entry-skip" type="button" aria-label={text[4]} onClick={() => { scene.current?.skip(); setSkipped(true); }} />
+      {/* A tap anywhere shows the entry at once: for the eye only. VoiceOver and the keyboard read the words as they
+          are, and the layer goes once used, so it no longer lies over the screen (second audit, 3 October). */}
+      {!skipped && <button className="entry-skip" type="button" tabIndex={-1} aria-hidden="true" onClick={() => { scene.current?.skip(); setSkipped(true); }} />}
       <p className="brand" ref={brand}>Workout Vision</p>
       <div className="entry-copy" ref={copy}>
         <h1 className="entry-l1"><span className="mask"><span>{text[0]}</span></span></h1>

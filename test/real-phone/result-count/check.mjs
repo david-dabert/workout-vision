@@ -232,6 +232,13 @@ try {
     check(await again.locator('[data-testid="contribute-ask"]').count() === 0, `${lang}: once answered, the saved card asks no more`);
     await again.context().close();
   }
+  // Every rep's line is in a list a screen reader goes through in order (second audit, 3 October).
+  {
+    const page = await open(browser, { lang: 'fr', level: 'intermediate' });
+    const items = await page.locator('[data-testid="res-reps-sr"] li').allTextContents();
+    check(items.length === 7 && items.every((t, i) => t.startsWith(`Rép. ${i + 1} · `) && /°/.test(t)), `a screen reader reads every rep's line: ${items.length} of 7 (${items[0] ?? ''})`);
+    await page.context().close();
+  }
   // Focus follows the step: "Non" pressed from the keyboard goes with its card; focus lands on the next card's
   // question, not on nothing (second audit, 3 October).
   {
