@@ -72,3 +72,28 @@ test('app loads offline after service worker precache', async ({ page, context }
   // 6. The full app renders, not just the shell: the nine lifts on the choice screen
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 10_000 });
 });
+
+// Choosing a lift warms the files a first analysis needs, the decoder's WASM among them, so an analysis made offline
+// before any made online still decodes with WebCodecs, not the playback fallback (third audit, C15).
+test('choosing a lift keeps the decoder WASM for an analysis made offline', async ({ page }) => {
+  await page.goto('/workout-vision/');
+  await reachChoice(page);
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      await new Promise((resolve) => {
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
+        setTimeout(resolve, 5000);
+      });
+    }
+  });
+  await page.locator('.altar').first().click();
+  await expect.poll(() => page.evaluate(async () => {
+    for (const name of await caches.keys()) {
+      if (!name.startsWith('wv-wasm-')) continue;
+      const cache = await caches.open(name);
+      if (await cache.match(new URL('web-demuxer.wasm', location.origin + '/workout-vision/').href)) return true;
+    }
+    return false;
+  }), { timeout: 20_000 }).toBe(true);
+});

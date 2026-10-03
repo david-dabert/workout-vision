@@ -58,9 +58,11 @@ const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──
 sw = sw.replaceAll('__SW_BASE__', BASE);
 const modelHash = createHash('sha256').update(readFileSync(join(DIST, 'mediapipe/pose_landmarker_full.task'))).digest('hex');
 sw = sw.replaceAll('__MODEL_SHA256__', modelHash);
-// MediaPipe's WASM and loaders, by content: a library upgrade changes the name of their cache (public/sw.js, WASM_CACHE).
+// MediaPipe's WASM and loaders, and the decoder's WASM, by content: a library upgrade changes the name of their cache
+// (public/sw.js, WASM_CACHE; the decoder's since the third audit, C20).
 const wasmHash = createHash('sha256');
 for (const f of readdirSync(join(DIST, 'mediapipe')).filter(f => !f.endsWith('.task')).sort()) wasmHash.update(f).update(readFileSync(join(DIST, 'mediapipe', f)));
+wasmHash.update('web-demuxer.wasm').update(readFileSync(join(DIST, 'web-demuxer.wasm')));
 sw = sw.replaceAll('__WASM_HASH__', wasmHash.digest('hex').slice(0, 16));
 
 // Replace the static CACHE_NAME with the hashed version

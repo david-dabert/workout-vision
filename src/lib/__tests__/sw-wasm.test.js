@@ -2,7 +2,8 @@
  * MediaPipe's WASM files sit at unversioned addresses (/mediapipe/vision_wasm_internal.wasm). The worker keeps the
  * previous version's cache one deploy longer (sw-versions.test.js), so a lookup across every cache could hand a
  * new app the old library's WASM after a @mediapipe/tasks-vision upgrade (audit of 2 October). The files are
- * kept in a cache named by their own fingerprint, looked up there only, and older ones are dropped.
+ * kept in a cache named by their own fingerprint, looked up there only, and older ones are dropped. The decoder's
+ * WASM (/web-demuxer.wasm) is kept the same way since the third audit (C20).
  */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -11,6 +12,7 @@ import { webcrypto } from 'node:crypto';
 
 const SRC = readFileSync(resolve(__dirname, '../../../public/sw.js'), 'utf8');
 const WASM = 'https://app.test/workout-vision/mediapipe/vision_wasm_internal.wasm';
+const DEMUXER = 'https://app.test/workout-vision/web-demuxer.wasm';
 
 function worker(names, wasmHash) {
   const store = new Map(names.map(([n, entries]) => [n, new Map(entries)]));
@@ -41,5 +43,16 @@ describe('MediaPipe WASM across a library upgrade', () => {
     const w = worker([['wv-wasm-old', [[WASM, 'old wasm']]], ['wv-wasm-new', [[WASM, 'kept wasm']]]], 'new');
     expect(await w.get(WASM)).toBe('kept wasm');
     expect(await w.activate()).toEqual(['wv-wasm-new']);
+  });
+});
+
+describe('the decoder WASM across a web-demuxer upgrade', () => {
+  it('never hands the new app the old decoder WASM still held in the previous version\'s cache', async () => {
+    const w = worker([['wv-vOLD', [[DEMUXER, 'old wasm']]]], 'new');
+    expect(await w.get(DEMUXER)).toBe('new wasm');
+  });
+  it('is kept in the fingerprinted cache once fetched, and served from it', async () => {
+    const w = worker([['wv-wasm-new', [[DEMUXER, 'kept wasm']]]], 'new');
+    expect(await w.get(DEMUXER)).toBe('kept wasm');
   });
 });
