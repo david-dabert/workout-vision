@@ -78,8 +78,12 @@ test('turned off, nothing is sent, in this visit or the next; the entry speaks o
   await expect(page.getByRole('button', { name: 'Réactiver le comptage anonyme' })).toBeVisible();
   // The opening, queued before the choice, is dropped if it has not left yet.
   await page.getByRole('button', { name: /Vos séries/ }).click();
+  // The history open (its address is #history), then the next visit at the app's address. A reload raced the
+  // screen's change: under load the hash had moved first and the reload reopened the history, where the switch is
+  // not shown (full e2e run of 3 October; alone, the reload came first).
+  await expect(page.locator('.history-screen')).toBeVisible({ timeout: 20000 });
   await pagehide(page);
-  await page.reload();
+  await page.goto(APP);
   await expect(page.getByRole('button', { name: 'Réactiver le comptage anonyme' })).toBeVisible({ timeout: 20000 });
   await pagehide(page);
   await page.waitForTimeout(5000);
