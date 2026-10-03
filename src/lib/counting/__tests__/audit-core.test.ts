@@ -108,3 +108,18 @@ describe('fast reps keep their turn (second audit)', () => {
     expect(countReps(frames(glitched), ts, 'bicep_curl').count).toBe(4);
   });
 });
+
+// Second audit, 3 October: speeds were read on the bridged angle, so the jump where a pose comes back after a
+// short loss made a peak no limb made (a 0.4 s loss mid-rep: 151 °/s became 503 °/s).
+describe('a bridged gap makes no speed', () => {
+  it('a rep with a 0.4 s pose loss keeps the peak speed of the same rep seen whole', () => {
+    const a = sample([{ hold: 165, sec: 1 }, ...cycles({ rest: 165, work: 50, reps: 4, firstSec: 1, secondSec: 1, restSec: 0.8 }), { hold: 165, sec: 1 }], 165, SPS);
+    const ts = timestamps(a.length, SPS);
+    const whole = countReps(frames(a), ts, 'bicep_curl');
+    // The loss falls inside the second rep's rise.
+    const r2 = whole.reps[1], from = r2.startTime + 0.3;
+    const gapped = countReps(frames(a).map((f, i) => (ts[i] > from && ts[i] < from + 0.4 ? null : f)), ts, 'bicep_curl');
+    expect(gapped.count).toBe(4);
+    expect(gapped.reps[1].peakSpeed).toBeLessThan(whole.reps[1].peakSpeed * 1.25);
+  });
+});

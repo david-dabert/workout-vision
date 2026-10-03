@@ -12,6 +12,16 @@
  * All methods stream one frame at a time via callback, keeping memory constant.
  */
 
+/**
+ * Whether a frame must be rotated by hand: the container says it is turned (90, 180 or 270°) and the decoded frame
+ * does not carry that rotation itself (WebKit). 180° was left out before (only 90 and 270 swap the sides), so an
+ * iPhone filming landscape the other way up gave the pose model an upside-down person (second audit, 3 October).
+ */
+export function manualRotationNeeded(containerRotation, frameRotation) {
+  if (!containerRotation) return false;
+  return !(typeof frameRotation === 'number' && frameRotation !== 0);
+}
+
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 // Route the demuxer's FFmpeg log lines to console.info so they don't
@@ -449,6 +459,10 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     const frameCount = Math.min(totalPossibleFrames, maxFrames);
     let extractedCount = startFrame;
     let nextCaptureTime = startFrame * interval;
+    // The grid starts at the video's first frame, not at 0 s: a trimmed or edited file whose first frame comes later
+    // otherwise gave every frame until the grid caught up, and the samples ran out before the video's end
+    // (second audit, 3 October). Set at the first frame sampled when sampling starts at the beginning.
+    let origin = startFrame === 0 ? null : 0;
 
     // Frame queue: decoder output pushes, main loop pulls
     // Bounded: close frames that will never be sampled, cap queue at 2
@@ -521,7 +535,6 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     let rotationDecision = '';
 
     function probeAutoRotation(frame) {
-      if (!swapDims) return false;
       // The VideoFrame carries its own rotation metadata when the browser's
       // VideoDecoder processes the container's rotation. Chrome sets
       // frame.rotation (e.g. 90) and swaps display dimensions to portrait;
@@ -533,7 +546,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
       // embedded the rotation and drawImage will handle it. Otherwise,
       // we rotate by hand using the container rotation from web-demuxer.
       const frameRotation = frame.rotation;
-      const frameCarriesRotation = (typeof frameRotation === 'number' && frameRotation !== 0);
+      const frameCarriesRotation = !manualRotationNeeded(rotation, frameRotation);
       rotationDecision = frameCarriesRotation
         ? `frame carries rotation=${frameRotation}, drawImage handles it`
         : `frame has no rotation (rotation=${frameRotation}), manual rotation=${rotation}° from container`;
@@ -579,12 +592,13 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
         const frame = frameQueue.shift();
         const timestamp = frame.timestamp / 1_000_000; // microseconds → seconds
 
+        if (origin === null) { origin = timestamp; nextCaptureTime = origin; }
         if (timestamp >= nextCaptureTime - 0.001) {
           drawFrame(frame);
           frame.close();
           await onFrame(canvas, extractedCount, timestamp);
           extractedCount++;
-          nextCaptureTime = extractedCount * interval;
+          nextCaptureTime = origin + extractedCount * interval;
           if (onProgress) onProgress(Math.round((extractedCount / frameCount) * 100));
         } else {
           frame.close();

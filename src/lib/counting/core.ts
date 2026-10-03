@@ -257,7 +257,11 @@ function countSide(
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
   const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
-  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def);
+  // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
+  // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
+  const halfSg = Math.floor(sgSize / 2);
+  const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if (cleaned[j] === null && bridged[j] !== null) return false; return true; });
+  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
 
   // 8. Confidence: fraction of samples with a detected pose on the tracked side
   const totalSamples = worldLandmarks.length;
@@ -599,6 +603,7 @@ function placeBoundaries(
   highThreshold: number,
   band: number,
   def: LiftDefinition,
+  seenAround: boolean[] = [],
 ): RepDetail[] {
   const restsLow = def.rest === 'low';
   const mid = (lowThreshold + highThreshold) / 2;
@@ -704,7 +709,7 @@ function placeBoundaries(
     let peak = 0, speedSum = 0, speedN = 0;
     for (let i = start; i < end; i++) {
       const a0 = smoothed[i], a1 = smoothed[i + 1];
-      if (a0 === null || a1 === null) continue;
+      if (a0 === null || a1 === null || seenAround[i] === false || seenAround[i + 1] === false) continue;
       const dt = timestamps[i + 1] - timestamps[i];
       if (dt <= 0) continue;
       const s = Math.abs(a1 - a0) / dt;

@@ -174,3 +174,17 @@ describe('halfway is half the movement, for every rep (audit FINDING-014)', () =
     expect(t.score).toBe(0);
   });
 });
+
+// Second audit, 3 October: the open rise's range ran only from rest to the first sample past the working
+// threshold, so a last stand of 80° read 55° beside the others' 78°. It runs to the furthest angle reached
+// before the video ends, as the stand did.
+describe('the open rise is measured over the whole rise', () => {
+  it('a last stand ended standing reads the range of the other stands', () => {
+    const path = [{ hold: 90, sec: 1 }, ...Array.from({ length: 11 }, () => [{ to: 170, sec: 0.8 }, { to: 90, sec: 0.8 }, { hold: 90, sec: 0.8 }]).flat(), { to: 170, sec: 0.8 }, { hold: 170, sec: 3 }];
+    const a = sample(path, 90, SPS), wl = a.map(x => jointFrame('knee', { left: x, right: x })), ts = timestamps(a.length, SPS);
+    const r = summarizeCount(wl, ts, 'chair_stand_test');
+    const last = r.reps.at(-1), others = r.reps.slice(0, -1).map((x: { romDegrees: number }) => x.romDegrees);
+    expect(last.clipped).toBe(true);
+    expect(last.romDegrees).toBeGreaterThan(Math.min(...others) - 5);
+  });
+});

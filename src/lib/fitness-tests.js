@@ -66,8 +66,13 @@ export function openRise(smoothed, timestamps, low, high, rest, afterSec, minRan
       const seg = smoothed.slice(start, i + 1), dt = timestamps[i] - timestamps[start];
       let peak = 0;
       for (let k = 1; k < seg.length; k++) peak = Math.max(peak, Math.abs(seg[k] - seg[k - 1]) / (timestamps[start + k] - timestamps[start + k - 1]));
-      const rom = Math.abs(seg.at(-1) - seg[0]);
-      return { startTime: timestamps[start], endTime: timestamps.at(-1), romDegrees: rom, concentricSec: dt, eccentricSec: 0, peakSpeed: peak, meanSpeed: dt > 0 ? rom / dt : 0, clipped: true, halfTime: timestamps[half] };
+      // The range runs to the furthest angle the rise reaches before the video ends or the pose is lost, as a
+      // stand's does; the working threshold is where the rise is recognised, not where it ends (second audit,
+      // 3 October: a last stand of 80° read 55°). The mean speed stays the one to the threshold, over its time.
+      let far = seg.at(-1);
+      for (let k = i + 1; k < smoothed.length && smoothed[k] !== null; k++) far = up ? Math.max(far, smoothed[k]) : Math.min(far, smoothed[k]);
+      const rom = Math.abs(far - seg[0]), toThreshold = Math.abs(seg.at(-1) - seg[0]);
+      return { startTime: timestamps[start], endTime: timestamps.at(-1), romDegrees: rom, concentricSec: dt, eccentricSec: 0, peakSpeed: peak, meanSpeed: dt > 0 ? toThreshold / dt : 0, clipped: true, halfTime: timestamps[half] };
     }
   }
   return null;

@@ -56,3 +56,17 @@ describe('WebCodecs decoding on an error or a cancel', () => {
     expect(decoders[0].closed).toBe(true);
   });
 });
+
+// Second audit, 3 October: the sampling grid started at 0 s while a video whose first frame is later (a trimmed or
+// edited file) gave every frame until the grid caught up, so the samples ran out before the end of the video.
+describe('a video whose first frame is not at 0 s', () => {
+  it('is sampled every fifteenth of a second from its first frame', async () => {
+    const { extractFramesWebCodecs } = await import('../frameExtractor');
+    globalThis.__emit = true;
+    globalThis.__stream = () => new ReadableStream({ start(c) { for (let i = 0; i < 60; i++) c.enqueue({ t: 0.5 + i / 30 }); c.close(); } });
+    const at = [];
+    await extractFramesWebCodecs(new Blob(['x']), 15, Infinity, 640, async (_c, _i, t) => { at.push(t); }, null, {});
+    expect(at[0]).toBeCloseTo(0.5, 3);
+    for (let i = 1; i < at.length; i++) expect(at[i] - at[i - 1], `sample ${i}`).toBeCloseTo(1 / 15, 2);
+  });
+});
