@@ -2,7 +2,8 @@
 // provisional ones on screen and the final one, is summarizeCount (coreAnalysis.js) on the samples so far, the same
 // function and the same samples the recorded path counts. The core is built for 15 samples a second (TARGET_FPS);
 // the live capture samples the camera at that rate (liveEngine.js), so no assumption of the core changes.
-import { summarizeCount } from './coreAnalysis';
+import { summarizeCount, repeatedSkeletons, FrozenSkeletonsError } from './coreAnalysis';
+import { isFrozenRead } from './frozenRead';
 import { liftDefinition } from './counting/core';
 import { TARGET_FPS, MAX_LONG_SIDE } from './extractionConfig';
 
@@ -78,8 +79,22 @@ export function createLiveCounter(lift, { summarize = summarizeCount } = {}) {
       if (shown && core.count > announced) { announced = core.count; announce = core.count; }
       return { count: shown ? core.count : null, inView, refused: core.refused, announce, samples: timestamps.length };
     },
-    /** The whole set, counted exactly as the recorded path counts a video. */
+    /**
+     * The whole set, counted exactly as the recorded path counts a video. Throws FrozenSkeletonsError when more than
+     * half the samples repeat the skeleton before them, the recorded path's frozen-read rule (coreAnalysis.js,
+     * analyzeCoreVideo; frozenRead.js, isFrozenRead), applied to the camera: the pose worker reads each sample in
+     * IMAGE mode with unfiltered world landmarks, so a repeated skeleton is a repeated picture, and a filmed person
+     * never gives one. A camera feed that stalls (a frozen preview, a camera another app took, a phone throttling
+     * the camera) hands the same picture on and on, which would read as a person standing still and a confident 0.
+     * A camera that only slows down repeats some pictures too: past half of them, the set was sampled at under half
+     * the 15 Hz the core is built for, which the live path refuses anyway (liveEngine.js, MAX_BACKLOG).
+     * Source: the frozen-read incident of 3 October (recorded path); not yet seen live. Status: experimental, the
+     * threshold UNSOURCED (frozenRead.js). Not in evaluate(): a frozen feed gives no new rep to show, so the
+     * provisional count only stops rising.
+     */
     finish() {
+      const still = repeatedSkeletons(worldLandmarks);
+      if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, 'live');
       const [w, h] = size ?? [null, null];
       const duration = timestamps.length ? timestamps[timestamps.length - 1] - timestamps[0] + 1 / TARGET_FPS : 0;
       const metadata = { width: w, height: h, fps: TARGET_FPS, duration, frameCount: timestamps.length, method: 'live', live: true, maxLongSide: MAX_LONG_SIDE };

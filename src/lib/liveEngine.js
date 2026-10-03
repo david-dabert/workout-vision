@@ -197,7 +197,8 @@ export function createLiveEngine({
     },
     /**
      * The set ends: the samples already taken are read, then the whole set is counted as the recorded path counts
-     * a video. Resolves with the result, or null when no sample was taken.
+     * a video. Resolves with the result, or null when no sample was taken; rejects with FrozenSkeletonsError
+     * when the camera's picture stood still (liveCounter.js, finish).
      */
     async stopSet() {
       clearTimeout(evalTimer);

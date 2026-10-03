@@ -36,11 +36,11 @@ self.onmessage = ({ data }) => {
   setTimeout(() => self.postMessage({ id: data.id, image: f.image, world: f.world }), 5);
 };`;
 
-async function open(page, { lang = 'en', mode = null, worker = FRAMES, init = null } = {}) {
+async function open(page, { lang = 'en', mode = null, worker = FRAMES, workerBody = null, init = null } = {}) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-  if (worker) await page.route('**/assets/corePoseWorker-*.js', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: fakeWorker(worker) }));
+  if (worker || workerBody) await page.route('**/assets/corePoseWorker-*.js', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: workerBody ?? fakeWorker(worker) }));
   await page.addInitScript(([l, m]) => {
     localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); localStorage.setItem('wv_level', 'intermediate');
     if (m) localStorage.setItem('wv_film_mode', m);
@@ -235,4 +235,48 @@ test('a set paused when the page is hidden can be counted as far as it went, or 
   expect(out.count).toBeGreaterThanOrEqual(2);
   expect(out.last).toBeLessThan(20);
   expect(errors).toEqual([]);
+});
+
+// Every camera stream the page opened, kept so a test can see whether its light went off (every track ended).
+const keepStreams = () => {
+  window.__streams = [];
+  const md = navigator.mediaDevices, gum = md.getUserMedia.bind(md);
+  md.getUserMedia = async c => { const s = await gum(c); window.__streams.push(s); return s; };
+};
+const cameraOff = page => page.evaluate(() => window.__streams.length > 0 && window.__streams.every(s => s.getTracks().every(t => t.readyState === 'ended')));
+
+test('a phone too slow for live counting turns the camera off', async ({ page }) => {
+  test.setTimeout(90000);
+  // Too slow: the worker loads, then never answers a sample, so the samples waiting pass two seconds' worth.
+  await open(page, { mode: 'live', init: keepStreams, workerBody: 'self.onmessage = ({ data }) => { if (data.type === \'init\') self.postMessage({ id: data.id }); };' });
+  await page.getByTestId('film-live').click();
+  await expect(page.getByTestId('live-start')).toBeEnabled({ timeout: 30000 });
+  await page.getByTestId('live-start').click();
+  await expect(page.getByTestId('live-problem')).toContainText('This phone cannot keep up live.', { timeout: 15000 });
+  await expect.poll(() => cameraOff(page), { timeout: 5000 }).toBe(true);
+});
+
+test('a pose model that fails to load turns the camera off', async ({ page }) => {
+  test.setTimeout(60000);
+  await open(page, { mode: 'live', init: keepStreams, workerBody: 'self.onmessage = ({ data }) => { setTimeout(() => self.postMessage({ id: data.id, error: \'no model\' }), 1500); };' });
+  await page.getByTestId('film-live').click();
+  await expect(page.getByTestId('live-problem')).toContainText('Live counting could not start.', { timeout: 20000 });
+  await expect.poll(() => cameraOff(page), { timeout: 5000 }).toBe(true);
+});
+
+test('a camera picture that stood still gives no count, and the camera is turned off', async ({ page }) => {
+  test.setTimeout(60000);
+  // Every sample answered with the same skeleton, as a frozen camera feed read in IMAGE mode gives (liveCounter.js).
+  const still = Array.from({ length: 400 }, () => FRAMES[40]);
+  const errors = await open(page, { mode: 'live', init: keepStreams, worker: still });
+  await page.getByTestId('film-live').click();
+  await expect(page.getByTestId('live-start')).toBeEnabled({ timeout: 30000 });
+  await page.getByTestId('live-start').click();
+  await expect(page.getByTestId('live-stop')).toBeVisible({ timeout: 6000 });
+  await page.waitForTimeout(3500);
+  await page.getByTestId('live-stop').click();
+  await expect(page.getByTestId('live-problem')).toContainText('This phone cannot keep up live.', { timeout: 15000 });
+  await expect(page.locator('.result-screen')).toHaveCount(0);
+  await expect.poll(() => cameraOff(page), { timeout: 5000 }).toBe(true);
+  expect(errors.filter(e => !e.includes('FrozenSkeletonsError') && !e.includes('[live] final count'))).toEqual([]);
 });

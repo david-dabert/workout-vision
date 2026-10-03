@@ -67,6 +67,12 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.current.push(id); return id; };
   const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = []; };
   const release = () => { wake.current?.(); wake.current = null; };
+  // The camera off, as leaving the screen turns it off: once a set is over or live counting has given up.
+  const stopCamera = () => { closeCamera(stream.current); stream.current = null; };
+  // Live counting given up (a phone too slow, a model or worker that failed, a frozen picture): the camera and the
+  // screen's wake lock are let go at once, not when the screen is left. The first cause is the one shown: a worker
+  // that times out after the phone was found too slow does not change the words.
+  const giveUp = cause => { release(); stopCamera(); setProblem(p => p ?? cause); setState('problem'); };
 
   // The phone's voices may arrive after the first render.
   useEffect(() => {
@@ -106,12 +112,12 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);
       },
-      onSlow: () => { release(); setProblem('slow'); setState('problem'); },
+      onSlow: () => giveUp('slow'),
       onFull: () => finish(),
-      onError: err => { console.error('[live]', err); release(); setProblem('failed'); setState('problem'); },
+      onError: err => { console.error('[live]', err); giveUp('failed'); },
     });
     engine.current = e;
-    e.load().then(() => setModelReady(true), err => { console.error('[live] model', err); setProblem('failed'); setState('problem'); });
+    e.load().then(() => setModelReady(true), err => { console.error('[live] model', err); giveUp('failed'); });
     return () => { e.dispose(); engine.current = null; clearTimers(); release(); hush(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -123,6 +129,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     if (['opening', 'loading', 'ready'].includes(stateRef.current)) setState('opening');
     openCamera(facing).then(s => {
       if (gone) { closeCamera(s); return; }
+      // Live counting gave up while the camera was opening (the model failed to load): it is not left on.
+      if (stateRef.current === 'problem') { closeCamera(s); return; }
       stream.current = s;
       if (video) { video.srcObject = s; video.play()?.catch(() => {}); }
       setState(st => (st === 'opening' ? 'loading' : st));
@@ -184,10 +192,21 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     if (!['running', 'paused'].includes(stateRef.current) && engine.current?.mode !== 'draining') return;
     setState('finishing');
     release();
-    const result = await engine.current?.stopSet();
+    let result;
+    try {
+      result = await engine.current?.stopSet();
+    } catch (err) {
+      // A camera picture that stood still (liveCounter.js, finish): no count, as a video read frozen gets none. The
+      // words of a phone that cannot keep up live hold for it (the set was sampled at under half the 15 Hz), so no
+      // new copy. Anything else is a failure of live counting.
+      console.error('[live] final count', err);
+      hush();
+      giveUp(err?.name === 'FrozenSkeletonsError' ? 'slow' : 'failed');
+      return;
+    }
     hush();
     if (!result) { engine.current?.preview(); setState('ready'); return; }
-    closeCamera(stream.current); stream.current = null;
+    stopCamera();
     doneRef.current(result, shown.current);
   }
 

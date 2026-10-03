@@ -5,7 +5,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
-import { summarizeCount } from '../coreAnalysis';
+import { summarizeCount, FrozenSkeletonsError } from '../coreAnalysis';
 import { createLiveCounter, LIVE_MAX_SAMPLES, IN_VIEW_SAMPLES } from '../liveCounter';
 
 const read = path => JSON.parse(gunzipSync(readFileSync(path)));
@@ -112,6 +112,24 @@ describe('live counting', () => {
     const other = createLiveCounter('bicep_curl');
     other.push({ t: 1 });
     expect(() => other.push({ t: 1 })).toThrow();
+  });
+
+  it('a camera picture that stood still gives no count: the recorded path\'s frozen-read rule', () => {
+    // David's real curl, its first 20 samples, then the camera hands on its last picture for 40 more: 40 of 59
+    // samples repeat the one before, more than half (frozenRead.js).
+    const set = real.find(s => s.name.startsWith('bicep_curl'));
+    const frozen = createLiveCounter(set.lift);
+    for (let k = 0; k < 60; k++) frozen.push({ world: set.world[Math.min(k, 19)], image: null, t: set.t[k] });
+    expect(() => frozen.finish()).toThrow(FrozenSkeletonsError);
+    try { frozen.finish(); } catch (e) { expect(e).toMatchObject({ samples: 60, repeats: 40, decoder: 'live' }); }
+    // A camera at half the rate for the second half (15 of 59 repeated): counted as usual.
+    const slowed = createLiveCounter(set.lift);
+    for (let k = 0; k < 60; k++) slowed.push({ world: set.world[k < 30 ? k : k - (k % 2)], image: null, t: set.t[k] });
+    expect(() => slowed.finish()).not.toThrow();
+    // A set of nobody in view (all null) is never a repeat: the visibility refusal's business.
+    const empty = createLiveCounter(set.lift);
+    for (let k = 0; k < 60; k++) empty.push({ world: null, image: null, t: set.t[k] });
+    expect(empty.finish().refused).toBe(true);
   });
 
   it('works out a ten-minute set fast enough to count twice a second', () => {
