@@ -1,0 +1,26 @@
+# Copy: four exercises added on 3 October 2026
+
+For David's approval before release (R10): every line below is pending David's approval (3 October). A name has
+no register; the app's register stays "vous". Status of the exercises: experimental, measured on no set.
+
+| Key | French | English | Where | Status |
+|---|---|---|---|---|
+| behind_the_neck_press.fr (guide-catalog.json) | Développé nuque | Behind-the-Neck Press | Exercise list, guide, film screen, history | pending David's approval (3 October) |
+| barbell_jump_squat.fr | Squat sauté à la barre | Barbell Jump Squat | Same | pending David's approval (3 October) |
+| wall_ball.fr | Wall ball | Wall Ball | Same | pending David's approval (3 October) |
+| sandbag_lunge.fr | Fentes marchées avec sac lesté | Sandbag Lunge | Guide only (not offered: a walking lunge leaves a fixed frame) | pending David's approval (3 October) |
+| EQUIPMENT['Medicine Ball'] (Guide.jsx) | Médecine-ball | Medicine Ball | Guide and exercise list, under the name (wall ball) | pending David's approval (3 October) |
+| EQUIPMENT.Sandbag (Guide.jsx) | Sac lesté | Sandbag | Guide, under the name (sandbag lunge) | pending David's approval (3 October) |
+
+Notes for David:
+- "Développé nuque" follows the glossary's "Développé militaire" for the overhead press; it is the name used in
+  French gyms ("développé nuque barre" kept as a search alias).
+- "Squat sauté à la barre": the glossary has "Squat" and the catalogue "Squat sauté"; the catalogue elsewhere writes
+  the bar as "barre" with no article ("Curl barre debout", "Rowing barre"), so "Squat sauté barre" is the other
+  option (kept as an alias).
+- "Wall ball" is kept in English, as French CrossFit and HYROX boxes say it.
+- The sandbag lunge was asked as "Fentes avec sac lesté"; it is a walking lunge, and the catalogue calls that one
+  "Fente marchée", so "Fentes marchées avec sac lesté" says what the lifter does. "Fentes avec sac lesté" and
+  "fentes sandbag" stay as aliases. Glossary: "Lunge" is "Fentes".
+- None of the four has a drawing in the guide: each borrows the nearest one (overhead press, jump squat, squat,
+  walking lunge), and the screens say "Dessin d'un mouvement proche." / "Mouvement proche, d'après le guide." (copy-curls.md).

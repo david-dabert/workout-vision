@@ -774,6 +774,27 @@
     ]
   },
   {
+    "key": "sandbag_lunge",
+    "name": "Sandbag Lunge",
+    "slug": "sandbag-lunge",
+    "drawing": "walking-lunge",
+    "category": "legs",
+    "equipment": "Sandbag",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Fentes marchées avec sac lesté",
+    "aliases": [
+      "sandbag lunge",
+      "sandbag lunges",
+      "fentes avec sac lesté",
+      "fentes marchées avec sac lesté",
+      "fentes sandbag"
+    ]
+  },
+  {
     "key": "step_up",
     "name": "Step-Up",
     "slug": "step-up",
@@ -1040,7 +1061,7 @@
       "Triceps",
       "Shoulders"
     ],
-    "fr": "Poussée triceps poulie",
+    "fr": "Extension triceps à la poulie haute",
     "aliases": [
       "tricep pushdown",
       "poussée triceps poulie",
@@ -1480,6 +1501,25 @@
       "push press",
       "push press",
       "push press"
+    ]
+  },
+  {
+    "key": "behind_the_neck_press",
+    "name": "Behind-the-Neck Press",
+    "slug": "behind-the-neck-press",
+    "drawing": "overhead-press",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ],
+    "fr": "Développé nuque",
+    "aliases": [
+      "behind-the-neck press",
+      "behind the neck press",
+      "développé nuque",
+      "développé nuque barre"
     ]
   },
   {
@@ -2545,6 +2585,47 @@
       "jump squat",
       "squat sauté",
       "jump squat"
+    ]
+  },
+  {
+    "key": "barbell_jump_squat",
+    "name": "Barbell Jump Squat",
+    "slug": "barbell-jump-squat",
+    "drawing": "jump-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Calves"
+    ],
+    "fr": "Squat sauté à la barre",
+    "aliases": [
+      "barbell jump squat",
+      "jump squat barre",
+      "squat sauté à la barre",
+      "squat sauté barre"
+    ]
+  },
+  {
+    "key": "wall_ball",
+    "name": "Wall Ball",
+    "slug": "wall-ball",
+    "drawing": "squat",
+    "category": "full_body",
+    "equipment": "Medicine Ball",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Shoulders"
+    ],
+    "fr": "Wall ball",
+    "aliases": [
+      "wall ball",
+      "wall balls",
+      "wall ball shot",
+      "médecine-ball",
+      "medicine ball"
     ]
   },
   {

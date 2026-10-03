@@ -36,6 +36,21 @@ describe('the contributions file', () => {
     expect(JSON.parse(text).sets).toEqual(expected);
     expect(text).not.toMatch(/setId|savedAt|sentAt/);
   });
+  // Third audit C10, C18, C38 (3 October): the consent text (contribute-copy.js `what`) names every field the file
+  // carries. This list pins those fields: a field added to contribution() or deviceInfo() fails here until the
+  // consent text names it and this list follows.
+  it('carries exactly the fields the consent text names', async () => {
+    const paths = (o, pre = '') => Object.entries(o).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? paths(v, `${pre}${k}.`) : [`${pre}${k}`]));
+    const one = contribution({ result, lift: 'squat', kept: 8, setId: 's', appVersion: 'v', device: deviceInfo({}, { width: 1, height: 1 }, {}) });
+    const text = await (await contributionsFile([one], new Date(), null)).text();
+    expect(paths(JSON.parse(text).sets[0]).sort()).toEqual([
+      'appCount', 'arm', 'contributionVersion', 'corrected', 'count', 'device.cores', 'device.memoryGb', 'device.platform',
+      'device.screen.height', 'device.screen.pixelRatio', 'device.screen.width', 'device.touchPoints', 'device.userAgent',
+      'extraction.fps', 'extraction.maxLongSide', 'frame.height', 'frame.width', 'imageLandmarks', 'kind', 'labelKind', 'lift',
+      'metadata.duration', 'metadata.extractionMethod', 'metadata.rotationDecision', 'metadata.sampleCount', 'timestamps',
+      'version', 'worldLandmarks',
+    ]);
+  });
   it('is plain JSON where it cannot', async () => {
     const f = await contributionsFile(list, new Date('2026-10-02T12:00:00Z'), null);
     expect(f.name).toBe('workout-vision-contributions-2026-10-02-1.json');

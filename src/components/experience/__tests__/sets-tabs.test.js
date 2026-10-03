@@ -2,7 +2,7 @@
 // saved in the other (second audit, 3 October). A change in one tab now tells the others to read again.
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('../../../lib/storage', () => ({ getWorkouts: async () => [{ id: 'a', exercise: 'squat', reps: 5, createdAt: 1 }], deleteWorkout: async () => {} }));
-import { knownSets, loadSets, refreshSets } from '../sets';
+import { knownSets, loadSets, onSetsChanged, refreshSets } from '../sets';
 
 describe('the sets list across tabs', () => {
   it('is read again when another tab changes the sets', async () => {
@@ -12,6 +12,20 @@ describe('the sets list across tabs', () => {
     other.postMessage('changed');
     await new Promise(r => setTimeout(r, 50));
     expect(knownSets()).toBeNull();
+    other.close();
+  });
+  // Third audit C19 (3 October): a history already open reads its list again, so its backup holds the new set.
+  it('tells a screen already open, until it stops listening', async () => {
+    let heard = 0;
+    const stop = onSetsChanged(() => { heard++; });
+    const other = new BroadcastChannel('wv-sets');
+    other.postMessage('changed');
+    await new Promise(r => setTimeout(r, 50));
+    expect(heard).toBe(1);
+    stop();
+    other.postMessage('changed');
+    await new Promise(r => setTimeout(r, 50));
+    expect(heard).toBe(1);
     other.close();
   });
   it('tells the other tabs when this one changes them', async () => {

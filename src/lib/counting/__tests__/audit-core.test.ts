@@ -141,7 +141,8 @@ describe('a lunge set alternating legs', () => {
 
 // 3 October: in a forward or reverse lunge both knees bend on every rep, so either knee counts the set; the one
 // the camera serves worse can miss reps. The knee with more reps counts (public lunges: 44 to 54 exact, 31 to 8
-// off by 3 or more, none newly off by 3: TRIED.md).
+// off by 3 or more, none newly off by 3: TRIED.md). Since, the lunges join both knees (`together`,
+// lunge-together.test.ts); this set still counts 6.
 describe('a lunge counted on the knee with more reps', () => {
   it('counts the set on the knee that sees every rep, when the other barely moves in the picture', () => {
     const good = sample([{ hold: 175, sec: 1 }, ...cycles({ rest: 175, work: 95, reps: 6, firstSec: 0.9, secondSec: 0.9, restSec: 0.5 }), { hold: 175, sec: 1 }], 175, SPS);

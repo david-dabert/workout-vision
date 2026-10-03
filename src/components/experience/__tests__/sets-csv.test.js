@@ -18,6 +18,8 @@ const AT = Date.UTC(2026, 8, 28, 8, 30, 0);
 // A set saved by the result screen after a correction: 5 kept, 4 counted.
 const counted = { id: 'a', exercise: 'bicep_curl', reps: 5, createdAt: AT, source: 'counter-core', duration: 21.36, corrected: true,
   machineResult: { reps: 4, confidence: 0.9 }, correctedResult: { reps: 5 }, repDetails: REPS, repDetailsVersion: 2 };
+// The same set kept as the app counted it: its rows are the set's reps.
+const exact = { ...counted, id: 'e', reps: 5, corrected: false, machineResult: { reps: 5, confidence: 0.9 }, correctedResult: null };
 // A manual set with a load, saved later.
 const manual = { id: 'b', exercise: 'squat', reps: 8, createdAt: AT + 3_600_000, source: 'manual', weight: 62.5, duration: 0,
   machineResult: { reps: 8, confidence: null }, correctedResult: null };
@@ -143,7 +145,7 @@ describe('setsCsv', () => {
 
 describe('repsCsv', () => {
   it('writes one row per rep of the sets that hold measured reps', () => {
-    const rows = lines(repsCsv([manual, counted, old], { lang: 'en' }));
+    const rows = lines(repsCsv([manual, exact, old], { lang: 'en' }));
     expect(rows[0].split(',')).toEqual(['Set date', 'Exercise', 'Rep', 'Range (°) (experimental measure)', 'Concentric (s) (experimental measure)', 'Eccentric (s) (experimental measure)', 'Peak speed (°/s) (experimental measure)', 'Mean speed (°/s) (experimental measure)', 'Cut by the video']);
     expect(rows).toHaveLength(1 + REPS.length);
     const first = rows[1].split(',');
@@ -152,14 +154,23 @@ describe('repsCsv', () => {
   });
 
   it('writes French with semicolons and decimal commas', () => {
-    const rows = lines(repsCsv([counted], { lang: 'fr' }));
+    const rows = lines(repsCsv([exact], { lang: 'fr' }));
     expect(rows[0].split(';')).toEqual(['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°) (mesure expérimentale)', 'Concentrique (s) (mesure expérimentale)', 'Excentrique (s) (mesure expérimentale)', 'Vitesse max (°/s) (mesure expérimentale)', 'Vitesse moyenne (°/s) (mesure expérimentale)', 'Coupée par la vidéo']);
     expect(rows[2].split(';').slice(1)).toEqual(['Curl biceps', '2', '118', '1,1', '1,5', '182', '93', 'non']);
   });
 
   it('leaves the times and speeds of a rep the video cut empty, as the report does', () => {
-    const rows = lines(repsCsv([counted], { lang: 'en' }));
+    const rows = lines(repsCsv([exact], { lang: 'en' }));
     expect(rows[5].split(',').slice(2)).toEqual(['5', '60', '', '', '', '', 'yes']);
+  });
+
+  // Third audit C12 (3 October): after a correction the rows are the marks the app detected, named as the report
+  // names them, never the reps of the count the user saved.
+  it('names a corrected set\'s rows as detected marks, as the report does', () => {
+    const fr = lines(repsCsv([counted], { lang: 'fr' })).slice(1).map(r => r.split(';')[2]);
+    expect(fr).toEqual(['Repère 1', 'Repère 2', 'Repère 3', 'Repère 4', 'Repère 5']);
+    const en = lines(repsCsv([counted, exact], { lang: 'en' })).slice(1).map(r => r.split(',')[2]);
+    expect(en).toEqual(['Mark 1', 'Mark 2', 'Mark 3', 'Mark 4', 'Mark 5', '1', '2', '3', '4', '5']);
   });
 
   it('is null when no set holds measured reps', () => {

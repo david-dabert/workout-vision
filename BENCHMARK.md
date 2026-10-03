@@ -1,8 +1,10 @@
 # Rep Counting Benchmark
 
+> **Historical, not the shipping counter** (third audit, C43, 3 October 2026). These figures come from the retired valley counter with its hysteresis guard (`src/lib/repCounter/`, `src/lib/hysteresisCounter.ts`, now dormant: ARCHITECTURE.md, section 5), on 41 Countix clips, and this file was last changed on 25 September 2026 (commit 1f5a90d), before the counting core (`src/lib/counting/core.ts`) existed. The app counts with that core today. Current figures, each dated on its first line: `test/real-phone/accuracy/public-scoreboard.txt` (Countix build sets) and `test/real-phone/accuracy/scoreboard.txt` (David's labelled sets).
+
 Offline validation of the rep counting engine against 43 videos from the [Countix](https://arxiv.org/abs/2006.15418) dataset (9 exercise types). Ground truth rep counts are human-labeled.
 
-## Current results (v25)
+## Historical results (v25, retired valley counter, 41 Countix clips)
 
 | Metric | Value |
 |---|---|

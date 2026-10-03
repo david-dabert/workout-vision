@@ -7,14 +7,10 @@
 import { collectSet } from './lib/collectSet';
 import { mismatchNote, flaggedSets, rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory, countsFromLine } from './lib/batchCollect';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
-import { OFFERED } from './lib/offer';
-import catalogue from './lib/guide-catalog.json';
+import { COLLECTOR_LIFTS } from './lib/collectorLifts';
 
-const byKey = new Map(catalogue.map(e => [e.key, e]));
-// The exercises the app offers, French name first, sorted in French, as in the single collector.
-const LIFTS = OFFERED.map(key => byKey.get(key)).filter(Boolean)
-  .map(e => ({ key: e.key, label: `${e.fr} / ${e.name}` }))
-  .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+// The exercises the app offers, but the fitness tests, as in the single collector (src/lib/collectorLifts.js).
+const LIFTS = COLLECTOR_LIFTS;
 const VIEWS = [['side', 'Side'], ['front', 'Front'], ['angle', 'Angle']];
 
 const $ = id => document.getElementById(id);

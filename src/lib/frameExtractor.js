@@ -266,6 +266,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
             // with 150 ms of analysis a frame, 89 of 89 after). Measured in desktop Chromium only.
             // The frame on screen is this callback's until the task ends, so it is drawn at once.
             video.pause();
+            let drawn = false;
             try {
               ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
 
@@ -308,9 +309,27 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
                 }
               }
 
+              drawn = true;
+            } catch {
+              // canvas draw failure, skip frame
+            }
+            if (drawn) {
               // The watchdog waits for the analysis too: a slow phone is not a stalled video (review 01).
               clearTimeout(stallTimeout);
-              await onFrame(canvas, extractedCount, mediaTime);
+              // A sample the caller could not analyse (the pose worker failed or timed out) ends the
+              // extraction, as on the WebCodecs path: swallowed, it was taken again from a later frame,
+              // or, with a dead worker, each frame waited 60 s and the screen hung (third audit, C06).
+              try {
+                await onFrame(canvas, extractedCount, mediaTime);
+              } catch (err) {
+                if (!resolved) {
+                  resolved = true;
+                  cleanup();
+                  if (signal) signal.removeEventListener('abort', onAbort);
+                  reject(err);
+                }
+                return;
+              }
               if (!resolved) resetStallTimeout();
               extractedCount++;
               lastCapturedTime = mediaTime;
@@ -318,8 +337,6 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
               if (onProgress) {
                 onProgress(Math.round((extractedCount / frameCount) * 100));
               }
-            } catch {
-              // canvas draw failure, skip frame
             }
           }
 
@@ -686,7 +703,17 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   // How many samples each path handed on: a path that fails part-way leaves its samples behind, and
   // the method then names both (review 01 of the decoder fix).
   let handed = 0;
-  const counted = (canvas, index, timestamp) => { handed++; return onFrame(canvas, index, timestamp); };
+  // An error of the caller's own analysis (onFrame) is not a decoder failure: it ends the extraction
+  // instead of starting the video again on the next decoder with the same failing worker (third audit, C06).
+  const counted = async (canvas, index, timestamp) => {
+    handed++;
+    try {
+      return await onFrame(canvas, index, timestamp);
+    } catch (err) {
+      if (err && typeof err === 'object') err.fromOnFrame = true;
+      throw err;
+    }
+  };
   let before = '';
 
   // Step 1: Try WebCodecs (sequential, deterministic, handles rotation). The check page can skip it
@@ -698,7 +725,7 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
       const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
       return { ...result, method: 'webcodecs' };
     } catch (err) {
-      if (err.name === 'AbortError') throw err;
+      if (err.name === 'AbortError' || err.fromOnFrame) throw err;
       console.error('[frameExtractor] WebCodecs failed:', err?.message || String(err));
       errors.push(`WebCodecs: ${err?.message || String(err)}`);
       before = `webcodecs failed after ${handed} samples (${err?.message || String(err)}), then `;
@@ -713,7 +740,7 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
       const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
       return { ...result, method: `${before}rvfc` };
     } catch (err) {
-      if (err.name === 'AbortError') throw err;
+      if (err.name === 'AbortError' || err.fromOnFrame) throw err;
       console.error('[frameExtractor] RVFC failed:', err?.message || String(err));
       errors.push(`RVFC: ${err?.message || String(err)}`);
     }

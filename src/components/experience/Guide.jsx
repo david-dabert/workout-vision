@@ -17,7 +17,7 @@ const ZONE_NAMES = {
  en: { shoulders: 'Shoulders', chest: 'Chest', biceps: 'Biceps', abs: 'Abs', quads: 'Thighs', back: 'Back', triceps: 'Triceps', lowerback: 'Lower back', glutes: 'Glutes', hamstrings: 'Hamstrings', calves: 'Calves' }
 };
 const MUSCLES = { shoulders: ['Shoulders', 'Rear Delts'], chest: ['Chest'], biceps: ['Biceps', 'Forearms', 'Grip'], abs: ['Core'], quads: ['Quads', 'Legs', 'Adductors', 'Groin', 'Hips'], back: ['Back', 'Lats', 'Upper Back'], triceps: ['Triceps'], lowerback: ['Lower Back', 'Posterior Chain'], glutes: ['Glutes'], hamstrings: ['Hamstrings'], calves: ['Calves'] };
-export const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids du corps', Box: 'Banc / box', Cable: 'Poulie', Cardio: 'Cardio', Chair: 'Chaise', Doorway: 'Encadrement de porte', Dumbbell: 'Haltères', Kettlebell: 'Kettlebell', Machine: 'Machine', Plate: 'Disque', 'Pull-up Bar': 'Barre de traction', 'Resistance Band': 'Élastique', 'Stability Ball': 'Ballon', Towel: 'Serviette', Wall: 'Mur' };
+export const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids du corps', Box: 'Banc / box', Cable: 'Poulie', Cardio: 'Cardio', Chair: 'Chaise', Doorway: 'Encadrement de porte', Dumbbell: 'Haltères', Kettlebell: 'Kettlebell', Machine: 'Machine', 'Medicine Ball': 'Médecine-ball', Plate: 'Disque', 'Pull-up Bar': 'Barre de traction', 'Resistance Band': 'Élastique', Sandbag: 'Sac lesté', 'Stability Ball': 'Ballon', Towel: 'Serviette', Wall: 'Mur' };
 export { norm };
 const inZone = (e, zone) => !zone || e.muscles.some(m => MUSCLES[zone].includes(m));
 const countedLift = e => (isOffered(e.key) ? e.key : undefined);

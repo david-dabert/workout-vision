@@ -1,3 +1,4 @@
+# A snapshot of 29 September, before later counting changes (curl 5 now counts 5): superseded by test/real-phone/accuracy/scoreboard.txt, which npm run scoreboard writes from the live core (third audit, C32).
 bench_press_7_side_24cc4f0b.json.gz  David 7  app 5  off by -2  (330 samples, webcodecs, arm right)
 bicep_curl_5_side_f5e5bdf2.json.gz  David 5  app 4  off by -1  (168 samples, webcodecs, arm left)
 hip_thrust_6_side_cf8c21d7.json.gz  David 6  app 6  exact  (221 samples, webcodecs, arm right)

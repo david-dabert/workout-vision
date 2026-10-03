@@ -2,7 +2,8 @@ name: Deploy to GitHub Pages
 
 # Publication waits for the whole CI verdict on main: lint, types, tests, the browser tests in Chromium and
 # WebKit, the iPhone tour and the synthetic journeys (ci.yml). On 2 October main was published at 20:52 and its
-# WebKit tour failed at 21:02 (audit, FINDING-001). The commit published is the one CI passed.
+# WebKit tour failed at 21:02 (audit, FINDING-001). The commit published is the one CI passed, and it is main's
+# tip: a deploy by hand, or a CI re-run of an older commit, publishes nothing else (third audit, C29, C30, C44).
 on:
   workflow_run:
     workflows: [CI]
@@ -20,10 +21,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  # Only main's tip, and only a commit CI passed (third audit, C29, C30, C44). A re-run of an older commit's CI
+  # that now passes would otherwise publish that commit over a newer one: it is skipped, not failed, so a
+  # superseded run does not show red (review of the fixes, 3 October). A deploy by hand of a commit CI did not
+  # pass would otherwise publish it, as the WebKit tour showed on 2 October (FINDING-001): that one fails.
+  gate:
     # A deploy by hand publishes main only, never another branch past the CI gate (R6).
     if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
+    # Reads main's tip and CI's runs for the commit (actions: read); it cannot write anything.
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      go: ${{ steps.check.outputs.go }}
+    steps:
+      - id: check
+        name: Publish only main's tip, and only a commit CI passed (R6)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          tip=$(gh api "repos/$REPO/commits/main" --jq .sha)
+          if [ "$SHA" != "$tip" ]; then
+            echo "Commit $SHA is not main's tip ($tip): superseded, nothing is published."
+            echo "go=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$EVENT" = workflow_dispatch ]; then
+            c=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&branch=main&event=push&status=completed" --jq '.workflow_runs[0].conclusion // "none"')
+            if [ "$c" != success ]; then
+              echo "CI's latest completed run for $SHA concluded '$c': a deploy by hand publishes only a commit CI passed."; exit 1
+            fi
+          fi
+          echo "go=true" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:

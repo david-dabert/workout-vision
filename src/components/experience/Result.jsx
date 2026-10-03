@@ -92,20 +92,25 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
         ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
         : (fr ? 'Essayez une autre vidéo, ou filmez à nouveau avec l’appareil photo.' : 'Try another video, or record again with the camera.')}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
-        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October). */}
+        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October).
+            One button per action: "Refilmer" goes back to the Film screen, where a video is filmed or chosen; a second
+            button doing the same under "Choisir une autre vidéo" opened no picker (third audit C14, 3 October). */}
         {model
-          ? <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+          ? <>
+            <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+            <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+          </>
           : <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>}
-        <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
     </div></section>
   </div>;
 }
 
 // What was read, without naming a cause the app cannot see (review 01 of the partial-read fix).
-function partialLine(read, expected, fr) {
-  const share = expected ? Math.round((Math.min(read, expected) / expected) * 100) : null;
-  if (expected && read > expected) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
+// Samples out of time order were read again from an earlier point: the "read twice" line, never "NaN %" (third audit, C08).
+function partialLine(read, expected, fr, disordered) {
+  const share = expected && Number.isFinite(read) ? Math.round((Math.min(read, expected) / expected) * 100) : null;
+  if (disordered || (expected && read > expected)) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
   return share === null
     ? (fr ? 'La durée de la vidéo n’a pas pu être lue. Nous n’affichons pas un compte incertain. Recommencez l’analyse.' : 'The length of the video could not be read. We do not show an uncertain count. Start the analysis again.')
     : (fr ? `Seuls ${share}\u00A0% de la vidéo ont été analysés. Nous n’affichons pas un compte partiel. Recommencez l’analyse.` : `Only ${share}% of the video was analysed. We do not show a partial count. Start the analysis again.`);
@@ -113,19 +118,19 @@ function partialLine(read, expected, fr) {
 
 // Shown when the phone read only part of the video: no count, since it would be the count of part
 // of the set (29 September: 181 of 439 samples read, 2 of 10 reps counted).
-export function AnalysisIncomplete({ lift, read, expected, decoder, onClose, onRestart, onRefilm }) {
+export function AnalysisIncomplete({ lift, read, expected, disordered = false, decoder, onClose, onRestart, onRefilm }) {
   const { lang } = useT(), fr = lang === 'fr';
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
       <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
-      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr)}</p>
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr, disordered)}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
-      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected } }} />
+      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected, disordered } }} />
     </div></section>
   </div>;
 }
@@ -259,9 +264,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
-  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
+  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
+  // its first column headed Repère after a correction, as the report heads it (third audit C11).
   const [view] = useState(() => levelView(readLevel()));
-  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
+  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr, corrected }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
@@ -419,8 +425,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <p className="fix-text">{fix}</p>
         </div>
         <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
+          {/* One button: "Choisir une autre vidéo" beside it did the same, back to Film (third audit C14, 3 October). */}
           <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
-          <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
         </div>
         <ReportCount fr={fr} report={report} />
       </div></section>

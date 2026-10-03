@@ -1,0 +1,436 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 114fa0e..02f941f 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -42,7 +42,8 @@ jobs:
+       # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls or
+       # any set is off by 3 or more (test/real-phone/accuracy/scoreboard.test.ts).
+       - run: SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard
+-      # The 894 public build sets (Countix): the same rule (test/real-phone/accuracy/public-scoreboard.test.ts).
++      # The 894 public build sets (Countix): the net rule of 3 October, exact counts may not fall, sets off by 3 or
++      # more may not rise, McNemar may not favour the old counts (test/real-phone/accuracy/public-scoreboard.test.ts).
+       - run: PUBLIC_BASE="$RUNNER_TEMP/base/public-baseline.json" npm run scoreboard:public
+       # The 96 synthetic sets (test/real-phone/synth/sets, rendered by run.mjs): the count may not lose an exact
+       # set, and the range and phase errors may not grow (audit FINDING-021).
+diff --git a/src/lib/check-baseline.json b/src/lib/check-baseline.json
+index 9af316e..0920f59 100644
+--- a/src/lib/check-baseline.json
++++ b/src/lib/check-baseline.json
+@@ -51,7 +51,7 @@
+       "view": "side",
+       "file": "bench_press_7_side_24cc4f0b.json.gz",
+       "sha256": "24cc4f0b86dce186435a2b34f41cce4cbacfffffd3cb49f62ad7381efbbf3aca",
+-      "before": 5,
++      "before": 8,
+       "refused": false,
+       "samples": 330,
+       "duration": 22.061667
+diff --git a/src/lib/counting/__tests__/bench-wrist-height.test.ts b/src/lib/counting/__tests__/bench-wrist-height.test.ts
+new file mode 100644
+index 0000000..0569956
+--- /dev/null
++++ b/src/lib/counting/__tests__/bench-wrist-height.test.ts
+@@ -0,0 +1,72 @@
++/**
++ * The bench press is found on the wrist's height above the shoulder (core.ts, countOn, WRIST_HEIGHT_UNITS_PER_M),
++ * workflow experiment of 3 October 2026 on the public build half A. What it answers: at the bottom of a bench rep
++ * the elbow sinks behind the torso and the bench, and the pose model places it worst there, while it still places
++ * the shoulder and the wrist. On a public set of eleven quick reps (Countix E9KZOVuBRfA, about 0.9 s each) the elbow
++ * angle read 128 to 131 degrees with the wrist at the chest, the pose was lost for a sample or two at most bottoms,
++ * the true bottoms (70 to 90 degrees) were erased as outliers, and the core counted 5.
++ * Here the body presses as a bench press is done (pressFrame: the forearm upright), quick reps of about 1 s; at each
++ * bottom, while the elbow is under 100 degrees, its landmark is put where it reads 131 degrees, and the pose is lost
++ * for two samples; every frame's elbow jitters by up to 6 cm and its shoulder and wrist by up to 2 cm (the elbow is
++ * the landmark placed worst; the sizes are a modelling choice, not a measurement). On the elbow angle such sets
++ * counted 10 in 3 of 40 seeds (mean 8.1); on the wrist's height, 40 of 40. Status: experimental.
++ */
++import { describe, it, expect } from 'vitest';
++import { countReps, type WorldLandmarkFrame } from '../core';
++import { pressFrame, sample, seeded, timestamps, type Segment } from './synthetic';
++
++/** pressFrame, with the elbow moved off the shoulder–wrist line (in depth) so that it reads `reads` degrees. */
++function misplacedElbow(angle: number, reads: number): WorldLandmarkFrame {
++  const f = pressFrame(angle)!;
++  const s = f[11], w = f[15];
++  const half = Math.hypot(w.x - s.x, w.y - s.y, w.z - s.z) / 2;
++  const depth = half / Math.tan(((reads / 2) * Math.PI) / 180);
++  f[13] = { x: (s.x + w.x) / 2, y: (s.y + w.y) / 2, z: depth, visibility: 0.99 };
++  return f;
++}
++
++/** Each of the arm's landmarks moved by up to `elbow` (the elbow) or `ends` (shoulder, wrist) metres on each axis. */
++function jitter(f: WorldLandmarkFrame, rng: () => number, elbow: number, ends: number): WorldLandmarkFrame {
++  if (!f) return f;
++  const g = f.map(p => ({ ...p }));
++  for (const [k, a] of [[11, ends], [13, elbow], [15, ends]] as const) {
++    g[k] = { ...g[k], x: g[k].x + (rng() - 0.5) * 2 * a, y: g[k].y + (rng() - 0.5) * 2 * a, z: g[k].z + (rng() - 0.5) * 2 * a };
++  }
++  return g;
++}
++
++const presses = (n: number, down: number, bottom: number, up: number, top: number, rest = 160, work = 75): Segment[] => {
++  const p: Segment[] = [{ hold: rest, sec: 1 }];
++  for (let r = 0; r < n; r++) p.push({ to: work, sec: down }, { hold: work, sec: bottom }, { to: rest, sec: up }, { hold: rest, sec: top });
++  p.push({ hold: rest, sec: 1 });
++  return p;
++};
++
++describe('bench press: reps found on the wrist height', () => {
++  it('ten quick reps whose elbow is misplaced at the bottom, with the pose lost there, count 10, over 40 seeds', () => {
++    const sps = 15, counts: number[] = [];
++    for (let seed = 1; seed <= 40; seed++) {
++      const rng = seeded(seed * 7919 + sps);
++      const angles = sample(presses(10, 0.4, 0.1, 0.4, 0.1), 160, sps);
++      let atBottom = 0;
++      const frames = angles.map(a => {
++        if (a >= 100) { atBottom = 0; return jitter(pressFrame(a), rng, 0.06, 0.02); }
++        atBottom++;
++        if (a === 75 && atBottom > 1 && atBottom <= 3) return null; // the pose lost for two samples at the bottom
++        return jitter(misplacedElbow(a, 131), rng, 0.06, 0.02);
++      });
++      counts.push(countReps(frames, timestamps(angles.length, sps), 'bench_press').count);
++    }
++    expect(counts.filter(c => c !== 10)).toEqual([]);
++  });
++
++  it('the reps keep the elbow range in degrees, not the height', () => {
++    // Slow, clean reps, 170 to 80 degrees: each rep's range is the elbow's, about 90 degrees.
++    const sps = 15, angles = sample(presses(5, 1, 0, 1, 0.8, 170, 80), 170, sps);
++    const r = countReps(angles.map(a => pressFrame(a)), timestamps(angles.length, sps), 'bench_press');
++    expect(r.count).toBe(5);
++    for (const rep of r.reps) expect(rep.romDegrees).toBeGreaterThan(80);
++    for (const rep of r.reps) expect(rep.romDegrees).toBeLessThan(95);
++    expect(r.smoothedAngles.filter(a => a !== null).every(a => a! >= 75 && a! <= 175)).toBe(true);
++  });
++});
+diff --git a/src/lib/counting/__tests__/edges.test.ts b/src/lib/counting/__tests__/edges.test.ts
+index 423e474..2b01a86 100644
+--- a/src/lib/counting/__tests__/edges.test.ts
++++ b/src/lib/counting/__tests__/edges.test.ts
+@@ -14,9 +14,11 @@
+  */
+ import { describe, it, expect } from 'vitest';
+ import { countReps, type Lift } from '../core';
+-import { jointFrame, sample, timestamps, type Joint, type Segment } from './synthetic';
++import { jointFrame, pressFrame, sample, timestamps, type Joint, type Segment } from './synthetic';
+ 
+-const frames = (joint: Joint, angles: number[]) => angles.map(a => jointFrame(joint, { left: a }));
++// The bench press is found on the wrist's height (core.ts, countOn): its body presses, the forearm upright, as a
++// bench press is done; the hanging arm of the other elbow lifts would raise the wrist as the elbow bends.
++const frames = (joint: Joint, angles: number[], lift?: Lift) => angles.map(a => (lift === 'bench_press' ? pressFrame(a) : jointFrame(joint, { left: a })));
+ const reps = (rest: number, work: number, n: number): Segment[] => {
+   const p: Segment[] = [{ hold: rest, sec: 0.8 }];
+   for (let r = 0; r < n; r++) p.push({ to: work, sec: 1 }, { to: rest, sec: 1 }, { hold: rest, sec: 0.8 });
+@@ -24,7 +26,7 @@ const reps = (rest: number, work: number, n: number): Segment[] => {
+ };
+ const run = (lift: Lift, joint: Joint, path: Segment[], start: number, sps: number) => {
+   const a = sample(path, start, sps);
+-  return countReps(frames(joint, a), timestamps(a.length, sps), lift);
++  return countReps(frames(joint, a, lift), timestamps(a.length, sps), lift);
+ };
+ 
+ const CONCENTRIC_FIRST: { lift: Lift; joint: Joint; rest: number; work: number }[] = [
+diff --git a/src/lib/counting/__tests__/lifts.test.ts b/src/lib/counting/__tests__/lifts.test.ts
+index 59c0de9..e486702 100644
+--- a/src/lib/counting/__tests__/lifts.test.ts
++++ b/src/lib/counting/__tests__/lifts.test.ts
+@@ -6,7 +6,7 @@
+  */
+ import { describe, it, expect } from 'vitest';
+ import { countReps, type Lift, type CountResult } from '../core';
+-import { jointFrame, cycles, sample, timestamps, seeded, wobble, type Joint, type Side } from './synthetic';
++import { jointFrame, pressFrame, cycles, sample, timestamps, seeded, wobble, type Joint, type Side } from './synthetic';
+ 
+ const SPS = [15, 30, 60, 120];
+ 
+@@ -22,13 +22,15 @@ const LIFTS: { lift: Lift; joint: Joint; rest: number; work: number; first: 'con
+   { lift: 'triceps_pushdown', joint: 'elbow', rest: 80, work: 170, first: 'concentric' },
+   { lift: 'romanian_deadlift', joint: 'hip', rest: 175, work: 95, first: 'eccentric' },
+   { lift: 'hip_thrust', joint: 'hip', rest: 100, work: 175, first: 'concentric' },
++  // The bench press is found on the wrist's height (core.ts, countOn): its body presses, the forearm upright, as a
++  // bench press is done; the hanging arm of the other elbow lifts would raise the wrist as the elbow bends.
+   { lift: 'bench_press', joint: 'elbow', rest: 170, work: 80, first: 'eccentric' },
+   { lift: 'bicep_curl', joint: 'elbow', rest: 170, work: 50, first: 'concentric' },
+   { lift: 'lateral_raise', joint: 'shoulder', rest: 15, work: 100, first: 'concentric' },
+ ];
+ 
+-function frames(joint: Joint, angles: (number | null)[], side: Side = 'left') {
+-  return angles.map(a => (a === null ? null : jointFrame(joint, { [side]: a })));
++function frames(joint: Joint, angles: (number | null)[], side: Side = 'left', lift?: Lift) {
++  return angles.map(a => (a === null ? null : lift === 'bench_press' ? pressFrame(a) : jointFrame(joint, { [side]: a })));
+ }
+ 
+ function median(values: number[]) {
+@@ -42,7 +44,7 @@ describe('Counting core — lifts by joint', () => {
+       it(`${lift}: 10 cycles at ${sps} sps with 10% wobble`, () => {
+         const rng = seeded(sps);
+         const angles = wobble(sample(cycles({ rest, work }), rest, sps), Math.abs(rest - work) * 0.1, rng);
+-        const result = countReps(frames(joint, angles), timestamps(angles.length, sps), lift);
++        const result = countReps(frames(joint, angles, 'left', lift), timestamps(angles.length, sps), lift);
+         expect(result.count).toBe(10);
+       });
+     }
+@@ -52,7 +54,7 @@ describe('Counting core — lifts by joint', () => {
+       const angles: (number | null)[] = sample(cycles({ rest, work }), rest, sps);
+       const mid = Math.floor(angles.length / 2);
+       for (let i = mid; i < mid + Math.round(0.5 * sps); i++) angles[i] = null;
+-      const result = countReps(frames(joint, angles), timestamps(angles.length, sps), lift);
++      const result = countReps(frames(joint, angles, 'left', lift), timestamps(angles.length, sps), lift);
+       expect(result.count).toBe(10);
+     });
+ 
+@@ -60,7 +62,7 @@ describe('Counting core — lifts by joint', () => {
+       // First phase 1.2 s, second 0.8 s: the phases are told apart by their length.
+       const sps = 30;
+       const angles = sample(cycles({ rest, work, firstSec: 1.2, secondSec: 0.8 }), rest, sps);
+-      const result = countReps(frames(joint, angles), timestamps(angles.length, sps), lift);
++      const result = countReps(frames(joint, angles, 'left', lift), timestamps(angles.length, sps), lift);
+       expect(result.count).toBe(10);
+       const firstPhase = median(result.reps.map(r => (first === 'concentric' ? r.concentricSec : r.eccentricSec)));
+       const secondPhase = median(result.reps.map(r => (first === 'concentric' ? r.eccentricSec : r.concentricSec)));
+diff --git a/src/lib/counting/core.ts b/src/lib/counting/core.ts
+index 9c7c5c8..b061e8f 100644
+--- a/src/lib/counting/core.ts
++++ b/src/lib/counting/core.ts
+@@ -12,7 +12,9 @@
+  *   hip      shoulder–hip–knee      Romanian deadlift, hip thrust
+  * Which joint moves each lift, and which phase lifts the load (concentric) or
+  * yields to it (eccentric), is standard kinesiology (Neumann, Kinesiology of the
+- * Musculoskeletal System, 3rd ed., 2017). No per-lift parameter is set.
++ * Musculoskeletal System, 3rd ed., 2017). No per-lift parameter is set. One exception to the signal, not
++ * to the parameters: the bench press's reps are found on the wrist's height above the shoulder, and
++ * measured on its elbow angle (countOn, WRIST_HEIGHT_UNITS_PER_M).
+  *
+  * Side selection: the side whose three joint landmarks have the highest average
+  * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
+@@ -125,6 +127,9 @@ export interface LiftDefinition {
+    * The rest-end threshold keeps THRESHOLD_MARGIN.
+    */
+   workMargin?: number;
++  /** Reps found on the wrist's height above the shoulder rather than on the joint's angle (the bench press,
++   *  WRIST_HEIGHT_UNITS_PER_M); each rep's range and speeds are still the joint's, in degrees. */
++  countOn?: 'wristHeight';
+ }
+ 
+ export const LIFTS = {
+@@ -135,7 +140,8 @@ export const LIFTS = {
+   dumbbell_row: { joint: 'elbow', rest: 'high', first: 'concentric' },
+   triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
+   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
+-  bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
++  // The bench press's reps are found on the wrist's height (WRIST_HEIGHT_UNITS_PER_M below says why).
++  bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric', countOn: 'wristHeight' },
+   overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
+   lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
+   // Squat depth varies from rep to rep (a tiring or touch-and-go set; Countix clips): the working-end threshold sits
+@@ -251,6 +257,20 @@ const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives th
+ const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
+ const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample
+ const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
++// Bench press, 3 October 2026 (workflow experiment "bench-press", public build half A): at the bottom of a bench rep
++// the elbow sinks behind the torso and the bench, and the pose model misplaces it while it still places the wrist:
++// on a fast set (Countix E9KZOVuBRfA) the elbow angle read 128-131 degrees with the wrist at the chest, and its
++// 0.3 s bottoms were lost (11 reps counted 5); filmed from the head or the feet of the bench, the elbow bends partly
++// along the camera's line of sight, where the model's depth is weakest (NX5TcYEILhI: the angle moved 118-139 degrees,
++// 9 reps counted 3). The bar, and the hands on it, move up and down; the wrist's height above the shoulder (world
++// landmarks, y, which follow the image's vertical) follows them whatever the elbow does and needs only two
++// landmarks. So the reps are found on it, and each rep's range and speeds are still measured on the elbow angle, in
++// degrees (those two sets: 7 and 7). The height is counted in units of 1/200 m so that a full rep's travel (about
++// 0.4 m of world-landmark height on the public build traces) spans about as many units as the elbow's range in
++// degrees (about 80), and the core's constants in degrees (MIN_ROM_DEGREES, OUTLIER_DEVIATION_DEG,
++// REST_BAND_MIN_DEG) keep the same share of a rep. Source: UNSOURCED (the 0.4 m and 80 degrees are rough readings
++// of public build traces, not a published figure). Status: experimental. Measured: see TRIED.md, 3 October.
++const WRIST_HEIGHT_UNITS_PER_M = 200;
+ // A `together` lift joins its two sides only when their smoothed angles correlate above this over the samples
+ // where both are seen (Pearson). Two knees that bend together correlate. The two public lunges that doubled when
+ // joined (TRIED.md, 3 October: 3 read 7, 4 read 8) read their knees in opposition, one straight while the other
+@@ -329,42 +349,51 @@ function countSide(
+   const sgSize = secToOddSamples(SG_WINDOW_SEC, sampleRate);
+   const smoothed = savitzkyGolay(bridged, sgSize);
+ 
+-  // 6. Compute thresholds from the set's own range
+-  const validAngles = smoothed.filter((a): a is number => a !== null);
+-  if (validAngles.length < 3) {
+-    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
+-  }
+-  const sorted = [...validAngles].sort((a, b) => a - b);
+-  const p = (pct: number) => sorted[Math.floor(sorted.length * pct / 100)];
+-  const pLow = p(PERCENTILE_LOW);
+-  const pHigh = p(PERCENTILE_HIGH);
+-  const range = pHigh - pLow;
+-
+-  if (range < MIN_ROM_DEGREES) {
+-    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: pLow, highThreshold: pHigh };
++  // 5b. The signal the reps are found on: the joint's angle, or for a lift counted on the wrist's height (the bench
++  // press, WRIST_HEIGHT_UNITS_PER_M) that height, through the same steps 3 to 5.
++  const onHeight = def.countOn === 'wristHeight';
++  const trackRaw = onHeight ? worldLandmarks.map(wl => (wl ? wristHeight(wl, arm) : null)) : rawAngles;
++  const trackCleaned = onHeight ? removeOutliers(trackRaw, outlierSize, OUTLIER_DEVIATION_DEG) : cleaned;
++  const trackBridged = onHeight ? bridgeDropouts(trackCleaned, timestamps, BRIDGE_GAP_SEC) : bridged;
++  const track = onHeight ? savitzkyGolay(trackBridged, sgSize) : smoothed;
++
++  // 6. Compute thresholds from the set's own range. What the result returns is the joint's angle and thresholds
++  // whatever the reps were found on.
++  const levels = (values: (number | null)[]) => {
++    const sorted = values.filter((a): a is number => a !== null).sort((a, b) => a - b);
++    if (sorted.length < 3) return null;
++    const p = (pct: number) => sorted[Math.floor(sorted.length * pct / 100)];
++    const pLow = p(PERCENTILE_LOW), pHigh = p(PERCENTILE_HIGH), range = pHigh - pLow;
++    const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
++    // The working end may sit further in (LiftDefinition.workMargin, squat); the rest end keeps the margin.
++    const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN);
++    return { pLow, pHigh, range, low: pLow + (def.rest === 'high' ? workMargin : margin), high: pHigh - (def.rest === 'high' ? margin : workMargin) };
++  };
++  const angleLevels = levels(smoothed), trackLevels = onHeight ? levels(track) : angleLevels;
++  const shown = angleLevels ? (angleLevels.range < MIN_ROM_DEGREES ? { low: angleLevels.pLow, high: angleLevels.pHigh } : angleLevels) : { low: 0, high: 0 };
++  if (!trackLevels || trackLevels.range < MIN_ROM_DEGREES) {
++    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: shown.low, highThreshold: shown.high };
+   }
+-
+-  const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
+-  // The working end may sit further in (LiftDefinition.workMargin, squat); the rest end keeps the margin.
+-  const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN);
+-  const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
+-  const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
++  const { range, low: lowThreshold, high: highThreshold } = trackLevels;
+ 
+   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
+-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
++  const cycles = detectReps(track, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
+   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
+   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
+   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
+   const halfSg = Math.floor(sgSize / 2);
+-  const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if (cleaned[j] === null && bridged[j] !== null) return false; return true; });
+-  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
++  const seenOf = (c: (number | null)[], b: (number | null)[]) => c.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(c.length - 1, i + halfSg); j++) if (c[j] === null && b[j] !== null) return false; return true; });
++  const seenAround = seenOf(cleaned, bridged);
++  const reps = onHeight
++    ? placeBoundaries(cycles, track, timestamps, lowThreshold, highThreshold, band, def, seenOf(trackCleaned, trackBridged), { smoothed, seenAround })
++    : placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
+ 
+   // 8. Confidence: fraction of samples with a detected pose on the tracked side
+   const totalSamples = worldLandmarks.length;
+   const detectedSamples = rawAngles.filter(a => a !== null).length;
+   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
+ 
+-  return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
++  return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: shown.low, highThreshold: shown.high };
+ }
+ 
+ /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
+@@ -495,6 +524,13 @@ function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right'):
+   return angleDeg(a, b, c);
+ }
+ 
++/** The wrist's height above the shoulder on one side, in WRIST_HEIGHT_UNITS_PER_M (world y points down); null unless both are seen. */
++function wristHeight(wl: WorldLandmark[], arm: 'left' | 'right'): number | null {
++  const s = wl[arm === 'left' ? L_SHOULDER : R_SHOULDER], w = wl[arm === 'left' ? L_WRIST : R_WRIST];
++  if (vis(s) < VIS_THRESHOLD || vis(w) < VIS_THRESHOLD) return null;
++  return (s.y - w.y) * WRIST_HEIGHT_UNITS_PER_M;
++}
++
+ function angleDeg(a: WorldLandmark, vertex: WorldLandmark, c: WorldLandmark): number {
+   const v1x = a.x - vertex.x, v1y = a.y - vertex.y, v1z = a.z - vertex.z;
+   const v2x = c.x - vertex.x, v2y = c.y - vertex.y, v2z = c.z - vertex.z;
+@@ -731,6 +767,10 @@ function detectReps(
+  *   `band` of the working extreme, the second from the moment it leaves that band
+  *   to the end; a pause at the working end belongs to neither. Which phase is
+  *   concentric depends on the lift.
++ * - `measured`: when the reps were found on another signal than the joint's angle
++ *   (countOn), their range and speeds are read on the angle between the same start
++ *   and end: the range from its held highest to its held lowest there, the span
++ *   widened by the hold on each side.
+  */
+ function placeBoundaries(
+   cycles: Cycle[],
+@@ -741,6 +781,7 @@ function placeBoundaries(
+   band: number,
+   def: LiftDefinition,
+   seenAround: boolean[] = [],
++  measured?: { smoothed: (number | null)[]; seenAround: boolean[] },
+ ): RepDetail[] {
+   const restsLow = def.rest === 'low';
+   const mid = (lowThreshold + highThreshold) / 2;
+@@ -839,15 +880,21 @@ function placeBoundaries(
+     if (workFrom < 0) { workFrom = first; workTo = last; }
+ 
+     const outer = [left, reached].filter((v): v is number => v !== null).reduce(furtherOut, restsLow ? Infinity : -Infinity);
+-    const rom = Number.isFinite(outer) ? Math.abs(outer - work) : Math.abs((smoothed[start] ?? work) - work);
++    let rom = Number.isFinite(outer) ? Math.abs(outer - work) : Math.abs((smoothed[start] ?? work) - work);
++    if (measured) {
++      // The span widened by the hold on each side, so that the rest end is held as long as the working end.
++      const angles = measured.smoothed.slice(Math.max(0, start - hold), end + hold + 1).filter((a): a is number => a !== null);
++      rom = angles.length ? heldExtreme(angles, false) - heldExtreme(angles, true) : 0;
++    }
+     const firstSec = timestamps[workFrom] - timestamps[start];
+     const secondSec = timestamps[end] - timestamps[workTo];
+     const clipped = left === null || after === null || start <= firstValid || end >= lastValid;
+     // Angular speed from the smoothed angle, frame to frame.
++    const speedOn = measured ? measured.smoothed : smoothed, seenOn = measured ? measured.seenAround : seenAround;
+     let peak = 0, speedSum = 0, speedN = 0;
+     for (let i = start; i < end; i++) {
+-      const a0 = smoothed[i], a1 = smoothed[i + 1];
+-      if (a0 === null || a1 === null || seenAround[i] === false || seenAround[i + 1] === false) continue;
++      const a0 = speedOn[i], a1 = speedOn[i + 1];
++      if (a0 === null || a1 === null || seenOn[i] === false || seenOn[i + 1] === false) continue;
+       const dt = timestamps[i + 1] - timestamps[i];
+       if (dt <= 0) continue;
+       const s = Math.abs(a1 - a0) / dt;
+diff --git a/test/real-phone/accuracy/public-scoreboard.test.ts b/test/real-phone/accuracy/public-scoreboard.test.ts
+index c0a9f31..73b0dca 100644
+--- a/test/real-phone/accuracy/public-scoreboard.test.ts
++++ b/test/real-phone/accuracy/public-scoreboard.test.ts
+@@ -1,8 +1,12 @@
+ // npm run scoreboard:public      (SCOREBOARD_UPDATE=1 once a change is accepted)
+ // CLAUDE.md R2 on public labelled sets (David, 30 September): the live core's count on every set of the
+ // build half of each public dataset, against its human label and against the counts last accepted
+-// (public-baseline.json), per dataset and lift. It fails if fewer sets are exact than before, or if a set
+-// becomes off by 3 or more. David's own sets keep their own gate (scoreboard.test.ts), unchanged.
++// (public-baseline.json), per dataset and lift. Since 3 October it holds David's net rule ("progress and
++// improvement are the goalposts", scripts/compare-variants.mjs): it fails if fewer sets are exact than before, if
++// more sets are off by 3 or more (refusals included) than before, or if the sets exact only before outnumber those
++// exact only now with McNemar's chi-square at 3.84 or more (p = 0.05). A set that becomes off by 3 or more no
++// longer fails it alone; each is still listed (BECAME OFF BY 3+). Until 3 October any such set failed it (David,
++// 30 September). David's own sets keep their own gate (scoreboard.test.ts), unchanged: R2, none newly off by 3.
+ import { expect, test } from 'vitest';
+ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+ import { resolve } from 'node:path';
+@@ -19,7 +23,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
+   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
+   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
+   const rows: string[] = [];
+-  let exactNow = 0, exactBefore = 0, became = 0, added = 0;
++  let exactNow = 0, exactBefore = 0, became = 0, added = 0, badNow = 0, badBefore = 0, onlyNow = 0, onlyBefore = 0;
+   for (const s of sets) {
+     const r = summarizeCount(s.wl, s.ts, s.lift);
+     const now = r.refused ? 'refused' : countInWindow(r.reps, s.window), before = base[s.name];
+@@ -30,6 +34,10 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
+     if (before === undefined) { added++; continue; }
+     if (off(now, s.label) === 0) exactNow++;
+     if (off(before, s.label) === 0) exactBefore++;
++    if (off(now, s.label) >= 3) badNow++;
++    if (off(before, s.label) >= 3) badBefore++;
++    if (off(now, s.label) === 0 && off(before, s.label) !== 0) onlyNow++;
++    if (off(before, s.label) === 0 && off(now, s.label) !== 0) onlyBefore++;
+     // A set that becomes off by 3 or more, or refused, where it was not before.
+     if (off(now, s.label) >= 3 && off(before, s.label) < 3) { became++; rows.push(`BECAME OFF BY 3+  ${s.name}  label ${s.label}  before ${before}  now ${now}`); }
+     else if (now !== before) rows.push(`-> ${s.name}  label ${s.label}  before ${before}  now ${now}`);
+@@ -38,13 +46,15 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
+   const table = ['| Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |', '|---|---:|---:|---:|---:|---:|',
+     ...[...groups].sort().map(([k, g]) => `| ${k} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`)];
+   const n = sets.length, exact = [...groups.values()].reduce((a, g) => a + g.exact, 0);
+-  const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${n - added} in the baseline, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}.`;
++  const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${n - added} in the baseline, ${exactNow} exact now, ${exactBefore} before; off by 3 or more ${badNow} now, ${badBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}.`;
+   const text = [head, '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
+     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : [])].join('\n') + '\n';
+   writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
+   process.stdout.write(text);
+   expect(exactNow).toBeGreaterThanOrEqual(exactBefore);
+-  expect(became).toBe(0);
++  expect(badNow).toBeLessThanOrEqual(badBefore);
++  const chi = onlyNow + onlyBefore ? (Math.abs(onlyNow - onlyBefore) - 1) ** 2 / (onlyNow + onlyBefore) : 0;
++  expect(onlyBefore > onlyNow && chi >= 3.84, `the paired test favours the old counts: ${onlyBefore} exact only before, ${onlyNow} only now`).toBe(false);
+   expect(missing).toEqual([]);
+   expect(absent).toEqual([]);
+   expect(unreadable).toEqual([]);

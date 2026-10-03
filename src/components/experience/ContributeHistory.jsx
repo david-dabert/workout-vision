@@ -13,14 +13,25 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   const [prepared, setPrepared] = useState(null); // { list, file }: the file prepared for that list
   const [note, setNote] = useState('');
   const downloadNext = useRef(false), sharing = useRef(false), generation = useRef(0);
+  // Sets left on the phone after a stop whose erase failed: the stop and erase stays offered until they are gone,
+  // so the promise that stopping erases them holds (third audit C17, 3 October).
+  const [leftover, setLeftover] = useState(false);
+  useEffect(() => {
+    if (choice === 'yes') return undefined;
+    let live = true;
+    contributions().then(l => { if (live) setLeftover(l.length > 0); }, () => {});
+    return () => { live = false; };
+  }, [choice, sets]);
 
   // The sets waiting, read when helping, and again whenever the saved sets change: a set deleted in the history
   // takes its contribution with it, and the file prepared before is dropped (audit of 2 October). Their file is
   // prepared at once.
+  // The stored choice, not the one on screen, decides: after a stop whose erase failed the screen still reads yes
+  // (so the stop can be retried), but nothing is read, prepared or sent again (review of the third audit's fixes).
   useEffect(() => {
-    if (choice !== 'yes') return undefined;
+    if (choice !== 'yes' || readChoice() !== 'yes') return undefined;
     let live = true;
-    contributions().then(l => { if (live) setWaiting(l); }, () => { if (live) setWaiting([]); });
+    contributions().then(l => { if (live && readChoice() === 'yes') setWaiting(l); }, () => { if (live) setWaiting([]); });
     return () => { live = false; };
   }, [choice, sets]);
   useEffect(() => {
@@ -33,7 +44,7 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   const file = prepared && prepared.list === waiting ? prepared.file : null;
 
   function send() {
-    if (!file || sharing.current) return;
+    if (!file || sharing.current || readChoice() !== 'yes') return;
     setNote('');
     const list = waiting, f = file, g = generation.current;
     if (!downloadNext.current && typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] })) {
@@ -64,9 +75,12 @@ export default function ContributeHistory({ fr, style, sets = null }) {
     // The phone must hold the stop before it is shown, or the stored yes would go on collecting (FINDING-016).
     if (!persistChoice('no')) { setNote(t.stopFailed); return; }
     generation.current++; // a prepared or shared file of the erased sets is dropped
-    setChoice('no');
     setPrepared(null);
-    try { await eraseContributions(); setWaiting(null); setNote(t.stopped); }
+    setWaiting(null); // nothing is offered for sending once the stop is stored, even if the erase then fails
+    // The screen shows the stop only once the sets are erased: when the erase fails, the stop button stays, so
+    // "Réessayez" has something to tap; nothing is collected meanwhile, as only a stored yes collects (third
+    // audit C17, 3 October).
+    try { await eraseContributions(); setChoice('no'); setLeftover(false); setNote(t.stopped); }
     catch { setNote(t.eraseFailed); }
   }
 
@@ -81,7 +95,10 @@ export default function ContributeHistory({ fr, style, sets = null }) {
           <button type="button" className="text-btn press" onClick={stop}>{t.stop}</button>
         </div>
       </>
-      : <div className="hist-keep-row"><button type="button" className="text-btn press" onClick={() => { if (persistChoice('yes')) { setChoice('yes'); setNote(''); } else setNote(t.startFailed); }}>{t.start}</button></div>}
+      : <div className="hist-keep-row">
+        <button type="button" className="text-btn press" onClick={() => { if (persistChoice('yes')) { setChoice('yes'); setNote(''); } else setNote(t.startFailed); }}>{t.start}</button>
+        {leftover && <button type="button" className="text-btn press" onClick={stop}>{t.stop}</button>}
+      </div>}
     <p className="hist-export-note" role="status">{note}</p>
   </section>;
 }

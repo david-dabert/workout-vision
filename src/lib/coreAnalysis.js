@@ -14,8 +14,13 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   // Use the core's own raw-angle validity (before outlier removal/bridging).
   // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
   // (audit FINDING-012: one hidden arm let the other's reps through as the whole count).
+  // A lunge's two knees bend together on every rep (core.ts, `together`): joined, either knee in sight sees the
+  // rep, so a sample is seen when one of them is. Status: experimental (TRIED.md, 3 October).
   const seen = angles => angles.filter(angle => angle !== null).length;
-  const visible = core.sides ? Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)) : seen(core.angles);
+  const either = (l, r) => l.filter((angle, i) => angle !== null || r[i] !== null).length;
+  const visible = core.sides
+    ? (liftDefinition(lift)?.together ? either(core.sides.left.angles, core.sides.right.angles) : Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)))
+    : seen(core.angles);
   const refused = visible < worldLandmarks.length / 2 || worldLandmarks.length === 0;
   // A fitness test is scored over its window (fitness-tests.js): the count and the marks are the reps in it.
   if (isTest(lift) && !refused) {
@@ -45,7 +50,7 @@ export function unreadSamples({ samples, duration, fps, maxFrames }) {
 }
 
 export class PartialReadError extends Error {
-  constructor({ read, expected, decoder = '' }) { super(`${read} samples read where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; }
+  constructor({ read, expected, decoder = '', disordered = false }) { super(`${read} samples read${disordered ? ' out of time order' : ''} where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; this.disordered = disordered; }
 }
 
 export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path } = {}) {
@@ -95,9 +100,10 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}) });
     signal?.throwIfAborted();
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
+    // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
-    const missed = unreadSamples({ samples: ordered ? timestamps.length : NaN, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
-    if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
+    const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
+    if (missed || !ordered) throw new PartialReadError({ ...(missed ?? { read: timestamps.length, expected: timestamps.length }), disordered: !ordered, decoder: metadata?.method || '' });
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));

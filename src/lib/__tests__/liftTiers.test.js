@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { TIERS, tierLabel } from '../liftTiers';
+import { TIERS, tierLabel, betaFirst } from '../liftTiers';
 import { APPROVED_LIFTS } from '../coreAnalysis';
 import { liftDefinition } from '../counting/core';
-import { LIFTS as SCREEN_LIFTS, META } from '../../components/experience/lift-meta';
+import { LIFTS as SCREEN_LIFTS, CARD_ORDER, META } from '../../components/experience/lift-meta';
 import poses from '../../components/experience/lift-poses.json';
 
 describe('lift tiers', () => {
@@ -12,9 +12,15 @@ describe('lift tiers', () => {
     for (const lift of Object.keys(TIERS)) expect(APPROVED_LIFTS, lift).toContain(lift);
     for (const lift of APPROVED_LIFTS) expect(liftDefinition(lift), lift).toBeTruthy();
   });
-  it('puts squat and the three built lifts in Beta, and five lifts in Experimental', () => {
-    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'beta').sort()).toEqual(['bicep_curl', 'lat_pulldown', 'lateral_raise', 'squat']);
-    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'experimental').sort()).toEqual(['bench_press', 'hip_thrust', 'leg_press', 'overhead_press', 'romanian_deadlift']);
+  // 3 October: the tiers follow David's labelled sets (test/real-phone/accuracy/tiers.test.ts, tiers.txt).
+  it('puts the five lifts whose sets all count exactly in Beta, and four lifts in Experimental', () => {
+    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'beta').sort()).toEqual(['bicep_curl', 'hip_thrust', 'lat_pulldown', 'romanian_deadlift', 'squat']);
+    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'experimental').sort()).toEqual(['bench_press', 'lateral_raise', 'leg_press', 'overhead_press']);
+  });
+  // David, 3 October: the Beta lifts are pinned on top, derived from TIERS.
+  it('orders the cards Beta first, each group in the order of LIFTS', () => {
+    expect(CARD_ORDER).toEqual(['bicep_curl', 'lat_pulldown', 'squat', 'hip_thrust', 'romanian_deadlift', 'lateral_raise', 'bench_press', 'leg_press', 'overhead_press']);
+    expect(betaFirst(['a', 'b', 'c', 'd'], k => (k === 'c' || k === 'a' ? 'beta' : 'experimental'))).toEqual(['a', 'c', 'b', 'd']);
   });
   // The nine lifts with a tier keep their card; the other offered exercises are listed under the cards (step 2).
   it('gives every lift with a tier a card, names in both languages and a figure', () => {

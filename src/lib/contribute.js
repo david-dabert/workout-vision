@@ -96,7 +96,8 @@ export async function forgetContributions(ids) { for (const id of ids) await sto
 /**
  * The waiting contributions as one file: gzip where the browser can compress, plain JSON otherwise. The phone's
  * own keys (setId, which holds the time of saving) and the time of each set stay on the phone: the file holds
- * what the person was told it holds.
+ * what the person was told it holds, each field named in contribute-copy.js `what` (third audit C38, 3 October;
+ * contribute.test.js pins the list).
  */
 export async function contributionsFile(list, now = new Date(), CS = globalThis.CompressionStream) {
   const sets = list.map(({ setId: _id, savedAt: _at, ...c }) => c);

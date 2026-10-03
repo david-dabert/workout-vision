@@ -3,13 +3,13 @@ import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { limbLabel } from './lift-meta';
 import Report, { warmReportPdf } from './Report';
-import { loadSets, knownSets, removeSet, countedBy, setTime } from './sets';
+import { loadSets, knownSets, onSetsChanged, removeSet, countedBy, setTime } from './sets';
 import { exerciseProgress, recordsOf } from './progress';
 import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
 import KeepSets from './KeepSets';
 import ContributeHistory from './ContributeHistory';
-import { forgetContributions, readChoice } from '../../lib/contribute';
+import { contributions, forgetContributions, readChoice } from '../../lib/contribute';
 import LevelPick from './LevelPick';
 import { readLevel, writeLevel } from './level';
 import { useCondensingTopbar } from './topbar';
@@ -42,10 +42,21 @@ export default function History({ onClose }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
 
+  // Contributions still on the phone keep their section in view, so they can always be erased, even with no set
+  // left and the choice stored as no (third audit C17, 3 October).
+  const [contributionsLeft, setContributionsLeft] = useState(false);
+  useEffect(() => {
+    let live = true;
+    contributions().then(l => { if (live) setContributionsLeft(l.length > 0); }, () => {});
+    return () => { live = false; };
+  }, [sets]);
+
   useEffect(() => {
     loadSets().then(setSets, () => { setSets([]); setProblem(fr ? 'Vos séries n’ont pas pu être lues sur ce téléphone.' : 'Your sets could not be read on this phone.'); });
+    // A set saved or deleted in another tab: the list, and so its backup and export, is read again (C19).
+    const stop = onSetsChanged(() => { loadSets().then(setSets, () => {}); });
     const t = timers.current;
-    return () => { clearTimeout(t.confirm); clearTimeout(t.close); };
+    return () => { stop(); clearTimeout(t.confirm); clearTimeout(t.close); };
   }, []);
 
   const liftName = w => (w.exercise && exerciseName(w.exercise, lang) !== w.exercise ? exerciseName(w.exercise, lang) : tExercise(w.exercise || w.exerciseKey));
@@ -65,6 +76,13 @@ export default function History({ onClose }) {
       return;
     }
     clearTimeout(timers.current.confirm);
+    // The set listed after this one, or before it when it was the last: the rows are rendered in the order of
+    // the list (third audit C13, 3 October).
+    const order = (sets || []).map(x => x.id), at = order.indexOf(w.id);
+    const neighbour = at < 0 ? undefined : order[at + 1] ?? order[at - 1];
+    // The deleted set's row: focus still inside it is lost focus, even when the frame below runs before React has
+    // removed the row (seen once under load in e2e/screen-focus.spec.js, 3 October: focus fell to nothing).
+    const gone = rowRefs.current[w.id]?.closest('li') ?? null;
     try {
       await removeSet(w.id);
       // A deleted set's contribution goes with it: it is never sent (contribute.js).
@@ -76,8 +94,9 @@ export default function History({ onClose }) {
       // left, never to nothing (second audit, 3 October).
       requestAnimationFrame(() => {
         const a = document.activeElement;
-        if (a && a !== document.body && document.contains(a)) return;
-        const next = document.querySelector('.history-screen .hist-btn') || document.querySelector('.history-screen h1, .history-screen .title');
+        if (a && a !== document.body && document.contains(a) && !gone?.contains(a)) return;
+        const row = neighbour === undefined ? null : rowRefs.current[neighbour];
+        const next = (row && document.contains(row) ? row : null) || document.querySelector('.history-screen h1, .history-screen .title');
         if (!next) return;
         if (!next.matches('button') && !next.hasAttribute('tabindex')) next.setAttribute('tabindex', '-1');
         next.focus({ preventScroll: true, focusVisible: false });
@@ -168,8 +187,9 @@ export default function History({ onClose }) {
           <ExportSets sets={sets} lang={lang} name={liftName} />
           <KeepSets sets={sets} fr={fr} onRestored={list => { setProblem(''); setSets(list); }} />
         </section>}
-        {/* While helping, the section stays, so the person can always stop and erase, even with no set left. */}
-        {(sets?.length > 0 || readChoice() === 'yes') && <ContributeHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
+        {/* While helping, or while contributions wait, the section stays, so the person can always stop and erase,
+            even with no set left. */}
+        {(sets?.length > 0 || readChoice() === 'yes' || contributionsLeft) && <ContributeHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}

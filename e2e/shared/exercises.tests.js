@@ -1,4 +1,6 @@
-// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 in all (181, and the standing and lying barbell curls since 2 October), in a searchable list
+// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 in all (181, and the standing and lying barbell curls since 2 October), 179 since 3 October
+// (the four floor exercises counted on both sides in profile withdrawn, src/lib/offer.js WITHDRAWN, third audit C21), 181 with the two (the barbell jump squat not yet counted) of the three
+// added the same day (behind-the-neck press, barbell jump squat, wall ball), in a searchable list
 // below the nine cards, each labelled Beta or Experimental; a tap opens its filming screen, which
 // names it, labels it and shows how to film it. Run in Chromium (exercises.spec.js) and in WebKit
 // with the iPhone profile (exercises.webkit.spec.js).
@@ -8,21 +10,31 @@ async function openChoice(page, expect, lang) {
   await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
   await page.goto('/workout-vision/');
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
-  await expect(page.locator('.all-exercises .item')).toHaveCount(183, { timeout: 20000 });
+  await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
-  test('the 183 counted exercises are listed under the nine cards; only the four with evidence carry a tag, Beta', async ({ page }) => {
+  test('the 181 counted exercises are listed under the nine cards; only the five with evidence carry a tag, Beta, pinned on top', async ({ page }) => {
     await openChoice(page, expect, 'en');
     const rail = await page.locator('.rail').boundingBox(), list = await page.locator('.all-exercises').boundingBox();
     expect(list.y).toBeGreaterThan(rail.y + rail.height);
-    await expect(page.locator('.all-exercises .tier-beta')).toHaveCount(4);
-    await expect(page.locator('.all-exercises .item .tag')).toHaveCount(4);
+    await expect(page.locator('.all-exercises .tier-beta')).toHaveCount(5);
+    await expect(page.locator('.all-exercises .item .tag')).toHaveCount(5);
     await expect(page.locator('.all-exercises .all-note')).toHaveText('Unless marked Beta, these exercises are experimental: we are still learning to count them.');
     await expect(page.locator('.all-exercises [data-exercise="walking_lunge"]')).toHaveCount(0);
-    for (const key of ['lateral_raise', 'bicep_curl', 'lat_pulldown', 'squat']) {
+    for (const key of ['bicep_curl', 'lat_pulldown', 'squat', 'hip_thrust', 'romanian_deadlift']) {
       await expect(page.locator(`.all-exercises [data-exercise="${key}"] .tag`)).toHaveText('Beta');
     }
+    // The Beta exercises lead the list (David, 3 October), alphabetical within their group; the lateral raise,
+    // Experimental since 3 October (tiers.txt), carries no tag.
+    const keys = await page.$$eval('.all-exercises [data-exercise]', els => els.map(e => e.dataset.exercise));
+    expect(keys.slice(0, 5)).toEqual(['bicep_curl', 'hip_thrust', 'lat_pulldown', 'romanian_deadlift', 'squat']);
+    await expect(page.locator('.all-exercises [data-exercise="lateral_raise"] .tag')).toHaveCount(0);
+    // A search still filters the whole list, the pinned group included.
+    await page.fill('#all-search', 'squat');
+    await expect(page.locator('.all-exercises [data-exercise="squat"]')).toBeVisible();
+    await expect(page.locator('.all-exercises [data-exercise="bicep_curl"]')).toHaveCount(0);
+    await page.fill('#all-search', '');
     await expect(page.locator('.all-exercises [data-exercise="pec_deck"]')).toHaveCount(0);
   });
 

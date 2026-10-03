@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { useT } from '../../lib/LanguageContext';
-import { LIFTS, META, createLiftScene } from './lift-scenes';
+import { META, createLiftScene } from './lift-scenes';
+import { CARD_ORDER } from './lift-meta';
 import { useSets } from './sets';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
+import { setName } from './set-name';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -94,7 +96,9 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
   const last = returning && sets?.[0];
   const n = sets?.length || 0;
   const lastKey = last && (last.exercise || last.exerciseKey);
-  const lastRaw = last && (META[lastKey]?.[lang] || nameOf?.(lastKey, lang) || (tExercise(lastKey) !== lastKey ? tExercise(lastKey) : ''));
+  // exerciseName gives the key back when it knows no name: a name is taken only when it differs from the key, as
+  // in the history (History.jsx), so a set of an earlier version is named by its locale name (third audit C25).
+  const lastRaw = last && setName({ key: lastKey, lang, meta: META, nameOf, tExercise });
   const lastName = lastRaw && lastRaw.toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
   return <div className="wv-experience">
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
@@ -111,7 +115,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
       </div>
       <div className="rail" ref={railRef} data-reveal style={{ '--i': 2 }}>
-        {LIFTS.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} describedBy={TIERS[lift] ? `tier-${lift}` : undefined} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
+        {CARD_ORDER.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} describedBy={TIERS[lift] ? `tier-${lift}` : undefined} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
           <LiftCanvas lift={lift} />
           <span className="altar-meta">
             <span className="altar-name">{META[lift][lang]}</span>
@@ -120,7 +124,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           </span>
         </LiftCard>)}
       </div>
-      <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{LIFTS.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
+      <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{CARD_ORDER.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
       </div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>
         <button className="row-link press" onClick={onGuide}>

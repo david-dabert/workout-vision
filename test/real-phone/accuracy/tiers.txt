@@ -1,0 +1,25 @@
+Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: PLAN.md Lift tiers, 28 September; David, 3 October). Columns: lift, TIERS (src/lib/liftTiers.js), what the rule gives, David's labelled sets, exact, refused. "!!" marks a disagreement.
+   lateral_raise      experimental  rule experimental  sets 2  exact 1  refused 0  1 of David's sets not exact
+      sets-29sep/lateral_raise_9_front_43e71b40.json.gz  label 9  count 8  (not exact)
+      landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  count 10
+   bicep_curl         beta          rule beta          sets 2  exact 2  refused 0  every set of David's counts exactly
+      sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  label 5  count 5
+      landmarks/bicep_curl_7_side_mufhf3wy.json.gz  label 7  count 7
+   lat_pulldown       beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+      landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  label 10  count 10
+   squat              beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+      sets-29sep/squat_7_side_21fd7ccf.json.gz  label 7  count 7
+      dataset, for traceability: MM-Fit, all 64 sets through the counter at dfe4d43 (27 September 2026): 60 exact, 63 within one (test/real-phone/mmfit/results.json); measured on an older core
+   bench_press        experimental  rule experimental  sets 2  exact 0  refused 1  press: measured, decides nothing (PLAN.md)
+      sets-29sep/bench_press_7_side_24cc4f0b.json.gz  label 7  count 5  (not exact)
+      landmarks/bench_press_7_angle_mufhcy60.json.gz  label 7  count refused  (not exact)
+   hip_thrust         beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+      sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  label 6  count 6
+   romanian_deadlift  beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+      sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  label 8  count 8
+   leg_press          experimental  rule experimental  sets 1  exact 0  refused 0  1 of David's sets not exact
+      sets-29sep/leg_press_13_side_1ee0ae47.json.gz  label 13  count 12  (not exact)
+   overhead_press     experimental  rule experimental  sets 3  exact 1  refused 0  press: measured, decides nothing (PLAN.md)
+      sets-29sep/overhead_press_4_front_cefdaa82.json.gz  label 4  count 5  (not exact)
+      sets-29sep/overhead_press_4_front_f75638cc.json.gz  label 4  count 4
+      landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  count 9  (not exact)

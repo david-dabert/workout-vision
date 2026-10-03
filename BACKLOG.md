@@ -84,7 +84,13 @@ measured (scoreboard, synth.txt); anything else waits for its measurement (R8, R
 
 `node scripts/unreachable.mjs` lists the source files no page of the app loads: on 2 October, 92 of 188 (non-test),
 among them the old upload, replay, coach report, injury, badge and feedback screens, and the old counters
-(SignalExtractor3D, valleyCounter, repCounter, hysteresisCounter). None reaches the bundle; 14 test files still
+(SignalExtractor3D, valleyCounter, repCounter, hysteresisCounter). None of their code reaches the bundle, but their
+strings and styles do (third audit, C50, 3 October 2026; `npm run build` that day): LanguageContext.jsx imports the
+whole en.json into the entry (i18n chunk 83.8 kB, 29.0 kB gzip) and loads the whole fr.json at once on a French phone
+(109.7 kB, 37.1 kB gzip), while the live screens read about 130 keys (six err_* in ErrorBoundary, the ex.* names
+as a last fallback in Choice and History); index.css, render-blocking, imports every partial (111.2 kB, 20.9 kB gzip),
+most of _landing, _dashboard, _features and _views serving only dormant screens. Splitting them goes with this
+decision, and needs a check by eye that the live screens look the same. 14 test files still
 test them (src/lib/__tests__/benchmark, biomechanics, coach, defense, exerciseDetector, hierarchicalDetector,
 hierarchicalValidation, pipeline, progressionScale, utils; counting hotfix_baseline and learned;
 test/real-phone/accuracy/learned-span, agreement/counts), so a green test run says less about the app than its size suggests.
@@ -110,3 +116,41 @@ Assessment (2 October):
 - Worth keeping, apart from tennis: dynamic time warping against a template of the user's own first rep, as a
   second opinion on the count. It would be a counting change: synthetic test first, scoreboard, synth and
   public gates (PLAN.md).
+
+## 3 October 2026: four floor exercises withdrawn until a view is shown to count them (third audit, C21)
+
+Dead bug, banded dead bug, bird dog and glute bridge march are counted on both sides, and the guide said to film
+them in profile. A both-sides count needs each side seen on half the samples or more (coreAnalysis.js,
+FINDING-012); lying or on all fours in profile, the body hides the far arm and leg, so a set filmed as told is
+refused. From the front or the feet, the hip angle lies along the camera's depth, where the pose model is weakest.
+They are withdrawn from the app (src/lib/offer.js, WITHDRAWN) and keep their guide entry, their names in History
+and their place in the set collectors.
+- They come back when exam sets (PLAN.md patterns 14, 16 and 17 name them) show a view that counts them: sets
+  labelled by David, filmed in profile, from the front and in three-quarter view, run through the count, with
+  neither side refused and no error of 3 or more. The view that works becomes their guide-families.json "view".
+- Not measured: no labelled set holds them. The reasoning is by anatomy, status experimental.
+
+## 3 October 2026: HYROX stations the app does not count
+
+Added the same day (experimental, measured on no set): the behind-the-neck press, the barbell jump squat and the
+wall ball, counted by existing patterns; the sandbag lunge has a guide entry only, as a walking lunge it leaves a
+fixed frame (src/lib/offer.js, NOT_FILMABLE). Not added, and why:
+- SkiErg, rowing, sled push, sled pull, farmers carry and running: HYROX scores them in distance or time, which a
+  phone filming joint angles cannot measure. Showing a rep count for them would display a number the app cannot
+  measure (R8).
+- Burpee broad jumps: the body goes flat on the floor and travels forward out of a fixed frame; the knee or elbow
+  cycle is not one repeated joint pattern seen from one place.
+- They could come back only with a measure the app can take (for example, a station timer the user starts and
+  stops), which is a new feature, not a counting pattern.
+
+## 3 October 2026: PLAN.md's tier list is stale
+
+PLAN.md (LIFT TIERS, 28 September) still lists lateral raise as Beta and hip thrust and Romanian deadlift as
+Experimental with "no clip". David's sets of 29 September changed the evidence: lateral_raise_9 counts 8,
+hip_thrust_6 counts 6 and romanian_deadlift_8 counts 8 (npm run scoreboard). On David's order of 3 October the
+tiers now follow the evidence, and test/real-phone/accuracy/tiers.test.ts enforces it on every npx vitest run: a
+lift is Beta iff it is not a press (bench, overhead) and every one of David's labelled sets of it counts exactly
+(none off, none refused); a lift with no set of David's may be Beta on dataset evidence recorded in the test
+(squat: MM-Fit). Today: Beta are biceps curl, lat pulldown, squat, hip thrust and Romanian deadlift; lateral
+raise, leg press, bench and overhead press are Experimental (tiers.txt). The Beta lifts are pinned first on the
+cards and in the list. PLAN.md's list is for David to update.

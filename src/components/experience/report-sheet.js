@@ -42,8 +42,10 @@ export function setMeasures(all) {
 /**
  * The per-rep table as the report prints it: Rep | Tempo | Range | Peak | Mean (peak and mean
  * angular speed in °/s). The result screen shows the same rows to an expert (level.js).
+ * After a correction the rows are the marks the app detected, not the reps the user saved, so the first
+ * column is headed Repère / Mark on the report and on the result screen alike (third audit C11, 3 October).
  */
-export function repTable({ reps, first, fr }) {
+export function repTable({ reps, first, fr, corrected = false }) {
   const allReps = reps || [];
   const liftFirst = first || 'concentric';
   // Short rep: range under 85% of the set's median, by the rule the result screen and the
@@ -64,6 +66,7 @@ export function repTable({ reps, first, fr }) {
     return [String(i + 1), tempoStr(t), range, String(Math.round(r.peakSpeed || 0)), String(Math.round(r.meanSpeed || 0))];
   });
   const columns = fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'];
+  if (corrected) columns[0] = fr ? 'Repère' : 'Mark';
   return { columns, rows, tempoStr };
 }
 
@@ -113,9 +116,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   // summary only the previous set's count.
   const hasShort = shown && allReps.some(isShortIn(reps));
   const hasPartial = shown && allReps.some(partialIn(reps));
-  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr }) : { columns: [], rows: [] };
-  // After a correction the rows are the marks the app detected, not the reps the user saved.
-  if (shown && counted != null && counted !== count && columns.length) columns[0] = fr ? 'Repère' : 'Mark';
+  // After a correction the rows are the marks the app detected, not the reps the user saved (repTable).
+  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count }) : { columns: [], rows: [] };
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];

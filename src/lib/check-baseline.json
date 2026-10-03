@@ -7,7 +7,7 @@
       "view": "side",
       "file": "bicep_curl_5_side_f5e5bdf2.json.gz",
       "sha256": "f5e5bdf22373394105769dfa6782557280a71adc97bb4bf780a4ba42eff54ed2",
-      "before": 4,
+      "before": 5,
       "refused": false,
       "samples": 168,
       "duration": 11.206667

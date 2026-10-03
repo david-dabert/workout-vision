@@ -27,15 +27,17 @@ test('after a set is deleted, focus is on the next set, not on nothing', async (
   await page.evaluate(() => new Promise((ok, ko) => {
     const r = indexedDB.open('workoutVision');
     r.onerror = () => ko(r.error);
-    r.onsuccess = () => { const tx = r.result.transaction('workouts', 'readwrite'); for (const [id, t] of [['a', 1], ['b', 2]]) tx.objectStore('workouts').put({ id, exercise: 'bicep_curl', reps: 7, source: 'counter-core', createdAt: Date.now() - t * 60000 }, id); tx.oncomplete = () => { r.result.close(); ok(); }; tx.onerror = () => ko(tx.error); };
+    r.onsuccess = () => { const tx = r.result.transaction('workouts', 'readwrite'); for (const [id, t, reps] of [['a', 1, 5], ['b', 2, 6], ['c', 3, 7]]) tx.objectStore('workouts').put({ id, exercise: 'bicep_curl', reps, source: 'counter-core', createdAt: Date.now() - t * 60000 }, id); tx.oncomplete = () => { r.result.close(); ok(); }; tx.onerror = () => ko(tx.error); };
   }));
   await page.reload();
   await page.getByRole('button', { name: /Vos séries/ }).click();
-  await page.locator('.hist-btn').first().click();
+  // The middle set is deleted: focus goes to the set listed after it (5, 6, 7 newest first), not to the top one
+  // (third audit C13, 3 October).
+  await page.locator('.hist-btn').nth(1).click();
   await page.getByRole('button', { name: 'Supprimer cette série' }).focus();
   await page.keyboard.press('Enter');
   await page.getByRole('button', { name: 'Touchez encore pour supprimer' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('.hist-btn')).toHaveCount(1);
-  await expect.poll(() => page.evaluate(() => document.activeElement?.classList.contains('hist-btn') ?? false)).toBe(true);
+  await expect(page.locator('.hist-btn')).toHaveCount(2);
+  await expect.poll(() => page.evaluate(() => document.activeElement?.classList.contains('hist-btn') ? document.activeElement.querySelector('.hist-n')?.textContent : null)).toBe('7');
 });
