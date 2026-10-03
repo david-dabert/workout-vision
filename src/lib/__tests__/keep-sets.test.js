@@ -23,6 +23,16 @@ describe('the backup file', () => {
     expect(r.sets.map(w => w.id)).toEqual(['a']);
     expect(r.skipped).toBe(4);
   });
+  it('leaves out a set whose time would break the newest-first order (third audit, C16)', () => {
+    const now = 1790900000000;
+    const text = JSON.stringify({ kind: BACKUP_KIND, version: 1, sets: [
+      set('a'), set('b', { createdAt: '2026-10-02T10:00:00Z' }), set('c', { createdAt: now + 2 * 86400000 }),
+      set('d', { createdAt: undefined, date: '2026-09-30T10:00:00Z' }), set('e', { createdAt: true }),
+    ] });
+    const r = readBackup(text, now);
+    expect(r.sets.map(w => w.id)).toEqual(['a', 'd']);
+    expect(r.skipped).toBe(3);
+  });
   it('adds only the sets this phone does not hold', async () => {
     const store = new Map([['a', set('a')]]);
     const put = async w => { if (store.has(w.id)) return false; store.set(w.id, w); return true; };

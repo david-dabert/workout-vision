@@ -183,8 +183,11 @@ export async function getWorkouts(options = {}) {
     all.push(sanitized || value);
   });
 
-  // Sort newest first, then apply offset/limit
-  all.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  // Sort newest first, on the time the screens use (sets.js setTime: createdAt, else the date), then apply
+  // offset/limit. A set with a date alone, or a createdAt that is not a number, no longer breaks the order (third
+  // audit, C16).
+  const time = w => { const v = new Date(w.createdAt ?? w.date).getTime(); return Number.isFinite(v) ? v : 0; };
+  all.sort((a, b) => time(b) - time(a));
   return all.slice(offset, offset + limit);
 }
 
