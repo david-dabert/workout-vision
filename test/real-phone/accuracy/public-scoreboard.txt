@@ -1,15 +1,15 @@
-Public scoreboard 2026-10-03: 894 build sets, 331 exact (37%). Of the 894 in the baseline, 331 exact now, 331 before; 0 became off by 3 or more.
+Public scoreboard 2026-10-03: 894 build sets, 331 exact (37%). Of the 818 in the baseline that decide, 309 exact now, 309 before; 0 became off by 3 or more. The 76 bench and overhead press sets are measured and decide nothing (PLAN.md).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
-| countix bench_press | 38 | 12 | 7 | 5 | 11 |
+| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 7 | 5 | 11 |
 | countix front_raise | 75 | 31 | 26 | 6 | 5 |
 | countix lunge | 78 | 31 | 28 | 1 | 7 |
 | countix pull_up | 60 | 20 | 25 | 3 | 7 |
 | countix push_up | 77 | 32 | 19 | 8 | 8 |
 | countix squat | 46 | 20 | 12 | 1 | 9 |
 | countix triceps_pushdown | 73 | 23 | 33 | 2 | 6 |
-| countix-whole bench_press | 38 | 10 | 9 | 5 | 11 |
+| countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 10 | 9 | 5 | 11 |
 | countix-whole front_raise | 75 | 27 | 27 | 6 | 8 |
 | countix-whole lunge | 78 | 33 | 25 | 1 | 7 |
 | countix-whole pull_up | 60 | 20 | 19 | 4 | 11 |

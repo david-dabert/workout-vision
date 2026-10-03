@@ -2,12 +2,13 @@
 // CLAUDE.md R2 on public labelled sets (David, 30 September): the live core's count on every set of the
 // build half of each public dataset, against its human label and against the counts last accepted
 // (public-baseline.json), per dataset and lift. It fails if fewer sets are exact than before, or if a set
-// becomes off by 3 or more. David's own sets keep their own gate (scoreboard.test.ts), unchanged.
+// becomes off by 3 or more. David's own sets keep their own gate (scoreboard.test.ts), unchanged. Bench press and
+// overhead press sets are measured, shown and kept in the baseline, and decide nothing (PLAN.md; decides() in sets.ts).
 import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { countInWindow, publicSets } from './sets';
+import { countInWindow, decides, PRESS_DECIDES_NOTHING, publicSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
@@ -19,7 +20,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
   const rows: string[] = [];
-  let exactNow = 0, exactBefore = 0, became = 0, added = 0;
+  let exactNow = 0, exactBefore = 0, became = 0, added = 0, kept = 0;
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
     const now = r.refused ? 'refused' : countInWindow(r.reps, s.window), before = base[s.name];
@@ -28,6 +29,9 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     g.n++; if (now === 'refused') g.refused++; else if (off(now, s.label) === 0) g.exact++; else if (off(now, s.label) === 1) g.one++; else if (off(now, s.label) >= 3) g.bad++;
     groups.set(key, g);
     if (before === undefined) { added++; continue; }
+    // A press set is shown like any other and moves no tally of the gate (PLAN.md: "measured but decide nothing").
+    if (!decides(s.lift)) { if (now !== before) rows.push(`-> ${s.name}  label ${s.label}  before ${before}  now ${now}  ${PRESS_DECIDES_NOTHING}`); continue; }
+    kept++;
     if (off(now, s.label) === 0) exactNow++;
     if (off(before, s.label) === 0) exactBefore++;
     // A set that becomes off by 3 or more, or refused, where it was not before.
@@ -36,9 +40,9 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   }
   const missing = Object.keys(base).filter(n => !(n in live));
   const table = ['| Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |', '|---|---:|---:|---:|---:|---:|',
-    ...[...groups].sort().map(([k, g]) => `| ${k} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`)];
+    ...[...groups].sort().map(([k, g]) => `| ${k}${decides(k.split(' ')[1]) ? '' : ` ${PRESS_DECIDES_NOTHING}`} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`)];
   const n = sets.length, exact = [...groups.values()].reduce((a, g) => a + g.exact, 0);
-  const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${n - added} in the baseline, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}.`;
+  const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${kept} in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}. The ${n - added - kept} bench and overhead press sets are measured and decide nothing (PLAN.md).`;
   const text = [head, '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : [])].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
