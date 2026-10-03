@@ -109,9 +109,11 @@ export interface LiftDefinition {
    * cannot be paired and the side with more reps counts, as eitherSide. Public build half's lunges against
    * eitherSide, 3 October, on the integrated core (test/real-phone/accuracy/variant-eval.test.ts): chosen on its
    * half A, 16 to 22 exact of 78, off by 3 or more (refusals included) 16 to 10, none lost; checked on half B,
-   * 39 to 42 exact of 78 (4 gained, 1 lost; McNemar 0.80, not significant), off by 3 or more 6 to 6; none newly
-   * off by 3 on either. Six refused sets now get a count: 2 exact, 4 short by 1 or 2. David's sets and the
-   * synthetic sets hold no lunge.
+   * 39 to 42 exact of 78 (3 gained, 0 lost; McNemar 1.33, not significant), off by 3 or more 6 to 6; none newly
+   * off by 3 on either. Those figures include the pairing of a lagging knee's rep (countBothSides), added after
+   * half B was first read (4 gained, 1 lost without it), on a synthetic case from the review, not on half B.
+   * Six refused sets now get a count: 2 exact, 4 short by 1 or 2. David's sets and the synthetic sets hold no
+   * lunge.
    * Status: experimental.
    */
   together?: boolean;
@@ -401,6 +403,10 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
  * a rep of one arm that overlaps a rep of the other by more than TOGETHER_OVERLAP
  * of the shorter is the same rep done with both arms together and counts once;
  * every other rep counts for its arm (David, 27 September: one rep per arm).
+ * For a lift whose two sides bend on every rep (`together`, the lunges), two reps
+ * are also one when the middle of either falls inside the other: one knee bending
+ * a little after the other is still the same rep (review of 3 October: half a
+ * second's lag counted 12 for 6). Status: experimental, UNSOURCED.
  * The count needs both arms in view, so the confidence is the lower of the two.
  */
 function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition): CountResult {
@@ -416,7 +422,9 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
     if (last && last.side !== 'both' && last.side !== r.side) {
       const overlap = Math.min(last.endTime, r.endTime) - Math.max(last.startTime, r.startTime);
       const shorter = Math.min(last.endTime - last.startTime, r.endTime - r.startTime);
-      if (overlap > TOGETHER_OVERLAP * shorter) {
+      const mid = (x: { startTime: number; endTime: number }) => (x.startTime + x.endTime) / 2;
+      const inside = (m: number, x: { startTime: number; endTime: number }) => m >= x.startTime && m <= x.endTime;
+      if (overlap > TOGETHER_OVERLAP * shorter || (def.together && (inside(mid(r), last) || inside(mid(last), r)))) {
         // One rep with both arms: its span covers both, its measures are one arm's, the arm with the larger range,
         // so its phases and speeds belong together; it is cut if either arm's was (audit FINDING-013: the largest
         // range and speeds of the two were kept with the first arm's phases, a rep no arm made).

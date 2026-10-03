@@ -46,4 +46,13 @@ describe('a lunge counted on both knees together', () => {
     const wl = ts.map((_, i) => jointFrame('knee', { left: a[i], right: 270 - a[i] }));
     expect(countReps(wl, ts, 'forward_lunge').count).toBe(6);
   });
+  // Review of 3 October: two knees that bend on the same rep but one a little after the other correlate, yet their
+  // reps overlapped by less than TOGETHER_OVERLAP and each counted on its own (12 for 6, with half a second's lag).
+  it('counts once a rep the two knees make together when one bends a little after the other', () => {
+    const a = set(2), ts = timestamps(a.length, SPS);
+    for (const lag of [3, 5, 7]) {
+      const wl = ts.map((_, i) => jointFrame('knee', { left: a[i], right: a[Math.max(0, i - lag)] }));
+      expect(countReps(wl, ts, 'forward_lunge').count, `lag ${lag} samples`).toBe(6);
+    }
+  });
 });
