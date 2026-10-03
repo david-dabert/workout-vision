@@ -1,6 +1,6 @@
 // Lift tiers (28 September 2026): nine lifts on offer, each labelled Beta or
 // Experimental on its card, on the filming screen and in the guide. Since 3 October the tiers follow
-// David's labelled sets (test/real-phone/accuracy/tiers.test.ts): five Beta, four Experimental, the
+// David's labelled sets (test/real-phone/accuracy/tiers.test.ts): six Beta, three Experimental, the
 // lateral raise among the latter; the Beta cards come first.
 import { test, expect } from '@playwright/test';
 
@@ -23,11 +23,11 @@ for (const [lang, beta, exp, squat, bench, whole, ohp, front, frontStep, armFram
     await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
     await page.goto('/workout-vision/');
     await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
-    await expect(page.locator('.altar .tier-beta')).toHaveCount(5);
-    await expect(page.locator('.altar .tier-experimental')).toHaveCount(4);
-    // Beta first (David, 3 October): the five Beta cards lead the rail, then the four Experimental ones.
+    await expect(page.locator('.altar .tier-beta')).toHaveCount(6);
+    await expect(page.locator('.altar .tier-experimental')).toHaveCount(3);
+    // Beta first (David, 3 October): the six Beta cards lead the rail, then the three Experimental ones.
     const order = await page.$$eval('.rail > .altar .tier', els => els.map(e => e.classList.contains('tier-beta') ? 'beta' : 'experimental'));
-    expect(order).toEqual([...Array(5).fill('beta'), ...Array(4).fill('experimental')]);
+    expect(order).toEqual([...Array(6).fill('beta'), ...Array(3).fill('experimental')]);
     await expect(page.locator('.rail > .altar').first()).toHaveAttribute('aria-describedby', 'tier-bicep_curl');
     // The lateral raise, Experimental since 3 October: its card and its filming screen say so in full.
     await expect(page.locator('.altar', { hasText: lateral }).locator('.tier')).toHaveText(exp);

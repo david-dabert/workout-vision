@@ -17,8 +17,8 @@ Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: P
       sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  label 6  count 6
    romanian_deadlift  beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
       sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  label 8  count 8
-   leg_press          experimental  rule experimental  sets 1  exact 0  refused 0  1 of David's sets not exact
-      sets-29sep/leg_press_13_side_1ee0ae47.json.gz  label 13  count 12  (not exact)
+   leg_press          beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+      sets-29sep/leg_press_13_side_1ee0ae47.json.gz  label 13  count 13
    overhead_press     experimental  rule experimental  sets 3  exact 1  refused 0  press: measured, decides nothing (PLAN.md)
       sets-29sep/overhead_press_4_front_cefdaa82.json.gz  label 4  count 5  (not exact)
       sets-29sep/overhead_press_4_front_f75638cc.json.gz  label 4  count 4

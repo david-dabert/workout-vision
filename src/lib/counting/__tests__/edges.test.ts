@@ -7,7 +7,9 @@
  *   later on its way back counts, marked clipped (window-edges.test.ts, 3 October).
  * - At the start, a first press shorter than the shortest rep is not counted: it cannot be told from
  *   standing up before the set. David's leg press of 29 September began with such a press (the app
- *   counts 12 of his 13).
+ *   counted 12 of his 13). Since 3 October such a first return counts when it lasts at least half the
+ *   set's own returns (HEAD_RETURN_SHARE, head-return.test.ts; the leg press now reads 13); the quick
+ *   returns pinned here (0.35 s against 1 s) stay uncounted.
  * Two rules that counted these reps were tried and withdrawn: six reviews showed each counting an
  * after-set or before-set movement as a rep. The filming screen asks for the whole set, from rest back
  * to rest, which is where these reps are won.

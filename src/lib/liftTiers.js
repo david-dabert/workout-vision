@@ -17,8 +17,9 @@ export const TIERS = {
   hip_thrust: 'beta',
   // 3 October: beta. sets-29sep/romanian_deadlift_8 counts 8 for 8, its only set (scoreboard.txt).
   romanian_deadlift: 'beta',
-  // sets-29sep/leg_press_13 counts 12 for 13 (scoreboard.txt).
-  leg_press: 'experimental',
+  // 3 October: sets-29sep/leg_press_13 counts 13 for 13 since the first-return rule (HEAD_RETURN_SHARE, core.ts;
+  // it read 12 before), so the gate (tiers.test.ts) makes it Beta. One set of David's.
+  leg_press: 'beta',
   // 28 September: counts 9 for 10 on David's build clip; MM-Fit 49 of 60 exact, 60 of 60 within one.
   overhead_press: 'experimental',
 };
