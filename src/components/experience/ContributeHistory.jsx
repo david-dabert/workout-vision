@@ -3,10 +3,10 @@
 // waiting are known, so a tap on Send opens the share sheet inside the tap, as Safari requires (review of
 // 2 October); a tap while a sheet is open does nothing; stopping drops a prepared file before it can be sent.
 import { useEffect, useRef, useState } from 'react';
-import { contributions, contributionsFile, eraseContributions, forgetContributions, readChoice, writeChoice } from '../../lib/contribute';
+import { contributions, contributionsFile, eraseContributions, forgetContributions, readChoice, persistChoice } from '../../lib/contribute';
 import { CONTRIBUTE } from './contribute-copy';
 
-export default function ContributeHistory({ fr, style }) {
+export default function ContributeHistory({ fr, style, sets = null }) {
   const t = CONTRIBUTE[fr ? 'fr' : 'en'];
   const [choice, setChoice] = useState(readChoice);
   const [waiting, setWaiting] = useState(null);
@@ -14,13 +14,15 @@ export default function ContributeHistory({ fr, style }) {
   const [note, setNote] = useState('');
   const downloadNext = useRef(false), sharing = useRef(false), generation = useRef(0);
 
-  // The sets waiting, read when helping; their file prepared at once.
+  // The sets waiting, read when helping, and again whenever the saved sets change: a set deleted in the history
+  // takes its contribution with it, and the file prepared before is dropped (audit of 2 October). Their file is
+  // prepared at once.
   useEffect(() => {
     if (choice !== 'yes') return undefined;
     let live = true;
     contributions().then(l => { if (live) setWaiting(l); }, () => { if (live) setWaiting([]); });
     return () => { live = false; };
-  }, [choice]);
+  }, [choice, sets]);
   useEffect(() => {
     if (!waiting?.length) return undefined;
     const g = ++generation.current;
@@ -59,8 +61,9 @@ export default function ContributeHistory({ fr, style }) {
   }
 
   async function stop() {
+    // The phone must hold the stop before it is shown, or the stored yes would go on collecting (FINDING-016).
+    if (!persistChoice('no')) { setNote(t.stopFailed); return; }
     generation.current++; // a prepared or shared file of the erased sets is dropped
-    writeChoice('no');
     setChoice('no');
     setPrepared(null);
     try { await eraseContributions(); setWaiting(null); setNote(t.stopped); }
@@ -78,7 +81,7 @@ export default function ContributeHistory({ fr, style }) {
           <button type="button" className="text-btn press" onClick={stop}>{t.stop}</button>
         </div>
       </>
-      : <div className="hist-keep-row"><button type="button" className="text-btn press" onClick={() => { writeChoice('yes'); setChoice('yes'); setNote(''); }}>{t.start}</button></div>}
+      : <div className="hist-keep-row"><button type="button" className="text-btn press" onClick={() => { if (persistChoice('yes')) { setChoice('yes'); setNote(''); } else setNote(t.startFailed); }}>{t.start}</button></div>}
     <p className="hist-export-note" role="status">{note}</p>
   </section>;
 }

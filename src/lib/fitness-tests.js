@@ -74,6 +74,31 @@ export function openRise(smoothed, timestamps, low, high, rest, afterSec, minRan
 }
 
 /**
+ * When each counted rep passes half its movement: the first moment its angle crosses the middle of the set's
+ * thresholds, the same middle as the open rise's (openRise), interpolated between samples. Half the rise's time
+ * is used only when the angle never crosses (audit FINDING-014: completed reps were judged on half their time,
+ * the open rise on half its angle; a rise slow at first passes half its time well before half its movement).
+ */
+export function riseHalfTimes(smoothed, timestamps, low, high, rest, reps) {
+  const mid = (low + high) / 2, past = rest === 'low' ? a => a >= mid : a => a <= mid;
+  return (reps || []).map(r => {
+    let prev = null;
+    for (let i = 0; i < timestamps.length && timestamps[i] <= r.endTime; i++) {
+      if (timestamps[i] < r.startTime) continue;
+      const a = smoothed[i];
+      if (a === null || a === undefined) { prev = null; continue; }
+      if (past(a)) {
+        if (prev === null) return timestamps[i];
+        const [t0, a0] = prev, u = a === a0 ? 1 : (mid - a0) / (a - a0);
+        return t0 + Math.min(1, Math.max(0, u)) * (timestamps[i] - t0);
+      }
+      prev = [timestamps[i], a];
+    }
+    return r.startTime + (Number.isFinite(r.concentricSec) ? r.concentricSec / 2 : (r.endTime - r.startTime) / 2);
+  });
+}
+
+/**
  * The test's score from the counted reps: the reps whose rise is past halfway within the window, the window
  * opening at the first rise, the open rise (openRise) among them. `complete` is false when the video ends
  * before the window does; with no rise at all, the window is measured from the start of the video.

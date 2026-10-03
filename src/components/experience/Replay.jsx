@@ -6,7 +6,7 @@ import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
 import { poseAt, repAt, phaseAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
-import { canExport, exportSetVideo } from './video-export';
+import { canExport, exportSetVideo, shareFailed } from './video-export';
 import './Replay.css';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
 import { isCorrected, markLabel, provenance } from './replay-labels';
@@ -51,9 +51,16 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out) }))
       .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null }); });
   }
-  const sharable = made.file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [made.file] });
+  // A share that fails offers the video to save instead, and says so; one sheet at a time.
+  const [shareBroke, setShareBroke] = useState(false);
+  const sharing = useRef(false);
+  const sharable = !shareBroke && made.file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [made.file] });
   function share() {
-    navigator.share({ files: [made.file] }).catch(() => {});
+    if (sharing.current) return;
+    sharing.current = true;
+    navigator.share({ files: [made.file] })
+      .catch(e => { if (shareFailed(e)) setShareBroke(true); })
+      .finally(() => { sharing.current = false; });
   }
 
   // The file is read where it lies on the phone; its address lives as long as the screen.
@@ -267,6 +274,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         {made.state === 'ready' && (sharable
           ? <button className="btn-line press" onClick={share}>{fr ? 'Partager la vidéo' : 'Share the video'}</button>
           : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? 'Enregistrer la vidéo' : 'Save the video'}</a>)}
+        {made.state === 'ready' && shareBroke && <p className="rp-export-note" role="status">{fr ? 'Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers.' : 'The share did not go through. Save the video, then share it from your files.'}</p>}
         {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled'
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’app ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}

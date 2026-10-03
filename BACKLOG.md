@@ -79,3 +79,34 @@ measured (scoreboard, synth.txt); anything else waits for its measurement (R8, R
 - Online coaches (Luc): the client films, the coach receives one report per week (29 September entry).
 - Pivots worth testing with one real user each before any code: home-exercise adherence for kinés; team
   logging for S&C coaches; a privacy-first set logger for women who train alone.
+
+## 2 October 2026: remove the dormant code (Astra's audit, FINDING-035), David's decision
+
+`node scripts/unreachable.mjs` lists the source files no page of the app loads: on 2 October, 92 of 188 (non-test),
+among them the old upload, replay, coach report, injury, badge and feedback screens, and the old counters
+(SignalExtractor3D, valleyCounter, repCounter, hysteresisCounter). None reaches the bundle; 14 test files still
+test them (src/lib/__tests__/benchmark, biomechanics, coach, defense, exerciseDetector, hierarchicalDetector,
+hierarchicalValidation, pipeline, progressionScale, utils; counting hotfix_baseline and learned;
+test/real-phone/accuracy/learned-span, agreement/counts), so a green test run says less about the app than its size suggests.
+
+App.jsx says "Hidden, not deleted". Proposal: delete what David does not mean to bring back, keep the learned
+counter (research, PLAN.md), and run the script in CI so a file no page loads is named. Nothing is deleted until
+David chooses.
+
+## 2 October 2026: tennis pro comparison from public skeleton data (David, relayed from another model), assessed, not opened
+
+The proposal: bundle skeleton sequences of professional tennis strokes (said to come from pwang724's "Tennis
+Skeleton Quiz"), compare a user's stroke to them by dynamic time warping, and say "your forehand matches 84 % with
+Federer".
+
+Assessment (2 October):
+- Out of scope: WorkoutVision counts gym reps; a tennis stroke is not a rep, and no current phase covers it (R7).
+- The source is unverified: the repository was not found by search and could not be opened from this session;
+  its data, labels and licence are unknown. The per-player "signatures" in the proposal carry no source (R9).
+- "84 % with Federer" is a number the app cannot measure reliably (R8): a match score against one player's
+  stroke has no ground truth and no validated meaning.
+- Already in place: joint angles from MediaPipe's world landmarks do not depend on the distance to the camera, so
+  the normalisation step adds nothing to counting.
+- Worth keeping, apart from tennis: dynamic time warping against a template of the user's own first rep, as a
+  second opinion on the count. It would be a counting change: synthetic test first, scoreboard, synth and
+  public gates (PLAN.md).

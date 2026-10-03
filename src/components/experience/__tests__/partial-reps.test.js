@@ -44,3 +44,21 @@ describe('partial reps', () => {
     expect(reportSheet({ lang: 'fr', date: new Date(2026, 9, 2), notes: '', liftName: 'x', count: 6, reps: whole, first: 'concentric', measures: true }).partialRepNote).toBe('');
   });
 });
+
+import { setAverages } from '../tempo';
+
+describe('partial reps leave the averages of time (audit FINDING-025)', () => {
+  it('average range over the reps the video holds whole, average duration over the timed ones', () => {
+    const a = setAverages(reps);
+    const timed = reps.filter(r => ![4, 6].includes(r.index));
+    const held = reps;
+    expect(a.rom).toBeCloseTo(held.reduce((s, r) => s + r.romDegrees, 0) / held.length, 6);
+    expect(a.dur).toBeCloseTo(timed.reduce((s, r) => s + r.endTime - r.startTime, 0) / timed.length, 6);
+  });
+  it("the previous set's duration on the report leaves its partial reps too", () => {
+    const sheet = reportSheet({ lang: 'en', date: new Date(2026, 9, 2), notes: '', liftName: 'x', count: 8, reps, first: 'concentric', measures: true,
+      previousSet: { count: 8, reps, date: new Date(2026, 9, 1) } });
+    const line = sheet.summary.find(l => l.startsWith('Set of'));
+    expect(line).toContain(`avg duration ${setAverages(reps).dur.toFixed(1)}`);
+  });
+});

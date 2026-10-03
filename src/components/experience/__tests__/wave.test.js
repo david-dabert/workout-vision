@@ -74,3 +74,34 @@ describe('the wave through storage', () => {
     expect(validateWorkout({ ...base, wave: { t: [0, 'x'], a: [90, 91] } }).sanitized.wave).toBe(null);
   });
 });
+
+describe('the kept wave keeps what was not seen (audit FINDING-027)', () => {
+  const t = Array.from({ length: 450 }, (_, i) => i / 15);
+  it('a lost sample between two kept ones still breaks the line', () => {
+    const a = t.map((x, i) => (i === 4 ? null : 90 + 40 * Math.sin(x)));
+    const w = compactWave(a, t);
+    expect(w.a).toContain(null);
+    expect(w.t.length).toBeLessThanOrEqual(400);
+    for (let k = 1; k < w.t.length; k++) expect(w.t[k]).toBeGreaterThanOrEqual(w.t[k - 1]);
+  });
+  it('keeps the last sample', () => {
+    const a = t.map(x => 90 + 40 * Math.sin(x));
+    const w = compactWave(a, t);
+    expect(w.t.at(-1)).toBe(Math.round(t.at(-1) * 100) / 100);
+  });
+});
+
+describe('per-rep details read back are checked (audit FINDING-015)', () => {
+  const base = { id: 'w1', exercise: 'bicep_curl', reps: 6, date: '2026-10-02T10:00:00Z', createdAt: 1, repDetailsVersion: 2 };
+  const rep = { index: 1, startTime: 0, endTime: 2, romDegrees: 80, concentricSec: 1, eccentricSec: 1, peakSpeed: 100, meanSpeed: 40 };
+  it('a list of reps with their numbers is kept', () => {
+    expect(validateWorkout({ ...base, repDetails: [rep] }).sanitized.repDetails).toEqual([rep]);
+  });
+  it('details that are not such a list are dropped, with their version', () => {
+    for (const bad of [{ 0: rep }, [{ ...rep, startTime: 'x' }], [null], 'reps']) {
+      const s = validateWorkout({ ...base, repDetails: bad }).sanitized;
+      expect(s.repDetails).toBe(null);
+      expect(s.repDetailsVersion).toBe(null);
+    }
+  });
+});

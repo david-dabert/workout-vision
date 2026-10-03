@@ -19,6 +19,16 @@ export function partialIn(reps) {
   return r => !r.clipped && ((median !== null && r.romDegrees < PARTIAL_RANGE_RATIO * median)
     || !(r.concentricSec >= MIN_PHASE_SEC) || !(r.eccentricSec >= MIN_PHASE_SEC));
 }
+/**
+ * A set's average range, over the reps the video holds whole (a partial rep's range is measured), and its average
+ * duration, over the timed reps only (audit FINDING-025): null where there is no rep to average.
+ */
+export function setAverages(reps) {
+  const held = (reps || []).filter(r => !r.clipped), timed = timedReps(reps);
+  const mean = (xs, f) => (xs.length ? xs.reduce((a, r) => a + f(r), 0) / xs.length : null);
+  return { rom: mean(held, r => r.romDegrees), dur: mean(timed, r => r.endTime - r.startTime) };
+}
+
 /** The reps whose times are shown: held whole by the video and not partial. */
 export const timedReps = reps => { const partial = partialIn(reps); return (reps || []).filter(r => !r.clipped && !partial(r)); };
 

@@ -21,6 +21,18 @@ describe('a restore', () => {
     const r = await restoreFlow(file([set('a')]), false, { restore: async () => { throw new Error('write'); }, list: async () => [] });
     expect(r.note).toBe('The backup could not be restored. Try again.');
   });
+  // Audit of 2 October: a file the phone cannot read (an iCloud file not downloaded) said nothing; a restore that
+  // stopped part-way said nothing was restored, though some sets were.
+  it('says so when the file cannot be read', async () => {
+    const r = await restoreFlow(Promise.reject(new DOMException('not readable', 'NotReadableError')), true, { restore: async () => ({ added: 0, present: 0 }), list: async () => [] });
+    expect(r.note).toBe('Ce fichier n’a pas pu être lu. S’il est dans iCloud, téléchargez-le, puis réessayez.');
+  });
+  it('reports the sets written before a restore stopped, and lists them', async () => {
+    const r = await restoreFlow(file([set('a'), set('b'), set('c')]), true, { restore: async () => ({ added: 1, present: 0, failed: 2 }), list: async () => ['a'] });
+    expect(r).toEqual({ note: '1 série restaurée. 2 séries n’ont pas pu être restaurées. Réessayez.', sets: ['a'] });
+    const en = await restoreFlow(file([set('a'), set('b')]), false, { restore: async () => ({ added: 1, present: 0, failed: 1 }), list: async () => ['a'] });
+    expect(en.note).toBe('1 set restored. 1 set could not be restored. Try again.');
+  });
   it('counts plurals and unreadable sets in both languages', () => {
     expect(restoredLine({ added: 0, present: 3, skipped: 2 }, true)).toBe('0 série restaurée. 3 étaient déjà sur ce téléphone. 2 séries illisibles n’ont pas été restaurées.');
     expect(restoredLine({ added: 2, skipped: 1 }, false)).toBe('2 sets restored. 1 unreadable set was not restored.');

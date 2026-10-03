@@ -19,3 +19,14 @@ Built in src/components/experience/KeepSets.jsx and keep-sets-view.js (history) 
 | keep.notbackup | Ce fichier n’est pas une sauvegarde de vos séries. | This file is not a backup of your sets. | When the file chosen is not a backup |
 | keep.newer | Cette sauvegarde vient d’une version plus récente de l’app. Mettez l’app à jour, puis réessayez. | This backup comes from a newer version of the app. Update the app, then try again. | When the backup comes from a later version |
 | keep.failed | La sauvegarde n’a pas pu être restaurée. Réessayez. | The backup could not be restored. Try again. | When the sets could not be written |
+
+## Added 2 October 2026 (audit of the live path), for David's approval (R10)
+
+| French | English | Where |
+|---|---|---|
+| Restaurer une sauvegarde | Restore a backup | First screen, under "Vos séries", when no set is on the phone |
+| Ce fichier n’a pas pu être lu. S’il est dans iCloud, téléchargez-le, puis réessayez. | This file could not be read. If it is in iCloud, download it, then try again. | History, after a restore whose file the phone cannot read |
+| 1 série n’a pas pu être restaurée. Réessayez. / N séries n’ont pas pu être restaurées. Réessayez. | 1 set could not be restored. Try again. / N sets could not be restored. Try again. | History, after a restore that stopped part-way, beside the sets restored |
+| Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone. | Your choice is saved, but this set could not be kept on this phone. | Saved card, after "Oui, aider" when the phone refuses to keep the set |
+| Votre niveau n’a pas pu être enregistré sur ce téléphone. | Your level could not be saved on this phone. | Saved card, after a level the phone refuses to store |
+| Recharger la page | Reload the page | "L’analyse n’a pas pu démarrer.", in place of "Refilmer" |

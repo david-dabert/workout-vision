@@ -1,5 +1,5 @@
 import { countReps, liftDefinition } from './counting/core';
-import { FITNESS_TESTS, isTest, openRise, scoreTest } from './fitness-tests';
+import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
@@ -12,13 +12,19 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   const core = countReps(worldLandmarks, timestamps, lift);
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).
-  const visible = core.angles.filter(angle => angle !== null).length;
+  // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
+  // (audit FINDING-012: one hidden arm let the other's reps through as the whole count).
+  const seen = angles => angles.filter(angle => angle !== null).length;
+  const visible = core.sides ? Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)) : seen(core.angles);
   const refused = visible < worldLandmarks.length / 2 || worldLandmarks.length === 0;
   // A fitness test is scored over its window (fitness-tests.js): the count and the marks are the reps in it.
   if (isTest(lift) && !refused) {
     const after = core.reps.length ? core.reps.at(-1).endTime : -Infinity;
     const open = openRise(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, after);
-    const t = scoreTest(core.reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
+    // Each rep's halfway is where its angle passes half the movement, as the open rise's is (FINDING-014).
+    const halves = riseHalfTimes(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, core.reps);
+    const reps = core.reps.map((r, i) => ({ ...r, halfTime: halves[i] }));
+    const t = scoreTest(reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
     return { ...core, count: t.score, reps: t.reps, refused, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
   return { ...core, refused };
@@ -76,6 +82,10 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
     const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp) => {
       signal?.throwIfAborted();
+      // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
+      // (frameExtractor.js): only the last pass is kept, so a short first pass can never make up for samples the
+      // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
+      if (index === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; }
       const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer;
       const result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: index * 1000 / TARGET_FPS }, [pixels]);
       imageLandmarks.push(result.image);
@@ -84,7 +94,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       onLandmarks(result.image, canvas.width, canvas.height);
     }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}) });
     signal?.throwIfAborted();
-    const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
+    // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
+    const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
+    const missed = unreadSamples({ samples: ordered ? timestamps.length : NaN, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
     if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.

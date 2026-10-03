@@ -42,3 +42,44 @@ describe('the contributions file', () => {
     expect(JSON.parse(await f.text()).sets).toHaveLength(1);
   });
 });
+
+import { persistChoice, readChoice } from '../contribute';
+
+describe('the contribution choice is saved before it is shown (audit FINDING-016)', () => {
+  const withStorage = (store, { setThrows = false, removeThrows = false } = {}, f) => {
+    const real = globalThis.localStorage;
+    globalThis.localStorage = {
+      getItem: k => (k in store ? store[k] : null),
+      setItem: (k, v) => { if (setThrows) throw new DOMException('full', 'QuotaExceededError'); store[k] = String(v); },
+      removeItem: k => { if (removeThrows) throw new Error('refused'); delete store[k]; },
+    };
+    try { return f(); } finally { globalThis.localStorage = real; }
+  };
+  it('stopping succeeds when the phone saves it', () => withStorage({ wv_contribute: 'yes' }, {}, () => {
+    expect(persistChoice('no')).toBe(true);
+    expect(readChoice()).toBe('no');
+  }));
+  it('stopping still succeeds when writing fails but removing the yes works', () => withStorage({ wv_contribute: 'yes' }, { setThrows: true }, () => {
+    expect(persistChoice('no')).toBe(true);
+    expect(readChoice()).not.toBe('yes');
+  }));
+  it('stopping reports failure when the yes cannot be undone', () => withStorage({ wv_contribute: 'yes' }, { setThrows: true, removeThrows: true }, () => {
+    expect(persistChoice('no')).toBe(false);
+    expect(readChoice()).toBe('yes');
+  }));
+  it('saying yes reports failure when it cannot be saved', () => withStorage({}, { setThrows: true }, () => {
+    expect(persistChoice('yes')).toBe(false);
+  }));
+});
+
+describe('a contribution says how its count was given (audit FINDING-008)', () => {
+  it('the count was kept after the app showed its own: it is marked so, never as a blind label', async () => {
+    const { contribution: make, isBlindLabel } = await import('../contribute');
+    const c = make({ result: { count: 7, metadata: {} }, lift: 'bicep_curl', kept: 8, setId: 's', appVersion: 'v', device: {} });
+    expect(c.labelKind).toBe('after-app');
+    expect(c.contributionVersion).toBe(2);
+    expect(isBlindLabel(c)).toBe(false);
+    expect(isBlindLabel({ labelKind: 'blind' })).toBe(true);
+    expect(isBlindLabel({})).toBe(false);
+  });
+});

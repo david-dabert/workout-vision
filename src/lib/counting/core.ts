@@ -317,12 +317,19 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
       const overlap = Math.min(last.endTime, r.endTime) - Math.max(last.startTime, r.startTime);
       const shorter = Math.min(last.endTime - last.startTime, r.endTime - r.startTime);
       if (overlap > TOGETHER_OVERLAP * shorter) {
+        // One rep with both arms: its span covers both, its measures are one arm's, the arm with the larger range,
+        // so its phases and speeds belong together; it is cut if either arm's was (audit FINDING-013: the largest
+        // range and speeds of the two were kept with the first arm's phases, a rep no arm made).
+        const big = r.romDegrees > last.romDegrees ? r : last;
         last.side = 'both';
         last.startTime = Math.min(last.startTime, r.startTime);
         last.endTime = Math.max(last.endTime, r.endTime);
-        last.romDegrees = Math.max(last.romDegrees, r.romDegrees);
-        last.peakSpeed = Math.max(last.peakSpeed, r.peakSpeed);
-        last.meanSpeed = Math.max(last.meanSpeed, r.meanSpeed);
+        last.romDegrees = big.romDegrees;
+        last.concentricSec = big.concentricSec;
+        last.eccentricSec = big.eccentricSec;
+        last.peakSpeed = big.peakSpeed;
+        last.meanSpeed = big.meanSpeed;
+        if (last.clipped || r.clipped) last.clipped = true;
         continue;
       }
     }

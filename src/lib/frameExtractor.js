@@ -393,12 +393,15 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
  * Requires: Safari 16.4+ or Chrome 94+ (VideoDecoder API)
  * WASM: web-demuxer-mini.wasm (~500KB, supports MOV/MP4/MKV/WebM)
  */
-async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
+export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const { signal, startFrame = 0 } = options;
   const { WebDemuxer } = await import('web-demuxer');
 
   const wasmUrl = new URL('web-demuxer.wasm', new URL(import.meta.env.BASE_URL || '/', location.origin)).href;
   const demuxer = new WebDemuxer({ wasmFilePath: wasmUrl });
+  // Set once the decoder exists: releases it on every exit, an error or a cancel as much as the end (audit
+  // FINDING-006: only the normal path closed the decoder and the queued frames).
+  let release = () => {};
 
   try {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -473,6 +476,14 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
       },
     });
     decoder.configure(decoderConfig);
+    // A cancel wakes the main loop at once, which then throws its AbortError (a wait for a frame had no way out).
+    const onAbort = () => { if (wakeMain) { wakeMain(); wakeMain = null; } };
+    signal?.addEventListener('abort', onAbort, { once: true });
+    release = () => {
+      signal?.removeEventListener('abort', onAbort);
+      while (frameQueue.length > 0) frameQueue.shift().close();
+      try { decoder.close(); } catch {}
+    };
 
     // Feed encoded chunks from demuxer stream (runs concurrently)
     const feedPromise = (async () => {
@@ -557,9 +568,10 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
       if (decodeError) throw new Error(`Video decode failed: ${decodeError.message}`);
 
       // Wait for frames if queue is empty
-      while (frameQueue.length === 0 && !decodeComplete && !decodeError) {
+      while (frameQueue.length === 0 && !decodeComplete && !decodeError && !signal?.aborted) {
         await waitForFrame();
       }
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
       if (frameQueue.length === 0) break;
 
       // Drain queued frames
@@ -580,13 +592,13 @@ async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFr
       }
     }
 
-    // Discard any remaining queued frames
-    while (frameQueue.length > 0) frameQueue.shift().close();
-    try { decoder.close(); } catch {}
+    // Discard any remaining queued frames, close the decoder, and let the feeding end.
+    release();
     await feedPromise;
 
     return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames, rotationDecision };
   } finally {
+    release();
     demuxer.destroy();
   }
 }

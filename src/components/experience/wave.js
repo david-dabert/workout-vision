@@ -72,16 +72,19 @@ export function repAt(geo, reps, xView) {
 }
 
 /**
- * The wave as a set keeps it (storage.js): at most `max` samples, evenly spread, times to the hundredth of a second
+ * The wave as a set keeps it (storage.js): at most `max` samples evenly spread (twice that where the pose was lost), the last always, times to the hundredth of a second
  * and angles to the tenth of a degree, a lost sample kept as null. About 2 KB for a set; no landmark, no image.
  */
 export function compactWave(angles, timestamps, max = 200) {
   const n = Math.min(angles?.length || 0, timestamps?.length || 0);
   if (n < 2) return null;
   const step = Math.max(1, Math.ceil(n / max)), t = [], a = [];
+  const put = k => { t.push(Math.round(timestamps[k] * 100) / 100); a.push(Number.isFinite(angles[k]) ? Math.round(angles[k] * 10) / 10 : null); };
   for (let k = 0; k < n; k += step) {
-    t.push(Math.round(timestamps[k] * 100) / 100);
-    a.push(Number.isFinite(angles[k]) ? Math.round(angles[k] * 10) / 10 : null);
+    put(k);
+    // A sample lost inside the stride still breaks the line: its own null follows the kept one (audit FINDING-027).
+    if (Number.isFinite(angles[k])) for (let j = k + 1; j < Math.min(n, k + step); j++) if (!Number.isFinite(angles[j])) { put(j); break; }
   }
+  if ((n - 1) % step) put(n - 1);  // the last sample, always
   return { t, a };
 }

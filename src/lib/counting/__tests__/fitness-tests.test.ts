@@ -154,3 +154,23 @@ describe('a test filmed from standing (David, 2 October 2026: 9 stands, the app 
     expect(r.reps.length).toBe(9);
   });
 });
+
+import { riseHalfTimes } from '../../fitness-tests';
+
+describe('halfway is half the movement, for every rep (audit FINDING-014)', () => {
+  // A rise from 90° to 170° that is slow at first: half its time (0.5 s) is reached at 100°, half its angle
+  // (130°) only at 0.794 s (80·t³ = 40).
+  const ts = Array.from({ length: 21 }, (_, i) => i * 0.1);
+  const angle = (t: number) => (t <= 1 ? 90 + 80 * Math.pow(t, 3) : 170);
+  const smoothed = ts.map(angle);
+  const rep = { startTime: 0, endTime: 2, concentricSec: 1, eccentricSec: 1 };
+  it('the halfway time is where the angle passes half the range', () => {
+    const [h] = riseHalfTimes(smoothed, ts, 90, 170, 'low', [rep]);
+    expect(h).toBeCloseTo(0.794, 2);
+  });
+  it('a rep whose half angle comes after the window is not scored, even when its half time came before', () => {
+    const [h] = riseHalfTimes(smoothed, ts, 90, 170, 'low', [rep]);
+    const t = scoreTest([{ ...rep, halfTime: h }], 40, 0.6);
+    expect(t.score).toBe(0);
+  });
+});

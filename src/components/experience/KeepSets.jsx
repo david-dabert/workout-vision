@@ -44,7 +44,7 @@ export default function KeepSets({ sets, fr, onRestored, style }) {
     e.target.value = '';
     if (!file) return;
     setNote('');
-    const r = await restoreFlow(await file.text(), fr, { list: () => { refreshSets(); return loadSets(); } });
+    const r = await restoreFlow(file.text(), fr, { list: () => { refreshSets(); return loadSets(); } });
     if (r.sets) onRestored?.(r.sets);
     setNote(r.note);
   }
@@ -54,8 +54,9 @@ export default function KeepSets({ sets, fr, onRestored, style }) {
   return <div className="hist-export hist-keep" data-reveal style={style} data-testid="keep-sets">
     <div className="hist-keep-row">
       {sets?.length > 0 && <button type="button" className="text-btn press" onClick={save} aria-label={fr ? 'Sauvegarder vos séries' : 'Back up your sets'}>{ICON_SAVE}<span>{fr ? 'Sauvegarder' : 'Back up'}</span></button>}
-      <label className="text-btn press" role="button" tabIndex="0" aria-label={fr ? 'Restaurer une sauvegarde' : 'Restore a backup'} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.querySelector('input')?.click(); } }}>
-        <input type="file" accept=".json,application/json" className="hx" tabIndex="-1" aria-hidden="true" onChange={restore} />
+      {/* The file input is the control, laid over its label (as on the filming screen): no second control around it. */}
+      <label className="text-btn press">
+        <input type="file" accept=".json,application/json" className="hx" aria-label={fr ? 'Restaurer une sauvegarde' : 'Restore a backup'} onChange={restore} />
         {ICON_OPEN}<span>{fr ? 'Restaurer' : 'Restore'}</span>
       </label>
     </div>

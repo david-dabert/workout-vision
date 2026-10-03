@@ -232,6 +232,44 @@ try {
     check(await again.locator('[data-testid="contribute-ask"]').count() === 0, `${lang}: once answered, the saved card asks no more`);
     await again.context().close();
   }
+  // A level the phone cannot store is said, never "noted" (audit of 2 October).
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.addInitScript(() => {
+      localStorage.setItem('wv_lang', 'fr');
+      const set = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (k, v) { if (k === 'wv_level' || k === 'wv_level_asked') throw new DOMException('full', 'QuotaExceededError'); return set.call(this, k, v); };
+    });
+    await page.goto(URL);
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    const ask = page.locator('[data-testid="level-ask"]');
+    await ask.waitFor({ timeout: 10000 });
+    await ask.locator('.level-seg button').first().click();
+    const note = await ask.locator('[role="status"]').textContent({ timeout: 5000 }).catch(() => '');
+    check(note === 'Votre niveau n’a pas pu être enregistré sur ce téléphone.', `a level the phone cannot store is said, not noted ("${note}")`);
+    await ctx.close();
+  }
+  // A yes whose set the phone cannot keep is said, never thanked (audit of 2 October).
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    await page.addInitScript(() => {
+      localStorage.setItem('wv_lang', 'fr'); localStorage.setItem('wv_level', 'intermediate');
+      const put = IDBObjectStore.prototype.put;
+      IDBObjectStore.prototype.put = function (...a) { if (this.name === 'contributions') throw new DOMException('full', 'QuotaExceededError'); return put.apply(this, a); };
+    });
+    await page.goto(URL);
+    await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    const ask = page.locator('[data-testid="contribute-ask"]');
+    await ask.waitFor({ timeout: 10000 });
+    await ask.getByRole('button', { name: 'Oui, aider' }).click();
+    const note = await ask.locator('[role="status"]').textContent({ timeout: 5000 }).catch(() => '');
+    await page.waitForTimeout(500);
+    const later = await ask.locator('[role="status"]').textContent().catch(() => '');
+    check(later === 'Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone.', `a set the phone cannot keep as a contribution is said, not thanked (first "${note}", then "${later}")`);
+    await ctx.close();
+  }
   // Asked once, answered or not (review of 2 October): a question left unanswered does not come back.
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 664 }, reducedMotion: 'reduce' });

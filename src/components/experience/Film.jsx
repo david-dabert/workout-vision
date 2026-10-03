@@ -97,13 +97,16 @@ export default function Film({ lift, onBack, onFile, hero: arrivedByTransition =
         <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
       </ol>}
       <div className="actions" data-reveal style={{ '--i': 5 }}>
-        <label ref={action} className="btn-primary tactile" role="button" tabIndex="0">
-          <input ref={fileRef} type="file" accept="video/*,.mov" capture="environment" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
+        {/* Each action is its file input, laid over the label so a tap lands on it (the surest way to open the
+            camera in Safari), named by the label's words, and reached and opened by the keyboard as any file input
+            is: the label is not a second control around it (audit FINDING-024, axe nested-interactive). */}
+        <label ref={action} className="btn-primary tactile">
+          <input ref={fileRef} type="file" accept="video/*,.mov" capture="environment" className="hx" onChange={handleFile} />
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
           <span>{test ? (fr ? 'Filmer le test' : 'Record the test') : (fr ? 'Filmer ma série' : 'Record my set')}</span>
         </label>
-        <label className="btn-ghost press" role="button" tabIndex="0">
-          <input type="file" accept="video/*,.mov" className="hx" tabIndex="-1" aria-hidden="true" onChange={handleFile} />
+        <label className="btn-ghost press">
+          <input type="file" accept="video/*,.mov" className="hx" onChange={handleFile} />
           <span>{fr ? 'Choisir une vidéo' : 'Choose a video'}</span>
         </label>
       </div>

@@ -76,6 +76,9 @@ async function processFile(file) {
     MAX_FRAMES,
     MAX_LONG_SIDE,
     async (canvas, frameIndex, timestamp) => {
+      // A decoding path that fails part-way starts again at sample 0: only the last pass is kept, as in the app
+      // (coreAnalysis.js; audit FINDING-002).
+      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; sampleCount = 0; }
       // Match the app's worker path: read pixels from the extraction canvas
       // and write them onto an OffscreenCanvas before inference. The roundtrip
       // is lossless, but using the same path as the worker ensures the harness

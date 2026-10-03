@@ -100,3 +100,16 @@ test('after a share that fails, the next tap downloads at once', async ({ page }
   const [download] = await Promise.all([page.waitForEvent('download', { timeout: 5000 }), save.click()]);
   expect(download.suggestedFilename()).toMatch(/^workout-vision-series-/);
 });
+
+// A phone with no set, after Safari erased them or on a new phone, is when a backup is needed: the history,
+// and its restore, are reached from the choice of lift all the same (audit of 2 October).
+test('with no set on the phone, the backup can still be restored from the first screen', async ({ page }) => {
+  await page.route('**/pose_landmarker_full.task', r => r.fulfill({ status: 200, body: '' }));
+  await page.addInitScript(() => { if (!location.protocol.startsWith('http')) return; localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr'); });
+  await page.goto('/workout-vision/');
+  await expect(page.locator('.altar').first()).toBeVisible({ timeout: 20000 });
+  const row = page.getByRole('button', { name: /Vos séries/ });
+  await expect(row).toContainText('Restaurer une sauvegarde');
+  await row.click();
+  await expect(page.getByTestId('keep-sets').locator('input[type="file"]')).toHaveCount(1);
+});

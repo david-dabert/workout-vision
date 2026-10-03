@@ -99,7 +99,8 @@ try {
   if (await replay.count()) { replayOpened = true; await replay.click(); await page.waitForTimeout(2500); await shot('replay'); await page.locator('.replay-screen .icon-btn').first().click(); await page.waitForTimeout(1200); }
   // The report.
   const report = page.locator('button').filter({ hasText: /Rapport|report/i }).first();
-  if (await report.count()) { await report.click(); await page.waitForTimeout(2000); await shot('report'); }
+  let reportWave = null;
+  if (await report.count()) { await report.click(); await page.waitForTimeout(2000); await shot('report'); reportWave = await page.locator('[data-testid="sh-wave"] path.w-line').count() > 0; }
   // The history: the saved set is listed with the saved count.
   await page.goto(BASE);
   const hist = page.locator('button, a').filter({ hasText: /Vos séries|Your sets|Historique|History/ }).first();
@@ -140,6 +141,10 @@ try {
       core.refused && 'refused',
       core.count !== expected && `counted ${core.count} of ${expected}`,
       ...['result', 'saved', 'replay', 'report', 'history'].filter(x => !reached.has(x)).map(x => `screen not reached: ${x}`),
+      // An accessibility violation found on any screen fails the run, as any other fault does (audit FINDING-023).
+      ...audit.map(x => `accessibility, ${x.step}: ${x.id} (${x.impact}, ${x.n}) ${x.target.join(', ')}`),
+      // The report opened right after the set carries its wave (audit FINDING-026).
+      reportWave === false && 'the report after the set has no wave',
       // The phone stored the kept count, marked corrected when it differs from the app's, beside the app's own.
       (!stored || stored.reps !== (want || core.count) || stored.machine !== core.count || stored.corrected !== !!want) && `stored ${JSON.stringify(stored)}, expected ${want || core.count} reps (app ${core.count}, corrected ${!!want})`,
       // With CONTRIBUTE: one contribution, holding the counts kept and the app's, and the pose of every sample.

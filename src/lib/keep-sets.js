@@ -33,9 +33,13 @@ export function onHomeScreen() {
   try { return navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; } catch { return false; }
 }
 
+const pad = n => String(n).padStart(2, '0');
+/** The phone's own date, 2026-10-03: a file saved at 00:30 in Paris carries that day, not the UTC one before it. */
+export const localDay = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
 /** The backup file's text and name: every set the history lists, with the file's own kind and version. */
 export function backupFile(sets, now = new Date()) {
-  const day = now.toISOString().slice(0, 10);
+  const day = localDay(now);
   const text = JSON.stringify({ kind: BACKUP_KIND, version: BACKUP_VERSION, savedAt: now.toISOString(), sets }, null, 1);
   return { name: `workout-vision-series-${day}.json`, text };
 }
@@ -62,7 +66,12 @@ export function readBackup(text) {
 
 /** Puts a backup's sets back on this phone; returns how many were added and how many were already here. */
 export async function restoreBackup(sets, put = restoreWorkout) {
+  // Written one by one: a write that fails part-way says how many went in and how many did not, so the person
+  // is not told nothing was restored (audit of 2 October). A first write that fails fails the whole restore.
   let added = 0, present = 0;
-  for (const w of sets) { if (await put(w)) added++; else present++; }
+  for (const [i, w] of sets.entries()) {
+    try { if (await put(w)) added++; else present++; }
+    catch (e) { if (i === 0) throw e; return { added, present, failed: sets.length - i }; }
+  }
   return { added, present };
 }

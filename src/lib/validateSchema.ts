@@ -92,9 +92,18 @@ export function validateWorkout(record: unknown): ValidationResult {
       (sanitized as Record<string, unknown>)[key] = DEFAULTS[key];
     }
   }
-  // A wave that is not two arrays of equal length, up to 400 samples, numbers or null, is not drawn.
+  // Per-rep details that are not a list of reps with finite times and ranges are dropped with their version, so a
+  // restored backup can never break the report or the spreadsheet (audit FINDING-015).
+  const reps = sanitized.repDetails as unknown;
+  const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
+  if (reps != null && !(Array.isArray(reps) && reps.every(r => r && typeof r === 'object'
+    && num((r as Record<string, unknown>).startTime) && num((r as Record<string, unknown>).endTime) && num((r as Record<string, unknown>).romDegrees)))) {
+    (sanitized as Record<string, unknown>).repDetails = null;
+    (sanitized as Record<string, unknown>).repDetailsVersion = null;
+  }
+  // A wave that is not two arrays of equal length, up to 401 samples (wave.js, compactWave), numbers or null, is not drawn.
   const w = sanitized.wave as { t?: unknown; a?: unknown } | null | undefined;
-  if (w != null && !(Array.isArray(w.t) && Array.isArray(w.a) && w.t.length === w.a.length && w.t.length <= 400
+  if (w != null && !(Array.isArray(w.t) && Array.isArray(w.a) && w.t.length === w.a.length && w.t.length <= 401
     && w.t.every(v => Number.isFinite(v)) && w.a.every(v => v === null || Number.isFinite(v)))) sanitized.wave = null;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;

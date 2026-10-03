@@ -105,3 +105,14 @@ describe('the exported overlay after a correction', () => {
     expect(drawn(null)).toEqual(['7 / 7']);
   });
 });
+
+import { shareFailed } from '../video-export';
+describe('a share that did not end well', () => {
+  it('failed unless it was cancelled or a sheet was already open', () => {
+    expect(shareFailed(Object.assign(new Error('x'), { name: 'AbortError' }))).toBe(false);
+    expect(shareFailed(Object.assign(new Error('x'), { name: 'InvalidStateError' }))).toBe(false);
+    expect(shareFailed(Object.assign(new Error('x'), { name: 'NotAllowedError' }))).toBe(true);
+    expect(shareFailed(new TypeError('x'))).toBe(true);
+    expect(shareFailed(undefined)).toBe(true);
+  });
+});

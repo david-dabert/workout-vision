@@ -392,6 +392,9 @@ function loadClipLandmarks(clipName: string) {
   return JSON.parse(buf.toString());
 }
 
+// These five clips are scored for accuracy by the scoreboard, which gates CI (npm run scoreboard,
+// test/real-phone/accuracy/scoreboard.txt). Here they check what their names say: the count is its marks, in
+// time order, one after the other (audit FINDING-022: the names gave an expected count no assertion checked).
 describe('Counting core — David\'s clips', () => {
   const clips: { file: string; lift: Lift; expected: number; hotfixCount: number }[] = [
     // hotfixCount: measured from hotfix_baseline.test.ts run, not hand-typed
@@ -403,7 +406,7 @@ describe('Counting core — David\'s clips', () => {
   ];
 
   for (const clip of clips) {
-    it(`${clip.lift}: expected ${clip.expected}`, () => {
+    it(`${clip.lift} (label ${clip.expected}, scored by the scoreboard): the count is its marks, in order`, () => {
       const data = loadClipLandmarks(clip.file);
       const result = countReps(data.worldLandmarks, data.timestamps, clip.lift);
 
@@ -422,10 +425,12 @@ describe('Counting core — David\'s clips', () => {
         console.log(`  rep ${rep.index}: ${rep.startTime.toFixed(2)}s–${rep.endTime.toFixed(2)}s, ROM=${rep.romDegrees.toFixed(1)}°, conc=${rep.concentricSec.toFixed(2)}s, ecc=${rep.eccentricSec.toFixed(2)}s`);
       }
 
-      // The test records the count; accuracy is judged by David, not asserted here.
-      // We assert only that the function runs and produces a number.
-      expect(result.count).toBeGreaterThanOrEqual(0);
       expect(result.reps.length).toBe(result.count);
+      for (let i = 0; i < result.reps.length; i++) {
+        const r = result.reps[i];
+        expect(r.endTime, `rep ${i + 1} ends after it starts`).toBeGreaterThan(r.startTime);
+        if (i) expect(r.startTime, `rep ${i + 1} starts after rep ${i} ends`).toBeGreaterThanOrEqual(result.reps[i - 1].endTime - 1e-9);
+      }
     });
   }
 });

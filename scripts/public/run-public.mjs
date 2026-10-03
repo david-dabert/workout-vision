@@ -21,6 +21,8 @@ import { gzipSync } from 'node:zlib';
 import { chromium } from '@playwright/test';
 import { splitOf } from './split.mjs';
 import { cutOf } from './cut.mjs';
+import { unreadPublic } from './whole-read.mjs';
+import { TARGET_FPS } from '../../src/lib/extractionConfig.js';
 
 const run = promisify(execFile);
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -114,6 +116,9 @@ async function worker() {
         page.evaluate(() => window._fetchAndProcess('/workout-vision/public-sample.webm')),
         new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('extraction took over 20 minutes')), 1200000); }),
       ]).finally(() => clearTimeout(timer));
+      // Written only when the whole clip was read, as the app requires before it counts (whole-read.mjs).
+      const unread = unreadPublic({ timestamps: data.timestamps, duration: data.metadata?.duration, fps: TARGET_FPS });
+      if (unread) throw new Error(`not read whole: ${unread}`);
       const shift = cutOf(set, fps)?.from ?? 0;
       const samples = data.imageLandmarks.length;
       // PLAN.md's rule for MM-Fit: both wrists and both ankles (15, 16, 27, 28) seen together.
