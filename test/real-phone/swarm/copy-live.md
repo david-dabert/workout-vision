@@ -11,7 +11,7 @@ pending David's approval (3 October). Where a line repeats words David already a
 | En direct | Live | Mode switch, right half, with a red dot | pending David's approval (3 October) |
 | Comment compter | How to count | Mode switch, read aloud only (group label) | pending David's approval (3 October) |
 | Compter en direct | Count live | Primary button in live mode | pending David's approval (3 October) |
-| L’image reste sur votre téléphone : rien n’est enregistré ni envoyé. | The picture stays on your phone: nothing is recorded or sent. | Privacy line in live mode, and at the foot of the live screen | pending David's approval (3 October) |
+| L’image de la caméra reste sur votre téléphone : elle n’est ni enregistrée ni envoyée. | The camera’s picture stays on your phone: it is neither recorded nor sent. | Privacy line in live mode, and at the foot of the live screen. Replaces, 3 October, “L’image reste sur votre téléphone : rien n’est enregistré ni envoyé.” / “The picture stays on your phone: nothing is recorded or sent.”, untrue once a set is saved, shared or contributed, or the usage counts are on (review finding B1). The new line speaks only of the camera’s picture, so it holds in every case and does not depend on the usage counts | pending David's approval (3 October) |
 
 ## Live screen (src/components/experience/Live.jsx)
 

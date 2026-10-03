@@ -317,7 +317,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         </div>}
       <p className="privacy live-privacy">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-        <span>{fr ? 'L’image reste sur votre téléphone : rien n’est enregistré ni envoyé.' : 'The picture stays on your phone: nothing is recorded or sent.'}</span>
+        {/* The Film screen's live line, word for word (Film.jsx): only the camera's picture is said to stay. */}
+        <span>{fr ? 'L’image de la caméra reste sur votre téléphone\u00A0: elle n’est ni enregistrée ni envoyée.' : 'The camera’s picture stays on your phone: it is neither recorded nor sent.'}</span>
       </p>
     </div></section>
   </div>;

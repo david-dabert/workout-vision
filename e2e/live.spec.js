@@ -67,7 +67,8 @@ test('the Film screen offers live counting beside the video, and remembers the c
   await expect(page.getByTestId('film-live')).toHaveText('Compter en direct');
   await page.waitForTimeout(1200);
   await page.screenshot({ path: info.outputPath('film-live.png') });
-  await expect(page.locator('.film-screen .privacy')).toHaveText('L’image reste sur votre téléphone : rien n’est enregistré ni envoyé.');
+  await expect(page.locator('.film-screen .privacy')).toHaveText('L’image de la caméra reste sur votre téléphone\u00A0: elle n’est ni enregistrée ni envoyée.');
+  await expect(page.locator('.film-screen .privacy')).not.toContainText('rien');
   // The choice holds on this phone.
   await page.reload();
   await page.locator('.rail > .altar[aria-label="Curl biceps"]').click();
