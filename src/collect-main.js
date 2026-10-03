@@ -9,16 +9,10 @@
 import { issueUrl } from './lib/collector';
 import { collectSet } from './lib/collectSet';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
-import { OFFERED } from './lib/offer';
-import catalogue from './lib/guide-catalog.json';
+import { COLLECTOR_LIFTS } from './lib/collectorLifts';
 
-// The exercises: the same as the app offers (src/lib/offer.js, PLAN.md, GROWTH, step 2), by their
-// guide names in French and English, in French alphabetical order.
-const byKey = new Map(catalogue.map(e => [e.key, e]));
-const LIFTS = OFFERED.map(key => byKey.get(key)).filter(Boolean)
-  .map(e => ({ key: e.key, label: `${e.fr} / ${e.name}` }))
-  // French name first, sorted in French, so that every « Rowing … » sits together (David, 29 September).
-  .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+// The exercises: the same as the app offers, fitness tests included (src/lib/collectorLifts.js; third audit, C52).
+const LIFTS = COLLECTOR_LIFTS;
 
 const $ = id => document.getElementById(id);
 
