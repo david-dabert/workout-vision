@@ -117,10 +117,15 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
     if (!reps) continue;
     const when = isoLocal(setTime(w)), lift = label(w);
     const partial = partialIn(reps);
+    // After a correction the rows are the marks the app detected, not the reps the user saved: their number reads
+    // "Repère 3" / "Mark 3", as the report heads that column (report-sheet.js; third audit C12, 3 October).
+    const counted = byHand(w) ? null : countedBy(w);
+    const mark = counted !== null && counted !== w.reps ? (fr ? 'Repère' : 'Mark') : null;
     reps.forEach((r, i) => {
+      const n = Number.isFinite(r.index) ? r.index : i + 1;
       // A rep the video cut, or a partial one (tempo.js), is counted, its range shown, its times and speeds not (as in the report).
       const cut = !!r.clipped, whole = x => (cut || partial(r) ? null : x);
-      rows.push([when, lift, Number.isFinite(r.index) ? r.index : i + 1, num(r.romDegrees, 0, f),
+      rows.push([when, lift, mark ? `${mark} ${n}` : n, num(r.romDegrees, 0, f),
         // Tenths, as on the screens: at 15 samples a second the app measures nothing finer (set-notes.js; audit of 3 October).
         num(whole(r.concentricSec), 1, f), num(whole(r.eccentricSec), 1, f),
         num(whole(r.peakSpeed), 0, f), num(whole(r.meanSpeed), 0, f), cut ? f.yes : f.no]);
