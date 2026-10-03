@@ -40,3 +40,23 @@ The consent text now names every field the shared file carries. The earlier text
 | what | À chaque série, l’app garde sur ce téléphone, pour que vous l’envoyiez : l’exercice ; son comptage, le vôtre (donné après avoir vu le sien) et si vous l’avez corrigé ; la position de vos articulations, dans l’espace et dans l’image, à chaque image analysée, avec son instant dans la vidéo, et le côté suivi ; la durée de la vidéo, la taille de son image, sa rotation, la façon dont elle a été lue, le nombre d’images analysées et les réglages de l’analyse ; le modèle de téléphone et de navigateur tels qu’ils se déclarent, le nombre de cœurs du processeur, la mémoire, l’écran (taille, densité de pixels, nombre de doigts reconnus) ; la version de l’app et du fichier. La date de la série reste sur le téléphone. Jamais la vidéo, ni votre nom. Vous les envoyez quand vous voulez. | After each set, the app keeps on this phone, for you to send: the exercise; its count, yours (given after seeing the app’s) and whether you corrected it; the position of your joints, in space and in the image, at each analysed frame, with its time in the video, and the side tracked; the video’s length, image size, rotation, how it was read, the number of frames analysed and the analysis settings; the phone and browser model as they state it, the processor’s core count, the memory, the screen (size, pixel density, number of touch points); the app and file version. The set’s date stays on the phone. Never the video, nor your name. You send them when you choose. | Saved card under "Aider à améliorer le comptage ?"; history under the section title |
 
 Field by field (contribute.js), the words that name it: lift "l’exercice"; appCount "son comptage"; count "le vôtre"; labelKind "donné après avoir vu le sien"; corrected "si vous l’avez corrigé"; worldLandmarks, imageLandmarks "la position de vos articulations, dans l’espace et dans l’image, à chaque image analysée"; timestamps "son instant dans la vidéo"; arm "le côté suivi"; metadata.duration "la durée de la vidéo"; frame "la taille de son image"; metadata.rotationDecision "sa rotation"; metadata.extractionMethod "la façon dont elle a été lue"; metadata.sampleCount "le nombre d’images analysées"; extraction (fps, maxLongSide) "les réglages de l’analyse"; device.userAgent, device.platform "le modèle de téléphone et de navigateur tels qu’ils se déclarent"; device.cores "le nombre de cœurs du processeur"; device.memoryGb "la mémoire"; device.screen (width, height, pixelRatio) "l’écran (taille, densité de pixels)"; device.touchPoints "nombre de doigts reconnus"; version, kind, contributionVersion "la version de l’app et du fichier".
+
+## Added 3 October 2026 (build "contribute-ask"): pending David's approval (3 October)
+
+The question moves to the saved card of the first set, kept or corrected, and is asked once more at most, from the
+fifth saved set, when left unanswered (src/lib/contribute.js shouldAskContribute; status convention, UNSOURCED: the
+numbers are the brief's). The card holds one sentence; the full list (`what`, unchanged) opens under "Quoi
+exactement ?". Its answers are "Oui, aider" and "Pas maintenant"; "Non merci" is no longer on the card (the key stays,
+unused there): the only no is "Arrêter et effacer" in the history. Register "vous". A non-breaking space stands
+before "?".
+
+| Key | French | English | Where |
+|---|---|---|---|
+| lead | Pour que l’app compte mieux sur tous les téléphones, elle garde sur ce téléphone vos comptages, la position de vos articulations et le modèle du téléphone, jamais la vidéo, et c’est vous qui les envoyez, quand vous voulez. | So the app counts better on every phone, it keeps on this phone your counts, your joint positions and the phone’s model, never the video, and you send them yourself, when you choose. | Saved card, under "Aider à améliorer le comptage ?" |
+| more | Quoi exactement ? | What exactly? | Saved card, the toggle that opens `what` |
+| later | Pas maintenant | Not now | Saved card, beside "Oui, aider" |
+| laterNote | D’accord. Vous pourrez toujours dire oui dans Vos séries. | All right. You can still say yes in Your sets. | Saved card, after "Pas maintenant" |
+
+For David: "téléphones … ce téléphone … du téléphone" repeats the word three times in `lead`. Any shorter wording
+must still name the three kinds of data kept (counts, joint positions, the phone's model) and "jamais la vidéo", or the
+one sentence would understate what the yes allows; the full list stays one tap away.

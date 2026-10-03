@@ -6,7 +6,7 @@ import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
-import { contribution, contributeAsked, keepContribution, markContributeAsked, readChoice } from '../../lib/contribute';
+import { contribution, contributeAsks, keepContribution, markContributeAsked, readChoice, shouldAskContribute } from '../../lib/contribute';
 import ContributeAsk from './ContributeAsk';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
@@ -282,10 +282,12 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [chosen, setChosen] = useState('');
   const offerLevel = shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
-  // Asked once, on a saved card that asks nothing else (the level question comes first); shown is asked.
-  const [askContribute] = useState(() => readChoice() === null && !contributeAsked());
-  const showContribute = step === 'saved' && !offerLevel && askContribute;
-  useEffect(() => { if (showContribute) markContributeAsked(); }, [showContribute]);
+  // Whether to help improve the count: asked on the saved card of the first set, and once more from the fifth when
+  // left unanswered, never after a yes or a no (contribute.js shouldAskContribute). Decided once the sets on the
+  // phone are read after the save; shown is asked.
+  const [contributeAt, setContributeAt] = useState(null); // the sets on the phone when it is asked
+  const showContribute = step === 'saved' && contributeAt !== null;
+  useEffect(() => { if (showContribute) markContributeAsked(contributeAt); }, [showContribute]); // eslint-disable-line react-hooks/exhaustive-deps
   // "Noted" only when the phone stored it (audit of 2 October); otherwise the screen says it was not kept.
   const [levelLost, setLevelLost] = useState(false);
   function chooseLevel(l) { setLevelLost(!writeLevel(l)); setChosen(l); }
@@ -354,6 +356,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       if (readChoice() === 'yes') keepThis(n);
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
+      // The question on helping, from the number of sets now on the phone; unread, it is not asked.
+      loadSets().then(l => {
+        if (shouldAskContribute({ choice: readChoice(), ...contributeAsks(), saved: l.length })) setContributeAt(c => c ?? l.length);
+      }, () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
       track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
@@ -560,8 +566,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           </button>
           <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
-          {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
+          {/* After the first saved set (and once more from the fifth): one quiet question, which nothing waits on. */}
           {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
+          {/* Once, after a saved set, when no level is stored. */}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'}</p>
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />

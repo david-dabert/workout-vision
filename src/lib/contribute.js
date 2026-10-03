@@ -37,10 +37,38 @@ export function persistChoice(v) {
   if (v === 'no' && readChoice() === 'yes') { try { localStorage.removeItem(CHOICE_KEY); } catch { /* checked below */ } }
   return v === 'yes' ? readChoice() === 'yes' : readChoice() !== 'yes';
 }
-// The question is shown once, answered or not, as the level question is (level.js).
+// When the question is asked on the saved card (build brief "contribute-ask", 3 October 2026): after the first saved
+// set, and once more at most, from the fifth, when it was left unanswered ("Pas maintenant", or the screen left).
+// A yes or a no, here or in the history, ends it. Shown counts as asked, so it is never shown more than twice.
+// The phone keeps how many times it was shown and the number of sets saved the first time, as "1@1": a count, not
+// an identifier. The old card's "true" (shown once, before this) reads as shown once at the first set.
+// Status: convention, UNSOURCED (the numbers are the brief's, 3 October 2026; not measured).
 const ASKED_KEY = 'wv_contribute_asked';
-export function contributeAsked() { try { return localStorage.getItem(ASKED_KEY) === 'true'; } catch { return true; } }
-export function markContributeAsked() { try { localStorage.setItem(ASKED_KEY, 'true'); } catch { /* asked again next time */ } }
+export const REASK_AT = 5; // the set from which "Pas maintenant" is asked again, once
+export const REASK_GAP = 4; // and never sooner than this many sets after the first ask (same source, same status)
+export const MAX_ASKS = 2;
+/** { asks, at }: how many times the card was shown, and the number of sets saved when it was first shown. */
+export function contributeAsks(store = globalThis.localStorage) {
+  let v;
+  try { v = store?.getItem(ASKED_KEY) ?? null; } catch { return { asks: MAX_ASKS, at: 0 }; } // unreadable: never asked
+  if (v === 'true') return { asks: 1, at: 1 };
+  const m = /^(\d+)@(\d+)$/.exec(v || '');
+  return m ? { asks: Number(m[1]), at: Number(m[2]) } : { asks: 0, at: 0 };
+}
+/** Records one more showing; saved: the number of sets on the phone as it is shown. false when not stored. */
+export function markContributeAsked(saved, store = globalThis.localStorage) {
+  const { asks, at } = contributeAsks(store);
+  try { store.setItem(ASKED_KEY, `${asks + 1}@${asks ? at : saved}`); return true; } catch { return false; }
+}
+/**
+ * Whether the saved card asks. choice: readChoice(); saved: the sets on the phone with this one, or null when not
+ * known (then it does not ask: no count, no guess). Asked at the first saved set, and once more from the fifth.
+ */
+export function shouldAskContribute({ choice, asks, at, saved }) {
+  if (choice !== null || !Number.isFinite(saved) || saved < 1 || asks >= MAX_ASKS) return false;
+  if (asks === 0) return true;
+  return saved >= Math.max(REASK_AT, at + REASK_GAP);
+}
 
 // Landmarks rounded to five decimals (a hundredth of a millimetre in the world frame, a hundred-thousandth of
 // the image): the file is about half the size and no count changes at that precision.
