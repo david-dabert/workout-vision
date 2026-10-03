@@ -19,7 +19,8 @@ self.onmessage = async ({ data }) => {
     const { width, height, pixels, timestamp } = data;
     if (!canvas || canvas.width !== width || canvas.height !== height) canvas = new OffscreenCanvas(width, height);
     canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
-    const result = detectPoseImage(model, canvas, timestamp);
+    // A detection error is posted as an error, not as an empty frame (third audit, C07).
+    const result = detectPoseImage(model, canvas, timestamp, { rethrow: true });
     self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null });
   } catch (error) {
     self.postMessage({ id: data.id, error: error.message });

@@ -103,9 +103,10 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
 }
 
 // What was read, without naming a cause the app cannot see (review 01 of the partial-read fix).
-function partialLine(read, expected, fr) {
-  const share = expected ? Math.round((Math.min(read, expected) / expected) * 100) : null;
-  if (expected && read > expected) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
+// Samples out of time order were read again from an earlier point: the "read twice" line, never "NaN %" (third audit, C08).
+function partialLine(read, expected, fr, disordered) {
+  const share = expected && Number.isFinite(read) ? Math.round((Math.min(read, expected) / expected) * 100) : null;
+  if (disordered || (expected && read > expected)) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
   return share === null
     ? (fr ? 'La durée de la vidéo n’a pas pu être lue. Nous n’affichons pas un compte incertain. Recommencez l’analyse.' : 'The length of the video could not be read. We do not show an uncertain count. Start the analysis again.')
     : (fr ? `Seuls ${share}\u00A0% de la vidéo ont été analysés. Nous n’affichons pas un compte partiel. Recommencez l’analyse.` : `Only ${share}% of the video was analysed. We do not show a partial count. Start the analysis again.`);
@@ -113,19 +114,19 @@ function partialLine(read, expected, fr) {
 
 // Shown when the phone read only part of the video: no count, since it would be the count of part
 // of the set (29 September: 181 of 439 samples read, 2 of 10 reps counted).
-export function AnalysisIncomplete({ lift, read, expected, decoder, onClose, onRestart, onRefilm }) {
+export function AnalysisIncomplete({ lift, read, expected, disordered = false, decoder, onClose, onRestart, onRefilm }) {
   const { lang } = useT(), fr = lang === 'fr';
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
       <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
-      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr)}</p>
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr, disordered)}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
-      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected } }} />
+      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected, disordered } }} />
     </div></section>
   </div>;
 }

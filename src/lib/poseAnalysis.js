@@ -333,8 +333,11 @@ export const selectSubjectPose = _selectSubjectPose;
  * @param {HTMLCanvasElement} source
  * @param {number} [timestamp] - deterministic timestamp in ms (frameIdx * 1000/fps).
  *   Falls back to performance.now() if not provided (live mode).
+ * @param {{ rethrow?: boolean }} [options] - rethrow: a detection error is thrown instead of read as
+ *   "no person in this frame". The app's and the collector's pose worker set it, so a model failure
+ *   ends the run as an error (third audit, C07); the harness, synth and Validate keep the null.
  */
-export function detectPoseImage(landmarker, source, timestamp) {
+export function detectPoseImage(landmarker, source, timestamp, { rethrow = false } = {}) {
   try {
     // IMAGE mode: no timestamp, no temporal state (deterministic per-frame).
     // VIDEO mode: timestamps must be monotonically increasing.
@@ -374,6 +377,7 @@ export function detectPoseImage(landmarker, source, timestamp) {
     return result;
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (image):', e);
+    if (rethrow) throw e;
     return null;
   }
 }

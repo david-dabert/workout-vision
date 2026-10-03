@@ -79,7 +79,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       }
     } catch (e) {
       if (isInterruption(controller.signal.reason)) { if (mine()) setInterrupted(true); }
-      else if (e.name === 'PartialReadError') { if (mine()) setIncomplete({ read: e.read, expected: e.expected, decoder: e.decoder }); }
+      else if (e.name === 'PartialReadError') { if (mine()) setIncomplete({ read: e.read, expected: e.expected, decoder: e.decoder, disordered: e.disordered }); }
       else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); }
     } finally { release(); wake(); if (mine()) { setBusy(false); abort.current = null; } }
   }
@@ -109,7 +109,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       <ScreenFade screenKey={view}>
         {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); refilm(); }} />}
         {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
-        {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
+        {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
       </ScreenFade>

@@ -93,8 +93,9 @@ export async function gzipBlob(jsonString) {
  * The samples of one set, in the order the extractor gives them. When the decoder starts again
  * from the first frame (extractFramesStreaming falls back from WebCodecs to playback), what came
  * before is dropped, failures included, so no sample is kept twice. `fail(index)` records a
- * sample whose pose could not be read, since the playback path swallows that error; a later
- * successful read of the same index clears it. `posed` counts the samples with a pose. The image
+ * sample whose pose could not be read; since the third audit (C06) the extractor ends on that
+ * error on both paths, so collectSet stops there, and a later successful read of the same index
+ * clears it. `posed` counts the samples with a pose. The image
  * landmarks are kept beside the world landmarks, as the committed clips hold both.
  */
 export function sampleSet() {
