@@ -268,11 +268,19 @@ const TOGETHER_MIN_CORRELATION = 0.3;
 // working extreme to the rest threshold (detectReps), and it is marked clipped, so no measure uses it. The rule
 // withdrawn on 1 October (TRIED.md) counted it from the working end on, which a movement after the set reaches
 // too; a move to a new position (arms crossed, phone in hand, standing up) does not come back. It stays above the
-// half-way-back cut that edges.test.ts keeps uncounted. Window-edges experiment, 3 October 2026, tuned on the
-// public build half A only; with the entering-sample check of detectReps (variant-eval): exact sets, public half A
-// 141 -> 151, half B 130 -> 140, synthetic 74 -> 74, David's 7 -> 8 (curl 5: 4 -> 5); none newly off by 3.
-// Status: experimental; UNSOURCED (no published rule for a rep cut by the recording).
-const CUT_RETURN_SHARE = 0.75;
+// half-way-back cut that edges.test.ts keeps uncounted (a constraint of 30 September, older than this value).
+// How the value was chosen (third audit C34, 3 October 2026). The first value, 0.75 (window-edges experiment,
+// 8ff7313), was chosen partly by watching David's hip thrust set (0.5 read it 7 for 6), which PLAN.md forbids
+// ("tune nothing to any clip"). It was re-chosen on the public build half A only: variant-eval swept 0.5 to 0.9
+// and 1.01 (rule off); half A, 458 sets, exact / off by 3 or more: 0.5 178/74, 0.6 171/74, 0.65 169/76,
+// 0.7 169/76, 0.75 167/76, 0.8 167/76, 0.85 164/76, 0.9 164/76, 1.01 160/77. 0.5 and 0.6 count the half-way-back
+// cut of edges.test.ts, so they are out; 0.65 and 0.7 give the same count on every half-A set, and 0.7 keeps the
+// wider margin from that cut. Half B, David's sets and the synthetic sets were read for 0.7 against 0.75: half B
+// 164 -> 166 exact (off by 3 or more 99 -> 99), David's 8 -> 8 (no count moved), synthetic 74 -> 74; none newly
+// off by 3. They had also been read once for 0.5, the first pick, before the full test suite showed it breaks
+// edges.test.ts (TRIED.md); the exclusion of 0.5 and 0.6 rests on that synthetic test alone. Sweep in TRIED.md. Status: experimental; UNSOURCED (no published rule for a rep cut
+// by the recording).
+const CUT_RETURN_SHARE = 0.7;
 
 // ─── Public API ───
 

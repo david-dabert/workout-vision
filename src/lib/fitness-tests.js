@@ -42,7 +42,7 @@ export const isTest = key => Object.hasOwn(FITNESS_TESTS, key);
  * `halfTime` added; else null. Nothing is returned when the set's range is under the core's countable range: a
  * still or barely moving video scores 0 (R8; review of 2 October). Halfway is the protocol's own rule (Jones,
  * Rikli & Beam 1999; literature). Used only for tests, inside their window: the core itself counts a last rep cut
- * on its way back once it is CUT_RETURN_SHARE (75 %) back (core.ts, TRIED.md, 3 October 2026), but a rise cut
+ * on its way back once it is CUT_RETURN_SHARE (70 %) back (core.ts, TRIED.md, 3 October 2026), but a rise cut
  * before it returns is counted only here, since after a set the same rise can be anything.
  */
 export function openRise(smoothed, timestamps, low, high, rest, afterSec, minRange = COUNTABLE_RANGE_DEG) {

@@ -1,22 +1,28 @@
-Public scoreboard 2026-10-03: 894 build sets, 331 exact (37%). Of the 818 in the baseline that decide, 309 exact now, 309 before; 0 became off by 3 or more. The 76 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Public scoreboard 2026-10-03: 894 build sets, 335 exact (37%). Of the 818 in the baseline that decide, 313 exact now, 309 before; 0 became off by 3 or more. The 76 bench and overhead press sets are measured and decide nothing (PLAN.md).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
 | countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 7 | 5 | 11 |
 | countix front_raise | 75 | 31 | 26 | 6 | 5 |
 | countix lunge | 78 | 31 | 28 | 1 | 7 |
-| countix pull_up | 60 | 20 | 25 | 3 | 7 |
+| countix pull_up | 60 | 21 | 25 | 3 | 7 |
 | countix push_up | 77 | 32 | 19 | 8 | 8 |
 | countix squat | 46 | 20 | 12 | 1 | 9 |
-| countix triceps_pushdown | 73 | 23 | 33 | 2 | 6 |
+| countix triceps_pushdown | 73 | 24 | 32 | 2 | 6 |
 | countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 10 | 9 | 5 | 11 |
 | countix-whole front_raise | 75 | 27 | 27 | 6 | 8 |
 | countix-whole lunge | 78 | 33 | 25 | 1 | 7 |
-| countix-whole pull_up | 60 | 20 | 19 | 4 | 11 |
+| countix-whole pull_up | 60 | 21 | 19 | 4 | 11 |
 | countix-whole push_up | 77 | 30 | 19 | 11 | 9 |
 | countix-whole squat | 46 | 19 | 10 | 2 | 11 |
-| countix-whole triceps_pushdown | 73 | 23 | 30 | 2 | 8 |
+| countix-whole triceps_pushdown | 73 | 24 | 29 | 2 | 8 |
 
+-> public/countix/build/HmwfLUgHZIc_000000_0.json.gz  label 5  before 3  now 4
+-> public/countix/build/o08hRRttMIw_000004_0.json.gz  label 5  before 4  now 5
+-> public/countix/build/rFRinf9b-Vw_000001_0.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/HmwfLUgHZIc_000000_0.json.gz  label 5  before 3  now 4
+-> public/countix-whole/build/o08hRRttMIw_000004_0.json.gz  label 5  before 4  now 5
+-> public/countix-whole/build/rFRinf9b-Vw_000001_0.json.gz  label 2  before 1  now 2
 
 Not scored (5032), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts

@@ -2,7 +2,7 @@
  * The edges of the video (accuracy work, 30 September 2026): what the core counts where the video starts
  * or ends inside a movement, pinned so that no future change moves it unmeasured. Status: convention.
  * - Every rep needs its whole path on video: leaving the rest, the working end, the return to rest.
- * - At the end, a last rep cut before three quarters of its return is not counted: it cannot be told from what
+ * - At the end, a last rep cut before 70 % of its return (CUT_RETURN_SHARE) is not counted: it cannot be told from what
  *   people do after a set (crossing the arms, reaching for the phone, sitting up, standing straight). One cut
  *   later on its way back counts, marked clipped (window-edges.test.ts, 3 October).
  * - At the start, a first press shorter than the shortest rep is not counted: it cannot be told from
