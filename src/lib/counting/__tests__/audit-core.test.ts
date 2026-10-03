@@ -123,3 +123,18 @@ describe('a bridged gap makes no speed', () => {
     expect(gapped.reps[1].peakSpeed).toBeLessThan(whole.reps[1].peakSpeed * 1.25);
   });
 });
+
+// Second audit, 3 October: lateral lunges and Cossack squats alternating legs were counted on one knee, so a set
+// read half its reps. Only the loaded knee bends in these (the other leg stays straight), so both knees are
+// counted and joined; not for lunges where both knees bend (TRIED.md: doubles and refusals on the public clips).
+describe('a lunge set alternating legs', () => {
+  it('counts every rep, whichever leg made it', () => {
+    const left: number[] = [], right: number[] = [];
+    const one = (bend: 'left' | 'right') => sample([{ hold: 175, sec: 0.6 }, { to: 95, sec: 0.9 }, { hold: 95, sec: 0.2 }, { to: 175, sec: 0.9 }], 175, SPS)
+      .forEach(a => { left.push(bend === 'left' ? a : 175); right.push(bend === 'right' ? a : 175); });
+    for (let i = 0; i < 4; i++) { one('left'); one('right'); }
+    const ts = timestamps(left.length, SPS);
+    const wl = ts.map((_, i) => jointFrame('knee', { left: left[i], right: right[i] }));
+    expect(countReps(wl, ts, 'lateral_lunge').count).toBe(8);
+  });
+});
