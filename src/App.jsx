@@ -21,6 +21,7 @@ import ScreenFade from './components/experience/ScreenFade';
 import { loadSets, knownSets } from './components/experience/sets';
 import { levelView, readLevel } from './components/experience/level';
 import { whenQuiet } from './lib/whenQuiet';
+import { warmPoseFiles } from './lib/pose-files';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
 // screen under 812 points). No WebGL context is made to decide it: making one held up the first
@@ -160,8 +161,9 @@ function AppInner() {
   // from that page, "Filmer cet exercice" goes on to the filming screen.
   const [guideLift, setGuideLift] = useState('');
   const chooseLift = (lift, guided = false) => {
-    // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
-    fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
+    // The model and the pose library's WASM enter the service worker's caches now, so a first analysis made offline
+    // can start (pose-files.js); inference stays in the existing worker.
+    warmPoseFiles(import.meta.env.BASE_URL);
     // A fitness test has no guide page of its own: its protocol is on the filming screen (fitness-tests.js).
     if (!guided && !isTest(lift) && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
       go('exercises', () => setGuideLift(lift));

@@ -91,9 +91,14 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
     const m = txt.split('\n').find(l => l.startsWith(name.padEnd(22)))?.match(/n\s+(\d+)\s+count exact\s+(\d+).*off >= 3: (\d+)\s+range error mean (-?\d+) deg.*conc\. (-?[\d.]+) s\s+ecc\. (-?[\d.]+) s/);
     return m ? { n: +m[1], exact: +m[2], cat: +m[3], rom: Math.abs(+m[4]), conc: Math.abs(+m[5]), ecc: Math.abs(+m[6]) } : null;
   };
-  const before = existsSync(file) ? readFileSync(file, 'utf8') : '', now = out.join('\n');
+  // In CI, the base branch's synth.txt (SYNTH_BASE): a change cannot lower the bar by editing it (audit of 3 October).
+  const from = process.env.SYNTH_BASE || file;
+  const before = existsSync(from) ? readFileSync(from, 'utf8') : '', now = out.join('\n');
   for (const name of ['all', 'all, guided view']) {
     const b = read(before, name), a = read(now, name);
+    // A changed number of sets is named, never passed over in silence: in CI it fails, so adding or removing a
+    // set is a decision taken on its own (audit of 3 October).
+    if (process.env.SYNTH_BASE) expect(a && b && a.n, `${name}: number of sets against the base branch`).toBe(b?.n);
     if (!b || !a || b.n !== a.n) continue;
     expect(a.exact, `${name}: exact counts`).toBeGreaterThanOrEqual(b.exact);
     expect(a.cat, `${name}: sets off by 3 or more`).toBeLessThanOrEqual(b.cat);

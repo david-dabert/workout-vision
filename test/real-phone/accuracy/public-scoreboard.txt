@@ -1,4 +1,4 @@
-Public scoreboard 2026-10-02: 894 build sets, 271 exact (30%). Of the 894 in the baseline, 271 exact now, 271 before; 0 became off by 3 or more.
+Public scoreboard 2026-10-03: 894 build sets, 271 exact (30%). Of the 894 in the baseline, 271 exact now, 271 before; 0 became off by 3 or more.
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|

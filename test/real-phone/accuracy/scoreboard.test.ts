@@ -15,7 +15,9 @@ const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
 const verdict = (count: number | string, label: number) => (count === 'refused' ? 'refused' : count === label ? 'exact' : Math.abs((count as number) - label) >= 3 ? 'catastrophic' : `off ${(count as number) > label ? '+' : ''}${(count as number) - label}`);
 
 test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
-  const base = JSON.parse(readFileSync(BASELINE, 'utf8'));
+  // In CI the counts compared with are the base branch's (SCOREBOARD_BASE), so a change cannot lower the bar by
+  // editing the baseline it is compared with (audit of 3 October).
+  const base = JSON.parse(readFileSync(process.env.SCOREBOARD_BASE || BASELINE, 'utf8'));
   const rows: string[] = [], live: Record<string, number | string> = {};
   // The gate compares the sets both runs hold: a set added since cannot hide a regression (review, 30 September).
   let exactNow = 0, exactBefore = 0, catastrophic = 0, n = 0, added = 0;

@@ -10,10 +10,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# The build runs npm ci and the tests: it reads the code and nothing more. Only the deploy job may publish
+# (audit of 3 October: a compromised dependency in the build could otherwise deploy the site).
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -21,7 +21,8 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    # A deploy by hand publishes main only, never another branch past the CI gate (R6).
+    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +37,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test e2e/offline.spec.js
+      - run: npx playwright test e2e/offline.spec.js --retries=0
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -44,6 +45,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
