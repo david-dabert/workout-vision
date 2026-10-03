@@ -87,6 +87,66 @@ describe('a failed analysis of one sample (third audit, C06)', () => {
   });
 });
 
+// Frozen-read incident, 3 October 2026: at a demo on David's iPhone a machine lateral raise counted 0, twice. The
+// playback path paused the video before drawing it, and a paused video may draw a stale frame on WebKit; a decoder
+// that hands on the same picture again and again gave a still pose and a confident 0. Each canvas here holds what
+// was last drawn on it: a moving source gives a new picture each sample, a frozen one the same picture throughout.
+function stubFrozenPage({ webcodecsFrozen, rvfcFrozen }) {
+  const videos = stubPage({ webcodecs: true });
+  const draws = [];
+  const value = src => {
+    if (typeof src.timestamp === 'number') return webcodecsFrozen ? 200 : 1 + Math.round(src.timestamp / 1e6 * 30);
+    draws.push({ t: src.t, paused: src.paused });
+    return rvfcFrozen ? 200 : 1 + Math.round(src.t * 30);
+  };
+  vi.stubGlobal('document', { createElement: tag => {
+    if (tag === 'video') { const v = fakeVideo(); videos.push(v); return v; }
+    let shown = 0;
+    const ctx = { drawImage(src) { shown = value(src); }, save() {}, restore() {}, translate() {}, rotate() {}, getImageData: (_x, _y, w, h) => ({ data: new Uint8ClampedArray(Math.min(w * h, 32 * 32) * 4).fill(shown) }) };
+    return { width: 640, height: 480, getContext: () => ctx };
+  } });
+  return { videos, draws };
+}
+
+describe('a frozen read (frozen-read incident, 3 October)', () => {
+  it('the playback path draws each sample while its frame plays, then pauses the video', async () => {
+    const { draws } = stubFrozenPage({ webcodecsFrozen: false, rvfcFrozen: false });
+    const { extractFramesRVFC } = await import('../frameExtractor');
+    const meta = await extractFramesRVFC(new Blob(['x']), 15, Infinity, 640, async () => {}, null, {});
+    expect(meta.frameCount).toBe(30);
+    expect(draws).toHaveLength(30);
+    expect(draws.every(d => d.paused === false)).toBe(true);
+  });
+  it('a moving read through WebCodecs is kept, the playback path never started', async () => {
+    const { videos } = stubFrozenPage({ webcodecsFrozen: false, rvfcFrozen: false });
+    const { extractFramesStreaming } = await import('../frameExtractor');
+    const result = await extractFramesStreaming(new Blob(['x']), 15, Infinity, 640, async () => {}, null, {});
+    expect(result.method).toBe('webcodecs');
+    expect(videos).toHaveLength(0);
+  });
+  it('a frozen WebCodecs read falls back to the playback path, which starts again at sample 0', async () => {
+    const { videos } = stubFrozenPage({ webcodecsFrozen: true, rvfcFrozen: false });
+    const { extractFramesStreaming } = await import('../frameExtractor');
+    const calls = [];
+    const result = await extractFramesStreaming(new Blob(['x']), 15, Infinity, 640, async (_c, i) => { calls.push(i); }, null, {});
+    expect(result.method).toMatch(/^webcodecs failed after 30 samples \(frozen read: 29 of 30 samples repeat the one before\), then rvfc$/);
+    expect(videos).toHaveLength(1);
+    expect(calls.slice(0, 30)).toEqual([...Array(30).keys()]);
+    expect(calls.slice(30)).toEqual([...Array(30).keys()]);
+  });
+  it('both reads frozen: an error, never a count', async () => {
+    stubFrozenPage({ webcodecsFrozen: true, rvfcFrozen: true });
+    const { extractFramesStreaming } = await import('../frameExtractor');
+    const run = extractFramesStreaming(new Blob(['x']), 15, Infinity, 640, async () => {}, null, {});
+    await expect(run).rejects.toThrow(/No decoder could process this file[\s\S]*WebCodecs: frozen read[\s\S]*RVFC: frozen read: 29 of 30/);
+  });
+  it('the playback path forced and frozen (the check page): an error, WebCodecs not tried behind its back', async () => {
+    stubFrozenPage({ webcodecsFrozen: false, rvfcFrozen: true });
+    const { extractFramesStreaming } = await import('../frameExtractor');
+    await expect(extractFramesStreaming(new Blob(['x']), 15, Infinity, 640, async () => {}, null, { path: 'rvfc' })).rejects.toThrow(/RVFC: frozen read/);
+  });
+});
+
 describe('a pose-model exception (third audit, C07)', () => {
   it('reads as no person by default, and is thrown when the worker asks for it', async () => {
     const { detectPoseImage } = await import('../poseAnalysis');

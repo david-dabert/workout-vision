@@ -12,6 +12,8 @@
  * All methods stream one frame at a time via callback, keeping memory constant.
  */
 
+import { canvasFingerprint, isFrozenRead, repeatCounter } from './frozenRead';
+
 /**
  * Whether a frame must be rotated by hand: the container says it is turned (90, 180 or 270°) and the decoded frame
  * does not carry that rotation itself (WebKit). 180° was left out before (only 90 and 270 swap the sides), so an
@@ -264,11 +266,14 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
             // The video waits while the frame is analysed, so a slow phone reads every sample
             // instead of letting the video run past them (test/real-phone/decoder: 11 of 90 read before
             // with 150 ms of analysis a frame, 89 of 89 after). Measured in desktop Chromium only.
-            // The frame on screen is this callback's until the task ends, so it is drawn at once.
-            video.pause();
+            // The frame is drawn first, while it is the one this callback presents, and the video is paused after.
+            // Paused first, the draw read a paused video, which WebKit may answer with a stale frame: at a demo on
+            // David's iPhone on 3 October, possibly in Low Power Mode, a machine lateral raise counted 0 twice while the
+            // same video read through WebCodecs gave 460 distinct samples and 8 of 9 (frozen-read incident, 3 October).
             let drawn = false;
             try {
               ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
+              video.pause();
 
               // On the first frame, validate the canvas isn't blank (HEVC canvas taint
               // on some iOS versions produces all-black frames silently)
@@ -634,6 +639,14 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
   }
 }
 
+/** A decoding path that handed on the same picture again and again (isFrozenRead): never counted. */
+export class FrozenReadError extends Error {
+  constructor({ samples, repeats }, decoder) {
+    super(`frozen read: ${repeats} of ${samples} samples repeat the one before`);
+    this.name = 'FrozenReadError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder;
+  }
+}
+
 /**
  * Inspect a video file to determine its codec without decoding.
  * Reads container metadata via web-demuxer (fast, no frame decode).
@@ -705,8 +718,15 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   let handed = 0;
   // An error of the caller's own analysis (onFrame) is not a decoder failure: it ends the extraction
   // instead of starting the video again on the next decoder with the same failing worker (third audit, C06).
+  // Each path's samples are fingerprinted as they are handed on, and a frozen read is a decoder failure: the
+  // other path is tried, and if none reads a moving video, nothing is counted (frozen-read incident, 3 October).
+  let repeats = repeatCounter();
+  const frozenCheck = (name) => {
+    if (isFrozenRead(repeats.read)) throw new FrozenReadError(repeats.read, name);
+  };
   const counted = async (canvas, index, timestamp) => {
     handed++;
+    repeats.add(canvasFingerprint(canvas));
     try {
       return await onFrame(canvas, index, timestamp);
     } catch (err) {
@@ -723,6 +743,7 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   } else if (typeof VideoDecoder !== 'undefined') {
     try {
       const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
+      frozenCheck('webcodecs');
       return { ...result, method: 'webcodecs' };
     } catch (err) {
       if (err.name === 'AbortError' || err.fromOnFrame) throw err;
@@ -736,8 +757,10 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
 
   // Step 2: Try RVFC (playback-based, works on older browsers)
   if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+    repeats = repeatCounter();
     try {
       const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
+      frozenCheck('rvfc');
       return { ...result, method: `${before}rvfc` };
     } catch (err) {
       if (err.name === 'AbortError' || err.fromOnFrame) throw err;

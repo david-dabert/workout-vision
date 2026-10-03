@@ -108,3 +108,41 @@ describe('a read whose samples go back in time', () => {
     } finally { delete globalThis.__passes; delete globalThis.__time; }
   });
 });
+
+// Frozen-read incident, 3 October: a whole read whose skeletons all repeat is a picture that did not move. It ends as
+// a read error (the "could not read this video" screen), never as a count of 0 nor as a refusal blaming the person.
+describe('a whole read whose skeletons repeat, and one whose do not', () => {
+  it('rejects with FrozenSkeletonsError, no count', async () => {
+    const frame = Array.from({ length: 33 }, (_, i) => ({ x: i / 33, y: 0, z: 0, visibility: 1 }));
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; }
+      postMessage(m) { setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id, ok: true } : { id: m.id, image: frame, world: frame } }), 0); }
+      terminate() {}
+      addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
+    };
+    globalThis.__passes = [439];
+    try {
+      await expect(analyzeCoreVideo(new Blob(['x']), 'lateral_raise')).rejects.toMatchObject({ name: 'FrozenSkeletonsError', samples: 439, repeats: 438 });
+    } finally { delete globalThis.__passes; }
+  });
+  it('counts a healthy read: the first 439 samples of the incident video read through WebCodecs, no skeleton repeated', async () => {
+    const { readFileSync } = await import('node:fs'), { gunzipSync } = await import('node:zlib'), { resolve } = await import('node:path');
+    const set = JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '../../../test/real-phone/sets-29sep/lateral_raise_9_front_43e71b40.json.gz'))).toString());
+    let k = 0;
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; }
+      postMessage(m) { const world = m.type === 'init' ? null : set.worldLandmarks[k++]; setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id, ok: true } : { id: m.id, image: world, world } }), 0); }
+      terminate() {}
+      addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
+    };
+    globalThis.window = globalThis.window ?? { dispatchEvent() {} };
+    globalThis.CustomEvent = globalThis.CustomEvent ?? class { constructor(type, init) { this.type = type; this.detail = init?.detail; } };
+    globalThis.__passes = [439];
+    globalThis.__time = i => set.timestamps[i];
+    try {
+      const r = await analyzeCoreVideo(new Blob(['x']), 'lateral_raise');
+      expect(r.refused).toBe(false);
+      expect(r.count).toBeGreaterThan(0);
+    } finally { delete globalThis.__passes; delete globalThis.__time; }
+  });
+});

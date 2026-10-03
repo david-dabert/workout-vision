@@ -1,12 +1,36 @@
 import { countReps, liftDefinition } from './counting/core';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
+import { isFrozenRead } from './frozenRead';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
 export const APPROVED_LIFTS = OFFERED;
+
+// Two skeletons equal to the last digit: the same picture went through the pose model twice.
+const sameSkeleton = (a, b) => !!a && !!b && a.length === b.length && a.every((p, i) => p.x === b[i].x && p.y === b[i].y && p.z === b[i].z);
+
+/**
+ * Samples whose world skeleton repeats the one before exactly: { samples, repeats }. The app's pose worker runs
+ * MediaPipe in IMAGE mode (corePoseWorker.js, getImageLandmarker: useImageMode, CPU), with no state carried from one
+ * frame to the next, and the world landmarks pass through unfiltered (poseAnalysis.js, detectPoseImage): the same
+ * picture gives the same skeleton, and a filmed person never gives the same skeleton twice. A frame with no person
+ * (null) is never a repeat; it is the visibility refusal's business. Frozen-read incident, 3 October.
+ */
+export function repeatedSkeletons(worldLandmarks) {
+  let repeats = 0;
+  for (let i = 1; i < worldLandmarks.length; i++) if (sameSkeleton(worldLandmarks[i], worldLandmarks[i - 1])) repeats++;
+  return { samples: worldLandmarks.length, repeats };
+}
+
+// A read whose skeletons repeat (repeatedSkeletons, isFrozenRead): an error of the read, never a count nor a refusal
+// that would blame the person's position (frozen-read incident, 3 October). It is shown as the screen for a video
+// that could not be read (CoreUpload.jsx, AnalysisError).
+export class FrozenSkeletonsError extends Error {
+  constructor({ samples, repeats }, decoder = '') { super(`${repeats} of ${samples} skeletons repeat the one before: the video was read frozen`); this.name = 'FrozenSkeletonsError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder; }
+}
 
 export function summarizeCount(worldLandmarks, timestamps, lift) {
   const core = countReps(worldLandmarks, timestamps, lift);
@@ -104,6 +128,16 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
     const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
     if (missed || !ordered) throw new PartialReadError({ ...(missed ?? { read: timestamps.length, expected: timestamps.length }), disordered: !ordered, decoder: metadata?.method || '' });
+    // Defence in depth behind the extractor's frozen-read check (frozenRead.js, isFrozenRead, the same rule and
+    // threshold): skeletons that repeat are a picture that did not move, read as a still person and a confident 0 on
+    // David's iPhone at the demo of 3 October. No count is given; the app shows a read error. The healthy read of that
+    // video gave 0 repeats in 460 samples; David's real-phone sets 0 in each; the 894 public build sets at most 8 of
+    // 150 (5 %); synthetic renders up to 27 % (frozenRead.js). Source: this incident and these reads. Status:
+    // experimental; the threshold is UNSOURCED.
+    // Checked here, on the app's own read, and not in summarizeCount: the counter's unit tests feed it noiseless
+    // synthetic skeletons whose holds repeat exactly, as a filmed person never does.
+    const still = repeatedSkeletons(worldLandmarks);
+    if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, metadata?.method || '');
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
