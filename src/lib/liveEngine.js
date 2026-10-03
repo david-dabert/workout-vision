@@ -168,11 +168,21 @@ export function createLiveEngine({
     get mode() { return mode; },
     get samples() { return counter?.length ?? 0; },
     get previewMs() { return previewMs; },
-    /** Loads the pose model in its worker; resolves once it can read a sample. */
+    /**
+     * Loads the pose model in its worker; resolves with true once it can read a sample, and rejects when the model
+     * fails. Resolves with false when the engine was disposed before the model was in: our own close aborts the
+     * loading (poseClient, close), which is expected and no failure, so it is never logged nor shown (a camera
+     * refused, then the screen left while the model loads: CI of 3 October, e2e/live.spec.js).
+     */
     load() {
-      if (!ready) { pose = poseClient(makeWorker); ready = pose.init(); }
+      if (!ready) {
+        pose = poseClient(makeWorker);
+        ready = pose.init().then(() => !closed, error => { if (closed) return false; throw error; });
+      }
       return ready;
     },
+    /** True once dispose() was called. */
+    get disposed() { return closed; },
     /** The camera picture is in `video`: samples are read now and then to show whether the person is in view. */
     preview() {
       if (closed) return;

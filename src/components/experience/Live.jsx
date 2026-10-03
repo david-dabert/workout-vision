@@ -117,7 +117,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       onError: err => { console.error('[live]', err); giveUp('failed'); },
     });
     engine.current = e;
-    e.load().then(() => setModelReady(true), err => { console.error('[live] model', err); giveUp('failed'); });
+    // false: the screen was left while the model loaded, our own close; nothing to say (liveEngine.js, load).
+    e.load().then(ok => { if (ok) setModelReady(true); }, err => { console.error('[live] model', err); giveUp('failed'); });
     return () => { e.dispose(); engine.current = null; clearTimers(); release(); hush(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

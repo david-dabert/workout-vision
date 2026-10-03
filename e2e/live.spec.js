@@ -79,7 +79,9 @@ test('the Film screen offers live counting beside the video, and remembers the c
 });
 
 test('a camera refused says so and leads back to recording', async ({ page }) => {
-  const errors = await open(page, { lang: 'fr', mode: 'live', init: () => {
+  // The pose model takes 4 s to load, so the screen is always left while it loads: that close is ours, never an
+  // error logged or shown (liveEngine.js, load; CI of 3 October: "[live] model AbortError: Closed").
+  const errors = await open(page, { lang: 'fr', mode: 'live', workerBody: 'self.onmessage = ({ data }) => { if (data.type === \'init\') setTimeout(() => self.postMessage({ id: data.id }), 4000); };', init: () => {
     navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('Permission denied', 'NotAllowedError'));
   } });
   await page.getByTestId('film-live').click();
@@ -91,6 +93,8 @@ test('a camera refused says so and leads back to recording', async ({ page }) =>
   await expect(page.locator('.film-screen')).toBeVisible();
   await expect(page.getByTestId('mode-video')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.film-screen .actions .btn-primary input[type=file]')).toHaveAttribute('capture', 'environment');
+  // Past the model's 4 s: its loading was aborted by the screen's close, and nothing was logged.
+  await page.waitForTimeout(4500);
   expect(errors).toEqual([]);
 });
 
