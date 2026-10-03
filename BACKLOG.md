@@ -129,3 +129,16 @@ and their place in the set collectors.
   labelled by David, filmed in profile, from the front and in three-quarter view, run through the count, with
   neither side refused and no error of 3 or more. The view that works becomes their guide-families.json "view".
 - Not measured: no labelled set holds them. The reasoning is by anatomy, status experimental.
+
+## 3 October 2026: HYROX stations the app does not count
+
+Added the same day (experimental, measured on no set): the behind-the-neck press, the barbell jump squat and the
+wall ball, counted by existing patterns; the sandbag lunge has a guide entry only, as a walking lunge it leaves a
+fixed frame (src/lib/offer.js, NOT_FILMABLE). Not added, and why:
+- SkiErg, rowing, sled push, sled pull, farmers carry and running: HYROX scores them in distance or time, which a
+  phone filming joint angles cannot measure. Showing a rep count for them would display a number the app cannot
+  measure (R8).
+- Burpee broad jumps: the body goes flat on the floor and travels forward out of a fixed frame; the knee or elbow
+  cycle is not one repeated joint pattern seen from one place.
+- They could come back only with a measure the app can take (for example, a station timer the user starts and
+  stops), which is a new feature, not a counting pattern.

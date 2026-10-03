@@ -4,8 +4,9 @@
 // evidence of its own. An exercise the guide cannot count (no joint) is not offered, nor one that
 // cannot be filmed from a fixed phone.
 
-// David's decision of 29 September 2026: the lifter walks out of a fixed frame.
-const NOT_FILMABLE = new Set(['walking_lunge']);
+// David's decision of 29 September 2026: the lifter walks out of a fixed frame. The sandbag lunge (3 October
+// 2026) is a walking lunge with a sandbag on the shoulders, so the same holds.
+const NOT_FILMABLE = new Set(['walking_lunge', 'sandbag_lunge']);
 import patterns from './counting/guide-patterns.json';
 import { TIERS } from './liftTiers';
 import { FITNESS_TESTS } from './fitness-tests';

@@ -6,8 +6,8 @@ import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
 import { EQUIPMENT, norm } from './Guide';
 
-// Every exercise the app counts (OFFERED but the fitness tests: 179 on 3 October 2026, 183 less the four floor
-// exercises withdrawn that day, offer.js WITHDRAWN; pinned by __tests__/exercise-list.test.js and
+// Every exercise the app counts (OFFERED but the fitness tests: 182 on 3 October 2026, 183 less the four floor
+// exercises withdrawn that day, offer.js WITHDRAWN, and with the behind-the-neck press, barbell jump squat and wall ball added that day; pinned by __tests__/exercise-list.test.js and
 // e2e/shared/exercises.tests.js), searchable, under the nine cards (PLAN.md, GROWTH,
 // step 2, David's choices of 29 September). Only the Beta ones carry a tag; one line under the title
 // says the rest are experimental, so the names take the row's width. A tap opens its filming screen. Loaded after the choice, so the catalogue stays out of the first screen.

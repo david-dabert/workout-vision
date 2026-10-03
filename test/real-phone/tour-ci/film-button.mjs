@@ -53,8 +53,9 @@ const below = all.filter(l => l.top < 0 || l.bottom > l.H);
 const gate = below.filter(l => l.H >= 664);
 const summary = sizes.map(([W, H]) => `${W}x${H}: ${all.filter(l => l.W === W && l.H === H).length} exercises, ${below.filter(l => l.W === W && l.H === H).length} below the fold`);
 console.log(summary.join('\n'));
-// Every offered exercise was opened at every size: the list holds 183: 181 since the walking lunge left it, and the two barbell curls of 2 October.
-const EXPECTED = 183;
+// Every offered exercise was opened at every size: the list holds 182: 181 since the walking lunge left it, the two barbell curls of 2 October,
+// less the four floor exercises withdrawn on 3 October (offer.js, WITHDRAWN), and the three added the same day.
+const EXPECTED = 182;
 const short = sizes.filter(([W, H]) => all.filter(l => l.W === W && l.H === H).length !== EXPECTED);
 if (short.length) { console.log(`not ${EXPECTED} exercises at:`, short.map(s => s.join('x')).join(', ')); process.exit(1); }
 if (gate.length) { console.log('below the fold at 664 px or taller:', gate.map(l => `${l.key} ${l.W}x${l.H} ${l.bottom}`).join(', ')); process.exit(1); }
