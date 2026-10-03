@@ -142,3 +142,15 @@ fixed frame (src/lib/offer.js, NOT_FILMABLE). Not added, and why:
   cycle is not one repeated joint pattern seen from one place.
 - They could come back only with a measure the app can take (for example, a station timer the user starts and
   stops), which is a new feature, not a counting pattern.
+
+## 3 October 2026: PLAN.md's tier list is stale
+
+PLAN.md (LIFT TIERS, 28 September) still lists lateral raise as Beta and hip thrust and Romanian deadlift as
+Experimental with "no clip". David's sets of 29 September changed the evidence: lateral_raise_9 counts 8,
+hip_thrust_6 counts 6 and romanian_deadlift_8 counts 8 (npm run scoreboard). On David's order of 3 October the
+tiers now follow the evidence, and test/real-phone/accuracy/tiers.test.ts enforces it on every npx vitest run: a
+lift is Beta iff it is not a press (bench, overhead) and every one of David's labelled sets of it counts exactly
+(none off, none refused); a lift with no set of David's may be Beta on dataset evidence recorded in the test
+(squat: MM-Fit). Today: Beta are biceps curl, lat pulldown, squat, hip thrust and Romanian deadlift; lateral
+raise, leg press, bench and overhead press are Experimental (tiers.txt). The Beta lifts are pinned first on the
+cards and in the list. PLAN.md's list is for David to update.

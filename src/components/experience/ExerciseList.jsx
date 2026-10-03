@@ -9,7 +9,7 @@ import { EQUIPMENT, norm } from './Guide';
 // Every exercise the app counts (OFFERED but the fitness tests: 181 on 3 October 2026, 183 less the four floor
 // exercises withdrawn that day, offer.js WITHDRAWN, and with the behind-the-neck press and wall ball added that day (the barbell jump squat not yet counted); pinned by __tests__/exercise-list.test.js and
 // e2e/shared/exercises.tests.js), searchable, under the nine cards (PLAN.md, GROWTH,
-// step 2, David's choices of 29 September). Only the Beta ones carry a tag; one line under the title
+// step 2, David's choices of 29 September). Only the Beta ones carry a tag, pinned at the top (3 October); one line under the title
 // says the rest are experimental, so the names take the row's width. A tap opens its filming screen. Loaded after the choice, so the catalogue stays out of the first screen.
 // The fitness tests have their own rows above (Choice.jsx); drawn from another exercise's guide entry, they
 // would list that exercise twice here.
@@ -33,7 +33,8 @@ export default function ExerciseList({ onChoose }) {
   const name = e => (fr ? e.fr : e.name);
   const list = ENTRIES
     .filter(e => !q || norm([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...e.muscles, ...e.muscles.map(m => MUSCLE_FR[m] || '')].join(' ')).includes(q))
-    .sort((a, b) => name(a).localeCompare(name(b), fr ? 'fr' : 'en'));
+    // The Beta exercises are pinned on top, with their tag and no heading (David, 3 October); each group alphabetical.
+    .sort((a, b) => (tierOf(b.key) === 'beta') - (tierOf(a.key) === 'beta') || name(a).localeCompare(name(b), fr ? 'fr' : 'en'));
   return <section className="all-exercises" aria-labelledby="all-exercises-title">
     <h2 id="all-exercises-title" className="all-title">{fr ? 'Tous les exercices comptés' : 'Every exercise we count'}</h2>
     <p className="all-note">{fr ? 'Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.' : 'Unless marked Beta, these exercises are experimental: we are still learning to count them.'}</p>
