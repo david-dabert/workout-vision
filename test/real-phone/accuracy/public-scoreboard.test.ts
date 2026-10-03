@@ -48,5 +48,8 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   expect(missing).toEqual([]);
   expect(absent).toEqual([]);
   expect(unreadable).toEqual([]);
+  // In CI the committed baseline must hold the live counts, so a hand edit or a count change merged without
+  // SCOREBOARD_UPDATE cannot move the bar the next change is compared with (third audit, C27).
+  if (process.env.PUBLIC_BASE) expect(existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')).counts : {}).toEqual(live);
   if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured on the live core by npm run scoreboard:public, not typed.`, counts: live }, null, 2) + '\n');
 }, 1_800_000);

@@ -39,10 +39,11 @@ jobs:
           for f in test/real-phone/accuracy/scoreboard-baseline.json test/real-phone/accuracy/public-baseline.json test/real-phone/synth/synth.txt; do
             git show "$base:$f" > "$RUNNER_TEMP/base/$(basename "$f")"
           done
-      # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls or
-      # any set is off by 3 or more (test/real-phone/accuracy/scoreboard.test.ts).
+      # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls, any set is off
+      # by 3 or more or newly refused, or the committed baseline does not hold the live counts, so the next change is
+      # compared with what the code really counts (test/real-phone/accuracy/scoreboard.test.ts; third audit, C27, C31).
       - run: SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard
-      # The 894 public build sets (Countix): the same rule (test/real-phone/accuracy/public-scoreboard.test.ts).
+      # The 894 public build sets (Countix): the same rule, the committed baseline included (public-scoreboard.test.ts).
       - run: PUBLIC_BASE="$RUNNER_TEMP/base/public-baseline.json" npm run scoreboard:public
       # The 96 synthetic sets (test/real-phone/synth/sets, rendered by run.mjs): the count may not lose an exact
       # set, and the range and phase errors may not grow (audit FINDING-021).
