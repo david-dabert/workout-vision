@@ -80,7 +80,11 @@ jobs:
         env:
           VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
       - run: npx playwright install --with-deps chromium
+      # The spec loads this build online: given the same address, it aborts every usage count the build would send,
+      # so test visits never land in the production counts (e2e/offline.spec.js; review finding N2).
       - run: npx playwright test e2e/offline.spec.js --retries=0
+        env:
+          VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

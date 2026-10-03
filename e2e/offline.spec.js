@@ -1,5 +1,18 @@
 import { test, expect } from '@playwright/test';
 
+// The deploy runs this spec on the very build it publishes, built with the real VITE_EVENTS_URL, online
+// (deploy.yml): every usage count those test visits would send is aborted here, so they never reach the production
+// counts (review finding N2). The page's own requests run as before, so the artifact tested is the one published.
+// The service worker leaves POSTs and other origins to the network (public/sw.js), and the context's routes see
+// both the page's and the worker's requests.
+const EVENTS = process.env.VITE_EVENTS_URL ? new URL(process.env.VITE_EVENTS_URL).origin : '';
+let blocked = 0;
+test.beforeEach(async ({ context }) => {
+  if (!EVENTS) return;
+  await context.route(url => url.origin === EVENTS, route => { blocked += 1; return route.abort('blockedbyclient'); });
+});
+test.afterAll(() => { if (EVENTS) console.log(`usage counts aborted, never sent to ${EVENTS}: ${blocked} request(s)`); });
+
 // A first visit plays the entry once, then shows the choice of lift.
 // A returning visit opens straight on the choice.
 async function reachChoice(page) {
