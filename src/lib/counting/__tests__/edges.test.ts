@@ -2,8 +2,9 @@
  * The edges of the video (accuracy work, 30 September 2026): what the core counts where the video starts
  * or ends inside a movement, pinned so that no future change moves it unmeasured. Status: convention.
  * - Every rep needs its whole path on video: leaving the rest, the working end, the return to rest.
- * - At the end, a last rep cut before its return is not counted: it cannot be told from what people do
- *   after a set (crossing the arms, reaching for the phone, sitting up, standing straight).
+ * - At the end, a last rep cut before three quarters of its return is not counted: it cannot be told from what
+ *   people do after a set (crossing the arms, reaching for the phone, sitting up, standing straight). One cut
+ *   later on its way back counts, marked clipped (window-edges.test.ts, 3 October).
  * - At the start, a first press shorter than the shortest rep is not counted: it cannot be told from
  *   standing up before the set. David's leg press of 29 September began with such a press (the app
  *   counts 12 of his 13).
@@ -40,7 +41,7 @@ const ECCENTRIC_FIRST: { lift: Lift; joint: Joint; rest: number; work: number }[
 describe('reps cut by the edges of the video', () => {
   for (const sps of [15, 30]) {
     for (const { lift, joint, rest, work } of CONCENTRIC_FIRST) {
-      it(`${lift} at ${sps} sps: a last rep cut on its way back is not guessed at`, () => {
+      it(`${lift} at ${sps} sps: a last rep cut half way back is not guessed at`, () => {
         const mid = (rest + work) / 2;
         const r = run(lift, joint, [...reps(rest, work, 5), { to: work, sec: 1 }, { hold: work, sec: 0.2 }, { to: mid, sec: 0.5 }], rest, sps);
         expect(r.count).toBe(5);

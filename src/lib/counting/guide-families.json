@@ -218,7 +218,8 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "Both arms pull together: each elbow is counted and the one with more reps kept, if it is seen on at least half the samples. Public build half, 3 October, over the edge rules: half A 156 to 158 exact, half B unchanged, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "assisted_pull_up": {
     "joint": "elbow",

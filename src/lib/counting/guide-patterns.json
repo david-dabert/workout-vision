@@ -27,7 +27,7 @@
  "lat_pulldown": "elbow/high/concentric",
  "close_grip_lat_pulldown": "elbow/high/concentric",
  "straight_arm_pulldown": "shoulder/high/concentric",
- "pull_up": "elbow/high/concentric",
+ "pull_up": "elbow/high/concentric/either",
  "assisted_pull_up": "elbow/high/concentric",
  "weighted_pull_up": "elbow/high/concentric",
  "chin_up": "elbow/high/concentric",

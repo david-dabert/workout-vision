@@ -1,53 +1,104 @@
-Public scoreboard 2026-10-03: 894 build sets, 286 exact (32%). Of the 894 in the baseline, 286 exact now, 279 before; 0 became off by 3 or more.
+Public scoreboard 2026-10-03: 894 build sets, 322 exact (36%). Of the 894 in the baseline, 322 exact now, 286 before; 0 became off by 3 or more.
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
-| countix bench_press | 38 | 12 | 6 | 6 | 11 |
-| countix front_raise | 75 | 29 | 27 | 6 | 5 |
+| countix bench_press | 38 | 12 | 7 | 5 | 11 |
+| countix front_raise | 75 | 31 | 26 | 6 | 5 |
 | countix lunge | 78 | 27 | 30 | 1 | 9 |
-| countix pull_up | 60 | 16 | 26 | 3 | 7 |
-| countix push_up | 77 | 26 | 20 | 6 | 10 |
-| countix squat | 46 | 18 | 12 | 2 | 9 |
-| countix triceps_pushdown | 73 | 18 | 37 | 2 | 6 |
-| countix-whole bench_press | 38 | 10 | 10 | 5 | 11 |
-| countix-whole front_raise | 75 | 26 | 28 | 6 | 8 |
-| countix-whole lunge | 78 | 25 | 32 | 1 | 11 |
-| countix-whole pull_up | 60 | 17 | 20 | 4 | 11 |
-| countix-whole push_up | 77 | 23 | 21 | 14 | 10 |
-| countix-whole squat | 46 | 17 | 10 | 2 | 11 |
-| countix-whole triceps_pushdown | 73 | 22 | 31 | 2 | 8 |
+| countix pull_up | 60 | 20 | 25 | 3 | 7 |
+| countix push_up | 77 | 32 | 19 | 8 | 8 |
+| countix squat | 46 | 20 | 12 | 1 | 9 |
+| countix triceps_pushdown | 73 | 23 | 33 | 2 | 6 |
+| countix-whole bench_press | 38 | 10 | 9 | 5 | 11 |
+| countix-whole front_raise | 75 | 27 | 27 | 6 | 8 |
+| countix-whole lunge | 78 | 28 | 27 | 1 | 11 |
+| countix-whole pull_up | 60 | 20 | 19 | 4 | 11 |
+| countix-whole push_up | 77 | 30 | 19 | 11 | 9 |
+| countix-whole squat | 46 | 19 | 10 | 2 | 11 |
+| countix-whole triceps_pushdown | 73 | 23 | 30 | 2 | 8 |
 
--> public/countix/build/9JSCtK83Lh0_000000_234.json.gz  label 3  before 2  now 3
--> public/countix/build/C29kvQkzadQ_000017_901.json.gz  label 2  before 1  now 2
--> public/countix/build/E0p8QDRa0Fg_000063_0.json.gz  label 8  before 4  now 6
--> public/countix/build/G1E_vGTK4PI_000011_733.json.gz  label 5  before 2  now 3
--> public/countix/build/GcWgWifEdyg_000088_0.json.gz  label 4  before 2  now 3
--> public/countix/build/IGdmwxyeOkU_000021_634.json.gz  label 4  before 2  now 3
--> public/countix/build/M-PVVSnca40_000010_0.json.gz  label 2  before 0  now 2
--> public/countix/build/N5a2yRphkcs_000013_0.json.gz  label 6  before 4  now 5
--> public/countix/build/ODPGbGJPJOE_000076_0.json.gz  label 6  before 2  now 3
--> public/countix/build/OJo44HSJ_DQ_000021_0.json.gz  label 2  before 1  now 2
--> public/countix/build/YW2Z0KDK1Iw_000018_0.json.gz  label 5  before 1  now 4
--> public/countix/build/ZuCAObqE5FA_000071_0.json.gz  label 5  before 1  now refused
--> public/countix/build/bX15GI0K2tI_000017_0.json.gz  label 6  before 2  now refused
--> public/countix/build/f2AfRV7qCnE_000006_0.json.gz  label 5  before 2  now 3
--> public/countix/build/iD75JTBSsO4_000026_0.json.gz  label 6  before 2  now 3
--> public/countix/build/reraUbcS7RI_000000_0.json.gz  label 6  before 4  now 5
--> public/countix-whole/build/9JSCtK83Lh0_000000_234.json.gz  label 3  before 0  now 2
--> public/countix-whole/build/C29kvQkzadQ_000017_901.json.gz  label 2  before 1  now 2
--> public/countix-whole/build/E0p8QDRa0Fg_000063_0.json.gz  label 8  before 4  now 6
--> public/countix-whole/build/GcWgWifEdyg_000088_0.json.gz  label 4  before 2  now 3
--> public/countix-whole/build/IGdmwxyeOkU_000021_634.json.gz  label 4  before 2  now 3
--> public/countix-whole/build/M-PVVSnca40_000010_0.json.gz  label 2  before 0  now 2
--> public/countix-whole/build/N5a2yRphkcs_000013_0.json.gz  label 6  before 4  now 5
--> public/countix-whole/build/ODPGbGJPJOE_000076_0.json.gz  label 6  before 2  now 3
--> public/countix-whole/build/OJo44HSJ_DQ_000021_0.json.gz  label 2  before 1  now 2
--> public/countix-whole/build/YW2Z0KDK1Iw_000018_0.json.gz  label 5  before 1  now 4
--> public/countix-whole/build/bX15GI0K2tI_000017_0.json.gz  label 6  before 2  now refused
--> public/countix-whole/build/e-Hia1hhUaE_000033_367.json.gz  label 5  before 1  now 2
--> public/countix-whole/build/f2AfRV7qCnE_000006_0.json.gz  label 5  before 2  now 3
--> public/countix-whole/build/iD75JTBSsO4_000026_0.json.gz  label 6  before 2  now 3
--> public/countix-whole/build/reraUbcS7RI_000000_0.json.gz  label 6  before 4  now 5
+-> public/countix/build/07eq1ZyNg_U_000018_0.json.gz  label 11  before 5  now 4
+-> public/countix/build/0PcNfBxvyC4_000000_300.json.gz  label 4  before 3  now 4
+-> public/countix/build/2RLoQCFdz4Y_000016_0.json.gz  label 4  before 3  now 4
+-> public/countix/build/2h2EMB7Q4KQ_000000_0.json.gz  label 7  before 6  now 7
+-> public/countix/build/3MbLV9MjhUk_000003_500.json.gz  label 6  before 3  now 4
+-> public/countix/build/4ETgc4TrCQg_000014_0.json.gz  label 8  before 7  now 8
+-> public/countix/build/59jzy3eVo30_000003_533.json.gz  label 6  before 4  now 5
+-> public/countix/build/5ttD_SCeNB0_000027_0.json.gz  label 5  before 1  now 2
+-> public/countix/build/6wpbwI5sbUo_000000_1533.json.gz  label 4  before 3  now 4
+-> public/countix/build/7QmGi3r4RPE_000004_33.json.gz  label 3  before 3  now 5
+-> public/countix/build/B-zdMVKu_Ts_000000_3233.json.gz  label 3  before 2  now 3
+-> public/countix/build/Bg2uQMSKXew_000019_0.json.gz  label 2  before 0  now 1
+-> public/countix/build/C7Z0BjKVnWk_000000_4463.json.gz  label 2  before 1  now 2
+-> public/countix/build/CnXUdZq7bBc_000002_933.json.gz  label 5  before 4  now 5
+-> public/countix/build/IDkiffbx_YU_000041_0.json.gz  label 4  before 4  now 5
+-> public/countix/build/JeseDM8fD7k_000016_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/LI_vBjLK-5A_000000_0.json.gz  label 4  before 4  now 5
+-> public/countix/build/LSZVUPkSswo_000008_0.json.gz  label 3  before 1  now 2
+-> public/countix/build/LxkdL0tGGxE_000000_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/Msh22THDcUI_000005_0.json.gz  label 4  before 3  now 4
+-> public/countix/build/NvqLMRadijE_000028_1640.json.gz  label 3  before 1  now 2
+-> public/countix/build/OfiZWZVPyD8_000011_0.json.gz  label 3  before 1  now 2
+-> public/countix/build/QQPv17nfR_E_000003_0.json.gz  label 6  before 4  now 5
+-> public/countix/build/QUy2Aum6oTM_000004_1133.json.gz  label 3  before 2  now 3
+-> public/countix/build/SxNHZthT2ZY_000007_0.json.gz  label 9  before 8  now 9
+-> public/countix/build/Uj7VQlHIltM_000101_0.json.gz  label 5  before 3  now 4
+-> public/countix/build/WNW4qKlqL2g_000002_5700.json.gz  label 3  before 2  now 3
+-> public/countix/build/YaHfRx04h4o_000171_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/ZuCAObqE5FA_000071_0.json.gz  label 5  before refused  now 2
+-> public/countix/build/_U6Zlc_WQGI_000023_0.json.gz  label 2  before 1  now 2
+-> public/countix/build/_uRAdM3_VtU_000000_2583.json.gz  label 3  before 1  now 2
+-> public/countix/build/b27ZGq3Wxo4_000017_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/bX15GI0K2tI_000017_0.json.gz  label 6  before refused  now 3
+-> public/countix/build/c-8TM6c6svY_000037_0.json.gz  label 2  before 1  now 2
+-> public/countix/build/dptApZvEt5Y_000003_0.json.gz  label 6  before 4  now 5
+-> public/countix/build/e-Hia1hhUaE_000033_367.json.gz  label 5  before 3  now 4
+-> public/countix/build/eMRW1vKyy9o_000006_0.json.gz  label 10  before 6  now 7
+-> public/countix/build/efQJ44Mk6BM_000002_1568.json.gz  label 5  before 4  now 5
+-> public/countix/build/fw3FnkqViKo_000010_0.json.gz  label 2  before 0  now 1
+-> public/countix/build/hdgTCJym5RQ_000006_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/i-HQaIjVsBs_000005_0.json.gz  label 3  before 0  now 1
+-> public/countix/build/jacxhCrLN44_000050_1280.json.gz  label 5  before 3  now 4
+-> public/countix/build/reraUbcS7RI_000000_0.json.gz  label 6  before 5  now 6
+-> public/countix/build/s-HmfE-SEH8_000186_0.json.gz  label 2  before 0  now 1
+-> public/countix/build/u9XyJmAGV0c_000013_0.json.gz  label 6  before 4  now 6
+-> public/countix-whole/build/07eq1ZyNg_U_000018_0.json.gz  label 11  before 5  now 4
+-> public/countix-whole/build/0PcNfBxvyC4_000000_300.json.gz  label 4  before 3  now 4
+-> public/countix-whole/build/0zJGjSfj7e8_000028_0.json.gz  label 4  before 3  now 4
+-> public/countix-whole/build/2QFhwsnYNHY_000000_1583.json.gz  label 4  before 3  now 4
+-> public/countix-whole/build/2RLoQCFdz4Y_000016_0.json.gz  label 4  before 3  now 4
+-> public/countix-whole/build/2wMk-qSPpLk_000149_2720.json.gz  label 3  before 1  now 2
+-> public/countix-whole/build/4F5Rk5BkqQg_000000_604.json.gz  label 4  before 1  now 2
+-> public/countix-whole/build/59jzy3eVo30_000003_533.json.gz  label 6  before 4  now 6
+-> public/countix-whole/build/5ttD_SCeNB0_000027_0.json.gz  label 5  before 2  now 3
+-> public/countix-whole/build/CnXUdZq7bBc_000002_933.json.gz  label 5  before 4  now 5
+-> public/countix-whole/build/GDDNo4blYwg_000001_1605.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/GkUrks0SGEU_000008_0.json.gz  label 3  before 4  now 5
+-> public/countix-whole/build/ICCuDALI15w_000001_0.json.gz  label 3  before 4  now 5
+-> public/countix-whole/build/LI_vBjLK-5A_000000_0.json.gz  label 4  before 4  now 5
+-> public/countix-whole/build/LPQSm5megAo_000000_1201.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/Msh22THDcUI_000005_0.json.gz  label 4  before 3  now 4
+-> public/countix-whole/build/QQPv17nfR_E_000003_0.json.gz  label 6  before 4  now 5
+-> public/countix-whole/build/QUy2Aum6oTM_000004_1133.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/SxNHZthT2ZY_000007_0.json.gz  label 9  before 8  now 9
+-> public/countix-whole/build/U_BLNvSJM14_000038_467.json.gz  label 3  before 4  now 5
+-> public/countix-whole/build/Wu3MSbqdrbU_000095_0.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/Wyojc0Clzsk_000074_0.json.gz  label 7  before 1  now 3
+-> public/countix-whole/build/YaHfRx04h4o_000171_0.json.gz  label 3  before 1  now 2
+-> public/countix-whole/build/ZuCAObqE5FA_000071_5188.json.gz  label 3  before 0  now 1
+-> public/countix-whole/build/asoaMCuZtA0_000009_7853.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/b0YR134L938_000000_2533.json.gz  label 4  before 1  now 2
+-> public/countix-whole/build/bX15GI0K2tI_000017_0.json.gz  label 6  before refused  now 3
+-> public/countix-whole/build/c-8TM6c6svY_000037_0.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/dptApZvEt5Y_000003_0.json.gz  label 6  before 4  now 5
+-> public/countix-whole/build/ekhHO6lmWVM_000133_7700.json.gz  label 3  before 1  now 2
+-> public/countix-whole/build/hdgTCJym5RQ_000006_0.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/lfFkacapSsI_000005_1502.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/miNX6dg_arc_000160_0.json.gz  label 6  before 5  now 7
+-> public/countix-whole/build/opoIUl4eXTU_000000_4167.json.gz  label 6  before 4  now 5
+-> public/countix-whole/build/reraUbcS7RI_000000_0.json.gz  label 6  before 5  now 6
+-> public/countix-whole/build/s-HmfE-SEH8_000186_6367.json.gz  label 2  before 0  now 1
+-> public/countix-whole/build/u9XyJmAGV0c_000013_0.json.gz  label 6  before 4  now 6
 
 Not scored (5032), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts
