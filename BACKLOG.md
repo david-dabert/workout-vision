@@ -84,7 +84,13 @@ measured (scoreboard, synth.txt); anything else waits for its measurement (R8, R
 
 `node scripts/unreachable.mjs` lists the source files no page of the app loads: on 2 October, 92 of 188 (non-test),
 among them the old upload, replay, coach report, injury, badge and feedback screens, and the old counters
-(SignalExtractor3D, valleyCounter, repCounter, hysteresisCounter). None reaches the bundle; 14 test files still
+(SignalExtractor3D, valleyCounter, repCounter, hysteresisCounter). None of their code reaches the bundle, but their
+strings and styles do (third audit, C50, 3 October 2026; `npm run build` that day): LanguageContext.jsx imports the
+whole en.json into the entry (i18n chunk 83.8 kB, 29.0 kB gzip) and loads the whole fr.json at once on a French phone
+(109.7 kB, 37.1 kB gzip), while the live screens read about 130 keys (six err_* in ErrorBoundary, the ex.* names
+as a last fallback in Choice and History); index.css, render-blocking, imports every partial (111.2 kB, 20.9 kB gzip),
+most of _landing, _dashboard, _features and _views serving only dormant screens. Splitting them goes with this
+decision, and needs a check by eye that the live screens look the same. 14 test files still
 test them (src/lib/__tests__/benchmark, biomechanics, coach, defense, exerciseDetector, hierarchicalDetector,
 hierarchicalValidation, pipeline, progressionScale, utils; counting hotfix_baseline and learned;
 test/real-phone/accuracy/learned-span, agreement/counts), so a green test run says less about the app than its size suggests.
