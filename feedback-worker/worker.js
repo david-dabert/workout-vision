@@ -1,8 +1,9 @@
 // Workout Vision Feedback Ingest Worker
 // Deploy: npx wrangler deploy (README.md)
 // POST /ingest: structured feedback (dormant). POST /event: anonymous usage counts (usage.js).
-// GET /stats, GET /dashboard (usage) and GET /feedback (feedback aggregates): STATS_TOKEN only.
-import { handleEvent, handleStats, handleDashboard, authorised } from './usage.js';
+// GET /stats, GET /dashboard (usage) and GET /feedback (feedback aggregates): STATS_TOKEN, in the Authorization header
+// only; POST /dashboard takes it from the dashboard's form. A job every minute deletes the rate-limit hashes (scheduled).
+import { handleEvent, handleStats, handleDashboard, authorised, purgeRateKeys } from './usage.js';
 
 const SCHEMA_VERSION = 1;
 const MAX_PAYLOAD = 4096;
@@ -49,6 +50,14 @@ function corsHeaders() {
 }
 
 export default {
+  // Every minute (wrangler.toml, crons): the usage rate limit's IP hashes older than the last minute are deleted, so
+  // none outlives three minutes even when no event follows to delete it (review finding N4).
+  async scheduled(controller, env, ctx) {
+    const done = purgeRateKeys(env, controller?.scheduledTime ?? Date.now());
+    if (ctx?.waitUntil) ctx.waitUntil(done);
+    await done;
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
 
@@ -60,7 +69,7 @@ export default {
     // Anonymous usage counts (usage.js)
     if (request.method === 'POST' && url.pathname === '/event') return handleEvent(request, env, corsHeaders());
     if (request.method === 'GET' && url.pathname === '/stats') return handleStats(request, env);
-    if (request.method === 'GET' && url.pathname === '/dashboard') return handleDashboard(request, env);
+    if ((request.method === 'GET' || request.method === 'POST') && url.pathname === '/dashboard') return handleDashboard(request, env);
 
     // Feedback aggregates (read-only). Behind the token since 3 October: it was open to anyone before.
     if (request.method === 'GET' && url.pathname === '/feedback') {

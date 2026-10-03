@@ -114,7 +114,7 @@ describe('POST /event', () => {
       .toEqual(['day', 'event', 'lift', 'tier', 'duration_bucket', 'app_version', 'lang', 'count']);
   });
 
-  it('forgets the rate keys after two minutes, and hashes an IP differently every day', async () => {
+  it('forgets the rate keys of past minutes at each event, and hashes an IP differently every day', async () => {
     const { db, env } = setup();
     const { overRate } = await import('./usage.js');
     const t = Date.UTC(2026, 9, 3, 12, 0, 0);
@@ -126,18 +126,50 @@ describe('POST /event', () => {
     expect(await rateKey(env, '203.0.113.7', '2026-10-03')).not.toBe(await rateKey(env, '203.0.113.7', '2026-10-04'));
     expect(await rateKey(env, '203.0.113.7', '2026-10-03')).not.toBe(await rateKey({ RATE_SALT: 'other' }, '203.0.113.7', '2026-10-03'));
   });
+
+  it('deletes the rate keys within three minutes with no event after them: the job every minute', async () => {
+    const { db, env } = setup();
+    const t = Date.UTC(2026, 9, 3, 12, 0, 59);
+    // Two IPs' hashes at 12:00:59, a day's count, then no traffic at all.
+    const { overRate } = await import('./usage.js');
+    await overRate(env, await rateKey(env, '203.0.113.7', '2026-10-03'), 1, t);
+    await overRate(env, await rateKey(env, '198.51.100.2', '2026-10-03'), 1, t);
+    db.prepare("INSERT INTO usage_daily VALUES ('2026-10-03', 'open', '', '', '', '1.0.0', 'en', 2)").run();
+    const n = () => db.prepare('SELECT COUNT(*) AS n FROM usage_rate').get().n;
+    const waits = [];
+    const tick = ms => worker.scheduled({ scheduledTime: ms, cron: '* * * * *' }, env, { waitUntil: p => waits.push(p) });
+    // The run of 12:01 keeps the hash of 12:00, the last minute's (the limit still needs it).
+    await tick(Date.UTC(2026, 9, 3, 12, 1, 0));
+    expect(n()).toBe(2);
+    // The run of 12:02 deletes them: just over a minute after they were written, with no event in between.
+    await tick(Date.UTC(2026, 9, 3, 12, 2, 0));
+    expect(n()).toBe(0);
+    expect(waits.length).toBe(2);
+    // The counts themselves are untouched.
+    expect(rows(db).length).toBe(1);
+  });
+
+  it('the cron that runs the job is in wrangler.toml, every minute', () => {
+    const toml = readFileSync(new URL('./wrangler.toml', import.meta.url), 'utf8');
+    expect(toml).toMatch(/\[triggers\]\s*\ncrons = \["\* \* \* \* \*"\]/);
+  });
 });
 
 describe('GET /stats and /dashboard', () => {
   const get = (env, path, headers = {}) => worker.fetch(new Request(`https://w.example${path}`, { headers }), env);
 
-  it('answer only with the token', async () => {
+  it('answer only with the token, in the Authorization header', async () => {
     const { env } = setup();
     for (const path of ['/stats', '/dashboard', '/feedback']) {
       expect((await get(env, path)).status).toBe(401);
       expect((await get(env, `${path}?token=wrong-token-0123456789`)).status).toBe(401);
       expect((await get(env, path, { Authorization: 'Bearer nope' })).status).toBe(401);
+      // The right token in the address is refused since 3 October (review finding N6): only the header opens.
+      expect((await get(env, `${path}?token=${TOKEN}`)).status).toBe(401);
+      expect((await get(env, path, { Authorization: TOKEN })).status).toBe(401);
     }
+    // (/feedback reads the feedback table, which this database of the usage tables lacks.)
+    for (const path of ['/stats', '/dashboard']) expect((await get(env, path, { Authorization: `Bearer ${TOKEN}` })).status).toBe(200);
     // No token set, or one too short to be a secret: closed.
     expect((await get({ ...env, STATS_TOKEN: undefined }, '/stats?token=')).status).toBe(401);
     expect((await get({ ...env, STATS_TOKEN: 'short' }, '/stats?token=short')).status).toBe(401);
@@ -152,9 +184,40 @@ describe('GET /stats and /dashboard', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     const data = await res.json();
     expect(data.rows.map(r => [r.event, r.lift, r.count])).toEqual([['analysis_done', 'bicep_curl', 1], ['open', '', 1]]);
-    const html = await (await get(env, `/dashboard?token=${TOKEN}`)).text();
+    const html = await (await get(env, '/dashboard', { Authorization: `Bearer ${TOKEN}` })).text();
     expect(html).toContain('<td>bicep_curl</td>');
     expect(html).toContain('By day');
+  });
+
+  it('in a browser: a form that posts the token, never puts it in the address', async () => {
+    const { db, env } = setup();
+    await post(env, { events: [{ event: 'analysis_done', lift: 'bicep_curl', tier: 'beta', ...V }] });
+    db.prepare("INSERT INTO usage_daily VALUES ('2020-01-01', 'choose_lift', 'squat', 'beta', '', '1.0.0', 'en', 5)").run();
+    const form = await get(env, '/dashboard');
+    expect(form.status).toBe(401);
+    expect(form.headers.get('Content-Security-Policy')).toContain("form-action 'self'");
+    expect(form.headers.get('Content-Security-Policy')).toContain("frame-ancestors 'none'");
+    const page = await form.text();
+    expect(page).toContain('<form method="post" action="/dashboard">');
+    expect(page).toContain('name="token" type="password"');
+    expect(page).not.toContain('By day');
+    const send = (body, type = 'application/x-www-form-urlencoded') => worker.fetch(new Request('https://w.example/dashboard', { method: 'POST', headers: { 'Content-Type': type }, body }), env);
+    const ok = await send(new URLSearchParams({ token: TOKEN, days: '7' }).toString());
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get('Cache-Control')).toBe('no-store');
+    const html = await ok.text();
+    expect(html).toContain('<td>bicep_curl</td>');
+    expect(html).not.toContain('<td>squat</td>'); // 2020 is outside the 7 days asked
+    expect(html).not.toContain(TOKEN);
+    const wrong = await send(new URLSearchParams({ token: 'wrong-token-0123456789' }).toString());
+    expect(wrong.status).toBe(401);
+    expect(await wrong.text()).toContain('Wrong token.');
+    // Only a form body: the token as JSON, or a body too long, is not read.
+    expect((await send(JSON.stringify({ token: TOKEN }), 'application/json')).status).toBe(401);
+    expect((await send(`token=${TOKEN}&pad=${'x'.repeat(2000)}`)).status).toBe(401);
+    // No token set: closed to the form too.
+    const closed = await worker.fetch(new Request('https://w.example/dashboard', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'token=' }), { ...env, STATS_TOKEN: undefined });
+    expect(closed.status).toBe(401);
   });
 
   it('escape what the table shows', () => {

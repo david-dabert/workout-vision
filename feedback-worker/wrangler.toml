@@ -10,3 +10,8 @@ database_id = "" # Fill after: npx wrangler d1 create workout-vision-feedback
 # Secrets, set with `npx wrangler secret put <NAME>`, never written here (README.md, Deploy):
 #   STATS_TOKEN  reads /stats, /dashboard and /feedback (at least 16 characters)
 #   RATE_SALT    salts the daily hash of the IP used only by the rate limit of /event
+
+# Every minute, the scheduled handler (worker.js) deletes the usage rate limit's IP hashes older than the last
+# minute, so none outlives three minutes, with or without traffic (README.md).
+[triggers]
+crons = ["* * * * *"]

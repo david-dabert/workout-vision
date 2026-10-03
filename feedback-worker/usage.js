@@ -1,8 +1,9 @@
 // Anonymous, aggregate usage counts (analytics, 3 October 2026).
 // POST /event adds one to a daily count per (day, event, lift, tier, duration bucket, app version, language). Nothing
 // else is kept: no IP, no user id, no time finer than the day, no row per event. The rate limit keys on a hash of the
-// IP salted with a secret and the day; that hash lives two minutes in its own table and is never written beside a
-// count. GET /stats and GET /dashboard read the counts with the STATS_TOKEN secret.
+// IP salted with a secret and the day; that hash lives at most three minutes in its own table (a job every minute
+// deletes it, purgeRateKeys, worker.js scheduled) and is never written beside a count. GET /stats and GET /dashboard
+// read the counts with the STATS_TOKEN secret, sent in the Authorization header; the dashboard's form posts it.
 import { validEvent, MAX_BATCH, EVENT_NAMES, DURATION_BUCKETS } from './usage-schema.js';
 
 const MAX_BODY = 4096;
@@ -34,10 +35,19 @@ export async function rateKey(env, ip, day) {
   return (await sha256Hex(`${env.RATE_SALT || memorySalt()}:${day}:${ip}`)).slice(0, 24);
 }
 
+/**
+ * Deletes the rate-limit hashes of every minute before the last one. Run by each event (overRate) and, so a hash is
+ * deleted even when no event follows, by the worker's job every minute (worker.js, scheduled; wrangler.toml, crons):
+ * a hash written in minute m is gone by the first run in minute m + 2, so within three minutes, whatever the traffic.
+ */
+export async function purgeRateKeys(env, nowMs = Date.now()) {
+  await env.DB.prepare('DELETE FROM usage_rate WHERE minute < ?').bind(Math.floor(nowMs / 60000) - 1).run();
+}
+
 /** Adds `hits` to the key's count for this minute, drops minutes older than the last one, and says if over the limit. */
 export async function overRate(env, key, hits, nowMs = Date.now()) {
   const minute = Math.floor(nowMs / 60000);
-  await env.DB.prepare('DELETE FROM usage_rate WHERE minute < ?').bind(minute - 1).run();
+  await purgeRateKeys(env, nowMs);
   await env.DB.prepare(
     'INSERT INTO usage_rate (key, minute, hits) VALUES (?, ?, ?) ON CONFLICT(key, minute) DO UPDATE SET hits = hits + excluded.hits'
   ).bind(key, minute, hits).run();
@@ -96,16 +106,24 @@ export async function handleEvent(request, env, cors, now = new Date()) {
   return new Response(null, { status: 204, headers: cors });
 }
 
-/** True when the request carries the STATS_TOKEN, by header or by ?token=. Compared in constant time on digests. */
-export async function authorised(request, env) {
+/** True when `given` is the STATS_TOKEN. Compared in constant time on digests. Closed when no token of 16+ is set. */
+export async function tokenMatches(env, given) {
   const expected = env.STATS_TOKEN;
-  if (!expected || expected.length < 16) return false;
-  const header = request.headers.get('Authorization') || '';
-  const given = header.startsWith('Bearer ') ? header.slice(7) : new URL(request.url).searchParams.get('token') || '';
+  if (!expected || expected.length < 16 || typeof given !== 'string' || !given) return false;
   const [a, b] = await Promise.all([sha256Hex(given), sha256Hex(expected)]);
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
+}
+
+/**
+ * True when the request carries the STATS_TOKEN in `Authorization: Bearer <token>`, and only there. A ?token= in the
+ * address is refused since 3 October (review finding N6): an address is kept in the browser's history, its sync and
+ * proxy and access logs, a header is not.
+ */
+export async function authorised(request, env) {
+  const header = request.headers.get('Authorization') || '';
+  return header.startsWith('Bearer ') && tokenMatches(env, header.slice(7));
 }
 
 /** The daily counts of the last `days` days (1 to 366), today included. */
@@ -180,20 +198,50 @@ th,td{border-bottom:1px solid #ddd;padding:4px 8px;text-align:left;white-space:n
 <h2>By lift, over the period</h2><div class="wrap">${table(['Lift', 'Tier', ...LIFT_COLUMNS.map(([h]) => h)], byLift)}</div>
 <h2>Visit length</h2><div class="wrap">${table(['Length', 'Visits'], sessions)}</div>
 <h2>Opens by version and language</h2><div class="wrap">${table(['Version', 'Language', 'Opens'], versions)}</div>
-<p>Raw counts: GET /stats?days=${esc(String(Math.round((Date.parse(to) - Date.parse(from)) / 86400000) + 1))} with the same token.</p>
+<p>Raw counts: GET /stats?days=${esc(String(Math.round((Date.parse(to) - Date.parse(from)) / 86400000) + 1))} with the same token in an Authorization: Bearer header.</p>
 </body></html>`;
 }
 
+/** The dashboard's sign-in form: the token is posted in the body, never put in the address (review finding N6). */
+export function tokenFormHtml(wrong = false) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex"><title>WorkoutVision usage</title>
+<style>body{font:16px/1.4 system-ui,sans-serif;margin:16px;background:#fff;color:#111}@media (prefers-color-scheme:dark){body{background:#111;color:#eee}}
+label{display:block;margin:12px 0 4px}input{font:inherit;padding:8px;width:100%;max-width:24em;box-sizing:border-box}button{font:inherit;margin-top:16px;padding:8px 16px}</style></head><body>
+<h1>WorkoutVision usage</h1>${wrong ? '\n<p role="alert">Wrong token.</p>' : ''}
+<form method="post" action="/dashboard">
+<label for="token">Token (STATS_TOKEN)</label><input id="token" name="token" type="password" autocomplete="current-password" required>
+<label for="days">Days</label><input id="days" name="days" type="number" min="1" max="366" value="30">
+<button type="submit">Show the counts</button>
+</form></body></html>`;
+}
+
+const HTML_HEADERS = {
+  'Content-Type': 'text/html; charset=utf-8',
+  'Cache-Control': 'no-store',
+  // The form posts only to this worker; no page may frame it.
+  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+  'Referrer-Policy': 'no-referrer',
+  'X-Robots-Tag': 'noindex',
+};
+const MAX_FORM = 1024;
+
+/**
+ * GET /dashboard with the token in the Authorization header (curl), or, in a browser, GET /dashboard for the form
+ * and POST /dashboard with the form's token and days (application/x-www-form-urlencoded). Without a valid token, the
+ * form, with 401.
+ */
 export async function handleDashboard(request, env, now = new Date()) {
-  if (!(await authorised(request, env))) return new Response('Unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } });
-  const html = dashboardHtml(await readCounts(env, daysParam(new URL(request.url)), now));
-  return new Response(html, {
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'no-store',
-      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'",
-      'Referrer-Policy': 'no-referrer',
-      'X-Robots-Tag': 'noindex',
-    },
-  });
+  let ok = false, days = daysParam(new URL(request.url)), tried = false;
+  if (request.method === 'POST') {
+    const type = request.headers.get('Content-Type') || '';
+    const text = type.startsWith('application/x-www-form-urlencoded') && Number(request.headers.get('content-length') || 0) <= MAX_FORM ? await request.text() : '';
+    const form = new URLSearchParams(text.length <= MAX_FORM ? text : '');
+    tried = true;
+    ok = await tokenMatches(env, form.get('token') || '');
+    const d = Number(form.get('days') || 30);
+    days = Number.isInteger(d) && d >= 1 && d <= 366 ? d : 30;
+  } else ok = await authorised(request, env);
+  if (!ok) return new Response(tokenFormHtml(tried), { status: 401, headers: HTML_HEADERS });
+  return new Response(dashboardHtml(await readCounts(env, days, now)), { headers: HTML_HEADERS });
 }
