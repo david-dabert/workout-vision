@@ -116,3 +116,16 @@ Assessment (2 October):
 - Worth keeping, apart from tennis: dynamic time warping against a template of the user's own first rep, as a
   second opinion on the count. It would be a counting change: synthetic test first, scoreboard, synth and
   public gates (PLAN.md).
+
+## 3 October 2026: four floor exercises withdrawn until a view is shown to count them (third audit, C21)
+
+Dead bug, banded dead bug, bird dog and glute bridge march are counted on both sides, and the guide said to film
+them in profile. A both-sides count needs each side seen on half the samples or more (coreAnalysis.js,
+FINDING-012); lying or on all fours in profile, the body hides the far arm and leg, so a set filmed as told is
+refused. From the front or the feet, the hip angle lies along the camera's depth, where the pose model is weakest.
+They are withdrawn from the app (src/lib/offer.js, WITHDRAWN) and keep their guide entry, their names in History
+and their place in the set collectors.
+- They come back when exam sets (PLAN.md patterns 14, 16 and 17 name them) show a view that counts them: sets
+  labelled by David, filmed in profile, from the front and in three-quarter view, run through the count, with
+  neither side refused and no error of 3 or more. The view that works becomes their guide-families.json "view".
+- Not measured: no labelled set holds them. The reasoning is by anatomy, status experimental.

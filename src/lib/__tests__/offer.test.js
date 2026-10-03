@@ -1,19 +1,30 @@
-import { describe, it, expect } from 'vitest';
-import { OFFERED, isOffered, tierOf } from '../offer';
+import { describe, it, expect, vi } from 'vitest';
+// exercise-info.js reaches the drawing code, which reads the screen when it loads (as in exercise-name.test.js).
+vi.hoisted(() => {
+  const any = new Proxy(function stub() {}, { get: (_, k) => (k === Symbol.toPrimitive ? () => 0 : any), apply: () => any, set: () => true });
+  globalThis.window ??= { devicePixelRatio: 1 };
+  globalThis.document ??= { createElement: () => any };
+});
+import { OFFERED, WITHDRAWN, isOffered, tierOf } from '../offer';
 import { TIERS } from '../liftTiers';
 import catalogue from '../guide-catalog.json';
 import families from '../counting/guide-families.json';
 import { liftDefinition } from '../counting/core';
+import { filmView } from '../../components/experience/exercise-info';
 
-// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 (181, and since 2 October the standing and lying barbell curls); Beta marks the
-// exercises with evidence and Experimental all the others, so that the label stays true.
+// Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 (181, and since 2 October the standing and lying barbell curls),
+// and since 3 October 179, without the four floor exercises counted on both sides in profile (offer.js, WITHDRAWN, third audit C21);
+// Beta marks the exercises with evidence and Experimental all the others, so that the label stays true.
 describe('the exercises the app offers', () => {
   // David's decision of 29 September: the walking lunge is not offered, since the lifter walks out of a fixed frame.
-  it('are the countable exercises of the guide but the walking lunge, 183, the lifts of LIFT TIERS among them', () => {
+  it('are the countable exercises of the guide but the walking lunge and the four withdrawn, 179, the lifts of LIFT TIERS among them', () => {
     const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
     expect(countable).toHaveLength(184);
     // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.
-    expect([...OFFERED].sort()).toEqual([...countable.filter(k => k !== 'walking_lunge'), 'chair_stand_test', 'arm_curl_test'].sort());
+    expect(Object.keys(WITHDRAWN).sort()).toEqual(['banded_dead_bug', 'bird_dog', 'dead_bug', 'glute_bridge_march']);
+    expect([...OFFERED].sort()).toEqual([...countable.filter(k => k !== 'walking_lunge' && !Object.hasOwn(WITHDRAWN, k)), 'chair_stand_test', 'arm_curl_test'].sort());
+    expect(OFFERED).toHaveLength(181);
+    for (const key of Object.keys(WITHDRAWN)) expect(isOffered(key), key).toBe(false);
     expect(tierOf('chair_stand_test')).toBe('experimental');
     expect(tierOf('arm_curl_test')).toBe('experimental');
     expect(isOffered('walking_lunge')).toBe(false);
@@ -32,5 +43,20 @@ describe('the exercises the app offers', () => {
 
   it('can each be counted by the core', () => {
     for (const key of OFFERED) expect(liftDefinition(key), key).not.toBeNull();
+  });
+
+  // Third audit, C21 (3 October 2026): a both-sides count needs both sides in view (coreAnalysis.js, FINDING-012),
+  // and in profile the far limbs are hidden. An offered both-sides exercise filmed in profile needs a reason here.
+  it('never ask for a profile view of an exercise counted on both sides, unless allowed with a reason', () => {
+    /** key -> why its profile view still shows both sides. None on 3 October 2026. */
+    const PROFILE_ALLOWED = {};
+    const inProfile = OFFERED.filter(k => liftDefinition(k)?.bothSides && filmView(k) === 'side' && !Object.hasOwn(PROFILE_ALLOWED, k));
+    expect(inProfile).toEqual([]);
+    for (const why of Object.values(PROFILE_ALLOWED)) expect(typeof why === 'string' && why.trim().length > 0).toBe(true);
+    // The withdrawn ones are the case this guards: counted on both sides and filmed in profile.
+    for (const key of Object.keys(WITHDRAWN)) {
+      expect(liftDefinition(key)?.bothSides, key).toBe(true);
+      expect(filmView(key), key).toBe('side');
+    }
   });
 });

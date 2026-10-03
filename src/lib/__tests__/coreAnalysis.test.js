@@ -10,8 +10,10 @@ describe('Step 3 analysis boundary', () => {
   // the nine lifts of LIFT TIERS among them; Automatic, an exercise without a joint and a core-only
   // lift still are not.
   it('does not allow Automatic, an exercise the guide cannot count, or a lift the guide does not hold', async () => {
-    // 183 exercises (the two barbell curls added on 2 October) and the two fitness tests (fitness-tests.js).
-    expect(APPROVED_LIFTS).toHaveLength(185);
+    // 183 exercises (the two barbell curls added on 2 October) less the four floor exercises withdrawn on 3 October
+    // (offer.js, WITHDRAWN, third audit C21), and the two fitness tests (fitness-tests.js).
+    expect(APPROVED_LIFTS).toHaveLength(181);
+    for (const lift of ['dead_bug', 'banded_dead_bug', 'bird_dog', 'glute_bridge_march']) expect(APPROVED_LIFTS, lift).not.toContain(lift);
     for (const test of ['chair_stand_test', 'arm_curl_test']) expect(APPROVED_LIFTS, test).toContain(test);
     for (const lift of ['bench_press', 'bicep_curl', 'hip_thrust', 'lat_pulldown', 'lateral_raise', 'leg_press', 'overhead_press', 'romanian_deadlift', 'squat']) expect(APPROVED_LIFTS, lift).toContain(lift);
     for (const lift of ['__auto__', 'triceps_pushdown', 'pec_deck', 'bicep_curl_alternating', 'walking_lunge']) {

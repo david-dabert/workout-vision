@@ -52,7 +52,7 @@ Measured with `node scripts/unreachable.mjs` on 3 October 2026, which follows st
 | Screen | Role |
 |---|---|
 | `Entry.jsx` + `entry-scene.js`, `entry-pose.json` | First-visit animation; skipped once `wv_seen_entry` is set, forced with `?entry`. `entry-scene.js` also exports the canvas body renderer used by other screens. Opens `Demo.jsx` on demand: a drawn squat that the counting core counts as it plays (`demo-set.js`, `demo-figure.js`). |
-| `Choice.jsx` + `lift-meta.js`, `lift-scenes.js`, `lift-poses.json` | The nine card lifts of `lift-meta.js` as animated cards, with their tier; below them "Another exercise" (Guide), the two fitness tests, "Your sets" (History) and `ExerciseList.jsx`, the searchable list of every offered exercise but the tests (183), loaded after the cards. |
+| `Choice.jsx` + `lift-meta.js`, `lift-scenes.js`, `lift-poses.json` | The nine card lifts of `lift-meta.js` as animated cards, with their tier; below them "Another exercise" (Guide), the two fitness tests, "Your sets" (History) and `ExerciseList.jsx`, the searchable list of every offered exercise but the tests (179), loaded after the cards. |
 | `Film.jsx` + `exercise-info.js` | Filming instructions (the view from `filmView`: the card's reference view, a fitness test's, else `guide-families.json`'s), the guide's drawings, a test's protocol, and the file picker. |
 | `../CoreUpload.jsx` | Runs the analysis, holds the screen awake and aborts it if the page is hidden (`src/lib/interruption.js`), and switches between Watch, Result, the three error screens, and the Report or Replay overlay. |
 | `Watch.jsx` | Progress and the live tracked skeleton while frames are processed. |
@@ -92,7 +92,7 @@ The image landmarks feed the Watch skeleton, the replay, the video export, the r
 The model file is checked against `src/lib/model-hash.json` before use and kept in IndexedDB (`wv-model-cache`).
 
 `src/lib/coreAnalysis.js`
-- `APPROVED_LIFTS = OFFERED` (`src/lib/offer.js`): every lift of `TIERS` (`liftTiers.js`), every countable exercise of `guide-patterns.json` and the two fitness tests (`fitness-tests.js`), except `NOT_FILMABLE` (the walking lunge). That is 185 keys: 183 exercises (4 Beta, the rest Experimental) and 2 tests. `analyzeCoreVideo` rejects any lift for which `isOffered` is false.
+- `APPROVED_LIFTS = OFFERED` (`src/lib/offer.js`): every lift of `TIERS` (`liftTiers.js`), every countable exercise of `guide-patterns.json` and the two fitness tests (`fitness-tests.js`), except `NOT_FILMABLE` (the walking lunge) and `WITHDRAWN` (dead bug, banded dead bug, bird dog, glute bridge march: counted on both sides and filmed in profile, where the far side is hidden; third audit C21, 3 October). That is 181 keys: 179 exercises (4 Beta, the rest Experimental) and 2 tests. The withdrawn four keep their guide entry and names, and the set collectors still list them. `analyzeCoreVideo` rejects any lift for which `isOffered` is false.
 - Each worker request carries an id and a 60 s timeout; an `AbortSignal` terminates the worker.
 - A read that is not whole (not exactly floor(duration × 15) samples, or samples out of time order) throws `PartialReadError` and shows no count.
 - The count is refused when fewer than half the samples have a measurable joint angle; for a both-sides count the less visible side decides, for a `together` count either knee in sight is enough.
@@ -205,4 +205,4 @@ Its only caller, `FeedbackPanel.jsx` (rendered only by `VideoUpload.jsx`), is do
 | `CLAUDE.md` R2, R6 | Counting changes go through `npm run scoreboard`; CI includes a real-phone gate. | Since 2 October `npm run scoreboard` exists and CI runs it on the stored landmarks of the real-phone clips, with `npm run scoreboard:public` and the synthetic sets; no workflow decodes the real-phone videos through the app. |
 | `DIRECTIVES.md` 0.5 | Crash breadcrumbs on the current stage. | `wv_analysis_stage` is written only by `VideoUpload.jsx`, which is dormant. |
 | `DIRECTIVES.md` 1.1 | `test/real-phone/manifest.json` with true count, view, labeller, date. | Only `test/real-phone/landmarks/manifest.json`, which records extraction data; true counts sit in test code and in file names. |
-| `STATE.md` line 15 | "Offered: 181 exercises (e2e/collect.spec.js)". | 183 exercises and 2 fitness tests (`offer.js`; `e2e/collect.spec.js` and `src/lib/__tests__/offer.test.js` pin 183). STATE.md is David's to correct. |
+| `STATE.md` line 15 | "Offered: 181 exercises (e2e/collect.spec.js)". | 179 exercises and 2 fitness tests since 3 October (`offer.js`; `src/lib/__tests__/offer.test.js` and `e2e/shared/exercises.tests.js` pin 179; the collectors list 183, `e2e/collect.spec.js`). STATE.md is David's to correct. |
