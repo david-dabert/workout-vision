@@ -35,6 +35,7 @@ import { isCorrected, markLabel, marksLabel } from './replay-labels';
 import { compareSides } from '../../lib/counting/symmetry';
 import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
+import { track } from '../../lib/events';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -353,6 +354,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
+      track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
       onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
@@ -366,6 +368,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   function challenge() {
     const data = challengeShare({ liftName, count: trueN, counted: count, fr, url: new URL(import.meta.env.BASE_URL, location.origin).href });
     setShareNote('');
+    track('share', { lift });
     shareChallenge(data, { share: navigator.share ? d => navigator.share(d) : null, clipboard: navigator.clipboard }).then(out => {
       if (out === 'copied') setShareNote(fr ? 'Message copié. Collez-le dans une conversation.' : 'Message copied. Paste it into a chat.');
       else if (out === 'unavailable') setShareNote(fr ? 'Le partage n’est pas disponible dans ce navigateur.' : 'Sharing is not available in this browser.');

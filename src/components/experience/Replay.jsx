@@ -8,6 +8,7 @@ import { poseAt, repAt, phaseAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
 import { canExport, exportSetVideo, shareFailed } from './video-export';
 import './Replay.css';
+import { track } from '../../lib/events';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
 import { isCorrected, markLabel, provenance } from './replay-labels';
 
@@ -58,6 +59,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   function share() {
     if (sharing.current) return;
     sharing.current = true;
+    track('share', { lift });
     navigator.share({ files: [made.file] })
       .catch(e => { if (shareFailed(e)) setShareBroke(true); })
       .finally(() => { sharing.current = false; });

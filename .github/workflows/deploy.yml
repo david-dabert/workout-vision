@@ -74,7 +74,11 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # The anonymous usage counts go to the worker named here, and only when David has set the repository variable
+      # (feedback-worker/README.md, Deploy). Unset, the app sends nothing and its page policy is unchanged.
       - run: npm run build
+        env:
+          VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test e2e/offline.spec.js --retries=0
       - uses: actions/upload-pages-artifact@v3

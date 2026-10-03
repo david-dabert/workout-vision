@@ -7,6 +7,7 @@ import { useSets } from './sets';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
 import { setName } from './set-name';
+import { eventsConfigured, browserRefuses, countingOff, setCountingOff } from '../../lib/events';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -145,9 +146,29 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
+        <UsageNote fr={fr} />
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
         <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
       </div>
     </section>
+  </div>;
+}
+
+// What the app sends about its use, where the build sends it (src/lib/events.js), and the way to stop it on this
+// phone. A browser that asks sites not to track sends nothing, and is not asked. Awaits David's approval
+// (test/real-phone/swarm/copy-analytics.md).
+function UsageNote({ fr }) {
+  const [off, setOff] = useState(countingOff);
+  if (!eventsConfigured() || browserRefuses()) return null;
+  const toggle = () => { setCountingOff(!off); setOff(!off); };
+  return <div className="foot usage-note" data-testid="usage-note">
+    <p role="status">{off
+      ? (fr ? 'Comptage anonyme désactivé sur ce téléphone.' : 'Anonymous counting is off on this phone.')
+      : (fr ? 'Pour s’améliorer, l’app compte de façon anonyme l’usage de ses écrans et de ses analyses\u00A0: ni identité, ni vidéo, ni mouvement.' : 'To improve, the app counts anonymously how often its screens and analyses are used: no identity, no video, no movement data.')}</p>
+    <button type="button" className="text-btn press" onClick={toggle}
+      aria-label={off ? (fr ? 'Réactiver le comptage anonyme' : 'Turn anonymous counting back on') : (fr ? 'Désactiver le comptage anonyme' : 'Turn off anonymous counting')}>
+      {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}
+    </button>
   </div>;
 }

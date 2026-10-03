@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { createEntryScene } from './entry-scene';
+import { eventsActive } from '../../lib/events';
 import '@fontsource/instrument-serif/400.css';
 import '@fontsource/instrument-serif/400-italic.css';
 import '@fontsource/geist/400.css';
@@ -14,6 +15,12 @@ import './Entry.css';
 const COPY = {
   fr: ['Votre corps est\u00A0un\u00A0temple.', 'Il est ici observé avec soin.', 'Rien ne quitte votre téléphone sans votre accord.', 'Entrer', 'Afficher l’entrée sans attendre', 'Version de test', 'Voir un exemple'],
   en: ['Your body is a\u00A0temple.', 'Here it is observed with care.', 'Nothing leaves your phone unless you share it.', 'Enter', 'Show the entry now', 'Test version', 'See an example'],
+};
+// Where the build sends anonymous usage counts (src/lib/events.js), "nothing leaves your phone" would be untrue: the
+// line speaks of the video, which never leaves it unless shared. Awaits David's approval (test/real-phone/swarm/copy-analytics.md).
+const COUNTED = {
+  fr: 'Votre vidéo ne quitte votre téléphone que si vous la partagez.',
+  en: 'Your video leaves your phone only if you share it.',
 };
 
 export function shouldShowEntry() {
@@ -90,7 +97,7 @@ export default function Entry({ onEnter }) {
       <div className="entry-copy" ref={copy}>
         <h1 className="entry-l1"><span className="mask"><span>{text[0]}</span></span></h1>
         <p className="entry-l2"><span className="mask"><span>{text[1]}</span></span></p>
-        <p className="entry-l3">{text[2]}</p>
+        <p className="entry-l3">{eventsActive() ? COUNTED[lang === 'en' ? 'en' : 'fr'] : text[2]}</p>
         <button type="button" className="enter tactile" aria-label={text[3]} onClick={enter}>
           <span>{text[3]}</span>
         </button>

@@ -136,10 +136,10 @@ The live path uses only `getImageLandmarker` and `detectPoseImage`; it also pull
 | IndexedDB `medical`, `food`, `milestones`, `personalRecords`, `meta` | Declared in `storage.js`; only `meta` (schema version) is used by the live path. |
 | IndexedDB `wv-model-cache` | The pose model, used only if it matches `model-hash.json`. |
 | Cache Storage (`public/sw.js`) | `wv-v1`, `wv-model-<sha256>`, `wv-wasm-<hash>`, `wv-meta`. |
-| `localStorage` | `wv_lang`, `wv_seen_entry`, `wv_seen_landing`, `wv_level`, `wv_level_asked`, `wv_contribute`, `wv_contribute_asked`. |
+| `localStorage` | `wv_lang`, `wv_seen_entry`, `wv_seen_landing`, `wv_level`, `wv_level_asked`, `wv_contribute`, `wv_contribute_asked`, `wv_count_off` (set only when the person turns the usage counts off). |
 
 After a set is saved, the app asks the browser to keep its storage (`navigator.storage.persist`, `keep-sets.js`).
-No network call leaves the device during use, apart from loading the app itself and the pose model from the same origin; reports, challenges, exports, backups and contributions leave only through a link or share sheet the user taps.
+No network call leaves the device during use, apart from loading the app itself and the pose model from the same origin, and, only in a build with `VITE_EVENTS_URL` set, the anonymous usage counts (`src/lib/events.js`: an event name from `feedback-worker/usage-schema.js`, the lift and tier, a visit-length bucket, the app version and language; batched, sent by `navigator.sendBeacon`, never with an identifier; none under Global Privacy Control or Do Not Track, or once turned off under the choice of lift). The build adds that server's origin to `connect-src` (`vite.config.js`, `eventsCspPlugin`). Reports, challenges, exports, backups and contributions leave only through a link or share sheet the user taps.
 
 ## 5. Dormant code
 
@@ -193,8 +193,7 @@ No workflow decodes a real-phone video through the app on a phone: David's iPhon
 
 ## 8. Outside the app
 
-`feedback-worker/`: a Cloudflare Worker with a D1 database that accepts anonymous structured feedback (`POST /ingest`, 4 KB limit, landmarks and video fields refused) and serves aggregates (`GET /dashboard`).
-Its only caller, `FeedbackPanel.jsx` (rendered only by `VideoUpload.jsx`), is dormant, so the live app sends nothing to it.
+`feedback-worker/`: a Cloudflare Worker with a D1 database. `POST /event` (`usage.js`) adds the app's anonymous usage events to daily totals per (day, event, lift, tier, duration bucket, version, language), storing no IP and no identifier; `GET /stats` and `GET /dashboard` read them with the `STATS_TOKEN` secret. It also accepts anonymous structured feedback (`POST /ingest`, 4 KB limit, landmarks and video fields refused; aggregates at `GET /feedback`, token only), whose only caller, `FeedbackPanel.jsx` (rendered only by `VideoUpload.jsx`), is dormant. Deploy steps: `feedback-worker/README.md`. Until David deploys it and sets `VITE_EVENTS_URL`, the live app sends nothing to it.
 
 `design/experience-prototype.html` is the approved visual prototype for the live screens.
 

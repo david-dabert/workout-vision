@@ -22,6 +22,7 @@ import { loadSets, knownSets } from './components/experience/sets';
 import { levelView, readLevel } from './components/experience/level';
 import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
+import { track } from './lib/events';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
 // screen under 812 points). No WebGL context is made to decide it: making one held up the first
@@ -161,6 +162,8 @@ function AppInner() {
   // from that page, "Filmer cet exercice" goes on to the filming screen.
   const [guideLift, setGuideLift] = useState('');
   const chooseLift = (lift, guided = false) => {
+    // A beginner's lift goes through its guide page first: its "Filmer cet exercice" is the same choice, counted once.
+    if (!(guided && guideLift === lift)) track('choose_lift', { lift });
     // The model and the pose library's WASM enter the service worker's caches now, so a first analysis made offline
     // can start (pose-files.js); inference stays in the existing worker.
     warmPoseFiles(import.meta.env.BASE_URL);
@@ -177,7 +180,7 @@ function AppInner() {
   let key, screen;
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
-    screen = <ExperienceFilm lift={selectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
+    screen = <ExperienceFilm lift={selectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => { track('film_start', { lift: selectedLift }); go('analyze', () => { fileSerial.current += 1; setVideoFile(f); }); }} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
     screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
@@ -191,7 +194,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // live and the dashboard. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => go('exercises', () => setGuideLift(''))} onHistory={() => go('history')} />;
+    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} />;
   }
 
   return <>

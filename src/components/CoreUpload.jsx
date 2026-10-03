@@ -7,6 +7,7 @@ import Report from './experience/Report';
 import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
 import { compactWave, waveAngles } from './experience/wave';
+import { track } from '../lib/events';
 
 // The analysis of the video chosen on the Film screen: App mounts it only with a lift and a file (App.jsx,
 // page 'analyze'). The old standalone form (lift and file pickers, an 'Arm used' line) and its save of the
@@ -59,6 +60,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       // A video chosen while the page is still hidden (back from the camera) waits for it.
       await whenVisible({ signal: controller.signal });
       release = watchInterruption(controller);
+      if (mine()) track('analysis_start', { lift });
       wake = holdScreenAwake();
       const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase: p => { if (mine()) setPhase(p); }, onLandmarks: (lm, w, h) => { if (mine()) { setLandmarks(lm); setFrameSize([w, h]); } } });
       // A beat at 100 %, then the result, as in the prototype; a run hidden meanwhile shows no count.
@@ -66,11 +68,15 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
       const settled = await settleRun(controller.signal, output, initialFile && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 380 : 0);
       release();
       // The Result screen saves the count once the user confirms it.
-      if (mine()) setResult(settled);
+      if (mine()) {
+        setResult(settled);
+        // Counted, or no rep found and the count asked for (Result.jsx, unsure), or refused.
+        track(settled.refused ? 'analysis_refused' : settled.count === 0 ? 'analysis_uncounted' : 'analysis_done', { lift });
+      }
     } catch (e) {
-      if (isInterruption(controller.signal.reason)) { if (mine()) setInterrupted(true); }
-      else if (e.name === 'PartialReadError') { if (mine()) setIncomplete({ read: e.read, expected: e.expected, decoder: e.decoder, disordered: e.disordered }); }
-      else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); }
+      if (isInterruption(controller.signal.reason)) { if (mine()) { setInterrupted(true); track('analysis_interrupted', { lift }); } }
+      else if (e.name === 'PartialReadError') { if (mine()) { setIncomplete({ read: e.read, expected: e.expected, decoder: e.decoder, disordered: e.disordered }); track('analysis_partial', { lift }); } }
+      else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); track('analysis_failed', { lift }); }
     } finally { release(); wake(); if (mine()) abort.current = null; }
   }
 
@@ -89,6 +95,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   function openReport(savedN, savedId) {
     trueNRef.current = savedN;
     savedIdRef.current = savedId ?? null;
+    track('report_open', { lift });
     openOverlay('report');
   }
 
@@ -96,7 +103,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
   const view = result ? 'result' : interrupted ? 'interrupted' : incomplete ? 'incomplete' : error ? 'error' : 'watch';
   return <>
     <ScreenFade screenKey={view}>
-      {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { abort.current?.abort(); refilm(); }} />}
+      {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { if (abort.current) track('analysis_cancelled', { lift }); abort.current?.abort(); refilm(); }} />}
       {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
       {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
