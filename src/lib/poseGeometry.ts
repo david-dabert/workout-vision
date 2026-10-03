@@ -101,6 +101,12 @@ export function calculateTrunkAngle(landmarks: LandmarkArray): number {
 /**
  * Check if any joint angle exceeds biomechanical limits.
  * Returns true if landmarks are anatomically implausible.
+ *
+ * Never fires as written (third audit, C48, 3 October 2026): calculateAngle returns acos(...) in
+ * degrees, at most 180, and every limit below is 180 or more, so this always returns false and
+ * filterAnatomicallyImplausible (poseAnalysis.js) never replaces a frame. The limits are UNSOURCED,
+ * status experimental. Making the check real needs limits an unsigned 0-180 angle can exceed
+ * (e.g. a minimum knee angle) with a cited source (R9); until then it is kept as dead per-frame work.
  */
 export function isAnatomicallyImplausible(landmarks: LandmarkArray): boolean {
   if (!landmarks || landmarks.length < 33) return false;
