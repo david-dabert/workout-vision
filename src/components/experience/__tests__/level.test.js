@@ -101,6 +101,14 @@ describe('the expert\'s table and speed line are the report\'s own, never a new 
       expect(sheet.summary).not.toContain(line);
     });
   }
+  // Third audit C11 (3 October): after a correction the screen's table heads its rows Repère, as the report does.
+  for (const fr of [true, false]) it(`heads the corrected table's rows as the report's marks (${fr ? 'fr' : 'en'})`, () => {
+    const sheet = reportSheet({ lang: fr ? 'fr' : 'en', date: new Date(2026, 8, 30), notes: '', liftName: 'Curl', count: 9, counted: 8, reps: eight, first: 'concentric' });
+    const t = repTable({ reps: eight, first: 'concentric', fr, corrected: true });
+    expect(t.columns[0]).toBe(fr ? 'Repère' : 'Mark');
+    expect(t.columns).toEqual(sheet.columns);
+    expect(repTable({ reps: eight, first: 'concentric', fr }).columns[0]).toBe(fr ? 'Rép.' : 'Rep');
+  });
   it('gives no speed line under four whole reps', () => {
     expect(speedChangeLine(eight.slice(0, 3), true)).toBe('');
   });

@@ -5,6 +5,7 @@ import { LIFTS, META, createLiftScene } from './lift-scenes';
 import { useSets } from './sets';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
+import { setName } from './set-name';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -94,7 +95,9 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
   const last = returning && sets?.[0];
   const n = sets?.length || 0;
   const lastKey = last && (last.exercise || last.exerciseKey);
-  const lastRaw = last && (META[lastKey]?.[lang] || nameOf?.(lastKey, lang) || (tExercise(lastKey) !== lastKey ? tExercise(lastKey) : ''));
+  // exerciseName gives the key back when it knows no name: a name is taken only when it differs from the key, as
+  // in the history (History.jsx), so a set of an earlier version is named by its locale name (third audit C25).
+  const lastRaw = last && setName({ key: lastKey, lang, meta: META, nameOf, tExercise });
   const lastName = lastRaw && lastRaw.toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
   return <div className="wv-experience">
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>

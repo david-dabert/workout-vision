@@ -260,9 +260,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
-  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
+  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
+  // its first column headed Repère after a correction, as the report heads it (third audit C11).
   const [view] = useState(() => levelView(readLevel()));
-  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
+  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr, corrected }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));

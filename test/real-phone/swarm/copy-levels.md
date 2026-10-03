@@ -15,3 +15,10 @@ Level names reuse the report's existing words (Débutant / Intermédiaire / Conf
 Reused as they are, no new wording: the report's table columns and its concentric speed line
 (`report-sheet.js`: "Vitesse concentrique : −20 % du début à la fin"), "Filmer cet exercice", "Tous les exercices",
 the account lines, the tip and "En savoir plus" (`set-account.js`, `set-notes.js`).
+
+Added 3 October 2026 (third audit C11), pending David's approval: after a correction, the expert's per-rep table
+on the result screen heads its first column with the report's existing word for a detected mark, as the PDF already does.
+
+| Where | FR | EN |
+|---|---|---|
+| Result, expert, first column of the per-rep table after a correction (`report-sheet.js` `repTable`, `Result.jsx`) | Repère | Mark |
