@@ -151,3 +151,13 @@ describe('a lunge counted on the knee with more reps', () => {
     expect(countReps(wl, ts, 'forward_lunge').count).toBe(6);
   });
 });
+
+describe('push-ups and front raises counted on the side with more reps', () => {
+  const run = (joint: 'elbow' | 'shoulder', rest: number, work: number, lift: string) => {
+    const good = sample([{ hold: rest, sec: 1 }, ...cycles({ rest, work, reps: 6, firstSec: 0.9, secondSec: 0.9, restSec: 0.5 }), { hold: rest, sec: 1 }], rest, SPS);
+    const ts = timestamps(good.length, SPS);
+    return countReps(ts.map((_, i) => jointFrame(joint, { left: rest + (good[i] - rest) * 0.1, right: good[i] })), ts, lift).count;
+  };
+  it('a push-up whose far elbow barely moves in the picture', () => expect(run('elbow', 170, 80, 'push_up')).toBe(6));
+  it('a front raise whose far arm barely moves in the picture', () => expect(run('shoulder', 20, 110, 'front_raise')).toBe(6));
+});

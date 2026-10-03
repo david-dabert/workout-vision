@@ -54,7 +54,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Both elbows bend together: each is counted and the one with more reps kept. Public build half's push-ups, 3 October: 49 exact either way, off by 3 or more 45 to 40, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "weighted_push_up": {
     "joint": "elbow",
@@ -103,7 +104,8 @@
     "rest": "low",
     "first": "concentric",
     "view": "side",
-    "why": "Forward arm elevation opens hip-shoulder-elbow from the arm-down start."
+    "why": "Both arms rise together: each shoulder is counted and the one with more reps kept, so the arm the camera serves worse does not lose reps. Public build half's front raises, 3 October: 48 to 55 exact of 150, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "rear_delt_fly": {
     "joint": null,
