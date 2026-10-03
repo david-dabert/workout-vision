@@ -163,8 +163,8 @@ Two pairs of files exist in both JavaScript and TypeScript (`SignalExtractor3D`,
 
 | Workflow | Trigger | Steps |
 |---|---|---|
-| `.github/workflows/ci.yml` | Push and pull request on `main` and `counter-core` | Four jobs. Quality: lint, typecheck, unit tests, `npm run scoreboard` (the stored landmarks of the labelled real-phone sets), the 96 synthetic sets against `synth.txt`, build. Browser tests: Playwright in Chromium and WebKit on the production build. Tour: WebKit with the iPhone profile at three sizes. Journey: the production app driven end to end by three rendered synthetic videos, with an accessibility audit. |
-| `.github/workflows/deploy.yml` | CI succeeding on a push to `main`, or by hand | Checks out the commit CI passed; lint, unit tests, build, Playwright offline test, deploy to GitHub Pages. |
+| `.github/workflows/ci.yml` | Push and pull request on `main` and `counter-core` | Four jobs. Quality: lint, typecheck, unit tests, `npm run scoreboard` (the stored landmarks of the labelled real-phone sets; the committed baselines must hold the live counts), the 96 synthetic sets against `synth.txt`, build. Browser tests: Playwright in Chromium and WebKit on the production build. Tour: WebKit with the iPhone profile at three sizes. Journey: the production app driven end to end by three rendered synthetic videos, with an accessibility audit. |
+| `.github/workflows/deploy.yml` | CI succeeding on a push to `main`, or by hand | Refuses any commit that is not `main`'s tip (a CI re-run of an older commit) and, by hand, any commit whose latest CI run did not succeed; checks out the commit CI passed; lint, unit tests, build, Playwright offline test, deploy to GitHub Pages. |
 
 No workflow decodes a real-phone video through the app on a phone: David's iPhone check stays the gate for that (CLAUDE.md R6).
 
