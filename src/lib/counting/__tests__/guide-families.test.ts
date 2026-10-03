@@ -54,6 +54,13 @@ describe('guide counting families', () => {
       expect(Object.hasOwn(entry, 'bothSides')).toBe(false);
       fields.push('eitherSide');
     }
+    if (Object.hasOwn(entry, 'together')) {
+      // Both sides joined when they bend together (core.ts), never with either of the other two side rules.
+      expect(entry.together).toBe(true);
+      expect(Object.hasOwn(entry, 'bothSides')).toBe(false);
+      expect(Object.hasOwn(entry, 'eitherSide')).toBe(false);
+      fields.push('together');
+    }
     if (Object.hasOwn(entry, 'bothSides')) {
       expect(entry.bothSides).toBe(true);
       fields.push('bothSides');

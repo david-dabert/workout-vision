@@ -13,13 +13,13 @@ import familiesJson from '../guide-families.json';
 import patternsJson from '../guide-patterns.json';
 import { jointFrame, cycles, sample, timestamps, type Side } from './synthetic';
 
-type Family = { joint: Joint | null; rest?: 'high' | 'low'; first?: 'concentric' | 'eccentric'; bothSides?: boolean; eitherSide?: boolean };
+type Family = { joint: Joint | null; rest?: 'high' | 'low'; first?: 'concentric' | 'eccentric'; bothSides?: boolean; eitherSide?: boolean; together?: boolean };
 const families = familiesJson as Record<string, Family>;
 
 const combos = new Map<string, string>(); // pattern → the first exercise of it outside LIFTS
 for (const [key, f] of Object.entries(families)) {
   if (!f.joint || Object.hasOwn(LIFTS, key)) continue;
-  const id = `${f.joint}/${f.rest}/${f.first}${f.bothSides ? '/bothSides' : f.eitherSide ? '/eitherSide' : ''}`;
+  const id = `${f.joint}/${f.rest}/${f.first}${f.bothSides ? '/bothSides' : f.eitherSide ? '/eitherSide' : f.together ? '/together' : ''}`;
   if (!combos.has(id)) combos.set(id, key);
 }
 
@@ -38,7 +38,8 @@ describe('every countable exercise is counted by its pattern', () => {
   it('defines each exercise from LIFTS when it is there, from its family otherwise, and none without a joint', () => {
     expect(liftDefinition('bicep_curl')).toEqual(LIFTS.bicep_curl);
     expect(liftDefinition('walking_lunge')).toEqual({ joint: 'knee', rest: 'high', first: 'eccentric', bothSides: true });
-    expect(liftDefinition('forward_lunge')).toEqual({ joint: 'knee', rest: 'high', first: 'eccentric', eitherSide: true });
+    expect(liftDefinition('forward_lunge')).toEqual({ joint: 'knee', rest: 'high', first: 'eccentric', together: true });
+    expect(liftDefinition('push_up')).toMatchObject({ joint: 'elbow', rest: 'high', first: 'eccentric', eitherSide: true });
     expect(liftDefinition('nordic_hamstring_curl')).toEqual({ joint: 'knee', rest: 'low', first: 'eccentric' });
     expect(liftDefinition('pec_deck')).toBeNull();
     expect(liftDefinition('no_such_exercise')).toBeNull();
@@ -60,7 +61,7 @@ describe('every countable exercise is counted by its pattern', () => {
   it('reads the same patterns as guide-families.json, and nothing else', () => {
     const expected: Record<string, string> = {};
     for (const [key, f] of Object.entries(families)) {
-      if (f.joint) expected[key] = [f.joint, f.rest, f.first, ...(f.bothSides ? ['both'] : f.eitherSide ? ['either'] : [])].join('/');
+      if (f.joint) expected[key] = [f.joint, f.rest, f.first, ...(f.bothSides ? ['both'] : f.eitherSide ? ['either'] : f.together ? ['together'] : [])].join('/');
     }
     expect(patternsJson).toEqual(expected);
   });

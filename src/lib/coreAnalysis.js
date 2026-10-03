@@ -14,8 +14,13 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   // Use the core's own raw-angle validity (before outlier removal/bridging).
   // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
   // (audit FINDING-012: one hidden arm let the other's reps through as the whole count).
+  // A lunge's two knees bend together on every rep (core.ts, `together`): joined, either knee in sight sees the
+  // rep, so a sample is seen when one of them is. Status: experimental (TRIED.md, 3 October).
   const seen = angles => angles.filter(angle => angle !== null).length;
-  const visible = core.sides ? Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)) : seen(core.angles);
+  const either = (l, r) => l.filter((angle, i) => angle !== null || r[i] !== null).length;
+  const visible = core.sides
+    ? (liftDefinition(lift)?.together ? either(core.sides.left.angles, core.sides.right.angles) : Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)))
+    : seen(core.angles);
   const refused = visible < worldLandmarks.length / 2 || worldLandmarks.length === 0;
   // A fitness test is scored over its window (fitness-tests.js): the count and the marks are the reps in it.
   if (isTest(lift) && !refused) {

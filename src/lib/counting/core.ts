@@ -98,8 +98,23 @@ export interface LiftDefinition {
    * forward or reverse lunge, a push-up, a pull-up), where the side the camera serves worse misses reps; the other
    * side is kept only when it is itself seen on at least half the samples (countReps). Public build half's lunges,
    * 3 October: 44 to 54 exact of 156, 31 to 8 off by 3 or more, none newly off by 3 (TRIED.md). Experimental.
+   * The lunges have since moved to `together`; the push-up, the pull-up and the front raise keep this.
    */
   eitherSide?: boolean;
+  /**
+   * Both joints bend together on every rep (a forward or reverse lunge: both knees): each side is counted and
+   * the two lists joined as for bothSides, so a rep one knee misses and the other sees still counts, and a rep
+   * both see counts once; the count needs either knee in sight at a sample, not both (coreAnalysis.js). When
+   * the two knees' angles do not rise and fall together over the set (TOGETHER_MIN_CORRELATION), their reps
+   * cannot be paired and the side with more reps counts, as eitherSide. Public build half's lunges against
+   * eitherSide, 3 October, on the integrated core (test/real-phone/accuracy/variant-eval.test.ts): chosen on its
+   * half A, 16 to 22 exact of 78, off by 3 or more (refusals included) 16 to 10, none lost; checked on half B,
+   * 39 to 42 exact of 78 (4 gained, 1 lost; McNemar 0.80, not significant), off by 3 or more 6 to 6; none newly
+   * off by 3 on either. Six refused sets now get a count: 2 exact, 4 short by 1 or 2. David's sets and the
+   * synthetic sets hold no lunge.
+   * Status: experimental.
+   */
+  together?: boolean;
   /** Share of the set's range each threshold is set inside its percentile; THRESHOLD_MARGIN when absent (DETECTION). */
   thresholdMargin?: number;
   /** Smallest range one rep may have, in degrees; MIN_ROM_DEGREES when absent. The set's own range floor never changes (DETECTION). */
@@ -136,7 +151,7 @@ export const LIFTS = {
   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
   leg_extension: { joint: 'knee', rest: 'low', first: 'concentric' },
   leg_curl: { joint: 'knee', rest: 'high', first: 'concentric' },
-  lunge: { joint: 'knee', rest: 'high', first: 'eccentric', eitherSide: true },
+  lunge: { joint: 'knee', rest: 'high', first: 'eccentric', together: true },
   romanian_deadlift: { joint: 'hip', rest: 'high', first: 'eccentric' },
   hip_thrust: { joint: 'hip', rest: 'low', first: 'concentric' },
   // The fitness tests (fitness-tests.js), each counted by its movement. Chair stand: seated, the knee rests
@@ -176,7 +191,7 @@ export function liftDefinition(key: string): LiftDefinition | null {
   const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
   return {
     joint, rest, first,
-    ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : {}),
+    ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : sides === 'together' ? { together: true } : {}),
     ...(Object.hasOwn(DETECTION, key) ? DETECTION[key] : {}),
   };
 }
@@ -236,6 +251,14 @@ const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives th
 const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
 const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample
 const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
+// A `together` lift joins its two sides only when their smoothed angles correlate above this over the samples
+// where both are seen (Pearson). Two knees that bend together correlate. The two public lunges that doubled when
+// joined (TRIED.md, 3 October: 3 read 7, 4 read 8) read their knees in opposition, one straight while the other
+// bent (correlation -0.10 and -0.64: the far leg swapped or misread), and two whose knees barely correlated
+// (0.06, 0.07) gained a false rep. 0.3 is the conventional "medium" correlation (Cohen, Statistical Power
+// Analysis for the Behavioral Sciences, 2nd ed., 1988); on the lunges of the public build half's half A every
+// value from 0.1 to 0.3 gives the same counts. Status: experimental (chosen on half A).
+const TOGETHER_MIN_CORRELATION = 0.3;
 // A last rep the video stops on its way back counts once its return has covered this share of the way from its
 // working extreme to the rest threshold (detectReps), and it is marked clipped, so no measure uses it. The rule
 // withdrawn on 1 October (TRIED.md) counted it from the working end on, which a movement after the set reaches
@@ -259,8 +282,18 @@ export function countReps(
   if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
   if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
   const seen = selectSide(worldLandmarks, def.joint);
+  if (def.together) {
+    const joined = countBothSides(worldLandmarks, timestamps, def);
+    const { left, right } = joined.sides!;
+    if (correlation(left.smoothedAngles, right.smoothedAngles) > TOGETHER_MIN_CORRELATION) {
+      // Either knee in sight sees the rep: the share of samples where one of them is.
+      const either = left.angles.filter((a, i) => a !== null || right.angles[i] !== null).length;
+      return { ...joined, confidence: worldLandmarks.length > 0 ? either / worldLandmarks.length : 0 };
+    }
+    // The knees do not move together: counted as eitherSide, below.
+  }
   const mine = countSide(worldLandmarks, timestamps, def, seen);
-  if (!def.eitherSide) return mine;
+  if (!def.eitherSide && !def.together) return mine;
   // The side with more reps; on a tie, the better seen. A side seen in fewer than half the samples, which the count
   // refuses (summarizeCount), is never kept over one seen in more: its extra reps would turn a set the better side
   // counts into a refusal (3 October: a push-up seen 91 % on one elbow and 49 % on the other; a public pull-up
@@ -415,6 +448,20 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
     highThreshold: primary.highThreshold,
     sides: { left, right },
   };
+}
+
+/** Pearson correlation of two angle series over the samples where both have a value; 0 under three such samples or with no spread. */
+function correlation(a: (number | null)[], b: (number | null)[]): number {
+  const xs: number[] = [], ys: number[] = [];
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    const x = a[i], y = b[i];
+    if (x !== null && y !== null) { xs.push(x); ys.push(y); }
+  }
+  if (xs.length < 3) return 0;
+  const mx = xs.reduce((s, v) => s + v, 0) / xs.length, my = ys.reduce((s, v) => s + v, 0) / ys.length;
+  let sxy = 0, sxx = 0, syy = 0;
+  for (let i = 0; i < xs.length; i++) { const dx = xs[i] - mx, dy = ys[i] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+  return sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : 0;
 }
 
 // ─── Side selection ───

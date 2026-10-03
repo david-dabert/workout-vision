@@ -701,8 +701,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 52 to 60 exact of 156 (chosen on one half, 14 to 20; checked on the other, 38 to 40, 2 lost), off by 3 or more 22 to 16, none newly off by 3. Status: experimental.",
+    "together": true
   },
   "split_squat": {
     "joint": "knee",
@@ -816,8 +816,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 52 to 60 exact of 156 (chosen on one half, 14 to 20; checked on the other, 38 to 40, 2 lost), off by 3 or more 22 to 16, none newly off by 3. Status: experimental.",
+    "together": true
   },
   "smith_machine_split_squat": {
     "joint": "knee",
@@ -859,8 +859,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 52 to 60 exact of 156 (chosen on one half, 14 to 20; checked on the other, 38 to 40, 2 lost), off by 3 or more 22 to 16, none newly off by 3. Status: experimental.",
+    "together": true
   },
   "dumbbell_lateral_lunge": {
     "joint": "knee",
@@ -1386,8 +1386,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 52 to 60 exact of 156 (chosen on one half, 14 to 20; checked on the other, 38 to 40, 2 lost), off by 3 or more 22 to 16, none newly off by 3. Status: experimental.",
+    "together": true
   },
   "lateral_lunge": {
     "joint": "knee",
