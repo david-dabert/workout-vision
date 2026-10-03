@@ -82,7 +82,7 @@ pass  en: a yes keeps this set: kept 9 over the app's 7, with the result's pose 
 pass  en: the yes is remembered
 pass  en: once answered, the saved card asks no more
 pass  a level the phone cannot store is said, not noted ("Votre niveau n’a pas pu être enregistré sur ce téléphone.")
-pass  a set the phone cannot keep as a contribution is said, not thanked (first "Merci. Vous pourrez arrêter à tout moment dans vos séries.", then "Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone.")
+pass  a set the phone cannot keep as a contribution is said, not thanked (first "Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone.", then "Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone.")
 pass  the question shown once and left unanswered is not asked again (first true, then 0)
 pass  en, beginner with motion: the label is there before the question (before the question, 1 label)
 pass  fr, beginner with motion: the label is there before the question (before the question, 1 label)

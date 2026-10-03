@@ -122,7 +122,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   if (!shown && previousSet && Number.isFinite(previousSet.count)) {
     const prevDate = previousSet.date instanceof Date ? previousSet.date : new Date(previousSet.date);
     const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
-    summary.push(fr ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép.` : `Set of ${day}${colon}${previousSet.count}${NBSP}reps`);
+    summary.push(fr ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép.` : `Set of ${day}${colon}${previousSet.count}${NBSP}${previousSet.count === 1 ? 'rep' : 'reps'}`);
   }
   if (measures && shown) {
     summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
@@ -160,7 +160,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         const durFr = prevAvgDur === null ? '' : `, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`, durEn = prevAvgDur === null ? '' : `, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`;
         summary.push(fr
           ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°${durFr}`
-          : `Set of ${day}${colon}${previousSet.count}${NBSP}reps, avg range ${prevAvgRange}°${durEn}`);
+          : `Set of ${day}${colon}${previousSet.count}${NBSP}${previousSet.count === 1 ? 'rep' : 'reps'}, avg range ${prevAvgRange}°${durEn}`);
       }
     }
   }

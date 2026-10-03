@@ -210,7 +210,8 @@
 .wv-experience .g-bar.capped { border-radius: 0; }
 .wv-experience .strip-col.lit .g-bar { background: var(--lamp); }
 .wv-experience .t-gap { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: 3px; height: 3px; border-radius: 50%; background: var(--hair-2); }
-.wv-experience .result-screen.is-saved .strips { opacity: 0.55; transition: opacity 0.7s var(--ease); }
+/* Saved: the marks step back, their words keep their contrast (WCAG 1.4.3; audit of 3 October). */
+.wv-experience .result-screen.is-saved .strips .strip-cols { opacity: 0.55; transition: opacity 0.7s var(--ease); }
 .wv-experience .res-strips .res-sides { margin-top: var(--s-4); }
 .wv-experience .strip-caption { margin: 0; min-height: 19px; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--bone-2); }
 @media (prefers-reduced-motion: reduce) {
@@ -231,5 +232,5 @@
 .wv-experience .w-back { stroke: rgba(232, 189, 126, 0.42); }
 .wv-experience .w-rep.part .w-out { stroke: var(--ash); stroke-width: 1.5; stroke-dasharray: 2 3; }
 .wv-experience .wave.has-sel .w-rep:not(.sel).lit path { opacity: 0.32; }
-.wv-experience .result-screen.is-saved .wave { opacity: 0.55; transition: opacity 0.7s var(--ease); }
+.wv-experience .result-screen.is-saved .wave svg { opacity: 0.55; transition: opacity 0.7s var(--ease); }
 @media (prefers-reduced-motion: reduce) { .wv-experience .w-rep path, .wv-experience .result-screen.is-saved .wave { transition: none; } }

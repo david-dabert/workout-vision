@@ -31,6 +31,10 @@ self.addEventListener('install', (event) => {
 // chunks (the report's PDF module, on 2 October, was gone from the cache and from the site). The versions are
 // listed, oldest first, in the wv-meta cache; every older one is dropped (src/lib/__tests__/sw-versions.test.js).
 const META_CACHE = 'wv-meta';
+// How long a page request waits for the network before the page kept answers. Status: convention (UNSOURCED value).
+const NAV_WAIT_MS = 4000;
+// This version's cache first, then any other: the previous version's cache holds the same unversioned addresses.
+const fromCurrent = (request) => caches.open(CACHE_NAME).then((cache) => cache.match(request)).then((hit) => hit || caches.match(request));
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const meta = await caches.open(META_CACHE);
@@ -114,25 +118,33 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Navigation and app shell: network-first with cache fallback. The page is checked
-  // with the server each time, so it never outlives the files it names.
+  // with the server each time, so it never outlives the files it names. Offline, or when the network has not
+  // answered within NAV_WAIT_MS (a weak signal in a gym), the page kept by this version answers, never the
+  // previous version's (audit of 3 October; src/lib/__tests__/sw-offline.test.js).
   if (request.mode === 'navigate' || APP_SHELL.includes(url.pathname)) {
-    event.respondWith(
-      fetch(request, { cache: 'no-cache' })
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('__SW_BASE__')))
-    );
+    const network = fetch(request, { cache: 'no-cache' }).then((response) => {
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+      }
+      return response;
+    });
+    const kept = () => fromCurrent(request).then((cached) => cached || fromCurrent('__SW_BASE__'));
+    event.respondWith(new Promise((resolve, reject) => {
+      let settled = false;
+      const answer = (r) => { if (!settled && r) { settled = true; resolve(r); } };
+      const timer = setTimeout(() => { kept().then(answer, () => {}); }, NAV_WAIT_MS);
+      network.then((r) => { clearTimeout(timer); answer(r); }, () => {
+        clearTimeout(timer);
+        kept().then((r) => (r ? answer(r) : reject(new TypeError('offline, nothing kept'))), reject);
+      });
+    }));
     return;
   }
 
-  // Everything else: stale-while-revalidate
+  // Everything else: stale-while-revalidate, from this version's cache first.
   event.respondWith(
-    caches.match(request).then((cached) => {
+    fromCurrent(request).then((cached) => {
       const networkFetch = fetch(request).then((response) => {
         if (response.ok) {
           const clone = response.clone();

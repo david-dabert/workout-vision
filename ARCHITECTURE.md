@@ -152,7 +152,7 @@ Two pairs of files exist in both JavaScript and TypeScript (`SignalExtractor3D`,
 | `npm run lint` | oxlint, React hooks rules. |
 | `playwright.core.config.js` → `e2e/core-app.spec.js` | The full live pipeline on the real-phone clips, in WebKit (iPhone 13) and Chrome, read through `wv:core-result`. Run by hand. |
 | `playwright.decode.config.js` → `e2e/decode-clips.spec.js` | Decodes the five real-phone clips to landmarks in `test/real-phone/landmarks/`, and checks determinism. Run by hand. |
-| `playwright.config.js` → `e2e/offline.spec.js`, `history.spec.js`, `screenshots.spec.js` | App-level checks; `offline.spec.js` runs in the deploy workflow. |
+| `playwright.config.js` → `e2e/offline.spec.js`, `history.spec.js` and the other `e2e/*.spec.js` | App-level checks; `offline.spec.js` runs in the deploy workflow. |
 | `test/real-phone/rep-parity.mjs`, `replay-check.mjs`, `checks.mjs` | Scripted checks against a local preview: count parity between WebKit and Chromium, replay, blank-screen detection. Evidence folders per round (`step3`, `round3`, `round5`, `round7`, and others). |
 | `test/real-phone/landmarks/` | Landmarks for five real-phone clips (bench press, curl, lat pulldown, lateral raise, overhead press). The videos themselves are not in the repository. |
 | `benchmark/` | Countix replay benchmark (`replay-benchmark.mjs`) against the previous counter (`RepCounter`), landmark caches, results from 7 September. |
@@ -179,6 +179,6 @@ The only caller is `FeedbackPanel.jsx`, which is dormant, so the live app sends 
 
 | Document | Says | Code says |
 |---|---|---|
-| `CLAUDE.md` R2, R6 | Counting changes go through `npm run scoreboard`; CI includes a real-phone gate. | No `scoreboard` script exists in `package.json`; no workflow runs the real-phone clips. |
+| `CLAUDE.md` R2, R6 | Counting changes go through `npm run scoreboard`; CI includes a real-phone gate. | Since 2 October `npm run scoreboard` exists and CI runs it on the stored landmarks of the real-phone clips; no workflow decodes the real-phone videos through the app. |
 | `DIRECTIVES.md` 0.5 | Crash breadcrumbs on the current stage. | `wv_analysis_stage` is written only by `VideoUpload.jsx`, which is dormant. |
 | `DIRECTIVES.md` 1.1 | `test/real-phone/manifest.json` with true count, view, labeller, date. | Only `test/real-phone/landmarks/manifest.json`, which records extraction data; true counts sit in test code and in file names. |

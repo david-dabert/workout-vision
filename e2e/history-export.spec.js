@@ -65,7 +65,7 @@ test('without a share sheet for files, the export downloads the sets and the rep
   expect(setRows[2].split(';').slice(1, 8)).toEqual(['Curl biceps', '5', '4', 'oui', 'oui', '', '18,4']);
   const repRows = reps.toString('utf8').slice(1).split('\r\n').filter(Boolean);
   expect(repRows).toHaveLength(6);
-  expect(repRows[1].split(';').slice(1)).toEqual(['Curl biceps', '1', '118', '1,00', '1,40', '200', '100', 'non']);
+  expect(repRows[1].split(';').slice(1)).toEqual(['Curl biceps', '1', '118', '1,0', '1,4', '200', '100', 'non']);
   // The app cannot know what the browser saved; it says what it did (review, 30 September).
   await expect(page.getByRole('status').filter({ hasText: 'Téléchargement lancé\u00A0: vos séries et le détail des répétitions.' })).toBeVisible();
 });

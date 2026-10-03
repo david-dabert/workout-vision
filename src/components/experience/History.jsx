@@ -130,7 +130,7 @@ export default function History({ onClose }) {
                 <span className={`hist-n${counted !== w.reps ? ' is-corrected' : ''}`} aria-hidden="true">{w.reps}</span>
                 <span className="hist-txt">
                   <span className="hist-name">{liftName(w)}</span>
-                  <span className="hist-meta"><span>{[time(w), seconds ? `${seconds} s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
+                  <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
                 {(counted !== w.reps || repsBest.has(w.id)) && <span className="hist-tags">
@@ -145,7 +145,7 @@ export default function History({ onClose }) {
                   <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
                 </button>
                 <button className={`text-btn press${confirm === w.id ? ' is-armed' : ''}`} onClick={() => remove(w)}>
-                  {confirm === w.id ? (fr ? 'Toucher encore pour supprimer' : 'Tap again to delete') : (fr ? 'Supprimer cette série' : 'Delete this set')}
+                  {confirm === w.id ? (fr ? 'Touchez encore pour supprimer' : 'Tap again to delete') : (fr ? 'Supprimer cette série' : 'Delete this set')}
                 </button>
               </div>}
             </li>;

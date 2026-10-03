@@ -138,7 +138,17 @@ export function reportPdf(sheet) {
   paint();
   let y = MARGIN;
   const room = () => PAGE_H - MARGIN - y;
-  const newPage = () => { doc.addPage('a5'); paint(); y = MARGIN; };
+  // Once the measures have begun, every new page opens with the experimental label, so no page shows a measure
+  // without it (R8; audit of 3 October: a long set's table ran onto pages without it).
+  let measuresBegun = false;
+  const newPage = () => {
+    doc.addPage('a5'); paint(); y = MARGIN;
+    if (measuresBegun && sheet.experimental) {
+      const block = lines(sheet.experimental, 9, COLUMN);
+      block.lines.forEach(line => { drawLine(line, block.raster, MARGIN, y, 9, 1.5, COLOR.ash); y += 13.5; });
+      y += GAP;
+    }
+  };
   const rule = () => { doc.setDrawColor(COLOR.rule); doc.setLineWidth(1); doc.line(MARGIN, y + 0.5, MARGIN + COLUMN, y + 0.5); };
   const label = (text, x, top) => write(upper(text), x, top, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16);
 
@@ -191,6 +201,7 @@ export function reportPdf(sheet) {
     y += GAP;
   };
   [sheet.corrected, sheet.arm, sheet.experimental].filter(Boolean).forEach(sheetLine);
+  measuresBegun = true;
 
   // The wave (wave.js), as on the report screen: the measured angle as a hairline, each rep over it in the
   // count's colour, its return lighter, a cut or partial rep in ash.

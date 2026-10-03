@@ -13,7 +13,9 @@ const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
 
 test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
-  const base = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')).counts : {};
+  // In CI, the base branch's counts (PUBLIC_BASE): a change cannot lower the bar by editing them (audit of 3 October).
+  const from = process.env.PUBLIC_BASE || BASELINE;
+  const base = existsSync(from) ? JSON.parse(readFileSync(from, 'utf8')).counts : {};
   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
   const rows: string[] = [];

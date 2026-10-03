@@ -33,7 +33,7 @@ const NOTES_ALL = {
       'Dormez au moins sept heures par nuit, de façon régulière : c’est la recommandation pour les adultes.', // source 15, literature
       'Le muscle se reconstruit au repos, et le sommeil en fait partie.', // convention
       'Environ 1,6 g de protéines par kilo de poids de corps et par jour suffit à la plupart des gens ; au-delà, le gain de muscle ne progresse plus.', // source 11, literature
-      'Pour prendre du muscle, inutile de trop manger : un léger excédent de calories suffit et limite la prise de gras.', // source 12, literature; convention
+      'Pour prendre du muscle, inutile de trop manger : un léger excédent de calories est la piste conseillée pour limiter la prise de gras, sans dose validée à ce jour.', // source 12, literature: the review finds the surplus that maximises muscle with least fat never validated in resistance training; worded as advice, not proof (R9; audit of 3 October)
       'Les courbatures ne disent pas si la séance a fait grandir le muscle.', // source 13, literature
     ] },
   ],
@@ -67,7 +67,7 @@ const NOTES_ALL = {
       'Sleep at least seven hours a night, regularly: that is the recommendation for adults.', // source 15, literature
       'Muscle rebuilds at rest, and sleep is part of it.', // convention
       'About 1.6 g of protein per kilo of body weight per day is enough for most people; beyond it, muscle gain no longer rises.', // source 11, literature
-      'To build muscle, there is no need to overeat: a slight calorie surplus is enough and limits fat gain.', // source 12, literature; convention
+      'To build muscle, there is no need to overeat: a slight calorie surplus is the advised approach to limit fat gain, though no amount has been validated yet.', // source 12, literature (see the French line)
       'Soreness does not tell you whether a session built muscle.', // source 13, literature
     ] },
   ],

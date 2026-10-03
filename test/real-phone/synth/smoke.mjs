@@ -106,7 +106,7 @@ try {
   const hist = page.locator('button, a').filter({ hasText: /Vos séries|Your sets|Historique|History/ }).first();
   let listed = null;
   // The row appears once the sets are read from the phone's storage: waited for, not timed.
-  if (await hist.waitFor({ timeout: 20000 }).then(() => true, () => false)) { await hist.click(); await page.waitForTimeout(1500); await shot('history'); listed = (await page.locator('body').innerText()).slice(0, 400); }
+  if (await hist.waitFor({ timeout: 20000 }).then(() => true, () => false)) { await hist.click(); await page.waitForTimeout(1500); await shot('history'); listed = (await page.locator('body').innerText()).slice(0, 1200); }
   // The count the phone stored for the newest set, read from its storage, not from the screen.
   const stored = await page.evaluate(() => new Promise(ok => {
     const r = indexedDB.open('workoutVision');
@@ -149,6 +149,8 @@ try {
       (!stored || stored.reps !== (want || core.count) || stored.machine !== core.count || stored.corrected !== !!want) && `stored ${JSON.stringify(stored)}, expected ${want || core.count} reps (app ${core.count}, corrected ${!!want})`,
       // With CONTRIBUTE: one contribution, holding the counts kept and the app's, and the pose of every sample.
       process.env.CONTRIBUTE && !(contributed?.length === 1 && contributed[0].count === (want || core.count) && contributed[0].appCount === core.count && contributed[0].samples === core.samples && contributed[0].timestamps === core.samples && contributed[0].posed > 0 && !contributed[0].video) && `contribution ${JSON.stringify(contributed)}, expected one of ${want || core.count} over ${core.count} with ${core.samples} samples`,
+      // The history lists the set with the count kept (second audit, 3 October: "listed" was read but never checked).
+      !(listed && new RegExp(`\\b${want || core.count}\\s+(répétitions?|reps?)\\b`).test(listed)) && `the history does not list the set with ${want || core.count} reps`,
       want && !new RegExp(`(Corrigé|Corrected)\\s*:\\s*${want}\\.`).test(kept) && `correction to ${want} not saved ("${kept}")`,
       ...faults.filter(f => !known(f)).map(f => `fault: ${f}`),
     ].filter(Boolean);

@@ -85,7 +85,7 @@ export default function Guide({ onClose, onChoose, lift }) {
         <button className="btn-primary press" onClick={() => onChoose(focus.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
         <button className="btn-ghost is-s press" onClick={() => setFocus(null)}>{fr ? 'Tous les exercices' : 'All exercises'}</button>
       </div>
-      <p className="guide-credit">Illustrations: Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
+      <p className="guide-credit">{fr ? 'Illustrations\u00A0:' : 'Illustrations:'} Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
     </div></section>
   </div>;
   const q = norm(query.trim());
@@ -103,7 +103,7 @@ export default function Guide({ onClose, onChoose, lift }) {
           {ZONES[view].map(z => <button key={z} className="chip press" aria-pressed={zone === z} onClick={() => pickZone(z)}><span>{ZONE_NAMES[lang][z]}</span><span className="ct">{CATALOGUE.filter(e => inZone(e, z)).length}</span></button>)}
         </div>
       </div>
-      <div className="guide-tools" data-reveal style={{ '--i': 4 }}><button className="btn-ghost is-s press" onClick={() => { setZone(null); setQuery(''); setOpen(null); }}>{fr ? 'Tous les exercices' : 'All exercises'}</button><button className="btn-ghost is-s press" onClick={() => setLang(fr ? 'en' : 'fr')}>{fr ? 'English' : 'Français'}</button></div>
+      <div className="guide-tools" data-reveal style={{ '--i': 4 }}><button className="btn-ghost is-s press" onClick={() => { setZone(null); setQuery(''); setOpen(null); }}>{fr ? 'Tous les exercices' : 'All exercises'}</button><button className="btn-ghost is-s press" lang={fr ? 'en' : 'fr'} onClick={() => setLang(fr ? 'en' : 'fr')}>{fr ? 'English' : 'Français'}</button></div>
       <p className="list-head" role="status" data-reveal style={{ '--i': 5 }}>{list.length} / {CATALOGUE.length} {fr ? 'exercices' : 'exercises'}</p>
       <ul className="list">{list.map(e => <li key={e.key} className="item" data-exercise={e.key}>
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
@@ -117,7 +117,7 @@ export default function Guide({ onClose, onChoose, lift }) {
         </div>}
       </li>)}</ul>
       {!list.length && <p className="empty">{fr ? 'Aucun exercice trouvé.' : 'No exercises found.'}</p>}
-      <p className="guide-credit">Illustrations: Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
+      <p className="guide-credit">{fr ? 'Illustrations\u00A0:' : 'Illustrations:'} Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
     </div></section>
   </div>;
 }

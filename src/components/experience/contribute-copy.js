@@ -5,7 +5,8 @@ import { REPORT_EMAIL } from '../../lib/reportLinks';
 export const CONTRIBUTE = {
   fr: {
     title: 'Aider à améliorer le comptage',
-    what: 'À chaque série, l’app garde sur ce téléphone son comptage, le vôtre, la position de vos articulations au fil de la série, jamais la vidéo, sa durée et le type de téléphone. Vous les envoyez quand vous voulez.',
+    // Every field the file holds is named (contribute.js), and "jamais la vidéo" can no longer be read as covering the rest (audit of 3 October).
+    what: 'À chaque série, l’app garde sur ce téléphone l’exercice, son comptage, le vôtre, la position de vos articulations au fil de la série, la durée de la vidéo, le modèle de téléphone et de navigateur tels qu’ils se déclarent, et la version de l’app. Jamais la vidéo. Vous les envoyez quand vous voulez.',
     ask: 'Aider à améliorer le comptage\u00A0?',
     yes: 'Oui, aider',
     no: 'Non merci',
@@ -27,7 +28,7 @@ export const CONTRIBUTE = {
   },
   en: {
     title: 'Help improve the count',
-    what: 'After each set, the app keeps on this phone its count, yours, the position of your joints through the set, never the video, its length and the kind of phone. You send them when you choose.',
+    what: 'After each set, the app keeps on this phone the exercise, its count, yours, the position of your joints through the set, the length of the video, the phone and browser model as they state it, and the app version. Never the video. You send them when you choose.',
     ask: 'Help improve the count?',
     yes: 'Yes, help',
     no: 'No thanks',

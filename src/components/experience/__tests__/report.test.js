@@ -320,3 +320,20 @@ describe('left/right line (front-view sets)', () => {
     expect(reportSheet({ ...base, reps, sides, lift: 'lateral_raise', measures: false }).summary.some(l => l.includes('gauche'))).toBe(false);
   });
 });
+
+// R8: every page that carries a measure carries the experimental label (audit of 3 October: the label was drawn
+// once, on page 1, and the table of a long set ran onto pages without it).
+import { jsPDF } from 'jspdf';
+describe('the experimental label in a PDF of several pages', () => {
+  it('stands on every page', () => {
+    const long = Array.from({ length: 18 }, (_, i) => rep(i * 3, 1.9, 90 - i, 0.8 + i * 0.02, 1.0));
+    // jsPDF tells its listeners of every text it sets and every page it adds (its events, as its plugins use them).
+    const pages = new Map();
+    let page = 1;
+    const hooks = [['addPage', () => { page += 1; }], ['preProcessText', ({ text }) => { pages.set(page, (pages.get(page) || '') + (Array.isArray(text) ? text.join('') : text)); }]];
+    jsPDF.API.events.push(...hooks);
+    try { reportPdf(reportSheet({ ...base, reps: long, first: 'concentric' })); } finally { for (const h of hooks) jsPDF.API.events.splice(jsPDF.API.events.indexOf(h), 1); }
+    expect(pages.size).toBeGreaterThan(1);
+    for (const [p, text] of pages) expect(text, `page ${p}`).toContain('Mesures expérimentales');
+  });
+});

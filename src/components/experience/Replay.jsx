@@ -270,7 +270,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       </div>
       {exportable && <div className="rp-export">
         {(made.state === 'idle' || made.state === 'failed') && <button className="btn-line press" onClick={prepare}>{fr ? 'Préparer la vidéo à partager' : 'Prepare the video to share'}</button>}
-        {made.state === 'making' && <button className="btn-line" disabled aria-live="polite">{fr ? `Préparation de la vidéo… ${Math.round(made.progress * 100)} %` : `Preparing the video… ${Math.round(made.progress * 100)}%`}</button>}
+        {made.state === 'making' && <button className="btn-line" disabled>{fr ? `Préparation de la vidéo… ${Math.round(made.progress * 100)} %` : `Preparing the video… ${Math.round(made.progress * 100)}%`}</button>}
         {made.state === 'ready' && (sharable
           ? <button className="btn-line press" onClick={share}>{fr ? 'Partager la vidéo' : 'Share the video'}</button>
           : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? 'Enregistrer la vidéo' : 'Save the video'}</a>)}

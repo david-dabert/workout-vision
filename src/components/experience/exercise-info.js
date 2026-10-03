@@ -12,8 +12,9 @@ const byKey = new Map(catalogue.map(e => [e.key, e]));
 
 /** The name people know the exercise by: the card's, else the guide's, in the screen's language. */
 export function exerciseName(key, lang) {
-  if (META[key]) return META[key][lang === 'fr' ? 'fr' : 'en'];
-  if (FITNESS_TESTS[key]) return FITNESS_TESTS[key][lang === 'fr' ? 'fr' : 'en'];
+  // Own keys only: a restored set named "constructor" is not the object's own constructor (audit of 3 October).
+  if (Object.hasOwn(META, key)) return META[key][lang === 'fr' ? 'fr' : 'en'];
+  if (Object.hasOwn(FITNESS_TESTS, key)) return FITNESS_TESTS[key][lang === 'fr' ? 'fr' : 'en'];
   const e = byKey.get(key);
   return e ? (lang === 'fr' ? e.fr : e.name) : key;
 }

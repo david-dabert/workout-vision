@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, counter-core]
 
+# The jobs read the code and upload their artifacts; the token can do nothing else (audit of 3 October).
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -16,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -24,12 +30,23 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      # The counting gates compare with the baselines the base branch holds, not those of the change itself, so a
+      # change cannot pass by editing them (audit of 3 October): the pull request's base, or main's previous commit.
+      - name: Baselines of the base branch
+        run: |
+          if [ -n "$GITHUB_BASE_REF" ]; then git fetch --depth=1 origin "$GITHUB_BASE_REF"; base=FETCH_HEAD; else base=HEAD^1; fi
+          mkdir -p "$RUNNER_TEMP/base"
+          for f in test/real-phone/accuracy/scoreboard-baseline.json test/real-phone/accuracy/public-baseline.json test/real-phone/synth/synth.txt; do
+            git show "$base:$f" > "$RUNNER_TEMP/base/$(basename "$f")"
+          done
       # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls or
       # any set is off by 3 or more (test/real-phone/accuracy/scoreboard.test.ts).
-      - run: npm run scoreboard
+      - run: SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard
+      # The 894 public build sets (Countix): the same rule (test/real-phone/accuracy/public-scoreboard.test.ts).
+      - run: PUBLIC_BASE="$RUNNER_TEMP/base/public-baseline.json" npm run scoreboard:public
       # The 96 synthetic sets (test/real-phone/synth/sets, rendered by run.mjs): the count may not lose an exact
-      # set, and the range and phase errors may not grow, against synth.txt (audit FINDING-021).
-      - run: SYNTH_DIR=test/real-phone/synth/sets npx vitest run --no-cache test/real-phone/synth/analyse.test.ts
+      # set, and the range and phase errors may not grow (audit FINDING-021).
+      - run: SYNTH_BASE="$RUNNER_TEMP/base/synth.txt" SYNTH_DIR=test/real-phone/synth/sets npx vitest run --no-cache test/real-phone/synth/analyse.test.ts
       - run: git diff --exit-code test/real-phone/synth/synth.txt
       - run: npm run build
 

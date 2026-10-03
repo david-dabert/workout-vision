@@ -68,8 +68,10 @@ function useRail(rail, dots) {
 // A lift card is a plain button. No switch input covers it: on iOS Safari a native switch
 // takes horizontal drags for its thumb, so a swipe that began on a card never reached the rail.
 // iOS gives no haptic tick without that switch; navigator.vibrate ticks where it exists (Android).
-function LiftCard({ children, onClick, label, cardRef }) {
-  return <button type="button" ref={cardRef} className="altar tactile" aria-label={label}
+// The card is named by its exercise; its tier ("Expérimental : …") is read after the name, so VoiceOver says
+// what the label says on screen (R8; audit of 3 October).
+function LiftCard({ children, onClick, label, describedBy, cardRef }) {
+  return <button type="button" ref={cardRef} className="altar tactile" aria-label={label} aria-describedby={describedBy}
     onClick={() => { navigator.vibrate?.(10); onClick(); }}>
     {children}
   </button>;
@@ -109,11 +111,11 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
       </div>
       <div className="rail" ref={railRef} data-reveal style={{ '--i': 2 }}>
-        {LIFTS.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
+        {LIFTS.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} describedBy={TIERS[lift] ? `tier-${lift}` : undefined} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>
           <LiftCanvas lift={lift} />
           <span className="altar-meta">
             <span className="altar-name">{META[lift][lang]}</span>
-            {TIERS[lift] && <span className={`tier tier-${TIERS[lift]}`}>{tierLabel(TIERS[lift], fr)}</span>}
+            {TIERS[lift] && <span id={`tier-${lift}`} className={`tier tier-${TIERS[lift]}`}>{tierLabel(TIERS[lift], fr)}</span>}
             <span className="altar-alias">{META[lift][fr ? 'aliasFr' : 'aliasEn']}</span>
           </span>
         </LiftCard>)}
@@ -140,7 +142,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
-        <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are in Beta or Experimental.'}</p>
+        <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
       </div>
     </section>
   </div>;

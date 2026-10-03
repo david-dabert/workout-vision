@@ -41,7 +41,7 @@
   "engine_failed_retry": "Erreur moteur. Appuyez pour réessayer",
   "retry_engine": "Réessayer le chargement du moteur IA",
   "err_title": "Une erreur est survenue",
-  "err_message": "Une erreur inattendue est survenue. Vous pouvez réessayer ou revenir au tableau de bord.",
+  "err_message": "Une erreur inattendue est survenue. Vous pouvez réessayer ou revenir à l’accueil.",
   "err_try_again": "Réessayer",
   "err_reload": "Recharger",
   "err_go_home": "Accueil",

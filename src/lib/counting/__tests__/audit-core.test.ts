@@ -81,3 +81,45 @@ describe('the side counted is the side that moves (FINDING-011)', () => {
     expect(countReps(wl, ts, 'bicep_curl').count).toBe(8);
   });
 });
+
+// Second audit, 3 October: the outlier filter's median window (0.5 s, nine samples at 15 a second) spans most of a
+// fast rep, so the turn of a 0.7 s curl sat more than 40° from the median and was erased as a glitch.
+describe('fast reps keep their turn (second audit)', () => {
+  // Expected to fail: three fixes tried on 3 October each failed a gate (TRIED.md); the case stays visible.
+  it.fails('eight continuous curls of 0.7 s are eight', () => {
+    const a = sample([{ hold: 160, sec: 1 }, ...cycles({ rest: 160, work: 40, reps: 8, firstSec: 0.35, secondSec: 0.35, restSec: 0 }), { hold: 160, sec: 1 }], 160, SPS);
+    const ts = timestamps(a.length, SPS);
+    expect(countReps(frames(a), ts, 'bicep_curl').count).toBe(8);
+  });
+  // A guard, not the proof of this change (it read 87° before it too): five separate 0.6 s curls stay five, and
+  // their range stays over 80°. Below 120° is the rule that each end of a rep is the mean of its most extreme
+  // third of a second (EXTREME_HOLD_SEC), which a 0.3 s half does not hold: a separate, experimental measure.
+  it('five separate 0.6 s curls of 120° are five, each read over 80°', () => {
+    const a = sample([{ hold: 160, sec: 1 }, ...cycles({ rest: 160, work: 40, reps: 5, firstSec: 0.3, secondSec: 0.3, restSec: 1 }), { hold: 160, sec: 1 }], 160, SPS);
+    const ts = timestamps(a.length, SPS);
+    const r = countReps(frames(a), ts, 'bicep_curl');
+    expect(r.count).toBe(5);
+    for (const rep of r.reps) expect(rep.romDegrees).toBeGreaterThan(80);
+  });
+  it('a one-sample glitch of 70° is still removed', () => {
+    const a = sample([{ hold: 160, sec: 1 }, ...cycles({ rest: 160, work: 40, reps: 4, firstSec: 1, secondSec: 1, restSec: 0.6 }), { hold: 160, sec: 1 }], 160, SPS);
+    const ts = timestamps(a.length, SPS);
+    const glitched = a.map((x, i) => (i === 8 ? x - 70 : x));
+    expect(countReps(frames(glitched), ts, 'bicep_curl').count).toBe(4);
+  });
+});
+
+// Second audit, 3 October: speeds were read on the bridged angle, so the jump where a pose comes back after a
+// short loss made a peak no limb made (a 0.4 s loss mid-rep: 151 °/s became 503 °/s).
+describe('a bridged gap makes no speed', () => {
+  it('a rep with a 0.4 s pose loss keeps the peak speed of the same rep seen whole', () => {
+    const a = sample([{ hold: 165, sec: 1 }, ...cycles({ rest: 165, work: 50, reps: 4, firstSec: 1, secondSec: 1, restSec: 0.8 }), { hold: 165, sec: 1 }], 165, SPS);
+    const ts = timestamps(a.length, SPS);
+    const whole = countReps(frames(a), ts, 'bicep_curl');
+    // The loss falls inside the second rep's rise.
+    const r2 = whole.reps[1], from = r2.startTime + 0.3;
+    const gapped = countReps(frames(a).map((f, i) => (ts[i] > from && ts[i] < from + 0.4 ? null : f)), ts, 'bicep_curl');
+    expect(gapped.count).toBe(4);
+    expect(gapped.reps[1].peakSpeed).toBeLessThan(whole.reps[1].peakSpeed * 1.25);
+  });
+});

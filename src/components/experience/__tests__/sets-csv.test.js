@@ -148,13 +148,13 @@ describe('repsCsv', () => {
     expect(rows).toHaveLength(1 + REPS.length);
     const first = rows[1].split(',');
     expect(Date.parse(first[0])).toBe(AT);
-    expect(first.slice(1)).toEqual(['Biceps curl', '1', '120', '1.00', '1.50', '181', '92', 'no']);
+    expect(first.slice(1)).toEqual(['Biceps curl', '1', '120', '1.0', '1.5', '181', '92', 'no']);
   });
 
   it('writes French with semicolons and decimal commas', () => {
     const rows = lines(repsCsv([counted], { lang: 'fr' }));
     expect(rows[0].split(';')).toEqual(['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°) (mesure expérimentale)', 'Concentrique (s) (mesure expérimentale)', 'Excentrique (s) (mesure expérimentale)', 'Vitesse max (°/s) (mesure expérimentale)', 'Vitesse moyenne (°/s) (mesure expérimentale)', 'Coupée par la vidéo']);
-    expect(rows[2].split(';').slice(1)).toEqual(['Curl biceps', '2', '118', '1,10', '1,50', '182', '93', 'non']);
+    expect(rows[2].split(';').slice(1)).toEqual(['Curl biceps', '2', '118', '1,1', '1,5', '182', '93', 'non']);
   });
 
   it('leaves the times and speeds of a rep the video cut empty, as the report does', () => {
