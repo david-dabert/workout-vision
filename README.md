@@ -17,6 +17,7 @@ The video is analysed on the phone and never leaves it.
   - per set: time under tension, average tempo, the angle over the whole set with each rep marked, and a comparison with the previous saved set of the same lift. The change in speed between the first and last reps is not stated: on synthetic sets it could not be told from noise.
 - Makes, on a tap, a video of the set with its overlay, handed to the phone's share sheet; nothing is sent unless the user shares it.
 - Lets the user report a wrong count by e-mail or GitHub issue, and challenge a friend through the share sheet, each on a tap.
+- Asks once whether the user wants to help improve the count; with a yes, each saved set's pose and counts are kept on the phone and sent only when the user taps Send (see Privacy).
 - Keeps saved sets in a history on the phone, with progress per exercise and personal bests, and exports them as two spreadsheet files for a coach.
 - Adapts the result screen to the user's level: beginner, intermediate or expert.
 - Works in French and English.
@@ -33,8 +34,13 @@ The video is analysed on the phone and never leaves it.
 ## Privacy
 
 Pose detection, counting, storage and the PDF all run in the browser on the phone.
-No video, frame or landmark is sent anywhere; only what the user shares by a tap leaves the phone, through the phone's own share sheet or mail app.
+The video and its frames never leave the phone. Only what the user shares by a tap leaves it, through the phone's own share sheet, mail app or a downloaded file.
 Saved sets stay in the phone's browser storage.
+
+"Help improve the count" is opt-in. The app asks once, on the saved card, and the answer can be changed in the history at any time; stopping erases the sets waiting to be sent (src/lib/contribute.js).
+With a yes, each saved set is kept on the phone as a contribution: the exercise, the app's count, the user's count and whether it was corrected; the joint positions (3D and in the image) and the time of every analysed frame, and the side tracked; the video's length, image size, rotation, how it was decoded, the number of frames and the analysis settings; the phone and browser as the browser states them (user agent, platform, processor cores, memory, touch points, screen size and pixel density); and the app version.
+The file holds no video, no name and no date of the set.
+Nothing leaves the phone until the user taps Send in the history: the file goes to the phone's share sheet, or is downloaded, for the user to send to David at pr.dabertdavid@gmail.com (src/components/experience/ContributeHistory.jsx).
 
 ## How it works
 
