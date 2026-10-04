@@ -4,6 +4,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { startEvents } from './lib/events'
+
+// Anonymous usage counts, only when the build names a server for them (src/lib/events.js).
+startEvents();
 
 // Register service worker for offline support and PWA install prompt
 if ('serviceWorker' in navigator) {

@@ -44,11 +44,21 @@ export function backupFile(sets, now = new Date()) {
   return { name: `workout-vision-series-${day}.json`, text };
 }
 
+// A set's time as the app writes it (storage.js saveWorkout: createdAt = Date.now(), a number), or a date alone for an
+// older set. A createdAt of another type, or one ahead of this phone's clock, would break the newest-first order the
+// history and the result screen rely on, so such a set is left out (third audit, C16). The day of slack covers a
+// backup made on a phone whose clock runs ahead. Status: convention (UNSOURCED value).
+const AHEAD_MS = 86400000;
+function keptTime(w, now) {
+  if (w.createdAt == null) return Number.isFinite(Date.parse(w.date));
+  return Number.isFinite(w.createdAt) && w.createdAt <= now + AHEAD_MS;
+}
+
 /**
  * The sets a backup file holds, each checked: an id, an exercise, a whole number of reps, a date. A file of
  * another kind or a later version is refused as a whole; a set that fails the check is left out and counted.
  */
-export function readBackup(text) {
+export function readBackup(text, now = Date.now()) {
   let data;
   try { data = JSON.parse(text); } catch { return { error: 'unreadable' }; }
   if (!data || data.kind !== BACKUP_KIND || !Array.isArray(data.sets)) return { error: 'not-a-backup' };
@@ -58,7 +68,7 @@ export function readBackup(text) {
     const ok = w && typeof w === 'object' && typeof w.id === 'string' && w.id
       && (typeof w.exercise === 'string' || typeof w.exerciseKey === 'string')
       && Number.isInteger(w.reps) && w.reps >= 0
-      && Number.isFinite(new Date(w.createdAt ?? w.date).getTime());
+      && keptTime(w, now);
     (ok ? sets : skipped).push(w);
   }
   return { sets, skipped: skipped.length };

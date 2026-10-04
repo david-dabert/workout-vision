@@ -6,30 +6,12 @@ import { useT } from '../lib/LanguageContext';
 
 const FEEDBACK_STORAGE_KEY = 'wv_feedback';
 
-// Beacon feedback to the Cloudflare Worker endpoint if configured.
-// Fails silently; no user-facing error if the Worker is down or URL is empty.
-function beaconFeedback(payload) {
-  try {
-    const url = typeof __FEEDBACK_URL__ !== 'undefined' ? __FEEDBACK_URL__ : '';
-    if (!url) return;
-    const body = JSON.stringify({
-      v: 1,
-      ...payload,
-      appVersion: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'unknown',
-    });
-    // Prefer sendBeacon (fire-and-forget, survives page unload)
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(`${url}/ingest`, new Blob([body], { type: 'application/json' }));
-    } else {
-      fetch(`${url}/ingest`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        keepalive: true,
-      }).catch(() => {});
-    }
-  } catch { /* silent */ }
-}
+// Inert since 3 October 2026 (WP0.4, docs/SPEC-production.md): this used to post the feedback, with free text, to the
+// worker's ingest endpoint whenever the build set VITE_FEEDBACK_URL. The endpoint is removed (it answers 404) and nothing
+// here sends anywhere: no network call, whatever the build. The choices stay on the phone (saveFeedbackEntry).
+// Any future sender needs the notice and recorded consent of Phase 2 first. The calls below are left in place so the
+// panel's behaviour on the phone is unchanged; their arguments are ignored.
+function beaconFeedback() {}
 
 function loadFeedback() {
   try {

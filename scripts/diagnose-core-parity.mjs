@@ -1,5 +1,9 @@
 // Read-only diagnostic: production worker vs development harness on the same browser.
 // Run vite preview :4173 and vite dev :5174 before this script. No fixtures are rewritten.
+// RETIRED (third audit, C51, 3 October 2026): it drives the old standalone analysis form (#core-lift, #core-file,
+// data-testid core-result), which the app never showed once the Film flow replaced it and which was then removed
+// from CoreUpload.jsx. It waits on #core-lift until it times out. Use test/real-phone/rep-parity.mjs (live flow:
+// .altar card, Film file input, wv:core-result) and test/real-phone/chrome-inference-parity.mjs instead.
 import { chromium } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';

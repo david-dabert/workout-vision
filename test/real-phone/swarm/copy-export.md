@@ -45,7 +45,7 @@ Both are UTF-8 with a byte order mark, so Excel reads the accents. In the French
 |---|---|---|---|
 | rcol.date | Date de la série | Set date | Same time as the set's row |
 | rcol.exercise | Exercice | Exercise | |
-| rcol.rep | Rép. | Rep | Rep number |
+| rcol.rep | Rép. | Rep | Rep number; on a corrected set "Repère 3" / "Mark 3" (added 3 October, see below) |
 | rcol.range | Amplitude (°) | Range (°) | Whole degrees, as in the report |
 | rcol.conc | Concentrique (s) | Concentric (s) | Two decimals; empty on a rep the video cut |
 | rcol.ecc | Excentrique (s) | Eccentric (s) | Two decimals; empty on a rep the video cut |
@@ -63,3 +63,12 @@ as the gym says it. The separator and decimal mark follow the phone's locale, th
 | French | English | Where |
 |---|---|---|
 | Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers. | The share did not go through. Save the video, then share it from your files. | Replay, under "Enregistrer la vidéo", after a share the phone refused |
+
+## Added 3 October 2026 (third audit C12): pending David's approval (3 October)
+
+On a set whose saved count differs from the app's, the reps file's rows are the marks the app detected, not the
+reps the user saved. Their number is written as the report heads that column (report-sheet.js, "Repère" / "Mark").
+
+| Key | French | English | Where |
+|---|---|---|---|
+| rval.mark | Repère 3 | Mark 3 | Reps file, column "Rép." / "Rep", each row of a corrected set (the number is the mark's) |

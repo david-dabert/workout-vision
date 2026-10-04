@@ -81,3 +81,6 @@
 
 /* The contribution question on the saved card shares the level question's form; its answers sit on one line. */
 .wv-experience .contribute-row { display: flex; align-items: center; gap: 18px; }
+/* "Quoi exactement ?" under the card's one sentence: a quiet link-like toggle, still a 44px target; the full list
+   opens under it. */
+.wv-experience .contribute-ask .contribute-more { margin-top: -10px; font-size: var(--fs-caption); text-decoration: underline; text-underline-offset: 3px; }

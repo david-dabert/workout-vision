@@ -5,9 +5,18 @@ import { REPORT_EMAIL } from '../../lib/reportLinks';
 export const CONTRIBUTE = {
   fr: {
     title: 'Aider à améliorer le comptage',
-    // Every field the file holds is named (contribute.js), and "jamais la vidéo" can no longer be read as covering the rest (audit of 3 October).
-    what: 'À chaque série, l’app garde sur ce téléphone l’exercice, son comptage, le vôtre, la position de vos articulations au fil de la série, la durée de la vidéo, le modèle de téléphone et de navigateur tels qu’ils se déclarent, et la version de l’app. Jamais la vidéo. Vous les envoyez quand vous voulez.',
+    // Every field the file holds is named, grouped in plain words (contribute.js contribution() and deviceInfo();
+    // contribute.test.js pins the list, so a new field fails until it is named here). The date of the set and its
+    // key stay on the phone (contributionsFile drops them). "Jamais la vidéo" stays apart from the list (audit of
+    // 3 October; third audit C10, C18, C38: the cores, memory, screen, image size, decoder, rotation and side were missing).
+    what: 'À chaque série, l’app garde sur ce téléphone, pour que vous l’envoyiez\u00A0: l’exercice\u00A0; son comptage, le vôtre (donné après avoir vu le sien) et si vous l’avez corrigé\u00A0; la position de vos articulations, dans l’espace et dans l’image, à chaque image analysée, avec son instant dans la vidéo, et le côté suivi\u00A0; la durée de la vidéo, la taille de son image, sa rotation, la façon dont elle a été lue, le nombre d’images analysées et les réglages de l’analyse\u00A0; le modèle de téléphone et de navigateur tels qu’ils se déclarent, le nombre de cœurs du processeur, la mémoire, l’écran (taille, densité de pixels, nombre de doigts reconnus)\u00A0; la version de l’app et du fichier. La date de la série reste sur le téléphone. Jamais la vidéo, ni votre nom. Vous les envoyez quand vous voulez.',
     ask: 'Aider à améliorer le comptage\u00A0?',
+    // The saved card's one sentence (ContributeAsk.jsx): what is kept, why, and that nothing leaves without the
+    // person. The full list is `what`, behind `more`. Pending David's approval (3 October).
+    lead: 'Pour que l’app compte mieux sur tous les téléphones, elle garde sur ce téléphone vos comptages, la position de vos articulations et le modèle du téléphone, jamais la vidéo, et c’est vous qui les envoyez, quand vous voulez.',
+    more: 'Quoi exactement\u00A0?',
+    later: 'Pas maintenant',
+    laterNote: 'D’accord. Vous pourrez toujours dire oui dans Vos séries.',
     yes: 'Oui, aider',
     no: 'Non merci',
     thanks: 'Merci. Vous pourrez arrêter à tout moment dans vos séries.',
@@ -25,11 +34,18 @@ export const CONTRIBUTE = {
     keepFailed: 'Votre accord est enregistré, mais cette série n’a pas pu être gardée sur ce téléphone.',
     start: 'Aider',
     shareTitle: 'Séries pour améliorer le comptage',
+    // A build without VITE_CONTRIBUTE (production until Phase 2, WP0.4): nothing is asked, kept or sent, and what
+    // waits can still be erased. Pending David's approval (3 October; copy-contribute.md).
+    paused: 'Les envois sont en pause pour l’instant\u00A0: l’app ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer.',
   },
   en: {
     title: 'Help improve the count',
-    what: 'After each set, the app keeps on this phone the exercise, its count, yours, the position of your joints through the set, the length of the video, the phone and browser model as they state it, and the app version. Never the video. You send them when you choose.',
+    what: 'After each set, the app keeps on this phone, for you to send: the exercise; its count, yours (given after seeing the app’s) and whether you corrected it; the position of your joints, in space and in the image, at each analysed frame, with its time in the video, and the side tracked; the video’s length, image size, rotation, how it was read, the number of frames analysed and the analysis settings; the phone and browser model as they state it, the processor’s core count, the memory, the screen (size, pixel density, number of touch points); the app and file version. The set’s date stays on the phone. Never the video, nor your name. You send them when you choose.',
     ask: 'Help improve the count?',
+    lead: 'So the app counts better on every phone, it keeps on this phone your counts, your joint positions and the phone’s model, never the video, and you send them yourself, when you choose.',
+    more: 'What exactly?',
+    later: 'Not now',
+    laterNote: 'All right. You can still say yes in Your sets.',
     yes: 'Yes, help',
     no: 'No thanks',
     thanks: 'Thank you. You can stop at any time in your sets.',
@@ -47,5 +63,6 @@ export const CONTRIBUTE = {
     keepFailed: 'Your choice is saved, but this set could not be kept on this phone.',
     start: 'Help',
     shareTitle: 'Sets to improve the count',
+    paused: 'Sending is paused for now: the app keeps nothing new. The sets already kept stay on this phone, and you can erase them.',
   },
 };

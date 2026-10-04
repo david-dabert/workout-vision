@@ -10,11 +10,14 @@ describe('Step 3 analysis boundary', () => {
   // the nine lifts of LIFT TIERS among them; Automatic, an exercise without a joint and a core-only
   // lift still are not.
   it('does not allow Automatic, an exercise the guide cannot count, or a lift the guide does not hold', async () => {
-    // 183 exercises (the two barbell curls added on 2 October) and the two fitness tests (fitness-tests.js).
-    expect(APPROVED_LIFTS).toHaveLength(185);
+    // 183 exercises (the two barbell curls added on 2 October) less the four floor exercises withdrawn on 3 October
+    // (offer.js, WITHDRAWN, third audit C21), with the three added the same day (behind-the-neck press, barbell jump
+    // squat, wall ball), and the two fitness tests (fitness-tests.js).
+    expect(APPROVED_LIFTS).toHaveLength(183);
+    for (const lift of ['dead_bug', 'banded_dead_bug', 'bird_dog', 'glute_bridge_march']) expect(APPROVED_LIFTS, lift).not.toContain(lift);
     for (const test of ['chair_stand_test', 'arm_curl_test']) expect(APPROVED_LIFTS, test).toContain(test);
     for (const lift of ['bench_press', 'bicep_curl', 'hip_thrust', 'lat_pulldown', 'lateral_raise', 'leg_press', 'overhead_press', 'romanian_deadlift', 'squat']) expect(APPROVED_LIFTS, lift).toContain(lift);
-    for (const lift of ['__auto__', 'triceps_pushdown', 'pec_deck', 'bicep_curl_alternating', 'walking_lunge']) {
+    for (const lift of ['__auto__', 'triceps_pushdown', 'pec_deck', 'bicep_curl_alternating', 'walking_lunge', 'sandbag_lunge']) {
       await expect(analyzeCoreVideo(null, lift)).rejects.toThrow('Choose an approved lift');
     }
   });
@@ -55,7 +58,7 @@ vi.mock('../frameExtractor', () => ({
   extractFramesStreaming: async (_file, _fps, _max, _side, onFrame) => {
     const canvas = { width: 2, height: 2, getContext: () => ({ getImageData: () => ({ data: new Uint8ClampedArray(16) }) }) };
     // Each pass starts again at sample 0, as the extractor's fallback does (frameExtractor.js).
-    for (const n of globalThis.__passes || [181]) for (let i = 0; i < n; i++) await onFrame(canvas, i, i / 15);
+    for (const n of globalThis.__passes || [181]) for (let i = 0; i < n; i++) await onFrame(canvas, i, globalThis.__time ? globalThis.__time(i) : i / 15);
     return { duration: 29.328333 };
   },
 }));
@@ -85,5 +88,61 @@ describe('a failed first pass and its fallback (audit FINDING-002)', () => {
     try {
       await expect(analyzeCoreVideo(new Blob(['x']), 'lateral_raise')).rejects.toMatchObject({ name: 'PartialReadError', read: 409, expected: 439 });
     } finally { delete globalThis.__passes; }
+  });
+});
+
+// Third audit, C08: a read whose samples went back in time carried read = NaN, and the screen said "Only NaN%".
+describe('a read whose samples go back in time', () => {
+  it('rejects with the real number of samples and the flag, never NaN', async () => {
+    const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 1 }));
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; }
+      postMessage(m) { setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id, ok: true } : { id: m.id, image: frame, world: frame } }), 0); }
+      terminate() {}
+      addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
+    };
+    globalThis.__passes = [439];
+    globalThis.__time = i => (i === 200 ? 199 / 15 : i / 15);
+    try {
+      await expect(analyzeCoreVideo(new Blob(['x']), 'lateral_raise')).rejects.toMatchObject({ name: 'PartialReadError', read: 439, expected: 439, disordered: true });
+    } finally { delete globalThis.__passes; delete globalThis.__time; }
+  });
+});
+
+// Frozen-read incident, 3 October: a whole read whose skeletons all repeat is a picture that did not move. It ends as
+// a read error (the "could not read this video" screen), never as a count of 0 nor as a refusal blaming the person.
+describe('a whole read whose skeletons repeat, and one whose do not', () => {
+  it('rejects with FrozenSkeletonsError, no count', async () => {
+    const frame = Array.from({ length: 33 }, (_, i) => ({ x: i / 33, y: 0, z: 0, visibility: 1 }));
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; }
+      postMessage(m) { setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id, ok: true } : { id: m.id, image: frame, world: frame } }), 0); }
+      terminate() {}
+      addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
+    };
+    globalThis.__passes = [439];
+    try {
+      await expect(analyzeCoreVideo(new Blob(['x']), 'lateral_raise')).rejects.toMatchObject({ name: 'FrozenSkeletonsError', samples: 439, repeats: 438 });
+    } finally { delete globalThis.__passes; }
+  });
+  it('counts a healthy read: the first 439 samples of the incident video read through WebCodecs, no skeleton repeated', async () => {
+    const { readFileSync } = await import('node:fs'), { gunzipSync } = await import('node:zlib'), { resolve } = await import('node:path');
+    const set = JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '../../../test/real-phone/sets-29sep/lateral_raise_9_front_43e71b40.json.gz'))).toString());
+    let k = 0;
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; }
+      postMessage(m) { const world = m.type === 'init' ? null : set.worldLandmarks[k++]; setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id, ok: true } : { id: m.id, image: world, world } }), 0); }
+      terminate() {}
+      addEventListener(t, f) { if (t === 'message') this.onmessage = f; }
+    };
+    globalThis.window = globalThis.window ?? { dispatchEvent() {} };
+    globalThis.CustomEvent = globalThis.CustomEvent ?? class { constructor(type, init) { this.type = type; this.detail = init?.detail; } };
+    globalThis.__passes = [439];
+    globalThis.__time = i => set.timestamps[i];
+    try {
+      const r = await analyzeCoreVideo(new Blob(['x']), 'lateral_raise');
+      expect(r.refused).toBe(false);
+      expect(r.count).toBeGreaterThan(0);
+    } finally { delete globalThis.__passes; delete globalThis.__time; }
   });
 });

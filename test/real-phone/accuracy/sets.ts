@@ -9,6 +9,13 @@ import { resolve } from 'node:path';
 export const ROOT = resolve(__dirname, '..');
 export type LabelledSet = { name: string; lift: string; label: number; wl: any[]; ts: number[] };
 
+// PLAN.md (30 September): "Bench press and overhead press sets are measured but decide nothing, since no counting
+// work is done on either until David films new press sets." Both scoreboards keep these sets in their tables, rows
+// and committed baselines, and leave them out of the pass/fail tallies (third audit, C37, 3 October). Leg press is
+// another lift and decides. Status: convention (David's order, recorded in PLAN.md), not a threshold.
+export const PRESS_DECIDES_NOTHING = '(press: measured, decides nothing, PLAN.md)';
+export const decides = (lift: string) => lift !== 'bench_press' && lift !== 'overhead_press';
+
 export function labelledSets() {
   const sets: LabelledSet[] = [], unreadable: string[] = [];
   const dirs = readdirSync(ROOT).filter(d => /^sets-/.test(d) && statSync(resolve(ROOT, d)).isDirectory()).sort();

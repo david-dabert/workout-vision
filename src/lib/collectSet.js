@@ -60,7 +60,8 @@ export async function collectSet(file, { lift, count, view }, { signal, onStatus
         result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: index * 1000 / TARGET_FPS }, [pixels]);
       } catch (err) {
         set.fail(index);
-        throw err;
+        // The extractor ends on this error (third audit, C06), so the refusal is said here.
+        throw new Error(`the pose model could not read sample ${index} (${err?.message || String(err)}). No file is offered. Pick the video again.`, { cause: err });
       }
       set.add(index, result.world, timestamp, result.image);
     },

@@ -2,11 +2,14 @@
  * The edges of the video (accuracy work, 30 September 2026): what the core counts where the video starts
  * or ends inside a movement, pinned so that no future change moves it unmeasured. Status: convention.
  * - Every rep needs its whole path on video: leaving the rest, the working end, the return to rest.
- * - At the end, a last rep cut before its return is not counted: it cannot be told from what people do
- *   after a set (crossing the arms, reaching for the phone, sitting up, standing straight).
+ * - At the end, a last rep cut before 70 % of its return (CUT_RETURN_SHARE) is not counted: it cannot be told from what
+ *   people do after a set (crossing the arms, reaching for the phone, sitting up, standing straight). One cut
+ *   later on its way back counts, marked clipped (window-edges.test.ts, 3 October).
  * - At the start, a first press shorter than the shortest rep is not counted: it cannot be told from
  *   standing up before the set. David's leg press of 29 September began with such a press (the app
- *   counts 12 of his 13).
+ *   counted 12 of his 13). Since 3 October such a first return counts when it lasts at least half the
+ *   set's own returns (HEAD_RETURN_SHARE, head-return.test.ts; the leg press now reads 13); the quick
+ *   returns pinned here (0.35 s against 1 s) stay uncounted.
  * Two rules that counted these reps were tried and withdrawn: six reviews showed each counting an
  * after-set or before-set movement as a rep. The filming screen asks for the whole set, from rest back
  * to rest, which is where these reps are won.
@@ -40,7 +43,7 @@ const ECCENTRIC_FIRST: { lift: Lift; joint: Joint; rest: number; work: number }[
 describe('reps cut by the edges of the video', () => {
   for (const sps of [15, 30]) {
     for (const { lift, joint, rest, work } of CONCENTRIC_FIRST) {
-      it(`${lift} at ${sps} sps: a last rep cut on its way back is not guessed at`, () => {
+      it(`${lift} at ${sps} sps: a last rep cut half way back is not guessed at`, () => {
         const mid = (rest + work) / 2;
         const r = run(lift, joint, [...reps(rest, work, 5), { to: work, sec: 1 }, { hold: work, sec: 0.2 }, { to: mid, sec: 0.5 }], rest, sps);
         expect(r.count).toBe(5);

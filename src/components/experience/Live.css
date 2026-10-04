@@ -1,0 +1,57 @@
+/* Live counting: the camera's picture in the frame of the Film screen, the count over it, the action under it.
+   One screen high, never scrolled while counting: the phone stands two or three metres away. */
+.wv-experience .live-screen { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.wv-experience .live-screen .wrap { min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 26px); }
+.wv-experience .live-tools { display: flex; gap: 8px; }
+.wv-experience .live-tools .icon-btn:disabled { opacity: 0.35; }
+.wv-experience .live-voice:not(.is-on) { color: var(--ash); }
+.wv-experience .live-pill { display: inline-flex; align-items: center; gap: 6px; color: var(--bone-2); }
+.wv-experience .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #E0624A; box-shadow: 0 0 8px rgba(224, 98, 74, 0.8); }
+.wv-experience .live-name { margin: 6px 0 0; text-align: center; }
+
+.wv-experience .live-stage { flex: 1 1 auto; display: flex; min-height: 0; margin-top: var(--s-3); }
+.wv-experience .live-frame {
+  position: relative; flex: 1 1 auto; min-height: min(62svh, 520px); border-radius: var(--r-xl); overflow: hidden;
+  border: 1px solid var(--hair-2); background: var(--well);
+  box-shadow: inset 0 0 0 6px #0C0A08, 0 40px 80px -30px rgba(0, 0, 0, 0.85), 0 0 70px -24px rgba(232, 189, 126, 0.22);
+}
+.wv-experience .live-video, .wv-experience .live-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wv-experience .live-video { object-fit: cover; background: #000; }
+/* The front camera is shown as a mirror, as every phone shows it; the pose model reads the picture unmirrored. */
+.wv-experience .live-screen.is-mirrored :is(.live-video, .live-canvas) { transform: scaleX(-1); }
+.wv-experience .live-frame .corners { z-index: 1; }
+
+.wv-experience .live-over {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px; text-align: center; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(8, 7, 6, 0.55), rgba(8, 7, 6, 0) 70%);
+}
+.wv-experience .live-hint { margin: 8px 0 0; max-width: 30ch; font-size: var(--fs-body); line-height: 1.45; color: var(--bone); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); text-wrap: balance; }
+.wv-experience .live-hint-title { margin: 0; font-family: var(--serif); font-size: var(--fs-heading); line-height: 1.1; color: var(--lamp-hi); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9); }
+.wv-experience .live-sub { margin-top: 6px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--bone-2); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9); }
+.wv-experience .live-count, .wv-experience .live-countdown { display: flex; flex-direction: column; align-items: center; }
+.wv-experience .live-count .res-label { margin-top: 8px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9); }
+/* The count: the result's numeral, big enough to read from three metres. */
+.wv-experience .live-n, .wv-experience .live-cd { margin: 0; transform-origin: 50% 50%; font-size: clamp(120px, min(48vw, 24svh), 220px); filter: drop-shadow(0 2px 18px rgba(0, 0, 0, 0.8)); }
+.wv-experience .live-n.is-pulse { animation: live-pulse 0.6s var(--ease); }
+.wv-experience .live-cd { animation: live-pulse 0.6s var(--ease); }
+@keyframes live-pulse { 0% { scale: 1.22; } 100% { scale: 1; } }
+.wv-experience .live-frame:has(.live-n.is-pulse) { animation: live-glow 0.8s var(--ease); }
+@keyframes live-glow { 0% { box-shadow: inset 0 0 0 6px #0C0A08, 0 0 0 2px var(--lamp), 0 0 60px 0 rgba(232, 189, 126, 0.5); } }
+
+.wv-experience .live-actions { margin-top: var(--s-4); }
+.wv-experience .live-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-align: center; text-wrap: balance; }
+.wv-experience .live-problem { margin-top: var(--s-4); text-align: center; }
+.wv-experience .live-problem .title { margin: 0; font-size: var(--fs-heading); }
+.wv-experience .live-problem .body-text { margin: 10px 0 0; }
+.wv-experience .live-privacy { margin-top: var(--s-3); }
+.wv-experience .live-screen:has(.live-problem) .live-frame { min-height: min(34svh, 280px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .wv-experience :is(.live-n, .live-cd) { animation: none; }
+  .wv-experience .live-frame:has(.live-n) { animation: none; }
+}
+@media (max-height: 640px) {
+  .wv-experience .live-frame { min-height: min(52svh, 420px); }
+  .wv-experience .live-n, .wv-experience .live-cd { font-size: clamp(96px, 22svh, 160px); }
+}

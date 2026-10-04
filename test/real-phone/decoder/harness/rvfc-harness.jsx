@@ -1,8 +1,11 @@
 // The playback decoding path (extractFramesRVFC), forced, on a synthetic 6 s video made in the page,
 // with an analysis that takes ?ms= milliseconds a frame (150 by default, slower than the video plays).
 // The same video is decoded twice (?twice) to show the two reads take the same sample times.
-// Writes window.__out = { expected, read, method }. Run by test/real-phone/decoder/harness/rvfc.mjs.
+// Writes window.__out = { expected, read, method, repeats }. Run by test/real-phone/decoder/harness/rvfc.mjs.
+// repeats: samples whose picture equals the one before (frozenRead.js); the video changes every frame, so a read
+// that draws the frame it was called for repeats none (frozen-read incident, 3 October: draw, then pause).
 import { extractFramesRVFC } from './lib/frameExtractor';
+import { canvasFingerprint, repeatCounter } from './lib/frozenRead';
 
 const SEC = 6, W = 360, H = 640, ms = Number(new URLSearchParams(location.search).get('ms') ?? 150);
 async function makeVideo() {
@@ -28,7 +31,7 @@ makeVideo().then(async file => {
     window.__out = { twice: true, samples: a.split(',').length, identical: a === b };
     return;
   }
-  let read = 0; const times = [];
-  const meta = await extractFramesRVFC(file, 15, Infinity, 640, async (_c, _i, t) => { read++; times.push(Math.round(t * 1e6)); await new Promise(r => setTimeout(r, ms)); }, null, {});
-  window.__out = { expected: Math.floor(meta.duration * 15), read, duration: meta.duration, times: times.join(',') };
+  let read = 0; const times = [], prints = repeatCounter();
+  const meta = await extractFramesRVFC(file, 15, Infinity, 640, async (c, _i, t) => { read++; prints.add(canvasFingerprint(c)); times.push(Math.round(t * 1e6)); await new Promise(r => setTimeout(r, ms)); }, null, {});
+  window.__out = { expected: Math.floor(meta.duration * 15), read, repeats: prints.read.repeats, duration: meta.duration, times: times.join(',') };
 }).catch(e => { window.__out = { error: String(e) }; });

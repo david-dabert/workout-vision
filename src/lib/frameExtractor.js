@@ -12,6 +12,8 @@
  * All methods stream one frame at a time via callback, keeping memory constant.
  */
 
+import { canvasFingerprint, isFrozenRead, repeatCounter } from './frozenRead';
+
 /**
  * Whether a frame must be rotated by hand: the container says it is turned (90, 180 or 270°) and the decoded frame
  * does not carry that rotation itself (WebKit). 180° was left out before (only 90 and 270 swap the sides), so an
@@ -264,10 +266,14 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
             // The video waits while the frame is analysed, so a slow phone reads every sample
             // instead of letting the video run past them (test/real-phone/decoder: 11 of 90 read before
             // with 150 ms of analysis a frame, 89 of 89 after). Measured in desktop Chromium only.
-            // The frame on screen is this callback's until the task ends, so it is drawn at once.
-            video.pause();
+            // The frame is drawn first, while it is the one this callback presents, and the video is paused after.
+            // Paused first, the draw read a paused video, which WebKit may answer with a stale frame: at a demo on
+            // David's iPhone on 3 October, possibly in Low Power Mode, a machine lateral raise counted 0 twice while the
+            // same video read through WebCodecs gave 460 distinct samples and 8 of 9 (frozen-read incident, 3 October).
+            let drawn = false;
             try {
               ctx.drawImage(video, 0, 0, frameWidth, frameHeight);
+              video.pause();
 
               // On the first frame, validate the canvas isn't blank (HEVC canvas taint
               // on some iOS versions produces all-black frames silently)
@@ -308,9 +314,27 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
                 }
               }
 
+              drawn = true;
+            } catch {
+              // canvas draw failure, skip frame
+            }
+            if (drawn) {
               // The watchdog waits for the analysis too: a slow phone is not a stalled video (review 01).
               clearTimeout(stallTimeout);
-              await onFrame(canvas, extractedCount, mediaTime);
+              // A sample the caller could not analyse (the pose worker failed or timed out) ends the
+              // extraction, as on the WebCodecs path: swallowed, it was taken again from a later frame,
+              // or, with a dead worker, each frame waited 60 s and the screen hung (third audit, C06).
+              try {
+                await onFrame(canvas, extractedCount, mediaTime);
+              } catch (err) {
+                if (!resolved) {
+                  resolved = true;
+                  cleanup();
+                  if (signal) signal.removeEventListener('abort', onAbort);
+                  reject(err);
+                }
+                return;
+              }
               if (!resolved) resetStallTimeout();
               extractedCount++;
               lastCapturedTime = mediaTime;
@@ -318,8 +342,6 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
               if (onProgress) {
                 onProgress(Math.round((extractedCount / frameCount) * 100));
               }
-            } catch {
-              // canvas draw failure, skip frame
             }
           }
 
@@ -617,6 +639,14 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
   }
 }
 
+/** A decoding path that handed on the same picture again and again (isFrozenRead): never counted. */
+export class FrozenReadError extends Error {
+  constructor({ samples, repeats }, decoder) {
+    super(`frozen read: ${repeats} of ${samples} samples repeat the one before`);
+    this.name = 'FrozenReadError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder;
+  }
+}
+
 /**
  * Inspect a video file to determine its codec without decoding.
  * Reads container metadata via web-demuxer (fast, no frame decode).
@@ -678,7 +708,8 @@ function isHEVC(codec) {
  * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
  * @param {number} [options.startFrame] - Frame index to start from (for resume)
  * @param {boolean} [options.deterministic] - Hint for logging; does not change decoder selection
- * @returns {Promise<{width, height, fps, duration, frameCount, method: string, peakOpenFrames?: number}>}
+ * @param {'frozen'} [options.inject] - The check page's test hook only: a synthetic frozen stream on the playback path
+ * @returns {Promise<{width, height, fps, duration, frameCount, method: string, peakOpenFrames?: number, repeats: {samples: number, repeats: number}, fallback: string | null}>}
  */
 export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const errors = [];
@@ -686,8 +717,28 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   // How many samples each path handed on: a path that fails part-way leaves its samples behind, and
   // the method then names both (review 01 of the decoder fix).
   let handed = 0;
-  const counted = (canvas, index, timestamp) => { handed++; return onFrame(canvas, index, timestamp); };
+  // An error of the caller's own analysis (onFrame) is not a decoder failure: it ends the extraction
+  // instead of starting the video again on the next decoder with the same failing worker (third audit, C06).
+  // Each path's samples are fingerprinted as they are handed on, and a frozen read is a decoder failure: the
+  // other path is tried, and if none reads a moving video, nothing is counted (frozen-read incident, 3 October).
+  let repeats = repeatCounter();
+  const frozenCheck = (name) => {
+    if (isFrozenRead(repeats.read)) throw new FrozenReadError(repeats.read, name);
+  };
+  const counted = async (canvas, index, timestamp) => {
+    handed++;
+    repeats.add(canvasFingerprint(canvas));
+    try {
+      return await onFrame(canvas, index, timestamp);
+    } catch (err) {
+      if (err && typeof err === 'object') err.fromOnFrame = true;
+      throw err;
+    }
+  };
   let before = '';
+  // Why the playback path ran, when it did (the check page shows it per row, WP0.2): the first entry of `errors`.
+  // The last frozen read seen, if any, is carried on the final error, so a page can tell a frozen refusal apart.
+  let frozen = null;
 
   // Step 1: Try WebCodecs (sequential, deterministic, handles rotation). The check page can skip it
   // (options.path === 'rvfc') to test the playback path on a phone where WebCodecs works.
@@ -696,9 +747,11 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   } else if (typeof VideoDecoder !== 'undefined') {
     try {
       const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
-      return { ...result, method: 'webcodecs' };
+      frozenCheck('webcodecs');
+      return { ...result, method: 'webcodecs', repeats: { ...repeats.read }, fallback: null };
     } catch (err) {
-      if (err.name === 'AbortError') throw err;
+      if (err.name === 'AbortError' || err.fromOnFrame) throw err;
+      if (err.name === 'FrozenReadError') frozen = { samples: err.samples, repeats: err.repeats, decoder: err.decoder };
       console.error('[frameExtractor] WebCodecs failed:', err?.message || String(err));
       errors.push(`WebCodecs: ${err?.message || String(err)}`);
       before = `webcodecs failed after ${handed} samples (${err?.message || String(err)}), then `;
@@ -709,11 +762,18 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
 
   // Step 2: Try RVFC (playback-based, works on older browsers)
   if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+    repeats = repeatCounter();
     try {
-      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
-      return { ...result, method: `${before}rvfc` };
+      // The check page's test hook only (check.html?inject=frozen, WP0.2 of docs/SPEC-production.md): every sample
+      // of the playback path after the first is handed on as the first, as a decoder stuck on one picture would, so
+      // the frozen-read guard is seen firing on the phone. The app itself never passes `inject`.
+      const onFrame = options.inject === 'frozen' ? frozenStream(counted) : counted;
+      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
+      frozenCheck('rvfc');
+      return { ...result, method: `${before}rvfc`, repeats: { ...repeats.read }, fallback: errors[0] ?? null };
     } catch (err) {
-      if (err.name === 'AbortError') throw err;
+      if (err.name === 'AbortError' || err.fromOnFrame) throw err;
+      if (err.name === 'FrozenReadError') frozen = { samples: err.samples, repeats: err.repeats, decoder: err.decoder };
       console.error('[frameExtractor] RVFC failed:', err?.message || String(err));
       errors.push(`RVFC: ${err?.message || String(err)}`);
     }
@@ -722,8 +782,25 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   }
 
   // No fallback to seek. Fail with reasons.
-  throw new Error(
+  const failure = new Error(
     `Video extraction failed. No decoder could process this file.\n` +
     errors.map(e => `  - ${e}`).join('\n')
   );
+  if (frozen) failure.frozen = frozen;
+  throw failure;
+}
+
+/**
+ * A synthetic frozen stream (check page test hook only): the first sample is kept, and every later one is handed on
+ * as that same picture. A new pass (sample 0 again) keeps its own first sample.
+ */
+export function frozenStream(onFrame, makeCanvas = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h })) {
+  let held = null;
+  return (canvas, index, timestamp) => {
+    if (!held || index === 0) {
+      held = makeCanvas(canvas.width, canvas.height);
+      held.getContext('2d').drawImage(canvas, 0, 0);
+    }
+    return onFrame(held, index, timestamp);
+  };
 }

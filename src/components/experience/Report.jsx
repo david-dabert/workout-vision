@@ -4,6 +4,7 @@ import { exerciseName } from './exercise-info';
 import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
+import { track } from '../../lib/events';
 import { useCondensingTopbar } from './topbar';
 import './Report.css';
 import RepWave from './RepWave';
@@ -113,6 +114,7 @@ export default function Report({ lift, count, counted, arm, date, source, leavin
     }
     const fileName = reportFileName({ lang, date: when, name });
     const file = new File([blob], fileName, { type: 'application/pdf' });
+    track('share', { lift });
     if (navigator.canShare?.({ files: [file] })) {
       sharing.current = true;
       navigator.share({ files: [file], title: sheet.title })

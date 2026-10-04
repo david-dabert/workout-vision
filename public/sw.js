@@ -6,7 +6,9 @@ const CACHE_NAME = 'wv-v1';
 const MODEL_CACHE = 'wv-model-__MODEL_SHA256__';
 // MediaPipe's WASM and its loaders sit at unversioned addresses: they are kept apart, under a fingerprint of the
 // files themselves (scripts/inject-sw-precache.js), and looked up there only, so the previous version's cache can
-// never hand a new app the old library's WASM (audit of 2 October; src/lib/__tests__/sw-wasm.test.js).
+// never hand a new app the old library's WASM (audit of 2 October; src/lib/__tests__/sw-wasm.test.js). The decoder's
+// WASM (/web-demuxer.wasm, also unversioned) is kept the same way, so a web-demuxer upgrade never meets the old
+// file (third audit, C20).
 const WASM_CACHE = 'wv-wasm-__WASM_HASH__';
 const APP_SHELL = [
   '__SW_BASE__',
@@ -79,8 +81,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // MediaPipe WASM files: cache-first, from their own cache only.
-  if (url.pathname.includes('/mediapipe/')) {
+  // MediaPipe WASM files and the decoder's WASM: cache-first, from their own cache only.
+  if (url.pathname.includes('/mediapipe/') || url.pathname.endsWith('/web-demuxer.wasm')) {
     event.respondWith(
       caches.open(WASM_CACHE).then((cache) => cache.match(request).then((cached) => {
         if (cached) return cached;

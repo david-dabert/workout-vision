@@ -13,7 +13,7 @@ const catalogueKeys = catalogue.map(exercise => exercise.key);
 // are exercise-specific interpretations, not measurements validated by the text.
 describe('guide counting families', () => {
   it('contains exactly one entry per catalogue key and no additional keys', () => {
-    expect(catalogueKeys).toHaveLength(304);
+    expect(catalogueKeys).toHaveLength(308);
     expect(new Set(catalogueKeys).size).toBe(catalogueKeys.length);
     expect(Object.keys(families).sort()).toEqual([...catalogueKeys].sort());
 
@@ -53,6 +53,13 @@ describe('guide counting families', () => {
       expect(entry.eitherSide).toBe(true);
       expect(Object.hasOwn(entry, 'bothSides')).toBe(false);
       fields.push('eitherSide');
+    }
+    if (Object.hasOwn(entry, 'together')) {
+      // Both sides joined when they bend together (core.ts), never with either of the other two side rules.
+      expect(entry.together).toBe(true);
+      expect(Object.hasOwn(entry, 'bothSides')).toBe(false);
+      expect(Object.hasOwn(entry, 'eitherSide')).toBe(false);
+      fields.push('together');
     }
     if (Object.hasOwn(entry, 'bothSides')) {
       expect(entry.bothSides).toBe(true);

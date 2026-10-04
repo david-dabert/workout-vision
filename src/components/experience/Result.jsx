@@ -6,8 +6,9 @@ import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
-import { contribution, contributeAsked, keepContribution, markContributeAsked, readChoice } from '../../lib/contribute';
+import { contribution, contributeAsks, keepContribution, markContributeAsked, readChoice, shouldAskContribute } from '../../lib/contribute';
 import ContributeAsk from './ContributeAsk';
+import { contributeBuild } from '../../lib/buildFlags';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
@@ -18,7 +19,8 @@ import { NOTES } from './set-notes';
 import { decimal, repTable, speedChangeLine } from './report-sheet';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
-import { compactWave, waveAngles } from './wave';
+import { waveAngles } from './wave';
+import { savedSet } from './saved-set';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -34,6 +36,7 @@ import { isCorrected, markLabel, marksLabel } from './replay-labels';
 import { compareSides } from '../../lib/counting/symmetry';
 import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
+import { track } from '../../lib/events';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -92,20 +95,25 @@ export function AnalysisError({ lift, phase, onClose, onRefilm }) {
         ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
         : (fr ? 'Essayez une autre vidéo, ou filmez à nouveau avec l’appareil photo.' : 'Try another video, or record again with the camera.')}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
-        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October). */}
+        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October).
+            One button per action: "Refilmer" goes back to the Film screen, where a video is filmed or chosen; a second
+            button doing the same under "Choisir une autre vidéo" opened no picker (third audit C14, 3 October). */}
         {model
-          ? <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+          ? <>
+            <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+            <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+          </>
           : <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>}
-        <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
     </div></section>
   </div>;
 }
 
 // What was read, without naming a cause the app cannot see (review 01 of the partial-read fix).
-function partialLine(read, expected, fr) {
-  const share = expected ? Math.round((Math.min(read, expected) / expected) * 100) : null;
-  if (expected && read > expected) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
+// Samples out of time order were read again from an earlier point: the "read twice" line, never "NaN %" (third audit, C08).
+function partialLine(read, expected, fr, disordered) {
+  const share = expected && Number.isFinite(read) ? Math.round((Math.min(read, expected) / expected) * 100) : null;
+  if (disordered || (expected && read > expected)) return fr ? 'Une partie de la vidéo a été lue deux fois. Nous n’affichons pas un compte faux. Recommencez l’analyse.' : 'Part of the video was read twice. We do not show a wrong count. Start the analysis again.';
   return share === null
     ? (fr ? 'La durée de la vidéo n’a pas pu être lue. Nous n’affichons pas un compte incertain. Recommencez l’analyse.' : 'The length of the video could not be read. We do not show an uncertain count. Start the analysis again.')
     : (fr ? `Seuls ${share}\u00A0% de la vidéo ont été analysés. Nous n’affichons pas un compte partiel. Recommencez l’analyse.` : `Only ${share}% of the video was analysed. We do not show a partial count. Start the analysis again.`);
@@ -113,19 +121,19 @@ function partialLine(read, expected, fr) {
 
 // Shown when the phone read only part of the video: no count, since it would be the count of part
 // of the set (29 September: 181 of 439 samples read, 2 of 10 reps counted).
-export function AnalysisIncomplete({ lift, read, expected, decoder, onClose, onRestart, onRefilm }) {
+export function AnalysisIncomplete({ lift, read, expected, disordered = false, decoder, onClose, onRestart, onRefilm }) {
   const { lang } = useT(), fr = lang === 'fr';
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
       <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.'}</h2>
-      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr)}</p>
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{partialLine(read, expected, fr, disordered)}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
       </div>
-      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected } }} />
+      <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected, disordered } }} />
     </div></section>
   </div>;
 }
@@ -153,11 +161,17 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
 /**
  * covered: the screen open over the result ('report' or 'replay'), or nothing.
  * onReplay: opens the replay; absent when the video is not at hand.
+ * liveShown: for a set counted live (LiveSession.jsx), the last count the live screen showed, or null.
  */
-export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {} }) {
+export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {}, liveShown = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
-  const [step, setStep] = useState('ask'); // ask | fix | saved
+  // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
+  // empty set from reps it missed. The screen asserts no number, no measure and no mark, and opens on the
+  // question "How many did you do?"; the set is saved with the app's 0 beside the person's count, as a
+  // correction (3 October 2026). Status: convention, from R8.
+  const unsure = !result.refused && result.count === 0;
+  const [step, setStep] = useState(unsure ? 'fix' : 'ask'); // ask | fix | saved
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
   // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
   const cardRef = useRef(null), firstStep = useRef(true);
@@ -259,19 +273,22 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
-  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own.
+  // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
+  // its first column headed Repère after a correction, as the report heads it (third audit C11).
   const [view] = useState(() => levelView(readLevel()));
-  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
+  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr, corrected }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
   const [chosen, setChosen] = useState('');
   const offerLevel = shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
-  // Asked once, on a saved card that asks nothing else (the level question comes first); shown is asked.
-  const [askContribute] = useState(() => readChoice() === null && !contributeAsked());
-  const showContribute = step === 'saved' && !offerLevel && askContribute;
-  useEffect(() => { if (showContribute) markContributeAsked(); }, [showContribute]);
+  // Whether to help improve the count: asked on the saved card of the first set, and once more from the fifth when
+  // left unanswered, never after a yes or a no (contribute.js shouldAskContribute). Decided once the sets on the
+  // phone are read after the save; shown is asked.
+  const [contributeAt, setContributeAt] = useState(null); // the sets on the phone when it is asked
+  const showContribute = step === 'saved' && contributeAt !== null;
+  useEffect(() => { if (showContribute) markContributeAsked(contributeAt); }, [showContribute]); // eslint-disable-line react-hooks/exhaustive-deps
   // "Noted" only when the phone stored it (audit of 2 October); otherwise the screen says it was not kept.
   const [levelLost, setLevelLost] = useState(false);
   function chooseLevel(l) { setLevelLost(!writeLevel(l)); setChosen(l); }
@@ -306,7 +323,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
   // The ghost of the lift behind the number.
   useEffect(() => {
-    if (result.refused) return undefined;
+    if (result.refused || unsure) return undefined;
     const body = new Body(LITE ? 1700 : 2600, 7), src = ghostSource(result, lift), out = new Float32Array(66), memo = {};
     return addLayer((ctx, W, H, t, now) => {
       const here = presence(rootRef.current, now, memo);
@@ -332,27 +349,21 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout({
-        exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
-        date: new Date().toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
-        // Measured over the app's marks: kept only when the saved count is the app's.
-        sides: n === count ? sides : null,
-        // What the app counted stays apart from what the visitor kept.
-        machineResult: { reps: count, confidence: result.confidence ?? null },
-        correctedResult: n !== count ? { reps: n } : null,
-        // Rep details measured with step 3c's boundaries; older sets' details are not shown.
-        repDetailsVersion: 2,
-        // The measured angle over the set, compact, for the report's wave (wave.js).
-        wave: compactWave(waveAngles(result), result.timestamps),
-      });
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
       // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
-      if (readChoice() === 'yes') keepThis(n);
+      // A build without VITE_CONTRIBUTE keeps none and never asks: contributions are paused (buildFlags.js, WP0.4).
+      if (contributeBuild() && readChoice() === 'yes') keepThis(n);
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
+      // The question on helping, from the number of sets now on the phone; unread, it is not asked.
+      if (contributeBuild()) loadSets().then(l => {
+        if (shouldAskContribute({ choice: readChoice(), ...contributeAsks(), saved: l.length })) setContributeAt(c => c ?? l.length);
+      }, () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
+      track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
       onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
@@ -366,6 +377,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   function challenge() {
     const data = challengeShare({ liftName, count: trueN, counted: count, fr, url: new URL(import.meta.env.BASE_URL, location.origin).href });
     setShareNote('');
+    track('share', { lift });
     shareChallenge(data, { share: navigator.share ? d => navigator.share(d) : null, clipboard: navigator.clipboard }).then(out => {
       if (out === 'copied') setShareNote(fr ? 'Message copié. Collez-le dans une conversation.' : 'Message copied. Paste it into a chat.');
       else if (out === 'unavailable') setShareNote(fr ? 'Le partage n’est pas disponible dans ce navigateur.' : 'Sharing is not available in this browser.');
@@ -377,7 +389,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
 
   if (result.refused) {
     const text = why.cause === 'nobody'
-      ? (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.')
+      ? (result.metadata?.live ? (fr ? 'Personne n’apparaît à l’image.' : 'We could not find you in the picture.') : (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.'))
       : why.cause === 'unclear'
         ? (many
           ? (fr ? `Vos ${limb.noun} n\u2019étaient pas assez visibles pour compter les répétitions.` : `Your ${limb.noun} were not visible enough to count the reps.`)
@@ -419,8 +431,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <p className="fix-text">{fix}</p>
         </div>
         <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
+          {/* One button: "Choisir une autre vidéo" beside it did the same, back to Film (third audit C14, 3 October). */}
           <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
-          <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
         </div>
         <ReportCount fr={fr} report={report} />
       </div></section>
@@ -452,11 +464,20 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // The set's two ranges and what a gap means: under the strips, or under the marks for the beginner, who has no strips.
   const sidesLine = measured && sidesText ? <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div> : null;
   const blocks = {
-    count: <div key="count" className="res-count">
+    // No count to show: the words of the refused screen, and the question below them (unsure, above).
+    count: unsure && step !== 'saved' ? <h2 key="count" className="title refused-title" data-testid="res-uncounted">{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2> : <div key="count" className="res-count">
       <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{result.test ? (fr ? ` en ${result.test.windowSec}\u00A0secondes` : ` in ${result.test.windowSec} seconds`) : ''}</p>
       {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
-      {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{fr ? `La vidéo s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`}</p>}
+      {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{result.metadata?.live
+        ? (fr ? `La série s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The set stops before ${result.test.windowSec} seconds: the score covers only what was filmed.`)
+        : (fr ? `La vidéo s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`)}</p>}
+      {/* A live set: the count shown during the set was the core on the set so far; this one is the core on all of it
+          (liveCounter.js). When they differ the screen says so, so the number heard during the set is not taken for a
+          second measure. Not shown for a set the app could not count: that screen asserts no number (R8). */}
+      {liveShown !== null && count > 0 && liveShown !== count && <p className="res-meta res-live" data-testid="res-live">{fr
+        ? `En direct, l’app affichait ${liveShown}. Le compte final relit toute la série.`
+        : `Live, the app showed ${liveShown}. The final count reads the whole set again.`}</p>}
       {/* Under the count from the first frame: every measure on this screen (marks, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && count > 0 && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
       <p className="sr" role="status">{step === 'saved'
@@ -521,7 +542,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             </span>
             <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
           </div>
-          <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>
+          {/* With no count from the app, the person's own count is saved, never the 0 the stepper opens on. */}
+          <button type="button" className="btn-primary press" disabled={unsure && trueN === 0} onClick={() => { if (unsure && trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true); }}>
             <span>{fr ? 'Enregistrer' : 'Save'}</span>
           </button>
         </div>
@@ -546,8 +568,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           </button>
           <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
-          {/* Once, after a saved set, when no level is stored: one quiet question, which nothing waits on. */}
+          {/* After the first saved set (and once more from the fifth): one quiet question, which nothing waits on. */}
           {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
+          {/* Once, after a saved set, when no level is stored. */}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'}</p>
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />

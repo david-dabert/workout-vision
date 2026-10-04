@@ -1,5 +1,7 @@
 # Phase B Scorecard — Accuracy & Resilience
 
+> **Historical** (third audit, C43, 3 October 2026). Written before the counting core (`src/lib/counting/core.ts`) and last changed on 25 September 2026 (commit 1f5a90d): it describes earlier code, most of it now dormant (ARCHITECTURE.md, section 5), and none of its figures is current. Current counting figures, each dated on its first line: `test/real-phone/accuracy/public-scoreboard.txt` and `test/real-phone/accuracy/scoreboard.txt`.
+
 **Date**: 2026-09-15
 **Scope**: Phase B of the 10/10 push. Accuracy bugs in scoring, form checks, and coaching report.
 

@@ -1,52 +1,32 @@
-// Workout Vision Feedback Ingest Worker
-// Deploy: npx wrangler deploy
-// Dashboard: GET /dashboard
+// Workout Vision Worker: anonymous usage counts, and the read-only aggregates of the old feedback table
+// Deploy: npx wrangler deploy (README.md)
+// POST /event: anonymous usage counts (usage.js). POST /ingest (feedback) was removed on 3 October 2026 (WP0.4): 404.
+// GET /stats, GET /dashboard (usage) and GET /feedback (feedback aggregates): STATS_TOKEN, in the Authorization header
+// only; POST /dashboard takes it from the dashboard's form. A job every minute deletes the rate-limit hashes (scheduled).
+import { handleEvent, handleStats, handleDashboard, authorised, purgeRateKeys } from './usage.js';
 
-const SCHEMA_VERSION = 1;
-const MAX_PAYLOAD = 4096;
-const BANNED_FIELDS = ['landmarks', 'video', 'frames', 'imageData', 'blob'];
-
-// Rate limiting: max 10 submissions per IP per minute
-const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_SEC = 60;
-
-/** Recursively check all keys in an object for banned field names. */
-function containsBannedField(obj, depth = 0) {
-  if (depth > 5 || !obj || typeof obj !== 'object') return null;
-  for (const key of Object.keys(obj)) {
-    if (BANNED_FIELDS.includes(key)) return key;
-    const nested = containsBannedField(obj[key], depth + 1);
-    if (nested) return nested;
-  }
-  return null;
-}
-
-/** IP-based rate limiting using D1 as backing store. */
-export async function isRateLimited(env, ip) {
-  // The window in SQLite's own format, as rows are inserted (datetime('now')): an ISO string with a T sorted
-  // after every same-day row and let all through (Astra's audit, FINDING-030; reproduced in SQLite: 5 rows, 0 counted).
-  const result = await env.DB.prepare(
-    `SELECT COUNT(*) as cnt FROM feedback WHERE ip_hash = ? AND created_at > datetime('now', ?)`
-  ).bind(ip, `-${RATE_LIMIT_WINDOW_SEC} seconds`).first();
-  return result && result.cnt >= RATE_LIMIT_MAX;
-}
-
-/** One-way hash of IP for rate limiting without storing raw IPs. */
-async function hashIP(ip) {
-  const data = new TextEncoder().encode(ip + ':wv-salt-2026');
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-}
+// POST /ingest was removed on 3 October 2026 (WP0.4, docs/SPEC-production.md): it took free text and a hash of the IP
+// salted with a constant written in this public repository, with no notice and no consent. It now answers 404 like any
+// unknown path. The feedback table stays in schema.sql and in any deployed database: exporting then dropping it is
+// David's decision D24 (R5), not this code's. GET /feedback still reads its aggregates, behind the token.
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, GET',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
 
 export default {
+  // Every minute (wrangler.toml, crons): the usage rate limit's IP hashes older than the last minute are deleted, so
+  // none outlives three minutes even when no event follows to delete it (review finding N4).
+  async scheduled(controller, env, ctx) {
+    const done = purgeRateKeys(env, controller?.scheduledTime ?? Date.now());
+    if (ctx?.waitUntil) ctx.waitUntil(done);
+    await done;
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
 
@@ -55,8 +35,14 @@ export default {
       return new Response(null, { headers: corsHeaders() });
     }
 
-    // Dashboard (read-only)
-    if (request.method === 'GET' && url.pathname === '/dashboard') {
+    // Anonymous usage counts (usage.js)
+    if (request.method === 'POST' && url.pathname === '/event') return handleEvent(request, env, corsHeaders());
+    if (request.method === 'GET' && url.pathname === '/stats') return handleStats(request, env);
+    if ((request.method === 'GET' || request.method === 'POST') && url.pathname === '/dashboard') return handleDashboard(request, env);
+
+    // Feedback aggregates (read-only). Behind the token since 3 October: it was open to anyone before.
+    if (request.method === 'GET' && url.pathname === '/feedback') {
+      if (!(await authorised(request, env))) return new Response('Unauthorized', { status: 401 });
       const stats = await env.DB.prepare(
         `SELECT kind, COUNT(*) as count,
          detected, corrected,
@@ -68,99 +54,7 @@ export default {
       ).all();
 
       return new Response(JSON.stringify(stats.results, null, 2), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-      });
-    }
-
-    // Ingest
-    if (request.method === 'POST' && url.pathname === '/ingest') {
-      // Rate limit check
-      const clientIP = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
-      const ipHash = await hashIP(clientIP);
-
-      if (await isRateLimited(env, ipHash)) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'Retry-After': String(RATE_LIMIT_WINDOW_SEC),
-            ...corsHeaders(),
-          }
-        });
-      }
-
-      const contentLength = request.headers.get('content-length');
-      if (contentLength && parseInt(contentLength) > MAX_PAYLOAD) {
-        return new Response(JSON.stringify({ error: 'Payload too large' }), {
-          status: 413,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-        });
-      }
-
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-        });
-      }
-
-      // Verify parsed size (content-length can be spoofed or omitted)
-      const serialized = JSON.stringify(body);
-      if (serialized.length > MAX_PAYLOAD) {
-        return new Response(JSON.stringify({ error: 'Payload too large' }), {
-          status: 413,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-        });
-      }
-
-      // Reject payloads containing banned fields at any depth (privacy)
-      const banned = containsBannedField(body);
-      if (banned) {
-        return new Response(JSON.stringify({ error: `Field '${banned}' not allowed` }), {
-          status: 422,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-        });
-      }
-
-      // Validate schema
-      if (body.v !== SCHEMA_VERSION) {
-        return new Response(JSON.stringify({ error: 'Schema version mismatch' }), {
-          status: 422,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-        });
-      }
-
-      const validKinds = ['correction', 'crash', 'feedback', 'rating'];
-      if (!validKinds.includes(body.kind)) {
-        return new Response(JSON.stringify({ error: 'Invalid kind' }), {
-          status: 422,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders() }
-        });
-      }
-
-      // Insert
-      await env.DB.prepare(
-        `INSERT INTO feedback (kind, app_version, device_class, detected, corrected, confidence, rep_count, rep_expected, message, diag, ip_hash, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
-      ).bind(
-        body.kind,
-        body.appVersion || null,
-        body.deviceClass || null,
-        body.detected || null,
-        body.corrected || null,
-        body.confidence || null,
-        body.repCount || null,
-        body.repExpected || null,
-        body.message || null,
-        body.diag ? JSON.stringify(body.diag) : null,
-        ipHash
-      ).run();
-
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders() }
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
       });
     }
 

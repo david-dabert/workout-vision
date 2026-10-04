@@ -13,7 +13,7 @@
 
 import { extractFramesStreaming } from '../../src/lib/frameExtractor.js';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from '../../src/lib/extractionConfig.js';
-import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, selectSubjectPose } from '../../src/lib/poseAnalysis.js';
+import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, resetKalmanFilters, selectSubjectPose } from '../../src/lib/poseAnalysis.js';
 
 // Match the app worker: TFLite sends this informational startup line to stderr.
 const originalError = console.error.bind(console);
@@ -78,7 +78,8 @@ async function processFile(file) {
     async (canvas, frameIndex, timestamp) => {
       // A decoding path that fails part-way starts again at sample 0: only the last pass is kept, as in the app
       // (coreAnalysis.js; audit FINDING-002).
-      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; sampleCount = 0; }
+      // The image smoothing forgets the abandoned pass too, as the app's worker does at sample 0 (third audit, C48).
+      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; sampleCount = 0; resetKalmanFilters(); }
       // Match the app's worker path: read pixels from the extraction canvas
       // and write them onto an OffscreenCanvas before inference. The roundtrip
       // is lossless, but using the same path as the worker ensures the harness

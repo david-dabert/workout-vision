@@ -20,8 +20,36 @@ function copyModelsPlugin() {
   }
 }
 
+/**
+ * Vite plugin: the pages' Content-Security-Policy lets them reach the server of the anonymous usage counts, and no
+ * other, when the build names one (VITE_EVENTS_URL, src/lib/events.js). Without it the policy is left as written.
+ * The value must be an https URL (http only for localhost); anything else fails the build rather than widen the policy.
+ */
+export function eventsCspPlugin(fixed) {
+  let origin = '';
+  return {
+    name: 'events-csp',
+    // The value the app reads (import.meta.env), from the environment or a .env file.
+    configResolved(config) { origin = eventsOrigin(fixed ?? config.env.VITE_EVENTS_URL ?? ''); },
+    transformIndexHtml(html) {
+      if (!origin) return html;
+      return html.replace(/(connect-src [^;"]*)/, `$1 ${origin}`);
+    },
+  };
+}
+
+/** The origin of the events URL, or '' when none is set. Throws on a URL that is not https (http only for localhost). */
+export function eventsOrigin(url) {
+  if (!url) return '';
+  let u;
+  try { u = new URL(url); } catch { throw new Error(`VITE_EVENTS_URL is not a URL: ${url}`); }
+  const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  if (!(u.protocol === 'https:' || (u.protocol === 'http:' && local))) throw new Error(`VITE_EVENTS_URL must be https: ${url}`);
+  return u.origin;
+}
+
 export default defineConfig({
-  plugins: [react(), copyModelsPlugin()],
+  plugins: [react(), copyModelsPlugin(), eventsCspPlugin()],
   base: process.env.VITE_BASE || '/workout-vision/',
   server: {
     host: true,

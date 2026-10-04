@@ -65,3 +65,7 @@
 .wv-experience .all-exercises .item-name { font-size: min(var(--fs-name), 6.2vw); }
 /* Beta in the list is gold as on the cards; the list's .tag rule loads later and would make it ash (#15). */
 .wv-experience .tag.tier-beta { color: var(--lamp); border-color: var(--lamp-line); }
+/* The note on anonymous usage counts (UsageNote, Choice.jsx), under "Vos séries": its button reads as a link, 44 px tall. */
+.wv-experience .usage-note { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wv-experience .usage-note p { margin: 0; }
+.wv-experience .usage-note .text-btn { font: inherit; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--r-pill); }

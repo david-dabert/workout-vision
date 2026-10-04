@@ -25,8 +25,9 @@ function readLines({ decoder, read, fr, c }) {
   const out = [];
   if (decoder) out.push(`${fr ? 'Décodeur' : 'Decoder'}${c}${decoder}`);
   if (read && Number.isFinite(read.read)) {
-    // A share only when it is one: more samples than the video holds is a read made twice, not 110 %.
-    const pct = read.expected && read.read <= read.expected ? Math.round((read.read / read.expected) * 100) : null;
+    // A share only when it is one: more samples than the video holds is a read made twice, not 110 %,
+    // and so is a read whose samples went back in time (third audit, C08).
+    const pct = read.expected && !read.disordered && read.read <= read.expected ? Math.round((read.read / read.expected) * 100) : null;
     const of = read.expected ? (fr ? ` sur ${read.expected}` : ` of ${read.expected}`) : '';
     const share = pct === null ? '' : (fr ? ` (${pct}${NBSP}%)` : ` (${pct}%)`);
     out.push(fr ? `Vidéo lue${c}${read.read} échantillons${of}${share}` : `Video read${c}${read.read}${of} samples${share}`);

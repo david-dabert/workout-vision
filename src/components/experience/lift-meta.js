@@ -1,8 +1,13 @@
 import { liftDefinition } from '../../lib/counting/core';
+import { betaFirst } from '../../lib/liftTiers';
 
 // The lifts on the choice screen, in order, with their names in both languages and the
 // names people use for them. Kept apart from the drawing code so tests can read it.
 export const LIFTS = ['lateral_raise', 'bicep_curl', 'lat_pulldown', 'squat', 'bench_press', 'hip_thrust', 'romanian_deadlift', 'leg_press', 'overhead_press'];
+// The order of the cards on the rail: every Beta lift first, then the Experimental ones, each group in the
+// order of LIFTS (David, 3 October). Derived from TIERS, so a lift that changes tier moves with it. LIFTS
+// keeps its order: each card's figure takes its phase from its place in LIFTS (lift-scenes.js).
+export const CARD_ORDER = betaFirst(LIFTS);
 export const META = {
   lateral_raise: { fr: 'Élévations latérales', en: 'Lateral raise', aliasFr: 'Latérales · Lateral raise', aliasEn: 'Side raise · Élévations latérales' },
   bicep_curl: { fr: 'Curl biceps', en: 'Biceps curl', aliasFr: 'Curl haltère · Biceps curl', aliasEn: 'Dumbbell curl · Curl biceps' },

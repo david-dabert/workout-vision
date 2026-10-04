@@ -11,17 +11,20 @@ const [, , a, b, ...rest] = process.argv;
 if (!a || !b) { console.error('usage: compare-variants.mjs <before.json> <after.json> [--lift <key>]'); process.exit(2); }
 const lift = rest[0] === '--lift' ? rest[1] : null;
 const before = JSON.parse(readFileSync(a, 'utf8')).sets, after = JSON.parse(readFileSync(b, 'utf8')).sets;
+// The public build half holds each Countix clip twice (countix and countix-whole read the same video): a gain or loss
+// is also counted by distinct clip, the video id before the first underscore (review of 3 October).
+const clip = n => n.split('/').pop().split('_')[0];
 const off = e => (e.count === 'refused' ? Infinity : Math.abs(e.count - e.label));
 const suites = ['david', 'publicA', 'publicB', 'synthetic'];
 const rows = {}, verdict = [];
 for (const s of suites) {
   const names = Object.keys(before).filter(n => before[n].suite === s && n in after && (!lift || before[n].lift === lift));
-  const r = { n: names.length, exactB: 0, exactA: 0, badB: 0, badA: 0, onlyA: 0, onlyB: 0, newlyBad: 0, moved: 0 };
+  const r = { n: names.length, exactB: 0, exactA: 0, badB: 0, badA: 0, onlyA: 0, onlyB: 0, newlyBad: 0, moved: 0, clipsGained: new Set(), clipsLost: new Set() };
   for (const n of names) {
     const x = before[n], y = after[n], ex = off(x) === 0, ey = off(y) === 0;
     if (ex) r.exactB++; if (ey) r.exactA++;
     if (off(x) >= 3) r.badB++; if (off(y) >= 3) r.badA++;
-    if (ey && !ex) r.onlyA++; if (ex && !ey) r.onlyB++;
+    if (ey && !ex) { r.onlyA++; r.clipsGained.add(clip(n)); } if (ex && !ey) { r.onlyB++; r.clipsLost.add(clip(n)); }
     if (off(y) >= 3 && off(x) < 3) r.newlyBad++;
     if (x.count !== y.count) r.moved++;
   }
@@ -32,6 +35,10 @@ console.log(`suite       n     exact before -> after   off3+ before -> after   o
 for (const s of suites) {
   const r = rows[s];
   console.log(`${s.padEnd(10)} ${String(r.n).padStart(4)}   ${String(r.exactB).padStart(5)} -> ${String(r.exactA).padEnd(5)}         ${String(r.badB).padStart(5)} -> ${String(r.badA).padEnd(5)}        ${String(r.onlyA).padStart(5)}      ${String(r.onlyB).padStart(5)}    ${r.chi.toFixed(2).padStart(5)}   ${String(r.newlyBad).padStart(5)}    ${String(r.moved).padStart(5)}`);
+}
+for (const s of suites) {
+  const r = rows[s];
+  if (r.clipsGained.size || r.clipsLost.size) console.log(`${s.padEnd(10)} distinct clips: ${r.clipsGained.size} gained, ${r.clipsLost.size} lost`);
 }
 const d = rows.david;
 if (d.exactA < d.exactB || d.newlyBad > 0) verdict.push("David's sets: fewer exact or a set newly off by 3 (R2)");

@@ -31,7 +31,7 @@ import {
 // Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mpVision from '@mediapipe/tasks-vision';
-import { isTheModel } from './model-hash';
+import { isTheModel, MODEL_SHA256 } from './model-hash';
 function getMediaPipeVision() {
   return mpVision;
 }
@@ -82,12 +82,35 @@ let _downloadProgressCb = null;
 // A cached buffer smaller than this was a partial download or corruption.
 const MIN_MODEL_BYTES = 5 * 1024 * 1024; // 5 MB
 
-async function fetchModelBuffer() {
+/**
+ * True when the service worker's store already keeps this model offline. public/sw.js puts the verified
+ * download in 'wv-model-<sha>' before it answers, so after a fetch this is already settled. A second copy in
+ * IndexedDB would then only double the 9.4 MB footprint on the phone (third audit, C49). Without a service
+ * worker (first visit before it controls the page, a refused store, the harness) the answer is false and the
+ * IndexedDB copy stays the offline fallback.
+ */
+async function heldByServiceWorker() {
+  try {
+    if (typeof caches === 'undefined') return false;
+    const name = `wv-model-${MODEL_SHA256}`;
+    if (!(await caches.has(name))) return false;
+    return !!(await (await caches.open(name)).match(MODEL_URL));
+  } catch { return false; }
+}
+
+/** The model's bytes: the IndexedDB copy if it is the right file, else a verified download. */
+export async function fetchModelBuffer() {
+  // A copy kept under an older key (another model or library version) is never read again: drop it, so a
+  // model change does not leave 9.4 MB behind for good (third audit, C49).
+  modelCache.keys().then(keys => Promise.all(keys.filter(k => k !== MODEL_CACHE_KEY).map(k => modelCache.removeItem(k)))).catch(() => {});
+
   // Try IndexedDB cache first (instant on repeat visits, works offline)
   try {
     const cached = await modelCache.getItem(MODEL_CACHE_KEY);
     // The kept copy is used only if it is exactly the model the app was built with (audit FINDING-018).
     if (cached && cached.byteLength >= MIN_MODEL_BYTES && await isTheModel(cached)) {
+      // The service worker keeps it too: one copy is enough, the next analysis reads the worker's (C49).
+      if (await heldByServiceWorker()) modelCache.removeItem(MODEL_CACHE_KEY).catch(() => {});
       return cached;
     }
     if (cached) {
@@ -129,14 +152,14 @@ async function fetchModelBuffer() {
     }
 
     if (!await isTheModel(buffer)) throw new Error('Pose model integrity mismatch');
-    modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
+    if (!await heldByServiceWorker()) modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
     return buffer;
   }
 
   // Fallback: no Content-Length or no streaming body (older browsers)
   const buffer = await response.arrayBuffer();
   if (!await isTheModel(buffer)) throw new Error('Pose model integrity mismatch');
-  modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
+  if (!await heldByServiceWorker()) modelCache.setItem(MODEL_CACHE_KEY, buffer).catch(() => {});
   return buffer;
 }
 
@@ -159,17 +182,21 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
 
   const modelBuffer = await fetchModelBuffer();
 
-  // Detect device capabilities to select optimal delegate order
-  const caps = await getDeviceCapabilities();
+  // Detect device capabilities to select optimal delegate order. A CPU-only landmarker (the app's
+  // pose worker, the harness, synth) never reads the answer, so it skips the WebGPU/WebNN probe that
+  // would otherwise delay every analysis before the model loads (third audit, C48).
+  const caps = forceCPU ? null : await getDeviceCapabilities();
   const simd = isSimdSupported();
 
-  console.info(
-    `[PoseAnalysis] Device: SIMD=${simd}, WebGL2=${caps.webgl2}, ` +
-    `GPU=${caps.unmaskedRenderer || caps.webgl2Renderer || 'unknown'}, ` +
-    `recommendedDelegate=${caps.recommendedDelegate}`
-  );
-  if (caps.gpuBlockedReason) {
-    console.warn(`[PoseAnalysis] ${caps.gpuBlockedReason}`);
+  if (caps) {
+    console.info(
+      `[PoseAnalysis] Device: SIMD=${simd}, WebGL2=${caps.webgl2}, ` +
+      `GPU=${caps.unmaskedRenderer || caps.webgl2Renderer || 'unknown'}, ` +
+      `recommendedDelegate=${caps.recommendedDelegate}`
+    );
+    if (caps.gpuBlockedReason) {
+      console.warn(`[PoseAnalysis] ${caps.gpuBlockedReason}`);
+    }
   }
 
   // Force CPU delegate for deterministic results in video upload mode.
@@ -309,6 +336,8 @@ export function disposeAllLandmarkers() {
 
 /**
  * Filter anatomically implausible landmarks, returning previous valid ones if current fail.
+ * Inert today: isAnatomicallyImplausible can never return true (its limits are above the 180 degrees
+ * an acos angle can reach; see poseGeometry.ts), so no frame is ever replaced (third audit, C48).
  */
 function filterAnatomicallyImplausible(landmarks, lastValid) {
   if (!landmarks) return lastValid;
@@ -333,8 +362,11 @@ export const selectSubjectPose = _selectSubjectPose;
  * @param {HTMLCanvasElement} source
  * @param {number} [timestamp] - deterministic timestamp in ms (frameIdx * 1000/fps).
  *   Falls back to performance.now() if not provided (live mode).
+ * @param {{ rethrow?: boolean }} [options] - rethrow: a detection error is thrown instead of read as
+ *   "no person in this frame". The app's and the collector's pose worker set it, so a model failure
+ *   ends the run as an error (third audit, C07); the harness, synth and Validate keep the null.
  */
-export function detectPoseImage(landmarker, source, timestamp) {
+export function detectPoseImage(landmarker, source, timestamp, { rethrow = false } = {}) {
   try {
     // IMAGE mode: no timestamp, no temporal state (deterministic per-frame).
     // VIDEO mode: timestamps must be monotonically increasing.
@@ -374,6 +406,7 @@ export function detectPoseImage(landmarker, source, timestamp) {
     return result;
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (image):', e);
+    if (rethrow) throw e;
     return null;
   }
 }

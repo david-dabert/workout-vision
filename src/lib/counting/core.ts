@@ -18,7 +18,9 @@
  * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
  * valid angle; the side never alternates frame by frame. The alternating curl, and every guide
  * exercise whose pattern counts both sides (liftDefinition), count both sides and join them
- * (countBothSides).
+ * (countBothSides). An either-side exercise (push-up, pull-up, front raise) is counted on each side and keeps
+ * the side with more reps among those seen in at least half the samples; the lunges (`together`) join both knees
+ * when they bend together (TOGETHER_MIN_CORRELATION) and are counted as either-side when they do not.
  *
  * Signal conditioning pipeline: outlier removal → bridge dropouts → Savitzky–Golay.
  * Outlier removal nulls samples that deviate from their local median by more
@@ -28,7 +30,8 @@
  *
  * Rep detection: smoothed angle crosses a low and a high threshold derived from the
  * set's own 10th/90th percentile range, leaving the rest end and coming back to it.
- * A rep is one full cycle whose duration falls within [minRepSec, maxRepSec].
+ * A rep is one full cycle whose duration falls within [minRepSec, maxRepSec]. A last rep the video stops on
+ * its way back counts, marked clipped, once it has come CUT_RETURN_SHARE of the way back (3 October 2026).
  * Its reported start and end are then placed where the angle leaves and regains
  * its rest level (placeBoundaries), so a rest that hovers near a threshold does
  * not move them; its range and phases are measured between them.
@@ -95,10 +98,43 @@ export interface LiftDefinition {
   bothSides?: boolean;
   /**
    * Both sides counted, the side with more reps kept: for a movement that bends both joints on every rep (a
-   * forward or reverse lunge), where the side the camera serves worse misses reps. Public build half's lunges,
+   * forward or reverse lunge, a push-up, a pull-up), where the side the camera serves worse misses reps; the other
+   * side is kept only when it is itself seen on at least half the samples (countReps). Public build half's lunges,
    * 3 October: 44 to 54 exact of 156, 31 to 8 off by 3 or more, none newly off by 3 (TRIED.md). Experimental.
+   * The lunges and the front raise (DETECTION) have since moved to `together`; the push-up and the pull-up keep this.
    */
   eitherSide?: boolean;
+  /**
+   * Both joints bend together on every rep (a forward or reverse lunge: both knees): each side is counted and
+   * the two lists joined as for bothSides, so a rep one knee misses and the other sees still counts, and a rep
+   * both see counts once; the count needs either knee in sight at a sample, not both (coreAnalysis.js). When
+   * the two knees' angles do not rise and fall together over the set (TOGETHER_MIN_CORRELATION), their reps
+   * cannot be paired and the side with more reps counts, as eitherSide. Public build half's lunges against
+   * eitherSide, 3 October, on the integrated core (test/real-phone/accuracy/variant-eval.test.ts): chosen on its
+   * half A, 16 to 22 exact of 78, off by 3 or more (refusals included) 16 to 10, none lost; checked on half B,
+   * 39 to 42 exact of 78 (3 gained, 0 lost; McNemar 1.33, not significant), off by 3 or more 6 to 6; none newly
+   * off by 3 on either. Those figures include the pairing of a lagging knee's rep (countBothSides), added after
+   * half B was first read (4 gained, 1 lost without it), on a synthetic case from the review, not on half B.
+   * Six refused sets now get a count: 2 exact, 4 short by 1 or 2. David's sets and the synthetic sets hold no
+   * lunge.
+   * Status: experimental.
+   */
+  together?: boolean;
+  /**
+   * The correlation of the two sides' smoothed angles above which a `together` lift joins them;
+   * TOGETHER_MIN_CORRELATION when absent (DETECTION). -Infinity joins them always.
+   */
+  togetherMinCorrelation?: number;
+  /** Share of the set's range each threshold is set inside its percentile; THRESHOLD_MARGIN when absent (DETECTION). */
+  thresholdMargin?: number;
+  /** Smallest range one rep may have, in degrees; MIN_ROM_DEGREES when absent. The set's own range floor never changes (DETECTION). */
+  minRepRomDeg?: number;
+  /**
+   * How far above the working extreme the working-end threshold sits, as a share of the set's range
+   * (10th to 90th percentile); THRESHOLD_MARGIN when absent. A rep counts once the angle passes it.
+   * The rest-end threshold keeps THRESHOLD_MARGIN.
+   */
+  workMargin?: number;
 }
 
 export const LIFTS = {
@@ -112,11 +148,20 @@ export const LIFTS = {
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
-  squat: { joint: 'knee', rest: 'high', first: 'eccentric' },
+  // Squat depth varies from rep to rep (a tiring or touch-and-go set; Countix clips): the working-end threshold sits
+  // a third of the range above the deepest level, not a fifth, so a rep counts once the knee has bent two thirds of
+  // the way down. Status: experimental, UNSOURCED; an unvalidated starting value (PLAN.md), chosen on the first
+  // half (A) of the Countix build sets, squat (3 October 2026): 26 -> 28 of 50 exact, none lost, none newly off
+  // by 3; 0.33 to 0.50 give the same counts there, 0.30 one exact fewer, 0.25 none. Only the working end moves:
+  // the same rule on the rest end split or merged reps erratically there (0.25 to 0.40). Checked once afterwards,
+  // unchanged: Countix half B squat 9 -> 10 of 42 exact, none lost; no count moved on the 96 synthetic sets or on
+  // David's 14 (squat_7 stays 7). The crossings of the rest-end threshold are unchanged, so it can add a rep to
+  // the count, never remove one. squat-depth.test.ts.
+  squat: { joint: 'knee', rest: 'high', first: 'eccentric', workMargin: 1 / 3 },
   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
   leg_extension: { joint: 'knee', rest: 'low', first: 'concentric' },
   leg_curl: { joint: 'knee', rest: 'high', first: 'concentric' },
-  lunge: { joint: 'knee', rest: 'high', first: 'eccentric', eitherSide: true },
+  lunge: { joint: 'knee', rest: 'high', first: 'eccentric', together: true },
   romanian_deadlift: { joint: 'hip', rest: 'high', first: 'eccentric' },
   hip_thrust: { joint: 'hip', rest: 'low', first: 'concentric' },
   // The fitness tests (fitness-tests.js), each counted by its movement. Chair stand: seated, the knee rests
@@ -130,18 +175,44 @@ export type Lift = keyof typeof LIFTS;
 // Every countable exercise of the guide, by its pattern (PLAN.md, GROWTH, step 2, 29 September
 // 2026): its joint, the end it rests at, the phase that leaves the rest and whether both sides
 // count, from guide-families.json through guide-patterns.json (scripts/make-guide-patterns.mjs),
-// which holds the patterns alone. No counting parameter depends on the exercise; a pattern only
-// chooses the joint, the side logic and which phase is concentric. Status: experimental: the
-// catalogue's own reading of each exercise's anatomy (guide-families.test.ts cites Neumann 2017,
+// which holds the patterns alone. A pattern only chooses the joint, the side logic and which phase is
+// concentric; the only counting parameters that depend on the exercise are in DETECTION below. Status:
+// experimental: the catalogue's own reading of each exercise's anatomy (guide-families.test.ts cites Neumann 2017,
 // "exercise-specific interpretations, not measurements"); not measured per exercise.
 const PATTERNS = guidePatterns as Record<string, string>;
+
+// Detection settings measured for one exercise, over its pattern; every other exercise keeps the core's.
+// push_up (3 October 2026): its public build sets are counted short far more often than long (publicA half, 74
+// sets: 43 under, 2 over): MediaPipe reads the elbow of a body lying level through a narrow range that varies
+// from rep to rep, so a rep that turns short of the set's 10th or 90th percentile is not counted. Thresholds a
+// quarter of the range inside the percentiles (the core's 0.20 elsewhere) and a rep's own range floor of 15°
+// (the set's floor stays 20°, so the collector's warning still never stands beside a count): publicA 19 -> 23
+// exact of 74, off by 3 or more 21 -> 18, no set less exact. Chosen on the publicA half alone; the publicB half,
+// read once after: 30 -> 33 exact of 80, 19 -> 18 off by 3 or more, none newly off by 3; David's sets and the
+// synthetic sets hold no push-up and do not move (scripts/compare-variants.mjs). Status: experimental.
+// front_raise (3 October 2026): each shoulder counted and their reps joined, always (`together` with no correlation
+// gate), rather than the shoulder with more reps (eitherSide): a raise both arms make counts once (75 % overlap of
+// the shorter, or the middle of either inside the other, countBothSides), and alternating raises count one each.
+// Public build half A, front_raise (80 sets), exact / off by 3 or more, against eitherSide 33 / 9: gate 0.3 36 / 9,
+// 0 37 / 9, -0.3 40 / 5, -0.6 and -Infinity 42 / 5 (9 gained, 0 lost, none newly off by 3); David's and the
+// synthetic sets hold no front raise and do not move. A short dropout of the raising arm no longer splits a rep
+// (front-raise-together.test.ts: 8 alternating raises with a 0.3 s dropout read 8, not the 16 of 30 September).
+// Source: UNSOURCED. Status: experimental, chosen on the public build half A (front_raise).
+const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation'>> = {
+  push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
+  front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
+};
 
 /** The definition an exercise is counted by: its LIFTS entry, else its guide pattern; null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (!Object.hasOwn(PATTERNS, key)) return null;
   const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
-  return { joint, rest, first, ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : {}) };
+  return {
+    joint, rest, first,
+    ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : sides === 'together' ? { together: true } : {}),
+    ...(Object.hasOwn(DETECTION, key) ? DETECTION[key] : {}),
+  };
 }
 
 // ─── Constants ───
@@ -195,10 +266,54 @@ const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
 // are (bicep_curl_5, both overhead_press 4/10 front). Status: experimental.
 const REST_BAND_FRACTION = 0.05;  // a rep leaves its rest when the angle is this share of the set's range away from it
 const REST_BAND_MIN_DEG = 2;      // … and never less than this many degrees
-const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives the rest level; below it, the extreme is used
-const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for
-const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample
+const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives the rest level; below it, the extreme is used. Source: UNSOURCED. Status: experimental
+const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for (placeBoundaries); since 8ff7313 (3 October 2026) also the longest a cut last rep may take to come back and still count (detectReps). Source: UNSOURCED. Status: experimental
+// A first rep whose return is all the video shows (it starts at the working end and comes back to rest in under
+// MIN_REP_SEC) counts when that return takes at least this share of the set's own extreme-to-rest time, the
+// median over its accepted reps, measured from where each one last deepened its working extreme (detectReps;
+// it needs two accepted reps to compare with, and placeBoundaries marks it clipped so no measure uses it).
+// Source: UNSOURCED. Status: experimental, chosen on the public build half A (0.5 against 0.6), bounded below
+// by the pinned edges tests (edges.test.ts, window-edges.test.ts).
+const HEAD_RETURN_SHARE = 0.5;
+const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample. Source: UNSOURCED. Status: experimental
 const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
+// A `together` lift joins its two sides only when their smoothed angles correlate above this over the samples
+// where both are seen (Pearson). Two knees that bend together correlate. The two public lunges that doubled when
+// joined (TRIED.md, 3 October: 3 read 7, 4 read 8) read their knees in opposition, one straight while the other
+// bent (correlation -0.10 and -0.64: the far leg swapped or misread), and two whose knees barely correlated
+// (0.06, 0.07) gained a false rep. 0.3 is the conventional "medium" correlation (Cohen, Statistical Power
+// Analysis for the Behavioral Sciences, 2nd ed., 1988); on the lunges of the public build half's half A every
+// value from 0.1 to 0.3 gives the same counts. Status: experimental (chosen on half A).
+const TOGETHER_MIN_CORRELATION = 0.3;
+// A last rep the video stops on its way back counts once its return has covered this share of the way from its
+// working extreme to the rest threshold (detectReps), and it is marked clipped, so no measure uses it. The rule
+// withdrawn on 1 October (TRIED.md) counted it from the working end on, which a movement after the set reaches
+// too; a move to a new position (arms crossed, phone in hand, standing up) does not come back. It stays above the
+// half-way-back cut that edges.test.ts keeps uncounted (a constraint of 30 September, older than this value).
+// How the value was chosen (third audit C34, 3 October 2026). The first value, 0.75 (window-edges experiment,
+// 8ff7313), was chosen partly by watching David's hip thrust set (0.5 read it 7 for 6), which PLAN.md forbids
+// ("tune nothing to any clip"). It was re-chosen on the public build half A only: variant-eval swept 0.5 to 0.9
+// and 1.01 (rule off); half A, 458 sets, exact / off by 3 or more: 0.5 178/74, 0.6 171/74, 0.65 169/76,
+// 0.7 169/76, 0.75 167/76, 0.8 167/76, 0.85 164/76, 0.9 164/76, 1.01 160/77. 0.5 and 0.6 count the half-way-back
+// cut of edges.test.ts, so they are out; 0.65 and 0.7 give the same count on every half-A set, and 0.7 keeps the
+// wider margin from that cut. Half B, David's sets and the synthetic sets were read for 0.7 against 0.75: half B
+// 164 -> 166 exact (off by 3 or more 99 -> 99), David's 8 -> 8 (no count moved), synthetic 74 -> 74; none newly
+// off by 3. They had also been read once for 0.5, the first pick, before the full test suite showed it breaks
+// edges.test.ts (TRIED.md); the exclusion of 0.5 and 0.6 rests on that synthetic test alone. Sweep in TRIED.md. Status: experimental; UNSOURCED (no published rule for a rep cut
+// by the recording).
+const CUT_RETURN_SHARE = 0.7;
+// Splitting an overlong rep at an in-set return that came most of the way back (splitOverlongReps, 3 October
+// 2026): two reps whose return between them stopped short of the rest threshold read as one long rep. Chosen on
+// the public build half A only (variant-eval, 458 sets, exact against 169 before; off by 3 or more 76 throughout):
+// return share 0.4 to 0.7: 175 (7 gained, 1 lost), 0.75 and 0.8: 176 (7 gained, 0 lost), 0.85 and 0.9: 175;
+// long 1.4 to 1.8: 175-176 (1.4 and 1.6 lose a synthetic set), 2.0 and 2.2: 172; regular below 0.5 makes one
+// half-A set newly off by 3, 0.5 to 0.7 the same counts; piece 0.4 to 0.7 the same counts. David's sets and the
+// synthetic sets read for every value: no exact count lost at the chosen ones. Source: UNSOURCED (no published
+// rule). Status: experimental, chosen on half A.
+const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts at least this share of the median rep. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_LONG = 1.8;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
 
 // ─── Public API ───
 
@@ -213,12 +328,32 @@ export function countReps(
   if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
   if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
   const seen = selectSide(worldLandmarks, def.joint);
-  if (def.eitherSide) {
-    // The side with more reps; on a tie, the better seen.
-    const mine = countSide(worldLandmarks, timestamps, def, seen), other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left');
-    return other.count > mine.count ? other : mine;
+  if (def.together) {
+    const joined = countBothSides(worldLandmarks, timestamps, def);
+    const { left, right } = joined.sides!;
+    if (correlation(left.smoothedAngles, right.smoothedAngles) > (def.togetherMinCorrelation ?? TOGETHER_MIN_CORRELATION)) {
+      // Either knee in sight sees the rep: the share of samples where one of them is.
+      const either = left.angles.filter((a, i) => a !== null || right.angles[i] !== null).length;
+      return { ...joined, confidence: worldLandmarks.length > 0 ? either / worldLandmarks.length : 0 };
+    }
+    // The knees do not move together: counted as eitherSide, below.
   }
-  return countSide(worldLandmarks, timestamps, def, seen);
+  const mine = countSide(worldLandmarks, timestamps, def, seen);
+  if (!def.eitherSide && !def.together) return mine;
+  // The side with more reps; on a tie, the better seen. A side seen in fewer than half the samples, which the count
+  // refuses (summarizeCount), is never kept over one seen in more: its extra reps would turn a set the better side
+  // counts into a refusal (3 October: a push-up seen 91 % on one elbow and 49 % on the other; a public pull-up
+  // labelled 2 went from 0 to refused). Experimental.
+  // "Better seen" is selectSide's summed visibility, while a sample is seen only when each landmark clears
+  // VIS_THRESHOLD on its own, so the side it picks can be the one seen less: whether each side is countable is
+  // compared first, then reps (third audit, C01, 3 October: a push-up whose picked wrist hovered at 0.45 was
+  // refused although the other elbow, seen on every sample, counted the same 6). Measured on 3 October with
+  // variant-eval: no count moved on David's sets, either public half or the synthetic sets.
+  const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left');
+  const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
+  const mineSeen = countable(mine), otherSeen = countable(other);
+  if (mineSeen !== otherSeen) return otherSeen ? other : mine;
+  return other.count > mine.count ? other : mine;
 }
 
 function countSide(
@@ -262,12 +397,14 @@ function countSide(
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: pLow, highThreshold: pHigh };
   }
 
-  const margin = range * THRESHOLD_MARGIN;
-  const lowThreshold = pLow + margin;
-  const highThreshold = pHigh - margin;
+  const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
+  // The working end may sit further in (LiftDefinition.workMargin, squat); the rest end keeps the margin.
+  const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN);
+  const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
+  const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -294,7 +431,8 @@ export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: num
 
 /**
  * How far the lift's own joint moves over the whole video, in degrees: the 95th minus the 5th percentile
- * of the smoothed angle on the side the count tracks; NaN with no definition or no angle. Under
+ * of the smoothed angle on the side the count tracks (for an either-side or together lift, the larger of the two
+ * sides, since either may be counted); NaN with no definition or no angle. Under
  * MIN_ROM_DEGREES the count is 0 whatever the video (its 90th minus 10th percentile is smaller still), so the
  * batch collector warns there: the video is likely not the labelled lift, or not filmed so the joint shows
  * (1 October 2026: three of four sets paired with the wrong label read 11 to 22 degrees).
@@ -304,10 +442,16 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
   const def = liftDefinition(lift);
   // A both-sides lift counts each arm on its own: one still arm says nothing about the set.
   if (!def || def.bothSides) return NaN;
-  const xs = sideAngles(worldLandmarks, timestamps, def, selectSide(worldLandmarks, def.joint)).smoothed
-    .filter((a): a is number => a !== null).sort((a, b) => a - b);
-  if (xs.length < 3) return NaN;
-  return xs[Math.floor(xs.length * 0.95)] - xs[Math.floor(xs.length * 0.05)];
+  const range = (arm: 'left' | 'right') => {
+    const xs = sideAngles(worldLandmarks, timestamps, def, arm).smoothed
+      .filter((a): a is number => a !== null).sort((a, b) => a - b);
+    return xs.length < 3 ? NaN : xs[Math.floor(xs.length * 0.95)] - xs[Math.floor(xs.length * 0.05)];
+  };
+  if (!def.eitherSide && !def.together) return range(selectSide(worldLandmarks, def.joint));
+  // An either-side or together lift can be counted on either side (countReps), so the larger of the two ranges:
+  // a still, better seen limb beside a working one no longer warns beside a count (third audit, C03, 3 October).
+  const both = [range('left'), range('right')].filter(x => !Number.isNaN(x));
+  return both.length ? Math.max(...both) : NaN;
 }
 
 // ─── Both sides: the alternating curl and the guide's both-sides exercises ───
@@ -317,6 +461,10 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
  * a rep of one arm that overlaps a rep of the other by more than TOGETHER_OVERLAP
  * of the shorter is the same rep done with both arms together and counts once;
  * every other rep counts for its arm (David, 27 September: one rep per arm).
+ * For a lift whose two sides bend on every rep (`together`, the lunges), two reps
+ * are also one when the middle of either falls inside the other: one knee bending
+ * a little after the other is still the same rep (review of 3 October: half a
+ * second's lag counted 12 for 6). Status: experimental, UNSOURCED.
  * The count needs both arms in view, so the confidence is the lower of the two.
  */
 function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition): CountResult {
@@ -332,7 +480,9 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
     if (last && last.side !== 'both' && last.side !== r.side) {
       const overlap = Math.min(last.endTime, r.endTime) - Math.max(last.startTime, r.startTime);
       const shorter = Math.min(last.endTime - last.startTime, r.endTime - r.startTime);
-      if (overlap > TOGETHER_OVERLAP * shorter) {
+      const mid = (x: { startTime: number; endTime: number }) => (x.startTime + x.endTime) / 2;
+      const inside = (m: number, x: { startTime: number; endTime: number }) => m >= x.startTime && m <= x.endTime;
+      if (overlap > TOGETHER_OVERLAP * shorter || (def.together && (inside(mid(r), last) || inside(mid(last), r)))) {
         // One rep with both arms: its span covers both, its measures are one arm's, the arm with the larger range,
         // so its phases and speeds belong together; it is cut if either arm's was (audit FINDING-013: the largest
         // range and speeds of the two were kept with the first arm's phases, a rep no arm made).
@@ -364,6 +514,20 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
     highThreshold: primary.highThreshold,
     sides: { left, right },
   };
+}
+
+/** Pearson correlation of two angle series over the samples where both have a value; 0 under three such samples or with no spread. */
+function correlation(a: (number | null)[], b: (number | null)[]): number {
+  const xs: number[] = [], ys: number[] = [];
+  for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    const x = a[i], y = b[i];
+    if (x !== null && y !== null) { xs.push(x); ys.push(y); }
+  }
+  if (xs.length < 3) return 0;
+  const mx = xs.reduce((s, v) => s + v, 0) / xs.length, my = ys.reduce((s, v) => s + v, 0) / ys.length;
+  let sxy = 0, sxx = 0, syy = 0;
+  for (let i = 0; i < xs.length; i++) { const dx = xs[i] - mx, dy = ys[i] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+  return sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : 0;
 }
 
 // ─── Side selection ───
@@ -508,8 +672,12 @@ function savitzkyGolay(angles: (number | null)[], windowSize: number): (number |
  *   rest low (lateral raise, triceps pushdown, leg extension, hip thrust): low → high → low
  * Returns each accepted cycle as sample indices: where the state machine entered
  * the rep, and where it completed it. Which cycles count is decided here alone.
+ * The sample that enters a rep is itself checked against the working threshold: the first
+ * sample of a video, or the first after a lost pose, may already be there (window-edges,
+ * 3 October 2026: unchecked, such a rep counted only when a second sample was there too).
+ * `cut`: the video, or a pose lost until its end, stopped the rep on its way back.
  */
-interface Cycle { enter: number; complete: number }
+interface Cycle { enter: number; complete: number; cut?: boolean }
 
 function detectReps(
   smoothed: (number | null)[],
@@ -517,6 +685,7 @@ function detectReps(
   lowThreshold: number,
   highThreshold: number,
   rest: 'high' | 'low',
+  minRom: number = MIN_ROM_DEGREES,
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -525,6 +694,14 @@ function detectReps(
   let peakAngle = -Infinity;
   let troughAngle = Infinity;
   let crossIdx = -1;
+  // Where the working extreme was last deepened, per cycle (the rep's return is timed from it), and the
+  // first rep's return when the video opened on it (see HEAD_RETURN_SHARE).
+  let hiIdx = -1;
+  const hiIdxs: number[] = [];
+  let enteredAtWork = false;
+  let head: Cycle | null = null;
+  let firstSeen = -1;
+  for (let i = 0; i < smoothed.length; i++) if (smoothed[i] !== null) { firstSeen = i; break; }
 
   for (let i = 0; i < smoothed.length; i++) {
     const angle = smoothed[i];
@@ -537,17 +714,24 @@ function detectReps(
           repStartIdx = i;
           peakAngle = angle;
           troughAngle = angle;
-          crossIdx = -1;
+          crossIdx = angle >= highThreshold ? i : -1; // the entering sample may already be at the working end
+          enteredAtWork = crossIdx === i;
+          hiIdx = i;
         }
       } else {
+        if (angle > peakAngle) hiIdx = i;
         peakAngle = Math.max(peakAngle, angle);
         troughAngle = Math.min(troughAngle, angle);
         if (angle >= highThreshold) crossIdx = i;
         if (angle < lowThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
+          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
+            hiIdxs.push(hiIdx);
+          } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
+            && repStartIdx === firstSeen && enteredAtWork) {
+            head = { enter: repStartIdx, complete: i }; // only its return is on video: judged after the loop
           }
           state = 'waiting';
         } else if (angle < lowThreshold) {
@@ -561,17 +745,24 @@ function detectReps(
           repStartIdx = i;
           peakAngle = angle;
           troughAngle = angle;
-          crossIdx = -1;
+          crossIdx = angle <= lowThreshold ? i : -1; // the entering sample may already be at the working end
+          enteredAtWork = crossIdx === i;
+          hiIdx = i;
         }
       } else {
+        if (angle < troughAngle) hiIdx = i;
         peakAngle = Math.max(peakAngle, angle);
         troughAngle = Math.min(troughAngle, angle);
         if (angle <= lowThreshold) crossIdx = i;
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= MIN_ROM_DEGREES) {
+          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
+            hiIdxs.push(hiIdx);
+          } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
+            && repStartIdx === firstSeen && enteredAtWork) {
+            head = { enter: repStartIdx, complete: i }; // only its return is on video: judged after the loop
           }
           state = 'waiting';
         } else if (angle > highThreshold) {
@@ -581,7 +772,115 @@ function detectReps(
     }
   }
 
+  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom);
+
+  // A first rep whose return is all the video shows: it counts when that return took at least HEAD_RETURN_SHARE of
+  // the set's own extreme-to-rest time (median over the accepted reps).
+  if (head && cycles.length >= 2) {
+    const backs = cycles.map((c, k) => timestamps[c.complete] - timestamps[hiIdxs[k]]).sort((x, y) => x - y);
+    const m = Math.floor(backs.length / 2);
+    const back = backs.length % 2 ? backs[m] : (backs[m - 1] + backs[m]) / 2;
+    if (timestamps[head.complete] - timestamps[head.enter] >= HEAD_RETURN_SHARE * back) cycles.unshift(head);
+  }
+
+  // A last rep the video (or a pose lost until its end) stopped on its way back: it reached the working end and
+  // has covered CUT_RETURN_SHARE of its return to the rest threshold, within RETURN_WINDOW_SEC of leaving its
+  // working half, and it meets every rule a whole rep meets, the lift's own range floor (minRom) included (third
+  // audit, C02, 3 October: it read the core's 20° where a whole push-up needs 15°; no count moved). A movement after the set that goes to a new
+  // position and stays there (arms crossed, phone in hand, standing up) never comes back that far.
+  if (state === 'inRep' && crossIdx > -1) {
+    let last = smoothed.length - 1;
+    while (last > repStartIdx && smoothed[last] === null) last--;
+    const extreme = restsLow ? peakAngle : troughAngle;
+    const returned = (smoothed[last]! - extreme) / ((restsLow ? lowThreshold : highThreshold) - extreme);
+    const mid = (lowThreshold + highThreshold) / 2;
+    let lastWorking = repStartIdx;
+    for (let i = repStartIdx; i <= last; i++) {
+      const a = smoothed[i];
+      if (a !== null && (restsLow ? a > mid : a < mid)) lastWorking = i;
+    }
+    const duration = timestamps[last] - timestamps[repStartIdx];
+    if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC
+      && duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && peakAngle - troughAngle >= minRom) {
+      cycles.push({ enter: repStartIdx, complete: last, cut: true });
+    }
+  }
+
   return cycles;
+}
+
+/**
+ * Two reps read as one: the return between them came most of the way back but stopped short of the rest
+ * threshold, so the state machine never closed the first. In a regular set (three reps or more, none much
+ * shorter than the median), a rep lasting well over the median is split at its fullest in-set return when that
+ * return covered SPLIT_RETURN_SHARE of the way from the working extreme to the rest threshold and both pieces
+ * are whole reps by length and range. A rep entered at the video's first sample is not split (its start is not
+ * seen). Cut last reps are added after this pass and are never split. Mutates `cycles`.
+ */
+function splitOverlongReps(
+  cycles: Cycle[],
+  smoothed: (number | null)[],
+  timestamps: number[],
+  lowThreshold: number,
+  highThreshold: number,
+  restsLow: boolean,
+  minRom: number,
+): void {
+  if (cycles.length < 3) return;
+  const durations = cycles.map(c => timestamps[c.complete] - timestamps[c.enter]).sort((a, b) => a - b);
+  const n = durations.length;
+  const md = n % 2 ? durations[(n - 1) / 2] : (durations[n / 2 - 1] + durations[n / 2]) / 2;
+  if (!(md > 0) || durations[0] < SPLIT_REGULAR * md) return;
+  const firstValid = smoothed.findIndex(a => a !== null);
+  // Oriented so the working side is positive.
+  const o = (a: number) => (restsLow ? a : -a);
+  const work = restsLow ? highThreshold : -lowThreshold;
+  const restT = restsLow ? lowThreshold : -highThreshold;
+  const range = (from: number, to: number) => {
+    let lo = Infinity, hi = -Infinity;
+    for (let i = from; i <= to; i++) {
+      const a = smoothed[i];
+      if (a === null) continue;
+      lo = Math.min(lo, a);
+      hi = Math.max(hi, a);
+    }
+    return hi - lo;
+  };
+  const minPiece = Math.max(MIN_REP_SEC, SPLIT_PIECE * md);
+  const out: Cycle[] = [];
+  for (const c of cycles) {
+    const dur = timestamps[c.complete] - timestamps[c.enter];
+    if (dur <= SPLIT_LONG * md || c.enter === firstValid || c.cut) { out.push(c); continue; }
+    let reached = false, extreme = -Infinity, ret = Infinity, retIdx = -1;
+    let bestShare = -Infinity, bestK = -1;
+    for (let i = c.enter; i <= c.complete; i++) {
+      const a = smoothed[i];
+      if (a === null) continue;
+      const v = o(a);
+      if (v >= work) {
+        if (reached && retIdx > -1) {
+          const share = (extreme - ret) / (extreme - restT);
+          if (share > bestShare) { bestShare = share; bestK = retIdx; }
+        }
+        reached = true;
+        retIdx = -1;
+        ret = Infinity;
+        extreme = Math.max(extreme, v);
+      } else if (reached && v < ret) {
+        ret = v;
+        retIdx = i;
+      }
+    }
+    const k = bestK;
+    if (k > -1 && bestShare >= SPLIT_RETURN_SHARE
+      && timestamps[k] - timestamps[c.enter] >= minPiece && timestamps[c.complete] - timestamps[k] >= minPiece
+      && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom) {
+      out.push({ enter: c.enter, complete: k }, { enter: k, complete: c.complete });
+    } else {
+      out.push(c);
+    }
+  }
+  cycles.splice(0, cycles.length, ...out);
 }
 
 // ─── Rep boundaries (step 3c) ───
@@ -687,7 +986,8 @@ function placeBoundaries(
     // End: back at the rest level; the fullest return reached on the way
     const windowEnd = Math.min(nextFirst, last + 1 + returnWindow);
     let end = c.complete;
-    const after = restLevel(last + 1, windowEnd);
+    // A rep cut on its way back has no rest after it on video: it ends where the video stopped it.
+    const after = c.cut ? null : restLevel(last + 1, windowEnd);
     const returned: number[] = [];
     for (let i = last + 1; i < windowEnd; i++) {
       const a = smoothed[i];

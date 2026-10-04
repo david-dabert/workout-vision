@@ -218,7 +218,8 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "Both arms pull together: each elbow is counted and the one with more reps kept, if it is seen on at least half the samples. Public build half, 3 October, over the edge rules: half A 156 to 158 exact, half B unchanged, none newly off by 3 (TRIED.md). Status: experimental.",
+    "eitherSide": true
   },
   "assisted_pull_up": {
     "joint": "elbow",
@@ -287,6 +288,14 @@
     "view": "side",
     "bothSides": true,
     "why": "Walking lunges alternate legs as each loaded knee bends then straightens."
+  },
+  "sandbag_lunge": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "bothSides": true,
+    "why": "A walking lunge with a sandbag on the shoulders: the legs alternate as each loaded knee bends then straightens, as walking_lunge. Not offered, as walking_lunge: the lifter walks out of a fixed frame (offer.js, NOT_FILMABLE). Added on 3 October 2026, not measured on any set."
   },
   "step_up": {
     "joint": "knee",
@@ -536,6 +545,13 @@
     "view": "front",
     "why": "The press rests at lockout between reps and the load comes down first. Follows overhead_press; to be confirmed on its own build set. Likeliest with machine_shoulder_press to rest at the shoulders."
   },
+  "behind_the_neck_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the load comes down first, behind the head. Follows overhead_press. Experimental: added on 3 October 2026, not measured on any set."
+  },
   "machine_lateral_raise": {
     "joint": "shoulder",
     "rest": "low",
@@ -700,8 +716,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 55 to 64 exact of 156 (chosen on one half, 16 to 22 of 78; checked on the other, 39 to 42 of 78, 3 gained, 0 lost), off by 3 or more 22 to 16, none newly off by 3 (core.ts, `together`; TRIED.md, 3 October, item 5). Status: experimental.",
+    "together": true
   },
   "split_squat": {
     "joint": "knee",
@@ -815,8 +831,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 55 to 64 exact of 156 (chosen on one half, 16 to 22 of 78; checked on the other, 39 to 42 of 78, 3 gained, 0 lost), off by 3 or more 22 to 16, none newly off by 3 (core.ts, `together`; TRIED.md, 3 October, item 5). Status: experimental.",
+    "together": true
   },
   "smith_machine_split_squat": {
     "joint": "knee",
@@ -858,8 +874,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 55 to 64 exact of 156 (chosen on one half, 16 to 22 of 78; checked on the other, 39 to 42 of 78, 3 gained, 0 lost), off by 3 or more 22 to 16, none newly off by 3 (core.ts, `together`; TRIED.md, 3 October, item 5). Status: experimental.",
+    "together": true
   },
   "dumbbell_lateral_lunge": {
     "joint": "knee",
@@ -923,6 +939,20 @@
   "jump_squat": {
     "joint": null,
     "why": "The jumping or airborne phase falls outside controlled joint-cycle counting."
+  },
+  "barbell_jump_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the bar from standing and the quadriceps extend it into the jump; the knee stays straight in the air, at the rest end, and the landing flows into the next dip. Experimental: added on 3 October 2026, not measured on any set; a synthetic set counts right when the last landing bends the knee no further than about 120 degrees, and a lifter who stands between jumps reads a landing absorbed past the working threshold as a rep (new-exercises.test.ts): not offered until a landing guard and a labelled set exist (offer.js, NOT_YET_COUNTED)."
+  },
+  "wall_ball": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The squat lowers from standing and the drive up throws the ball; the knee rests straight while the ball flies and is caught, then bends into the next squat. Experimental: added on 3 October 2026, not measured on any set."
   },
   "incline_dumbbell_curl": {
     "joint": "elbow",
@@ -1385,8 +1415,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Both knees bend on every rep: each knee is counted and the one with more reps kept, so the knee the camera serves worse does not lose reps. Public build half's lunges, 3 October: 44 to 54 exact of 156, none newly off by 3 (TRIED.md). Status: experimental.",
-    "eitherSide": true
+    "why": "Both knees bend on every rep: each knee is counted and their reps joined, so a rep one knee misses and the other sees still counts and a rep both see counts once; when the two knees do not bend together over the set, the knee with more reps counts. Public build half's lunges against the knee with more reps, 3 October: 55 to 64 exact of 156 (chosen on one half, 16 to 22 of 78; checked on the other, 39 to 42 of 78, 3 gained, 0 lost), off by 3 or more 22 to 16, none newly off by 3 (core.ts, `together`; TRIED.md, 3 October, item 5). Status: experimental.",
+    "together": true
   },
   "lateral_lunge": {
     "joint": "knee",

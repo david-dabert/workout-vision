@@ -5,6 +5,7 @@ import { exerciseName } from './exercise-info';
 import { Body, mapPose, SPR, DPR, LITE } from './entry-scene';
 import { addLayer, setDust, stageReduced, presence } from './stage-loop';
 import './Watch.css';
+import { eventsActive } from '../../lib/events';
 
 const SEEN = 0.5;      // a joint counts for the body box when the model sees it at least this well
 const DRAWN = 0.3;     // below this a joint is not drawn at all
@@ -159,7 +160,11 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
         <div className={`watch-progress${loading ? ' is-loading' : ''}`} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label={fr ? 'Analyse' : 'Analysis'}><i ref={barRef} /></div>
         <p className="privacy">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-          <span>{fr ? 'Analysé sur votre téléphone. Rien n’est envoyé.' : 'Analysed on your phone. Nothing is sent.'}</span>
+          {/* With anonymous usage counts on (src/lib/events.js), "nothing is sent" would be untrue: the line speaks of the
+              video. Awaits David's approval (test/real-phone/swarm/copy-analytics.md). */}
+          <span>{eventsActive()
+            ? (fr ? 'Analysé sur votre téléphone. La vidéo n’est envoyée nulle part.' : 'Analysed on your phone. The video is sent nowhere.')
+            : (fr ? 'Analysé sur votre téléphone. Rien n’est envoyé.' : 'Analysed on your phone. Nothing is sent.')}</span>
         </p>
         <p className="privacy keep-on">{fr ? 'Gardez l’écran allumé jusqu’au résultat.' : 'Keep the screen on until the result.'}</p>
         <button className="text-btn press" type="button" onClick={onSkip}>{fr ? 'Annuler' : 'Cancel'}</button>

@@ -1,5 +1,18 @@
 import { test, expect } from '@playwright/test';
 
+// The deploy runs this spec on the very build it publishes, built with the real VITE_EVENTS_URL, online
+// (deploy.yml): every usage count those test visits would send is aborted here, so they never reach the production
+// counts (review finding N2). The page's own requests run as before, so the artifact tested is the one published.
+// The service worker leaves POSTs and other origins to the network (public/sw.js), and the context's routes see
+// both the page's and the worker's requests.
+const EVENTS = process.env.VITE_EVENTS_URL ? new URL(process.env.VITE_EVENTS_URL).origin : '';
+let blocked = 0;
+test.beforeEach(async ({ context }) => {
+  if (!EVENTS) return;
+  await context.route(url => url.origin === EVENTS, route => { blocked += 1; return route.abort('blockedbyclient'); });
+});
+test.afterAll(() => { if (EVENTS) console.log(`usage counts aborted, never sent to ${EVENTS}: ${blocked} request(s)`); });
+
 // A first visit plays the entry once, then shows the choice of lift.
 // A returning visit opens straight on the choice.
 async function reachChoice(page) {
@@ -71,4 +84,29 @@ test('app loads offline after service worker precache', async ({ page, context }
 
   // 6. The full app renders, not just the shell: the nine lifts on the choice screen
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 10_000 });
+});
+
+// Choosing a lift warms the files a first analysis needs, the decoder's WASM among them, so an analysis made offline
+// before any made online still decodes with WebCodecs, not the playback fallback (third audit, C15).
+test('choosing a lift keeps the decoder WASM for an analysis made offline', async ({ page }) => {
+  await page.goto('/workout-vision/');
+  await reachChoice(page);
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      await new Promise((resolve) => {
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
+        setTimeout(resolve, 5000);
+      });
+    }
+  });
+  await page.locator('.altar').first().click();
+  await expect.poll(() => page.evaluate(async () => {
+    for (const name of await caches.keys()) {
+      if (!name.startsWith('wv-wasm-')) continue;
+      const cache = await caches.open(name);
+      if (await cache.match(new URL('web-demuxer.wasm', location.origin + '/workout-vision/').href)) return true;
+    }
+    return false;
+  }), { timeout: 20_000 }).toBe(true);
 });
