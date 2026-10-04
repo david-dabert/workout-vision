@@ -484,7 +484,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     // The grid starts at the video's first frame, not at 0 s: a trimmed or edited file whose first frame comes later
     // otherwise gave every frame until the grid caught up, and the samples ran out before the video's end
     // (second audit, 3 October). Set at the first frame sampled when sampling starts at the beginning.
-    let origin = startFrame === 0 ? null : 0;
+    let origin = startFrame === 0 ? null : (options.origin ?? 0);
 
     // Frame queue: decoder output pushes, main loop pulls
     // Bounded: close frames that will never be sampled, cap queue at 2
@@ -600,7 +600,11 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
     while (extractedCount < frameCount) {
       if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-      if (decodeError) throw new Error(`Video decode failed: ${decodeError.message}`);
+      if (decodeError) {
+        const e = new Error(`Video decode failed: ${decodeError.message}`);
+        e.resume = { startFrame: extractedCount, origin };
+        throw e;
+      }
 
       // Wait for frames if queue is empty
       while (frameQueue.length === 0 && !decodeComplete && !decodeError && !signal?.aborted) {
@@ -689,6 +693,29 @@ function isHEVC(codec) {
 }
 
 /**
+ * A decoder that fails part-way (Safari's "Decoder failure", David's iPhone, 4 October: after 10 samples) is replaced
+ * by a fresh one that goes on from the sample where it stopped (the error's `resume`: next sample, grid origin), up to
+ * `max` times, before the caller turns to the playback path, which read only 56 % of that video. Samples already
+ * handed on are kept. A restart that makes no progress, a cancel, or an error of the caller's own analysis ends it.
+ * max: convention (no source for a number of retries).
+ */
+export async function withRestarts(run, options = {}, max = 3) {
+  let pass = { ...options }, restarts = 0;
+  for (;;) {
+    try {
+      return { result: await run(pass), restarts };
+    } catch (err) {
+      const at = err?.resume;
+      const stuck = restarts > 0 && at && at.startFrame <= (pass.startFrame ?? 0);
+      if (!at || err.name === 'AbortError' || err.fromOnFrame || restarts >= max || stuck) throw err;
+      restarts++;
+      console.warn(`[frameExtractor] WebCodecs failed at sample ${at.startFrame} (${err.message}); restart ${restarts}`);
+      pass = { ...options, startFrame: at.startFrame, origin: at.origin };
+    }
+  }
+}
+
+/**
  * Streaming frame extractor — inspect first, then use the right decoder.
  *
  * Approach: read the file's codec from container metadata, then route
@@ -746,9 +773,9 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     errors.push('WebCodecs: skipped, playback path forced');
   } else if (typeof VideoDecoder !== 'undefined') {
     try {
-      const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
+      const { result, restarts } = await withRestarts(pass => extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, pass), options);
       frozenCheck('webcodecs');
-      return { ...result, method: 'webcodecs', repeats: { ...repeats.read }, fallback: null };
+      return { ...result, method: restarts ? `webcodecs, restarted ${restarts}\u00D7` : 'webcodecs', repeats: { ...repeats.read }, fallback: null };
     } catch (err) {
       if (err.name === 'AbortError' || err.fromOnFrame) throw err;
       if (err.name === 'FrozenReadError') frozen = { samples: err.samples, repeats: err.repeats, decoder: err.decoder };
