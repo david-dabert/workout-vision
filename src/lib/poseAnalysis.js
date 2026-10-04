@@ -180,7 +180,10 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
 
   const vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_LOCAL);
 
-  const modelBuffer = await fetchModelBuffer();
+  // Test benches only (test/real-phone/synth): a page may hand over another pose model's bytes, to measure it against
+  // the one the app ships (David's order of 4 October: make the pose model excellent). The app never sets it.
+  const benchModel = globalThis.__WV_BENCH_POSE_MODEL__;
+  const modelBuffer = benchModel instanceof ArrayBuffer ? benchModel : await fetchModelBuffer();
 
   // Detect device capabilities to select optimal delegate order. A CPU-only landmarker (the app's
   // pose worker, the harness, synth) never reads the answer, so it skips the WebGPU/WebNN probe that
