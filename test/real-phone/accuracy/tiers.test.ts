@@ -8,11 +8,15 @@
 // David's sets are the labelled build sets npm run scoreboard counts (labelledSets(): test/real-phone/sets-*/ and
 // landmarks/), counted by the live core as the scoreboard does. The table is written to tiers.txt; it holds no run
 // date, so a run that changes nothing leaves the file unchanged. Nothing here moves a count or a parameter.
+// A lift with a set of David's but no entry in TIERS (none today)
+// is held to the same rule, with the tier the app gives it (offer.js tierOf: Experimental when offered), so its sets are
+// listed and a disagreement fails here too (WP0.2 of docs/SPEC-production.md).
 import { expect, test } from 'vitest';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { TIERS } from '../../../src/lib/liftTiers';
+import { tierOf } from '../../../src/lib/offer';
 import { decides, labelledSets } from './sets';
 
 // Dataset evidence for a lift with no set of David's (PLAN.md, Lift tiers). Kept for traceability: squat now has
@@ -25,7 +29,9 @@ test('every lift tier follows the evidence of David\'s labelled sets', () => {
   const { sets, unreadable } = labelledSets();
   expect(unreadable).toEqual([]);
   const rows: string[] = [], wrong: string[] = [];
-  for (const [lift, tier] of Object.entries(TIERS)) {
+  const outside = [...new Set(sets.map(s => s.lift))].filter(lift => !Object.hasOwn(TIERS, lift)).sort();
+  const lifts: [string, string][] = [...Object.entries(TIERS), ...outside.map(lift => [lift, tierOf(lift) ?? 'not offered'] as [string, string])];
+  for (const [lift, tier] of lifts) {
     const own = sets.filter(s => s.lift === lift).map(s => {
       const r = summarizeCount(s.wl, s.ts, s.lift);
       const count = r.refused ? 'refused' : r.count;
@@ -40,12 +46,13 @@ test('every lift tier follows the evidence of David\'s labelled sets', () => {
     else if (DATASET_EVIDENCE[lift]) { rule = 'beta'; why = `no set of David's; dataset: ${DATASET_EVIDENCE[lift]}`; }
     else { rule = 'experimental'; why = 'no evidence'; }
     if (rule !== tier) wrong.push(`${lift}: TIERS says ${tier}, the evidence gives ${rule}`);
-    rows.push(`${rule === tier ? '  ' : '!!'} ${lift.padEnd(18)} ${tier.padEnd(13)} rule ${rule.padEnd(13)} sets ${own.length}  exact ${exact}  refused ${refused}  ${why}`);
+    const from = Object.hasOwn(TIERS, lift) ? '' : '  (not in TIERS: the tier offer.js gives)';
+    rows.push(`${rule === tier ? '  ' : '!!'} ${lift.padEnd(18)} ${tier.padEnd(13)} rule ${rule.padEnd(13)} sets ${own.length}  exact ${exact}  refused ${refused}  ${why}${from}`);
     for (const s of own) rows.push(`      ${s.name}  label ${s.label}  count ${s.count}${s.exact ? '' : '  (not exact)'}`);
     if (DATASET_EVIDENCE[lift] && own.length) rows.push(`      dataset, for traceability: ${DATASET_EVIDENCE[lift]}`);
   }
   const head = 'Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: PLAN.md Lift tiers, 28 September; David, 3 October). '
-    + 'Columns: lift, TIERS (src/lib/liftTiers.js), what the rule gives, David\'s labelled sets, exact, refused. "!!" marks a disagreement.';
+    + 'Columns: lift, TIERS (src/lib/liftTiers.js; for a lift not in it, offer.js tierOf), what the rule gives, David\'s labelled sets, exact, refused. "!!" marks a disagreement.';
   const text = [head, ...rows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'tiers.txt'), text);
   expect(wrong, text).toEqual([]);

@@ -30,7 +30,7 @@ Routing is a URL hash (`src/lib/useHashRouter.js`).
 Choosing an exercise warms the pose model and WASM files into the service worker's caches (`src/lib/pose-files.js`).
 A person whose level is beginner (`level.js`, `wv_level`) is shown the exercise's guide page before Film until `GUIDED_SETS` (3) sets are saved; a fitness test goes straight to Film.
 
-The same build also serves three tool pages that are not linked from the app: `collect.html` and `collect-batch.html` (the set collectors: landmarks and the person's count, shared as a file) and `check.html` (David's five labelled clips counted by `analyzeCoreVideo` and compared with `src/lib/check-baseline.json`).
+The same build also serves three tool pages that are not linked from the app: `collect.html` and `collect-batch.html` (the set collectors: landmarks and the person's count, shared as a file) and `check.html` (David's six labelled clips counted by `analyzeCoreVideo` and compared with `src/lib/check-baseline.json`, one row per clip id with the repeat share, the decoder and its fallback; `check.html?inject=frozen` adds a row that feeds a frozen stream on the playback path and must be refused).
 
 ## 2. Live module graph
 
@@ -173,7 +173,7 @@ Two pairs of files exist in both JavaScript and TypeScript (`SignalExtractor3D`,
 | Command or file | Scope |
 |---|---|
 | `npm test` (Vitest) | `src/lib/counting/__tests__/` covers the live counting core (synthetic signals, real-phone landmarks, lift definitions and patterns, range, edges, side rules, fitness tests, symmetry). `src/components/experience/__tests__/` covers screen logic (replay, report, sets, export, progress, level). `src/lib/__tests__/` covers `coreAnalysis.js`, `offer.js`, the service worker, the collectors and, for the rest, dormant modules. `npm test` also runs the tests under `test/real-phone/`, `scripts/__tests__/` and `feedback-worker/`; the scoreboards and the research tools among them skip unless their environment variable is set. |
-| `npm run scoreboard` | The live count of the 14 labelled real-phone sets (`test/real-phone/landmarks/` and `test/real-phone/sets-29sep/`) against `scoreboard-baseline.json`; output in `test/real-phone/accuracy/scoreboard.txt`, dated on its first line. Its five bench and overhead press sets are shown and decide nothing (PLAN.md). |
+| `npm run scoreboard` | The live count of the 14 labelled real-phone sets (`test/real-phone/landmarks/` and every `test/real-phone/sets-*/` folder, today `sets-29sep/`; `test/real-phone/incidents/` scores nothing) against `scoreboard-baseline.json`; output in `test/real-phone/accuracy/scoreboard.txt`, dated on its first line. Its five bench and overhead press sets are shown and decide nothing (PLAN.md). |
 | `npm run scoreboard:public` | The 894 Countix build sets (`test/real-phone/public/`) against `public-baseline.json`; output in `public-scoreboard.txt`, dated on its first line. Its 76 bench press sets are shown and decide nothing (PLAN.md). |
 | `npm run synth` | The 96 synthetic sets (`test/real-phone/synth/sets/`) against `synth.txt`. |
 | `test/real-phone/accuracy/variant-eval.test.ts` + `scripts/compare-variants.mjs` | Set-by-set comparison of two versions of the counter on David's sets, the public build half (in halves A and B) and the synthetic sets; gates nothing. |

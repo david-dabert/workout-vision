@@ -29,7 +29,7 @@ export function repeatedSkeletons(worldLandmarks) {
 // that would blame the person's position (frozen-read incident, 3 October). It is shown as the screen for a video
 // that could not be read (CoreUpload.jsx, AnalysisError).
 export class FrozenSkeletonsError extends Error {
-  constructor({ samples, repeats }, decoder = '') { super(`${repeats} of ${samples} skeletons repeat the one before: the video was read frozen`); this.name = 'FrozenSkeletonsError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder; }
+  constructor({ samples, repeats }, decoder = '', fallback = null) { super(`${repeats} of ${samples} skeletons repeat the one before: the video was read frozen`); this.name = 'FrozenSkeletonsError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder; this.fallback = fallback; }
 }
 
 export function summarizeCount(worldLandmarks, timestamps, lift) {
@@ -74,10 +74,10 @@ export function unreadSamples({ samples, duration, fps, maxFrames }) {
 }
 
 export class PartialReadError extends Error {
-  constructor({ read, expected, decoder = '', disordered = false }) { super(`${read} samples read${disordered ? ' out of time order' : ''} where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; this.disordered = disordered; }
+  constructor({ read, expected, decoder = '', disordered = false, fallback = null }) { super(`${read} samples read${disordered ? ' out of time order' : ''} where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; this.disordered = disordered; this.fallback = fallback; }
 }
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
   let id = 0;
@@ -109,6 +109,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     await send({ type: 'init' });
     onPhase('extracting');
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
+    // `path` and `inject` come from the check page only (check-main.js): the app passes neither.
     const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp) => {
       signal?.throwIfAborted();
       // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
@@ -121,13 +122,13 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
       onLandmarks(result.image, canvas.width, canvas.height);
-    }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}) });
+    }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}), ...(inject ? { inject } : {}) });
     signal?.throwIfAborted();
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
     // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
     const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
-    if (missed || !ordered) throw new PartialReadError({ ...(missed ?? { read: timestamps.length, expected: timestamps.length }), disordered: !ordered, decoder: metadata?.method || '' });
+    if (missed || !ordered) throw new PartialReadError({ ...(missed ?? { read: timestamps.length, expected: timestamps.length }), disordered: !ordered, decoder: metadata?.method || '', fallback: metadata?.fallback ?? null });
     // Defence in depth behind the extractor's frozen-read check (frozenRead.js, isFrozenRead, the same rule and
     // threshold): skeletons that repeat are a picture that did not move, read as a still person and a confident 0 on
     // David's iPhone at the demo of 3 October. No count is given; the app shows a read error. The healthy read of that
@@ -137,7 +138,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // Checked here, on the app's own read, and not in summarizeCount: the counter's unit tests feed it noiseless
     // synthetic skeletons whose holds repeat exactly, as a filmed person never does.
     const still = repeatedSkeletons(worldLandmarks);
-    if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, metadata?.method || '');
+    if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, metadata?.method || '', metadata?.fallback ?? null);
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));

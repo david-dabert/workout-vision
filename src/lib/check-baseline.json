@@ -1,7 +1,8 @@
 {
-  "note": "The five sets of 29 September David chose for the check (biceps curl, hip thrust, leg press, Romanian deadlift, bench press), collected on his iPhone (test/real-phone/sets-29sep): his count, the video's SHA-256 (recorded, not matched: Photos hands the page another file), the samples and length of the collected read, and what the live core gives on their landmarks: the count and whether the app refuses the set (summarizeCount). check-baseline.test.ts keeps them equal to the core's.",
+  "note": "The sets David chose for the check, each collected on his iPhone and committed under test/real-phone/sets-*/: the five of 29 September (biceps curl, hip thrust, leg press, Romanian deadlift, bench press) and his lateral raise of 29 September, the same video as the 3 October demo incident (same 460 samples, same 30.713333 s; the incident read is kept apart in test/real-phone/incidents/2026-10-03-demo/ and scores nothing; WP0.2 of docs/SPEC-production.md, David's choice A, 4 October). Each row: its id (the landmarks file without extension), his count, the video's SHA-256 (recorded, not matched: Photos hands the page another file), the samples and length of the collected read, and what the live core gives on its landmarks: the count and whether the app refuses the set (summarizeCount). check-baseline.test.ts keeps them equal to the core's. The page keys rows by id, never by lift.",
   "clips": [
     {
+      "id": "bicep_curl_5_side_f5e5bdf2",
       "lift": "bicep_curl",
       "label": 5,
       "view": "side",
@@ -13,6 +14,7 @@
       "duration": 11.206667
     },
     {
+      "id": "hip_thrust_6_side_cf8c21d7",
       "lift": "hip_thrust",
       "label": 6,
       "view": "side",
@@ -24,6 +26,7 @@
       "duration": 14.774999999999999
     },
     {
+      "id": "leg_press_13_side_1ee0ae47",
       "lift": "leg_press",
       "label": 13,
       "view": "side",
@@ -35,6 +38,7 @@
       "duration": 29.711667
     },
     {
+      "id": "romanian_deadlift_8_side_b3dc2c9e",
       "lift": "romanian_deadlift",
       "label": 8,
       "view": "side",
@@ -46,6 +50,7 @@
       "duration": 25.331667
     },
     {
+      "id": "bench_press_7_side_24cc4f0b",
       "lift": "bench_press",
       "label": 7,
       "view": "side",
@@ -55,6 +60,18 @@
       "refused": false,
       "samples": 330,
       "duration": 22.061667
+    },
+    {
+      "id": "lateral_raise_9_front_43e71b40",
+      "lift": "lateral_raise",
+      "label": 9,
+      "view": "front",
+      "file": "lateral_raise_9_front_43e71b40.json.gz",
+      "sha256": "43e71b409d2636289648db5946840a4f00d4f5f272cc78d369ab998afb6a8baf",
+      "before": 8,
+      "refused": false,
+      "samples": 460,
+      "duration": 30.713333
     }
   ]
 }

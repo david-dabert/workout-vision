@@ -1,4 +1,4 @@
-Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: PLAN.md Lift tiers, 28 September; David, 3 October). Columns: lift, TIERS (src/lib/liftTiers.js), what the rule gives, David's labelled sets, exact, refused. "!!" marks a disagreement.
+Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: PLAN.md Lift tiers, 28 September; David, 3 October). Columns: lift, TIERS (src/lib/liftTiers.js; for a lift not in it, offer.js tierOf), what the rule gives, David's labelled sets, exact, refused. "!!" marks a disagreement.
    lateral_raise      experimental  rule experimental  sets 2  exact 1  refused 0  1 of David's sets not exact
       sets-29sep/lateral_raise_9_front_43e71b40.json.gz  label 9  count 8  (not exact)
       landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  count 10

@@ -3,7 +3,7 @@
 // every labelled set on disk, set by set, against its label and against the counts last accepted
 // (scoreboard-baseline.json). It fails if fewer sets are exact than before, or if any set is off by 3 or
 // more, or if a set that gave a count becomes refused. Bench press and overhead press sets are measured, shown and
-// kept in the baseline, and decide nothing (PLAN.md; decides() in sets.ts). Build sets only (David's sets of 29 September and the five build clips): no exam set exists yet,
+// kept in the baseline, and decide nothing (PLAN.md; decides() in sets.ts). Build sets only (David's sets in every test/real-phone/sets-*/ folder and the five build clips): no exam set exists yet,
 // and nothing here may tune a parameter. Runs only when asked, so a plain npm test changes no file.
 import { expect, test } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';

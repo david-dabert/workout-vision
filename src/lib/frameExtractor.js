@@ -708,7 +708,8 @@ function isHEVC(codec) {
  * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
  * @param {number} [options.startFrame] - Frame index to start from (for resume)
  * @param {boolean} [options.deterministic] - Hint for logging; does not change decoder selection
- * @returns {Promise<{width, height, fps, duration, frameCount, method: string, peakOpenFrames?: number}>}
+ * @param {'frozen'} [options.inject] - The check page's test hook only: a synthetic frozen stream on the playback path
+ * @returns {Promise<{width, height, fps, duration, frameCount, method: string, peakOpenFrames?: number, repeats: {samples: number, repeats: number}, fallback: string | null}>}
  */
 export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const errors = [];
@@ -735,6 +736,9 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     }
   };
   let before = '';
+  // Why the playback path ran, when it did (the check page shows it per row, WP0.2): the first entry of `errors`.
+  // The last frozen read seen, if any, is carried on the final error, so a page can tell a frozen refusal apart.
+  let frozen = null;
 
   // Step 1: Try WebCodecs (sequential, deterministic, handles rotation). The check page can skip it
   // (options.path === 'rvfc') to test the playback path on a phone where WebCodecs works.
@@ -744,9 +748,10 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
     try {
       const result = await extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
       frozenCheck('webcodecs');
-      return { ...result, method: 'webcodecs' };
+      return { ...result, method: 'webcodecs', repeats: { ...repeats.read }, fallback: null };
     } catch (err) {
       if (err.name === 'AbortError' || err.fromOnFrame) throw err;
+      if (err.name === 'FrozenReadError') frozen = { samples: err.samples, repeats: err.repeats, decoder: err.decoder };
       console.error('[frameExtractor] WebCodecs failed:', err?.message || String(err));
       errors.push(`WebCodecs: ${err?.message || String(err)}`);
       before = `webcodecs failed after ${handed} samples (${err?.message || String(err)}), then `;
@@ -759,11 +764,16 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
     repeats = repeatCounter();
     try {
-      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, counted, onProgress, options);
+      // The check page's test hook only (check.html?inject=frozen, WP0.2 of docs/SPEC-production.md): every sample
+      // of the playback path after the first is handed on as the first, as a decoder stuck on one picture would, so
+      // the frozen-read guard is seen firing on the phone. The app itself never passes `inject`.
+      const onFrame = options.inject === 'frozen' ? frozenStream(counted) : counted;
+      const result = await extractFramesRVFC(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options);
       frozenCheck('rvfc');
-      return { ...result, method: `${before}rvfc` };
+      return { ...result, method: `${before}rvfc`, repeats: { ...repeats.read }, fallback: errors[0] ?? null };
     } catch (err) {
       if (err.name === 'AbortError' || err.fromOnFrame) throw err;
+      if (err.name === 'FrozenReadError') frozen = { samples: err.samples, repeats: err.repeats, decoder: err.decoder };
       console.error('[frameExtractor] RVFC failed:', err?.message || String(err));
       errors.push(`RVFC: ${err?.message || String(err)}`);
     }
@@ -772,8 +782,25 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   }
 
   // No fallback to seek. Fail with reasons.
-  throw new Error(
+  const failure = new Error(
     `Video extraction failed. No decoder could process this file.\n` +
     errors.map(e => `  - ${e}`).join('\n')
   );
+  if (frozen) failure.frozen = frozen;
+  throw failure;
+}
+
+/**
+ * A synthetic frozen stream (check page test hook only): the first sample is kept, and every later one is handed on
+ * as that same picture. A new pass (sample 0 again) keeps its own first sample.
+ */
+export function frozenStream(onFrame, makeCanvas = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h })) {
+  let held = null;
+  return (canvas, index, timestamp) => {
+    if (!held || index === 0) {
+      held = makeCanvas(canvas.width, canvas.height);
+      held.getContext('2d').drawImage(canvas, 0, 0);
+    }
+    return onFrame(held, index, timestamp);
+  };
 }
