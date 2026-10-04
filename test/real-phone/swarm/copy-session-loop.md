@@ -14,3 +14,7 @@ Register: vous, as the rest of the app.
 | manual.tag | Saisi à la main | Typed by hand | History, the set's tag |
 | manual.line | Saisi à la main : l’app n’a pas pu compter cette série. | Typed by hand: the app could not count this set. | History detail and session report |
 | recents.word | Reprendre | Recent | Choice, before the recent lifts (4 October, design pass) |
+| error.frozen.title | Le téléphone a mal lu cette vidéo. | The phone did not read this video properly. | Analysis error, frozen read (4 October) |
+| error.frozen.body | Les images sont restées figées pendant la lecture, donc aucun compte n’est affiché. Relancez l’analyse en gardant l’écran allumé. | The pictures stayed frozen while the video was read, so no count is shown. Start the analysis again and keep the screen on. | Same |
+| error.other.body | Relancez l’analyse, ou filmez à nouveau avec l’appareil photo. | Start the analysis again, or record again with the camera. | Analysis error, other failures |
+| error.restart | Relancer l’analyse | Start the analysis again | Analysis error, first button |
