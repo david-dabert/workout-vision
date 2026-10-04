@@ -6,7 +6,17 @@ import { compactWave, waveAngles } from './wave';
  * (Result.jsx, unsure) is saved with the person's count, its machineResult 0 and its correctedResult theirs,
  * so the history, the report, the spreadsheet and the contributions say the app counted none (R8).
  */
-export function savedSet({ result, lift, n, corrected, sides = null, now = new Date() }) {
+// manual: a set the app refused, whose count the person typed (WP1.6 of docs/SPEC-production.md). It is saved as theirs
+// alone: no count of the app, no rep details, no measure, no wave; the history, the report and the spreadsheet say
+// "saisi à la main".
+export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date() }) {
+  if (manual) {
+    return {
+      exercise: lift, reps: n, repDetails: [], arm: result.arm ?? null, confidence: null,
+      date: now.toISOString(), source: 'manual', duration: result.metadata?.duration, corrected: true,
+      sides: null, machineResult: null, correctedResult: { reps: n }, repDetailsVersion: 2, wave: null,
+    };
+  }
   const count = result.count;
   return {
     exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,

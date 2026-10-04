@@ -191,7 +191,7 @@ function AppInner() {
     screen = <LiveSession lift={selectedLift} onClose={backToChoice} onRecord={backToFilm} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
-    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
+    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
   } else if (page === 'exercises') {
     key = guideLift ? `guide:${guideLift}` : 'guide';
     screen = <ExerciseGuide lift={guideLift} onClose={() => go('dashboard', () => setGuideLift(''))} onChoose={l => chooseLift(l, true)} />;

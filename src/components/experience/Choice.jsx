@@ -3,7 +3,8 @@ import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { useT } from '../../lib/LanguageContext';
 import { META, createLiftScene } from './lift-scenes';
 import { CARD_ORDER } from './lift-meta';
-import { useSets } from './sets';
+import { useSets, recentLifts } from './sets';
+import { isOffered } from '../../lib/offer';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel } from '../../lib/liftTiers';
 import { setName } from './set-name';
@@ -101,6 +102,9 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
   // in the history (History.jsx), so a set of an earlier version is named by its locale name (third audit C25).
   const lastRaw = last && setName({ key: lastKey, lang, meta: META, nameOf, tExercise });
   const lastName = lastRaw && lastRaw.toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
+  // The last lifts filmed, one tap each to their filming screen (WP1.5 of docs/SPEC-production.md): a lift the app no
+  // longer offers is left out. Named as the history names them; a lift whose name is not loaded yet waits for it.
+  const recents = sets?.length ? recentLifts(sets, 3).filter(isOffered).map(key => ({ key, name: setName({ key, lang, meta: META, nameOf, tExercise }) })).filter(r => r.name) : [];
   return <div className="wv-experience">
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
       <div className="choose-hero">
@@ -111,6 +115,10 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           {lastName && <p className="welcome-l2">{fr
             ? `Dernière série\u00A0: ${lastName}, ${last.reps} ${last.reps > 1 ? 'répétitions' : 'répétition'}.`
             : `Last set: ${lastName}, ${last.reps} ${last.reps === 1 ? 'rep' : 'reps'}.`}</p>}
+        </div>}
+        {/* Shown from the first saved set, welcome or not: a person back from "Changer d'exercice" finds them too. */}
+        {recents.length > 0 && <div className="recents" role="group" aria-label={fr ? 'Exercices récents' : 'Recent exercises'} data-testid="recents">
+          {recents.map(r => <button key={r.key} type="button" className="recent press" onClick={() => { navigator.vibrate?.(10); onChoose(r.key); }}>{r.name}</button>)}
         </div>}
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>

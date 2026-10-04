@@ -180,7 +180,10 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     count: String(count),
     word: fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps'),
     lift: liftName,
-    corrected: counted != null && counted !== count
+    // A set the app refused and the person typed (WP1.6): said so where a correction would be.
+    corrected: source === 'manual'
+      ? (fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
+      : counted != null && counted !== count
       ? (fr ? `Compté par l’app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
       : '',
     arm: arm === 'left' || arm === 'right'
