@@ -5,7 +5,9 @@
 /* The column fills the screen, so the picture takes all the height the controls leave. */
 .wv-experience .replay-screen .wrap { height: 100%; min-height: 0; }
 
-.wv-experience .rp-stage { flex: 1 1 0; min-height: 180px; margin-top: 10px; container-type: size; display: grid; place-items: center; }
+/* The picture is the screen's subject: never under 46 % of the screen's height, even on a 4.7-inch iPhone in Safari,
+   where the controls left it 180 px (David's screenshots, 4 October); the share action and the note scroll under it. */
+.wv-experience .rp-stage { flex: 1 1 0; min-height: max(180px, 46svh); margin-top: 10px; container-type: size; display: grid; place-items: center; }
 /* The frame has the video's own shape, as large as the stage allows. */
 .wv-experience .rp-frame {
   position: relative; overflow: hidden; border-radius: var(--r-l); background: #000;

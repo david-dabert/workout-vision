@@ -41,20 +41,33 @@ export const canExport = () => typeof MediaRecorder !== 'undefined'
  * advancing for five seconds ('stalled'), cannot play, or the recorder fails; the recorder and its
  * capture are stopped on every path (review 01 of step 4). Call it inside the tap: the video starts
  * playing there, since Safari on iPhone may load nothing, and may refuse to play, outside a tap.
+ *
+ * screen: the video element on screen (the replay's), played from the start for the recording. Safari on iPhone
+ * stops drawing a video too small or transparent to be seen: a hidden one gave a 4-second file of a 30-second
+ * set (David's iPhone, 4 October). A visible one is drawn to its end, and the person watches the set as it is made.
+ * The recording is refused ('incomplete') when its frames stop short of the video's end, never handed over cut.
  */
-export function exportSetVideo({ file, result, lift, fr = false, saved = null, onProgress, signal }) {
+export function exportSetVideo({ file, result, lift, fr = false, saved = null, onProgress, signal, screen = null }) {
   return new Promise((resolve, reject) => {
     const mime = pickMime(m => MediaRecorder.isTypeSupported(m));
     if (!mime) { reject(new Error('no-format')); return; }
     const def = liftDefinition(lift), sides = litSides(def, result.arm);
     const times = result.timestamps || [], frames = steadyFrames(result.imageLandmarks || [], times);
     const reps = (!result.refused && result.reps) || [];
-    const url = URL.createObjectURL(file);
-    // Safari decodes a video only while it is in the page; this one is there, out of sight.
-    const video = Object.assign(document.createElement('video'), { src: url, muted: true, playsInline: true, preload: 'auto' });
-    video.setAttribute('playsinline', '');
-    Object.assign(video.style, { position: 'fixed', left: '0', top: '0', width: '2px', height: '2px', opacity: '0', pointerEvents: 'none' });
-    document.body.appendChild(video);
+    // Without a video on screen (a test page), one is made and laid over the page at full size, under everything.
+    const own = !screen;
+    const url = own ? URL.createObjectURL(file) : null;
+    const video = screen || Object.assign(document.createElement('video'), { src: url, muted: true, playsInline: true, preload: 'auto' });
+    if (own) {
+      video.setAttribute('playsinline', '');
+      Object.assign(video.style, { position: 'fixed', inset: '0', width: '100%', height: '100%', zIndex: '-1', pointerEvents: 'none' });
+      document.body.appendChild(video);
+    } else {
+      video.muted = true; video.playbackRate = 1; video.pause(); video.currentTime = 0;
+    }
+    const listen = new AbortController(), on = { signal: listen.signal };
+    // The latest frame drawn, in the video's time, and how many: a recording that stops short is refused.
+    let drawnT = 0, drawn = 0;
     const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
     let recorder = null, stream = null, vfc = 0, raf = 0, watch = 0, done = false, lastT = -1, lastMove = Date.now();
     const chunks = [];
@@ -67,7 +80,9 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
       if (recorder && recorder.state === 'recording') { recorder.onstop = null; recorder.ondataavailable = null; try { recorder.stop(); } catch { /* already stopping */ } }
       stream?.getTracks().forEach(t => t.stop());
       chunks.length = err ? 0 : chunks.length;
-      video.pause(); video.remove(); URL.revokeObjectURL(url);
+      listen.abort();
+      video.pause();
+      if (own) { video.remove(); URL.revokeObjectURL(url); }
       if (err) reject(err); else resolve(out);
     };
     signal?.addEventListener('abort', () => finish(new DOMException('aborted', 'AbortError')));
@@ -75,6 +90,7 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
     const draw = t => {
       const W = canvas.width, H = canvas.height, u = W / 390;
       ctx.drawImage(video, 0, 0, W, H);
+      drawn += 1; drawnT = Math.max(drawnT, t);
       const lm = poseAt(frames, times, t);
       if (lm) drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k])));
       if (reps.length) {
@@ -103,13 +119,17 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
     const onFrame = (_, m) => { if (done) return; draw(m?.mediaTime ?? video.currentTime); vfc = video.requestVideoFrameCallback(onFrame); };
     const loop = () => { if (done) return; draw(video.currentTime); raf = requestAnimationFrame(loop); };
 
-    video.addEventListener('error', () => finish(new Error('unreadable')), { once: true });
+    video.addEventListener('error', () => finish(new Error('unreadable')), { once: true, ...on });
     // At the end the browser pauses, then ends: a pause before the end is an interruption.
-    video.addEventListener('pause', () => { if (!video.ended) finish(new Error('interrupted')); });
+    video.addEventListener('pause', () => { if (!video.ended) finish(new Error('interrupted')); }, on);
     video.addEventListener('ended', () => {
-      draw(video.duration || video.currentTime); onProgress?.(1);
+      const end = video.duration || video.currentTime;
+      // Frames for the whole set, or none: drawn up to its last second, and at least five a second on average.
+      // Status: convention (no published bar for a shared clip); a cut file is the failure being prevented.
+      if (!(end > 0) || drawnT < end - 1 || drawn < 5 * end) { finish(new Error('incomplete')); return; }
+      draw(end); onProgress?.(1);
       setTimeout(() => { if (!done && recorder?.state === 'recording') recorder.stop(); }, 120);
-    }, { once: true });
+    }, { once: true, ...on });
     video.addEventListener('playing', () => {
       if (done || recorder) return;
       try {

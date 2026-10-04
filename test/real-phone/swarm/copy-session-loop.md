@@ -13,4 +13,4 @@ Register: vous, as the rest of the app.
 | manual.saved | Merci. 8 répétitions enregistrées, saisies à la main. (1: Merci. 1 répétition enregistrée, saisie à la main.) | Thank you. 8 reps saved, typed by hand. | Refused screen, once saved |
 | manual.tag | Saisi à la main | Typed by hand | History, the set's tag |
 | manual.line | Saisi à la main : l’app n’a pas pu compter cette série. | Typed by hand: the app could not count this set. | History detail and session report |
-| recents.word | Reprendre | Again | Choice, before the recent lifts (4 October, design pass) |
+| recents.word | Reprendre | Recent | Choice, before the recent lifts (4 October, design pass) |

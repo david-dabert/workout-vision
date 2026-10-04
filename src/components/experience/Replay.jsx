@@ -57,7 +57,9 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     videoRef.current?.pause();
     abort.current = new AbortController();
     setMade({ state: 'making', progress: 0, file: null, link: null });
-    exportSetVideo({ file, result, lift, fr, saved, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
+    // Made from the video on screen, played from its start: the person watches the set as it is prepared.
+    setSlow(false);
+    exportSetVideo({ file, result, lift, fr, saved, screen: videoRef.current, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
       .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out) }))
       .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null }); });
   }
@@ -169,7 +171,8 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   }
   function toggle() {
     const video = videoRef.current;
-    if (!video) return;
+    // While the video is being prepared it plays for the recording: a tap would stop it.
+    if (!video || made.state === 'making') return;
     if (video.paused || video.ended) play(); else video.pause();
   }
   // A rep is reached a frame inside its start: a seek to the start itself may land on the frame before it,
@@ -288,13 +291,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       <p className="rp-detail" aria-live={playing ? 'off' : 'polite'}>{head && <span className="sr">{head}</span>}{detail}</p>
       {MEASURES_SHOWN && reps.length > 0 && <p className="rp-prov" data-testid="rp-exp">{experimentalLabel(fr)}</p>}
       <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
-        <button className="btn-primary press rp-play" onClick={toggle} disabled={broken}>
+        <button className="btn-primary press rp-play" onClick={toggle} disabled={broken || made.state === 'making'}>
           {playing
             ? <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
             : <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z" /></svg>}
           <span>{playing ? 'Pause' : (fr ? 'Lire' : 'Play')}</span>
         </button>
-        <button className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`} aria-pressed={slow} disabled={broken} onClick={() => setSlow(s => !s)}>{fr ? 'Ralenti' : 'Slow motion'}</button>
+        <button className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`} aria-pressed={slow} disabled={broken || made.state === 'making'} onClick={() => setSlow(s => !s)}>{fr ? 'Ralenti' : 'Slow motion'}</button>
       </div>
       {exportable && <div className="rp-export">
         {(made.state === 'idle' || made.state === 'failed') && <button className="btn-line press" onClick={prepare}>{fr ? 'Préparer la vidéo à partager' : 'Prepare the video to share'}</button>}
@@ -303,7 +306,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           ? <button className="btn-line press" onClick={share}>{fr ? 'Partager la vidéo' : 'Share the video'}</button>
           : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? 'Enregistrer la vidéo' : 'Save the video'}</a>)}
         {made.state === 'ready' && shareBroke && <p className="rp-export-note" role="status">{fr ? 'Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers.' : 'The share did not go through. Save the video, then share it from your files.'}</p>}
-        {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled'
+        {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled' || made.why === 'incomplete'
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’app ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
       </div>}
