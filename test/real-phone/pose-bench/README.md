@@ -45,3 +45,18 @@ Against the judge's valid reps only, full counts 11 / 43 exactly: the app counts
 The pose model is not the bottleneck for counting: heavy and lite count no better than the shipped full model, and
 heavy takes 2.6 times as long. The app keeps `pose_landmarker_full`. The levers left are the counting rules at the
 edges of a set (D15) and data from the exercises still without labelled sets.
+
+## Left/right gap, curls and presses filmed square on (synthetic truth, 4 October 2026)
+
+The heavy model was also run on the 12 synthetic curls and presses filmed square on (test/real-phone/synth: two
+rigged bodies, true gaps -23 % to +18 %), to see whether it reads depth better than the full model, the reason the
+app compares sides on the lateral raise only (symmetry.ts). Each side's range over the counted reps, against the
+built-in truth:
+
+| Model | Mean absolute gap error | Largest error |
+|---|---|---|
+| full (shipped) | 17.2 points | 44 |
+| heavy | 34.5 points | 73 |
+
+The bar the lateral raise meets is 10 points. Heavy reads the gap worse: the camera's depth, not the model, limits
+the comparison of curls and presses filmed from the front. symmetry.ts keeps them out.
