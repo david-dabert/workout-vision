@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
 import { poseAt, repAt, phaseAt } from './replay-track';
-import { drawSkeleton, litSides } from './replay-draw';
+import { drawSkeleton, litSides, trailPoints } from './replay-draw';
+import { steadyFrames, trailAt } from './replay-smooth';
 import { canExport, exportSetVideo, shareFailed } from './video-export';
 import './Replay.css';
 import { track } from '../../lib/events';
@@ -29,7 +30,9 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const [broken, setBroken] = useState(false);
 
   // A refused set shows no reps here either: the result said it could not count them.
-  const frames = result.imageLandmarks || [], times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
+  const times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
+  // The skeleton drawn is the model's, steadied for the eye once per set (replay-smooth.js); the count never reads it.
+  const frames = useMemo(() => steadyFrames(result.imageLandmarks || [], times), [result]); // eslint-disable-line react-hooks/exhaustive-deps
   const def = liftDefinition(lift);
   const sides = litSides(def, result.arm);
   const meta = result.metadata || {};
@@ -104,7 +107,8 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       // The picture sits in its box as object-fit: contain places it.
       const vw = video.videoWidth || fw, vh = video.videoHeight || fh;
       const s = Math.min(cw / vw, ch / vh);
-      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def);
+      const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
+      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails);
     };
     // The screen's words follow the video about ten times a second, and at once when it stops.
     const tell = (t, force) => {
