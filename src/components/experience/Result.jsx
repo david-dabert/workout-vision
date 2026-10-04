@@ -21,6 +21,7 @@ import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
+import { momentLine } from './moment';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
@@ -351,6 +352,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // screen states no rank and no comparison rather than a false one (review 01 of step 3).
   const [before, setBefore] = useState(() => { const k = knownSets(); return k ? mine(k) : null; });
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Once saved: the one earned line, a record, a record equalled or a coach's word (moment.js), above the thanks.
+  const moment = step === 'saved' ? momentLine({ n: trueN, before, nth: before ? before.length + 1 : 1, fr }) : null;
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
@@ -692,6 +695,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
           {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app\u00A0: ${count}. Corrigé\u00A0: ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
+          {moment && <p className={`moment is-${moment.kind}`} data-testid="moment" role="status">{moment.text}</p>}
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
