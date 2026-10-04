@@ -1,0 +1,394 @@
+{
+ "w19-situps-31640-32443": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w19-situps-33443-34240": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w19-situps-34859-35658": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w19-squats-3869-4343": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-squats-2469-2955": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-squats-1014-1510": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-pushups-5420-6088": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-pushups-11910-12654": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-pushups-7845-8730": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-dumbbell_shoulder_press-14571-15366": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-dumbbell_shoulder_press-16246-16988": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-dumbbell_shoulder_press-17778-18635": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-lunges-21726-22551": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-lunges-19930-20954": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-lunges-23396-24170": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-dumbbell_rows-25843-26283": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-dumbbell_rows-26980-27460": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-dumbbell_rows-29220-29671": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-tricep_extensions-37836-38433": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-tricep_extensions-42365-42950": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-tricep_extensions-40513-41132": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-bicep_curls-43830-44509": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-bicep_curls-45120-45761": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-bicep_curls-48102-48685": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-bicep_curls-49214-49838": {
+  "split": "build",
+  "status": "written"
+ },
+ "w19-lateral_shoulder_raises-52134-52560": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-situps-45035-45777": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w16-situps-46903-47600": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w16-situps-49726-50157": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w16-situps-51339-52029": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w16-jumping_jacks-76070-76109": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w16-jumping_jacks-76490-76838": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w16-jumping_jacks-78177-78527": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w16-jumping_jacks-80046-80400": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w16-squats-7413-7950": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-squats-5819-6385": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-squats-3772-4438": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-pushups-9557-9951": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-pushups-13696-14306": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-pushups-11735-12465": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-pushups-15543-16189": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-dumbbell_shoulder_press-19977-20722": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-dumbbell_shoulder_press-17903-18709": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-dumbbell_shoulder_press-22128-22869": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-lunges-28479-29321": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-lunges-26293-27211": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-lunges-31545-32488": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-dumbbell_rows-34400-35003": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-dumbbell_rows-36338-36920": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-dumbbell_rows-38449-38977": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-tricep_extensions-56206-56978": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-tricep_extensions-54362-55185": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-tricep_extensions-58296-59000": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-bicep_curls-60804-61420": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-bicep_curls-63421-64136": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-bicep_curls-66033-66793": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-lateral_shoulder_raises-70267-71193": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-lateral_shoulder_raises-67542-68645": {
+  "split": "build",
+  "status": "written"
+ },
+ "w16-lateral_shoulder_raises-73521-74600": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-situps-45744-46577": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w20-situps-49814-50592": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w20-situps-53021-53785": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w20-jumping_jacks-89297-89630": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w20-jumping_jacks-91978-92341": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w20-jumping_jacks-94498-94869": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w20-squats-2178-2976": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-squats-4027-4819": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-squats-6599-7448": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-pushups-10093-10621": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-pushups-12592-13225": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-pushups-15603-16331": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-lunges-22940-23846": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-lunges-20425-21429": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-lunges-26392-27375": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-dumbbell_rows-31643-32235": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-dumbbell_rows-33867-34568": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-dumbbell_rows-36462-37081": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-tricep_extensions-56904-57640": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-tricep_extensions-62285-62960": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-tricep_extensions-60225-60934": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-bicep_curls-67093-67873": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-bicep_curls-69715-70503": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-bicep_curls-72723-73508": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-lateral_shoulder_raises-77008-77909": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-lateral_shoulder_raises-80244-81138": {
+  "split": "build",
+  "status": "written"
+ },
+ "w20-lateral_shoulder_raises-84763-85691": {
+  "split": "build",
+  "status": "written"
+ },
+ "w18-situps-63671-64648": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w18-situps-68617-69604": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w18-situps-74858-75834": {
+  "status": "left out",
+  "reason": "situps is not a lift the app counts"
+ },
+ "w18-jumping_jacks-117011-117334": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w18-jumping_jacks-118625-118948": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w18-jumping_jacks-121292-121612": {
+  "status": "left out",
+  "reason": "jumping_jacks is not a lift the app counts"
+ },
+ "w18-squats-1785-2500": {
+  "split": "build",
+  "status": "written"
+ },
+ "w18-squats-7663-8406": {
+  "split": "build",
+  "status": "written"
+ },
+ "w18-squats-3566-4325": {
+  "split": "build",
+  "status": "written"
+ },
+ "w18-pushups-9629-10111": {
+  "split": "build",
+  "status": "written"
+ },
+ "w18-pushups-13444-13974": {
+  "split": "build",
+  "status": "written"
+ },
+ "w18-pushups-17455-18010": {
+  "split": "build",
+  "status": "written"
+ }
+}

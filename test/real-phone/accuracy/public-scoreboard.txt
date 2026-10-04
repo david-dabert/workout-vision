@@ -1,4 +1,4 @@
-Public scoreboard 2026-10-04: 906 build sets, 363 exact (40%). Of the 830 in the baseline that decide, 340 exact now, 340 before; 0 became off by 3 or more. The 76 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Public scoreboard 2026-10-04: 945 build sets, 384 exact (41%). Of the 863 in the baseline that decide, 355 exact now, 355 before; 0 became off by 3 or more. The 82 bench and overhead press sets are measured and decide nothing (PLAN.md).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
@@ -18,9 +18,14 @@ Public scoreboard 2026-10-04: 906 build sets, 363 exact (40%). Of the 830 in the
 | countix-whole push_up | 77 | 32 | 17 | 9 | 9 |
 | countix-whole squat | 46 | 20 | 9 | 2 | 11 |
 | countix-whole triceps_pushdown | 73 | 24 | 29 | 2 | 8 |
+| mmfit bicep_curl_alternating | 10 | 4 | 6 | 0 | 0 |
+| mmfit dumbbell_row | 6 | 0 | 6 | 0 | 0 |
+| mmfit lateral_raise | 7 | 1 | 3 | 0 | 0 |
+| mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 6 | 6 | 0 | 0 | 0 |
+| mmfit squat | 10 | 10 | 0 | 0 | 0 |
 
 
-Not scored (5032), each with its reason:
+Not scored (5091), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts
 public/countix/AaTvErday_s_000121_900: left out: battle rope training is not a lift the app counts
 public/countix/AnEm66_ZHvQ_000020_1001: left out: battle rope training is not a lift the app counts
@@ -5053,3 +5058,62 @@ public/countix-whole/nKr-2IIH-f4_000004_0: failed: the video holds 51 frames; it
 public/countix-whole/u2hqoZGgWow_000001_0: failed: the video holds 79 frames; its label ends at frame 270
 public/countix-whole/6vSxpNUlSYU_000000_0: failed: the video holds 111 frames; its label ends at frame 200
 public/countix-whole/9vJvCg9q2Lo_000010_0: failed: the video holds 162 frames; its label ends at frame 257
+public/mmfit/w19-situps-31640-32443: left out: situps is not a lift the app counts
+public/mmfit/w19-situps-33443-34240: left out: situps is not a lift the app counts
+public/mmfit/w19-situps-34859-35658: left out: situps is not a lift the app counts
+public/mmfit/w16-situps-45035-45777: left out: situps is not a lift the app counts
+public/mmfit/w16-situps-46903-47600: left out: situps is not a lift the app counts
+public/mmfit/w16-situps-49726-50157: left out: situps is not a lift the app counts
+public/mmfit/w16-situps-51339-52029: left out: situps is not a lift the app counts
+public/mmfit/w16-jumping_jacks-76070-76109: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w16-jumping_jacks-76490-76838: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w16-jumping_jacks-78177-78527: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w16-jumping_jacks-80046-80400: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w20-situps-45744-46577: left out: situps is not a lift the app counts
+public/mmfit/w20-situps-49814-50592: left out: situps is not a lift the app counts
+public/mmfit/w20-situps-53021-53785: left out: situps is not a lift the app counts
+public/mmfit/w20-jumping_jacks-89297-89630: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w20-jumping_jacks-91978-92341: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w20-jumping_jacks-94498-94869: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w18-situps-63671-64648: left out: situps is not a lift the app counts
+public/mmfit/w18-situps-68617-69604: left out: situps is not a lift the app counts
+public/mmfit/w18-situps-74858-75834: left out: situps is not a lift the app counts
+public/mmfit/w18-jumping_jacks-117011-117334: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w18-jumping_jacks-118625-118948: left out: jumping_jacks is not a lift the app counts
+public/mmfit/w18-jumping_jacks-121292-121612: left out: jumping_jacks is not a lift the app counts
+public/mmfit/build/w16-lunges-26293-27211.json.gz: not admitted: wrists and ankles seen together in 1% of samples
+public/mmfit/build/w16-lunges-28479-29321.json.gz: not admitted: wrists and ankles seen together in 0% of samples
+public/mmfit/build/w16-lunges-31545-32488.json.gz: not admitted: wrists and ankles seen together in 2% of samples
+public/mmfit/build/w16-pushups-11735-12465.json.gz: not admitted: wrists and ankles seen together in 2% of samples
+public/mmfit/build/w16-pushups-13696-14306.json.gz: not admitted: wrists and ankles seen together in 1% of samples
+public/mmfit/build/w16-pushups-15543-16189.json.gz: not admitted: wrists and ankles seen together in 4% of samples
+public/mmfit/build/w16-pushups-9557-9951.json.gz: not admitted: wrists and ankles seen together in 0% of samples
+public/mmfit/build/w16-tricep_extensions-54362-55185.json.gz: not admitted: wrists and ankles seen together in 63% of samples
+public/mmfit/build/w16-tricep_extensions-56206-56978.json.gz: not admitted: wrists and ankles seen together in 60% of samples
+public/mmfit/build/w16-tricep_extensions-58296-59000.json.gz: not admitted: wrists and ankles seen together in 64% of samples
+public/mmfit/build/w18-pushups-13444-13974.json.gz: not admitted: wrists and ankles seen together in 2% of samples
+public/mmfit/build/w18-pushups-17455-18010.json.gz: not admitted: wrists and ankles seen together in 0% of samples
+public/mmfit/build/w18-pushups-9629-10111.json.gz: not admitted: wrists and ankles seen together in 1% of samples
+public/mmfit/build/w19-dumbbell_rows-25843-26283.json.gz: not admitted: wrists and ankles seen together in 78% of samples
+public/mmfit/build/w19-dumbbell_rows-26980-27460.json.gz: not admitted: wrists and ankles seen together in 86% of samples
+public/mmfit/build/w19-dumbbell_rows-29220-29671.json.gz: not admitted: wrists and ankles seen together in 86% of samples
+public/mmfit/build/w19-lunges-19930-20954.json.gz: not admitted: wrists and ankles seen together in 19% of samples
+public/mmfit/build/w19-lunges-21726-22551.json.gz: not admitted: wrists and ankles seen together in 10% of samples
+public/mmfit/build/w19-lunges-23396-24170.json.gz: not admitted: wrists and ankles seen together in 3% of samples
+public/mmfit/build/w19-pushups-11910-12654.json.gz: not admitted: wrists and ankles seen together in 3% of samples
+public/mmfit/build/w19-pushups-5420-6088.json.gz: not admitted: wrists and ankles seen together in 11% of samples
+public/mmfit/build/w19-pushups-7845-8730.json.gz: not admitted: wrists and ankles seen together in 2% of samples
+public/mmfit/build/w19-squats-2469-2955.json.gz: not admitted: wrists and ankles seen together in 88% of samples
+public/mmfit/build/w19-squats-3869-4343.json.gz: not admitted: wrists and ankles seen together in 85% of samples
+public/mmfit/build/w19-tricep_extensions-37836-38433.json.gz: not admitted: wrists and ankles seen together in 67% of samples
+public/mmfit/build/w19-tricep_extensions-40513-41132.json.gz: not admitted: wrists and ankles seen together in 75% of samples
+public/mmfit/build/w19-tricep_extensions-42365-42950.json.gz: not admitted: wrists and ankles seen together in 76% of samples
+public/mmfit/build/w20-lunges-20425-21429.json.gz: not admitted: wrists and ankles seen together in 83% of samples
+public/mmfit/build/w20-lunges-22940-23846.json.gz: not admitted: wrists and ankles seen together in 80% of samples
+public/mmfit/build/w20-lunges-26392-27375.json.gz: not admitted: wrists and ankles seen together in 82% of samples
+public/mmfit/build/w20-pushups-10093-10621.json.gz: not admitted: wrists and ankles seen together in 1% of samples
+public/mmfit/build/w20-pushups-12592-13225.json.gz: not admitted: wrists and ankles seen together in 0% of samples
+public/mmfit/build/w20-pushups-15603-16331.json.gz: not admitted: wrists and ankles seen together in 0% of samples
+public/mmfit/build/w20-tricep_extensions-56904-57640.json.gz: not admitted: wrists and ankles seen together in 57% of samples
+public/mmfit/build/w20-tricep_extensions-60225-60934.json.gz: not admitted: wrists and ankles seen together in 62% of samples
+public/mmfit/build/w20-tricep_extensions-62285-62960.json.gz: not admitted: wrists and ankles seen together in 59% of samples

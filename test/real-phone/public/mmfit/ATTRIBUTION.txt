@@ -1,0 +1,5 @@
+MM-Fit Dataset. David Strömbäck, Sangxia Huang and Valentin Radu.
+Source: https://zenodo.org/records/7672767 (videos); labels from the MM-Fit archive, unchanged.
+Licence: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Modifications: the app's MediaPipe world landmarks over each labelled set, written by scripts/public/run-public.mjs;
+no video frame is kept. Halves by workout (scripts/public/split.mjs). Build half only in the scoreboard.
