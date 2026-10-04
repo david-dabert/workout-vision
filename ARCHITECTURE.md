@@ -121,7 +121,7 @@ The live path uses only `getImageLandmarker` and `detectPoseImage`; it also pull
 |---|---|
 | `prebuild`: `scripts/copy-models.js` | Copies MediaPipe WASM from `node_modules` into `public/mediapipe/` and downloads `pose_landmarker_full.task` there, checked against `src/lib/model-hash.json`, so nothing is fetched from a CDN at runtime. Also run by a Vite plugin at build start. |
 | `prebuild`: `scripts/copy-guide.js` | Copies and resizes guide artwork (CC BY-SA 4.0) from `@bryllim/workout-guide` into `public/guide/`. |
-| `vite build` | Four pages (`index`, `collect`, `collect-batch`, `check`); target ES2022 and Safari 16; chunks `react-vendor`, `localforage`, `exercises`, `i18n`; injects `__APP_VERSION__`, `__GIT_HASH__`, `__BUILD_TIME__`, `__FEEDBACK_URL__` (empty: the deploy does not pass it, and the feedback panel is not reachable from the app). Base path from `VITE_BASE`. |
+| `vite build` | Four pages (`index`, `collect`, `collect-batch`, `check`); target ES2022 and Safari 16; chunks `react-vendor`, `localforage`, `exercises`, `i18n`; injects `__APP_VERSION__`, `__GIT_HASH__`, `__BUILD_TIME__`, `__FEEDBACK_URL__` (empty: the deploy does not pass it; nothing reads it since the feedback panel's sender was made inert, WP0.4). Base path from `VITE_BASE`. |
 | `scripts/inject-sw-precache.js` | Writes the hashed asset list and the model and WASM fingerprints into `dist/sw.js`, so the app works offline after the first visit. |
 
 `public/sw.js`: app shell precache, network-first for navigation, cache-first for hashed assets; the model and the WASM files (MediaPipe's and the decoder's `web-demuxer.wasm`) each in a cache named after their fingerprint; the previous version's files kept one deploy longer.
@@ -198,7 +198,7 @@ No workflow decodes a real-phone video through the app on a phone: David's iPhon
 
 ## 8. Outside the app
 
-`feedback-worker/`: a Cloudflare Worker with a D1 database. `POST /event` (`usage.js`) adds the app's anonymous usage events to daily totals per (day, event, lift, tier, duration bucket, version, language), storing no IP and no identifier; `GET /stats` and `GET /dashboard` read them with the `STATS_TOKEN` secret. It also accepts anonymous structured feedback (`POST /ingest`, 4 KB limit, landmarks and video fields refused; aggregates at `GET /feedback`, token only), whose only caller, `FeedbackPanel.jsx` (rendered only by `VideoUpload.jsx`), is dormant. Deploy steps: `feedback-worker/README.md`. Until David deploys it and sets `VITE_EVENTS_URL`, the live app sends nothing to it.
+`feedback-worker/`: a Cloudflare Worker with a D1 database. `POST /event` (`usage.js`) adds the app's anonymous usage events to daily totals per (day, event, lift, tier, duration bucket, version, language), storing no IP and no identifier; `GET /stats` and `GET /dashboard` read them with the `STATS_TOKEN` secret. `POST /ingest` (structured feedback with free text) was removed on 3 October 2026 (WP0.4) and answers 404; the old `feedback` table is kept, readable at `GET /feedback` (token only), until David's decision D24. Its former sender, `FeedbackPanel.jsx` (rendered only by `VideoUpload.jsx`), is inert: it posts nowhere. Deploy steps: `feedback-worker/README.md`. Until David deploys it and sets `VITE_EVENTS_URL`, the live app sends nothing to it.
 
 `design/experience-prototype.html` is the approved visual prototype for the live screens.
 

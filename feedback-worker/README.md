@@ -1,9 +1,9 @@
 # Workout Vision Feedback Worker
 
-Cloudflare Worker + D1. Two jobs:
+Cloudflare Worker + D1. One job, and a read-only remainder:
 
 - **Usage counts** (since 3 October 2026): anonymous daily totals of what the app's screens and analyses are used for, so David knows how many people use the app and how far they get (`usage.js`, `usage-schema.js`).
-- **Feedback** (dormant): structured feedback through `POST /ingest`. The app does not call it.
+- **Feedback** (closed): `POST /ingest` was removed on 3 October 2026 (WP0.4, `docs/SPEC-production.md`) and answers 404 like any unknown path. It was open to anyone, stored free text and a hash of the IP salted with a constant written in this repository, with no notice and no consent. The app's only sender, `src/components/FeedbackPanel.jsx`, is inert since the same day (it posts nowhere, whatever the build). The `feedback` table stays in `schema.sql` and in any deployed database, readable through `GET /feedback`: exporting then dropping it is David's decision D24 (below).
 
 ## What the usage counts keep, and what they do not
 
@@ -27,8 +27,8 @@ The counts are of events, not of people: no row can be tied to a person or a pho
 | `GET /stats?days=30` | `STATS_TOKEN` | The daily counts of the last 1 to 366 days, as JSON: `{ from, to, rows: [{ day, event, lift, tier, durationBucket, appVersion, lang, count }] }`. |
 | `GET /dashboard?days=30` | `STATS_TOKEN` | Without the token: a form that asks for it (401). With it, the same counts as HTML tables: by day (opens, lifts chosen, videos chosen, analyses started, counted, not counted, refused, failed, cancelled, kept, corrected, reports, shares), by lift, visit length, opens by version and language. |
 | `POST /dashboard` | `STATS_TOKEN` | The form's answer: `token` and `days` in an `application/x-www-form-urlencoded` body (at most 1 KB); the dashboard, or the form again with "Wrong token." (401). |
-| `GET /feedback` | `STATS_TOKEN` | The feedback aggregates (open to anyone before 3 October). |
-| `POST /ingest` | (dormant) | Feedback, max 4 KB, no landmarks, video or frames. |
+| `GET /feedback` | `STATS_TOKEN` | The aggregates of the old `feedback` table (open to anyone before 3 October). |
+| `POST /ingest` | nobody | Removed on 3 October 2026 (WP0.4): 404, nothing stored. |
 
 The token goes in `Authorization: Bearer <token>`, and only there: since 3 October a `?token=` in the address is refused, even when right, since an address is kept in the browser's history and its sync, and in proxy and access logs. In a browser, open `/dashboard` and type the token in its form: it is posted in the request's body, never put in the address (a password manager may offer to keep it). The pages are not cached, send no referrer, post only to the worker and cannot be framed. With no `STATS_TOKEN` set, or one shorter than 16 characters, the three reading endpoints answer 401 to everyone.
 
@@ -73,10 +73,18 @@ curl -H "Authorization: Bearer $STATS_TOKEN" 'https://workout-vision-feedback.<y
 
 To stop the counts: remove the `VITE_EVENTS_URL` variable and deploy the app again. To erase them: `npx wrangler d1 execute workout-vision-feedback --remote --command "DELETE FROM usage_daily"`.
 
+## The old feedback table: what David must do (D24)
+
+No wrangler command is run by the code or by an agent. If the worker was ever deployed:
+
+1. In the Cloudflare dashboard, check whether `workout-vision-feedback` is deployed, and redeploy it from this folder (`npx wrangler deploy`) so the live copy no longer accepts `/ingest`.
+2. See whether the `feedback` table holds rows: `npx wrangler d1 execute workout-vision-feedback --remote --command "SELECT COUNT(*), MIN(created_at), MAX(created_at) FROM feedback"`.
+3. Under D24 (R5: his explicit approval), export it (`npx wrangler d1 export workout-vision-feedback --remote --table=feedback --output=feedback-export.sql`, kept off the repository), then drop it (`--command "DROP TABLE feedback"`). Removing the table from `schema.sql` and `GET /feedback` is a later commit, after that decision.
+
 ## Tests
 
-`npx vitest run feedback-worker` runs the worker against SQLite (`node:sqlite`), as D1 runs it: `rate-limit.test.js` (feedback) and `usage.test.js` (usage counts: what is kept, what is refused, the rate limit and the job every minute that deletes its hashes, the token in the header only, the dashboard's form, the schema).
+`npx vitest run feedback-worker` runs the worker against SQLite (`node:sqlite`), as D1 runs it: `worker.test.js` (`/ingest` answers 404 and writes nothing, the `feedback` table is left as it is, the usage endpoints still answer) and `usage.test.js` (usage counts: what is kept, what is refused, the rate limit and the job every minute that deletes its hashes, the token in the header only, the dashboard's form, the schema).
 
 ## Schema
 
-`schema.sql` creates every table; `migrations/0001_usage.sql` adds the usage tables to an existing database (a test checks the two match). Feedback kinds: correction, crash, feedback, rating.
+`schema.sql` creates every table; `migrations/0001_usage.sql` adds the usage tables to an existing database (a test checks the two match). The `feedback` table (kinds: correction, crash, feedback, rating) is no longer written by anything; it is kept until David decides D24.
