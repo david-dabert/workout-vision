@@ -118,7 +118,7 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         </div>}
         {/* Shown from the first saved set, welcome or not: a person back from "Changer d'exercice" finds them too. */}
         {recents.length > 0 && <div className="recents" role="group" aria-label={fr ? 'Exercices récents' : 'Recent exercises'} data-testid="recents">
-          <span className="recents-label" aria-hidden="true">{fr ? 'Reprendre' : 'Again'}</span>
+          <span className="recents-label" aria-hidden="true">{fr ? 'Reprendre' : 'Recent'}</span>
           {recents.map(r => <button key={r.key} type="button" className="recent press" onClick={() => { navigator.vibrate?.(10); onChoose(r.key); }}>{r.name}</button>)}
         </div>}
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>

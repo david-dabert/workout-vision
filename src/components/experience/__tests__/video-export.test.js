@@ -77,6 +77,27 @@ describe('the export settles and cleans up (review 01 of step 4)', () => {
     refusePlay = true;
     await expect(start()).rejects.toThrow();
   });
+  it('refuses a recording whose frames stop short of the end, never hands over a cut file (David, 4 October)', async () => {
+    const out = start();
+    video.dispatchEvent(new Event('playing')); // one frame drawn, at 0 s, of a 10-second video
+    video.currentTime = 4;
+    video.dispatchEvent(new Event('ended'));
+    await expect(out).rejects.toThrow('incomplete');
+    expect(recorders[0].stop).toHaveBeenCalled();
+  });
+  it('records the video on screen when given one: played from the start, never removed, its listeners gone', async () => {
+    const screen = new FakeVideo();
+    screen.remove = vi.fn(); screen.currentTime = 7;
+    const out = exportSetVideo({ file: new Blob(['x']), result: { arm: 'left', reps: [] }, lift: 'bicep_curl', screen });
+    expect(screen.currentTime).toBe(0);
+    expect(screen.muted).toBe(true);
+    screen.dispatchEvent(new Event('playing'));
+    screen.dispatchEvent(new Event('pause'));
+    await expect(out).rejects.toThrow('interrupted');
+    expect(screen.remove).not.toHaveBeenCalled();
+    // The export's listeners are gone: a later pause of the replay is not an export failure.
+    expect(() => screen.dispatchEvent(new Event('pause'))).not.toThrow();
+  });
   it('fails when the recorder cannot be made', async () => {
     throwOnRecorder = true;
     const out = start();
@@ -94,6 +115,11 @@ describe('the exported overlay after a correction', () => {
     document.createElement = tag => (tag === 'video' ? (video = new FakeVideo()) : { width: 390, height: 693, getContext: () => ctx, captureStream: () => ({ getTracks: () => [track] }) });
     const reps = Array.from({ length: 7 }, (_, i) => ({ index: i + 1, startTime: i, endTime: i + 0.8 }));
     exportSetVideo({ file: new Blob(['x']), result: { arm: 'left', count: 7, reps }, lift: 'bicep_curl', fr: false, saved }).catch(() => {});
+    // The whole 10-second video drawn, six frames a second, then its end: only the end's words are kept.
+    let n = 0;
+    globalThis.requestAnimationFrame = cb => { if (n++ < 60) { video.currentTime = Math.min(10, n / 6); cb(); } return 1; };
+    video.dispatchEvent(new Event('playing'));
+    text.length = 0;
     video.dispatchEvent(new Event('ended'));
     return text;
   };
