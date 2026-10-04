@@ -163,7 +163,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
  * onReplay: opens the replay; absent when the video is not at hand.
  * liveShown: for a set counted live (LiveSession.jsx), the last count the live screen showed, or null.
  */
-export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onRefilm, onSaved = () => {}, liveShown = null }) {
+export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
@@ -199,6 +199,61 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const [shareNote, setShareNote] = useState('');
   const [sel, setSel] = useState(-1); // the rep whose details are shown, or none
   const saving = useRef(false);
+  // Leaving a counted set not yet saved asks first (WP1.4 of docs/SPEC-production.md): the close button and the
+  // browser's back (Safari's edge swipe) both lead here, so a set is never lost by a slip of the thumb.
+  const [closing, setClosing] = useState(false);
+  const unsaved = step !== 'saved' && !result.refused;
+  const unsavedRef = useRef(unsaved);
+  unsavedRef.current = unsaved;
+  const askClose = () => { if (unsavedRef.current) setClosing(true); else guard.current.pending.then(onClose); };
+  // The question takes focus and comes into view as it opens, for VoiceOver, the keyboard and a short screen.
+  useEffect(() => {
+    if (!closing || covered) return;
+    const q = document.getElementById('close-q');
+    q?.scrollIntoView({ block: 'center', behavior: 'auto' });
+    q?.focus({ preventScroll: true, focusVisible: false });
+  }, [closing, covered]);
+  // Back is held by one extra history entry at the same address while the set is unsaved: going back takes that
+  // entry and stays on the result, where the question opens; the entry is put back for the next swipe. A change of
+  // address made by the app itself (another screen) is not a back, and is let through.
+  // Once the set is saved, or the person leaves by the card, the extra entry is taken back, so the history holds no
+  // dead step; whatever moves on (a new set, the choice) waits for that. A browser that skips the entry (some skip
+  // entries added without a tap) goes back as it did before this guard: no worse, and the close button still asks.
+  const guard = useRef({ here: null, off: false, pending: Promise.resolve() });
+  const release = () => {
+    const g = guard.current;
+    if (g.off) return g.pending;
+    if (typeof history === 'undefined' || !history.state?.wvResult || location.href !== g.here) return g.pending;
+    g.off = true;
+    g.pending = new Promise(done => {
+      let t = 0;
+      const end = () => { clearTimeout(t); window.removeEventListener('popstate', end); done(); };
+      window.addEventListener('popstate', end);
+      t = setTimeout(end, 500);
+      history.back();
+    });
+    return g.pending;
+  };
+  const released = () => release();
+  useEffect(() => {
+    if (!unsaved || typeof history === 'undefined') return undefined;
+    const g = guard.current;
+    g.here = location.href; g.off = false;
+    history.pushState({ wvResult: true }, '', g.here);
+    const onPop = () => {
+      if (g.off || location.href !== g.here || !unsavedRef.current) return;
+      history.pushState({ wvResult: true }, '', g.here);
+      setClosing(true);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Saved in place: the entry goes now. Left for another screen: the address has changed and nothing is undone.
+      release();
+    };
+  }, [unsaved]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Every way on from the result waits for the entry to be taken back first.
+  const after = fn => (...a) => guard.current.pending.then(() => fn(...a));
   const rootRef = useRef(null);
   const reportRef = useRef(null);
   const replayRef = useRef(null);
@@ -281,13 +336,14 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
   const [chosen, setChosen] = useState('');
-  const offerLevel = shouldAskLevel({ step, ...levelBefore });
+  // A refused set typed by hand shows neither question, so neither is spent on it (review of 4 October).
+  const offerLevel = !result.refused && shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
   // Whether to help improve the count: asked on the saved card of the first set, and once more from the fifth when
   // left unanswered, never after a yes or a no (contribute.js shouldAskContribute). Decided once the sets on the
   // phone are read after the save; shown is asked.
   const [contributeAt, setContributeAt] = useState(null); // the sets on the phone when it is asked
-  const showContribute = step === 'saved' && contributeAt !== null;
+  const showContribute = !result.refused && step === 'saved' && contributeAt !== null;
   useEffect(() => { if (showContribute) markContributeAsked(contributeAt); }, [showContribute]); // eslint-disable-line react-hooks/exhaustive-deps
   // "Noted" only when the phone stored it (audit of 2 October); otherwise the screen says it was not kept.
   const [levelLost, setLevelLost] = useState(false);
@@ -343,19 +399,19 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const keepThis = n => keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() }))
     .then(() => true, e => { console.warn('[contribute] this set could not be kept', e); return false; });
 
-  async function doSave(n, corrected) {
-    if (saving.current) return;
+  async function doSave(n, corrected, manual = false) {
+    if (saving.current) return false;
     saving.current = true;
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides }));
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
       // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
       // A build without VITE_CONTRIBUTE keeps none and never asks: contributions are paused (buildFlags.js, WP0.4).
-      if (contributeBuild() && readChoice() === 'yes') keepThis(n);
+      if (!manual && corrected !== null && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed or unanswered count is no label of the app's read
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       // The question on helping, from the number of sets now on the phone; unread, it is not asked.
@@ -363,13 +419,40 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         if (shouldAskContribute({ choice: readChoice(), ...contributeAsks(), saved: l.length })) setContributeAt(c => c ?? l.length);
       }, () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
-      track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
+      if (!manual) track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
-      onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
+      if (!manual) onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
+      return true;
     } catch {
       setSaveError(fr ? 'Résultat affiché, mais non enregistré.' : 'Result shown, but could not save it.');
+      return false;
     } finally { saving.current = false; }
+  }
+
+  // "Garder": the set is saved as the screen stands (the app's count while it asks, the typed count once corrected),
+  // then the screen closes as the person wanted. With no count to save (the app counted none and nothing is typed
+  // yet), the question on the number opens instead. "Ne pas garder": the screen closes and nothing is saved.
+  // A count the person has not answered for ("C'est bien N ?" still open) is saved as unconfirmed (corrected null):
+  // it stays in the history and the trend, holds no record (progress.js confirmed) and is never kept as a label.
+  async function keepAndClose() {
+    if (saving.current) return;
+    if (step === 'fix' && unsure && trueN === 0) {
+      setClosing(false);
+      // Nothing to keep yet: the question on the number takes focus, as the card it stands in.
+      requestAnimationFrame(() => {
+        const q = cardRef.current?.querySelector('[data-testid="fix-card"] .ask-q');
+        if (q) { if (!q.hasAttribute('tabindex')) q.setAttribute('tabindex', '-1'); q.focus({ preventScroll: false, focusVisible: false }); }
+      });
+      return;
+    }
+    if (await doSave(step === 'fix' ? trueN : count, step === 'fix' ? true : null)) { setClosing(false); await released(); onClose(); }
+  }
+  async function discardAndClose() {
+    if (saving.current) return; // a save already under way finishes; the card stays until it does
+    setClosing(false);
+    await released();
+    onClose();
   }
 
   // The challenge opens the phone's share sheet inside the tap, with the result and a link to the
@@ -386,6 +469,37 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // What the phone read, for the report: the decoder and the samples read out of the video's.
   const read = { read: result.timestamps?.length ?? null, expected: Number.isFinite(result.metadata?.duration) ? Math.floor(result.metadata.duration * TARGET_FPS) : null };
   const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError, decoder: result.metadata?.method || '', read });
+
+  // The question "How many did you do?" with its stepper: after a "No", for a set the app counted none in, and,
+  // as "Saisir mon nombre", for a set the app refused (manual: saved as typed by hand, WP1.6).
+  const fixCard = manual => (
+        <div className="glass appear" data-testid="fix-card">
+          <p className="ask-q">{fr ? 'Combien en avez-vous fait\u00A0?' : 'How many did you do?'}</p>
+          <div className="stepper">
+            <button className="round press" disabled={trueN <= 0} onClick={() => { setTyped(null); setTrueN(n => Math.max(0, n - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
+            {/* The numeral is also a field: a tap opens the number pad and typing replaces the number, so 7 to 34
+                takes three taps, not 27 (design review of 1 October). The figures stay drawn by Digits underneath.
+                aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
+            <span className={`stepper-n${typed !== null ? ' is-typing' : ''}`}>
+              <span aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
+              {/* The field opens empty, so what is typed replaces the number wherever iOS leaves the caret (a
+                  select() on focus does not hold after a tap in WebKit: review of 2 October). Until a digit is
+                  typed, and if every digit is deleted, the number stays the one it opened on. */}
+              <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done"
+                aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? String(trueN)}
+                onFocus={() => { typedFrom.current = trueN; setTyped(''); }}
+                onBlur={() => setTyped(null)}
+                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); setTrueN(d === '' ? typedFrom.current : Number(d)); }}
+                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
+            </span>
+            <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
+          </div>
+          {/* With no count from the app, the person's own count is saved, never the 0 the stepper opens on. */}
+          <button type="button" className="btn-primary press" disabled={(unsure || manual) && trueN === 0} onClick={() => { if ((unsure || manual) && trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true, manual); }}>
+            <span>{fr ? 'Enregistrer' : 'Save'}</span>
+          </button>
+        </div>
+  );
 
   if (result.refused) {
     const text = why.cause === 'nobody'
@@ -433,6 +547,19 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
           {/* One button: "Choisir une autre vidéo" beside it did the same, back to Film (third audit C14, 3 October). */}
           <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+          {/* The set is done all the same: the person may log it by hand, saved as theirs, with no count of the app
+              (WP1.6 of docs/SPEC-production.md). The stepper opens on 0, never on the count the app refused (R8). */}
+          {step === 'ask' && <button className="btn-ghost press" data-testid="manual-open" onClick={() => { setTyped(null); setTrueN(0); setStep('fix'); }}>{fr ? 'Saisir mon nombre' : 'Enter my count'}</button>}
+        </div>
+        <div ref={cardRef}>
+          {step === 'fix' && fixCard(true)}
+          {step === 'saved' && <div className="saved appear" data-testid="saved-card">
+            <p className="saved-msg">{fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
+            <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
+            <button className="btn-line press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+            <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
+          </div>}
+          {saveError && <p role="alert" className="save-error">{saveError}</p>}
         </div>
         <ReportCount fr={fr} report={report} />
       </div></section>
@@ -508,6 +635,17 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       <RepWave angles={waveAngles(result)} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
     </div>,
     card: <div key="card" ref={cardRef}>
+      {closing && unsaved && (
+        <div className="glass appear" data-testid="close-card" role="group" aria-labelledby="close-q">
+          <p className="ask-q" id="close-q" tabIndex={-1}>{fr ? 'Garder cette série\u00A0?' : 'Keep this set?'}</p>
+          <div className="ask-row">
+            <button type="button" className="btn-primary press" onClick={keepAndClose} data-testid="close-keep">
+              <span>{fr ? 'Garder' : 'Keep'}</span>
+            </button>
+            <button type="button" className="btn-ghost press" onClick={discardAndClose} data-testid="close-discard">{fr ? 'Ne pas garder' : 'Don’t keep'}</button>
+          </div>
+        </div>
+      )}
       {step === 'ask' && asked && (
         <div className="glass appear" data-testid="ask-card">
           <p className="ask-q">{fr ? `C’est bien ${count}\u00A0?` : `Was it ${count}?`}</p>
@@ -520,35 +658,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
-      {step === 'fix' && (
-        <div className="glass appear" data-testid="fix-card">
-          <p className="ask-q">{fr ? 'Combien en avez-vous fait\u00A0?' : 'How many did you do?'}</p>
-          <div className="stepper">
-            <button className="round press" disabled={trueN <= 0} onClick={() => { setTyped(null); setTrueN(n => Math.max(0, n - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
-            {/* The numeral is also a field: a tap opens the number pad and typing replaces the number, so 7 to 34
-                takes three taps, not 27 (design review of 1 October). The figures stay drawn by Digits underneath.
-                aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
-            <span className={`stepper-n${typed !== null ? ' is-typing' : ''}`}>
-              <span aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
-              {/* The field opens empty, so what is typed replaces the number wherever iOS leaves the caret (a
-                  select() on focus does not hold after a tap in WebKit: review of 2 October). Until a digit is
-                  typed, and if every digit is deleted, the number stays the one it opened on. */}
-              <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done"
-                aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? String(trueN)}
-                onFocus={() => { typedFrom.current = trueN; setTyped(''); }}
-                onBlur={() => setTyped(null)}
-                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); setTrueN(d === '' ? typedFrom.current : Number(d)); }}
-                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
-            </span>
-            <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
-          </div>
-          {/* With no count from the app, the person's own count is saved, never the 0 the stepper opens on. */}
-          <button type="button" className="btn-primary press" disabled={unsure && trueN === 0} onClick={() => { if (unsure && trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true); }}>
-            <span>{fr ? 'Enregistrer' : 'Save'}</span>
-          </button>
-        </div>
-      )}
-
+      {step === 'fix' && fixCard(false)}
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
           {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app\u00A0: ${count}. Corrigé\u00A0: ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
@@ -561,7 +671,10 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
           {/* After saving, the next things done in a gym are resting and the next set: the next set leads, the
               report follows, the challenge stays as a quiet line (design review of 1 October). */}
-          <button className="btn-line press" onClick={onNewSet}>{fr ? 'Nouvelle série' : 'New set'}</button>
+          {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
+              changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). */}
+          <button className="btn-line press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+          <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
@@ -604,7 +717,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // Under the report, the result is out of reach of taps, the keyboard and screen readers.
   return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
     <section className={`screen is-active result-screen lv-${view.level}${step === 'saved' ? ' is-saved' : ''}`} data-level={view.level}><div className="wrap">
-      <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
+      <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
       <div className="res-head" data-reveal style={{ '--i': 0 }}>
         <p className="eyebrow">{liftName}</p>
         <div className="res-sub">

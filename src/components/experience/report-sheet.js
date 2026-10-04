@@ -103,7 +103,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -180,7 +180,10 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     count: String(count),
     word: fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps'),
     lift: liftName,
-    corrected: counted != null && counted !== count
+    // A set the app refused and the person typed (WP1.6): said so where a correction would be.
+    corrected: source === 'manual' && afterRefusal
+      ? (fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
+      : counted != null && counted !== count
       ? (fr ? `Compté par l’app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
       : '',
     arm: arm === 'left' || arm === 'right'

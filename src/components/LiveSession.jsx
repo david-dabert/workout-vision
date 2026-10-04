@@ -53,7 +53,7 @@ export default function LiveSession({ lift, onClose, onRecord }) {
       {!result && <Live lift={lift} onBack={running => { if (running) track('analysis_cancelled', { lift }); onRecord(); }} onRecord={() => { writeFilmMode('video'); onRecord(); }}
         onStart={() => track('analysis_start', { lift })} onDone={done} />}
       {result && <Result result={result} lift={lift} liveShown={liveShown} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport}
-        onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={again} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+        onReplay={() => openOverlay('replay')} onNewSet={onRecord} onChangeLift={onClose} onRefilm={again} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
     </ScreenFade>
     {result && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} wave={compactWave(waveAngles(result), result.timestamps)} leaving={overlayLeaving} onBack={closeOverlay} />}
     {result && overlay === 'replay' && <Replay file={null} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}

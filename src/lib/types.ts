@@ -287,6 +287,8 @@ export interface WorkoutRecord {
   sides?: { left: number; right: number; si: number; reps: number } | null;
   /** The measured angle over the set, at most 200 samples (wave.js, compactWave). */
   wave?: { t: number[]; a: (number | null)[] } | null;
+  /** A refused set whose count the person typed by hand (WP1.6; saved-set.js). */
+  afterRefusal?: boolean;
 }
 
 export interface RepCounterDiagnostics {

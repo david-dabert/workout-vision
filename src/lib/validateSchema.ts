@@ -22,6 +22,8 @@ const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'sides',
   // The measured angle over the set, compact, for the report's wave (components/experience/wave.js).
   'wave',
+  // A refused set whose count the person typed (WP1.6): said so in the history and the report.
+  'afterRefusal',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

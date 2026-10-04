@@ -30,6 +30,12 @@
    other lines and the rows under it are balanced too, so no line ends on one word. */
 .wv-experience .altar-name { font-size: min(34px, 8.4vw); line-height: 1.02; text-wrap: balance; }
 .wv-experience .altar-meta .tier, .wv-experience .altar-alias, .wv-experience .row-txt small { text-wrap: balance; }
+/* The recent lifts: one row of pills under the welcome, each a 44 px tap target (A11Y-2), scrolled sideways when
+   the names are long; never two lines, so the cards keep their place (WP1.5). */
+.wv-experience .recents { display: flex; gap: var(--s-2); margin: var(--s-3) calc(-1 * var(--s-4)) 0; padding: 0 var(--s-4); overflow-x: auto; scrollbar-width: none; }
+.wv-experience .recents::-webkit-scrollbar { display: none; }
+.wv-experience .recent { flex: none; height: 44px; padding: 0 16px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: rgba(232, 189, 126, 0.06); color: var(--bone); font: 500 var(--fs-caption)/1 var(--sans); white-space: nowrap; }
+.wv-experience .recent:first-child { border-color: rgba(232, 189, 126, 0.55); color: var(--lamp); }
 @media (max-height: 700px) {
   .wv-experience .choose-screen .title { margin-top: 16px; }
   .wv-experience .choose-screen .sub { margin-top: 10px; }
@@ -46,6 +52,7 @@
   .wv-experience .welcome { margin-top: 4px; }
   .wv-experience .welcome-l1 { font-size: var(--fs-name); }
   .wv-experience .welcome-l2 { display: none; }
+  .wv-experience .recents { margin-top: 6px; }
   /* A returning visitor has swiped the cards before: the instruction gives its lines to the figure. */
   .wv-experience .choose-screen.has-welcome .sub { display: none; }
   .wv-experience .rail { margin-top: 12px; }

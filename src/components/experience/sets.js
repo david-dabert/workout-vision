@@ -64,7 +64,20 @@ export function previousSet(all, lift, self) {
 
 // What the app itself counted: kept apart since this version, and derivable
 // from the counted reps (or the old app's own field) for sets saved before.
+/** The lifts of the newest sets, each once, newest first, at most n: the "Récents" of the choice (WP1.5). */
+export function recentLifts(all, n = 3) {
+  const out = [];
+  for (const w of all || []) {
+    const k = w.exercise || w.exerciseKey;
+    if (k && !out.includes(k)) out.push(k);
+    if (out.length === n) break;
+  }
+  return out;
+}
+
+// A set typed by hand (ManualLog.jsx's, or one the app refused, WP1.6) has no count of the app: null.
 export function countedBy(w) {
+  if (w.source === 'manual') return null;
   if (w.correctedResult && Number.isFinite(w.machineResult?.reps)) return w.machineResult.reps;
   if (w.corrected && Array.isArray(w.repDetails)) return w.repDetails.length;
   if (w.repsOverridden && Number.isFinite(w.machineReps)) return w.machineReps;

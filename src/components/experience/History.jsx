@@ -155,22 +155,26 @@ export default function History({ onClose }) {
           <h2 className="hist-head">{day.label}</h2>
           <ul className="hist-list">{day.sets.map(w => {
             const counted = countedBy(w), shown = open === w.id, arm = armLabel(w);
+            // Typed by hand after a refusal (WP1.6): no count of the app to set beside it.
+            const byHand = counted === null, fixed = !byHand && counted !== w.reps;
             const seconds = Math.round(w.duration || 0);
             return <li key={w.id} className="hist-item">
               <button ref={el => { rowRefs.current[w.id] = el; }} className="hist-btn press" aria-expanded={shown} onClick={() => toggle(w.id)}>
-                <span className={`hist-n${counted !== w.reps ? ' is-corrected' : ''}`} aria-hidden="true">{w.reps}</span>
+                <span className={`hist-n${fixed || byHand ? ' is-corrected' : ''}`} aria-hidden="true">{w.reps}</span>
                 <span className="hist-txt">
                   <span className="hist-name">{liftName(w)}</span>
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
-                {(counted !== w.reps || repsBest.has(w.id)) && <span className="hist-tags">
+                {(fixed || byHand || repsBest.has(w.id)) && <span className="hist-tags">
                   {repsBest.has(w.id) && <span className="hist-tag is-best">{fr ? 'Record' : 'Best'}</span>}
-                  {counted !== w.reps && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
+                  {fixed && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
+                  {byHand && <span className="hist-tag">{fr ? 'Saisi à la main' : 'Typed by hand'}</span>}
                 </span>}
               </button>
               {shown && <div className="hist-detail appear">
-                {counted !== w.reps && <p className="hist-corr">{fr ? `Compté par l’app : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
+                {byHand && w.afterRefusal && <p className="hist-corr">{fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
+                {fixed && <p className="hist-corr">{fr ? `Compté par l’app : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
                 <button className="btn-line press" onClick={() => { setLeaving(false); setReport(w); track('report_open', { lift: w.exercise || w.exerciseKey }); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
                   <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
@@ -196,7 +200,7 @@ export default function History({ onClose }) {
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
-      date={setTime(report)} source={report.source} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
+      date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
       setId={report.id} sides={report.sides ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
   </>;
 }
