@@ -31,6 +31,7 @@
 .wv-experience .rp-of { font-family: var(--mono); font-size: var(--fs-label); color: var(--ash); }
 /* As wide as its longest word, so the chip keeps its size from phase to phase. */
 /* The phase word at the label size: 8.5 px was below reading size (#28). */
+.wv-experience .rp-chip.is-idle .rp-phase { display: none; } /* between reps the chip holds the count alone, no empty band */
 .wv-experience .rp-phase { min-width: 11.6ch; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--lamp); }
 .wv-experience .rp-broken { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: var(--bone-2); background: rgba(8, 7, 6, 0.7); text-wrap: balance; }
 

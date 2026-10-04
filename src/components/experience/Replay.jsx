@@ -266,7 +266,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
             : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
               aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’app' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
           <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
-          {reps.length > 0 && <div className="rp-chip" aria-hidden="true">
+          {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
             <span className="rp-phase">{phaseWord}</span>
           </div>}

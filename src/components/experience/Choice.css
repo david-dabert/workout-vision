@@ -34,6 +34,8 @@
    the names are long; never two lines, so the cards keep their place (WP1.5). */
 .wv-experience .recents { display: flex; gap: var(--s-2); margin: var(--s-3) calc(-1 * var(--s-4)) 0; padding: 0 var(--s-4); overflow-x: auto; scrollbar-width: none; }
 .wv-experience .recents::-webkit-scrollbar { display: none; }
+.wv-experience .recents { align-items: center; }
+.wv-experience .recents-label { flex: none; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash); margin-right: 2px; }
 .wv-experience .recent { flex: none; height: 44px; padding: 0 16px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: rgba(232, 189, 126, 0.06); color: var(--bone); font: 500 var(--fs-caption)/1 var(--sans); white-space: nowrap; }
 .wv-experience .recent:first-child { border-color: rgba(232, 189, 126, 0.55); color: var(--lamp); }
 @media (max-height: 700px) {

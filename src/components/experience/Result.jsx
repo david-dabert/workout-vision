@@ -203,9 +203,17 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // browser's back (Safari's edge swipe) both lead here, so a set is never lost by a slip of the thumb.
   const [closing, setClosing] = useState(false);
   const unsaved = step !== 'saved' && !result.refused;
+  // A set the app counted none in, with no number typed yet, holds nothing to keep: closing it asks nothing.
+  const empty = unsure && step === 'fix' && trueN === 0;
+  const emptyRef = useRef(empty);
+  emptyRef.current = empty;
   const unsavedRef = useRef(unsaved);
   unsavedRef.current = unsaved;
-  const askClose = () => { if (unsavedRef.current) setClosing(true); else guard.current.pending.then(onClose); };
+  // While the question is open, the close button takes it back to the count's question: a slip undone in one tap.
+  const askClose = () => {
+    if (unsavedRef.current && !emptyRef.current) setClosing(c => !c);
+    else release().then(onClose);
+  };
   // The question takes focus and comes into view as it opens, for VoiceOver, the keyboard and a short screen.
   useEffect(() => {
     if (!closing || covered) return;
@@ -242,6 +250,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     history.pushState({ wvResult: true }, '', g.here);
     const onPop = () => {
       if (g.off || location.href !== g.here || !unsavedRef.current) return;
+      // Nothing to keep: the back goes on, as the person asked.
+      if (emptyRef.current) { g.off = true; history.back(); return; }
       history.pushState({ wvResult: true }, '', g.here);
       setClosing(true);
     };
@@ -433,8 +443,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // "Garder": the set is saved as the screen stands (the app's count while it asks, the typed count once corrected),
   // then the screen closes as the person wanted. With no count to save (the app counted none and nothing is typed
   // yet), the question on the number opens instead. "Ne pas garder": the screen closes and nothing is saved.
-  // A count the person has not answered for ("C'est bien N ?" still open) is saved as unconfirmed (corrected null):
-  // it stays in the history and the trend, holds no record (progress.js confirmed) and is never kept as a label.
+  // The question names the number ("Garder ces 4 répétitions ?"), in place of "C'est bien 4 ?": keeping it is the
+  // person's answer to both, so the set is saved as confirmed, or as corrected when the number was typed.
   async function keepAndClose() {
     if (saving.current) return;
     if (step === 'fix' && unsure && trueN === 0) {
@@ -446,7 +456,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       });
       return;
     }
-    if (await doSave(step === 'fix' ? trueN : count, step === 'fix' ? true : null)) { setClosing(false); await released(); onClose(); }
+    if (await doSave(step === 'fix' ? trueN : count, step === 'fix')) { setClosing(false); await released(); onClose(); }
   }
   async function discardAndClose() {
     if (saving.current) return; // a save already under way finishes; the card stays until it does
@@ -529,7 +539,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     // The replay shows where the tracking lost the body; under it, this screen is out of reach.
     return <div className="wv-experience" inert={covered ? true : undefined}>
       <section className="screen is-active result-screen"><div className="wrap">
-        <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} />
+        <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
         <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{liftName}</p>
         <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2>
         {/* The frame beside its sentence, as a figure and its caption, so "Refilmer" stays in view (design review, 30 September). */}
@@ -637,7 +647,11 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     card: <div key="card" ref={cardRef}>
       {closing && unsaved && (
         <div className="glass appear" data-testid="close-card" role="group" aria-labelledby="close-q">
-          <p className="ask-q" id="close-q" tabIndex={-1}>{fr ? 'Garder cette série\u00A0?' : 'Keep this set?'}</p>
+          <p className="ask-q" id="close-q" tabIndex={-1}>{(() => {
+            const n = step === 'fix' ? trueN : count;
+            const what = fr ? (n > 1 ? `ces ${n} répétitions` : n === 1 ? 'cette répétition' : 'cette série') : (n > 1 ? `these ${n} reps` : n === 1 ? 'this rep' : 'this set');
+            return fr ? `Garder ${what}\u00A0?` : `Keep ${what}?`;
+          })()}</p>
           <div className="ask-row">
             <button type="button" className="btn-primary press" onClick={keepAndClose} data-testid="close-keep">
               <span>{fr ? 'Garder' : 'Keep'}</span>
@@ -646,7 +660,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           </div>
         </div>
       )}
-      {step === 'ask' && asked && (
+      {/* One question at a time: while the close question is open it stands where the other question stood. */}
+      {step === 'ask' && asked && !closing && (
         <div className="glass appear" data-testid="ask-card">
           <p className="ask-q">{fr ? `C’est bien ${count}\u00A0?` : `Was it ${count}?`}</p>
           <div className="ask-row">
@@ -658,7 +673,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         </div>
       )}
 
-      {step === 'fix' && fixCard(false)}
+      {step === 'fix' && !(closing && unsaved) && fixCard(false)}
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
           {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app\u00A0: ${count}. Corrigé\u00A0: ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
@@ -673,7 +688,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
               report follows, the challenge stays as a quiet line (design review of 1 October). */}
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
               changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). */}
-          <button className="btn-line press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+          {/* Once saved, the next set is the one thing left to do: it takes the gold, so the screen keeps one clear
+              action after the question goes (design pass of 4 October). */}
+          <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
           <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
