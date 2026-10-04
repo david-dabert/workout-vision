@@ -35,14 +35,16 @@ function readLines({ decoder, read, fr, c }) {
   return out;
 }
 
-function reportLines({ lift, liftName, counted, userCount, version, fr, partial = false, decoder = '', read = null }) {
+// failure: what stopped the analysis, as the app names it (an error's name and message), for a video it could not read.
+function reportLines({ lift, liftName, counted, userCount, version, fr, partial = false, decoder = '', read = null, failure = '' }) {
   const c = fr ? `${NBSP}: ` : ': ';
   return [
     `${fr ? 'Exercice' : 'Lift'}${c}${liftName} (${lift})`,
-    `${fr ? 'Compté par l’app' : 'Counted by the app'}${c}${counted == null ? (partial ? partialLine(fr) : refusedLine(fr)) : counted}`,
+    `${fr ? 'Compté par l’app' : 'Counted by the app'}${c}${counted == null ? (failure ? (fr ? 'rien, la vidéo n’a pas pu être lue' : 'none, the video could not be read') : partial ? partialLine(fr) : refusedLine(fr)) : counted}`,
     `${fr ? 'Compté par moi' : 'Counted by me'}${c}${userCount ?? ''}`,
     ...(version ? [`${fr ? 'Version de l’app' : 'App version'}${c}${version}`] : []),
     ...readLines({ decoder, read, fr, c }),
+    ...(failure ? [`${fr ? 'Erreur' : 'Error'}${c}${failure}`] : []),
     '',
     fr ? 'Ce message ne contient ni vidéo ni image.' : 'This message contains no video and no image.',
     '',
@@ -55,21 +57,21 @@ function reportLines({ lift, liftName, counted, userCount, version, fr, partial 
  * A mailto: link to pr.dabertdavid@gmail.com. Every reserved character is percent-encoded and
  * lines end in CR LF (RFC 6068), so the mail app shows the message as written.
  */
-export function reportEmailUrl({ lift, liftName = lift, counted, userCount, version = '', fr = false, partial = false, decoder = '', read = null }) {
+export function reportEmailUrl({ lift, liftName = lift, counted, userCount, version = '', fr = false, partial = false, decoder = '', read = null, failure = '' }) {
   // Written by the user to David, in the first person (David's copy, 29 September 2026). A refused
   // set has no count of the app's, and the user's is theirs to write.
   const app = counted == null ? (fr ? 'rien' : 'none') : counted, me = userCount ?? (fr ? `${NBSP}?` : '?');
   const subject = fr
     ? `Workout Vision${NBSP}: ${liftName}, l’app ${app}, moi${userCount == null ? me : ` ${me}`}`
     : `Workout Vision: ${liftName}, the app ${app}, me${userCount == null ? me : ` ${me}`}`;
-  const body = reportLines({ lift, liftName, counted, userCount, version, fr, partial, decoder, read }).join('\r\n');
+  const body = reportLines({ lift, liftName, counted, userCount, version, fr, partial, decoder, read, failure }).join('\r\n');
   return `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 /** The same report as a new GitHub issue, in English, for users who have an account. */
-export function reportIssueUrl({ lift, liftName = lift, counted, userCount, version = '', partial = false, decoder = '', read = null }) {
-  const body = reportLines({ lift, liftName, counted, userCount, version, fr: false, partial, decoder, read }).join('\n');
-  const title = counted == null ? `Count report: ${lift}, ${partial ? 'video not read in full' : 'set refused'}` : `Count report: ${lift}, app ${counted}, user ${userCount}`;
+export function reportIssueUrl({ lift, liftName = lift, counted, userCount, version = '', partial = false, decoder = '', read = null, failure = '' }) {
+  const body = reportLines({ lift, liftName, counted, userCount, version, fr: false, partial, decoder, read, failure }).join('\n');
+  const title = counted == null ? `Count report: ${lift}, ${failure ? 'video not read' : partial ? 'video not read in full' : 'set refused'}` : `Count report: ${lift}, app ${counted}, user ${userCount}`;
   const q = new URLSearchParams({ title, body });
   return `${REPO}/issues/new?${q}`;
 }

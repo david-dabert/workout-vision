@@ -81,30 +81,45 @@ function Topbar({ fr, onClose, onReplay, replayRef, badge = true }) {
 }
 
 // Shown when the analysis itself failed; the technical message stays in the console.
-export function AnalysisError({ lift, phase, onClose, onRefilm }) {
+// The analysis stopped before a count. Three causes, each said as it is (David's iPhone, 4 October: one screen said
+// "could not read" for all of them, with no way to try again or to say what happened):
+//   the pose model did not start (reload); the phone read the video frozen, its pictures or skeletons repeating
+//   (FrozenReadError, FrozenSkeletonsError: try the analysis again, screen on); any other failure of the read.
+// Every case offers the report, with the failure's name, message and decoder, so the cause reaches David.
+export function AnalysisError({ lift, phase, failure = null, onClose, onRestart, onRefilm }) {
   const { lang } = useT(), fr = lang === 'fr';
   const model = phase === 'model';
+  const frozen = !model && /^Frozen/.test(failure?.name || '');
+  const title = model
+    ? (fr ? 'L’analyse n’a pas pu démarrer.' : 'The analysis could not start.')
+    : frozen
+      ? (fr ? 'Le téléphone a mal lu cette vidéo.' : 'The phone did not read this video properly.')
+      : (fr ? 'Nous n’avons pas pu lire cette vidéo.' : 'We could not read this video.');
+  const body = model
+    ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
+    : frozen
+      ? (fr ? 'Les images sont restées figées pendant la lecture, donc aucun compte n’est affiché. Relancez l’analyse en gardant l’écran allumé.' : 'The pictures stayed frozen while the video was read, so no count is shown. Start the analysis again and keep the screen on.')
+      : (fr ? 'Relancez l’analyse, ou filmez à nouveau avec l’appareil photo.' : 'Start the analysis again, or record again with the camera.');
+  const report = failure && !model ? { lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, version: appVersion(), fr, decoder: failure.decoder || '', failure: `${failure.name}: ${failure.message}` } : null;
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
       <Topbar fr={fr} onClose={onClose} />
       <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
-      <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{model
-        ? (fr ? 'L’analyse n’a pas pu démarrer.' : 'The analysis could not start.')
-        : (fr ? 'Nous n’avons pas pu lire cette vidéo.' : 'We could not read this video.')}</h2>
-      <p className="body-text" data-reveal style={{ '--i': 2 }}>{model
-        ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
-        : (fr ? 'Essayez une autre vidéo, ou filmez à nouveau avec l’appareil photo.' : 'Try another video, or record again with the camera.')}</p>
+      <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{title}</h2>
+      <p className="body-text" data-reveal style={{ '--i': 2 }}>{body}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
-        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October).
-            One button per action: "Refilmer" goes back to the Film screen, where a video is filmed or chosen; a second
-            button doing the same under "Choisir une autre vidéo" opened no picker (third audit C14, 3 October). */}
+        {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October). */}
         {model
           ? <>
             <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
             <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
           </>
-          : <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>}
+          : <>
+            {onRestart && <button className="btn-primary press" onClick={onRestart} data-testid="error-restart">{fr ? 'Relancer l’analyse' : 'Start the analysis again'}</button>}
+            <button className={`${onRestart ? 'btn-ghost' : 'btn-primary'} press`} onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+          </>}
       </div>
+      {report && <ReportCount fr={fr} report={report} />}
     </div></section>
   </div>;
 }

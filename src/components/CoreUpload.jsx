@@ -19,7 +19,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState('');
   const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   // The page was hidden during the run (screen locked, app left): no count is shown.
   const [interrupted, setInterrupted] = useState(false);
   const [incomplete, setIncomplete] = useState(null); // { read, expected } when the phone read part of the video
@@ -55,7 +55,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
 
   async function run(controller) {
     const mine = () => abort.current === controller;
-    setResult(null); setSavedCount(null); setSavedSides(null); setError(''); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
+    setResult(null); setSavedCount(null); setSavedSides(null); setError(null); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
     let release = () => {}, wake = async () => {};
     try {
       // A video chosen while the page is still hidden (back from the camera) waits for it.
@@ -77,7 +77,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
     } catch (e) {
       if (isInterruption(controller.signal.reason)) { if (mine()) { setInterrupted(true); track('analysis_interrupted', { lift }); } }
       else if (e.name === 'PartialReadError') { if (mine()) { setIncomplete({ read: e.read, expected: e.expected, decoder: e.decoder, disordered: e.disordered }); track('analysis_partial', { lift }); } }
-      else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError(e.message || 'failed'); track('analysis_failed', { lift }); }
+      else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError({ name: e.name || 'Error', message: e.message || 'failed', decoder: e.decoder || '' }); track('analysis_failed', { lift }); }
     } finally { release(); wake(); if (mine()) abort.current = null; }
   }
 
@@ -105,7 +105,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   return <>
     <ScreenFade screenKey={view}>
       {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { if (abort.current) track('analysis_cancelled', { lift }); abort.current?.abort(); refilm(); }} />}
-      {view === 'error' && <AnalysisError lift={lift} phase={phase} onClose={onClose} onRefilm={refilm} />}
+      {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
       {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
       {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
