@@ -65,8 +65,15 @@ test('WP1.4: closing an unsaved set asks; "Ne pas garder" saves nothing, "Garder
   await analysed(page);
   await page.getByRole('button', { name: 'Fermer' }).click();
   await expect(page.getByTestId('close-card')).toBeVisible();
-  await expect(page.getByTestId('close-card')).toContainText('Garder cette série');
+  // One question at a time, naming the number: it stands where "C'est bien N ?" stood.
+  await expect(page.getByTestId('close-card')).toContainText(/Garder ces \d+ répétitions/);
+  await expect(page.getByTestId('ask-card')).toHaveCount(0);
   await expect(page.locator('#close-q')).toBeFocused();
+  // The close button again takes the question back.
+  await page.getByRole('button', { name: 'Fermer' }).click();
+  await expect(page.getByTestId('close-card')).toHaveCount(0);
+  await expect(page.getByTestId('ask-card')).toBeVisible();
+  await page.getByRole('button', { name: 'Fermer' }).click();
   await page.getByTestId('close-discard').click();
   await expect(page.locator('.choose-screen')).toBeVisible();
   expect(await savedCount(page)).toBe(0);
@@ -76,8 +83,8 @@ test('WP1.4: closing an unsaved set asks; "Ne pas garder" saves nothing, "Garder
   await page.getByTestId('close-keep').click();
   await expect(page.locator('.choose-screen')).toBeVisible();
   expect(await savedCount(page)).toBe(1);
-  // Kept before "C'est bien 7 ?" was answered: saved unconfirmed, so it can hold no record (review of 4 October).
-  expect((await lastSaved(page)).corrected).toBeNull();
+  // "Garder ces N répétitions ?" names the app's number: keeping it confirms that number.
+  expect((await lastSaved(page)).corrected).toBe(false);
   expect(errors).toEqual([]);
 });
 
@@ -91,6 +98,7 @@ test('WP1.4: the browser\'s back on an unsaved set stays on it and asks; once sa
   // A second back asks again, and does not leave.
   await page.goBack();
   await expect(page.locator('.result-screen')).toBeVisible();
+  await page.getByRole('button', { name: 'Fermer' }).click(); // back to the count's question
   await page.getByRole('button', { name: 'Oui, c’est juste' }).click();
   await expect(page.getByTestId('saved-card')).toBeVisible();
   await expect(page.getByTestId('close-card')).toHaveCount(0);

@@ -5,7 +5,7 @@ Register: vous, as the rest of the app.
 | Key | Français | English | Where |
 |---|---|---|---|
 | change-lift | Changer d’exercice | Change exercise | Saved card, under "Nouvelle série" |
-| close.q | Garder cette série ? | Keep this set? | Result, after the close button or back, on a set not yet saved |
+| close.q | Garder ces 4 répétitions ? (1: Garder cette répétition ? 0: Garder cette série ?) | Keep these 4 reps? | Result, after the close button or back, on a set not yet saved; it stands in place of "C'est bien 4 ?" (4 October, design pass) |
 | close.keep | Garder | Keep | Same card |
 | close.discard | Ne pas garder | Don’t keep | Same card |
 | recents.label | Exercices récents (read by VoiceOver only) | Recent exercises | Choice, the row of recent lifts |
@@ -13,3 +13,4 @@ Register: vous, as the rest of the app.
 | manual.saved | Merci. 8 répétitions enregistrées, saisies à la main. (1: Merci. 1 répétition enregistrée, saisie à la main.) | Thank you. 8 reps saved, typed by hand. | Refused screen, once saved |
 | manual.tag | Saisi à la main | Typed by hand | History, the set's tag |
 | manual.line | Saisi à la main : l’app n’a pas pu compter cette série. | Typed by hand: the app could not count this set. | History detail and session report |
+| recents.word | Reprendre | Again | Choice, before the recent lifts (4 October, design pass) |

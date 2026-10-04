@@ -75,7 +75,8 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
       const s = String(n), was = lastDigits.padStart(s.length, ' ');
       const digits = s.split('').map((d, i) => `<span class="d${lastDigits && was[i] !== d ? ' is-new' : ''}">${d}</span>`).join('');
       lastDigits = s;
-      el.innerHTML = `${digits}<span class="u">${fr ? ' %' : '%'}</span>`;
+      // French sets the sign apart by a narrow no-break space, as a typesetter does: the serif's full space read as a gap.
+      el.innerHTML = `${digits}<span class="u">${fr ? '\u202F%' : '%'}</span>`;
     };
 
     const off = addLayer((ctx, W, H, t, now) => {
