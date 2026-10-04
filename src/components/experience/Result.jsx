@@ -205,29 +205,55 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   const unsaved = step !== 'saved' && !result.refused;
   const unsavedRef = useRef(unsaved);
   unsavedRef.current = unsaved;
-  const askClose = () => { if (unsavedRef.current) setClosing(true); else onClose(); };
+  const askClose = () => { if (unsavedRef.current) setClosing(true); else guard.current.pending.then(onClose); };
   // The question takes focus and comes into view as it opens, for VoiceOver, the keyboard and a short screen.
   useEffect(() => {
-    if (!closing) return;
+    if (!closing || covered) return;
     const q = document.getElementById('close-q');
     q?.scrollIntoView({ block: 'center', behavior: 'auto' });
     q?.focus({ preventScroll: true, focusVisible: false });
-  }, [closing]);
+  }, [closing, covered]);
   // Back is held by one extra history entry at the same address while the set is unsaved: going back takes that
   // entry and stays on the result, where the question opens; the entry is put back for the next swipe. A change of
   // address made by the app itself (another screen) is not a back, and is let through.
+  // Once the set is saved, or the person leaves by the card, the extra entry is taken back, so the history holds no
+  // dead step; whatever moves on (a new set, the choice) waits for that. A browser that skips the entry (some skip
+  // entries added without a tap) goes back as it did before this guard: no worse, and the close button still asks.
+  const guard = useRef({ here: null, off: false, pending: Promise.resolve() });
+  const release = () => {
+    const g = guard.current;
+    if (g.off) return g.pending;
+    if (typeof history === 'undefined' || !history.state?.wvResult || location.href !== g.here) return g.pending;
+    g.off = true;
+    g.pending = new Promise(done => {
+      let t = 0;
+      const end = () => { clearTimeout(t); window.removeEventListener('popstate', end); done(); };
+      window.addEventListener('popstate', end);
+      t = setTimeout(end, 500);
+      history.back();
+    });
+    return g.pending;
+  };
+  const released = () => release();
   useEffect(() => {
     if (!unsaved || typeof history === 'undefined') return undefined;
-    const here = location.href;
-    history.pushState({ wvResult: true }, '', here);
+    const g = guard.current;
+    g.here = location.href; g.off = false;
+    history.pushState({ wvResult: true }, '', g.here);
     const onPop = () => {
-      if (location.href !== here || !unsavedRef.current) return;
-      history.pushState({ wvResult: true }, '', here);
+      if (g.off || location.href !== g.here || !unsavedRef.current) return;
+      history.pushState({ wvResult: true }, '', g.here);
       setClosing(true);
     };
     window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Saved in place: the entry goes now. Left for another screen: the address has changed and nothing is undone.
+      release();
+    };
   }, [unsaved]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Every way on from the result waits for the entry to be taken back first.
+  const after = fn => (...a) => guard.current.pending.then(() => fn(...a));
   const rootRef = useRef(null);
   const reportRef = useRef(null);
   const replayRef = useRef(null);
@@ -310,13 +336,14 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
   const [chosen, setChosen] = useState('');
-  const offerLevel = shouldAskLevel({ step, ...levelBefore });
+  // A refused set typed by hand shows neither question, so neither is spent on it (review of 4 October).
+  const offerLevel = !result.refused && shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
   // Whether to help improve the count: asked on the saved card of the first set, and once more from the fifth when
   // left unanswered, never after a yes or a no (contribute.js shouldAskContribute). Decided once the sets on the
   // phone are read after the save; shown is asked.
   const [contributeAt, setContributeAt] = useState(null); // the sets on the phone when it is asked
-  const showContribute = step === 'saved' && contributeAt !== null;
+  const showContribute = !result.refused && step === 'saved' && contributeAt !== null;
   useEffect(() => { if (showContribute) markContributeAsked(contributeAt); }, [showContribute]); // eslint-disable-line react-hooks/exhaustive-deps
   // "Noted" only when the phone stored it (audit of 2 October); otherwise the screen says it was not kept.
   const [levelLost, setLevelLost] = useState(false);
@@ -384,7 +411,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
       askToKeep();
       // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
       // A build without VITE_CONTRIBUTE keeps none and never asks: contributions are paused (buildFlags.js, WP0.4).
-      if (!manual && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed count is no label of the app's read
+      if (!manual && corrected !== null && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed or unanswered count is no label of the app's read
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       // The question on helping, from the number of sets now on the phone; unread, it is not asked.
@@ -392,9 +419,9 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         if (shouldAskContribute({ choice: readChoice(), ...contributeAsks(), saved: l.length })) setContributeAt(c => c ?? l.length);
       }, () => {});
       setSaveError(''); // a retry that saves takes back "not saved"
-      track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
+      if (!manual) track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
-      onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
+      if (!manual) onSaved(n, n === count ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
       return true;
     } catch {
@@ -406,10 +433,26 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // "Garder": the set is saved as the screen stands (the app's count while it asks, the typed count once corrected),
   // then the screen closes as the person wanted. With no count to save (the app counted none and nothing is typed
   // yet), the question on the number opens instead. "Ne pas garder": the screen closes and nothing is saved.
+  // A count the person has not answered for ("C'est bien N ?" still open) is saved as unconfirmed (corrected null):
+  // it stays in the history and the trend, holds no record (progress.js confirmed) and is never kept as a label.
   async function keepAndClose() {
+    if (saving.current) return;
+    if (step === 'fix' && unsure && trueN === 0) {
+      setClosing(false);
+      // Nothing to keep yet: the question on the number takes focus, as the card it stands in.
+      requestAnimationFrame(() => {
+        const q = cardRef.current?.querySelector('[data-testid="fix-card"] .ask-q');
+        if (q) { if (!q.hasAttribute('tabindex')) q.setAttribute('tabindex', '-1'); q.focus({ preventScroll: false, focusVisible: false }); }
+      });
+      return;
+    }
+    if (await doSave(step === 'fix' ? trueN : count, step === 'fix' ? true : null)) { setClosing(false); await released(); onClose(); }
+  }
+  async function discardAndClose() {
+    if (saving.current) return; // a save already under way finishes; the card stays until it does
     setClosing(false);
-    if (step === 'fix' && unsure && trueN === 0) return;
-    if (await doSave(step === 'fix' ? trueN : count, step === 'fix')) onClose();
+    await released();
+    onClose();
   }
 
   // The challenge opens the phone's share sheet inside the tap, with the result and a link to the
@@ -513,8 +556,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
             <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
-            <button className="btn-line press" onClick={onNewSet} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
-            <button className="text-btn press" onClick={onChangeLift} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
+            <button className="btn-line press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+            <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           </div>}
           {saveError && <p role="alert" className="save-error">{saveError}</p>}
         </div>
@@ -599,7 +642,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             <button type="button" className="btn-primary press" onClick={keepAndClose} data-testid="close-keep">
               <span>{fr ? 'Garder' : 'Keep'}</span>
             </button>
-            <button type="button" className="btn-ghost press" onClick={() => { setClosing(false); onClose(); }} data-testid="close-discard">{fr ? 'Ne pas garder' : 'Don’t keep'}</button>
+            <button type="button" className="btn-ghost press" onClick={discardAndClose} data-testid="close-discard">{fr ? 'Ne pas garder' : 'Don’t keep'}</button>
           </div>
         </div>
       )}
@@ -630,8 +673,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
               report follows, the challenge stays as a quiet line (design review of 1 October). */}
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
               changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). */}
-          <button className="btn-line press" onClick={onNewSet} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
-          <button className="text-btn press" onClick={onChangeLift} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
+          <button className="btn-line press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+          <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>

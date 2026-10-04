@@ -58,7 +58,7 @@ describe('the skeleton steadied for the eye', () => {
 describe('the trail of the lit limb', () => {
   it('runs from the oldest sample in its span to the point drawn now', () => {
     const { frames, times } = track(Array.from({ length: 30 }, (_, i) => i / 30));
-    const now = { x: 0.7, y: 0.5 };
+    const now = { x: 0.7, y: 0.5, visibility: 1 };
     const tr = trailAt(frames, times, T(20) + 0.01, 0, now, { span: 0.6 });
     expect(tr.at(-1)).toEqual({ x: 0.7, y: 0.5, age: 0 });
     expect(tr.length).toBe(9 + 1); // samples 12 to 20 lie within 0.6 s of t, then the point drawn now
@@ -92,5 +92,12 @@ describe('on a real set', () => {
     let off = 0, n = 0;
     raw.forEach((f, i) => { if (f?.[15] && out[i]?.[15]) { off += Math.hypot(f[15].x - out[i][15].x, f[15].y - out[i][15].y); n++; } });
     expect(off / n).toBeLessThan(0.02);
+  });
+});
+
+describe('the trail, with the point drawn now unseen', () => {
+  it('is not drawn', () => {
+    const { frames, times } = track(Array.from({ length: 10 }, () => 0.5));
+    expect(trailAt(frames, times, T(9), 0, { x: 0.5, y: 0.5, visibility: 0.2 })).toEqual([]);
   });
 });

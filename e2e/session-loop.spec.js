@@ -15,6 +15,16 @@ async function analysed(page) {
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
 }
+const lastSaved = page => page.evaluate(() => new Promise((ok, ko) => {
+  const r = indexedDB.open('workoutVision');
+  r.onerror = () => ko(r.error);
+  r.onsuccess = () => {
+    const db = r.result;
+    const q = db.transaction('workouts').objectStore('workouts').getAll();
+    q.onsuccess = () => { db.close(); ok(q.result.sort((a, b) => b.createdAt - a.createdAt)[0]); };
+    q.onerror = () => { db.close(); ko(q.error); };
+  };
+}));
 const savedCount = page => page.evaluate(() => new Promise((ok, ko) => {
   const r = indexedDB.open('workoutVision');
   r.onerror = () => ko(r.error);
@@ -66,6 +76,8 @@ test('WP1.4: closing an unsaved set asks; "Ne pas garder" saves nothing, "Garder
   await page.getByTestId('close-keep').click();
   await expect(page.locator('.choose-screen')).toBeVisible();
   expect(await savedCount(page)).toBe(1);
+  // Kept before "C'est bien 7 ?" was answered: saved unconfirmed, so it can hold no record (review of 4 October).
+  expect((await lastSaved(page)).corrected).toBeNull();
   expect(errors).toEqual([]);
 });
 
@@ -85,12 +97,17 @@ test('WP1.4: the browser\'s back on an unsaved set stays on it and asks; once sa
   await page.getByRole('button', { name: 'Fermer' }).click();
   await expect(page.locator('.choose-screen')).toBeVisible();
   expect(await savedCount(page)).toBe(1);
+  // The extra entry was taken back on saving: two steps back reach the filming screen, with no dead step.
+  await page.goBack();
+  await page.goBack();
+  await expect(page).toHaveURL(/#film$/);
   expect(errors).toEqual([]);
 });
 
 test('WP1.6: a refused set is logged by hand, from 0, and the history says it was typed', async ({ page }) => {
   test.setTimeout(150000);
-  const errors = await start(page, { nobody: true });
+  // No level stored: a typed set must not spend the one-time question on the level (review of 4 October).
+  const errors = await start(page, { nobody: true, init: () => localStorage.removeItem('wv_level') });
   await analysed(page);
   await expect(page.locator('.refused-title')).toHaveText('Nous n’avons pas pu compter cette série.');
   await page.getByTestId('manual-open').click();
@@ -101,6 +118,15 @@ test('WP1.6: a refused set is logged by hand, from 0, and the history says it wa
   for (let i = 0; i < 8; i++) await card.getByRole('button', { name: 'Une de plus' }).click();
   await save.click();
   await expect(page.getByTestId('saved-card')).toContainText('8 répétitions enregistrées, saisies à la main.');
+  const saved = await lastSaved(page);
+  expect(saved).toMatchObject({ reps: 8, source: 'manual', afterRefusal: true, arm: null, corrected: true });
+  expect(await page.evaluate(() => localStorage.getItem('wv_level_asked'))).toBeNull();
+  // The replay states no count of the app beside the typed one (R8).
+  await page.getByRole('button', { name: 'Revoir la série avec le squelette' }).click();
+  await expect(page.locator('.replay-screen')).toBeVisible();
+  await expect(page.getByTestId('rp-prov')).toHaveCount(0);
+  await page.locator('.replay-screen').getByRole('button', { name: 'Retour' }).click();
+  await expect(page.locator('.replay-screen')).toHaveCount(0);
   await page.getByTestId('change-lift').click();
   await openHistory(page);
   await expect(page.locator('.hist-btn').first()).toContainText('Saisi à la main');

@@ -8,11 +8,12 @@ import { compactWave, waveAngles } from './wave';
  */
 // manual: a set the app refused, whose count the person typed (WP1.6 of docs/SPEC-production.md). It is saved as theirs
 // alone: no count of the app, no rep details, no measure, no wave; the history, the report and the spreadsheet say
-// "saisi à la main".
+// "saisi à la main". No arm: the app could not see one (the core's default side is no observation). afterRefusal tells
+// these from the sets ManualLog.jsx typed (25-26 September), which the app never tried to count.
 export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date() }) {
   if (manual) {
     return {
-      exercise: lift, reps: n, repDetails: [], arm: result.arm ?? null, confidence: null,
+      exercise: lift, reps: n, repDetails: [], arm: null, confidence: null, afterRefusal: true,
       date: now.toISOString(), source: 'manual', duration: result.metadata?.duration, corrected: true,
       sides: null, machineResult: null, correctedResult: { reps: n }, repDetailsVersion: 2, wave: null,
     };

@@ -173,7 +173,7 @@ export default function History({ onClose }) {
                 </span>}
               </button>
               {shown && <div className="hist-detail appear">
-                {byHand && <p className="hist-corr">{fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
+                {byHand && w.afterRefusal && <p className="hist-corr">{fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
                 {fixed && <p className="hist-corr">{fr ? `Compté par l’app : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
                 <button className="btn-line press" onClick={() => { setLeaving(false); setReport(w); track('report_open', { lift: w.exercise || w.exerciseKey }); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
@@ -200,7 +200,7 @@ export default function History({ onClose }) {
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
-      date={setTime(report)} source={report.source} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
+      date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
       setId={report.id} sides={report.sides ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
   </>;
 }

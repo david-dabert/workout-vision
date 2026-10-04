@@ -75,7 +75,7 @@ export function recentLifts(all, n = 3) {
   return out;
 }
 
-// A set typed by hand after the app refused it (WP1.6) has no count of the app: null.
+// A set typed by hand (ManualLog.jsx's, or one the app refused, WP1.6) has no count of the app: null.
 export function countedBy(w) {
   if (w.source === 'manual') return null;
   if (w.correctedResult && Number.isFinite(w.machineResult?.reps)) return w.machineResult.reps;

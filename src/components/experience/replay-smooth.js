@@ -68,6 +68,8 @@ export function steadyFrames(frames, times) {
  * ending at `now` (the point as drawn at t). Only points the model was sure of; the path stops at a gap.
  */
 export function trailAt(frames, times, t, k, now, { span = 0.6, sure = 0.5 } = {}) {
+  // No trail to a point not seen now: it would lead the eye to a limb the drawing has faded out (review of 4 October).
+  if (now && !(now.visibility >= sure)) return [];
   const out = [];
   let i = times.length - 1;
   while (i >= 0 && times[i] > t) i--;
