@@ -1,0 +1,174 @@
+{
+ "deadlift_diag_m1_6_6": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_diag_m2_6_5": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_diag_m3_12_0": {
+  "split": "build",
+  "status": "written"
+ },
+ "deadlift_diag_m4_7_6": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_diag_w1_9_3": {
+  "split": "build",
+  "status": "written"
+ },
+ "deadlift_diag_w2_9_6": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_diag_w4_11_2": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_front_m1_13_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_front_m2_13_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_front_m3_10_0": {
+  "split": "build",
+  "status": "written"
+ },
+ "deadlift_front_m4_10_2": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_front_w1_6_6": {
+  "split": "build",
+  "status": "written"
+ },
+ "deadlift_front_w2_12_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_front_w4_12_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_side_m1_11_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_side_m2_9_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_side_m3_9_3": {
+  "split": "build",
+  "status": "written"
+ },
+ "deadlift_side_m4_8_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_side_w1_12_0": {
+  "split": "build",
+  "status": "written"
+ },
+ "deadlift_side_w2_9_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "deadlift_side_w4_7_6": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_diag_m1_6_7": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_diag_m2_8_6": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_diag_m3_12_0": {
+  "split": "build",
+  "status": "written"
+ },
+ "squat_diag_m4_5_7": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_diag_w1_9_3": {
+  "split": "build",
+  "status": "written"
+ },
+ "squat_diag_w2_5_7": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_diag_w4_10_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_front_m1_9_4": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_front_m2_13_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_front_m3_9_3": {
+  "split": "build",
+  "status": "written"
+ },
+ "squat_front_m4_6_6": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_front_w1_9_3": {
+  "split": "build",
+  "status": "written"
+ },
+ "squat_front_w2_9_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_front_w4_12_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_side_m1_12_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_side_m2_9_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_side_m32_9_3": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_side_m3_11_0": {
+  "split": "build",
+  "status": "written"
+ },
+ "squat_side_m4_11_1": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_side_w1_12_0": {
+  "split": "build",
+  "status": "written"
+ },
+ "squat_side_w2_12_0": {
+  "split": "holdout",
+  "status": "written"
+ },
+ "squat_side_w4_7_6": {
+  "split": "holdout",
+  "status": "written"
+ }
+}

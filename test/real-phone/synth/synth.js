@@ -127,6 +127,8 @@ camera.lookAt(0, 0.95, 0);
 
 const flat = document.createElement('canvas'); flat.width = W; flat.height = H;
 const fctx = flat.getContext('2d', { willReadFrequently: true });
+// A bench run may load another pose model (run.mjs, BENCH_POSE): its bytes are handed to the app's loader.
+if (P.benchPose) globalThis.__WV_BENCH_POSE_MODEL__ = await (await fetch('bench-pose.task')).arrayBuffer();
 const model = P.video ? null : await getImageLandmarker();
 const frames = [], truth = [], ts = [];
 const n = Math.floor(total * FPS);

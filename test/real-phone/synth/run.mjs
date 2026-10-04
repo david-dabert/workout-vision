@@ -10,6 +10,8 @@ import { chromium } from '@playwright/test';
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '../../..');
 const OUT = process.env.SYNTH_OUT, MODEL = process.env.SYNTH_MODEL;
+// BENCH_POSE: another pose model file to measure in place of the shipped one (poseAnalysis.js bench hook).
+const BENCH = process.env.BENCH_POSE ? readFileSync(process.env.BENCH_POSE) : null;
 if (!OUT || !MODEL) throw new Error('SYNTH_OUT and SYNTH_MODEL are required');
 mkdirSync(OUT, { recursive: true });
 const sets = JSON.parse(readFileSync(process.argv[2], 'utf8'));
@@ -25,9 +27,10 @@ try {
     const page = await browser.newPage();
     page.on('pageerror', e => console.log('pageerror', p.id, e.message));
     await page.route('**/synth-model.glb', r => r.fulfill({ body: glb, contentType: 'model/gltf-binary' }));
-    await page.addInitScript(x => { window.SYNTH = x; }, p);
+    if (BENCH) await page.route('**/bench-pose.task', r => r.fulfill({ body: BENCH, contentType: 'application/octet-stream' }));
+    await page.addInitScript(x => { window.SYNTH = x; }, BENCH ? { ...p, benchPose: true } : p);
     const t0 = Date.now();
-    await page.goto(URL);
+    await page.goto(URL, { timeout: 300000 }); // the dev server's first load pre-bundles three.js
     await page.waitForFunction(() => window.RESULT, null, { timeout: 900000 });
     const r = await page.evaluate(() => window.RESULT);
     if (p.shot) { const s = await page.evaluate(() => window.SHOT); writeFileSync(resolve(OUT, `${p.id}.jpg`), Buffer.from(s.split(',')[1], 'base64')); }

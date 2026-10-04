@@ -54,6 +54,9 @@ export default defineConfig({
   server: {
     host: true,
     https: httpsConfig,
+    // Agent worktrees (.claude/worktrees, tens of thousands of files) and the stored datasets are never served
+    // code: watching them exhausted the system's file watchers and stopped the dev server (4 October).
+    watch: { ignored: ['**/.claude/**', '**/test/real-phone/public/**', '**/dist*/**'] },
   },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
