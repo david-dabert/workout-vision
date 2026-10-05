@@ -25,6 +25,7 @@ export const SCHEMA_VERSION = 1;
  */
 export async function checkAndMigrateSchema() {
   try {
+    await _repairManualProvenance();
     const storedVersion = await metaStore.getItem('schemaVersion');
     if (storedVersion === SCHEMA_VERSION) return;
 
@@ -38,6 +39,21 @@ export async function checkAndMigrateSchema() {
   } catch (e) {
     console.warn('[Storage] Schema migration failed:', e);
   }
+}
+
+/**
+ * Once per phone: a count typed by hand after a refusal (afterRefusal, saved-set.js) was stored from 3 to 5 October
+ * with the typed count as the app's machineResult (saveWorkout's old fallback). The app measured nothing, so its
+ * machineResult goes back to null; nothing else in the set changes (Astra's review of 5 October).
+ */
+async function _repairManualProvenance() {
+  if (await metaStore.getItem('manualProvenanceRepaired')) return;
+  const fix = [];
+  await workoutStore.iterate((value, key) => {
+    if (value?.afterRefusal === true && value.source === 'manual' && value.machineResult != null) fix.push({ key, value });
+  });
+  for (const { key, value } of fix) await workoutStore.setItem(key, { ...value, machineResult: null });
+  await metaStore.setItem('manualProvenanceRepaired', true);
 }
 
 /**
@@ -120,8 +136,10 @@ export async function saveWorkout(workout) {
     ...workout,
     createdAt: Date.now(),
     schemaVersion: SCHEMA_VERSION,
-    // Preserve machine result alongside any user correction
-    machineResult: workout.machineResult || (workout.reps != null ? { reps: workout.reps, confidence: workout.confidence || null } : null),
+    // Preserve machine result alongside any user correction. A set that states machineResult: null (a count typed by
+    // hand after the app refused the set, saved-set.js) keeps it: the app measured nothing, and the typed count is not
+    // to be stored as the app's (Astra's review of 5 October). The default applies only when the field is absent.
+    machineResult: workout.machineResult !== undefined ? workout.machineResult : (workout.reps != null ? { reps: workout.reps, confidence: workout.confidence || null } : null),
     correctedResult: workout.correctedResult || null,
   };
   await workoutStore.setItem(id, entry);

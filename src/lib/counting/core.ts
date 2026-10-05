@@ -412,7 +412,9 @@ function countSide(
   const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if (cleaned[j] === null && bridged[j] !== null) return false; return true; });
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
 
-  // 8. Confidence: fraction of samples with a detected pose on the tracked side
+  // 8. Confidence: fraction of samples with a detected pose on the tracked side. It is pose coverage, not certainty
+  // that the count is right: a set seen throughout can still be miscounted (Astra's review of 5 October). Read it as
+  // coverage; the field keeps its name for the sets already saved with it.
   const totalSamples = worldLandmarks.length;
   const detectedSamples = rawAngles.filter(a => a !== null).length;
   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
