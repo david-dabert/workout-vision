@@ -14,10 +14,9 @@ describe('the line said once a set is saved', () => {
   it('greets the first set of a lift', () => {
     expect(momentLine({ n: 8, before: [], fr: true }).kind).toBe('first');
   });
-  it('otherwise gives a coach line, the same for the same rank', () => {
-    const a = momentLine({ n: 6, before: [set(10)], nth: 2, fr: true });
-    expect(a.kind).toBe('coach');
-    expect(momentLine({ n: 6, before: [set(10)], nth: 2, fr: true })).toEqual(a);
+  it('otherwise says nothing: no line judges the execution, which the app does not measure (R8)', () => {
+    expect(momentLine({ n: 6, before: [set(10)], fr: true })).toBeNull();
+    expect(momentLine({ n: 6, before: [set(10)], fr: false })).toBeNull();
   });
   it('says nothing for a count not kept, a zero, or before the sets are read (R8)', () => {
     expect(momentLine({ n: 8, before: [], kept: false })).toBeNull();
