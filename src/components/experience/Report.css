@@ -50,8 +50,8 @@
 .wv-experience .sh-line { margin: 0; font-size: 12px; color: var(--paper-ash); }
 .wv-experience .sh-table { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; table-layout: fixed; }
 /* Fixed columns, so the PDF can set the same table: Rep 11%, Tempo 32%, Range 21%, Peak and Mean 18% each. */
-.wv-experience .sh-table th:first-child { width: 11%; }
-.wv-experience .sh-table th:nth-child(2) { width: 32%; }
+.wv-experience .sh-table th:first-child { width: 14%; }
+.wv-experience .sh-table th:nth-child(2) { width: 29%; }
 .wv-experience .sh-table th:nth-child(3) { width: 21%; }
 .wv-experience .sh-table th:nth-child(4), .wv-experience .sh-table th:nth-child(5) { width: 18%; }
 .wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--paper-rule);
@@ -102,3 +102,17 @@
 .wv-experience .sheet .mg-ph { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px 6px; border: 1px solid var(--paper-rule); border-radius: 9px; }
 .wv-experience .sheet .mg-ph b { font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1; color: var(--paper-gold); font-variant-numeric: lining-nums; }
 .wv-experience .sheet .mg-ph small { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--paper-ash); white-space: nowrap; }
+/* Report composition (David's iPhone, 5 October: harmony). How the count was made sits under it as labelled details,
+   like the people above; the set's two figures are set like the count; footnotes are small; the experimental notice
+   closes the sheet, as it closes every PDF page. */
+.wv-experience .sheet .sh-details { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* A label that wraps ("COMPTÉ PAR L’APP") keeps the three values on one line, as in the PDF. */
+.wv-experience .sheet .sh-details > span { display: flex; flex-direction: column; justify-content: space-between; gap: 2px; }
+.wv-experience .sheet .sh-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
+.wv-experience .sheet .sh-stats em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
+.wv-experience .sheet .sh-stats b { display: block; margin-top: 4px; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1; color: var(--paper-gold); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .sheet .sh-foot-notes { margin: -4px 0 0; font-size: 10px; color: var(--paper-ash); white-space: pre-wrap; }
+.wv-experience .sheet .sh-exp { margin: 0; padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 9.5px; line-height: 1.5; color: var(--paper-ash); }
+.wv-experience .sh-wave .strip-key { display: inline-flex; align-items: center; gap: 6px; }
+.wv-experience .sh-wave .strip-key .sw-out { background: #8A6630; }
+.wv-experience .sh-wave .strip-key .sw-back { background: #CDB68E; margin-left: 6px; }

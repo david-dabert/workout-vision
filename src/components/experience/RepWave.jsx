@@ -22,7 +22,8 @@ export default function RepWave({ angles, timestamps, reps, rest, first, sel, sh
   return <div className={`wave${sel >= 0 ? ' has-sel' : ''}`} data-testid="rep-wave">
     <p className="strip-head">
       <span className="strip-label">{fr ? `Angle ${jointWord}` : `${jointWord[0].toUpperCase()}${jointWord.slice(1)} angle`}</span>
-      <span className="strip-key">{fr ? `trait plein${NB}: aller · léger${NB}: retour` : 'solid: out · light: back'}</span>
+      {/* The key shows the two strokes themselves (David's iPhone, 5 October: "solid: out" said less than the colour). */}
+      <span className="strip-key"><i className="sw sw-out" aria-hidden="true" />{fr ? 'aller' : 'out'}<i className="sw sw-back" aria-hidden="true" />{fr ? 'retour' : 'back'}</span>
     </p>
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" onClick={tap}>
       {strokes.map(s => <rect key={`b${s.i}`} className={`w-band${s.i === sel ? ' sel' : ''}`} x={s.band.x} y="0" width={s.band.w} height={H} />)}

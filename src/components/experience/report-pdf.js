@@ -137,18 +137,22 @@ export function reportPdf(sheet) {
   const paint = () => { doc.setFillColor(COLOR.paper); doc.rect(0, 0, PAGE_W, PAGE_H, 'F'); };
   paint();
   let y = MARGIN;
-  const room = () => PAGE_H - MARGIN - y;
+  // Every page keeps a footer for the experimental notice and the page number (drawn last, footers()).
+  const FOOTER = 22;
+  const room = () => PAGE_H - MARGIN - FOOTER - y;
   // Once the measures have begun, every new page opens with the experimental label, so no page shows a measure
   // without it (R8; audit of 3 October: a long set's table ran onto pages without it).
   let measuresBegun = false;
-  const newPage = () => {
-    doc.addPage('a5'); paint(); y = MARGIN;
-    if (measuresBegun && sheet.experimental) {
-      const block = lines(sheet.experimental, 9, COLUMN);
-      block.lines.forEach(line => { drawLine(line, block.raster, MARGIN, y, 9, 1.5, COLOR.ash); y += 13.5; });
-      y += GAP;
-    }
+  // The experimental notice now closes every page in its footer (footers()), so a new page opens on its content
+  // (David's iPhone, 5 October: the notice heading each page read as debris). measuresBegun is kept for that rule.
+  // Each page's notice is set as the page is finished, the page number once the count of pages is known (end).
+  const FOOT_Y = PAGE_H - MARGIN - 12, NUM_W = 40;
+  const footer = () => {
+    if (!sheet.experimental) return;
+    const block = lines(sheet.experimental, 8.5, COLUMN - NUM_W);
+    drawLine(block.lines[0], block.raster, MARGIN, FOOT_Y, 8.5, 1.5, COLOR.ash);
   };
+  const newPage = () => { footer(); doc.addPage('a5'); paint(); y = MARGIN; };
   const rule = () => { doc.setDrawColor(COLOR.rule); doc.setLineWidth(1); doc.line(MARGIN, y + 0.5, MARGIN + COLUMN, y + 0.5); };
   const label = (text, x, top) => write(upper(text), x, top, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16);
 
@@ -163,17 +167,24 @@ export function reportPdf(sheet) {
   y += 30 + GAP;
 
   // What the user filled in about themselves, two to a row, in two columns 8 apart; nothing when
-  // nothing was filled in (step 1: no coach is assumed).
+  // nothing was filled in (step 1: no coach is assumed). The count's details are set the same way.
   const colW = (COLUMN - 8) / 2;
-  for (let r = 0; r < sheet.people.length; r += 2) {
-    const row = sheet.people.slice(r, r + 2).map(([name, value]) => ({ name, block: lines(value, 12, colW) }));
-    row.forEach(({ name, block }, i) => {
-      const x = MARGIN + i * (colW + 8);
-      label(name, x, y);
-      block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
-    });
-    y += 13.5 + 18 * Math.max(...row.map(c => c.block.lines.length)) + GAP;
-  }
+  const pairs = (items, per = 2) => {
+    const w = (COLUMN - 8 * (per - 1)) / per;
+    for (let r = 0; r < items.length; r += per) {
+      // A label wider than its column ("COUNTED BY THE APP" in three) wraps there, as the sheet's does.
+      const row = items.slice(r, r + per).map(([name, value]) => ({ heads: wrapText(upper(name), w, t => width(t, 'mono', 9, 9 * 0.16)), block: lines(value, 12, w) }));
+      const headH = 13.5 * Math.max(...row.map(c => c.heads.length));
+      if (room() < headH + 18 * Math.max(...row.map(c => c.block.lines.length)) && y > MARGIN) newPage();
+      row.forEach(({ heads, block }, i) => {
+        const x = MARGIN + i * (w + 8);
+        heads.forEach((h, k) => write(h, x, y + k * 13.5, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16));
+        block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + headH + k * 18, 12, 1.5, COLOR.ink));
+      });
+      y += headH + 18 * Math.max(...row.map(c => c.block.lines.length)) + GAP;
+    }
+  };
+  pairs(sheet.people);
 
   // The count: a rule, then the numeral and its words on one baseline.
   rule();
@@ -200,7 +211,21 @@ export function reportPdf(sheet) {
     block.lines.forEach(line => { if (room() < 18 && y > MARGIN) newPage(); drawLine(line, block.raster, MARGIN, y, 12, 1.5, COLOR.ash); y += 18; });
     y += GAP;
   };
-  [sheet.corrected, sheet.arm, sheet.experimental].filter(Boolean).forEach(sheetLine);
+  // How the count was made, labelled like the people (report-sheet.js, details).
+  pairs(sheet.details || [], 3);
+  // The set's two figures, set like the count: a rule, two columns, a label in capitals over a serif value in gold.
+  if (sheet.stats?.length) {
+    const H = 1 + 12 + 13.5 + 4 + 26;
+    if (room() < H && y > MARGIN) newPage();
+    rule();
+    y += 1 + 12;
+    sheet.stats.forEach(([name, value], i) => {
+      const x = MARGIN + i * (colW + 8);
+      label(name, x, y);
+      write(value, x, y + 13.5 + 4, 'serif', 26, 1, COLOR.count);
+    });
+    y += 13.5 + 4 + 26 + GAP;
+  }
   measuresBegun = true;
 
   // The wave (wave.js), as on the report screen: the measured angle as a hairline, each rep over it in the
@@ -210,7 +235,13 @@ export function reportPdf(sheet) {
     if (room() < 13.5 + 16.5 + 8 + H && y > MARGIN) newPage();
     write(label, MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12);
     y += 13.5;
-    write(sheet.fr ? 'trait plein\u00A0: aller · léger\u00A0: retour' : 'solid: out · light: back', MARGIN, y, 'sans', 11, 1.5, COLOR.ash);
+    // The key shows the two strokes themselves, as the sheet does (RepWave.jsx).
+    const keyOut = sheet.fr ? 'aller' : 'out', keyBack = sheet.fr ? 'retour' : 'back', mid = y + 16.5 / 2;
+    doc.setLineWidth(2); doc.setDrawColor(COLOR.count); doc.line(MARGIN, mid, MARGIN + 14, mid);
+    write(keyOut, MARGIN + 19, y, 'sans', 11, 1.5, COLOR.ash);
+    const bx = MARGIN + 19 + width(keyOut, 'sans', 11) + 14;
+    doc.setDrawColor(COLOR.waveBack); doc.line(bx, mid, bx + 14, mid);
+    write(keyBack, bx + 19, y, 'sans', 11, 1.5, COLOR.ash);
     y += 16.5 + 8;
     const geo = waveGeometry({ angles: sheet.wave.a, timestamps: sheet.wave.t, rest: sheet.wave.rest, width: COLUMN, height: H, pad: 2 });
     const draw = (strokes, color, w) => {
@@ -231,43 +262,54 @@ export function reportPdf(sheet) {
     y += H + GAP;
   }
 
-  // The reps table: Rep (11%), Tempo (32%), Range (21%), Peak (18%), Mean (18%): wide enough that no
+  // The reps table: Rep (14%, "REPÈRE" after a correction), Tempo (29%), Range (21%), Peak (18%), Mean (18%): wide enough that no
   // heading runs into the next ("RÉP.TEMPO", "AMPLITUDEPIC" on David's report of 29 September).
   // With collapsed borders each row holds half of the 1 px rule above it and
   // below it: the heading row is 6 + 13.5 + 6 + 0.5 high, a rep's row
   // 0.5 + 5 + 17.25 + 5 + 0.5, and the table ends half a rule below its last
   // line. A row that does not fit opens a page, which repeats the heading.
   if (sheet.rows?.length) {
-    const widths = [COLUMN * 0.11, COLUMN * 0.32, COLUMN * 0.21, COLUMN * 0.18, COLUMN * 0.18];
+    const widths = [COLUMN * 0.14, COLUMN * 0.29, COLUMN * 0.21, COLUMN * 0.18, COLUMN * 0.18];
     const colX = k => MARGIN + widths.slice(0, k).reduce((a, b) => a + b, 0);
-    const HEAD = 26, ROW = 28.25;
+    const HEAD = 26, ROW = 24;
     const hline = (at, color) => { doc.setDrawColor(color); doc.setLineWidth(1); doc.line(MARGIN, at, MARGIN + COLUMN, at); };
     const heading = () => {
       sheet.columns.forEach((c, k) => write(upper(c), colX(k), y + 6, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12));
       hline(y + HEAD, COLOR.rule);
       y += HEAD;
     };
-    if (room() < HEAD + ROW + 0.5 && y > MARGIN) newPage();
+    // The table stays whole when a fresh page holds it, rather than leaving a row or two behind.
+    const whole = HEAD + ROW * sheet.rows.length + 0.5, BODY = PAGE_H - 2 * MARGIN - FOOTER;
+    if ((room() < whole && whole <= BODY || room() < HEAD + ROW + 0.5) && y > MARGIN) newPage();
     heading();
     sheet.rows.forEach(row => {
       if (room() < ROW + 0.5) { newPage(); heading(); }
-      row.forEach((v, k) => write(v, colX(k), y + 0.5 + 5, 'mono', 11.5, 1.5, COLOR.ink));
+      row.forEach((v, k) => write(v, colX(k), y + 0.5 + (ROW - 1 - 17.25) / 2, 'mono', 11.5, 1.5, COLOR.ink));
       hline(y + ROW, COLOR.rowRule);
       y += ROW;
     });
     y += 0.5 + GAP;
   }
-  // One item per line, each its own paragraph (Luc, 29 September).
-  sheet.summary.forEach(sheetLine);
-  if (sheet.shortRepNote) sheetLine(sheet.shortRepNote);
-  if (sheet.partialRepNote) sheetLine(sheet.partialRepNote);
+  // The table's two marks, as footnotes under it, small.
+  const notesUnder = [sheet.shortRepNote, sheet.partialRepNote].filter(Boolean).join('     ');
+  if (notesUnder) {
+    if (room() < 15 && y > MARGIN) newPage();
+    y -= GAP - 4;
+    const nb = lines(notesUnder, 10, COLUMN);
+    drawLine(nb.lines[0], nb.raster, MARGIN, y, 10, 1.5, COLOR.ash);
+    y += 15 + GAP;
+  }
+  // What the figures do not say, one item per line (Luc, 29 September).
+  (sheet.more || []).forEach(sheetLine);
   // The key to the measures (report-sheet.js, measureGuide), as the sheet shows it: the table's headings as terms, in
   // small capitals and the count's gold, the definitions in ink, and the tempo's four phases drawn as boxes.
   if (sheet.guide) {
     const g = sheet.guide, TERM = COLUMN * 0.27, TEXT_X = MARGIN + TERM + 10, TEXT_W = COLUMN - TERM - 10, LH = 12.5 * 1.45;
     const BOX_H = 44, BOX_GAP = 6;
     const need = text => lines(text, 12.5, TEXT_W).lines.length * LH;
-    if (room() < 1 + 10 + 13.5 + 10 + need(g.tempo.text) + 8 + BOX_H && y > MARGIN) newPage();
+    // The key stays whole when a fresh page holds it.
+    const whole = 1 + 13 + 13.5 + 10 + need(g.tempo.text) + 8 + BOX_H + 9 + g.items.reduce((a, i) => a + Math.max(need(i.text), wrapText(upper(i.term), TERM, t => width(t, 'mono', 9, 9 * 0.06)).length * 13.5) + 9, 0);
+    if (room() < whole && y > MARGIN) newPage();
     doc.setDrawColor(COLOR.rule); doc.setLineWidth(1); doc.line(MARGIN, y, MARGIN + COLUMN, y);
     y += 13;
     write(upper(g.title), MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16);
@@ -320,5 +362,13 @@ export function reportPdf(sheet) {
     foot.forEach(line => { write(line, MARGIN, y, 'sans', 10, 1.5, COLOR.ash); y += 15; });
   }
 
+  // The last page's notice, then every page's number when there are several.
+  footer();
+  const pages = doc.getNumberOfPages();
+  if (pages > 1) for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    const num = `${p} / ${pages}`;
+    write(num, MARGIN + COLUMN - width(num, 'mono', 8.5, 8.5 * 0.1), FOOT_Y, 'mono', 8.5, 1.5, COLOR.ash, 8.5 * 0.1);
+  }
   return doc.output('blob');
 }

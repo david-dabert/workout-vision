@@ -171,20 +171,26 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         </div>
         {/* The numeral leads; the sentence is its caption (critic, 30 September). */}
         {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
-        {sheet.corrected && <p className="sh-line">{sheet.corrected}</p>}
-        {sheet.arm && <p className="sh-line">{sheet.arm}</p>}
-        {sheet.experimental && <p className="sh-line sh-exp" data-testid="sh-exp">{sheet.experimental}</p>}
+        {/* How the count was made, labelled like the people above (David's iPhone, 5 October: four grey sentences of equal weight). */}
+        {sheet.details.length > 0 && <div className="sh-people sh-details">
+          {sheet.details.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
+        </div>}
+        {/* The set's two figures, set like the count, under it. */}
+        {sheet.stats.length > 0 && <div className="sh-stats" data-testid="sh-stats">
+          {sheet.stats.map(([label, value]) => <span key={label}><em>{label}</em><b>{value}</b></span>)}
+        </div>}
         {sheet.wave && <div className="sh-wave" data-testid="sh-wave"><RepWave angles={sheet.wave.a} timestamps={sheet.wave.t} reps={sheet.wave.reps} rest={sheet.wave.rest} first={sheet.wave.first} sel={-1} shown={sheet.wave.reps.length} fr={fr} jointWord={sheet.wave.jointWord} onSelect={() => {}} /></div>}
         {sheet.rows.length > 0 && <table className="sh-table">
           <thead><tr>{sheet.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
           <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
         </table>}
-        {sheet.summary.map(line => <p key={line} className="sh-line">{line}</p>)}
-        {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
-        {sheet.partialRepNote && <p className="sh-line sh-short">{sheet.partialRepNote}</p>}
+        {(sheet.shortRepNote || sheet.partialRepNote) && <p className="sh-foot-notes">{[sheet.shortRepNote, sheet.partialRepNote].filter(Boolean).join('   ')}</p>}
+        {sheet.more.map(line => <p key={line} className="sh-line">{line}</p>)}
         {sheet.guide && <MeasureGuide guide={sheet.guide} />}
         {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
         {sheet.foot && <p className="sh-foot">{sheet.foot}</p>}
+        {/* Experimental, at the foot of the sheet as at the foot of every PDF page (R8). */}
+        {sheet.experimental && <p className="sh-exp" data-testid="sh-exp">{sheet.experimental}</p>}
       </article>
 
       <div className="share-bar">

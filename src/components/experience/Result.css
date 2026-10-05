@@ -244,3 +244,7 @@
 .wv-experience .wave.has-sel .w-rep:not(.sel).lit path { opacity: 0.32; }
 .wv-experience .result-screen.is-saved .wave svg { opacity: 0.55; transition: opacity 0.7s var(--ease); }
 @media (prefers-reduced-motion: reduce) { .wv-experience .w-rep path, .wv-experience .result-screen.is-saved .wave { transition: none; } }
+/* The wave's key shows its two strokes (RepWave.jsx). */
+.wv-experience .strip-key .sw { display: inline-block; width: 14px; height: 2px; border-radius: 1px; vertical-align: middle; margin-right: 5px; }
+.wv-experience .strip-key .sw-out { background: var(--lamp); }
+.wv-experience .strip-key .sw-back { background: rgba(232, 189, 126, 0.42); margin-left: 10px; }
