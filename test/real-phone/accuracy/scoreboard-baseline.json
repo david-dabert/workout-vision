@@ -1,6 +1,7 @@
 {
-  "note": "The counts last accepted (2026-10-03), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2).",
+  "note": "The counts last accepted (2026-10-05), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2).",
   "counts": {
+    "sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz": 8,
     "sets-29sep/bench_press_7_side_24cc4f0b.json.gz": 5,
     "sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz": 5,
     "sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz": 6,

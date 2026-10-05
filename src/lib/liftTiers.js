@@ -24,6 +24,13 @@ export const TIERS = {
   overhead_press: 'experimental',
 };
 
+// The offered exercises with no card of their own (offer.js) that earn Beta by the same rule, from David's sets.
+// Kept apart from TIERS, which also lists the cards (lift-meta.js, Choice.jsx). Same status: convention.
+export const GUIDE_TIERS = {
+  // 5 October: beta. sets-05oct/machine_seated_back_extension_8 counts 8 for 8, its only set (scoreboard.txt).
+  machine_seated_back_extension: 'beta',
+};
+
 export const tierLabel = (tier, fr) => tier === 'beta'
   ? (fr ? 'Bêta' : 'Beta')
   : (fr ? 'Expérimental\u00A0: nous\u00A0apprenons encore cet exercice' : 'Experimental: we are still learning this exercise');

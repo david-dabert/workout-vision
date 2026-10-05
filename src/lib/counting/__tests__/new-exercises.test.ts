@@ -119,9 +119,10 @@ describe('the machine seated back extension', () => {
     expect(g.how!.en).toMatch(/^Seated, facing forward/);
   });
 
-  it('is offered, experimental', () => {
+  // 5 October: Beta, as its one set of David's counts exactly (liftTiers.js GUIDE_TIERS, tiers.test.ts).
+  it('is offered, beta', () => {
     expect(isOffered('machine_seated_back_extension')).toBe(true);
-    expect(tierOf('machine_seated_back_extension')).toBe('experimental');
+    expect(tierOf('machine_seated_back_extension')).toBe('beta');
   });
 
   it('ten extensions from 80 to 120 degrees count ten', () => {
