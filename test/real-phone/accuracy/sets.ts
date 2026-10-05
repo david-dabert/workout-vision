@@ -57,11 +57,21 @@ export const PUBLIC = resolve(ROOT, 'public');
 // a set recorded as written with no file is missing and fails the gate; a set that failed or was left out
 // is listed with its reason; a written set outside the admission rule (scripts/public/admission.mjs) is
 // listed, not scored.
+export type Exposed = Record<string, { sets: string | string[]; reason: string }>;
+/** Whether a held-out set is recorded as already seen (public/exposed.json): its whole dataset, or its id. */
+export function isExposed(exposed: Exposed, ds: string, id: string) {
+  const e = exposed[ds];
+  return !!e && (e.sets === 'all' || (Array.isArray(e.sets) && e.sets.includes(id)));
+}
 export function publicSets(split: 'build' | 'holdout' = 'build') {
   if (split === 'holdout' && !process.env.HOLDOUT) throw new Error('The held-out half is read only by its own run (HOLDOUT=1).');
   const sets: PublicSet[] = [], unreadable: string[] = [], missing: string[] = [], notScored: string[] = [];
   let datasets: string[] = [];
   try { datasets = readdirSync(PUBLIC).filter(d => statSync(resolve(PUBLIC, d)).isDirectory()).sort(); } catch { return { sets, unreadable, missing, notScored }; }
+  // Held-out sets already seen (public/exposed.json): listed with their reason, never scored as an unseen exam.
+  let exposed: Exposed = {};
+  try { exposed = JSON.parse(readFileSync(resolve(PUBLIC, 'exposed.json'), 'utf8')); } catch { /* none recorded */ }
+  const seen = (ds: string, id: string) => split === 'holdout' && isExposed(exposed, ds, id);
   for (const ds of datasets) {
     let record: Record<string, { split?: string; status: string; reason?: string }> = {};
     try { record = JSON.parse(readFileSync(resolve(PUBLIC, ds, 'sets.json'), 'utf8')); } catch { unreadable.push(`public/${ds}/sets.json`); }
@@ -74,6 +84,7 @@ export function publicSets(split: 'build' | 'holdout' = 'build') {
     try { files = readdirSync(dir).filter(f => f.endsWith('.json.gz')).sort(); } catch { continue; }
     for (const f of files) {
       const name = `public/${ds}/${split}/${f}`;
+      if (seen(ds, f.replace(/\.json\.gz$/, ''))) { notScored.push(`${name}: exposed: ${exposed[ds].reason}`); continue; }
       let d: any;
       try { d = JSON.parse(gunzipSync(readFileSync(resolve(dir, f))).toString()); }
       catch { unreadable.push(name); continue; }

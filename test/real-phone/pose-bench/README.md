@@ -60,3 +60,10 @@ built-in truth:
 
 The bar the lateral raise meets is 10 points. Heavy reads the gap worse: the camera's depth, not the model, limits
 the comparison of curls and presses filmed from the front. symmetry.ts keeps them out.
+
+## Exposure of CFRep's held-out half (recorded 5 October 2026)
+
+This bench counted all 43 CFRep videos on 4 October, before scripts/public/cfrep.mjs put 31 of them in the held-out
+half. Those 31 have been seen, and their counts informed keeping the full model, so they can no longer serve as an
+unseen exam. test/real-phone/public/exposed.json records it, and the held-out reader lists them as exposed instead
+of scoring them (found by Astra's review of 5 October). A future bench reads the build half only.

@@ -1,0 +1,8 @@
+{
+  "note": "Held-out sets already seen, which no exam may count as unseen. Read by test/real-phone/accuracy/sets.ts publicSets('holdout'): an exposed set is listed with its reason, never scored.",
+  "cfrep": {
+    "sets": "all",
+    "date": "2026-10-04",
+    "reason": "The pose-model bench (test/real-phone/pose-bench) counted all 43 CFRep videos, the 31 later put in the held-out half included, before scripts/public/cfrep.mjs split them; those counts informed keeping pose_landmarker_full. Found by Astra's review of 5 October."
+  }
+}
