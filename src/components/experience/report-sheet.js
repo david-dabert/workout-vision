@@ -41,24 +41,31 @@ export function setMeasures(all) {
 
 /**
  * What each measure means, in plain words, under the per-rep table on the result screen, the report and the PDF
- * (David's demo to a physiotherapist, 5 October: "it's physics for most people"). It describes, it never judges:
- * every measure stays experimental (measures.js). Copy awaits David's approval (R10).
+ * (David's demo to a physiotherapist, 5 October: "it's physics for most people"). Each term is the table's own column
+ * heading, so the eye goes from one to the other; the tempo is shown, four phases with their seconds, not described.
+ * It describes, it never judges: every measure stays experimental (measures.js). Copy awaits David's approval (R10).
  */
+export function measureGuide(fr) {
+  return {
+    title: fr ? 'Lire les chiffres' : 'Reading the numbers',
+    tempo: {
+      term: 'Tempo',
+      text: fr ? 'La durée de chaque phase de la répétition, en secondes, dans cet ordre.' : 'How long each phase of the rep lasts, in seconds, in this order.',
+      example: fr ? [['2', 'descente'], ['1', 'en bas'], ['1', 'montée'], ['0', 'en haut']] : [['2', 'down'], ['1', 'bottom'], ['1', 'up'], ['0', 'top']],
+    },
+    items: [
+      { term: fr ? 'Amplitude' : 'Range', text: fr ? 'De combien de degrés l’articulation suivie s’ouvre et se referme.' : 'How many degrees the tracked joint opens and closes.' },
+      { term: fr ? 'Pic' : 'Peak', text: fr ? 'La vitesse la plus élevée du mouvement, en degrés par seconde.' : 'The fastest speed of the movement, in degrees per second.' },
+      { term: fr ? 'Moy.' : 'Mean', text: fr ? 'La vitesse moyenne du mouvement, en degrés par seconde.' : 'The average speed of the movement, in degrees per second.' },
+      { term: fr ? 'Temps sous tension' : 'Time under tension', text: fr ? 'La durée cumulée des répétitions, sans les repos entre elles.' : 'The total time of the reps, without the rests between them.', tut: true },
+    ],
+  };
+}
+
+/** The same key as plain lines, one per measure. */
 export function measureLegend(fr) {
-  const c = fr ? `${NBSP}: ` : ': ', s = `${NBSP}s`;
-  return fr ? [
-    `Tempo${c}la durée de chaque phase, en secondes, dans l’ordre descente, pause en bas, montée, pause en haut. 2-1-1-0 se lit${c}2${s} pour descendre, 1${s} en bas, 1${s} pour monter, pas de pause en haut.`,
-    `Amplitude${c}de combien de degrés l’articulation suivie s’ouvre et se referme pendant la répétition.`,
-    `Pic${c}la vitesse la plus élevée du mouvement, en degrés par seconde.`,
-    `Moy.${c}la vitesse moyenne du mouvement, en degrés par seconde.`,
-    `Temps sous tension${c}la durée cumulée de toutes les répétitions, sans les repos entre elles.`,
-  ] : [
-    `Tempo${c}how long each phase lasts, in seconds, in the order lowering, pause at the bottom, lifting, pause at the top. 2-1-1-0 reads${c}2${s} down, 1${s} at the bottom, 1${s} up, no pause at the top.`,
-    `Range${c}how many degrees the tracked joint opens and closes during the rep.`,
-    `Peak${c}the fastest speed of the movement, in degrees per second.`,
-    `Mean${c}the average speed of the movement, in degrees per second.`,
-    `Time under tension${c}the total time of all the reps, without the rests between them.`,
-  ];
+  const g = measureGuide(fr), c = fr ? `${NBSP}: ` : ': ';
+  return [`${g.tempo.term}${c}${g.tempo.text} ${g.tempo.example.map(([n, l]) => `${n} ${l}`).join(', ')}.`, ...g.items.map(i => `${i.term}${c}${i.text}`)];
 }
 
 /**
@@ -221,7 +228,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr) } : null,
     // The plain-words key to the table and the summary, wherever they are shown.
-    legend: shown && rows.length > 0 ? measureLegend(fr) : [],
+    guide: shown && rows.length > 0 ? measureGuide(fr) : null,
     partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',
     // Beside every measure printed, while none is validated (measures.js).
     experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',

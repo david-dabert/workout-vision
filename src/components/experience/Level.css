@@ -35,7 +35,6 @@
 .wv-experience .lv-table th { text-align: left; font-weight: 400; font-size: 9px; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; color: var(--ash); padding: 0 4px 6px 0; border-bottom: 1px solid var(--hair-2); }
 .wv-experience .lv-table td { padding: 4px 4px 4px 0; border-bottom: 1px solid var(--hair); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wv-experience .lv-units { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
-.wv-experience .lv-units p { margin: 0 0 var(--s-1); }
 
 @media (max-height: 700px) {
   .wv-experience .result-screen.lv-beginner .set-account > p { font-size: 15px; }
@@ -85,3 +84,14 @@
 /* "Quoi exactement ?" under the card's one sentence: a quiet link-like toggle, still a 44px target; the full list
    opens under it. */
 .wv-experience .contribute-ask .contribute-more { margin-top: -10px; font-size: var(--fs-caption); text-decoration: underline; text-underline-offset: 3px; }
+/* The same key on the dark result screen (measure-guide.jsx). */
+.wv-experience .lv-units .mg { display: grid; gap: 8px; }
+.wv-experience .lv-units .mg-title { margin: 0; font-family: var(--mono); font-weight: 400; font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .lv-units .mg-list { display: grid; gap: 8px; margin: 0; }
+.wv-experience .lv-units .mg-row { display: grid; grid-template-columns: 27% minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.wv-experience .lv-units .mg-row dt { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lamp-hi); }
+.wv-experience .lv-units .mg-row dd { margin: 0; color: var(--bone-2); text-wrap: pretty; }
+.wv-experience .lv-units .mg-tempo { display: flex; gap: 6px; margin-top: 8px; }
+.wv-experience .lv-units .mg-ph { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px 6px; border: 1px solid var(--hair); border-radius: 9px; }
+.wv-experience .lv-units .mg-ph b { font-family: var(--serif); font-weight: 400; font-size: 22px; line-height: 1; color: var(--lamp-hi); font-variant-numeric: lining-nums; }
+.wv-experience .lv-units .mg-ph small { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ash); white-space: nowrap; }
