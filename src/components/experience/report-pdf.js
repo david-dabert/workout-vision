@@ -261,7 +261,41 @@ export function reportPdf(sheet) {
   sheet.summary.forEach(sheetLine);
   if (sheet.shortRepNote) sheetLine(sheet.shortRepNote);
   if (sheet.partialRepNote) sheetLine(sheet.partialRepNote);
-  (sheet.legend || []).forEach(sheetLine);
+  // The key to the measures (report-sheet.js, measureGuide), as the sheet shows it: the table's headings as terms, in
+  // small capitals and the count's gold, the definitions in ink, and the tempo's four phases drawn as boxes.
+  if (sheet.guide) {
+    const g = sheet.guide, TERM = COLUMN * 0.27, TEXT_X = MARGIN + TERM + 10, TEXT_W = COLUMN - TERM - 10, LH = 12.5 * 1.45;
+    const BOX_H = 44, BOX_GAP = 6;
+    const need = text => lines(text, 12.5, TEXT_W).lines.length * LH;
+    if (room() < 1 + 10 + 13.5 + 10 + need(g.tempo.text) + 8 + BOX_H && y > MARGIN) newPage();
+    doc.setDrawColor(COLOR.rule); doc.setLineWidth(1); doc.line(MARGIN, y, MARGIN + COLUMN, y);
+    y += 13;
+    write(upper(g.title), MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16);
+    y += 13.5 + 10;
+    // A term longer than its column ("TEMPS SOUS TENSION") wraps there, as the sheet's does, and never runs into its text.
+    const row = (term, text, after = 0) => {
+      const block = lines(text, 12.5, TEXT_W);
+      const termLines = wrapText(upper(term), TERM, s => width(s, 'mono', 9, 9 * 0.06)), TERM_LH = 13.5;
+      const h = Math.max(block.lines.length * LH, termLines.length * TERM_LH);
+      if (room() < h + after && y > MARGIN) newPage();
+      termLines.forEach((t, k) => write(t, MARGIN, y + 3 + k * TERM_LH, 'mono', 9, 1.5, COLOR.count, 9 * 0.06));
+      block.lines.forEach((line, k) => drawLine(line, block.raster, TEXT_X, y + k * LH, 12.5, 1.45, COLOR.ink));
+      y += h;
+    };
+    row(g.tempo.term, g.tempo.text, 8 + BOX_H);
+    y += 8;
+    const n = g.tempo.example.length, boxW = (TEXT_W - BOX_GAP * (n - 1)) / n;
+    g.tempo.example.forEach(([digit, label], k) => {
+      const x = TEXT_X + k * (boxW + BOX_GAP);
+      doc.setDrawColor(COLOR.rule); doc.setLineWidth(1); doc.roundedRect(x, y, boxW, BOX_H, 9, 9, 'S');
+      write(digit, x + (boxW - width(digit, 'serif', 24)) / 2, y + 5, 'serif', 24, 1, COLOR.count);
+      const cap = upper(label);
+      write(cap, x + (boxW - width(cap, 'mono', 8, 8 * 0.08)) / 2, y + 29, 'mono', 8, 1.2, COLOR.ash, 8 * 0.08);
+    });
+    y += BOX_H + 9;
+    g.items.forEach(i => { row(i.term, i.text); y += 9; });
+    y += GAP - 9;
+  }
 
   // Notes, when the user wrote any, then the foot. The notes label keeps its first line, and the
   // foot never stands alone on a page: it takes the last two lines of notes with it.

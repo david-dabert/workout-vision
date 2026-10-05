@@ -8,6 +8,7 @@ import { track } from '../../lib/events';
 import { useCondensingTopbar } from './topbar';
 import './Report.css';
 import RepWave from './RepWave';
+import { MeasureGuide } from './measure-guide';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
 // and is warmed as soon as a report is likely, so the share happens within the tap.
@@ -181,7 +182,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.summary.map(line => <p key={line} className="sh-line">{line}</p>)}
         {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
         {sheet.partialRepNote && <p className="sh-line sh-short">{sheet.partialRepNote}</p>}
-        {sheet.legend?.length > 0 && <div className="sh-legend" data-testid="report-legend">{sheet.legend.map(l => <p key={l} className="sh-line sh-short">{l}</p>)}</div>}
+        {sheet.guide && <MeasureGuide guide={sheet.guide} />}
         {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
         {sheet.foot && <p className="sh-foot">{sheet.foot}</p>}
       </article>
