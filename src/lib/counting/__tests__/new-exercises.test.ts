@@ -98,3 +98,34 @@ describe('the exercises added on 3 October', () => {
     expect(count('wall_ball', knees(cycles({ rest: 172, work: 80, firstSec: 0.8, secondSec: 0.6, restSec: 0.3 }), 172))).toBe(10);
   });
 });
+
+/**
+ * Added on 5 October 2026 at David's request: the machine seated back extension, counted as the back extension (hip,
+ * resting forward-leaning, extending first), filmed from the side; no drawing of its own, it borrows the back
+ * extension's. Angles are illustrative (UNSOURCED): the hip angle (shoulder, hip, knee) opens from 80 degrees, leaning
+ * forward on the seat, to 120 at the end of the extension.
+ */
+describe('the machine seated back extension', () => {
+  const hips = (path: Segment[], start: number) => sample(path, start, SPS).map(x => jointFrame('hip', { left: x, right: x }));
+
+  it('resolves to the back extension pattern, hip/low/concentric, and borrows its drawing', () => {
+    expect((patterns as Record<string, string>).machine_seated_back_extension).toBe('hip/low/concentric');
+    expect(liftDefinition('machine_seated_back_extension')).toEqual(liftDefinition('back_extension'));
+    const g = getGuideExercise('machine_seated_back_extension')!;
+    expect(g.similar).toBe(true);
+    expect(g.frames[0]).toMatch(/guide\/back-extension\/frame-1\.webp$/);
+  });
+
+  it('is offered, experimental', () => {
+    expect(isOffered('machine_seated_back_extension')).toBe(true);
+    expect(tierOf('machine_seated_back_extension')).toBe('experimental');
+  });
+
+  it('ten extensions from 80 to 120 degrees count ten', () => {
+    expect(count('machine_seated_back_extension', hips(cycles({ rest: 80, work: 120 }), 80))).toBe(10);
+  });
+
+  it('a travel under the 20-degree floor gives no count rather than a wrong one (R8)', () => {
+    expect(count('machine_seated_back_extension', hips(cycles({ rest: 90, work: 105 }), 90))).toBe(0);
+  });
+});

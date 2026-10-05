@@ -6,7 +6,7 @@ import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
 import { EQUIPMENT, norm } from './Guide';
 
-// Every exercise the app counts (OFFERED but the fitness tests: 181 on 3 October 2026, 183 less the four floor
+// Every exercise the app counts (OFFERED but the fitness tests: 182 on 5 October 2026 with the machine seated back extension; 181 on 3 October 2026, 183 less the four floor
 // exercises withdrawn that day, offer.js WITHDRAWN, and with the behind-the-neck press and wall ball added that day (the barbell jump squat not yet counted); pinned by __tests__/exercise-list.test.js and
 // e2e/shared/exercises.tests.js), searchable, under the nine cards (PLAN.md, GROWTH,
 // step 2, David's choices of 29 September). Only the Beta ones carry a tag, pinned at the top (3 October); one line under the title

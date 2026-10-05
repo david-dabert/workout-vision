@@ -24,3 +24,15 @@ Notes for David:
   "fentes sandbag" stay as aliases. Glossary: "Lunge" is "Fentes".
 - None of the four has a drawing in the guide: each borrows the nearest one (overhead press, jump squat, squat,
   walking lunge), and the screens say "Dessin d'un mouvement proche." / "Mouvement proche, d'après le guide." (copy-curls.md).
+
+## 5 October 2026: machine seated back extension (David's request)
+
+| Key | Français | English |
+|---|---|---|
+| machine_seated_back_extension | Extension lombaire assise à la machine | Machine Seated Back Extension |
+
+- Aliases: "machine à lombaires", "extension lombaire assise", "seated back extension", "back extension machine",
+  "lower back machine". French gym speech says "la machine à lombaires"; the name says what the lifter does.
+- No drawing of its own: it borrows the back extension's, with the same "Dessin d'un mouvement proche." line.
+- Counted as the back extension (hip, from the forward-leaning start), filmed from the side; Experimental,
+  measured on no set (guide-families.json).

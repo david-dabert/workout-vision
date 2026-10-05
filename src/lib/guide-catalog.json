@@ -2520,6 +2520,29 @@
     ]
   },
   {
+    "key": "machine_seated_back_extension",
+    "name": "Machine Seated Back Extension",
+    "slug": "machine-seated-back-extension",
+    "drawing": "back-extension",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Lower Back",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Extension lombaire assise à la machine",
+    "aliases": [
+      "machine seated back extension",
+      "seated back extension",
+      "back extension machine",
+      "lower back machine",
+      "extension lombaire assise à la machine",
+      "extension lombaire assise",
+      "machine à lombaires"
+    ]
+  },
+  {
     "key": "donkey_calf_raise",
     "name": "Donkey Calf Raise",
     "slug": "donkey-calf-raise",

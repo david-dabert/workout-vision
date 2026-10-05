@@ -924,6 +924,13 @@
     "view": "side",
     "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
   },
+  "machine_seated_back_extension": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Seated, the hips held by the seat and the pad behind the upper back: the trunk extends backward from its forward-leaning start, opening the hip angle (shoulder, hip, knee), then comes back forward. As back_extension. Experimental: added on 5 October 2026 at David's request, not measured on any set; a machine's short travel may leave some sets under the core's 20-degree floor (MIN_ROM_DEGREES), which then refuses them."
+  },
   "donkey_calf_raise": {
     "joint": null,
     "why": "Calf plantarflexion moves the ankle, which is outside the four tracked joints."

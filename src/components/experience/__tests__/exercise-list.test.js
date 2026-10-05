@@ -2,7 +2,8 @@
 // with its guide entry. Its comment gives the number, 183 on 3 October 2026 (third audit, C26: it said 181, while
 // the README and e2e/collect.spec.js said 183); this keeps the comment, the README and the list in step. 179 since
 // the same day's withdrawal of four floor exercises counted on both sides in profile (offer.js, WITHDRAWN, C21);
-// 181 with the behind-the-neck press and the wall ball, added the same day (the barbell jump squat not yet counted, offer.js).
+// 181 with the behind-the-neck press and the wall ball, added the same day (the barbell jump squat not yet counted, offer.js);
+// 182 with the machine seated back extension, added on 5 October.
 import { describe, expect, it, vi } from 'vitest';
 // exercise-info.js reaches the drawing code, which reads the screen when it loads (as in exercise-name.test.js).
 vi.hoisted(() => {
@@ -15,10 +16,10 @@ import { isTest } from '../../../lib/fitness-tests';
 import { guideExercise } from '../exercise-info';
 
 describe('the list of every counted exercise', () => {
-  it('holds the 181 offered exercises, each with its guide entry, and no fitness test', () => {
+  it('holds the 182 offered exercises, each with its guide entry, and no fitness test', () => {
     // The same rows as ExerciseList.jsx's ENTRIES.
     const exercises = OFFERED.filter(k => !isTest(k));
-    expect(exercises).toHaveLength(181);
-    expect(exercises.map(guideExercise).filter(Boolean)).toHaveLength(181);
+    expect(exercises).toHaveLength(182);
+    expect(exercises.map(guideExercise).filter(Boolean)).toHaveLength(182);
   });
 });

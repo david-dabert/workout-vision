@@ -115,6 +115,7 @@
  "landmine_romanian_deadlift": "hip/high/eccentric",
  "glute_focused_back_extension": "hip/low/concentric",
  "reverse_hyperextension": "hip/low/concentric",
+ "machine_seated_back_extension": "hip/low/concentric",
  "barbell_jump_squat": "knee/high/eccentric",
  "wall_ball": "knee/high/eccentric",
  "incline_dumbbell_curl": "elbow/high/concentric",
