@@ -51,6 +51,6 @@ test('a set the app counted none in is a correction in the history, the report a
   await page.locator('.hist-detail .btn-line').click();
   await expect(page.locator('.sheet')).toBeVisible();
   await expect(page.locator('.sh-opener')).toHaveText('Vous avez compté 8 répétitions.');
-  await expect(page.locator('.sheet')).toContainText('Compté par l’app : 0. Corrigé : 8.');
+  await expect(page.locator('.sh-details > span')).toHaveText([/Compté par l’app\s*0/, /Corrigé\s*8/, /Bras suivi/]);
   await expect(page.getByTestId('sh-wave')).toHaveCount(0);
 });
