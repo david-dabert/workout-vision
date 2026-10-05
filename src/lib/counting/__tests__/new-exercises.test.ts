@@ -115,8 +115,8 @@ describe('the machine seated back extension', () => {
     const g = getGuideExercise('machine_seated_back_extension')!;
     expect(g.frames).toEqual([]);
     expect(g.similar).toBe(false);
-    expect(g.how.fr).toMatch(/^Assis face à l’avant/);
-    expect(g.how.en).toMatch(/^Seated, facing forward/);
+    expect(g.how!.fr).toMatch(/^Assis face à l’avant/);
+    expect(g.how!.en).toMatch(/^Seated, facing forward/);
   });
 
   it('is offered, experimental', () => {
