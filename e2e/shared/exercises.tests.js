@@ -1,6 +1,6 @@
 // Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 in all (181, and the standing and lying barbell curls since 2 October), 179 since 3 October
 // (the four floor exercises counted on both sides in profile withdrawn, src/lib/offer.js WITHDRAWN, third audit C21), 181 with the two (the barbell jump squat not yet counted) of the three
-// added the same day (behind-the-neck press, barbell jump squat, wall ball), in a searchable list
+// added the same day (behind-the-neck press, barbell jump squat, wall ball), 182 with the machine seated back extension of 5 October, in a searchable list
 // below the nine cards, each labelled Beta or Experimental; a tap opens its filming screen, which
 // names it, labels it and shows how to film it. Run in Chromium (exercises.spec.js) and in WebKit
 // with the iPhone profile (exercises.webkit.spec.js).
@@ -10,11 +10,11 @@ async function openChoice(page, expect, lang) {
   await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
   await page.goto('/workout-vision/');
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
-  await expect(page.locator('.all-exercises .item')).toHaveCount(181, { timeout: 20000 });
+  await expect(page.locator('.all-exercises .item')).toHaveCount(182, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
-  test('the 181 counted exercises are listed under the nine cards; only the six with evidence carry a tag, Beta, pinned on top', async ({ page }) => {
+  test('the 182 counted exercises are listed under the nine cards; only the six with evidence carry a tag, Beta, pinned on top', async ({ page }) => {
     await openChoice(page, expect, 'en');
     const rail = await page.locator('.rail').boundingBox(), list = await page.locator('.all-exercises').boundingBox();
     expect(list.y).toBeGreaterThan(rail.y + rail.height);

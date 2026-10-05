@@ -83,10 +83,11 @@ test('the page says it is for David\'s own sets, and where a set of anyone else 
 
 // Step 2 (PLAN.md, GROWTH): the collector offers the same exercises as the app, so that a set of any
 // of them can be collected, and the four floor exercises withdrawn from the app on 3 October (src/lib/offer.js,
-// WITHDRAWN, third audit C21), whose collected sets are what would bring them back: 181 + 4 + the barbell jump squat, in the guide but not yet counted (offer.js NOT_YET_COUNTED), = 186.
-test('the collector offers the 181 exercises the app counts, the 4 withdrawn and the jump squat, by their names in both languages', async ({ page }) => {
+// WITHDRAWN, third audit C21), whose collected sets are what would bring them back: 182 (with the machine seated back extension of 5 October) + 4 + the barbell jump squat, in the guide but not yet counted (offer.js NOT_YET_COUNTED), = 187.
+test('the collector offers the 182 exercises the app counts, the 4 withdrawn and the jump squat, by their names in both languages', async ({ page }) => {
   await open(page);
-  await expect(page.locator('#lift option')).toHaveCount(186);
+  await expect(page.locator('#lift option')).toHaveCount(187);
+  await expect(page.locator('#lift option[value="machine_seated_back_extension"]')).toHaveText('Extension lombaire assise à la machine / Machine Seated Back Extension');
   await expect(page.locator('#lift option[value="forward_lunge"]')).toHaveText('Fente avant / Forward Lunge');
   await expect(page.locator('#lift option[value="walking_lunge"]')).toHaveCount(0);
   await expect(page.locator('#lift option[value="sandbag_lunge"]')).toHaveCount(0);
