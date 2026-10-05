@@ -4,7 +4,7 @@ import { OFFERED, tierOf } from '../../lib/offer';
 import { isTest } from '../../lib/fitness-tests';
 import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
-import { EQUIPMENT, norm } from './Guide';
+import { EQUIPMENT, norm, Thumb } from './Guide';
 
 // Every exercise the app counts (OFFERED but the fitness tests: 182 on 5 October 2026 with the machine seated back extension; 181 on 3 October 2026, 183 less the four floor
 // exercises withdrawn that day, offer.js WITHDRAWN, and with the behind-the-neck press and wall ball added that day (the barbell jump squat not yet counted); pinned by __tests__/exercise-list.test.js and
@@ -43,7 +43,7 @@ export default function ExerciseList({ onChoose }) {
     <p className="list-head" role="status">{list.length} / {ENTRIES.length} {fr ? 'exercices' : 'exercises'}</p>
     <ul className="list">{list.map(e => <li key={e.key} className="item" data-exercise={e.key}>
       <button className="item-btn press" onClick={() => onChoose(e.key)}>
-        <span className="thumb"><img src={e.frames[0]} loading="lazy" width="56" height="56" alt="" /></span>
+        <Thumb exercise={e} />
         <span><span className="item-name">{name(e)}</span><span className="item-sub">{fr ? e.name : e.fr} · {keep(fr ? EQUIPMENT[e.equipment] : e.equipment)}</span></span>
         {tierOf(e.key) === 'beta' && <span className="tag tier-tag tier-beta">{tierTag('beta', fr)}</span>}
       </button>

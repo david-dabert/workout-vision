@@ -36,3 +36,7 @@
    size the closest spots, shoulders and chest, lower back and glutes, stand 44 px apart, so each
    spot's 44 x 44 target is whole and none covers another (visual gate, 30 September). */
 .wv-experience .map-fig { grid-column: 1 / -1; width: min(100%, 324px); justify-self: center; margin: 4px 0 8px; }
+/* An exercise with no fitting drawing (exerciseGuide.js, noDrawing): an empty arch beside its name, and its movement in words in the frame. */
+.wv-experience .thumb-none { width: 22px; height: 28px; border-radius: 11px 11px 4px 4px; border: 1px solid var(--hair); }
+.wv-experience .guide-frames.guide-how { display: grid; place-items: center; padding: var(--s-5); }
+.wv-experience .guide-how p { margin: 0; font-size: var(--fs-body, 15px); line-height: 1.5; color: var(--bone-2); text-align: center; text-wrap: pretty; }

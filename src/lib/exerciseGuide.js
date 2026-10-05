@@ -5,8 +5,12 @@ const aliases = { bicep_curl: 'dumbbell_curl', lateral_raise: 'lateral_raise', s
 export function getFrameUrl(slug, frame) { return `${import.meta.env.BASE_URL}guide/${slug}/frame-${frame}.webp`; }
 export function getGuideExercise(key) {
   const entry = byKey.get(key) || byKey.get(aliases[key]);
-  // An exercise the guide has no drawing of borrows the closest one (`drawing`), and says so (`similar`).
-  return entry ? { ...entry, similar: !!entry.drawing, frames: [1, 2, 3].map(i => getFrameUrl(entry.drawing ?? entry.slug, i)) } : null;
+  // An exercise the guide has no drawing of borrows the closest one (`drawing`), and says so (`similar`); one whose
+  // closest drawing would show another posture (`noDrawing`, the machine seated back extension: the borrowed back
+  // extension lies face down) has no frames, and its screens say the movement in words instead (`how`).
+  if (!entry) return null;
+  if (entry.noDrawing) return { ...entry, similar: false, frames: [] };
+  return { ...entry, similar: !!entry.drawing, frames: [1, 2, 3].map(i => getFrameUrl(entry.drawing ?? entry.slug, i)) };
 }
 export function getExerciseFrames(key) { return getGuideExercise(key); }
 export function hasExerciseGuide(key) { return !!getGuideExercise(key); }

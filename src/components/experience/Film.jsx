@@ -84,7 +84,7 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{exerciseName(lift, lang)}</h2>
       {tier && <p className={`tier tier-${tier}`} data-reveal style={{ '--i': 1 }}>{tierLabel(tier, fr)}</p>}
       <div ref={frame} className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
-        {figure ? <canvas ref={canvas} aria-hidden="true" /> : guide && <GuideFrames exercise={guide} />}
+        {figure ? <canvas ref={canvas} aria-hidden="true" /> : guide?.frames.length > 0 && <GuideFrames exercise={guide} fr={fr} />}
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 9V0h9M91 0h9v9M100 91v9h-9M9 100H0v-9" fill="none" stroke="currentColor" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
         </svg>
@@ -92,7 +92,11 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
       </div>
       {figure
         ? <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
-        : <p className="caption" data-reveal style={{ '--i': 3 }}>{test || guide?.similar
+        : <p className="caption" data-reveal style={{ '--i': 3 }}>{guide?.noDrawing
+          // No drawing of the guide shows this posture (exerciseGuide.js, noDrawing): the frame stays an empty viewfinder,
+          // the movement is said in words here, and no credit is given for drawings it does not show.
+          ? (fr ? guide.how.fr : guide.how.en)
+          : test || guide?.similar
           ? (fr ? 'Mouvement proche, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'A similar movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.')
           : fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
       {/* A fitness test is filmed as its protocol says (fitness-tests.js): its own three steps. */}

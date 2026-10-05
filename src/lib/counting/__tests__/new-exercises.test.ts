@@ -101,19 +101,22 @@ describe('the exercises added on 3 October', () => {
 
 /**
  * Added on 5 October 2026 at David's request: the machine seated back extension, counted as the back extension (hip,
- * resting forward-leaning, extending first), filmed from the side; no drawing of its own, it borrows the back
- * extension's. Angles are illustrative (UNSOURCED): the hip angle (shoulder, hip, knee) opens from 80 degrees, leaning
+ * seated upright, pushing the pad back), filmed from the side; no drawing: the back extension's lies face down, another
+ * posture, so its screens describe the movement in words. Angles are illustrative (UNSOURCED): the hip angle (shoulder, hip, knee) opens from 80 degrees, leaning
  * forward on the seat, to 120 at the end of the extension.
  */
 describe('the machine seated back extension', () => {
   const hips = (path: Segment[], start: number) => sample(path, start, SPS).map(x => jointFrame('hip', { left: x, right: x }));
 
-  it('resolves to the back extension pattern, hip/low/concentric, and borrows its drawing', () => {
+  it('resolves to the back extension pattern, hip/low/concentric, and shows no drawing but its movement in words', () => {
     expect((patterns as Record<string, string>).machine_seated_back_extension).toBe('hip/low/concentric');
     expect(liftDefinition('machine_seated_back_extension')).toEqual(liftDefinition('back_extension'));
+    // David, 5 October: the back extension's drawing (lying face down) showed another posture than this seated one.
     const g = getGuideExercise('machine_seated_back_extension')!;
-    expect(g.similar).toBe(true);
-    expect(g.frames[0]).toMatch(/guide\/back-extension\/frame-1\.webp$/);
+    expect(g.frames).toEqual([]);
+    expect(g.similar).toBe(false);
+    expect(g.how.fr).toMatch(/^Assis face à l’avant/);
+    expect(g.how.en).toMatch(/^Seated, facing forward/);
   });
 
   it('is offered, experimental', () => {
