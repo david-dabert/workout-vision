@@ -1,4 +1,4 @@
-# New copy: the gym session loop (WP1.3 to WP1.6), awaiting David's approval (R10)
+# New copy: the gym session loop (WP1.3 to WP1.6), approved by David on 5 October (R10)
 
 Register: vous, as the rest of the app.
 

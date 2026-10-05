@@ -146,7 +146,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const hasShort = shown && allReps.some(isShortIn(reps));
   const hasPartial = shown && allReps.some(partialIn(reps));
   // After a correction the rows are the marks the app detected, not the reps the user saved (repTable).
-  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count }) : { columns: [], rows: [] };
+  const { columns, rows, tempoStr } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count }) : { columns: [], rows: [] };
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
@@ -196,8 +196,36 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     }
   }
 
+  // The set's two figures, set like the count (David's iPhone, 5 October: the report read as a list of grey lines):
+  // time under tension, and the average tempo in the table's own notation (repTable), not a second rounding of it.
+  const stats = [];
+  if (measures && shown) {
+    stats.push([fr ? 'Temps sous tension' : 'Time under tension', sec(measures.tut)]);
+    const partial = partialIn(allReps);
+    const timed = allReps.map((r, i) => ({ r, next: allReps[i + 1] })).filter(({ r }) => !r.clipped && !partial(r))
+      .map(({ r, next }) => repTempo(r, next ? next.startTime : null, liftFirst));
+    if (timed.length && tempoStr) {
+      const mean = k => timed.reduce((a, t) => a + t[k], 0) / timed.length;
+      stats.push([fr ? 'Tempo moyen' : 'Average tempo', tempoStr({ lowering: mean('lowering'), bottom: mean('bottom'), lifting: mean('lifting'), top: mean('top') })]);
+    }
+  }
+  // What the stats do not say, each its own line (left and right, the previous set, speed changes when shown).
+  const statLabels = [fr ? 'Temps sous tension' : 'Time under tension', 'Tempo'];
+  const more = summary.filter(line => !statLabels.some(l => line.startsWith(`${l}${colon}`)));
+  // How the count was made, as labelled details under it, like the people above it: who counted, and the limb followed.
+  const details = [];
+  if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’app n’a pas pu compter' : 'by hand, the app could not count']);
+  else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’app' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
+  if (arm === 'left' || arm === 'right') {
+    const limb = joint === 'knee' ? (fr ? 'Jambe suivie' : 'Leg tracked') : joint === 'hip' ? (fr ? 'Côté suivi' : 'Side tracked') : (fr ? 'Bras suivi' : 'Arm tracked');
+    details.push([limb, arm === 'left' ? (fr ? 'gauche' : 'left') : fr ? (joint === 'knee' ? 'droite' : 'droit') : 'right']);
+  }
+
   return {
     fr,
+    details,
+    stats,
+    more,
     // No brand: the report names no app (David, 29 September).
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
