@@ -1,16 +1,16 @@
 # Copy: four exercises added on 3 October 2026
 
-For David's approval before release (R10): every line below is pending David's approval (3 October). A name has
+Release copy (R10): every line below was approved by David on 5 October. A name has
 no register; the app's register stays "vous". Status of the exercises: experimental, measured on no set.
 
 | Key | French | English | Where | Status |
 |---|---|---|---|---|
-| behind_the_neck_press.fr (guide-catalog.json) | Développé nuque | Behind-the-Neck Press | Exercise list, guide, film screen, history | pending David's approval (3 October) |
-| barbell_jump_squat.fr | Squat sauté à la barre | Barbell Jump Squat | Same | pending David's approval (3 October) |
-| wall_ball.fr | Wall ball | Wall Ball | Same | pending David's approval (3 October) |
-| sandbag_lunge.fr | Fentes marchées avec sac lesté | Sandbag Lunge | Guide only (not offered: a walking lunge leaves a fixed frame) | pending David's approval (3 October) |
-| EQUIPMENT['Medicine Ball'] (Guide.jsx) | Médecine-ball | Medicine Ball | Guide and exercise list, under the name (wall ball) | pending David's approval (3 October) |
-| EQUIPMENT.Sandbag (Guide.jsx) | Sac lesté | Sandbag | Guide, under the name (sandbag lunge) | pending David's approval (3 October) |
+| behind_the_neck_press.fr (guide-catalog.json) | Développé nuque | Behind-the-Neck Press | Exercise list, guide, film screen, history | approved by David (5 October) |
+| barbell_jump_squat.fr | Squat sauté à la barre | Barbell Jump Squat | Same | approved by David (5 October) |
+| wall_ball.fr | Wall ball | Wall Ball | Same | approved by David (5 October) |
+| sandbag_lunge.fr | Fentes marchées avec sac lesté | Sandbag Lunge | Guide only (not offered: a walking lunge leaves a fixed frame) | approved by David (5 October) |
+| EQUIPMENT['Medicine Ball'] (Guide.jsx) | Médecine-ball | Medicine Ball | Guide and exercise list, under the name (wall ball) | approved by David (5 October) |
+| EQUIPMENT.Sandbag (Guide.jsx) | Sac lesté | Sandbag | Guide, under the name (sandbag lunge) | approved by David (5 October) |
 
 Notes for David:
 - "Développé nuque" follows the glossary's "Développé militaire" for the overhead press; it is the name used in
@@ -40,4 +40,4 @@ Notes for David:
   exercise shows no drawing. In its place: "Assis face à l’avant, le dos contre le coussin : poussez vers l’arrière avec
   le dos, sans vous pencher en avant, puis revenez lentement." / "Seated, facing forward, your back against the pad: push
   back with your back, without leaning forward, then come back slowly." On the filming screen it is the line under
-  the frame, which stays an empty viewfinder. For David's approval (R10).
+  the frame, which stays an empty viewfinder. Approved by David on 5 October (R10).
