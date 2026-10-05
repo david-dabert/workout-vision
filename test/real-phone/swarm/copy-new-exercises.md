@@ -36,3 +36,8 @@ Notes for David:
 - No drawing of its own: it borrows the back extension's, with the same "Dessin d'un mouvement proche." line.
 - Counted as the back extension (hip, from the forward-leaning start), filmed from the side; Experimental,
   measured on no set (guide-families.json).
+- 5 October, after David's iPhone: the borrowed back extension drawing (lying face down) showed another posture, so the
+  exercise shows no drawing. In its place: "Assis face à l’avant, le dos contre le coussin : poussez vers l’arrière avec
+  le dos, sans vous pencher en avant, puis revenez lentement." / "Seated, facing forward, your back against the pad: push
+  back with your back, without leaning forward, then come back slowly." On the filming screen it is the line under
+  the frame, which stays an empty viewfinder. For David's approval (R10).

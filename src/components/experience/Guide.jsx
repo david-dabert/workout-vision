@@ -50,13 +50,19 @@ function BodyMap() {
   }, []);
   return <canvas ref={canvas} aria-hidden="true" />;
 }
-export function GuideFrames({ exercise }) {
+/** The small drawing beside a name; an empty frame for an exercise with no drawing (exerciseGuide.js, noDrawing). */
+export function Thumb({ exercise }) {
+  return <span className="thumb">{exercise.frames[0] ? <img src={exercise.frames[0]} loading="lazy" width="56" height="56" alt="" /> : <i className="thumb-none" aria-hidden="true" />}</span>;
+}
+export function GuideFrames({ exercise, fr }) {
   const [active, setActive] = useState(0);
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (exercise.frames.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = setInterval(() => setActive(n => (n + 1) % exercise.frames.length), 800);
     return () => clearInterval(timer);
   }, [exercise]);
+  // No drawing: the movement in words, in the frame the drawing would fill.
+  if (!exercise.frames.length) return <div className="guide-frames guide-how" data-testid="guide-how"><p>{exercise.how ? (fr ? exercise.how.fr : exercise.how.en) : ''}</p></div>;
   return <div className="guide-frames">{exercise.frames.map((src, i) => <img key={src} className={i === active ? 'active' : ''} src={src} width="320" height="320" loading="lazy" alt={`${exercise.fr} / ${exercise.name} - ${i + 1}`} />)}</div>;
 }
 /**
@@ -107,11 +113,11 @@ export default function Guide({ onClose, onChoose, lift }) {
       <p className="list-head" role="status" data-reveal style={{ '--i': 5 }}>{list.length} / {CATALOGUE.length} {fr ? 'exercices' : 'exercises'}</p>
       <ul className="list">{list.map(e => <li key={e.key} className="item" data-exercise={e.key}>
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
-          <span className="thumb"><img src={e.frames[0]} loading="lazy" width="56" height="56" alt="" /></span>
+          <Thumb exercise={e} />
           <span><span className="item-name">{fr ? e.fr : e.name}</span><span className="item-sub">{fr ? e.name : e.fr} · {fr ? EQUIPMENT[e.equipment] : e.equipment}</span></span>
           <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? tierTag(tierOf(e.key), fr) : 'Guide'}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} /><p>{countedLift(e) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key), fr)}.` : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{countedLift(e) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key), fr)}.` : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
           {countedLift(e) && <button className="btn-line press" onClick={() => onChoose(countedLift(e))}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>}
           <button className="btn-ghost is-s press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}

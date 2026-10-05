@@ -2523,7 +2523,6 @@
     "key": "machine_seated_back_extension",
     "name": "Machine Seated Back Extension",
     "slug": "machine-seated-back-extension",
-    "drawing": "back-extension",
     "category": "back",
     "equipment": "Machine",
     "muscles": [
@@ -2540,7 +2539,12 @@
       "extension lombaire assise à la machine",
       "extension lombaire assise",
       "machine à lombaires"
-    ]
+    ],
+    "noDrawing": true,
+    "how": {
+      "fr": "Assis face à l’avant, le dos contre le coussin : poussez vers l’arrière avec le dos, sans vous pencher en avant, puis revenez lentement.",
+      "en": "Seated, facing forward, your back against the pad: push back with your back, without leaning forward, then come back slowly."
+    }
   },
   {
     "key": "donkey_calf_raise",
