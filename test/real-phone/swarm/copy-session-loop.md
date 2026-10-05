@@ -22,3 +22,8 @@ Register: vous, as the rest of the app.
 | moment.record | Record : 12. Votre meilleur était 10. | Personal best: 12. Your best was 10. | Saved card, a confirmed best beaten |
 | moment.equal | 10, votre meilleur égalé. | 10, your best equalled. | Saved card, a confirmed best equalled |
 | moment.coach | Removed 5 October (Astra's review): the lines judged an execution the app does not measure (R8). Otherwise no line; the saved card's thanks stands alone. | Removed | — |
+| legend.tempo | Tempo : la durée de chaque phase, en secondes, dans l’ordre descente, pause en bas, montée, pause en haut. 2-1-1-0 se lit : 2 s pour descendre, 1 s en bas, 1 s pour monter, pas de pause en haut. | Tempo: how long each phase lasts, in seconds, in the order lowering, pause at the bottom, lifting, pause at the top. 2-1-1-0 reads: 2 s down, 1 s at the bottom, 1 s up, no pause at the top. | Under the rep table: result screen, report, PDF (5 October) |
+| legend.range | Amplitude : de combien de degrés l’articulation suivie s’ouvre et se referme pendant la répétition. | Range: how many degrees the tracked joint opens and closes during the rep. | Same |
+| legend.peak | Pic : la vitesse la plus élevée du mouvement, en degrés par seconde. | Peak: the fastest speed of the movement, in degrees per second. | Same |
+| legend.mean | Moy. : la vitesse moyenne du mouvement, en degrés par seconde. | Mean: the average speed of the movement, in degrees per second. | Same |
+| legend.tut | Temps sous tension : la durée cumulée de toutes les répétitions, sans les repos entre elles. | Time under tension: the total time of all the reps, without the rests between them. | Report and PDF |

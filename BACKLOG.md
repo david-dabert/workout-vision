@@ -2,6 +2,19 @@
 
 New ideas wait here, dated, until David opens them as a step (CLAUDE.md R7).
 
+## 5 October 2026: a section for physiotherapists and physical trainers (rehabilitation)
+
+Source: David's demo to a physiotherapist (prone T raise, "it's physics for most people"; he asked for a meeting), and
+David's mentor: physiotherapists, physical therapists and physical trainers need their own section, for clients in
+rehabilitation, after injury or surgery.
+
+- Rehabilitation exercises in the catalogue (the prone T raise is not in it today; the demo ran under another lift).
+- Reference videos of each exercise done correctly. Rights: filmed by David or a professional and validated by one;
+  never the public datasets the app is measured on (their licences do not cover showing them to users, and their
+  labels are counts, not correct form). Rehabilitation datasets to read for measuring only, licence checked first:
+  IntelliRehabDS (CC BY 4.0, zenodo.org/records/4610859); REHAB24-6 (non-commercial research only, zenodo.org/records/13305826).
+- Done now (5 October): the plain-words key to the measures under the rep table, result screen, report and PDF.
+
 ## 29 September 2026: a coach mode, one combined report per client
 
 Source: Luc, an online coach, at the gym with David. Online video coaching is growing; clients send coaches

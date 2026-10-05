@@ -16,7 +16,7 @@ import RestClock from './RestClock';
 import Digits from './Digits';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
-import { decimal, repTable, speedChangeLine } from './report-sheet';
+import { decimal, measureLegend, repTable, speedChangeLine } from './report-sheet';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
 import { waveAngles } from './wave';
@@ -740,7 +740,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         <thead><tr>{table.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
         <tbody>{table.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>
       </table>
-      <p className="lv-units">{fr ? 'Tempo\u00A0: descente-pause-montée-pause, en secondes. Pic et Moy.\u00A0: vitesse angulaire, en °/s.' : 'Tempo: lowering-pause-lifting-pause, in seconds. Peak and Mean: angular speed, in °/s.'}</p>
+      <div className="lv-units" data-testid="level-legend">{measureLegend(fr).slice(0, 4).map(l => <p key={l}>{l}</p>)}</div>
     </div>,
     account: measured && <div key="account" className="set-account appear" data-testid="set-account">
       {plain}

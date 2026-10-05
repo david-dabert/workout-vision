@@ -181,6 +181,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.summary.map(line => <p key={line} className="sh-line">{line}</p>)}
         {sheet.shortRepNote && <p className="sh-line sh-short">{sheet.shortRepNote}</p>}
         {sheet.partialRepNote && <p className="sh-line sh-short">{sheet.partialRepNote}</p>}
+        {sheet.legend?.length > 0 && <div className="sh-legend" data-testid="report-legend">{sheet.legend.map(l => <p key={l} className="sh-line sh-short">{l}</p>)}</div>}
         {sheet.notes && <div className="sh-notes"><em>{sheet.notesLabel}</em><p>{sheet.notes}</p></div>}
         {sheet.foot && <p className="sh-foot">{sheet.foot}</p>}
       </article>

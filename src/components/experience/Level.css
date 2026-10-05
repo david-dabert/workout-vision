@@ -35,6 +35,7 @@
 .wv-experience .lv-table th { text-align: left; font-weight: 400; font-size: 9px; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; color: var(--ash); padding: 0 4px 6px 0; border-bottom: 1px solid var(--hair-2); }
 .wv-experience .lv-table td { padding: 4px 4px 4px 0; border-bottom: 1px solid var(--hair); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wv-experience .lv-units { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
+.wv-experience .lv-units p { margin: 0 0 var(--s-1); }
 
 @media (max-height: 700px) {
   .wv-experience .result-screen.lv-beginner .set-account > p { font-size: 15px; }
