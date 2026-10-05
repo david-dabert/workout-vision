@@ -40,6 +40,28 @@ export function setMeasures(all) {
 
 
 /**
+ * What each measure means, in plain words, under the per-rep table on the result screen, the report and the PDF
+ * (David's demo to a physiotherapist, 5 October: "it's physics for most people"). It describes, it never judges:
+ * every measure stays experimental (measures.js). Copy awaits David's approval (R10).
+ */
+export function measureLegend(fr) {
+  const c = fr ? `${NBSP}: ` : ': ', s = `${NBSP}s`;
+  return fr ? [
+    `Tempo${c}la durée de chaque phase, en secondes, dans l’ordre descente, pause en bas, montée, pause en haut. 2-1-1-0 se lit${c}2${s} pour descendre, 1${s} en bas, 1${s} pour monter, pas de pause en haut.`,
+    `Amplitude${c}de combien de degrés l’articulation suivie s’ouvre et se referme pendant la répétition.`,
+    `Pic${c}la vitesse la plus élevée du mouvement, en degrés par seconde.`,
+    `Moy.${c}la vitesse moyenne du mouvement, en degrés par seconde.`,
+    `Temps sous tension${c}la durée cumulée de toutes les répétitions, sans les repos entre elles.`,
+  ] : [
+    `Tempo${c}how long each phase lasts, in seconds, in the order lowering, pause at the bottom, lifting, pause at the top. 2-1-1-0 reads${c}2${s} down, 1${s} at the bottom, 1${s} up, no pause at the top.`,
+    `Range${c}how many degrees the tracked joint opens and closes during the rep.`,
+    `Peak${c}the fastest speed of the movement, in degrees per second.`,
+    `Mean${c}the average speed of the movement, in degrees per second.`,
+    `Time under tension${c}the total time of all the reps, without the rests between them.`,
+  ];
+}
+
+/**
  * The per-rep table as the report prints it: Rep | Tempo | Range | Peak | Mean (peak and mean
  * angular speed in °/s). The result screen shows the same rows to an expert (level.js).
  * After a correction the rows are the marks the app detected, not the reps the user saved, so the first
@@ -198,6 +220,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr) } : null,
+    // The plain-words key to the table and the summary, wherever they are shown.
+    legend: shown && rows.length > 0 ? measureLegend(fr) : [],
     partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',
     // Beside every measure printed, while none is validated (measures.js).
     experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',
