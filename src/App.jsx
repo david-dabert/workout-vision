@@ -24,6 +24,7 @@ import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
 import { track } from './lib/events';
 import { liveBuild } from './lib/buildFlags';
+import { payloadOf } from './components/experience/programme';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
 // screen under 812 points). No WebGL context is made to decide it: making one held up the first
@@ -66,7 +67,11 @@ const History = lazyScreen(() => import('./components/experience/History'));
 const About = lazyScreen(() => import('./components/experience/About'));
 // Live counting (Film screen, "En direct"): the camera, the count as the set goes, then the same result.
 const LiveSession = lazyScreen(() => import('./components/LiveSession'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About };
+// Espace pro (6 October): the coach's programme builder, reached from the foot of the choice; and the client's
+// programme, opened from the coach's link (#programme=…) or from the choice once kept on the phone.
+const Pro = lazyScreen(() => import('./components/experience/Pro'));
+const Programme = lazyScreen(() => import('./components/experience/Programme'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -92,6 +97,9 @@ function AppInner() {
   // The page a View Transition brought in; its screen change needs no fade of its own.
   const [transitionPage, setTransitionPage] = useState(null);
   const fileSerial = useRef(0);
+  // The coach's target of the exercise being filmed, when it was started from a programme (programme.js, plannedOf):
+  // the set is saved with it, and closing the filming or the result goes back to the programme.
+  const [planned, setPlanned] = useState(null);
   // Run storage schema migration on mount
   // The saved sets are read once the records are migrated, while the entry plays,
   // so the choice of lift never waits for them.
@@ -180,7 +188,9 @@ function AppInner() {
     }
     go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
   };
-  const backToChoice = () => go('dashboard', () => { setSelectedLift(''); setVideoFile(null); });
+  const backToChoice = () => (planned
+    ? go('programme', () => { setSelectedLift(''); setVideoFile(null); setPlanned(null); })
+    : go('dashboard', () => { setSelectedLift(''); setVideoFile(null); }));
   const backToFilm = () => go('film', () => setVideoFile(null));
 
   let key, screen;
@@ -190,16 +200,24 @@ function AppInner() {
       onLive={liveBuild() ? () => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; }); } : undefined} />;
   } else if (page === 'live' && selectedLift && liveBuild()) {
     key = `live:${fileSerial.current}`;
-    screen = <LiveSession lift={selectedLift} onClose={backToChoice} onRecord={backToFilm} />;
+    screen = <LiveSession lift={selectedLift} planned={planned} onClose={backToChoice} onRecord={backToFilm} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
-    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
+    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} planned={planned} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
   } else if (page === 'exercises') {
     key = guideLift ? `guide:${guideLift}` : 'guide';
-    screen = <ExerciseGuide lift={guideLift} onClose={() => go('dashboard', () => setGuideLift(''))} onChoose={l => chooseLift(l, true)} />;
+    screen = <ExerciseGuide lift={guideLift} onClose={() => (planned && guideLift ? go('programme', () => { setGuideLift(''); setPlanned(null); }) : go('dashboard', () => setGuideLift('')))} onChoose={l => chooseLift(l, true)} />;
   } else if (page === 'history') {
     key = 'history';
     screen = <History onClose={() => go('dashboard')} />;
+  } else if (page === 'pro') {
+    key = 'pro';
+    screen = <Pro onClose={() => go('dashboard')} />;
+  } else if (page === 'programme') {
+    key = 'programme';
+    // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
+    // cleared (Programme.jsx), or when the programme is opened from the choice.
+    screen = <Programme payload={payloadOf(window.location.hash)} onClose={() => go('dashboard')} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} />;
@@ -207,7 +225,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
+    screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro')} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
   }
 
   return <>

@@ -12,6 +12,8 @@ import { ABOUT } from './about-copy';
 import { eventsConfigured, browserRefuses, countingOff, setCountingOff } from '../../lib/events';
 import { collectSwitchAtLoad, collectSwitchSeen, onCollectSwitch } from '../../lib/phoneCollect';
 import { COLLECT } from './collect-copy';
+import { PRO } from './pro-copy';
+import { loadReceived } from './programme-store';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -84,7 +86,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory, onAbout }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -92,6 +94,9 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout }) {
   const [nameOf, setNameOf] = useState(null);
   useEffect(() => { import('./exercise-info').then(m => setNameOf(() => m.exerciseName), () => {}); }, []);
   useRail(railRef, dotsRef);
+  // The programme a coach sent, once opened from its link (Programme.jsx): one row, first under the cards.
+  const [received] = useState(() => (onProgramme ? loadReceived()[0] ?? null : null));
+  const pro = PRO[fr ? 'fr' : 'en'];
   // The chosen card carries the name the filming screen's frame takes, so it grows into it (View Transitions).
   const choose = (lift, i) => { cards.current.forEach((c, j) => { if (c) c.style.viewTransitionName = j === i ? 'lift-hero' : ''; }); onChoose(lift); };
   // Give storage a moment before showing the choice; late results still expose history.
@@ -140,6 +145,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout }) {
       <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{CARD_ORDER.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
       </div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>
+        {received && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6h10M9 12h10M9 18h10" /><path d="M4.5 6l.01 0M4.5 12l.01 0M4.5 18l.01 0" strokeWidth="2.4" /></svg></span>
+          <span className="row-txt"><b>{pro.programmeRow}</b><small>{received.programme.title}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         <button className="row-link press" onClick={onGuide}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="4.5" r="2" /><path d="M4.5 9.5L12 8l7.5 1.5" /><path d="M12 8v6" /><path d="M12 14l-3.5 7" /><path d="M12 14l3.5 7" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
@@ -159,6 +169,12 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout }) {
         {Array.isArray(sets) && <button className="row-link press" onClick={onHistory}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6 7v10M10 7v10M14 7v10M18 7v10" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
+        {/* Espace pro (Pro.jsx): the coach's and the physiotherapist's programme builder, a quiet row after the sets. */}
+        {onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4.5V3h6v1.5" /><path d="M8.5 10h7M8.5 14h7M8.5 18h4" /></svg></span>
+          <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}

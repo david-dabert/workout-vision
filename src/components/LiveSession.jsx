@@ -12,7 +12,7 @@ import { writeFilmMode } from '../lib/liveCamera';
 // recorded set (CoreUpload.jsx), with the same result in the same shape (liveCounter.js, finish). There is no video:
 // the replay shows the skeleton alone (Replay.jsx, without a file). The usage counts are the recorded path's own,
 // so the counts the server accepts do not change (feedback-worker/usage-schema.js).
-export default function LiveSession({ lift, onClose, onRecord }) {
+export default function LiveSession({ lift, onClose, onRecord, planned = null }) {
   const [result, setResult] = useState(null);
   const [liveShown, setLiveShown] = useState(null);
   const [overlay, setOverlay] = useState(null);
@@ -53,9 +53,9 @@ export default function LiveSession({ lift, onClose, onRecord }) {
       {!result && <Live lift={lift} onBack={running => { if (running) track('analysis_cancelled', { lift }); onRecord(); }} onRecord={() => { writeFilmMode('video'); onRecord(); }}
         onStart={() => track('analysis_start', { lift })} onDone={done} />}
       {result && <Result result={result} lift={lift} liveShown={liveShown} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport}
-        onReplay={() => openOverlay('replay')} onNewSet={onRecord} onChangeLift={onClose} onRefilm={again} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+        onReplay={() => openOverlay('replay')} onNewSet={onRecord} onChangeLift={onClose} onRefilm={again} planned={planned} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
     </ScreenFade>
-    {result && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} wave={compactWave(waveAngles(result), result.timestamps)} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {result && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} wave={compactWave(waveAngles(result), result.timestamps)} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {result && overlay === 'replay' && <Replay file={null} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

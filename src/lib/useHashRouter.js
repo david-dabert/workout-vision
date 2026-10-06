@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const VALID_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'coach', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
-  'film', 'prs', 'onboarding', 'live', 'about',
+  'film', 'prs', 'onboarding', 'live', 'about', 'pro', 'programme',
 ]);
 
 function readHash() {
   const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
+  if (raw.startsWith('programme=')) return 'programme';
   return VALID_PAGES.has(raw) ? raw : 'dashboard';
 }
 

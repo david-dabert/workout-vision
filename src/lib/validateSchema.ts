@@ -27,6 +27,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'afterRefusal',
   // Where the body went unseen during the set (counting/doubt.js, saved-set.js): stored, read by no screen yet.
   'doubt',
+  // The coach's target, for a set filmed from a programme (Espace pro, 6 October; programme.js, plannedOf).
+  'planned',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
@@ -110,6 +112,12 @@ export function validateWorkout(record: unknown): ValidationResult {
   const w = sanitized.wave as { t?: unknown; a?: unknown } | null | undefined;
   if (w != null && !(Array.isArray(w.t) && Array.isArray(w.a) && w.t.length === w.a.length && w.t.length <= 401
     && w.t.every(v => Number.isFinite(v)) && w.a.every(v => v === null || Number.isFinite(v)))) sanitized.wave = null;
+  // A target that is not a programme's name, a place in it and whole numbers is dropped: the set stays, outside any
+  // programme (a restored backup can hold anything).
+  const p = sanitized.planned as Record<string, unknown> | null | undefined;
+  const whole = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 1000;
+  if (p != null && !(typeof p === 'object' && typeof p.programme === 'string' && p.programme.length <= 32
+    && whole(p.item) && whole(p.sets) && whole(p.reps) && whole(p.rest))) delete sanitized.planned;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;
   if (r.createdAt) sanitized.createdAt = r.createdAt as string;

@@ -83,6 +83,8 @@ describe('the fields the result screen saves', () => {
     const keys = new Set([
       ...Object.keys(savedSet({ result, lift: 'squat', n: 6, corrected: false })),
       ...Object.keys(savedSet({ result, lift: 'squat', n: 5, manual: true })),
+      // a set filmed from a coach's programme (programme.js)
+      ...Object.keys(savedSet({ result, lift: 'squat', n: 6, corrected: false, planned: { programme: 'p1', item: 0, sets: 3, reps: 10, rest: 90 } })),
       // added by saveWorkout
       'id', 'createdAt', 'schemaVersion',
     ]);

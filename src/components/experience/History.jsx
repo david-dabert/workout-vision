@@ -212,6 +212,6 @@ export default function History({ onClose }) {
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
-      setId={report.id} sides={report.sides ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
+      setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
   </>;
 }

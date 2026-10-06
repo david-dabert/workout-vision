@@ -182,7 +182,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
  * onReplay: opens the replay; absent when the video is not at hand.
  * liveShown: for a set counted live (LiveSession.jsx), the last count the live screen showed, or null.
  */
-export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null }) {
+export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
@@ -436,7 +436,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual }));
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();

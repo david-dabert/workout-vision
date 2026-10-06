@@ -291,6 +291,8 @@ export interface WorkoutRecord {
   afterRefusal?: boolean;
   /** Where the body went unseen during the set (counting/doubt.js), numbers only; read by no screen yet. */
   doubt?: unknown;
+  /** The coach's target, for a set filmed from a programme (components/experience/programme.js, plannedOf). */
+  planned?: { programme: string; item: number; sets: number; reps: number; rest: number } | null;
 }
 
 export interface RepCounterDiagnostics {
