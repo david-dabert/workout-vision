@@ -9,8 +9,11 @@ import { partialIn } from './tempo';
 
 const W = 320, H = 72;
 
-export default function RepWave({ angles, timestamps, reps, rest, first, sel, shown, fr, jointWord, onSelect }) {
-  const geo = useMemo(() => waveGeometry({ angles, timestamps, rest, width: W, height: H }), [angles, timestamps, rest]);
+// reference: a band { lo, hi } in degrees (reference-ranges.js), drawn faint behind the wave and unlabelled until
+// David approves its words (copy-reference-band.md); null draws nothing and leaves the scale as it was.
+export default function RepWave({ angles, timestamps, reps, rest, first, sel, shown, fr, jointWord, onSelect, reference = null }) {
+  const refLo = reference?.lo ?? null, refHi = reference?.hi ?? null;
+  const geo = useMemo(() => waveGeometry({ angles, timestamps, rest, width: W, height: H, include: refLo != null ? [refLo, refHi] : null }), [angles, timestamps, rest, refLo, refHi]);
   const strokes = useMemo(() => repStrokes(geo, reps, { first, isPartial: partialIn(reps) }), [geo, reps, first]);
   if (!geo || !reps?.length) return null;
   const NB = ' ';
@@ -26,6 +29,7 @@ export default function RepWave({ angles, timestamps, reps, rest, first, sel, sh
       <span className="strip-key"><i className="sw sw-out" aria-hidden="true" />{fr ? 'aller' : 'out'}<i className="sw sw-back" aria-hidden="true" />{fr ? 'retour' : 'back'}</span>
     </p>
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" onClick={tap}>
+      {reference && (() => { const a = geo.y(reference.lo), b = geo.y(reference.hi); return <rect className="w-ref" data-testid="wave-reference" fill="#E8BD7E" fillOpacity="0.08" x="0" y={Math.min(a, b)} width={W} height={Math.abs(b - a)} />; })()}
       {strokes.map(s => <rect key={`b${s.i}`} className={`w-band${s.i === sel ? ' sel' : ''}`} x={s.band.x} y="0" width={s.band.w} height={H} />)}
       <path className="w-line" d={geo.path()} />
       {strokes.map(s => <g key={s.i} className={`w-rep${s.i < shown ? ' lit' : ''}${s.i === sel ? ' sel' : ''}${s.whole ? '' : ' part'}`}>

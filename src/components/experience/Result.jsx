@@ -20,6 +20,7 @@ import { decimal, measureGuide, repTable, speedChangeLine } from './report-sheet
 import { MeasureGuide } from './measure-guide';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
+import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
 import { momentLine } from './moment';
@@ -661,7 +662,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     </div>,
     // The measured angle over the set, each rep over it (RepWave.jsx), for every level: what was measured, drawn.
     wave: MEASURES_SHOWN && count > 0 && result.smoothedAngles?.length > 1 && <div key="wave" className="res-wave">
-      <RepWave angles={waveAngles(result)} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} />
+      <RepWave angles={waveAngles(result)} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} reference={referenceBand(lift, { joint: liftDefinition(lift)?.joint })} />
     </div>,
     card: <div key="card" ref={cardRef}>
       {closing && unsaved && (
