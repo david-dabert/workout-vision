@@ -14,21 +14,21 @@ async function openChoice(page, expect, lang) {
 }
 
 export default function exercisesTests(test, expect) {
-  test('the 182 counted exercises are listed under the nine cards; only the six with evidence carry a tag, Beta, pinned on top', async ({ page }) => {
+  test('the 182 counted exercises are listed under the nine cards; only the seven with evidence carry a tag, Beta, pinned on top', async ({ page }) => {
     await openChoice(page, expect, 'en');
     const rail = await page.locator('.rail').boundingBox(), list = await page.locator('.all-exercises').boundingBox();
     expect(list.y).toBeGreaterThan(rail.y + rail.height);
-    await expect(page.locator('.all-exercises .tier-beta')).toHaveCount(6);
-    await expect(page.locator('.all-exercises .item .tag')).toHaveCount(6);
+    await expect(page.locator('.all-exercises .tier-beta')).toHaveCount(7);
+    await expect(page.locator('.all-exercises .item .tag')).toHaveCount(7);
     await expect(page.locator('.all-exercises .all-note')).toHaveText('Unless marked Beta, these exercises are experimental: we are still learning to count them.');
     await expect(page.locator('.all-exercises [data-exercise="walking_lunge"]')).toHaveCount(0);
-    for (const key of ['bicep_curl', 'lat_pulldown', 'squat', 'hip_thrust', 'romanian_deadlift', 'leg_press']) {
+    for (const key of ['bicep_curl', 'lat_pulldown', 'squat', 'hip_thrust', 'romanian_deadlift', 'leg_press', 'machine_seated_back_extension']) {
       await expect(page.locator(`.all-exercises [data-exercise="${key}"] .tag`)).toHaveText('Beta');
     }
     // The Beta exercises lead the list (David, 3 October), alphabetical within their group; the lateral raise,
     // Experimental since 3 October (tiers.txt), carries no tag.
     const keys = await page.$$eval('.all-exercises [data-exercise]', els => els.map(e => e.dataset.exercise));
-    expect(keys.slice(0, 6)).toEqual(['bicep_curl', 'hip_thrust', 'lat_pulldown', 'leg_press', 'romanian_deadlift', 'squat']);
+    expect(keys.slice(0, 7)).toEqual(['bicep_curl', 'hip_thrust', 'lat_pulldown', 'leg_press', 'machine_seated_back_extension', 'romanian_deadlift', 'squat']);
     await expect(page.locator('.all-exercises [data-exercise="lateral_raise"] .tag')).toHaveCount(0);
     // A search still filters the whole list, the pinned group included.
     await page.fill('#all-search', 'squat');
