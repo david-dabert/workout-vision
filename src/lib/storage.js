@@ -15,6 +15,23 @@ const milestoneStore = localforage.createInstance({ name: 'workoutVision', store
 const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
 const metaStore = localforage.createInstance({ name: 'workoutVision', storeName: 'meta' });
 
+/** A stored record the app can read: an object, not null, not a list. */
+export const isRecord = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * Every record of a store, each given to fn. A record that is not an object (null, a string: a corrupt or foreign
+ * write) is skipped and left where it is, never deleted; a callback that throws on one record is logged and the
+ * others are still read. In localforage's IndexedDB driver a throw inside the iterate callback leaves its promise
+ * unsettled, so one corrupt record made the history wait forever and hid its restore (audit of 6 October, action 18).
+ * fn's return value never stops the iteration.
+ */
+function eachRecord(store, fn) {
+  return store.iterate((value, key) => {
+    if (!isRecord(value)) return;
+    try { fn(value, key); } catch (e) { console.warn('[Storage] Record skipped:', key, e); }
+  });
+}
+
 /** Current schema version. Increment when workout record shape changes. */
 export const SCHEMA_VERSION = 1;
 
@@ -27,7 +44,9 @@ export async function checkAndMigrateSchema() {
   try {
     await _repairManualProvenance();
     const storedVersion = await metaStore.getItem('schemaVersion');
-    if (storedVersion === SCHEMA_VERSION) return;
+    // A version this build knows, or a newer one written by a later build: nothing to do. A rolled-back build never
+    // lowers it, so the later build's data is not marked as older than it is (audit of 6 October, action 18).
+    if (typeof storedVersion === 'number' && storedVersion >= SCHEMA_VERSION) return;
 
     // Run migrations in order
     if (!storedVersion || storedVersion < 1) {
@@ -46,11 +65,14 @@ export async function checkAndMigrateSchema() {
  * with the typed count as the app's machineResult (saveWorkout's old fallback). The app measured nothing, so its
  * machineResult goes back to null; nothing else in the set changes (Astra's review of 5 October).
  */
+/** A count typed by hand after the app refused the set (saved-set.js, manual): the app measured nothing. */
+const typedAfterRefusal = w => w?.afterRefusal === true && w.source === 'manual';
+
 async function _repairManualProvenance() {
   if (await metaStore.getItem('manualProvenanceRepaired')) return;
   const fix = [];
-  await workoutStore.iterate((value, key) => {
-    if (value?.afterRefusal === true && value.source === 'manual' && value.machineResult != null) fix.push({ key, value });
+  await eachRecord(workoutStore, (value, key) => {
+    if (typedAfterRefusal(value) && value.machineResult != null) fix.push({ key, value });
   });
   for (const { key, value } of fix) await workoutStore.setItem(key, { ...value, machineResult: null });
   await metaStore.setItem('manualProvenanceRepaired', true);
@@ -62,7 +84,7 @@ async function _repairManualProvenance() {
  */
 async function _migrateToV1() {
   const workouts = [];
-  await workoutStore.iterate((value, key) => {
+  await eachRecord(workoutStore, (value, key) => {
     workouts.push({ key, value });
   });
 
@@ -153,7 +175,10 @@ export async function saveWorkout(workout) {
  */
 export async function restoreWorkout(entry) {
   if (!entry?.id || (await workoutStore.getItem(entry.id))) return false;
-  await workoutStore.setItem(entry.id, entry);
+  // A count typed by hand after a refusal is restored with no machine result, as saveWorkout keeps it and
+  // _repairManualProvenance repairs it: a backup made from 3 to 5 October holds the typed count as the app's,
+  // and the repair has already run on this phone (audit of 6 October, action 18).
+  await workoutStore.setItem(entry.id, typedAfterRefusal(entry) ? { ...entry, machineResult: null } : entry);
   return true;
 }
 
@@ -188,7 +213,7 @@ export async function getWorkouts(options = {}) {
   const toTs = dateTo ? new Date(dateTo).getTime() : null;
 
   const all = [];
-  await workoutStore.iterate((value) => {
+  await eachRecord(workoutStore, (value) => {
     // Apply filters during iteration
     if (exercise && value.exercise !== exercise) return;
     const ts = value.createdAt || new Date(value.date).getTime();
@@ -224,7 +249,7 @@ export async function getWorkoutCount(filters = {}) {
   const toTs = dateTo ? new Date(dateTo).getTime() : null;
 
   let count = 0;
-  await workoutStore.iterate((value) => {
+  await eachRecord(workoutStore, (value) => {
     if (exercise && value.exercise !== exercise) return;
     const ts = value.createdAt || new Date(value.date).getTime();
     if (fromTs && ts < fromTs) return;
@@ -243,7 +268,7 @@ export async function getWorkoutCount(filters = {}) {
  */
 export async function getRecentWorkouts(n = 10) {
   const recent = [];
-  await workoutStore.iterate((value) => {
+  await eachRecord(workoutStore, (value) => {
     const ts = value.createdAt || 0;
     if (recent.length < n) {
       recent.push(value);
@@ -271,7 +296,7 @@ export async function getWorkoutsByDateRange(dateFrom, dateTo) {
   const fromTs = new Date(dateFrom).getTime();
   const toTs = new Date(dateTo).getTime();
   const results = [];
-  await workoutStore.iterate((value) => {
+  await eachRecord(workoutStore, (value) => {
     const ts = value.createdAt || new Date(value.date).getTime();
     if (ts >= fromTs && ts <= toTs) {
       results.push(value);
@@ -286,7 +311,7 @@ export async function getWorkoutsByDateRange(dateFrom, dateTo) {
  */
 export async function getAllWorkouts() {
   const workouts = [];
-  await workoutStore.iterate((value) => {
+  await eachRecord(workoutStore, (value) => {
     const { valid, errors, sanitized } = validateWorkout(value);
     if (!valid) {
       console.warn('[Storage] Workout validation issues:', value.id, errors);
@@ -302,7 +327,7 @@ export async function getAllWorkouts() {
  */
 export async function getLastWorkoutForExercise(exerciseKey, excludeId) {
   let best = null;
-  await workoutStore.iterate((value) => {
+  await eachRecord(workoutStore, (value) => {
     if (value.exercise !== exerciseKey) return;
     if (excludeId && value.id === excludeId) return;
     if (!best || (value.createdAt || 0) > (best.createdAt || 0)) {
@@ -338,7 +363,7 @@ export async function saveMedicalRecord(record) {
 
 export async function getMedicalRecords() {
   const records = [];
-  await medicalStore.iterate((value) => {
+  await eachRecord(medicalStore, (value) => {
     records.push(value);
   });
   return records.sort((a, b) => b.uploadedAt - a.uploadedAt);
@@ -362,7 +387,7 @@ export async function saveFoodEntry(entry) {
 
 export async function getFoodLog(dateStr) {
   const entries = [];
-  await foodStore.iterate((value) => {
+  await eachRecord(foodStore, (value) => {
     entries.push(value);
   });
   if (dateStr) {

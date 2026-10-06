@@ -20,6 +20,11 @@ describe('the install manifest', () => {
     expect(manifest.theme_color).toBe(meta('theme-color'));
   });
 
+  // Wellness positioning (audit of 6 October): the app does not present itself as a health or medical product.
+  it('declares the fitness category only, not health', () => {
+    expect(manifest.categories).toEqual(['fitness']);
+  });
+
   it('offers only shortcuts to screens the app opens', () => {
     for (const s of manifest.shortcuts || []) {
       expect(s.url.startsWith(manifest.scope)).toBe(true);

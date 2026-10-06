@@ -22,6 +22,8 @@ for (const size of [{ width: 390, height: 664 }, { width: 390, height: 745 }]) {
         await page.route('**/pose_landmarker_full.task', r => r.fulfill({ status: 200, body: '' }));
         await page.addInitScript(([l]) => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); localStorage.setItem('wv_level', 'beginner'); }, [lang]);
         await page.goto('/workout-vision/');
+        // The row carries its tier tag, as the list's rows do: the tests are Experimental (tierOf, offer.js).
+        await expect(page.getByTestId(`tier-${key}`)).toHaveText(lang === 'fr' ? 'Expérimental' : 'Experimental');
         await page.getByTestId(`choose-${key}`).click();
         await expect(page.locator('.film-screen')).toBeVisible();
         await expect(page.locator('.film-screen .eyebrow')).toHaveText(lang === 'fr' ? 'Test de condition physique' : 'Fitness test');

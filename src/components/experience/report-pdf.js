@@ -12,11 +12,14 @@ const MARGIN = (PAGE_W - COLUMN) / 2;
 const GAP = 12;                                   // .sheet { gap }
 const COLOR = { paper: '#FBF7EF', ink: '#1D1812', ash: '#6B6256', rule: '#E4DCCD', rowRule: '#F0EADF', count: '#8A6630', waveBack: '#CDB68E' };
 const FACE = { serif: 'InstrumentSerif-Regular', sans: 'Geist-Regular', sansMedium: 'Geist-Medium', mono: 'GeistMono-Regular' };
+const SHORT_MARK = '▾';                          // report-sheet.js: after a short rep's range
 const SANS_CSS = 'Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 
 // Greedy lines, breaking where a browser would: at spaces, and after a hyphen
 // between two letters. A word wider than the line is cut between letters, as
-// overflow-wrap: anywhere does.
+// overflow-wrap: anywhere does. The no-break spaces (U+00A0, U+202F) belong to the
+// word, as in a browser, so "17\u00A0%" never parts (audit of 6 October).
+const BREAK = /[^\S\u00A0\u202F]/, PARTS = /[^\S\u00A0\u202F]+|[\S\u00A0\u202F]+/g, ALL_BREAK = /^[^\S\u00A0\u202F]+$/;
 export function wrapText(text, maxWidth, measure) {
   const out = [];
   const fit = (s) => { // the longest head of s, by characters, that fits the line
@@ -27,9 +30,9 @@ export function wrapText(text, maxWidth, measure) {
   };
   for (const para of text.split('\n')) {
     let line = '';
-    const parts = (para.match(/\s+|\S+/g) || []).flatMap(p => /\s/.test(p) ? [p] : p.replace(/(\p{L})-(?=\p{L})/gu, '$1-\u0000').split('\u0000'));
+    const parts = (para.match(PARTS) || []).flatMap(p => BREAK.test(p) ? [p] : p.replace(/(\p{L})-(?=\p{L})/gu, '$1-\u0000').split('\u0000'));
     for (const part of parts) {
-      if (/^\s+$/.test(part)) { if (line) line += part; continue; }
+      if (ALL_BREAK.test(part)) { if (line) line += part; continue; }
       if (!line.trim() || measure(line + part) <= maxWidth) line += part;
       else { out.push(line.trimEnd()); line = part; }
       while (measure(line.trimEnd()) > maxWidth && [...line.trimEnd()].length > 1) {
@@ -284,7 +287,17 @@ export function reportPdf(sheet) {
     heading();
     sheet.rows.forEach(row => {
       if (room() < ROW + 0.5) { newPage(); heading(); }
-      row.forEach((v, k) => write(v, colX(k), y + 0.5 + (ROW - 1 - 17.25) / 2, 'mono', 11.5, 1.5, COLOR.ink));
+      row.forEach((v, k) => {
+        const top = y + 0.5 + (ROW - 1 - 17.25) / 2;
+        if (!v.endsWith(SHORT_MARK)) { write(v, colX(k), top, 'mono', 11.5, 1.5, COLOR.ink); return; }
+        // The short-rep mark: the mono face has no ▾ and jsPDF dropped it (audit of 6 October), so it is drawn,
+        // a small triangle in the text's colour after the value, its point on the baseline.
+        const t = v.slice(0, -SHORT_MARK.length), x = colX(k) + width(t, 'mono', 11.5), base = baseline('mono', 11.5, 1.5, top);
+        write(t, colX(k), top, 'mono', 11.5, 1.5, COLOR.ink);
+        const w = 11.5 * 0.5, h = 11.5 * 0.42;
+        doc.setFillColor(COLOR.ink);
+        doc.triangle(x, base - h, x + w, base - h, x + w / 2, base, 'F');
+      });
       hline(y + ROW, COLOR.rowRule);
       y += ROW;
     });

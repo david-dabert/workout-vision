@@ -61,6 +61,8 @@ async function processFile(file) {
   const worldLandmarksArr = []; // per-sample: array of 33 world landmarks (metres) or null
   const timestamps = [];
   const pixelHashes = [];      // per-sample SHA-256 hex of the pixel buffer handed to the landmarker
+  const poseSources = [];      // per-sample 'full' (whole frame), 'crop' (second look around the last pose, poseCrop.js) or null
+  let detectMs = 0;            // time spent in detectPoseImage, crops included
   let lockedSubjectIdx = null;
   let sampleCount = 0;
   let midFrameDataURL = null;
@@ -79,7 +81,7 @@ async function processFile(file) {
       // A decoding path that fails part-way starts again at sample 0: only the last pass is kept, as in the app
       // (coreAnalysis.js; audit FINDING-002).
       // The image smoothing forgets the abandoned pass too, as the app's worker does at sample 0 (third audit, C48).
-      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; sampleCount = 0; resetKalmanFilters(); }
+      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; poseSources.length = 0; detectMs = 0; sampleCount = 0; resetKalmanFilters(); }
       // Match the app's worker path: read pixels from the extraction canvas
       // and write them onto an OffscreenCanvas before inference. The roundtrip
       // is lossless, but using the same path as the worker ensures the harness
@@ -93,7 +95,9 @@ async function processFile(file) {
       pixelHashes.push(Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join(''));
 
       const deterministicTs = frameIndex * (1000 / TARGET_FPS);
+      const d0 = performance.now();
       const result = detectPoseImage(landmarker, inferCanvas, deterministicTs);
+      detectMs += performance.now() - d0;
 
       let lm = null;
       let wlm = null;
@@ -113,6 +117,7 @@ async function processFile(file) {
       }
 
       imageLandmarks.push(lm);
+      poseSources.push(lm ? (result.source ?? 'full') : null);
       worldLandmarksArr.push(wlm);
       timestamps.push(timestamp);
       sampleCount++;
@@ -207,6 +212,8 @@ async function processFile(file) {
     peakOpenFrames: streamResult.peakOpenFrames || 0,
     rotationDecision: streamResult.rotationDecision || 'none',
     poseCoverage,
+    cropSamples: poseSources.filter(x => x === 'crop').length,
+    detectSeconds: parseFloat((detectMs / 1000).toFixed(2)),
     noseAboveHips,
     leftArmVisibility,
     rightArmVisibility,
@@ -214,7 +221,7 @@ async function processFile(file) {
 
   disposeAllLandmarkers();
 
-  return { metadata, imageLandmarks, worldLandmarks: worldLandmarksArr, timestamps, pixelHashes, midFrameDataURL };
+  return { metadata, imageLandmarks, worldLandmarks: worldLandmarksArr, timestamps, pixelHashes, poseSources, midFrameDataURL };
 }
 
 // Expose to Playwright

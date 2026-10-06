@@ -8,7 +8,7 @@
 // 2026) is a walking lunge with a sandbag on the shoulders, so the same holds.
 const NOT_FILMABLE = new Set(['walking_lunge', 'sandbag_lunge']);
 import patterns from './counting/guide-patterns.json';
-import { TIERS } from './liftTiers';
+import { GUIDE_TIERS, TIERS } from './liftTiers';
 import { FITNESS_TESTS } from './fitness-tests';
 
 // Withdrawn on 3 October 2026 (third audit, C21): the floor exercises counted on both sides
@@ -45,4 +45,4 @@ const offered = new Set(OFFERED);
 
 export const isOffered = key => offered.has(key);
 /** 'beta', 'experimental', or null for an exercise the app does not count. */
-export const tierOf = key => TIERS[key] || (offered.has(key) ? 'experimental' : null);
+export const tierOf = key => TIERS[key] || (offered.has(key) ? GUIDE_TIERS[key] || 'experimental' : null);

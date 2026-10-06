@@ -53,3 +53,22 @@ export function phaseAt(r, t, first) {
   if (t >= r.endTime - len[second]) return second;
   return null;
 }
+
+// A rep is reached a frame inside its start: a seek to the start itself may land on the frame before it,
+// where the screen would name no rep (1 October 2026, check.mjs). 0.04 s is one frame at 25 fps.
+export const into = r => Math.min(r.startTime + 0.04, (r.startTime + r.endTime) / 2);
+
+// The keys of the replay's line (role="slider"): the arrows, either pair, and Page Up / Page Down go to the
+// next or previous rep, as a slider's keys move it by one step (audit of 6 October: Up and Down did nothing);
+// Home and End to the video's ends. The moment to seek to, or null for a key the line leaves alone.
+const STEP = { ArrowRight: 1, ArrowUp: 1, PageUp: 1, ArrowLeft: -1, ArrowDown: -1, PageDown: -1 };
+export function keyedTime(key, reps, now, length) {
+  const step = STEP[key];
+  if (step) {
+    const next = step > 0 ? reps.findIndex(r => r.startTime > now + 0.05) : reps.map(r => r.startTime < now - 0.05).lastIndexOf(true);
+    return next >= 0 ? into(reps[next]) : step > 0 ? length : 0;
+  }
+  if (key === 'Home') return 0;
+  if (key === 'End') return length;
+  return null;
+}

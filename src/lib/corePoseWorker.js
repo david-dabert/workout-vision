@@ -26,7 +26,8 @@ self.onmessage = async ({ data }) => {
     canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
     // A detection error is posted as an error, not as an empty frame (third audit, C07).
     const result = detectPoseImage(model, canvas, timestamp, { rethrow: true });
-    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null });
+    // source 'crop': the pose was found on the second look around the last pose (poseCrop.js), not on the whole frame.
+    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null });
   } catch (error) {
     self.postMessage({ id: data.id, error: error.message });
   }

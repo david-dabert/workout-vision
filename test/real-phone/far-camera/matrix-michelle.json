@@ -1,0 +1,102 @@
+[
+ {
+  "id": "michelle-squat-v90-d9-nocrop",
+  "model": "michelle",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 7,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 7001,
+  "dist": 9,
+  "noCrop": true,
+  "shot": false
+ },
+ {
+  "id": "michelle-squat-v90-d9-crop",
+  "model": "michelle",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 7,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 7001,
+  "dist": 9,
+  "shot": true
+ },
+ {
+  "id": "michelle-bicep_curl-v90-d9-nocrop",
+  "model": "michelle",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 7,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 7002,
+  "dist": 9,
+  "noCrop": true,
+  "shot": false
+ },
+ {
+  "id": "michelle-bicep_curl-v90-d9-crop",
+  "model": "michelle",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 7,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 7002,
+  "dist": 9,
+  "shot": true
+ },
+ {
+  "id": "michelle-lateral_raise-v0-d9-nocrop",
+  "model": "michelle",
+  "exercise": "lateral_raise",
+  "view": 0,
+  "reps": 8,
+  "peakL": 90,
+  "peakR": 90,
+  "seed": 7003,
+  "dist": 9,
+  "noCrop": true,
+  "shot": false
+ },
+ {
+  "id": "michelle-lateral_raise-v0-d9-crop",
+  "model": "michelle",
+  "exercise": "lateral_raise",
+  "view": 0,
+  "reps": 8,
+  "peakL": 90,
+  "peakR": 90,
+  "seed": 7003,
+  "dist": 9,
+  "shot": true
+ },
+ {
+  "id": "michelle-overhead_press-v0-d9-nocrop",
+  "model": "michelle",
+  "exercise": "overhead_press",
+  "view": 0,
+  "reps": 8,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 7004,
+  "dist": 9,
+  "noCrop": true,
+  "shot": false
+ },
+ {
+  "id": "michelle-overhead_press-v0-d9-crop",
+  "model": "michelle",
+  "exercise": "overhead_press",
+  "view": 0,
+  "reps": 8,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 7004,
+  "dist": 9,
+  "shot": true
+ }
+]

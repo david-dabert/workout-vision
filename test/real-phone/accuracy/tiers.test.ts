@@ -8,8 +8,8 @@
 // David's sets are the labelled build sets npm run scoreboard counts (labelledSets(): test/real-phone/sets-*/ and
 // landmarks/), counted by the live core as the scoreboard does. The table is written to tiers.txt; it holds no run
 // date, so a run that changes nothing leaves the file unchanged. Nothing here moves a count or a parameter.
-// A lift with a set of David's but no entry in TIERS (none today)
-// is held to the same rule, with the tier the app gives it (offer.js tierOf: Experimental when offered), so its sets are
+// A lift with a set of David's but no entry in TIERS (the machine seated back extension, 5 October)
+// is held to the same rule, with the tier the app gives it (offer.js tierOf: GUIDE_TIERS, else Experimental when offered), so its sets are
 // listed and a disagreement fails here too (WP0.2 of docs/SPEC-production.md).
 import { expect, test } from 'vitest';
 import { writeFileSync } from 'node:fs';

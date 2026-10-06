@@ -2,7 +2,7 @@
 // but the list cannot be read again (review of 2 October), and where the iPhone warning applies (keep-sets.js).
 import { describe, expect, it } from 'vitest';
 import { restoreFlow, restoredLine } from '../keep-sets-view';
-import { BACKUP_KIND, onIOS } from '../../../lib/keep-sets';
+import { BACKUP_KIND, MAX_BACKUP_BYTES, onIOS } from '../../../lib/keep-sets';
 
 const file = sets => JSON.stringify({ kind: BACKUP_KIND, version: 1, sets });
 const set = id => ({ id, exercise: 'bicep_curl', reps: 7, createdAt: 1790900000000 });
@@ -32,6 +32,15 @@ describe('a restore', () => {
     expect(r).toEqual({ note: '1 série restaurée. 2 séries n’ont pas pu être restaurées. Réessayez.', sets: ['a'] });
     const en = await restoreFlow(file([set('a'), set('b')]), false, { restore: async () => ({ added: 1, present: 0, failed: 1 }), list: async () => ['a'] });
     expect(en.note).toBe('1 set restored. 1 set could not be restored. Try again.');
+  });
+  // Audit of 6 October, action 18: a file larger than any backup (a video picked by mistake) is never read.
+  it('refuses a file above the size cap without reading it', async () => {
+    let read = false, wrote = false;
+    const r = await restoreFlow(() => { read = true; return file([set('a')]); }, true, { size: MAX_BACKUP_BYTES + 1, restore: async () => { wrote = true; return { added: 1 }; }, list: async () => [] });
+    expect(r).toEqual({ note: 'Ce fichier n’est pas une sauvegarde de vos séries.' });
+    expect(read || wrote).toBe(false);
+    const ok = await restoreFlow(() => file([set('a')]), false, { size: MAX_BACKUP_BYTES, restore: async () => ({ added: 1, present: 0 }), list: async () => ['a'] });
+    expect(ok).toEqual({ note: '1 set restored.', sets: ['a'] });
   });
   it('counts plurals and unreadable sets in both languages', () => {
     expect(restoredLine({ added: 0, present: 3, skipped: 2 }, true)).toBe('0 série restaurée. 3 étaient déjà sur ce téléphone. 2 séries illisibles n’ont pas été restaurées.');

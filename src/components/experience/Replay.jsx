@@ -4,7 +4,7 @@ import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
-import { poseAt, repAt, phaseAt } from './replay-track';
+import { poseAt, repAt, phaseAt, into, keyedTime } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { canExport, exportSetVideo, shareFailed } from './video-export';
@@ -175,9 +175,6 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     if (!video || made.state === 'making') return;
     if (video.paused || video.ended) play(); else video.pause();
   }
-  // A rep is reached a frame inside its start: a seek to the start itself may land on the frame before it,
-  // where the screen would name no rep (1 October 2026, check.mjs). 0.04 s is one frame at 25 fps.
-  const into = r => Math.min(r.startTime + 0.04, (r.startTime + r.endTime) / 2);
   function seekTo(t) {
     const video = videoRef.current;
     if (!video) return;
@@ -213,13 +210,12 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     });
     seekTo(hit >= 0 ? into(reps[hit]) : t);
   }
+  // The line's keys: a rep at a time, either arrow pair or Page Up / Down; Home and End (replay-track.js, keyedTime).
   function keys(e) {
-    const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    if (step) {
-      e.preventDefault();
-      const next = step > 0 ? reps.findIndex(r => r.startTime > now + 0.05) : reps.map(r => r.startTime < now - 0.05).lastIndexOf(true);
-      seekTo(next >= 0 ? into(reps[next]) : step > 0 ? length : 0);
-    } else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); seekTo(e.key === 'Home' ? 0 : length); }
+    const t = keyedTime(e.key, reps, now, length);
+    if (t === null) return;
+    e.preventDefault();
+    seekTo(t);
   }
 
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;

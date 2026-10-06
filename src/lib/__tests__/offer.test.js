@@ -6,7 +6,7 @@ vi.hoisted(() => {
   globalThis.document ??= { createElement: () => any };
 });
 import { NOT_YET_COUNTED, OFFERED, WITHDRAWN, isOffered, tierOf } from '../offer';
-import { TIERS } from '../liftTiers';
+import { GUIDE_TIERS, TIERS } from '../liftTiers';
 import catalogue from '../guide-catalog.json';
 import families from '../counting/guide-families.json';
 import { liftDefinition } from '../counting/core';
@@ -39,9 +39,9 @@ describe('the exercises the app offers', () => {
   });
 
   it('keep the tier of the lifts with evidence, and mark every other one Experimental', () => {
-    for (const [key, tier] of Object.entries(TIERS)) expect(tierOf(key)).toBe(tier);
+    for (const [key, tier] of Object.entries({ ...TIERS, ...GUIDE_TIERS })) expect(tierOf(key)).toBe(tier);
     const beta = OFFERED.filter(k => tierOf(k) === 'beta');
-    expect(beta.sort()).toEqual(Object.keys(TIERS).filter(k => TIERS[k] === 'beta').sort());
+    expect(beta.sort()).toEqual(Object.entries({ ...TIERS, ...GUIDE_TIERS }).filter(([, t]) => t === 'beta').map(([k]) => k).sort());
     expect(tierOf('hammer_curl')).toBe('experimental');
     expect(tierOf('pec_deck')).toBeNull();
   });

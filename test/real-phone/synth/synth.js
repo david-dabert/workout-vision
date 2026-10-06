@@ -129,8 +129,12 @@ const flat = document.createElement('canvas'); flat.width = W; flat.height = H;
 const fctx = flat.getContext('2d', { willReadFrequently: true });
 // A bench run may load another pose model (run.mjs, BENCH_POSE): its bytes are handed to the app's loader.
 if (P.benchPose) globalThis.__WV_BENCH_POSE_MODEL__ = await (await fetch('bench-pose.task')).arrayBuffer();
+// P.noCrop: the pose path without its crop pass on lost frames (poseAnalysis.js bench hook), to measure the pass
+// against its absence (test/real-phone/far-camera/run.mjs).
+if (P.noCrop) globalThis.__WV_BENCH_NO_CROP__ = true;
 const model = P.video ? null : await getImageLandmarker();
-const frames = [], truth = [], ts = [];
+const frames = [], truth = [], ts = [], sources = [];
+let detectMs = 0;
 const n = Math.floor(total * FPS);
 const jpegs = [];
 for (let i = 0; i < n; i++) {
@@ -159,11 +163,14 @@ for (let i = 0; i < n; i++) {
   renderer.render(scene, camera);
   fctx.drawImage(renderer.domElement, 0, 0);
   if (P.video) { jpegs.push(flat.toDataURL('image/jpeg', 0.9)); truth.push(truthAngles()); ts.push(time); continue; }
+  const d0 = performance.now();
   const res = detectPoseImage(model, flat, time * 1000);
+  detectMs += performance.now() - d0;
   frames.push(res?.worldLandmarks?.[0] ? res.worldLandmarks[0].map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4), z: +p.z.toFixed(4), visibility: +(p.visibility ?? 1).toFixed(3) })) : null);
+  sources.push(res?.worldLandmarks?.[0] ? (res.source ?? 'full') : null);
   truth.push(truthAngles());
   ts.push(time);
   if (i === Math.floor(n / 3) && P.shot) window.SHOT = flat.toDataURL('image/jpeg', 0.8);
 }
 window.JPEGS = jpegs;
-window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, truth, timestamps: ts, size: [W, H] };
+window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, poseSources: sources, detectMs, truth, timestamps: ts, size: [W, H] };

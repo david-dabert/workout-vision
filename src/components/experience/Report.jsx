@@ -47,11 +47,11 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
 
   const liftName = exerciseName(lift, lang);
   const first = liftDefinition(lift)?.first || 'concentric';
-  // The previous saved set of the same lift, if any, for comparison: before this one, never this one.
+  // The previous saved set of the same lift and the same tracked arm or side, if any, for comparison: before this one, never this one.
   // Just after a save the sets are being read again; the comparison then follows once they are in,
   // rather than being left out for good (review, 30 September).
   const previousOf = all => {
-    const prev = previousSet(all, lift, { id: setId, at: when.getTime() });
+    const prev = previousSet(all, lift, { id: setId, at: when.getTime(), arm });
     return prev ? { count: prev.reps, reps: prev.repDetails, date: new Date(prev.createdAt ?? prev.date) } : null;
   };
   const [previous, setPrevious] = useState(() => { const all = knownSets(); return all ? previousOf(all) : undefined; });

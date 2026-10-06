@@ -62,7 +62,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back. Counted as push_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "overhead_press": {
     "joint": "elbow",
@@ -169,7 +170,8 @@
     "rest": "high",
     "first": "concentric",
     "view": "side",
-    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start. One limb at a time (one arm rows while the other hand braces on the bench): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "chest_supported_row": {
     "joint": "elbow",
@@ -226,21 +228,24 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "weighted_pull_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "chin_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "shrug": {
     "joint": null,
@@ -600,14 +605,16 @@
     "rest": "high",
     "first": "concentric",
     "view": "side",
-    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start. One limb at a time (one arm rows the end of a landmine bar while the other braces on the knee): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "single_arm_cable_row": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "side",
-    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start. One limb at a time (one arm pulls the handle while the other rests): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "wide_grip_lat_pulldown": {
     "joint": "elbow",
@@ -621,21 +628,24 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "assisted_chin_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "weighted_chin_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "rack_pull": {
     "joint": "hip",
@@ -709,7 +719,8 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load."
+    "why": "The standing hip hinge closes shoulder-hip-knee while lowering the load. One limb at a time (the standing hip hinges while the other leg extends behind in line with the torso): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "reverse_lunge": {
     "joint": "knee",
@@ -739,7 +750,8 @@
     "rest": "low",
     "first": "concentric",
     "view": "side",
-    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance."
+    "why": "Glutes extend the flexed hip to lift the pelvis or legs against resistance. One limb at a time (the planted leg lifts the pelvis while the other leg is held raised): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "barbell_glute_bridge": {
     "joint": "hip",
@@ -806,14 +818,16 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start. One limb at a time (one leg moves out while the other stands still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "cable_standing_hip_adduction": {
     "joint": "hip",
     "rest": "low",
     "first": "concentric",
     "view": "front",
-    "why": "Adductors pull the abducted leg toward alignment, opening shoulder-hip-knee."
+    "why": "Adductors pull the abducted leg toward alignment, opening shoulder-hip-knee. One limb at a time (one leg moves in while the other stands still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "hip_adduction_machine": {
     "joint": null,
@@ -973,7 +987,8 @@
     "rest": "high",
     "first": "concentric",
     "view": "side",
-    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance."
+    "why": "Biceps or brachialis flex the extended elbow to lift the curl resistance. One limb at a time (one arm curls with the elbow braced on the thigh while the other rests): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "ez_bar_curl": {
     "joint": "elbow",
@@ -1050,7 +1065,8 @@
     "rest": "low",
     "first": "concentric",
     "view": "side",
-    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance."
+    "why": "Triceps extend the flexed elbow to lift the cable or dumbbell resistance. One limb at a time (one arm extends overhead while the other rests): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "bench_dip": {
     "joint": "elbow",
@@ -1196,35 +1212,40 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back. Counted as push_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "knee_push_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back. Counted as push_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "wide_push_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back. Counted as push_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "diamond_push_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back. Counted as push_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "decline_push_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back."
+    "why": "Elbow flexion lowers the load from straight arms; triceps extend it back. Counted as push_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "pike_push_up": {
     "joint": "elbow",
@@ -1358,21 +1379,24 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "Both elbows flex together to lift the body, even when the head alternates sides of the bar."
+    "why": "Both elbows flex together to lift the body, even when the head alternates sides of the bar. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "l_sit_pull_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "towel_pull_up": {
     "joint": "elbow",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance."
+    "why": "The vertical pull flexes extended elbows while lifting bodyweight or resistance. Counted as pull_up (core.ts, COUNT_AS): the same elbow cycle, so its definition, side rule and detection settings. Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "bodyweight_squat": {
     "joint": "knee",
@@ -1386,21 +1410,24 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back. One limb at a time (the standing knee bends while the other leg is held straight in front): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "assisted_pistol_squat": {
     "joint": "knee",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back. One limb at a time (the standing knee bends while the other leg is held straight in front): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "shrimp_squat": {
     "joint": "knee",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back. One limb at a time (the standing knee bends while the other leg is held bent behind): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "cossack_squat": {
     "joint": "knee",
@@ -1445,21 +1472,24 @@
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back. One limb at a time (the standing knee bends while the other leg is held bent behind): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "single_leg_box_squat": {
     "joint": "knee",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back."
+    "why": "Knee flexion lowers the load from standing or lockout; quadriceps extend it back. One limb at a time (the standing knee bends while the other leg is held off the floor): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "step_down": {
     "joint": "knee",
     "rest": "high",
     "first": "eccentric",
     "view": "side",
-    "why": "The supporting knee bends to lower the other foot off the step, then extends."
+    "why": "The supporting knee bends to lower the other foot off the step, then extends. One limb at a time (the supporting knee bends while the other leg hangs straight off the step): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "calf_raise": {
     "joint": null,
@@ -1489,7 +1519,8 @@
     "rest": "low",
     "first": "concentric",
     "view": "side",
-    "why": "From quadruped hip flexion, glutes extend the thigh to lift the bent leg."
+    "why": "From quadruped hip flexion, glutes extend the thigh to lift the bent leg. One limb at a time (one leg kicks back while the other kneels still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "fire_hydrant": {
     "joint": null,
@@ -1508,14 +1539,16 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start. One limb at a time (the top leg rises while the bottom leg lies still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "side_lying_leg_raise": {
     "joint": "hip",
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start. One limb at a time (the top leg rises while the bottom leg lies still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "lying_hamstring_walkout": {
     "joint": null,
@@ -1580,7 +1613,8 @@
     "rest": "low",
     "first": "concentric",
     "view": "side",
-    "why": "From quadruped hip flexion, glutes extend the thigh to lift the bent leg."
+    "why": "From quadruped hip flexion, glutes extend the thigh to lift the bent leg. One limb at a time (one leg kicks back while the other kneels still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "banded_fire_hydrant": {
     "joint": null,
@@ -1595,7 +1629,8 @@
     "rest": "high",
     "first": "concentric",
     "view": "front",
-    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start."
+    "why": "Glute-driven lateral leg elevation closes shoulder-hip-knee from the aligned-leg start. One limb at a time (one leg moves out while the other stands still): each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
   },
   "banded_seated_hip_abduction": {
     "joint": null,

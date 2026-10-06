@@ -36,7 +36,6 @@ import {
 import * as mp from '@mediapipe/tasks-vision';
 
 const WASM_LOCAL_URL = 'mediapipe'; // local WASM files served by SW
-const CDN_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 const LOCAL_MODEL_URL = 'mediapipe/pose_landmarker_full.task';
 const LOCAL_MANIFEST_URL = 'mediapipe/manifest.json';
 
@@ -50,8 +49,8 @@ async function sha256Hex(buffer) {
 }
 
 /**
- * Fetch model with SHA-256 integrity verification.
- * Tries local vendored copy first; falls back to CDN on hash mismatch or fetch failure.
+ * Fetch the vendored model with SHA-256 integrity verification. A failed fetch or a hash mismatch is an error:
+ * the model is never loaded from a third-party host (the CDN fallback was removed, audit of 6 October, action 18).
  */
 async function fetchModelWithVerification() {
   let expectedHash = null;
@@ -65,29 +64,12 @@ async function fetchModelWithVerification() {
     }
   } catch { /* manifest unavailable; proceed without verification */ }
 
-  // Try local vendored model first
-  try {
-    const localResp = await fetch(LOCAL_MODEL_URL);
-    if (localResp.ok) {
-      const buffer = await localResp.arrayBuffer();
-      if (expectedHash) {
-        const actualHash = await sha256Hex(buffer);
-        if (actualHash === expectedHash) {
-          return buffer;
-        }
-        console.warn('[PoseWorker] Local model SHA-256 mismatch, falling back to CDN');
-      } else {
-        // No manifest hash available; trust the local copy
-        return buffer;
-      }
-    }
-  } catch { /* local fetch failed */ }
-
-  // Fallback to CDN
-  console.warn('[PoseWorker] Loading model from CDN fallback');
-  const cdnResp = await fetch(CDN_MODEL_URL);
-  if (!cdnResp.ok) throw new Error(`Model fetch failed: ${cdnResp.status}`);
-  return cdnResp.arrayBuffer();
+  // The vendored model, verified when the manifest gives its hash.
+  const localResp = await fetch(LOCAL_MODEL_URL);
+  if (!localResp.ok) throw new Error(`Model fetch failed: ${localResp.status}`);
+  const buffer = await localResp.arrayBuffer();
+  if (expectedHash && (await sha256Hex(buffer)) !== expectedHash) throw new Error('Model SHA-256 mismatch');
+  return buffer;
 }
 
 // ─── Worker state ───

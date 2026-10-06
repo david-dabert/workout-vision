@@ -8,10 +8,51 @@ import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { countInWindow, decides, PRESS_DECIDES_NOTHING, publicSets } from './sets';
+import { countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
+
+// 95% Wilson score interval for a share k of n (Wilson EB, "Probable inference, the law of succession, and
+// statistical inference", J Am Stat Assoc 1927;22(158):209-212). z = 1.96 for 95%. Status: literature.
+// Printed only, decides nothing: the gate below is unchanged.
+function wilson(k: number, n: number, z = 1.96): [number, number] {
+  if (!n) return [0, 0];
+  const p = k / n, z2 = z * z, d = 1 + z2 / n;
+  const mid = (p + z2 / (2 * n)) / d, half = (z / d) * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
+  return [Math.max(0, mid - half), Math.min(1, mid + half)];
+}
+const share = (k: number, n: number) => {
+  const pct = (x: number) => Math.round(100 * x), [lo, hi] = wilson(k, n);
+  return `${k} exact (${n ? pct(k / n) : 0}%, 95% Wilson ${pct(lo)}-${pct(hi)}%)`;
+};
+
+// The headline counts sets; Countix's 447 build clips are each read twice, cut to the labelled window (countix) and
+// whole with the window beside it (countix-whole, same file name), so its two readings are not independent sets
+// (audit of 6 October, action 12). These lines report each dataset alone, and Countix once per distinct clip.
+// Rep error is total |count - label| over the labelled reps of the counted sets (refused sets have no count).
+// Printed only, decides nothing.
+function honestLines(sets: { name: string; dataset: string; label: number }[], live: Record<string, number | string>) {
+  const exact = (name: string, label: number) => live[name] !== 'refused' && off(live[name], label) === 0;
+  const lines = ['Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:'];
+  for (const ds of [...new Set(sets.map(s => s.dataset))].sort()) {
+    const g = sets.filter(s => s.dataset === ds), counted = g.filter(s => live[s.name] !== 'refused');
+    const err = counted.reduce((a, s) => a + off(live[s.name], s.label), 0), reps = counted.reduce((a, s) => a + s.label, 0);
+    lines.push(`- ${ds}: ${g.length} sets, ${share(g.filter(s => exact(s.name, s.label)).length, g.length)}, ${g.length - counted.length} refused, rep error ${err} of ${reps} reps (${reps ? (100 * err / reps).toFixed(1) : 0}%).`);
+  }
+  const clip = (s: { name: string }) => s.name.split('/').pop()!;
+  const cut = new Map(sets.filter(s => s.dataset === 'countix').map(s => [clip(s), s]));
+  const whole = new Map(sets.filter(s => s.dataset === 'countix-whole').map(s => [clip(s), s]));
+  const both = [...cut.keys()].filter(k => whole.has(k));
+  if (both.length) {
+    // A clip's file is <youtube id>_<start s, 6 digits>_<window start ms> (scripts/public/countix.mjs).
+    const videos = new Set(both.map(k => k.replace(/_\d{6}_\d+\.json\.gz$/, ''))).size;
+    const ex = (m: typeof cut, k: string) => exact(m.get(k)!.name, m.get(k)!.label);
+    const b = both.filter(k => ex(cut, k) && ex(whole, k)).length, e = both.filter(k => ex(cut, k) || ex(whole, k)).length;
+    lines.push(`Countix by distinct clip: ${both.length} labelled clips from ${videos} YouTube videos, each read twice (cut and whole)${cut.size + whole.size - 2 * both.length ? `, ${cut.size + whole.size - 2 * both.length} read once and left out here` : ''}: both readings ${share(b, both.length)}; either reading ${share(e, both.length)}.`);
+  }
+  return lines;
+}
 
 test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   // In CI, the base branch's counts (PUBLIC_BASE): a change cannot lower the bar by editing them (audit of 3 October).
@@ -19,12 +60,13 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const base = existsSync(from) ? JSON.parse(readFileSync(from, 'utf8')).counts : {};
   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
-  const rows: string[] = [];
+  const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [];
   let exactNow = 0, exactBefore = 0, became = 0, added = 0, kept = 0;
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
     const now = r.refused ? 'refused' : countInWindow(r.reps, s.window), before = base[s.name];
     live[s.name] = now;
+    if (r.doubt && now !== 'refused') doubts.push({ flagged: r.doubt.flagged, err: Math.abs((now as number) - s.label) });
     const key = `${s.dataset} ${s.lift}`, g = groups.get(key) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0 };
     g.n++; if (now === 'refused') g.refused++; else if (off(now, s.label) === 0) g.exact++; else if (off(now, s.label) === 1) g.one++; else if (off(now, s.label) >= 3) g.bad++;
     groups.set(key, g);
@@ -43,7 +85,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     ...[...groups].sort().map(([k, g]) => `| ${k}${decides(k.split(' ')[1]) ? '' : ` ${PRESS_DECIDES_NOTHING}`} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`)];
   const n = sets.length, exact = [...groups.values()].reduce((a, g) => a + g.exact, 0);
   const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${kept} in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}. The ${n - added - kept} bench and overhead press sets are measured and decide nothing (PLAN.md).`;
-  const text = [head, '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
+  const text = [head, doubtLine(doubts), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : [])].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);

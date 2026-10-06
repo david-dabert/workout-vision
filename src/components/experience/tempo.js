@@ -52,15 +52,15 @@ export function repTempo(r, nextStart, first) {
 }
 
 /**
- * The set's tempo in coach notation, lowering-bottom-lifting-top, as David approved it for the result
- * screen on 29 September (test/real-phone/growth-step3/texts.md): whole seconds, as tempo is written, a
- * phase that took place reading at least 1 (convention). The phases and the pause at the turn are
- * averaged over the whole reps; the pause between reps over the gaps that exist (a whole rep followed by
- * any rep, a cut one included), not over the reps (review, 30 September: a real rest had read 0).
- * The result screen, the report's summary and the spreadsheet all write this one; the per-rep table keeps
- * tenths (repTempo). null without a whole rep.
+ * The set's tempo as four averages in seconds, lowering-bottom-lifting-top, before any rounding: the one
+ * source of the set tempo, for the result screen, the report's tile and summary and the spreadsheet
+ * (audit of 6 October: the report's tile averaged each rep's row, so the last rep's rest gap, which does not
+ * exist, read 0 and pulled the pause between reps down, the 30 September bug back). The phases and the pause
+ * at the turn are averaged over the whole reps; the pause between reps over the gaps that exist (a whole rep
+ * followed by any rep, a cut one included), not over the reps (review, 30 September: a real rest had read 0).
+ * null without a whole rep. Status: experimental (measures.js), averaging rule by convention.
  */
-export function setTempo(reps, first = 'concentric') {
+export function setTempoParts(reps, first = 'concentric') {
   const all = reps || [];
   const partial = partialIn(all);
   const whole = all.map((r, i) => ({ r, next: all[i + 1] })).filter(({ r }) => !r.clipped && !partial(r));
@@ -70,7 +70,20 @@ export function setTempo(reps, first = 'concentric') {
   const turn = mean(whole.map(({ r }) => Math.max(0, r.endTime - r.startTime - r.concentricSec - r.eccentricSec)));
   const gaps = whole.filter(({ next }) => next).map(({ r, next }) => Math.max(0, next.startTime - r.endTime));
   const between = gaps.length ? mean(gaps) : 0;
-  const phase = x => (x > 0 ? Math.max(1, Math.round(x)) : 0);
   const [bottom, top] = first === 'eccentric' ? [turn, between] : [between, turn];
-  return [phase(ecc), Math.round(bottom), phase(conc), Math.round(top)].join('-');
+  return { lowering: ecc, bottom, lifting: conc, top };
+}
+
+/**
+ * The set's tempo in coach notation, lowering-bottom-lifting-top, as David approved it for the result
+ * screen on 29 September (test/real-phone/growth-step3/texts.md): whole seconds, as tempo is written, a
+ * phase that took place reading at least 1 (convention), from setTempoParts. The result screen, the report's
+ * tile and summary and the spreadsheet all write this one, in this one precision; the per-rep table keeps
+ * tenths (repTempo). null without a whole rep.
+ */
+export function setTempo(reps, first = 'concentric') {
+  const t = setTempoParts(reps, first);
+  if (!t) return null;
+  const phase = x => (x > 0 ? Math.max(1, Math.round(x)) : 0);
+  return [phase(t.lowering), Math.round(t.bottom), phase(t.lifting), Math.round(t.top)].join('-');
 }

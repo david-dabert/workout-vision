@@ -1,4 +1,5 @@
 import { countReps, liftDefinition } from './counting/core';
+import { poseDoubt } from './counting/doubt';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { isFrozenRead } from './frozenRead';
@@ -46,6 +47,8 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
     ? (liftDefinition(lift)?.together ? either(core.sides.left.angles, core.sides.right.angles) : Math.min(seen(core.sides.left.angles), seen(core.sides.right.angles)))
     : seen(core.angles);
   const refused = visible < worldLandmarks.length / 2 || worldLandmarks.length === 0;
+  // Where the body went unseen (counting/doubt.js): measured and stored, read by no screen yet.
+  const doubt = refused ? null : poseDoubt(core, timestamps, { together: !!liftDefinition(lift)?.together });
   // A fitness test is scored over its window (fitness-tests.js): the count and the marks are the reps in it.
   if (isTest(lift) && !refused) {
     const after = core.reps.length ? core.reps.at(-1).endTime : -Infinity;
@@ -54,9 +57,9 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
     const halves = riseHalfTimes(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, core.reps);
     const reps = core.reps.map((r, i) => ({ ...r, halfTime: halves[i] }));
     const t = scoreTest(reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
-    return { ...core, count: t.score, reps: t.reps, refused, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
+    return { ...core, count: t.score, reps: t.reps, refused, doubt, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
-  return { ...core, refused };
+  return { ...core, refused, doubt };
 }
 
 /**

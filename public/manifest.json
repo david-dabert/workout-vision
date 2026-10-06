@@ -2,7 +2,7 @@
   "name": "WorkoutVision",
   "short_name": "WorkoutVision",
   "description": "Counts your repetitions from a video, on your phone. Test version.",
-  "categories": ["health", "fitness"],
+  "categories": ["fitness"],
   "start_url": "/workout-vision/",
   "scope": "/workout-vision/",
   "display": "standalone",

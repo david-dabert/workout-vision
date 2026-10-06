@@ -18,6 +18,7 @@ import { track } from '../../lib/events';
 import './History.css';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const LOAD_WAIT_MS = 10_000;
 const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
 function dayLabel(d, fr) {
@@ -54,11 +55,17 @@ export default function History({ onClose }) {
   }, [sets]);
 
   useEffect(() => {
-    loadSets().then(setSets, () => { setSets([]); setProblem(fr ? 'Vos séries n’ont pas pu être lues sur ce téléphone.' : 'Your sets could not be read on this phone.'); });
+    const unread = fr ? 'Vos séries n’ont pas pu être lues sur ce téléphone.' : 'Your sets could not be read on this phone.';
+    // A read that never ends (the browser's storage blocked or stuck) still shows the restore after LOAD_WAIT_MS,
+    // with the line of a failed read; a read that ends later shows its sets and drops that line (audit of
+    // 6 October, action 18). LOAD_WAIT_MS: convention (UNSOURCED value).
+    let late = false;
+    const slow = setTimeout(() => { late = true; setSets(s => s ?? []); setProblem(unread); }, LOAD_WAIT_MS);
+    loadSets().then(list => { clearTimeout(slow); if (late) setProblem(''); setSets(list); }, () => { clearTimeout(slow); setSets([]); setProblem(unread); });
     // A set saved or deleted in another tab: the list, and so its backup and export, is read again (C19).
     const stop = onSetsChanged(() => { loadSets().then(setSets, () => {}); });
     const t = timers.current;
-    return () => { stop(); clearTimeout(t.confirm); clearTimeout(t.close); };
+    return () => { stop(); clearTimeout(slow); clearTimeout(t.confirm); clearTimeout(t.close); };
   }, []);
 
   const liftName = w => (w.exercise && exerciseName(w.exercise, lang) !== w.exercise ? exerciseName(w.exercise, lang) : tExercise(w.exercise || w.exerciseKey));

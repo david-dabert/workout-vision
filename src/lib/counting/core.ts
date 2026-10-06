@@ -18,7 +18,7 @@
  * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
  * valid angle; the side never alternates frame by frame. The alternating curl, and every guide
  * exercise whose pattern counts both sides (liftDefinition), count both sides and join them
- * (countBothSides). An either-side exercise (push-up, pull-up, front raise) is counted on each side and keeps
+ * (countBothSides). An either-side exercise (push-up, pull-up, a one-limb exercise) is counted on each side and keeps
  * the side with more reps among those seen in at least half the samples; the lunges (`together`) join both knees
  * when they bend together (TOGETHER_MIN_CORRELATION) and are counted as either-side when they do not.
  *
@@ -30,7 +30,8 @@
  *
  * Rep detection: smoothed angle crosses a low and a high threshold derived from the
  * set's own 10th/90th percentile range, leaving the rest end and coming back to it.
- * A rep is one full cycle whose duration falls within [minRepSec, maxRepSec]. A last rep the video stops on
+ * A rep is one full cycle at least MIN_REP_SEC long whose moving time (its duration less its time held at the
+ * working end, up to WORK_HOLD_CAP_SEC) is at most MAX_REP_SEC (6 October 2026). A last rep the video stops on
  * its way back counts, marked clipped, once it has come CUT_RETURN_SHARE of the way back (3 October 2026).
  * Its reported start and end are then placed where the angle leaves and regains
  * its rest level (placeBoundaries), so a rest that hovers near a threshold does
@@ -39,10 +40,11 @@
  * Every parameter is in seconds or degrees, never frames.
  *
  * References (fixed parameters only):
- *   Rep duration bounds: 0.5–8.0 s covers controlled eccentrics through
- *     explosive concentrics across standard resistance exercises (Schoenfeld,
- *     Ogborn & Krieger, "Effect of Repetition Duration During Resistance
- *     Training on Muscle Hypertrophy", Sports Medicine 2015; 45(4):577-85).
+ *   Rep duration bounds 0.5–8.0 s: the range of repetition durations over which
+ *     Schoenfeld, Ogborn & Krieger ("Effect of Repetition Duration During Resistance
+ *     Training on Muscle Hypertrophy", Sports Medicine 2015; 45(4):577-85) found
+ *     similar hypertrophy. The paper sets no limit on how long a rep can last; using
+ *     the range as bounds is ours. The upper bound applies to moving time (MAX_REP_SEC).
  *   Savitzky–Golay window, outlier parameters, the rest band and the overlap
  *     that joins two arms: unvalidated starting values. Not derived from a
  *     specific published recommendation.
@@ -102,6 +104,10 @@ export interface LiftDefinition {
    * side is kept only when it is itself seen on at least half the samples (countReps). Public build half's lunges,
    * 3 October: 44 to 54 exact of 156, 31 to 8 off by 3 or more, none newly off by 3 (TRIED.md). Experimental.
    * The lunges and the front raise (DETECTION) have since moved to `together`; the push-up and the pull-up keep this.
+   * Since 6 October 2026 (audit, action 6) also the exercises done one limb at a time (one-arm rows, the
+   * concentration curl, pistol and skater squats, the single-leg Romanian deadlift, standing and side-lying hip
+   * abductions, donkey kicks; guide-families.json): the idle limb, held still, can be the better seen and read 0
+   * (one-limb.test.ts). Source: UNSOURCED. Status: experimental; no labelled set holds these exercises.
    */
   eitherSide?: boolean;
   /**
@@ -203,9 +209,28 @@ const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRep
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
 };
 
-/** The definition an exercise is counted by: its LIFTS entry, else its guide pattern; null if it has none. */
+// Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
+// the incline, the knees or a load changed. They had kept the core's default rule (one side, the better seen, and
+// the default thresholds), which the public push-up and pull-up sets rejected for their parents (eitherSide and
+// DETECTION above, TRIED.md, 3 October). Each takes its parent's whole definition (side rule and detection
+// settings); its guide pattern carries the parent's side rule too, so the two never disagree (close-variants.test.ts).
+// Left out: the pike and feet-elevated pike push-ups (the shoulder, not a level body, carries the load), the wall
+// push-up (a near-upright body and a short elbow range), the shoulder-tap push-up (one hand leaves the floor on
+// every rep) and the archer push-up (one arm loaded at a time, counted on both sides). Source: UNSOURCED (the
+// parents' settings were measured on Countix push-ups and pull-ups only; no labelled set holds these keys).
+// Status: experimental.
+export const COUNT_AS: Readonly<Record<string, string>> = Object.freeze({
+  knee_push_up: 'push_up', incline_push_up: 'push_up', decline_push_up: 'push_up',
+  wide_push_up: 'push_up', diamond_push_up: 'push_up', weighted_push_up: 'push_up',
+  assisted_pull_up: 'pull_up', weighted_pull_up: 'pull_up', neutral_grip_pull_up: 'pull_up',
+  commando_pull_up: 'pull_up', l_sit_pull_up: 'pull_up', towel_pull_up: 'pull_up',
+  chin_up: 'pull_up', assisted_chin_up: 'pull_up', weighted_chin_up: 'pull_up',
+});
+
+/** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS), else its guide pattern; null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
+  if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
   if (!Object.hasOwn(PATTERNS, key)) return null;
   const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
   return {
@@ -234,15 +259,28 @@ export const JOINT_POINTS: Record<Joint, { left: [number, number, number]; right
   hip: { left: [L_SHOULDER, L_HIP, L_KNEE], right: [R_SHOULDER, R_HIP, R_KNEE] },
 };
 
-// Savitzky–Golay quadratic kernels (symmetric, preserves peaks)
-// Selected at runtime from SG_WINDOW_SEC and actual sample rate.
-const SG_KERNELS: Record<number, number[]> = {
-  3: [1, 1, 1].map(v => v / 3),
-  5: [-3, 12, 17, 12, -3].map(v => v / 35),
-  7: [-2, 3, 6, 7, 6, 3, -2].map(v => v / 21),
-  9: [-21, 14, 39, 54, 59, 54, 39, 14, -21].map(v => v / 231),
-  11: [-36, 9, 44, 69, 84, 89, 84, 69, 44, 9, -36].map(v => v / 429),
-};
+// Savitzky–Golay quadratic kernels (symmetric, preserves peaks), for the window SG_WINDOW_SEC gives at the
+// actual sample rate (sgKernel). Until 6 October 2026 they came from a fixed table of 3 to 11 samples, and any
+// other window (above about 33 samples per second) fell back to 5 samples without a word (audit of 6 October,
+// action 4). They are now generated for any odd window from the closed form of a quadratic least-squares fit
+// (Savitzky & Golay, Anal. Chem. 1964; 36(8):1627-39): for a window of 2m+1 samples, the weight at offset i is
+// (3(3m² + 3m − 1) − 15 i²) / ((2m − 1)(2m + 1)(2m + 3)), which gives the table's 5 to 11 exactly
+// (sg-kernel.test.ts). Status: literature (the formula); the window itself stays an unvalidated starting value.
+// Three samples keep the table's moving average: a quadratic fit through three points is the points themselves.
+const SG_KERNEL_3 = [1, 1, 1].map(v => v / 3);
+const sgKernels = new Map<number, number[]>();
+export function sgKernel(windowSize: number): number[] {
+  let n = Math.max(3, Math.round(Number.isFinite(windowSize) ? windowSize : 3));
+  if (n % 2 === 0) n += 1;
+  if (n === 3) return SG_KERNEL_3;
+  const cached = sgKernels.get(n);
+  if (cached) return cached;
+  const m = (n - 1) / 2;
+  const norm = (2 * m - 1) * (2 * m + 1) * (2 * m + 3);
+  const kernel = Array.from({ length: n }, (_, j) => (3 * (3 * m * m + 3 * m - 1) - 15 * (j - m) ** 2) / norm);
+  sgKernels.set(n, kernel);
+  return kernel;
+}
 
 // Unvalidated starting values — recorded per PLAN.md rule
 const BRIDGE_GAP_SEC = 0.5;       // max dropout to bridge
@@ -250,7 +288,21 @@ const OUTLIER_WINDOW_SEC = 0.5;   // window for local median in outlier removal
 const OUTLIER_DEVIATION_DEG = 40; // max deviation from local median before nulling
 const SG_WINDOW_SEC = 0.333;      // Savitzky–Golay window in seconds
 const MIN_REP_SEC = 0.5;          // shortest plausible rep (Schoenfeld et al. 2015)
-const MAX_REP_SEC = 8.0;          // longest plausible rep
+// Longest rep, in moving time (detectReps): its duration less the time it held at the working end, that hold
+// counted up to WORK_HOLD_CAP_SEC. Source: Schoenfeld, Ogborn & Krieger, Sports Medicine 2015 (45(4):577-85)
+// found similar hypertrophy over the repetition durations of the studies they pooled, 0.5 to 8 s; it states no
+// longest possible rep, so 8 s as a bound is our reading of that range, not its finding. Status: literature (the
+// range), experimental (its use as a bound on moving time).
+const MAX_REP_SEC = 8.0;
+// A rep's time at the working end (the samples past the working threshold) is not counted against MAX_REP_SEC, up
+// to this many seconds (audit of 6 October 2026, action 5): with the bound on the whole duration, eight squats or
+// lateral raises paused 5 s at the working end read 0, and a set of six plain and two paused reps read 6 with
+// full coverage. The cap keeps a long stay at the working end that is no rep out (arms crossed for 20 s after a
+// curl set: moving time 21 - 10 = 11 s). Trade-off: an isometric hold of up to 10 s entered and left from rest
+// (a 10 s wall sit then standing up) now reads as 1 rep. A cycle whose entering sample is already at the working
+// end (video or pose opening on it) keeps the whole-duration bound (detectReps, `bounded`). work-hold.test.ts.
+// Source: UNSOURCED. Status: experimental.
+const WORK_HOLD_CAP_SEC = 10;
 const PERCENTILE_LOW = 10;        // for threshold from set's own range
 const PERCENTILE_HIGH = 90;
 const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
@@ -649,7 +701,7 @@ function bridgeDropouts(
 // ─── Smoothing ───
 
 function savitzkyGolay(angles: (number | null)[], windowSize: number): (number | null)[] {
-  const kernel = SG_KERNELS[windowSize] ?? SG_KERNELS[5];
+  const kernel = sgKernel(windowSize);
   const result: (number | null)[] = [...angles];
   const half = Math.floor(kernel.length / 2);
 
@@ -704,6 +756,19 @@ function detectReps(
   let head: Cycle | null = null;
   let firstSeen = -1;
   for (let i = 0; i < smoothed.length; i++) if (smoothed[i] !== null) { firstSeen = i; break; }
+  // A cycle's moving time: its duration less the time it spent past the working threshold (two consecutive samples
+  // both past it), that hold counted up to WORK_HOLD_CAP_SEC. MAX_REP_SEC bounds this, not the whole duration.
+  const atWork = (a: number | null) => a !== null && (restsLow ? a >= highThreshold : a <= lowThreshold);
+  const moving = (from: number, to: number) => {
+    let held = 0;
+    for (let i = from + 1; i <= to; i++) if (atWork(smoothed[i]) && atWork(smoothed[i - 1])) held += timestamps[i] - timestamps[i - 1];
+    return timestamps[to] - timestamps[from] - Math.min(held, WORK_HOLD_CAP_SEC);
+  };
+  // A cycle whose entering sample is already at the working end (the video, or the pose after a loss, opens on it)
+  // keeps the bound on its whole duration: what came before the hold is not seen, so the hold may be setup, not a
+  // rep's pause (context.test.ts: 8 s holding a dumbbell with the elbow bent before a curl set read as an 11th rep).
+  const bounded = (from: number, to: number) =>
+    (enteredAtWork ? timestamps[to] - timestamps[from] : moving(from, to)) <= MAX_REP_SEC;
 
   for (let i = 0; i < smoothed.length; i++) {
     const angle = smoothed[i];
@@ -728,7 +793,7 @@ function detectReps(
         if (angle < lowThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= minRom) {
+          if (duration >= MIN_REP_SEC && bounded(repStartIdx, i) && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
             hiIdxs.push(hiIdx);
           } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
@@ -759,7 +824,7 @@ function detectReps(
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= minRom) {
+          if (duration >= MIN_REP_SEC && bounded(repStartIdx, i) && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
             hiIdxs.push(hiIdx);
           } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
@@ -774,16 +839,21 @@ function detectReps(
     }
   }
 
-  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom);
-
   // A first rep whose return is all the video shows: it counts when that return took at least HEAD_RETURN_SHARE of
-  // the set's own extreme-to-rest time (median over the accepted reps).
+  // the set's own extreme-to-rest time (median over the accepted reps). Judged on the accepted reps as the state
+  // machine found them, before splitOverlongReps adds pieces that have no working extreme of their own (audit of
+  // 6 October, action 4: read after the split, a piece was timed from a later rep's extreme, the times fell below
+  // zero, and any quick first return counted).
+  let headCounts = false;
   if (head && cycles.length >= 2) {
     const backs = cycles.map((c, k) => timestamps[c.complete] - timestamps[hiIdxs[k]]).sort((x, y) => x - y);
     const m = Math.floor(backs.length / 2);
     const back = backs.length % 2 ? backs[m] : (backs[m - 1] + backs[m]) / 2;
-    if (timestamps[head.complete] - timestamps[head.enter] >= HEAD_RETURN_SHARE * back) cycles.unshift(head);
+    headCounts = timestamps[head.complete] - timestamps[head.enter] >= HEAD_RETURN_SHARE * back;
   }
+
+  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom);
+  if (head && headCounts) cycles.unshift(head);
 
   // A last rep the video (or a pose lost until its end) stopped on its way back: it reached the working end and
   // has covered CUT_RETURN_SHARE of its return to the rest threshold, within RETURN_WINDOW_SEC of leaving its
@@ -803,7 +873,7 @@ function detectReps(
     }
     const duration = timestamps[last] - timestamps[repStartIdx];
     if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC
-      && duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && peakAngle - troughAngle >= minRom) {
+      && duration >= MIN_REP_SEC && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom) {
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     }
   }

@@ -8,11 +8,11 @@ import { describe, expect, it } from 'vitest';
 import { LIFTS, META } from '../lift-meta';
 import { getAllGuideExercises } from '../../../lib/exerciseGuide';
 
-import { norm } from '../search-text';
+import { norm, searchMatch } from '../search-text';
 
 const CATALOGUE = getAllGuideExercises();
 // The search's text for an exercise, as Guide.jsx builds it, names only (zones and equipment cannot name a lift).
-const found = name => CATALOGUE.filter(e => norm([e.fr, e.name, ...e.aliases].join(' ')).includes(norm(name))).map(e => e.key);
+const found = name => CATALOGUE.filter(e => searchMatch([e.fr, e.name, ...e.aliases].join(' '), name)).map(e => e.key);
 
 describe('the names on the cards', () => {
   for (const lift of LIFTS) {

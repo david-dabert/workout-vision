@@ -4,9 +4,9 @@ import { useT } from '../../lib/LanguageContext';
 import { META, createLiftScene } from './lift-scenes';
 import { CARD_ORDER } from './lift-meta';
 import { useSets, recentLifts } from './sets';
-import { isOffered } from '../../lib/offer';
+import { isOffered, tierOf } from '../../lib/offer';
 import { holdStage } from './stage-loop';
-import { TIERS, tierLabel } from '../../lib/liftTiers';
+import { TIERS, tierLabel, tierTag } from '../../lib/liftTiers';
 import { setName } from './set-name';
 import { eventsConfigured, browserRefuses, countingOff, setCountingOff } from '../../lib/events';
 import './Choice.css';
@@ -142,10 +142,13 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
           <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>
-        {/* The fitness tests (fitness-tests.js): a count in 30 seconds, under a published protocol. */}
+        {/* The fitness tests (fitness-tests.js): a count in 30 seconds, under a published protocol. Each row carries its
+            tier tag as the list's rows do (tierOf, offer.js: Experimental; R8, audit of 6 October). */}
         {['chair_stand_test', 'arm_curl_test'].map(key => <button key={key} className="row-link press" onClick={() => onChoose(key)} data-testid={`choose-${key}`}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13.5" r="7.5" /><path d="M12 13.5V9.5" /><path d="M10 3h4" /><path d="M12 3v3" /></svg></span>
-          <span className="row-txt"><b>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</b><small>{fr ? 'Test de condition physique' : 'Fitness test'}</small></span>
+          {/* The tag sits beside the name, so the caption keeps the row's full width (tour, 390x745: a caption beside
+              the tag left one word alone on its last line). */}
+          <span className="row-txt"><span className="row-head"><b>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</b>{tierOf(key) && <span className={`tag tier-tag tier-${tierOf(key)}`} data-testid={`tier-${key}`}>{tierTag(tierOf(key), fr)}</span>}</span><small>{fr ? 'Test de condition physique' : 'Fitness test'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>)}
         {/* Shown with no set too: after Safari erases the sets, or on a new phone, the history holds the restore

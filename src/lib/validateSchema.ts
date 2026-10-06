@@ -5,7 +5,8 @@
 
 import { ValidationResult, WorkoutRecord } from './types';
 
-const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
+/** The fields a read keeps (every other field is dropped); exported so a test holds every field saved-set.js writes. */
+export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'id', 'date', 'createdAt', 'updatedAt', 'schemaVersion',
   'exercise', 'exerciseKey', 'exerciseName',
   'reps', 'machineReps', 'repsOverridden',
@@ -24,6 +25,8 @@ const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'wave',
   // A refused set whose count the person typed (WP1.6): said so in the history and the report.
   'afterRefusal',
+  // Where the body went unseen during the set (counting/doubt.js, saved-set.js): stored, read by no screen yet.
+  'doubt',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

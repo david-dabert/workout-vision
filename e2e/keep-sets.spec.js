@@ -113,3 +113,32 @@ test('with no set on the phone, the backup can still be restored from the first 
   await row.click();
   await expect(page.getByTestId('keep-sets').locator('input[type="file"]')).toHaveCount(1);
 });
+
+// Audit of 6 October, action 18: a record that is not a set (null, a string) made the storage's read wait forever,
+// so the history showed nothing and hid its restore. It is skipped, the other sets are listed, and it is not deleted.
+test('a corrupt record leaves the other sets listed and the restore in view', async ({ page }) => {
+  await page.route('**/pose_landmarker_full.task', r => r.fulfill({ status: 200, body: '' }));
+  await page.addInitScript(() => { if (!location.protocol.startsWith('http')) return; localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr'); });
+  await page.goto('/workout-vision/');
+  await expect(page.locator('.altar').first()).toBeVisible({ timeout: 20000 });
+  await page.evaluate(() => new Promise((resolve, reject) => {
+    const r = indexedDB.open('workoutVision');
+    r.onerror = () => reject(r.error);
+    r.onsuccess = () => {
+      const tx = r.result.transaction('workouts', 'readwrite'), s = tx.objectStore('workouts');
+      s.put(null, 'aaa-null'); s.put('not a set', 'aab-text');
+      s.put({ id: 'set-ok', exercise: 'bicep_curl', reps: 7, source: 'counter-core', createdAt: Date.now(), machineResult: { reps: 7 }, correctedResult: null }, 'set-ok');
+      tx.oncomplete = () => { r.result.close(); resolve(); }; tx.onerror = () => reject(tx.error);
+    };
+  }));
+  await page.reload();
+  await page.locator('button, a').filter({ hasText: /Vos séries/ }).first().click();
+  await expect(page.getByTestId('keep-sets').locator('input[type="file"]')).toHaveCount(1, { timeout: 5000 });
+  await expect(page.locator('.hist-btn')).toHaveCount(1);
+  const kept = await page.evaluate(() => new Promise((resolve, reject) => {
+    const r = indexedDB.open('workoutVision');
+    r.onerror = () => reject(r.error);
+    r.onsuccess = () => { const q = r.result.transaction('workouts').objectStore('workouts').getAllKeys(); q.onsuccess = () => { r.result.close(); resolve(q.result); }; };
+  }));
+  expect(kept).toEqual(expect.arrayContaining(['aaa-null', 'aab-text', 'set-ok']));
+});

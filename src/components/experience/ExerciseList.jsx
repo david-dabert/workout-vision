@@ -4,7 +4,8 @@ import { OFFERED, tierOf } from '../../lib/offer';
 import { isTest } from '../../lib/fitness-tests';
 import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
-import { EQUIPMENT, norm, Thumb } from './Guide';
+import { EQUIPMENT, Thumb } from './Guide';
+import { searchMatch, searchWords } from './search-text';
 
 // Every exercise the app counts (OFFERED but the fitness tests: 182 on 5 October 2026 with the machine seated back extension; 181 on 3 October 2026, 183 less the four floor
 // exercises withdrawn that day, offer.js WITHDRAWN, and with the behind-the-neck press and wall ball added that day (the barbell jump squat not yet counted); pinned by __tests__/exercise-list.test.js and
@@ -26,13 +27,15 @@ const MUSCLE_FR = {
   Adductors: 'adducteurs', Legs: 'jambes',
 };
 
+// Each exercise's words for the search (search-text.js), cut once: its names, equipment and muscles in both languages.
+const WORDS = new Map(ENTRIES.map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...e.muscles, ...e.muscles.map(m => MUSCLE_FR[m] || '')].join(' '))]));
+
 export default function ExerciseList({ onChoose }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [query, setQuery] = useState('');
-  const q = norm(query.trim());
   const name = e => (fr ? e.fr : e.name);
   const list = ENTRIES
-    .filter(e => !q || norm([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...e.muscles, ...e.muscles.map(m => MUSCLE_FR[m] || '')].join(' ')).includes(q))
+    .filter(e => searchMatch(WORDS.get(e.key), query))
     // The Beta exercises are pinned on top, with their tag and no heading (David, 3 October); each group alphabetical.
     .sort((a, b) => (tierOf(b.key) === 'beta') - (tierOf(a.key) === 'beta') || name(a).localeCompare(name(b), fr ? 'fr' : 'en'));
   return <section className="all-exercises" aria-labelledby="all-exercises-title">

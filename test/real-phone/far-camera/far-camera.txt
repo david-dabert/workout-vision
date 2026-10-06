@@ -1,0 +1,9 @@
+Far-camera synthetic sets (dist 9 m), crop pass off -> on: pose in 46% -> 96% of 2969 samples; 3 -> 6 of 8 counts exact; detection 100 -> 146 s per minute of video (headless Chromium, SwiftShader, this machine's CPU).
+michelle-bicep_curl-v90-d9  truth 7  pose 53/341 (16%) -> 321/341 (94%, 268 from the crop)  count refused -> 7  detect 36.5 s -> 69.4 s
+michelle-lateral_raise-v0-d9  truth 8  pose 293/384 (76%) -> 384/384 (100%, 91 from the crop)  count 8 -> 8  detect 63.3 s -> 73.7 s
+michelle-overhead_press-v0-d9  truth 8  pose 155/401 (39%) -> 401/401 (100%, 246 from the crop)  count refused -> 8  detect 47.6 s -> 71.5 s
+michelle-squat-v90-d9  truth 7  pose 176/347 (51%) -> 324/347 (93%, 148 from the crop)  count refused -> 7  detect 46.6 s -> 61.4 s
+soldier-bicep_curl-v90-d9  truth 7  pose 183/356 (51%) -> 333/356 (94%, 150 from the crop)  count 7 -> 6  detect 33.2 s -> 46.7 s
+soldier-lateral_raise-v0-d9  truth 8  pose 397/397 (100%) -> 397/397 (100%, 0 from the crop)  count 8 -> 8  detect 46.8 s -> 47.9 s
+soldier-overhead_press-v0-d9  truth 8  pose 43/393 (11%) -> 350/393 (89%, 307 from the crop)  count refused -> 9  detect 31.3 s -> 63.3 s
+soldier-squat-v90-d9  truth 7  pose 66/350 (19%) -> 326/350 (93%, 260 from the crop)  count refused -> 7  detect 25.6 s -> 49.2 s

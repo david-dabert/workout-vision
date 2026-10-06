@@ -51,13 +51,16 @@ export async function removeSet(id) {
 export const setTime = w => new Date(w.createdAt ?? w.date).getTime();
 
 /**
- * The set a report compares with: the last saved set of the same lift strictly before this one, whose
- * reps were measured with step 3c's boundaries; never the set itself (just saved, it is the newest)
- * nor a later one (a set opened from the history). self: { id, at } of the set reported.
+ * The set a report compares with: the last saved set of the same lift and the same tracked arm or side,
+ * strictly before this one, whose reps were measured with step 3c's boundaries; never the set itself (just
+ * saved, it is the newest) nor a later one (a set opened from the history). A left-arm set is not compared
+ * with a right-arm set, nor a set of one side with a set of both (audit of 6 October). self: { id, at, arm }
+ * of the set reported; an arm the set does not know (null) matches only a set that does not know it either.
  */
 export function previousSet(all, lift, self) {
+  const arm = self.arm ?? null;
   const prev = (all || []).filter(w => (w.exercise || w.exerciseKey) === lift && w.id !== self.id && setTime(w) < self.at
-    && w.repDetails?.length && w.repDetailsVersion >= 2)
+    && (w.arm ?? null) === arm && w.repDetails?.length && w.repDetailsVersion >= 2)
     .sort((a, b) => setTime(b) - setTime(a))[0];
   return prev ?? null;
 }
