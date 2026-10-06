@@ -39,3 +39,31 @@ describe('a first rep whose return is all the video shows', () => {
     });
   }
 });
+
+// Audit of 6 October 2026, action 4 (A): splitOverlongReps adds cycles after the working extremes were recorded,
+// so the set's extreme-to-rest times were read against the wrong reps (a later rep's extreme, after this one's
+// end) and their median could fall below zero: any quick first return then counted. The median is now taken on
+// the accepted reps before the split.
+describe('a quick first return before a set with a split rep', () => {
+  const REST = 170, WORK = 50;
+  const rep = (): Segment[] => [{ to: WORK, sec: 1 }, { to: REST, sec: 1 }, { hold: REST, sec: 0.8 }];
+  const doubled: Segment[] = [
+    { to: WORK, sec: 1 }, { to: 140, sec: 0.9 }, { to: WORK, sec: 0.9 }, { to: REST, sec: 1 }, { hold: REST, sec: 0.8 },
+  ];
+  const curl = (path: Segment[], sps: number) => {
+    const a = sample(path, WORK, sps);
+    return countReps(a.map(x => jointFrame('elbow', { left: x })), timestamps(a.length, sps), 'bicep_curl');
+  };
+  // The split rep comes first, so most of the set's reps follow it (and were misread before the fix).
+  const body: Segment[] = [{ hold: REST, sec: 0.8 }, ...doubled, ...rep(), ...rep(), ...rep(), ...rep()];
+  // The head holds 0.2 s at the working end first, so the outlier filter keeps its opening samples.
+  it('at 30 sps, a 0.15 s head is not counted; the split rep still counts two', () => {
+    expect(curl([{ hold: WORK, sec: 0.2 }, { to: REST, sec: 0.15 }, ...body], 30).count).toBe(6);
+    expect(curl(body, 30).count).toBe(6);
+  });
+  it('at 30 sps, a head as long as the set\'s returns still counts', () => {
+    const r = curl([{ hold: WORK, sec: 0.1 }, { to: REST, sec: 0.45 }, ...body], 30);
+    expect(r.count).toBe(7);
+    expect(r.reps[0].clipped).toBe(true);
+  });
+});

@@ -774,16 +774,21 @@ function detectReps(
     }
   }
 
-  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom);
-
   // A first rep whose return is all the video shows: it counts when that return took at least HEAD_RETURN_SHARE of
-  // the set's own extreme-to-rest time (median over the accepted reps).
+  // the set's own extreme-to-rest time (median over the accepted reps). Judged on the accepted reps as the state
+  // machine found them, before splitOverlongReps adds pieces that have no working extreme of their own (audit of
+  // 6 October, action 4: read after the split, a piece was timed from a later rep's extreme, the times fell below
+  // zero, and any quick first return counted).
+  let headCounts = false;
   if (head && cycles.length >= 2) {
     const backs = cycles.map((c, k) => timestamps[c.complete] - timestamps[hiIdxs[k]]).sort((x, y) => x - y);
     const m = Math.floor(backs.length / 2);
     const back = backs.length % 2 ? backs[m] : (backs[m - 1] + backs[m]) / 2;
-    if (timestamps[head.complete] - timestamps[head.enter] >= HEAD_RETURN_SHARE * back) cycles.unshift(head);
+    headCounts = timestamps[head.complete] - timestamps[head.enter] >= HEAD_RETURN_SHARE * back;
   }
+
+  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom);
+  if (head && headCounts) cycles.unshift(head);
 
   // A last rep the video (or a pose lost until its end) stopped on its way back: it reached the working end and
   // has covered CUT_RETURN_SHARE of its return to the rest threshold, within RETURN_WINDOW_SEC of leaving its
