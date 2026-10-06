@@ -32,6 +32,7 @@ import {
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mpVision from '@mediapipe/tasks-vision';
 import { isTheModel, MODEL_SHA256 } from './model-hash';
+import { cropAround, mapFromCrop, CROP_PX, CROP_SEED_MS } from './poseCrop';
 function getMediaPipeVision() {
   return mpVision;
 }
@@ -333,6 +334,7 @@ export function disposeAllLandmarkers() {
   _kalmanVideo = new OneEuroLandmarkFilter();
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
+  _cropSeed = null;
 }
 
 // isAnatomicallyImplausible — delegated to poseGeometry.js
@@ -355,6 +357,39 @@ export const calculateAngle = _calculateAngle;
 export const extractJointAngles = _extractJointAngles;
 export const selectSubjectPose = _selectSubjectPose;
 
+// Crop pass on lost frames (poseCrop.js): the last accepted pose's raw image landmarks, the frame size and time.
+// Test benches may turn it off to measure it (globalThis.__WV_BENCH_NO_CROP__); the app never sets it.
+let _cropSeed = null;
+let _cropCanvas = null;
+const _sourceSize = (source) => ({ width: source?.videoWidth || source?.width || 0, height: source?.videoHeight || source?.height || 0 });
+
+function _seedCrop(rawLandmarks, source, now) {
+  const { width, height } = _sourceSize(source);
+  const box = cropAround(rawLandmarks, width, height);
+  _cropSeed = box ? { ...box, width, height, t: now } : null;
+}
+
+function _detectInCrop(landmarker, source, now) {
+  if (globalThis.__WV_BENCH_NO_CROP__ || !_cropSeed) return null;
+  const { width, height } = _sourceSize(source);
+  // A seed from another frame size, or from before this time (a new pass), or older than CROP_SEED_MS, is not used.
+  if (width !== _cropSeed.width || height !== _cropSeed.height || now < _cropSeed.t || now - _cropSeed.t > CROP_SEED_MS) return null;
+  if (!_cropCanvas) {
+    _cropCanvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(CROP_PX, CROP_PX) : document.createElement('canvas');
+    _cropCanvas.width = CROP_PX; _cropCanvas.height = CROP_PX;
+  }
+  const ctx = _cropCanvas.getContext('2d');
+  const { sx, sy, side } = _cropSeed;
+  ctx.clearRect(0, 0, CROP_PX, CROP_PX);
+  ctx.drawImage(source, sx, sy, side, side, 0, 0, CROP_PX, CROP_PX);
+  const found = landmarker.detect(_cropCanvas);
+  if (!found?.landmarks?.length) return null;
+  const landmarks = mapFromCrop(found.landmarks[0], _cropSeed, width, height);
+  _seedCrop(landmarks, source, now);
+  // World landmarks are hip-centred metres, the same whatever the crop: passed through as found.
+  return { landmarks: [landmarks], worldLandmarks: found.worldLandmarks?.length ? [found.worldLandmarks[0]] : [], source: 'crop' };
+}
+
 /**
  * Detect pose on a single image/frame (video upload analysis).
  * Uses detectForVideo with a deterministic timestamp so that the same
@@ -376,6 +411,14 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
     let result;
     if (_landmarkerIsImageMode) {
       result = landmarker.detect(source);
+      const now = timestamp != null ? timestamp : performance.now();
+      if (result?.landmarks?.length) _seedCrop(result.landmarks[0], source, now);
+      else {
+        // No pose on the whole frame: a second look on a crop around the last accepted pose (poseCrop.js). The
+        // crop's pose skips the image smoothing, so every frame the whole-frame pass reads is unchanged.
+        const cropped = _detectInCrop(landmarker, source, now);
+        if (cropped) return cropped;
+      }
     } else {
       const ts = timestamp != null ? (timestamp + _imageTimestampOffset) : performance.now();
       if (ts > _imageMaxTimestamp) _imageMaxTimestamp = ts;
@@ -512,6 +555,7 @@ export function resetKalmanFilters() {
   _kalmanVideo = new OneEuroLandmarkFilter();
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
+  _cropSeed = null;
   // Bump timestamp offset so next video's deterministic timestamps
   // continue above the previous peak (MediaPipe requires monotonic increase).
   _imageTimestampOffset = _imageMaxTimestamp + 1000;

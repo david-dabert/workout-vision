@@ -81,6 +81,8 @@ frameExtractor.extractFramesStreaming          main thread
 corePoseWorker.js                              Web Worker, one per analysis
    poseAnalysis.getImageLandmarker()           MediaPipe PoseLandmarker, IMAGE mode, CPU delegate
    poseAnalysis.detectPoseImage()              image landmarks: One-Euro filter + anatomical-plausibility hold;
+                                               a frame with no pose is read again on a crop around the last pose
+                                               (poseCrop.js, within 1 s of it; marked source 'crop', not smoothed);
                                                world landmarks (what the core counts on): not filtered
  │  image landmarks + world landmarks per sample
  ▼
