@@ -5,7 +5,8 @@ Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: P
    bicep_curl         beta          rule beta          sets 2  exact 2  refused 0  every set of David's counts exactly
       sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  label 5  count 5
       landmarks/bicep_curl_7_side_mufhf3wy.json.gz  label 7  count 7
-   lat_pulldown       beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+   lat_pulldown       beta          rule beta          sets 2  exact 2  refused 0  every set of David's counts exactly
+      sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz  label 6  count 6
       landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  label 10  count 10
    squat              beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
       sets-29sep/squat_7_side_21fd7ccf.json.gz  label 7  count 7
@@ -28,3 +29,5 @@ Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: P
    machine_seated_back_extension experimental  rule experimental  sets 2  exact 1  refused 0  1 of David's sets not exact  (not in TIERS: the tier offer.js gives)
       sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  count 8
       sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  label 13  count 12  (not exact)
+   reverse_curl       experimental  rule experimental  sets 1  exact 0  refused 0  1 of David's sets not exact  (not in TIERS: the tier offer.js gives)
+      sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz  label 10  count 9  (not exact)
