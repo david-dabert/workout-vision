@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Réduire des vidéos</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; padding: 24px 16px 48px; background: #0b0b0c; color: #ece8e1; font: 16px/1.5 -apple-system, system-ui, sans-serif; }
+  h1 { font-weight: 400; font-size: 26px; margin: 0 0 8px; }
+  p { color: #a8a39b; margin: 0 0 16px; }
+  label.pick, button { display: block; width: 100%; box-sizing: border-box; padding: 16px; margin: 12px 0; border-radius: 14px; border: 1px solid #3a3733; background: #1a1918; color: #ece8e1; font-size: 17px; text-align: center; }
+  button.go { background: #c9a35b; color: #0b0b0c; border: 0; font-weight: 600; }
+  button:disabled { opacity: .4; }
+  input[type=file] { display: none; }
+  ol { padding-left: 20px; }
+  li { margin: 6px 0; }
+  .ok { color: #9fd49a; } .err { color: #e59a8f; }
+  video { display: none; }
+</style>
+</head>
+<body>
+<!-- David's tool (6 October 2026): makes a phone video small enough for GitHub's upload page (25 MB a file), on the
+     phone itself. Each video is played once into a canvas at most 720 px high and recorded at 1 Mbit/s, without
+     sound (MediaRecorder, as the app's export, video-export.js). Nothing is sent anywhere; the files go to the share
+     sheet or are saved. Not linked from the app. -->
+<h1>Réduire des vidéos</h1>
+<p>Choisissez vos vidéos. Chacune est relue une fois, en temps réel, puis proposée en petit format, sans le son. Une minute de vidéo pèse environ 8&nbsp;Mo.</p>
+<label class="pick">Choisir les vidéos<input id="pick" type="file" accept="video/*" multiple></label>
+<button id="go" class="go" disabled>Réduire</button>
+<ol id="list"></ol>
+<button id="share" disabled>Partager ou enregistrer les vidéos réduites</button>
+<video id="v" muted playsinline></video>
+<canvas id="c" hidden></canvas>
+<script>
+const MIMES = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
+const mime = MIMES.find(m => { try { return MediaRecorder.isTypeSupported(m); } catch { return false; } }) || '';
+const pick = document.getElementById('pick'), go = document.getElementById('go'), list = document.getElementById('list');
+const shareBtn = document.getElementById('share'), video = document.getElementById('v'), canvas = document.getElementById('c');
+let files = [], out = [];
+const mb = n => (n / 1048576).toFixed(1).replace('.', ',') + ' Mo';
+pick.onchange = () => {
+  files = [...pick.files]; out = []; list.innerHTML = '';
+  for (const f of files) { const li = document.createElement('li'); li.textContent = `${f.name} · ${mb(f.size)}`; list.append(li); }
+  go.disabled = !files.length || !mime; shareBtn.disabled = true;
+  if (!mime) list.insertAdjacentHTML('beforeend', '<li class="err">Ce navigateur ne sait pas enregistrer de vidéo.</li>');
+};
+function shrink(file, li) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), ctx = canvas.getContext('2d'), chunks = [];
+    let recorder, raf;
+    video.src = url;
+    video.onloadedmetadata = () => {
+      const k = Math.min(1, 720 / Math.max(video.videoWidth, video.videoHeight));
+      canvas.width = Math.max(2, Math.floor(video.videoWidth * k / 2) * 2);
+      canvas.height = Math.max(2, Math.floor(video.videoHeight * k / 2) * 2);
+      recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: mime, videoBitsPerSecond: 1_000_000 });
+      recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop = () => {
+        URL.revokeObjectURL(url);
+        const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+        resolve(new File(chunks, file.name.replace(/\.[^.]+$/, '') + '-petit.' + ext, { type: mime.split(';')[0] }));
+      };
+      const draw = () => { ctx.drawImage(video, 0, 0, canvas.width, canvas.height); li.textContent = `${file.name} · ${Math.round(100 * video.currentTime / (video.duration || 1))} %`; raf = requestAnimationFrame(draw); };
+      video.onplaying = () => { if (recorder.state === 'inactive') { recorder.start(1000); draw(); } };
+      video.onended = () => { cancelAnimationFrame(raf); ctx.drawImage(video, 0, 0, canvas.width, canvas.height); setTimeout(() => recorder.stop(), 150); };
+      video.play().catch(reject);
+    };
+    video.onerror = () => reject(new Error('lecture'));
+  });
+}
+go.onclick = async () => {
+  go.disabled = true; pick.disabled = true; out = [];
+  for (let i = 0; i < files.length; i++) {
+    const li = list.children[i];
+    try { const f = await shrink(files[i], li); out.push(f); li.className = 'ok'; li.textContent = `${f.name} · ${mb(f.size)}`; }
+    catch { li.className = 'err'; li.textContent = `${files[i].name} · non réduite, réessayez`; }
+  }
+  shareBtn.disabled = !out.length; pick.disabled = false;
+};
+shareBtn.onclick = async () => {
+  if (navigator.canShare && navigator.canShare({ files: out })) { try { await navigator.share({ files: out }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  for (const f of out) { const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); }
+};
+</script>
+</body>
+</html>
