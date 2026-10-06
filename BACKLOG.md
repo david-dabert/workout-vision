@@ -213,3 +213,20 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   provisional count that waits for the next rep before it shows one may be steadier. Measure on the real-phone sets.
 - Live replay is the skeleton alone; keeping a short low-resolution clip on the phone for the replay would need the
   person's yes and a memory budget.
+
+## 6 October 2026: a reference movement beside the person's own (David; raised by the physiotherapist and Christopher)
+
+- The idea: for each exercise, a short (about 3 s) animated figure drawn by the app, not filmed, showing the reference
+  execution: range of motion, the order of the phases, and a tempo. Shown beside the replay with the skeleton overlay,
+  or below it, so the person compares the two. No third-party video, so no licence question.
+- What exists: the nine card lifts already have animated figures (lift-poses.json, lift-scenes.js,
+  scripts/make-lift-poses.mjs); the guide's 182 exercises have still drawings, and some have none (noDrawing).
+- Before building:
+  - Every reference range and tempo needs a source and a status (R9). Write "reference execution", never "optimal" or
+    "correct for you": the right range depends on the person, the goal and any injury, and a rehabilitation claim
+    reaches the MDR (BACKLOG, 6 October note).
+  - The comparison is only as honest as the measure: on synthetic sets the app reads range about 30% low and phase
+    times about 45 to 54% short (synth.txt, 6 October). A person shown "your range: 60%" against a reference would be
+    misled. Fix or calibrate the measures first (review of 6 October, action 9).
+- Cheapest first step, after that: draw the reference range as a band on the existing per-rep wave (RepWave), for the
+  five Beta lifts, from a sourced range per joint. Then the animated figures, Beta lifts first.
