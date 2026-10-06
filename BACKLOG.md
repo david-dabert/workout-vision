@@ -270,3 +270,14 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
 - Physiotherapists: same builder, wellness wording only until the MDR question is settled (6 October note).
 - Order: after collection from the result screen (above). The reference movement (animated figure, 6 October) comes
   after the range measure is within 10 % of truth (reference band, behind its flag).
+- Built 6 October (first version, branch claude/generate-architecture-md-inw479, not yet on David's iPhone): "Espace
+  pro" from the choice (`#pro`, `Pro.jsx`): title, for whom, general note; exercises from the counted catalogue (the
+  choice's searchable list), each with sets, reps, rest in seconds and a cue, reordered and removed; drafts kept in
+  localStorage on the coach's phone. Two outputs: a PDF in the report's design (`programme-pdf.js` on `pdf-kit.js`, the
+  report's jsPDF setup), shared like the report; and a link, `#programme=<payload>` (`programme.js`: compact JSON, gzip
+  where the browser has CompressionStream, base64url; every field checked, 8,000 characters at most, unpacking stopped
+  at 16 kB). The client's phone shows the programme (`Programme.jsx`), keeps it, starts the usual filming of an
+  exercise, and shows each set saved from it today beside its target; the set keeps the target (`planned`), and its
+  session report prints "Prévu : 3 × 10" beside the count. Words in `pro-copy.js`, for David's approval
+  (`test/real-phone/swarm/copy-pro.md`). Not built: tempo per exercise, a QR code on the PDF, several days in one
+  programme, the client sending results back other than by the report's PDF.
