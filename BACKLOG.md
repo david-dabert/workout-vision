@@ -242,3 +242,20 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   Reuse src/lib/contribute.js and collectSet's file format; switched on by a flag only David's phone carries.
 - Labels typed after seeing the app's count are "after-app" (contribute.js, FINDING-008): mark them so, and keep a
   blind recount for the sets the scoreboard publishes (R1, R13).
+
+## 6 October 2026: a program builder for coaches and physiotherapists (Zine, coach; David)
+
+- Market: coach platforms (Trainerize, 400 000+ coaches; TrueCoach; Hexfit) build programs with sets, reps, tempo
+  and rest, and add messaging, payments, nutrition. Consumer apps (Nike Training Club, Decathlon Coach, FitOn,
+  Freeletics) ship ready-made programs and videos. None of them, as far as their public pages say, counts the
+  client's reps from a phone video.
+- The loop only WorkoutVision can close: the coach writes the program; the client receives it on their phone; each
+  set is filmed and counted; the client sends back the session report PDF with counts, so the coach sees what was
+  done, not what was ticked.
+- First version, no server, no account (keeps "nothing leaves the phone"): a Pro section where the coach picks
+  exercises from the 182 of the catalogue, sets per exercise, reps, rest, a note; the app makes a PDF in the report's
+  design and a link that opens the program in the client's app (program encoded in the link). The client's session
+  follows the program and its report shows planned against counted.
+- Physiotherapists: same builder, wellness wording only until the MDR question is settled (6 October note).
+- Order: after collection from the result screen (above). The reference movement (animated figure, 6 October) comes
+  after the range measure is within 10 % of truth (reference band, behind its flag).
