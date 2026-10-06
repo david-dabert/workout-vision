@@ -29,7 +29,7 @@ export const TIERS = {
 // Kept apart from TIERS, which also lists the cards (lift-meta.js, Choice.jsx). Same status: convention.
 export const GUIDE_TIERS = {
   // The machine seated back extension was Beta on 5 and 6 October on its one set (8 for 8); David named the 13-rep
-  // set of 5 October a back extension on 6 October, which counts 8 for 13: Experimental (tiers.txt).
+  // set of 5 October a back extension on 6 October; collected again with the crop retry it counts 12 for 13: Experimental (tiers.txt).
 };
 
 export const tierLabel = (tier, fr) => tier === 'beta'
