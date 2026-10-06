@@ -129,9 +129,18 @@ export function sampleSet() {
  * samples without a pose a set may hold is David's decision (the committed bench_press_7_angle
  * clip has 151 of 331).
  */
+/**
+ * How many samples a read may fall short of floor(duration x fps) and still be whole: the larger of 2 samples
+ * and 1 % of the video. On 6 October David's videos exported from the app read 1 or 2 samples short of 300 to 414
+ * (the last frame or two before the end of the stream), and six of seven were refused. The failure the rule
+ * guards against stays refused: 181 of 439 on 29 September. Source: UNSOURCED. Status: experimental.
+ */
+export const READ_SHORT_TOLERANCE = expected => Math.max(2, Math.floor(expected * 0.01));
+export const readIsWhole = (samples, expected) => Number.isFinite(expected) && samples <= expected && expected - samples <= READ_SHORT_TOLERANCE(expected);
+
 export function setIsWhole({ samples, posed = samples, duration, fps, maxFrames, failed }) {
   const expected = Math.floor(duration * fps);
-  return failed === 0 && posed > 0 && expected > 0 && expected <= maxFrames && samples === expected;
+  return failed === 0 && posed > 0 && expected > 0 && expected <= maxFrames && readIsWhole(samples, expected);
 }
 
 
@@ -148,7 +157,7 @@ export function refusal({ samples, posed = samples, duration, fps, maxFrames, fa
   const expected = Math.floor(duration * fps);
   if (!Number.isFinite(expected) || expected <= 0) return 'the length of the video could not be read. No file is offered. Pick the video again.';
   if (expected > maxFrames) return `the video is longer than the ${maxFrames} samples the page can read. No file is offered. Film a shorter set.`;
-  if (failed === 0 && samples === expected) {
+  if (failed === 0 && readIsWhole(samples, expected)) {
     return 'no body was found in any frame of the video. No file is offered. Film the whole body in the frame.';
   }
   const parts = [samples > expected

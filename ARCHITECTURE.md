@@ -26,7 +26,7 @@ Entry ─► Choice ─┬─► Film ─► CoreUpload ─┬─► Watch   (an
 ```
 
 Routing is a URL hash (`src/lib/useHashRouter.js`).
-`App.jsx` renders Film for `#film` once an exercise is chosen, CoreUpload for `#analyze` once a video is chosen, LiveSession for `#live` once live counting is started from Film, Guide for `#exercises` and History for `#history`; every other hash, and those two without their choice, shows Choice.
+`App.jsx` renders Film for `#film` once an exercise is chosen, CoreUpload for `#analyze` once a video is chosen, LiveSession for `#live` once live counting is started from Film, Guide for `#exercises`, History for `#history` and About for `#about` (`About.jsx`, its words in `about-copy.js`, its photos in `public/about/`, reached from the foot of the choice); every other hash, and those two without their choice, shows Choice.
 Choosing an exercise warms the pose model and WASM files into the service worker's caches (`src/lib/pose-files.js`).
 A person whose level is beginner (`level.js`, `wv_level`) is shown the exercise's guide page before Film until `GUIDED_SETS` (3) sets are saved; a fitness test goes straight to Film.
 

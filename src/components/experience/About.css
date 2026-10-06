@@ -1,0 +1,17 @@
+/* "À propos" (About.jsx): one column, the design system's tokens only (design/SYSTEM.md). */
+.wv-experience .about-screen .wrap { padding-bottom: var(--s-7); }
+.wv-experience .about-screen .title { margin-top: var(--s-6); color: var(--bone); }
+.wv-experience .about-photo { margin: 0; }
+.wv-experience .about-photo img { display: block; width: 100%; height: auto; border-radius: var(--r-m); background: var(--well); border: 1px solid var(--hair); }
+.wv-experience .about-photo figcaption { margin-top: var(--s-2); font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
+/* The portrait leads the page at a modest size; the two dated photos sit in the text, a little narrower than the
+   column so the tall Dordogne frame stays within a screen. */
+.wv-experience .about-portrait { width: min(56%, 220px); margin-top: var(--s-4); }
+.wv-experience .about-sanSiro, .wv-experience .about-dordogne { width: min(100%, 340px); margin: var(--s-6) auto 0; }
+.wv-experience .about-dordogne { width: min(86%, 300px); }
+.wv-experience .about-body { margin-top: var(--s-5); }
+.wv-experience .about-p { margin: var(--s-6) 0 0; font-size: 17px; line-height: 1.6; color: var(--bone-2); }
+.wv-experience .about-body > .about-p:first-child { margin-top: 0; }
+.wv-experience .about-line { display: block; text-wrap: pretty; }
+.wv-experience .about-line + .about-line { margin-top: var(--s-2); }
+.wv-experience .about-signature { margin: var(--s-6) 0 0; font-family: var(--serif); font-style: italic; font-size: var(--fs-name); line-height: 1.2; color: var(--lamp); }
