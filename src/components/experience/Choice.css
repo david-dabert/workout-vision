@@ -76,6 +76,7 @@
 .wv-experience .tag.tier-beta { color: var(--lamp); border-color: var(--lamp-line); }
 /* Experimental on a fitness-test row is the ash pill the guide shows, not the cards' plain caption (Entry.css .tier-experimental). */
 .wv-experience .row-link .tag { flex-shrink: 0; }
+.wv-experience .row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .wv-experience .row-link .tag.tier-experimental { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 5px 10px 4px; border: 1px solid var(--hair-2); color: var(--ash); }
 /* The note on anonymous usage counts (UsageNote, Choice.jsx), under "Vos séries": its button reads as a link, 44 px tall. */
 .wv-experience .usage-note { display: flex; flex-direction: column; align-items: center; gap: 2px; }
