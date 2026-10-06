@@ -1,7 +1,7 @@
 {
   "note": "The counts last accepted (2026-10-06), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2).",
   "counts": {
-    "sets-05oct/hip_thrust_13_side_be96e7c5.json.gz": 8,
+    "sets-05oct/machine_seated_back_extension_13_side_be96e7c5.json.gz": 8,
     "sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz": 8,
     "sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz": 6,
     "sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz": 6,

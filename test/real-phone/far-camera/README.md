@@ -1,6 +1,6 @@
 # Far camera: the crop pass on lost frames (6 October 2026)
 
-Audit of 6 October, action 3. David's hip thrust of 5 October (`sets-05oct/hip_thrust_13`) counts 8 for 13: the pose
+Audit of 6 October, action 3. David's back extension of 5 October (filed as a hip thrust until David named it on 6 October) (`sets-05oct/machine_seated_back_extension_13`) counts 8 for 13: the pose
 model finds a pose in 105 of 280 samples mid-set. The app runs MediaPipe on the whole frame (IMAGE mode, the person
 detector sees the frame shrunk to 224 px), and a body that fills little of the frame drops out on scattered samples.
 

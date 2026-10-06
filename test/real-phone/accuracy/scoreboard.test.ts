@@ -36,7 +36,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     else { if (v === 'exact') exactNow++; if (vb === 'exact') exactBefore++; }
     // R2 reads "no clip becomes a catastrophic error". A set already off by 3 or more (in the baseline, or added
     // with that error) is shown and kept, and fails only if its error grows: a set is never left out of the gate
-    // because it fails (review of 6 October: the held hip thrust set was a gate escape).
+    // because it fails (review of 6 October: the held 13-rep set was a gate escape).
     const err = (c: number | string) => (c === 'refused' ? Infinity : Math.abs((c as number) - s.label));
     if (v === 'catastrophic') {
       if (before === undefined || (vb === 'catastrophic' && err(now) <= err(before))) { known++; rows.push(`KNOWN CATASTROPHIC  ${s.name}  label ${s.label}  now ${now}`); }

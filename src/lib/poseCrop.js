@@ -1,7 +1,7 @@
 /**
  * Second look on a lost frame (audit of 6 October, action 3). The pose model runs on the whole frame (IMAGE mode;
  * its person detector sees the frame shrunk to 224 px), so a body that fills little of the frame drops out on
- * scattered samples: David's hip thrust of 5 October (sets-05oct/hip_thrust_13) has a pose in 105 of 280 samples
+ * scattered samples: David's back extension of 5 October (filed as a hip thrust until David named it on 6 October) (sets-05oct/machine_seated_back_extension_13) has a pose in 105 of 280 samples
  * mid-set. On a frame where the whole-frame pass finds no pose, the model runs again on a square crop around the
  * last accepted pose, drawn larger, and the landmarks found are mapped back to the whole frame.
  *

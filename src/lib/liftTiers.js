@@ -13,9 +13,8 @@ export const TIERS = {
   lat_pulldown: 'beta',
   squat: 'beta',
   bench_press: 'experimental',
-  // 6 October: experimental. Of David's four sets, sets-05oct/hip_thrust_13 counts 8 for 13 (7 before the hold rule
-  // of the same day; pose lost mid-set) and sets-06oct/set02_hip_thrust_7 counts 6 for 7; sets-29sep/hip_thrust_6 and
-  // sets-06oct/set01_hip_thrust_6 count exactly (scoreboard.txt). Beta from 3 to 6 October on the one set.
+  // 6 October: experimental. Of David's three sets, sets-06oct/set02_hip_thrust_7 counts 6 for 7; sets-29sep/hip_thrust_6
+  // and sets-06oct/set01_hip_thrust_6 count exactly (scoreboard.txt). Beta from 3 to 6 October on the one set.
   hip_thrust: 'experimental',
   // 3 October: beta. sets-29sep/romanian_deadlift_8 counts 8 for 8, its only set (scoreboard.txt).
   romanian_deadlift: 'beta',
@@ -29,8 +28,8 @@ export const TIERS = {
 // The offered exercises with no card of their own (offer.js) that earn Beta by the same rule, from David's sets.
 // Kept apart from TIERS, which also lists the cards (lift-meta.js, Choice.jsx). Same status: convention.
 export const GUIDE_TIERS = {
-  // 5 October: beta. sets-05oct/machine_seated_back_extension_8 counts 8 for 8, its only set (scoreboard.txt).
-  machine_seated_back_extension: 'beta',
+  // The machine seated back extension was Beta on 5 and 6 October on its one set (8 for 8); David named the 13-rep
+  // set of 5 October a back extension on 6 October, which counts 8 for 13: Experimental (tiers.txt).
 };
 
 export const tierLabel = (tier, fr) => tier === 'beta'

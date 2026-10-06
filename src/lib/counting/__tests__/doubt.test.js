@@ -20,7 +20,7 @@ describe('poseDoubt', () => {
     expect(poseDoubt({ angles: short, reps: reps(10, 2) }, ts(300))).toMatchObject({ holes: 0, flagged: false });
   });
 
-  it('flags a set seen less than 80% of the time, even in scattered gaps (the hip thrust of 5 October)', () => {
+  it('flags a set seen less than 80% of the time, even in scattered gaps (the back extension of 5 October)', () => {
     const angles = Array(300).fill(90).map((a, i) => (i % 3 === 0 ? null : a));   // 67% seen, gaps of one sample
     expect(poseDoubt({ angles, reps: reps(10, 2) }, ts(300))).toMatchObject({ coverage: 0.67, holes: 0, flagged: true });
   });
