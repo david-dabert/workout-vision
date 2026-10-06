@@ -15,6 +15,29 @@ rehabilitation, after injury or surgery.
   IntelliRehabDS (CC BY 4.0, zenodo.org/records/4610859); REHAB24-6 (non-commercial research only, zenodo.org/records/13305826).
 - Done now (5 October): the plain-words key to the measures under the rep table, result screen, report and PDF.
 
+## 6 October 2026: physiotherapy and the EU MDR, the reasoning corrected
+
+The 5 October section (rehabilitation, after injury or surgery) and the kinésithérapeute line of the 2 October
+use-case map read as if patient adherence or rehabilitation follow-up stayed outside the EU MDR because it is
+"not diagnosis". That reasoning is wrong. What decides is the intended purpose stated by the manufacturer, not
+whether the app diagnoses:
+- Regulation (EU) 2017/745, Art. 2(1): software intended by the manufacturer for a medical purpose, among them
+  the monitoring or alleviation of a disease, or of an injury or disability, is a medical device. Software meant
+  to follow a patient's rehabilitation exercises after injury or surgery falls under that purpose. The exact
+  wording of Art. 2(1), and whether "rehabilitation" is named in it or reached through "injury or disability",
+  is to be confirmed by a regulatory adviser (the text could not be retrieved from here on 6 October).
+- Annex VIII, Rule 11, with MDCG 2019-11 (already cited on 1 October above): software that provides information
+  used to take decisions for diagnostic or therapeutic purposes is at least class IIa. A report a kiné reads to
+  adjust a patient's programme is such information. The class that would apply to a given feature is to be
+  confirmed by a regulatory adviser.
+- Outside the MDR: fitness logging by healthy adults (wellness use), with no medical purpose stated or implied.
+  That is the intended purpose docs/SPEC-production.md sets in WP2.1 ("fitness logging for healthy adults; not
+  for patients' care or monitoring") and D16 ("No patient-facing positioning or demo until a regulatory opinion
+  exists"); D19 keeps patients out of any data flow.
+So the physiotherapy section, the "home-exercise adherence for kinés" pivot and any patient demo stay closed until
+D16 is answered and a regulatory opinion exists. The web app manifest now declares the category "fitness" only
+(public/manifest.json, 6 October).
+
 ## 29 September 2026: a coach mode, one combined report per client
 
 Source: Luc, an online coach, at the gym with David. Online video coaching is growing; clients send coaches
@@ -55,6 +78,8 @@ Checked against the code on main (84e020a) before entry. These are proposals, no
   SESAM-Vitale approved software every practice already owns (Ordre des MK; Caducée, 1 September 2026 reform).
 - Medical use (EU MDR Rule 11, MDCG 2019-11): software that informs a care decision is class IIa or higher.
   No reading may be framed as informing care until that route is decided.
+  (6 October: monitoring a patient's rehabilitation is a medical purpose too, informing a decision or not;
+  see "6 October 2026: physiotherapy and the EU MDR".)
 
 ## 2 October 2026
 - Fit a five-rep session report on one A5 page with its opener (report-pdf.js): today it spills onto a second.
@@ -89,6 +114,8 @@ measured (scoreboard, synth.txt); anything else waits for its measurement (R8, R
   Prescribed targets (reps, tempo) entered by the kiné on the patient's phone; no reading framed as clinical.
   Range is underestimated 20-30 % on synthetic bodies: shown only as "as recorded", never as a measurement of
   mobility, until a goniometer comparison exists.
+  (Corrected 6 October: "adherence, not diagnosis" does not keep this outside the MDR; following a patient's
+  rehabilitation is a medical purpose. Closed until D16; see "6 October 2026: physiotherapy and the EU MDR".)
 - Online coaches (Luc): the client films, the coach receives one report per week (29 September entry).
 - Pivots worth testing with one real user each before any code: home-exercise adherence for kinés; team
   logging for S&C coaches; a privacy-first set logger for women who train alone.

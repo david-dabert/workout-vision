@@ -1,5 +1,6 @@
-// Standardised fitness tests that are counts in a fixed time (David, 2 October 2026: tests a kinésithérapeute
-// already uses, so the app's count has a protocol and a meaning). Two items of the Senior Fitness Test
+// Standardised fitness tests that are counts in a fixed time (David, 2 October 2026: published, standardised tests,
+// so the app's count has a protocol and a meaning). Offered for self-assessment by healthy adults (wellness use),
+// not for clinical use, diagnosis or rehabilitation (BACKLOG.md, note of 6 October). Two items of the Senior Fitness Test
 // (Rikli & Jones): the 30-second chair stand and the 30-second arm curl. Each is counted by its movement's
 // definition (core.ts LIFTS) and scored over a window that opens at the first rise.
 //
