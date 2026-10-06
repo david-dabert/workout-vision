@@ -8,6 +8,7 @@ import { isOffered, tierOf } from '../../lib/offer';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel, tierTag } from '../../lib/liftTiers';
 import { setName } from './set-name';
+import { ABOUT } from './about-copy';
 import { eventsConfigured, browserRefuses, countingOff, setCountingOff } from '../../lib/events';
 import './Choice.css';
 
@@ -81,7 +82,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -162,6 +163,8 @@ export default function Choice({ onChoose, onGuide, onHistory }) {
         <UsageNote fr={fr} />
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
         <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
+        {/* Why the app exists, in David's words (About.jsx). */}
+        {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
       </div>
     </section>
   </div>;

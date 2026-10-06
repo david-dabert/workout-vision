@@ -62,9 +62,11 @@ const Analyze = lazyScreen(() => import('./components/CoreUpload'));
 const ExerciseGuide = lazyScreen(() => import('./components/experience/Guide'));
 const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
 const History = lazyScreen(() => import('./components/experience/History'));
+// "À propos": why the app exists, reached from the foot of the choice.
+const About = lazyScreen(() => import('./components/experience/About'));
 // Live counting (Film screen, "En direct"): the camera, the count as the set goes, then the same result.
 const LiveSession = lazyScreen(() => import('./components/LiveSession'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -198,11 +200,14 @@ function AppInner() {
   } else if (page === 'history') {
     key = 'history';
     screen = <History onClose={() => go('dashboard')} />;
+  } else if (page === 'about') {
+    key = 'about';
+    screen = <About onClose={() => go('dashboard')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} />;
+    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
   }
 
   return <>
