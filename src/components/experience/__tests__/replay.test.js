@@ -86,3 +86,22 @@ describe('the phase on screen', () => {
     expect(phaseAt(rep(0, 1.1, 0.1, 1, { clipped: true }), 0.05, 'concentric')).toBe(null);
   });
 });
+
+// The replay line's keys (Replay.jsx, keys): a slider's keys, one rep a step (audit of 6 October: Up and Down did nothing).
+import { keyedTime, into } from '../replay-track';
+describe('the keys of the replay line', () => {
+  const reps = [{ startTime: 1, endTime: 2 }, { startTime: 3, endTime: 4 }, { startTime: 5, endTime: 6 }];
+  it('goes to the next rep with Right, Up and Page Up, to the previous with Left, Down and Page Down', () => {
+    for (const key of ['ArrowRight', 'ArrowUp', 'PageUp']) expect(keyedTime(key, reps, 3.04, 8), key).toBe(into(reps[2]));
+    for (const key of ['ArrowLeft', 'ArrowDown', 'PageDown']) expect(keyedTime(key, reps, 3.04, 8), key).toBe(into(reps[0]));
+  });
+  it('goes to the ends past the first and last rep, and with Home and End', () => {
+    expect(keyedTime('ArrowUp', reps, 5.5, 8)).toBe(8);
+    expect(keyedTime('ArrowDown', reps, 0.5, 8)).toBe(0);
+    expect(keyedTime('Home', reps, 4, 8)).toBe(0);
+    expect(keyedTime('End', reps, 4, 8)).toBe(8);
+  });
+  it('leaves every other key alone', () => {
+    for (const key of ['Enter', ' ', 'Tab', 'a']) expect(keyedTime(key, reps, 3, 8)).toBe(null);
+  });
+});

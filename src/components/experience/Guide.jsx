@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { norm } from './search-text';
+import { searchMatch, searchWords } from './search-text';
 import { useT } from '../../lib/LanguageContext';
 import { getAllGuideExercises } from '../../lib/exerciseGuide';
 import { Body, mapPose, DPR } from './entry-scene';
@@ -18,8 +18,9 @@ const ZONE_NAMES = {
 };
 const MUSCLES = { shoulders: ['Shoulders', 'Rear Delts'], chest: ['Chest'], biceps: ['Biceps', 'Forearms', 'Grip'], abs: ['Core'], quads: ['Quads', 'Legs', 'Adductors', 'Groin', 'Hips'], back: ['Back', 'Lats', 'Upper Back'], triceps: ['Triceps'], lowerback: ['Lower Back', 'Posterior Chain'], glutes: ['Glutes'], hamstrings: ['Hamstrings'], calves: ['Calves'] };
 export const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids du corps', Box: 'Banc / box', Cable: 'Poulie', Cardio: 'Cardio', Chair: 'Chaise', Doorway: 'Encadrement de porte', Dumbbell: 'Haltères', Kettlebell: 'Kettlebell', Machine: 'Machine', 'Medicine Ball': 'Médecine-ball', Plate: 'Disque', 'Pull-up Bar': 'Barre de traction', 'Resistance Band': 'Élastique', Sandbag: 'Sac lesté', 'Stability Ball': 'Ballon', Towel: 'Serviette', Wall: 'Mur' };
-export { norm };
 const inZone = (e, zone) => !zone || e.muscles.some(m => MUSCLES[zone].includes(m));
+// Each exercise's words for the search (search-text.js), cut once: its names, equipment, zones and muscles.
+const WORDS = new Map(CATALOGUE.map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...Object.keys(MUSCLES).filter(z => inZone(e, z)).flatMap(z => [ZONE_NAMES.fr[z], ZONE_NAMES.en[z]]), ...e.muscles].join(' '))]));
 const countedLift = e => (isOffered(e.key) ? e.key : undefined);
 
 function BodyMap() {
@@ -94,8 +95,7 @@ export default function Guide({ onClose, onChoose, lift }) {
       <p className="guide-credit">{fr ? 'Illustrations\u00A0:' : 'Illustrations:'} Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
     </div></section>
   </div>;
-  const q = norm(query.trim());
-  const list = CATALOGUE.filter(e => inZone(e, zone)).filter(e => !q || norm([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...Object.keys(MUSCLES).filter(z => inZone(e, z)).flatMap(z => [ZONE_NAMES.fr[z], ZONE_NAMES.en[z]]), ...e.muscles].join(' ')).includes(q));
+  const list = CATALOGUE.filter(e => inZone(e, zone)).filter(e => searchMatch(WORDS.get(e.key), query));
   function pickZone(z) { setZone(previous => previous === z ? null : z); setOpen(null); }
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active guide-screen"><div className="wrap">

@@ -337,3 +337,53 @@ describe('the experimental label in a PDF of several pages', () => {
     for (const [p, text] of pages) expect(text, `page ${p}`).toContain('Mesures expérimentales');
   });
 });
+
+// Audit of 6 October: the mono face has no ▾, so jsPDF dropped the short-rep mark from the table; it is drawn as a
+// triangle instead, one on each short rep's row, and no ▾ goes to the font.
+// Every triangle a reportPdf draws: jsPDF defines triangle on each document, so it is wrapped as each one starts
+// (jsPDF's 'initialized' event, as its plugins use it).
+function triangles(run) {
+  const calls = [];
+  const hook = ['initialized', function () { const own = this.triangle; this.triangle = (...a) => { calls.push(a); return own.apply(this, a); }; }];
+  jsPDF.API.events.push(hook);
+  try { run(); } finally { jsPDF.API.events.splice(jsPDF.API.events.indexOf(hook), 1); }
+  return calls;
+}
+
+describe('the short-rep mark in the PDF', () => {
+  it('is drawn as one triangle on each short rep’s row, never set as text', () => {
+    const short = [rep(0, 1.9, 90, 0.8, 1.0), rep(3, 1.9, 88, 0.9, 1.0), rep(6, 1.9, 50, 1.0, 1.0), rep(9, 1.9, 86, 1.1, 1.0), rep(12, 1.9, 40, 1.2, 1.0)];
+    const sheet = reportSheet({ ...base, reps: short, first: 'concentric' });
+    const marked = sheet.rows.filter(r => r.some(v => v.endsWith('▾'))).length;
+    expect(marked).toBe(2);
+    const texts = [];
+    const hook = ['preProcessText', ({ text }) => { texts.push(Array.isArray(text) ? text.join('') : String(text)); }];
+    jsPDF.API.events.push(hook);
+    let drawn;
+    try { drawn = triangles(() => reportPdf(sheet)); } finally { jsPDF.API.events.splice(jsPDF.API.events.indexOf(hook), 1); }
+    expect(drawn).toHaveLength(marked);
+    for (const [, y1, , y2, , y3, style] of drawn) {
+      expect(style).toBe('F');
+      expect(y1).toBe(y2);      // a flat top
+      expect(y3).toBeGreaterThan(y1); // pointing down
+    }
+    expect(texts.some(t => t.startsWith('50°'))).toBe(true);
+    // The table's ranges (the footnote under the table is drawn by the browser when the face lacks a character).
+    expect(texts.filter(t => /^\d+°/.test(t)).join('')).not.toContain('▾');
+  });
+
+  it('draws no triangle when no rep is short', () => {
+    expect(triangles(() => reportPdf(reportSheet({ ...base, reps, first: 'concentric' })))).toEqual([]);
+  });
+});
+
+describe('wrapText and the no-break spaces', () => {
+  const six = s => [...s].length * 6;
+  it('keeps a number and its unit joined by U+00A0 or U+202F on one line', () => {
+    // "écart 17 %" in a line just too short for it: the break falls before "17 %", never inside it.
+    expect(wrapText('gauche 92° · écart 17 %', 6 * 21, six)).toEqual(['gauche 92° · écart', '17 %']);
+    expect(wrapText('écart 17 %', 6 * 8, six)).toEqual(['écart 17', ' %']); // wider than the line: cut as overflow-wrap does
+    expect(wrapText('écart 17 %', 6 * 10, six)).toEqual(['écart 17 %']);
+    expect(wrapText('un écart 17 %', 6 * 10, six)).toEqual(['un', 'écart 17 %']);
+  });
+});

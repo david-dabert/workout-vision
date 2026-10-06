@@ -153,7 +153,8 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
   return <div className="wv-experience">
     <section className="screen is-active watch-screen">
       <div className="watch-top" ref={topRef}>
-        <p className="eyebrow">{title} · {loading ? (fr ? 'Chargement' : 'Loading') : (fr ? 'Analyse' : 'Analysis')}</p>
+        {/* The screen's heading: the screen change gives it the focus (ScreenFade.jsx), not Cancel (audit of 6 October). */}
+        <h1 className="eyebrow">{title} · {loading ? (fr ? 'Chargement' : 'Loading') : (fr ? 'Analyse' : 'Analysis')}</h1>
       </div>
       <div className="watch-space" />
       <div className="watch-bottom" ref={bottomRef}>
