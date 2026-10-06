@@ -162,8 +162,12 @@ describe('collector', () => {
       expect(setIsWhole({ samples: 180, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
     });
 
-    it('refuses a set missing one sample', () => {
-      expect(setIsWhole({ samples: 608, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
+    // 6 October: a read 1 or 2 samples short (the end of the stream) is whole; a real partial read is not.
+    it('keeps a set missing one or two samples, and refuses one missing more than 2 samples or 1 %', () => {
+      expect(setIsWhole({ samples: 608, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(true);
+      expect(setIsWhole({ samples: 607, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(true);
+      expect(setIsWhole({ samples: 602, duration: 40.618333, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
+      expect(setIsWhole({ samples: 181, duration: 29.3, fps: 15, maxFrames: 10000, failed: 0 })).toBe(false);
     });
 
     it('refuses a set with a sample whose pose could not be read', () => {

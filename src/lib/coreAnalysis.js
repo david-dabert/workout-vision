@@ -1,5 +1,6 @@
 import { countReps, liftDefinition } from './counting/core';
 import { poseDoubt } from './counting/doubt';
+import { readIsWhole } from './collector';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { isFrozenRead } from './frozenRead';
@@ -68,11 +69,12 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
  * clip and the app counted 2 of 10. The collector's rule (collector.js, setIsWhole) holds for the app:
  * fewer samples, more samples (a failed first decoding pass leaves its samples behind), a length the
  * video does not report, or more samples than the cap, and no count is shown (R8; review 01).
- * Status: convention, from the extractor's own sampling rule.
+ * Status: convention, from the extractor's own sampling rule; a shortfall of 2 samples or 1 % is whole (collector.js,
+ * READ_SHORT_TOLERANCE, 6 October).
  */
 export function unreadSamples({ samples, duration, fps, maxFrames }) {
   const expected = Math.floor(duration * fps);
-  const whole = Number.isFinite(expected) && expected > 0 && expected <= maxFrames && samples === expected;
+  const whole = Number.isFinite(expected) && expected > 0 && expected <= maxFrames && readIsWhole(samples, expected);
   return whole ? null : { read: samples, expected: Number.isFinite(expected) && expected > 0 ? expected : null };
 }
 
