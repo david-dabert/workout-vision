@@ -35,3 +35,5 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .demo-numeral { animation: none; }
 }
+
+.wv-experience .demo-real { margin-top: var(--s-6, 48px); display: flex; flex-direction: column; gap: var(--s-3, 16px); }

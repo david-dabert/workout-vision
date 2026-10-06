@@ -7,6 +7,8 @@ import { Body, LITE } from './entry-scene';
 import { fitFigure, figurePoints, litOnly, grainSize } from './demo-figure';
 import { poseAt } from './replay-track';
 import './Demo.css';
+import './About.css';
+import { DemoVideos } from './DemoVideos';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
 
 // The entry's example (feature B): a drawn squat that the counting core counts as it plays. It is
@@ -14,14 +16,14 @@ import { MEASURES_SHOWN, experimentalLabel } from './measures';
 // approval: test/real-phone/swarm/copy-B.md.
 const COPY = {
   fr: {
-    tag: 'Exemple', close: 'Fermer l’exemple', eyebrow: 'Squat dessiné',
+    tag: 'Exemple', real: 'Des séries réelles, comptées par l’app', close: 'Fermer l’exemple', eyebrow: 'Squat dessiné',
     sub: 'Un squat dessiné pour l’exemple, compté par l’app comme votre série le sera.',
     word: n => (n > 1 ? 'Répétitions' : 'Répétition'),
     done: n => `Fin de série : ${n} ${n > 1 ? 'répétitions comptées' : 'répétition comptée'}.`,
     times: 'Durée de chaque répétition', go: 'À vous', again: 'Revoir l’exemple',
   },
   en: {
-    tag: 'Example', close: 'Close the example', eyebrow: 'Drawn squat',
+    tag: 'Example', real: 'Real sets, counted by the app', close: 'Close the example', eyebrow: 'Drawn squat',
     sub: 'A squat drawn for the example, counted by the app as your set will be.',
     word: n => (n === 1 ? 'Rep' : 'Reps'),
     done: n => `End of set: ${n} ${n === 1 ? 'rep' : 'reps'} counted.`,
@@ -62,6 +64,11 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
           {onReplay && <button type="button" className="btn-ghost press" onClick={onReplay}>{c.again}</button>}
         </div>
       </div>
+      {/* Real sets, below the drawn one (David, 6 October): words to be confirmed by David (R10). */}
+      <section className="demo-real" aria-label={c.real}>
+        <p className="eyebrow demo-eyebrow">{c.real}</p>
+        <DemoVideos fr={lang !== 'en'} />
+      </section>
     </div></section>
   </div>;
 }

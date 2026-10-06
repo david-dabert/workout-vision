@@ -1,5 +1,6 @@
 import { useT } from '../../lib/LanguageContext';
-import { ABOUT, DEMOS, PHOTOS } from './about-copy';
+import { ABOUT, PHOTOS } from './about-copy';
+import { DemoVideos } from './DemoVideos';
 import './About.css';
 
 // One photo of public/about/, with its pixel size so its place is kept before it loads. Only the portrait, at the
@@ -12,15 +13,6 @@ function Photo({ id, alt, caption, eager = false }) {
   return <figure className={`about-photo about-${id}`} {...(eager ? { 'data-reveal': true, style: { '--i': 0 } } : {})}>
     {img}
     {caption && <figcaption>{caption}</figcaption>}
-  </figure>;
-}
-
-// A set as the app saw it: its replay, muted, looping, its first frame shown until it plays.
-function Demo({ d, fr }) {
-  const base = `${import.meta.env.BASE_URL}demo/${d.file}`;
-  return <figure className="about-photo about-demo">
-    <video src={`${base}.mp4`} poster={`${base}.jpg`} width={d.width} height={d.height} muted loop playsInline autoPlay preload="metadata" aria-label={fr ? d.fr : d.en} />
-    <figcaption>{fr ? d.fr : d.en}</figcaption>
   </figure>;
 }
 
@@ -45,7 +37,7 @@ export default function About({ onClose }) {
         <Photo id="dordogne" {...c.photos.dordogne} />
         <Paragraph lines={p3} />
         <Paragraph lines={p4} />
-        {DEMOS.map(d => <Demo key={d.file} d={d} fr={fr} />)}
+        <DemoVideos fr={fr} />
         <Paragraph lines={p5} />
         <p className="about-signature">{c.signature}</p>
       </div>
