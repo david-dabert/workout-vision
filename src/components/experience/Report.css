@@ -85,6 +85,9 @@
 .wv-experience .sh-wave .strip-key { color: var(--paper-ash); }
 .wv-experience .sh-wave svg { height: 64px; }
 .wv-experience .sh-wave .w-line { stroke: var(--paper-rule); }
+/* The reference band (reference-ranges.js) on paper, the PDF's row rule colour (report-pdf.js). The screen's fill is
+   set on the rect itself (RepWave.jsx), so a page without this sheet never draws it black. */
+.wv-experience .sh-wave .w-ref { fill: #F0EADF; fill-opacity: 1; }
 .wv-experience .sh-wave .w-out { stroke: #8A6630; }
 .wv-experience .sh-wave .w-back { stroke: #CDB68E; }
 .wv-experience .sh-wave .w-rep.part .w-out { stroke: var(--paper-ash); }
