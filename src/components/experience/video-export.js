@@ -23,7 +23,12 @@ export function pickMime(supported) {
  */
 export const shareFailed = e => e?.name !== 'AbortError' && e?.name !== 'InvalidStateError';
 
-export const exportFileName = (lift, mime) => `workoutvision-${String(lift).replace(/_/g, '-')}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
+// The count kept for the set, when known, ends the name (David, 6 October: the files he shares carry their count).
+export const exportFileName = (lift, mime, count) => `workoutvision-${String(lift).replace(/_/g, '-')}${Number.isInteger(count) ? `-${count}` : ''}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
+
+// 2 Mbit/s at most 1280 px: a 60 s set is about 15 MB, under the 25 MB a file may weigh on GitHub's upload page
+// (David's exports of 6 October at 4 Mbit/s were refused there). Status: convention.
+export const EXPORT_BITS_PER_SECOND = 2_000_000;
 
 /** The recorded size: the picture's proportions, at most 1280 px on the long side, in even pixels. */
 export function exportSize(w, h) {
@@ -136,10 +141,10 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
         [canvas.width, canvas.height] = exportSize(video.videoWidth || 720, video.videoHeight || 1280);
         draw(video.currentTime);
         stream = canvas.captureStream(30);
-        recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+        recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: EXPORT_BITS_PER_SECOND });
         recorder.ondataavailable = e => { if (e.data?.size) chunks.push(e.data); };
         recorder.onerror = e => finish(e.error || new Error('recorder'));
-        recorder.onstop = () => finish(null, new File(chunks, exportFileName(lift, mime), { type: mime.split(';')[0] }));
+        recorder.onstop = () => finish(null, new File(chunks, exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count), { type: mime.split(';')[0] }));
         recorder.start(1000);
       } catch (e) { finish(e); return; }
       if ('requestVideoFrameCallback' in video) vfc = video.requestVideoFrameCallback(onFrame); else raf = requestAnimationFrame(loop);
