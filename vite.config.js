@@ -57,7 +57,7 @@ export default defineConfig({
   server: {
     // This computer only. npm run dev:lan (WV_LAN=1) serves the network too, for a phone on the same Wi-Fi
     // (audit of 6 October, action 18).
-    host: LAN ? true : 'localhost',
+    host: LAN ? true : '127.0.0.1',
     https: httpsConfig,
     // Vite's own denials always. On the network, also the labelled sets and their landmarks (test/), the benchmark
     // data and any video: anyone on the Wi-Fi could otherwise fetch them. On this computer they stay served, since
