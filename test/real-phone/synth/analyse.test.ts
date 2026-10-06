@@ -5,7 +5,7 @@ import { expect, test } from 'vitest';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
-import { countReps, liftDefinition } from '../../../src/lib/counting/core';
+import { countReps, liftDefinition, JOINT_POINTS } from '../../../src/lib/counting/core';
 import { compareSides, GAP_ERROR_POINTS } from '../../../src/lib/counting/symmetry';
 import { timedReps } from '../../../src/components/experience/tempo';
 
@@ -13,6 +13,20 @@ const DIR = process.env.SYNTH_DIR;
 const JOINT: Record<string, 'shoulder' | 'elbow' | 'knee'> = { lateral_raise: 'shoulder', bicep_curl: 'elbow', overhead_press: 'elbow', squat: 'knee' };
 const med = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); return s.length ? (s.length % 2 ? s[s.length >> 1] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : NaN; };
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN);
+// Landmarks that give each side exactly its true angle (the three points of JOINT_POINTS in a plane, all seen):
+// the app's own pipeline (smoothing, thresholds, placeBoundaries) run on the true angle instead of the pose.
+// What it reads there against the truth is the error of the measure's definition; what the pose reading adds
+// on top is the error of the pose (6 October, BACKLOG step 1).
+const trueAngleLandmarks = (r: any, j: string) => r.timestamps.map((_: number, i: number) => {
+  const wl = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 1 }));
+  for (const side of ['left', 'right'] as const) {
+    const [a, b, c] = (JOINT_POINTS as any)[j][side], th = (r.truth[i][j][side] * Math.PI) / 180, x0 = side === 'left' ? 0 : 1;
+    wl[b] = { x: x0, y: 0, z: 0, visibility: 1 };
+    wl[a] = { x: x0 + 0.3, y: 0, z: 0, visibility: 1 };
+    wl[c] = { x: x0 + 0.3 * Math.cos(th), y: 0.3 * Math.sin(th), z: 0, visibility: 1 };
+  }
+  return wl;
+});
 const f0 = (x: number) => (Number.isFinite(x) ? x.toFixed(0) : '-'), f1 = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : '-');
 
 test.skipIf(!DIR)('synthetic sets against their truth', () => {
@@ -32,6 +46,9 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
     });
     // Each counted rep matched to the true rep containing its middle.
     const matched = c.reps.map(cr => { const m = (cr.startTime + cr.endTime) / 2; return { cr, tr: truthReps.find((t: any) => m >= t.start - 0.2 && m <= t.end + 0.2) }; }).filter(x => x.tr);
+    // The same reps read by the app's pipeline on the true angle (trueAngleLandmarks), matched to the same true rep.
+    const ideal = countReps(trueAngleLandmarks(r, j), ts, lift);
+    const idealOf = (tr: any) => ideal.reps.find(ir => { const m = (ir.startTime + ir.endTime) / 2; return m >= tr.start - 0.2 && m <= tr.end + 0.2; });
     const sideKey = c.arm === 'left' ? 'romL' : 'romR';
     const romErr = matched.map(x => x.cr.romDegrees - x.tr[sideKey]);
     const whole = matched.filter(x => !x.cr.clipped);
@@ -40,6 +57,14 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
     // (setMeasures: the timed reps' lengths) against the true reps' lengths, in % (printed, not gated).
     const concRel = whole.filter(x => x.tr.conc > 0).map(x => (x.cr.concentricSec - x.tr.conc) / x.tr.conc * 100);
     const eccRel = whole.filter(x => x.tr.ecc > 0).map(x => (x.cr.eccentricSec - x.tr.ecc) / x.tr.ecc * 100);
+    // Definition error (pipeline on the true angle against the truth) and pose error (app against the pipeline on
+    // the true angle), relative, on the reps both readings hold whole.
+    const pairs = whole.map(x => ({ ...x, ir: idealOf(x.tr) })).filter(x => x.ir && !x.ir.clipped);
+    const rel = (a: number, b: number) => (b > 0 ? ((a - b) / b) * 100 : NaN);
+    const defRom = matched.map(x => idealOf(x.tr)).filter(Boolean).map((ir: any, k) => rel(ir.romDegrees, matched[k].tr[sideKey]));
+    const poseRom = matched.map(x => ({ x, ir: idealOf(x.tr) })).filter(y => y.ir).map(y => rel(y.x.cr.romDegrees, y.ir!.romDegrees));
+    const defConc = pairs.map(x => rel(x.ir!.concentricSec, x.tr.conc)), poseConc = pairs.map(x => rel(x.cr.concentricSec, x.ir!.concentricSec));
+    const defEcc = pairs.map(x => rel(x.ir!.eccentricSec, x.tr.ecc)), poseEcc = pairs.map(x => rel(x.cr.eccentricSec, x.ir!.eccentricSec));
     const appTut = timedReps(c.reps).reduce((a: number, cr: any) => a + cr.endTime - cr.startTime, 0);
     const trueTut = truthReps.reduce((a: number, t: any) => a + t.end - t.start, 0);
     const L = med(truthReps.map((t: any) => t.romL)), R = med(truthReps.map((t: any) => t.romR));
@@ -47,6 +72,7 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
     const s = compareSides(r.worldLandmarks, ts, lift, c.reps);
     rows.push({ id: f.replace('.json.gz', ''), model: p.model, lift, view: p.view, asym: Math.round(((p.peakR - p.peakL) / p.peakL) * 100), truth: r.reps.length, count: c.count,
       romErr: mean(romErr), concRel: mean(concRel), eccRel: mean(eccRel), tutRel: trueTut > 0 ? (appTut - trueTut) / trueTut * 100 : NaN, romRel: mean(matched.map(x => (x.cr.romDegrees - x.tr[sideKey]) / x.tr[sideKey] * 100)), concErr: mean(concErr), eccErr: mean(eccErr),
+      defRom: mean(defRom), poseRom: mean(poseRom), defConc: mean(defConc), poseConc: mean(poseConc), defEcc: mean(defEcc), poseEcc: mean(poseEcc),
       seen: r.worldLandmarks.filter(Boolean).length / ts.length, status: s.status, trueSI, appSI: s.status === 'measured' ? s.comparison.si : NaN });
   }
   expect(rows.length).toBeGreaterThan(0);
@@ -89,6 +115,18 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
     const pick = (k: string) => xs.map(r => r[k]).filter(Number.isFinite);
     out.push(`view ${String(v).padStart(2)} deg: conc. ${f0(mean(pick('concRel')))} %  ecc. ${f0(mean(pick('eccRel')))} %  time under tension ${f0(mean(pick('tutRel')))} % (mean absolute ${f0(mean(pick('tutRel').map(Math.abs)))} %)  range ${f0(mean(pick('romRel')))} %`);
   }
+  out.push('');
+  // Printed, not gated (6 October, BACKLOG step 1): where the measure errors come from. "definition": the app's
+  // pipeline run on the true angle, against the truth (smoothing, the rest and working bands, the held extremes).
+  // "pose": the app on the detected pose, against that same pipeline on the true angle.
+  out.push('Measure errors split (printed, not gated): definition = app pipeline on the true angle vs truth; pose = app vs that.');
+  const split = (name: string, xs: any[]) => {
+    const pick = (k: string) => mean(xs.map(r => r[k]).filter(Number.isFinite));
+    out.push(`${name.padEnd(22)} range: definition ${f0(pick('defRom')).padStart(3)} %  pose ${f0(pick('poseRom')).padStart(3)} %   conc.: definition ${f0(pick('defConc')).padStart(3)} %  pose ${f0(pick('poseConc')).padStart(3)} %   ecc.: definition ${f0(pick('defEcc')).padStart(3)} %  pose ${f0(pick('poseEcc')).padStart(3)} %`);
+  };
+  split('all', rows);
+  for (const v of [0, 30, 60, 90]) split(`view ${v} deg`, rows.filter(r => r.view === v));
+  for (const l of Object.keys(JOINT)) split(`${l} (${REC[l] ? 'side' : 'front'})`, rows.filter(r => r.lift === l && r.view === REC[l]));
   out.push('');
   out.push('Left/right comparison (symmetry.ts): which views the gate measures, and the gap error where it does.');
   for (const v of [0, 30, 60, 90]) {
