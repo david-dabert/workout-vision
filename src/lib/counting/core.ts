@@ -30,7 +30,8 @@
  *
  * Rep detection: smoothed angle crosses a low and a high threshold derived from the
  * set's own 10th/90th percentile range, leaving the rest end and coming back to it.
- * A rep is one full cycle whose duration falls within [minRepSec, maxRepSec]. A last rep the video stops on
+ * A rep is one full cycle at least MIN_REP_SEC long whose moving time (its duration less its time held at the
+ * working end, up to WORK_HOLD_CAP_SEC) is at most MAX_REP_SEC (6 October 2026). A last rep the video stops on
  * its way back counts, marked clipped, once it has come CUT_RETURN_SHARE of the way back (3 October 2026).
  * Its reported start and end are then placed where the angle leaves and regains
  * its rest level (placeBoundaries), so a rest that hovers near a threshold does
@@ -39,10 +40,11 @@
  * Every parameter is in seconds or degrees, never frames.
  *
  * References (fixed parameters only):
- *   Rep duration bounds: 0.5–8.0 s covers controlled eccentrics through
- *     explosive concentrics across standard resistance exercises (Schoenfeld,
- *     Ogborn & Krieger, "Effect of Repetition Duration During Resistance
- *     Training on Muscle Hypertrophy", Sports Medicine 2015; 45(4):577-85).
+ *   Rep duration bounds 0.5–8.0 s: the range of repetition durations over which
+ *     Schoenfeld, Ogborn & Krieger ("Effect of Repetition Duration During Resistance
+ *     Training on Muscle Hypertrophy", Sports Medicine 2015; 45(4):577-85) found
+ *     similar hypertrophy. The paper sets no limit on how long a rep can last; using
+ *     the range as bounds is ours. The upper bound applies to moving time (MAX_REP_SEC).
  *   Savitzky–Golay window, outlier parameters, the rest band and the overlap
  *     that joins two arms: unvalidated starting values. Not derived from a
  *     specific published recommendation.
@@ -263,7 +265,21 @@ const OUTLIER_WINDOW_SEC = 0.5;   // window for local median in outlier removal
 const OUTLIER_DEVIATION_DEG = 40; // max deviation from local median before nulling
 const SG_WINDOW_SEC = 0.333;      // Savitzky–Golay window in seconds
 const MIN_REP_SEC = 0.5;          // shortest plausible rep (Schoenfeld et al. 2015)
-const MAX_REP_SEC = 8.0;          // longest plausible rep
+// Longest rep, in moving time (detectReps): its duration less the time it held at the working end, that hold
+// counted up to WORK_HOLD_CAP_SEC. Source: Schoenfeld, Ogborn & Krieger, Sports Medicine 2015 (45(4):577-85)
+// found similar hypertrophy over the repetition durations of the studies they pooled, 0.5 to 8 s; it states no
+// longest possible rep, so 8 s as a bound is our reading of that range, not its finding. Status: literature (the
+// range), experimental (its use as a bound on moving time).
+const MAX_REP_SEC = 8.0;
+// A rep's time at the working end (the samples past the working threshold) is not counted against MAX_REP_SEC, up
+// to this many seconds (audit of 6 October 2026, action 5): with the bound on the whole duration, eight squats or
+// lateral raises paused 5 s at the working end read 0, and a set of six plain and two paused reps read 6 with
+// full coverage. The cap keeps a long stay at the working end that is no rep out (arms crossed for 20 s after a
+// curl set: moving time 21 - 10 = 11 s). Trade-off: an isometric hold of up to 10 s entered and left from rest
+// (a 10 s wall sit then standing up) now reads as 1 rep. A cycle whose entering sample is already at the working
+// end (video or pose opening on it) keeps the whole-duration bound (detectReps, `bounded`). work-hold.test.ts.
+// Source: UNSOURCED. Status: experimental.
+const WORK_HOLD_CAP_SEC = 10;
 const PERCENTILE_LOW = 10;        // for threshold from set's own range
 const PERCENTILE_HIGH = 90;
 const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
@@ -717,6 +733,19 @@ function detectReps(
   let head: Cycle | null = null;
   let firstSeen = -1;
   for (let i = 0; i < smoothed.length; i++) if (smoothed[i] !== null) { firstSeen = i; break; }
+  // A cycle's moving time: its duration less the time it spent past the working threshold (two consecutive samples
+  // both past it), that hold counted up to WORK_HOLD_CAP_SEC. MAX_REP_SEC bounds this, not the whole duration.
+  const atWork = (a: number | null) => a !== null && (restsLow ? a >= highThreshold : a <= lowThreshold);
+  const moving = (from: number, to: number) => {
+    let held = 0;
+    for (let i = from + 1; i <= to; i++) if (atWork(smoothed[i]) && atWork(smoothed[i - 1])) held += timestamps[i] - timestamps[i - 1];
+    return timestamps[to] - timestamps[from] - Math.min(held, WORK_HOLD_CAP_SEC);
+  };
+  // A cycle whose entering sample is already at the working end (the video, or the pose after a loss, opens on it)
+  // keeps the bound on its whole duration: what came before the hold is not seen, so the hold may be setup, not a
+  // rep's pause (context.test.ts: 8 s holding a dumbbell with the elbow bent before a curl set read as an 11th rep).
+  const bounded = (from: number, to: number) =>
+    (enteredAtWork ? timestamps[to] - timestamps[from] : moving(from, to)) <= MAX_REP_SEC;
 
   for (let i = 0; i < smoothed.length; i++) {
     const angle = smoothed[i];
@@ -741,7 +770,7 @@ function detectReps(
         if (angle < lowThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= minRom) {
+          if (duration >= MIN_REP_SEC && bounded(repStartIdx, i) && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
             hiIdxs.push(hiIdx);
           } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
@@ -772,7 +801,7 @@ function detectReps(
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && rom >= minRom) {
+          if (duration >= MIN_REP_SEC && bounded(repStartIdx, i) && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
             hiIdxs.push(hiIdx);
           } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
@@ -821,7 +850,7 @@ function detectReps(
     }
     const duration = timestamps[last] - timestamps[repStartIdx];
     if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC
-      && duration >= MIN_REP_SEC && duration <= MAX_REP_SEC && peakAngle - troughAngle >= minRom) {
+      && duration >= MIN_REP_SEC && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom) {
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     }
   }

@@ -13,7 +13,7 @@ export const TIERS = {
   lat_pulldown: 'beta',
   squat: 'beta',
   bench_press: 'experimental',
-  // 6 October: experimental. sets-05oct/hip_thrust_13 counts 7 for 13 (pose lost mid-set; scoreboard.txt);
+  // 6 October: experimental. sets-05oct/hip_thrust_13 counts 7 for 13 (8 since the hold rule, same day; pose lost mid-set; scoreboard.txt);
   // sets-29sep/hip_thrust_6 counts 6 for 6. Beta from 3 to 6 October on the one set.
   hip_thrust: 'experimental',
   // 3 October: beta. sets-29sep/romanian_deadlift_8 counts 8 for 8, its only set (scoreboard.txt).
