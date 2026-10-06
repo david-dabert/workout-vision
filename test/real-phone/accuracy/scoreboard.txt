@@ -1,9 +1,11 @@
-Scoreboard 2026-10-06: of the 13 sets in the baseline that decide, 10 exact now, 10 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
-Pose doubt (counting/doubt.js, experimental, decides nothing): of 17 counted sets, 1 flagged: 1 exact (100%), 0 off by 3+ (0%); 16 not flagged: 10 exact (63%), 0 off by 3+ (0%). Sets off by 3+ flagged: 0 of 0.
+Scoreboard 2026-10-06: of the 13 sets in the baseline that decide, 10 exact now, 10 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 2 sets new since. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
+Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted sets, 1 flagged: 1 exact (100%), 0 off by 3+ (0%); 18 not flagged: 11 exact (61%), 0 off by 3+ (0%). Sets off by 3+ flagged: 0 of 0.
    sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  before 8 (exact)  now 8 (exact)
    sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  label 13  before 12 (off -1)  now 12 (off -1)
    sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz  label 7  before 6 (off -1)  now 6 (off -1)
+-> sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz  label 10  before - (new)  now 9 (off -1)
+-> sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz  label 6  before - (new)  now 6 (exact)
    sets-29sep/bench_press_7_side_24cc4f0b.json.gz  label 7  before 5 (off -2)  now 5 (off -2)  (press: measured, decides nothing, PLAN.md)
    sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  label 5  before 5 (exact)  now 5 (exact)
    sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  label 6  before 6 (exact)  now 6 (exact)

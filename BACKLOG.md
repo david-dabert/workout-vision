@@ -230,3 +230,15 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
     misled. Fix or calibrate the measures first (review of 6 October, action 9).
 - Cheapest first step, after that: draw the reference range as a band on the existing per-rep wave (RepWave), for the
   five Beta lifts, from a sourced range per joint. Then the animated figures, Beta lifts first.
+
+## 6 October 2026: collecting David's sets without the collector (priority for the next run)
+
+- Collecting nine labelled sets took David over an hour on 6 October: the batch collector refused reads one or two
+  samples short (fixed, #112), the chat takes no video, GitHub's upload page refuses files over 25 MB, and exported
+  replays are not valid sets (overlay drawn on the body, about 10 frames a second).
+- Build it into the app, for David's phone only: when he keeps or corrects a count on the result screen, the app
+  saves that set's landmark file with its lift, view and his count, in the collector's format, and a "Send the day's
+  sets" action shares them all at once (one share sheet, one message). No retyping, no second reading of the video.
+  Reuse src/lib/contribute.js and collectSet's file format; switched on by a flag only David's phone carries.
+- Labels typed after seeing the app's count are "after-app" (contribute.js, FINDING-008): mark them so, and keep a
+  blind recount for the sets the scoreboard publishes (R1, R13).
