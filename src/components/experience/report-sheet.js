@@ -96,7 +96,7 @@ export function repTable({ reps, first, fr, corrected = false }) {
   });
   const columns = fr ? ['Rép.', 'Tempo', 'Amplitude', 'Pic', 'Moy.'] : ['Rep', 'Tempo', 'Range', 'Peak', 'Mean'];
   if (corrected) columns[0] = fr ? 'Repère' : 'Mark';
-  return { columns, rows, tempoStr };
+  return { columns, rows };
 }
 
 // The concentric speed change (setMeasures) as the report writes it; '' when there is none.
@@ -146,7 +146,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const hasShort = shown && allReps.some(isShortIn(reps));
   const hasPartial = shown && allReps.some(partialIn(reps));
   // After a correction the rows are the marks the app detected, not the reps the user saved (repTable).
-  const { columns, rows, tempoStr } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count }) : { columns: [], rows: [] };
+  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count }) : { columns: [], rows: [] };
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
@@ -197,17 +197,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   }
 
   // The set's two figures, set like the count (David's iPhone, 5 October: the report read as a list of grey lines):
-  // time under tension, and the average tempo in the table's own notation (repTable), not a second rounding of it.
+  // time under tension, and the set's tempo as the result screen and the spreadsheet write it (setTempo, whole
+  // seconds), so the pause between reps is averaged over the gaps that exist (audit of 6 October).
   const stats = [];
   if (measures && shown) {
     stats.push([fr ? 'Temps sous tension' : 'Time under tension', sec(measures.tut)]);
-    const partial = partialIn(allReps);
-    const timed = allReps.map((r, i) => ({ r, next: allReps[i + 1] })).filter(({ r }) => !r.clipped && !partial(r))
-      .map(({ r, next }) => repTempo(r, next ? next.startTime : null, liftFirst));
-    if (timed.length && tempoStr) {
-      const mean = k => timed.reduce((a, t) => a + t[k], 0) / timed.length;
-      stats.push([fr ? 'Tempo moyen' : 'Average tempo', tempoStr({ lowering: mean('lowering'), bottom: mean('bottom'), lifting: mean('lifting'), top: mean('top') })]);
-    }
+    const tempo = setTempo(reps, liftFirst);
+    if (tempo) stats.push([fr ? 'Tempo moyen' : 'Average tempo', tempo]);
   }
   // What the stats do not say, each its own line (left and right, the previous set, speed changes when shown).
   const statLabels = [fr ? 'Temps sous tension' : 'Time under tension', 'Tempo'];

@@ -19,3 +19,18 @@ describe('the set a report compares with', () => {
     expect(previousSet(all, 'bicep_curl', { id: 'older', at: d(8) })).toBeNull();
   });
 });
+
+// Audit of 6 October, action 9: a set of the left arm is not compared with a set of the right arm.
+describe('the previous set follows the same arm or side', () => {
+  const sides = [w('right', 12, { arm: 'right' }), w('left', 11, { arm: 'left' }), w('right-before', 9, { arm: 'right' })];
+  it('a right-arm set is compared with the last right-arm set, not the left-arm set in between', () => {
+    expect(previousSet(sides, 'bicep_curl', { id: 'right', at: d(12), arm: 'right' }).id).toBe('right-before');
+  });
+  it('a left-arm set with no left-arm set before it has none to compare with', () => {
+    expect(previousSet(sides, 'bicep_curl', { id: 'left', at: d(11), arm: 'left' })).toBeNull();
+  });
+  it('a set of both sides (filmed from the front) is compared with another of both sides only', () => {
+    const front = [w('both-now', 12, { arm: 'both' }), w('right', 11, { arm: 'right' }), w('both-before', 10, { arm: 'both' })];
+    expect(previousSet(front, 'bicep_curl', { id: 'both-now', at: d(12), arm: 'both' }).id).toBe('both-before');
+  });
+});

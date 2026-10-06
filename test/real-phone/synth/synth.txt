@@ -22,6 +22,12 @@ overhead_press (front) n   6  count exact   6 (100 %), off >= 3: 0  range error 
 squat (side)           n   6  count exact   4 (67 %), off >= 3: 1  range error mean -15 deg (-16 %)  conc. -0.5 s  ecc. -0.5 s
 all, guided view       n  24  count exact  20 (83 %), off >= 3: 2  range error mean -19 deg (-20 %)  conc. -0.5 s  ecc. -0.5 s
 
+Measure errors per view (printed, not gated): phase time relative error, time under tension error, range error.
+view  0 deg: conc. -46 %  ecc. -45 %  time under tension -37 % (mean absolute 37 %)  range -36 %
+view 30 deg: conc. -45 %  ecc. -45 %  time under tension -30 % (mean absolute 30 %)  range -27 %
+view 60 deg: conc. -47 %  ecc. -48 %  time under tension -41 % (mean absolute 41 %)  range -29 %
+view 90 deg: conc. -53 %  ecc. -54 %  time under tension -59 % (mean absolute 59 %)  range -29 %
+
 Left/right comparison (symmetry.ts): which views the gate measures, and the gap error where it does.
 view  0 deg: measured 6 of 24; gap error mean -3.4 points, mean absolute 5.5; side right in 4 of 4 sets with a true gap of 10 % or more; refused: not-compared-lift
 view 30 deg: measured 0 of 24; refused: not-compared-lift, not-front

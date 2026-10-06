@@ -7,6 +7,7 @@ import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { countReps, liftDefinition } from '../../../src/lib/counting/core';
 import { compareSides, GAP_ERROR_POINTS } from '../../../src/lib/counting/symmetry';
+import { timedReps } from '../../../src/components/experience/tempo';
 
 const DIR = process.env.SYNTH_DIR;
 const JOINT: Record<string, 'shoulder' | 'elbow' | 'knee'> = { lateral_raise: 'shoulder', bicep_curl: 'elbow', overhead_press: 'elbow', squat: 'knee' };
@@ -35,11 +36,17 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
     const romErr = matched.map(x => x.cr.romDegrees - x.tr[sideKey]);
     const whole = matched.filter(x => !x.cr.clipped);
     const concErr = whole.map(x => x.cr.concentricSec - x.tr.conc), eccErr = whole.map(x => x.cr.eccentricSec - x.tr.ecc);
+    // Relative phase-time errors (%) on the whole reps, and the time under tension as the report states it
+    // (setMeasures: the timed reps' lengths) against the true reps' lengths, in % (printed, not gated).
+    const concRel = whole.filter(x => x.tr.conc > 0).map(x => (x.cr.concentricSec - x.tr.conc) / x.tr.conc * 100);
+    const eccRel = whole.filter(x => x.tr.ecc > 0).map(x => (x.cr.eccentricSec - x.tr.ecc) / x.tr.ecc * 100);
+    const appTut = timedReps(c.reps).reduce((a: number, cr: any) => a + cr.endTime - cr.startTime, 0);
+    const trueTut = truthReps.reduce((a: number, t: any) => a + t.end - t.start, 0);
     const L = med(truthReps.map((t: any) => t.romL)), R = med(truthReps.map((t: any) => t.romR));
     const trueSI = ((R - L) / ((L + R) / 2)) * 100;
     const s = compareSides(r.worldLandmarks, ts, lift, c.reps);
     rows.push({ id: f.replace('.json.gz', ''), model: p.model, lift, view: p.view, asym: Math.round(((p.peakR - p.peakL) / p.peakL) * 100), truth: r.reps.length, count: c.count,
-      romErr: mean(romErr), romRel: mean(matched.map(x => (x.cr.romDegrees - x.tr[sideKey]) / x.tr[sideKey] * 100)), concErr: mean(concErr), eccErr: mean(eccErr),
+      romErr: mean(romErr), concRel: mean(concRel), eccRel: mean(eccRel), tutRel: trueTut > 0 ? (appTut - trueTut) / trueTut * 100 : NaN, romRel: mean(matched.map(x => (x.cr.romDegrees - x.tr[sideKey]) / x.tr[sideKey] * 100)), concErr: mean(concErr), eccErr: mean(eccErr),
       seen: r.worldLandmarks.filter(Boolean).length / ts.length, status: s.status, trueSI, appSI: s.status === 'measured' ? s.comparison.si : NaN });
   }
   expect(rows.length).toBeGreaterThan(0);
@@ -72,6 +79,16 @@ test.skipIf(!DIR)('synthetic sets against their truth', () => {
   out.push('At the view the filming guide asks for:');
   for (const l of Object.keys(JOINT)) summary(`${l} (${REC[l] ? 'side' : 'front'})`, rows.filter(r => r.lift === l && r.view === REC[l]));
   summary('all, guided view', rows.filter(r => r.view === REC[r.lift]));
+  out.push('');
+  // Printed, not gated (audit of 6 October, action 9): the measure errors per view, relative to the truth.
+  // Phase times: mean signed relative error of the whole reps' concentric and eccentric times; time under tension:
+  // the report's figure (timed reps only) against the true reps' total length, a missed or extra rep included.
+  out.push('Measure errors per view (printed, not gated): phase time relative error, time under tension error, range error.');
+  for (const v of [0, 30, 60, 90]) {
+    const xs = rows.filter(r => r.view === v);
+    const pick = (k: string) => xs.map(r => r[k]).filter(Number.isFinite);
+    out.push(`view ${String(v).padStart(2)} deg: conc. ${f0(mean(pick('concRel')))} %  ecc. ${f0(mean(pick('eccRel')))} %  time under tension ${f0(mean(pick('tutRel')))} % (mean absolute ${f0(mean(pick('tutRel').map(Math.abs)))} %)  range ${f0(mean(pick('romRel')))} %`);
+  }
   out.push('');
   out.push('Left/right comparison (symmetry.ts): which views the gate measures, and the gap error where it does.');
   for (const v of [0, 30, 60, 90]) {
