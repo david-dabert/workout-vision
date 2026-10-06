@@ -1,6 +1,13 @@
 Public scoreboard 2026-10-06: 1064 build sets, 490 exact (46%). Of the 949 in the baseline that decide, 431 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 65 exact (33%), 23 off by 3+ (12%); 751 not flagged: 425 exact (57%), 26 off by 3+ (3%). Sets off by 3+ flagged: 23 of 49.
 
+Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:
+- cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 8 of 141 reps (5.7%).
+- countix: 447 sets, 181 exact (40%, 95% Wilson 36-45%), 53 refused, rep error 331 of 1412 reps (23.4%).
+- countix-whole: 447 sets, 174 exact (39%, 95% Wilson 35-44%), 65 refused, rep error 339 of 1386 reps (24.5%).
+- mmfit: 158 sets, 127 exact (80%, 95% Wilson 73-86%), 0 refused, rep error 48 of 1583 reps (3.0%).
+Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 157 exact (35%, 95% Wilson 31-40%); either reading 198 exact (44%, 95% Wilson 40-49%).
+
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
 | cfrep deadlift | 6 | 3 | 2 | 1 | 0 |
