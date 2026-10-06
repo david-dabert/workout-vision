@@ -104,8 +104,17 @@ export const PHOTOS = {
 
 // The sets shown on the About page, each the app's own replay exported by David (media/demo/, re-encoded for the web
 // into public/demo/, sound and metadata removed). The count is the app's; David kept it (no correction note on the
-// video). Captions to be confirmed by David on his iPhone (R10, 6 October). One today; up to five.
+// video). Captions to be confirmed by David on his iPhone (R10, 6 October). Five, the ones whose count David gave and the
+// replay matches; the reverse curl (app 9, label 10) and the chest-supported row (app 5, David said 6) are held.
 export const DEMOS = [
+  { file: 'dip-13', width: 404, height: 720, app: 13, kept: 13,
+    fr: `Dips · 13${NB}répétitions comptées par l’app, 13 par moi`, en: `Dips · 13${NB}reps counted by the app, 13 by me` },
+  { file: 'ez-curl-10', width: 404, height: 720, app: 10, kept: 10,
+    fr: `Curl à la barre EZ · 10${NB}répétitions comptées par l’app, 10 par moi`, en: `EZ-bar curl · 10${NB}reps counted by the app, 10 by me` },
+  { file: 'bodyweight-squat-9', width: 404, height: 720, app: 9, kept: 9,
+    fr: `Squat au poids du corps · 9${NB}répétitions comptées par l’app, 9 par moi`, en: `Bodyweight squat · 9${NB}reps counted by the app, 9 by me` },
+  { file: 'lat-pulldown-6', width: 404, height: 720, app: 6, kept: 6,
+    fr: `Tirage vertical · 6${NB}répétitions comptées par l’app, 6 par moi`, en: `Lat pulldown · 6${NB}reps counted by the app, 6 by me` },
   { file: 'bicep-curl-5', width: 540, height: 960, app: 5, kept: 5,
     fr: `Curl biceps · 5${NB}répétitions comptées par l’app, 5 par moi`, en: `Biceps curl · 5${NB}reps counted by the app, 5 by me` },
 ];
