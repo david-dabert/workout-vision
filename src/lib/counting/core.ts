@@ -234,15 +234,28 @@ export const JOINT_POINTS: Record<Joint, { left: [number, number, number]; right
   hip: { left: [L_SHOULDER, L_HIP, L_KNEE], right: [R_SHOULDER, R_HIP, R_KNEE] },
 };
 
-// Savitzky–Golay quadratic kernels (symmetric, preserves peaks)
-// Selected at runtime from SG_WINDOW_SEC and actual sample rate.
-const SG_KERNELS: Record<number, number[]> = {
-  3: [1, 1, 1].map(v => v / 3),
-  5: [-3, 12, 17, 12, -3].map(v => v / 35),
-  7: [-2, 3, 6, 7, 6, 3, -2].map(v => v / 21),
-  9: [-21, 14, 39, 54, 59, 54, 39, 14, -21].map(v => v / 231),
-  11: [-36, 9, 44, 69, 84, 89, 84, 69, 44, 9, -36].map(v => v / 429),
-};
+// Savitzky–Golay quadratic kernels (symmetric, preserves peaks), for the window SG_WINDOW_SEC gives at the
+// actual sample rate (sgKernel). Until 6 October 2026 they came from a fixed table of 3 to 11 samples, and any
+// other window (above about 33 samples per second) fell back to 5 samples without a word (audit of 6 October,
+// action 4). They are now generated for any odd window from the closed form of a quadratic least-squares fit
+// (Savitzky & Golay, Anal. Chem. 1964; 36(8):1627-39): for a window of 2m+1 samples, the weight at offset i is
+// (3(3m² + 3m − 1) − 15 i²) / ((2m − 1)(2m + 1)(2m + 3)), which gives the table's 5 to 11 exactly
+// (sg-kernel.test.ts). Status: literature (the formula); the window itself stays an unvalidated starting value.
+// Three samples keep the table's moving average: a quadratic fit through three points is the points themselves.
+const SG_KERNEL_3 = [1, 1, 1].map(v => v / 3);
+const sgKernels = new Map<number, number[]>();
+export function sgKernel(windowSize: number): number[] {
+  let n = Math.max(3, Math.round(Number.isFinite(windowSize) ? windowSize : 3));
+  if (n % 2 === 0) n += 1;
+  if (n === 3) return SG_KERNEL_3;
+  const cached = sgKernels.get(n);
+  if (cached) return cached;
+  const m = (n - 1) / 2;
+  const norm = (2 * m - 1) * (2 * m + 1) * (2 * m + 3);
+  const kernel = Array.from({ length: n }, (_, j) => (3 * (3 * m * m + 3 * m - 1) - 15 * (j - m) ** 2) / norm);
+  sgKernels.set(n, kernel);
+  return kernel;
+}
 
 // Unvalidated starting values — recorded per PLAN.md rule
 const BRIDGE_GAP_SEC = 0.5;       // max dropout to bridge
@@ -649,7 +662,7 @@ function bridgeDropouts(
 // ─── Smoothing ───
 
 function savitzkyGolay(angles: (number | null)[], windowSize: number): (number | null)[] {
-  const kernel = SG_KERNELS[windowSize] ?? SG_KERNELS[5];
+  const kernel = sgKernel(windowSize);
   const result: (number | null)[] = [...angles];
   const half = Math.floor(kernel.length / 2);
 
