@@ -10,6 +10,8 @@ import { TIERS, tierLabel, tierTag } from '../../lib/liftTiers';
 import { setName } from './set-name';
 import { ABOUT } from './about-copy';
 import { eventsConfigured, browserRefuses, countingOff, setCountingOff } from '../../lib/events';
+import { collectSwitchAtLoad, collectSwitchSeen, onCollectSwitch } from '../../lib/phoneCollect';
+import { COLLECT } from './collect-copy';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -161,6 +163,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout }) {
         </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
         <UsageNote fr={fr} />
+        <CollectSwitched fr={fr} />
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
         <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
         {/* Why the app exists, in David's words (About.jsx). */}
@@ -186,4 +189,13 @@ function UsageNote({ fr }) {
       {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}
     </button>
   </div>;
+}
+
+// One line after the app was opened at #collecte or #collecte-off (phoneCollect.js), on that visit to the choice only.
+function CollectSwitched({ fr }) {
+  const [state, setState] = useState(collectSwitchAtLoad);
+  useEffect(() => { if (state) collectSwitchSeen(); }, [state]);
+  useEffect(() => onCollectSwitch(setState), []);
+  if (!state) return null;
+  return <p className="foot" role="status" data-testid="collect-switched">{COLLECT[fr ? 'fr' : 'en'][state]}</p>;
 }
