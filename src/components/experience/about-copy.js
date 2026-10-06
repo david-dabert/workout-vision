@@ -10,7 +10,7 @@ export const ABOUT = {
     paragraphs: [
       [
         `Il y a trois ans, je pesais 170${NB}kilogrammes.`,
-        'Ma fille a eu l’honnêteté de me dire que si je ne faisais rien, je ne verrais pas mes deux filles avoir dix-huit ans.',
+        'Mon médecin a eu l’honnêteté de me dire que si je ne faisais rien, je ne verrais pas mes deux filles avoir dix-huit ans.',
         'Ce fut un réveil brutal.',
       ],
       [
@@ -54,7 +54,7 @@ export const ABOUT = {
     paragraphs: [
       [
         `Three years ago, I weighed 170${NB}kilograms.`,
-        'My daughter had the honesty to tell me that if I did nothing, I would not see my two daughters reach eighteen.',
+        'My doctor had the honesty to tell me that if I did nothing, I would not see my two daughters reach eighteen.',
         'It was a brutal awakening.',
       ],
       [
