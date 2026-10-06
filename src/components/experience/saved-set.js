@@ -10,16 +10,19 @@ import { compactWave, waveAngles } from './wave';
 // alone: no count of the app, no rep details, no measure, no wave; the history, the report and the spreadsheet say
 // "saisi à la main". No arm: the app could not see one (the core's default side is no observation). afterRefusal tells
 // these from the sets ManualLog.jsx typed (25-26 September), which the app never tried to count.
-export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date() }) {
+// planned: the coach's target when the set was filmed from a programme (programme.js, plannedOf); the programme's
+// screen reads it to show the set beside its target, and the report prints it ("Prévu : 3 × 10"). Absent otherwise.
+export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date(), planned = null }) {
+  const withPlan = set => (planned ? { ...set, planned } : set);
   if (manual) {
-    return {
+    return withPlan({
       exercise: lift, reps: n, repDetails: [], arm: null, confidence: null, afterRefusal: true,
       date: now.toISOString(), source: 'manual', duration: result.metadata?.duration, corrected: true,
       sides: null, machineResult: null, correctedResult: { reps: n }, repDetailsVersion: 2, wave: null,
-    };
+    });
   }
   const count = result.count;
-  return {
+  return withPlan({
     exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
     date: now.toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
     // Measured over the app's marks: kept only when the saved count is the app's.
@@ -33,5 +36,5 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     repDetailsVersion: 2,
     // The measured angle over the set, compact, for the report's wave (wave.js).
     wave: compactWave(waveAngles(result), result.timestamps),
-  };
+  });
 }

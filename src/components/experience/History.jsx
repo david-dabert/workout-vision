@@ -9,6 +9,8 @@ import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
 import KeepSets from './KeepSets';
 import ContributeHistory from './ContributeHistory';
+import CollectHistory from './CollectHistory';
+import { collectOn } from '../../lib/phoneCollect';
 import { contributeBuild } from '../../lib/buildFlags';
 import { contributions, forgetContributions, readChoice } from '../../lib/contribute';
 import LevelPick from './LevelPick';
@@ -204,10 +206,12 @@ export default function History({ onClose }) {
             even with no set left. A build with contributions paused (buildFlags.js, WP0.4) offers nothing to start:
             the section shows only for a stored yes or sets still waiting, to stop and erase them. */}
         {((contributeBuild() && sets?.length > 0) || readChoice() === 'yes' || contributionsLeft) && <ContributeHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
+        {/* On David's phone only, with the flag set at #collecte (phoneCollect.js): the landmark files to send. */}
+        {collectOn() && <CollectHistory fr={fr} sets={sets} style={{ '--i': 6 }} />}
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
-      setId={report.id} sides={report.sides ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
+      setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
   </>;
 }

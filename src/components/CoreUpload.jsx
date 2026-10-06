@@ -14,7 +14,7 @@ import { track } from '../lib/events';
 // unconfirmed count, which only ran without a file, could never be reached and were removed (third audit, C51);
 // the Result screen saves the count the user confirms.
 // onNewSet: after a saved set, the next set of the same lift (back to Film); onClose: back to the choice of lift.
-export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, initialLift = '', initialFile = null }) {
+export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, initialLift = '', initialFile = null, planned = null }) {
   const lift = initialLift, file = initialFile;
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState('');
@@ -108,9 +108,9 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
       {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
-      {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
     </ScreenFade>
-    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} wave={compactWave(waveAngles(result), result.timestamps)} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} sides={savedSides} wave={compactWave(waveAngles(result), result.timestamps)} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

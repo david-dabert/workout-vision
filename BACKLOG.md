@@ -242,6 +242,17 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   Reuse src/lib/contribute.js and collectSet's file format; switched on by a flag only David's phone carries.
 - Labels typed after seeing the app's count are "after-app" (contribute.js, FINDING-008): mark them so, and keep a
   blind recount for the sets the scoreboard publishes (R1, R13).
+- Built 6 October 2026 (branch claude/generate-architecture-md-inw479, not yet confirmed on David's iPhone, R3):
+  opening the app at #collecte (or ?collecte=1) switches it on for that phone, #collecte-off (or ?collecte=0) off,
+  with one line of confirmation on the first screen; no screen shows the switch (src/lib/phoneCollect.js). With it
+  on, a video set whose count is kept or corrected on the result screen also keeps, in IndexedDB (store "collected"),
+  the collector's file (setPayload, setFileName, gzip) with the kept count, labelKind 'after-app', the app's count,
+  the video's SHA-256 (the landmarks' hash when the video cannot be read) and, as view, the view the app asks the lift
+  to be filmed from (viewSource 'app-guide'). Live sets are not kept (no video, not read at the collector's settings).
+  The history then shows "Envoyer les séries collectées (N)": one share sheet with every file (downloads where the
+  sheet takes no files), then "Effacer" or "Garder". Nothing is sent by itself; without the flag nothing changes.
+  Words for David's approval: test/real-phone/swarm/copy-collect.md. Tests: src/lib/__tests__/phoneCollect.test.js,
+  e2e/collect-phone.spec.js. Open: whether after-app sets enter the scoreboard stays David's decision (R1, R13).
 
 ## 6 October 2026: a program builder for coaches and physiotherapists (Zine, coach; David)
 
@@ -259,3 +270,14 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
 - Physiotherapists: same builder, wellness wording only until the MDR question is settled (6 October note).
 - Order: after collection from the result screen (above). The reference movement (animated figure, 6 October) comes
   after the range measure is within 10 % of truth (reference band, behind its flag).
+- Built 6 October (first version, branch claude/generate-architecture-md-inw479, not yet on David's iPhone): "Espace
+  pro" from the choice (`#pro`, `Pro.jsx`): title, for whom, general note; exercises from the counted catalogue (the
+  choice's searchable list), each with sets, reps, rest in seconds and a cue, reordered and removed; drafts kept in
+  localStorage on the coach's phone. Two outputs: a PDF in the report's design (`programme-pdf.js` on `pdf-kit.js`, the
+  report's jsPDF setup), shared like the report; and a link, `#programme=<payload>` (`programme.js`: compact JSON, gzip
+  where the browser has CompressionStream, base64url; every field checked, 8,000 characters at most, unpacking stopped
+  at 16 kB). The client's phone shows the programme (`Programme.jsx`), keeps it, starts the usual filming of an
+  exercise, and shows each set saved from it today beside its target; the set keeps the target (`planned`), and its
+  session report prints "Prévu : 3 × 10" beside the count. Words in `pro-copy.js`, for David's approval
+  (`test/real-phone/swarm/copy-pro.md`). Not built: tempo per exercise, a QR code on the PDF, several days in one
+  programme, the client sending results back other than by the report's PDF.

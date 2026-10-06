@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { topPose } from './lift-scenes';
-import { exerciseName } from './exercise-info';
+import { exerciseName, filmView } from './exercise-info';
 import { Body, mapPose, DPR, LITE } from './entry-scene';
 import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
@@ -40,6 +40,7 @@ import { compareSides } from '../../lib/counting/symmetry';
 import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
 import { track } from '../../lib/events';
+import { collectOn, collectThisSet } from '../../lib/phoneCollect';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The user's own body at the top of the first rep, faint behind the number.
@@ -181,7 +182,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
  * onReplay: opens the replay; absent when the video is not at hand.
  * liveShown: for a set counted live (LiveSession.jsx), the last count the live screen showed, or null.
  */
-export default function Result({ result, lift, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null }) {
+export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
@@ -435,13 +436,20 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual }));
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
       // With the person's yes, this set is kept as a contribution: counts, pose, decoder, phone kind (contribute.js).
       // A build without VITE_CONTRIBUTE keeps none and never asks: contributions are paused (buildFlags.js, WP0.4).
       if (!manual && corrected !== null && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed or unanswered count is no label of the app's read
+      // On David's phone only (the flag set at #collecte, phoneCollect.js): the set's landmark file in the collector's
+      // format, with the count kept here, marked after-app. Video sets only: a live set has no video and is not read
+      // at the collector's settings. Never sent from here; never awaited, so a failure does not touch the save.
+      if (!manual && corrected !== null && videoFile && collectOn()) {
+        collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion() })
+          .catch(e => console.warn('[collecte] this set could not be kept', e));
+      }
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
       // The question on helping, from the number of sets now on the phone; unread, it is not asked.

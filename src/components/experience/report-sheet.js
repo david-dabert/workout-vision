@@ -8,6 +8,7 @@ import { sidesLines } from './sides-line';
 import { liftDefinition } from '../../lib/counting/core';
 import { jointName } from './lift-meta';
 import { referenceBand } from '../../lib/reference-ranges';
+import { PRO } from './pro-copy';
 
 export { setTempo };
 
@@ -131,9 +132,10 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {number} [o.previousSet.count]
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
+ * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -234,6 +236,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     count: String(count),
     word: fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps'),
     lift: liftName,
+    // The coach's target beside the count, for a set filmed from a programme (Espace pro, 6 October): "Prévu : 3 × 10".
+    planned: plannedLine(planned, fr),
     // A set the app refused and the person typed (WP1.6): said so where a correction would be.
     corrected: source === 'manual' && afterRefusal
       ? (fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
@@ -264,6 +268,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   };
 }
 
+// "Prévu : 3 × 10" (pro-copy.js), or '' for a set saved outside a programme or a target the set does not hold whole.
+function plannedLine(planned, fr) {
+  const ok = n => Number.isInteger(n) && n > 0;
+  if (!planned || !ok(planned.sets) || !ok(planned.reps)) return '';
+  return PRO[fr ? 'fr' : 'en'].planned(`${planned.sets}${NBSP}×${NBSP}${planned.reps}`);
+}
+
 const CONTEXT = {
   alone: ['En solo', 'Alone'],
   friend: ['En binôme', 'With a friend'],
@@ -284,10 +295,15 @@ function people({ fr, name, context, partner, level }) {
 
 // An ASCII file name anyone can read in any mail or chat: rapport-seance-camille-martin-2026-09-26.pdf
 const LETTERS = { æ: 'ae', œ: 'oe', ø: 'o', ß: 'ss', ł: 'l', đ: 'd', ð: 'd', þ: 'th', ı: 'i' };
-export function reportFileName({ lang, date, name }) {
+/** A name as a file name's part: ASCII letters and digits, words joined by hyphens, at most about 40 characters. */
+export function fileSlug(name) {
   let slug = clean(name).toLowerCase().replace(/[æœøßłđðþı]/g, c => LETTERS[c])
     .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   if (slug.length > 40) { const cut = slug.slice(0, 41).lastIndexOf('-'); slug = slug.slice(0, cut > 0 ? cut : 40); }
+  return slug;
+}
+export function reportFileName({ lang, date, name }) {
+  const slug = fileSlug(name);
   const pad = n => String(n).padStart(2, '0');
   const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   return [lang === 'fr' ? 'rapport-seance' : 'session-report', slug, day].filter(Boolean).join('-') + '.pdf';
