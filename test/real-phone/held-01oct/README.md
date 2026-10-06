@@ -15,3 +15,8 @@ Likely cause: the batch collector orders videos by file date; iPhone Safari date
 over, and with a large pick the thumbnails that let a pairing be checked did not load. Counted on these
 labels the core scored 0 of 5 exact; that measures the pairing, not the counter.
 Nothing is relabelled here. David decides each pairing; set18 alone is consistent with its label.
+
+6 October: David collected three of these videos again, each under its exercise and count (sets-06oct/, matched by landmarks, mean difference 0.003 of the frame):
+- set19 (held as lateral_raise 7) is a hip thrust, 6 reps: sets-06oct/set01_hip_thrust_6_side_4091c266.
+- batch2/set11 (hip_thrust 7) confirmed: sets-06oct/set02_hip_thrust_7_side_b717b687.
+- batch2/set10 (hip_thrust 7) is the video of sets-29sep/hip_thrust_6_side_cf8c21d7, labelled 6 on 29 September and 7 on 1 and 6 October. Not scored again until David says which count is right (R1, R12).
