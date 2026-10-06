@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ABOUT } from '../about-copy';
+import { ABOUT, DEMOS } from '../about-copy';
 
 // "À propos" (6 October 2026): David's words, approved as written, every sentence on its own line, in both languages.
 vi.mock('../About.css', () => ({}));
@@ -28,7 +28,9 @@ describe('the About page', () => {
       expect(imgs.map(i => i.match(/alt="([^"]*)"/)[1])).toEqual([c.photos.portrait.alt, c.photos.sanSiro.alt, c.photos.dordogne.alt]);
       expect(imgs.map(i => /loading="lazy"/.test(i))).toEqual([false, true, true]);
       expect(imgs.every(i => /width="\d+"/.test(i) && /height="\d+"/.test(i))).toBe(true);
-      expect([...html.matchAll(/<figcaption>([^<]*)<\/figcaption>/g)].map(m => m[1])).toEqual([c.photos.sanSiro.caption, c.photos.dordogne.caption]);
+      expect([...html.matchAll(/<figcaption>([^<]*)<\/figcaption>/g)].map(m => m[1])).toEqual([c.photos.sanSiro.caption, c.photos.dordogne.caption, ...DEMOS.map(d => (lang === 'fr' ? d.fr : d.en).replace(/ /g, ' '))]);
+      // The demonstration sets: muted, looping, inline, with a poster.
+      expect([...html.matchAll(/<video [^>]*>/g)].map(m => m[0]).every(v => /muted/.test(v) && /playsInline|playsinline/.test(v) && /poster=/.test(v))).toBe(true);
     });
   }
   it('keeps the photos in their order in the text: portrait, title, P1, San Siro, P2, Dordogne, P3 to P5', async () => {

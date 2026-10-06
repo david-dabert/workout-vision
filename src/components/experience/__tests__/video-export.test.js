@@ -14,6 +14,7 @@ describe('the exported video: format, name and size (step 4)', () => {
   it('names the file after the exercise and the format', () => {
     expect(exportFileName('bicep_curl', 'video/mp4;codecs=avc1')).toBe('workoutvision-bicep-curl.mp4');
     expect(exportFileName('squat', 'video/webm')).toBe('workoutvision-squat.webm');
+    expect(exportFileName('bicep_curl', 'video/mp4', 10)).toBe('workoutvision-bicep-curl-10.mp4');
   });
   it('keeps the picture\'s proportions, at most 1280 px on the long side, in even pixels', () => {
     expect(exportSize(1920, 1080)).toEqual([1280, 720]);

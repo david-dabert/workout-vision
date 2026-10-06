@@ -101,3 +101,11 @@ export const PHOTOS = {
   sanSiro: { file: 'san-siro-2023.jpg', width: 900, height: 1200 },
   dordogne: { file: 'dordogne-2026.jpg', width: 675, height: 1200 },
 };
+
+// The sets shown on the About page, each the app's own replay exported by David (media/demo/, re-encoded for the web
+// into public/demo/, sound and metadata removed). The count is the app's; David kept it (no correction note on the
+// video). Captions to be confirmed by David on his iPhone (R10, 6 October). One today; up to five.
+export const DEMOS = [
+  { file: 'bicep-curl-5', width: 540, height: 960, app: 5, kept: 5,
+    fr: `Curl biceps · 5${NB}répétitions comptées par l’app, 5 par moi`, en: `Biceps curl · 5${NB}reps counted by the app, 5 by me` },
+];

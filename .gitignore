@@ -84,3 +84,6 @@ __pycache__/
 .journey-sets/
 journey/
 smoke-shots/
+
+# The About page's demonstration clips: re-encoded for the web, sound and metadata removed (6 October).
+!public/demo/*.mp4
