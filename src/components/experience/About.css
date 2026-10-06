@@ -15,3 +15,5 @@
 .wv-experience .about-line { display: block; text-wrap: pretty; }
 .wv-experience .about-line + .about-line { margin-top: var(--s-2); }
 .wv-experience .about-signature { margin: var(--s-6) 0 0; font-family: var(--serif); font-style: italic; font-size: var(--fs-name); line-height: 1.2; color: var(--lamp); }
+
+.wv-experience .about-photo video { display: block; width: 100%; height: auto; border-radius: var(--r-m); background: var(--well); border: 1px solid var(--hair); }
