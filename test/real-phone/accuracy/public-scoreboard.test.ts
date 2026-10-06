@@ -8,7 +8,7 @@ import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { countInWindow, decides, PRESS_DECIDES_NOTHING, publicSets } from './sets';
+import { countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
@@ -19,12 +19,13 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const base = existsSync(from) ? JSON.parse(readFileSync(from, 'utf8')).counts : {};
   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
-  const rows: string[] = [];
+  const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [];
   let exactNow = 0, exactBefore = 0, became = 0, added = 0, kept = 0;
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
     const now = r.refused ? 'refused' : countInWindow(r.reps, s.window), before = base[s.name];
     live[s.name] = now;
+    if (r.doubt && now !== 'refused') doubts.push({ flagged: r.doubt.flagged, err: Math.abs((now as number) - s.label) });
     const key = `${s.dataset} ${s.lift}`, g = groups.get(key) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0 };
     g.n++; if (now === 'refused') g.refused++; else if (off(now, s.label) === 0) g.exact++; else if (off(now, s.label) === 1) g.one++; else if (off(now, s.label) >= 3) g.bad++;
     groups.set(key, g);
@@ -43,7 +44,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     ...[...groups].sort().map(([k, g]) => `| ${k}${decides(k.split(' ')[1]) ? '' : ` ${PRESS_DECIDES_NOTHING}`} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`)];
   const n = sets.length, exact = [...groups.values()].reduce((a, g) => a + g.exact, 0);
   const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${kept} in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}. The ${n - added - kept} bench and overhead press sets are measured and decide nothing (PLAN.md).`;
-  const text = [head, '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
+  const text = [head, doubtLine(doubts), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : [])].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);

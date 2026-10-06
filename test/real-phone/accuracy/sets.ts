@@ -97,3 +97,15 @@ export function publicSets(split: 'build' | 'holdout' = 'build') {
   }
   return { sets, unreadable, missing, notScored };
 }
+
+// The sets the app counted while not seeing the body (counting/doubt.js), against the others: printed by both
+// scoreboards, deciding nothing. err is |count - label|, for counted sets only.
+export function doubtLine(rows: { flagged: boolean; err: number }[]) {
+  const part = (flagged: boolean) => {
+    const g = rows.filter(r => r.flagged === flagged), n = g.length, pct = (k: number) => (n ? Math.round((100 * k) / n) : 0);
+    const exact = g.filter(r => r.err === 0).length, bad = g.filter(r => r.err >= 3).length;
+    return `${n} ${flagged ? 'flagged' : 'not flagged'}: ${exact} exact (${pct(exact)}%), ${bad} off by 3+ (${pct(bad)}%)`;
+  };
+  const bad = rows.filter(r => r.err >= 3);
+  return `Pose doubt (counting/doubt.js, experimental, decides nothing): of ${rows.length} counted sets, ${part(true)}; ${part(false)}. Sets off by 3+ flagged: ${bad.filter(r => r.flagged).length} of ${bad.length}.`;
+}

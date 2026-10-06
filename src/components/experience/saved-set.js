@@ -26,6 +26,8 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     sides: n === count ? sides : null,
     // What the app counted stays apart from what the visitor kept.
     machineResult: { reps: count, confidence: result.confidence ?? null },
+    // Where the body went unseen (counting/doubt.js), numbers only: stored, read by no screen yet.
+    doubt: result.doubt ?? null,
     correctedResult: n !== count ? { reps: n } : null,
     // Rep details measured with step 3c's boundaries; older sets' details are not shown.
     repDetailsVersion: 2,

@@ -9,7 +9,7 @@ import { expect, test } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { decides, labelledSets, PRESS_DECIDES_NOTHING } from './sets';
+import { decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING } from './sets';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
 
@@ -19,7 +19,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // In CI the counts compared with are the base branch's (SCOREBOARD_BASE), so a change cannot lower the bar by
   // editing the baseline it is compared with (audit of 3 October).
   const base = JSON.parse(readFileSync(process.env.SCOREBOARD_BASE || BASELINE, 'utf8'));
-  const rows: string[] = [], live: Record<string, number | string> = {};
+  const rows: string[] = [], live: Record<string, number | string> = {}, doubts: { flagged: boolean; err: number }[] = [];
   // The gate compares the sets both runs hold: a set added since cannot hide a regression (review, 30 September).
   let exactNow = 0, exactBefore = 0, catastrophic = 0, known = 0, becameRefused = 0, n = 0, added = 0, press = 0;
   const { sets, unreadable } = labelledSets();
@@ -27,6 +27,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     const r = summarizeCount(s.wl, s.ts, s.lift);
     const now = r.refused ? 'refused' : r.count, before = base.counts[s.name];
     live[s.name] = now; n++;
+    if (r.doubt) doubts.push({ flagged: r.doubt.flagged, err: Math.abs(r.count - s.label) });
     const v = verdict(now, s.label), vb = before === undefined ? 'new' : verdict(before, s.label);
     // A press set is shown like any other and moves no tally of the gate (PLAN.md: "measured but decide nothing").
     const mark = decides(s.lift) ? '' : `  ${PRESS_DECIDES_NOTHING}`;
@@ -52,7 +53,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of unreadable) rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
   const kept = n - added - press;
   const head = `Scoreboard ${new Date().toISOString().slice(0, 10)}: of the ${kept} sets in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${catastrophic} newly catastrophic, ${known} known catastrophic (shown, gated on growth), ${becameRefused} newly refused${added ? `; ${added} set${added > 1 ? 's' : ''} new since` : ''}. The ${press} bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.`;
-  const text = [head, ...rows].join('\n') + '\n';
+  const text = [head, doubtLine(doubts), ...rows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
