@@ -18,7 +18,7 @@
  * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
  * valid angle; the side never alternates frame by frame. The alternating curl, and every guide
  * exercise whose pattern counts both sides (liftDefinition), count both sides and join them
- * (countBothSides). An either-side exercise (push-up, pull-up, front raise) is counted on each side and keeps
+ * (countBothSides). An either-side exercise (push-up, pull-up, a one-limb exercise) is counted on each side and keeps
  * the side with more reps among those seen in at least half the samples; the lunges (`together`) join both knees
  * when they bend together (TOGETHER_MIN_CORRELATION) and are counted as either-side when they do not.
  *
@@ -104,6 +104,10 @@ export interface LiftDefinition {
    * side is kept only when it is itself seen on at least half the samples (countReps). Public build half's lunges,
    * 3 October: 44 to 54 exact of 156, 31 to 8 off by 3 or more, none newly off by 3 (TRIED.md). Experimental.
    * The lunges and the front raise (DETECTION) have since moved to `together`; the push-up and the pull-up keep this.
+   * Since 6 October 2026 (audit, action 6) also the exercises done one limb at a time (one-arm rows, the
+   * concentration curl, pistol and skater squats, the single-leg Romanian deadlift, standing and side-lying hip
+   * abductions, donkey kicks; guide-families.json): the idle limb, held still, can be the better seen and read 0
+   * (one-limb.test.ts). Source: UNSOURCED. Status: experimental; no labelled set holds these exercises.
    */
   eitherSide?: boolean;
   /**
@@ -205,9 +209,28 @@ const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRep
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
 };
 
-/** The definition an exercise is counted by: its LIFTS entry, else its guide pattern; null if it has none. */
+// Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
+// the incline, the knees or a load changed. They had kept the core's default rule (one side, the better seen, and
+// the default thresholds), which the public push-up and pull-up sets rejected for their parents (eitherSide and
+// DETECTION above, TRIED.md, 3 October). Each takes its parent's whole definition (side rule and detection
+// settings); its guide pattern carries the parent's side rule too, so the two never disagree (close-variants.test.ts).
+// Left out: the pike and feet-elevated pike push-ups (the shoulder, not a level body, carries the load), the wall
+// push-up (a near-upright body and a short elbow range), the shoulder-tap push-up (one hand leaves the floor on
+// every rep) and the archer push-up (one arm loaded at a time, counted on both sides). Source: UNSOURCED (the
+// parents' settings were measured on Countix push-ups and pull-ups only; no labelled set holds these keys).
+// Status: experimental.
+export const COUNT_AS: Readonly<Record<string, string>> = Object.freeze({
+  knee_push_up: 'push_up', incline_push_up: 'push_up', decline_push_up: 'push_up',
+  wide_push_up: 'push_up', diamond_push_up: 'push_up', weighted_push_up: 'push_up',
+  assisted_pull_up: 'pull_up', weighted_pull_up: 'pull_up', neutral_grip_pull_up: 'pull_up',
+  commando_pull_up: 'pull_up', l_sit_pull_up: 'pull_up', towel_pull_up: 'pull_up',
+  chin_up: 'pull_up', assisted_chin_up: 'pull_up', weighted_chin_up: 'pull_up',
+});
+
+/** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS), else its guide pattern; null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
+  if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
   if (!Object.hasOwn(PATTERNS, key)) return null;
   const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
   return {
