@@ -13,13 +13,13 @@ describe('lift tiers', () => {
     for (const lift of APPROVED_LIFTS) expect(liftDefinition(lift), lift).toBeTruthy();
   });
   // 3 October: the tiers follow David's labelled sets (test/real-phone/accuracy/tiers.test.ts, tiers.txt).
-  it('puts the six lifts whose sets all count exactly in Beta, and three lifts in Experimental', () => {
-    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'beta').sort()).toEqual(['bicep_curl', 'hip_thrust', 'lat_pulldown', 'leg_press', 'romanian_deadlift', 'squat']);
-    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'experimental').sort()).toEqual(['bench_press', 'lateral_raise', 'overhead_press']);
+  it('puts the five lifts whose sets all count exactly in Beta, and four lifts in Experimental', () => {
+    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'beta').sort()).toEqual(['bicep_curl', 'lat_pulldown', 'leg_press', 'romanian_deadlift', 'squat']);
+    expect(Object.keys(TIERS).filter(l => TIERS[l] === 'experimental').sort()).toEqual(['bench_press', 'hip_thrust', 'lateral_raise', 'overhead_press']);
   });
   // David, 3 October: the Beta lifts are pinned on top, derived from TIERS.
   it('orders the cards Beta first, each group in the order of LIFTS', () => {
-    expect(CARD_ORDER).toEqual(['bicep_curl', 'lat_pulldown', 'squat', 'hip_thrust', 'romanian_deadlift', 'leg_press', 'lateral_raise', 'bench_press', 'overhead_press']);
+    expect(CARD_ORDER).toEqual(['bicep_curl', 'lat_pulldown', 'squat', 'romanian_deadlift', 'leg_press', 'lateral_raise', 'bench_press', 'hip_thrust', 'overhead_press']);
     expect(betaFirst(['a', 'b', 'c', 'd'], k => (k === 'c' || k === 'a' ? 'beta' : 'experimental'))).toEqual(['a', 'c', 'b', 'd']);
   });
   // The nine lifts with a tier keep their card; the other offered exercises are listed under the cards (step 2).

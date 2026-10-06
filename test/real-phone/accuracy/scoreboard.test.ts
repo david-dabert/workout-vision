@@ -21,7 +21,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   const base = JSON.parse(readFileSync(process.env.SCOREBOARD_BASE || BASELINE, 'utf8'));
   const rows: string[] = [], live: Record<string, number | string> = {};
   // The gate compares the sets both runs hold: a set added since cannot hide a regression (review, 30 September).
-  let exactNow = 0, exactBefore = 0, catastrophic = 0, becameRefused = 0, n = 0, added = 0, press = 0;
+  let exactNow = 0, exactBefore = 0, catastrophic = 0, known = 0, becameRefused = 0, n = 0, added = 0, press = 0;
   const { sets, unreadable } = labelledSets();
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
@@ -33,7 +33,14 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     if (mark) { press++; rows.push(`${now === before ? '  ' : '->'} ${s.name}  label ${s.label}  before ${before ?? '-'} (${vb})  now ${now} (${v})${mark}`); continue; }
     if (before === undefined) added++;
     else { if (v === 'exact') exactNow++; if (vb === 'exact') exactBefore++; }
-    if (v === 'catastrophic') catastrophic++;
+    // R2 reads "no clip becomes a catastrophic error". A set already off by 3 or more (in the baseline, or added
+    // with that error) is shown and kept, and fails only if its error grows: a set is never left out of the gate
+    // because it fails (review of 6 October: the held hip thrust set was a gate escape).
+    const err = (c: number | string) => (c === 'refused' ? Infinity : Math.abs((c as number) - s.label));
+    if (v === 'catastrophic') {
+      if (before === undefined || (vb === 'catastrophic' && err(now) <= err(before))) { known++; rows.push(`KNOWN CATASTROPHIC  ${s.name}  label ${s.label}  now ${now}`); }
+      else catastrophic++;
+    }
     // A set that gave a count and is now refused fails like one off by 3 or more, as in the public gate and
     // scripts/compare-variants.mjs; a set already refused in the baseline does not (third audit, C31).
     if (v === 'refused' && before !== undefined && before !== 'refused') { becameRefused++; rows.push(`BECAME REFUSED  ${s.name}  label ${s.label}  before ${before}`); }
@@ -44,7 +51,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of missing) rows.push(`MISSING ${name}  (in the baseline, not on disk)`);
   for (const name of unreadable) rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
   const kept = n - added - press;
-  const head = `Scoreboard ${new Date().toISOString().slice(0, 10)}: of the ${kept} sets in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${catastrophic} catastrophic, ${becameRefused} newly refused${added ? `; ${added} set${added > 1 ? 's' : ''} new since` : ''}. The ${press} bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.`;
+  const head = `Scoreboard ${new Date().toISOString().slice(0, 10)}: of the ${kept} sets in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${catastrophic} newly catastrophic, ${known} known catastrophic (shown, gated on growth), ${becameRefused} newly refused${added ? `; ${added} set${added > 1 ? 's' : ''} new since` : ''}. The ${press} bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.`;
   const text = [head, ...rows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);

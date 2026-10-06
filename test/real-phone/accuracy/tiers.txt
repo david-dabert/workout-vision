@@ -13,7 +13,8 @@ Lift tiers against the evidence (test/real-phone/accuracy/tiers.test.ts; rule: P
    bench_press        experimental  rule experimental  sets 2  exact 0  refused 1  press: measured, decides nothing (PLAN.md)
       sets-29sep/bench_press_7_side_24cc4f0b.json.gz  label 7  count 5  (not exact)
       landmarks/bench_press_7_angle_mufhcy60.json.gz  label 7  count refused  (not exact)
-   hip_thrust         beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
+   hip_thrust         experimental  rule experimental  sets 2  exact 1  refused 0  1 of David's sets not exact
+      sets-05oct/hip_thrust_13_side_be96e7c5.json.gz  label 13  count 7  (not exact)
       sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  label 6  count 6
    romanian_deadlift  beta          rule beta          sets 1  exact 1  refused 0  every set of David's counts exactly
       sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  label 8  count 8
