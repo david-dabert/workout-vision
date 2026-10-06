@@ -7,6 +7,7 @@ import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measure
 import { sidesLines } from './sides-line';
 import { liftDefinition } from '../../lib/counting/core';
 import { jointName } from './lift-meta';
+import { referenceBand } from '../../lib/reference-ranges';
 
 export { setTempo };
 
@@ -250,7 +251,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     summary,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
-    wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr) } : null,
+    wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr), reference: referenceBand(lift, { joint: liftDefinition(lift)?.joint }) } : null,
     // The plain-words key to the table and the summary, wherever they are shown.
     guide: shown && rows.length > 0 ? measureGuide(fr) : null,
     partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',

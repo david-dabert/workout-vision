@@ -179,7 +179,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.stats.length > 0 && <div className="sh-stats" data-testid="sh-stats">
           {sheet.stats.map(([label, value]) => <span key={label}><em>{label}</em><b>{value}</b></span>)}
         </div>}
-        {sheet.wave && <div className="sh-wave" data-testid="sh-wave"><RepWave angles={sheet.wave.a} timestamps={sheet.wave.t} reps={sheet.wave.reps} rest={sheet.wave.rest} first={sheet.wave.first} sel={-1} shown={sheet.wave.reps.length} fr={fr} jointWord={sheet.wave.jointWord} onSelect={() => {}} /></div>}
+        {sheet.wave && <div className="sh-wave" data-testid="sh-wave"><RepWave angles={sheet.wave.a} timestamps={sheet.wave.t} reps={sheet.wave.reps} rest={sheet.wave.rest} first={sheet.wave.first} sel={-1} shown={sheet.wave.reps.length} fr={fr} jointWord={sheet.wave.jointWord} onSelect={() => {}} reference={sheet.wave.reference} /></div>}
         {sheet.rows.length > 0 && <table className="sh-table">
           <thead><tr>{sheet.columns.map(c => <th key={c} scope="col">{c}</th>)}</tr></thead>
           <tbody>{sheet.rows.map(row => <tr key={row[0]}>{row.map((v, k) => <td key={k}>{v}</td>)}</tr>)}</tbody>

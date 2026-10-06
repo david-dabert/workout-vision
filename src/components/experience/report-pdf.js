@@ -246,7 +246,10 @@ export function reportPdf(sheet) {
     doc.setDrawColor(COLOR.waveBack); doc.line(bx, mid, bx + 14, mid);
     write(keyBack, bx + 19, y, 'sans', 11, 1.5, COLOR.ash);
     y += 16.5 + 8;
-    const geo = waveGeometry({ angles: sheet.wave.a, timestamps: sheet.wave.t, rest: sheet.wave.rest, width: COLUMN, height: H, pad: 2 });
+    const ref = sheet.wave.reference;
+    const geo = waveGeometry({ angles: sheet.wave.a, timestamps: sheet.wave.t, rest: sheet.wave.rest, width: COLUMN, height: H, pad: 2, include: ref ? [ref.lo, ref.hi] : null });
+    // The reference band (reference-ranges.js), faint, behind the wave; unlabelled, as on the screen.
+    if (geo && ref) { const a = geo.y(ref.lo), b = geo.y(ref.hi); doc.setFillColor(COLOR.rowRule); doc.rect(MARGIN, y + Math.min(a, b), COLUMN, Math.abs(b - a), 'F'); }
     const draw = (strokes, color, w) => {
       doc.setDrawColor(color); doc.setLineWidth(w);
       for (const s of strokes) for (let k = 1; k < s.length; k++) doc.line(MARGIN + s[k - 1][0], y + s[k - 1][1], MARGIN + s[k][0], y + s[k][1]);

@@ -21,12 +21,14 @@ export function waveAngles(result) {
 }
 
 /** Geometry of the wave in a width x height box (viewBox units). null without two measured samples. */
-export function waveGeometry({ angles, timestamps, rest = 'low', width = 320, height = 72, pad = 4 }) {
+export function waveGeometry({ angles, timestamps, rest = 'low', width = 320, height = 72, pad = 4, include = null }) {
   const n = Math.min(angles?.length || 0, timestamps?.length || 0);
   const vals = [];
   for (let i = 0; i < n; i++) if (Number.isFinite(angles[i])) vals.push(angles[i]);
   if (vals.length < 2) return null;
-  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  // include: angles the scale must also hold (a reference band, reference-ranges.js), or null for the set alone.
+  const extra = include ? include.filter(Number.isFinite) : [];
+  const lo = Math.min(...vals, ...extra), hi = Math.max(...vals, ...extra), span = hi - lo || 1;
   const t0 = timestamps[0], t1 = timestamps[n - 1], dur = t1 - t0 || 1;
   const x = t => pad + ((t - t0) / dur) * (width - 2 * pad);
   // Work up: a lift resting low rises with the angle; one resting high rises as the angle closes.
