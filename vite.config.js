@@ -5,6 +5,9 @@ import fs from 'fs'
 import path from 'path'
 import { resolve } from 'path'
 
+// npm run dev:lan: the dev server on the local network, with the stricter file list below.
+const LAN = process.env.WV_LAN === '1'
+
 const certDir = path.resolve(__dirname, '.certs')
 const httpsConfig = fs.existsSync(path.join(certDir, 'key.pem'))
   ? { key: fs.readFileSync(path.join(certDir, 'key.pem')), cert: fs.readFileSync(path.join(certDir, 'cert.pem')) }
@@ -52,8 +55,15 @@ export default defineConfig({
   plugins: [react(), copyModelsPlugin(), eventsCspPlugin()],
   base: process.env.VITE_BASE || '/workout-vision/',
   server: {
-    host: true,
+    // This computer only. npm run dev:lan (WV_LAN=1) serves the network too, for a phone on the same Wi-Fi
+    // (audit of 6 October, action 18).
+    host: LAN ? true : 'localhost',
     https: httpsConfig,
+    // Vite's own denials always. On the network, also the labelled sets and their landmarks (test/), the benchmark
+    // data and any video: anyone on the Wi-Fi could otherwise fetch them. On this computer they stay served, since
+    // the decoding harness (test/real-phone/harness.html, e2e/decode-clips.spec.js) loads David's clips through the
+    // dev server. A bare vite --host bypasses the network list: use npm run dev:lan.
+    fs: { deny: ['.env', '.env.*', '*.{crt,pem}', '**/.git/**', ...(LAN ? ['**/test/**', '**/benchmark/**', '**/*.{mp4,MP4,mov,MOV,m4v,M4V,webm,avi,mkv}'] : [])] },
     // Agent worktrees (.claude/worktrees, tens of thousands of files) and the stored datasets are never served
     // code: watching them exhausted the system's file watchers and stopped the dev server (4 October).
     watch: { ignored: ['**/.claude/**', '**/test/real-phone/public/**', '**/dist*/**'] },

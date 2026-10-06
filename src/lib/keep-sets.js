@@ -12,6 +12,11 @@ import { restoreWorkout } from './storage';
 
 export const BACKUP_KIND = 'workout-vision-sets';
 export const BACKUP_VERSION = 1;
+// The largest file a restore reads. A set as the result screen saves it, with 20 reps and a full wave, takes about
+// 15 kB in the backup (measured on 6 October with backupFile's indent), so 100 MB holds over 6,000 sets; a larger
+// file, such as a video picked by mistake, is refused before it is read into memory (audit of 6 October, action 18).
+// Status: convention (UNSOURCED value).
+export const MAX_BACKUP_BYTES = 100 * 1024 * 1024;
 
 /** Asks once that the app's storage be kept; resolves to whether it is (false where the browser cannot say). */
 export async function askToKeep() {

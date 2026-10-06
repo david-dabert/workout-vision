@@ -289,6 +289,8 @@ export interface WorkoutRecord {
   wave?: { t: number[]; a: (number | null)[] } | null;
   /** A refused set whose count the person typed by hand (WP1.6; saved-set.js). */
   afterRefusal?: boolean;
+  /** Where the body went unseen during the set (counting/doubt.js), numbers only; read by no screen yet. */
+  doubt?: unknown;
 }
 
 export interface RepCounterDiagnostics {

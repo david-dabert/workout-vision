@@ -57,7 +57,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the modules and data flow.
 
 ```bash
 npm ci
-npm run dev        # dev server
+npm run dev        # dev server, this computer only
+npm run dev:lan    # dev server on the local network, for a phone on the same Wi-Fi (test/, benchmark/ and videos not served)
 npm test           # unit tests (Vitest)
 npm run lint       # oxlint
 npm run typecheck  # tsc --noEmit

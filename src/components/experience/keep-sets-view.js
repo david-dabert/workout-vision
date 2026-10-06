@@ -1,6 +1,6 @@
 // The words and the sequence of a restore from a backup file (KeepSets.jsx), kept apart from the component so
 // tests can run them.
-import { readBackup, restoreBackup } from '../../lib/keep-sets';
+import { MAX_BACKUP_BYTES, readBackup, restoreBackup } from '../../lib/keep-sets';
 /** What a restore did, in the person's words; { unlisted } when the sets are written but could not be listed. */
 export function restoredLine({ added = 0, present = 0, skipped = 0, failed = 0, unlisted = false }, fr) {
   if (unlisted) return fr ? 'Rouvrez vos séries pour les voir.' : 'Open your sets again to see them.';
@@ -16,16 +16,20 @@ export function restoredLine({ added = 0, present = 0, skipped = 0, failed = 0, 
  * could be read. The sets are written before the list is read, so a failed read does not report the restore
  * as failed (review of 2 October). restore and list are the storage's own unless a test gives others.
  */
-export async function restoreFlow(text, fr, { restore = restoreBackup, list }) {
+export async function restoreFlow(text, fr, { restore = restoreBackup, list, size = 0 }) {
+  const notBackup = fr ? 'Ce fichier n’est pas une sauvegarde de vos séries.' : 'This file is not a backup of your sets.';
+  // A file larger than any backup the app writes is refused unread (keep-sets.js, MAX_BACKUP_BYTES); text may then be
+  // a function that reads the file, so it is never called.
+  if (size > MAX_BACKUP_BYTES) return { note: notBackup };
   // The file's text may still be on its way (File.text()): a file the phone cannot read, such as an iCloud file
   // not downloaded, is said, not left silent (audit of 2 October).
   let read;
-  try { read = await text; }
+  try { read = await (typeof text === 'function' ? text() : text); }
   catch { return { note: fr ? 'Ce fichier n’a pas pu être lu. S’il est dans iCloud, téléchargez-le, puis réessayez.' : 'This file could not be read. If it is in iCloud, download it, then try again.' }; }
   const r = readBackup(read);
   if (r.error) return { note: r.error === 'newer-version'
     ? (fr ? 'Cette sauvegarde vient d’une version plus récente de l’app. Mettez l’app à jour, puis réessayez.' : 'This backup comes from a newer version of the app. Update the app, then try again.')
-    : (fr ? 'Ce fichier n’est pas une sauvegarde de vos séries.' : 'This file is not a backup of your sets.') };
+    : notBackup };
   let done;
   try { done = await restore(r.sets); }
   catch { return { note: fr ? 'La sauvegarde n’a pas pu être restaurée. Réessayez.' : 'The backup could not be restored. Try again.' }; }
