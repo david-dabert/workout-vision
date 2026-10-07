@@ -53,6 +53,11 @@ export function eventsOrigin(url) {
 
 export default defineConfig({
   plugins: [react(), copyModelsPlugin(), eventsCspPlugin()],
+  // jsPDF's optional modules, used only by doc.html() and addSvgAsImage(), which the app never calls: stubbed
+  // (src/lib/jspdf-optional-stub.js, C9 of the design review of 7 October 2026).
+  resolve: {
+    alias: Object.fromEntries(['html2canvas', 'canvg', 'dompurify'].map(m => [m, resolve(__dirname, 'src/lib/jspdf-optional-stub.js')])),
+  },
   base: process.env.VITE_BASE || '/workout-vision/',
   server: {
     // This computer only. npm run dev:lan (WV_LAN=1) serves the network too, for a phone on the same Wi-Fi

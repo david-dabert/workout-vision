@@ -74,9 +74,10 @@
 .wv-experience .grain {
   position: fixed; inset: -60px; z-index: 8; pointer-events: none; opacity: 0.07;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px; animation: grain 0.9s steps(5) infinite;
+  background-size: 200px 200px;
 }
-@keyframes grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-18px, 12px); } 50% { transform: translate(14px, -16px); } 75% { transform: translate(-10px, -8px); } 100% { transform: translate(0, 0); } }
+/* The grain stands still (C9, design review of 7 October 2026): the same texture at the same 0.07, without the
+   animation that repainted a full-screen layer five times a second. Status: convention (no specific source). */
 .wv-experience .screen {
   position: fixed; inset: 0; z-index: 2; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) var(--gut) calc(env(safe-area-inset-bottom, 0px) + 30px);
@@ -224,7 +225,7 @@ html, body { background: #080706; color-scheme: dark; }
 .wv-grain {
   position: fixed; inset: -60px; z-index: 200; pointer-events: none; opacity: 0.07;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px; animation: grain 0.9s steps(5) infinite;
+  background-size: 200px 200px;
 }
 /* Every screen after the entry fades in; its blocks rise one after another. */
 .wv-experience .screen.is-active:not(.entry) { animation: screen-in var(--d-screen) var(--ease) 0.05s backwards; }
@@ -274,7 +275,6 @@ html, body { background: #080706; color-scheme: dark; }
 @media (prefers-reduced-motion: reduce) {
   .wv-experience [data-reveal] { opacity: 1; translate: none; }
   .wv-experience:has(.report-screen) { animation: none; }
-  .wv-grain { animation: none; }
 }
 
 /* The large title condenses into the topbar as it scrolls under it (topbar.js): the bar sticks, turns to
