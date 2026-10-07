@@ -70,3 +70,5 @@ Rules, steps and current state: [PLAN.md](PLAN.md).
 ## License
 
 MIT: see [LICENSE](LICENSE). The bundled fonts and the MediaPipe pose model keep their own licences.
+
+Public benchmark data. Only landmark files derived through the app's own pose path are kept (test/real-phone/public/); no video or frame is in the repository or redistributed. RepCount-A (Hu et al., TransRAC, CVPR 2022), read from its Hugging Face mirror lmms-lab-eval/repcounta-lance, licence "other": the videos are YouTube's and the counts and rep marks TransRAC's; used as a research benchmark only (test/real-phone/public/repcount/, scripts/public/fetch-repcount-lance.sh), it decides no gate. Countix and MM-Fit: see scripts/public/countix.mjs and test/real-phone/public/mmfit/ATTRIBUTION.txt.
