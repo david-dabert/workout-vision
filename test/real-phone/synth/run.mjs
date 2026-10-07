@@ -16,6 +16,8 @@ const BENCH = process.env.BENCH_POSE ? readFileSync(process.env.BENCH_POSE) : nu
 const LOST = process.env.LOST_POSE ? readFileSync(process.env.LOST_POSE) : null;
 // SYNTH_LOCK=1: the pose path with the lifter lock on (synth.js, P.lock; src/lib/lifterLock.js).
 const LOCK = !!process.env.SYNTH_LOCK;
+// SYNTH_GATE=1: the pose path with the continuity gate on (synth.js, P.gate; src/lib/jumpGate.js).
+const GATE = !!process.env.SYNTH_GATE;
 if (!OUT || !MODEL) throw new Error('SYNTH_OUT and SYNTH_MODEL are required');
 mkdirSync(OUT, { recursive: true });
 const sets = JSON.parse(readFileSync(process.argv[2], 'utf8'));
@@ -33,7 +35,7 @@ try {
     await page.route('**/synth-model.glb', r => r.fulfill({ body: glb, contentType: 'model/gltf-binary' }));
     if (BENCH) await page.route('**/bench-pose.task', r => r.fulfill({ body: BENCH, contentType: 'application/octet-stream' }));
     if (LOST) await page.route('**/lost-pose.task', r => r.fulfill({ body: LOST, contentType: 'application/octet-stream' }));
-    await page.addInitScript(x => { window.SYNTH = x; }, { ...p, ...(BENCH ? { benchPose: true } : {}), ...(LOST ? { lostPose: true } : {}), ...(LOCK ? { lock: true } : {}) });
+    await page.addInitScript(x => { window.SYNTH = x; }, { ...p, ...(BENCH ? { benchPose: true } : {}), ...(LOST ? { lostPose: true } : {}), ...(LOCK ? { lock: true } : {}), ...(GATE ? { gate: true } : {}) });
     const t0 = Date.now();
     await page.goto(URL, { timeout: 300000 }); // the dev server's first load pre-bundles three.js
     await page.waitForFunction(() => window.RESULT, null, { timeout: 900000 });

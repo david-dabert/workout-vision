@@ -34,6 +34,7 @@ import * as mpVision from '@mediapipe/tasks-vision';
 import { isTheModel, MODEL_SHA256 } from './model-hash';
 import { cropAround, mapFromCrop, keepLost, fillBackward, CROP_PX, CROP_SEED_MS, BACK_PASS, BACK_KEEP_MS, BACK_MAX_FRAMES } from './poseCrop';
 import { LIFTER_LOCK, LIFTER_POSES, pickLifter, nextReference } from './lifterLock';
+import { JUMP_GATE, newGate, holdsBack, accept as gateAccept, heldBack } from './jumpGate';
 function getMediaPipeVision() {
   return mpVision;
 }
@@ -340,6 +341,8 @@ export function disposeAllLandmarkers() {
   _cropSeed = null;
   _lifterRef = null;
   _dropLost();
+  _gate = newGate();
+  _gatedFrames = 0;
 }
 
 // isAnatomicallyImplausible — delegated to poseGeometry.js
@@ -369,6 +372,13 @@ let _cropCanvas = null;
 // Lifter lock (lifterLock.js, LIFTER_LOCK): the lifter's last torso { x, y, len, t, width, height } in frame pixels.
 // Test benches turn it on (globalThis.__WV_BENCH_LOCK__) or off (globalThis.__WV_BENCH_NO_LOCK__); the app sets neither.
 let _lifterRef = null;
+// Continuity gate (jumpGate.js, JUMP_GATE): the last accepted pose's torso and any jump under way. Test benches turn it
+// on (globalThis.__WV_BENCH_GATE__) or off (globalThis.__WV_BENCH_NO_GATE__); the app sets neither.
+let _gate = newGate();
+// Frames whose pose the gate held back since the last reset (read by the benches).
+let _gatedFrames = 0;
+export const gatedFrames = () => _gatedFrames;
+function _gateOn() { return (JUMP_GATE || globalThis.__WV_BENCH_GATE__ === true) && !globalThis.__WV_BENCH_NO_GATE__; }
 function _lockOn() { return (LIFTER_LOCK || globalThis.__WV_BENCH_LOCK__ === true) && !globalThis.__WV_BENCH_NO_LOCK__; }
 // A result with several poses reduced to the lifter's (pickLifter), so every caller reads landmarks[0] as before; a
 // result with one pose is returned as it is. Updates the reference from the pose kept.
@@ -418,6 +428,8 @@ function _detectInCrop(landmarker, source, now) {
   if (width !== _cropSeed.width || height !== _cropSeed.height || now < _cropSeed.t || now - _cropSeed.t > CROP_SEED_MS) return null;
   const found = _readCrop(landmarker, source, _cropSeed, width, height);
   if (!found) return null;
+  // Continuity gate: a pose the crop finds far from the lifter is not accepted either.
+  if (_gateOn() && holdsBack(_gate, found.landmarks, width, height, now)) return null;
   _seedCrop(found.landmarks, source, now);
   if (_lockOn()) _lifterRef = nextReference(_lifterRef, found.landmarks, width, height, now);
   return { landmarks: [found.landmarks], worldLandmarks: found.worldLandmarks ? [found.worldLandmarks] : [], source: 'crop' };
@@ -500,7 +512,21 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
       const now = timestamp != null ? timestamp : performance.now();
       if (_lockOn()) result = _keepLifter(result, source, now);
       const backOn = backfill && _backOn();
+      const gateOn = _gateOn();
+      let gated = false;
+      // Continuity gate (jumpGate.js): a pose that jumped far from the last accepted one is held back, and the frame
+      // is read as lost, so the crop retry below looks again around the lifter.
+      if (gateOn && result?.landmarks?.length) {
+        const { width, height } = _sourceSize(source);
+        if (holdsBack(_gate, result.landmarks[0], width, height, now)) {
+          gated = true;
+          _gatedFrames++;
+          _gate = heldBack(_gate, now);
+          result = { ...result, landmarks: [], worldLandmarks: [] };
+        }
+      }
       if (result?.landmarks?.length) {
+        if (gateOn) { const { width, height } = _sourceSize(source); _gate = gateAccept(_gate, result.landmarks[0], width, height, now); }
         _seedCrop(result.landmarks[0], source, now);
         // Backward pass: the lost frames just before this pose, read on crops seeded from it (raw landmarks, before
         // the image smoothing). It touches neither the forward seed nor the smoothing.
@@ -509,11 +535,14 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
         // No pose on the whole frame: a second look on a crop around the last accepted pose (poseCrop.js). The
         // crop's pose skips the image smoothing, so every frame the whole-frame pass reads is unchanged.
         const cropped = _detectInCrop(landmarker, source, now);
+        if (cropped && gateOn) { const { width, height } = _sourceSize(source); _gate = gateAccept(_gate, cropped.landmarks[0], width, height, now); }
+        if (cropped && gated) cropped.gated = true;
         if (cropped) {
           if (backOn) { const b = _fillLost(landmarker, source, cropped.landmarks[0], now); if (b) cropped.backfill = b; }
           return cropped;
         }
         if (backOn) _keepLostFrame(source, now);
+        if (gated) result.gated = true;
       }
     } else {
       const ts = timestamp != null ? (timestamp + _imageTimestampOffset) : performance.now();
@@ -657,6 +686,8 @@ export function resetKalmanFilters() {
   _cropSeed = null;
   _lifterRef = null;
   _dropLost();
+  _gate = newGate();
+  _gatedFrames = 0;
   // Bump timestamp offset so next video's deterministic timestamps
   // continue above the previous peak (MediaPipe requires monotonic increase).
   _imageTimestampOffset = _imageMaxTimestamp + 1000;

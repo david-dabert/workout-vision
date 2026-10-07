@@ -90,6 +90,10 @@ export class PartialReadError extends Error {
 // result and the replay are on screen; a fresh worker per analysis keeps every analysis's landmarks as they were.
 // WORKER_CLOSE_MS: convention, UNSOURCED (the model closes in a few milliseconds when the worker is idle).
 const WORKER_CLOSE_MS = 1000;
+// Samples sent to the pose worker and not yet placed, at most (analyzeCoreVideo, pipelining): 2 lets the next sample be
+// decoded and read while the worker reads the one before; more would hold more pictures without reading faster, since
+// the worker reads one at a time. Measured 7 October (TRIED.md). Source: UNSOURCED. Status: experimental.
+const IN_FLIGHT = 2;
 let previousWorkerGone = Promise.resolve();
 
 export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject } = {}) {
@@ -157,17 +161,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
     // The sample each worker timestamp was sent for, so the backward pass's results land on their own samples.
     const sampleAt = new Map();
-    // `path` and `inject` come from the check page only (check-main.js): the app passes neither.
-    const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp, read) => {
-      signal?.throwIfAborted();
-      // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
-      // (frameExtractor.js): only the last pass is kept, so a short first pass can never make up for samples the
-      // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
-      if (index === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; sampleAt.clear(); }
-      // The pixels the extractor already read for its frozen-read check (one readback per sample, not two).
-      const pixels = (read ?? canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)).data.buffer;
-      const sent = index * 1000 / TARGET_FPS;
-      const result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: sent }, [pixels]);
+    // A sample's answer from the worker, put in place in the order the samples were sent (the worker answers in that
+    // order, and each step below waits for the one before it).
+    const place = (result, sent, timestamp, width, height) => {
       // Backward pass (poseCrop.js): earlier samples without a pose that the worker has now read; a sample that has a
       // pose is never replaced.
       for (const b of result.back || []) {
@@ -178,8 +174,38 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
-      onLandmarks(result.image, canvas.width, canvas.height);
+      onLandmarks(result.image, width, height);
+    };
+    // Pipelining (speed investigation, 7 October): the next sample is decoded, drawn and read on this thread while the
+    // worker runs the pose model on the one before, instead of each waiting for the other. At most IN_FLIGHT samples
+    // are sent and not yet placed; the worker reads them one after the other in the order sent, so every landmark is
+    // the one the unpipelined read gave (SHA-256 of timestamps and landmarks, TRIED.md 7 October).
+    let placed = Promise.resolve();
+    const inFlight = [];
+    const drain = async () => { while (inFlight.length) await inFlight.shift(); };
+    // `path` and `inject` come from the check page only (check-main.js): the app passes neither.
+    const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp, read) => {
+      signal?.throwIfAborted();
+      // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
+      // (frameExtractor.js): only the last pass is kept, so a short first pass can never make up for samples the
+      // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
+      if (index === 0) {
+        await drain();
+        if (timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; sampleAt.clear(); }
+      }
+      // The pixels the extractor already read for its frozen-read check (one readback per sample, not two).
+      const pixels = (read ?? canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)).data.buffer;
+      const sent = index * 1000 / TARGET_FPS;
+      const { width, height } = canvas;
+      const answer = send({ pixels, width, height, timestamp: sent }, [pixels]);
+      placed = placed.then(() => answer).then(result => place(result, sent, timestamp, width, height));
+      // Handled here so a sample left unplaced by an earlier failure or a cancel is not reported as unhandled; the
+      // failure itself reaches the caller through drain().
+      placed.catch(() => {});
+      inFlight.push(placed);
+      if (inFlight.length >= IN_FLIGHT) await inFlight.shift();
     }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}), ...(inject ? { inject } : {}) });
+    await drain();
     signal?.throwIfAborted();
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
     // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).

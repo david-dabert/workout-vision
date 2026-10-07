@@ -13,7 +13,7 @@
 
 import { extractFramesStreaming } from '../../src/lib/frameExtractor.js';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from '../../src/lib/extractionConfig.js';
-import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, resetKalmanFilters, selectSubjectPose } from '../../src/lib/poseAnalysis.js';
+import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, resetKalmanFilters, selectSubjectPose, gatedFrames } from '../../src/lib/poseAnalysis.js';
 
 // Match the app worker: TFLite sends this informational startup line to stderr.
 const originalError = console.error.bind(console);
@@ -224,6 +224,8 @@ async function processFile(file) {
     poseCoverage,
     cropSamples: poseSources.filter(x => x === 'crop').length,
     backSamples: poseSources.filter(x => x === 'back').length,
+    // Frames whose whole-frame pose the continuity gate held back (jumpGate.js; 0 unless a bench turns it on).
+    gatedSamples: gatedFrames(),
     detectSeconds: parseFloat((detectMs / 1000).toFixed(2)),
     noseAboveHips,
     leftArmVisibility,
