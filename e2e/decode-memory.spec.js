@@ -58,3 +58,25 @@ test('reading a library video holds at most 5 decoded frames at once and reads e
   expect(frames.reads, 'pixel reads, one per sample').toBe(result.samples);
   expect(errors).toEqual([]);
 });
+
+// Leaving the replay unloads its video at once (paused, source removed, load()) and empties its overlay canvas, so the
+// browser drops the decoder and its frames without waiting for the element to be collected (crash investigation,
+// 7 October, cause 5).
+test('leaving the replay unloads its video and empties its canvas', async ({ page }) => {
+  test.setTimeout(120000);
+  const errors = await start(page);
+  await openFilm(page, BASE);
+  const video = Buffer.from(await drawnWebm(page, 4000), 'base64');
+  await page.locator('.film-screen input[type="file"]').last().setInputFiles({ name: 'set.webm', mimeType: 'video/webm', buffer: video });
+  await expect(page.locator('.result-screen')).toBeVisible({ timeout: 90000 });
+  await page.getByRole('button', { name: 'Revoir la vidéo' }).click();
+  await expect(page.locator('.replay-screen')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.querySelector('.rp-video')?.readyState ?? 0)).toBeGreaterThan(0);
+  await page.evaluate(() => { window.__replay = { video: document.querySelector('.rp-video'), canvas: document.querySelector('.rp-canvas') }; });
+  expect(await page.evaluate(() => window.__replay.canvas.width)).toBeGreaterThan(0);
+  await page.locator('.replay-screen').getByRole('button', { name: 'Retour' }).click();
+  await expect(page.locator('.replay-screen')).toHaveCount(0);
+  const left = await page.evaluate(() => { const { video, canvas } = window.__replay; return { src: video.getAttribute('src'), paused: video.paused, network: video.networkState, ready: video.readyState, canvas: [canvas.width, canvas.height] }; });
+  expect(left).toEqual({ src: null, paused: true, network: 0, ready: 0, canvas: [0, 0] });
+  expect(errors).toEqual([]);
+});

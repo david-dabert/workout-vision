@@ -85,6 +85,8 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
       cancelAnimationFrame(raf);
       if (recorder && recorder.state === 'recording') { recorder.onstop = null; recorder.ondataavailable = null; try { recorder.stop(); } catch { /* already stopping */ } }
       stream?.getTracks().forEach(t => t.stop());
+      // The recording canvas is emptied once recorded, not left to be collected (crash investigation, 7 October).
+      canvas.width = 0; canvas.height = 0;
       chunks.length = err ? 0 : chunks.length;
       listen.abort();
       video.pause();
