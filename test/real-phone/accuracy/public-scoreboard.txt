@@ -5308,3 +5308,22 @@ public/mmfit/build/w20-pushups-15603-16331.json.gz: not admitted: wrists and ank
 public/mmfit/build/w20-tricep_extensions-56904-57640.json.gz: not admitted: wrists and ankles seen together in 57% of samples
 public/mmfit/build/w20-tricep_extensions-60225-60934.json.gz: not admitted: wrists and ankles seen together in 62% of samples
 public/mmfit/build/w20-tricep_extensions-62285-62960.json.gz: not admitted: wrists and ankles seen together in 59% of samples
+
+RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation splits; build half; benchmark only, decides nothing): 124 build sets of 9 classes; 17 held out, unread; 5 failed or left out. Core on the 79 sets of classes with a counter: 29 exact (37%). Off by 3+ counts refusals.
+| Class | Catalogue key | Sets | Exact | Off by 1 | Off by 3+ | Refused |
+|---|---|---:|---:|---:|---:|---:|
+| battle_rope | no counter | 3 | - | - | - | - |
+| bench_pressing | bench_press | 18 | 4 | 1 | 8 | 4 |
+| front_raise | front_raise | 14 | 6 | 5 | 1 | 0 |
+| jump_jack | no counter | 14 | - | - | - | - |
+| pommelhorse | no counter | 12 | - | - | - | - |
+| pull_up | pull_up | 14 | 4 | 5 | 4 | 0 |
+| push_up | push_up | 15 | 5 | 4 | 4 | 0 |
+| situp | no counter | 16 | - | - | - | - |
+| squat | squat | 18 | 10 | 4 | 3 | 2 |
+Not scored (5):
+public/repcount/train151: failed: not read whole: read 86 samples of the 150 the video holds
+public/repcount/stu3_54: failed: not read whole: read 330 samples of the 495 the video holds
+public/repcount/test2349: failed: not read whole: read 140 samples of the 150 the video holds
+public/repcount/stu6_61: failed: page.evaluate: Target page, context or browser has been closed
+public/repcount/stu4_70: failed: page.evaluate: Target page, context or browser has been closed
