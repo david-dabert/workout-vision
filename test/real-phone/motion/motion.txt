@@ -48,3 +48,20 @@ Side check, barbell_squat_9_a (label 9; David's iPhone app counted 9), skeleton 
   VP9 lossless copy, playback path (rvfc): 8
 The re-encode does not explain 7 against 9; the decode path moves the count by one; the iPhone's own decode and
 pose delegate were not reproduced here.
+
+Alternating rule, 7 October (motionRhythm.js opts.alternating; analyse.mjs sets it for a lift the catalogue counts on
+both sides, liftDefinition(lift).bothSides): the region's left and right halves each counted over the set's period; when
+their peaks lie half a period apart (median phase >= 0.3 of a period, ALT_MIN_PHASE, UNSOURCED, experimental) the count
+doubles. Of the 18 sets only m-curls (bicep_curl_alternating) is such a lift; its halves: left 5, right 4 peaks, phase
+0.49. No other set's count can move (the rule is not applied to them). Same 18 sets, same captures:
+  before: m-curls 10 / skel 10 / motion 5 (DISAGREE)
+  after : m-curls 10 / skel 10 / motion 10 (agree)
+  after : [all] 18 sets. motion exact 13, off by 3+ 0; skeleton exact 9; fused exact 11, off by 3+ or refused 0. flags 10:
+          true 7 of 9 skeleton misses (recall 78%), false alarms 3 of 9 skeleton exact (precision 70%)
+  after : [m] 8 sets. motion exact 6, off by 3+ 0; flags 4: true 3 of 4, false alarms 1 of 4
+  (before: [all] motion exact 12, off by 3+ 1; [m] motion exact 5, off by 3+ 1; table above)
+Applied to every set regardless of the catalogue, the rule would wrongly double 4 sets whose halves also move half a
+period apart (m-lunges 18, m-pushups 20, m-rows 20, s-curl 10): it is held to the catalogue's alternating lifts.
+Synthetic alternating curls (test/real-phone/occlusion/, rendered after the rule was written): stored frames 0 -> 10 exact
+of 14 (front view 8 of 8, side view 2 of 6; off by 3 or more 14 -> 4, all from the side, where both arms sit in one half);
+videos through the harness 0 -> 2 exact of 3 (the side view stays 5 for 10).

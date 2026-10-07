@@ -1,0 +1,94 @@
+Occluded synthetic sets (7 October 2026). Rendered by test/real-phone/synth/run.mjs (matrix-*.json here) at 360 x 640, 15 fps,
+2.7 m, through the app's pose path (crop retry on, backward pass off), headless Chromium with SwiftShader.
+pose = samples with a pose; other = of those, poses nearer the second person's hips than the lifter's (sets with a
+second person only; - elsewhere);
+skel = summarizeCount (refused: no count); motion = motionRhythm.js on the stored 24 x 24 region frames (alt: the
+alternating rule, x2 when the halves move in turn, and their phase); truth = reps rendered.
+
+set                                           pose  other  skel     motion  truth  alt
+michelle-bicep_curl-v0-clean                  100%  -      6        6       6      
+michelle-bicep_curl-v0-dim                    99%   -      6        6       6      
+michelle-bicep_curl-v0-rack                   100%  -      6        6       6      
+michelle-bicep_curl-v90-clean                 100%  -      6        5       6      
+michelle-bicep_curl-v90-dim                   29%   -      refused  6       6      
+michelle-bicep_curl-v90-person                100%  167    6        5       6      
+michelle-bicep_curl-v90-plate                 79%   -      refused  6       6      
+michelle-bicep_curl-v90-rack                  100%  -      refused  5       6      
+michelle-bicep_curl_alternating-v0-clean      100%  -      10       10      10     x2 0.48
+michelle-bicep_curl_alternating-v0-dim        99%   -      10       10      10     x2 0.48
+michelle-bicep_curl_alternating-v0-person     100%  0      10       10      10     x2 0.48
+michelle-bicep_curl_alternating-v0-rack       100%  -      refused  10      10     x2 0.48
+michelle-bicep_curl_alternating-v90-clean     100%  -      refused  5       10     -- 0.02
+michelle-bicep_curl_alternating-v90-dim       46%   -      refused  5       10     -- 0.14
+michelle-bicep_curl_alternating-v90-rack      100%  -      refused  5       10     -- 0.04
+michelle-overhead_press-v0-clean              100%  -      6        6       6      
+michelle-overhead_press-v0-dim                98%   -      7        6       6      
+michelle-overhead_press-v0-person             100%  0      6        6       6      
+michelle-overhead_press-v0-rack               100%  -      6        6       6      
+michelle-overhead_press-v90-clean             100%  -      0        6       6      
+michelle-overhead_press-v90-dim               15%   -      refused  6       6      
+michelle-overhead_press-v90-person            100%  114    6        6       6      
+michelle-overhead_press-v90-plate             67%   -      refused  6       6      
+michelle-overhead_press-v90-rack              100%  -      0        6       6      
+michelle-squat-v0-clean                       100%  -      6        6       6      
+michelle-squat-v0-dim                         92%   -      0        6       6      
+michelle-squat-v0-person                      100%  0      0        6       6      
+michelle-squat-v0-rack                        98%   -      0        6       6      
+michelle-squat-v90-clean                      100%  -      10       6       6      
+michelle-squat-v90-dim                        56%   -      refused  6       6      
+michelle-squat-v90-gym                        7%    19     refused  6       6      
+michelle-squat-v90-person                     98%   160    0        6       6      
+michelle-squat-v90-plate                      43%   -      refused  6       6      
+michelle-squat-v90-rack                       100%  -      6        6       6      
+soldier-bicep_curl-v0-clean                   100%  -      6        6       6      
+soldier-bicep_curl-v0-dim                     100%  -      15       6       6      
+soldier-bicep_curl-v0-rack                    100%  -      6        6       6      
+soldier-bicep_curl-v90-clean                  100%  -      3        5       6      
+soldier-bicep_curl-v90-dim                    100%  -      4        6       6      
+soldier-bicep_curl-v90-person                 100%  0      7        5       6      
+soldier-bicep_curl-v90-plate                  39%   -      refused  6       6      
+soldier-bicep_curl-v90-rack                   99%   -      7        5       6      
+soldier-bicep_curl_alternating-v0-clean       100%  -      14       10      10     x2 0.48
+soldier-bicep_curl_alternating-v0-dim         100%  -      18       10      10     x2 0.46
+soldier-bicep_curl_alternating-v0-person      100%  0      18       10      10     x2 0.48
+soldier-bicep_curl_alternating-v0-rack        100%  -      10       10      10     x2 0.46
+soldier-bicep_curl_alternating-v90-clean      100%  -      refused  10      10     x2 0.47
+soldier-bicep_curl_alternating-v90-dim        100%  -      refused  5       10     -- 0.23
+soldier-bicep_curl_alternating-v90-rack       99%   -      refused  10      10     x2 0.47
+soldier-overhead_press-v0-clean               100%  -      6        5       6      
+soldier-overhead_press-v0-dim                 100%  -      6        5       6      
+soldier-overhead_press-v0-person              100%  0      6        5       6      
+soldier-overhead_press-v0-rack                100%  -      6        5       6      
+soldier-overhead_press-v90-clean              99%   -      6        6       6      
+soldier-overhead_press-v90-dim                37%   -      refused  6       6      
+soldier-overhead_press-v90-person             95%   4      12       6       6      
+soldier-overhead_press-v90-plate              99%   -      0        6       6      
+soldier-overhead_press-v90-rack               100%  -      6        6       6      
+soldier-squat-v0-clean                        100%  -      0        6       6      
+soldier-squat-v0-dim                          100%  -      6        6       6      
+soldier-squat-v0-person                       100%  0      0        6       6      
+soldier-squat-v0-rack                         99%   -      6        6       6      
+soldier-squat-v90-clean                       100%  -      6        6       6      
+soldier-squat-v90-dim                         100%  -      6        6       6      
+soldier-squat-v90-gym                         2%    5      refused  6       6      
+soldier-squat-v90-person                      100%  0      9        6       6      
+soldier-squat-v90-plate                       65%   -      refused  6       6      
+soldier-squat-v90-rack                        100%  -      5        6       6      
+
+By condition (all lifts, views and bodies): sets; mean pose coverage; skeleton exact / off by 3 or more (refused counted
+there); motion exact / off by 3 or more; sets where the pose found was the second person on some sample.
+  clean   16  pose 100%  skeleton 9 / 7   motion 12 / 1   read the other person 0
+  plate   6   pose 66%   skeleton 0 / 6   motion 6 / 0   read the other person 0
+  rack    16  pose 100%  skeleton 8 / 6   motion 12 / 1   read the other person 0
+  dim     16  pose 79%   skeleton 5 / 9   motion 13 / 2   read the other person 0
+  person  12  pose 99%   skeleton 5 / 6   motion 9 / 0   read the other person 4
+  gym     2   pose 5%    skeleton 0 / 2   motion 2 / 0   read the other person 2
+
+Against the clean render of the same body, lift and view: skeleton error grew / stayed / shrank; motion the same.
+  plate   6   skeleton 6 / 0 / 0   motion 0 / 4 / 2
+  rack    16  skeleton 4 / 8 / 4   motion 0 / 16 / 0
+  dim     16  skeleton 8 / 6 / 2   motion 1 / 13 / 2
+  person  12  skeleton 5 / 5 / 2   motion 0 / 12 / 0
+  gym     2   skeleton 2 / 0 / 0   motion 0 / 2 / 0
+
+All 68 sets: skeleton exact 27, off by 3 or more or refused 36; motion exact 54, off by 3 or more 4; either exact 60.

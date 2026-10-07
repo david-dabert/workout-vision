@@ -302,3 +302,6 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   (R8), offering both numbers; where the pose covers under 90 % of the set, the motion count is the one offered first.
 - Before building: more real videos held out from the method (the exam sets), a rule for alternating lifts (the motion
   count is half), the cost measured on an iPhone, and David's approval of the screen and its French (R10).
+- 7 October, later: a rule for alternating lifts is on the bench (TRIED.md, 7 October; front views counted in full,
+  side views still half). On occluded synthetic sets the motion count held where the skeleton failed (plate: 6 of 6
+  against 0 of 6; test/real-phone/occlusion/). Still to do before building: held-out real videos, iPhone cost, R10.
