@@ -261,6 +261,8 @@ if (P.noCrop) globalThis.__WV_BENCH_NO_CROP__ = true;
 // P.lock: the pose path with the lifter lock (lifterLock.js; two poses asked, the lifter's kept), set before the model
 // loads since it sets numPoses (7 October, run.mjs SYNTH_LOCK=1).
 if (P.lock) globalThis.__WV_BENCH_LOCK__ = true;
+// P.gate: the pose path with the continuity gate (jumpGate.js; off in the app), 7 October, run.mjs SYNTH_GATE=1.
+if (P.gate) globalThis.__WV_BENCH_GATE__ = true;
 const model = P.video ? null : await getImageLandmarker();
 // P.lostPose: a second pose model (run.mjs, LOST_POSE, e.g. MediaPipe's heavy model) run on the whole frame of the
 // frames still without a pose after the app's own path, to measure it (7 October). Bench only; the app has none.
