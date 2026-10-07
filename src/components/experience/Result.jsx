@@ -19,6 +19,7 @@ import RepWave from './RepWave';
 import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
+import { InstallSuggest } from './Install';
 import { momentLine } from './moment';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
@@ -757,6 +758,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           </button>
           <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
+          {/* Once, on the saved card of the first set saved where the app is not installed: how to install it (Install.jsx).
+              After the confirmation, never before it. */}
+          <InstallSuggest fr={fr} />
           {/* After the first saved set (and once more from the fifth): one quiet question, which nothing waits on. */}
           {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
           {/* Once, after a saved set, when no level is stored. */}

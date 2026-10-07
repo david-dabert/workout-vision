@@ -1,0 +1,58 @@
+/* Installing the app (Install.jsx). The final direction (studio/final/DIRECTION.md, 7 October 2026): dark ground,
+   rules not boxes, keys of radius 4 and 58 px, nothing gold (gold means measured), every target at least 44 px.
+   Status: convention (the design review's system; no specific source). */
+
+/* The row at the foot of the choice: the rows' own shape, quieter (its mark in the muted colour, not the gold). */
+.wv-experience .ins-row { margin-top: var(--s-5); }
+.wv-experience .ins-row .row-ico { color: var(--c-fg-muted); border-color: var(--c-rule); }
+
+/* The sheet: over the app, at the bottom of the screen, in the thumb zone. */
+.wv-experience.ins-layer { position: fixed; inset: 0; z-index: 200; height: auto; overflow: visible; background: transparent; display: flex; flex-direction: column; justify-content: flex-end; }
+.wv-experience .ins-scrim { position: absolute; inset: 0; background: color-mix(in srgb, var(--void) 78%, transparent); animation: ins-fade var(--d-fast) var(--ease) both; }
+.wv-experience .ins-sheet {
+  position: relative; width: 100%; max-width: 480px; margin: 0 auto; max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--s-4) var(--gut) calc(var(--s-5) + env(safe-area-inset-bottom, 0px));
+  background: var(--basalt); border-top: 1px solid var(--c-edge); border-radius: 4px 4px 0 0;
+  display: flex; flex-direction: column; gap: var(--s-3);
+  animation: ins-rise var(--d-ui) var(--ease) both;
+}
+@keyframes ins-fade { from { opacity: 0; } }
+@keyframes ins-rise { from { translate: 0 24px; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .wv-experience .ins-scrim, .wv-experience .ins-sheet { animation: none; } }
+
+.wv-experience .ins-head { display: flex; align-items: flex-start; gap: var(--s-3); }
+.wv-experience .ins-title { flex: 1; margin: 10px 0 0; font: 600 22px/1.2 var(--sans); letter-spacing: -0.02em; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .ins-title:focus { outline: none; }
+.wv-experience .ins-title:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+.wv-experience .ins-x { flex: none; width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--c-fg-muted); border-radius: 4px; }
+.wv-experience .ins-x svg { width: 22px; height: 22px; }
+
+.wv-experience .ins-steps { list-style: none; margin: var(--s-2) 0 0; padding: 0; }
+.wv-experience .ins-step { display: flex; gap: var(--s-4); align-items: flex-start; padding: var(--s-4) 0; border-top: 1px solid var(--c-rule); }
+.wv-experience .ins-step:last-child { border-bottom: 1px solid var(--c-rule); }
+.wv-experience .ins-n { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 1.5px solid var(--c-edge); border-radius: 4px; font: 600 15px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--c-fg); }
+.wv-experience .ins-step-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: 2px; }
+.wv-experience .ins-step-line { font-size: 17px; line-height: 1.45; color: var(--c-fg); }
+.wv-experience .ins-step-line b { font-weight: 600; }
+.wv-experience .ins-step small { font-size: 15px; line-height: 1.4; color: var(--c-fg-muted); }
+.wv-experience .ins-glyph { display: inline-block; width: 22px; height: 22px; vertical-align: -5px; margin: 0 6px 0 2px; color: var(--c-fg); }
+
+.wv-experience .ins-why, .wv-experience .ins-body { margin: var(--s-2) 0 0; font-size: 15px; line-height: 1.5; color: var(--c-fg-muted); text-wrap: pretty; }
+.wv-experience .ins-body { font-size: 17px; color: var(--c-fg); }
+.wv-experience .ins-link { margin: var(--s-1) 0 0; padding: 12px 14px; border: 1px solid var(--c-rule); border-radius: 4px; font-size: 15px; line-height: 1.4; color: var(--c-fg); overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
+.wv-experience .ins-note { margin: 0; min-height: 1.45em; text-align: center; font-size: 15px; line-height: 1.45; color: var(--c-fg-muted); }
+
+/* The keys: 58 px, radius 4; the primary one bone on the dark, never gold. */
+.wv-experience .ins-key { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 58px; padding: 0 16px; border: 1.5px solid var(--c-edge); border-radius: 4px; background: transparent; color: var(--c-fg); font: 600 17px/1.2 var(--sans); }
+.wv-experience .ins-key.is-primary { border-color: var(--c-fg); background: var(--c-fg); color: var(--c-surface); }
+.wv-experience .ins-key .ins-glyph, .wv-experience .ins-key svg { width: 20px; height: 20px; margin: 0; color: inherit; flex: none; }
+.wv-experience .ins-sheet .ins-key { margin-top: var(--s-2); }
+.wv-experience .ins-sheet .ins-note + .ins-key { margin-top: 0; }
+
+/* The suggestion on the saved card: a rule above it, a sentence of why, the key and "Non merci". */
+.wv-experience .ins-suggest { margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--c-rule); display: flex; flex-direction: column; gap: 6px; }
+.wv-experience .ins-suggest-title { margin: 0; font: 600 17px/1.35 var(--sans); color: var(--c-fg); }
+.wv-experience .ins-suggest-why { margin: 0; font-size: 15px; line-height: 1.5; color: var(--c-fg-muted); text-wrap: pretty; }
+.wv-experience .ins-suggest-keys { display: flex; flex-direction: column; gap: 4px; margin-top: var(--s-2); }
+.wv-experience .ins-suggest .text-btn { align-self: center; }
+.wv-experience .saved > .ins-note { margin-top: var(--s-2); }

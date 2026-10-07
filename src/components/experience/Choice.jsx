@@ -14,6 +14,7 @@ import { collectSwitchAtLoad, collectSwitchSeen, onCollectSwitch } from '../../l
 import { COLLECT } from './collect-copy';
 import { PRO } from './pro-copy';
 import { loadReceived } from './programme-store';
+import { InstallRow } from './Install';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -181,6 +182,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         <UsageNote fr={fr} />
         <CollectSwitched fr={fr} />
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
+        {/* Installing the app (Install.jsx): a quiet row at the foot of the list, never once the app is installed. */}
+        <InstallRow fr={fr} />
         <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
         {/* Why the app exists, in David's words (About.jsx). */}
         {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}

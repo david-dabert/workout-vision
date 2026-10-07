@@ -6,12 +6,16 @@ import './index.css'
 import App from './App.jsx'
 import { startEvents } from './lib/events'
 import { collectSwitchAtLoad } from './lib/phoneCollect'
+import { holdInstallPrompt } from './lib/install'
 
 // Anonymous usage counts, only when the build names a server for them (src/lib/events.js).
 startEvents();
 
 // #collecte / #collecte-off (David's phone only, phoneCollect.js): applied before the router reads the address.
 collectSwitchAtLoad();
+
+// Chromium's install prompt can come before the app renders: it is held from here for the app's own key (install.js).
+holdInstallPrompt();
 
 // Register service worker for offline support and PWA install prompt
 if ('serviceWorker' in navigator) {

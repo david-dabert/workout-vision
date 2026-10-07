@@ -4,6 +4,7 @@
 import { useRef, useState } from 'react';
 import { backupFile, onHomeScreen, onIOS } from '../../lib/keep-sets';
 import { restoreFlow } from './keep-sets-view';
+import { INSTALL } from './install-copy';
 import { refreshSets, loadSets } from './sets';
 
 const ICON_SAVE = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11" /><path d="M7.5 10.5 12 15l4.5-4.5" /><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13" /></svg>;
@@ -60,9 +61,8 @@ export default function KeepSets({ sets, fr, onRestored, style }) {
         {ICON_OPEN}<span>{fr ? 'Restaurer' : 'Restore'}</span>
       </label>
     </div>
-    {warn && sets?.length > 0 && <p className="hist-keep-why" data-testid="keep-why">{fr
-      ? 'Sur iPhone, Safari peut effacer vos séries après sept jours d’utilisation sans ouvrir l’app. Ajoutez-la à l’écran d’accueil, ou gardez une sauvegarde.'
-      : 'On iPhone, Safari may erase your sets after seven days of use without opening the app. Add it to your home screen, or keep a backup.'}</p>}
+    {/* The same words as the install sheet's (install-copy.js), so the history and the sheet say one thing. */}
+    {warn && sets?.length > 0 && <p className="hist-keep-why" data-testid="keep-why">{INSTALL[fr ? 'fr' : 'en'].keepWhy}</p>}
     <p className="hist-export-note" role="status">{note}</p>
   </div>;
 }
