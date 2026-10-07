@@ -61,7 +61,8 @@ async function processFile(file) {
   const worldLandmarksArr = []; // per-sample: array of 33 world landmarks (metres) or null
   const timestamps = [];
   const pixelHashes = [];      // per-sample SHA-256 hex of the pixel buffer handed to the landmarker
-  const poseSources = [];      // per-sample 'full' (whole frame), 'crop' (second look around the last pose, poseCrop.js) or null
+  const poseSources = [];      // per-sample 'full' (whole frame), 'crop' (second look around the last pose, poseCrop.js), 'back' (backward pass) or null
+  const sampleAt = new Map();  // deterministic timestamp -> sample index, for the backward pass
   let detectMs = 0;            // time spent in detectPoseImage, crops included
   let lockedSubjectIdx = null;
   let sampleCount = 0;
@@ -81,11 +82,13 @@ async function processFile(file) {
       // A decoding path that fails part-way starts again at sample 0: only the last pass is kept, as in the app
       // (coreAnalysis.js; audit FINDING-002).
       // The image smoothing forgets the abandoned pass too, as the app's worker does at sample 0 (third audit, C48).
-      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; poseSources.length = 0; detectMs = 0; sampleCount = 0; resetKalmanFilters(); }
+      if (frameIndex === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarksArr.length = 0; timestamps.length = 0; pixelHashes.length = 0; poseSources.length = 0; detectMs = 0; sampleCount = 0; sampleAt.clear(); resetKalmanFilters(); }
       // Match the app's worker path: read pixels from the extraction canvas
       // and write them onto an OffscreenCanvas before inference. The roundtrip
       // is lossless, but using the same path as the worker ensures the harness
       // and the app hand identical pixel data to the landmarker.
+      // Bench hook (motion rhythm bench, 7 October; test/real-phone/motion/): each decoded frame, before inference.
+      globalThis.__WV_HARNESS_FRAME_TAP__?.(canvas, frameIndex, timestamp);
       const pxData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
       const inferCanvas = new OffscreenCanvas(canvas.width, canvas.height);
       inferCanvas.getContext('2d').putImageData(pxData, 0, 0);
@@ -96,8 +99,14 @@ async function processFile(file) {
 
       const deterministicTs = frameIndex * (1000 / TARGET_FPS);
       const d0 = performance.now();
-      const result = detectPoseImage(landmarker, inferCanvas, deterministicTs);
+      const result = detectPoseImage(landmarker, inferCanvas, deterministicTs, { backfill: true });
       detectMs += performance.now() - d0;
+      // Backward pass (poseCrop.js), as the app applies it (coreAnalysis.js): earlier samples without a pose, now read.
+      for (const b of result?.backfill || []) {
+        const i = sampleAt.get(b.timestamp);
+        if (i != null && !imageLandmarks[i] && !worldLandmarksArr[i]) { imageLandmarks[i] = b.landmarks[0]; worldLandmarksArr[i] = b.worldLandmarks[0] || null; poseSources[i] = 'back'; }
+      }
+      sampleAt.set(deterministicTs, imageLandmarks.length);
 
       let lm = null;
       let wlm = null;
@@ -125,7 +134,8 @@ async function processFile(file) {
     (pct) => {
       if (pct % 10 === 0) appendLog(`  Extraction: ${pct}%`);
     },
-    { deterministic: true },
+    // Bench hook (7 October): __WV_HARNESS_PATH__ = 'rvfc' reads the video by playback, as a phone without WebCodecs does.
+    { deterministic: true, ...(globalThis.__WV_HARNESS_PATH__ ? { path: globalThis.__WV_HARNESS_PATH__ } : {}) },
   );
 
   const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
@@ -213,6 +223,7 @@ async function processFile(file) {
     rotationDecision: streamResult.rotationDecision || 'none',
     poseCoverage,
     cropSamples: poseSources.filter(x => x === 'crop').length,
+    backSamples: poseSources.filter(x => x === 'back').length,
     detectSeconds: parseFloat((detectMs / 1000).toFixed(2)),
     noseAboveHips,
     leftArmVisibility,

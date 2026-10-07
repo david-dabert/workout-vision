@@ -32,7 +32,7 @@ import {
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mpVision from '@mediapipe/tasks-vision';
 import { isTheModel, MODEL_SHA256 } from './model-hash';
-import { cropAround, mapFromCrop, CROP_PX, CROP_SEED_MS } from './poseCrop';
+import { cropAround, mapFromCrop, keepLost, fillBackward, CROP_PX, CROP_SEED_MS, BACK_PASS, BACK_KEEP_MS, BACK_MAX_FRAMES } from './poseCrop';
 function getMediaPipeVision() {
   return mpVision;
 }
@@ -335,6 +335,7 @@ export function disposeAllLandmarkers() {
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
   _cropSeed = null;
+  _dropLost();
 }
 
 // isAnatomicallyImplausible — delegated to poseGeometry.js
@@ -369,25 +370,86 @@ function _seedCrop(rawLandmarks, source, now) {
   _cropSeed = box ? { ...box, width, height, t: now } : null;
 }
 
+const _newCanvas = (w, h) => {
+  const c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas');
+  c.width = w; c.height = h;
+  return c;
+};
+
+// One detect on a square crop of `source` (box { sx, sy, side } in frame pixels): the pose found, mapped back to the
+// whole frame, or null. World landmarks are hip-centred metres, the same whatever the crop: passed through as found.
+function _readCrop(landmarker, source, box, width, height) {
+  if (!_cropCanvas) _cropCanvas = _newCanvas(CROP_PX, CROP_PX);
+  const ctx = _cropCanvas.getContext('2d');
+  const { sx, sy, side } = box;
+  ctx.clearRect(0, 0, CROP_PX, CROP_PX);
+  ctx.drawImage(source, sx, sy, side, side, 0, 0, CROP_PX, CROP_PX);
+  const found = landmarker.detect(_cropCanvas);
+  if (!found?.landmarks?.length) return null;
+  return { landmarks: mapFromCrop(found.landmarks[0], box, width, height), worldLandmarks: found.worldLandmarks?.length ? found.worldLandmarks[0] : null };
+}
+
 function _detectInCrop(landmarker, source, now) {
   if (globalThis.__WV_BENCH_NO_CROP__ || !_cropSeed) return null;
   const { width, height } = _sourceSize(source);
   // A seed from another frame size, or from before this time (a new pass), or older than CROP_SEED_MS, is not used.
   if (width !== _cropSeed.width || height !== _cropSeed.height || now < _cropSeed.t || now - _cropSeed.t > CROP_SEED_MS) return null;
-  if (!_cropCanvas) {
-    _cropCanvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(CROP_PX, CROP_PX) : document.createElement('canvas');
-    _cropCanvas.width = CROP_PX; _cropCanvas.height = CROP_PX;
-  }
-  const ctx = _cropCanvas.getContext('2d');
-  const { sx, sy, side } = _cropSeed;
-  ctx.clearRect(0, 0, CROP_PX, CROP_PX);
-  ctx.drawImage(source, sx, sy, side, side, 0, 0, CROP_PX, CROP_PX);
-  const found = landmarker.detect(_cropCanvas);
-  if (!found?.landmarks?.length) return null;
-  const landmarks = mapFromCrop(found.landmarks[0], _cropSeed, width, height);
-  _seedCrop(landmarks, source, now);
-  // World landmarks are hip-centred metres, the same whatever the crop: passed through as found.
-  return { landmarks: [landmarks], worldLandmarks: found.worldLandmarks?.length ? [found.worldLandmarks[0]] : [], source: 'crop' };
+  const found = _readCrop(landmarker, source, _cropSeed, width, height);
+  if (!found) return null;
+  _seedCrop(found.landmarks, source, now);
+  return { landmarks: [found.landmarks], worldLandmarks: found.worldLandmarks ? [found.worldLandmarks] : [], source: 'crop' };
+}
+
+// Backward pass (poseCrop.js, BACK_PASS): copies of the lost frames of the last BACK_KEEP_MS, { t, canvas, width,
+// height }, in time order, and a pool of spare canvases so a long gap does not allocate a canvas per frame.
+// Only a caller that asks for it ({ backfill: true }) and applies result.backfill gets it: the app's pose worker,
+// the harness and synth. BACK_PASS is off (poseCrop.js): test benches turn it on (globalThis.__WV_BENCH_BACK__) or off
+// (globalThis.__WV_BENCH_NO_BACK__) and may change how long lost frames are kept (globalThis.__WV_BENCH_BACK_KEEP_MS__,
+// the frame cap scaled with it); the app sets none of them, so it neither keeps lost frames nor reads them back.
+let _lost = [];
+const _lostPool = [];
+function _dropLost(frames = _lost) {
+  for (const f of frames) _lostPool.push(f.canvas);
+  if (frames === _lost) _lost = [];
+}
+const _backKeep = () => {
+  const ms = globalThis.__WV_BENCH_BACK_KEEP_MS__;
+  return ms > 0 ? { keepMs: ms, max: Math.ceil((BACK_MAX_FRAMES * ms) / BACK_KEEP_MS) } : { keepMs: BACK_KEEP_MS, max: BACK_MAX_FRAMES };
+};
+const _backOn = () => (BACK_PASS || globalThis.__WV_BENCH_BACK__ === true) && !globalThis.__WV_BENCH_NO_BACK__;
+
+function _keepLostFrame(source, now) {
+  const { width, height } = _sourceSize(source);
+  if (!(width > 0) || !(height > 0)) return;
+  // A frame from before the last one kept (a new pass) or of another size: the frames kept so far are dropped.
+  if (_lost.length && (now <= _lost.at(-1).t || _lost.at(-1).width !== width || _lost.at(-1).height !== height)) _dropLost();
+  const { keepMs, max } = _backKeep();
+  const { kept, dropped } = keepLost(_lost, now, keepMs, max - 1);
+  _dropLost(dropped);
+  _lost = kept;
+  let canvas = _lostPool.pop();
+  if (!canvas) canvas = _newCanvas(width, height);
+  if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+  canvas.getContext('2d').drawImage(source, 0, 0);
+  _lost.push({ t: now, canvas, width, height });
+}
+
+// A pose accepted at `now` (raw image landmarks): the kept lost frames read back on crops seeded from it.
+function _fillLost(landmarker, source, rawLandmarks, now) {
+  if (!_lost.length) return null;
+  const { width, height } = _sourceSize(source);
+  const { keepMs, max } = _backKeep();
+  const usable = _lost.filter(f => f.width === width && f.height === height);
+  const { kept } = keepLost(usable, now, keepMs, max);
+  const filled = fillBackward(kept.filter(f => f.t < now), { landmarks: rawLandmarks, t: now }, (f, seed) => {
+    const box = cropAround(seed, width, height);
+    return box ? _readCrop(landmarker, f.canvas, box, width, height) : null;
+  });
+  _dropLost();
+  if (!filled.length) return null;
+  return filled.reverse().map(({ frame, result }) => ({
+    timestamp: frame.t, landmarks: [result.landmarks], worldLandmarks: result.worldLandmarks ? [result.worldLandmarks] : [], source: 'back',
+  }));
 }
 
 /**
@@ -404,20 +466,30 @@ function _detectInCrop(landmarker, source, now) {
  *   "no person in this frame". The app's and the collector's pose worker set it, so a model failure
  *   ends the run as an error (third audit, C07); the harness, synth and Validate keep the null.
  */
-export function detectPoseImage(landmarker, source, timestamp, { rethrow = false } = {}) {
+export function detectPoseImage(landmarker, source, timestamp, { rethrow = false, backfill = false } = {}) {
   try {
     // IMAGE mode: no timestamp, no temporal state (deterministic per-frame).
     // VIDEO mode: timestamps must be monotonically increasing.
     let result;
+    let back = null;
     if (_landmarkerIsImageMode) {
       result = landmarker.detect(source);
       const now = timestamp != null ? timestamp : performance.now();
-      if (result?.landmarks?.length) _seedCrop(result.landmarks[0], source, now);
-      else {
+      const backOn = backfill && _backOn();
+      if (result?.landmarks?.length) {
+        _seedCrop(result.landmarks[0], source, now);
+        // Backward pass: the lost frames just before this pose, read on crops seeded from it (raw landmarks, before
+        // the image smoothing). It touches neither the forward seed nor the smoothing.
+        if (backOn) back = _fillLost(landmarker, source, result.landmarks[0], now);
+      } else {
         // No pose on the whole frame: a second look on a crop around the last accepted pose (poseCrop.js). The
         // crop's pose skips the image smoothing, so every frame the whole-frame pass reads is unchanged.
         const cropped = _detectInCrop(landmarker, source, now);
-        if (cropped) return cropped;
+        if (cropped) {
+          if (backOn) { const b = _fillLost(landmarker, source, cropped.landmarks[0], now); if (b) cropped.backfill = b; }
+          return cropped;
+        }
+        if (backOn) _keepLostFrame(source, now);
       }
     } else {
       const ts = timestamp != null ? (timestamp + _imageTimestampOffset) : performance.now();
@@ -449,6 +521,9 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
     // These are passed through unfiltered; Kalman and plausibility checks
     // apply only to normalized landmarks used for rendering.
     // worldLandmarks are used downstream for accurate velocity/ROM calculations.
+    // result.backfill: [{ timestamp, landmarks, worldLandmarks, source: 'back' }], earlier frames that were returned
+    // without a pose and now have one; the caller puts them in place of those frames.
+    if (back && result) result.backfill = back;
     return result;
   } catch (e) {
     console.warn('[PoseAnalysis] Detection error (image):', e);
@@ -556,6 +631,7 @@ export function resetKalmanFilters() {
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
   _cropSeed = null;
+  _dropLost();
   // Bump timestamp offset so next video's deterministic timestamps
   // continue above the previous peak (MediaPipe requires monotonic increase).
   _imageTimestampOffset = _imageMaxTimestamp + 1000;

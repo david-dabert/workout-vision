@@ -281,3 +281,24 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   session report prints "Prévu : 3 × 10" beside the count. Words in `pro-copy.js`, for David's approval
   (`test/real-phone/swarm/copy-pro.md`). Not built: tempo per exercise, a QR code on the PDF, several days in one
   programme, the client sending results back other than by the report's PDF.
+
+## 6 October 2026: smaller downloaded videos (idea from Azélie, through David)
+
+- Idea: compress the video a user downloads, as the shrink page does (public/shrink.html: 720 px, 1 Mbit/s).
+- Today the download is already a re-recording, not the original: at most 1280 px, 2 Mbit/s, about 15 MB a minute
+  (`video-export.js`, `exportSize`, `EXPORT_BITS_PER_SECOND`). 720 px and about 1.2 Mbit/s would halve it, about 4 to
+  7 MB saved on a set of 30 to 60 seconds, for a slightly softer image.
+- The space that matters is the original filming in Photos (60 to 170 MB a minute), which a web app cannot shrink or
+  delete.
+- Not built: no user has reported the size; David judged on 6 October that it is not progress for now. Revisit if a
+  user asks for smaller files.
+
+## 7 October 2026: motion count as a confirm prompt on the result screen (proposal, not built)
+
+- Measured on the bench only (TRIED.md, 7 October; `src/lib/counting/motionRhythm.js`, `test/real-phone/motion/motion.txt`):
+  a count from image motion alone disagrees with the skeleton on 7 of its 9 misses and on 4 of its 9 exact sets
+  (18 sets: David's 5, MM-Fit w19 8, synthetic 5; David's 5 were used to set the method).
+- Proposal: when the two counts differ, the result screen shows no grade and asks the user to confirm the count
+  (R8), offering both numbers; where the pose covers under 90 % of the set, the motion count is the one offered first.
+- Before building: more real videos held out from the method (the exam sets), a rule for alternating lifts (the motion
+  count is half), the cost measured on an iPhone, and David's approval of the screen and its French (R10).

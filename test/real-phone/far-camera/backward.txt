@@ -1,0 +1,33 @@
+Synthetic sets: 8 far-camera (dist 9 m) and 20 near sets with a lost frame (headless Chromium, SwiftShader, this machine's CPU; renders ran two at a time beside other work, so the times compare variants of one set, not runs):
+a today's crop retry: pose 96% of 9221 samples; exact 21 of 28; off by 3 or more 2; refused 0; detection 206 s per minute of video
+b + backward pass (1 s): pose 98% of 9221 samples; exact 23 of 28; off by 3 or more 2; refused 0; detection 208 s per minute of video
+b3 + backward pass (3 s kept): pose 100% of 2969 samples; exact 8 of 8; off by 3 or more 0; refused 0; detection 240 s per minute of video
+c + heavy model on lost frames: pose 96% of 2969 samples; exact 6 of 8; off by 3 or more 0; refused 0; detection 206 s per minute of video
+michelle-bicep_curl-v90-d9  truth 7  a 321/341 (94%) count 7 76.7 s  |  b 336/341 (99%, 15 filled) count 7 78.0 s  |  b3 341/341 (100%, 20 filled) count 7 80.4 s  |  c 321/341 (94%) count 7 91.8 s
+michelle-lateral_raise-v0-d9  truth 8  a 384/384 (100%) count 8 116.7 s  |  b 384/384 (100%) count 8 125.7 s  |  b3 384/384 (100%) count 8 123.8 s  |  c 384/384 (100%) count 8 94.8 s
+michelle-lateral_raise-v90-a-10  truth 6  a 301/303 (99%) count 6 73.5 s  |  b 303/303 (100%, 2 filled) count 6 70.9 s  |  b3 -  |  c -
+michelle-lateral_raise-v90-a0  truth 7  a 356/357 (100%) count 7 82.1 s  |  b 357/357 (100%, 1 filled) count 7 84.2 s  |  b3 -  |  c -
+michelle-lateral_raise-v90-a20  truth 5  a 256/257 (100%) count 5 59.7 s  |  b 257/257 (100%, 1 filled) count 5 59.4 s  |  b3 -  |  c -
+michelle-overhead_press-v0-d9  truth 8  a 401/401 (100%) count 8 134.9 s  |  b 401/401 (100%) count 8 133.1 s  |  b3 401/401 (100%) count 8 134.3 s  |  c 401/401 (100%) count 8 104.0 s
+michelle-squat-v0-a20  truth 6  a 300/302 (99%) count 6 71.6 s  |  b 302/302 (100%, 2 filled) count 6 72.2 s  |  b3 -  |  c -
+michelle-squat-v90-a-10  truth 6  a 293/299 (98%) count 10 73.7 s  |  b 299/299 (100%, 6 filled) count 10 73.3 s  |  b3 -  |  c -
+michelle-squat-v90-a0  truth 7  a 341/342 (100%) count 12 82.1 s  |  b 342/342 (100%, 1 filled) count 12 84.0 s  |  b3 -  |  c -
+michelle-squat-v90-a20  truth 5  a 247/248 (100%) count 5 59.5 s  |  b 248/248 (100%, 1 filled) count 5 62.4 s  |  b3 -  |  c -
+michelle-squat-v90-d9  truth 7  a 324/347 (93%) count 7 74.2 s  |  b 338/347 (97%, 14 filled) count 7 76.5 s  |  b3 347/347 (100%, 23 filled) count 7 74.5 s  |  c 324/347 (93%) count 7 115.3 s
+soldier-bicep_curl-v60-a-10  truth 5  a 246/247 (100%) count 6 59.0 s  |  b 246/247 (100%) count 6 61.6 s  |  b3 -  |  c -
+soldier-bicep_curl-v60-a0  truth 6  a 297/298 (100%) count 6 68.4 s  |  b 297/298 (100%) count 6 53.8 s  |  b3 -  |  c -
+soldier-bicep_curl-v90-d9  truth 7  a 333/356 (94%) count 6 90.1 s  |  b 347/356 (97%, 14 filled) count 7 89.0 s  |  b3 356/356 (100%, 23 filled) count 7 90.6 s  |  c 333/356 (94%) count 6 60.1 s
+soldier-lateral_raise-v0-d9  truth 8  a 397/397 (100%) count 8 90.3 s  |  b 397/397 (100%) count 8 91.4 s  |  b3 397/397 (100%) count 8 94.0 s  |  c 397/397 (100%) count 8 61.0 s
+soldier-lateral_raise-v60-a-10  truth 5  a 251/265 (95%) count 5 47.2 s  |  b 257/265 (97%, 6 filled) count 5 47.1 s  |  b3 -  |  c -
+soldier-lateral_raise-v60-a0  truth 6  a 282/291 (97%) count 6 51.2 s  |  b 286/291 (98%, 4 filled) count 6 51.9 s  |  b3 -  |  c -
+soldier-lateral_raise-v60-a20  truth 8  a 372/393 (95%) count 8 69.4 s  |  b 375/393 (95%, 3 filled) count 8 72.2 s  |  b3 -  |  c -
+soldier-overhead_press-v0-d9  truth 8  a 350/393 (89%) count 9 91.5 s  |  b 378/393 (96%, 28 filled) count 8 95.4 s  |  b3 392/393 (100%, 42 filled) count 8 95.6 s  |  c 353/393 (90%, 3 filled) count 10 83.9 s
+soldier-overhead_press-v30-a-10  truth 8  a 380/398 (95%) count 9 79.9 s  |  b 382/398 (96%, 2 filled) count 9 83.6 s  |  b3 -  |  c -
+soldier-overhead_press-v30-a0  truth 5  a 160/243 (66%) count 6 44.3 s  |  b 169/243 (70%, 9 filled) count 6 49.1 s  |  b3 -  |  c -
+soldier-overhead_press-v30-a20  truth 7  a 317/353 (90%) count 7 74.9 s  |  b 322/353 (91%, 5 filled) count 7 75.8 s  |  b3 -  |  c -
+soldier-overhead_press-v90-a-10  truth 6  a 297/298 (100%) count 6 61.0 s  |  b 298/298 (100%, 1 filled) count 6 62.0 s  |  b3 -  |  c -
+soldier-overhead_press-v90-a0  truth 7  a 363/365 (99%) count 7 78.1 s  |  b 365/365 (100%, 2 filled) count 7 78.2 s  |  b3 -  |  c -
+soldier-overhead_press-v90-a20  truth 5  a 268/268 (100%) count 5 56.7 s  |  b 268/268 (100%) count 5 56.9 s  |  b3 -  |  c -
+soldier-squat-v30-a-10  truth 8  a 395/395 (100%) count 8 76.0 s  |  b 395/395 (100%) count 8 77.8 s  |  b3 -  |  c -
+soldier-squat-v30-a20  truth 7  a 329/330 (100%) count 7 67.6 s  |  b 330/330 (100%, 1 filled) count 7 67.3 s  |  b3 -  |  c -
+soldier-squat-v90-d9  truth 7  a 326/350 (93%) count 7 98.0 s  |  b 341/350 (97%, 15 filled) count 7 100.0 s  |  b3 350/350 (100%, 24 filled) count 7 97.3 s  |  c 326/350 (93%) count 7 67.8 s
