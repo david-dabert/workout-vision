@@ -146,3 +146,52 @@ describe('a whole read whose skeletons repeat, and one whose do not', () => {
     } finally { delete globalThis.__passes; delete globalThis.__time; }
   });
 });
+
+// Crash investigation, 7 October (cause 3): every analysis creates its pose worker, and one started right after
+// another could hold two pose models at once. The next worker is created only once the previous one has closed its
+// model and been terminated; a cancel terminates at once.
+describe('one pose worker at a time', () => {
+  const frame = Array.from({ length: 33 }, (_, i) => ({ x: i / 33, y: 0, z: 0, visibility: 1 }));
+  const workers = (closeAfter = 5) => {
+    const log = { live: 0, peak: 0, created: 0, closes: 0 };
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; log.created++; log.live++; log.peak = Math.max(log.peak, log.live); this.k = 0; }
+      postMessage(m) {
+        if (m.type === 'close') { log.closes++; setTimeout(() => this.onmessage?.({ data: { id: m.id } }), closeAfter); return; }
+        const k = this.k++;
+        const world = m.type === 'init' ? null : frame.map(p => ({ ...p, x: p.x + k / 1000 }));
+        setTimeout(() => this.onmessage?.({ data: m.type === 'init' ? { id: m.id } : { id: m.id, image: world, world } }), 0);
+      }
+      terminate() { if (!this.gone) { this.gone = true; log.live--; } }
+    };
+    return log;
+  };
+  it('two analyses started back to back never hold two workers, and each worker closes its model first', async () => {
+    const log = workers(30);
+    globalThis.window = globalThis.window ?? { dispatchEvent() {} };
+    globalThis.CustomEvent = globalThis.CustomEvent ?? class { constructor(type, init) { this.type = type; this.detail = init?.detail; } };
+    globalThis.__passes = [439];
+    try {
+      const [a, b] = await Promise.allSettled([analyzeCoreVideo(new Blob(['x']), 'lateral_raise'), analyzeCoreVideo(new Blob(['x']), 'lateral_raise')]);
+      expect(a.status).toBe('fulfilled');
+      expect(b.status).toBe('fulfilled');
+      await new Promise(r => setTimeout(r, 60));
+      expect(log).toMatchObject({ created: 2, peak: 1, live: 0, closes: 2 });
+    } finally { delete globalThis.__passes; }
+  });
+  it('a cancelled analysis lets the next one start without waiting for a close', async () => {
+    const log = workers(5000);
+    globalThis.__passes = [439];
+    const ac = new AbortController();
+    try {
+      const first = analyzeCoreVideo(new Blob(['x']), 'lateral_raise', { signal: ac.signal });
+      ac.abort();
+      await expect(first).rejects.toMatchObject({ name: 'AbortError' });
+      const began = Date.now();
+      const next = analyzeCoreVideo(new Blob(['x']), 'lateral_raise');
+      await expect(next).resolves.toBeTruthy();
+      expect(Date.now() - began).toBeLessThan(900);
+      expect(log.peak).toBe(1);
+    } finally { delete globalThis.__passes; }
+  });
+});
