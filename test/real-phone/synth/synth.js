@@ -8,6 +8,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { getImageLandmarker, detectPoseImage } from '../../../src/lib/poseAnalysis.js';
 import * as mpVision from '@mediapipe/tasks-vision';
 import { TARGET_FPS, MAX_LONG_SIDE } from '../../../src/lib/extractionConfig.js';
+import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { roiFromBoxes, shrinkRegion, GRID } from '../../../src/lib/counting/motionRhythm.js';
 
 const P = window.SYNTH;
 // P.video: render frames for a video file (run-video.mjs) at its own size and rate, without pose detection.
@@ -26,7 +28,8 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(P.bg ?? 0x8a8f96);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x555555, 2.2));
+const hemi = new THREE.HemisphereLight(0xffffff, 0x555555, 2.2);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: 0x5c5048 }));
 floor.rotation.x = -Math.PI / 2; scene.add(floor);
@@ -102,6 +105,7 @@ const total = t + (P.endRest ?? 1.2);
 // P.window (seconds): the protocol's score of a timed test (fitness-tests.js), the reps whose rise is past
 // halfway within the window that opens at the first rise.
 const score = P.window ? reps.filter(r => r.start + (r.top - r.start) / 2 <= reps[0].start + P.window).length : undefined;
+const repAt = time => { let k = 0; for (let i = 0; i < reps.length; i++) if (time >= reps[i].start) k = i; return k; };
 const ease = x => (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, x)))) / 2;
 const progress = time => {
   for (const r of reps) {
@@ -125,6 +129,127 @@ const truthAngles = () => ({
 const yaw = (P.view ?? 0) * D, dist = P.dist ?? 2.7;
 camera.position.set(Math.sin(yaw) * dist * S.left, P.camY ?? 1.15, Math.cos(yaw) * dist);
 camera.lookAt(0, 0.95, 0);
+
+// P.occlude (7 October; test/real-phone/occlusion/README.md): occluders and degradations that mimic what goes wrong on
+// David's real videos, opt-in per matrix entry; without it none of this runs and a set renders as before.
+//   plate: a bar with two 45 cm plates (dark discs, 5 cm thick, at +-0.7 m from its middle along the body's left-right
+//          axis), on the shoulders for a squat, in the hands otherwise; from the side the near plate hides the torso.
+//   rack: { at, offsets }: vertical uprights (7 x 7 cm, 2.4 m tall, dark) `at` m from the body towards the camera,
+//          shifted sideways by each offset (m, camera's right); default one upright at 0.8 m, offset 0.1 m.
+//   light: scale of both lights (0.3 = a dim gym); noise: sigma of Gaussian pixel noise (0-255 levels, seeded);
+//   blur: renders averaged per frame over the shutter (shutter, s, default one frame interval).
+//   person: { side, depth }: a second body of the same model, static, standing `side` m to the camera's right of the
+//          lifter (0.75 m: about half in frame at 2.7 m) and `depth` m farther from the camera.
+const O = P.occlude || null;
+const occ = { gray: [], boxes: [], onTarget: [] };
+let placeOccluders = () => {}, renderBlurred = () => {}, addNoise = () => {};
+let bystander = null; // the second person's hips, in world space (static)
+if (O) {
+  const dark = new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.7, metalness: 0.2 });
+  const camDir = camera.position.clone().sub(new THREE.Vector3(0, 0.95, 0)).setY(0).normalize();
+  const camRight = new THREE.Vector3(camDir.z, 0, -camDir.x); // horizontal, to the camera's right
+  if (O.light) { hemi.intensity *= O.light; sun.intensity *= O.light; }
+  let bar = null;
+  if (O.plate) {
+    bar = new THREE.Group();
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 2.2, 12), new THREE.MeshStandardMaterial({ color: 0x777777, metalness: 0.6, roughness: 0.4 }));
+    rod.rotation.z = Math.PI / 2; bar.add(rod);
+    for (const sgn of [-1, 1]) {
+      const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.225, 0.05, 48), dark);
+      disc.rotation.z = Math.PI / 2; disc.position.x = sgn * 0.7; bar.add(disc);
+    }
+    scene.add(bar);
+  }
+  if (O.rack) {
+    const r = O.rack === true ? {} : O.rack;
+    for (const off of r.offsets ?? [0.1]) {
+      const up = new THREE.Mesh(new THREE.BoxGeometry(0.07, 2.4, 0.07), dark);
+      up.position.copy(camDir.clone().multiplyScalar(r.at ?? 0.8).add(camRight.clone().multiplyScalar(off))).setY(1.2);
+      scene.add(up);
+    }
+  }
+  if (O.person) {
+    resetPose(); neutralArms(); neutralLegs();
+    const other = cloneSkinned(body);
+    const q = O.person === true ? {} : O.person;
+    other.position.add(camRight.clone().multiplyScalar(q.side ?? 0.75)).add(camDir.clone().multiplyScalar(-(q.depth ?? 0.5)));
+    // Faces the camera (about the world's vertical: a model's root may carry another rotation).
+    other.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.atan2(camDir.x, camDir.z));
+    scene.add(other);
+    other.updateMatrixWorld(true);
+    bystander = (other.getObjectByName('mixamorigHips') || other.getObjectByName('mixamorig:Hips')).getWorldPosition(new THREE.Vector3());
+    resetPose();
+  }
+  placeOccluders = () => {
+    if (!bar) return;
+    body.updateMatrixWorld(true);
+    const at = P.exercise === 'squat' ? wp(B.LeftArm).add(wp(B.RightArm)).multiplyScalar(0.5).add(v(0, 0.02, -0.06))
+      : wp(B.LeftHand).add(wp(B.RightHand)).multiplyScalar(0.5);
+    bar.position.copy(at);
+  };
+  // Noise from its own seeded generator, so the set's timeline (rnd) is the same with and without it.
+  let ns = (P.seed >>> 0 || 1) ^ 0x5bd1e995;
+  const nr = () => { ns = (ns * 1664525 + 1013904223) >>> 0; return (ns + 0.5) / 2 ** 32; };
+  const gauss = () => Math.sqrt(-2 * Math.log(nr())) * Math.cos(2 * Math.PI * nr());
+  addNoise = () => {
+    const img = fctx.getImageData(0, 0, W, H), d = img.data;
+    for (let k = 0; k < d.length; k += 4) { const e = gauss() * O.noise; d[k] += e; d[k + 1] += e; d[k + 2] += e; }
+    fctx.putImageData(img, 0, 0);
+  };
+  renderBlurred = time => {
+    const k = O.blur, shutter = O.shutter ?? 1 / FPS;
+    fctx.globalAlpha = 1;
+    for (let s = 0; s < k; s++) {
+      poseAt(time - shutter * (1 - s / (k - 1)));
+      renderer.render(scene, camera);
+      fctx.globalAlpha = 1 / (s + 1); // running mean
+      fctx.drawImage(renderer.domElement, 0, 0);
+    }
+    fctx.globalAlpha = 1;
+  };
+}
+// Per frame, with P.occlude: the frame shrunk to 128 px gray (as test/real-phone/motion/capture.mjs takes it from the
+// app's decode), the box of the pose found (image landmarks with visibility >= 0.5), and, with a second person, whether
+// the pose found is the lifter: its hip midpoint nearer the lifter's projected hips than the bystander's (image
+// coordinates, x scaled to the height). A fixed distance to the lifter's hips misfired on side views (MediaPipe's hip
+// points sit off the rig's Hips bone), so only the nearer of the two people is read.
+const GRAY_SIDE = 128, gw = Math.round(W * GRAY_SIDE / H), gh = GRAY_SIDE;
+const small = document.createElement('canvas'); small.width = gw; small.height = gh;
+const sctx = small.getContext('2d', { willReadFrequently: true });
+const recordOcclusion = got => {
+  sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
+  sctx.drawImage(flat, 0, 0, gw, gh);
+  const px = sctx.getImageData(0, 0, gw, gh).data, gray = new Uint8Array(gw * gh);
+  for (let i = 0, j = 0; j < gray.length; i += 4, j++) gray[j] = (77 * px[i] + 150 * px[i + 1] + 29 * px[i + 2]) >> 8;
+  occ.gray.push(gray);
+  const lm = got?.landmarks?.[0];
+  let box = null, on = null;
+  if (lm) {
+    const vis = lm.filter(p => (p.visibility ?? 1) >= 0.5);
+    if (vis.length >= 4) {
+      const xs = vis.map(p => p.x), ys = vis.map(p => p.y);
+      box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(z => Math.round(z * 1000) / 1000);
+    }
+    if (bystander) {
+      const img = q => { const pr = q.clone().project(camera); return [(pr.x + 1) / 2, (1 - pr.y) / 2]; };
+      const mx = (lm[23].x + lm[24].x) / 2, my = (lm[23].y + lm[24].y) / 2;
+      const dist = ([x, y]) => Math.hypot((mx - x) * W / H, my - y);
+      on = dist(img(wp(B.Hips))) <= dist(img(bystander));
+    }
+  }
+  occ.boxes.push(box); occ.onTarget.push(on);
+};
+// The motion bench's input, kept small: each frame's region (motionRhythm.js roiFromBoxes over the set's boxes) shrunk
+// to GRID x GRID gray bytes, base64; motionCount reads them back with w = h = GRID and the whole grid as its region.
+const occlusionResult = () => {
+  const roi = roiFromBoxes(occ.boxes);
+  const grids = occ.gray.map(g => {
+    const r = shrinkRegion(g, gw, gh, roi, GRID);
+    let s = ''; for (let i = 0; i < r.length; i++) s += String.fromCharCode(Math.max(0, Math.min(255, Math.round(r[i]))));
+    return btoa(s);
+  });
+  return { boxes: occ.boxes, ...(bystander ? { onTarget: occ.onTarget } : {}), motion: { grid: GRID, roi, frames: grids } };
+};
 
 const flat = document.createElement('canvas'); flat.width = W; flat.height = H;
 const fctx = flat.getContext('2d', { willReadFrequently: true });
@@ -153,12 +278,14 @@ if (P.backKeepMs) globalThis.__WV_BENCH_BACK_KEEP_MS__ = P.backKeepMs;
 let detectMs = 0;
 const n = Math.floor(total * FPS);
 const jpegs = [];
-for (let i = 0; i < n; i++) {
-  const time = i / FPS;
+// The body's pose at a time (the set's timeline above).
+const poseAt = time => {
   resetPose();
   neutralArms(); neutralLegs();
   const { u, j } = progress(time);
-  for (const side of ['left', 'right']) POSE[P.exercise](side, u, (side === 'left' ? P.peakL : P.peakR) * j);
+  // P.alternate (7 October, opt-in): one side per rep, the left first (an alternating curl); the other side rests.
+  const busy = P.alternate ? (repAt(time) % 2 === 0 ? 'left' : 'right') : null;
+  for (const side of ['left', 'right']) POSE[P.exercise](side, busy && side !== busy ? 0 : u, (side === 'left' ? P.peakL : P.peakR) * j);
   // A squat lowers the hips so the feet stay on the floor.
   // The drop is set in world space and taken back through the Hips' parent, which in these models is scaled
   // and turned (review, 2 October: dividing by the body's scale left the feet 0.3 m off the floor).
@@ -176,8 +303,19 @@ for (let i = 0; i < n; i++) {
     B.Hips.position.copy(B.Hips.parent.worldToLocal(hips));
     body.updateMatrixWorld(true);
   }
-  renderer.render(scene, camera);
-  fctx.drawImage(renderer.domElement, 0, 0);
+  if (O) placeOccluders();
+};
+for (let i = 0; i < n; i++) {
+  const time = i / FPS;
+  // P.occlude.blur: the frame is the mean of `blur` renders over the shutter time before it (motion blur), the body
+  // posed at each; the pose at the frame's own time is set last, for the truth.
+  if (O?.blur > 1) renderBlurred(time);
+  poseAt(time);
+  if (!(O?.blur > 1)) {
+    renderer.render(scene, camera);
+    fctx.drawImage(renderer.domElement, 0, 0);
+  }
+  if (O?.noise) addNoise();
   if (P.video) { jpegs.push(flat.toDataURL('image/jpeg', 0.9)); truth.push(truthAngles()); ts.push(time); continue; }
   const d0 = performance.now();
   const res = detectPoseImage(model, flat, time * 1000, { backfill: true });
@@ -195,6 +333,7 @@ for (let i = 0; i < n; i++) {
     detectMs += performance.now() - d1;
     if (r2?.worldLandmarks?.[0]) got = { ...r2, source: 'lost-model' };
   }
+  if (O) recordOcclusion(got, time);
   frames.push(got ? round(got.worldLandmarks[0]) : null);
   sources.push(got ? (got.source ?? 'full') : null);
   truth.push(truthAngles());
@@ -203,3 +342,4 @@ for (let i = 0; i < n; i++) {
 }
 window.JPEGS = jpegs;
 window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, poseSources: sources, detectMs, truth, timestamps: ts, size: [W, H] };
+if (O && !P.video) window.RESULT.occlusion = occlusionResult();

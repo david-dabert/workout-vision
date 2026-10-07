@@ -1,0 +1,563 @@
+[
+ {
+  "id": "soldier-squat-v90-clean",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8101,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-squat-v90-plate",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8101,
+  "shot": true,
+  "occlude": {
+   "plate": true
+  }
+ },
+ {
+  "id": "soldier-squat-v90-rack",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8101,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-squat-v90-dim",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8101,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-squat-v90-person",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8101,
+  "shot": true,
+  "occlude": {
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-squat-v90-gym",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 90,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8101,
+  "shot": true,
+  "occlude": {
+   "plate": true,
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   },
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4,
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-squat-v0-clean",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 0,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8100,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-squat-v0-rack",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 0,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8100,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-squat-v0-dim",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 0,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8100,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-squat-v0-person",
+  "model": "soldier",
+  "exercise": "squat",
+  "view": 0,
+  "reps": 6,
+  "peakL": 100,
+  "peakR": 100,
+  "seed": 8100,
+  "shot": true,
+  "occlude": {
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v90-clean",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 90,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8111,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-overhead_press-v90-plate",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 90,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8111,
+  "shot": true,
+  "occlude": {
+   "plate": true
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v90-rack",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 90,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8111,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v90-dim",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 90,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8111,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v90-person",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 90,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8111,
+  "shot": true,
+  "occlude": {
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v0-clean",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 0,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8110,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-overhead_press-v0-rack",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 0,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8110,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v0-dim",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 0,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8110,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-overhead_press-v0-person",
+  "model": "soldier",
+  "exercise": "overhead_press",
+  "view": 0,
+  "reps": 6,
+  "peakL": 170,
+  "peakR": 170,
+  "seed": 8110,
+  "shot": true,
+  "occlude": {
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl-v90-clean",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8121,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-bicep_curl-v90-plate",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8121,
+  "shot": true,
+  "occlude": {
+   "plate": true
+  }
+ },
+ {
+  "id": "soldier-bicep_curl-v90-rack",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8121,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl-v90-dim",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8121,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-bicep_curl-v90-person",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 90,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8121,
+  "shot": true,
+  "occlude": {
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl-v0-clean",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 0,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8120,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-bicep_curl-v0-rack",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 0,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8120,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl-v0-dim",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "view": 0,
+  "reps": 6,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8120,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v0-clean",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 0,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8130,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v0-rack",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 0,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8130,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v0-dim",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 0,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8130,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v0-person",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 0,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8130,
+  "shot": true,
+  "occlude": {
+   "person": {
+    "side": 0.75,
+    "depth": 0.5
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v90-clean",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 90,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8131,
+  "shot": true,
+  "occlude": {}
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v90-rack",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 90,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8131,
+  "shot": true,
+  "occlude": {
+   "rack": {
+    "at": 0.8,
+    "offsets": [
+     0.1
+    ]
+   }
+  }
+ },
+ {
+  "id": "soldier-bicep_curl_alternating-v90-dim",
+  "model": "soldier",
+  "exercise": "bicep_curl",
+  "alternate": true,
+  "lift": "bicep_curl_alternating",
+  "view": 90,
+  "reps": 10,
+  "peakL": 130,
+  "peakR": 130,
+  "seed": 8131,
+  "shot": true,
+  "occlude": {
+   "light": 0.3,
+   "noise": 12,
+   "blur": 4
+  }
+ }
+]

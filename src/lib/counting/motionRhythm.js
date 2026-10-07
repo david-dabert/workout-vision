@@ -27,7 +27,12 @@
  * end samples) were set while looking at David's five real videos, which are therefore not a held-out test; MM-Fit
  * w19 (8 sets) and five synthetic videos were run once after the rules were frozen (TRIED.md, 7 October).
  * Known limit (it.fails in __tests__/motionRhythm.test.js): reps that never pause at the rest can count one short.
- * Alternating lifts (one arm then the other) repeat once per pair: the motion count is half the label.
+ * Alternating lifts (one arm then the other) repeat once per pair: the motion count is half the label. Rule of
+ * 7 October (opts.alternating, which the caller sets for a lift the catalogue counts on both sides, `bothSides` in
+ * core.ts liftDefinition: the alternating curl, the walking lunge, the dead bug...): the region is cut into its left and
+ * right halves, each half's rep component is counted over the same period (alternationPhase), and when the two halves
+ * turn half a period apart (anti-phase: one side works while the other rests) each counted period holds two reps, so
+ * the count doubles. When they turn together (both sides in each half, as from the side) the count is left as it is.
  */
 
 export const GRID = 24;
@@ -45,6 +50,14 @@ export const REST_EDGE_SEC = 0.5;
 export const MIN_SMOOTHNESS = 0.5;
 /** Within this share of the best autocorrelation peak, the shortest lag wins (a period, not two of them). */
 export const HARMONIC_SHARE = 0.85;
+/**
+ * Alternating lifts: the left and right halves of the region are taken as anti-phase when their peaks lie, by median,
+ * at least ALT_MIN_PHASE of a period from each other (0 = together, 0.5 = exactly alternating); each half is read on an
+ * ALT_GRID x ALT_GRID grid. Source: UNSOURCED. Status: experimental (7 October; one real alternating set, MM-Fit w19's
+ * curls, and synthetic alternating curls; test/real-phone/motion/motion.txt, test/real-phone/occlusion/).
+ */
+export const ALT_MIN_PHASE = 0.3;
+export const ALT_GRID = 12;
 
 const quantile = (xs, q) => {
   if (!xs.length) return NaN;
@@ -207,10 +220,46 @@ export function countExcursions(signal, lag, { prominenceShare = PROMINENCE_SHAR
 }
 
 /**
+ * Whether the left and right halves of the region move in turn over a period of `lag` samples (an alternating lift
+ * seen from the front or the back). Each half: its first PCS principal components on an ALT_GRID grid, the one with
+ * the highest autocorrelation at the period minus that at half of it, less its centred mean over one period, counted
+ * as in motionCount (components with no memory from one sample to the next, MIN_SMOOTHNESS, are noise and left out).
+ * phase: the median, over the left half's peaks, of the distance to the nearest right-half peak in
+ * periods, folded into 0 to 0.5. null when either half has fewer than two peaks.
+ * @returns {{ left: number, right: number, phase: number | null, antiPhase: boolean }}
+ */
+export function alternationPhase(frames, w, h, roi, lag, opts = {}) {
+  const mid = (roi[0] + roi[2]) / 2;
+  const halves = [[roi[0], roi[1], mid, roi[3]], [mid, roi[1], roi[2], roi[3]]].map(r => {
+    const { signals } = principalSignals(frames.map(f => shrinkRegion(f, w, h, r, opts.altGrid ?? ALT_GRID)), opts.pcs ?? PCS);
+    let best = null;
+    for (const sig of signals) {
+      const ac = autocorrelation(sig, lag + 1);
+      if (ac.length <= lag || ac[1] < MIN_SMOOTHNESS) continue; // frame noise, not motion
+      const score = ac[lag] - ac[Math.round(lag / 2)];
+      if (!best || score > best.score) best = { score, sig };
+    }
+    if (!best) return [];
+    const trend = smooth(best.sig, lag);
+    return countExcursions(best.sig.map((x, i) => x - trend[i]), lag, opts).peaks;
+  });
+  const [L, R] = halves;
+  if (L.length < 2 || R.length < 2) return { left: L.length, right: R.length, phase: null, antiPhase: false };
+  const folded = L.map(p => {
+    const d = Math.min(...R.map(q => Math.abs(q - p))) / lag, f = d - Math.floor(d);
+    return Math.min(f, 1 - f);
+  });
+  const phase = Math.round(quantile(folded, 0.5) * 100) / 100;
+  return { left: L.length, right: R.length, phase, antiPhase: phase >= (opts.altMinPhase ?? ALT_MIN_PHASE) };
+}
+
+/**
  * The motion count of a set.
  * @param {{ frames: ArrayLike<number>[], w: number, h: number, timestamps: number[], boxes?: Array<number[] | null> }} set
  *   frames: gray bytes, w x h, one per sample; timestamps in seconds; boxes: the pose box per sample in [0, 1], or null.
- * @returns {{ count: number, period: number | null, confidence: number, roi: number[], component: number, peaksAt: number[] }}
+ * @param {{ alternating?: boolean } & Record<string, any>} [opts] alternating: the lift is done one side at a time
+ *   (liftDefinition(lift).bothSides); the count doubles when the region's halves move in turn (alternationPhase).
+ * @returns {{ count: number, period: number | null, confidence: number, roi: number[], component: number, peaksAt: number[], alternation?: { left: number, right: number, phase: number | null, antiPhase: boolean } }}
  */
 export function motionCount({ frames, w, h, timestamps, boxes = [] }, opts = {}) {
   const T = frames.length;
@@ -272,7 +321,14 @@ export function motionCount({ frames, w, h, timestamps, boxes = [] }, opts = {})
   const gm = gaps.reduce((s, x) => s + x, 0) / (gaps.length || 1);
   const cv = gaps.length > 1 ? Math.sqrt(gaps.reduce((s, x) => s + (x - gm) ** 2, 0) / gaps.length) / gm : 1;
   const confidence = Math.round(best.strength * Math.max(0, 1 - Math.min(1, cv)) * 100) / 100;
-  return { count: peaks.length, period: Math.round(best.lag * dt * 100) / 100, confidence, roi, component: best.k, peaksAt: peaks.map(i => timestamps[i]) };
+  const out = { count: peaks.length, period: Math.round(best.lag * dt * 100) / 100, confidence, roi, component: best.k, peaksAt: peaks.map(i => timestamps[i]) };
+  // An alternating lift whose two halves move in turn: each period counted holds one rep per side.
+  if (opts.alternating) {
+    const alt = alternationPhase(frames, w, h, roi, best.lag, opts);
+    out.alternation = alt;
+    if (alt.antiPhase) out.count = 2 * peaks.length;
+  }
+  return out;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { motionCount, dominantPeriod, prominentPeaks, roiFromBoxes, countExcursions, crossCheck, principalSignals } from '../motionRhythm.js';
+import { motionCount, dominantPeriod, prominentPeaks, roiFromBoxes, countExcursions, crossCheck, principalSignals, alternationPhase } from '../motionRhythm.js';
 
 const FPS = 15;
 
@@ -29,7 +29,62 @@ function video({ reps = 8, repSec = 2, restSec = 1.5, w = 48, h = 64, noise = 6,
   return { frames, w, h, timestamps };
 }
 
+/**
+ * Two bright squares (the two hands) on a textured background, left and right. 'alternate': rep k moves the left square
+ * when k is even, the right one when it is odd (an alternating curl from the front); 'together': both move on every rep.
+ * Each rep lasts repSec, then a pause of pauseSec at the rest.
+ */
+function twoArms({ reps = 10, repSec = 1.6, pauseSec = 0.4, restSec = 1.5, mode = 'alternate', w = 64, h = 48, noise = 6, seed = 9 } = {}) {
+  let s = seed;
+  const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+  const bg = new Uint8Array(w * h).map((_, i) => 60 + ((i * 37) % 50));
+  const frames = [], timestamps = [];
+  const total = restSec * 2 + reps * (repSec + pauseSec);
+  for (let i = 0; i < Math.round(total * FPS); i++) {
+    const t = i / FPS, k = Math.floor((t - restSec) / (repSec + pauseSec)), into = t - restSec - k * (repSec + pauseSec);
+    const y = k >= 0 && k < reps && into < repSec ? (1 - Math.cos((2 * Math.PI * into) / repSec)) / 2 : 0;
+    const yl = mode === 'together' || k % 2 === 0 ? y : 0, yr = mode === 'together' || k % 2 === 1 ? y : 0;
+    const f = new Uint8Array(w * h);
+    for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+      const top = xx < w / 2 ? h * (0.6 - 0.45 * yl) : h * (0.6 - 0.45 * yr);
+      const inside = yy >= top && yy < top + h * 0.2 && ((xx >= w * 0.12 && xx < w * 0.35) || (xx >= w * 0.65 && xx < w * 0.88));
+      f[yy * w + xx] = Math.max(0, Math.min(255, (inside ? 220 : bg[yy * w + xx]) + (rnd() - 0.5) * 2 * noise));
+    }
+    frames.push(f); timestamps.push(t);
+  }
+  return { frames, w, h, timestamps };
+}
+
 describe('motionRhythm', () => {
+  // Alternating lifts (7 October): the frames repeat once per left-right pair, so the plain count is half.
+  it('counts both half-cycles of an alternating lift whose halves move in turn', () => {
+    const v = twoArms({ reps: 10 });
+    const plain = motionCount(v);
+    expect(plain.count).toBe(5);
+    const alt = motionCount(v, { alternating: true });
+    expect(alt.alternation.antiPhase).toBe(true);
+    expect(alt.alternation.phase).toBeGreaterThan(0.4);
+    expect(alt.count).toBe(10);
+    expect(motionCount(twoArms({ reps: 8, repSec: 2, pauseSec: 0.6, seed: 4 }), { alternating: true }).count).toBe(8);
+  });
+
+  it('leaves the count alone when both halves move together, or when the lift is not alternating', () => {
+    const together = twoArms({ reps: 8, mode: 'together' });
+    const r = motionCount(together, { alternating: true });
+    expect(r.alternation.antiPhase).toBe(false);
+    expect(r.count).toBe(8);
+    expect(motionCount(twoArms({ reps: 10 })).alternation).toBeUndefined();
+  });
+
+  it('reads no phase when one half holds only pixel noise', () => {
+    const v = video({ reps: 6, repSec: 2 });
+    // The square spans 30 to 70 % of the width: the region's left half (0 to 25 %) holds no motion.
+    const a = alternationPhase(v.frames, v.w, v.h, [0, 0, 0.5, 1], Math.round(2 * FPS));
+    expect(a.left).toBe(0);
+    expect(a.phase).toBeNull();
+    expect(a.antiPhase).toBe(false);
+  });
+
   it('counts a clean periodic set and finds its period', () => {
     const r = motionCount(video({ reps: 8, repSec: 2 }));
     expect(r.count).toBe(8);
