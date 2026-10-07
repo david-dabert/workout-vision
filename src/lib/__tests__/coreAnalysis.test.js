@@ -195,3 +195,41 @@ describe('one pose worker at a time', () => {
     } finally { delete globalThis.__passes; }
   });
 });
+
+// Speed investigation, 7 October: the next sample is read while the worker reads the one before (pipelining). The
+// worker answers in the order it was sent (one thread, one queue), so each sample keeps its own landmarks; at most two
+// samples are sent and not yet placed.
+describe('pipelined samples', () => {
+  it('keep their order and their own landmarks, two in flight at most', async () => {
+    const log = { outstanding: 0, peak: 0 };
+    globalThis.Worker = class {
+      constructor() { this.onmessage = null; this.queue = []; this.busy = false; }
+      // One message at a time, first in first out, with a varying delay, as a worker thread reads them.
+      pump() {
+        if (this.busy || !this.queue.length) return;
+        this.busy = true;
+        const m = this.queue.shift();
+        setTimeout(() => {
+          this.busy = false;
+          if (m.pixels) log.outstanding--;
+          const k = m.timestamp == null ? 0 : Math.round(m.timestamp * 15 / 1000);
+          const world = Array.from({ length: 33 }, (_, i) => ({ x: i / 33 + k / 1000, y: k, z: 0, visibility: 1 }));
+          this.onmessage?.({ data: m.type ? { id: m.id } : { id: m.id, image: world, world } });
+          this.pump();
+        }, m.pixels ? (m.timestamp * 7) % 3 : 0);
+      }
+      postMessage(m) { if (m.pixels) { log.outstanding++; log.peak = Math.max(log.peak, log.outstanding); } this.queue.push(m); this.pump(); }
+      terminate() {}
+    };
+    globalThis.window = globalThis.window ?? { dispatchEvent() {} };
+    globalThis.CustomEvent = globalThis.CustomEvent ?? class { constructor(type, init) { this.type = type; this.detail = init?.detail; } };
+    globalThis.__passes = [30, 439];
+    try {
+      const r = await analyzeCoreVideo(new Blob(['x']), 'lateral_raise');
+      expect(r.timestamps.length).toBe(439);
+      expect(r.worldLandmarks.every((w, i) => w[0].y === i)).toBe(true);
+      expect(r.timestamps.every((t, i) => t === i / 15)).toBe(true);
+      expect(log.peak).toBe(2);
+    } finally { delete globalThis.__passes; }
+  });
+});
