@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { tModule } from '../lib/LanguageContext';
+import { noteError } from '../lib/crashLog';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -15,6 +16,8 @@ class ErrorBoundary extends Component {
     console.error('[ErrorBoundary] Caught error:', error);
     console.error('[ErrorBoundary] Component stack:', errorInfo?.componentStack);
     this._componentStack = errorInfo?.componentStack || '';
+    // The last error, kept in the crash log on the phone (crashLog.js).
+    noteError(error, 'boundary');
   }
 
   handleTryAgain = () => {

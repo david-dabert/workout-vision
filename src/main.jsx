@@ -7,6 +7,11 @@ import App from './App.jsx'
 import { startEvents } from './lib/events'
 import { collectSwitchAtLoad } from './lib/phoneCollect'
 import { holdInstallPrompt } from './lib/install'
+import { startCrashLog } from './lib/crashLog'
+
+// The crash log kept on the phone (crashLog.js): a previous session that did not end cleanly is found here, before the
+// app renders, and the choice of lift says so. A reload by the service worker below is a clean navigation (pagehide).
+startCrashLog();
 
 // Anonymous usage counts, only when the build names a server for them (src/lib/events.js).
 startEvents();

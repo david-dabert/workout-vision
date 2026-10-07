@@ -82,9 +82,49 @@ export class PartialReadError extends Error {
   constructor({ read, expected, decoder = '', disordered = false, fallback = null }) { super(`${read} samples read${disordered ? ' out of time order' : ''} where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; this.disordered = disordered; this.fallback = fallback; }
 }
 
+// One pose worker, and so one pose model and its WASM heap, at a time (crash investigation, 7 October, cause 3): an
+// analysis started right after another (a cancel then another video, Restart) waits until the previous worker has
+// closed its model, or for at most WORKER_CLOSE_MS, and has been terminated. A worker kept and reused across analyses
+// would be simpler but would carry the pose model's state from one video to the next (poseAnalysis.js: the image
+// smoothing, the crop seed and the backward pass are module state in the worker) and keep the model's memory while the
+// result and the replay are on screen; a fresh worker per analysis keeps every analysis's landmarks as they were.
+// WORKER_CLOSE_MS: convention, UNSOURCED (the model closes in a few milliseconds when the worker is idle).
+const WORKER_CLOSE_MS = 1000;
+let previousWorkerGone = Promise.resolve();
+
 export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
-  const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
+  // Analyses queue one behind the other: each waits for the worker of the one started before it.
+  const before = previousWorkerGone;
+  let workerGone;
+  previousWorkerGone = new Promise(resolve => { workerGone = resolve; });
+  try {
+    await before;
+    signal?.throwIfAborted();
+  } catch (err) {
+    workerGone();
+    throw err;
+  }
+  let worker;
+  try { worker = new Worker(new URL('./corePoseWorker.js', import.meta.url)); } catch (err) { workerGone(); throw err; }
+  let ended = false;
+  // Terminates the worker, at once on a cancel or a failure of the worker, else once it has closed its model.
+  const endWorker = (graceful) => {
+    if (ended) return;
+    ended = true;
+    if (!graceful) { worker.terminate(); workerGone(); return; }
+    let timer, finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      worker.terminate();
+      failAll(new Error('Pose worker closed'));
+      workerGone();
+    };
+    timer = setTimeout(done, WORKER_CLOSE_MS);
+    send({ type: 'close' }).then(done, done);
+  };
   let id = 0;
   const pending = new Map();
   const failAll = (error) => {
@@ -99,8 +139,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     if (data.error) request.reject(new Error(data.error));
     else request.resolve(data);
   };
-  worker.onerror = (event) => failAll(new Error(event.message || 'Pose worker failed'));
-  const abort = () => { worker.terminate(); failAll(new DOMException('Cancelled', 'AbortError')); };
+  let workerFailed = false;
+  worker.onerror = (event) => { workerFailed = true; failAll(new Error(event.message || 'Pose worker failed')); };
+  const abort = () => { endWorker(false); failAll(new DOMException('Cancelled', 'AbortError')); };
   const send = (message, transfer = []) => new Promise((resolve, reject) => {
     const requestId = id++;
     const timer = setTimeout(() => { pending.delete(requestId); reject(new Error('Pose worker timed out')); }, 60000);
@@ -117,13 +158,14 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // The sample each worker timestamp was sent for, so the backward pass's results land on their own samples.
     const sampleAt = new Map();
     // `path` and `inject` come from the check page only (check-main.js): the app passes neither.
-    const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp) => {
+    const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp, read) => {
       signal?.throwIfAborted();
       // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
       // (frameExtractor.js): only the last pass is kept, so a short first pass can never make up for samples the
       // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
       if (index === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; sampleAt.clear(); }
-      const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer;
+      // The pixels the extractor already read for its frozen-read check (one readback per sample, not two).
+      const pixels = (read ?? canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)).data.buffer;
       const sent = index * 1000 / TARGET_FPS;
       const result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: sent }, [pixels]);
       // Backward pass (poseCrop.js): earlier samples without a pose that the worker has now read; a sample that has a
@@ -160,7 +202,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     return result;
   } finally {
     signal?.removeEventListener('abort', abort);
-    worker.terminate();
     failAll(new Error('Analysis finished'));
+    endWorker(!workerFailed && !signal?.aborted);
   }
 }

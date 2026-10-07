@@ -10,6 +10,13 @@ let model;
 let canvas;
 self.onmessage = async ({ data }) => {
   try {
+    // The analysis is over: the model is closed before the page terminates this worker (coreAnalysis.js, endWorker).
+    if (data.type === 'close') {
+      try { model?.close(); } catch {}
+      model = null; canvas = null;
+      self.postMessage({ id: data.id });
+      return;
+    }
     if (data.type === 'init') {
       model = await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');

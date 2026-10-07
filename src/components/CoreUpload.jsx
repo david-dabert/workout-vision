@@ -8,6 +8,11 @@ import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
 import { compactWave, waveAngles } from './experience/wave';
 import { track } from '../lib/events';
+import { markCrash, noteError } from '../lib/crashLog';
+
+// The crash log's breadcrumbs during the reading of the video (crashLog.js): every 2 s at most, so the log is written
+// about as often as a phone's screen would notice. Convention, UNSOURCED.
+const CRASH_MARK_MS = 2000;
 
 // The analysis of the video chosen on the Film screen: App mounts it only with a lift and a file (App.jsx,
 // page 'analyze'). The old standalone form (lift and file pickers, an 'Arm used' line) and its save of the
@@ -36,7 +41,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   const savedIdRef = useRef(null);
   const abort = useRef(null);
   const closeTimer = useRef(null);
-  useEffect(() => () => { abort.current?.abort(); clearTimeout(closeTimer.current); }, []);
+  useEffect(() => () => { abort.current?.abort(); clearTimeout(closeTimer.current); markCrash({ phase: null }); }, []);
 
   // Arriving from the Film screen with a file, the analysis starts at once. Start and
   // abort live in one effect, so a remount (StrictMode) restarts it instead of losing it.
@@ -57,13 +62,24 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
     const mine = () => abort.current === controller;
     setResult(null); setSavedCount(null); setSavedSides(null); setError(null); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
     let release = () => {}, wake = async () => {};
+    // Crash log (crashLog.js): the phase, then while the video is read, the sample reached and the frame size.
+    let samples = 0, marked = 0;
+    markCrash({ phase: 'waiting', sample: null, frame: null, decoder: null, file: file ? { type: file.type || '', size: file.size ?? null } : null });
+    const onPhase = p => { markCrash({ phase: p, sample: samples }); if (mine()) setPhase(p); };
+    const onLandmarks = (lm, w, h) => {
+      samples++;
+      const at = Date.now();
+      if (at - marked >= CRASH_MARK_MS) { marked = at; markCrash({ phase: 'extracting', sample: samples, frame: [w, h] }); }
+      if (mine()) { setLandmarks(lm); setFrameSize([w, h]); }
+    };
     try {
       // A video chosen while the page is still hidden (back from the camera) waits for it.
       await whenVisible({ signal: controller.signal });
       release = watchInterruption(controller);
       if (mine()) track('analysis_start', { lift });
       wake = holdScreenAwake();
-      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase: p => { if (mine()) setPhase(p); }, onLandmarks: (lm, w, h) => { if (mine()) { setLandmarks(lm); setFrameSize([w, h]); } } });
+      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks });
+      markCrash({ phase: 'result', sample: output.timestamps?.length ?? samples, frame: output.metadata ? [output.metadata.width, output.metadata.height] : null, decoder: output.metadata?.method || null });
       // A beat at 100 %, then the result, as in the prototype; a run hidden meanwhile shows no count.
       setProgress(100);
       const settled = await settleRun(controller.signal, output, initialFile && !matchMedia('(prefers-reduced-motion: reduce)').matches ? 380 : 0);
@@ -75,11 +91,15 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
         track(settled.refused ? 'analysis_refused' : settled.count === 0 ? 'analysis_uncounted' : 'analysis_done', { lift });
       }
     } catch (e) {
+      if (e?.name !== 'AbortError') { markCrash({ phase: 'error', sample: samples, decoder: e?.decoder || null }); noteError(e, 'analysis'); }
       if (isInterruption(controller.signal.reason)) { if (mine()) { setInterrupted(true); track('analysis_interrupted', { lift }); } }
       else if (e.name === 'PartialReadError') { if (mine()) { setIncomplete({ read: e.read, expected: e.expected, decoder: e.decoder, disordered: e.disordered }); track('analysis_partial', { lift }); } }
       else if (e.name !== 'AbortError' && mine()) { console.error('[analysis]', e); setError({ name: e.name || 'Error', message: e.message || 'failed', decoder: e.decoder || '' }); track('analysis_failed', { lift }); }
     } finally { release(); wake(); if (mine()) abort.current = null; }
   }
+
+  // Over the result, the replay or the report is the phase of the crash log (crashLog.js).
+  useEffect(() => { if (result) markCrash({ phase: overlay || 'result' }); }, [overlay, result]);
 
   const refilm = onRefilm || onClose;
   function closeOverlay() {

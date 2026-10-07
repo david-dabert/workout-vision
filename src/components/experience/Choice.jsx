@@ -15,6 +15,8 @@ import { COLLECT } from './collect-copy';
 import { PRO } from './pro-copy';
 import { loadReceived } from './programme-store';
 import { InstallRow } from './Install';
+import { pendingIncident, dismissIncident } from '../../lib/crashLog';
+import { CRASH, crashLine } from './crash-copy';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -119,6 +121,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       <div className="choose-hero">
       <div className="wrap">
         <div className="topbar"><span className="brand-sm">Workout Vision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
+        <CrashNote fr={fr} />
         {last && <div className="welcome">
           <p className="welcome-l1">{fr ? 'Bon retour.' : 'Welcome back.'}</p>
           {lastName && <p className="welcome-l2">{fr
@@ -207,6 +210,27 @@ function UsageNote({ fr }) {
       aria-label={off ? (fr ? 'Réactiver le comptage anonyme' : 'Turn anonymous counting back on') : (fr ? 'Désactiver le comptage anonyme' : 'Turn off anonymous counting')}>
       {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}
     </button>
+  </div>;
+}
+
+// One line after the app restarted during a session that did not end cleanly (crashLog.js): where it was, and its
+// detail to copy for David, kept on the phone until dismissed. Nothing shows without an incident.
+function CrashNote({ fr }) {
+  const [incident, setIncident] = useState(pendingIncident);
+  const [copied, setCopied] = useState(null);
+  if (!incident) return null;
+  const c = CRASH[fr ? 'fr' : 'en'];
+  const copy = () => {
+    const text = JSON.stringify(incident, null, 2);
+    Promise.resolve().then(() => navigator.clipboard.writeText(text)).then(() => setCopied('ok'), () => setCopied('failed'));
+  };
+  const dismiss = () => { dismissIncident(); setIncident(null); };
+  return <div className="foot usage-note crash-note" data-testid="crash-note">
+    <p role="status">{copied === 'ok' ? `${crashLine(incident, fr)} ${c.copied}` : copied === 'failed' ? `${crashLine(incident, fr)} ${c.copyFailed}` : crashLine(incident, fr)}</p>
+    <div className="crash-keys">
+      <button type="button" className="text-btn press" onClick={copy} data-testid="crash-copy">{c.copy}</button>
+      <button type="button" className="text-btn press" onClick={dismiss} aria-label={c.dismissLabel} data-testid="crash-dismiss">{c.dismiss}</button>
+    </div>
   </div>;
 }
 

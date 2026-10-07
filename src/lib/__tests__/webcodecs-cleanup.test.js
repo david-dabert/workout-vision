@@ -70,3 +70,28 @@ describe('a video whose first frame is not at 0 s', () => {
     for (let i = 1; i < at.length; i++) expect(at[i] - at[i - 1], `sample ${i}`).toBeCloseTo(1 / 15, 2);
   });
 });
+
+// Crash investigation, 7 October: the feeding now pauses while the decoder holds more than two chunks. A decoder that
+// reorders frames (HEVC with B-frames) can hold several chunks before it gives the first frame: the feeding must not
+// wait on it forever while the main loop waits for that frame.
+describe('a decoder that needs several chunks before its first frame', () => {
+  it('is fed on after a stall, and every sample is read', async () => {
+    const { extractFramesWebCodecs } = await import('../frameExtractor');
+    globalThis.__stream = () => chunks(60);
+    globalThis.VideoDecoder = class {
+      static async isConfigSupported() { return { supported: true }; }
+      constructor({ output }) { this.output = output; this.held = []; decoders.push(this); }
+      get decodeQueueSize() { return this.held.length; }
+      configure() {}
+      // Holds four chunks before it gives the earliest one, as a reordering decoder does.
+      decode(chunk) { this.held.push(chunk); if (this.held.length > 4) this.output(makeFrame(this.held.shift().t)); }
+      async flush() { while (this.held.length) this.output(makeFrame(this.held.shift().t)); }
+      close() { this.closed = true; }
+    };
+    const at = [];
+    const result = await extractFramesWebCodecs(new Blob(['x']), 15, Infinity, 640, async (_c, _i, t) => { at.push(t); }, null, {});
+    expect(at.length).toBe(30);
+    expect(result.feedStalls).toBe(1);
+    expect(frames.every(f => f.closed)).toBe(true);
+  }, 10000);
+});

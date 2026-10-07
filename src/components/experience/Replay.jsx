@@ -76,13 +76,23 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       .finally(() => { sharing.current = false; });
   }
 
-  // The file is read where it lies on the phone; its address lives as long as the screen.
+  // The file is read where it lies on the phone; its address lives as long as the screen. Leaving, the video is
+  // unloaded (paused, its source removed, load()) so the browser drops its decoder and buffered frames at once rather
+  // than when the element is collected, and the overlay's canvas is emptied (crash investigation, 7 October, cause 5).
   useEffect(() => {
     if (!file) return undefined;
     const address = URL.createObjectURL(file);
     setUrl(address);
-    return () => URL.revokeObjectURL(address);
+    const video = videoRef.current;
+    return () => {
+      if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
+      URL.revokeObjectURL(address);
+    };
   }, [file]);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    return () => { if (canvas) { canvas.width = 0; canvas.height = 0; } };
+  }, []);
   // Focus goes to Back for the keyboard and screen readers, without painting the ring on a touch (#25).
   useEffect(() => { backRef.current?.focus({ preventScroll: true, focusVisible: false }); }, []);
   useEffect(() => { if (leaving) videoRef.current?.pause(); }, [leaving]);
