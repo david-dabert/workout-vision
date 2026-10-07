@@ -17,13 +17,21 @@ export function frameFingerprint(data, step = 7) {
   return h >>> 0;
 }
 
-/** The fingerprint of what a canvas holds, or null when it cannot be read (a null is never taken for a repeat). */
-export function canvasFingerprint(canvas) {
+/** The pixels a canvas holds (ImageData), or null when it cannot be read. */
+export function canvasPixels(canvas) {
   try {
-    return frameFingerprint(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data);
+    return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
   } catch {
     return null;
   }
+}
+
+/** The fingerprint of pixels read by canvasPixels, or null for none (a null is never taken for a repeat). */
+export const pixelsFingerprint = image => (image ? frameFingerprint(image.data) : null);
+
+/** The fingerprint of what a canvas holds, or null when it cannot be read (a null is never taken for a repeat). */
+export function canvasFingerprint(canvas) {
+  return pixelsFingerprint(canvasPixels(canvas));
 }
 
 // A frozen read: the decoder handed the same picture again and again, so the pose stood still and the count was a

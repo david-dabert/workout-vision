@@ -117,13 +117,14 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // The sample each worker timestamp was sent for, so the backward pass's results land on their own samples.
     const sampleAt = new Map();
     // `path` and `inject` come from the check page only (check-main.js): the app passes neither.
-    const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp) => {
+    const metadata = await extractFramesStreaming(file, TARGET_FPS, MAX_FRAMES, MAX_LONG_SIDE, async (canvas, index, timestamp, read) => {
       signal?.throwIfAborted();
       // A decoding path that fails part-way leaves its samples behind, and the fallback starts again at sample 0
       // (frameExtractor.js): only the last pass is kept, so a short first pass can never make up for samples the
       // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
       if (index === 0 && timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; sampleAt.clear(); }
-      const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data.buffer;
+      // The pixels the extractor already read for its frozen-read check (one readback per sample, not two).
+      const pixels = (read ?? canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)).data.buffer;
       const sent = index * 1000 / TARGET_FPS;
       const result = await send({ pixels, width: canvas.width, height: canvas.height, timestamp: sent }, [pixels]);
       // Backward pass (poseCrop.js): earlier samples without a pose that the worker has now read; a sample that has a

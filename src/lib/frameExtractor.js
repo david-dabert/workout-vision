@@ -12,7 +12,7 @@
  * All methods stream one frame at a time via callback, keeping memory constant.
  */
 
-import { canvasFingerprint, isFrozenRead, repeatCounter } from './frozenRead';
+import { canvasPixels, isFrozenRead, pixelsFingerprint, repeatCounter } from './frozenRead';
 
 /**
  * Whether a frame must be rotated by hand: the container says it is turned (90, 180 or 270°) and the decoded frame
@@ -758,7 +758,8 @@ export async function withRestarts(run, options = {}, max = 3) {
  * @param {number} targetFps - Target frames per second
  * @param {number} maxFrames - Maximum frames to extract
  * @param {number} maxWidth - Maximum frame width
- * @param {function} onFrame - Called with (canvas, frameIndex, timestamp)
+ * @param {function} onFrame - Called with (canvas, frameIndex, timestamp, pixels): pixels is the canvas's ImageData,
+ *   read once for the frozen-read fingerprint, or null when it could not be read; the callback may transfer its buffer
  * @param {function} onProgress - Progress callback (0-100)
  * @param {Object} [options] - Additional options
  * @param {AbortSignal} [options.signal] - AbortSignal for cancellation
@@ -781,11 +782,16 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   const frozenCheck = (name) => {
     if (isFrozenRead(repeats.read)) throw new FrozenReadError(repeats.read, name);
   };
+  // The sample's pixels are read once (a GPU readback of the whole picture on a phone) and handed on with the canvas:
+  // the fingerprint and the caller's pose model use the same copy (crash investigation, 7 October, cause 2: two
+  // readbacks per sample). The caller may transfer the buffer away, so the fingerprint is taken first. Null when the
+  // canvas cannot be read; the caller then reads it itself, as before.
   const counted = async (canvas, index, timestamp) => {
     handed++;
-    repeats.add(canvasFingerprint(canvas));
+    const pixels = canvasPixels(canvas);
+    repeats.add(pixelsFingerprint(pixels));
     try {
-      return await onFrame(canvas, index, timestamp);
+      return await onFrame(canvas, index, timestamp, pixels);
     } catch (err) {
       if (err && typeof err === 'object') err.fromOnFrame = true;
       throw err;
