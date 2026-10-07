@@ -73,21 +73,21 @@ try {
   // CORRECT=+1 or -1: the visitor says No and saves the count corrected by that much.
   const delta = Number(process.env.CORRECT || 0);
   // TYPE=34: the visitor says No, taps the numeral and types the count instead.
+  // The result screen of 7 October: no "Non" key; the numeral's own field and the − / + keys correct it, then
+  // "Enregistrer N répétitions" saves (fix-card), or "Oui, N répétitions" saves the app's count (ask-card).
   if (process.env.TYPE) {
-    await page.locator('[data-testid="ask-card"] .btn-ghost').click();
-    await page.locator('[data-testid="fix-card"]').waitFor({ timeout: 10000 });
-    await shot('fix');
-    await page.locator('[data-testid="fix-card"] .stepper-in').click();
+    await page.locator('.res-hero .stepper-in').click();
     await page.keyboard.type(process.env.TYPE);
+    await page.keyboard.press('Enter');
+    await page.locator('[data-testid="fix-card"]').waitFor({ timeout: 10000 });
     await page.waitForTimeout(500); await shot('fix-typed');
-    await page.locator('[data-testid="fix-card"] .btn-primary').click();
+    await page.locator('[data-testid="fix-card"] [data-testid="res-save"]').click();
   } else if (delta) {
-    await page.locator('[data-testid="ask-card"] .btn-ghost').click();
+    for (let i = 0; i < Math.abs(delta); i++) await page.locator('.res-hero .res-step').nth(delta > 0 ? 1 : 0).click();
     await page.locator('[data-testid="fix-card"]').waitFor({ timeout: 10000 });
     await shot('fix');
-    for (let i = 0; i < Math.abs(delta); i++) await page.locator('[data-testid="fix-card"] .round').nth(delta > 0 ? 1 : 0).click();
-    await page.locator('[data-testid="fix-card"] .btn-primary').click();
-  } else await page.locator('[data-testid="ask-card"] .btn-primary').click();
+    await page.locator('[data-testid="fix-card"] [data-testid="res-save"]').click();
+  } else await page.locator('[data-testid="ask-card"] [data-testid="res-yes"]').click();
   // Saved only once the saved card is there (a failed save keeps the question on screen).
   let savedSeen = true;
   await page.locator('[data-testid="saved-card"]').waitFor({ timeout: 20000 }).catch(() => { savedSeen = false; });
