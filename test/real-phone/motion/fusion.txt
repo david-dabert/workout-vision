@@ -1,0 +1,109 @@
+Rhythm safety net (src/lib/counting/fusion.js, off in the app), 2026-10-07. skel: the app's counter (refused: none);
+pose: samples with a pose; rhythm: motionRhythm.js on the stored 24 x 24 pose-region frames (MM-Fit: 128 px frames and boxes);
+fused: the number the app would propose; confirm: the set would be marked to confirm (R8), with its reason.
+
+real video, 7 October
+set                                                 label skel    pose  rhythm period conf  fused  confirm
+barbell_squat_9_a                                   9     9       97%   9      1.6    0.53  9      
+barbell_squat_9_b                                   9     9       96%   9      1.6    0.6   9      
+behind_neck_chin_up_5                               5     6       87%   5      2.2    0.58  6      yes (disagree)
+hanging_leg_raise_6                                 6     6       72%   0      -      0     6      
+lying_biceps_curl_11                                11    11      97%   0      -      0     11     
+machine_chest_supported_row_6                       6     5       100%  5      4      0.46  5      
+machine_seated_back_extension_18                    18    17      98%   16     1.53   0.67  17     yes (disagree)
+pendulum_squat_7                                    7     14      98%   7      4.53   0.39  14     yes (disagree)
+seated_dumbbell_curl_10                             10    10      97%   0      -      0     10     
+sissy_squat_5_5011                                  5     refused 98%   4      5.54   0.48  4      yes (refused)
+sissy_squat_7_5006                                  7     4       100%  7      5.81   0.37  4      yes (disagree)
+sissy_squat_7_5008                                  7     refused 100%  0      -      0     none   
+sissy_squat_9_5007                                  9     9       100%  8      3.6    0.51  9      yes (disagree)
+[real video, 7 October] 13 sets. Exact: skeleton 6, fused proposal 6, rhythm alone 5. Off by 3+: skeleton 2, fused 2; refused by the skeleton 2, of which 1 get a rhythm number to confirm (0 exact). Exact lost 0; newly off by 3+ 0. To confirm: 6 sets; skeleton wrong counts flagged 4 of 5 (recall 80%); false alarms 1 of 6 skeleton-exact sets (17%).
+
+occlusion bench (synthetic)
+set                                                 label skel    pose  rhythm period conf  fused  confirm
+michelle-bicep_curl-v0-clean                        6     6       100%  6      2.93   0.54  6      
+michelle-bicep_curl-v0-dim                          6     6       99%   6      2.93   0.55  6      
+michelle-bicep_curl-v0-rack                         6     6       100%  6      2.93   0.54  6      
+michelle-bicep_curl-v90-clean                       6     6       100%  5      2.93   0.54  6      yes (disagree)
+michelle-bicep_curl-v90-dim                         6     refused 29%   6      3      0.58  6      yes (refused)
+michelle-bicep_curl-v90-person                      6     6       100%  5      2.93   0.54  6      yes (disagree)
+michelle-bicep_curl-v90-plate                       6     refused 79%   6      2.93   0.7   6      yes (refused)
+michelle-bicep_curl-v90-rack                        6     refused 100%  5      2.93   0.54  5      yes (refused)
+michelle-bicep_curl_alternating-v0-clean            10    10      100%  10     6.13   0.74  10     
+michelle-bicep_curl_alternating-v0-dim              10    10      99%   10     6.13   0.71  10     
+michelle-bicep_curl_alternating-v0-person           10    10      100%  10     6.13   0.75  10     
+michelle-bicep_curl_alternating-v0-rack             10    refused 100%  10     6.13   0.64  10     yes (refused)
+michelle-bicep_curl_alternating-v90-clean           10    refused 100%  5      6.27   0.7   5      yes (refused)
+michelle-bicep_curl_alternating-v90-dim             10    refused 46%   5      6.2    0.66  5      yes (refused)
+michelle-bicep_curl_alternating-v90-rack            10    refused 100%  5      6.2    0.71  5      yes (refused)
+michelle-overhead_press-v0-clean                    6     6       100%  6      3.13   0.64  6      
+michelle-overhead_press-v0-dim                      6     7       98%   6      3.07   0.64  7      yes (disagree)
+michelle-overhead_press-v0-person                   6     6       100%  6      3.07   0.64  6      
+michelle-overhead_press-v0-rack                     6     6       100%  6      3.13   0.62  6      
+michelle-overhead_press-v90-clean                   6     0       100%  6      3.13   0.94  0      yes (disagree)
+michelle-overhead_press-v90-dim                     6     refused 15%   6      3.13   0.94  6      yes (refused)
+michelle-overhead_press-v90-person                  6     6       100%  6      3.13   0.94  6      
+michelle-overhead_press-v90-plate                   6     refused 67%   6      3.13   0.94  6      yes (refused)
+michelle-overhead_press-v90-rack                    6     0       100%  6      3.13   0.94  0      yes (disagree)
+michelle-squat-v0-clean                             6     6       100%  6      3      0.68  6      
+michelle-squat-v0-dim                               6     0       92%   6      3.07   0.69  0      yes (disagree)
+michelle-squat-v0-person                            6     0       100%  6      3      0.67  0      yes (disagree)
+michelle-squat-v0-rack                              6     0       98%   6      3.07   0.68  0      yes (disagree)
+michelle-squat-v90-clean                            6     10      100%  6      3.13   0.69  10     yes (disagree)
+michelle-squat-v90-dim                              6     refused 56%   6      3.13   0.69  6      yes (refused)
+michelle-squat-v90-gym                              6     refused 7%    6      3.13   0.72  6      yes (refused)
+michelle-squat-v90-person                           6     0       98%   6      3.13   0.69  0      yes (disagree)
+michelle-squat-v90-plate                            6     refused 43%   6      3.13   0.69  6      yes (refused)
+michelle-squat-v90-rack                             6     6       100%  6      3.13   0.68  6      
+soldier-bicep_curl-v0-clean                         6     6       100%  6      2.87   0.58  6      
+soldier-bicep_curl-v0-dim                           6     15      100%  6      2.87   0.65  15     yes (disagree)
+soldier-bicep_curl-v0-rack                          6     6       100%  6      2.87   0.59  6      
+soldier-bicep_curl-v90-clean                        6     3       100%  5      3.07   0.64  3      yes (disagree)
+soldier-bicep_curl-v90-dim                          6     4       100%  6      3.07   0.55  4      yes (disagree)
+soldier-bicep_curl-v90-person                       6     7       100%  5      3.07   0.65  7      yes (disagree)
+soldier-bicep_curl-v90-plate                        6     refused 39%   6      3.07   0.7   6      yes (refused)
+soldier-bicep_curl-v90-rack                         6     7       99%   5      3.07   0.64  7      yes (disagree)
+soldier-bicep_curl_alternating-v0-clean             10    14      100%  10     6      0.71  14     yes (disagree)
+soldier-bicep_curl_alternating-v0-dim               10    18      100%  10     6      0.74  18     yes (disagree)
+soldier-bicep_curl_alternating-v0-person            10    18      100%  10     6      0.69  18     yes (disagree)
+soldier-bicep_curl_alternating-v0-rack              10    10      100%  10     5.93   0.7   10     
+soldier-bicep_curl_alternating-v90-clean            10    refused 100%  10     5.8    0.81  10     yes (refused)
+soldier-bicep_curl_alternating-v90-dim              10    refused 100%  5      5.8    0.68  5      yes (refused)
+soldier-bicep_curl_alternating-v90-rack             10    refused 99%   10     5.8    0.85  10     yes (refused)
+soldier-overhead_press-v0-clean                     6     6       100%  5      3      0.61  6      yes (disagree)
+soldier-overhead_press-v0-dim                       6     6       100%  5      3      0.62  6      yes (disagree)
+soldier-overhead_press-v0-person                    6     6       100%  5      3      0.6   6      yes (disagree)
+soldier-overhead_press-v0-rack                      6     6       100%  5      3      0.6   6      yes (disagree)
+soldier-overhead_press-v90-clean                    6     6       99%   6      3.33   0.69  6      
+soldier-overhead_press-v90-dim                      6     refused 37%   6      3.27   0.68  6      yes (refused)
+soldier-overhead_press-v90-person                   6     12      95%   6      3.27   0.71  12     yes (disagree)
+soldier-overhead_press-v90-plate                    6     0       99%   6      3.27   0.71  0      yes (disagree)
+soldier-overhead_press-v90-rack                     6     6       100%  6      3.27   0.69  6      
+soldier-squat-v0-clean                              6     0       100%  6      3.13   0.77  0      yes (disagree)
+soldier-squat-v0-dim                                6     6       100%  6      3.13   0.8   6      
+soldier-squat-v0-person                             6     0       100%  6      3.13   0.77  0      yes (disagree)
+soldier-squat-v0-rack                               6     6       99%   6      3.13   0.76  6      
+soldier-squat-v90-clean                             6     6       100%  6      2.8    0.72  6      
+soldier-squat-v90-dim                               6     6       100%  6      2.8    0.75  6      
+soldier-squat-v90-gym                               6     refused 2%    6      2.8    0.76  6      yes (refused)
+soldier-squat-v90-person                            6     9       100%  6      2.8    0.72  9      yes (disagree)
+soldier-squat-v90-plate                             6     refused 65%   6      2.8    0.72  6      yes (refused)
+soldier-squat-v90-rack                              6     5       100%  6      2.8    0.72  5      yes (disagree)
+[occlusion bench (synthetic)] 68 sets. Exact: skeleton 27, fused proposal 41, rhythm alone 54. Off by 3+: skeleton 17, fused 21; refused by the skeleton 19, of which 19 get a rhythm number to confirm (14 exact). Exact lost 0; newly off by 3+ 4 (michelle-bicep_curl_alternating-v90-clean, michelle-bicep_curl_alternating-v90-dim, michelle-bicep_curl_alternating-v90-rack, soldier-bicep_curl_alternating-v90-dim). To confirm: 47 sets; skeleton wrong counts flagged 22 of 22 (recall 100%); false alarms 6 of 27 skeleton-exact sets (22%).
+
+MM-Fit w19 captures
+set                                                 label skel    pose  rhythm period conf  fused  confirm
+m-curls                                             10    10      100%  10     4.33   0.63  10     
+m-lateral                                           9     7       100%  7      1.93   0.65  7      
+m-lunges                                            10    10      100%  9      2.67   0.66  10     yes (disagree)
+m-press                                             10    10      100%  10     2.67   0.71  10     
+m-pushups                                           10    9       100%  10     2.13   0.47  9      yes (disagree)
+m-rows                                              10    9       100%  10     1.47   0.64  9      yes (disagree)
+m-squats                                            10    10      100%  10     1.67   0.88  10     
+m-triceps                                           10    9       100%  10     1.93   0.78  9      yes (disagree)
+[MM-Fit w19 captures] 8 sets. Exact: skeleton 4, fused proposal 4, rhythm alone 6. Off by 3+: skeleton 0, fused 0; refused by the skeleton 0, of which 0 get a rhythm number to confirm (0 exact). Exact lost 0; newly off by 3+ 0. To confirm: 4 sets; skeleton wrong counts flagged 3 of 4 (recall 75%); false alarms 1 of 4 skeleton-exact sets (25%).
+
+stored scoreboard sets (no frames)
+set                                                 label skel    pose  rhythm period conf  fused  confirm
+(20 sets, not listed: no motion frames are stored with them, so the net leaves every count as the skeleton gives it)
+[stored scoreboard sets (no frames)] 20 sets. Exact: skeleton 12, fused proposal 12, rhythm alone 0. Off by 3+: skeleton 0, fused 0; refused by the skeleton 1, of which 0 get a rhythm number to confirm (0 exact). Exact lost 0; newly off by 3+ 0. To confirm: 0 sets; skeleton wrong counts flagged 0 of 7 (recall 0%); false alarms 0 of 12 skeleton-exact sets (0%).
