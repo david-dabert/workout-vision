@@ -3,12 +3,13 @@
 // two read as one family. One CSS pixel of the sheet is one point of the page.
 import { jsPDF } from 'jspdf';
 import { FONTS } from './pdf-fonts/fonts';
+import { PAPER } from './palette';
 
 export const PAGE_W = 419.53, PAGE_H = 595.28;          // A5, in points
 export const COLUMN = 310;                               // the sheet's text column on a 390 px phone
 export const MARGIN = (PAGE_W - COLUMN) / 2;
 export const GAP = 12;                                   // .sheet { gap }
-export const COLOR = { paper: '#FBF7EF', ink: '#1D1812', ash: '#6B6256', rule: '#E4DCCD', rowRule: '#F0EADF', count: '#8A6630', waveBack: '#CDB68E' };
+export const COLOR = PAPER;
 export const FACE = { serif: 'InstrumentSerif-Regular', sans: 'Geist-Regular', sansMedium: 'Geist-Medium', mono: 'GeistMono-Regular' };
 const SANS_CSS = 'Geist, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 

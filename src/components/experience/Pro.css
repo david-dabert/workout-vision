@@ -2,13 +2,13 @@
    tokens only (design/SYSTEM.md, Entry.css); the fields are the report's (Report.css). */
 .wv-experience .pro-screen .wrap { padding-bottom: var(--s-7); }
 .wv-experience .pro-eyebrow { margin-top: var(--s-4); }
-.wv-experience .pro-screen .title { margin-top: var(--s-2); color: var(--bone); overflow-wrap: anywhere; }
+.wv-experience .pro-screen .title { margin-top: var(--s-2); color: var(--c-fg); overflow-wrap: anywhere; }
 .wv-experience .pro-edit .title { margin-top: var(--s-4); font-size: var(--fs-heading); line-height: 1.1; }
 .wv-experience .pro-sub { margin-top: var(--s-3); max-width: none; text-wrap: pretty; }
 .wv-experience .pro-foot { margin-top: var(--s-6); }
 .wv-experience .pro-foot + .pro-foot { margin-top: var(--s-2); }
 .wv-experience .pro-warn { margin: var(--s-3) 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--lamp-hi); }
-.wv-experience .pro-empty { margin: 0; padding: var(--s-4) 0; font-size: var(--fs-body); color: var(--ash); }
+.wv-experience .pro-empty { margin: 0; padding: var(--s-4) 0; font-size: var(--fs-body); color: var(--c-fg-muted); }
 .wv-experience .pro-first { margin-top: var(--s-5); }
 
 /* The drafts (and the other programmes received): rows of the choice's kind, a hairline between them. */
@@ -21,13 +21,13 @@
 .wv-experience .pro-items { list-style: none; margin: 0; padding: 0; }
 .wv-experience .pro-item { padding: var(--s-4) 0; border-bottom: 1px solid var(--hair-0); }
 .wv-experience .pro-item-head { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: center; }
-.wv-experience .pro-item-name { font-family: var(--serif); font-size: min(var(--fs-name), 6.2vw); line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
-.wv-experience .pro-index { display: block; margin-bottom: 4px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); color: var(--lamp); }
+.wv-experience .pro-item-name { font-family: var(--serif); font-size: min(var(--fs-name), 6.2vw); line-height: 1.05; color: var(--c-fg); overflow-wrap: anywhere; }
+.wv-experience .pro-index { display: block; margin-bottom: 4px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); color: var(--c-accent); }
 .wv-experience .pro-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); margin-top: var(--s-3); }
 .wv-experience .pro-num { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.wv-experience .pro-num label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ash); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wv-experience .pro-num label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wv-experience .pro-num input, .wv-experience .pro-item-note, .wv-experience .pro-screen .field input[readonly] {
-  width: 100%; height: 48px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--hair); color: var(--bone);
+  width: 100%; height: 48px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule); color: var(--c-fg);
   font-size: 16px; outline: none; -webkit-appearance: none; appearance: none;
 }
 .wv-experience .pro-num input { padding: 0 12px; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: center; color: var(--lamp-hi); }
@@ -35,15 +35,15 @@
 .wv-experience .pro-item-note::placeholder { color: var(--ash-2); }
 .wv-experience :is(.pro-num input, .pro-item-note):focus { border-color: var(--lamp-line-strong); }
 .wv-experience .pro-item-tools { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
-.wv-experience .pro-item-tools .icon-btn { border-color: var(--hair); color: var(--bone-2); }
+.wv-experience .pro-item-tools .icon-btn { border-color: var(--c-rule); color: var(--bone-2); }
 .wv-experience .pro-item-tools .icon-btn:disabled { opacity: 0.32; cursor: default; }
 .wv-experience .pro-remove { margin-left: auto; padding-right: 0; font-size: var(--fs-caption); }
 .wv-experience .pro-add { margin-top: var(--s-4); }
 .wv-experience .pro-note { margin-top: var(--s-5); }
 
 /* The two outputs: the PDF in gold, the link in a gold outline, the copy quiet beside it. */
-.wv-experience .pro-share { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-6); padding-top: var(--s-5); border-top: 1px solid var(--hair); }
-.wv-experience .pro-status { margin: 0; min-height: 1.45em; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
+.wv-experience .pro-share { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-6); padding-top: var(--s-5); border-top: 1px solid var(--c-rule); }
+.wv-experience .pro-status { margin: 0; min-height: 1.45em; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
 .wv-experience .pro-link-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--s-2); }
 .wv-experience .pro-link-row .btn-line, .wv-experience .pro-link-row .btn-ghost { height: 54px; padding: 0 10px; }
 .wv-experience .pro-share [aria-disabled="true"] { opacity: 0.45; }
@@ -61,17 +61,17 @@
 .wv-experience .pro-pick .all-exercises { margin-top: var(--s-4); }
 
 /* The client's programme. */
-.wv-experience .programme-meta { display: flex; flex-direction: column; gap: 2px; margin: var(--s-3) 0 0; font-size: var(--fs-body); line-height: 1.5; color: var(--ash); }
+.wv-experience .programme-meta { display: flex; flex-direction: column; gap: 2px; margin: var(--s-3) 0 0; font-size: var(--fs-body); line-height: 1.5; color: var(--c-fg-muted); }
 .wv-experience .programme-meta span:first-child:not(:last-child) { color: var(--bone-2); }
-.wv-experience .programme-note { margin: var(--s-4) 0 0; padding: 14px 16px; border-radius: var(--r-s); border: 1px solid var(--hair); background: rgba(20, 17, 13, 0.56); font-size: var(--fs-body); line-height: 1.55; color: var(--bone-2); white-space: pre-wrap; overflow-wrap: anywhere; }
-.wv-experience .programme-list { list-style: none; margin: var(--s-5) 0 0; padding: 0; border-top: 1px solid var(--hair); }
+.wv-experience .programme-note { margin: var(--s-4) 0 0; padding: 14px 16px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: rgba(20, 17, 13, 0.56); font-size: var(--fs-body); line-height: 1.55; color: var(--bone-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.wv-experience .programme-list { list-style: none; margin: var(--s-5) 0 0; padding: 0; border-top: 1px solid var(--c-rule); }
 .wv-experience .programme-item { padding: var(--s-3) 0 var(--s-4); border-bottom: 1px solid var(--hair-0); }
 .wv-experience .programme-btn { width: 100%; display: grid; grid-template-columns: 56px minmax(0, 1fr) 22px; gap: 14px; align-items: center; text-align: left; }
 .wv-experience .programme-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wv-experience .programme-name { font-family: var(--serif); font-size: min(var(--fs-name), 6.2vw); line-height: 1.05; color: var(--bone); overflow-wrap: anywhere; }
-.wv-experience .programme-target { font-size: var(--fs-caption); letter-spacing: 0.02em; color: var(--lamp); }
-.wv-experience .programme-cue { font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); overflow-wrap: anywhere; }
-.wv-experience .programme-check { width: 22px; height: 22px; color: var(--lamp); }
+.wv-experience .programme-name { font-family: var(--serif); font-size: min(var(--fs-name), 6.2vw); line-height: 1.05; color: var(--c-fg); overflow-wrap: anywhere; }
+.wv-experience .programme-target { font-size: var(--fs-caption); letter-spacing: 0.02em; color: var(--c-accent); }
+.wv-experience .programme-cue { font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); overflow-wrap: anywhere; }
+.wv-experience .programme-check { width: 22px; height: 22px; color: var(--c-accent); }
 /* Planned against counted: one cell per planned set, under the name. A set done shows the reps counted, in gold
    when it met the target; a set to do is an empty dashed cell. */
 .wv-experience .programme-sets { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: var(--s-3) 0 0 70px; padding: 0; }
@@ -79,5 +79,5 @@
   font-family: var(--mono); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
 .wv-experience .programme-sets .is-todo { border: 1px dashed var(--hair-2); }
 .wv-experience .programme-sets .is-met { border: 1px solid var(--lamp-line); background: rgba(232, 189, 126, 0.12); color: var(--lamp-hi); }
-.wv-experience .programme-sets .is-short { border: 1px solid var(--hair-2); background: rgba(239, 232, 220, 0.06); color: var(--bone); }
+.wv-experience .programme-sets .is-short { border: 1px solid var(--hair-2); background: rgba(239, 232, 220, 0.06); color: var(--c-fg); }
 .wv-experience .programme-item.is-done .programme-name { color: var(--bone-2); }

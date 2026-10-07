@@ -55,7 +55,7 @@
 .wv-experience *, .wv-experience *::before, .wv-experience *::after { box-sizing: border-box; }
 .wv-experience { height: 100%; }
 .wv-experience {
-  margin: 0; background: var(--void); color: var(--bone);
+  margin: 0; background: var(--c-surface); color: var(--c-fg);
   font: 400 15px/1.5 var(--sans);
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
@@ -65,7 +65,7 @@
   cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation; text-align: inherit;
 }
 .wv-experience input, .wv-experience textarea { font: inherit; color: inherit; }
-.wv-experience :focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+.wv-experience :focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
 .wv-experience [hidden] { display: none !important; }
 .wv-experience .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .wv-experience .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
@@ -74,9 +74,10 @@
 .wv-experience .grain {
   position: fixed; inset: -60px; z-index: 8; pointer-events: none; opacity: 0.07;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px; animation: grain 0.9s steps(5) infinite;
+  background-size: 200px 200px;
 }
-@keyframes grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-18px, 12px); } 50% { transform: translate(14px, -16px); } 75% { transform: translate(-10px, -8px); } 100% { transform: translate(0, 0); } }
+/* The grain stands still (C9, design review of 7 October 2026): the same texture at the same 0.07, without the
+   animation that repainted a full-screen layer five times a second. Status: convention (no specific source). */
 .wv-experience .screen {
   position: fixed; inset: 0; z-index: 2; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: calc(env(safe-area-inset-top, 0px) + 10px) var(--gut) calc(env(safe-area-inset-bottom, 0px) + 30px);
@@ -89,22 +90,22 @@
 @keyframes reveal { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
 .wv-experience .appear { animation: reveal var(--d-appear) var(--ease) both; }
 .wv-experience .topbar { display: flex; align-items: center; justify-content: space-between; min-height: 48px; }
-.wv-experience .brand-sm { height: 44px; font-size: 10.5px; letter-spacing: 0.42em; text-transform: uppercase; color: var(--ash); }
-.wv-experience .pill { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ash); border: 1px solid var(--hair-2); border-radius: var(--r-pill); padding: 6px 10px 5px; }
+.wv-experience .brand-sm { height: 44px; font-size: 10.5px; letter-spacing: 0.42em; text-transform: uppercase; color: var(--c-fg-muted); }
+.wv-experience .pill { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); border: 1px solid var(--hair-2); border-radius: var(--r-pill); padding: 6px 10px 5px; }
 /* Lift tier (liftTiers.js): Beta in the lamp's colour, Experimental in ash; always legible, never a badge of quality. */
 .wv-experience .tier { align-self: flex-start; display: inline-block; margin: 6px 0 0; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.45; letter-spacing: 0.08em; border: 1px solid currentColor; border-radius: var(--r-pill); padding: 5px 10px 4px; max-width: 100%; }
-.wv-experience .tier-beta { color: var(--lamp); text-transform: uppercase; }
+.wv-experience .tier-beta { color: var(--c-accent); text-transform: uppercase; }
 /* Experimental is a sentence, not a badge: plain caption text, no box (design/SYSTEM.md, #7). */
-.wv-experience .tier-experimental { border: 0; padding: 0; font: 400 var(--fs-caption)/1.45 var(--sans); letter-spacing: 0; color: var(--ash); }
+.wv-experience .tier-experimental { border: 0; padding: 0; font: 400 var(--fs-caption)/1.45 var(--sans); letter-spacing: 0; color: var(--c-fg-muted); }
 .wv-experience .icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--hair-2); display: grid; place-items: center; }
 .wv-experience .icon-btn svg { width: 18px; height: 18px; }
 /* Headings take the experience's weight and leading, not the old app's bold display headings (styles/_base.css): an
    eyebrow set as a heading for screen readers (History, Result, Watch) read faux-bold in a mono face that has no bold
    (getComputedStyle, 6 October: font-weight 800 on "Vos données"). :where() adds no weight, so every class still sets its own. */
 .wv-experience :where(h1, h2, h3, h4, h5, h6) { font-weight: 400; line-height: inherit; }
-.wv-experience .eyebrow { margin: 0; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--lamp); }
+.wv-experience .eyebrow { margin: 0; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }
 .wv-experience .title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--fs-title); line-height: 0.98; letter-spacing: -0.012em; text-wrap: balance; }
-.wv-experience .sub { margin: 0; color: var(--ash); font-size: var(--fs-body); line-height: 1.55; max-width: 36ch; }
+.wv-experience .sub { margin: 0; color: var(--c-fg-muted); font-size: var(--fs-body); line-height: 1.55; max-width: 36ch; }
 .wv-experience .press, .wv-experience .tactile { position: relative; transition: scale 0.22s var(--ease), background-color 0.2s, border-color 0.2s; }
 /* Only .is-pressed dips a control (main.jsx sets it after 80 ms under a finger, at once under a
    mouse). Never :active: iOS Safari applies it the moment a finger lands, also on a swipe or a
@@ -118,14 +119,14 @@
 .wv-experience .is-pressed::after { opacity: 1; transition-duration: 0.06s; }
 .wv-experience .hx { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 3; cursor: pointer; }
 /* The invisible file input is the control: its keyboard focus shows on the label it covers. */
-.wv-experience label:has(> .hx:focus-visible) { outline: 2px solid var(--lamp); outline-offset: 3px; }
+.wv-experience label:has(> .hx:focus-visible) { outline: 2px solid var(--c-accent); outline-offset: 3px; }
 .wv-experience .entry { display: flex; flex-direction: column; justify-content: flex-end; text-align: center; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px); }
 .wv-experience .entry-skip { position: absolute; inset: 0; width: 100%; height: 100%; cursor: default; z-index: 0; }
-.wv-experience .entry .brand { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 22px); left: 0; right: 0; margin: 0; font-size: 10.5px; letter-spacing: 0.5em; text-indent: 0.5em; text-transform: uppercase; color: var(--ash); opacity: 0; pointer-events: none; }
+.wv-experience .entry .brand { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 22px); left: 0; right: 0; margin: 0; font-size: 10.5px; letter-spacing: 0.5em; text-indent: 0.5em; text-transform: uppercase; color: var(--c-fg-muted); opacity: 0; pointer-events: none; }
 .wv-experience .entry-copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; pointer-events: none; width: 100%; max-width: 440px; margin-inline: auto; }
 .wv-experience .entry-l1 { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(40px, 11.6vw, 58px); line-height: 1; letter-spacing: -0.015em; text-wrap: balance; }
-.wv-experience .entry-l2 { margin: 14px 0 0; font-family: var(--serif); font-size: clamp(20px, 5.6vw, 25px); line-height: 1.2; color: var(--ash); }
-.wv-experience .entry-l3 { margin: 22px 0 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--lamp); opacity: 0; }
+.wv-experience .entry-l2 { margin: 14px 0 0; font-family: var(--serif); font-size: clamp(20px, 5.6vw, 25px); line-height: 1.2; color: var(--c-fg-muted); }
+.wv-experience .entry-l3 { margin: 22px 0 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--c-accent); opacity: 0; }
 .wv-experience .mask { display: block; overflow: hidden; padding-bottom: 0.08em; }
 .wv-experience .mask > span { display: block; translate: 0 112%; }
 .wv-experience .enter {
@@ -148,7 +149,7 @@
 /* The way to the example (Demo.jsx): a quiet second action under Enter, a full 44 px to tap. */
 .wv-experience .entry-demo {
   pointer-events: auto; position: relative; z-index: 2; margin-top: 8px; min-height: 44px; padding: 0 18px;
-  font-size: 14px; color: var(--ash); text-decoration: none; /* the prototype's quiet action, no web link (critic, 30 September) */
+  font-size: 14px; color: var(--c-fg-muted); text-decoration: none; /* the prototype's quiet action, no web link (critic, 30 September) */
   opacity: 0;
 }
 .wv-experience .entry.play .entry-demo { animation: fade 1.2s var(--ease) 3.1s forwards; }
@@ -171,7 +172,7 @@
  .wv-experience .mask > span { translate: 0 0; }
 }
 
-.wv-experience .entry-l1 { color: var(--bone); }
+.wv-experience .entry-l1 { color: var(--c-fg); }
 
 /* Buttons shared by every screen (from the prototype, formerly in Film.css):
    defined here, with the entry, so a screen reached first never lacks them. */
@@ -181,7 +182,7 @@
 .wv-experience .btn-primary {
   position: relative; height: 58px; width: 100%; border-radius: var(--r-m); overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  color: var(--ink); font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
+  color: var(--c-on-accent); font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
   background: linear-gradient(180deg, #F6DAAA 0%, #E3B170 55%, #C98F48 100%);
   /* A tighter glow than the prototype's: its 40 px spread laid a gold haze on the button below (#9). */
   box-shadow: 0 12px 28px -16px rgba(232, 189, 126, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
@@ -190,26 +191,26 @@
 .wv-experience .btn-primary::after { background: radial-gradient(170px circle at var(--px, 50%) var(--py, 50%), rgba(255, 255, 255, 0.45), transparent 65%); }
 .wv-experience .btn-primary svg { width: 18px; height: 18px; }
 .wv-experience .btn-line { height: 54px; width: 100%; border-radius: var(--r-m); border: 1px solid var(--lamp-line); color: var(--lamp-hi); display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-size: var(--fs-body); min-height: 44px; text-decoration: none; }
-.wv-experience .btn-ghost { height: 54px; width: 100%; border-radius: var(--r-m); border: 1px solid var(--hair-2); font-size: var(--fs-body); color: var(--bone); display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; cursor: pointer; background: transparent; text-decoration: none; }
+.wv-experience .btn-ghost { height: 54px; width: 100%; border-radius: var(--r-m); border: 1px solid var(--hair-2); font-size: var(--fs-body); color: var(--c-fg); display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; cursor: pointer; background: transparent; text-decoration: none; }
 .wv-experience :is(.btn-line, .btn-ghost) svg { width: 17px; height: 17px; flex-shrink: 0; }
 /* The compact quiet button: filters and small actions in a row. */
 .wv-experience .btn-ghost.is-s { height: 44px; width: auto; padding: 0 16px; border-radius: var(--r-s); font-size: var(--fs-caption); }
-.wv-experience .text-btn { height: 44px; padding: 0 16px; font-size: var(--fs-body); color: var(--ash); align-self: center; text-decoration: none; }
+.wv-experience .text-btn { height: 44px; padding: 0 16px; font-size: var(--fs-body); color: var(--c-fg-muted); align-self: center; text-decoration: none; }
 /* In a left-aligned column the text button's label lines up with the text above it. */
 .wv-experience .text-btn.is-inline { padding-inline: 0; align-self: flex-start; display: inline-flex; align-items: center; }
 /* One section head: a mono label over a hairline (lists, days, progress, the demo's times). */
-.wv-experience :is(.section-head, .list-head, .hist-head) { margin: var(--s-6) 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--hair); font-family: var(--mono); font-weight: 400; font-size: var(--fs-label); line-height: 1.4; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
-.wv-experience .section-head.is-accent { color: var(--lamp); }
+.wv-experience :is(.section-head, .list-head, .hist-head) { margin: var(--s-6) 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--c-rule); font-family: var(--mono); font-weight: 400; font-size: var(--fs-label); line-height: 1.4; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-fg-muted); }
+.wv-experience .section-head.is-accent { color: var(--c-accent); }
 /* Surfaces: glass for the user's turn, a hairline card for information. */
-.wv-experience .surface-glass { border-radius: var(--r-l); border: 1px solid var(--hair); background: rgba(20, 17, 13, 0.56); -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15); }
+.wv-experience .surface-glass { border-radius: var(--r-l); border: 1px solid var(--c-rule); background: rgba(20, 17, 13, 0.56); -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15); }
 .no-glass .wv-experience .surface-glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
-.wv-experience .surface-card { border-radius: var(--r-l); border: 1px solid var(--hair); padding: 18px 20px; }
+.wv-experience .surface-card { border-radius: var(--r-l); border: 1px solid var(--c-rule); padding: 18px 20px; }
 /* Numbers that move like instruments: each digit in a cell of its own; only the digit that changes rolls in. */
 .wv-experience .dg { display: inline-block; width: 0.52em; text-align: center; animation: dg-in var(--d-tick) var(--ease); }
 .wv-experience .dg.is-sep { width: auto; animation: none; }
 @keyframes dg-in { from { translate: 0 0.35em; opacity: 0; } }
 /* A count's word under its numeral, and the numeral's tick: shared by the result and the entry's example. */
-.wv-experience .res-label { margin: var(--s-2) 0 0; text-align: center; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .res-label { margin: var(--s-2) 0 0; text-align: center; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.34em; text-indent: 0.34em; text-transform: uppercase; color: var(--c-fg-muted); }
 @keyframes res-tick { from { scale: 1.07; opacity: 0.55; } to { scale: 1; opacity: 1; } }
 
 /* ── Shared craft rules (26 September) ─────────────────────────────── */
@@ -218,13 +219,13 @@ html, body { background: #080706; color-scheme: dark; }
 /* Screens float over one stage (dust, vignette, grain); the entry and the
    report keep their own opaque ground. */
 .wv-experience { background: transparent; }
-.wv-experience.entry-experience, .wv-experience:has(.report-screen) { background: var(--void); }
+.wv-experience.entry-experience, .wv-experience:has(.report-screen) { background: var(--c-surface); }
 .wv-stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; }
 .wv-vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(130% 90% at 50% 36%, transparent 50%, rgba(0, 0, 0, 0.62) 100%); }
 .wv-grain {
   position: fixed; inset: -60px; z-index: 200; pointer-events: none; opacity: 0.07;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px; animation: grain 0.9s steps(5) infinite;
+  background-size: 200px 200px;
 }
 /* Every screen after the entry fades in; its blocks rise one after another. */
 .wv-experience .screen.is-active:not(.entry) { animation: screen-in var(--d-screen) var(--ease) 0.05s backwards; }
@@ -257,7 +258,7 @@ html, body { background: #080706; color-scheme: dark; }
 .wv-experience .btn-primary:active { transform: none; opacity: 1; }
 .wv-experience :is(button, a) { transition: scale 0.22s var(--ease), background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s; }
 .wv-experience :is(input, textarea), .wv-experience :is(input, textarea):is(:focus, :focus-visible) { box-shadow: none; }
-.wv-experience ::selection { background: rgba(232, 189, 126, 0.3); color: var(--bone); }
+.wv-experience ::selection { background: rgba(232, 189, 126, 0.3); color: var(--c-fg); }
 .wv-experience ::-webkit-scrollbar { width: 0; height: 0; }
 /* The entry on short screens (Safari with its toolbars, iPhone SE). */
 @media (max-height: 700px) {
@@ -274,7 +275,6 @@ html, body { background: #080706; color-scheme: dark; }
 @media (prefers-reduced-motion: reduce) {
   .wv-experience [data-reveal] { opacity: 1; translate: none; }
   .wv-experience:has(.report-screen) { animation: none; }
-  .wv-grain { animation: none; }
 }
 
 /* The large title condenses into the topbar as it scrolls under it (topbar.js): the bar sticks, turns to
@@ -286,12 +286,12 @@ html, body { background: #080706; color-scheme: dark; }
   padding: calc(10px + env(safe-area-inset-top, 0px)) var(--gut) 0;
   transition: background-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
-.wv-experience .topbar.is-condensed { background: rgba(8, 7, 6, 0.86); -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2); box-shadow: 0 1px 0 var(--hair); }
+.wv-experience .topbar.is-condensed { background: rgba(8, 7, 6, 0.86); -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2); box-shadow: 0 1px 0 var(--c-rule); }
 .no-glass .wv-experience .topbar.is-condensed { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(8, 7, 6, 0.94); }
 .wv-experience .topbar-title {
   position: absolute; left: calc(var(--gut) + 56px); right: calc(var(--gut) + 56px); bottom: 14px;
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center;
-  font: 500 var(--fs-body)/1.2 var(--sans); color: var(--bone); pointer-events: none;
+  font: 500 var(--fs-body)/1.2 var(--sans); color: var(--c-fg); pointer-events: none;
   opacity: 0; translate: 0 6px; transition: opacity 0.3s var(--ease), translate 0.3s var(--ease);
 }
 .wv-experience .topbar.is-condensed .topbar-title { opacity: 1; translate: 0 0; }

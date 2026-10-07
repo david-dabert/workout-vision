@@ -2,11 +2,12 @@
 // video on screen, the exported video over each frame it records (step 4). One drawing for both.
 import { JOINT_POINTS } from '../../lib/counting/core';
 import { SEEN } from './replay-track';
+import { HEX, RGB, rgba } from './palette';
 
 const BONES = [[11, 12], [11, 23], [12, 24], [23, 24], [11, 13], [13, 15], [12, 14], [14, 16], [23, 25], [25, 27], [24, 26], [26, 28], [27, 31], [28, 32]];
 const DOTS = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
-const BONE = 'rgba(239, 232, 220, 0.85)', SHADE = 'rgba(8, 7, 6, 0.4)';
-export const LAMP = '#F7DCAE';
+const BONE = rgba(RGB.bone, 0.85), SHADE = rgba(RGB.void, 0.4);
+export const LAMP = HEX.lampHi;
 
 // A point is drawn fully once the model's sureness reaches SEEN + FADE / 2 and not at all below SEEN - FADE / 2;
 // between the two it fades, so a bone the model loses for a moment dims instead of blinking. Display only;
@@ -58,7 +59,7 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
     const pts = [at(a), at(v), at(b)];
     ctx.globalAlpha = o;
     line(pts, 6, SHADE);
-    ctx.shadowColor = 'rgba(247, 220, 174, 0.75)'; ctx.shadowBlur = 10 * u;
+    ctx.shadowColor = rgba(RGB.lampHi, 0.75); ctx.shadowBlur = 10 * u;
     line(pts, 3.5, LAMP);
     ctx.shadowBlur = 0;
     ctx.fillStyle = LAMP;

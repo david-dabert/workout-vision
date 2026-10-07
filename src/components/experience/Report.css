@@ -9,23 +9,23 @@
 .wv-experience .form-grid { margin-top: var(--s-5); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .wv-experience .field { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-3); }
 .wv-experience .form-grid .field { margin-top: 0; }
-.wv-experience .field label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
+.wv-experience .field label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-fg-muted); }
 .wv-experience .field input,
-.wv-experience .field textarea { width: 100%; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--hair); color: var(--bone); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
+.wv-experience .field textarea { width: 100%; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule); color: var(--c-fg); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
 .wv-experience .field input { height: 50px; padding: 0 14px; }
 .wv-experience .field textarea { padding: 12px 14px; line-height: 1.45; resize: none; }
 .wv-experience .field input:focus,
 .wv-experience .field textarea:focus { border-color: var(--lamp-line-strong); }
 .wv-experience .field ::placeholder { color: var(--ash-2); }
-.wv-experience .field .field-label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
+.wv-experience .field .field-label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-fg-muted); }
 /* The screen's h1 16 px under the topbar, and its sub at the sub size, as on every screen (#11). */
 .wv-experience .report-screen .title { margin-top: var(--s-4); }
-.wv-experience .report-sub { margin: var(--s-3) 0 0; font-size: var(--fs-body); line-height: 1.55; color: var(--ash); text-wrap: pretty; }
+.wv-experience .report-sub { margin: var(--s-3) 0 0; font-size: var(--fs-body); line-height: 1.55; color: var(--c-fg-muted); text-wrap: pretty; }
 .wv-experience .report-screen .report-sub + .field { margin-top: var(--s-5); }
 /* Three answers side by side, as the guide's front and back switch; a long French answer wraps inside its button. */
-.wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--hair); }
+.wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule); }
 .wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
-.wv-experience .report-seg button[aria-pressed="true"] { background: var(--lamp); color: var(--ink); }
+.wv-experience .report-seg button[aria-pressed="true"] { background: var(--c-accent); color: var(--c-on-accent); }
 /* The partner's field fades in where it stands: a field that rose into place would pass over the level below it (CI run 149). */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .wv-experience .fade-in { animation: fade-in var(--d-ui) var(--ease) both; }
@@ -70,9 +70,9 @@
 .wv-experience .share-bar {
   position: sticky; bottom: 0; z-index: 3; margin-top: 8px;
   padding: 12px 0 calc(env(safe-area-inset-bottom, 0px) + 16px);
-  background: linear-gradient(to bottom, rgba(8, 7, 6, 0), var(--void) 22px);
+  background: linear-gradient(to bottom, rgba(8, 7, 6, 0), var(--c-surface) 22px);
 }
-.wv-experience .share-note { margin: 0 0 10px; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
+.wv-experience .share-note { margin: 0 0 10px; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
 /* Empty, it takes no room but stays a live region, so a message is announced. */
 .wv-experience .share-note:empty { margin: 0; }
 /* A message sits on the solid part of the bar, below its fade, never over the sheet. */

@@ -37,3 +37,29 @@ export function restSpoken(s, fr) {
   if (sec || !parts.length) parts.push(unit(sec, fr ? 'seconde' : 'second'));
   return parts.slice(0, 2).join(' ');
 }
+
+// The screen kept awake while the rest runs (C9, design review of 7 October 2026), so the clock is still in view when
+// the phone is picked up for the next set. Held from the start of the rest for at most REST_AWAKE_CAP_MS, then let go,
+// so a phone left on the bench goes to sleep; released when the rest stops or the clock leaves the screen. iOS drops
+// the lock when the page is hidden: it is taken again when the page shows, while the rest is under the cap. No promise
+// is made that the screen stays on: iOS before 18.4 ignores the lock in an installed web app.
+// Status of the 10 minutes: experimental (UNSOURCED: longer than a usual rest between sets, short enough not to drain
+// the battery; to be measured on the iPhone).
+export const REST_AWAKE_CAP_MS = 10 * 60 * 1000;
+
+/** Holds the screen awake for a running rest clock; returns the release. `hold` is holdScreenAwake (interruption.js). */
+export function keepAwakeDuringRest(clock, { hold, doc = document, cap = REST_AWAKE_CAP_MS, setT = setTimeout, clearT = clearTimeout }) {
+  let release = null, done = false;
+  const under = () => clock.running && clock.ms() < cap;
+  const take = () => { if (!done && !release && under()) release = hold(); };
+  const drop = () => { if (release) { release(); release = null; } };
+  const timer = setT(() => { drop(); }, Math.max(0, cap - clock.ms()));
+  const shown = () => {
+    if (doc.visibilityState !== 'visible') return;
+    drop(); // the browser let it go while hidden
+    take();
+  };
+  take();
+  doc.addEventListener('visibilitychange', shown);
+  return () => { done = true; clearT(timer); doc.removeEventListener('visibilitychange', shown); drop(); };
+}

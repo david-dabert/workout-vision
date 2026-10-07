@@ -7,6 +7,8 @@ import '@fontsource/instrument-serif/400-italic.css';
 import '@fontsource/geist/400.css';
 import '@fontsource/geist/500.css';
 import '@fontsource/geist/600.css';
+// The count's face (C1, design review of 7 October 2026): Geist 700, preloaded by index.html.
+import '@fontsource/geist/700.css';
 import '@fontsource/geist-mono/400.css';
 import './Entry.css';
 

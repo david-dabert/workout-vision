@@ -38,7 +38,16 @@ const rootScripts = ['boot.js', 'cache-bust.js']
   })
   .map(f => `${BASE}${f}`);
 
-const precacheEntries = [...assetFiles, ...rootScripts];
+// The fonts, latin subset only, as woff2 (C9, design review of 7 October 2026): every face the built CSS names is
+// emitted (Geist, Geist Mono, Instrument Serif for the experience; Inter and Outfit, still named by the legacy tokens
+// of src/styles/_tokens.css for the analysis and live screens), and its latin woff2 is all a French or English page
+// needs. They are kept at install, so a screen first opened offline still has its type; the other subsets (latin-ext,
+// cyrillic, greek, vietnamese) and the .woff fallbacks stay fetched on demand, as before.
+const fontFiles = readdirSync(ASSETS_DIR)
+  .filter(f => /-latin-(?:wght|\d{3})-(?:normal|italic)-[A-Za-z0-9_-]{8}\.woff2$/.test(f))
+  .map(f => `${BASE}assets/${f}`);
+
+const precacheEntries = [...assetFiles, ...fontFiles, ...rootScripts];
 
 // Generate a cache version based on asset hashes
 const assetsHash = createHash('md5')
@@ -120,4 +129,10 @@ for (const entry of precacheEntries) {
   }
 }
 
+if (!fontFiles.length) {
+  console.error('[inject-sw-precache] FATAL: no latin woff2 font found in dist/assets to precache');
+  process.exit(1);
+}
+
+console.log(`[inject-sw-precache] Fonts precached (latin woff2): ${fontFiles.map(f => f.split('/').pop()).join(', ')}`);
 console.log(`[inject-sw-precache] Injected ${precacheEntries.length} assets into SW (cache: ${cacheName}) — all assertions passed`);

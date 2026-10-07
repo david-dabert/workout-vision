@@ -231,3 +231,32 @@ body {
   z-index: 1;
 }
 
+
+/* ══════════════════════════════════════════
+   EXPERIENCE COLOUR ROLES (C8, design review of 7 October 2026)
+   The screens of the experience (src/components/experience/*.css) name a colour by its role, never by its
+   swatch, so a second theme (paper, C7) redefines these six and nothing else. Each role points at the
+   experience's swatch it replaced one for one (Entry.css, .wv-experience): same pixels, by construction
+   (e2e/visual.spec.js). --ink is not reused: it already means the dark ink on gold, here --c-on-accent.
+   Status: convention (a theme's role tokens, accepted front-end practice; no specific source).
+   ══════════════════════════════════════════ */
+.wv-experience {
+  --c-surface: var(--void);      /* the ground of a screen */
+  --c-fg: var(--bone);           /* text and marks at full strength */
+  --c-fg-muted: var(--ash);      /* secondary text: labels, captions */
+  --c-rule: var(--hair);         /* hairlines, borders of fields and cards */
+  --c-accent: var(--lamp);       /* the one gold: primary action, focus, measured counts */
+  --c-on-accent: var(--ink);     /* text drawn on the gold */
+
+  /* The numeral (C1, design review of 7 October 2026): every count and clock of the experience in one face, one
+     weight and, for a count the app measured, one solid colour, with no gradient and no glow (Demo, Live, Result,
+     Replay; the stepper and the rest clock take the face in --c-fg, being typed or timed, not measured). Geist has
+     tabular lining figures, so a count no longer changes width as it rises (Instrument Serif has none). A typed or
+     planned value is never drawn in --numeral-colour (R8). Each screen keeps its own size.
+     Status: convention (a heavy tabular sans for figures read at a distance; no specific source); the digit width
+     is measured from the font file (Geist 700, tnum: 636 units of 1000). */
+  --numeral-face: var(--sans);
+  --numeral-weight: 700;
+  --numeral-colour: var(--c-accent);
+  --numeral-digit: 0.636em;
+}

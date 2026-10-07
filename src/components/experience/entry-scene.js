@@ -1,5 +1,6 @@
 // Ported from design/experience-prototype.html: particle geometry, seeds and rendering unchanged.
 import entry from './entry-pose.json';
+import { RGB, rgba } from './palette';
 const DPR = Math.min(2, window.devicePixelRatio || 1);
 const LITE = (navigator.hardwareConcurrency || 8) <= 4;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -9,11 +10,11 @@ function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>>
 function sprite(r, g, b) {
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const x = c.getContext('2d'); const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-  gr.addColorStop(0, 'rgba(255,251,242,1)'); gr.addColorStop(0.16, `rgba(${r},${g},${b},0.95)`);
-  gr.addColorStop(0.42, `rgba(${r},${g},${b},0.3)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  gr.addColorStop(0, rgba(RGB.spark, 1)); gr.addColorStop(0.16, rgba([r, g, b], 0.95));
+  gr.addColorStop(0.42, rgba([r, g, b], 0.3)); gr.addColorStop(1, rgba([r, g, b], 0));
   x.fillStyle = gr; x.fillRect(0, 0, 64, 64); return c;
 }
-const SPR = [sprite(255, 238, 208), sprite(242, 198, 134), sprite(214, 150, 76)];
+const SPR = [sprite(...RGB.dustLight), sprite(...RGB.dustMid), sprite(...RGB.dustDeep)];
 const PARTS = [
   { k: 'torso', w: 3.0 }, { k: 'head', w: 1.0 }, { k: 'neck', w: 0.22, r: 0.07 },
   { k: 'seg', a: 11, b: 13, r: 0.085, w: 0.72, arm: 'left' }, { k: 'seg', a: 12, b: 14, r: 0.085, w: 0.72, arm: 'right' },
@@ -229,12 +230,12 @@ function drawDoor(ctx, W, H, e, rect, now) {
   const gw = 110 * DPR + lw;
   ctx.save(); ctx.translate(cx, y0 + hh / 2); ctx.scale(gw, Math.max(1, hh * 0.62));
   const g1 = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-  g1.addColorStop(0, `rgba(232,189,126,${0.09 * inten})`); g1.addColorStop(0.45, `rgba(232,189,126,${0.05 * inten})`);
-  g1.addColorStop(0.78, `rgba(232,189,126,${0.012 * inten})`); g1.addColorStop(1, 'rgba(232,189,126,0)');
+  g1.addColorStop(0, rgba(RGB.lamp, 0.09 * inten)); g1.addColorStop(0.45, rgba(RGB.lamp, 0.05 * inten));
+  g1.addColorStop(0.78, rgba(RGB.lamp, 0.012 * inten)); g1.addColorStop(1, rgba(RGB.lamp, 0));
   ctx.fillStyle = g1; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
   ctx.globalCompositeOperation = 'lighter';
   const g2 = ctx.createLinearGradient(0, y0, 0, y0 + hh);
-  g2.addColorStop(0, 'rgba(255,240,215,0)'); g2.addColorStop(0.5, `rgba(255,240,215,${0.9 * inten})`); g2.addColorStop(1, 'rgba(255,240,215,0)');
+  g2.addColorStop(0, rgba(RGB.glint, 0)); g2.addColorStop(0.5, rgba(RGB.glint, 0.9 * inten)); g2.addColorStop(1, rgba(RGB.glint, 0));
   ctx.fillStyle = g2; ctx.fillRect(cx - lw / 2, y0, lw, hh);
   ctx.globalCompositeOperation = 'source-over';
 }

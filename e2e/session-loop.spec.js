@@ -142,3 +142,23 @@ test('WP1.6: a refused set is logged by hand, from 0, and the history says it wa
   await expect(page.locator('.hist-corr')).toHaveText('Saisi à la main : l’app n’a pas pu compter cette série.');
   expect(errors).toEqual([]);
 });
+
+// C1 (design review of 7 October 2026): the count's colour is the app's measure only. A count the person corrected
+// is saved as theirs and drawn in the text colour; the count accepted keeps the count's colour (R8).
+test('C1: a corrected count, once saved, is not drawn in the measured count’s colour', async ({ page }) => {
+  test.setTimeout(150000);
+  const errors = await start(page);
+  await analysed(page);
+  const numeral = page.getByTestId('res-numeral');
+  const colour = () => numeral.evaluate(e => getComputedStyle(e).color);
+  const accent = await numeral.evaluate(e => { const s = getComputedStyle(e.closest('.wv-experience')); const p = document.createElement('i'); p.style.color = s.getPropertyValue('--c-accent'); document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; });
+  expect(await colour()).toBe(accent);
+  await page.getByRole('button', { name: 'Non', exact: true }).click();
+  await page.getByTestId('fix-card').getByRole('button', { name: 'Une de plus' }).click();
+  await page.getByTestId('fix-card').getByRole('button', { name: 'Enregistrer' }).click();
+  await expect(page.getByTestId('saved-card')).toBeVisible();
+  await expect(numeral).toHaveClass(/is-typed/);
+  expect(await colour()).not.toBe(accent);
+  expect(await colour()).toBe(await page.evaluate(() => { const p = document.createElement('i'); p.style.color = getComputedStyle(document.querySelector('.wv-experience')).getPropertyValue('--c-fg'); document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; }));
+  expect(errors).toEqual([]);
+});

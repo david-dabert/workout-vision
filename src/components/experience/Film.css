@@ -11,18 +11,18 @@
   box-shadow: inset 0 0 0 6px #0C0A08, 0 40px 80px -30px rgba(0, 0, 0, 0.85), 0 0 70px -24px rgba(232, 189, 126, 0.22);
 }
 .wv-experience .frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wv-experience .corners { position: absolute; inset: 16px; width: calc(100% - 32px); height: calc(100% - 32px); color: var(--lamp); }
+.wv-experience .corners { position: absolute; inset: 16px; width: calc(100% - 32px); height: calc(100% - 32px); color: var(--c-accent); }
 /* The scan line travels by translation, which the compositor draws alone: animating `top`
    laid the page out again on every frame the screen was open. The box spans the travel,
    8 % to 92 % of the frame, and draws its 1 px line along its top edge. */
 .wv-experience .scan { position: absolute; left: 10%; right: 10%; top: 8%; height: 84%; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(247, 220, 174, 0.75), transparent) top / 100% 1px no-repeat; animation: film-scan 4.4s var(--ease) infinite; }
 @keyframes film-scan { 0% { translate: 0 0; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { translate: 0 100%; opacity: 0; } }
 /* A sentence, so sans (mono is for labels and numerals only, #10). */
-.wv-experience .caption { margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
+.wv-experience .caption { margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
 .wv-experience .steps { list-style: none; margin: var(--s-5) 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .wv-experience .steps li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: baseline; font-size: var(--fs-body); line-height: 1.5; }
-.wv-experience .steps .n { font-family: var(--serif); font-size: var(--fs-heading); line-height: 1; color: var(--lamp); }
-.wv-experience .privacy { margin: var(--s-4) 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--fs-caption); line-height: 1.4; color: var(--ash); text-align: center; }
+.wv-experience .steps .n { font-family: var(--serif); font-size: var(--fs-heading); line-height: 1; color: var(--c-accent); }
+.wv-experience .privacy { margin: var(--s-4) 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); text-align: center; }
 .wv-experience .privacy svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -62,6 +62,6 @@
 
 /* How to count: a video, filmed or chosen, or live (Live.jsx). Two halves of one pill under the action; the chosen one lit. */
 .wv-experience .film-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: var(--s-3) 0 0; padding: 4px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); }
-.wv-experience .film-mode-opt { min-height: 44px; border-radius: var(--r-pill); border: 0; background: transparent; color: var(--ash); font-size: var(--fs-caption); display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+.wv-experience .film-mode-opt { min-height: 44px; border-radius: var(--r-pill); border: 0; background: transparent; color: var(--c-fg-muted); font-size: var(--fs-caption); display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
 .wv-experience .film-mode-opt.is-on { background: rgba(232, 189, 126, 0.14); color: var(--lamp-hi); box-shadow: inset 0 0 0 1px var(--lamp-line); }
 .wv-experience .film-mode .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #E0624A; }

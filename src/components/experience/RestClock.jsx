@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { restClock, nextTick, restText, restSpoken } from './rest-clock';
+import { restClock, nextTick, restText, restSpoken, keepAwakeDuringRest } from './rest-clock';
+import { holdScreenAwake } from '../../lib/interruption';
 import Digits from './Digits';
 
 /**
@@ -27,6 +28,9 @@ export default function RestClock({ fr, autoStart = false, clock: shared }) {
     window.addEventListener('pageshow', back);
     return () => { clearTimeout(t); document.removeEventListener('visibilitychange', back); window.removeEventListener('pageshow', back); };
   }, [running, clock]);
+
+  // The screen stays awake while the rest runs, up to the cap (rest-clock.js, keepAwakeDuringRest).
+  useEffect(() => (running ? keepAwakeDuringRest(clock, { hold: holdScreenAwake }) : undefined), [running, clock]);
 
   function start() { navigator.vibrate?.(10); clock.start(); moved.current = true; setRunning(true); }
   function stop() { clock.stop(); moved.current = true; setRunning(false); }

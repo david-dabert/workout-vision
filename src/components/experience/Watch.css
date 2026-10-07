@@ -2,10 +2,10 @@
    layout, in the space between the title and the percentage. */
 .wv-experience .watch-screen { display: flex; flex-direction: column; text-align: center; }
 .wv-experience .watch-top { display: flex; flex-direction: column; align-items: center; }
-.wv-experience .watch-screen .eyebrow { margin-top: var(--s-4); color: var(--ash); letter-spacing: 0.3em; }
+.wv-experience .watch-screen .eyebrow { margin-top: var(--s-4); color: var(--c-fg-muted); letter-spacing: 0.3em; }
 .wv-experience .watch-space { flex: 1; min-height: 140px; }
 .wv-experience .watch-bottom { width: 100%; max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.wv-experience .pct { margin: 0; min-height: 66px; display: flex; justify-content: center; align-items: baseline; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; color: var(--bone); transition: opacity 0.6s var(--ease); }
+.wv-experience .pct { margin: 0; min-height: 66px; display: flex; justify-content: center; align-items: baseline; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; color: var(--c-fg); transition: opacity 0.6s var(--ease); }
 /* Instrument Serif has no tabular figures: fixed cells stop the number from shifting as it counts. */
 .wv-experience .pct .d { display: inline-block; width: 0.46em; text-align: center; }
 /* A digit that changes rolls in (the instruments' digits, Entry.css .dg). */
@@ -16,7 +16,7 @@
 .wv-experience .watch-progress i { position: absolute; left: 0; top: -0.5px; height: 2px; width: 0; background: linear-gradient(90deg, rgba(232, 189, 126, 0.2), var(--lamp-hi)); box-shadow: 0 0 12px rgba(247, 220, 174, 0.7); }
 .wv-experience .watch-progress.is-loading::after { content: ""; position: absolute; top: -0.5px; left: 0; width: 22%; height: 2px; background: linear-gradient(90deg, transparent, rgba(247, 220, 174, 0.85), transparent); animation: watch-scan 1.8s var(--ease) infinite; }
 @keyframes watch-scan { 0% { translate: -100% 0; opacity: 0; } 15%, 85% { opacity: 1; } 100% { translate: 455% 0; opacity: 0; } }
-.wv-experience .watch-screen .privacy { margin: 6px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--fs-caption); line-height: 1.4; color: var(--ash); text-align: center; }
+.wv-experience .watch-screen .privacy { margin: 6px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); text-align: center; }
 .wv-experience .watch-screen .privacy svg { width: 14px; height: 14px; flex-shrink: 0; }
 .wv-experience .watch-screen .text-btn { min-height: 44px; border-radius: var(--r-pill); }
 @media (prefers-reduced-motion: reduce) {
