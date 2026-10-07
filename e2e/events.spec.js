@@ -69,10 +69,10 @@ test('turned off, nothing is sent, in this visit or the next; the entry speaks o
   const { events } = await listen(page);
   await page.addInitScript(() => { localStorage.setItem('wv_lang', 'fr'); });
   await page.goto(APP);
-  // With the counts on, the entry no longer says that nothing leaves the phone.
-  await expect(page.getByText('Votre vidéo ne quitte votre téléphone que si vous la partagez.')).toBeVisible({ timeout: 20000 });
+  // With the counts on, the entry speaks of the video only, never of "nothing" leaving the phone.
+  await expect(page.getByText('La vidéo reste sur votre téléphone.')).toBeVisible({ timeout: 20000 });
   await expect(page.getByText('Rien ne quitte votre téléphone sans votre accord.')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Entrer' }).click();
+  await page.getByRole('button', { name: 'Commencer' }).click();
   await page.getByRole('button', { name: 'Désactiver le comptage anonyme' }).click();
   await expect(page.getByTestId('usage-note')).toContainText('Comptage anonyme désactivé sur ce téléphone.');
   await expect(page.getByRole('button', { name: 'Réactiver le comptage anonyme' })).toBeVisible();

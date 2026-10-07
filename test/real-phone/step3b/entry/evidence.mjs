@@ -24,10 +24,10 @@ async function run(name, options, test) {
   } finally { writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2)); await context.close(); }
 }
 try {
-  await run('first visit, skip, Enter, preserved link, return and replay', {}, async (page, requests) => {
+  await run('first visit, skip, Start, preserved link, return and replay', {}, async (page, requests) => {
     await page.goto(`${base}#analyze`, { waitUntil: 'networkidle' });
-    await expect(page.getByRole('heading', { name: 'Votre corps est un temple.' })).toBeVisible();
-    await page.waitForTimeout(4500);
+    await expect(page.getByRole('heading', { name: 'Filmez votre série.' })).toBeVisible();
+    await page.waitForTimeout(1800);
     await page.screenshot({ path: `${dir}/01-entry-fr.png` });
     expect(requests.filter(u => /\.task(?:\?|$)/.test(u))).toEqual([]);
     expect(requests.filter(u => /fonts\.(googleapis|gstatic)\.com/.test(u))).toEqual([]);
@@ -35,7 +35,7 @@ try {
       expect(await page.evaluate(f => document.fonts.check(`16px "${f}"`), font)).toBe(true);
     }
     await page.getByRole('button', { name: 'Afficher l’entrée sans attendre' }).tap({ position: { x: 15, y: 100 } });
-    await page.getByRole('button', { name: 'Entrer', exact: true }).tap();
+    await page.getByRole('button', { name: 'Commencer', exact: true }).tap();
     await expect(page.locator('#core-lift')).toBeVisible();
     expect(new URL(page.url()).hash).toBe('#analyze');
     await page.screenshot({ path: `${dir}/02-after-enter.png` });
@@ -47,18 +47,18 @@ try {
     await page.getByRole('button', { name: 'Afficher l’entrée sans attendre' }).tap({ position: { x: 15, y: 100 } });
     await page.waitForTimeout(600);
     await page.screenshot({ path: `${dir}/03-replay-skipped.png` });
-    await page.getByRole('button', { name: 'Entrer', exact: true }).tap();
+    await page.getByRole('button', { name: 'Commencer', exact: true }).tap();
     await expect(page.locator('#core-lift')).toBeVisible();
     expect(new URL(page.url()).searchParams.has('entry')).toBe(false);
   });
-  await run('reduced motion stays still; English Enter works', { reducedMotion: 'reduce', locale: 'en-GB' }, async page => {
+  await run('reduced motion stays still; English Start works', { reducedMotion: 'reduce', locale: 'en-GB' }, async page => {
     await page.goto(`${base}#analyze`, { waitUntil: 'networkidle' });
-    await expect(page.getByRole('heading', { name: 'Your body is a temple.' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Film your set.' })).toBeVisible();
     const before = await page.locator('canvas').evaluate(c => c.toDataURL());
     await page.waitForTimeout(1000);
     expect(await page.locator('canvas').evaluate(c => c.toDataURL())).toBe(before);
     await page.screenshot({ path: `${dir}/04-reduced-en.png` });
-    await page.getByRole('button', { name: 'Enter', exact: true }).tap();
+    await page.getByRole('button', { name: 'Start', exact: true }).tap();
     await expect(page.locator('#core-lift')).toBeVisible();
   });
   const response = await fetch(`${base}mediapipe/vision_wasm_internal.wasm`);

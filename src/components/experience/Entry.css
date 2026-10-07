@@ -120,44 +120,67 @@
 .wv-experience .hx { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 3; cursor: pointer; }
 /* The invisible file input is the control: its keyboard focus shows on the label it covers. */
 .wv-experience label:has(> .hx:focus-visible) { outline: 2px solid var(--c-accent); outline-offset: 3px; }
-.wv-experience .entry { display: flex; flex-direction: column; justify-content: flex-end; text-align: center; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px); }
+/* The entry (C2 of the design review, 7 October 2026; mock-up studio/final/01-entry): a status line (the serif
+   wordmark over a 2 px rule, the test status in words), the viewfinder holding the figure of light, the promise, the
+   privacy line, two keys and the credit. Flush left, one column. Everything is in place and tappable within about
+   1.2 s; nothing loops. Sizes from the mock-up: status 12 px caps, promise 46 px serif, line 20 px, keys 58 px. */
+.wv-experience .entry {
+  display: flex; flex-direction: column; text-align: left;
+  padding: env(safe-area-inset-top, 0px) var(--gut) calc(env(safe-area-inset-bottom, 0px) + 18px);
+}
 .wv-experience .entry-skip { position: absolute; inset: 0; width: 100%; height: 100%; cursor: default; z-index: 0; }
-.wv-experience .entry .brand { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 22px); left: 0; right: 0; margin: 0; font-size: 10.5px; letter-spacing: 0.5em; text-indent: 0.5em; text-transform: uppercase; color: var(--c-fg-muted); opacity: 0; pointer-events: none; }
-.wv-experience .entry-copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; pointer-events: none; width: 100%; max-width: 440px; margin-inline: auto; }
-.wv-experience .entry-l1 { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(40px, 11.6vw, 58px); line-height: 1; letter-spacing: -0.015em; text-wrap: balance; }
-.wv-experience .entry-l2 { margin: 14px 0 0; font-family: var(--serif); font-size: clamp(20px, 5.6vw, 25px); line-height: 1.2; color: var(--c-fg-muted); }
-.wv-experience .entry-l3 { margin: 22px 0 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--c-accent); opacity: 0; }
+.wv-experience .entry-mast {
+  position: relative; z-index: 1; pointer-events: none; flex: none; height: 44px; margin-top: 6px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--c-fg);
+  opacity: 0; white-space: nowrap;
+}
+.wv-experience .entry .brand { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 24px; line-height: 1; color: var(--c-fg); }
+.wv-experience .entry-test { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bone-2); }
+/* The viewfinder: it takes the height the words leave; its four corners frame the figure drawn on the stage behind. */
+.wv-experience .entry-view { position: relative; flex: 1 1 auto; min-height: 120px; margin-top: 20px; pointer-events: none; opacity: 0; }
+.wv-experience .entry-view i { position: absolute; width: 18px; height: 18px; border: 0 solid var(--ash); }
+.wv-experience .entry-view i:nth-child(1) { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; }
+.wv-experience .entry-view i:nth-child(2) { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; }
+.wv-experience .entry-view i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.wv-experience .entry-view i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+.wv-experience .entry-copy { position: relative; z-index: 1; flex: none; display: flex; flex-direction: column; align-items: stretch; pointer-events: none; width: 100%; max-width: 440px; margin: 0 auto; }
+.wv-experience .entry-l1 { margin: 26px 0 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(38px, 11.8vw, 46px); line-height: 1; letter-spacing: -0.015em; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .entry-l2 { margin: 10px 0 0; max-width: 330px; font-size: 20px; line-height: 1.35; color: var(--bone-2); opacity: 0; }
+.wv-experience .entry-l3 { margin: 18px 0 0; display: flex; align-items: center; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--bone-2); opacity: 0; }
+.wv-experience .entry-l3 svg { flex: none; }
 .wv-experience .mask { display: block; overflow: hidden; padding-bottom: 0.08em; }
 .wv-experience .mask > span { display: block; translate: 0 112%; }
-.wv-experience .enter {
-  pointer-events: auto; position: relative; z-index: 2; margin-top: 30px; height: 58px; min-width: 214px; padding: 0 40px;
-  border-radius: 999px; border: 1px solid var(--lamp-line);
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 500; letter-spacing: 0.42em; text-indent: 0.42em; text-transform: uppercase; color: var(--lamp-hi);
-  overflow: hidden; opacity: 0;
-  background: radial-gradient(120% 140% at 50% 125%, rgba(232, 189, 126, 0.18), transparent 60%);
+.wv-experience .entry-keys { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; opacity: 0; }
+/* The keys: bone fill for the one way in, a 3:1 outline for the example (WCAG 1.4.11). Radius 4, 58 px, verbs. */
+.wv-experience .enter, .wv-experience .entry-demo {
+  pointer-events: auto; position: relative; z-index: 2; width: 100%; height: 58px; min-height: 44px; border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 17px; font-weight: 600; letter-spacing: 0; overflow: hidden;
 }
-.wv-experience .enter::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(247, 220, 174, 0.3) 50%, transparent 65%); translate: -130% 0; }
-.wv-experience .entry-test { margin: 18px 0 0; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash-2); opacity: 0; }
-.wv-experience .entry.play .brand { animation: fade 1.6s var(--ease) 0.3s forwards; }
-.wv-experience .entry.play .entry-l1 .mask > span { animation: rise 1.4s var(--ease) 1.45s forwards; }
-.wv-experience .entry.play .entry-l2 .mask > span { animation: rise 1.3s var(--ease) 1.95s forwards; }
-.wv-experience .entry.play .entry-l3 { animation: fade 1.4s var(--ease) 2.45s forwards; }
-.wv-experience .entry.play .enter { animation: reveal 1.2s var(--ease) 2.9s forwards; }
-.wv-experience .entry.play .enter::before { animation: sweep 4.2s var(--ease) 4.4s infinite; }
-.wv-experience .entry.play .entry-test { animation: fade 1.2s var(--ease) 3.3s forwards; }
-/* The way to the example (Demo.jsx): a quiet second action under Enter, a full 44 px to tap. */
-.wv-experience .entry-demo {
-  pointer-events: auto; position: relative; z-index: 2; margin-top: 8px; min-height: 44px; padding: 0 18px;
-  font-size: 14px; color: var(--c-fg-muted); text-decoration: none; /* the prototype's quiet action, no web link (critic, 30 September) */
-  opacity: 0;
+.wv-experience .enter { background: var(--c-fg); color: var(--void); }
+.wv-experience .entry-demo { border: 1.5px solid color-mix(in srgb, var(--c-fg) 40%, transparent); color: var(--c-fg); }
+.wv-experience .enter > span { position: relative; z-index: 1; }
+.wv-experience .entry .enter::after { background: radial-gradient(170px circle at var(--px, 50%) var(--py, 50%), color-mix(in srgb, var(--void) 14%, transparent), transparent 65%); }
+/* One pass of light across the key once it is in place, never again (C2). */
+.wv-experience .enter::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--paper) 60%, transparent) 50%, transparent 65%); translate: -130% 0; }
+.wv-experience .entry-credit {
+  pointer-events: auto; position: relative; z-index: 2; align-self: center; display: inline-flex; align-items: center; min-height: 44px; margin-top: 6px; padding: 0 8px;
+  font-size: 15px; color: var(--bone-2); text-decoration: none; opacity: 0;
 }
-.wv-experience .entry.play .entry-demo { animation: fade 1.2s var(--ease) 3.1s forwards; }
+/* The order of appearance, all of it done 0.85 s after the words' faces are in (at most 450 ms, Entry.jsx). */
+.wv-experience .entry.play .entry-mast { animation: fade 0.5s var(--ease) 0s forwards; }
+.wv-experience .entry.play .entry-view { animation: fade 0.6s var(--ease) 0.05s forwards; }
+.wv-experience .entry.play .entry-l1 .mask > span { animation: rise 0.7s var(--ease) 0.1s forwards; }
+.wv-experience .entry.play .entry-l2 { animation: fade 0.5s var(--ease) 0.2s forwards; }
+.wv-experience .entry.play .entry-l3 { animation: fade 0.5s var(--ease) 0.3s forwards; }
+.wv-experience .entry.play .entry-keys { animation: fade 0.45s var(--ease) 0.35s forwards; }
+.wv-experience .entry.play .entry-credit { animation: fade 0.45s var(--ease) 0.4s forwards; }
+.wv-experience .entry.play .enter::before { animation: sweep 1.4s var(--ease) 0.9s 1 forwards; }
 /* Once the example has faded in over it, the entry is hidden until the example closes. */
 .wv-experience .entry.demo-open { visibility: hidden; transition: visibility 0s linear 0.85s; }
-.wv-experience .entry.skip .brand, .wv-experience .entry.skip .entry-l3, .wv-experience .entry.skip .entry-test, .wv-experience .entry.skip .enter, .wv-experience .entry.skip .entry-demo { animation-delay: 0s !important; animation-duration: 0.35s !important; }
-.wv-experience .entry.skip .mask > span { animation-delay: 0s !important; animation-duration: 0.45s !important; }
-.wv-experience .entry.leaving .entry-copy, .wv-experience .entry.leaving .brand { animation: out 0.45s var(--ease) forwards !important; }
+.wv-experience .entry.skip :is(.entry-mast, .entry-view, .entry-l2, .entry-l3, .entry-keys, .entry-credit) { animation-delay: 0s !important; animation-duration: 0.25s !important; }
+.wv-experience .entry.skip .mask > span { animation-delay: 0s !important; animation-duration: 0.3s !important; }
+.wv-experience .entry.leaving :is(.entry-copy, .entry-mast, .entry-view) { animation: out 0.45s var(--ease) forwards !important; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rise { from { translate: 0 112%; } to { translate: 0 0; } }
 @keyframes sweep { 0% { translate: -130% 0; } 40%, 100% { translate: 130% 0; } }
@@ -168,11 +191,10 @@
 .wv-experience .tactile.is-pressed { transition-duration: 0.06s; }
 @media (prefers-reduced-motion: reduce) {
  .wv-experience *, .wv-experience *::before, .wv-experience *::after { animation: none !important; transition: none !important; }
- .wv-experience .entry .brand, .wv-experience .entry-l3, .wv-experience .entry-test, .wv-experience .enter, .wv-experience .entry-demo { opacity: 1; }
+ .wv-experience :is(.entry-mast, .entry-view, .entry-l2, .entry-l3, .entry-keys, .entry-credit) { opacity: 1; }
  .wv-experience .mask > span { translate: 0 0; }
 }
 
-.wv-experience .entry-l1 { color: var(--c-fg); }
 
 /* Buttons shared by every screen (from the prototype, formerly in Film.css):
    defined here, with the entry, so a screen reached first never lacks them. */
@@ -260,17 +282,27 @@ html, body { background: #080706; color-scheme: dark; }
 .wv-experience :is(input, textarea), .wv-experience :is(input, textarea):is(:focus, :focus-visible) { box-shadow: none; }
 .wv-experience ::selection { background: rgba(232, 189, 126, 0.3); color: var(--c-fg); }
 .wv-experience ::-webkit-scrollbar { width: 0; height: 0; }
-/* The entry on short screens (Safari with its toolbars, iPhone SE). */
-@media (max-height: 700px) {
-  .wv-experience .entry-l2 { margin-top: 10px; }
-  .wv-experience .entry-l3 { margin-top: 16px; }
-  .wv-experience .enter { margin-top: 22px; height: 52px; }
-  .wv-experience .entry-test { margin-top: 12px; }
-  .wv-experience .entry-demo { margin-top: 4px; }
-  .wv-experience .entry-demo + .entry-test { margin-top: 4px; }
+/* The entry on short screens (Safari with its toolbars, an iPhone SE at 375 × 667 and less): the same order, tighter,
+   the viewfinder giving up height first (it keeps at least 120 px). */
+@media (max-height: 760px) {
+  .wv-experience .entry-view { margin-top: 14px; }
+  .wv-experience .entry-l1 { margin-top: 18px; font-size: clamp(34px, 10.6vw, 42px); }
+  .wv-experience .entry-l2 { margin-top: 8px; font-size: 18px; }
+  .wv-experience .entry-l3 { margin-top: 12px; }
+  .wv-experience .entry-keys { margin-top: 18px; gap: 8px; }
+  .wv-experience :is(.enter, .entry-demo) { height: 52px; }
+  .wv-experience .entry-credit { margin-top: 2px; }
+}
+@media (max-height: 600px) {
+  .wv-experience .entry-l1 { margin-top: 12px; font-size: 32px; }
+  .wv-experience .entry-l2 { font-size: 16px; }
+  .wv-experience .entry-l3 { margin-top: 8px; }
+  .wv-experience .entry-keys { margin-top: 12px; }
+  .wv-experience :is(.enter, .entry-demo) { height: 48px; }
+  .wv-experience .entry-view { min-height: 90px; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .wv-experience .entry:not(.play) :is(.enter, .entry-demo) { pointer-events: none; }
+  .wv-experience .entry:not(.play) :is(.enter, .entry-demo, .entry-credit) { pointer-events: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wv-experience [data-reveal] { opacity: 1; translate: none; }

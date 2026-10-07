@@ -61,4 +61,16 @@ describe('the example screen', () => {
     expect(fr).toContain(`${DEMO_REPS} répétitions`);
     expect(en).toContain(`${DEMO_REPS} reps`);
   });
+
+  // Design review, 7 October 2026 (decision 3): the drawn example shows its count, labelled as an example, and no rep
+  // times: they would be the times of an animation, not measures of a person (R8). Rep times stay on real sets.
+  it('ends on the count alone: no rep times, no seconds, no experimental measures', () => {
+    const end = demoSet().duration;
+    for (const lang of ['fr', 'en']) {
+      const html = view(lang, end);
+      expect(html).toContain(lang === 'fr' ? 'Exemple' : 'Example');
+      expect(html).not.toMatch(/demo-times|"demo-exp"|Durée de chaque|Time of each rep|expérimentales|Experimental measures/);
+      expect(html).not.toMatch(/\d[.,]\d\s?s</);
+    }
+  });
 });

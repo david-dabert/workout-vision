@@ -151,17 +151,27 @@ function drawDust(ctx, W, H, t, k) {
 }
 
 
+// The entry plays once, then holds still (C2 of the design review, 7 October 2026): the figure gathers at twice the
+// prototype's pace, so it is whole about 1.4 s after the entry starts, the light behind it settles by 1.7 s, and from
+// then on nothing moves (no breathing, no twinkle, no drifting dust) and no frame is drawn until the figure leaves.
+// Status: convention (no specific source); the pace is David's to judge on his iPhone.
+const PACE = 2;
+const SETTLE_MS = 1700;
+export const ENTRY_SETTLE_MS = SETTLE_MS;
+
 export function createEntryScene(canvas, reduced, bounds) {
   const ctx = canvas.getContext('2d');
-  // The figure fits between the brand and the text block, whatever the
-  // screen height (the prototype assumed 844 px and collided at 664).
+  // The figure fits the box the entry gives it (its viewfinder), whatever the screen height (the prototype assumed
+  // 844 px and collided at 664). Without a box, the prototype's place.
   let fit = null;
   function measure() { fit = bounds ? bounds() : null; }
   function figureRect(W, H) {
     if (!fit) return { x: W * 0.1, y: H * 0.085, w: W * 0.8, h: H * 0.49 };
-    const top = Math.max(H * 0.085, (fit.top + 16) * DPR);
-    const h = Math.max(H * 0.26, Math.min(H * 0.49, (fit.bottom - 20) * DPR - top));
-    return { x: W * 0.1, y: top, w: W * 0.8, h };
+    const left = (fit.left ?? 0) * DPR, right = (fit.right ?? W / DPR) * DPR;
+    const boxH = (fit.bottom - fit.top) * DPR, inset = Math.max(10 * DPR, boxH * 0.07);
+    const top = fit.top * DPR + inset;
+    const h = Math.max(80 * DPR, boxH - inset * 2);
+    return { x: left, y: top, w: Math.max(1, right - left), h };
   }
   const big = new Body(LITE ? 1700 : 2600, 7);
   const pose = new Float32Array(entry.p), P2 = new Float32Array(66);
@@ -172,16 +182,18 @@ export function createEntryScene(canvas, reduced, bounds) {
     // The scene's own time: the wall clock less the time it spent covered, so all of it goes on from
     // where it stopped (review, 30 September).
     const now = wall - away;
-    const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : now / 1000;
+    // Once settled, the scene's clock stops at the settling moment, so every frame drawn after it is the same.
+    const still = Math.min(now, stage.entryStart + SETTLE_MS);
+    const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : (stage.explodeAt ? now : still) / 1000;
     ctx.clearRect(0, 0, W, H);
     drawDust(ctx, W, H, t, 1);
-    const e = reduced ? 9 : (now - stage.entryStart) / 1000;
+    const e = reduced ? 9 : (still - stage.entryStart) / 1000 * PACE;
     const rect = figureRect(W, H);
     drawDoor(ctx, W, H, e, rect, now);
     mapPose(pose, entry.vb, rect, P2);
     big.draw(ctx, P2, {
       alpha: 1, time: t, dpr: DPR, stars: 1, breathe: reduced ? 0 : Math.sin(t * 1.1) * 0.012,
-      assemble: reduced ? null : { t: e, x: W / 2, top: rect.y - H * 0.02, bot: rect.y + rect.h + H * 0.02 },
+      assemble: reduced ? null : { t: e, x: rect.x + rect.w / 2, top: rect.y - H * 0.02, bot: rect.y + rect.h + H * 0.02 },
       explode: !reduced && stage.explodeAt ? { t: (now - stage.explodeAt) / 1000 } : null
     });
   }
@@ -191,14 +203,24 @@ export function createEntryScene(canvas, reduced, bounds) {
     measure();
     draw(performance.now());
   }
-  function loop(now) { draw(now); if (!disposed && !pausedAt) frame = requestAnimationFrame(loop); }
+  const settled = wall => !stage.explodeAt && wall - away >= stage.entryStart + SETTLE_MS;
+  function loop(now) {
+    draw(now);
+    frame = 0;
+    if (!disposed && !pausedAt && !settled(now)) frame = requestAnimationFrame(loop);
+  }
   const observer = new ResizeObserver(size);
   observer.observe(canvas); size();
   if (!reduced) frame = requestAnimationFrame(loop);
   return {
     skip() { stage.entryStart = performance.now() - away - 6000; draw(performance.now()); },
     remeasure() { measure(); },
-    leave() { if (!reduced) stage.explodeAt = performance.now() - away; },
+    leave() {
+      if (reduced) return;
+      stage.explodeAt = performance.now() - away;
+      // A settled scene draws no frame: the leaving starts the loop again.
+      if (!frame && !pausedAt && !disposed) frame = requestAnimationFrame(loop);
+    },
     // Covered by the example: no frame is drawn, and on return the figure goes on where it stopped
     // (reviews of 29 and 30 September).
     pause() { if (reduced || disposed || pausedAt) return; pausedAt = performance.now(); cancelAnimationFrame(frame); },
@@ -210,7 +232,7 @@ export function createEntryScene(canvas, reduced, bounds) {
     dispose() { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); }
   };
 function drawDoor(ctx, W, H, e, rect, now) {
-  const cx = W / 2, top = rect.y - H * 0.045, bot = rect.y + rect.h + H * 0.045;
+  const cx = rect.x + rect.w / 2, top = rect.y - rect.h * 0.05, bot = rect.y + rect.h * 1.05;
   const hh = (bot - top) * easeOut(clamp(e / 1.1)), y0 = (top + bot) / 2 - hh / 2;
   const rest = e < 1.7 ? 1 : Math.max(0.32, 1 - (e - 1.7) * 0.45);
   let inten = rest, lw = 1.4 * DPR;
