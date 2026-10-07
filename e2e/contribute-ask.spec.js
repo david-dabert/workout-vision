@@ -61,11 +61,11 @@ async function saveSet(page, how = 'keep') {
   await expect(page.getByTestId('live-count').locator('.numeral')).toHaveText('2', { timeout: 20000 });
   await page.getByTestId('live-stop').click();
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 20000 });
-  if (how === 'keep') await page.getByRole('button', { name: 'Oui, c’est juste' }).click();
+  if (how === 'keep') await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   else {
-    await page.getByRole('button', { name: 'Non', exact: true }).click();
+    // The count is corrected in place, with + (C4, 7 October 2026: no "Non" first), then saved as the person's.
     await page.getByRole('button', { name: 'Une de plus' }).click();
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByTestId('res-save').click();
   }
   const card = page.getByTestId('saved-card');
   await expect(card).toBeVisible();

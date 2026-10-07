@@ -102,7 +102,7 @@ export async function saveSet(page, base) {
   await openFilm(page, base);
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
-  await page.getByRole('button', { name: 'Oui, c’est juste' }).click();
+  await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   const card = page.getByTestId('saved-card');
   await expect(card).toBeVisible();
   // The question is decided once the sets on the phone are read: give it the time to show, if it is to.

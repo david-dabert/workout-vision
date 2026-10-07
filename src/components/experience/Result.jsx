@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { topPose } from './lift-scenes';
 import { exerciseName, filmView } from './exercise-info';
-import { Body, mapPose, DPR, LITE } from './entry-scene';
-import { addLayer, presence } from './stage-loop';
 import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
 import { contribution, contributeAsks, keepContribution, markContributeAsked, readChoice, shouldAskContribute } from '../../lib/contribute';
@@ -13,7 +10,6 @@ import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
 import RestClock from './RestClock';
-import Digits from './Digits';
 import { restClock } from './rest-clock';
 import { NOTES } from './set-notes';
 import { decimal, measureGuide, repTable, speedChangeLine } from './report-sheet';
@@ -41,34 +37,10 @@ import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
 import { track } from '../../lib/events';
 import { collectOn, collectThisSet } from '../../lib/phoneCollect';
+import { RESULT } from './result-copy';
+import { dayPlan, planRows, quickKeys } from './result-plan';
 
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-// The user's own body at the top of the first rep, faint behind the number.
-function ghostSource(result, lift) {
-  const rep = result.reps?.[0], frames = result.imageLandmarks, ts = result.timestamps;
-  if (rep && frames?.length && ts?.length) {
-    const at = rep.startTime + (rep.concentricSec || 0);
-    let best = 0;
-    for (let i = 1; i < ts.length; i++) if (Math.abs(ts[i] - at) < Math.abs(ts[best] - at)) best = i;
-    const lm = frames[best], fw = result.metadata?.width || result.metadata?.extractedWidth || 1, fh = result.metadata?.height || result.metadata?.extractedHeight || 1;
-    if (lm) {
-      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      const p = new Float32Array(66);
-      for (let i = 0; i < 33; i++) {
-        const q = lm[i], x = q.x * fw, y = q.y * fh;
-        p[i * 2] = q.visibility < 0.3 ? NaN : x; p[i * 2 + 1] = q.visibility < 0.3 ? NaN : y;
-        if (q.visibility >= 0.5) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
-      }
-      if (Number.isFinite(x0)) {
-        const px = (x1 - x0) * 0.1, py = (y1 - y0) * 0.1;
-        for (let i = 0; i < 33; i++) { p[i * 2] -= x0 - px; p[i * 2 + 1] -= y0 - py; }
-        return { p, vb: [x1 - x0 + 2 * px, y1 - y0 + 2 * py] };
-      }
-    }
-  }
-  return topPose(lift);
-}
-
 function Topbar({ fr, onClose, onReplay, replayRef, badge = true }) {
   return <div className="topbar">
     <button className="icon-btn press" onClick={onClose} aria-label={fr ? 'Fermer' : 'Close'}>
@@ -190,7 +162,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // question "How many did you do?"; the set is saved with the app's 0 beside the person's count, as a
   // correction (3 October 2026). Status: convention, from R8.
   const unsure = !result.refused && result.count === 0;
-  const [step, setStep] = useState(unsure ? 'fix' : 'ask'); // ask | fix | saved
+  // Low confidence (screen 05b of the final direction, C4 of the design review of 7 October 2026): the app's own
+  // signals only, no new threshold. A refused set, a set counted none in, or a live set whose final count is not the
+  // one the live screen showed. The screen then shows no number, no gold and no measure until the person gives
+  // their count ("–", quick keys centred on the plan, none chosen). Status: convention, from R8.
+  const liveDiffers = !result.refused && liveShown !== null && result.count > 0 && liveShown !== result.count;
+  const low = !!result.refused || unsure || liveDiffers;
+  const c = RESULT[fr ? 'fr' : 'en'];
+  const [step, setStep] = useState(low ? 'fix' : 'ask'); // ask | fix | saved
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
   // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
   const cardRef = useRef(null), firstStep = useRef(true);
@@ -203,7 +182,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
     target.focus({ preventScroll: true, focusVisible: false });
   }, [step]);
-  const [trueN, setTrueN] = useState(result.count);
+  // 0 stands for "no number chosen yet" on the low-confidence screen ("–"); otherwise the app's count to confirm.
+  const [trueN, setTrueN] = useState(low ? 0 : result.count);
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
@@ -223,7 +203,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [closing, setClosing] = useState(false);
   const unsaved = step !== 'saved' && !result.refused;
   // A set the app counted none in, with no number typed yet, holds nothing to keep: closing it asks nothing.
-  const empty = unsure && step === 'fix' && trueN === 0;
+  const empty = low && step === 'fix' && trueN === 0;
   const emptyRef = useRef(empty);
   emptyRef.current = empty;
   const unsavedRef = useRef(unsaved);
@@ -286,12 +266,6 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const rootRef = useRef(null);
   const reportRef = useRef(null);
   const replayRef = useRef(null);
-  const coveredRef = useRef(covered);
-  coveredRef.current = covered;
-  // Once the question is answered the ghost steps back, so it never sits on the cards' words (#8).
-  const stepRef = useRef(step);
-  useEffect(() => { stepRef.current = step; }, [step]);
-
   // Back from the report or the replay, the keyboard and screen readers return to the button that opened it.
   const wasCovered = useRef(covered);
   useEffect(() => {
@@ -313,7 +287,6 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // Without validated measures (measures.js) every mark has one height, and a rep's details are its
   // number alone, with "partly filmed" where the recording cut it.
   const reps = result.reps || [];
-  const maxRom = Math.max(1, ...reps.map(r => r.romDegrees || 0));
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
   // Left against right, for a set filmed from the front only (counting/symmetry.ts); measured once.
@@ -408,22 +381,27 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     return () => { cancelAnimationFrame(raf); clearTimeout(t); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The ghost of the lift behind the number.
+  // The keys hold at the foot of the screen while content passes under them; only then do they lay a ground of
+  // their own over it (is-stuck), so at rest they sit on the stage with no edge. Stuck when the mark that follows them
+  // in the page (res-dock-end) lies below the screen.
   useEffect(() => {
-    if (result.refused || unsure) return undefined;
-    const body = new Body(LITE ? 1700 : 2600, 7), src = ghostSource(result, lift), out = new Float32Array(66), memo = {};
-    return addLayer((ctx, W, H, t, now) => {
-      const here = presence(rootRef.current, now, memo);
-      if (coveredRef.current || here <= 0) return;
-      mapPose(src.p, src.vb, { x: W * 0.04, y: H * 0.04, w: W * 0.92, h: H * 0.66 }, out);
-      // The ghost belongs to the count: it fades as the count scrolls away, so it never sits behind the
-      // charts and words below (design review, 2 October).
-      const num = rootRef.current?.querySelector('.res-count');
-      const seen = num ? Math.max(0, Math.min(1, num.getBoundingClientRect().bottom / (window.innerHeight * 0.5))) : 1;
-      if (seen <= 0) return;
-      body.draw(ctx, out, { alpha: 0.2 * here * seen * (stepRef.current === 'ask' ? 1 : 0.3), time: t, dpr: DPR, breathe: reduced ? 0 : Math.sin(t * 0.9) * 0.01 });
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const screen = rootRef.current?.querySelector('.screen');
+    if (!screen) return undefined;
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const dock = screen.querySelector('.res-dock'), end = screen.querySelector('.res-dock-end');
+      if (dock && end) dock.classList.toggle('is-stuck', end.getBoundingClientRect().top > screen.getBoundingClientRect().bottom + 1);
+    };
+    const on = () => { if (!raf) raf = requestAnimationFrame(check); };
+    check();
+    screen.addEventListener('scroll', on, { passive: true });
+    window.addEventListener('resize', on);
+    return () => { cancelAnimationFrame(raf); screen.removeEventListener('scroll', on); window.removeEventListener('resize', on); };
+  });
+
+  // The ghost of the lift that stood behind the number is gone (C4, 7 October 2026): the final direction keeps one
+  // reading per screen, with no particles, and the stage sleeps without a layer (C9).
 
   // The set saved, as a contribution, kept on this phone until the person sends or erases it.
   // True once kept; a write the phone refuses is never taken for a kept set (audit of 2 October).
@@ -475,11 +453,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // person's answer to both, so the set is saved as confirmed, or as corrected when the number was typed.
   async function keepAndClose() {
     if (saving.current) return;
-    if (step === 'fix' && unsure && trueN === 0) {
+    if (step === 'fix' && low && trueN === 0) {
       setClosing(false);
       // Nothing to keep yet: the question on the number takes focus, as the card it stands in.
       requestAnimationFrame(() => {
-        const q = cardRef.current?.querySelector('[data-testid="fix-card"] .ask-q');
+        const q = document.querySelector('[data-testid="fix-card"] .ask-q');
         if (q) { if (!q.hasAttribute('tabindex')) q.setAttribute('tabindex', '-1'); q.focus({ preventScroll: false, focusVisible: false }); }
       });
       return;
@@ -508,44 +486,96 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const read = { read: result.timestamps?.length ?? null, expected: Number.isFinite(result.metadata?.duration) ? Math.floor(result.metadata.duration * TARGET_FPS) : null };
   const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError, decoder: result.metadata?.method || '', read });
 
-  // The question "How many did you do?" with its stepper: after a "No", for a set the app counted none in, and,
-  // as "Saisir mon nombre", for a set the app refused (manual: saved as typed by hand, WP1.6).
-  const fixCard = manual => (
-        <div className="glass appear" data-testid="fix-card">
-          <p className="ask-q">{fr ? 'Combien en avez-vous fait\u00A0?' : 'How many did you do?'}</p>
-          <div className="stepper">
-            <button className="round press" disabled={trueN <= 0} onClick={() => { setTyped(null); setTrueN(n => Math.max(0, n - 1)); }} aria-label={fr ? 'Une de moins' : 'One fewer'}>−</button>
-            {/* The numeral is also a field: a tap opens the number pad and typing replaces the number, so 7 to 34
-                takes three taps, not 27 (design review of 1 October). The figures stay drawn by Digits underneath.
-                aria-atomic: the digits are separate nodes, so the whole number is read, not the digit that changed (review, 30 September). */}
-            <span className={`stepper-n${typed !== null ? ' is-typing' : ''}`}>
-              <span aria-live="polite" aria-atomic="true"><Digits text={trueN} /></span>
-              {/* The field opens empty, so what is typed replaces the number wherever iOS leaves the caret (a
-                  select() on focus does not hold after a tap in WebKit: review of 2 October). Until a digit is
-                  typed, and if every digit is deleted, the number stays the one it opened on. */}
-              <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done"
-                aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? String(trueN)}
-                onFocus={() => { typedFrom.current = trueN; setTyped(''); }}
-                onBlur={() => setTyped(null)}
-                onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); setTrueN(d === '' ? typedFrom.current : Number(d)); }}
-                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
-            </span>
-            <button className="round press" disabled={trueN >= 99} onClick={() => { setTyped(null); setTrueN(n => Math.min(99, n + 1)); }} aria-label={fr ? 'Une de plus' : 'One more'}>+</button>
-          </div>
-          {/* With no count from the app, the person's own count is saved, never the 0 the stepper opens on. */}
-          <button type="button" className="btn-primary press" disabled={(unsure || manual) && trueN === 0} onClick={() => { if ((unsure || manual) && trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true, manual); }}>
-            <span>{fr ? 'Enregistrer' : 'Save'}</span>
-          </button>
-        </div>
-  );
+  // The number the person gives: by − and +, a quick key, or typed on the number pad. On a counted set, a change makes
+  // the count theirs (step fix); brought back to the app's number, it is the app's to confirm again (step ask).
+  const adjust = v => {
+    const n = Math.max(0, Math.min(99, v));
+    setTyped(null);
+    setTrueN(n);
+    if (!low) setStep(n === count ? 'ask' : 'fix');
+  };
+  const live = !!result.metadata?.live;
+  // For a set filmed from a programme: the day's sets of this exercise and the set's place among them
+  // (result-plan.js). Until the sets are read there is no table and no set number, never a wrong one.
+  const day = dayPlan({ planned, sets: before, lift });
+  // The status line (one per screen, final direction): the state of the count, then where the set stands.
+  const where = day ? `${liftName} · ${c.setOf(day.index, Math.max(day.sets, day.index))}` : low ? liftName : `${liftName} · ${armLabel}`;
+  const typedSaved = step === 'saved' && (!!result.refused || isCorrected(trueN, count));
+  const status = <div className="res-status" data-testid="res-status">
+    <p className="res-status-state">{step === 'saved'
+      ? <><i className={`res-mark is-sq${typedSaved ? '' : ' is-measured'}`} aria-hidden="true" />{c.saved}</>
+      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{low ? c.yourCount : c.toConfirm}</>}</p>
+    <p className="res-status-where">{where}</p>
+  </div>;
+  const tierLine = tierOf(lift) ? <div className="res-tierline"><p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p></div> : null;
+
+  // − and +, drawn (Geist has no U+2212 at this weight), 64 pt square keys whose outline holds 3:1 (WCAG 1.4.11).
+  const minus = <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M3 11H19" /></svg>;
+  const plus = <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M3 11H19M11 3V19" /></svg>;
+  // The number between − and +. It is also a field: a tap opens the number pad and typing replaces the number, so 7
+  // to 34 takes three taps, not 27 (design review of 1 October). The field opens empty, so what is typed replaces the
+  // number wherever iOS leaves the caret (review of 2 October); with every digit deleted the number stays as it was.
+  const hero = (slot, ready, keys = true) => <div className={`res-hero${ready ? '' : ' is-waiting'}`}>
+    {keys && <button type="button" className="res-step press" disabled={!ready || trueN <= 0} onClick={() => adjust(trueN - 1)} aria-label={fr ? 'Une de moins' : 'One fewer'}>{minus}</button>}
+    <span className={`res-slot${typed !== null ? ' is-typing' : ''}`}>
+      {slot}
+      {keys && <input className="stepper-in" type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done" disabled={!ready}
+        aria-label={fr ? 'Nombre de répétitions' : 'Number of reps'} value={typed ?? (trueN ? String(trueN) : '')}
+        onFocus={() => { typedFrom.current = trueN; setTyped(''); }}
+        onBlur={() => setTyped(null)}
+        onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); const n = d === '' ? typedFrom.current : Number(d); setTrueN(n); if (!low) setStep(n === count ? 'ask' : 'fix'); }}
+        onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />}
+    </span>
+    {keys && <button type="button" className="res-step press" disabled={!ready || trueN >= 99} onClick={() => adjust(trueN + 1)} aria-label={fr ? 'Une de plus' : 'One more'}>{plus}</button>}
+  </div>;
+
+  // Leaving a set not yet saved: one question, naming the number, where the keys stood.
+  const closeCard = <div className="res-close appear" data-testid="close-card" role="group" aria-labelledby="close-q">
+    <p className="ask-q" id="close-q" tabIndex={-1}>{(() => {
+      const n = step === 'fix' ? trueN : count;
+      const what = fr ? (n > 1 ? `ces ${n} répétitions` : n === 1 ? 'cette répétition' : 'cette série') : (n > 1 ? `these ${n} reps` : n === 1 ? 'this rep' : 'this set');
+      return fr ? `Garder ${what} ?` : `Keep ${what}?`;
+    })()}</p>
+    <div className="ask-row">
+      <button type="button" className="res-key is-primary press" onClick={keepAndClose} data-testid="close-keep">{fr ? 'Garder' : 'Keep'}</button>
+      <button type="button" className="res-key press" onClick={discardAndClose} data-testid="close-discard">{fr ? 'Ne pas garder' : 'Don’t keep'}</button>
+    </div>
+  </div>;
+
+  // Low confidence (screen 05b): the cause the app measured, the question, and no number until the person gives one.
+  // The slot starts at "–"; the quick keys are centred on the plan (else on the person's previous set of this lift,
+  // labelled so), none chosen; Save waits for a number. The app's count is never offered as the centre (R8).
+  const centre = Number.isInteger(planned?.reps) && planned.reps > 0 ? planned.reps : null;
+  const previous = before?.[0]?.reps;
+  const quick = quickKeys(centre ?? previous);
+  const centreLine = centre ? c.planSays(centre) : quick.length ? c.lastSet(previous) : '';
+  const lowAsk = (manual, cause) => <div key="count" className="res-low" data-testid="fix-card">
+    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers ? c.notSure : c.noCount}</h2>
+    <div className="res-cause">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" /><path d="M10 5.5v5.5" /><circle className="dot" cx="10" cy="14.2" r=".6" /></svg>
+      <div>{cause.map(l => <p key={l}>{l}</p>)}</div>
+    </div>
+    <p className="ask-q res-ask" id="res-ask">{c.howMany}</p>
+    {hero(trueN > 0
+      ? <span key={trueN} className="res-typed" data-testid="res-typed" aria-hidden="true">{trueN}</span>
+      : <span className="res-empty" data-testid="res-empty" aria-hidden="true"><i /></span>, true)}
+    <p className="sr" aria-live="polite" aria-atomic="true">{trueN > 0 ? trueN : c.empty}</p>
+    {trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
+    {quick.length > 0 && <div className="res-quick" role="group" aria-labelledby="res-ask">{quick.map(k => <button key={k} type="button" className={`res-qk press${trueN === k ? ' is-on' : ''}`} aria-pressed={trueN === k} onClick={() => adjust(k)}>{k}</button>)}</div>}
+    {centreLine && <p className="res-hint res-centre">{centreLine}</p>}
+  </div>;
+  const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{closing && unsaved ? closeCard : <div className="res-keys">
+    <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true, manual); }}>{trueN > 0 ? c.saveN(trueN) : c.save}</button>
+    <button type="button" className="res-key press" onClick={onRefilm}>{c.refilm}</button>
+  </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
 
   if (result.refused) {
     const text = why.cause === 'nobody'
       ? (result.metadata?.live ? (fr ? 'Personne n’apparaît à l’image.' : 'We could not find you in the picture.') : (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.'))
       : why.cause === 'unclear'
         ? (many
-          ? (fr ? `Vos ${limb.noun} n\u2019étaient pas assez visibles pour compter les répétitions.` : `Your ${limb.noun} were not visible enough to count the reps.`)
-          : (fr ? `Votre ${armLabel} n\u2019était pas assez visible pour compter les répétitions.` : `Your ${armLabel} was not visible enough to count the reps.`))
+          ? (fr ? `Vos ${limb.noun} n’étaient pas assez visibles pour compter les répétitions.` : `Your ${limb.noun} were not visible enough to count the reps.`)
+          : (fr ? `Votre ${armLabel} n’était pas assez visible pour compter les répétitions.` : `Your ${armLabel} was not visible enough to count the reps.`))
         : why.hips
           ? (why.cause === 'outside'
             ? (fr ? 'Vos hanches sont restées hors du cadre pendant la plus grande partie de la série.' : 'Your hips stayed out of the frame for most of the set.')
@@ -558,43 +588,27 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
               ? (fr ? `Vos ${limb.noun} étaient caché${ee} pendant la plus grande partie de la série.` : `Your ${limb.noun} were hidden for most of the set.`)
               : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`)));
     const fix = why.hips
-      ? (fr ? 'Reculez pour que vos hanches soient dans l\u2019image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
+      ? (fr ? 'Reculez pour que vos hanches soient dans l’image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
-        ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l\u2019image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
+        ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l’image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
         : legs
-          ? (fr ? 'Placez-vous au centre de l\u2019image, pieds compris, puis refilmez.' : 'Stand in the middle of the picture, feet included, then record again.')
-          : (fr ? 'Placez-vous au centre de l\u2019image, bras compris, puis refilmez.' : 'Stand in the middle of the picture, arms included, then record again.');
-    // The replay shows where the tracking lost the body; under it, this screen is out of reach.
-    return <div className="wv-experience" inert={covered ? true : undefined}>
-      <section className="screen is-active result-screen"><div className="wrap">
+          ? (fr ? 'Placez-vous au centre de l’image, pieds compris, puis refilmez.' : 'Stand in the middle of the picture, feet included, then record again.')
+          : (fr ? 'Placez-vous au centre de l’image, bras compris, puis refilmez.' : 'Stand in the middle of the picture, arms included, then record again.');
+    // The cause the app measured (refusal.js) and its fix, then the person's count, typed by hand and saved as theirs
+    // with no count of the app (WP1.6 of docs/SPEC-production.md; R8). "Refilmer" stays one tap away. The replay, in
+    // the top bar, shows where the tracking lost the body; under it, this screen is out of reach.
+    return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
+      <section className={`screen is-active result-screen is-low${step === 'saved' ? ' is-saved' : ''}`}><div className="wrap">
         <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
-        <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{liftName}</p>
-        <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2>
-        {/* The frame beside its sentence, as a figure and its caption, so "Refilmer" stays in view (design review, 30 September). */}
-        <div className={why.cause === 'outside' ? 'refused-why' : undefined} data-reveal style={{ '--i': 2 }}>
-          {why.cause === 'outside' && <div className="frame">
-            <i className="edge" style={why.exitLeft ? { left: 0 } : { right: 0 }} aria-hidden="true" />
-            <span className="edge-label" style={{ textAlign: why.exitLeft ? 'left' : 'right' }}>{fr ? 'Hors cadre' : 'Out of frame'}</span>
-          </div>}
-          <p className="body-text">{text}</p>
-        </div>
-        <div className="fix-note" data-reveal style={{ '--i': 3 }}>
-          <p className="eyebrow">{fr ? 'La correction' : 'The fix'}</p>
-          <p className="fix-text">{fix}</p>
-        </div>
-        <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
-          {/* One button: "Choisir une autre vidéo" beside it did the same, back to Film (third audit C14, 3 October). */}
-          <button className="btn-primary press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
-          {/* The set is done all the same: the person may log it by hand, saved as theirs, with no count of the app
-              (WP1.6 of docs/SPEC-production.md). The stepper opens on 0, never on the count the app refused (R8). */}
-          {step === 'ask' && <button className="btn-ghost press" data-testid="manual-open" onClick={() => { setTyped(null); setTrueN(0); setStep('fix'); }}>{fr ? 'Saisir mon nombre' : 'Enter my count'}</button>}
-        </div>
+        {status}
+        {tierLine}
+        {step !== 'saved' && lowAsk(true, [text, fix])}
+        {step !== 'saved' && lowDock(true)}
         <div ref={cardRef}>
-          {step === 'fix' && fixCard(true)}
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
             <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
-            <button className="btn-line press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+            <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
             <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           </div>}
           {saveError && <p role="alert" className="save-error">{saveError}</p>}
@@ -620,45 +634,79 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       </section>)}
     </details>
   </>;
-  // Once saved, the numeral is the count saved: the user's, when they corrected it; the app's stays
-  // beside it as "Compté par l'app" (review of 1 October). Before, it is the app's count rising.
-  const big = step === 'saved' ? trueN : shown;
+  // The numeral: the app's count rising, then the count to confirm, in the measured count's colour; the person's
+  // number once they change it (step fix) or once a changed count is saved, drawn in --c-fg at weight 400 with the words
+  // "Saisi par vous" (C1, R8). After a low-confidence screen it is the number the person gave.
+  const big = step === 'ask' ? shown : trueN;
+  const typedView = step === 'fix' || corrected;
   const one = big <= 1;
-  const measured = count > 0 && asked;
+  // Before the person gives their count on the low-confidence screen, no measure of the set is shown (R8, no grade).
+  const showMeasures = !low || step === 'saved';
+  const measured = count > 0 && asked && showMeasures;
   // The level chosen before this set sets the screen; one chosen on it applies from the next set.
   // The set's two ranges and what a gap means: under the strips, or under the marks for the beginner, who has no strips.
   const sidesLine = measured && sidesText ? <div className="res-sides" data-testid="res-sides"><p>{sidesText.line}</p><p className="res-sides-note">{sidesText.note}</p></div> : null;
+  // The cells still planned after the counted ones (dashed, never filled), and the day's rows.
+  const extra = day ? Math.max(0, day.reps - reps.length) : 0;
+  const current = step === 'saved'
+    ? { kind: isCorrected(trueN, count) ? 'corrected' : 'confirmed', n: trueN }
+    : low ? { kind: 'yours', n: trueN || null } : { kind: 'pending', n: step === 'fix' ? trueN : count, typed: step === 'fix' };
+  const rows = planRows(day, current);
+  const replayKey = onReplay && <button ref={replayRef} type="button" className="res-key press" onClick={onReplay}>{live ? c.replaySet : c.replayVideo}</button>;
   const blocks = {
-    // No count to show: the words of the refused screen, and the question below them (unsure, above).
-    count: unsure && step !== 'saved' ? <h2 key="count" className="title refused-title" data-testid="res-uncounted">{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2> : <div key="count" className="res-count">
-      <span key={big} className={`numeral tick${corrected ? ' is-typed' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>
-      <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{result.test ? (fr ? ` en ${result.test.windowSec}\u00A0secondes` : ` in ${result.test.windowSec} seconds`) : ''}</p>
+    // Low confidence: the cause and the question, no number (05b). Otherwise the question, the count between − and +,
+    // its state in a mark and a word, and where it comes from (05).
+    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [c.liveDiffers(liveShown)]) : <div key="count" className="res-count">
+      {step !== 'saved' && <p className={`res-q${asked ? '' : ' is-waiting'}${step === 'fix' ? ' is-fix' : ''}`} aria-hidden={asked ? undefined : true}>{step === 'fix' ? c.howMany : c.question(count)}</p>}
+      {hero(<span key={big} className={`numeral tick${typedView ? ' is-typed' : ''}${String(big).length > 2 ? ' is-long' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>, asked, step !== 'saved')}
+      {step === 'fix' && <p className="sr" aria-live="polite" aria-atomic="true">{trueN}</p>}
+      <p className={`res-state${typedView ? ' is-typed' : ''}${step === 'saved' ? ' is-saved' : ''}`} data-testid="res-state">{typedView
+        ? c.typedBy
+        : <><i className={`res-mark ${step === 'saved' ? 'is-sq' : 'is-ring'} is-measured`} aria-hidden="true" />{step === 'saved' ? c.saved : c.toConfirm}</>}</p>
+      {/* Where the number comes from: the app, on a video whose length is measured (metadata.duration); once the person
+          changed it, the app's own count beside theirs (the saved card says it once saved). */}
+      {step === 'fix' ? <p className="res-src">{c.countedWas(count)}</p> : !typedView && <p className="res-src" data-testid="res-src">{c.source(seconds, live)}</p>}
+      {tierLine}
+      {result.test && <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{fr ? ` en ${result.test.windowSec} secondes` : ` in ${result.test.windowSec} seconds`}</p>}
       {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
       {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{result.metadata?.live
-        ? (fr ? `La série s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The set stops before ${result.test.windowSec} seconds: the score covers only what was filmed.`)
-        : (fr ? `La vidéo s’arrête avant les ${result.test.windowSec}\u00A0secondes\u00A0: le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`)}</p>}
-      {/* A live set: the count shown during the set was the core on the set so far; this one is the core on all of it
-          (liveCounter.js). When they differ the screen says so, so the number heard during the set is not taken for a
-          second measure. Not shown for a set the app could not count: that screen asserts no number (R8). */}
-      {liveShown !== null && count > 0 && liveShown !== count && <p className="res-meta res-live" data-testid="res-live">{fr
-        ? `En direct, l’app affichait ${liveShown}. Le compte final relit toute la série.`
-        : `Live, the app showed ${liveShown}. The final count reads the whole set again.`}</p>}
-      {/* Under the count from the first frame: every measure on this screen (marks, account, table) is experimental (measures.js). */}
-      {MEASURES_SHOWN && count > 0 && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
+        ? (fr ? `La série s’arrête avant les ${result.test.windowSec} secondes : le score ne porte que sur ce qui a été filmé.` : `The set stops before ${result.test.windowSec} seconds: the score covers only what was filmed.`)
+        : (fr ? `La vidéo s’arrête avant les ${result.test.windowSec} secondes : le score ne porte que sur ce qui a été filmé.` : `The video ends before ${result.test.windowSec} seconds: the score covers only what was filmed.`)}</p>}
       <p className="sr" role="status">{step === 'saved'
         ? (fr ? `${trueN} ${trueN > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}.` : `${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved.`)
         : asked ? (fr ? `${count} ${count > 1 ? 'répétitions comptées' : 'répétition comptée'}.` : `${count} ${count === 1 ? 'rep' : 'reps'} counted.`) : ''}</p>
     </div>,
-    bars: count > 0 && <div key="bars">
-      <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`}
-        {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
-        {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`} style={{ '--r': MEASURES_SHOWN ? Math.max(0, rep.romDegrees || 0) / maxRom : 1 }}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
+    // One cell per counted rep, solid in the measured colour as the count rises; for a planned set, one dashed cell
+    // per rep still planned (never filled, never gold). Touching the cells shows the nearest rep's details.
+    bars: count > 0 && showMeasures && <div key="bars" className="res-cells-wrap">
+      <div className="res-cells">
+        <div ref={marksRef} className={`bars${sel >= 0 ? ' has-sel' : ''}`} style={{ flexGrow: Math.max(1, reps.length) }}
+          {...(asked ? { role: 'group', tabIndex: 0, 'aria-label': marksLabel({ fr, corrected }), onClick: pick, onKeyDown: keys } : { 'aria-hidden': true })}>
+          {reps.map((rep, i) => <div key={rep.index} className={`bar${i < shown ? ' lit' : ''}${i === sel ? ' sel' : ''}`}><i />{shortSet.has(rep.index) && i < shown && <b className="short-mark" aria-hidden="true">▾</b>}</div>)}
+        </div>
+        {extra > 0 && <div className="bars is-planned" data-testid="res-planned-cells" aria-hidden="true" style={{ flexGrow: extra }}>
+          {Array.from({ length: extra }, (_, i) => <div key={i} className="bar is-planned"><i /></div>)}
+        </div>}
       </div>
       {/* VoiceOver on iPhone cannot move through the marks (they answer arrow keys and taps): every rep's line is
           also in a list read in order, with the label of the measures before it (second audit, 3 October). */}
       {asked && <ol className="sr" data-testid="res-reps-sr">{reps.map((_, i) => { const t = repText(i); return <li key={i}>{t.head}{t.body}</li>; })}</ol>}
       {view.level === 'beginner' && sidesLine}
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
+      {/* Under the cells: every measure on this screen (cells, account, table) is experimental (measures.js). */}
+      {MEASURES_SHOWN && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
+    </div>,
+    // The day's table, for a set filmed from a programme: each set with a mark, a weight and a word. Confirmed sets in
+    // the measured colour at weight 700; the set on screen "à confirmer"; a typed or corrected set at weight 400 with
+    // its word; the sets to come "prévu N", at caption size, never a numeral and never gold (R8).
+    plan: rows.length > 0 && showMeasures && <div key="plan" className="res-plan" data-testid="res-plan">
+      <p className="res-plan-head"><span className="res-caps">{c.today}</span><span>{c.plannedHead(day.sets, day.reps)}</span></p>
+      <ol className="res-rows">{rows.map(r => <li key={r.k} className={`res-row is-${r.kind}${r.typed ? ' is-typed' : ''}${r.k === day.index ? ' is-current' : ''}`} data-kind={r.kind}>
+        <i className="res-mark" aria-hidden="true" />
+        <span className="res-row-set">{c.setN(r.k)}</span>
+        <span className="res-row-n" data-testid={r.kind === 'planned' ? 'res-planned' : undefined}>{r.kind === 'planned' ? c.plannedValue(r.n) : (r.n ?? '–')}</span>
+        <span className="res-row-word">{r.kind === 'planned' ? '' : c.word[r.typed ? 'pending' : r.kind]}</span>
+      </li>)}</ol>
     </div>,
     // Expert: the set's concentric speed change, the report's own line (report-sheet.js).
     speed: measured && speedLine && <p key="speed" className="lv-speed" data-testid="level-speed">{speedLine}</p>,
@@ -669,56 +717,38 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {sidesLine}
     </div>,
     // The measured angle over the set, each rep over it (RepWave.jsx), for every level: what was measured, drawn.
-    wave: MEASURES_SHOWN && count > 0 && result.smoothedAngles?.length > 1 && <div key="wave" className="res-wave">
+    wave: MEASURES_SHOWN && count > 0 && showMeasures && result.smoothedAngles?.length > 1 && <div key="wave" className="res-wave">
       <RepWave angles={waveAngles(result)} timestamps={result.timestamps} reps={reps} rest={liftDefinition(lift)?.rest} first={liftDefinition(lift)?.first} sel={sel} shown={shown} fr={fr} jointWord={jointName(liftDefinition(lift)?.joint, fr)} onSelect={setSel} reference={referenceBand(lift, { joint: liftDefinition(lift)?.joint })} />
     </div>,
+    // The keys, in the thumb zone: "Oui, N répétitions" confirms the app's count, the video is one tap away. A changed
+    // count is saved as the person's. Nothing is saved, and nothing celebrates, before one of them is pressed.
+    dock: !low && step !== 'saved' && [<div key="dock" className="res-dock" data-testid="res-dock">
+      {closing && unsaved ? closeCard
+        : step === 'ask'
+          ? (asked && <div className="res-keys appear" data-testid="ask-card">
+            <button type="button" className="res-key is-primary press" data-testid="res-yes" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>{c.yes(count)}</button>
+            {replayKey}
+          </div>)
+          : <div className="res-keys" data-testid="fix-card">
+            <button type="button" className="res-key is-primary press" data-testid="res-save" onClick={() => { navigator.vibrate?.(10); doSave(trueN, true); }}>{c.saveN(trueN)}</button>
+            {replayKey}
+          </div>}
+    </div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />],
+    lowDock: low && step !== 'saved' && lowDock(false),
     card: <div key="card" ref={cardRef}>
-      {closing && unsaved && (
-        <div className="glass appear" data-testid="close-card" role="group" aria-labelledby="close-q">
-          <p className="ask-q" id="close-q" tabIndex={-1}>{(() => {
-            const n = step === 'fix' ? trueN : count;
-            const what = fr ? (n > 1 ? `ces ${n} répétitions` : n === 1 ? 'cette répétition' : 'cette série') : (n > 1 ? `these ${n} reps` : n === 1 ? 'this rep' : 'this set');
-            return fr ? `Garder ${what}\u00A0?` : `Keep ${what}?`;
-          })()}</p>
-          <div className="ask-row">
-            <button type="button" className="btn-primary press" onClick={keepAndClose} data-testid="close-keep">
-              <span>{fr ? 'Garder' : 'Keep'}</span>
-            </button>
-            <button type="button" className="btn-ghost press" onClick={discardAndClose} data-testid="close-discard">{fr ? 'Ne pas garder' : 'Don’t keep'}</button>
-          </div>
-        </div>
-      )}
-      {/* One question at a time: while the close question is open it stands where the other question stood. */}
-      {step === 'ask' && asked && !closing && (
-        <div className="glass appear" data-testid="ask-card">
-          <p className="ask-q">{fr ? `C’est bien ${count}\u00A0?` : `Was it ${count}?`}</p>
-          <div className="ask-row">
-            <button type="button" className="btn-primary press" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>
-              <span>{fr ? 'Oui, c’est juste' : 'Yes, that’s right'}</span>
-            </button>
-            <button className="btn-ghost press" onClick={() => setStep('fix')}>{fr ? 'Non' : 'No'}</button>
-          </div>
-        </div>
-      )}
-
-      {step === 'fix' && !(closing && unsaved) && fixCard(false)}
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
-          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app\u00A0: ${count}. Corrigé\u00A0: ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
+          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app : ${count}. Corrigé : ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
           {moment && <p className={`moment is-${moment.kind}`} data-testid="moment" role="status">{moment.text}</p>}
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
           {/* The rest begins as the set is saved: its clock runs at once, above the report and the
-              challenge, since the next thing done on the bench is to rest (design pass, 29 September).
-              The result screen carries no opener: its numeral and account already say it; the report does. */}
+              challenge, since the next thing done on the bench is to rest (design pass, 29 September). */}
           <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
-          {/* After saving, the next things done in a gym are resting and the next set: the next set leads, the
-              report follows, the challenge stays as a quiet line (design review of 1 October). */}
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
-              changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). */}
-          {/* Once saved, the next set is the one thing left to do: it takes the gold, so the screen keeps one clear
-              action after the question goes (design pass of 4 October). */}
+              changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). Once saved, the next
+              set is the one thing left to do (design pass of 4 October). */}
           <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
           <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
@@ -731,8 +761,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
           {/* Once, after a saved set, when no level is stored. */}
           {offerLevel && <div className="level-ask appear" data-testid="level-ask">
-            <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'}</p>
-            <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau\u00A0?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
+            <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>
+            <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
             {chosen && <p className="level-note" role="status">{levelLost
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
               : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
@@ -757,21 +787,20 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {more}
     </div>,
     // Beginner: the account and the tip lead, from the first frame.
-    plain: count > 0 && <div key="plain" className="set-account" data-testid="set-account">{plain}</div>,
+    plain: count > 0 && showMeasures && <div key="plain" className="set-account" data-testid="set-account">{plain}</div>,
     more: measured && <div key="more" className="set-account acc-more appear">{more}</div>,
   };
+  // One order for every level: the status, the count, its cells, the day's table and the keys lead, so the
+  // question and its answer stay on the first screen; the level's own blocks follow (level.js).
+  const order = ['count', 'bars', 'plan', 'dock', 'lowDock', 'card', ...resultBlocks(view.level).filter(b => !['count', 'bars', 'card'].includes(b))];
   // Under the report, the result is out of reach of taps, the keyboard and screen readers.
   return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
-    <section className={`screen is-active result-screen lv-${view.level}${step === 'saved' ? ' is-saved' : ''}`} data-level={view.level}><div className="wrap">
-      <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
-      <div className="res-head" data-reveal style={{ '--i': 0 }}>
-        <p className="eyebrow">{liftName}</p>
-        <div className="res-sub">
-          {tierOf(lift) && <p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p>}
-          <p className="res-meta">{seconds ? `${seconds}\u00A0s · ${armLabel}` : armLabel}</p>
-        </div>
-      </div>
-      {resultBlocks(view.level).map(b => blocks[b] || null)}
+    <section className={`screen is-active result-screen lv-${view.level}${step === 'saved' ? ' is-saved' : ''}${low ? ' is-low' : ''}`} data-level={view.level}><div className="wrap">
+      {/* The replay is the second key while the count waits for its answer; in the top bar otherwise. */}
+      <Topbar fr={fr} onClose={askClose} onReplay={low || step === 'saved' ? onReplay : undefined} replayRef={replayRef} badge={false} />
+      {status}
+      {low && step !== 'saved' && tierLine}
+      {order.map(b => blocks[b] || null)}
       {/* The support links come after what the app measured (critic, 30 September). */}
       {report && <ReportCount fr={fr} report={report} />}
     </div></section>

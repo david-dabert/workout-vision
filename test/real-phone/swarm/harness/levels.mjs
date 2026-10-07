@@ -42,7 +42,8 @@ const layout = () => {
 try {
   await new Promise(r => setTimeout(r, 7000));
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM });
-  const yes = { fr: 'Oui, c’est juste', en: 'Yes, that’s right' };
+  // The confirm key names the count (C4, 7 October 2026): "Oui, N répétitions".
+  const yes = { fr: /^Oui, \d+ répétitions?$/, en: /^Yes, \d+ reps?$/ };
   // bench_press: a lift outside the beta group, whose heading carries the experimental line on two rows
   // (review, 2 October: the button ended 8 px lower there than on bicep_curl).
   for (const lift of ['bicep_curl', 'bench_press']) for (const lang of ['fr', 'en']) for (const level of ['beginner', 'intermediate', 'expert', '']) for (const [W, Ht] of [[390, 664], [375, 548]]) {
@@ -152,7 +153,7 @@ try {
     await p.goto(url());
     await p.waitForSelector('[data-testid="ask-card"]', { timeout: 30000 });
     say(await p.locator('[data-testid="level-ask"]').count() === 0, 'no level question before the save');
-    await p.getByRole('button', { name: 'Oui, c’est juste' }).click();
+    await p.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
     await p.waitForSelector('[data-testid="level-ask"]', { timeout: 10000 });
     await p.locator('[data-testid="level-ask"]').scrollIntoViewIfNeeded();
     if (SHOTS) await p.screenshot({ path: `${SHOTS}/level-ask-fr-390x664.png` });
@@ -164,7 +165,7 @@ try {
     await p.evaluate(() => localStorage.removeItem('wv_level'));
     await p.reload();
     await p.waitForSelector('[data-testid="ask-card"]', { timeout: 30000 });
-    await p.getByRole('button', { name: 'Oui, c’est juste' }).click();
+    await p.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
     await p.waitForSelector('[data-testid="saved-card"]');
     say(await p.locator('[data-testid="level-ask"]').count() === 0, 'the question is not offered a second time');
     await ctx.close();

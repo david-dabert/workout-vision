@@ -136,8 +136,8 @@ try {
   const askCard = page.locator('[data-testid="ask-card"]');
   await expect(askCard).toBeVisible();
 
-  // ── 6. Confirm the count (tap "Oui, c'est juste") ──
-  const yesBtn = page.locator('.ask-row .btn-primary');
+  // ── 6. Confirm the count (tap "Oui, N répétitions") ──
+  const yesBtn = page.locator('[data-testid="res-yes"]');
   await expect(yesBtn).toBeVisible();
   // WebKit iPhone: click via mouse coordinates to ensure React event delegation catches it
   const box = await yesBtn.boundingBox();

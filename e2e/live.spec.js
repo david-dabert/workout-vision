@@ -188,8 +188,8 @@ test('a whole live set: the count as it goes, then the same result, history, rep
   await expect(page.getByTestId('res-live')).toHaveCount(0);
   await shot('3-result');
 
-  // Replay: the skeleton alone, no video to share.
-  await page.locator('.rp-open').click();
+  // Replay: the skeleton alone, no video to share. Before the count is answered it is the second key (C4).
+  await page.getByRole('button', { name: 'Revoir la série', exact: true }).click();
   await expect(page.getByTestId('rp-still')).toBeVisible();
   await expect(page.locator('.rp-export')).toHaveCount(0);
   await expect(page.locator('.rp-note')).toContainText('aucune vidéo n’a été enregistrée');
@@ -201,7 +201,7 @@ test('a whole live set: the count as it goes, then the same result, history, rep
   await expect(page.locator('.replay-screen')).toHaveCount(0, { timeout: 5000 });
 
   // Saved as any set: in the history, with its report.
-  await page.getByRole('button', { name: 'Oui, c’est juste' }).click();
+  await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   await expect(page.locator('.result-screen')).toContainText('7');
   await page.locator('.result-screen .icon-btn').first().click();
   await page.getByRole('button', { name: /Vos séries/ }).click();
