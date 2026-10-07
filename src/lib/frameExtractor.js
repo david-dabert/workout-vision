@@ -24,6 +24,9 @@ export function manualRotationNeeded(containerRotation, frameRotation) {
   return !(typeof frameRotation === 'number' && frameRotation !== 0);
 }
 
+/** How long the feeding waits, with the main loop waiting too and nothing decoded, before it feeds on (see below). */
+const FEED_STALL_MS = 2000;
+
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 // Route the demuxer's FFmpeg log lines to console.info so they don't
@@ -434,6 +437,8 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
   // Set once the decoder exists: releases it on every exit, an error or a cancel as much as the end (audit
   // FINDING-006: only the normal path closed the decoder and the queued frames).
   let release = () => {};
+  // The extraction canvas, emptied when the pass ends (its backing store is otherwise held until collected).
+  let canvas = null;
 
   try {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -464,7 +469,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
       frameHeight -= frameHeight % 2;
     }
 
-    const canvas = document.createElement('canvas');
+    canvas = document.createElement('canvas');
     canvas.width = frameWidth;
     canvas.height = frameHeight;
     const ctx = canvas.getContext('2d');
@@ -486,19 +491,31 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     // (second audit, 3 October). Set at the first frame sampled when sampling starts at the beginning.
     let origin = startFrame === 0 ? null : (options.origin ?? 0);
 
-    // Frame queue: decoder output pushes, main loop pulls
-    // Bounded: close frames that will never be sampled, cap queue at 2
+    // Frame queue: decoder output pushes, main loop pulls.
+    // Every decoded VideoFrame is a full-size picture held by the decoder's pool (a 4K HDR 10-bit frame is about
+    // 25 MB): an iPhone that holds a dozen at once can be killed for memory while it reads a gallery video (crash at
+    // the demo of 7 October; 10 to 12 frames open at once were measured in Chromium). So a frame that will never be
+    // sampled is closed the moment it arrives, the next sample time is known before the pose model runs, and the
+    // feeding pauses while one frame waits. Measured: 12 -> 5 frames open at most (360p30) and 10-11 -> 5 (4K60),
+    // the same samples and landmarks, the same time. Source: crash investigation of 7 October. Status: validated
+    // (Chromium, synthetic VP8 clips; not yet on an iPhone).
     const frameQueue = [];
     let decodeComplete = false;
     let decodeError = null;
     let wakeMain = null;
     let peakOpenFrames = 0;
+    // Bumped on every decoded frame and every sample handed on: the feeding's watch for a decoder that needs more
+    // input before it gives a frame (an HEVC stream that reorders its frames), see the feeding below.
+    let progress = 0;
+    let feedStalls = 0;
 
     const decoder = new VideoDecoder({
       output: (frame) => {
+        progress++;
         const timestamp = frame.timestamp / 1_000_000;
-        // Close frames that arrive before the next capture time (they won't be sampled)
-        if (timestamp < nextCaptureTime - 0.001 && frameQueue.length > 0) {
+        // Once the sampling grid has started, a frame before the next capture time is never sampled: closed at once.
+        // Before the grid starts (origin null), the first frame sets it and is kept.
+        if (origin !== null && timestamp < nextCaptureTime - 0.001) {
           frame.close();
           return;
         }
@@ -525,14 +542,23 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     const feedPromise = (async () => {
       const stream = demuxer.read('video', startFrame * interval);
       const reader = stream.getReader();
+      // Back-pressure: feeding pauses while more than one frame waits or the decoder holds more than two chunks.
+      // A decoder that reorders frames (HEVC with B-frames) may need more chunks before it gives the frame the main
+      // loop waits for: if the main loop has been waiting with nothing decoded for FEED_STALL_MS, feeding goes on
+      // under the earlier, looser limits for the rest of the pass, and the stall is recorded (feedStalls).
+      // Limits 1 and 2: measured (crash investigation, 7 October: 5 frames open at most, same speed; 0 and 0 gave 2
+      // frames but 10 % slower). 2 s and the looser limits 2 and 8 (the earlier code): convention, UNSOURCED.
+      let maxQueued = 1, maxDecoding = 2;
       try {
         while (true) {
           if (signal?.aborted || extractedCount >= frameCount) break;
           const { done, value } = await reader.read();
           if (done) break;
           decoder.decode(value);
-          // Back-pressure: pause feeding if frame queue or decoder queue is deep
-          while ((frameQueue.length > 2 || decoder.decodeQueueSize > 8) && !signal?.aborted) {
+          let seen = progress, since = performance.now();
+          while ((frameQueue.length > maxQueued || decoder.decodeQueueSize > maxDecoding) && !signal?.aborted) {
+            if (progress !== seen) { seen = progress; since = performance.now(); }
+            else if (wakeMain && performance.now() - since > FEED_STALL_MS) { feedStalls++; maxQueued = 2; maxDecoding = 8; break; }
             await new Promise(r => setTimeout(r, 0));
           }
         }
@@ -620,11 +646,13 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
         if (origin === null) { origin = timestamp; nextCaptureTime = origin; }
         if (timestamp >= nextCaptureTime - 0.001) {
-          drawFrame(frame);
-          frame.close();
+          try { drawFrame(frame); } finally { frame.close(); }
+          // The next sample time is set before the pose model runs, so the frames decoded meanwhile that will
+          // never be sampled are closed as they arrive rather than queued.
+          nextCaptureTime = origin + (extractedCount + 1) * interval;
+          progress++;
           await onFrame(canvas, extractedCount, timestamp);
           extractedCount++;
-          nextCaptureTime = origin + extractedCount * interval;
           if (onProgress) onProgress(Math.round((extractedCount / frameCount) * 100));
         } else {
           frame.close();
@@ -636,10 +664,11 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     release();
     await feedPromise;
 
-    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames, rotationDecision };
+    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames, feedStalls, rotationDecision };
   } finally {
     release();
     demuxer.destroy();
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
   }
 }
 
