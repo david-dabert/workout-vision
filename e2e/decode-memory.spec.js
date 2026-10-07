@@ -69,7 +69,9 @@ test('leaving the replay unloads its video and empties its canvas', async ({ pag
   const video = Buffer.from(await drawnWebm(page, 4000), 'base64');
   await page.locator('.film-screen input[type="file"]').last().setInputFiles({ name: 'set.webm', mimeType: 'video/webm', buffer: video });
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 90000 });
-  await page.getByRole('button', { name: 'Revoir la vidéo' }).click();
+  // Named after what the result shows: "Revoir la vidéo" under a count, "Revoir la série avec le squelette" when the
+  // count is asked for (the drawn video's samples fall on varying poses of the fake worker).
+  await page.getByRole('button', { name: /^Revoir la (vidéo|série avec le squelette)$/ }).first().click();
   await expect(page.locator('.replay-screen')).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.querySelector('.rp-video')?.readyState ?? 0)).toBeGreaterThan(0);
   await page.evaluate(() => { window.__replay = { video: document.querySelector('.rp-video'), canvas: document.querySelector('.rp-canvas') }; });
