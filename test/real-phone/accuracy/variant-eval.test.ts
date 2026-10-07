@@ -12,6 +12,9 @@ import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { countInWindow, labelledSets, publicSets } from './sets';
 
+// WV_CORE_BENCH='{"zWeight":0.5}' (7 October): the survey techniques of src/lib/counting/survey.ts, switched for this
+// run only (research; the app never sets it).
+if (process.env.WV_CORE_BENCH) (globalThis as any).__WV_CORE_BENCH__ = JSON.parse(process.env.WV_CORE_BENCH);
 type Entry = { suite: 'david' | 'publicA' | 'publicB' | 'synthetic'; lift: string; label: number; count: number | 'refused' };
 
 test.skipIf(!process.env.VARIANT_EVAL)('every set, as the live counter counts it', () => {

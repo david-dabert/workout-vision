@@ -51,6 +51,10 @@
  */
 
 import guidePatterns from './guide-patterns.json';
+import {
+  zWeight, zAllViews, sideShare, depthShare, interpolateOn, fillOn, fillMinR, FILL_MIN_PAIRS, fitLine,
+  shapeOn, shapeSlack, shapePart, SHAPE_POINTS, SHAPE_BAND, SHAPE_MIN_REPS, resample, dtw, medianSeries, altDiffOn, altMaxR,
+} from './survey';
 
 // ─── Types ───
 
@@ -415,17 +419,21 @@ function countSide(
   arm: 'left' | 'right',
 ): CountResult {
   // 1. Extract raw angle per sample
+  const zw = setZWeight(worldLandmarks);
   const rawAngles = worldLandmarks.map(wl => {
     if (!wl) return null;
-    return extractAngle(wl, def.joint, arm);
+    return extractAngle(wl, def.joint, arm, zw);
   });
+  // T1 (survey.ts, FILL_FROM_PARTNER, off): samples the counted side misses, filled from the other side's angle.
+  // rawAngles stays as seen (coverage); `filled` marks the samples that were not.
+  const { values: filledAngles, filled } = fillFromPartner(rawAngles, worldLandmarks, def, arm, zw);
 
   // 2. Estimate sample rate from timestamps
   const sampleRate = estimateSampleRate(timestamps);
 
   // 3. Remove outliers (before bridging, so spikes don't propagate)
   const outlierSize = secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
-  const cleaned = removeOutliers(rawAngles, outlierSize, OUTLIER_DEVIATION_DEG);
+  const cleaned = removeOutliers(filledAngles, outlierSize, OUTLIER_DEVIATION_DEG);
 
   // 4. Bridge short dropouts
   const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
@@ -461,7 +469,7 @@ function countSide(
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
   const halfSg = Math.floor(sgSize / 2);
-  const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if (cleaned[j] === null && bridged[j] !== null) return false; return true; });
+  const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if ((cleaned[j] === null && bridged[j] !== null) || filled[j]) return false; return true; });
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
 
   // 8. Confidence: fraction of samples with a detected pose on the tracked side. It is pose coverage, not certainty
@@ -476,9 +484,11 @@ function countSide(
 
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
 export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
-  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm) : null));
+  const zw = setZWeight(worldLandmarks);
+  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw) : null));
+  const { values: filledAngles } = fillFromPartner(rawAngles, worldLandmarks, def, arm, zw);
   const sampleRate = estimateSampleRate(timestamps);
-  const cleaned = removeOutliers(rawAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
+  const cleaned = removeOutliers(filledAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
   const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
   return { rawAngles, smoothed: savitzkyGolay(bridged, secToOddSamples(SG_WINDOW_SEC, sampleRate)) };
 }
@@ -524,6 +534,11 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
 function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition): CountResult {
   const left = countSide(worldLandmarks, timestamps, def, 'left');
   const right = countSide(worldLandmarks, timestamps, def, 'right');
+  // T5 (survey.ts, ALT_DIFF, off): the two sides move in turn, so the reps are read on their difference.
+  if (def.bothSides && !def.together && altDiffOn() && correlation(left.smoothedAngles, right.smoothedAngles) < altMaxR()) {
+    const alt = countAlternating(left, right, timestamps, def);
+    if (alt) return alt;
+  }
   const all = [
     ...left.reps.map(r => ({ ...r, side: 'left' as const })),
     ...right.reps.map(r => ({ ...r, side: 'right' as const })),
@@ -570,6 +585,41 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
   };
 }
 
+/**
+ * T5: an alternating lift read on the left minus right difference of the smoothed angles. Each excursion of the
+ * difference to one side is one rep of the arm that moved (for a lift resting high, the left arm working pulls the
+ * difference below zero); a full cycle of the difference is two reps. Each half is counted as a one-sided signal
+ * resting at 0, by the core's own thresholds and rep rules. Null when the difference has no range.
+ */
+function countAlternating(left: CountResult, right: CountResult, timestamps: number[], def: LiftDefinition): CountResult | null {
+  const diff = left.smoothedAngles.map((l, i) => { const r = right.smoothedAngles[i]; return l === null || r === null ? null : l - r; });
+  const restHigh = def.rest === 'high';
+  const half = (sign: -1 | 1, side: 'left' | 'right') => {
+    // Oriented as the lift: resting high, the working side's excursion goes down.
+    const s = diff.map(d => (d === null ? null : sign < 0 ? Math.min(d, 0) : Math.max(d, 0)));
+    const rest: 'high' | 'low' = sign < 0 ? 'high' : 'low';
+    const vals = s.filter((a): a is number => a !== null).sort((a, b) => a - b);
+    if (vals.length < 3) return [];
+    const p = (pct: number) => vals[Math.floor(vals.length * pct / 100)];
+    const pLow = p(PERCENTILE_LOW), pHigh = p(PERCENTILE_HIGH), range = pHigh - pLow;
+    if (range < MIN_ROM_DEGREES) return [];
+    const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
+    const lowT = pLow + margin, highT = pHigh - margin;
+    const cycles = detectReps(s, timestamps, lowT, highT, rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
+    const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
+    return placeBoundaries(cycles, s, timestamps, lowT, highT, band, { ...def, rest }).map(r => ({ ...r, side }));
+  };
+  const reps = [...half(-1, restHigh ? 'left' : 'right'), ...half(1, restHigh ? 'right' : 'left')].sort((a, b) => a.startTime - b.startTime);
+  if (!reps.length) return null;
+  reps.forEach((r, i) => { r.index = i + 1; });
+  const primary = left.reps.length >= right.reps.length ? left : right;
+  return {
+    count: reps.length, reps, arm: 'both', confidence: Math.min(left.confidence, right.confidence),
+    angles: primary.angles, smoothedAngles: primary.smoothedAngles, lowThreshold: primary.lowThreshold, highThreshold: primary.highThreshold,
+    sides: { left, right },
+  };
+}
+
 /** Pearson correlation of two angle series over the samples where both have a value; 0 under three such samples or with no spread. */
 function correlation(a: (number | null)[], b: (number | null)[]): number {
   const xs: number[] = [], ys: number[] = [];
@@ -606,18 +656,39 @@ function vis(p: WorldLandmark): number {
 
 // ─── Angle extraction ───
 
-function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right'): number | null {
+function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right', zw = 1): number | null {
   const [ia, ib, ic] = JOINT_POINTS[joint][arm];
   const a = wl[ia], b = wl[ib], c = wl[ic];
   if (vis(a) < VIS_THRESHOLD || vis(b) < VIS_THRESHOLD || vis(c) < VIS_THRESHOLD) {
     return null;
   }
-  return angleDeg(a, b, c);
+  return angleDeg(a, b, c, zw);
 }
 
-function angleDeg(a: WorldLandmark, vertex: WorldLandmark, c: WorldLandmark): number {
-  const v1x = a.x - vertex.x, v1y = a.y - vertex.y, v1z = a.z - vertex.z;
-  const v2x = c.x - vertex.x, v2y = c.y - vertex.y, v2z = c.z - vertex.z;
+// T3 (survey.ts, Z_WEIGHT, off at 1): the depth weight for this set: below 1 only on a set read as filmed from the
+// side (its shoulder line points mostly into depth), so a front-view squat or curl, which bends in depth, keeps z.
+function setZWeight(worldLandmarks: WorldLandmarkFrame[]): number {
+  const w = zWeight();
+  if (w === 1) return 1;
+  if (zAllViews()) return w;
+  return depthShare(worldLandmarks) >= sideShare() ? w : 1;
+}
+
+// T1 (survey.ts): missing samples of this side's angle filled from the other side's, through a straight line fitted
+// where both are seen, when they correlate at |r| >= FILL_MIN_R. Not for a lift counted on both sides.
+function fillFromPartner(raw: (number | null)[], worldLandmarks: WorldLandmarkFrame[], def: LiftDefinition, arm: 'left' | 'right', zw: number) {
+  const none = { values: raw, filled: raw.map(() => false) };
+  if (!fillOn() || def.bothSides || !raw.some(a => a === null)) return none;
+  const other = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm === 'left' ? 'right' : 'left', zw) : null));
+  const { a, b, r, n } = fitLine(other, raw);
+  if (n < FILL_MIN_PAIRS || Math.abs(r) < fillMinR()) return none;
+  const filled = raw.map((x, i) => x === null && other[i] !== null);
+  return { values: raw.map((x, i) => (filled[i] ? a + b * other[i]! : x)), filled };
+}
+
+function angleDeg(a: WorldLandmark, vertex: WorldLandmark, c: WorldLandmark, zw = 1): number {
+  const v1x = a.x - vertex.x, v1y = a.y - vertex.y, v1z = (a.z - vertex.z) * zw;
+  const v2x = c.x - vertex.x, v2y = c.y - vertex.y, v2z = (c.z - vertex.z) * zw;
   const dot = v1x * v2x + v1y * v2y + v1z * v2z;
   const m1 = Math.sqrt(v1x * v1x + v1y * v1y + v1z * v1z);
   const m2 = Math.sqrt(v2x * v2x + v2y * v2y + v2z * v2z);
@@ -686,12 +757,24 @@ function bridgeDropouts(
   const result = [...angles];
   let lastValid: number | null = null;
   let lastValidTime = -Infinity;
+  const interpolate = interpolateOn();
+  let next = -1; // T2: the next seen sample after a gap, looked up once per gap
 
   for (let i = 0; i < result.length; i++) {
     if (result[i] !== null) {
       lastValid = result[i];
       lastValidTime = timestamps[i];
     } else if (lastValid !== null && (timestamps[i] - lastValidTime) <= maxGapSec) {
+      // T2 (survey.ts, BRIDGE_INTERPOLATE, off): an inner gap no longer than maxGapSec, seen on both sides, is filled
+      // by a straight line; otherwise the last value is repeated, as before.
+      if (interpolate) {
+        if (next < i) { next = i; while (next < angles.length && angles[next] === null) next++; }
+        if (next < angles.length && timestamps[next] - lastValidTime <= maxGapSec) {
+          const f = (timestamps[i] - lastValidTime) / (timestamps[next] - lastValidTime);
+          result[i] = lastValid + f * (angles[next]! - lastValid);
+          continue;
+        }
+      }
       result[i] = lastValid;
     }
   }
@@ -852,8 +935,12 @@ function detectReps(
     headCounts = timestamps[head.complete] - timestamps[head.enter] >= HEAD_RETURN_SHARE * back;
   }
 
-  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom);
+  // T4 (survey.ts, SHAPE_EDGES, off): the set's own rep shape, from the reps accepted so far.
+  const shape = shapeOn() ? repShape(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow) : null;
+  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom, shape);
   if (head && headCounts) cycles.unshift(head);
+  // T4: a first rep the head rule refused counts when its return matches the end of the set's rep shape.
+  else if (head && shape && shapePart('h') && shape.matches(head.enter, head.complete, 'end')) cycles.unshift(head);
 
   // A last rep the video (or a pose lost until its end) stopped on its way back: it reached the working end and
   // has covered CUT_RETURN_SHARE of its return to the rest threshold, within RETURN_WINDOW_SEC of leaving its
@@ -872,8 +959,11 @@ function detectReps(
       if (a !== null && (restsLow ? a > mid : a < mid)) lastWorking = i;
     }
     const duration = timestamps[last] - timestamps[repStartIdx];
-    if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC
-      && duration >= MIN_REP_SEC && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom) {
+    const whole = duration >= MIN_REP_SEC && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom;
+    if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC && whole) {
+      cycles.push({ enter: repStartIdx, complete: last, cut: true });
+    } else if (shape && shapePart('c') && whole && returned > 0 && shape.matches(repStartIdx, last, 'start')) {
+      // T4: a last rep cut short of the cut rule counts when what the video shows matches the start of the set's shape.
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     }
   }
@@ -897,6 +987,7 @@ function splitOverlongReps(
   highThreshold: number,
   restsLow: boolean,
   minRom: number,
+  shape: RepShape | null = null,
 ): void {
   if (cycles.length < 3) return;
   const durations = cycles.map(c => timestamps[c.complete] - timestamps[c.enter]).sort((a, b) => a - b);
@@ -944,15 +1035,54 @@ function splitOverlongReps(
       }
     }
     const k = bestK;
-    if (k > -1 && bestShare >= SPLIT_RETURN_SHARE
-      && timestamps[k] - timestamps[c.enter] >= minPiece && timestamps[c.complete] - timestamps[k] >= minPiece
-      && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom) {
+    const pieces = k > -1 && timestamps[k] - timestamps[c.enter] >= minPiece && timestamps[c.complete] - timestamps[k] >= minPiece
+      && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom;
+    // T4: a split whose return fell short of SPLIT_RETURN_SHARE is made when both pieces match the set's rep shape.
+    if (pieces && (bestShare >= SPLIT_RETURN_SHARE || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
       out.push({ enter: c.enter, complete: k }, { enter: k, complete: c.complete });
     } else {
       out.push(c);
     }
   }
   cycles.splice(0, cycles.length, ...out);
+}
+
+// ─── T4: the set's rep shape (survey.ts, SHAPE_EDGES) ───
+
+interface RepShape { matches(from: number, to: number, part: 'whole' | 'start' | 'end'): boolean }
+
+/**
+ * The median shape of the accepted reps (each resampled to SHAPE_POINTS, oriented so the rest threshold is 0 and the
+ * working threshold 1) and the largest DTW distance of an accepted rep to it. A candidate matches when its distance
+ * is at most SHAPE_SLACK times that. A part of a rep (the start of a cut last rep, the end of a first rep the video
+ * opened on) is resampled on the same time scale (its duration over the median rep's) and compared with the same part
+ * of the template. Null under SHAPE_MIN_REPS accepted reps.
+ */
+function repShape(cycles: Cycle[], smoothed: (number | null)[], timestamps: number[], low: number, high: number, restsLow: boolean): RepShape | null {
+  const whole = cycles.filter(c => !c.cut);
+  if (whole.length < SHAPE_MIN_REPS) return null;
+  const span = high - low;
+  if (!(span > 0)) return null;
+  const norm = smoothed.map(a => (a === null ? null : restsLow ? (a - low) / span : (high - a) / span));
+  const traces = whole.map(c => resample(norm, timestamps, c.enter, c.complete, SHAPE_POINTS)).filter((t): t is number[] => !!t);
+  if (traces.length < SHAPE_MIN_REPS) return null;
+  const template = medianSeries(traces);
+  const maxD = Math.max(...traces.map(t => dtw(t, template, SHAPE_BAND)));
+  const durs = whole.map(c => timestamps[c.complete] - timestamps[c.enter]).sort((x, y) => x - y);
+  const md = durs[Math.floor(durs.length / 2)];
+  const limit = shapeSlack() * maxD;
+  return {
+    matches(from, to, part) {
+      if (part === 'whole') {
+        const t = resample(norm, timestamps, from, to, SHAPE_POINTS);
+        return !!t && dtw(t, template, SHAPE_BAND) <= limit;
+      }
+      const pts = Math.max(2, Math.min(SHAPE_POINTS, Math.round((SHAPE_POINTS * (timestamps[to] - timestamps[from])) / md)));
+      const t = resample(norm, timestamps, from, to, pts);
+      const ref = part === 'start' ? template.slice(0, pts) : template.slice(SHAPE_POINTS - pts);
+      return !!t && dtw(t, ref, SHAPE_BAND) <= limit;
+    },
+  };
 }
 
 // ─── Rep boundaries (step 3c) ───
