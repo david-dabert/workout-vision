@@ -20,3 +20,20 @@ Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted set
    landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  label 10  before 10 (exact)  now 10 (exact)
    landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  before 10 (exact)  now 10 (exact)
    landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 9 (off -1)  (press: measured, decides nothing, PLAN.md)
+
+Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 13 sets in the baseline, 6 exact now, 6 before; 0 newly catastrophic, 2 known catastrophic (shown, gated on growth), 0 newly refused; 2 refused of 13.
+   sets-07oct-video/barbell_squat_9_a.json.gz  label 9  before 9 (exact)  now 9 (exact)
+   sets-07oct-video/barbell_squat_9_b.json.gz  label 9  before 9 (exact)  now 9 (exact)
+   sets-07oct-video/behind_neck_chin_up_5.json.gz  label 5  before 6 (off +1)  now 6 (off +1)
+   sets-07oct-video/hanging_leg_raise_6.json.gz  label 6  before 6 (exact)  now 6 (exact)
+   sets-07oct-video/lying_biceps_curl_11.json.gz  label 11  before 11 (exact)  now 11 (exact)
+   sets-07oct-video/machine_chest_supported_row_6.json.gz  label 6  before 5 (off -1)  now 5 (off -1)
+   sets-07oct-video/machine_seated_back_extension_18.json.gz  label 18  before 17 (off -1)  now 17 (off -1)
+KNOWN CATASTROPHIC  sets-07oct-video/pendulum_squat_7.json.gz  label 7  now 14
+   sets-07oct-video/pendulum_squat_7.json.gz  label 7  before 14 (catastrophic)  now 14 (catastrophic)
+   sets-07oct-video/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
+   sets-07oct-video/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)
+KNOWN CATASTROPHIC  sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  now 4
+   sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  before 4 (catastrophic)  now 4 (catastrophic)
+   sets-07oct-video/sissy_squat_7_5008.json.gz  label 7  before refused (refused)  now refused (refused)
+   sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)

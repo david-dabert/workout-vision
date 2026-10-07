@@ -1,5 +1,5 @@
 {
-  "note": "The counts last accepted (2026-10-06), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2).",
+  "note": "The counts last accepted (2026-10-07), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section (test/real-phone/sets-07oct-video/).",
   "counts": {
     "sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz": 8,
     "sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz": 6,
@@ -21,5 +21,20 @@
     "landmarks/lat_pulldown_10_front_mufhlh4o.json.gz": 10,
     "landmarks/lateral_raise_10_front_mufhhbun.json.gz": 10,
     "landmarks/overhead_press_10_front_mufhjkku.json.gz": 9
+  },
+  "videoCounts": {
+    "sets-07oct-video/barbell_squat_9_a.json.gz": 9,
+    "sets-07oct-video/barbell_squat_9_b.json.gz": 9,
+    "sets-07oct-video/behind_neck_chin_up_5.json.gz": 6,
+    "sets-07oct-video/hanging_leg_raise_6.json.gz": 6,
+    "sets-07oct-video/lying_biceps_curl_11.json.gz": 11,
+    "sets-07oct-video/machine_chest_supported_row_6.json.gz": 5,
+    "sets-07oct-video/machine_seated_back_extension_18.json.gz": 17,
+    "sets-07oct-video/pendulum_squat_7.json.gz": 14,
+    "sets-07oct-video/seated_dumbbell_curl_10.json.gz": 10,
+    "sets-07oct-video/sissy_squat_5_5011.json.gz": "refused",
+    "sets-07oct-video/sissy_squat_7_5006.json.gz": 4,
+    "sets-07oct-video/sissy_squat_7_5008.json.gz": "refused",
+    "sets-07oct-video/sissy_squat_9_5007.json.gz": 9
   }
 }

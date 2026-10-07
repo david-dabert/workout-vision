@@ -1,0 +1,18 @@
+{
+  "note": "David's 13 real gym videos of 7 October 2026. Labels by David (R1), copied from his labels.txt, never from the app. lift: the catalogue key the set is counted as (README.md: why each). original: the file he sent (shrunk on his phone, H.264, variable frame timing).",
+  "sets": [
+    { "name": "barbell_squat_9_a", "original": "IMG_1315-petit.mp4", "lift": "squat", "label": 9, "view": "side", "what": "barbell squat, side view, a plate hides the torso" },
+    { "name": "barbell_squat_9_b", "original": "IMG_1315-petit_2.mp4", "lift": "squat", "label": 9, "view": "side", "what": "barbell squat, ends with a walk-out" },
+    { "name": "behind_neck_chin_up_5", "original": "IMG_1316-petit.mp4", "lift": "chin_up", "label": 5, "view": "back", "what": "behind-the-neck chin-up, back view (no behind-the-neck key: chin_up)" },
+    { "name": "hanging_leg_raise_6", "original": "IMG_1317-petit.mp4", "lift": "hanging_leg_raise", "label": 6, "view": null, "what": "hanging leg raise" },
+    { "name": "machine_chest_supported_row_6", "original": "ScreenRecording_10-04-2026_22-15-31_1-petit.mp4", "lift": "chest_supported_row", "label": 6, "view": null, "what": "machine chest-supported row, another lifter" },
+    { "name": "lying_biceps_curl_11", "original": "IMG_1576-petit.mp4", "lift": "cable_curl", "label": 11, "view": "side", "what": "lying cable biceps curl on a bench, landscape (no lying cable curl key: cable_curl, same elbow rule as lying_barbell_curl)" },
+    { "name": "seated_dumbbell_curl_10", "original": "IMG_1579-petit.mp4", "lift": "incline_dumbbell_curl", "label": 10, "view": "angle", "what": "seated incline dumbbell biceps curl, front-side view, people behind" },
+    { "name": "pendulum_squat_7", "original": "ScreenRecording_10-07-2026_09-42-06_1-petit.mp4", "lift": "hack_squat", "label": 7, "view": "front", "what": "pendulum squat machine, another lifter (no pendulum squat key: hack_squat, same knee rule)" },
+    { "name": "machine_seated_back_extension_18", "original": "IMG_1580-petit.mp4", "lift": "machine_seated_back_extension", "label": 18, "view": "side", "what": "machine seated back extension, phone on its side, a person passes behind" },
+    { "name": "sissy_squat_7_5006", "original": "IMG_5006-petit.mp4", "lift": "sissy_squat", "label": 7, "view": "side", "what": "sissy squat with band, David, landscape" },
+    { "name": "sissy_squat_9_5007", "original": "IMG_5007-petit.mp4", "lift": "sissy_squat", "label": 9, "view": "side", "what": "deep sissy squat, another lifter" },
+    { "name": "sissy_squat_7_5008", "original": "IMG_5008-petit.mp4", "lift": "sissy_squat", "label": 7, "view": "side", "what": "sissy squat with band, David, landscape; the original has no frame from 20.0 to 33.6 s" },
+    { "name": "sissy_squat_5_5011", "original": "IMG_5011-petit.mp4", "lift": "sissy_squat", "label": 5, "view": "front", "what": "kneeling sissy squat with band, David" }
+  ]
+}
