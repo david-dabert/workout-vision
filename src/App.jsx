@@ -25,6 +25,7 @@ import { warmPoseFiles } from './lib/pose-files';
 import { track } from './lib/events';
 import { liveBuild } from './lib/buildFlags';
 import { payloadOf } from './components/experience/programme';
+import { markCrash } from './lib/crashLog';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
 // screen under 812 points). No WebGL context is made to decide it: making one held up the first
@@ -227,6 +228,10 @@ function AppInner() {
     key = 'choice';
     screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro')} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
   }
+
+  // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.
+  const screenName = key.split(':')[0];
+  useEffect(() => { markCrash({ screen: screenName, lift: selectedLift || null }); }, [screenName, selectedLift]);
 
   return <>
     <Stage />
