@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { getImageLandmarker, detectPoseImage } from '../../../src/lib/poseAnalysis.js';
+import * as mpVision from '@mediapipe/tasks-vision';
 import { TARGET_FPS, MAX_LONG_SIDE } from '../../../src/lib/extractionConfig.js';
 
 const P = window.SYNTH;
@@ -133,7 +134,22 @@ if (P.benchPose) globalThis.__WV_BENCH_POSE_MODEL__ = await (await fetch('bench-
 // against its absence (test/real-phone/far-camera/run.mjs).
 if (P.noCrop) globalThis.__WV_BENCH_NO_CROP__ = true;
 const model = P.video ? null : await getImageLandmarker();
+// P.lostPose: a second pose model (run.mjs, LOST_POSE, e.g. MediaPipe's heavy model) run on the whole frame of the
+// frames still without a pose after the app's own path, to measure it (7 October). Bench only; the app has none.
+let lostModel = null;
+if (P.lostPose && !P.video) {
+  const vision = await mpVision.FilesetResolver.forVisionTasks(`${import.meta.env.BASE_URL}mediapipe`);
+  const bytes = new Uint8Array(await (await fetch('lost-pose.task')).arrayBuffer());
+  lostModel = await mpVision.PoseLandmarker.createFromOptions(vision, { baseOptions: { modelAssetBuffer: bytes, delegate: 'CPU' }, runningMode: 'IMAGE', numPoses: 1, minPoseDetectionConfidence: 0.35, minPosePresenceConfidence: 0.4, minTrackingConfidence: 0.5 });
+}
 const frames = [], truth = [], ts = [], sources = [];
+const sampleAt = new Map(); // detection timestamp -> frame index, for the backward pass
+const round = w => w.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4), z: +p.z.toFixed(4), visibility: +(p.visibility ?? 1).toFixed(3) }));
+// P.back / P.noBack: the pose path with or without its backward pass (poseAnalysis.js bench hooks; BACK_PASS is off in
+// the app); P.backKeepMs: lost frames kept longer.
+if (P.back) globalThis.__WV_BENCH_BACK__ = true;
+if (P.noBack) globalThis.__WV_BENCH_NO_BACK__ = true;
+if (P.backKeepMs) globalThis.__WV_BENCH_BACK_KEEP_MS__ = P.backKeepMs;
 let detectMs = 0;
 const n = Math.floor(total * FPS);
 const jpegs = [];
@@ -164,10 +180,23 @@ for (let i = 0; i < n; i++) {
   fctx.drawImage(renderer.domElement, 0, 0);
   if (P.video) { jpegs.push(flat.toDataURL('image/jpeg', 0.9)); truth.push(truthAngles()); ts.push(time); continue; }
   const d0 = performance.now();
-  const res = detectPoseImage(model, flat, time * 1000);
+  const res = detectPoseImage(model, flat, time * 1000, { backfill: true });
   detectMs += performance.now() - d0;
-  frames.push(res?.worldLandmarks?.[0] ? res.worldLandmarks[0].map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4), z: +p.z.toFixed(4), visibility: +(p.visibility ?? 1).toFixed(3) })) : null);
-  sources.push(res?.worldLandmarks?.[0] ? (res.source ?? 'full') : null);
+  // Backward pass (poseCrop.js), as the app applies it: earlier frames without a pose, now read on a crop.
+  for (const b of res?.backfill || []) {
+    const k = sampleAt.get(b.timestamp);
+    if (k != null && !frames[k] && b.worldLandmarks[0]) { frames[k] = round(b.worldLandmarks[0]); sources[k] = 'back'; }
+  }
+  sampleAt.set(time * 1000, frames.length);
+  let got = res?.worldLandmarks?.[0] ? res : null;
+  if (!got && lostModel) {
+    const d1 = performance.now();
+    const r2 = lostModel.detect(flat);
+    detectMs += performance.now() - d1;
+    if (r2?.worldLandmarks?.[0]) got = { ...r2, source: 'lost-model' };
+  }
+  frames.push(got ? round(got.worldLandmarks[0]) : null);
+  sources.push(got ? (got.source ?? 'full') : null);
   truth.push(truthAngles());
   ts.push(time);
   if (i === Math.floor(n / 3) && P.shot) window.SHOT = flat.toDataURL('image/jpeg', 0.8);

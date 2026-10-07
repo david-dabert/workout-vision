@@ -12,10 +12,12 @@ const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '../.
 const OUT = process.env.SYNTH_OUT, MODEL = process.env.SYNTH_MODEL;
 // BENCH_POSE: another pose model file to measure in place of the shipped one (poseAnalysis.js bench hook).
 const BENCH = process.env.BENCH_POSE ? readFileSync(process.env.BENCH_POSE) : null;
+// LOST_POSE: a second pose model run only on the frames still without a pose (synth.js, P.lostPose).
+const LOST = process.env.LOST_POSE ? readFileSync(process.env.LOST_POSE) : null;
 if (!OUT || !MODEL) throw new Error('SYNTH_OUT and SYNTH_MODEL are required');
 mkdirSync(OUT, { recursive: true });
 const sets = JSON.parse(readFileSync(process.argv[2], 'utf8'));
-const PORT = 5191, URL = `http://localhost:${PORT}/workout-vision/test/real-phone/synth/synth.html`;
+const PORT = Number(process.env.SYNTH_PORT || 5191), URL = `http://localhost:${PORT}/workout-vision/test/real-phone/synth/synth.html`;
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'ignore', detached: true });
 const glb = readFileSync(MODEL);
 try {
@@ -28,7 +30,8 @@ try {
     page.on('pageerror', e => console.log('pageerror', p.id, e.message));
     await page.route('**/synth-model.glb', r => r.fulfill({ body: glb, contentType: 'model/gltf-binary' }));
     if (BENCH) await page.route('**/bench-pose.task', r => r.fulfill({ body: BENCH, contentType: 'application/octet-stream' }));
-    await page.addInitScript(x => { window.SYNTH = x; }, BENCH ? { ...p, benchPose: true } : p);
+    if (LOST) await page.route('**/lost-pose.task', r => r.fulfill({ body: LOST, contentType: 'application/octet-stream' }));
+    await page.addInitScript(x => { window.SYNTH = x; }, { ...p, ...(BENCH ? { benchPose: true } : {}), ...(LOST ? { lostPose: true } : {}) });
     const t0 = Date.now();
     await page.goto(URL, { timeout: 300000 }); // the dev server's first load pre-bundles three.js
     await page.waitForFunction(() => window.RESULT, null, { timeout: 900000 });

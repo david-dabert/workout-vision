@@ -49,3 +49,57 @@ export function cropAround(landmarks, width, height) {
 export function mapFromCrop(landmarks, { sx, sy, side }, width, height) {
   return landmarks.map(p => ({ ...p, x: (sx + p.x * side) / width, y: (sy + p.y * side) / height, z: (p.z * side) / width }));
 }
+
+/**
+ * Backward pass (7 October; David's idea): a video is not live, so a frame still without a pose after the forward
+ * pass (whole frame, then the crop around the LAST pose) can be read again on a crop around the NEXT accepted pose.
+ * This reaches the frames before the first detection and the start of gaps the forward crop cannot seed. The app
+ * keeps the pixels of the lost frames of the last BACK_KEEP_MS (no second decode), and when a pose is accepted it
+ * reads them back, nearest first, each crop seeded by the pose just after it. A frame that already has a pose is
+ * never read again and never changes.
+ */
+// The backward pass is OFF (7 October): on David's real videos it lost an exact count (barbell squat 9 -> 8 for 9) and
+// moved a chin-up further off (6 -> 7 for 5), where on the synthetic far-camera sets it made 6 -> 8 of 8 exact
+// (TRIED.md, "Pose detection"; test/real-phone/far-camera/README.md). Kept behind this flag for the benches
+// (globalThis.__WV_BENCH_BACK__ turns it on there). Source: UNSOURCED (David's idea of 7 October). Status:
+// experimental, not shipped.
+export const BACK_PASS = false;
+// Lost frames are kept this long, so a pose can seed a crop on the lost frames of the second before it: the forward
+// crop's window, the other way. Source: UNSOURCED (same window as CROP_SEED_MS). Status: experimental.
+export const BACK_KEEP_MS = CROP_SEED_MS;
+// At most this many lost frames are kept (1 s at the app's 15 fps, plus one): a bound on memory whatever the
+// timestamps say, about 0.9 MB each at 360 x 640. Source: UNSOURCED (arithmetic). Status: experimental.
+export const BACK_MAX_FRAMES = 16;
+
+/**
+ * The lost frames still worth keeping at time `now`: those of the last `keepMs` (and not after `now`), the most
+ * recent `max` of them, in time order. Returns { kept, dropped }; dropped frames may be recycled by the caller.
+ */
+export function keepLost(lost, now, keepMs = BACK_KEEP_MS, max = BACK_MAX_FRAMES) {
+  const inWindow = lost.filter(f => f.t <= now && now - f.t <= keepMs);
+  const kept = inWindow.slice(-max);
+  return { kept, dropped: lost.filter(f => !kept.includes(f)) };
+}
+
+/**
+ * Read lost frames backwards from a seed pose. lost: frames in time order, each { t, ... }; seed: { landmarks, t }
+ * (the accepted pose just after them, image landmarks normalised to the frame). tryFrame(frame, seedLandmarks)
+ * returns { landmarks, worldLandmarks } in whole-frame coordinates, or null. Frames are tried nearest first; a pose
+ * found becomes the seed for the frames before it (as the forward crop chains); a frame more than seedMs before the
+ * current seed ends the pass. Returns [{ frame, result }] for the frames that gained a pose, latest first.
+ */
+export function fillBackward(lost, seed, tryFrame, seedMs = CROP_SEED_MS) {
+  const filled = [];
+  let s = seed;
+  for (let i = lost.length - 1; i >= 0; i--) {
+    const f = lost[i];
+    if (!(f.t < s.t)) continue;
+    if (s.t - f.t > seedMs) break;
+    const result = tryFrame(f, s.landmarks);
+    if (result?.landmarks?.length) {
+      filled.push({ frame: f, result });
+      s = { landmarks: result.landmarks, t: f.t };
+    }
+  }
+  return filled;
+}

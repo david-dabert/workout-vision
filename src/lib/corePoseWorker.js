@@ -25,9 +25,12 @@ self.onmessage = async ({ data }) => {
     if (!canvas || canvas.width !== width || canvas.height !== height) canvas = new OffscreenCanvas(width, height);
     canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
     // A detection error is posted as an error, not as an empty frame (third audit, C07).
-    const result = detectPoseImage(model, canvas, timestamp, { rethrow: true });
+    const result = detectPoseImage(model, canvas, timestamp, { rethrow: true, backfill: true });
     // source 'crop': the pose was found on the second look around the last pose (poseCrop.js), not on the whole frame.
-    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null });
+    // back: earlier samples (by the timestamp they were sent with) that had no pose and now have one, read on a crop
+    // around this pose (the backward pass, poseCrop.js BACK_PASS); the caller puts them in place.
+    const back = (result?.backfill || []).map(b => ({ timestamp: b.timestamp, image: b.landmarks[0] || null, world: b.worldLandmarks[0] || null, source: 'back' }));
+    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null, back });
   } catch (error) {
     self.postMessage({ id: data.id, error: error.message });
   }

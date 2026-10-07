@@ -37,3 +37,41 @@ Cost: a crop is one more detect() on a lost frame only; it costs about what a wh
 costs (a frame with no pose is cheaper: the landmark stage does not run). Per minute of video, the extra time is
 (lost frames within 1 s of a pose) x (one detect). Times above are headless Chromium with SwiftShader on this
 machine's CPU, not a phone.
+
+# The backward pass (7 October 2026)
+
+David's idea: a video is not live, so a frame still without a pose after the forward pass (whole frame, then the crop
+around the last pose) can be read on a crop around the NEXT accepted pose. `src/lib/poseCrop.js` (`BACK_PASS`,
+`keepLost`, `fillBackward`) and `src/lib/poseAnalysis.js` (`detectPoseImage(..., { backfill: true })`): no second
+decode. A lost frame's pixels are copied into a pooled canvas and kept for `BACK_KEEP_MS` (1 s, at most
+`BACK_MAX_FRAMES` = 16, about 0.9 MB each at 360 x 640, so at most about 15 MB). When a pose is accepted (whole frame or
+forward crop), the kept frames are read back nearest first, each on a crop (same geometry as the forward crop) seeded
+from the pose just after it; the poses found come back on that pose's result as `result.backfill` and the caller puts
+them on their own samples (the app's worker and `coreAnalysis.js`, the harness, synth). A frame that has a pose is never
+read again; the forward seed and the image smoothing are not touched. Validate and the legacy `analyzeVideo.js` do not
+ask for it. Bench hooks: `__WV_BENCH_NO_BACK__` (off), `__WV_BENCH_BACK_KEEP_MS__` (keep lost frames longer).
+
+Variants per set (`matrix-backward-*.json`: `-a` backward pass off, `-b` on, `-b3` on with 3 s kept;
+`matrix-heavy-*.json`: `-c` the backward pass off and MediaPipe's heavy pose model, `pose_landmarker_heavy.task`
+float16, run by synth.js on the whole frame of the frames still lost, `LOST_POSE=<file>` for run.mjs). The landmarks are
+in `sets-backward/`; `backward.test.ts` reads them, checks that every frame with a pose in `-a` is byte-identical in
+every other variant, holds the R2 gate for `-b`, and writes `backward.txt`.
+
+Videos, through the harness (`run-video.mjs`, now four runs: crop off; crop on, back off; back on; back on with 3 s
+kept): the Soldier squat above, and eight MM-Fit sets of workout w19 (zenodo.org/records/7672767, CC BY 4.0, labels
+from MM-Fit's own files as in `test/real-phone/mmfit/inventory.json`), cut to VP9 WebM by frame with ffmpeg.
+
+Results (7 October; times are headless Chromium with SwiftShader on this machine's CPU, with other work running beside
+the synthetic renders, so they compare the variants of one set, not runs):
+
+    synthetic far camera, 8 sets   pose 96 % -> 98 % (b) / 100 % (b3) / 96 % (c); exact 6 -> 8 (b) / 8 (b3) / 6 (c) of 8; off by 3 or more 0 in all
+    synthetic near, 20 sets with a lost frame   pose 97 % -> 98 % (b); exact 15 -> 15 of 20; off by 3 or more 2 -> 2; no count moved
+    synthetic video, Soldier squat 9 m   93 % -> 97 % (b) / 100 % (b3); 7 for 7 in all; detection 127.5 -> 127.7 s per minute of video
+    MM-Fit w19, 8 sets   100 % of samples with a pose in every variant: nothing to fill, no count moved (4 of 8 exact), no extra cost
+    David's real videos (5)   barbell squat 9 (b): 9 -> 8 for 9; behind-the-neck chin-up: 6 -> 7 for 5; see TRIED.md
+
+Every sample with a pose before the backward pass was byte-identical with it, on every set and video. The backward
+pass lost an exact count on David's real barbell squat, so it is off in the app (`BACK_PASS = false`); the benches turn
+it on with `__WV_BENCH_BACK__` (synth: `"back": true` in the matrix; run-video.mjs does it for its last two runs).
+A person-centred crop on every frame (variant d) was not built: it changes the frames the whole frame already reads,
+which the byte-identical rule forbids, and needs a second pose path per frame.
