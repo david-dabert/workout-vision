@@ -1,6 +1,6 @@
 /* Replay screen: the set's video with the tracked skeleton, over the result.
    Its layer keeps its own opaque ground and fades in whole, as the report does. */
-.wv-experience:has(.replay-screen) { background: var(--void); animation: screen-in 0.6s var(--ease) backwards; }
+.wv-experience:has(.replay-screen) { background: var(--c-surface); animation: screen-in 0.6s var(--ease) backwards; }
 .wv-experience .replay-screen.is-active { animation: none; }
 /* The column fills the screen, so the picture takes all the height the controls leave. */
 .wv-experience .replay-screen .wrap { height: 100%; min-height: 0; }
@@ -12,7 +12,7 @@
 .wv-experience .rp-frame {
   position: relative; overflow: hidden; border-radius: var(--r-l); background: #000;
   width: min(100cqw, 100cqh * var(--ar, 0.5625)); height: min(100cqh, 100cqw / var(--ar, 0.5625));
-  box-shadow: 0 0 0 1px var(--hair);
+  box-shadow: 0 0 0 1px var(--c-rule);
 }
 .wv-experience .rp-video, .wv-experience .rp-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .wv-experience .rp-video { object-fit: contain; background: #000; cursor: pointer; }
@@ -30,11 +30,11 @@
   font-family: var(--serif); font-size: 26px; line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
   background: var(--gold-num); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.wv-experience .rp-of { font-family: var(--mono); font-size: var(--fs-label); color: var(--ash); }
+.wv-experience .rp-of { font-family: var(--mono); font-size: var(--fs-label); color: var(--c-fg-muted); }
 /* As wide as its longest word, so the chip keeps its size from phase to phase. */
 /* The phase word at the label size: 8.5 px was below reading size (#28). */
 .wv-experience .rp-chip.is-idle .rp-phase { display: none; } /* between reps the chip holds the count alone, no empty band */
-.wv-experience .rp-phase { min-width: 11.6ch; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--lamp); }
+.wv-experience .rp-phase { min-width: 11.6ch; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-accent); }
 .wv-experience .rp-broken { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: var(--bone-2); background: rgba(8, 7, 6, 0.7); text-wrap: balance; }
 
 /* The set's time line: one mark per rep; the lit one is on screen. */
@@ -42,15 +42,15 @@
 .wv-experience .rp-line::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: 1px; background: var(--hair-2); }
 .wv-experience .rp-rep { position: absolute; top: 50%; height: 10px; margin-top: -5px; border-radius: 5px; background: rgba(232, 189, 126, 0.34); transition: background var(--d-fast) var(--ease), box-shadow var(--d-fast) var(--ease); }
 .wv-experience .rp-rep.is-on { background: var(--lamp-hi); box-shadow: 0 0 12px rgba(247, 220, 174, 0.55); }
-.wv-experience .rp-now { position: absolute; top: 9px; bottom: 9px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--bone); pointer-events: none; }
-.wv-experience .rp-detail { flex: none; min-height: 19px; margin: 2px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
+.wv-experience .rp-now { position: absolute; top: 9px; bottom: 9px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--c-fg); pointer-events: none; }
+.wv-experience .rp-detail { flex: none; min-height: 19px; margin: 2px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); text-wrap: balance; }
 .wv-experience .rp-prov { flex: none; margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: inherit; text-wrap: balance; }
 
 .wv-experience .rp-controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: var(--s-3); }
 .wv-experience .rp-controls .btn-primary, .wv-experience .rp-controls .btn-ghost { height: 52px; }
 .wv-experience .rp-slow.is-on { border-color: var(--lamp-line-strong); color: var(--lamp-hi); background: rgba(232, 189, 126, 0.08); }
 .wv-experience .rp-controls :disabled { opacity: 0.4; cursor: default; }
-.wv-experience .rp-note { flex: none; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
+.wv-experience .rp-note { flex: none; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
 
 @media (max-height: 600px) {
   .wv-experience .rp-stage { margin-top: 6px; }
@@ -66,4 +66,4 @@
 .wv-experience .rp-export { flex: none; margin-top: 10px; display: flex; flex-direction: column; }
 .wv-experience .rp-export .btn-line { width: 100%; justify-content: center; text-decoration: none; }
 .wv-experience .rp-export .btn-line:disabled { opacity: 0.7; cursor: default; }
-.wv-experience .rp-export-note { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.4; color: var(--ash); text-align: center; }
+.wv-experience .rp-export-note { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); text-align: center; }

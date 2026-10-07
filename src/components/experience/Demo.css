@@ -1,12 +1,12 @@
 /* The entry's example, over the entry. Shared tokens and buttons come from Entry.css. */
 /* Its screen fades in over the entry (the shared screen-in), so the tap never shows a blank. */
 .wv-experience.demo-experience { z-index: 110; background: transparent; }
-.wv-experience .demo-screen { z-index: 3; background: var(--void); }
+.wv-experience .demo-screen { z-index: 3; background: var(--c-surface); }
 .wv-experience .demo-wrap { min-height: 100%; }
-.wv-experience .demo-tag { color: var(--lamp); border-color: var(--lamp-line); }
+.wv-experience .demo-tag { color: var(--c-accent); border-color: var(--lamp-line); }
 .wv-experience .demo-eyebrow { margin-top: var(--s-4); }
 /* The example's line leads in serif, as a heading does on every screen (#21); at the name size, so the figure keeps its room. */
-.wv-experience .demo-sub { margin: var(--s-2) 0 0; color: var(--bone); font-family: var(--serif); font-size: var(--fs-name); line-height: 1.15; text-wrap: balance; }
+.wv-experience .demo-sub { margin: var(--s-2) 0 0; color: var(--c-fg); font-family: var(--serif); font-size: var(--fs-name); line-height: 1.15; text-wrap: balance; }
 /* A fixed height, so the body does not shrink as the result appears (critic, 30 September); the figure
    takes what the words, the count and the held result leave. */
 .wv-experience .demo-figure { position: relative; flex: 0 0 auto; height: clamp(120px, calc(100svh - 510px), 300px); margin-top: var(--s-2); }
@@ -19,7 +19,7 @@
 .wv-experience .demo-result.is-held { visibility: hidden; }
 .wv-experience .demo-times-label { margin-top: 0; text-align: center; }
 .wv-experience .demo-times { margin: var(--s-2) 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; color: var(--bone-2); }
-.wv-experience .demo-exp { margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); font-style: italic; }
+.wv-experience .demo-exp { margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); font-style: italic; }
 .wv-experience .demo-times span { white-space: nowrap; }
 .wv-experience .demo-actions { margin-top: var(--s-4); }
 @media (max-height: 700px) {

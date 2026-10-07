@@ -231,3 +231,20 @@ body {
   z-index: 1;
 }
 
+
+/* ══════════════════════════════════════════
+   EXPERIENCE COLOUR ROLES (C8, design review of 7 October 2026)
+   The screens of the experience (src/components/experience/*.css) name a colour by its role, never by its
+   swatch, so a second theme (paper, C7) redefines these six and nothing else. Each role points at the
+   experience's swatch it replaced one for one (Entry.css, .wv-experience): same pixels, by construction
+   (e2e/visual.spec.js). --ink is not reused: it already means the dark ink on gold, here --c-on-accent.
+   Status: convention (a theme's role tokens, accepted front-end practice; no specific source).
+   ══════════════════════════════════════════ */
+.wv-experience {
+  --c-surface: var(--void);      /* the ground of a screen */
+  --c-fg: var(--bone);           /* text and marks at full strength */
+  --c-fg-muted: var(--ash);      /* secondary text: labels, captions */
+  --c-rule: var(--hair);         /* hairlines, borders of fields and cards */
+  --c-accent: var(--lamp);       /* the one gold: primary action, focus, measured counts */
+  --c-on-accent: var(--ink);     /* text drawn on the gold */
+}

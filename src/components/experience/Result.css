@@ -14,7 +14,7 @@
 .wv-experience .res-head { margin-top: var(--s-3); display: flex; flex-direction: column; align-items: center; gap: var(--s-1); text-align: center; }
 .wv-experience .res-sub { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; }
 .wv-experience .res-sub .tier { margin: 0; }
-.wv-experience .res-meta { margin: 0; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); }
+.wv-experience .res-meta { margin: 0; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); }
 .wv-experience .numeral {
   display: block; margin: 6px auto 0; text-align: center;
   font-family: var(--serif); font-weight: 400; font-size: var(--fs-display); line-height: 0.84; letter-spacing: -0.04em;
@@ -36,18 +36,18 @@
 .wv-experience .bar.lit i { background: linear-gradient(to top, rgba(232, 189, 126, 0.15), var(--lamp-hi)); box-shadow: 0 0 14px rgba(247, 220, 174, 0.5); }
 .wv-experience .bars.has-sel .bar:not(.sel) i { opacity: 0.3; }
 .wv-experience .bar.sel i { width: min(9px, calc(100% - 1px)); }
-.wv-experience .bar .short-mark { position: absolute; bottom: calc(18px + 72px * var(--r, 1) + 4px); left: 50%; translate: -50% 0; font-size: 11px; line-height: 1; font-weight: 400; color: var(--lamp); }
+.wv-experience .bar .short-mark { position: absolute; bottom: calc(18px + 72px * var(--r, 1) + 4px); left: 50%; translate: -50% 0; font-size: 11px; line-height: 1; font-weight: 400; color: var(--c-accent); }
 /* A sentence of measures: sans, figures tabular (mono is for labels and numerals only, #10). */
-.wv-experience .res-detail { min-height: 19px; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
-.wv-experience .res-sides { margin: var(--s-2) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--ash); text-wrap: balance; }
+.wv-experience .res-detail { min-height: 19px; margin: var(--s-3) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); text-wrap: balance; }
+.wv-experience .res-sides { margin: var(--s-2) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); text-wrap: balance; }
 .wv-experience .res-sides p { margin: 0; }
 .wv-experience .res-sides .res-sides-note { opacity: .8; }
-.wv-experience .res-exp { margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); font-style: italic; text-wrap: balance; }
+.wv-experience .res-exp { margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); font-style: italic; text-wrap: balance; }
 
 /* The user's turn: glass (the surface system, Entry.css). */
 .wv-experience .glass {
   margin-top: var(--s-5); padding: 22px 20px; border-radius: var(--r-l); display: flex; flex-direction: column; gap: var(--s-4);
-  background: rgba(20, 17, 13, 0.56); border: 1px solid var(--hair);
+  background: rgba(20, 17, 13, 0.56); border: 1px solid var(--c-rule);
   -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15);
 }
 .no-glass .wv-experience .glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
@@ -57,7 +57,7 @@
 .wv-experience .ask-row > * { height: 58px; }
 .wv-experience .result-screen .hx { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; z-index: 3; cursor: pointer; }
 .wv-experience .stepper { display: flex; align-items: center; justify-content: center; gap: 22px; }
-.wv-experience .round { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--hair-2); font-size: 24px; line-height: 1; display: grid; place-items: center; color: var(--bone); min-height: 44px; cursor: pointer; }
+.wv-experience .round { width: 54px; height: 54px; border-radius: 50%; border: 1px solid var(--hair-2); font-size: 24px; line-height: 1; display: grid; place-items: center; color: var(--c-fg); min-height: 44px; cursor: pointer; }
 .wv-experience .round:disabled { opacity: 0.35; cursor: default; }
 /* Save waits for the person's count when the app counted none (Result.jsx, unsure). */
 .wv-experience .result-screen .btn-primary:disabled { opacity: 0.4; cursor: default; }
@@ -67,7 +67,7 @@
 /* While typing: one lamp-coloured line under the figures says the number is open to the keyboard. It is
    also the field's focus indicator (the field itself is invisible), so no ring is drawn around it. */
 .wv-experience .stepper-in:focus, .wv-experience .stepper-in:focus-visible { outline: none; }
-.wv-experience .stepper-n::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: -10px; height: 2px; border-radius: 1px; background: var(--lamp); opacity: 0; transition: opacity 160ms ease; }
+.wv-experience .stepper-n::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: -10px; height: 2px; border-radius: 1px; background: var(--c-accent); opacity: 0; transition: opacity 160ms ease; }
 .wv-experience .stepper-n.is-typing::after { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .wv-experience .stepper-n::after { transition: none; } }
 
@@ -75,16 +75,16 @@
 .wv-experience .saved { margin-top: var(--s-5); display: flex; flex-direction: column; gap: 10px; }
 /* The earned line once a set is saved (moment.js): the serif of the count, in gold for a record. The count above it
    gives one slow pulse of light as the set is saved; none under Reduce Motion. */
-.wv-experience .moment { margin: 0 0 8px; text-align: center; font-family: var(--serif); font-size: 28px; line-height: 1.15; color: var(--bone); text-wrap: balance; animation: moment-in 0.7s var(--ease) both; }
-.wv-experience .moment.is-record, .wv-experience .moment.is-equal { color: var(--lamp); }
+.wv-experience .moment { margin: 0 0 8px; text-align: center; font-family: var(--serif); font-size: 28px; line-height: 1.15; color: var(--c-fg); text-wrap: balance; animation: moment-in 0.7s var(--ease) both; }
+.wv-experience .moment.is-record, .wv-experience .moment.is-equal { color: var(--c-accent); }
 .wv-experience .result-screen.is-saved .res-count { animation: count-glow 1.1s var(--ease) 1; }
 @keyframes moment-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes count-glow { 0% { filter: none; } 35% { filter: drop-shadow(0 0 22px rgba(247, 220, 174, 0.75)) brightness(1.15); } 100% { filter: none; } }
 @media (prefers-reduced-motion: reduce) { .wv-experience .moment, .wv-experience .result-screen.is-saved .res-count { animation: none; } }
 .wv-experience .saved-msg { margin: 0 0 6px; text-align: center; color: var(--bone-2); font-size: var(--fs-body); line-height: 1.5; }
 .wv-experience .saved-corr { text-align: center; margin-bottom: 4px; }
-.wv-experience .save-error { color: var(--lamp); text-align: center; margin: var(--s-3) 0 0; }
-.wv-experience .saved .share-note { margin: 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); }
+.wv-experience .save-error { color: var(--c-accent); text-align: center; margin: var(--s-3) 0 0; }
+.wv-experience .saved .share-note { margin: 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); }
 .wv-experience .saved .share-note:empty { display: none; }
 .wv-experience .result-screen .text-btn { border-radius: var(--r-pill); }
 
@@ -98,8 +98,8 @@
 /* The rest clock: counted up from the saved set, readable at arm's length on the bench (RestClock.jsx). */
 .wv-experience .rest-slot { margin: 4px 0 6px; display: flex; flex-direction: column; }
 .wv-experience .rest-clock { padding: 6px 0 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.wv-experience .rest-label { color: var(--ash); }
-.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .rest-label { color: var(--c-fg-muted); }
+.wv-experience .rest-time { margin: 0; font-family: var(--serif); font-size: var(--fs-number); line-height: 1; color: var(--c-fg); font-variant-numeric: lining-nums tabular-nums; }
 .wv-experience .rest-stop { margin-top: 2px; }
 
 /* Refused, incomplete, interrupted, error: the screen's own h1 size (#27), its own frame (#4). */
@@ -110,12 +110,12 @@
   border-radius: var(--r-l); border: 1px solid var(--hair-2); background: var(--well); overflow: hidden;
   box-shadow: inset 0 0 0 5px #0C0A08;
 }
-.wv-experience .edge { position: absolute; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--lamp) 0 6px, transparent 6px 12px); }
-.wv-experience .edge-label { position: absolute; top: 16px; left: 12px; right: 12px; white-space: nowrap; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--lamp); }
+.wv-experience .edge { position: absolute; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--c-accent) 0 6px, transparent 6px 12px); }
+.wv-experience .edge-label { position: absolute; top: 16px; left: 12px; right: 12px; white-space: nowrap; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-accent); }
 .wv-experience .body-text { margin: var(--s-5) 0 0; font-size: var(--fs-body); line-height: 1.55; color: var(--bone-2); }
 /* The fix is the user's turn: glass. */
 .wv-experience .fix-note {
-  margin-top: var(--s-5); padding: 18px 20px; border-radius: var(--r-l); border: 1px solid var(--hair); display: flex; flex-direction: column; gap: var(--s-2);
+  margin-top: var(--s-5); padding: 18px 20px; border-radius: var(--r-l); border: 1px solid var(--c-rule); display: flex; flex-direction: column; gap: var(--s-2);
   background: rgba(20, 17, 13, 0.56); -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15);
 }
 .no-glass .wv-experience .fix-note { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
@@ -132,16 +132,16 @@
 .wv-experience .rp-open svg { width: 12px; height: 12px; }
 
 /* The support links: after what the app measured, never underlined, in the actions' order (#3). */
-.wv-experience .report-count { margin: var(--s-4) 0 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 6px; font-size: var(--fs-caption); color: var(--ash); }
+.wv-experience .report-count { margin: var(--s-4) 0 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 6px; font-size: var(--fs-caption); color: var(--c-fg-muted); }
 .wv-experience .report-count > span { width: 100%; text-align: center; }
 .wv-experience .report-count a.text-btn { display: inline-flex; align-items: center; text-decoration: none; color: var(--bone-2); font-size: var(--fs-caption); }
 
 /* The account of the set: information, so a hairline card (the surface system) when it follows the question (#19). */
 .wv-experience .set-account { margin: var(--s-5) 0 0; display: flex; flex-direction: column; gap: var(--s-2); text-align: left; }
-.wv-experience .set-account.appear { padding: 18px 20px; border: 1px solid var(--hair); border-radius: var(--r-l); }
-.wv-experience .set-account p { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--bone, inherit); }
+.wv-experience .set-account.appear { padding: 18px 20px; border: 1px solid var(--c-rule); border-radius: var(--r-l); }
+.wv-experience .set-account p { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--c-fg, inherit); }
 .wv-experience .set-account .acc-tip { margin-top: var(--s-2); }
-.wv-experience .set-account .acc-cheer { color: var(--lamp); }
+.wv-experience .set-account .acc-cheer { color: var(--c-accent); }
 .wv-experience .acc-notes { margin-top: var(--s-1); }
 .wv-experience .acc-notes summary { list-style: none; cursor: pointer; }
 .wv-experience .acc-notes summary::-webkit-details-marker { display: none; }
@@ -149,7 +149,7 @@
 .wv-experience .acc-notes summary.text-btn { display: flex; align-items: center; width: max-content; padding-inline: 0; }
 .wv-experience .acc-notes section { margin-top: var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); }
 .wv-experience .acc-notes h3 { margin: 0; }
-.wv-experience .acc-notes p, .wv-experience .acc-notes .acc-lead { font-size: var(--fs-caption); line-height: 1.5; color: var(--ash); }
+.wv-experience .acc-notes p, .wv-experience .acc-notes .acc-lead { font-size: var(--fs-caption); line-height: 1.5; color: var(--c-fg-muted); }
 
 /* The tier under the centred lift name. */
 .wv-experience .result-screen .tier { align-self: center; }
@@ -196,10 +196,10 @@
 .wv-experience .strips { display: flex; flex-direction: column; align-items: center; gap: var(--s-5); cursor: pointer; }
 .wv-experience .strip { width: 100%; display: flex; flex-direction: column; align-items: center; }
 .wv-experience .strip-head { margin: 0 0 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; text-wrap: balance; }
-.wv-experience .strip-label { font-family: var(--mono); font-size: var(--fs-label); line-height: 1.4; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ash); }
+.wv-experience .strip-label { font-family: var(--mono); font-size: var(--fs-label); line-height: 1.4; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-fg-muted); }
 .wv-experience .strip-key { font-size: var(--fs-caption); line-height: 1.4; color: var(--ash-2); }
 .wv-experience .strip-cols { position: relative; display: flex; }
-.wv-experience .strip-cols.mid::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--hair); }
+.wv-experience .strip-cols.mid::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--c-rule); }
 .wv-experience .strip-col { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; transition: opacity 0.3s; }
 .wv-experience .strips.has-sel .strip-col:not(.sel) { opacity: 0.32; }
 .wv-experience .t-half { flex: 1; width: 100%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 1px; }
@@ -210,7 +210,7 @@
 .wv-experience .t-up { border-radius: 3px 3px 0 0; background: rgba(232, 189, 126, 0.32); }
 .wv-experience .t-down { border-radius: 0 0 3px 3px; background: rgba(232, 189, 126, 0.16); }
 .wv-experience .t-up.capped { border-radius: 0; box-shadow: inset 0 2px 0 var(--lamp-hi); }
-.wv-experience .t-down.capped { border-radius: 0; box-shadow: inset 0 -2px 0 var(--lamp); }
+.wv-experience .t-down.capped { border-radius: 0; box-shadow: inset 0 -2px 0 var(--c-accent); }
 .wv-experience .strip-col.lit .t-up { background: linear-gradient(to bottom, var(--lamp-hi), rgba(232, 189, 126, 0.45)); }
 .wv-experience .strip-col.lit .t-down { background: rgba(232, 189, 126, 0.42); }
 /* The gap between sides: one solid bar, up for the right, down for the left, all of one weight. */
@@ -218,7 +218,7 @@
 .wv-experience .g-bar.up { border-radius: 3px 3px 0 0; }
 .wv-experience .g-bar.down { border-radius: 0 0 3px 3px; }
 .wv-experience .g-bar.capped { border-radius: 0; }
-.wv-experience .strip-col.lit .g-bar { background: var(--lamp); }
+.wv-experience .strip-col.lit .g-bar { background: var(--c-accent); }
 .wv-experience .t-gap { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: 3px; height: 3px; border-radius: 50%; background: var(--hair-2); }
 /* Saved: the marks step back, their words keep their contrast (WCAG 1.4.3; audit of 3 October). */
 .wv-experience .result-screen.is-saved .strips .strip-cols { opacity: 0.55; transition: opacity 0.7s var(--ease); }
@@ -238,13 +238,13 @@
 .wv-experience .w-band.sel { fill: rgba(232, 189, 126, 0.07); }
 .wv-experience .w-rep path { stroke-width: 2; opacity: 0; transition: opacity 0.45s var(--ease); }
 .wv-experience .w-rep.lit path { opacity: 1; }
-.wv-experience .w-out { stroke: var(--lamp); }
+.wv-experience .w-out { stroke: var(--c-accent); }
 .wv-experience .w-back { stroke: rgba(232, 189, 126, 0.42); }
-.wv-experience .w-rep.part .w-out { stroke: var(--ash); stroke-width: 1.5; stroke-dasharray: 2 3; }
+.wv-experience .w-rep.part .w-out { stroke: var(--c-fg-muted); stroke-width: 1.5; stroke-dasharray: 2 3; }
 .wv-experience .wave.has-sel .w-rep:not(.sel).lit path { opacity: 0.32; }
 .wv-experience .result-screen.is-saved .wave svg { opacity: 0.55; transition: opacity 0.7s var(--ease); }
 @media (prefers-reduced-motion: reduce) { .wv-experience .w-rep path, .wv-experience .result-screen.is-saved .wave { transition: none; } }
 /* The wave's key shows its two strokes (RepWave.jsx). */
 .wv-experience .strip-key .sw { display: inline-block; width: 14px; height: 2px; border-radius: 1px; vertical-align: middle; margin-right: 5px; }
-.wv-experience .strip-key .sw-out { background: var(--lamp); }
+.wv-experience .strip-key .sw-out { background: var(--c-accent); }
 .wv-experience .strip-key .sw-back { background: rgba(232, 189, 126, 0.42); margin-left: 10px; }

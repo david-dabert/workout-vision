@@ -4,7 +4,7 @@
 .wv-experience .live-screen .wrap { min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 26px); }
 .wv-experience .live-tools { display: flex; gap: 8px; }
 .wv-experience .live-tools .icon-btn:disabled { opacity: 0.35; }
-.wv-experience .live-voice:not(.is-on) { color: var(--ash); }
+.wv-experience .live-voice:not(.is-on) { color: var(--c-fg-muted); }
 .wv-experience .live-pill { display: inline-flex; align-items: center; gap: 6px; color: var(--bone-2); }
 .wv-experience .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #E0624A; box-shadow: 0 0 8px rgba(224, 98, 74, 0.8); }
 .wv-experience .live-name { margin: 6px 0 0; text-align: center; }
@@ -26,7 +26,7 @@
   padding: 24px; text-align: center; pointer-events: none;
   background: radial-gradient(ellipse at center, rgba(8, 7, 6, 0.55), rgba(8, 7, 6, 0) 70%);
 }
-.wv-experience .live-hint { margin: 8px 0 0; max-width: 30ch; font-size: var(--fs-body); line-height: 1.45; color: var(--bone); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); text-wrap: balance; }
+.wv-experience .live-hint { margin: 8px 0 0; max-width: 30ch; font-size: var(--fs-body); line-height: 1.45; color: var(--c-fg); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); text-wrap: balance; }
 .wv-experience .live-hint-title { margin: 0; font-family: var(--serif); font-size: var(--fs-heading); line-height: 1.1; color: var(--lamp-hi); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9); }
 .wv-experience .live-sub { margin-top: 6px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--bone-2); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9); }
 .wv-experience .live-count, .wv-experience .live-countdown { display: flex; flex-direction: column; align-items: center; }
@@ -37,10 +37,10 @@
 .wv-experience .live-cd { animation: live-pulse 0.6s var(--ease); }
 @keyframes live-pulse { 0% { scale: 1.22; } 100% { scale: 1; } }
 .wv-experience .live-frame:has(.live-n.is-pulse) { animation: live-glow 0.8s var(--ease); }
-@keyframes live-glow { 0% { box-shadow: inset 0 0 0 6px #0C0A08, 0 0 0 2px var(--lamp), 0 0 60px 0 rgba(232, 189, 126, 0.5); } }
+@keyframes live-glow { 0% { box-shadow: inset 0 0 0 6px #0C0A08, 0 0 0 2px var(--c-accent), 0 0 60px 0 rgba(232, 189, 126, 0.5); } }
 
 .wv-experience .live-actions { margin-top: var(--s-4); }
-.wv-experience .live-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-align: center; text-wrap: balance; }
+.wv-experience .live-note { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-align: center; text-wrap: balance; }
 .wv-experience .live-problem { margin-top: var(--s-4); text-align: center; }
 .wv-experience .live-problem .title { margin: 0; font-size: var(--fs-heading); }
 .wv-experience .live-problem .body-text { margin: 10px 0 0; }

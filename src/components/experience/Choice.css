@@ -1,16 +1,16 @@
 /* Choice styles ported from the approved prototype. */
-.wv-experience .welcome { margin-top: 18px; }.wv-experience .welcome-l1 { margin: 0; font-family: var(--serif); font-style: italic; font-size: var(--fs-heading); line-height: 1.1; color: var(--lamp); }.wv-experience .welcome-l2 { margin: 4px 0 0; font-size: var(--fs-caption); color: var(--ash); }.wv-experience .choose-screen .title { margin-top: 22px; }.wv-experience .choose-screen .sub { margin-top: var(--s-3); }.wv-experience .rail {
+.wv-experience .welcome { margin-top: 18px; }.wv-experience .welcome-l1 { margin: 0; font-family: var(--serif); font-style: italic; font-size: var(--fs-heading); line-height: 1.1; color: var(--c-accent); }.wv-experience .welcome-l2 { margin: 4px 0 0; font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .choose-screen .title { margin-top: 22px; }.wv-experience .choose-screen .sub { margin-top: var(--s-3); }.wv-experience .rail {
   display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; touch-action: pan-x pan-y;
   margin: 24px calc(var(--gut) * -1) 0; padding: 4px var(--gut) 8px; scrollbar-width: none;
 }.wv-experience .rail::-webkit-scrollbar { display: none; }.wv-experience .altar {
   position: relative; display: block; flex: 0 0 min(80%, 340px); height: clamp(390px, 58vh, 500px); scroll-snap-align: center;
   border-radius: var(--r-xl); overflow: hidden; isolation: isolate; text-align: left;
   background: radial-gradient(90% 55% at 50% 0%, rgba(232, 189, 126, 0.17), transparent 70%), linear-gradient(180deg, #14110D 0%, var(--well) 100%);
-  border: 1px solid var(--hair);
-}.wv-experience .altar canvas { position: absolute; left: 0; top: 0; width: 100%; height: 72%; display: block; }.wv-experience .altar-meta { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }.wv-experience .altar-idx { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.2em; color: var(--ash); }.wv-experience .altar-name { font-family: var(--serif); font-size: 37px; line-height: 1; letter-spacing: -0.01em; }.wv-experience .altar-alias { font-size: var(--fs-caption); color: var(--ash); }.wv-experience .altar-view { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--lamp); }.wv-experience .altar-view svg { width: 14px; height: 14px; flex-shrink: 0; }.wv-experience .dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }.wv-experience .dots i { width: 16px; height: 2px; border-radius: 1px; background: var(--hair-2); transition: width var(--d-ui) var(--ease), background var(--d-ui); }.wv-experience .dots i.on { width: 30px; background: var(--lamp); }.wv-experience .row-link { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: var(--s-5); padding: 18px 2px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); text-align: left; }.wv-experience .row-ico { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--hair-2); display: grid; place-items: center; color: var(--lamp); flex-shrink: 0; }.wv-experience .row-ico svg { width: 22px; height: 22px; }.wv-experience .row-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }.wv-experience .row-txt b { font-weight: 500; font-size: 16px; }.wv-experience .row-txt small { font-size: var(--fs-caption); color: var(--ash); }.wv-experience .row-arrow { width: 18px; height: 18px; color: var(--ash); flex-shrink: 0; }.wv-experience .foot { margin: var(--s-5) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--ash); text-wrap: balance; }
+  border: 1px solid var(--c-rule);
+}.wv-experience .altar canvas { position: absolute; left: 0; top: 0; width: 100%; height: 72%; display: block; }.wv-experience .altar-meta { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }.wv-experience .altar-idx { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.2em; color: var(--c-fg-muted); }.wv-experience .altar-name { font-family: var(--serif); font-size: 37px; line-height: 1; letter-spacing: -0.01em; }.wv-experience .altar-alias { font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .altar-view { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }.wv-experience .altar-view svg { width: 14px; height: 14px; flex-shrink: 0; }.wv-experience .dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }.wv-experience .dots i { width: 16px; height: 2px; border-radius: 1px; background: var(--hair-2); transition: width var(--d-ui) var(--ease), background var(--d-ui); }.wv-experience .dots i.on { width: 30px; background: var(--c-accent); }.wv-experience .row-link { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: var(--s-5); padding: 18px 2px; border-top: 1px solid var(--c-rule); border-bottom: 1px solid var(--c-rule); text-align: left; }.wv-experience .row-ico { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--hair-2); display: grid; place-items: center; color: var(--c-accent); flex-shrink: 0; }.wv-experience .row-ico svg { width: 22px; height: 22px; }.wv-experience .row-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }.wv-experience .row-txt b { font-weight: 500; font-size: 16px; }.wv-experience .row-txt small { font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .row-arrow { width: 18px; height: 18px; color: var(--c-fg-muted); flex-shrink: 0; }.wv-experience .foot { margin: var(--s-5) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
 
 
-.wv-experience .title, .wv-experience .altar-name { color: var(--bone); }
+.wv-experience .title, .wv-experience .altar-name { color: var(--c-fg); }
 
 /* The choice fills the screen it is given. The heading, the rail and the dots form one block as
    tall as the visible screen, less a reserve at the bottom for the floating bar of the browser
@@ -35,9 +35,9 @@
 .wv-experience .recents { display: flex; gap: var(--s-2); margin: var(--s-3) calc(-1 * var(--s-4)) 0; padding: 0 var(--s-4); overflow-x: auto; scrollbar-width: none; }
 .wv-experience .recents::-webkit-scrollbar { display: none; }
 .wv-experience .recents { align-items: center; }
-.wv-experience .recents-label { flex: none; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ash); margin-right: 2px; }
-.wv-experience .recent { flex: none; height: 44px; padding: 0 16px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: rgba(232, 189, 126, 0.06); color: var(--bone); font: 500 var(--fs-caption)/1 var(--sans); white-space: nowrap; }
-.wv-experience .recent:first-child { border-color: rgba(232, 189, 126, 0.55); color: var(--lamp); }
+.wv-experience .recents-label { flex: none; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--c-fg-muted); margin-right: 2px; }
+.wv-experience .recent { flex: none; height: 44px; padding: 0 16px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: rgba(232, 189, 126, 0.06); color: var(--c-fg); font: 500 var(--fs-caption)/1 var(--sans); white-space: nowrap; }
+.wv-experience .recent:first-child { border-color: rgba(232, 189, 126, 0.55); color: var(--c-accent); }
 @media (max-height: 700px) {
   .wv-experience .choose-screen .title { margin-top: 16px; }
   .wv-experience .choose-screen .sub { margin-top: 10px; }
@@ -64,8 +64,8 @@
 .wv-experience .row-link + .row-link { margin-top: 0; border-top: 0; }
 /* Every counted exercise, under the cards (step 2): the guide's search and rows. */
 .wv-experience .all-exercises { margin-top: var(--s-6); }
-.wv-experience .all-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--fs-heading); line-height: 1.1; color: var(--bone); }
-.wv-experience .all-note { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--ash); text-wrap: pretty; }
+.wv-experience .all-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--fs-heading); line-height: 1.1; color: var(--c-fg); }
+.wv-experience .all-note { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--c-fg-muted); text-wrap: pretty; }
 .wv-experience .all-exercises .search { margin-top: var(--s-4); }
 /* Without a tag, a row's name takes the width the tag held (David's choice, 29 September). */
 .wv-experience .all-exercises .item-btn { grid-template-columns: 56px minmax(0, 1fr); }
@@ -73,11 +73,11 @@
 /* The longest French names keep to two lines down to 320 px (an iPhone SE, or a mini with Display Zoom). */
 .wv-experience .all-exercises .item-name { font-size: min(var(--fs-name), 6.2vw); }
 /* Beta in the list is gold as on the cards; the list's .tag rule loads later and would make it ash (#15). */
-.wv-experience .tag.tier-beta { color: var(--lamp); border-color: var(--lamp-line); }
+.wv-experience .tag.tier-beta { color: var(--c-accent); border-color: var(--lamp-line); }
 /* Experimental on a fitness-test row is the ash pill the guide shows, not the cards' plain caption (Entry.css .tier-experimental). */
 .wv-experience .row-link .tag { flex-shrink: 0; }
 .wv-experience .row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
-.wv-experience .row-link .tag.tier-experimental { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 5px 10px 4px; border: 1px solid var(--hair-2); color: var(--ash); }
+.wv-experience .row-link .tag.tier-experimental { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 5px 10px 4px; border: 1px solid var(--hair-2); color: var(--c-fg-muted); }
 /* The note on anonymous usage counts (UsageNote, Choice.jsx), under "Vos séries": its button reads as a link, 44 px tall. */
 .wv-experience .usage-note { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .wv-experience .usage-note p { margin: 0; }

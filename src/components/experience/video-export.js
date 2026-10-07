@@ -8,6 +8,7 @@ import { poseAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints, LAMP } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { overlayLines } from './replay-labels';
+import { RGB, rgba } from './palette';
 
 const MIMES = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
 
@@ -105,7 +106,7 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
         const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
         ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
         ctx.textBaseline = 'top';
-        ctx.fillStyle = 'rgba(8, 7, 6, 0.55)';
+        ctx.fillStyle = rgba(RGB.void, 0.55);
         const w = ctx.measureText(label).width;
         ctx.fillRect(pad - 10 * u, pad - 8 * u, w + 20 * u, 46 * u);
         ctx.fillStyle = LAMP;
@@ -113,7 +114,7 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
         if (note) {
           ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
           const nw = Math.min(ctx.measureText(note).width, W - 2 * pad);
-          ctx.fillStyle = 'rgba(8, 7, 6, 0.55)';
+          ctx.fillStyle = rgba(RGB.void, 0.55);
           ctx.fillRect(pad - 10 * u, pad + 46 * u, nw + 20 * u, 26 * u);
           ctx.fillStyle = LAMP;
           ctx.fillText(note, pad, pad + 52 * u, W - 2 * pad);
