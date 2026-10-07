@@ -31,6 +31,8 @@ export default function About({ onClose }) {
       <Photo id="portrait" alt={c.photos.portrait.alt} eager />
       <h1 className="title" data-reveal style={{ '--i': 1 }}>{c.title}</h1>
       <div className="about-body" data-reveal style={{ '--i': 2 }}>
+        {/* The serif opening line of David's story, at its head (design review, 7 October 2026). */}
+        <p className="about-lead">{c.lead}</p>
         <Paragraph lines={p1} />
         <Photo id="sanSiro" {...c.photos.sanSiro} />
         <Paragraph lines={p2} />

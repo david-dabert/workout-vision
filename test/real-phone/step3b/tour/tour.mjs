@@ -72,9 +72,9 @@ try {
   // Entry should be visible (first visit, no wv_seen_entry)
   const entryEnter = page.locator('.enter');
   await expect(entryEnter).toBeVisible({ timeout: 5000 });
-  // The brand, the title, the line and the button arrive in turn over about four seconds.
+  // The masthead, the words and the keys are in place within about 1.2 s, the figure still by 1.7 s (C2, 7 October 2026).
   await page.locator('.entry.play').waitFor({ timeout: 5000 });
-  await page.waitForTimeout(4600);
+  await page.waitForTimeout(1800);
   await shot('01-entry');
 
   // Tap Enter — the label wraps a hidden checkbox; clicking the label triggers onChange

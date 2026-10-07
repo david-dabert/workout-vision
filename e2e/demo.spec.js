@@ -22,7 +22,7 @@ async function first(browser, size, lang, reducedMotion = 'no-preference') {
   await page.addInitScript(l => localStorage.setItem('wv_lang', l), lang);
   await page.goto('/workout-vision/');
   await expect(page.getByRole('button', { name: WORDS[lang].open })).toBeVisible({ timeout: 20000 });
-  await page.waitForTimeout(reducedMotion === 'reduce' ? 600 : 4600); // the entry has settled
+  await page.waitForTimeout(reducedMotion === 'reduce' ? 600 : 1800); // the entry has settled (C2: still by 1.7 s, entry-scene.js)
   return { context, page, errors };
 }
 
@@ -45,9 +45,11 @@ test('the example plays a set, ticking the count rep by rep, and ends on the cor
   await expect(page.getByTestId('demo-result')).toBeVisible();
   await expect(page.locator('.demo-screen [role="status"]')).toHaveText(WORDS.fr.done);
   await expect(page.locator('.demo-numeral')).toHaveText('5');
-  // Rep times, a measure not yet validated, come with the experimental label (measures.js, 1 October).
-  await expect(page.locator('.demo-times')).toHaveCount(1);
-  await expect(page.getByTestId('demo-exp')).toHaveText('Mesures expérimentales\u00A0: estimées par l’app, pas encore validées.');
+  // The drawn example shows no rep times (design review, 7 October 2026, decision 3: times of an animation are not
+  // measures of a person, R8), so no experimental label either; the count stays, under the example's label.
+  await expect(page.getByTestId('demo-result')).not.toContainText(/\d[.,]\d\s?s\b/);
+  await expect(page.getByText(/Mesures expérimentales/)).toHaveCount(0);
+  await expect(page.locator('.demo-screen .demo-tag')).toHaveText(WORDS.fr.tag);
   await page.waitForTimeout(1000);
   expect(await faults(page)).toEqual([]);
   // Close: back to the entry. Then "À vous" leads on to the choice of lift.
@@ -99,12 +101,12 @@ test('the example ends clear of overlaps at 375×548 with motion (en)', async ({
   await context.close();
 });
 
-// Review, 29 September: once "Entrer" is tapped, the example no longer opens (a double tap
+// Review, 29 September: once "Commencer" (formerly "Entrer") is tapped, the example no longer opens (a double tap
 // landing low, or a tap on Enter while the example's code loads, must not flash it up).
 test('the example does not open once the entry is leaving', async ({ browser }) => {
   test.setTimeout(60_000);
   const { context, page } = await first(browser, { width: 390, height: 664 }, 'fr');
-  await page.getByRole('button', { name: 'Entrer' }).click();
+  await page.getByRole('button', { name: 'Commencer' }).click();
   await page.locator('.entry-demo').click({ force: true });
   await page.waitForTimeout(300);
   expect(await page.locator('.demo-screen').count()).toBe(0);
@@ -128,9 +130,9 @@ test('the example does not skip the set after a pause of the page', async ({ bro
   await context.close();
 });
 
-// Review, 30 September: under the example the entry's figure is not drawn (its canvas holds still),
-// and once the example closes it moves again.
-test('the entry figure holds still under the example and moves again after it', async ({ browser }) => {
+// Review, 30 September: under the example the entry's figure is not drawn (its canvas holds still). Since the design
+// review of 7 October 2026 (C2) the figure plays once and then holds still, so after the example it is still too.
+test('the entry figure holds still under the example and after it', async ({ browser }) => {
   test.setTimeout(60_000);
   const { context, page } = await first(browser, { width: 390, height: 664 }, 'fr');
   const shot = () => page.evaluate(() => document.querySelector('.entry-stage').toDataURL());
@@ -142,6 +144,8 @@ test('the entry figure holds still under the example and moves again after it', 
   await page.getByRole('button', { name: WORDS.fr.close }).click();
   await expect(page.locator('.demo-screen')).toHaveCount(0);
   const c = await shot(); await page.waitForTimeout(600); const d = await shot();
-  expect(c === d).toBe(false);
+  expect(c === d).toBe(true);
+  // Still, but drawn: the figure is there, not a blank canvas.
+  expect(await page.evaluate(() => { const c = document.querySelector('.entry-stage'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n; })).toBeGreaterThan(1000);
   await context.close();
 });

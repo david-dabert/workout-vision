@@ -23,6 +23,8 @@ describe('the About page', () => {
       expect(lines).toHaveLength(22);
       expect(html).toContain(`<h1 class="title" data-reveal="true" style="--i:1">${c.title}</h1>`);
       expect(html).toContain(`<p class="about-signature">${c.signature}</p>`);
+      expect(html).toContain(`<p class="about-lead">${c.lead}</p>`);
+      expect(c.lead).toBe(lang === 'fr' ? 'Votre corps est un\u00A0temple.' : 'Your body is a\u00A0temple.');
       const imgs = [...html.matchAll(/<img [^>]*>/g)].map(m => m[0]);
       expect(imgs).toHaveLength(3);
       expect(imgs.map(i => i.match(/alt="([^"]*)"/)[1])).toEqual([c.photos.portrait.alt, c.photos.sanSiro.alt, c.photos.dordogne.alt]);
@@ -38,6 +40,9 @@ describe('the About page', () => {
     const at = s => html.indexOf(s);
     expect(at('portrait.jpg')).toBeLessThan(at('<h1'));
     expect(at('<h1')).toBeLessThan(at('Ce fut un réveil brutal.'));
+    // The story opens on "Votre corps est un temple." (moved from the entry, design review of 7 October 2026).
+    expect(at('<h1')).toBeLessThan(at('<p class="about-lead">Votre corps est un\u00A0temple.</p>'));
+    expect(at('<p class="about-lead">')).toBeLessThan(at('Il y a trois ans, je pesais'));
     expect(at('Ce fut un réveil brutal.')).toBeLessThan(at('san-siro-2023.jpg'));
     expect(at('san-siro-2023.jpg')).toBeLessThan(at('Depuis, j’ai fait'));
     expect(at('pesais 105')).toBeLessThan(at('dordogne-2026.jpg'));

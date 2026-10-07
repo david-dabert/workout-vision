@@ -9,7 +9,6 @@ import { poseAt } from './replay-track';
 import './Demo.css';
 import './About.css';
 import { DemoVideos } from './DemoVideos';
-import { MEASURES_SHOWN, experimentalLabel } from './measures';
 
 // The entry's example (feature B): a drawn squat that the counting core counts as it plays. It is
 // labelled as an example throughout, so no one takes it for their own set. Words awaiting David's
@@ -20,14 +19,14 @@ const COPY = {
     sub: 'Un squat dessiné pour l’exemple, compté par l’app comme votre série le sera.',
     word: n => (n > 1 ? 'Répétitions' : 'Répétition'),
     done: n => `Fin de série : ${n} ${n > 1 ? 'répétitions comptées' : 'répétition comptée'}.`,
-    times: 'Durée de chaque répétition', go: 'À vous', again: 'Revoir l’exemple',
+    go: 'À vous', again: 'Revoir l’exemple',
   },
   en: {
     tag: 'Example', real: 'Real sets, counted by the app', close: 'Close the example', eyebrow: 'Drawn squat',
     sub: 'A squat drawn for the example, counted by the app as your set will be.',
     word: n => (n === 1 ? 'Rep' : 'Reps'),
     done: n => `End of set: ${n} ${n === 1 ? 'rep' : 'reps'} counted.`,
-    times: 'Time of each rep', go: 'Your turn', again: 'Watch again',
+    go: 'Your turn', again: 'Watch again',
   },
 };
 
@@ -35,7 +34,6 @@ const COPY = {
 export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStart, onReplay }) {
   const c = COPY[lang] || COPY.fr;
   const shown = countAt(result.reps, t), done = t >= duration;
-  const secs = new Intl.NumberFormat(lang === 'en' ? 'en' : 'fr', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   return <div className="wv-experience demo-experience">
     <section className="screen is-active demo-screen" aria-label={c.tag}><div className="wrap demo-wrap">
       <div className="topbar">
@@ -55,10 +53,8 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
       <p className="sr" role="status">{done ? c.done(result.count) : ''}</p>
       {/* Until the set ends, the result's place is held, hidden, so nothing moves when it lands. */}
       <div className={`demo-result${done ? ' appear' : ' is-held'}`} {...(done ? { 'data-testid': 'demo-result' } : { 'aria-hidden': true, inert: true })}>
-        {/* Rep times are a measure not yet validated (measures.js): shown under the experimental label, as on the user's own set. */}
-        {MEASURES_SHOWN && <p className="section-head demo-times-label">{c.times}</p>}
-        {MEASURES_SHOWN && <p className="demo-times">{result.reps.map(r => <span key={r.index}>{`${secs.format(r.endTime - r.startTime)} s`}</span>)}</p>}
-        {MEASURES_SHOWN && <p className="demo-exp" data-testid="demo-exp">{experimentalLabel(lang !== 'en')}</p>}
+        {/* No rep times here (design review, 7 October 2026): the example is a drawing, and its times would be those of
+            an animation, not measures of a person (R8). Rep times stay on the user’s own sets, under the experimental label. */}
         <div className="actions demo-actions">
           <button type="button" className="btn-primary press" onClick={onStart}>{c.go}</button>
           {onReplay && <button type="button" className="btn-ghost press" onClick={onReplay}>{c.again}</button>}

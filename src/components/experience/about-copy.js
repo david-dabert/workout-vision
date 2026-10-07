@@ -7,6 +7,10 @@ export const ABOUT = {
   fr: {
     link: 'À propos',
     title: 'J’ai construit l’outil dont j’avais besoin il y a trois ans.',
+    // The opening line of the story, moved here from the entry (design review, 7 October 2026: the entry now says
+    // what the app does). David's own words, approved on the entry; their place here awaits his approval
+    // (test/real-phone/swarm/copy-entry.md).
+    lead: 'Votre corps est un\u00A0temple.',
     paragraphs: [
       [
         `Il y a trois ans, je pesais 170${NB}kilogrammes.`,
@@ -51,6 +55,7 @@ export const ABOUT = {
   en: {
     link: 'About',
     title: 'I built the tool I needed three years ago.',
+    lead: 'Your body is a\u00A0temple.',
     paragraphs: [
       [
         `Three years ago, I weighed 170${NB}kilograms.`,

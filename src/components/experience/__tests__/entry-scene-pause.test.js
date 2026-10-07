@@ -47,4 +47,26 @@ describe('the entry scene under the example', () => {
     expect(moved).toBeLessThan(4);
     scene.dispose();
   });
+  // Design review, 7 October 2026 (C2): the entry plays once. Settled, the scene draws no more frames and every frame
+  // it draws (a resize, a return from the example) is the same; leaving starts the loop again.
+  it('plays once, then holds still until it leaves', async () => {
+    let now = 5000;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    const { createEntryScene, ENTRY_SETTLE_MS } = await import('../entry-scene');
+    const canvas = { clientWidth: 390, clientHeight: 664, width: 0, height: 0, getContext: () => ctx };
+    const scene = createEntryScene(canvas, false, () => ({ top: 60, bottom: 360, left: 20, right: 370 }));
+    expect(ENTRY_SETTLE_MS).toBeLessThanOrEqual(1700);
+    now += 500; expect(run()).toBe(1);
+    now += ENTRY_SETTLE_MS; images = []; expect(run()).toBe(1);
+    const settled = images.slice();
+    expect(run()).toBe(0);
+    scene.pause(); now += 30000; scene.resume();
+    images = []; expect(run()).toBe(1);
+    expect(images).toEqual(settled);
+    expect(run()).toBe(0);
+    scene.leave();
+    now += 100; expect(run()).toBe(1);
+    now += 100; expect(run()).toBe(1);
+    scene.dispose();
+  });
 });

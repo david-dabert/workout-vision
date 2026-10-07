@@ -84,7 +84,7 @@ try {
   // Entry, on a first visit.
   await page.goto(base, { waitUntil: 'networkidle' });
   await expect(page.locator('.enter')).toBeVisible({ timeout: 10000 });
-  await page.waitForTimeout(reduced ? 800 : 4600);
+  await page.waitForTimeout(reduced ? 800 : 1800); // in place within 1.2 s, the figure still by 1.7 s (C2, 7 October 2026)
   await shot('01-entry');
   await inView('01-entry', page.locator('.enter'));
   await page.locator('.enter').click();

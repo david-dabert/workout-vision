@@ -145,10 +145,11 @@ export default function tactilityTests(test, expect, { cdp = true } = {}) {
     });
   }
 
-  test('the Enter button keeps its size, weight and colour', async ({ page }) => {
+  // The entry's key since the design review of 7 October 2026 (C2): "Commencer", 17 px at 600, a bone key.
+  test('the entry\'s Start button keeps its size, weight and colour', async ({ page }) => {
     await page.goto('/workout-vision/?entry');
-    const style = await page.locator('.enter').evaluate(el => { const s = getComputedStyle(el); return { size: s.fontSize, weight: s.fontWeight, tag: el.tagName }; });
-    expect(style).toEqual({ size: '12px', weight: '500', tag: 'BUTTON' });
+    const style = await page.locator('.enter').evaluate(el => { const s = getComputedStyle(el); return { size: s.fontSize, weight: s.fontWeight, tag: el.tagName, colour: s.color }; });
+    expect(style).toEqual({ size: '17px', weight: '600', tag: 'BUTTON', colour: 'rgb(8, 7, 6)' });
   });
 
   // Drives touch through Chrome's DevTools protocol, which WebKit does not have: Chromium only.
