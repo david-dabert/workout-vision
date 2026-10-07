@@ -9,6 +9,8 @@ import { contribution } from '../../../lib/contribute';
 // R8 (CLAUDE.md), 3 October 2026: a set the counter did not refuse but found no rep in is not a measured 0.
 // The result screen asserts no number, no measure and no mark: it says the set could not be counted and asks
 // "How many did you do?". The set is saved as a correction: the app's 0 beside the person's count.
+// 7 October 2026 (C4, final direction, screen 05b): the words are the app's ("l'appli"), pending David's approval
+// (test/real-phone/swarm/copy-result.md), and the keys are the result's square keys (res-key).
 vi.mock('../lift-scenes', () => ({ hasFigure: () => false, liftView: () => null, topPose: () => null }));
 vi.mock('../entry-scene', () => ({ Body: class {}, mapPose: () => null, DPR: 1, LITE: false }));
 vi.mock('../stage-loop', () => ({ addLayer: () => () => {}, presence: () => 0, holdStage: () => {} }));
@@ -28,7 +30,7 @@ describe('a set counted 0 that was not refused', () => {
   for (const level of ['beginner', 'intermediate', 'expert']) {
     it(`asks for the count with no number, no measure and no mark (${level})`, async () => {
       const en = await render('en', zero, level);
-      expect(en).toContain('We could not count this set.');
+      expect(en).toContain('The app could not count this set.');
       expect(en).toContain('data-testid="fix-card"');
       expect(en).toContain('How many did you do?');
       expect(en).not.toContain('data-testid="ask-card"');
@@ -38,12 +40,12 @@ describe('a set counted 0 that was not refused', () => {
       expect(en).not.toMatch(/data-testid="(res-exp|set-account|res-sides|level-table|level-speed)"/);
       expect(en).not.toMatch(/class="(bars|res-wave)[" ]/);
       // Save waits for the person's count: the 0 the stepper opens on is never saved as theirs.
-      expect(en).toMatch(/<button type="button" class="btn-primary press" disabled="">/);
+      expect(en).toMatch(/<button type="button" class="res-key is-primary press" data-testid="res-save" disabled="">Save<\/button>/);
     });
   }
-  it('says the same in French, with the strings already approved', async () => {
+  it('says the same in French', async () => {
     const fr = await render('fr', zero);
-    expect(fr).toContain('Nous n’avons pas pu compter cette série.');
+    expect(fr).toContain('L’appli n’a pas pu compter cette série.');
     expect(fr).toContain('Combien en avez-vous fait ?');
     expect(fr).not.toContain('C’est bien 0');
     expect(fr).not.toContain('data-testid="res-numeral"');
@@ -54,9 +56,11 @@ describe('a set counted 0 that was not refused', () => {
     expect(nine).not.toContain('data-testid="fix-card"');
     expect(nine).not.toContain('data-testid="res-uncounted"');
     const refused = await render('en', { ...zero, refused: true, worldLandmarks: [], timestamps: [] });
-    expect(refused).toContain('We could not count this set.');
-    expect(refused).not.toContain('data-testid="fix-card"');
-    expect(refused).toContain('Record again');
+    expect(refused).toContain('The app could not count this set.');
+    // A refused set offers the count by hand at once (05b), with no number of the app, and the way to film again.
+    expect(refused).toContain('data-testid="fix-card"');
+    expect(refused).not.toContain('data-testid="res-numeral"');
+    expect(refused).toContain('Record the set again');
   });
 });
 

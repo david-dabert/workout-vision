@@ -48,7 +48,7 @@ test('WP1.3: "Nouvelle série" goes back to filming the same lift; "Changer d’
   // A second set of the same lift, then a change of lift: the choice offers the lift back in one tap.
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
-  await page.getByRole('button', { name: 'Oui, c’est juste' }).click();
+  await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   await page.getByTestId('change-lift').click();
   const recents = page.getByTestId('recents');
   await expect(recents).toBeVisible();
@@ -99,7 +99,7 @@ test('WP1.4: the browser\'s back on an unsaved set stays on it and asks; once sa
   await page.goBack();
   await expect(page.locator('.result-screen')).toBeVisible();
   await page.getByRole('button', { name: 'Fermer' }).click(); // back to the count's question
-  await page.getByRole('button', { name: 'Oui, c’est juste' }).click();
+  await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   await expect(page.getByTestId('saved-card')).toBeVisible();
   await expect(page.getByTestId('close-card')).toHaveCount(0);
   await page.getByRole('button', { name: 'Fermer' }).click();
@@ -117,13 +117,17 @@ test('WP1.6: a refused set is logged by hand, from 0, and the history says it wa
   // No level stored: a typed set must not spend the one-time question on the level (review of 4 October).
   const errors = await start(page, { nobody: true, init: () => localStorage.removeItem('wv_level') });
   await analysed(page);
-  await expect(page.locator('.refused-title')).toHaveText('Nous n’avons pas pu compter cette série.');
-  await page.getByTestId('manual-open').click();
+  // The count by hand is offered at once (C4, 7 October 2026, screen 05b): no number until the person gives one.
+  await expect(page.locator('.refused-title')).toHaveText('L’appli n’a pas pu compter cette série.');
   const card = page.getByTestId('fix-card');
   await expect(card).toBeVisible();
-  const save = card.getByRole('button', { name: 'Enregistrer' });
+  await expect(page.getByTestId('res-empty')).toBeVisible();
+  await expect(page.getByTestId('res-numeral')).toHaveCount(0);
+  const save = page.getByTestId('res-save');
   await expect(save).toBeDisabled();
+  await expect(save).toHaveText('Enregistrer');
   for (let i = 0; i < 8; i++) await card.getByRole('button', { name: 'Une de plus' }).click();
+  await expect(save).toHaveText('Enregistrer 8 répétitions');
   await save.click();
   await expect(page.getByTestId('saved-card')).toContainText('8 répétitions enregistrées, saisies à la main.');
   const saved = await lastSaved(page);
@@ -153,12 +157,50 @@ test('C1: a corrected count, once saved, is not drawn in the measured count’s 
   const colour = () => numeral.evaluate(e => getComputedStyle(e).color);
   const accent = await numeral.evaluate(e => { const s = getComputedStyle(e.closest('.wv-experience')); const p = document.createElement('i'); p.style.color = s.getPropertyValue('--c-accent'); document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; });
   expect(await colour()).toBe(accent);
-  await page.getByRole('button', { name: 'Non', exact: true }).click();
-  await page.getByTestId('fix-card').getByRole('button', { name: 'Une de plus' }).click();
-  await page.getByTestId('fix-card').getByRole('button', { name: 'Enregistrer' }).click();
+  // Corrected in place with + (C4): the number is the person's at once, in the text colour, before it is saved.
+  await page.getByRole('button', { name: 'Une de plus' }).click();
+  await expect(numeral).toHaveClass(/is-typed/);
+  await expect(page.getByTestId('res-state')).toHaveText('Saisi par vous');
+  await page.getByTestId('res-save').click();
   await expect(page.getByTestId('saved-card')).toBeVisible();
   await expect(numeral).toHaveClass(/is-typed/);
   expect(await colour()).not.toBe(accent);
   expect(await colour()).toBe(await page.evaluate(() => { const p = document.createElement('i'); p.style.color = getComputedStyle(document.querySelector('.wv-experience')).getPropertyValue('--c-fg'); document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; }));
+  expect(errors).toEqual([]);
+});
+
+// C4 (design review of 7 October 2026, screen 05): the count is confirmed before anything is saved or offered next.
+// "C'est bien N ?" leads; nothing is saved, no next set and no earned line show until "Oui, N répétitions"; − and +
+// make the number the person's, and back on the app's number it is the app's to confirm again; "Oui" saves it as
+// counted, and the ring fills ("Enregistré").
+test('C4: the count is confirmed before it is saved or the next set is offered', async ({ page }) => {
+  test.setTimeout(150000);
+  const errors = await start(page);
+  await analysed(page);
+  const yes = page.getByTestId('res-yes');
+  await expect(yes).toBeVisible();
+  const n = Number(await page.getByTestId('res-numeral').textContent());
+  await expect(yes).toHaveText(`Oui, ${n} répétitions`);
+  await expect(page.locator('.res-q')).toHaveText(`C’est bien ${n}\u00A0?`);
+  await expect(page.getByTestId('res-status')).toContainText('À confirmer');
+  await expect(page.getByTestId('res-src')).toHaveText(/^Compté par l’appli sur votre vidéo de \d+\u00A0s\.$/);
+  for (const id of ['saved-card', 'new-set', 'moment']) await expect(page.getByTestId(id)).toHaveCount(0);
+  expect(await savedCount(page)).toBe(0);
+  // − then +: the person's number, then the app's again.
+  await page.getByRole('button', { name: 'Une de moins' }).click();
+  await expect(page.getByTestId('ask-card')).toHaveCount(0);
+  await expect(page.getByTestId('res-save')).toHaveText(`Enregistrer ${n - 1} répétitions`);
+  expect(await savedCount(page)).toBe(0);
+  await page.getByRole('button', { name: 'Une de plus' }).click();
+  await expect(yes).toBeVisible();
+  await expect(page.getByTestId('res-numeral')).not.toHaveClass(/is-typed/);
+  // The video is one tap away before the answer.
+  await expect(page.getByRole('button', { name: 'Revoir la vidéo' })).toBeVisible();
+  await yes.click();
+  await expect(page.getByTestId('saved-card')).toBeVisible();
+  await expect(page.getByTestId('res-status')).toContainText('Enregistré');
+  await expect(page.getByTestId('new-set')).toBeVisible();
+  expect(await savedCount(page)).toBe(1);
+  expect((await lastSaved(page))).toMatchObject({ reps: n, corrected: false });
   expect(errors).toEqual([]);
 });

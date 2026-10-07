@@ -84,7 +84,7 @@ test.describe('on an iPhone outside the home screen', () => {
   test.use({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
   test('the history says why a backup matters', async ({ page }) => {
     await openHistory(page);
-    await expect(page.getByTestId('keep-why')).toHaveText('Sur iPhone, Safari peut effacer vos séries après sept jours d’utilisation sans ouvrir l’app. Ajoutez-la à l’écran d’accueil, ou gardez une sauvegarde.');
+    await expect(page.getByTestId('keep-why')).toHaveText('Sur iPhone, Safari peut effacer vos séries après sept jours d’utilisation sans ouvrir l’app. Installez-la sur l’écran d’accueil, ou gardez une sauvegarde.');
   });
 });
 

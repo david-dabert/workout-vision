@@ -247,6 +247,10 @@ body {
   --c-rule: var(--hair);         /* hairlines, borders of fields and cards */
   --c-accent: var(--lamp);       /* the one gold: primary action, focus, measured counts */
   --c-on-accent: var(--ink);     /* text drawn on the gold */
+  /* The outline of a key, a stepper or a quick key (C4, design review of 7 October 2026): bone at 0.42 over --void,
+     3.5:1 (WCAG 2.2 1.4.11 asks 3:1 of a component's boundary; computed with the WCAG formula, alpha blended over
+     the ground, and checked by src/components/experience/__tests__/result-confirm.test.jsx). Status: literature (WCAG 2.2, SC 1.4.11). */
+  --c-edge: rgba(239, 232, 220, 0.42);
 
   /* The numeral (C1, design review of 7 October 2026): every count and clock of the experience in one face, one
      weight and, for a count the app measured, one solid colour, with no gradient and no glow (Demo, Live, Result,

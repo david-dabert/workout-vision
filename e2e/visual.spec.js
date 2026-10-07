@@ -77,7 +77,7 @@ test('result', async ({ page }) => {
   await openFilm(page, BASE);
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
-  await expect(page.getByRole('button', { name: 'Oui, c’est juste' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ })).toBeVisible();
   // The angle curve is drawn from the frames the drawn video happened to hold (MediaRecorder's timing), not from
   // the styles: it is masked, the rest of the screen is compared.
   await shot(page, 'result', [page.locator('.res-wave svg')]);
