@@ -1,0 +1,50 @@
+Motion rhythm bench, 7 October 2026 (TRIED.md, 7 October). src/lib/counting/motionRhythm.js, default settings, frozen
+before MM-Fit and the synthetic videos were read. Frames: the app's own decode (harness.html, WebCodecs, 15 samples
+per second, crop retry on, backward pass off), shrunk to 128 px gray (capture.mjs), then analyse.mjs.
+Sets: d- David's real videos of 7 October (labels his, R1; VP8 copies, held outside the repository; three rules of
+the module were set while looking at these five, so they are not a held-out test); m- MM-Fit w19 (zenodo 7672767,
+dataset labels, cut to VP9); s- synthetic videos (synth.js, exact truth).
+skel = summarizeCount on the same run; pose = samples with a pose; check = skeleton against motion; fused = motion
+where pose < 90 % (or refused) and motion confidence >= 0.3, else skeleton.
+
+set             label skel    pose  motion period  conf  pc  check     fused
+d-chinup        5     6       88%   5      2.2     0.56  1   DISAGREE  5
+d-hlr           6     5       64%   6      2.33    0.67  2   DISAGREE  6
+d-row           6     5       100%  5      4       0.47  0   agree     5
+d-squat-a       9     7       98%   9      1.6     0.54  1   DISAGREE  7
+d-squat-b       9     9       95%   9      1.6     0.6   1   agree     9
+m-curls         10    10      100%  5      4.33    0.63  0   DISAGREE  10
+m-lateral       9     7       100%  7      1.93    0.65  0   agree     7
+m-lunges        10    10      100%  9      2.67    0.66  0   DISAGREE  10
+m-press         10    10      100%  10     2.67    0.71  0   agree     10
+m-pushups       10    9       100%  10     2.13    0.47  0   DISAGREE  9
+m-rows          10    9       100%  10     1.47    0.64  0   DISAGREE  9
+m-squats        10    10      100%  10     1.67    0.88  0   agree     10
+m-triceps       10    9       100%  10     1.93    0.78  0   DISAGREE  9
+s-chair         13    11      100%  13     2.07    0.67  0   DISAGREE  11
+s-curl          6     6       100%  5      3       0.68  0   DISAGREE  6
+s-lateral       8     8       100%  8      3.07    0.48  0   agree     8
+s-ohp           5     5       100%  4      3.07    0.68  0   DISAGREE  5
+s-squat-far     7     7       93%   7      3.07    0.65  0   agree     7
+[all] 18 sets. motion exact 12, off by 3+ 1; skeleton exact 9, off by 3+ or refused 0; fused exact 11, off by 3+ or refused 0. flags 11: true 7 of 9 skeleton misses (recall 78%), false alarms 4 of 9 skeleton exact (precision 64%); agree and both right 5, agree and both wrong 2
+[d] 5 sets. motion exact 4, off by 3+ 0; skeleton exact 1, off by 3+ or refused 0; fused exact 3, off by 3+ or refused 0. flags 3: true 3 of 4 skeleton misses (recall 75%), false alarms 0 of 1 skeleton exact (precision 100%); agree and both right 1, agree and both wrong 1
+[m] 8 sets. motion exact 5, off by 3+ 1; skeleton exact 4, off by 3+ or refused 0; fused exact 4, off by 3+ or refused 0. flags 5: true 3 of 4 skeleton misses (recall 75%), false alarms 2 of 4 skeleton exact (precision 60%); agree and both right 2, agree and both wrong 1
+[s] 5 sets. motion exact 3, off by 3+ 0; skeleton exact 4, off by 3+ or refused 0; fused exact 4, off by 3+ or refused 0. flags 3: true 1 of 1 skeleton misses (recall 100%), false alarms 2 of 4 skeleton exact (precision 33%); agree and both right 2, agree and both wrong 0
+
+Other settings, all 18 sets (summary line only):
+MOTION_OPTS={"mode":"pc"}
+[all] 18 sets. motion exact 9, off by 3+ 2; skeleton exact 9, off by 3+ or refused 0; fused exact 11, off by 3+ or refused 0. flags 9: true 5 of 9 skeleton misses (recall 56%), false alarms 4 of 9 skeleton exact (precision 56%); agree and both right 5, agree and both wrong 4
+MOTION_OPTS={"mode":"rest"}
+[all] 18 sets. motion exact 6, off by 3+ 6; skeleton exact 9, off by 3+ or refused 0; fused exact 9, off by 3+ or refused 0. flags 11: true 7 of 9 skeleton misses (recall 78%), false alarms 4 of 9 skeleton exact (precision 64%); agree and both right 5, agree and both wrong 2
+MOTION_OPTS={"wholeFrame":true}
+[all] 18 sets. motion exact 10, off by 3+ 1; skeleton exact 9, off by 3+ or refused 0; fused exact 11, off by 3+ or refused 0. flags 11: true 6 of 9 skeleton misses (recall 67%), false alarms 5 of 9 skeleton exact (precision 55%); agree and both right 4, agree and both wrong 3
+MOTION_OPTS={"coverageFloor":1.01}
+[all] 18 sets. motion exact 12, off by 3+ 1; skeleton exact 9, off by 3+ or refused 0; fused exact 12, off by 3+ or refused 1. flags 11: true 7 of 9 skeleton misses (recall 78%), false alarms 4 of 9 skeleton exact (precision 64%); agree and both right 5, agree and both wrong 2
+
+Side check, barbell_squat_9_a (label 9; David's iPhone app counted 9), skeleton count by decode:
+  VP8 copy (29.02 fps constant, 676 frames; the original has 701, variable frame rate), WebCodecs: 7
+  VP9 lossless from the .mp4, original timestamps kept (701 frames), WebCodecs: 7
+  VP8 copy, playback path (rvfc, MOTION_PATH=rvfc): 8
+  VP9 lossless copy, playback path (rvfc): 8
+The re-encode does not explain 7 against 9; the decode path moves the count by one; the iPhone's own decode and
+pose delegate were not reproduced here.

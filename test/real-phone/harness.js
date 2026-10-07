@@ -87,6 +87,8 @@ async function processFile(file) {
       // and write them onto an OffscreenCanvas before inference. The roundtrip
       // is lossless, but using the same path as the worker ensures the harness
       // and the app hand identical pixel data to the landmarker.
+      // Bench hook (motion rhythm bench, 7 October; test/real-phone/motion/): each decoded frame, before inference.
+      globalThis.__WV_HARNESS_FRAME_TAP__?.(canvas, frameIndex, timestamp);
       const pxData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
       const inferCanvas = new OffscreenCanvas(canvas.width, canvas.height);
       inferCanvas.getContext('2d').putImageData(pxData, 0, 0);
@@ -132,7 +134,8 @@ async function processFile(file) {
     (pct) => {
       if (pct % 10 === 0) appendLog(`  Extraction: ${pct}%`);
     },
-    { deterministic: true },
+    // Bench hook (7 October): __WV_HARNESS_PATH__ = 'rvfc' reads the video by playback, as a phone without WebCodecs does.
+    { deterministic: true, ...(globalThis.__WV_HARNESS_PATH__ ? { path: globalThis.__WV_HARNESS_PATH__ } : {}) },
   );
 
   const elapsed = ((performance.now() - t0) / 1000).toFixed(2);

@@ -292,3 +292,13 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   delete.
 - Not built: no user has reported the size; David judged on 6 October that it is not progress for now. Revisit if a
   user asks for smaller files.
+
+## 7 October 2026: motion count as a confirm prompt on the result screen (proposal, not built)
+
+- Measured on the bench only (TRIED.md, 7 October; `src/lib/counting/motionRhythm.js`, `test/real-phone/motion/motion.txt`):
+  a count from image motion alone disagrees with the skeleton on 7 of its 9 misses and on 4 of its 9 exact sets
+  (18 sets: David's 5, MM-Fit w19 8, synthetic 5; David's 5 were used to set the method).
+- Proposal: when the two counts differ, the result screen shows no grade and asks the user to confirm the count
+  (R8), offering both numbers; where the pose covers under 90 % of the set, the motion count is the one offered first.
+- Before building: more real videos held out from the method (the exam sets), a rule for alternating lifts (the motion
+  count is half), the cost measured on an iPhone, and David's approval of the screen and its French (R10).
