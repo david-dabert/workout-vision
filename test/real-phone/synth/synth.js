@@ -258,6 +258,9 @@ if (P.benchPose) globalThis.__WV_BENCH_POSE_MODEL__ = await (await fetch('bench-
 // P.noCrop: the pose path without its crop pass on lost frames (poseAnalysis.js bench hook), to measure the pass
 // against its absence (test/real-phone/far-camera/run.mjs).
 if (P.noCrop) globalThis.__WV_BENCH_NO_CROP__ = true;
+// P.lock: the pose path with the lifter lock (lifterLock.js; two poses asked, the lifter's kept), set before the model
+// loads since it sets numPoses (7 October, run.mjs SYNTH_LOCK=1).
+if (P.lock) globalThis.__WV_BENCH_LOCK__ = true;
 const model = P.video ? null : await getImageLandmarker();
 // P.lostPose: a second pose model (run.mjs, LOST_POSE, e.g. MediaPipe's heavy model) run on the whole frame of the
 // frames still without a pose after the app's own path, to measure it (7 October). Bench only; the app has none.

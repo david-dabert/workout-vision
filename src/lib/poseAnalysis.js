@@ -33,6 +33,7 @@ import {
 import * as mpVision from '@mediapipe/tasks-vision';
 import { isTheModel, MODEL_SHA256 } from './model-hash';
 import { cropAround, mapFromCrop, keepLost, fillBackward, CROP_PX, CROP_SEED_MS, BACK_PASS, BACK_KEEP_MS, BACK_MAX_FRAMES } from './poseCrop';
+import { LIFTER_LOCK, LIFTER_POSES, pickLifter, nextReference } from './lifterLock';
 function getMediaPipeVision() {
   return mpVision;
 }
@@ -219,7 +220,9 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
       const landmarker = await mp.PoseLandmarker.createFromOptions(vision, {
         baseOptions: { modelAssetBuffer: new Uint8Array(modelBuffer), delegate },
         runningMode,
-        numPoses: 1,
+        // Lifter lock (lifterLock.js): two poses asked in IMAGE mode, so a bystander ranked first no longer hides
+        // the lifter; detectPoseImage keeps one. Off unless LIFTER_LOCK or the bench hook (__WV_BENCH_LOCK__).
+        numPoses: useImageMode && _lockOn() ? LIFTER_POSES : 1,
         minPoseDetectionConfidence: 0.35,
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
@@ -335,6 +338,7 @@ export function disposeAllLandmarkers() {
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
   _cropSeed = null;
+  _lifterRef = null;
   _dropLost();
 }
 
@@ -362,6 +366,21 @@ export const selectSubjectPose = _selectSubjectPose;
 // Test benches may turn it off to measure it (globalThis.__WV_BENCH_NO_CROP__); the app never sets it.
 let _cropSeed = null;
 let _cropCanvas = null;
+// Lifter lock (lifterLock.js, LIFTER_LOCK): the lifter's last torso { x, y, len, t, width, height } in frame pixels.
+// Test benches turn it on (globalThis.__WV_BENCH_LOCK__) or off (globalThis.__WV_BENCH_NO_LOCK__); the app sets neither.
+let _lifterRef = null;
+function _lockOn() { return (LIFTER_LOCK || globalThis.__WV_BENCH_LOCK__ === true) && !globalThis.__WV_BENCH_NO_LOCK__; }
+// A result with several poses reduced to the lifter's (pickLifter), so every caller reads landmarks[0] as before; a
+// result with one pose is returned as it is. Updates the reference from the pose kept.
+function _keepLifter(result, source, now) {
+  const n = result?.landmarks?.length || 0;
+  if (!n) return result;
+  const { width, height } = _sourceSize(source);
+  if (n === 1) { _lifterRef = nextReference(_lifterRef, result.landmarks[0], width, height, now); return result; }
+  const i = pickLifter(result.landmarks, _lifterRef, width, height);
+  _lifterRef = nextReference(_lifterRef, result.landmarks[i], width, height, now, true);
+  return { ...result, landmarks: [result.landmarks[i]], worldLandmarks: result.worldLandmarks?.[i] ? [result.worldLandmarks[i]] : [] };
+}
 const _sourceSize = (source) => ({ width: source?.videoWidth || source?.width || 0, height: source?.videoHeight || source?.height || 0 });
 
 function _seedCrop(rawLandmarks, source, now) {
@@ -386,7 +405,10 @@ function _readCrop(landmarker, source, box, width, height) {
   ctx.drawImage(source, sx, sy, side, side, 0, 0, CROP_PX, CROP_PX);
   const found = landmarker.detect(_cropCanvas);
   if (!found?.landmarks?.length) return null;
-  return { landmarks: mapFromCrop(found.landmarks[0], box, width, height), worldLandmarks: found.worldLandmarks?.length ? found.worldLandmarks[0] : null };
+  // Lifter lock: of several poses in the crop, the one nearest the lifter (in whole-frame pixels).
+  const mapped = found.landmarks.map(lm => mapFromCrop(lm, box, width, height));
+  const i = mapped.length > 1 ? pickLifter(mapped, _lifterRef, width, height) : 0;
+  return { landmarks: mapped[i], worldLandmarks: found.worldLandmarks?.[i] ?? null };
 }
 
 function _detectInCrop(landmarker, source, now) {
@@ -397,6 +419,7 @@ function _detectInCrop(landmarker, source, now) {
   const found = _readCrop(landmarker, source, _cropSeed, width, height);
   if (!found) return null;
   _seedCrop(found.landmarks, source, now);
+  if (_lockOn()) _lifterRef = nextReference(_lifterRef, found.landmarks, width, height, now);
   return { landmarks: [found.landmarks], worldLandmarks: found.worldLandmarks ? [found.worldLandmarks] : [], source: 'crop' };
 }
 
@@ -475,6 +498,7 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
     if (_landmarkerIsImageMode) {
       result = landmarker.detect(source);
       const now = timestamp != null ? timestamp : performance.now();
+      if (_lockOn()) result = _keepLifter(result, source, now);
       const backOn = backfill && _backOn();
       if (result?.landmarks?.length) {
         _seedCrop(result.landmarks[0], source, now);
@@ -631,6 +655,7 @@ export function resetKalmanFilters() {
   _lastValidLandmarksImage = null;
   _lastValidLandmarksVideo = null;
   _cropSeed = null;
+  _lifterRef = null;
   _dropLost();
   // Bump timestamp offset so next video's deterministic timestamps
   // continue above the previous peak (MediaPipe requires monotonic increase).

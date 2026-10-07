@@ -18,6 +18,9 @@ import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { motionCount } from '../../../src/lib/counting/motionRhythm.js';
 
+// WV_CORE_BENCH='{"zWeight":0.5}' (7 October): the survey techniques of src/lib/counting/survey.ts, switched for this
+// run only (research; the app never sets it).
+if (process.env.WV_CORE_BENCH) (globalThis as any).__WV_CORE_BENCH__ = JSON.parse(process.env.WV_CORE_BENCH);
 const DIR = process.env.OCC_DIR || resolve(__dirname, 'sets');
 const read = (f: string) => JSON.parse(gunzipSync(readFileSync(resolve(DIR, f))).toString());
 const CONDITIONS = ['clean', 'plate', 'rack', 'dim', 'person', 'gym'];
