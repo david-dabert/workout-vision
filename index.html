@@ -17,6 +17,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- The count's face, Geist 700 latin (C1, design review of 7 October 2026), fetched with the page so a count is
+         never drawn in a fallback face and swapped mid-set. Vite rewrites the path to the built file's. -->
+    <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/geist/files/geist-latin-700-normal.woff2" crossorigin />
     <!-- Google Fonts loaded non-blocking via boot.js to avoid hanging offline -->
     <title>Workout Vision</title>
     <meta name="description" content="Counts your repetitions from a video, on your phone. Test version." />

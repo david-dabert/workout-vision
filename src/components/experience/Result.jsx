@@ -631,7 +631,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const blocks = {
     // No count to show: the words of the refused screen, and the question below them (unsure, above).
     count: unsure && step !== 'saved' ? <h2 key="count" className="title refused-title" data-testid="res-uncounted">{fr ? 'Nous n’avons pas pu compter cette série.' : 'We could not count this set.'}</h2> : <div key="count" className="res-count">
-      <span key={big} className="numeral tick" aria-hidden="true" data-testid="res-numeral">{big}</span>
+      <span key={big} className={`numeral tick${corrected ? ' is-typed' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>
       <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{result.test ? (fr ? ` en ${result.test.windowSec}\u00A0secondes` : ` in ${result.test.windowSec} seconds`) : ''}</p>
       {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
       {result.test && !result.test.complete && <p className="res-meta res-test-short" data-testid="res-test-short">{result.metadata?.live

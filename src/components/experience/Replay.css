@@ -27,8 +27,8 @@
 }
 .wv-experience .rp-count { display: flex; align-items: baseline; gap: 4px; }
 .wv-experience .rp-n {
-  font-family: var(--serif); font-size: 26px; line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
-  background: var(--gold-num); -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-family: var(--numeral-face); font-weight: var(--numeral-weight); font-size: 26px; line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
+  color: var(--numeral-colour);
 }
 .wv-experience .rp-of { font-family: var(--mono); font-size: var(--fs-label); color: var(--c-fg-muted); }
 /* As wide as its longest word, so the chip keeps its size from phase to phase. */
