@@ -11,14 +11,16 @@ const clip = JSON.parse(gunzipSync(readFileSync(resolve('test/real-phone/landmar
 const round = v => Math.round(v * 1e4) / 1e4;
 const pack = frame => frame && frame.map(p => ({ x: round(p.x), y: round(p.y), z: round(p.z), visibility: round(p.visibility) }));
 const FRAMES = clip.timestamps.map((_, k) => ({ image: pack(clip.imageLandmarks[k]), world: pack(clip.worldLandmarks[k]) }));
-export const fakeWorker = `
-const FRAMES = ${JSON.stringify(FRAMES)};
+// A pose worker answering sample k (at 15 a second) with frames[k] ({ image, world }), and no body past the last.
+export const workerOf = frames => `
+const FRAMES = ${JSON.stringify(frames.map(f => ({ image: pack(f.image), world: pack(f.world) })))};
 self.onmessage = ({ data }) => {
   if (data.type === 'init') { self.postMessage({ id: data.id }); return; }
   const k = Math.round(data.timestamp * 15 / 1000);
   const f = FRAMES[k] || { image: null, world: null };
   setTimeout(() => self.postMessage({ id: data.id, image: f.image, world: f.world }), 1);
 };`;
+export const fakeWorker = workerOf(FRAMES);
 
 // A worker that finds nobody in any sample: the app refuses the set ("Personne n'apparaît dans la vidéo").
 export const emptyWorker = `
@@ -27,11 +29,11 @@ self.onmessage = ({ data }) => {
   setTimeout(() => self.postMessage({ id: data.id, image: null, world: null }), 1);
 };`;
 
-export async function start(page, { choice = null, filmMode = null, nobody = false, init = null } = {}) {
+export async function start(page, { choice = null, filmMode = null, nobody = false, init = null, worker = null } = {}) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.route('**/assets/corePoseWorker-*.js', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: nobody ? emptyWorker : fakeWorker }));
+  await page.route('**/assets/corePoseWorker-*.js', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: worker ?? (nobody ? emptyWorker : fakeWorker) }));
   // Set once, on the first load only: what the screens store afterwards is left as they stored it.
   await page.addInitScript(([choice, filmMode]) => {
     if (sessionStorage.getItem('wv_test_init')) return;
@@ -51,11 +53,11 @@ export async function openFilm(page, base) {
   await expect(page.locator('.film-screen .actions .btn-primary')).toContainText('Filmer ma série');
 }
 
-// A 12-second video drawn in the page, a different picture at every frame, chosen in the library input. Chromium's
+// A 12-second video (or `seconds`) drawn in the page, a different picture at every frame, chosen in the library input. Chromium's
 // MediaRecorder writes no duration: it is written into the file's Info element (EBML Duration, in milliseconds at the
 // default timecode scale), as a phone's camera file holds one.
-export async function chooseDrawnVideo(page) {
-  await page.evaluate(async () => {
+export async function chooseDrawnVideo(page, seconds = 12) {
+  await page.evaluate(async seconds => {
     const c = Object.assign(document.createElement('canvas'), { width: 360, height: 640 });
     const g = c.getContext('2d');
     const rec = new MediaRecorder(c.captureStream(30), { mimeType: 'video/webm;codecs=vp8' });
@@ -67,7 +69,7 @@ export async function chooseDrawnVideo(page) {
     draw();
     const began = performance.now();
     rec.start(500);
-    await new Promise(r => setTimeout(r, 12000));
+    await new Promise(r => setTimeout(r, seconds * 1000));
     const stopped = new Promise(r => { rec.onstop = r; });
     rec.stop();
     const ms = performance.now() - began;
@@ -94,7 +96,7 @@ export async function chooseDrawnVideo(page) {
     const input = document.querySelectorAll('.film-screen input[type=file]')[1];
     const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
     input.dispatchEvent(new Event('change', { bubbles: true }));
-  });
+  }, seconds);
 }
 
 // One set filmed, analysed and kept as counted; the saved card is returned once the question could have shown.

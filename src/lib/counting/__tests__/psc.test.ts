@@ -1,7 +1,8 @@
-// Unit checks of the class-agnostic bench counter (psc.js) on generated poses with a known count. Not a measure of
+// Unit checks of the class-agnostic counter (src/lib/counting/psc.js) on generated poses with a known count. Not a measure of
 // accuracy (psc.test.ts is): these pin the mechanics (period, rest side, alternation, abstaining on stillness).
 import { describe, expect, it } from 'vitest';
-import { fusePsc, pickPeriod, pscCount } from './psc.js';
+import { fusePsc, pickPeriod, pscCount, pscProposal } from '../psc.js';
+import { PROPOSAL_MAX_SAMPLES, withProposal } from '../../coreAnalysis';
 
 // A standing body (MediaPipe world landmarks, hips at the origin, y down) whose elbows bend `reps` times.
 function body(reps: number, { period = 2, rest = 1, fs = 15, alternate = false, still = false } = {}) {
@@ -51,5 +52,36 @@ describe('PSC bench counter', () => {
     expect(fusePsc(psc, { count: 8, period: 2.1, confidence: 0.8 }).confident).toBe(true);
     expect(fusePsc({ ...psc, coverage: 0.5 }, { count: 7, period: 2, confidence: 0.8 })).toMatchObject({ count: 7, source: 'rhythm', confident: false });
     expect(fusePsc(psc, { count: 6, period: 2, confidence: 0.8 }).confident).toBe(false);
+  });
+});
+
+// The app's use (8 October 2026): PSC's count offered on a refused set, to confirm (R8). pscProposal reads the set as
+// the result holds it; withProposal adds it to a refused result only.
+describe('PSC as a proposal on a refused set', () => {
+  const set = (b: { wl: any[]; ts: number[] }) => ({ worldLandmarks: b.wl, timestamps: b.ts, imageLandmarks: b.wl.map(f => f.map((p: any) => ({ x: p.x + 0.5, y: p.y + 0.5, z: 0, visibility: p.visibility }))) });
+  it('proposes the count with the times of each rep, reading the image landmarks as {x, y} objects', () => {
+    const p = pscProposal(set(body(8)))!;
+    expect(p.count).toBe(8);
+    expect(p.reps).toHaveLength(8);
+    for (const r of p.reps) expect(r.endTime).toBeGreaterThan(r.startTime);
+  });
+  it('proposes nothing for a body that does not move, an empty set or mismatched lengths', () => {
+    expect(pscProposal(set(body(6, { still: true })))).toBeNull();
+    expect(pscProposal({ worldLandmarks: [], timestamps: [] })).toBeNull();
+    const b = body(8);
+    expect(pscProposal({ worldLandmarks: b.wl, timestamps: b.ts.slice(1) })).toBeNull();
+  });
+  it('is added to a refused result only, never to a counted set or a fitness test', () => {
+    const b = set(body(8));
+    expect(withProposal({ ...b, refused: true, count: 0 }, 'bicep_curl').proposal).toMatchObject({ count: 8 });
+    const counted = { ...b, refused: false, count: 7 };
+    expect(withProposal(counted, 'bicep_curl')).toBe(counted);
+    const test = { ...b, refused: true, count: 0 };
+    expect(withProposal(test, 'arm_curl_test')).toBe(test);
+  });
+  it('is not run on a set longer than three minutes', () => {
+    expect(PROPOSAL_MAX_SAMPLES).toBe(2700);
+    const long = { refused: true, worldLandmarks: new Array(2701).fill(null), timestamps: Array.from({ length: 2701 }, (_, k) => k / 15) };
+    expect(withProposal(long, 'bicep_curl')).toBe(long);
   });
 });

@@ -1,6 +1,8 @@
 /**
- * PSC, a class-agnostic rep counter (Periodic Signal Consensus), bench module: nothing in the app imports it (built 7-8
- * October 2026, TRIED.md). It counts a set from the pose alone, without knowing the exercise: no joint, rest side or
+ * PSC, a class-agnostic rep counter (Periodic Signal Consensus), built 7-8 October 2026 on the bench (TRIED.md). In the
+ * app since 8 October only as a proposal on a set the core refused (pscProposal below, coreAnalysis.js withProposal): a
+ * number to confirm on the low-confidence screen, never a silent count (R8). The bench imports it from here
+ * (test/real-phone/psc/psc.test.ts, test/real-phone/learned-phase/). It counts a set from the pose alone, without knowing the exercise: no joint, rest side or
  * threshold is chosen per exercise. Stages (the design of the research report of 7 October):
  *  A. two poses per frame to keep the lifter: skipped, the stored landmarks hold one pose (numPoses 1).
  *  B. a bank of candidate signals (3D and, when stored, image-plane joint angles both sides, trunk to vertical, limb
@@ -415,13 +417,13 @@ export function countCycles(s, a, b, tau, { lag }) {
  * @param {{ wl: any[], ts: number[], image?: Array<number[] | null> | null }} set
  * @param {{ stages?: { E?: boolean, D?: boolean, twoPass?: boolean }, useImage?: boolean }} [opts] stages.D false: the best signal
  *   alone, no consensus; stages.E false: the whole set; twoPass false: the period from equal weights only.
- * @returns {{ count: number | null, period: number | null, confirm: boolean, reasons: string[], segment: number[] | null,
+ * @returns {{ count: number | null, reps: { startTime: number, endTime: number }[], period: number | null, confirm: boolean, reasons: string[], segment: number[] | null,
  *   signals: string[], alternating: boolean, periodCount: number | null, coverage: number, bank: number }}
  */
 export function pscCount({ wl, ts, image = null }, opts = {}) {
   const stages = { E: true, D: true, twoPass: true, detrend: false, ...(opts.stages || {}) };
   const coverage = wl.length ? wl.filter(Boolean).length / wl.length : 0;
-  const none = reason => ({ count: null, period: null, confirm: true, reasons: [reason], segment: null, signals: [], alternating: false, periodCount: null, coverage, bank: 0 });
+  const none = reason => ({ count: null, reps: [], period: null, confirm: true, reasons: [reason], segment: null, signals: [], alternating: false, periodCount: null, coverage, bank: 0 });
   if (!ts || ts.length < 10) return none('too short');
   const { grid, sigs } = signalBank(wl, ts, image, { useImage: opts.useImage !== false });
   if (!sigs.length) return none('no signal seen');
@@ -482,7 +484,7 @@ export function pscCount({ wl, ts, image = null }, opts = {}) {
   // Alternation: a mirrored pair (the best signal's, else the best-scoring other pair among the angles, vertical
   // positions and distances), each periodic at the period, anticorrelated, half a period apart, both well seen.
   // Lateral (X) positions are left out: a mirrored lateral pair moving one way reads as anti-phase on any sinusoid.
-  let alternating = false, count, sides = null;
+  let alternating = false, count, sides = null, cycles = [];
   const byName = new Map(sigs.map((x, k) => [x.name, k]));
   const pairs = [];
   for (const o of order) {
@@ -503,16 +505,18 @@ export function pscCount({ wl, ts, image = null }, opts = {}) {
     for (let l = 0; l < Math.round(lag); l++) { const r = corrAt(x.z, ms.z, l); if (r > br) { br = r; bl = l; } }
     if (corrAt(x.z, ms.z) < ALT_CORR && x.coverage >= ALT_MIN_SEEN && ms.coverage >= ALT_MIN_SEEN && Math.abs(bl / lag - 0.5) <= ALT_PHASE_TOL) {
       const c1 = countCycles(x.z, a, b, local.tau, { lag }), c2 = countCycles(ms.z, a, b, local.tau, { lag });
-      alternating = true; sides = [c1.count, c2.count];
+      alternating = true; sides = [c1.count, c2.count]; cycles = [...c1.cycles, ...c2.cycles];
       count = c1.count + c2.count;
       if (Math.abs(c1.count - c2.count) > 1) reasons.push('sides differ');
     }
     break;
   }
-  if (!alternating) count = countCycles(s, a, b, local.tau, { lag }).count;
+  if (!alternating) ({ count, cycles } = countCycles(s, a, b, local.tau, { lag }));
   const duration = (b - a) / FS, periodCount = Math.round(duration / (lag / FS)) * (alternating ? 2 : 1);
   if (Math.abs(count - periodCount) >= 2 * (alternating ? 2 : 1)) reasons.push('count and period disagree');
-  return { count, period: Math.round((lag / FS) * 100) / 100, confirm: reasons.length > 0, reasons, segment: [grid[a], grid[b]], signals: members.map(m => sigs[m.k].name), alternating, sides, periodCount, coverage, bank: sigs.length };
+  // Each counted cycle's start and end, in the set's seconds (a window's count reads them: countInWindow).
+  const reps = cycles.map(c => ({ startTime: grid[c.start], endTime: grid[c.end] })).sort((p, q) => p.startTime - q.startTime);
+  return { count, reps, period: Math.round((lag / FS) * 100) / 100, confirm: reasons.length > 0, reasons, segment: [grid[a], grid[b]], signals: members.map(m => sigs[m.k].name), alternating, sides, periodCount, coverage, bank: sigs.length };
 }
 
 /**
@@ -525,4 +529,25 @@ export function fusePsc(psc, rhythm) {
   if (psc.coverage < G_COVERAGE && found) return { count: rhythm.count, source: 'rhythm', confident: false, reason: 'pose coverage low: rhythm to confirm' };
   if (found && rhythm.count === psc.count && Math.abs(rhythm.period - psc.period) <= G_PERIOD_TOL * psc.period && !psc.confirm) return { count: psc.count, source: 'psc', confident: true, reason: 'agree' };
   return { count: psc.count, source: 'psc', confident: false, reason: found ? (rhythm.count === psc.count ? 'periods differ or psc unsure' : 'disagree') : 'no rhythm' };
+}
+
+/**
+ * The app's use of PSC (8 October 2026, delegated decision of David, R8): where the core refuses a set, PSC's count is
+ * offered on the low-confidence screen as a number to confirm, never a silent count, never a grade, never a measure.
+ * Reads only the set's stored landmarks: world landmarks, timestamps (seconds) and, when kept, the image landmarks
+ * ({x, y} objects, flattened here to PSC's [x0, y0, x1, y1, ...]; or imageXY, already flat, as the public sets keep them). Returns null when PSC finds no rep (no proposal).
+ * Shipped on the official variant evaluation (TRIED.md, 8 October): validated as a proposal on refused sets only.
+ * @param {{ worldLandmarks?: any[], imageLandmarks?: any[] | null, imageXY?: Array<number[] | null> | null, timestamps?: number[] }} set
+ * @returns {{ count: number, reps: { startTime: number, endTime: number }[], period: number | null, confirm: boolean } | null}
+ */
+export function pscProposal({ worldLandmarks = [], imageLandmarks = null, imageXY = null, timestamps = [] } = {}) {
+  if (!worldLandmarks.length || worldLandmarks.length !== timestamps.length) return null;
+  const fits = a => Array.isArray(a) && a.length === worldLandmarks.length && a.some(Boolean);
+  const image = fits(imageXY) ? imageXY
+    : fits(imageLandmarks) ? imageLandmarks.map(f => (f ? f.flatMap(p => [p.x, p.y]) : null))
+      : null;
+  let r;
+  try { r = pscCount({ wl: worldLandmarks, ts: timestamps, image }); } catch { return null; }
+  if (!Number.isInteger(r.count) || r.count < 1) return null;
+  return { count: r.count, reps: r.reps, period: r.period, confirm: r.confirm };
 }

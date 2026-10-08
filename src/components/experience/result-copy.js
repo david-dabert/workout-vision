@@ -47,6 +47,12 @@ export const RESULT = {
     empty: 'Aucun nombre choisi',
     // The question once the number is the person's (the words of the former card, kept).
     howMany: `Combien en avez-vous fait${NB}?`,
+    // A refused set with PSC's proposal (8 October 2026, R8: a number to confirm, never a silent count, no grade, no
+    // measure; test/real-phone/swarm/copy-proposal.md). Pending David's approval.
+    proposal: n => `Proposition de l’appli${NB}: ${n}`,
+    proposalNote: 'L’appli propose ce nombre sans avoir bien vu le mouvement. Vérifiez-le avant d’enregistrer.',
+    confirmN: n => `Confirmer ${n} ${reps(n, true)}`,
+    savedConfirmed: n => `Merci. ${n} ${n > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}, ${n > 1 ? 'confirmées' : 'confirmée'} par vous.`,
   },
   en: {
     toConfirm: 'To confirm',
@@ -80,5 +86,9 @@ export const RESULT = {
     lastSet: n => `Your previous set: ${n}.`,
     empty: 'No number chosen',
     howMany: 'How many did you do?',
+    proposal: n => `The app’s proposal: ${n}`,
+    proposalNote: 'The app suggests this number without having seen the movement clearly. Check it before saving.',
+    confirmN: n => `Confirm ${n} ${reps(n, false)}`,
+    savedConfirmed: n => `Thank you. ${n} ${n === 1 ? 'rep' : 'reps'} saved, confirmed by you.`,
   },
 };

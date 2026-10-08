@@ -1,4 +1,4 @@
-Public scoreboard 2026-10-07: 1064 build sets, 490 exact (46%). Of the 949 in the baseline that decide, 431 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Public scoreboard 2026-10-08: 1064 build sets, 490 exact (46%). Of the 949 in the baseline that decide, 431 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 65 exact (33%), 23 off by 3+ (12%); 751 not flagged: 425 exact (57%), 26 off by 3+ (3%). Sets off by 3+ flagged: 23 of 49.
 
 Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:

@@ -68,7 +68,7 @@
 .wv-experience .res-slot::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: -10px; height: 2px; border-radius: 1px; background: var(--c-fg); opacity: 0; transition: opacity 160ms ease; }
 .wv-experience .res-slot.is-typing::after { opacity: 1; }
 .wv-experience .res-state { display: flex; align-items: center; justify-content: center; margin: 18px 0 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--c-fg); }
-.wv-experience .res-state.is-typed { margin-top: 16px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bone-2); }
+.wv-experience .res-state:is(.is-typed, .is-proposal) { margin-top: 16px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bone-2); }
 .wv-experience .res-src { margin: 4px 0 0; text-align: center; font-size: 15px; line-height: 1.4; font-variant-numeric: tabular-nums; color: var(--bone-2); text-wrap: balance; }
 .wv-experience .res-meta { margin: 0; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); }
 

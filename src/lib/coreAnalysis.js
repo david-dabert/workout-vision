@@ -4,6 +4,7 @@ import { readIsWhole } from './collector';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { isFrozenRead } from './frozenRead';
+import { pscProposal } from './counting/psc';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
@@ -61,6 +62,29 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
     return { ...core, count: t.score, reps: t.reps, refused, doubt, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
   return { ...core, refused, doubt };
+}
+
+/**
+ * The longest set PSC is run on for a proposal: 3 minutes of samples at 15 Hz. PSC's cost grows with the set's length
+ * (about 70-130 ms for a 25-40 s set and 580 ms for 2.5 minutes in Node on the bench machine, 8 October); a longer set
+ * gets no proposal rather than a frozen screen. Source: UNSOURCED. Status: convention (a time bound, not a measure of
+ * accuracy).
+ */
+export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
+
+/**
+ * A set the core refused, with PSC's count as a proposal (src/lib/counting/psc.js, pscProposal): `proposal` is
+ * { count, reps, period, confirm, ms } or null. The result screen offers it as a number to confirm, never a silent
+ * count, never a grade, never a measure (R8; delegated decision of David, 8 October 2026). Measured on the official
+ * variant evaluation before it was wired (TRIED.md, 8 October): no exact count lost, none newly off by 3, the public
+ * halves 255 -> 264 and 235 -> 247 exact. A counted set, a fitness test (scored over its window) and a set longer than
+ * PROPOSAL_MAX_SAMPLES are returned as they came. Status: validated (on the bench; David's iPhone check pending).
+ */
+export function withProposal(result, lift) {
+  if (!result?.refused || isTest(lift) || !(result.timestamps?.length <= PROPOSAL_MAX_SAMPLES)) return result;
+  const t0 = performance.now();
+  const p = pscProposal(result);
+  return { ...result, proposal: p ? { ...p, ms: Math.round(performance.now() - t0) } : null };
 }
 
 /**
@@ -222,7 +246,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // synthetic skeletons whose holds repeat exactly, as a filmed person never does.
     const still = repeatedSkeletons(worldLandmarks);
     if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, metadata?.method || '', metadata?.fallback ?? null);
-    const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
+    const result = withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps }, lift);
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;

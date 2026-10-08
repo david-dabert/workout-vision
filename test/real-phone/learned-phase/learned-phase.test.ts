@@ -15,7 +15,7 @@ import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { motionCount } from '../../../src/lib/counting/motionRhythm.js';
 import { labelledSets, videoSets } from '../accuracy/sets';
-import { pscCount } from '../psc/psc.js';
+import { pscCount } from '../../../src/lib/counting/psc.js';
 import { foldOf, groupOf } from './data.js';
 import { learnedCount, loadModel } from './model.js';
 

@@ -14,7 +14,7 @@ import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { motionCount } from '../../../src/lib/counting/motionRhythm.js';
 import { labelledSets, videoSets } from '../accuracy/sets';
-import { fusePsc, pscCount } from './psc.js';
+import { fusePsc, pscCount } from '../../../src/lib/counting/psc.js';
 
 type Item = { suite: string; name: string; cls: string; lift: string | null; label: number; wl: any[]; ts: number[]; image: any[] | null; motion?: any; appRefused?: boolean };
 type Out = { psc: number | null; core: number | 'refused' | 'no counter'; v: Record<string, number | null>; confirm: boolean; fused?: { count: number | null; confident: boolean } };
@@ -90,7 +90,7 @@ test.skipIf(!process.env.PSC)('PSC against the core on every labelled dataset', 
   expect(items.length).toBeGreaterThan(0);
   const res = new Map<Item, Out>();
   for (const it of items) res.set(it, run(it));
-  const lines = [`PSC (test/real-phone/psc/psc.js), class-agnostic, against the core (summarizeCount), ${new Date().toISOString().slice(0, 10)}. Build halves only.`,
+  const lines = [`PSC (src/lib/counting/psc.js), class-agnostic, against the core (summarizeCount), ${new Date().toISOString().slice(0, 10)}. Build halves only.`,
     'Cells: exact / within 1 / off by 3+ (a refusal or no count is off by 3+). core: only where a catalogue key maps; "no counter" otherwise.', ''];
   const suites = [...new Set(items.map(i => i.suite))];
   lines.push('| Dataset | Sets | PSC alone | Core (mapped sets) | PSC on the mapped sets | Mapped | PSC marked to confirm: exact / not |', '|---|---:|---|---|---|---:|---|');
