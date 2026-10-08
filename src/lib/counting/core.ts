@@ -164,8 +164,8 @@ export interface LiftDefinition {
   lift?: boolean;
   /**
    * The set's own range floor, in degrees: a set whose angle spans less (10th to 90th percentile) counts no rep;
-   * MIN_ROM_DEGREES when absent (DETECTION). The collector's warning (batchCollect.js, MISMATCH_RANGE_DEG) keeps
-   * MIN_ROM_DEGREES: an exercise with a lower floor must not be offered to the collector before it reads its own.
+   * MIN_ROM_DEGREES when absent (DETECTION). The collector's warning reads the same floor (batchCollect.js,
+   * mismatchFloor).
    */
   minRangeDeg?: number;
 }

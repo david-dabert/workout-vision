@@ -5,7 +5,7 @@
  * downloaded. No video is uploaded and no count is shown.
  */
 import { collectSet } from './lib/collectSet';
-import { mismatchNote, flaggedSets, rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory, countsFromLine } from './lib/batchCollect';
+import { mismatchNote, mismatchFloor, flaggedSets, rowErrors, batchFileName, carryChoice, appendRows, twinOf, twinNote, oneAtATime, numbersUsed, mergeMemory, countsFromLine } from './lib/batchCollect';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { COLLECTOR_LIFTS } from './lib/collectorLifts';
 
@@ -214,7 +214,7 @@ $('collect').addEventListener('click', async () => {
       row.blob = out.blob; row.baseName = out.name; row.sha256 = out.sha256;
       row.state = 'done'; row.note = `Done: ${out.samples} samples. ${batchFileName(row.set, row.baseName)}`;
       // A video whose exercise joint barely moves is likely paired with the wrong label: said before sharing.
-      const warn = mismatchNote(row.set, LIFTS.find(l => l.key === row.lift)?.label ?? row.lift, out.jointRange);
+      const warn = mismatchNote(row.set, LIFTS.find(l => l.key === row.lift)?.label ?? row.lift, out.jointRange, mismatchFloor(row.lift));
       if (warn) { row.mismatch = true; row.note = `${row.note} ${warn}`; }
     } catch (err) {
       row.state = 'failed';
