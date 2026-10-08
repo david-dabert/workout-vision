@@ -25,6 +25,13 @@ none newly refused), against their own baseline (`videoCounts` in `../accuracy/s
 
 13 files, 11.6 MB in all. No video is in the repository.
 
+Added 8 October 2026: `standing_barbell_curl_8` (`barbell_curl`, David's count 8: the app refused the set on his
+iPhone, proposed 8, and he confirmed "it was indeed 8 reps"). Side view against bright windows; at the top of each rep
+the plates hide the near elbow and wrist (the counted elbow seen on 35 % of samples, under the 50 % the count needs),
+so the app refuses it: the scoreboard holds it as refused, the case a reading of the bar itself would have to fix.
+Captured the same way (`capture.mjs`, the original re-encoded to VP9 with its frame times by PyAV, as this machine has
+no ffmpeg); `labelSource` in the manifest says where its label comes from. 14 files.
+
 ## How they were made (`capture.mjs`)
 
 1. Each original re-encoded to VP9 in MP4 with its own frame timestamps (this Chromium has no H.264 decoder):
