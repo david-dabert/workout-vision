@@ -194,27 +194,41 @@ export function coreOnSignal(s, grid, first, summarize, physical = false) {
 }
 
 /**
+ * The rep signals of a set from its spec (repSignal), as sgcCount and specProgress read them: { grid, G, oneSide, rs }
+ * (rs: [left, right] for a one-limb or alternating spec, else [both]; an entry is null when none of its signals is
+ * seen), or { reason } when there is nothing to read.
+ */
+function specSignals({ wl, ts, image = null }, spec, opts) {
+  if (!spec || spec.noReps) return { reason: 'no reps in the spec' };
+  if (!ts || ts.length < 10) return { reason: 'too short' };
+  const { grid, sigs } = signalBank(wl, ts, image, { useImage: opts.useImage !== false });
+  if (!sigs.length) return { reason: 'no signal seen' };
+  const G = grid.length, scales = signalScales(wl, image, opts.useImage !== false);
+  const rs = pr => repSignal(sigs, pr, scales, opts);
+  if (spec.side || spec.alternate === true) {
+    // Each side's own signals: the spec's moving side as written, and its mirror for the other side.
+    const left = specProfile(spec, 'left').filter(p => !/R$/.test(p.name));
+    const right = left.map(p => ({ ...p, name: swapName(p.name) }));
+    return { grid, G, oneSide: true, rs: [rs(left), rs(right)] };
+  }
+  return { grid, G, oneSide: false, rs: [rs(specProfile(spec, spec.alternate === 'mirror' ? 'mirror' : 'both'))] };
+}
+
+/**
  * Count a set with its exercise's motion spec.
  * @param {{ wl: any[], ts: number[], image?: Array<number[]|null>|null }} set
  * @param {object} spec a motion spec (motions/<key>.json)
  * @returns {{ count: number|null, members: string[], period?: number, reason?: string, sides?: number[] }}
  */
-export function sgcCount({ wl, ts, image = null }, spec, opts = {}) {
-  if (!spec || spec.noReps) return { count: null, members: [], reason: 'no reps in the spec' };
-  if (!ts || ts.length < 10) return { count: null, members: [], reason: 'too short' };
-  const { grid, sigs } = signalBank(wl, ts, image, { useImage: opts.useImage !== false });
-  if (!sigs.length) return { count: null, members: [], reason: 'no signal seen' };
-  const G = grid.length, scales = signalScales(wl, image, opts.useImage !== false);
+export function sgcCount(set, spec, opts = {}) {
+  const b = specSignals(set, spec, opts);
+  if (b.reason) return { count: null, members: [], reason: b.reason };
+  const { grid, G } = b;
   // opts.summarize (coreAnalysis.js summarizeCount): the core's rep logic on the rep signal as well (coreCount), on
   // the progress p (opts.physical) or on the z-combination s.
   const withCore = r => (opts.summarize ? (({ count, reason }) => ({ coreCount: count, coreReason: reason }))(opts.physical ? coreOnSignal(r.p, grid, opts.first, opts.summarize, true) : coreOnSignal(r.s, grid, opts.first, opts.summarize)) : {});
-  const rs = pr => repSignal(sigs, pr, scales, opts);
-  const oneSide = spec.side || spec.alternate === true;
-  if (oneSide) {
-    // Each side's own signals: the spec's moving side as written, and its mirror for the other side.
-    const left = specProfile(spec, 'left').filter(p => !/R$/.test(p.name));
-    const right = left.map(p => ({ ...p, name: swapName(p.name) }));
-    const res = [left, right].map(pr => { const r = rs(pr); return r ? { ...countSignal(r.s, G), ...withCore(r), members: r.members } : { count: null, coreCount: null, members: [] }; });
+  if (b.oneSide) {
+    const res = b.rs.map(r => (r ? { ...countSignal(r.s, G), ...withCore(r), members: r.members } : { count: null, coreCount: null, members: [] }));
     if (spec.alternate === true) {
       const n = res.filter(r => r.count != null), m = res.filter(r => r.coreCount != null);
       return { count: n.length ? n.reduce((x, r) => x + r.count, 0) : null, coreCount: m.length ? m.reduce((x, r) => x + r.coreCount, 0) : null, members: res.flatMap(r => r.members), sides: res.map(r => r.count) };
@@ -223,7 +237,41 @@ export function sgcCount({ wl, ts, image = null }, spec, opts = {}) {
     const best = res.filter(r => r.count != null).sort((p, q) => (q.periodScore ?? -1) - (p.periodScore ?? -1))[0];
     return best ? { ...best, sides: res.map(r => r.count) } : { count: null, coreCount: null, members: [], reason: 'no period on either side' };
   }
-  const r = rs(specProfile(spec, spec.alternate === 'mirror' ? 'mirror' : 'both'));
+  const r = b.rs[0];
   if (!r) return { count: null, coreCount: null, members: [], reason: 'none of the spec\'s signals seen' };
   return { ...countSignal(r.s, G), ...withCore(r), members: r.members };
+}
+
+/**
+ * The spec's progress through the rep (repSignal's p, physical units: a full rep of the spec moves it by about 1), on
+ * PSC's 15 Hz grid from the set's first timestamp: { t0, p } (p NaN where no member is seen), or null when there is no
+ * spec, the spec has no reps, or none of its signals is seen. One-limb specs: the side sgcCount counts (the more
+ * periodic; when neither side has a period, the one whose p spans more). Alternating specs: the side-wise maximum (the
+ * moving side rises, the other stays near its rest), since the two sides' sum is not a progress. Used as an input of
+ * the learned phase counter (learned-phase/data.js progressOnGrid). Bench only; experimental.
+ * @param {{ wl: any[], ts: number[], image?: Array<number[]|null>|null }} set
+ * @param {object|null} spec a motion spec (motions/<key>.json)
+ * @returns {{ t0: number, p: Float64Array } | null}
+ */
+export function specProgress(set, spec, opts = {}) {
+  const b = specSignals(set, spec, opts);
+  if (b.reason || !b.rs.some(Boolean)) return null;
+  let p;
+  if (!b.oneSide) p = b.rs[0].p;
+  else if (spec.alternate === true) {
+    const [l, r] = b.rs;
+    p = new Float64Array(b.G).fill(NaN);
+    for (let t = 0; t < b.G; t++) {
+      const a = l ? l.p[t] : NaN, c = r ? r.p[t] : NaN;
+      p[t] = Number.isFinite(a) && Number.isFinite(c) ? Math.max(a, c) : Number.isFinite(a) ? a : c;
+    }
+  } else {
+    const spread = x => { const v = Array.from(x).filter(Number.isFinite); return v.length ? quantile(v, 0.95) - quantile(v, 0.05) : -1; };
+    const sides = b.rs.filter(Boolean).map(r => ({ r, c: countSignal(r.s, b.G) }));
+    const best = sides.filter(x => x.c.count != null).sort((x, y) => (y.c.periodScore ?? -1) - (x.c.periodScore ?? -1))[0]
+      ?? sides.sort((x, y) => spread(y.r.p) - spread(x.r.p))[0];
+    p = best.r.p;
+  }
+  if (!p.some(Number.isFinite)) return null;
+  return { t0: b.grid[0], p: Float64Array.from(p) };
 }

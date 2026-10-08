@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Learned phase counter, bench only: training (numpy only, no framework).
 
-python3 -I test/real-phone/learned-phase/train.py <export folder> <out folder> [--epochs N] [--seed S] [--folds 0,1,all]
+python3 -I test/real-phone/learned-phase/train.py <export folder> <out folder> [--epochs N] [--seed S] [--folds 0,1,all] [--progress]
 
 Reads <export folder>/index.json and joints.f32 (export.test.ts). Trains, per fold f in {0, 1}, a model on
 RepCount-A train (role train) + the cv sets of the other fold; and "all": RepCount-A train + every cv set (the model the
@@ -18,6 +18,15 @@ construction (RepNet's trick, Dwibedi et al. 2020; R1: no label is changed, a co
 number of copies of a labelled rep it holds): repeat one labelled rep 2-30 times with per-copy time warp,
 amplitude jitter, pauses and dropouts; crop a natural set at rep boundaries; rotate about the vertical axis, mirror,
 time-stretch. All constants UNSOURCED, experimental.
+
+--progress (the progress input mode; off by default): the features gain two channels per frame from the progress p of
+the set's motion spec (export.test.ts with LPHASE_PROGRESS=1 writes progress.f32; data.js progressFeatures, mirrored in
+progress_features() here): p minus its median over the set, clipped to [-2, 2], 0 where absent, and a mask (1 where p
+is finite). The model JSON then says "input": "progress", and model.js computes p for it (sgc.js specProgress). The
+augmentation carries p along the joints: the same frames are cut, repeated, held and stretched, a repeated rep's p is
+scaled by the same amplitude around its first frame, a dropped stretch longer than 8 frames has no p (PSC bridges
+shorter gaps, psc.js BRIDGE_SEC); rotation, mirror and jitter leave it (it is read from rotation-free signals, the
+more periodic side or both sides).
 """
 import base64, json, math, os, sys, time
 import numpy as np
@@ -34,8 +43,9 @@ GAP = sum(DIL) + 2
 
 
 # ---------------------------------------------------------------- features (mirror of data.js features())
-def features(J):
-    """J: (T, 13, 4) float32 joints (x, y, z, seen). Returns (T, F) float32, as data.js."""
+def features(J, P=None):
+    """J: (T, 13, 4) float32 joints (x, y, z, seen); P: (T,) progress or None. Returns (T, F) float32, or (T, F + 2)
+    with P, as data.js."""
     T = J.shape[0]
     J = J.astype(np.float64)
     seen = J[:, :, 3] > 0
@@ -76,6 +86,23 @@ def features(J):
         out[m, 48 + c] = (col[m] - med) / sp
     out[:, 96:109] = seen
     out[:, 109] = ~seen.any(1)
+    if P is None:
+        return out
+    return np.concatenate([out, progress_features(P)], 1)
+
+
+PROGRESS_CLIP = 2.0
+
+
+def progress_features(P):
+    """(T, 2) float32, as data.js progressFeatures: p minus its median over the frames where it is finite, clipped to
+    [-2, 2], 0 where absent; and 1 where p is finite."""
+    P = np.asarray(P, np.float32).astype(np.float64)
+    fin = np.isfinite(P)
+    out = np.zeros((len(P), 2), np.float32)
+    if fin.any():
+        out[fin, 0] = np.clip(P[fin] - np.median(P[fin]), -PROGRESS_CLIP, PROGRESS_CLIP)
+    out[:, 1] = fin
     return out
 
 
@@ -113,11 +140,11 @@ def rotate_mirror(J, rng):
     return J
 
 
-def stretch(J, bounds, f):
+def stretch(J, bounds, f, P=None):
     T = J.shape[0]
     T2 = max(2, int(round(T / f)))
     src = np.minimum(np.round(np.arange(T2) * f).astype(int), T - 1)
-    return J[src], (None if bounds is None else [(s / f, e / f) for s, e in bounds])
+    return J[src], (None if bounds is None else [(s / f, e / f) for s, e in bounds]), (None if P is None else P[src])
 
 
 def jitter(J, rng, sd=0.006):
@@ -126,20 +153,24 @@ def jitter(J, rng, sd=0.006):
     return J
 
 
-def dropout(J, rng):
+def dropout(J, rng, P=None):
     J = J.copy()
+    P = None if P is None else P.copy()
     T = J.shape[0]
     for _ in range(rng.integers(1, 4)):
         L = int(rng.integers(2, 16))
         a = int(rng.integers(0, max(1, T - L)))
         J[a:a + L] = 0
-    return J
+        if P is not None and L > 8:
+            P[a:a + L] = np.nan
+    return J, P
 
 
-def repeat_rep(J, bounds, rng):
+def repeat_rep(J, bounds, rng, P=None):
     """One labelled rep repeated 2-30 times (RepCount-A counts reach the 30s and beyond): per-copy warp 0.6-1.5, amplitude 0.8-1.15 around its first frame,
     pauses at rest (p 0.25, up to 1.5 s), still lead-in and tail from the set's own frames before its first rep / after
-    its last (or the rep's first frame held). Count = copies."""
+    its last (or the rep's first frame held). Count = copies. P (progress, or None) follows the same frames, a copy's
+    scaled by the same amplitude around the rep's first frame. Returns (J, bounds, P) or None."""
     i = int(rng.integers(0, len(bounds)))
     s, e = bounds[i]
     k0, k1 = max(0, int(math.ceil(s))), min(J.shape[0], int(math.ceil(e)))
@@ -147,20 +178,28 @@ def repeat_rep(J, bounds, rng):
         return None
     rep = J[k0:k1]
     first = rep[0]
+    prep = None if P is None else P[k0:k1]
+
+    def held(k, n):
+        return None if P is None else np.repeat(P[k:k + 1], n)
     N = int(rng.integers(2, 31))
-    parts, bnd, t = [], [], 0.0
+    parts, pparts, bnd, t = [], [], [], 0.0
     lead_end = max(0, int(bounds[0][0]))
     if lead_end > 3 and rng.random() < 0.6:
         L = int(rng.integers(1, min(lead_end, 3 * HZ) + 1))
         parts.append(J[lead_end - L:lead_end])
+        pparts.append(None if P is None else P[lead_end - L:lead_end])
     else:
-        parts.append(np.repeat(first[None], int(rng.integers(0, 2 * HZ + 1)), 0))
+        n = int(rng.integers(0, 2 * HZ + 1))
+        parts.append(np.repeat(first[None], n, 0))
+        pparts.append(held(k0, n))
     t = sum(len(p) for p in parts)
     for _ in range(N):
         if rng.random() < 0.25:
-            P = int(rng.integers(2, int(1.5 * HZ)))
-            parts.append(np.repeat(first[None], P, 0))
-            t += P
+            n = int(rng.integers(2, int(1.5 * HZ)))
+            parts.append(np.repeat(first[None], n, 0))
+            pparts.append(held(k0, n))
+            t += n
         w = rng.uniform(0.6, 1.5)
         L = max(4, int(round(len(rep) * w)))
         src = np.minimum((np.arange(L) * len(rep) / L).astype(int), len(rep) - 1)
@@ -169,19 +208,26 @@ def repeat_rep(J, bounds, rng):
         both = (r[:, :, 3] > 0) & (first[None, :, 3] > 0)
         r[:, :, :3] = np.where(both[:, :, None], first[None, :, :3] + a * (r[:, :, :3] - first[None, :, :3]), r[:, :, :3])
         parts.append(r)
+        if P is not None:
+            pr = prep[src]
+            pparts.append(pr if not np.isfinite(prep[0]) else (prep[0] + a * (pr - prep[0])).astype(np.float32))
         bnd.append((t, t + L))
         t += L
     tail_start = min(J.shape[0], int(math.ceil(bounds[-1][1])))
     if J.shape[0] - tail_start > 3 and rng.random() < 0.6:
         L = int(rng.integers(1, min(J.shape[0] - tail_start, 3 * HZ) + 1))
         parts.append(J[tail_start:tail_start + L])
+        pparts.append(None if P is None else P[tail_start:tail_start + L])
     else:
-        parts.append(np.repeat(rep[-1][None], int(rng.integers(0, 2 * HZ + 1)), 0))
-    return np.concatenate(parts, 0), bnd
+        n = int(rng.integers(0, 2 * HZ + 1))
+        parts.append(np.repeat(rep[-1][None], n, 0))
+        pparts.append(held(k1 - 1, n))
+    return np.concatenate(parts, 0), bnd, (None if P is None else np.concatenate(pparts, 0))
 
 
-def crop_reps(J, bounds, rng):
-    """A natural set cut at rep boundaries: reps i..j with up to 2 s around them (never into a neighbouring rep)."""
+def crop_reps(J, bounds, rng, P=None):
+    """A natural set cut at rep boundaries: reps i..j with up to 2 s around them (never into a neighbouring rep).
+    Returns (J, bounds, P) or None."""
     n = len(bounds)
     i = int(rng.integers(0, n))
     j = int(rng.integers(i, n))
@@ -192,7 +238,7 @@ def crop_reps(J, bounds, rng):
     b = int(min(J.shape[0], math.floor(min(hi, e + rng.uniform(0, 2 * HZ)))))
     if b - a < 10:
         return None
-    return J[a:b], [(p - a, q - a) for p, q in bounds[i:j + 1]]
+    return J[a:b], [(p - a, q - a) for p, q in bounds[i:j + 1]], (None if P is None else P[a:b])
 
 
 # ---------------------------------------------------------------- model
@@ -327,42 +373,51 @@ def readouts(o):
 
 
 # ---------------------------------------------------------------- data
-def load(folder):
+def load(folder, prog=False):
     ix = json.load(open(os.path.join(folder, 'index.json')))
     allj = np.fromfile(os.path.join(folder, 'joints.f32'), dtype=np.float32)
+    allp = None
+    if prog:
+        if not os.path.exists(os.path.join(folder, 'progress.f32')) or any('progress' not in e for e in ix):
+            sys.exit(f'{folder}: no progress channel (export with LPHASE_PROGRESS=1)')
+        allp = np.fromfile(os.path.join(folder, 'progress.f32'), dtype=np.float32)
     for e in ix:
         e['J'] = allj[e['offset']:e['offset'] + e['T'] * NJ * 4].reshape(e['T'], NJ, 4)
         e['bounds'] = [tuple(b) for b in e['bounds']] if e['bounds'] else None
+        e['P'] = None if allp is None else allp[e['progress']:e['progress'] + e['T']]
     return ix
 
 
 def make_sample(e, rng, aug=True):
-    J, bounds, N = e['J'], e['bounds'], e['label']
+    """The progress input rides along when the set carries it (load(prog=True)), with the same random draws."""
+    J, bounds, N, P = e['J'], e['bounds'], e['label'], e['P']
     if aug and bounds:
         u = rng.random()
         if u < 0.35:
-            r = repeat_rep(J, bounds, rng)
+            r = repeat_rep(J, bounds, rng, P)
             if r is not None:
-                J, bounds = r
+                J, bounds, P = r
                 N = len(bounds)
         elif u < 0.55:
-            r = crop_reps(J, bounds, rng)
+            r = crop_reps(J, bounds, rng, P)
             if r is not None:
-                J, bounds = r
+                J, bounds, P = r
                 N = len(bounds)
     if aug and not bounds and rng.random() < 0.4:
         # a count-only clip (Countix, MM-Fit) held still 0-3 s at each end, as a recording that starts and ends at
         # rest: holding a pose adds no rep, so the count stands
         a0, a1 = int(rng.integers(0, 3 * HZ + 1)), int(rng.integers(0, 3 * HZ + 1))
         J = np.concatenate([np.repeat(J[:1], a0, 0), J, np.repeat(J[-1:], a1, 0)], 0)
+        if P is not None:
+            P = np.concatenate([np.repeat(P[:1], a0), P, np.repeat(P[-1:], a1)])
     if aug:
         if rng.random() < 0.5:
-            J, bounds = stretch(J, bounds, rng.uniform(0.6, 1.5))
+            J, bounds, P = stretch(J, bounds, rng.uniform(0.6, 1.5), P)
         J = rotate_mirror(J, rng)
         J = jitter(J, rng)
         if rng.random() < 0.3:
-            J = dropout(J, rng)
-    X = features(J)
+            J, P = dropout(J, rng, P)
+    X = features(J, P)
     T = X.shape[0]
     if bounds:
         rate, sc, act = targets(T, bounds)
@@ -373,7 +428,7 @@ def make_sample(e, rng, aug=True):
 
 def pack(samples):
     T = sum(s[0].shape[0] for s in samples) + GAP * (len(samples) + 1)
-    X = np.zeros((T, F), np.float32)
+    X = np.zeros((T, samples[0][0].shape[1]), np.float32)
     m = np.zeros((T, 1), np.float32)
     segs, t = [], GAP
     for (x, N, rate, sc, act, hb) in samples:
@@ -391,8 +446,8 @@ def predict(P, x):
     return o
 
 
-def train(items, rng, epochs, W, log, max_frames=6000, lr=2e-3):
-    P = init(rng)
+def train(items, rng, epochs, W, log, max_frames=6000, lr=2e-3, n_in=F):
+    P = init(rng, n_in)
     M = {k: np.zeros_like(v) for k, v in P.items()}
     V = {k: np.zeros_like(v) for k, v in P.items()}
     step = 0
@@ -431,7 +486,9 @@ def train(items, rng, epochs, W, log, max_frames=6000, lr=2e-3):
 
 
 def to_json(P, meta):
-    out = {'meta': meta, 'dil': DIL, 'C': C, 'F': F, 'tensors': {}}
+    out = {'meta': meta, 'dil': DIL, 'C': C, 'F': int(P['Win'].shape[0]), 'tensors': {}}
+    if meta.get('input', 'pose') != 'pose':
+        out['input'] = meta['input']
     for k, v in P.items():
         h = v.astype(np.float16)
         out['tensors'][k] = {'shape': list(v.shape), 'f16': base64.b64encode(h.tobytes()).decode()}
@@ -444,18 +501,29 @@ def from_json(d):
 
 def fixture(src, model_path, out_path, T=40):
     """A small parity fixture for learned-phase-unit.test.ts: one synthetic set's first T frames of joints, the
-    features and the model outputs train.py computes for them."""
-    ix = load(src)
-    e = next(x for x in ix if x['suite'] == 'synthetic')
+    features and the model outputs train.py computes for them. For a progress-input model (fixture-progress.json): also
+    the set's progress (null where absent: the missing stretch; two frames beyond the clip) and the model itself."""
+    mj = json.load(open(model_path))
+    prog = mj.get('input', 'pose') == 'progress'
+    ix = load(src, prog)
+    e = next(x for x in ix if x['suite'] == 'synthetic' and (not prog or np.isfinite(x['P'][:T]).all()))
     J = e['J'][:T].copy()
     J[5:9, 4] = 0  # a joint unseen for a few frames
     J[20:22] = 0   # a missing stretch
-    P = from_json(json.load(open(model_path)))
-    X = features(J)
+    Pg = None
+    if prog:
+        Pg = e['P'][:T].copy()
+        Pg[20:22] = np.nan
+        Pg[30:32] = [9.0, -9.0]  # beyond the clip
+    P = from_json(mj)
+    X = features(J, Pg)
     o = predict(P, X)
-    json.dump({'name': e['name'], 'T': T, 'joints': [round(float(v), 6) for v in J.reshape(-1)],
-               'features': [round(float(v), 5) for v in X.reshape(-1)], 'outputs': [round(float(v), 5) for v in o.reshape(-1)]},
-              open(out_path, 'w'))
+    out = {'name': e['name'], 'T': T, 'joints': [round(float(v), 6) for v in J.reshape(-1)],
+           'features': [round(float(v), 5) for v in X.reshape(-1)], 'outputs': [round(float(v), 5) for v in o.reshape(-1)]}
+    if prog:
+        out['progress'] = [round(float(v), 6) if np.isfinite(v) else None for v in Pg]
+        out['model'] = mj
+    json.dump(out, open(out_path, 'w'))
 
 
 def main():
@@ -466,9 +534,10 @@ def main():
     epochs = int(args[args.index('--epochs') + 1]) if '--epochs' in args else 30
     seed = int(args[args.index('--seed') + 1]) if '--seed' in args else 1
     folds = (args[args.index('--folds') + 1] if '--folds' in args else '0,1,all').split(',')
+    prog = '--progress' in args
     W = {'count': 1.0, 'rate': 0.5, 'act': 0.5, 'phase': 0.5}
     os.makedirs(out, exist_ok=True)
-    ix = load(src)
+    ix = load(src, prog)
     logf = open(os.path.join(out, 'train.log'), 'a')
 
     def log(s):
@@ -491,14 +560,17 @@ def main():
             f = int(fold)
             tr = [e for e in ix if e['role'] == 'train' or (e['role'] == 'cv' and e['fold'] != f)]
             ev = [e for e in ix if e['role'] == 'eval' or (e['role'] == 'cv' and e['fold'] == f)]
-        log(f'fold {fold}: train {len(tr)} sets ({sum(e["T"] for e in tr)} frames, {sum(1 for e in tr if e["bounds"])} with rep bounds), held out {len(ev)}; epochs {epochs}, seed {seed}')
-        P = train(tr, rng, epochs, W, log)
+        log(f'fold {fold}: train {len(tr)} sets ({sum(e["T"] for e in tr)} frames, {sum(1 for e in tr if e["bounds"])} with rep bounds), held out {len(ev)}; epochs {epochs}, seed {seed}'
+            + (f'; progress input, {sum(1 for e in tr if e.get("spec"))} training sets with a spec' if prog else ''))
+        P = train(tr, rng, epochs, W, log, n_in=F + 2 if prog else F)
         meta = {'fold': fold, 'epochs': epochs, 'seed': seed, 'trainSets': len(tr), 'weights': W,
                 'trainSuites': sorted(set(e['suite'] for e in tr))}
+        if prog:
+            meta['input'] = 'progress'
         json.dump(to_json(P, meta), open(os.path.join(out, f'model-{fold}.json'), 'w'))
         res = []
         for e in ev:
-            o = predict(P, features(e['J']))
+            o = predict(P, features(e['J'], e['P']))
             r = readouts(o)
             res.append({'name': e['name'], 'suite': e['suite'], 'cls': e['cls'], 'label': e['label'], 'role': e['role'], **r})
         json.dump(res, open(os.path.join(out, f'eval-{fold}.json'), 'w'))
