@@ -137,7 +137,7 @@ export interface LiftDefinition {
   togetherMinCorrelation?: number;
   /** Share of the set's range each threshold is set inside its percentile; THRESHOLD_MARGIN when absent (DETECTION). */
   thresholdMargin?: number;
-  /** Smallest range one rep may have, in degrees; MIN_ROM_DEGREES when absent. The set's own range floor never changes (DETECTION). */
+  /** Smallest range one rep may have, in degrees; MIN_ROM_DEGREES when absent (DETECTION). */
   minRepRomDeg?: number;
   /**
    * How far above the working extreme the working-end threshold sits, as a share of the set's range
@@ -145,6 +145,26 @@ export interface LiftDefinition {
    * The rest-end threshold keeps THRESHOLD_MARGIN.
    */
   workMargin?: number;
+  /**
+   * The joint read as the lift of its limb against gravity, in place of the three-point angle in space: 180 plus the
+   * angle of the limb from the joint to its end (LIFT_POINTS: the shoulder to the wrist) above the horizontal, the
+   * world's y being down (liftAngleDeg).
+   * For a body lying face down whose limb rises off the floor: on a prone Y raise the arms, overhead in a Y, lift; the
+   * three-point shoulder angle then barely moves (1.6 degrees over the rep on its motion spec, test/real-phone/synth/
+   * motions/prone_y_raise.json, the arms out in a Y) and, read in the image plane, folds back at 180 (one rep would read
+   * as two). With the trunk level, 180 is the arm in line with it and the lift is the shoulder's flexion past that line
+   * (177 to 193 on the spec). Neither the side the camera stands on nor a left-right swap changes it; a phone rolled
+   * from upright tilts the horizontal it is read against. On rendered sets (8 October 2026, test/real-phone/synth/motions/
+   * lift-angle.test.ts) it followed the rendered reps more closely than the shoulder's angle in the image plane taken
+   * from the trunk's line, the hips of a body lying being read loosely, and read to the wrist more closely than to the
+   * elbow (the longer lever). Source: UNSOURCED. Status: experimental.
+   */
+  lift?: boolean;
+  /**
+   * The set's own range floor, in degrees: a set whose angle spans less (10th to 90th percentile) counts no rep;
+   * MIN_ROM_DEGREES when absent (DETECTION).
+   */
+  minRangeDeg?: number;
 }
 
 export const LIFTS = {
@@ -208,9 +228,15 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // synthetic sets hold no front raise and do not move. A short dropout of the raising arm no longer splits a rep
 // (front-raise-together.test.ts: 8 alternating raises with a 0.3 s dropout read 8, not the 16 of 30 September).
 // Source: UNSOURCED. Status: experimental, chosen on the public build half A (front_raise).
-const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation'>> = {
+// prone_y_raise (8 October 2026): read as the arm's lift (LiftDefinition.lift), whose range on rendered prone Y raises
+// was 13 to 20 degrees while the arms lifted and 0 to 5.8 while the body lay still, on the side facing the camera
+// (test/real-phone/synth/motions/lift-angle.test.ts, the renders of 8 October before the landscape batch): 10 degrees,
+// about twice the stillness, for the set and for each rep. Source: measured on rendered sets only, no person filmed.
+// Status: experimental.
+const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
+  prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10 },
 };
 
 // Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
@@ -236,10 +262,11 @@ export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
   if (!Object.hasOwn(PATTERNS, key)) return null;
-  const [joint, rest, first, sides] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', string?];
+  const [joint, rest, first, ...more] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', ...string[]];
   return {
     joint, rest, first,
-    ...(sides === 'both' ? { bothSides: true } : sides === 'either' ? { eitherSide: true } : sides === 'together' ? { together: true } : {}),
+    ...(more.includes('both') ? { bothSides: true } : more.includes('either') ? { eitherSide: true } : more.includes('together') ? { together: true } : {}),
+    ...(more.includes('lift') ? { lift: true } : {}),
     ...(Object.hasOwn(DETECTION, key) ? DETECTION[key] : {}),
   };
 }
@@ -261,6 +288,14 @@ export const JOINT_POINTS: Record<Joint, { left: [number, number, number]; right
   shoulder: { left: [L_HIP, L_SHOULDER, L_ELBOW], right: [R_HIP, R_SHOULDER, R_ELBOW] },
   knee: { left: [L_HIP, L_KNEE, L_ANKLE], right: [R_HIP, R_KNEE, R_ANKLE] },
   hip: { left: [L_SHOULDER, L_HIP, L_KNEE], right: [R_SHOULDER, R_HIP, R_KNEE] },
+};
+
+// The two landmarks a lift is read on (LiftDefinition.lift): the joint and its limb's end.
+const LIFT_POINTS: Record<Joint, { left: [number, number]; right: [number, number] }> = {
+  shoulder: { left: [L_SHOULDER, L_WRIST], right: [R_SHOULDER, R_WRIST] },
+  elbow: { left: [L_ELBOW, L_WRIST], right: [R_ELBOW, R_WRIST] },
+  hip: { left: [L_HIP, L_ANKLE], right: [R_HIP, R_ANKLE] },
+  knee: { left: [L_KNEE, L_ANKLE], right: [R_KNEE, R_ANKLE] },
 };
 
 // Savitzky–Golay quadratic kernels (symmetric, preserves peaks), for the window SG_WINDOW_SEC gives at the
@@ -422,7 +457,7 @@ function countSide(
   const zw = setZWeight(worldLandmarks);
   const rawAngles = worldLandmarks.map(wl => {
     if (!wl) return null;
-    return extractAngle(wl, def.joint, arm, zw);
+    return extractAngle(wl, def.joint, arm, zw, def.lift);
   });
   // T1 (survey.ts, FILL_FROM_PARTNER, off): samples the counted side misses, filled from the other side's angle.
   // rawAngles stays as seen (coverage); `filled` marks the samples that were not.
@@ -453,7 +488,7 @@ function countSide(
   const pHigh = p(PERCENTILE_HIGH);
   const range = pHigh - pLow;
 
-  if (range < MIN_ROM_DEGREES) {
+  if (range < (def.minRangeDeg ?? MIN_ROM_DEGREES)) {
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: pLow, highThreshold: pHigh };
   }
 
@@ -485,7 +520,7 @@ function countSide(
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
 export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
   const zw = setZWeight(worldLandmarks);
-  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw) : null));
+  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw, def.lift) : null));
   const { values: filledAngles } = fillFromPartner(rawAngles, worldLandmarks, def, arm, zw);
   const sampleRate = estimateSampleRate(timestamps);
   const cleaned = removeOutliers(filledAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
@@ -602,7 +637,7 @@ function countAlternating(left: CountResult, right: CountResult, timestamps: num
     if (vals.length < 3) return [];
     const p = (pct: number) => vals[Math.floor(vals.length * pct / 100)];
     const pLow = p(PERCENTILE_LOW), pHigh = p(PERCENTILE_HIGH), range = pHigh - pLow;
-    if (range < MIN_ROM_DEGREES) return [];
+    if (range < (def.minRangeDeg ?? MIN_ROM_DEGREES)) return [];
     const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
     const lowT = pLow + margin, highT = pHigh - margin;
     const cycles = detectReps(s, timestamps, lowT, highT, rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
@@ -656,7 +691,11 @@ function vis(p: WorldLandmark): number {
 
 // ─── Angle extraction ───
 
-function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right', zw = 1): number | null {
+function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right', zw = 1, lift = false): number | null {
+  if (lift) {
+    const [iv, ie] = LIFT_POINTS[joint][arm];
+    return vis(wl[iv]) < VIS_THRESHOLD || vis(wl[ie]) < VIS_THRESHOLD ? null : liftAngleDeg(wl[iv], wl[ie]);
+  }
   const [ia, ib, ic] = JOINT_POINTS[joint][arm];
   const a = wl[ia], b = wl[ib], c = wl[ic];
   if (vis(a) < VIS_THRESHOLD || vis(b) < VIS_THRESHOLD || vis(c) < VIS_THRESHOLD) {
@@ -679,7 +718,7 @@ function setZWeight(worldLandmarks: WorldLandmarkFrame[]): number {
 function fillFromPartner(raw: (number | null)[], worldLandmarks: WorldLandmarkFrame[], def: LiftDefinition, arm: 'left' | 'right', zw: number) {
   const none = { values: raw, filled: raw.map(() => false) };
   if (!fillOn() || def.bothSides || !raw.some(a => a === null)) return none;
-  const other = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm === 'left' ? 'right' : 'left', zw) : null));
+  const other = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm === 'left' ? 'right' : 'left', zw, def.lift) : null));
   const { a, b, r, n } = fitLine(other, raw);
   if (n < FILL_MIN_PAIRS || Math.abs(r) < fillMinR()) return none;
   const filled = raw.map((x, i) => x === null && other[i] !== null);
@@ -694,6 +733,15 @@ function angleDeg(a: WorldLandmark, vertex: WorldLandmark, c: WorldLandmark, zw 
   const m2 = Math.sqrt(v2x * v2x + v2y * v2y + v2z * v2z);
   if (m1 < 1e-9 || m2 < 1e-9) return 0;
   return Math.acos(Math.max(-1, Math.min(1, dot / (m1 * m2)))) * (180 / Math.PI);
+}
+
+/**
+ * The lift of a limb against gravity (LiftDefinition.lift): 180 plus its angle above the horizontal, in degrees, from
+ * the joint to the limb's end, in world coordinates (y down). 180 level, above 180 rising, below falling.
+ */
+export function liftAngleDeg(vertex: WorldLandmark, c: WorldLandmark): number {
+  const ex = c.x - vertex.x, ey = c.y - vertex.y, ez = c.z - vertex.z;
+  return 180 + Math.atan2(-ey, Math.hypot(ex, ez)) * (180 / Math.PI);
 }
 
 // ─── Sample rate helpers ───

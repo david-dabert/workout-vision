@@ -65,6 +65,12 @@ describe('guide counting families', () => {
       expect(entry.bothSides).toBe(true);
       fields.push('bothSides');
     }
+    if (Object.hasOwn(entry, 'angle')) {
+      // Read as a limb's lift against gravity (core.ts, LiftDefinition.lift), filmed from the side.
+      expect(entry.angle).toBe('lift');
+      expect(entry.view).toBe('side');
+      fields.push('angle');
+    }
     expect(Object.keys(entry).sort()).toEqual(fields.sort());
   });
 

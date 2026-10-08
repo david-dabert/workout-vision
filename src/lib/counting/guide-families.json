@@ -1339,8 +1339,13 @@
     "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
   },
   "prone_y_raise": {
-    "joint": null,
-    "why": "Prone Y elevation has a small, technique-dependent hip-shoulder-elbow change; uncertain signal."
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "angle": "lift",
+    "eitherSide": true,
+    "why": "Lying face down, the arms overhead in a Y lift off the floor: the shoulder flexes past the line of the trunk. The three-point shoulder angle barely moves with the arms out in a Y and folds back at 180, so the shoulder is read as the arm's lift against gravity (core.ts, LiftDefinition.lift): 177 on the floor to 193 lifted, on the motion spec. Either shoulder can be the better seen. Status: experimental, measured on rendered sets only (8 October 2026)."
   },
   "prone_t_raise": {
     "joint": null,

@@ -12,8 +12,9 @@ describe('Step 3 analysis boundary', () => {
   it('does not allow Automatic, an exercise the guide cannot count, or a lift the guide does not hold', async () => {
     // 183 exercises (the two barbell curls added on 2 October) less the four floor exercises withdrawn on 3 October
     // (offer.js, WITHDRAWN, third audit C21), with the three added the same day (behind-the-neck press, barbell jump
-    // squat, wall ball), the machine seated back extension added on 5 October, and the two fitness tests (fitness-tests.js).
-    expect(APPROVED_LIFTS).toHaveLength(184);
+    // squat, wall ball), the machine seated back extension added on 5 October, the prone Y raise on 8 October, and the
+    // two fitness tests (fitness-tests.js).
+    expect(APPROVED_LIFTS).toHaveLength(185);
     for (const lift of ['dead_bug', 'banded_dead_bug', 'bird_dog', 'glute_bridge_march']) expect(APPROVED_LIFTS, lift).not.toContain(lift);
     for (const test of ['chair_stand_test', 'arm_curl_test']) expect(APPROVED_LIFTS, test).toContain(test);
     for (const lift of ['bench_press', 'bicep_curl', 'hip_thrust', 'lat_pulldown', 'lateral_raise', 'leg_press', 'overhead_press', 'romanian_deadlift', 'squat']) expect(APPROVED_LIFTS, lift).toContain(lift);

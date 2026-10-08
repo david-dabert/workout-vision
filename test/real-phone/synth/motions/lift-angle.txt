@@ -1,0 +1,54 @@
+The prone Y raise read as the arms' lift against gravity (core.ts, LiftDefinition.lift), on rendered sets (8 October 2026).
+Bench: test/real-phone/synth/motions/lift-angle.test.ts. Renders: library.mjs prone_y_raise, through run.mjs (the app's pose model);
+the landscape option is synth.js P.landscape. Bodies: Michelle (plain clothing) and Soldier (dark, patterned clothing).
+A rendered body is not a person; no person has been filmed doing this exercise for the app. Status: experimental.
+
+Columns: per side, the range of each signal (10th to 90th percentile, degrees) and, in brackets, its correlation with the
+rendered progress through the reps; then the reps rendered and the app's result as a recorded set reads it (summarizeCount,
+withProposal, withBodyCheck; 'to confirm': the result screen asks for the count, R8).
+
+## 1. Upright phone, side view (the catalogue's default framing): the body is lost on 5 of 7
+prone_y_raise, shoulder read as the arm's lift: 7 rendered sets, 2 seen on over half their frames; exact 1, within 1 1, off by 3 or more or refused 6; shown as the app's count and off by 3 or more: 0.
+| Set | Body | View | Pose found | Range in degrees (10th-90th) and correlation with the rendered rep: signed from the trunk / lift to the elbow / lift to the wrist (the app, smoothed) / in space | Reps | App |
+|---|---|---:|---:|---|---:|---|
+| lib-prone_y_raise-v0 | michelle | 73 | 927/945 | L 74 (-0.00) / 10 (0.53) / 13 (0.87) / 38 (-0.62), R 256 (0.47) / 19 (0.29) / 25 (0.71) / 112 (0.36) | 14 | 14 (body check 0.93) |
+| lib-prone_y_raise-v1 | soldier | 73 | 0/700 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 11 | refused |
+| lib-prone_y_raise-v2 | michelle | 113 | 0/388 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 7 | refused |
+| lib-prone_y_raise-v3 | soldier | 75 | 626/743 | L 6 (0.14) / 8 (0.07) / 3 (0.08) / 5 (0.12), R 5 (0.21) / 7 (0.21) / 3 (-0.16) / 7 (-0.04) | 13 | 0, to confirm |
+| lib-prone_y_raise-v5 | soldier | 113 | 2/670 | L NaN (NaN) / NaN (NaN) / 0 (NaN) / 0 (NaN), R NaN (NaN) / NaN (NaN) / 0 (-0.77) / 16 (-0.77) | 15 | refused |
+| lib-prone_y_raise-v7 | soldier | 77 | 0/267 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 5 | refused |
+| lib-prone_y_raise-v9 | soldier | 96 | 0/199 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 4 | refused |
+
+## 2. First trials of the phone on its side (ls: side view; lf: from the head end) and upright from the head end (pf)
+Used, with section 1, to choose the reading (the wrist rather than the elbow) and the 10-degree floor (core.ts, DETECTION):
+the near side's range was 0 to 5.8 degrees while the body lay still, 13 to 20 while the arms lifted.
+prone_y_raise, shoulder read as the arm's lift: 8 rendered sets, 6 seen on over half their frames; exact 2, within 1 2, off by 3 or more or refused 6; shown as the app's count and off by 3 or more: 0.
+| Set | Body | View | Pose found | Range in degrees (10th-90th) and correlation with the rendered rep: signed from the trunk / lift to the elbow / lift to the wrist (the app, smoothed) / in space | Reps | App |
+|---|---|---:|---:|---|---:|---|
+| v2-prone_y_raise-v0-ls | michelle, landscape | 70 | 945/945 | L 42 (0.55) / 20 (0.75) / 20 (0.96) / 25 (0.20), R 19 (0.02) / 16 (0.52) / 19 (0.78) / 42 (0.20) | 14 | 14 (body check 0.99) |
+| v2-prone_y_raise-v1-pf | soldier | -10 | 410/700 | L 301 (-0.37) / 42 (-0.25) / 31 (0.38) / 98 (0.31), R 323 (-0.13) / 51 (-0.01) / 43 (0.10) / 108 (-0.00) | 11 | refused (PSC 12) |
+| v2-prone_y_raise-v2-lf | michelle, landscape | 0 | 340/388 | L 345 (0.26) / 22 (0.66) / 17 (0.80) / 46 (0.62), R 11 (-0.32) / 10 (-0.01) / 8 (0.30) / 22 (0.55) | 7 | refused (PSC 7) |
+| v2-prone_y_raise-v3-ls | soldier, landscape | 100 | 743/743 | L 8 (-0.03) / 10 (-0.24) / 8 (-0.31) / 8 (-0.17), R 6 (-0.15) / 14 (-0.52) / 7 (-0.11) / 9 (0.10) | 13 | 0, to confirm |
+| v2-prone_y_raise-v4-pf | michelle | 20 | 0/602 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 12 | refused |
+| v2-prone_y_raise-v5-lf | soldier, landscape | -20 | 145/670 | L 322 (0.10) / 73 (0.14) / 65 (0.09) / 62 (0.13), R 347 (0.26) / 32 (0.43) / 103 (0.63) / 62 (-0.33) | 15 | refused |
+| v2-prone_y_raise-v6-ls | michelle, landscape | 80 | 173/173 | L 11 (0.78) / 14 (0.93) / 16 (0.97) / 12 (-0.79), R NaN (NaN) / NaN (NaN) / 0 (NaN) / NaN (NaN) | 4 | 4 (body check 0.99) |
+| v2-prone_y_raise-v7-pf | soldier | 0 | 259/267 | L 100 (-0.43) / 25 (-0.44) / 20 (-0.09) / 39 (0.58), R 161 (-0.55) / 23 (-0.35) / 20 (-0.23) / 133 (0.19) | 5 | refused (PSC 5) |
+
+## 3. The phone on its side, side view, views 60 to 120 degrees: 14 sets rendered after the choices above, read once
+prone_y_raise, shoulder read as the arm's lift: 14 rendered sets, 11 seen on over half their frames; exact 6, within 1 7, off by 3 or more or refused 6; shown as the app's count and off by 3 or more: 1.
+| Set | Body | View | Pose found | Range in degrees (10th-90th) and correlation with the rendered rep: signed from the trunk / lift to the elbow / lift to the wrist (the app, smoothed) / in space | Reps | App |
+|---|---|---:|---:|---|---:|---|
+| ls-prone_y_raise-v0 | michelle, landscape | 60 | 941/945 | L 86 (0.61) / 28 (0.76) / 40 (0.94) / 47 (0.68), R 64 (0.35) / 36 (0.84) / 31 (0.88) / 46 (-0.59) | 14 | 14 (body check 0.92) |
+| ls-prone_y_raise-v1 | soldier, landscape | 70 | 691/700 | L 63 (-0.16) / 26 (-0.43) / 21 (0.47) / 98 (0.07), R 347 (-0.54) / 29 (-0.38) / 38 (-0.83) / 135 (0.42) | 11 | 13 |
+| ls-prone_y_raise-v10 | michelle, landscape | 90 | 545/545 | L 14 (0.90) / 12 (0.93) / 17 (0.94) / 11 (0.48), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 12 | 12 (body check 0.99) |
+| ls-prone_y_raise-v11 | soldier, landscape | 100 | 397/424 | L 290 (0.45) / 27 (0.54) / 44 (0.81) / 130 (0.65), R 320 (0.29) / 34 (0.16) / 72 (0.62) / 159 (0.28) | 7 | 8 (body check 0.91) |
+| ls-prone_y_raise-v12 | michelle, landscape | 110 | 0/179 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 5 | refused |
+| ls-prone_y_raise-v13 | soldier, landscape | 120 | 0/356 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 7 | refused |
+| ls-prone_y_raise-v2 | michelle, landscape | 80 | 345/388 | L 20 (0.71) / 20 (0.86) / 21 (0.92) / 10 (0.23), R NaN (NaN) / NaN (NaN) / 19 (0.88) / NaN (NaN) | 7 | 7 (body check 0.94) |
+| ls-prone_y_raise-v3 | soldier, landscape | 90 | 743/743 | L 9 (0.06) / 15 (-0.02) / 18 (-0.06) / 14 (-0.21), R 9 (0.09) / 10 (0.06) / 12 (0.30) / 16 (0.03) | 13 | refused (PSC 4) |
+| ls-prone_y_raise-v4 | michelle, landscape | 100 | 0/602 | L NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 12 | refused |
+| ls-prone_y_raise-v5 | soldier, landscape | 110 | 625/670 | L 348 (-0.06) / 25 (-0.14) / 21 (-0.20) / 45 (0.18), R 346 (-0.04) / 42 (-0.12) / 41 (-0.06) / 68 (-0.23) | 15 | 25, to confirm (body check 0.29) |
+| ls-prone_y_raise-v6 | michelle, landscape | 120 | 155/173 | L 32 (0.94) / 24 (0.98) / 19 (0.96) / 8 (0.45), R NaN (NaN) / NaN (NaN) / NaN (NaN) / NaN (NaN) | 4 | 4 (body check 0.98) |
+| ls-prone_y_raise-v7 | soldier, landscape | 60 | 184/267 | L 175 (-0.09) / 28 (0.04) / 14 (0.25) / 149 (-0.02), R 199 (-0.02) / 23 (-0.19) / 15 (0.09) / 140 (-0.05) | 5 | 8 |
+| ls-prone_y_raise-v8 | michelle, landscape | 70 | 738/768 | L 30 (0.95) / 20 (0.93) / 24 (0.98) / 20 (0.87), R NaN (NaN) / NaN (NaN) / 5 (0.28) / NaN (NaN) | 16 | 16 (body check 0.99) |
+| ls-prone_y_raise-v9 | soldier, landscape | 80 | 137/199 | L 305 (-0.31) / 94 (-0.68) / 42 (-0.71) / 131 (0.21), R 79 (0.01) / 55 (-0.18) / 26 (-0.37) / 86 (0.30) | 4 | 4 (body check 0.55) |

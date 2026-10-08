@@ -66,7 +66,13 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
   const wholeBody = ['knee', 'hip'].includes(liftDefinition(lift)?.joint);
   // A knee or hip exercise filmed from the front (a lateral lunge, a standing hip abduction) is filmed facing
   // the phone, as its view says; the whole body stays in frame either way (review of 29 September).
-  const step1 = wholeBody && view === 'side'
+  // A body lying face down read as a limb's lift (core.ts, LiftDefinition.lift: the prone Y raise) is filmed with the
+  // phone on its side: on rendered sets filmed upright from the side, the pose model lost the body on 5 of 7; on its
+  // side, the body was found on 11 of 14 and the 5 found of the plainly dressed body counted exactly
+  // (test/real-phone/synth/motions/lift-angle.txt, 8 October 2026). Status: experimental, no person filmed.
+  const step1 = liftDefinition(lift)?.lift
+    ? (fr ? 'Calez le téléphone à l\u2019horizontale, au sol, sur le côté\u00a0: il doit vous voir de profil, des mains aux pieds.' : 'Prop the phone sideways on the floor at your side, so it sees you in profile, hands to feet.')
+    : wholeBody && view === 'side'
     ? (fr ? 'Posez le téléphone à la verticale, sur le côté, pour qu\u2019il vous voie de profil.' : 'Stand the phone upright at your side, so it sees you in profile.')
     : view === 'side'
     ? (fr ? 'Posez le téléphone sur le côté, le bras qui travaille face à l\u2019objectif.' : 'Stand the phone at your side, working arm facing the lens.')

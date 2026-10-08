@@ -14,7 +14,9 @@ import { specAt, specUses, MIRRORED } from '../template/fk.js';
 
 const P = window.SYNTH;
 // P.video: render frames for a video file (run-video.mjs) at its own size and rate, without pose detection.
-const H = P.video ? P.video.h : MAX_LONG_SIDE, W = P.video ? P.video.w : Math.round(MAX_LONG_SIDE * 9 / 16);
+// P.landscape: the phone turned on its side (16:9 rather than 9:16), as a body lying on the floor fills more of it.
+const LONG = MAX_LONG_SIDE, SHORT = Math.round(MAX_LONG_SIDE * 9 / 16);
+const H = P.video ? P.video.h : P.landscape ? SHORT : LONG, W = P.video ? P.video.w : P.landscape ? LONG : SHORT;
 const FPS = P.video ? P.video.fps : TARGET_FPS;
 const D = Math.PI / 180;
 
