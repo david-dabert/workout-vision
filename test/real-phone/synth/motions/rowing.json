@@ -1,0 +1,32 @@
+{
+ "key": "rowing",
+ "source": "convention: rowing ergometer stroke (no machine rendered), the catch (shins vertical, body over, arms straight) to the finish (legs straight, leaning back, handle at the lower ribs); continuous, timed or by distance, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.45
+ },
+ "start": {
+  "pitch": 25,
+  "trunk": 5,
+  "hipFlex": 150,
+  "hipAbd": 12,
+  "knee": 130,
+  "ankle": -35,
+  "shoulderFlex": 110,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -20,
+  "trunk": -5,
+  "hipFlex": 60,
+  "hipAbd": 6,
+  "knee": 5,
+  "ankle": 25,
+  "shoulderFlex": -35,
+  "shoulderAbd": 25,
+  "elbow": 115
+ },
+ "noReps": true
+}

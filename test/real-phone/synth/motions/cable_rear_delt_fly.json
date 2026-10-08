@@ -1,0 +1,15 @@
+{
+ "key": "cable_rear_delt_fly",
+ "source": "convention: standing facing a cable column, cables crossed at shoulder height, straight arms swept from crossed in front back out to the sides; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 90,
+  "shoulderAbd": -15,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 95,
+  "elbow": 10
+ }
+}

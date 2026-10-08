@@ -1,0 +1,23 @@
+{
+ "key": "prone_t_raise",
+ "source": "convention: lying face down, arms straight out to the sides in a T, lifted off the floor by squeezing the shoulder blades and lowered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 82,
+  "elbow": 5,
+  "ankle": 50
+ },
+ "end": {
+  "pitch": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 108,
+  "elbow": 5,
+  "ankle": 50
+ }
+}

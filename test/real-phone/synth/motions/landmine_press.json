@@ -1,0 +1,19 @@
+{
+ "key": "landmine_press",
+ "source": "convention: standing, both hands on the bar end at the upper chest, pressed up and forward along the bar's arc to straight arms, leaning slightly into it; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 5,
+  "shoulderFlex": 25,
+  "shoulderAbd": 10,
+  "humRot": -45,
+  "elbow": 135
+ },
+ "end": {
+  "trunk": 10,
+  "shoulderFlex": 125,
+  "shoulderAbd": -15,
+  "humRot": -20,
+  "elbow": 10
+ }
+}

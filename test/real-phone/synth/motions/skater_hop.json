@@ -1,0 +1,38 @@
+{
+ "key": "skater_hop",
+ "source": "convention: lateral bound from a soft athletic stance to landing on one leg, hips hinged, the other leg sweeping behind and across, the opposite arm swinging across; left then right; the lateral flight is not posed; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 15,
+  "hipFlex": 25,
+  "knee": 30,
+  "ankle": 0,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 20
+ },
+ "end": {
+  "pitch": 35,
+  "trunk": 10,
+  "roll": 8,
+  "left": {
+   "hipFlex": 75,
+   "knee": 70,
+   "ankle": -30,
+   "shoulderFlex": -30,
+   "shoulderAbd": 20,
+   "elbow": 20
+  },
+  "right": {
+   "hipFlex": 10,
+   "hipAbd": -15,
+   "knee": 45,
+   "ankle": 30,
+   "shoulderFlex": 70,
+   "shoulderAbd": 0,
+   "elbow": 20
+  }
+ },
+ "alternate": "mirror",
+ "view": 0
+}

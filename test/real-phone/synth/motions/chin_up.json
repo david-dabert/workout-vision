@@ -1,0 +1,23 @@
+{
+ "key": "chin_up",
+ "source": "convention: chin-up, underhand shoulder-width grip, from a straight-arm hang until the chin clears the bar, the elbows travelling down in front of the body; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 30
+ },
+ "end": {
+  "shoulderFlex": 20,
+  "shoulderAbd": 25,
+  "elbow": 130,
+  "hipFlex": 15,
+  "knee": 35
+ }
+}

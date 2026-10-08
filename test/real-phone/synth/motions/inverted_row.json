@@ -1,0 +1,19 @@
+{
+ "key": "inverted_row",
+ "source": "convention: inverted row under a bar at hip height, body straight from heels to shoulders about 20 degrees above horizontal, overhand grip, pulled until the bar meets the lower chest (the body pivots on the heels); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -70,
+  "ankle": 15,
+  "shoulderFlex": 110,
+  "shoulderAbd": 20,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -58,
+  "ankle": 15,
+  "shoulderFlex": -15,
+  "shoulderAbd": 35,
+  "elbow": 110
+ }
+}

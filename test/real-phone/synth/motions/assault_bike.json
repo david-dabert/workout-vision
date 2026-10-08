@@ -1,0 +1,48 @@
+{
+ "key": "assault_bike",
+ "source": "convention: air bike (no bike rendered), seated upright, legs pedalling while the arms push and pull the handles, one cycle from the left knee up with the left handle pulled and the right pushed to the reverse; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.85
+ },
+ "start": {
+  "pitch": 10,
+  "trunk": 5,
+  "shoulderAbd": 15,
+  "left": {
+   "hipFlex": 90,
+   "knee": 110,
+   "ankle": -20,
+   "shoulderFlex": 10,
+   "elbow": 100
+  },
+  "right": {
+   "hipFlex": 45,
+   "knee": 40,
+   "ankle": 10,
+   "shoulderFlex": 70,
+   "elbow": 25
+  }
+ },
+ "end": {
+  "pitch": 10,
+  "trunk": 5,
+  "shoulderAbd": 15,
+  "left": {
+   "hipFlex": 45,
+   "knee": 40,
+   "ankle": 10,
+   "shoulderFlex": 70,
+   "elbow": 25
+  },
+  "right": {
+   "hipFlex": 90,
+   "knee": 110,
+   "ankle": -20,
+   "shoulderFlex": 10,
+   "elbow": 100
+  }
+ },
+ "noReps": true
+}

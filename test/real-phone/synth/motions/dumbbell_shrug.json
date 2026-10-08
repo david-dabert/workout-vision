@@ -1,0 +1,14 @@
+{
+ "key": "dumbbell_shrug",
+ "source": "convention: standing, dumbbells hanging at the sides, shoulders shrugged straight up; the engine cannot raise the shoulder girdle, so both poses are the hold; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderAbd": 6,
+  "elbow": 5
+ },
+ "end": {
+  "shoulderAbd": 6,
+  "elbow": 5
+ },
+ "view": 0
+}

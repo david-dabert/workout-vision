@@ -1,0 +1,42 @@
+{
+ "key": "treadmill_incline_walk",
+ "source": "convention: walking on an inclined treadmill without holding the rails (no belt or slope rendered), slight lean into the incline, one cycle from the left heel strike to the right; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 5,
+  "shoulderAbd": 8,
+  "left": {
+   "hipFlex": 30,
+   "knee": 8,
+   "ankle": -20,
+   "shoulderFlex": -15,
+   "elbow": 25
+  },
+  "right": {
+   "hipFlex": -12,
+   "knee": 15,
+   "ankle": 15,
+   "shoulderFlex": 20,
+   "elbow": 30
+  }
+ },
+ "end": {
+  "pitch": 5,
+  "shoulderAbd": 8,
+  "left": {
+   "hipFlex": -12,
+   "knee": 15,
+   "ankle": 15,
+   "shoulderFlex": 20,
+   "elbow": 30
+  },
+  "right": {
+   "hipFlex": 30,
+   "knee": 8,
+   "ankle": -20,
+   "shoulderFlex": -15,
+   "elbow": 25
+  }
+ },
+ "noReps": true
+}

@@ -1,0 +1,20 @@
+{
+ "key": "sprawl",
+ "source": "convention: from standing, the legs shot back and the hips dropped to the floor, chest up on straight arms with the back arched, and back up to standing; the crouch between is not posed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "ankle": 0
+ },
+ "end": {
+  "pitch": 88,
+  "trunk": -25,
+  "shoulderFlex": 63,
+  "shoulderAbd": 5,
+  "elbow": 10,
+  "ankle": 0
+ }
+}

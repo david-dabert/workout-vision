@@ -1,0 +1,44 @@
+{
+ "key": "cycling",
+ "source": "convention: seated on a bike saddle (no bike rendered), trunk leaning to the bars, one pedal stroke from the left pedal at the top and the right at the bottom to the reverse (linear, not circular); continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.95
+ },
+ "start": {
+  "pitch": 15,
+  "trunk": 25,
+  "shoulderFlex": 90,
+  "shoulderAbd": 12,
+  "elbow": 20,
+  "left": {
+   "hipFlex": 85,
+   "knee": 115,
+   "ankle": -25
+  },
+  "right": {
+   "hipFlex": 45,
+   "knee": 35,
+   "ankle": 15
+  }
+ },
+ "end": {
+  "pitch": 15,
+  "trunk": 25,
+  "shoulderFlex": 90,
+  "shoulderAbd": 12,
+  "elbow": 20,
+  "left": {
+   "hipFlex": 45,
+   "knee": 35,
+   "ankle": 15
+  },
+  "right": {
+   "hipFlex": 85,
+   "knee": 115,
+   "ankle": -25
+  }
+ },
+ "noReps": true
+}

@@ -1,0 +1,27 @@
+{
+ "key": "lateral_shuffle",
+ "source": "convention: defensive side shuffle in a low athletic stance, hands up in front, one cycle from the lead foot stepped wide to the trailing foot brought in (the sideways travel is not posed); continuous, timed or by distance, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 25,
+  "hipFlex": 65,
+  "knee": 70,
+  "ankle": -30,
+  "hipAbd": 25,
+  "shoulderFlex": 30,
+  "shoulderAbd": 20,
+  "elbow": 80
+ },
+ "end": {
+  "pitch": 25,
+  "hipFlex": 65,
+  "knee": 70,
+  "ankle": -30,
+  "hipAbd": 10,
+  "shoulderFlex": 30,
+  "shoulderAbd": 20,
+  "elbow": 80
+ },
+ "view": 0,
+ "noReps": true
+}

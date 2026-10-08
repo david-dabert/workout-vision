@@ -1,0 +1,19 @@
+{
+ "key": "half_burpee",
+ "source": "convention: burpee without the push-up and the jump: from standing, hands to the floor and the feet back to a high plank, and back up to standing; the crouch between is not posed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "ankle": 0
+ },
+ "end": {
+  "pitch": 70,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ }
+}

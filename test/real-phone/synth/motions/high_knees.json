@@ -1,0 +1,34 @@
+{
+ "key": "high_knees",
+ "source": "convention: running in place on the balls of the feet, each rep one knee driven to hip height with the opposite arm forward, left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 3,
+  "hipFlex": 5,
+  "knee": 10,
+  "ankle": 15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 90
+ },
+ "end": {
+  "pitch": 3,
+  "shoulderAbd": 10,
+  "left": {
+   "hipFlex": 90,
+   "knee": 95,
+   "ankle": 20,
+   "shoulderFlex": -30,
+   "elbow": 90
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 10,
+   "ankle": 25,
+   "shoulderFlex": 50,
+   "elbow": 90
+  }
+ },
+ "alternate": "mirror",
+ "view": 90
+}

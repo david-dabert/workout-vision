@@ -1,0 +1,25 @@
+{
+ "key": "active_hang",
+ "source": "convention: active hang, hanging from the bar on straight arms with the shoulder blades held down and the chest slightly up (shoulder-blade depression not expressible: upper arms a little closer than a dead hang); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderAbd": 158,
+  "elbow": 3,
+  "trunk": -5,
+  "hipFlex": 5,
+  "knee": 5
+ },
+ "end": {
+  "shoulderAbd": 158,
+  "elbow": 3,
+  "trunk": -5,
+  "hipFlex": 5,
+  "knee": 5
+ },
+ "view": 0,
+ "noReps": true
+}

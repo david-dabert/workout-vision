@@ -1,0 +1,42 @@
+{
+ "key": "running",
+ "source": "convention: running stride, one full cycle from the left knee drive (right leg pushing off behind, right arm forward) to the right; continuous, timed, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 8,
+  "shoulderAbd": 10,
+  "left": {
+   "hipFlex": 55,
+   "knee": 85,
+   "ankle": -5,
+   "shoulderFlex": -35,
+   "elbow": 90
+  },
+  "right": {
+   "hipFlex": -20,
+   "knee": 25,
+   "ankle": 30,
+   "shoulderFlex": 45,
+   "elbow": 85
+  }
+ },
+ "end": {
+  "pitch": 8,
+  "shoulderAbd": 10,
+  "left": {
+   "hipFlex": -20,
+   "knee": 25,
+   "ankle": 30,
+   "shoulderFlex": 45,
+   "elbow": 85
+  },
+  "right": {
+   "hipFlex": 55,
+   "knee": 85,
+   "ankle": -5,
+   "shoulderFlex": -35,
+   "elbow": 90
+  }
+ },
+ "noReps": true
+}

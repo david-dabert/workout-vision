@@ -1,0 +1,28 @@
+{
+ "key": "l_sit_pull_up",
+ "source": "convention: L-sit pull-up, legs held straight and level in front, overhand shoulder-width-plus grip, from a straight-arm hang until the chin clears the bar; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "elbow": 5,
+  "pitch": -10,
+  "hipFlex": 80,
+  "knee": 0,
+  "ankle": 20
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 55,
+  "humRot": 90,
+  "elbow": 125,
+  "pitch": -10,
+  "hipFlex": 80,
+  "knee": 0,
+  "ankle": 20
+ }
+}

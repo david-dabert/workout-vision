@@ -1,0 +1,42 @@
+{
+ "key": "single_arm_cable_row",
+ "source": "convention: single-arm seated cable row, on the low bench with feet on the plate, the left arm pulls the handle from straight to the waist while the right hand rests on the thigh, torso from slightly forward to slightly back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.45
+ },
+ "start": {
+  "pitch": 10,
+  "hipFlex": 90,
+  "knee": 25,
+  "ankle": 10,
+  "left": {
+   "shoulderFlex": 80,
+   "shoulderAbd": 5,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 30,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "end": {
+  "pitch": -5,
+  "hipFlex": 75,
+  "knee": 25,
+  "ankle": 10,
+  "left": {
+   "shoulderFlex": -35,
+   "shoulderAbd": 15,
+   "elbow": 110
+  },
+  "right": {
+   "shoulderFlex": 30,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "side": "left"
+}

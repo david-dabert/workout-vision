@@ -1,0 +1,46 @@
+{
+ "key": "meadows_row",
+ "source": "convention: Meadows row, staggered stance side-on to a landmine bar, right foot forward with the right hand braced on the right knee, torso about 75 degrees from vertical, the left hand rows the bar end from a straight hang with the elbow flared high; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 60,
+  "trunk": 15,
+  "left": {
+   "hipFlex": 45,
+   "knee": 25,
+   "ankle": -10,
+   "shoulderFlex": 75,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": 100,
+   "knee": 55,
+   "ankle": -15,
+   "shoulderFlex": 53,
+   "shoulderAbd": 10,
+   "elbow": 15
+  }
+ },
+ "end": {
+  "pitch": 60,
+  "trunk": 15,
+  "left": {
+   "hipFlex": 45,
+   "knee": 25,
+   "ankle": -10,
+   "shoulderFlex": 30,
+   "shoulderAbd": 70,
+   "elbow": 95
+  },
+  "right": {
+   "hipFlex": 100,
+   "knee": 55,
+   "ankle": -15,
+   "shoulderFlex": 53,
+   "shoulderAbd": 10,
+   "elbow": 15
+  }
+ },
+ "side": "left"
+}

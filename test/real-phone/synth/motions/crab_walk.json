@@ -1,0 +1,46 @@
+{
+ "key": "crab_walk",
+ "source": "convention: face up on hands and feet with the hips lifted off the floor, hands under the shoulders, knees bent about 90 degrees, one cycle from the left hand and right foot stepped to the other pair (the travel is not posed); locomotion by distance, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": -60,
+  "shoulderAbd": 15,
+  "elbow": 3,
+  "hipAbd": 12,
+  "left": {
+   "shoulderFlex": -70,
+   "hipFlex": 50,
+   "knee": 90,
+   "ankle": 20
+  },
+  "right": {
+   "shoulderFlex": -50,
+   "hipFlex": 40,
+   "knee": 100,
+   "ankle": 0
+  }
+ },
+ "end": {
+  "pitch": -60,
+  "shoulderAbd": 15,
+  "elbow": 3,
+  "hipAbd": 12,
+  "left": {
+   "shoulderFlex": -50,
+   "hipFlex": 40,
+   "knee": 100,
+   "ankle": 0
+  },
+  "right": {
+   "shoulderFlex": -70,
+   "hipFlex": 50,
+   "knee": 90,
+   "ankle": 20
+  }
+ },
+ "noReps": true
+}

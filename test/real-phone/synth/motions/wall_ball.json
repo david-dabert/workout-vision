@@ -1,0 +1,21 @@
+{
+ "key": "wall_ball",
+ "source": "convention: standing with the arms reaching up after the throw and catch, riding the ball down into a full squat with the ball at the chest, elbows under it (no ball or wall rendered); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 3,
+  "shoulderFlex": 150,
+  "shoulderAbd": 15,
+  "elbow": 25
+ },
+ "end": {
+  "trunk": 30,
+  "hipFlex": 100,
+  "hipAbd": 14,
+  "knee": 125,
+  "ankle": -25,
+  "shoulderFlex": 45,
+  "shoulderAbd": 20,
+  "elbow": 130
+ }
+}

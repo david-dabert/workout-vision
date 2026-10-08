@@ -1,0 +1,29 @@
+{
+ "key": "machine_shoulder_press",
+ "source": "convention: seated against the reclined back pad, handles taken at shoulder height (where the stack rests and each rep returns), pressed to lockout; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "pitch": -10,
+  "hipFlex": 80,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 60,
+  "shoulderAbd": 50,
+  "humRot": 15,
+  "elbow": 100
+ },
+ "end": {
+  "pitch": -10,
+  "hipFlex": 80,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 165,
+  "shoulderAbd": 25,
+  "humRot": 15,
+  "elbow": 8
+ }
+}

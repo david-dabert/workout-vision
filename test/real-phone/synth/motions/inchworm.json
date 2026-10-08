@@ -1,0 +1,19 @@
+{
+ "key": "inchworm",
+ "source": "convention: from standing, folding forward and walking the hands out to a high plank (hands under the shoulders, body straight), then back and up to standing; the fold and the hand steps between are not posed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "ankle": 0
+ },
+ "end": {
+  "pitch": 70,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ }
+}

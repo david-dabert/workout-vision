@@ -1,0 +1,25 @@
+{
+ "key": "barbell_row",
+ "source": "convention: bent-over barbell row, hips hinged with the torso about 55 degrees from vertical and soft knees, overhand grip a little wider than the shoulders, the bar pulled from hanging arms to the lower ribs with the elbows out about 30 degrees; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 60,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": 55,
+  "shoulderAbd": 12,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 60,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": -30,
+  "shoulderAbd": 30,
+  "elbow": 105
+ }
+}

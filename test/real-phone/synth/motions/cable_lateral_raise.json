@@ -1,0 +1,26 @@
+{
+ "key": "cable_lateral_raise",
+ "source": "convention: standing, one arm at a time (left), handle from a low pulley in front of the hip, raised out to the side to shoulder height with a soft elbow; the free hand holds the column; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 15,
+  "shoulderAbd": 0,
+  "elbow": 15,
+  "right": {
+   "shoulderFlex": 10,
+   "shoulderAbd": 30,
+   "elbow": 30
+  }
+ },
+ "end": {
+  "shoulderFlex": 15,
+  "shoulderAbd": 90,
+  "elbow": 15,
+  "right": {
+   "shoulderFlex": 10,
+   "shoulderAbd": 30,
+   "elbow": 30
+  }
+ },
+ "side": "left"
+}

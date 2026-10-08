@@ -1,0 +1,15 @@
+{
+ "key": "hammer_curl",
+ "source": "convention: standing, both dumbbells in a neutral grip curled together from straight arms at the sides to the shoulders, upper arms still; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 8,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 8,
+  "elbow": 135
+ }
+}

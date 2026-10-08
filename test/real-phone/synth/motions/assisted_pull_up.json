@@ -1,0 +1,26 @@
+{
+ "key": "assisted_pull_up",
+ "source": "convention: machine-assisted pull-up, kneeling on the assist pad (not rendered), overhand grip wider than the shoulders, from a straight-arm hang until the chin passes the handles, elbows down and out; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 90,
+  "ankle": 20
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 55,
+  "humRot": 90,
+  "elbow": 125,
+  "hipFlex": 5,
+  "knee": 90,
+  "ankle": 20
+ }
+}

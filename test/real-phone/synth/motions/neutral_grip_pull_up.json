@@ -1,0 +1,23 @@
+{
+ "key": "neutral_grip_pull_up",
+ "source": "convention: neutral-grip pull-up on parallel handles about shoulder width, from a straight-arm hang until the chin clears the handles, elbows travelling down between front and side; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 150,
+  "shoulderAbd": 30,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 30
+ },
+ "end": {
+  "shoulderFlex": 20,
+  "shoulderAbd": 35,
+  "elbow": 130,
+  "hipFlex": 15,
+  "knee": 35
+ }
+}

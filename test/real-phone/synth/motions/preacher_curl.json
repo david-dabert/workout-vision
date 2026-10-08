@@ -1,0 +1,27 @@
+{
+ "key": "preacher_curl",
+ "source": "convention: seated, upper arms on the sloped preacher pad about 45 degrees in front, curled from near-straight elbows until the forearms are vertical; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": 10,
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 12,
+  "shoulderFlex": 45,
+  "shoulderAbd": 12,
+  "elbow": 15
+ },
+ "end": {
+  "trunk": 10,
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 12,
+  "shoulderFlex": 45,
+  "shoulderAbd": 12,
+  "elbow": 125
+ }
+}

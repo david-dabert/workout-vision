@@ -1,0 +1,16 @@
+{
+ "key": "overhead_press",
+ "source": "convention: standing barbell strict press, lockout overhead to the bar at the collarbones, elbows a little in front of the bar; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "shoulderFlex": 40,
+  "shoulderAbd": 22,
+  "humRot": 0,
+  "elbow": 132
+ }
+}

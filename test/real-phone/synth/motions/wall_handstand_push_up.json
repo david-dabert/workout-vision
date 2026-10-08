@@ -1,0 +1,24 @@
+{
+ "key": "wall_handstand_push_up",
+ "source": "convention: handstand with the heels against a wall, body straight, lowered until the head nears the floor and pressed back to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 175,
+  "shoulderFlex": 175,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 175,
+  "shoulderFlex": 80,
+  "shoulderAbd": 45,
+  "humRot": 0,
+  "elbow": 95,
+  "ankle": 30
+ }
+}

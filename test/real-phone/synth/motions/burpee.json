@@ -1,0 +1,19 @@
+{
+ "key": "burpee",
+ "source": "convention: from standing, down to the chest and thighs on the floor with the hands by the shoulders, and back up to standing; the crouch between and the jump at the top are not posed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "ankle": 0
+ },
+ "end": {
+  "pitch": 90,
+  "shoulderFlex": -15,
+  "shoulderAbd": 55,
+  "elbow": 130,
+  "ankle": 0
+ }
+}

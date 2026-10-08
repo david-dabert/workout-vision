@@ -1,0 +1,25 @@
+{
+ "key": "pike_push_up",
+ "source": "convention: hands and toes on the floor, hips high in an inverted V, head lowered between the hands by bending the elbows and pressed back up; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 130,
+  "shoulderFlex": 140,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 110,
+  "ankle": 10
+ },
+ "end": {
+  "pitch": 150,
+  "shoulderFlex": 80,
+  "shoulderAbd": 30,
+  "elbow": 95,
+  "hipFlex": 130,
+  "ankle": 10
+ }
+}

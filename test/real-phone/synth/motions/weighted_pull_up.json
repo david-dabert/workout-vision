@@ -1,0 +1,24 @@
+{
+ "key": "weighted_pull_up",
+ "source": "convention: weighted pull-up with a dip belt, overhand grip wider than the shoulders, knees bent, from a straight-arm hang until the chin clears the bar, elbows down and out; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 45
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 55,
+  "humRot": 90,
+  "elbow": 125,
+  "hipFlex": 15,
+  "knee": 50
+ }
+}

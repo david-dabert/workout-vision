@@ -1,0 +1,27 @@
+{
+ "key": "squat_thrust",
+ "source": "convention: the squat-to-plank transition: from a deep crouch with the hands on the floor in front of the feet, the feet thrust back to a high plank and back in; the stand-up of the four-count version is not posed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 30,
+  "trunk": 20,
+  "hipFlex": 130,
+  "hipAbd": 10,
+  "knee": 140,
+  "ankle": -25,
+  "shoulderFlex": 60,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 70,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ }
+}

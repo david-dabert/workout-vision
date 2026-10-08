@@ -1,0 +1,38 @@
+{
+ "key": "stair_climber",
+ "source": "convention: stepping machine (no stairs rendered), upright with the hands resting on the rails, one cycle from the left foot on the high step to the right; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 5,
+  "shoulderFlex": 20,
+  "shoulderAbd": 25,
+  "elbow": 50,
+  "left": {
+   "hipFlex": 55,
+   "knee": 75,
+   "ankle": -25
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 5,
+   "ankle": 5
+  }
+ },
+ "end": {
+  "pitch": 5,
+  "shoulderFlex": 20,
+  "shoulderAbd": 25,
+  "elbow": 50,
+  "left": {
+   "hipFlex": 0,
+   "knee": 5,
+   "ankle": 5
+  },
+  "right": {
+   "hipFlex": 55,
+   "knee": 75,
+   "ankle": -25
+  }
+ },
+ "noReps": true
+}

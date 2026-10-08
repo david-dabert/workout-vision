@@ -1,0 +1,50 @@
+{
+ "key": "swimming",
+ "source": "convention: front crawl, body horizontal face down (floating, no water rendered), one stroke from the left arm reaching forward with the right finishing at the hip to the reverse, rolling about 35 degrees each way, flutter kick; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.9
+ },
+ "start": {
+  "pitch": 88,
+  "roll": 35,
+  "left": {
+   "shoulderFlex": 170,
+   "shoulderAbd": 10,
+   "elbow": 10,
+   "hipFlex": 10,
+   "knee": 15,
+   "ankle": 45
+  },
+  "right": {
+   "shoulderFlex": -20,
+   "shoulderAbd": 15,
+   "elbow": 20,
+   "hipFlex": -10,
+   "knee": 5,
+   "ankle": 45
+  }
+ },
+ "end": {
+  "pitch": 88,
+  "roll": -35,
+  "left": {
+   "shoulderFlex": -20,
+   "shoulderAbd": 15,
+   "elbow": 20,
+   "hipFlex": -10,
+   "knee": 5,
+   "ankle": 45
+  },
+  "right": {
+   "shoulderFlex": 170,
+   "shoulderAbd": 10,
+   "elbow": 10,
+   "hipFlex": 10,
+   "knee": 15,
+   "ankle": 45
+  }
+ },
+ "noReps": true
+}

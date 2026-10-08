@@ -1,0 +1,25 @@
+{
+ "key": "assisted_chin_up",
+ "source": "convention: machine-assisted chin-up, kneeling on the assist pad (not rendered), underhand shoulder-width grip, from a straight-arm hang until the chin clears the handles; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 90,
+  "ankle": 20
+ },
+ "end": {
+  "shoulderFlex": 20,
+  "shoulderAbd": 25,
+  "elbow": 130,
+  "hipFlex": 5,
+  "knee": 90,
+  "ankle": 20
+ }
+}

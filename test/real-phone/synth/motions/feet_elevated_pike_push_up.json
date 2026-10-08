@@ -1,0 +1,25 @@
+{
+ "key": "feet_elevated_pike_push_up",
+ "source": "convention: hands on the floor, feet on a box, hips stacked high over the shoulders with the torso near vertical, head lowered toward the floor by bending the elbows; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 160,
+  "shoulderFlex": 165,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 75,
+  "ankle": 20
+ },
+ "end": {
+  "pitch": 165,
+  "shoulderFlex": 85,
+  "shoulderAbd": 35,
+  "elbow": 95,
+  "hipFlex": 80,
+  "ankle": 20
+ }
+}

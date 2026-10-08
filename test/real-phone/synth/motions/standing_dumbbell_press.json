@@ -1,0 +1,17 @@
+{
+ "key": "standing_dumbbell_press",
+ "source": "convention: standing, dumbbells pressed from shoulder height, elbows out and a little forward, to lockout over the shoulders; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 25,
+  "humRot": 20,
+  "elbow": 5
+ },
+ "end": {
+  "shoulderFlex": 66,
+  "shoulderAbd": 60,
+  "humRot": 20,
+  "elbow": 95
+ }
+}

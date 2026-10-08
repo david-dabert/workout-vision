@@ -1,0 +1,16 @@
+{
+ "key": "band_pull_apart",
+ "source": "convention: standing, band held at shoulder width with straight arms forward at shoulder height, pulled apart out to the sides until it touches the chest; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 2,
+  "elbow": 5
+ },
+ "end": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 98,
+  "elbow": 5
+ },
+ "view": 0
+}

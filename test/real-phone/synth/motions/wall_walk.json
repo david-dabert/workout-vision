@@ -1,0 +1,24 @@
+{
+ "key": "wall_walk",
+ "source": "convention: from lying face down with the chest and thighs on the floor, hands by the shoulders and the feet against the wall, walking up to a handstand with the chest to the wall (no wall rendered: the feet float where it holds them); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 90,
+  "shoulderFlex": -15,
+  "shoulderAbd": 55,
+  "elbow": 130,
+  "ankle": 0
+ },
+ "end": {
+  "pitch": 170,
+  "shoulderFlex": 170,
+  "shoulderAbd": 10,
+  "elbow": 3,
+  "hipFlex": 5,
+  "ankle": 40
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "key": "walking",
+ "source": "convention: walking stride, one full cycle from the left heel strike (right heel rising behind, arms swinging opposite) to the right; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 2,
+  "shoulderAbd": 8,
+  "left": {
+   "hipFlex": 25,
+   "knee": 5,
+   "ankle": -15,
+   "shoulderFlex": -20,
+   "elbow": 15
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 15,
+   "ankle": 20,
+   "shoulderFlex": 20,
+   "elbow": 20
+  }
+ },
+ "end": {
+  "pitch": 2,
+  "shoulderAbd": 8,
+  "left": {
+   "hipFlex": -15,
+   "knee": 15,
+   "ankle": 20,
+   "shoulderFlex": 20,
+   "elbow": 20
+  },
+  "right": {
+   "hipFlex": 25,
+   "knee": 5,
+   "ankle": -15,
+   "shoulderFlex": -20,
+   "elbow": 15
+  }
+ },
+ "noReps": true
+}

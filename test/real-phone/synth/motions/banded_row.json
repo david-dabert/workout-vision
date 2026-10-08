@@ -1,0 +1,23 @@
+{
+ "key": "banded_row",
+ "source": "convention: standing band row, band anchored at chest height in front, soft knees, handles pulled from straight arms to the lower ribs; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 5,
+  "hipFlex": 20,
+  "knee": 20,
+  "ankle": -5,
+  "shoulderFlex": 85,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 5,
+  "hipFlex": 20,
+  "knee": 20,
+  "ankle": -5,
+  "shoulderFlex": -25,
+  "shoulderAbd": 20,
+  "elbow": 115
+ }
+}

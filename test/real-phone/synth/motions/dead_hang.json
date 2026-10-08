@@ -1,0 +1,23 @@
+{
+ "key": "dead_hang",
+ "source": "convention: dead hang, hanging relaxed from the bar on straight arms, overhand grip about shoulder width, legs relaxed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderAbd": 170,
+  "elbow": 3,
+  "hipFlex": 5,
+  "knee": 10
+ },
+ "end": {
+  "shoulderAbd": 170,
+  "elbow": 3,
+  "hipFlex": 5,
+  "knee": 10
+ },
+ "view": 0,
+ "noReps": true
+}

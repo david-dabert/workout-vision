@@ -1,0 +1,34 @@
+{
+ "key": "farmer_carry",
+ "source": "convention: walking tall with a heavy dumbbell in each hand, arms straight by the sides, short steps, one cycle from the left foot forward to the right (no weights rendered); a carry, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderAbd": 14,
+  "elbow": 3,
+  "left": {
+   "hipFlex": 18,
+   "knee": 5,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 12,
+   "ankle": 12
+  }
+ },
+ "end": {
+  "shoulderAbd": 14,
+  "elbow": 3,
+  "left": {
+   "hipFlex": -10,
+   "knee": 12,
+   "ankle": 12
+  },
+  "right": {
+   "hipFlex": 18,
+   "knee": 5,
+   "ankle": -10
+  }
+ },
+ "noReps": true
+}

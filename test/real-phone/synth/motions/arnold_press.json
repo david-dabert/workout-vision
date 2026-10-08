@@ -1,0 +1,26 @@
+{
+ "key": "arnold_press",
+ "source": "convention: seated, dumbbells pressed from in front of the chin with the elbows forward and palms in, to lockout overhead; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 170,
+  "shoulderAbd": 25,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 60,
+  "shoulderAbd": 10,
+  "humRot": 0,
+  "elbow": 140
+ }
+}

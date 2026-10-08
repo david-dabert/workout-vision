@@ -1,0 +1,15 @@
+{
+ "key": "front_raise",
+ "source": "convention: standing, both dumbbells raised together in front, straight arms, from the thighs to shoulder height; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 6,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 92,
+  "shoulderAbd": 6,
+  "elbow": 10
+ }
+}

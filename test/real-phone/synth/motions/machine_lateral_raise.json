@@ -1,0 +1,27 @@
+{
+ "key": "machine_lateral_raise",
+ "source": "convention: seated in the machine, elbows bent at 90 degrees against the pads, upper arms raised out to the sides to shoulder height; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 15,
+  "humRot": 0,
+  "elbow": 90
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 90,
+  "humRot": 0,
+  "elbow": 90
+ }
+}
