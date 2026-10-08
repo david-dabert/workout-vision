@@ -1,29 +1,31 @@
 {
  "key": "banded_frog_pump",
- "source": "convention: lying on the back, a mini band above the knees, soles of the feet together and knees out wide, thrust the hips up, lower to the floor; angles UNSOURCED",
+ "source": "convention: lying on the back, a mini band above the knees, soles of the feet together close to the hips (the thighs turned out: hipRot) and the knees fallen out wide, thrust the hips up squeezing the glutes while the shoulders and the feet stay on the floor, lower to the floor; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "feet"
  },
  "start": {
   "pitch": -90,
-  "hipFlex": 60,
-  "hipAbd": 55,
-  "knee": 120,
-  "ankle": 30,
+  "hipFlex": 40,
+  "hipAbd": 50,
+  "hipRot": 40,
+  "knee": 135,
+  "ankle": 0,
   "neck": 10,
   "shoulderFlex": 0,
   "shoulderAbd": 15,
   "elbow": 5
  },
  "end": {
-  "pitch": -116,
+  "pitch": -108,
   "hipFlex": 0,
-  "hipAbd": 50,
-  "knee": 115,
-  "ankle": 30,
-  "neck": 30,
-  "shoulderFlex": -26,
+  "hipAbd": 40,
+  "hipRot": 40,
+  "knee": 125,
+  "ankle": -10,
+  "neck": 28,
+  "shoulderFlex": -18,
   "shoulderAbd": 15,
   "elbow": 5
  }

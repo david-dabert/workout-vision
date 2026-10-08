@@ -1,6 +1,6 @@
 {
  "key": "russian_twist",
- "source": "convention: seated, torso leaned back about 45 degrees, knees bent, feet off the floor, hands together; the hands sweep to one hip, then the other (trunk rotation not expressible: arms only); angles UNSOURCED",
+ "source": "convention: seated, torso leaned back about 45 degrees, knees bent, feet off the floor, hands together in front of the chest; the trunk turns on the pelvis (about 45 degrees) and the straightening arms carry the hands beside one hip, then the other (alternate mirror: the swapped rep turns to the right); angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "hips",
@@ -14,9 +14,9 @@
   "ankle": 20,
   "hipAbd": 6,
   "shoulderFlex": 30,
-  "shoulderAbd": 12,
+  "shoulderAbd": 0,
   "humRot": -32,
-  "elbow": 80
+  "elbow": 65
  },
  "end": {
   "pitch": -45,
@@ -25,17 +25,18 @@
   "knee": 70,
   "ankle": 20,
   "hipAbd": 6,
+  "trunkTwist": 45,
   "left": {
-   "shoulderFlex": 20,
-   "shoulderAbd": 15,
-   "humRot": -30,
-   "elbow": 60
+   "shoulderFlex": 25,
+   "shoulderAbd": -5,
+   "humRot": -55,
+   "elbow": 30
   },
   "right": {
-   "shoulderFlex": 45,
-   "shoulderAbd": -35,
-   "humRot": 0,
-   "elbow": 5
+   "shoulderFlex": 21,
+   "shoulderAbd": -6,
+   "humRot": -40,
+   "elbow": 30
   }
  },
  "alternate": "mirror"

@@ -1,17 +1,25 @@
 {
  "key": "upright_row",
- "source": "convention: standing, barbell with a grip about shoulder width, pulled from the thighs to the upper chest close to the body, elbows leading up and out to shoulder height; angles UNSOURCED",
+ "source": "convention: standing, barbell with a grip about shoulder width, pulled from the thighs to the upper chest close to the body, elbows leading up and out to shoulder height (mid: the bar at the navel, the elbows half way out), the shoulders shrugging slightly at the top; angles UNSOURCED",
  "status": "experimental",
  "start": {
   "shoulderFlex": 8,
-  "shoulderAbd": 8,
+  "shoulderAbd": 10,
   "humRot": -60,
-  "elbow": 8
+  "elbow": 20
+ },
+ "mid": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 42,
+  "humRot": -60,
+  "elbow": 100,
+  "shrug": 5
  },
  "end": {
   "shoulderFlex": 20,
   "shoulderAbd": 75,
   "humRot": -40,
-  "elbow": 140
+  "elbow": 140,
+  "shrug": 15
  }
 }

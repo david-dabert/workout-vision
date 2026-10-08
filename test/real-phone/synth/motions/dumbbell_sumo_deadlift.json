@@ -1,23 +1,25 @@
 {
  "key": "dumbbell_sumo_deadlift",
- "source": "convention: dumbbell sumo deadlift, wide stance, one dumbbell held by its head in both hands between the legs, hinged with the knees out, to lockout; angles UNSOURCED",
+ "source": "convention: dumbbell sumo deadlift, wide stance with the toes turned out about 35 degrees and the feet planted, one dumbbell held by its head in both hands between the legs, hinged with the knees out over the toes, to lockout with the thighs still turned out; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "pitch": 25,
-  "trunk": 10,
-  "hipFlex": 90,
-  "hipAbd": 30,
-  "knee": 85,
-  "ankle": -20,
-  "shoulderFlex": 35,
-  "shoulderAbd": -3,
+  "pitch": 30,
+  "trunk": 15,
+  "hipFlex": 110,
+  "hipAbd": 40,
+  "hipRot": 0,
+  "knee": 95,
+  "ankle": -26,
+  "shoulderFlex": 45,
+  "shoulderAbd": -6,
   "elbow": 5
  },
  "end": {
   "hipAbd": 20,
+  "hipRot": 35,
   "knee": 2,
-  "shoulderFlex": 0,
-  "shoulderAbd": -3,
+  "shoulderFlex": 3,
+  "shoulderAbd": -6,
   "elbow": 5
  }
 }

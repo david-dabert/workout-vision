@@ -1,6 +1,6 @@
 {
  "key": "wrist_curl",
- "source": "convention: seated, leaning forward with the forearms on the thighs, palms up, barbell curled by the wrists alone; the engine has no wrist joint, so both poses are the hold; angles UNSOURCED",
+ "source": "convention: seated, leaning forward with the forearms on the thighs, palms up (pronation -90), the wrists just past the knees; the barbell is lowered by extending the wrists and curled up by the wrists alone; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "hips",
@@ -13,7 +13,9 @@
   "trunk": 35,
   "shoulderFlex": 35,
   "shoulderAbd": 8,
-  "elbow": 90
+  "elbow": 90,
+  "pronation": -90,
+  "wrist": -50
  },
  "end": {
   "hipFlex": 90,
@@ -22,6 +24,8 @@
   "trunk": 35,
   "shoulderFlex": 35,
   "shoulderAbd": 8,
-  "elbow": 90
+  "elbow": 90,
+  "pronation": -90,
+  "wrist": 50
  }
 }

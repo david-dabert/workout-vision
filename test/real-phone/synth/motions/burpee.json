@@ -1,19 +1,45 @@
 {
  "key": "burpee",
- "source": "convention: from standing, down to the chest and thighs on the floor with the hands by the shoulders, and back up to standing; the crouch between and the jump at the top are not posed; angles UNSOURCED",
+ "source": "convention: from standing, squat down and put the hands on the floor in front of the feet (mid), jump the feet back and lower until the chest and thighs touch the floor with the hands by the shoulders, and back up the same way to standing; the jump at the top is not posed, and the jump back and in is a glide (the feet and the hands are pinned together, so each slides about half of what the feet travel); tempo UNSOURCED; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
-  "y": 0.05
+  "y": 0.05,
+  "pin": [
+   "feet",
+   "hands"
+  ]
  },
  "start": {
   "ankle": 0
  },
+ "mid": {
+  "pitch": 80,
+  "trunk": 30,
+  "neck": -20,
+  "shoulderFlex": 100,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "hipFlex": 105,
+  "hipAbd": 8,
+  "knee": 115,
+  "ankle": -45
+ },
  "end": {
   "pitch": 90,
-  "shoulderFlex": -15,
-  "shoulderAbd": 55,
-  "elbow": 130,
+  "shoulderFlex": -5,
+  "shoulderAbd": 50,
+  "elbow": 125,
   "ankle": 0
+ },
+ "tempo": {
+  "out": [
+   0.8,
+   1.6
+  ],
+  "back": [
+   0.9,
+   1.8
+  ]
  }
 }

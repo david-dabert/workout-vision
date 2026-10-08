@@ -1,21 +1,24 @@
 {
  "key": "dumbbell_sumo_squat",
- "source": "convention: dumbbell sumo squat, wide stance with the toes out, one dumbbell hanging between the legs at arm length, knees out over the toes, thighs to about parallel; angles UNSOURCED",
+ "source": "convention: dumbbell sumo squat, wide stance with the toes turned out about 35 degrees and the feet planted, one dumbbell hanging between the legs at arm length, knees out over the toes, thighs to about parallel, trunk fairly upright; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "hipAbd": 22,
-  "shoulderFlex": 5,
-  "shoulderAbd": -4,
+  "hipAbd": 20,
+  "hipRot": 35,
+  "shoulderFlex": 3,
+  "shoulderAbd": -6,
   "elbow": 5
  },
  "end": {
-  "trunk": 20,
-  "hipFlex": 85,
-  "hipAbd": 30,
-  "knee": 100,
-  "ankle": -15,
-  "shoulderFlex": 20,
-  "shoulderAbd": -4,
+  "pitch": 15,
+  "trunk": 10,
+  "hipFlex": 90,
+  "hipAbd": 45,
+  "hipRot": 0,
+  "knee": 90,
+  "ankle": -24,
+  "shoulderFlex": 25,
+  "shoulderAbd": -6,
   "elbow": 5
  }
 }

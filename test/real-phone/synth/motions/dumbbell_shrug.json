@@ -1,12 +1,13 @@
 {
  "key": "dumbbell_shrug",
- "source": "convention: standing, dumbbells hanging at the sides, shoulders shrugged straight up; the engine cannot raise the shoulder girdle, so both poses are the hold; angles UNSOURCED",
+ "source": "convention: standing, dumbbells hanging at the sides, shoulders shrugged straight up (shrug 45: about 6 cm on the rendered bodies) and lowered, arms straight; angles UNSOURCED",
  "status": "experimental",
  "start": {
   "shoulderAbd": 6,
   "elbow": 5
  },
  "end": {
+  "shrug": 45,
   "shoulderAbd": 6,
   "elbow": 5
  },

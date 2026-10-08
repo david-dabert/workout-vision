@@ -1,12 +1,12 @@
 {
  "key": "seal_jack",
- "source": "convention: from feet together with the straight arms forward at shoulder height, palms together, to feet apart with the arms opened out to the sides at shoulder height; the jump itself is not posed; angles UNSOURCED",
+ "source": "convention: from feet together with the straight arms forward at shoulder height, palms together, to feet apart with the arms opened out to the sides at shoulder height, fast (tempo about 0.25-0.5 s each way); the jump itself is not posed; angles UNSOURCED",
  "status": "experimental",
  "start": {
   "knee": 5,
   "ankle": 10,
   "shoulderFlex": 90,
-  "shoulderAbd": 0,
+  "shoulderAbd": -9,
   "elbow": 5
  },
  "end": {
@@ -17,5 +17,15 @@
   "shoulderAbd": 90,
   "elbow": 5
  },
- "view": 0
+ "view": 0,
+ "tempo": {
+  "out": [
+   0.25,
+   0.5
+  ],
+  "back": [
+   0.25,
+   0.5
+  ]
+ }
 }

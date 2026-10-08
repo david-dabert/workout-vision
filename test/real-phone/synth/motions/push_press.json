@@ -1,15 +1,33 @@
 {
  "key": "push_press",
- "source": "convention: standing, barbell in the front rack (where each rep starts after a reset), knee dip and drive, pressed to lockout; the dip itself is not posed; angles UNSOURCED",
+ "source": "convention: standing, barbell in the front rack, where each rep starts and the lifter resets between reps (the catalogue's rest at lockout contradicts this: the dip and drive can only start from the rack); a knee dip with the trunk upright (mid), then the legs drive while the arms press to lockout, and the bar is lowered back to the rack with the knees absorbing it; tempo UNSOURCED; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "shoulderFlex": 40,
-  "shoulderAbd": 22,
-  "elbow": 132
+  "shoulderFlex": 45,
+  "shoulderAbd": 20,
+  "elbow": 135
+ },
+ "mid": {
+  "shoulderFlex": 45,
+  "shoulderAbd": 20,
+  "elbow": 135,
+  "hipFlex": 15,
+  "knee": 30,
+  "ankle": -15
  },
  "end": {
   "shoulderFlex": 175,
   "shoulderAbd": 15,
   "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1.2
+  ],
+  "back": [
+   0.8,
+   1.6
+  ]
  }
 }

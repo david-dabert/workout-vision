@@ -1,26 +1,40 @@
 {
  "key": "hindu_push_up",
- "source": "convention: from downward dog (hips high, arms and back in line, heels down) the body swoops into upward dog (hips low, legs on the floor, chest up on straight arms, back arched) and back; angles UNSOURCED",
+ "source": "convention: from downward dog (hips high, arms and back in line, heels down) the elbows bend and the chest dives low past the hands, hips following (mid), then the arms straighten into upward dog (hips low, legs long, chest up on straight arms, back arched), hands and feet planted throughout; the way back retraces the dive (a dive bomber's return) where a hindu push-up pushes the hips straight back up; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
-  "y": 0.06
+  "y": 0.06,
+  "pin": [
+   "feet",
+   "hands"
+  ]
  },
  "start": {
-  "pitch": 135,
+  "pitch": 131,
   "neck": 10,
-  "shoulderFlex": 172,
+  "shoulderFlex": 174,
   "shoulderAbd": 10,
   "elbow": 5,
-  "hipFlex": 105,
+  "hipFlex": 95,
   "knee": 0,
-  "ankle": -30
+  "ankle": -35
+ },
+ "mid": {
+  "pitch": 103,
+  "trunk": 20,
+  "neck": -10,
+  "shoulderFlex": 30,
+  "shoulderAbd": 30,
+  "elbow": 125,
+  "hipFlex": 35,
+  "ankle": 7
  },
  "end": {
-  "pitch": 90,
-  "trunk": -50,
+  "pitch": 79,
+  "trunk": -52,
   "neck": -25,
-  "shoulderFlex": 40,
+  "shoulderFlex": 20,
   "shoulderAbd": 10,
   "elbow": 5,
   "hipFlex": 0,

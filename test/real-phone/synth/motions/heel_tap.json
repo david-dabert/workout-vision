@@ -1,6 +1,6 @@
 {
  "key": "heel_tap",
- "source": "convention: lying on the back, knees bent, feet flat close to the hips, shoulders off the floor, arms long by the sides; the trunk bends side to side so each hand reaches its heel (lateral trunk bend not alternable: arms only); angles UNSOURCED",
+ "source": "convention: lying on the back, knees bent, feet flat close to the hips, shoulders off the floor, arms long by the sides; the trunk bends sideways so one hand slides down to its heel, back to centre, then the other side; tempo UNSOURCED; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
@@ -21,20 +21,30 @@
  "end": {
   "pitch": -90,
   "trunk": 25,
+  "trunkSide": 28,
   "neck": 5,
   "hipFlex": 60,
   "knee": 115,
   "ankle": 35,
   "hipAbd": 10,
+  "shoulderFlex": 12,
   "elbow": 5,
   "left": {
-   "shoulderFlex": 5,
-   "shoulderAbd": 28
+   "shoulderAbd": 18
   },
   "right": {
-   "shoulderFlex": 18,
-   "shoulderAbd": 2
+   "shoulderAbd": 6
   }
  },
- "alternate": "mirror"
+ "alternate": "mirror",
+ "tempo": {
+  "out": [
+   0.3,
+   0.7
+  ],
+  "back": [
+   0.3,
+   0.7
+  ]
+ }
 }

@@ -1,31 +1,67 @@
 {
  "key": "typewriter_push_up",
- "source": "convention: wide hands, held low in a push-up, the body glides towards one hand (that elbow bends deep, the other straightens) and back to centre, sides alternating; angles UNSOURCED",
+ "source": "convention: from a high plank with the hands wide, lower towards one hand (that elbow bends deep, the other arm straightens out to the side; mid), slide across low to the other hand, and back the same way up to the plank; hands and feet planted, the body turning slightly over them; the next rep starts towards the other hand; the way down and up is diagonal (to and from the first side) where the usual rep lowers and rises at the centre; tempo UNSOURCED; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
-  "y": 0.08
+  "y": 0.08,
+  "pin": [
+   "feet",
+   "hands"
+  ]
  },
  "start": {
-  "pitch": 80,
-  "shoulderFlex": 25,
-  "shoulderAbd": 65,
-  "elbow": 70,
-  "ankle": 38
+  "pitch": 74,
+  "shoulderFlex": 75,
+  "shoulderAbd": 32,
+  "elbow": 5,
+  "ankle": 30
  },
- "end": {
-  "pitch": 80,
+ "mid": {
+  "pitch": 82,
+  "yaw": 7,
+  "trunkTwist": -8,
   "ankle": 38,
   "left": {
-   "shoulderFlex": 15,
-   "shoulderAbd": 72,
-   "elbow": 112
+   "shoulderFlex": 6,
+   "shoulderAbd": 60,
+   "humRot": 12,
+   "elbow": 125
   },
   "right": {
-   "shoulderFlex": 45,
-   "shoulderAbd": 58,
-   "elbow": 12
+   "shoulderFlex": 57,
+   "shoulderAbd": 51,
+   "humRot": 0,
+   "elbow": 14
   }
  },
- "alternate": "mirror"
+ "end": {
+  "pitch": 82,
+  "yaw": -7,
+  "trunkTwist": 8,
+  "ankle": 38,
+  "left": {
+   "shoulderFlex": 57,
+   "shoulderAbd": 51,
+   "humRot": 0,
+   "elbow": 14
+  },
+  "right": {
+   "shoulderFlex": 6,
+   "shoulderAbd": 60,
+   "humRot": 12,
+   "elbow": 125
+  }
+ },
+ "alternate": "mirror",
+ "tempo": {
+  "out": [
+   1,
+   2.2
+  ],
+  "back": [
+   1,
+   2.2
+  ]
+ }
 }

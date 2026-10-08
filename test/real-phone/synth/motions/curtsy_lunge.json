@@ -1,7 +1,10 @@
 {
  "key": "curtsy_lunge",
- "source": "convention: hands on the hips, one leg steps back and across behind the other, both knees bend until the back knee nears the floor, push back to standing; left then right; angles UNSOURCED",
+ "source": "convention: hands on the hips, one leg steps back and across behind the other, both knees bend until the back knee nears the floor, the pelvis turning a little towards the back leg and the chest kept square, push back to standing; left then right; the hips are held in place horizontally (pin none: with both legs moving on every rep a feet pin would slide the front foot by half the step), so the front foot slides forward under them; angles UNSOURCED",
  "status": "experimental",
+ "support": {
+  "pin": "none"
+ },
  "start": {
   "shoulderFlex": -15,
   "shoulderAbd": 45,
@@ -9,6 +12,8 @@
   "elbow": 100
  },
  "end": {
+  "yaw": -10,
+  "trunkTwist": 10,
   "trunk": 10,
   "shoulderFlex": -15,
   "shoulderAbd": 45,
@@ -17,14 +22,14 @@
   "left": {
    "hipFlex": 80,
    "hipAbd": 8,
-   "knee": 95,
-   "ankle": -15
+   "knee": 110,
+   "ankle": -30
   },
   "right": {
-   "hipFlex": -15,
-   "hipAbd": -35,
-   "knee": 85,
-   "ankle": 40
+   "hipFlex": 0,
+   "hipAbd": -25,
+   "knee": 95,
+   "ankle": 0
   }
  },
  "alternate": "mirror"

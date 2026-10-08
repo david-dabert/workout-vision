@@ -1,6 +1,6 @@
 {
  "key": "banded_clamshell",
- "source": "convention: lying on the right side with a mini band above the knees, hips bent about 45 degrees and knees about 90, feet together, the top (left) knee opened against the band and closed; angles UNSOURCED",
+ "source": "convention: lying on the right side with a mini band above the knees, hips bent about 45 degrees and knees about 90, knees and feet stacked; the top (left) knee opens towards the ceiling against the band while the feet stay together (the thigh turns out: hipAbd with hipRot, the leg turning about the hip-ankle line), and closes; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
@@ -9,7 +9,7 @@
  "start": {
   "roll": 90,
   "hipFlex": 45,
-  "hipAbd": 0,
+  "hipAbd": -5,
   "knee": 90,
   "ankle": 0,
   "right": {
@@ -25,10 +25,17 @@
  "end": {
   "roll": 90,
   "hipFlex": 45,
+  "hipAbd": -5,
   "knee": 90,
   "ankle": 0,
+  "right": {
+   "shoulderAbd": 160,
+   "elbow": 40
+  },
   "left": {
-   "hipAbd": 40,
+   "hipFlex": 35,
+   "hipAbd": 25,
+   "hipRot": 35,
    "shoulderFlex": 70,
    "shoulderAbd": 10,
    "elbow": 60

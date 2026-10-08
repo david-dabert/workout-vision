@@ -1,29 +1,38 @@
 {
  "key": "archer_push_up",
- "source": "convention: hands very wide, the body lowered towards one hand whose elbow bends while the other arm stays straight and slides out level, sides alternating; angles UNSOURCED",
+ "source": "convention: hands very wide, the body lowered towards one hand whose elbow bends while the other arm stays straight and reaches out to the side, the chest shifting over the bending hand (the body turns over the planted feet, the working shoulder a little lower), the gaze a little ahead, sides alternating; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
-  "y": 0.08
+  "y": 0.08,
+  "pin": [
+   "feet",
+   "hands"
+  ]
  },
  "start": {
-  "ankle": 30,
-  "pitch": 72,
-  "shoulderFlex": 72,
-  "shoulderAbd": 50,
-  "elbow": 5
+  "pitch": 74,
+  "neck": -20,
+  "shoulderFlex": 75,
+  "shoulderAbd": 32,
+  "elbow": 5,
+  "ankle": 30
  },
  "end": {
-  "pitch": 82,
+  "pitch": 81,
+  "yaw": 7,
+  "trunkTwist": -8,
+  "neck": -20,
   "ankle": 35,
   "left": {
-   "shoulderFlex": 30,
-   "shoulderAbd": 68,
-   "elbow": 100
+   "shoulderFlex": 15,
+   "shoulderAbd": 50,
+   "humRot": 10,
+   "elbow": 112
   },
   "right": {
-   "shoulderFlex": 55,
-   "shoulderAbd": 78,
+   "shoulderFlex": 68,
+   "shoulderAbd": 47,
    "elbow": 3
   }
  },

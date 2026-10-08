@@ -1,41 +1,57 @@
 {
  "key": "cable_woodchop",
- "source": "convention: high-to-low chop, standing side-on to a high pulley, feet wide, both hands on the handle above the near shoulder; arms stay long and pull down across the body to outside the far hip as the hips and shoulders turn and the knees bend (trunk rotation approximated by turning the whole body); angles UNSOURCED",
+ "source": "convention: high-to-low chop, standing side-on to a high pulley, feet wide and planted, both hands on the handle above the near (left) shoulder; arms stay long and pull down across the body to outside the far (right) hip as the trunk turns on the pelvis (about 45 degrees each way) and the knees bend (the hips' own turn and the back foot's pivot are not posed); angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "yaw": 25,
+  "trunkTwist": 45,
   "hipFlex": 8,
   "knee": 12,
   "ankle": -4,
   "hipAbd": 12,
   "left": {
-   "shoulderFlex": 120,
-   "shoulderAbd": -5,
-   "elbow": 30
+   "shoulderFlex": 130,
+   "shoulderAbd": -6,
+   "humRot": 30,
+   "elbow": 5
   },
   "right": {
-   "shoulderFlex": 140,
-   "shoulderAbd": -30,
+   "shoulderFlex": 132,
+   "shoulderAbd": -25,
+   "elbow": 3
+  }
+ },
+ "mid": {
+  "left": {
+   "shoulderFlex": 88,
+   "shoulderAbd": -9,
+   "humRot": 0,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 88,
+   "shoulderAbd": -9,
+   "humRot": 0,
    "elbow": 5
   }
  },
  "end": {
-  "yaw": -25,
+  "trunkTwist": -45,
+  "trunk": 15,
   "hipFlex": 30,
   "knee": 38,
   "ankle": -8,
   "hipAbd": 12,
-  "trunk": 15,
   "left": {
-   "shoulderFlex": 35,
-   "shoulderAbd": -25,
+   "shoulderFlex": 46,
+   "shoulderAbd": -15,
+   "humRot": -30,
    "elbow": 5
   },
   "right": {
-   "shoulderFlex": 30,
-   "shoulderAbd": -10,
-   "humRot": 20,
-   "elbow": 15
+   "shoulderFlex": 47,
+   "shoulderAbd": -18,
+   "humRot": -35,
+   "elbow": 5
   }
  }
 }
