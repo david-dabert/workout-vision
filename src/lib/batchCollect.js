@@ -2,7 +2,7 @@
  * The batch collector's rules (collect-batch.html): many sets picked at once, one row each, in the order
  * they were filmed. Pure, so the page and its tests share them.
  */
-import { COUNTABLE_RANGE_DEG } from './counting/core';
+import { COUNTABLE_RANGE_DEG, liftDefinition } from './counting/core';
 
 /** The videos by their files' dates, then by name read as the phone numbers them (IMG_999 before IMG_1000).
  * On an iPhone the date may be when Photos handed the file over, so each row shows its video. */
@@ -31,8 +31,14 @@ export function rowErrors(row) {
  * public clips, 6.4 % fall under 35 degrees (review of 1 October), which is why 35 was not kept.
  */
 export const MISMATCH_RANGE_DEG = COUNTABLE_RANGE_DEG;
-export function mismatchNote(set, liftLabel, range) {
-  if (!(range < MISMATCH_RANGE_DEG)) return '';
+/**
+ * The floor a lift's range is held to: its own set floor where it has one (core.ts, LiftDefinition.minRangeDeg: the
+ * prone Y raise's 10 degrees, collected since 8 October though not yet offered), else MISMATCH_RANGE_DEG, so the
+ * warning never stands beside a count the counter would make.
+ */
+export const mismatchFloor = lift => liftDefinition(lift)?.minRangeDeg ?? MISMATCH_RANGE_DEG;
+export function mismatchNote(set, liftLabel, range, floor = MISMATCH_RANGE_DEG) {
+  if (!(range < floor)) return '';
   return `Check set ${set}: the app sees too little movement of the joint that counts ${liftLabel} (${Math.round(range)}°) to count it. Is it the right video, filmed so that joint shows?`;
 }
 

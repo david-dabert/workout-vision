@@ -176,7 +176,7 @@ describe('counts filled from the line', () => {
   });
 });
 
-import { mismatchNote, flaggedSets, MISMATCH_RANGE_DEG } from '../batchCollect';
+import { mismatchNote, mismatchFloor, flaggedSets, MISMATCH_RANGE_DEG } from '../batchCollect';
 describe('a video the app cannot count is flagged before it is shared (1 October 2026)', () => {
   it('uses the counter\'s own minimum range, so it never stands beside a count', () => {
     expect(MISMATCH_RANGE_DEG).toBe(20);
@@ -186,6 +186,11 @@ describe('a video the app cannot count is flagged before it is shared (1 October
   });
   it('says nothing when the range is unknown', () => {
     expect(mismatchNote(1, 'Curl', NaN)).toBe('');
+    // A lift with its own set floor is held to it (core.ts, LiftDefinition.minRangeDeg): the prone Y raise's 10 degrees.
+    expect(mismatchFloor('prone_y_raise')).toBe(10);
+    expect(mismatchFloor('squat')).toBe(MISMATCH_RANGE_DEG);
+    expect(mismatchNote(3, 'Prone Y raise', 12, mismatchFloor('prone_y_raise'))).toBe('');
+    expect(mismatchNote(3, 'Prone Y raise', 8, mismatchFloor('prone_y_raise'))).toMatch(/^Check set 3: /);
     expect(mismatchNote(1, 'Curl', undefined)).toBe('');
   });
   it('lists only collected, flagged sets', () => {
