@@ -17,13 +17,13 @@
   "elbow": 5
  },
  "end": {
-  "pitch": -108,
+  "pitch": -116,
   "hipFlex": 0,
   "hipAbd": 50,
   "knee": 115,
   "ankle": 30,
   "neck": 30,
-  "shoulderFlex": -18,
+  "shoulderFlex": -26,
   "shoulderAbd": 15,
   "elbow": 5
  }

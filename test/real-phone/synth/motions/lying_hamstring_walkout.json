@@ -6,12 +6,12 @@
   "anchor": "feet"
  },
  "start": {
-  "pitch": -112,
+  "pitch": -116,
   "hipFlex": 0,
   "knee": 105,
   "ankle": 7,
   "neck": 30,
-  "shoulderFlex": -22,
+  "shoulderFlex": -26,
   "shoulderAbd": 15,
   "elbow": 5,
   "hipAbd": 6

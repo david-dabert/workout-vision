@@ -7,9 +7,9 @@
  },
  "start": {
   "pitch": -90,
-  "hipFlex": 45,
-  "hipAbd": 15,
-  "knee": 110,
+  "hipFlex": 55,
+  "hipAbd": 8,
+  "knee": 120,
   "ankle": 25,
   "neck": 10,
   "shoulderFlex": 0,
@@ -17,14 +17,14 @@
   "elbow": 5
  },
  "end": {
-  "pitch": -112,
+  "pitch": -116,
   "hipFlex": 0,
-  "hipAbd": 15,
-  "knee": 105,
-  "ankle": 7,
+  "knee": 114,
+  "ankle": 2,
   "neck": 30,
-  "shoulderFlex": -22,
+  "shoulderFlex": -26,
   "shoulderAbd": 15,
-  "elbow": 5
+  "elbow": 5,
+  "hipAbd": 8
  }
 }

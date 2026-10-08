@@ -13,8 +13,8 @@
   "ankle": 18,
   "neck": 10,
   "shoulderFlex": 0,
-  "shoulderAbd": 60,
-  "elbow": 60
+  "shoulderAbd": 55,
+  "elbow": 15
  },
  "end": {
   "pitch": -90,
@@ -24,7 +24,7 @@
   "ankle": 0,
   "neck": 30,
   "shoulderFlex": 0,
-  "shoulderAbd": 60,
-  "elbow": 60
+  "shoulderAbd": 55,
+  "elbow": 15
  }
 }

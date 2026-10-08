@@ -1,6 +1,6 @@
 {
  "key": "side_lying_hip_abduction",
- "source": "convention: lying on the side in a straight line, head on the bottom arm, the top leg straight and in line with the trunk, raised to about 40 degrees and lowered; angles UNSOURCED",
+ "source": "convention: lying on the right side in a straight line, head on the bottom arm, the top (left) leg straight and in line with the trunk, raised to about 40 degrees and lowered; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
@@ -11,11 +11,11 @@
   "hipFlex": 0,
   "hipAbd": 0,
   "knee": 0,
-  "left": {
+  "right": {
    "shoulderAbd": 165,
    "elbow": 30
   },
-  "right": {
+  "left": {
    "shoulderFlex": 80,
    "shoulderAbd": 10,
    "elbow": 70
@@ -23,7 +23,7 @@
  },
  "end": {
   "roll": 90,
-  "right": {
+  "left": {
    "hipAbd": 40,
    "hipFlex": 0,
    "knee": 0,
@@ -32,5 +32,5 @@
    "elbow": 70
   }
  },
- "side": "right"
+ "side": "left"
 }
