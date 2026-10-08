@@ -3,13 +3,13 @@
  "source": "convention: standing with the back to a low pulley, straight bar at shoulder width, straight arms raised in front to shoulder height; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "shoulderFlex": 5,
-  "shoulderAbd": 2,
+  "shoulderFlex": 8,
+  "shoulderAbd": 5,
   "elbow": 10
  },
  "end": {
   "shoulderFlex": 92,
-  "shoulderAbd": 2,
+  "shoulderAbd": 5,
   "elbow": 10
  }
 }
