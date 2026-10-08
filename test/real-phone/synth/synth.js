@@ -179,22 +179,30 @@ const poseSpec = (uL, uR) => {
   B.Hips.position.copy(B.Hips.parent.worldToLocal(hips));
   body.updateMatrixWorld(true);
 };
-const PIN = { feet: [B.LeftFoot, B.RightFoot, B.LeftToeBase, B.RightToeBase], hands: [B.LeftHand, B.RightHand] };
+// The pinned points by side. A one-sided movement plants only the still side's points (side: the other side's; alternate
+// true: the side at rest on this rep), so a kickback's standing foot stays put.
+const PIN = { feet: { left: [B.LeftFoot, B.LeftToeBase], right: [B.RightFoot, B.RightToeBase] }, hands: { left: [B.LeftHand], right: [B.RightHand] } };
 const pins = (() => {
   if (!P.spec) return [];
   const s = P.spec.support ?? {}, a = s.anchor ?? 'feet', p = s.pin === undefined ? (a === 'feet' || a === 'hands' ? a : null) : s.pin;
   return [].concat(p ?? []).filter(x => { if (PIN[x]) return true; if (x && x !== 'none') console.warn(`support.pin: unknown "${x}"`); return false; });
 })();
-const pinAt = () => {
+const pinSides = (uL, uR) => (P.spec.side ? [P.spec.side === 'left' ? 'right' : 'left']
+  : P.spec.alternate === true && (uL > 0) !== (uR > 0) ? [uL > 0 ? 'right' : 'left'] : ['left', 'right']);
+// The mean of each pinned group's points (over the planted sides), the groups weighing alike.
+const pinAt = sides => {
   let x = 0, z = 0;
-  for (const name of pins) for (const o of PIN[name]) { const w = wp(o); x += w.x / PIN[name].length / pins.length; z += w.z / PIN[name].length / pins.length; }
+  for (const name of pins) {
+    const os = sides.flatMap(sd => PIN[name][sd]);
+    for (const o of os) { const w = wp(o); x += w.x / os.length / pins.length; z += w.z / os.length / pins.length; }
+  }
   return { x, z };
 };
-const pinRest = {}; // the pinned points' mean at u = 0, per swap state (a mirror spec's swapped rest may differ)
+const pinRest = {}; // the pinned points' mean at u = 0, per swap state and planted sides (filled below)
 const applySpec = (uL, uR) => {
   poseSpec(uL, uR);
   if (!pins.length) return;
-  const ref = pinRest[specSwap], cur = pinAt(), hips = wp(B.Hips);
+  const sides = pinSides(uL, uR), ref = pinRest[`${specSwap}:${sides}`], cur = pinAt(sides), hips = wp(B.Hips);
   hips.x += ref.x - cur.x; hips.z += ref.z - cur.z;
   B.Hips.position.copy(B.Hips.parent.worldToLocal(hips));
   body.updateMatrixWorld(true);
@@ -209,7 +217,13 @@ const specSides = (u, busy) => {
   if (P.spec.alternate === 'mirror') return [u, u];
   return [busy && busy !== 'left' || P.spec.side === 'right' ? 0 : u, busy && busy !== 'right' || P.spec.side === 'left' ? 0 : u];
 };
-if (pins.length) { for (const sw of [false, true]) { resetPose(); specSwap = sw; poseSpec(0, 0); pinRest[sw] = pinAt(); } specSwap = false; resetPose(); }
+if (pins.length) {
+  for (const sw of [false, true]) {
+    resetPose(); specSwap = sw; poseSpec(0, 0);
+    for (const sides of [['left', 'right'], ['left'], ['right']]) pinRest[`${sw}:${sides}`] = pinAt(sides);
+  }
+  specSwap = false; resetPose();
+}
 
 // P.seated: rest is the working end of the pose (a squat held low stands for sitting on a chair, there being no
 // chair in the scene), and each rep rises from it and returns: the 30-second chair stand.
@@ -254,13 +268,19 @@ const yaw = (P.view ?? 0) * D, dist = P.dist ?? 2.7;
 camera.position.set(Math.sin(yaw) * dist * S.left, P.camY ?? 1.15, Math.cos(yaw) * dist);
 camera.lookAt(0, 0.95, 0);
 // A spec set is framed on the body: the box of its bones and its head's top at rest, at the via pose and at the working
-// end (both sides), grown by 0.2 m for the flesh and the hair, fits the frame with a margin (P.fill, default 1.15), seen
+// end (both sides, each alone when they alternate, and mirrored), grown by 0.2 m for the flesh and the hair, fits the frame with a margin (P.fill, default 1.15), seen
 // from the view angle and P.camLift m above the box's centre (a phone held at chest height or on a bench; default the
 // spec's camLift, else 0.15: a phone on the floor for a lying body is a negative camLift). Lying and hanging bodies need
 // it; P.dist overrides.
 if (P.spec) {
   const pts = [];
-  for (const u of P.spec.mid ? [0, 0.5, 1] : [0, 1]) { resetPose(); applySpec(u, u); for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o)); }
+  const take = (uL, uR) => { resetPose(); applySpec(uL, uR); for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o)); };
+  for (const u of P.spec.mid ? [0, 0.5, 1] : [0, 1]) {
+    take(u, u);
+    // The poses a set shows besides: one side at a time (alternate true), the mirrored reps (alternate "mirror").
+    if (P.spec.alternate === true) { take(u, 0); take(0, u); }
+    if (P.spec.alternate === 'mirror') { specSwap = true; take(u, u); specSwap = false; }
+  }
   resetPose();
   const bb = new THREE.Box3().setFromPoints(pts).expandByScalar(0.2), c = bb.getCenter(v(0, 0, 0)), size = bb.getSize(v(0, 0, 0));
   const dir = v(Math.sin(yaw) * S.left, 0, Math.cos(yaw)), vfov = camera.fov * D, hfov = 2 * Math.atan(Math.tan(vfov / 2) * W / H);
