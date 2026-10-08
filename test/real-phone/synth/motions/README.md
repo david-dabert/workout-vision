@@ -95,7 +95,8 @@ defaults out 0.5-1.8 and back 0.6-2.2 (fast cardio: high knees, jumping jacks at
 by 25 % on top and keeps its pause at the working end (about 0.15 s) and between reps (about 0.35 s).
 `camLift` (optional): the camera's height above the centre of the body's box, in metres (default 0.15; a phone on the
 floor for a lying exercise: about -0.2 to -0.3). The preview uses it as is; library.mjs draws within 0.2 m of it (without
-it, 0.3 m below to 0.5 m above).
+it, 0.3 m below to 0.5 m above). The camera never goes lower than 1 cm above the floor (a lying body's box centre is only
+0.16-0.3 m up, so these values would otherwise put it under the floor).
 
 The camera frames the box of the skeleton and the head's top at rest, at mid and at the working end (both sides, each
 side alone for alternate true, and the mirrored pose for "mirror"), grown by 0.2 m for the flesh and the hair.

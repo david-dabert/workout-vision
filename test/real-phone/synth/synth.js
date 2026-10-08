@@ -291,7 +291,10 @@ if (P.spec) {
   const dir = v(Math.sin(yaw) * S.left, 0, Math.cos(yaw)), vfov = camera.fov * D, hfov = 2 * Math.atan(Math.tan(vfov / 2) * W / H);
   const across = Math.abs(size.x * dir.z) + Math.abs(size.z * dir.x), depth = Math.abs(size.x * dir.x) + Math.abs(size.z * dir.z);
   const fit = Math.max(size.y / 2 / Math.tan(vfov / 2), across / 2 / Math.tan(hfov / 2)) * (P.fill ?? 1.15) + depth / 2;
-  camera.position.copy(c).add(dir.multiplyScalar(P.dist ?? Math.max(fit, 1.8))).setY(c.y + (P.camLift ?? P.spec.camLift ?? 0.15));
+  // Never under the floor: a lying body's box centre is 0.16-0.3 m up, so a camLift of -0.3 (the library's lowest draw;
+  // README's phone on the floor) put the camera below it, the floor unseen and the body floating (lib-prone_y_raise-v3,
+  // lib-superman-v4). 1 cm: a phone lying on the floor (UNSOURCED, experimental).
+  camera.position.copy(c).add(dir.multiplyScalar(P.dist ?? Math.max(fit, 1.8))).setY(Math.max(0.01, c.y + (P.camLift ?? P.spec.camLift ?? 0.15)));
   camera.lookAt(c);
 }
 
