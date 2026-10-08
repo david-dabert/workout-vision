@@ -6,6 +6,9 @@
 // training set (model-all.json), which never saw them. Also: the learned count as a selector between core, PSC and the
 // motion rhythm; its inference cost. Writes lphase.txt; with LPHASE_VARIANTS, core.json, learned.json and
 // selector.json in the format of scripts/compare-variants.mjs. A benchmark, not a gate.
+// Every set is handed to learnedCount with its lift and its motion spec (spec-of.ts: its lift's spec or its COUNT_AS
+// parent's; RepCount-A's class's; the synthetic and occlusion sets' params.exercise, as export.test.ts wrote them), so
+// a progress-input model (train.py --progress) reads the progress channel it was trained with; other models ignore it.
 import { expect, test } from 'vitest';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
@@ -18,8 +21,9 @@ import { labelledSets, videoSets } from '../accuracy/sets';
 import { pscCount } from '../../../src/lib/counting/psc.js';
 import { foldOf, groupOf } from './data.js';
 import { learnedCount, loadModel } from './model.js';
+import { specFor, specOfSet } from './spec-of';
 
-type Item = { suite: string; name: string; id: string; cls: string; lift: string | null; label: number; wl: any[]; ts: number[]; image: any[] | null; motion?: any; appRefused?: boolean; model: string };
+type Item = { suite: string; name: string; id: string; cls: string; lift: string | null; spec: any | null; label: number; wl: any[]; ts: number[]; image: any[] | null; motion?: any; appRefused?: boolean; model: string };
 const gz = (f: string) => JSON.parse(gunzipSync(readFileSync(f)).toString());
 const PUB = resolve(__dirname, '../public');
 const flat = (frames: any[]) => frames.map(f => (f ? f.flatMap((p: any) => [p.x, p.y]) : null));
@@ -31,19 +35,19 @@ function load(): Item[] {
     for (const f of readdirSync(dir).filter(f => f.endsWith('.json.gz')).sort()) {
       const d = gz(resolve(dir, f));
       if (d.admitted === false || d.split !== 'build') continue;
-      items.push({ suite: ds, name: `public/${ds}/build/${f}`, id: d.id, cls: d.class ?? d.lift, lift: d.lift ?? null, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, image: d.imageXY ?? null, model: ds === 'repcount' ? 'all' : String(foldOf(groupOf(ds, d.id))) });
+      items.push({ suite: ds, name: `public/${ds}/build/${f}`, id: d.id, cls: d.class ?? d.lift, lift: d.lift ?? null, spec: specOfSet(ds, d.lift, d.class), label: d.count, wl: d.worldLandmarks, ts: d.timestamps, image: d.imageXY ?? null, model: ds === 'repcount' ? 'all' : String(foldOf(groupOf(ds, d.id))) });
     }
   }
   for (const s of videoSets().sets) {
     const d = gz(resolve(__dirname, '..', s.name));
-    items.push({ suite: 'real video', name: s.name, id: s.name, cls: s.lift, lift: s.lift, label: s.label, wl: s.wl, ts: s.ts, image: d.imageLandmarks ? flat(d.imageLandmarks) : null, motion: s.motion, appRefused: s.appRefused, model: 'all' });
+    items.push({ suite: 'real video', name: s.name, id: s.name, cls: s.lift, lift: s.lift, spec: specFor(s.lift), label: s.label, wl: s.wl, ts: s.ts, image: d.imageLandmarks ? flat(d.imageLandmarks) : null, motion: s.motion, appRefused: s.appRefused, model: 'all' });
   }
-  for (const s of labelledSets().sets) items.push({ suite: 'stored sets', name: s.name, id: s.name, cls: s.lift, lift: s.lift, label: s.label, wl: s.wl, ts: s.ts, image: null, model: 'all' });
+  for (const s of labelledSets().sets) items.push({ suite: 'stored sets', name: s.name, id: s.name, cls: s.lift, lift: s.lift, spec: specFor(s.lift), label: s.label, wl: s.wl, ts: s.ts, image: null, model: 'all' });
   for (const [suite, dir] of [['synthetic', '../synth/sets'], ['occlusion', '../occlusion/sets']]) {
     const D = resolve(__dirname, dir);
     for (const f of readdirSync(D).filter(f => f.endsWith('.json.gz')).sort()) {
       const r = gz(resolve(D, f)), lift = r.params.lift ?? r.params.exercise;
-      items.push({ suite, name: `${suite}/${f}`, id: f, cls: lift, lift, label: r.reps.length, wl: r.worldLandmarks, ts: r.timestamps, image: null, motion: r.occlusion?.motion ? { ...r.occlusion.motion } : undefined, model: String(foldOf(groupOf(suite, lift))) });
+      items.push({ suite, name: `${suite}/${f}`, id: f, cls: lift, lift, spec: specFor(r.params.exercise), label: r.reps.length, wl: r.worldLandmarks, ts: r.timestamps, image: null, motion: r.occlusion?.motion ? { ...r.occlusion.motion } : undefined, model: String(foldOf(groupOf(suite, lift))) });
     }
   }
   return items;
@@ -67,7 +71,7 @@ test.skipIf(!process.env.LPHASE)('learned phase counter against core and PSC', (
   let ms = 0, secs = 0;
   for (const it of items) {
     const t0 = performance.now();
-    const L = learnedCount(models[it.model], it.wl, it.ts);
+    const L = learnedCount(models[it.model], it.wl, it.ts, { lift: it.lift, spec: it.spec, image: it.image });
     const dt = performance.now() - t0;
     if (it.model === 'all') { ms += dt; secs += it.ts[it.ts.length - 1] - it.ts[0]; }
     let core: any = 'no counter';
@@ -97,10 +101,11 @@ test.skipIf(!process.env.LPHASE)('learned phase counter against core and PSC', (
     res.set(it, { L, learned, core, psc, rhythm, sel: near([core, psc]), sel3: near([core, psc, rhythm]), fill, selBoth });
   }
   const R = (i: Item) => res.get(i);
+  const suitesSeen = () => [...new Set(items.map(i => i.suite))].map(s => { const g = items.filter(i => i.suite === s); return `${s} ${g.filter(i => i.spec).length} of ${g.length}`; }).join(', ');
   const day = new Date().toISOString().slice(0, 10);
   const m0 = models.all;
   const lines = [`Learned phase counter (test/real-phone/learned-phase/), readout "${READ}", against the core (summarizeCount) and PSC (psc.js), ${day}. Build halves only.`,
-    `Model: ${m0.meta.trainSets} training sets (${m0.meta.trainSuites.join(', ')}), ${m0.bytes} bytes of float16 weights, ${m0.dil.length} dilated blocks of ${m0.C} channels.`,
+    `Model: ${m0.meta.trainSets} training sets (${m0.meta.trainSuites.join(', ')}), ${m0.bytes} bytes of float16 weights, ${m0.dil.length} dilated blocks of ${m0.C} channels; input ${m0.input === 'progress' ? `pose and the spec's progress (sets with a spec: ${suitesSeen()})` : 'pose only'}.`,
     `JS inference (model.js, this machine, Node): ${(ms / Math.max(secs, 1) * 60).toFixed(0)} ms per minute of recording (features + forward + readout).`,
     'Cells: exact / within 1 / off by 3+ (a refusal or no count is off by 3+). Held out: cv suites by the fold model not trained on their fold; RepCount-A and David\'s sets by the model trained on all training sets.', '',
     '| Dataset | Sets | Learned | PSC | Core (mapped) | Learned on mapped | PSC on mapped | Selector core/PSC on mapped | Control: PSC where core refuses | Control: selector where both count | Mapped |', '|---|---:|---|---|---|---|---|---|---|---|---:|'];

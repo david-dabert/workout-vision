@@ -2,7 +2,9 @@ name: Motion library
 
 # A data and bench job, not a gate (test/real-phone/synth/motions/README.md). Renders the motion library (every catalogue
 # exercise posed by hand; library.mjs's matrix, 6 sets per exercise) on 20 runners through the app's pose model; counts
-# it as the app does (library-core.test.ts); trains the learned phase counter without and with it, three seeds each, and
+# it as the app does (library-core.test.ts); trains the learned phase counter without and with it, and with it and the
+# progress input (library-progress: each set's motion-spec progress, sgc.js specProgress, as two more input channels;
+# export with LPHASE_PROGRESS=1, train.py --progress), three seeds each, and
 # reads RepCount-A's held-out build half and David's real sets with every model (learned-phase.test.ts, compare-runs.py);
 # then commits only the reports and the weights to the branch that ran it. The rendered sets stay in the run's artifacts
 # for 7 days: too large for the repository, and rendered again from the specs at will. A run starts when a push changes
@@ -97,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [base, library]
+        variant: [base, library, library-progress]
         seed: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
@@ -111,20 +113,23 @@ jobs:
       - run: npm ci
       - run: pip install numpy==2.4.6
       - uses: actions/download-artifact@v4
-        if: matrix.variant == 'library'
+        if: matrix.variant != 'base'
         with:
           pattern: motion-library-*
           path: ${{ runner.temp }}/lib
       - name: Export
         run: |
-          if [ "${{ matrix.variant }}" = library ]; then export LPHASE_LIBRARY="$RUNNER_TEMP/lib"; fi
+          if [ "${{ matrix.variant }}" != base ]; then export LPHASE_LIBRARY="$RUNNER_TEMP/lib"; fi
+          if [ "${{ matrix.variant }}" = library-progress ]; then export LPHASE_PROGRESS=1; fi
           LPHASE_EXPORT="$RUNNER_TEMP/exp" npx vitest run --no-cache test/real-phone/learned-phase/export.test.ts
       # The three fold models at once, one thread each (two threads per model were three times faster than the default
       # threading on four cores, 8 October).
       - name: Train
         run: |
+          mode=""
+          if [ "${{ matrix.variant }}" = library-progress ]; then mode="--progress"; fi
           for f in 0 1 all; do
-            OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 -I test/real-phone/learned-phase/train.py "$RUNNER_TEMP/exp" "$RUNNER_TEMP/out-$f" --epochs 60 --seed ${{ matrix.seed }} --folds $f > "$RUNNER_TEMP/train-$f.log" 2>&1 &
+            OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 -I test/real-phone/learned-phase/train.py "$RUNNER_TEMP/exp" "$RUNNER_TEMP/out-$f" --epochs 60 --seed ${{ matrix.seed }} --folds $f $mode > "$RUNNER_TEMP/train-$f.log" 2>&1 &
           done
           wait
           tail -n 4 "$RUNNER_TEMP"/train-*.log
