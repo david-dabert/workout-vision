@@ -268,10 +268,10 @@ const yaw = (P.view ?? 0) * D, dist = P.dist ?? 2.7;
 camera.position.set(Math.sin(yaw) * dist * S.left, P.camY ?? 1.15, Math.cos(yaw) * dist);
 camera.lookAt(0, 0.95, 0);
 // A spec set is framed on the body: the box of its bones and its head's top at rest, at the via pose and at the working
-// end (both sides, each alone when they alternate, and mirrored), grown by 0.2 m for the flesh and the hair, fits the frame with a margin (P.fill, default 1.15), seen
-// from the view angle and P.camLift m above the box's centre (a phone held at chest height or on a bench; default the
-// spec's camLift, else 0.15: a phone on the floor for a lying body is a negative camLift). Lying and hanging bodies need
-// it; P.dist overrides.
+// end (both sides, each alone when they alternate, and mirrored), grown by 0.2 m for the flesh and the hair, fits the
+// frame with a margin (P.fill, default 1.15), seen from the view angle and P.camLift m above the box's centre (a phone
+// held at chest height or on a bench; default the spec's camLift, else 0.15; a phone on the floor for a lying body is a
+// negative camLift). Lying and hanging bodies need it; P.dist overrides.
 if (P.spec) {
   const pts = [];
   const take = (uL, uR) => { resetPose(); applySpec(uL, uR); for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o)); };
