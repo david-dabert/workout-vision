@@ -18,12 +18,16 @@ const LOST = process.env.LOST_POSE ? readFileSync(process.env.LOST_POSE) : null;
 const LOCK = !!process.env.SYNTH_LOCK;
 // SYNTH_GATE=1: the pose path with the continuity gate on (synth.js, P.gate; src/lib/jumpGate.js).
 const GATE = !!process.env.SYNTH_GATE;
-if (!OUT || !MODEL) throw new Error('SYNTH_OUT and SYNTH_MODEL are required');
+// SYNTH_MODELS=name=<glb>,name=<glb>: a body per set, by its matrix entry's `model` (the motion library, library.mjs).
+const MODELS = Object.fromEntries((process.env.SYNTH_MODELS ?? '').split(',').filter(Boolean).map(x => { const [k, f] = x.split('='); return [k, readFileSync(f)]; }));
+if (!OUT || (!MODEL && !Object.keys(MODELS).length)) throw new Error('SYNTH_OUT and SYNTH_MODEL (or SYNTH_MODELS) are required');
 mkdirSync(OUT, { recursive: true });
 const sets = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const PORT = Number(process.env.SYNTH_PORT || 5191), URL = `http://localhost:${PORT}/workout-vision/test/real-phone/synth/synth.html`;
-const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'ignore', detached: true });
-const glb = readFileSync(MODEL);
+// SYNTH_SERVER=external: a Vite server already listens on SYNTH_PORT (several run.mjs at once share one, so they do
+// not race on Vite's dependency cache; motion-library.yml); otherwise this run starts its own and stops it at the end.
+const server = process.env.SYNTH_SERVER === 'external' ? null : spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'ignore', detached: true });
+const glb = MODEL ? readFileSync(MODEL) : null;
 try {
   for (let i = 0; i < 60; i++) { try { await fetch(URL); break; } catch { await new Promise(r => setTimeout(r, 1000)); } }
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -32,7 +36,7 @@ try {
     if (existsSync(file)) continue;
     const page = await browser.newPage();
     page.on('pageerror', e => console.log('pageerror', p.id, e.message));
-    await page.route('**/synth-model.glb', r => r.fulfill({ body: glb, contentType: 'model/gltf-binary' }));
+    await page.route('**/synth-model.glb', r => r.fulfill({ body: MODELS[p.model] ?? glb, contentType: 'model/gltf-binary' }));
     if (BENCH) await page.route('**/bench-pose.task', r => r.fulfill({ body: BENCH, contentType: 'application/octet-stream' }));
     if (LOST) await page.route('**/lost-pose.task', r => r.fulfill({ body: LOST, contentType: 'application/octet-stream' }));
     await page.addInitScript(x => { window.SYNTH = x; }, { ...p, ...(BENCH ? { benchPose: true } : {}), ...(LOST ? { lostPose: true } : {}), ...(LOCK ? { lock: true } : {}), ...(GATE ? { gate: true } : {}) });
@@ -47,4 +51,4 @@ try {
     await page.close();
   }
   await browser.close();
-} finally { try { process.kill(-server.pid); } catch {} }
+} finally { if (server) try { process.kill(-server.pid); } catch {} }

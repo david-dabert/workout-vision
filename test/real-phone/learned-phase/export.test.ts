@@ -1,11 +1,12 @@
-// LPHASE_EXPORT=<folder> [LPHASE_TRAIN=<RepCount train-split landmark folder, default repcount-train/>] npx vitest run --no-cache test/real-phone/learned-phase/export.test.ts
+// LPHASE_EXPORT=<folder> [LPHASE_TRAIN=<RepCount train-split landmark folder, default repcount-train/>] [LPHASE_LIBRARY=<rendered motion library folder>] npx vitest run --no-cache test/real-phone/learned-phase/export.test.ts
 // Writes the training and evaluation data of the learned phase counter for train.py: <folder>/index.json (one entry per
 // set: suite, name, group, class, label, role, fold, frames, rep bounds in grid frames) and <folder>/joints.f32 (every
 // set's 15 Hz joints, data.js resampleJoints, concatenated). What it never writes: David's stored sets and real videos
 // (the exams, read only by learned-phase.test.ts in JS) and every held-out half (scripts/public/split.mjs).
 // Roles: train (RepCount-A train split, every set), eval (RepCount-A test and validation build half: never trained on),
 // cv (Countix, MM-Fit, CF-Rep build halves, synthetic and occlusion sets: two folds by group, each fold model trained on
-// the other fold only).
+// the other fold only); with LPHASE_LIBRARY, train also holds the motion library's rendered sets (synth/motions/, run.mjs
+// output: every catalogue exercise posed by hand, never a person's set).
 import { expect, test } from 'vitest';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, openSync, writeSync, closeSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
@@ -57,6 +58,12 @@ test.skipIf(!OUT)('export learned-phase data', () => {
       const g = groupOf(suite, lift);
       add({ suite, name: `${suite}/${f}`, group: g, cls: lift, label: r.reps.length, role: 'cv', fold: foldOf(g) }, r.worldLandmarks, r.timestamps, r.reps.map((p: any) => [p.start, p.end]));
     }
+  }
+  // The motion library (synth/motions/README.md), rendered by run.mjs from library.mjs's matrix: training data only.
+  const LIB = process.env.LPHASE_LIBRARY;
+  if (LIB) for (const f of readdirSync(LIB, { recursive: true }).map(String).filter(f => f.endsWith('.json.gz')).sort()) {
+    const r = gz(resolve(LIB, f)), key = r.params.spec?.key ?? r.params.exercise;
+    add({ suite: 'library', name: `library/${f}`, group: `library:${key}`, cls: key, label: r.reps.length, role: 'train', fold: -1 }, r.worldLandmarks, r.timestamps, r.reps.map((p: any) => [p.start, p.end]));
   }
   closeSync(fd);
   writeFileSync(resolve(OUT!, 'index.json'), JSON.stringify(index));

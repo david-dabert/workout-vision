@@ -157,7 +157,7 @@ const reps = [];
 let t = P.startRest ?? 1.0;
 for (let i = 0; i < P.reps; i++) {
   const out = jit(P.outSec ?? 1.1, 0.25), back = jit(P.backSec ?? 1.4, 0.25), hold = jit(0.15, 0.5), gap = jit(0.35, 0.5);
-  reps.push({ start: t, top: t + out, hold: t + out + hold, end: t + out + hold + back, j: jit(1, 0.04) });
+  reps.push({ start: t, top: t + out, hold: t + out + hold, end: t + out + hold + back, j: jit(1, P.ampJit ?? 0.04) });
   t += out + hold + back + gap;
 }
 // P.endUp: the last rep stops at its working end and holds it to the end of the video (a 30-second test
