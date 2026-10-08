@@ -10,7 +10,7 @@
 // parent's; RepCount-A's class's; the synthetic and occlusion sets' params.exercise, as export.test.ts wrote them), so
 // a progress-input model (train.py --progress) reads the progress channel it was trained with; other models ignore it.
 import { expect, test } from 'vitest';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
