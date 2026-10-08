@@ -155,6 +155,9 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
  * onReplay: opens the replay; absent when the video is not at hand.
  * liveShown: for a set counted live (LiveSession.jsx), the last count the live screen showed, or null.
  */
+// Whether a flagged set offers the spec-guided count beside the app's (see `second` below). Status: off, measured.
+const OFFER_BODY_SECOND = false;
+
 export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
@@ -173,7 +176,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // the save and after it: showMeasures), and the spec-guided count beside it when it differs, both labelled; nothing
   // is saved until the person confirms or changes the number. Status: experimental (test/real-phone/accuracy/body-check.txt).
   const flagged = !result.refused && result.count > 0 && result.bodyCheck?.flagged === true;
-  const second = flagged && Number.isInteger(result.bodyCheck.second?.count) && result.bodyCheck.second.count > 0 && result.bodyCheck.second.count !== result.count ? result.bodyCheck.second.count : null;
+  // The spec-guided count is not offered beside it (8 October 2026): on the real-world sets it flags (public build halves,
+  // RepCount-A, David's sets) it was right 7 times in 79 where offered, the app's own count 19 times on the same sets
+  // (test/real-phone/accuracy/body-check.txt). It stays in result.bodyCheck.second and the saved set, to be measured.
+  const second = OFFER_BODY_SECOND && flagged && Number.isInteger(result.bodyCheck.second?.count) && result.bodyCheck.second.count > 0 && result.bodyCheck.second.count !== result.count ? result.bodyCheck.second.count : null;
   const low = !!result.refused || unsure || liveDiffers || flagged;
   // A refused set may carry PSC's count (coreAnalysis.js, withProposal; 8 October 2026): the slot opens on it, labelled
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,

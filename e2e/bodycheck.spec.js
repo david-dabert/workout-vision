@@ -47,20 +47,17 @@ async function flaggedSet(page) {
   return { errors, out };
 }
 
-test('a flagged set shows its count to confirm and the body’s count, no grade, saved only once confirmed', async ({ page }, info) => {
+test('a flagged set shows its count to confirm, no grade, saved only once confirmed', async ({ page }, info) => {
   test.setTimeout(150000);
   const { errors, out } = await flaggedSet(page);
   info.annotations.push({ type: 'body-check', description: `${out.n} samples, agreement ${out.check.agreement}, second ${out.check.second.count}, ${out.check.ms} ms` });
   console.log(`[body-check] ${out.n} samples, agreement ${out.check.agreement}, core 15, second ${out.check.second.count}, ${out.check.ms} ms (Chromium, this machine)`);
   await expect(page.locator('.res-low-title')).toHaveText('L’appli n’a pas pu compter cette série avec certitude.');
   await expect(page.locator('.res-cause')).toContainText('Sur cette série, l’angle du coude ne bouge pas comme le reste de votre corps. L’appli a pu mal le lire.');
-  // The app's count in the slot, to confirm; the two counts as keys, each saying where it comes from.
+  // The app’s count in the slot, to confirm, labelled; the whole body’s count is not offered (Result.jsx OFFER_BODY_SECOND).
   await expect(page.getByTestId('res-typed')).toHaveText('15');
-  await expect(page.getByTestId('res-candidates')).toHaveAttribute('aria-label', 'Deux comptes possibles');
-  await expect(page.getByTestId('res-cand-joint')).toHaveText('15D’après le coude');
-  await expect(page.getByTestId('res-cand-joint')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('res-cand-body')).toHaveText('8D’après tout le corps');
-  await expect(page.getByTestId('res-cand-body')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('res-candidates')).toHaveCount(0);
+  await expect(page.getByTestId('res-bodycount')).toBeVisible();
   await expect(page.getByTestId('res-body-note')).toHaveText('Vérifiez ce nombre avant d’enregistrer.');
   await expect(page.getByTestId('res-status')).toContainText('À confirmer');
   // No numeral of a counted set, no measure, no grade.
@@ -68,20 +65,18 @@ test('a flagged set shows its count to confirm and the body’s count, no grade,
   await expect(page.locator('[data-testid="res-sides"], [data-testid="res-exp"], [data-testid="set-account"], .res-wave, .bars')).toHaveCount(0);
   await expect(page.getByTestId('res-save')).toHaveText('Confirmer 15 répétitions');
   if (process.env.WV_SHOTS) await page.screenshot({ path: resolve(process.env.WV_SHOTS, 'bodycheck-fr-390x844@3x.png') });
-  // The body's count, chosen.
-  await page.getByTestId('res-cand-body').click();
-  await expect(page.getByTestId('res-typed')).toHaveText('8');
-  await expect(page.getByTestId('res-cand-body')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('res-save')).toHaveText('Confirmer 8 répétitions');
-  await expect(page.getByTestId('res-status')).toContainText('À confirmer');
+  // A corrected count, given with -.
+  await page.getByRole('button', { name: 'Une de moins' }).click();
+  await expect(page.getByTestId('res-typed')).toHaveText('14');
+  await expect(page.getByTestId('res-save')).toHaveText('Enregistrer 14 répétitions');
   // Nothing is saved before the tap.
   await page.waitForTimeout(500);
   expect(await savedSets(page)).toEqual([]);
   await page.getByTestId('res-save').click();
-  await expect(page.getByTestId('saved-card')).toContainText('Compté par l’app : 15. Corrigé : 8.'); // the counted set's saved card, as it stands (it says "l’app")
+  await expect(page.getByTestId('saved-card')).toContainText('Compté par l’app : 15. Corrigé : 14.'); // the counted set's saved card, as it stands (it says "l’app")
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ reps: 8, source: 'counter-core', corrected: true, machineResult: { reps: 15 }, correctedResult: { reps: 8 }, bodyCheck: { second: 8 }, repDetails: [], sides: null, wave: null });
+  expect(saved[0]).toMatchObject({ reps: 14, source: 'counter-core', corrected: true, machineResult: { reps: 15 }, correctedResult: { reps: 14 }, bodyCheck: { second: 8 }, repDetails: [], sides: null, wave: null });
   expect(saved[0].bodyCheck.agreement).toBeLessThan(0.5);
   // Saved, still no measure: they are all read on the joint the check doubts (R8).
   await expect(page.locator('[data-testid="res-sides"], [data-testid="res-exp"], [data-testid="set-account"], [data-testid="level-table"], .res-wave, .bars')).toHaveCount(0);
@@ -106,7 +101,6 @@ test('a number given with + is the person’s count', async ({ page }) => {
   await expect(page.getByTestId('res-typed')).toHaveText('16');
   await expect(page.getByText('Saisi par vous')).toBeVisible();
   await expect(page.getByTestId('res-status')).toContainText('À vous de compter');
-  await expect(page.getByTestId('res-cand-joint')).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByTestId('res-save')).toHaveText('Enregistrer 16 répétitions');
   expect(await savedSets(page)).toEqual([]);
   await page.getByTestId('res-save').click();

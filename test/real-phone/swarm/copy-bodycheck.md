@@ -2,8 +2,9 @@
 
 Written 8 October 2026. When the joint the app counts does not move like the rest of the body
 (src/lib/counting/bodyCheck.js, coreAnalysis.js withBodyCheck; agreement under 0.5), the result opens on the
-low-confidence screen (05b) with the app's count as a number to confirm, and, when it differs, the count read from the
-whole body (the spec-guided count) as a second key: never a silent count, never a grade, never a measure (R8). The
+low-confidence screen (05b) with the app's count as a number to confirm: never a silent count, never a grade, never a
+measure (R8). The count read from the whole body (the spec-guided count) is not shown (decided 8 October, below); its
+lines stay here for the day it is. The
 pattern is the PSC proposal's (copy-proposal.md). Register "vous", glossary DIRECTIVES.md Part 7 (série, répétition);
 the app is "l'appli", as on the rest of the result screen (copy-result.md). The strings live in
 src/components/experience/result-copy.js. Status of every line: **pending David's approval (8 October 2026)**.
@@ -35,8 +36,9 @@ or left against right) and the saved set keeps none, so the report and the histo
 the joint the check doubts (R8).
 
 Questions for David:
-- Show the second count at all? On the official sets it is right on 11 of the 93 flagged sets where it is offered, the
-  app's own count on 23 of them (test/real-phone/accuracy/body-check.txt); on your videos it was right on both
-  (chin-up 5, pendulum squat 7), on your stored back extensions on neither.
-- "D'après le genou" names the joint as a coach would, without the word "angle": is it clear enough beside "D'après
-  tout le corps"?
+- Decided 8 October, not a question: the second count is not shown (Result.jsx OFFER_BODY_SECOND = false). On the
+  real-world sets it flags it was right 7 times in 79 where offered, the app's own count 19 times on the same sets
+  (test/real-phone/accuracy/body-check.txt); on your videos it was right on both (chin-up 5, pendulum squat 7), on your
+  stored back extensions on neither. It stays computed and saved with the set, to be measured again.
+- (Kept for the day the second count is shown.) "D'après le genou" names the joint as a coach would, without the word
+  "angle": is it clear enough beside "D'après tout le corps"?

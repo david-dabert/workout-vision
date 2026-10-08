@@ -25,15 +25,14 @@ async function render(lang, result, lift = 'hack_squat', liveShown = null) {
 }
 
 describe('a counted set the body check flags', () => {
-  it('opens on the app’s count to confirm, with the whole body’s count beside it, and no measure (fr)', async () => {
+  it('opens on the app’s count to confirm, without the whole body’s count (not offered), and no measure (fr)', async () => {
     const fr = await render('fr', { ...counted, bodyCheck: check(7) });
     expect(fr).toContain('L’appli n’a pas pu compter cette série avec certitude.');
     expect(fr).toContain(RESULT.fr.bodyCause('du genou'));
     expect(fr).toContain('Sur cette série, l’angle du genou ne bouge pas comme le reste de votre corps. L’appli a pu mal le lire.');
     expect(fr).toContain('data-testid="res-typed" aria-hidden="true">14</span>');
-    expect(fr).toContain('aria-label="Deux comptes possibles" data-testid="res-candidates"');
-    expect(fr).toMatch(/aria-pressed="true" data-testid="res-cand-joint"><span class="res-cand-n">14<\/span><span class="res-cand-from">D’après le genou<\/span>/);
-    expect(fr).toMatch(/aria-pressed="false" data-testid="res-cand-body"><span class="res-cand-n">7<\/span><span class="res-cand-from">D’après tout le corps<\/span>/);
+    expect(fr).not.toContain('data-testid="res-candidates"');
+    expect(fr).toContain(`data-testid="res-bodycount">${RESULT.fr.bodyCounted(14)}</p>`);
     expect(fr).toContain(`data-testid="res-body-note">${RESULT.fr.bodyNote}</p>`);
     expect(fr).toMatch(/<button type="button" class="res-key is-primary press" data-testid="res-save">Confirmer 14 répétitions<\/button>/);
     expect(fr).toContain('À confirmer');
@@ -47,8 +46,7 @@ describe('a counted set the body check flags', () => {
   it('says the same in English, with the joint’s name', async () => {
     const en = await render('en', { ...counted, bodyCheck: check(7) }, 'bicep_curl');
     expect(en).toContain('In this set, the elbow angle does not move like the rest of your body. The app may have misread it.');
-    expect(en).toContain('From the elbow');
-    expect(en).toContain('From the whole body');
+    expect(en).not.toContain('From the whole body');
     expect(en).toContain('Confirm 14 reps');
   });
   it('with the same count from the whole body, or none, offers the one count, labelled', async () => {
