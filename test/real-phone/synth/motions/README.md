@@ -97,9 +97,8 @@ by 25 % on top and keeps its pause at the working end (about 0.15 s) and between
 floor for a lying exercise: about -0.2 to -0.3). The preview uses it as is; library.mjs draws within 0.2 m of it (without
 it, 0.3 m below to 0.5 m above).
 
-The camera frames the box of the skeleton and the head's top at rest, at mid and at the working end, as the set shows
-them (only the moving side for `side`, each side alone for alternate true, the unswapped and the mirrored pose for
-"mirror", both sides at once otherwise), grown by 0.2 m for the flesh and the hair.
+The camera frames the box of the skeleton and the head's top at rest, at mid and at the working end (both sides, each
+side alone for alternate true, and the mirrored pose for "mirror"), grown by 0.2 m for the flesh and the hair.
 
 ## Check
 

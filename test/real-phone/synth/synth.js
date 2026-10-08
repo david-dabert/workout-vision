@@ -273,20 +273,20 @@ const yaw = (P.view ?? 0) * D, dist = P.dist ?? 2.7;
 camera.position.set(Math.sin(yaw) * dist * S.left, P.camY ?? 1.15, Math.cos(yaw) * dist);
 camera.lookAt(0, 0.95, 0);
 // A spec set is framed on the body: the box of its bones and its head's top at rest, at the via pose and at the working
-// end, as the set shows them (specSides: only its side for `side`, each side alone for alternate true, unswapped and
-// mirrored for "mirror"; both sides at once only when both move), grown by 0.2 m for the flesh and the hair, fits the
+// end (both sides, each alone when they alternate, and mirrored), grown by 0.2 m for the flesh and the hair, fits the
 // frame with a margin (P.fill, default 1.15), seen from the view angle and P.camLift m above the box's centre (a phone
 // held at chest height or on a bench; default the spec's camLift, else 0.15; a phone on the floor for a lying body is a
 // negative camLift). Lying and hanging bodies need it; P.dist overrides.
 if (P.spec) {
   const pts = [];
-  for (const busy of P.spec.alternate ? ['left', 'right'] : [null]) {
-    for (const u of P.spec.mid ? [0, 0.5, 1] : [0, 1]) {
-      resetPose(); applySpec(...specSides(u, busy));
-      for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o));
-    }
+  const take = (uL, uR) => { resetPose(); applySpec(uL, uR); for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o)); };
+  for (const u of P.spec.mid ? [0, 0.5, 1] : [0, 1]) {
+    take(u, u);
+    // The poses a set shows besides: one side at a time (alternate true), the mirrored reps (alternate "mirror").
+    if (P.spec.alternate === true) { take(u, 0); take(0, u); }
+    if (P.spec.alternate === 'mirror') { specSwap = true; take(u, u); specSwap = false; }
   }
-  specSwap = false; resetPose();
+  resetPose();
   const bb = new THREE.Box3().setFromPoints(pts).expandByScalar(0.2), c = bb.getCenter(v(0, 0, 0)), size = bb.getSize(v(0, 0, 0));
   const dir = v(Math.sin(yaw) * S.left, 0, Math.cos(yaw)), vfov = camera.fov * D, hfov = 2 * Math.atan(Math.tan(vfov / 2) * W / H);
   const across = Math.abs(size.x * dir.z) + Math.abs(size.z * dir.x), depth = Math.abs(size.x * dir.x) + Math.abs(size.z * dir.z);
