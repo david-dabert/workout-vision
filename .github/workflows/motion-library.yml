@@ -26,7 +26,9 @@ jobs:
   render:
     name: Render share ${{ matrix.shard }} of 20
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # 8 October: 1,620 sets in 3 renderers per runner did not finish in 180 minutes (the shares were cut and uploaded
+    # as they stood); GitHub's limit for a job is 360.
+    timeout-minutes: 350
     strategy:
       fail-fast: false
       matrix:
@@ -45,17 +47,17 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/glb"
           for m in Michelle Soldier; do curl -sSfL -o "$RUNNER_TEMP/glb/$m.glb" "https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/models/gltf/$m.glb"; done
-      # Three renderers on one Vite server, a third of the share each.
+      # Four renderers on one Vite server (the runner's four cores), a quarter of the share each.
       - name: Render the share
         run: |
           node test/real-phone/synth/motions/library.mjs --shard ${{ matrix.shard }}/20 > "$RUNNER_TEMP/matrix.json"
-          node -e "const fs = require('fs'), m = JSON.parse(fs.readFileSync(process.argv[1])); for (let k = 0; k < 3; k++) fs.writeFileSync(process.argv[1] + '.' + k, JSON.stringify(m.filter((_, i) => i % 3 === k)))" "$RUNNER_TEMP/matrix.json"
+          node -e "const fs = require('fs'), m = JSON.parse(fs.readFileSync(process.argv[1])); for (let k = 0; k < 4; k++) fs.writeFileSync(process.argv[1] + '.' + k, JSON.stringify(m.filter((_, i) => i % 4 === k)))" "$RUNNER_TEMP/matrix.json"
           npx vite --port 5191 --strictPort > "$RUNNER_TEMP/vite.log" 2>&1 &
           npx --yes wait-on@8 http://localhost:5191/workout-vision/test/real-phone/synth/synth.html --timeout 120000
           export PW_CHROMIUM="$(node -e "import('@playwright/test').then(m => console.log(m.chromium.executablePath()))")"
           export SYNTH_SERVER=external SYNTH_PORT=5191 SYNTH_OUT="$RUNNER_TEMP/lib"
           export SYNTH_MODELS="michelle=$RUNNER_TEMP/glb/Michelle.glb,soldier=$RUNNER_TEMP/glb/Soldier.glb"
-          for k in 0 1 2; do node test/real-phone/synth/run.mjs "$RUNNER_TEMP/matrix.json.$k" > "$RUNNER_TEMP/render-$k.log" 2>&1 & done
+          for k in 0 1 2 3; do node test/real-phone/synth/run.mjs "$RUNNER_TEMP/matrix.json.$k" > "$RUNNER_TEMP/render-$k.log" 2>&1 & done
           wait
           cat "$RUNNER_TEMP"/render-*.log
           ls "$RUNNER_TEMP/lib" | grep -c json.gz
