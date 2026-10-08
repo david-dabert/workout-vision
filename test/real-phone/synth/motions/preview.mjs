@@ -65,14 +65,15 @@ try {
     // The checks, from the spec's own view. FAIL: the spec is wrong (the body lost by the pose model at rest, halfway or at
     // the working end; the catalogue joint swinging under 30 degrees on the skeleton, or towards its rest side). WARN:
     // the pose model measures, on its better side, under 20 degrees (the core's floor) or a third of the true swing.
-    const o = res.views[own], why = [], warn = [];
+    // alternate true moves one side in the stills: the other's measured drift must not stand in for its swing.
+    const o = res.views[own], why = [], warn = [], judged = spec.alternate === true ? [BUSY] : sides;
     if (!o.found.every(Boolean)) why.push('pose lost');
     if (joint) {
-      const swings = sides.map(side => o[side].truth[2] - o[side].truth[0]), best = swings.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a));
+      const swings = judged.map(side => o[side].truth[2] - o[side].truth[0]), best = swings.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a));
       const want = fam.rest === 'high' ? -1 : 1;
       if (Math.abs(best) < 30) why.push(`swing ${best}`);
       else if (Math.sign(best) !== want) why.push(`moves away from rest ${fam.rest}`);
-      const meas = sides.map(side => { const m = o[side].measured; return m[0] == null || m[2] == null ? 0 : (m[2] - m[0]) * want; });
+      const meas = judged.map(side => { const m = o[side].measured; return m[0] == null || m[2] == null ? 0 : (m[2] - m[0]) * want; });
       if (Math.max(...meas) < Math.max(20, Math.abs(best) / 3)) warn.push(`measured swing ${Math.round(Math.max(...meas))} of ${Math.abs(best)}`);
     }
     res.warn = warn;

@@ -149,7 +149,12 @@ const poseSpec = (uL, uR) => {
   body.updateMatrixWorld(true);
   const trunk = mul(root, rot('X', g('trunk')), rot('Z', -g('trunkSide') * S.left), rot('Y', g('trunkTwist') * S.left));
   aim(B.Spine, B.Neck, along(trunk, 0, 1, 0));
-  turn(B.Spine, along(trunk, 0, 1, 0), g('trunkTwist') * S.left);
+  // aim turns the spine the shortest way, which drops the turn about the trunk's axis that flexion then side bend carry
+  // (fk.js composes them as here: X then Z). The spine is turned by that twist, 2 atan2(-sin a sin b, cos a cos b) with a
+  // and b the two half angles (0 when either is 0, so a spec without both is posed as before; 17.6 degrees at trunk 60
+  // with trunkSide 30, which put the shoulders 17-21 degrees off fk.js's), and by trunkTwist.
+  const ha = g('trunk') * D / 2, hb = -g('trunkSide') * S.left * D / 2;
+  turn(B.Spine, along(trunk, 0, 1, 0), g('trunkTwist') * S.left + 2 * Math.atan2(-Math.sin(ha) * Math.sin(hb), Math.cos(ha) * Math.cos(hb)) / D);
   if (B.Head) aim(B.Neck, B.Head, along(mul(trunk, rot('X', g('neck'))), 0, 1, 0));
   for (const side of ['left', 'right']) {
     const u = side === 'left' ? uL : uR, sg = S[side], from = specSwap ? (side === 'left' ? 'right' : 'left') : side, k = key => lerpSpec(key, from, u), C = cap(side);
@@ -268,20 +273,20 @@ const yaw = (P.view ?? 0) * D, dist = P.dist ?? 2.7;
 camera.position.set(Math.sin(yaw) * dist * S.left, P.camY ?? 1.15, Math.cos(yaw) * dist);
 camera.lookAt(0, 0.95, 0);
 // A spec set is framed on the body: the box of its bones and its head's top at rest, at the via pose and at the working
-// end (both sides, each alone when they alternate, and mirrored), grown by 0.2 m for the flesh and the hair, fits the
+// end, as the set shows them (specSides: only its side for `side`, each side alone for alternate true, unswapped and
+// mirrored for "mirror"; both sides at once only when both move), grown by 0.2 m for the flesh and the hair, fits the
 // frame with a margin (P.fill, default 1.15), seen from the view angle and P.camLift m above the box's centre (a phone
 // held at chest height or on a bench; default the spec's camLift, else 0.15; a phone on the floor for a lying body is a
 // negative camLift). Lying and hanging bodies need it; P.dist overrides.
 if (P.spec) {
   const pts = [];
-  const take = (uL, uR) => { resetPose(); applySpec(uL, uR); for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o)); };
-  for (const u of P.spec.mid ? [0, 0.5, 1] : [0, 1]) {
-    take(u, u);
-    // The poses a set shows besides: one side at a time (alternate true), the mirrored reps (alternate "mirror").
-    if (P.spec.alternate === true) { take(u, 0); take(0, u); }
-    if (P.spec.alternate === 'mirror') { specSwap = true; take(u, u); specSwap = false; }
+  for (const busy of P.spec.alternate ? ['left', 'right'] : [null]) {
+    for (const u of P.spec.mid ? [0, 0.5, 1] : [0, 1]) {
+      resetPose(); applySpec(...specSides(u, busy));
+      for (const o of [...Object.values(B), X.HeadTop_End]) if (o) pts.push(wp(o));
+    }
   }
-  resetPose();
+  specSwap = false; resetPose();
   const bb = new THREE.Box3().setFromPoints(pts).expandByScalar(0.2), c = bb.getCenter(v(0, 0, 0)), size = bb.getSize(v(0, 0, 0));
   const dir = v(Math.sin(yaw) * S.left, 0, Math.cos(yaw)), vfov = camera.fov * D, hfov = 2 * Math.atan(Math.tan(vfov / 2) * W / H);
   const across = Math.abs(size.x * dir.z) + Math.abs(size.z * dir.x), depth = Math.abs(size.x * dir.x) + Math.abs(size.z * dir.z);
