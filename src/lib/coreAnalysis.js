@@ -79,9 +79,11 @@ export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
  * variant evaluation before it was wired (TRIED.md, 8 October): no exact count lost, none newly off by 3, the public
  * halves 255 -> 264 and 235 -> 247 exact. A counted set, a fitness test (scored over its window) and a set longer than
  * PROPOSAL_MAX_SAMPLES are returned as they came. Status: validated (on the bench; David's iPhone check pending).
+ * An alternating lift (bothSides: one rep per side) gets no proposal: PSC proposed 7 of the 14 occlusion alternating
+ * curls at half their count (5 for 10), one cycle per left-right pair (TRIED.md, 8 October; delegated decision, 8 October).
  */
 export function withProposal(result, lift) {
-  if (!result?.refused || isTest(lift) || !(result.timestamps?.length <= PROPOSAL_MAX_SAMPLES)) return result;
+  if (!result?.refused || isTest(lift) || liftDefinition(lift)?.bothSides || !(result.timestamps?.length <= PROPOSAL_MAX_SAMPLES)) return result;
   const t0 = performance.now();
   const p = pscProposal(result);
   return { ...result, proposal: p ? { ...p, ms: Math.round(performance.now() - t0) } : null };
