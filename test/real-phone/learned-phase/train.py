@@ -91,7 +91,7 @@ def features(J, P=None):
     return np.concatenate([out, progress_features(P)], 1)
 
 
-PROGRESS_CLIP = 2.0
+PROGRESS_CLIP = 2.0  # data.js PROGRESS_CLIP: UNSOURCED, experimental (two reps' worth either side)
 
 
 def progress_features(P):

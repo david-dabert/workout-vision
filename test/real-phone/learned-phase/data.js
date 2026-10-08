@@ -176,8 +176,11 @@ export function alignProgress(prog, t0, T) {
   const out = new Float32Array(T).fill(NaN);
   if (!prog) return out;
   const { p } = prog;
+  // The offset between the grids first, then the step: t0 + k / HZ - prog.t0 loses the step's precision to a large t0
+  // (epoch seconds: a third of the frames read between two samples instead of on one).
+  const off = (t0 - prog.t0) * FS, step = FS / HZ;
   for (let k = 0; k < T; k++) {
-    const u = (t0 + k / HZ - prog.t0) * FS, i = Math.round(u);
+    const u = off + k * step, i = Math.round(u);
     if (Math.abs(u - i) < 1e-6) { if (i >= 0 && i < p.length) out[k] = p[i]; continue; }
     const a = Math.floor(u);
     if (a >= 0 && a + 1 < p.length && Number.isFinite(p[a]) && Number.isFinite(p[a + 1])) out[k] = p[a] + (u - a) * (p[a + 1] - p[a]);

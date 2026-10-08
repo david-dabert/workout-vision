@@ -105,7 +105,7 @@ test.skipIf(!process.env.LPHASE)('learned phase counter against core and PSC', (
   const day = new Date().toISOString().slice(0, 10);
   const m0 = models.all;
   const lines = [`Learned phase counter (test/real-phone/learned-phase/), readout "${READ}", against the core (summarizeCount) and PSC (psc.js), ${day}. Build halves only.`,
-    `Model: ${m0.meta.trainSets} training sets (${m0.meta.trainSuites.join(', ')}), ${m0.bytes} bytes of float16 weights, ${m0.dil.length} dilated blocks of ${m0.C} channels; input ${m0.input === 'progress' ? `pose and the spec's progress (sets with a spec: ${suitesSeen()})` : 'pose only'}.`,
+    `Model: ${m0.meta.trainSets} training sets (${m0.meta.trainSuites.join(', ')}), ${m0.bytes} bytes of float16 weights, ${m0.dil.length} dilated blocks of ${m0.C} channels${m0.input === 'progress' ? `; input pose and the spec's progress (sets with a spec: ${suitesSeen()})` : ''}.`,
     `JS inference (model.js, this machine, Node): ${(ms / Math.max(secs, 1) * 60).toFixed(0)} ms per minute of recording (features + forward + readout).`,
     'Cells: exact / within 1 / off by 3+ (a refusal or no count is off by 3+). Held out: cv suites by the fold model not trained on their fold; RepCount-A and David\'s sets by the model trained on all training sets.', '',
     '| Dataset | Sets | Learned | PSC | Core (mapped) | Learned on mapped | PSC on mapped | Selector core/PSC on mapped | Control: PSC where core refuses | Control: selector where both count | Mapped |', '|---|---:|---|---|---|---|---|---|---|---|---:|'];

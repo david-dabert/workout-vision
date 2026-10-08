@@ -69,6 +69,9 @@ test('progress lies on the joints grid', () => {
   expect(half[1]).toBeCloseTo(1.5, 5);
   expect(half.slice(2)).toEqual([NaN, NaN]);
   expect(Array.from(alignProgress(null, 0, 2))).toEqual([NaN, NaN]);
+  // the same grid from a large first timestamp (epoch seconds) is still a copy, frame for frame
+  const big = 1.7e9, q = Float64Array.from({ length: 900 }, (_, k) => (k % 50 === 25 ? NaN : Math.sin(k / 7)));
+  expect(Array.from(alignProgress({ t0: big, p: q }, big, 900))).toEqual(Array.from(Float32Array.from(q)));
 });
 
 test('learnedCount reads the spec\'s progress for a progress model only', () => {
