@@ -1,0 +1,27 @@
+{
+ "key": "dumbbell_hip_thrust",
+ "source": "convention: dumbbell hip thrust, upper back on a bench, one dumbbell held on the hips by both hands, feet flat, from the hips near the floor to trunk and thighs level with the shins vertical; the bench is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -49,
+  "neck": 25,
+  "hipFlex": 78,
+  "hipAbd": 12,
+  "knee": 97,
+  "ankle": 30,
+  "shoulderFlex": 25,
+  "shoulderAbd": 5,
+  "elbow": 45
+ },
+ "end": {
+  "pitch": -90,
+  "neck": 25,
+  "hipFlex": 0,
+  "hipAbd": 12,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": 25,
+  "shoulderAbd": 5,
+  "elbow": 45
+ }
+}

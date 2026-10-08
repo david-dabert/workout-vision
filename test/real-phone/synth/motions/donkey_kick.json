@@ -1,0 +1,32 @@
+{
+ "key": "donkey_kick",
+ "source": "convention: on hands and knees, back flat, one knee bent at a right angle, the thigh driven back and up until level with the trunk, sole towards the ceiling, lowered back under the hip; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "pitch": 85,
+  "trunk": 0,
+  "hipFlex": 85,
+  "hipAbd": 6,
+  "knee": 90,
+  "ankle": 50,
+  "shoulderFlex": 85,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 85,
+  "trunk": 0,
+  "hipFlex": 5,
+  "hipAbd": 6,
+  "knee": 90,
+  "ankle": -10,
+  "shoulderFlex": 85,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "side": "left"
+}

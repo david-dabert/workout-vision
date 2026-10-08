@@ -1,0 +1,36 @@
+{
+ "key": "split_squat",
+ "source": "convention: static split squat, left foot forward, right heel up, dumbbells hanging, straight down until the rear knee nears the floor and back up, the feet staying planted; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 30,
+   "knee": 5,
+   "ankle": 25
+  },
+  "right": {
+   "hipFlex": -30,
+   "knee": 5,
+   "ankle": -15
+  }
+ },
+ "end": {
+  "trunk": 5,
+  "shoulderFlex": 5,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 85,
+   "knee": 95,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 92,
+   "ankle": -35
+  }
+ }
+}

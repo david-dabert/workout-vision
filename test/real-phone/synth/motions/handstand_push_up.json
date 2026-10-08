@@ -1,6 +1,6 @@
 {
  "key": "handstand_push_up",
- "source": "convention: freestanding handstand, body straight and stacked, lowered until the head nears the floor and pressed back to straight arms; angles UNSOURCED",
+ "source": "convention: freestanding handstand, body straight and stacked, lowered until the head nears the floor a little behind the hands (tripod), legs tipping slightly forward to balance and pressed back to straight arms; angles UNSOURCED",
  "status": "experimental",
  "support": {
   "anchor": "lowest",
@@ -14,8 +14,8 @@
   "ankle": 30
  },
  "end": {
-  "pitch": 180,
-  "shoulderFlex": 82,
+  "pitch": 172,
+  "shoulderFlex": 80,
   "shoulderAbd": 45,
   "humRot": 0,
   "elbow": 95,

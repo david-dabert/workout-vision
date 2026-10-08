@@ -1,0 +1,23 @@
+{
+ "key": "smith_machine_squat",
+ "source": "convention: Smith machine back squat, bar on the upper back, feet slightly forward of the bar, to about parallel; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135
+ },
+ "end": {
+  "trunk": 20,
+  "hipFlex": 95,
+  "hipAbd": 12,
+  "knee": 105,
+  "ankle": -10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135
+ }
+}

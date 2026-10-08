@@ -1,0 +1,28 @@
+{
+ "key": "standing_quad_stretch",
+ "source": "convention: standing on the right leg, right arm out for balance, the left hand pulls the left heel to the glute with the knees together and the thigh vertical, held; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "right": {
+   "shoulderAbd": 45,
+   "elbow": 10
+  }
+ },
+ "end": {
+  "left": {
+   "hipFlex": -5,
+   "knee": 145,
+   "ankle": 30,
+   "shoulderFlex": -45,
+   "shoulderAbd": 10,
+   "elbow": 30
+  },
+  "right": {
+   "shoulderAbd": 45,
+   "elbow": 10
+  }
+ },
+ "side": "left",
+ "view": 90,
+ "noReps": true
+}

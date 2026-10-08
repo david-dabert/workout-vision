@@ -5,12 +5,13 @@
  "start": {
   "shoulderFlex": 8,
   "shoulderAbd": 8,
+  "humRot": -60,
   "elbow": 8
  },
  "end": {
   "shoulderFlex": 20,
   "shoulderAbd": 75,
-  "humRot": -15,
+  "humRot": -60,
   "elbow": 140
  }
 }

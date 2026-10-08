@@ -1,0 +1,17 @@
+{
+ "key": "calf_raise",
+ "source": "convention: standing tall, rise onto the balls of the feet as high as possible, lower the heels back to the floor; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 8,
+  "ankle": 0
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 8,
+  "ankle": 35
+ }
+}

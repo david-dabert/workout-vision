@@ -1,0 +1,38 @@
+{
+ "key": "smith_machine_split_squat",
+ "source": "convention: Smith machine split squat, bar on the upper back, left foot forward, right heel up, straight down until the rear knee nears the floor; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135,
+  "left": {
+   "hipFlex": 30,
+   "knee": 5,
+   "ankle": 25
+  },
+  "right": {
+   "hipFlex": -30,
+   "knee": 5,
+   "ankle": -15
+  }
+ },
+ "end": {
+  "trunk": 4,
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135,
+  "left": {
+   "hipFlex": 85,
+   "knee": 95,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 92,
+   "ankle": -35
+  }
+ }
+}

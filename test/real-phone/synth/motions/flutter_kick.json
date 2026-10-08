@@ -1,0 +1,37 @@
+{
+ "key": "flutter_kick",
+ "source": "convention: lying on the back, arms by the sides, straight legs held off the floor; the legs kick up and down in small alternating strokes; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "trunk": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "hipFlex": 20,
+  "knee": 3,
+  "ankle": 30,
+  "hipAbd": 4
+ },
+ "end": {
+  "pitch": -90,
+  "trunk": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "knee": 3,
+  "ankle": 30,
+  "hipAbd": 4,
+  "left": {
+   "hipFlex": 35
+  },
+  "right": {
+   "hipFlex": 8
+  }
+ },
+ "alternate": "mirror"
+}

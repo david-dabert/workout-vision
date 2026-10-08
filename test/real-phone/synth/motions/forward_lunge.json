@@ -1,0 +1,29 @@
+{
+ "key": "forward_lunge",
+ "source": "convention: hands on the hips, step forward and lower until the front thigh is about level and the back knee nears the floor, trunk upright, push back to standing; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100
+ },
+ "end": {
+  "trunk": 5,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "left": {
+   "hipFlex": 85,
+   "knee": 95,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 90,
+   "ankle": 40
+  }
+ },
+ "alternate": "mirror"
+}

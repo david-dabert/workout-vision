@@ -1,0 +1,39 @@
+{
+ "key": "clamshell",
+ "source": "convention: lying on the side, hips bent about 45 degrees and knees about 90, feet together, the top knee opened towards the ceiling and closed; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "roll": 90,
+  "hipFlex": 45,
+  "hipAbd": 0,
+  "knee": 90,
+  "ankle": 0,
+  "left": {
+   "shoulderAbd": 160,
+   "elbow": 40
+  },
+  "right": {
+   "shoulderFlex": 70,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "end": {
+  "roll": 90,
+  "hipFlex": 45,
+  "knee": 90,
+  "ankle": 0,
+  "right": {
+   "hipAbd": 40,
+   "shoulderFlex": 70,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "side": "right",
+ "view": 0
+}

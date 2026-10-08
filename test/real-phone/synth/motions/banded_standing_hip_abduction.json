@@ -1,0 +1,22 @@
+{
+ "key": "banded_standing_hip_abduction",
+ "source": "convention: standing tall with a mini band around the ankles, hands on the hips, the straight left leg lifted out to the side to about 40 degrees, trunk upright, returned; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 4,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100
+ },
+ "end": {
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "left": {
+   "hipAbd": 40
+  }
+ },
+ "side": "left"
+}

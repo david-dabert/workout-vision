@@ -1,0 +1,20 @@
+{
+ "key": "bodyweight_squat",
+ "source": "convention: feet shoulder-width, arms rise forward for balance as the hips sit back and down below parallel, heels down, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 8
+ },
+ "end": {
+  "trunk": 35,
+  "hipFlex": 100,
+  "hipAbd": 12,
+  "knee": 130,
+  "ankle": -30,
+  "shoulderFlex": 115,
+  "shoulderAbd": 10,
+  "elbow": 5
+ }
+}

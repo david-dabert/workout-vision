@@ -1,0 +1,45 @@
+{
+ "key": "half_kneeling_pallof_press",
+ "source": "convention: half kneeling, the inside knee down under the hip, the other foot forward at 90 degrees, handle at the sternum; the arms press straight out and return; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.06
+ },
+ "start": {
+  "shoulderFlex": 25,
+  "shoulderAbd": 5,
+  "humRot": -45,
+  "elbow": 115,
+  "left": {
+   "hipFlex": -5,
+   "knee": 90,
+   "ankle": 0,
+   "hipAbd": 6
+  },
+  "right": {
+   "hipFlex": 90,
+   "knee": 90,
+   "ankle": 0,
+   "hipAbd": 8
+  }
+ },
+ "end": {
+  "shoulderFlex": 88,
+  "shoulderAbd": -15,
+  "humRot": 0,
+  "elbow": 5,
+  "left": {
+   "hipFlex": -5,
+   "knee": 90,
+   "ankle": 0,
+   "hipAbd": 6
+  },
+  "right": {
+   "hipFlex": 90,
+   "knee": 90,
+   "ankle": 0,
+   "hipAbd": 8
+  }
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "key": "landmine_romanian_deadlift",
+ "source": "convention: the bar end held in both hands in front of the hips, soft knees, hinge at the hips until the bar end reaches mid-shin, back flat, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 10,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 25,
+  "hipFlex": 40,
+  "knee": 20,
+  "ankle": -20,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5
+ }
+}

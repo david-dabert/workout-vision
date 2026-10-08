@@ -1,0 +1,37 @@
+{
+ "key": "single_leg_romanian_deadlift",
+ "source": "convention: single-leg Romanian deadlift on the left leg, dumbbells hanging, the right leg reaching back in line with the trunk as the hips hinge until the trunk is nearly level; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 0,
+   "knee": 10,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 20,
+   "ankle": 10
+  }
+ },
+ "end": {
+  "pitch": 70,
+  "trunk": 5,
+  "shoulderFlex": 75,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 75,
+   "knee": 15,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -5,
+   "knee": 5,
+   "ankle": 10
+  }
+ }
+}

@@ -1,0 +1,30 @@
+{
+ "key": "banded_seated_hip_abduction",
+ "source": "convention: seated on a bench, a mini band above the knees, hands on the bench beside the hips, the knees pushed out against the band and returned; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "trunk": 10,
+  "hipFlex": 90,
+  "hipAbd": 8,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": -10,
+  "shoulderAbd": 20,
+  "elbow": 10
+ },
+ "end": {
+  "trunk": 10,
+  "hipFlex": 90,
+  "hipAbd": 40,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": -10,
+  "shoulderAbd": 20,
+  "elbow": 10
+ },
+ "view": 0
+}

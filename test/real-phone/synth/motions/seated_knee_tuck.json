@@ -1,0 +1,29 @@
+{
+ "key": "seated_knee_tuck",
+ "source": "convention: seated on the floor, leaning back on the hands, legs extended just off the floor; the knees draw in to the chest as the torso comes up, then the legs extend; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.12
+ },
+ "start": {
+  "pitch": -40,
+  "shoulderFlex": -45,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 55,
+  "knee": 5,
+  "ankle": 30,
+  "hipAbd": 5
+ },
+ "end": {
+  "pitch": -25,
+  "shoulderFlex": -35,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 125,
+  "knee": 120,
+  "ankle": 30,
+  "hipAbd": 5
+ }
+}

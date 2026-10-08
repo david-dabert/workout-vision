@@ -4,6 +4,7 @@
  "status": "experimental",
  "start": {
   "trunk": -3,
+  "hipAbd": 12,
   "knee": 3,
   "shoulderFlex": 90,
   "shoulderAbd": 0,
@@ -12,10 +13,11 @@
  "end": {
   "pitch": 50,
   "hipFlex": 70,
+  "hipAbd": 12,
   "knee": 25,
   "ankle": -5,
-  "shoulderFlex": 35,
-  "shoulderAbd": 0,
+  "shoulderFlex": 25,
+  "shoulderAbd": -6,
   "elbow": 5
  },
  "view": 90

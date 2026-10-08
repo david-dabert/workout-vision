@@ -1,0 +1,36 @@
+{
+ "key": "wall_calf_stretch",
+ "source": "convention: facing a wall with the hands on it at shoulder height, left foot forward with the knee bent, right leg straight behind with the heel down, the body leans in until the right calf stretches, held; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 90,
+  "elbow": 20,
+  "left": {
+   "hipFlex": 20,
+   "knee": 15,
+   "ankle": 5
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 0,
+   "ankle": -15
+  }
+ },
+ "end": {
+  "pitch": 20,
+  "shoulderFlex": 105,
+  "elbow": 35,
+  "left": {
+   "hipFlex": 45,
+   "knee": 45,
+   "ankle": -20
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 0,
+   "ankle": -30
+  }
+ },
+ "view": 90,
+ "noReps": true
+}

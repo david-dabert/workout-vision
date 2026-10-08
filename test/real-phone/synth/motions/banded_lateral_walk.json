@@ -1,0 +1,28 @@
+{
+ "key": "banded_lateral_walk",
+ "source": "convention: a mini band around the ankles, half squat with hands on the hips, one step out to the side and the other foot brought back to hip width, posed as stance widening and narrowing; one step is one cycle; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 20,
+  "hipFlex": 30,
+  "knee": 35,
+  "ankle": -5,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "hipAbd": 8
+ },
+ "end": {
+  "trunk": 20,
+  "hipFlex": 30,
+  "knee": 35,
+  "ankle": -5,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "hipAbd": 20
+ },
+ "view": 0
+}

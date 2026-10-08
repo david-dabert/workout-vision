@@ -6,14 +6,14 @@
   "trunk": 5,
   "shoulderFlex": 25,
   "shoulderAbd": 10,
-  "humRot": -45,
+  "humRot": -30,
   "elbow": 135
  },
  "end": {
   "trunk": 10,
   "shoulderFlex": 125,
-  "shoulderAbd": -15,
-  "humRot": -20,
+  "shoulderAbd": -10,
+  "humRot": 0,
   "elbow": 10
  }
 }

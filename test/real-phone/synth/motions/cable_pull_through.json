@@ -1,0 +1,24 @@
+{
+ "key": "cable_pull_through",
+ "source": "convention: cable pull-through, facing away from a low pulley, rope between the legs, wide stance, hips hinged back with the hands drawn between the thighs, then driven to standing; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 14,
+  "knee": 5,
+  "ankle": -5,
+  "shoulderFlex": 8,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 45,
+  "trunk": 25,
+  "hipFlex": 45,
+  "hipAbd": 14,
+  "knee": 25,
+  "ankle": -25,
+  "shoulderFlex": 40,
+  "shoulderAbd": 0,
+  "elbow": 5
+ }
+}

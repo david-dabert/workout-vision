@@ -1,0 +1,37 @@
+{
+ "key": "bulgarian_split_squat",
+ "source": "convention: Bulgarian split squat, left foot forward, right instep on a bench behind, dumbbells hanging, down until the rear knee nears the floor; the bench is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 10,
+  "shoulderFlex": 10,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 20,
+   "knee": 5,
+   "ankle": 15
+  },
+  "right": {
+   "hipFlex": -20,
+   "knee": 70,
+   "ankle": 70
+  }
+ },
+ "end": {
+  "trunk": 20,
+  "shoulderFlex": 20,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 85,
+   "knee": 100,
+   "ankle": -15
+  },
+  "right": {
+   "hipFlex": -33,
+   "knee": 108,
+   "ankle": 19
+  }
+ }
+}

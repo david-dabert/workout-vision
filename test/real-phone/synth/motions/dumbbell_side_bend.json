@@ -1,0 +1,32 @@
+{
+ "key": "dumbbell_side_bend",
+ "source": "convention: standing, a dumbbell in the right hand, the other hand on the waist; the trunk bends sideways towards the dumbbell and returns upright; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 8,
+  "right": {
+   "shoulderAbd": 8,
+   "elbow": 5
+  },
+  "left": {
+   "shoulderAbd": 40,
+   "humRot": -90,
+   "elbow": 100
+  }
+ },
+ "end": {
+  "hipAbd": 8,
+  "trunkSide": -28,
+  "right": {
+   "shoulderAbd": 20,
+   "elbow": 5
+  },
+  "left": {
+   "shoulderAbd": 40,
+   "humRot": -90,
+   "elbow": 100
+  }
+ },
+ "side": "right",
+ "view": 0
+}

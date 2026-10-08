@@ -1,0 +1,23 @@
+{
+ "key": "landmine_squat",
+ "source": "convention: the bar end held at the chest in both hands, squat to about parallel leaning slightly into the bar, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 5,
+  "shoulderFlex": 30,
+  "shoulderAbd": 15,
+  "humRot": -30,
+  "elbow": 135
+ },
+ "end": {
+  "trunk": 25,
+  "hipFlex": 95,
+  "hipAbd": 12,
+  "knee": 120,
+  "ankle": -25,
+  "shoulderFlex": 50,
+  "shoulderAbd": 15,
+  "humRot": -30,
+  "elbow": 135
+ }
+}

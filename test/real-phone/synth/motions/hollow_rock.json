@@ -1,0 +1,33 @@
+{
+ "key": "hollow_rock",
+ "source": "convention: the hollow body position held rigid and rocked from the upper back to the hips and back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -108,
+  "trunk": 25,
+  "neck": 10,
+  "shoulderFlex": 170,
+  "shoulderAbd": 6,
+  "elbow": 5,
+  "hipFlex": 25,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 3
+ },
+ "end": {
+  "pitch": -80,
+  "trunk": 25,
+  "neck": 10,
+  "shoulderFlex": 170,
+  "shoulderAbd": 6,
+  "elbow": 5,
+  "hipFlex": 25,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 3
+ }
+}

@@ -8,18 +8,19 @@
  },
  "start": {
   "pitch": 160,
-  "shoulderFlex": 165,
+  "shoulderFlex": 160,
   "shoulderAbd": 10,
   "elbow": 5,
-  "hipFlex": 75,
+  "hipFlex": 95,
   "ankle": 20
  },
  "end": {
-  "pitch": 165,
-  "shoulderFlex": 85,
-  "shoulderAbd": 35,
-  "elbow": 95,
-  "hipFlex": 80,
+  "pitch": 155,
+  "shoulderFlex": 80,
+  "shoulderAbd": 40,
+  "humRot": 0,
+  "elbow": 92,
+  "hipFlex": 75,
   "ankle": 20
  }
 }

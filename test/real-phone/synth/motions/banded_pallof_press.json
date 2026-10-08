@@ -1,0 +1,25 @@
+{
+ "key": "banded_pallof_press",
+ "source": "convention: standing side-on to the band anchor, athletic stance, band at the sternum; the arms press straight out in front and return, the trunk resisting rotation; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipFlex": 12,
+  "knee": 18,
+  "ankle": -6,
+  "hipAbd": 9,
+  "shoulderFlex": 25,
+  "shoulderAbd": 5,
+  "humRot": -45,
+  "elbow": 115
+ },
+ "end": {
+  "hipFlex": 12,
+  "knee": 18,
+  "ankle": -6,
+  "hipAbd": 9,
+  "shoulderFlex": 88,
+  "shoulderAbd": -15,
+  "humRot": 0,
+  "elbow": 5
+ }
+}

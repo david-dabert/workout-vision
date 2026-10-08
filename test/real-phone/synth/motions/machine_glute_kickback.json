@@ -1,0 +1,38 @@
+{
+ "key": "machine_glute_kickback",
+ "source": "convention: standing glute kickback machine, trunk leaning forward with the forearms on the pad, right leg standing, the left foot on the plate driven back and up to hip extension; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 30,
+  "shoulderFlex": 70,
+  "shoulderAbd": 15,
+  "elbow": 80,
+  "left": {
+   "hipFlex": 55,
+   "knee": 70,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 30,
+   "knee": 5,
+   "ankle": -5
+  }
+ },
+ "end": {
+  "pitch": 30,
+  "shoulderFlex": 70,
+  "shoulderAbd": 15,
+  "elbow": 80,
+  "left": {
+   "hipFlex": -20,
+   "knee": 25,
+   "ankle": 10
+  },
+  "right": {
+   "hipFlex": 30,
+   "knee": 5,
+   "ankle": -5
+  }
+ },
+ "side": "left"
+}

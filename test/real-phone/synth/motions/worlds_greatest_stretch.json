@@ -1,0 +1,53 @@
+{
+ "key": "worlds_greatest_stretch",
+ "source": "convention: deep lunge, left foot forward, back knee off the floor, both hands on the floor inside the front foot, then the left arm opens and reaches to the ceiling and returns (reps on one side); the engine has no trunk rotation, so the reach is posed as the arm sweeping out to the side and opening behind the trunk (left arm on the floor written as shoulderFlex -110 with shoulderAbd 172, the same direction as flexion 70, so the path passes through the side); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 30,
+  "trunk": 40,
+  "neck": 15,
+  "left": {
+   "hipFlex": 110,
+   "knee": 100,
+   "ankle": -20,
+   "hipAbd": 6,
+   "shoulderFlex": -110,
+   "shoulderAbd": 172,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 25,
+   "ankle": 20,
+   "hipAbd": 6,
+   "shoulderFlex": 70,
+   "shoulderAbd": 8,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "pitch": 30,
+  "trunk": 40,
+  "neck": -15,
+  "left": {
+   "hipFlex": 110,
+   "knee": 100,
+   "ankle": -20,
+   "hipAbd": 6,
+   "shoulderFlex": -90,
+   "shoulderAbd": 45,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 25,
+   "ankle": 20,
+   "hipAbd": 6,
+   "shoulderFlex": 70,
+   "shoulderAbd": 8,
+   "elbow": 5
+  }
+ },
+ "side": "left",
+ "view": 90
+}

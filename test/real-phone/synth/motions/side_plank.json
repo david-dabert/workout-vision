@@ -1,0 +1,37 @@
+{
+ "key": "side_plank",
+ "source": "convention: forearm side plank on the right forearm, elbow under the shoulder, legs stacked, body straight, top arm along the body; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "roll": 78,
+  "hipAbd": 0,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 78,
+   "elbow": 90
+  },
+  "left": {
+   "shoulderAbd": 0,
+   "elbow": 10
+  }
+ },
+ "end": {
+  "roll": 78,
+  "hipAbd": 0,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 78,
+   "elbow": 90
+  },
+  "left": {
+   "shoulderAbd": 0,
+   "elbow": 10
+  }
+ },
+ "view": 0,
+ "noReps": true
+}

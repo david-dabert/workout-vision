@@ -1,0 +1,30 @@
+{
+ "key": "cossack_squat",
+ "source": "convention: wide stance, sit deep over one leg with the heel down while the other leg straightens with the toes up, arms forward for balance, rise to the wide stance; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 35,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 8
+ },
+ "end": {
+  "trunk": 25,
+  "shoulderFlex": 100,
+  "shoulderAbd": 10,
+  "elbow": 10,
+  "left": {
+   "hipFlex": 105,
+   "hipAbd": 35,
+   "knee": 145,
+   "ankle": -40
+  },
+  "right": {
+   "hipFlex": 0,
+   "hipAbd": 70,
+   "knee": 0,
+   "ankle": -40
+  }
+ },
+ "alternate": "mirror"
+}

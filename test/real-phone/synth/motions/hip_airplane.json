@@ -1,0 +1,41 @@
+{
+ "key": "hip_airplane",
+ "source": "convention: single-leg hinge on the left leg, trunk level, right leg straight behind in line, arms out like wings, the pelvis and trunk turned open towards the right and back to square; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "yaw": 90,
+  "roll": 90,
+  "pitch": 90,
+  "shoulderAbd": 90,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 90,
+   "hipAbd": 0,
+   "knee": 10,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 0,
+   "ankle": 20
+  }
+ },
+ "end": {
+  "yaw": 90,
+  "roll": 90,
+  "pitch": 45,
+  "shoulderAbd": 90,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 90,
+   "hipAbd": 45,
+   "knee": 10,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 0,
+   "ankle": 20
+  }
+ }
+}

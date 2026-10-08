@@ -1,0 +1,41 @@
+{
+ "key": "shrimp_squat",
+ "source": "convention: standing on the left leg, the right knee bent and the right foot held behind by the right hand, left arm forward, lower until the right knee touches the floor behind, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "shoulderFlex": 80,
+   "shoulderAbd": 10,
+   "elbow": 5,
+   "knee": 0
+  },
+  "right": {
+   "shoulderFlex": -35,
+   "shoulderAbd": 10,
+   "elbow": 10,
+   "hipFlex": -5,
+   "knee": 135,
+   "ankle": 30
+  }
+ },
+ "end": {
+  "pitch": 25,
+  "trunk": 25,
+  "left": {
+   "shoulderFlex": 125,
+   "shoulderAbd": 10,
+   "elbow": 5,
+   "hipFlex": 105,
+   "knee": 120,
+   "ankle": -40
+  },
+  "right": {
+   "shoulderFlex": -30,
+   "shoulderAbd": 10,
+   "elbow": 5,
+   "hipFlex": 5,
+   "knee": 140,
+   "ankle": 30
+  }
+ }
+}

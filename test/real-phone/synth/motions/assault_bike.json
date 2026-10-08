@@ -4,25 +4,25 @@
  "status": "experimental",
  "support": {
   "anchor": "hips",
-  "y": 0.85
+  "y": 0.9
  },
  "start": {
   "pitch": 10,
   "trunk": 5,
   "shoulderAbd": 15,
   "left": {
-   "hipFlex": 90,
-   "knee": 110,
+   "hipFlex": 85,
+   "knee": 105,
    "ankle": -20,
-   "shoulderFlex": 10,
-   "elbow": 100
+   "shoulderFlex": -10,
+   "elbow": 115
   },
   "right": {
    "hipFlex": 45,
    "knee": 40,
    "ankle": 10,
-   "shoulderFlex": 70,
-   "elbow": 25
+   "shoulderFlex": 65,
+   "elbow": 30
   }
  },
  "end": {
@@ -33,15 +33,15 @@
    "hipFlex": 45,
    "knee": 40,
    "ankle": 10,
-   "shoulderFlex": 70,
-   "elbow": 25
+   "shoulderFlex": 65,
+   "elbow": 30
   },
   "right": {
-   "hipFlex": 90,
-   "knee": 110,
+   "hipFlex": 85,
+   "knee": 105,
    "ankle": -20,
-   "shoulderFlex": 10,
-   "elbow": 100
+   "shoulderFlex": -10,
+   "elbow": 115
   }
  },
  "noReps": true

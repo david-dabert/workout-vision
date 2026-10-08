@@ -1,0 +1,39 @@
+{
+ "key": "copenhagen_plank",
+ "source": "convention: side plank on the right forearm with the top leg resting on a bench (not rendered) at the ankle, the bottom leg raised to meet it, body straight; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "roll": 95,
+  "hipAbd": 0,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 95,
+   "elbow": 90,
+   "hipAbd": 10
+  },
+  "left": {
+   "shoulderAbd": 0,
+   "elbow": 10
+  }
+ },
+ "end": {
+  "roll": 95,
+  "hipAbd": 0,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 95,
+   "elbow": 90,
+   "hipAbd": 10
+  },
+  "left": {
+   "shoulderAbd": 0,
+   "elbow": 10
+  }
+ },
+ "view": 0,
+ "noReps": true
+}

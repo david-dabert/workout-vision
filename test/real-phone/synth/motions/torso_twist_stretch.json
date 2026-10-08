@@ -1,0 +1,22 @@
+{
+ "key": "torso_twist_stretch",
+ "source": "convention: standing, feet hip-width and knees soft, arms out at shoulder height, the trunk turns to the right and to the left, one rep a full right-left cycle; the engine has no trunk rotation on the pelvis, so the turn is posed as a whole-body yaw (hips and feet pivot with it); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "knee": 10,
+  "ankle": -5,
+  "shoulderAbd": 85,
+  "elbow": 15,
+  "yaw": -40
+ },
+ "end": {
+  "hipAbd": 10,
+  "knee": 10,
+  "ankle": -5,
+  "shoulderAbd": 85,
+  "elbow": 15,
+  "yaw": 40
+ },
+ "view": 0
+}

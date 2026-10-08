@@ -1,0 +1,28 @@
+{
+ "key": "l_sit_hold",
+ "source": "convention: hands on the floor beside the hips, arms straight, body pressed up, straight legs held level in front; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 0.08
+ },
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 0,
+  "hipFlex": 90,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 2
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 0,
+  "hipFlex": 90,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 2
+ },
+ "noReps": true
+}

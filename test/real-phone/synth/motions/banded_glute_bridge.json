@@ -1,0 +1,30 @@
+{
+ "key": "banded_glute_bridge",
+ "source": "convention: lying on the back, a mini band above the knees, feet flat near the hips, drive the hips up until shoulders, hips and knees line up, knees pushed out against the band, lower back to the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "feet"
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 45,
+  "hipAbd": 15,
+  "knee": 110,
+  "ankle": 25,
+  "neck": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -112,
+  "hipFlex": 0,
+  "hipAbd": 15,
+  "knee": 105,
+  "ankle": 7,
+  "neck": 30,
+  "shoulderFlex": -22,
+  "shoulderAbd": 15,
+  "elbow": 5
+ }
+}

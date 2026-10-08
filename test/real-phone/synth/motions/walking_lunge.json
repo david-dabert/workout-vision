@@ -1,0 +1,27 @@
+{
+ "key": "walking_lunge",
+ "source": "convention: dumbbell walking lunge, dumbbells hanging, upright trunk, front thigh about parallel and the rear knee just above the floor, legs alternating; posed in place (the forward step is not rendered); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 5,
+  "shoulderFlex": 5,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 85,
+   "knee": 95,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 95,
+   "ankle": -35
+  }
+ },
+ "alternate": "mirror"
+}

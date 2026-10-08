@@ -1,0 +1,43 @@
+{
+ "key": "russian_twist",
+ "source": "convention: seated, torso leaned back about 45 degrees, knees bent, feet off the floor, hands together; the hands sweep to one hip, then the other (trunk rotation not expressible: arms only); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.12
+ },
+ "start": {
+  "pitch": -45,
+  "trunk": 0,
+  "hipFlex": 85,
+  "knee": 70,
+  "ankle": 20,
+  "hipAbd": 6,
+  "shoulderFlex": 30,
+  "shoulderAbd": 10,
+  "humRot": -50,
+  "elbow": 80
+ },
+ "end": {
+  "pitch": -45,
+  "trunk": 0,
+  "hipFlex": 85,
+  "knee": 70,
+  "ankle": 20,
+  "hipAbd": 6,
+  "left": {
+   "shoulderFlex": 20,
+   "shoulderAbd": 15,
+   "humRot": -30,
+   "elbow": 60
+  },
+  "right": {
+   "shoulderFlex": 45,
+   "shoulderAbd": -35,
+   "humRot": 0,
+   "elbow": 5
+  }
+ },
+ "alternate": "mirror",
+ "view": 0
+}

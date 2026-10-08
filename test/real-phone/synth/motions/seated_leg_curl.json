@@ -1,0 +1,27 @@
+{
+ "key": "seated_leg_curl",
+ "source": "convention: seated leg curl, back against the pad, thighs under the thigh pad, hands on the side handles, legs extended in front then heels pulled under the seat; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": -10,
+  "hipFlex": 100,
+  "knee": 5,
+  "ankle": -10,
+  "shoulderFlex": 30,
+  "shoulderAbd": 20,
+  "elbow": 60
+ },
+ "end": {
+  "trunk": -10,
+  "hipFlex": 100,
+  "knee": 115,
+  "ankle": -10,
+  "shoulderFlex": 30,
+  "shoulderAbd": 20,
+  "elbow": 60
+ }
+}

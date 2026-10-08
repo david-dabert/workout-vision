@@ -1,0 +1,23 @@
+{
+ "key": "sumo_deadlift",
+ "source": "convention: barbell sumo deadlift, wide stance with the knees pushed out, hands inside the knees, more upright trunk than the conventional pull, to lockout; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 25,
+  "trunk": 10,
+  "hipFlex": 85,
+  "hipAbd": 35,
+  "knee": 75,
+  "ankle": -15,
+  "shoulderFlex": 35,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 25,
+  "knee": 2,
+  "shoulderFlex": 0,
+  "shoulderAbd": 0,
+  "elbow": 5
+ }
+}

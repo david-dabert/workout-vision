@@ -1,0 +1,29 @@
+{
+ "key": "lying_leg_raise",
+ "source": "convention: lying on the back, arms by the sides, legs straight just off the floor; the straight legs rise to vertical and lower under control; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "shoulderFlex": 0,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 5,
+  "knee": 3,
+  "ankle": 25,
+  "hipAbd": 3
+ },
+ "end": {
+  "pitch": -90,
+  "shoulderFlex": 0,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 90,
+  "knee": 5,
+  "ankle": 25,
+  "hipAbd": 3
+ }
+}

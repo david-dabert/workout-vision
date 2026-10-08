@@ -1,0 +1,22 @@
+{
+ "key": "smith_machine_romanian_deadlift",
+ "source": "convention: Smith machine Romanian deadlift, bar in the hands at the thighs, soft knees, hips pushed back until the bar passes the knees; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 12,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 35,
+  "hipFlex": 40,
+  "knee": 15,
+  "ankle": -15,
+  "shoulderFlex": 70,
+  "shoulderAbd": 12,
+  "elbow": 5
+ }
+}

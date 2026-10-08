@@ -1,0 +1,34 @@
+{
+ "key": "decline_sit_up",
+ "source": "convention: on a decline bench about 25 degrees, knees bent, feet hooked under the pads, fingers at the temples; the torso rises from lying on the bench to upright over the thighs, then lowers; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.65
+ },
+ "start": {
+  "pitch": -115,
+  "trunk": 0,
+  "hipFlex": 15,
+  "knee": 110,
+  "ankle": -10,
+  "hipAbd": 6,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ },
+ "end": {
+  "pitch": -10,
+  "trunk": 20,
+  "neck": 10,
+  "hipFlex": 120,
+  "knee": 110,
+  "ankle": -10,
+  "hipAbd": 6,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "key": "assisted_pistol_squat",
+ "source": "convention: standing on the left leg holding a post or strap at chest height, the right leg held in front, sit deep on the left leg letting the arms straighten, the right leg rising, stand back up pulling lightly; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 70,
+  "shoulderAbd": 10,
+  "elbow": 70,
+  "left": {
+   "knee": 0
+  },
+  "right": {
+   "hipFlex": 30,
+   "knee": 10,
+   "ankle": -10
+  }
+ },
+ "end": {
+  "trunk": 20,
+  "shoulderFlex": 100,
+  "shoulderAbd": 10,
+  "elbow": 10,
+  "left": {
+   "hipFlex": 105,
+   "knee": 140,
+   "ankle": -35
+  },
+  "right": {
+   "hipFlex": 85,
+   "knee": 5,
+   "ankle": -10
+  }
+ }
+}

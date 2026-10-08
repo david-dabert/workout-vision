@@ -1,0 +1,23 @@
+{
+ "key": "deadlift",
+ "source": "convention: conventional barbell deadlift from the floor, hips above the knees, flat back and vertical arms, to standing lockout; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 105,
+  "hipAbd": 8,
+  "knee": 75,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 8,
+  "knee": 2,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ }
+}

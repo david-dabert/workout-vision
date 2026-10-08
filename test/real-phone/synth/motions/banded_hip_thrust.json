@@ -1,0 +1,30 @@
+{
+ "key": "banded_hip_thrust",
+ "source": "convention: upper back on a bench, a band across the hips anchored to the floor, feet flat, hips lowered towards the floor then driven up until the trunk and thighs are level and the shins vertical; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "feet"
+ },
+ "start": {
+  "pitch": -53,
+  "hipFlex": 90,
+  "hipAbd": 15,
+  "knee": 125,
+  "ankle": 18,
+  "neck": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 60,
+  "elbow": 60
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": 0,
+  "hipAbd": 15,
+  "knee": 90,
+  "ankle": 0,
+  "neck": 30,
+  "shoulderFlex": 0,
+  "shoulderAbd": 60,
+  "elbow": 60
+ }
+}

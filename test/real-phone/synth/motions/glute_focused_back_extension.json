@@ -1,0 +1,33 @@
+{
+ "key": "glute_focused_back_extension",
+ "source": "convention: 45-degree back extension bench, the pad below the hip crease, upper back rounded and chin tucked, arms crossed on the chest, hinge down at the hips then raise the trunk until the body is in line; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "feet",
+  "y": 0.3
+ },
+ "start": {
+  "pitch": 125,
+  "hipFlex": 80,
+  "trunk": 20,
+  "neck": 20,
+  "knee": 0,
+  "ankle": 0,
+  "shoulderFlex": 40,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 135
+ },
+ "end": {
+  "pitch": 45,
+  "hipFlex": 0,
+  "trunk": 15,
+  "neck": 15,
+  "knee": 0,
+  "ankle": 0,
+  "shoulderFlex": 40,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 135
+ }
+}

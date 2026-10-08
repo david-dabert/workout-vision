@@ -1,0 +1,38 @@
+{
+ "key": "bird_dog",
+ "source": "convention: on hands and knees, hands under the shoulders, knees under the hips; one leg extends straight back to hip height while the opposite arm reaches forward, then the other side; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.06
+ },
+ "start": {
+  "pitch": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "hipFlex": 90,
+  "knee": 90,
+  "ankle": 65,
+  "hipAbd": 5
+ },
+ "end": {
+  "pitch": 90,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "hipAbd": 5,
+  "left": {
+   "hipFlex": 0,
+   "knee": 3,
+   "ankle": 10,
+   "shoulderFlex": 90
+  },
+  "right": {
+   "hipFlex": 90,
+   "knee": 90,
+   "ankle": 65,
+   "shoulderFlex": 175
+  }
+ },
+ "alternate": "mirror"
+}

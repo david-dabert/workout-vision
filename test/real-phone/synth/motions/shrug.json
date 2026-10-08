@@ -3,14 +3,14 @@
  "source": "convention: standing, barbell hanging at arm's length in front of the thighs, shoulders shrugged straight up; the engine cannot raise the shoulder girdle, so both poses are the hold; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "shoulderFlex": 6,
-  "shoulderAbd": 8,
+  "shoulderFlex": 12,
+  "shoulderAbd": 3,
   "elbow": 5,
   "knee": 5
  },
  "end": {
-  "shoulderFlex": 6,
-  "shoulderAbd": 8,
+  "shoulderFlex": 12,
+  "shoulderAbd": 3,
   "elbow": 5,
   "knee": 5
  },

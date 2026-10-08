@@ -1,0 +1,31 @@
+{
+ "key": "curtsy_lunge",
+ "source": "convention: hands on the hips, one leg steps back and across behind the other, both knees bend until the back knee nears the floor, push back to standing; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100
+ },
+ "end": {
+  "trunk": 10,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "left": {
+   "hipFlex": 80,
+   "hipAbd": 5,
+   "knee": 95,
+   "ankle": -15
+  },
+  "right": {
+   "hipFlex": -15,
+   "hipAbd": -25,
+   "knee": 85,
+   "ankle": 40
+  }
+ },
+ "alternate": "mirror"
+}

@@ -1,0 +1,33 @@
+{
+ "key": "weighted_crunch",
+ "source": "convention: lying on the back, knees bent, feet flat, a plate held on the chest with both hands; the shoulder blades curl off the floor and lower; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 30,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 130
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 30,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 130,
+  "trunk": 35,
+  "neck": 10
+ }
+}

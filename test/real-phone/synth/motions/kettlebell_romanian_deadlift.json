@@ -1,0 +1,24 @@
+{
+ "key": "kettlebell_romanian_deadlift",
+ "source": "convention: kettlebell Romanian deadlift, one kettlebell held by the handle in both hands, soft knees, hips pushed back to below the knees; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 8,
+  "knee": 8,
+  "ankle": -8,
+  "shoulderFlex": 5,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 30,
+  "hipFlex": 40,
+  "hipAbd": 8,
+  "knee": 20,
+  "ankle": -20,
+  "shoulderFlex": 65,
+  "shoulderAbd": 0,
+  "elbow": 5
+ }
+}

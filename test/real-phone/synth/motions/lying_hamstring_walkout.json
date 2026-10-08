@@ -1,0 +1,30 @@
+{
+ "key": "lying_hamstring_walkout",
+ "source": "convention: from a glute bridge, the heels walk out in small steps until the legs are nearly straight with the hips kept up, then walk back in; one walk out and back is posed as one smooth cycle; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "feet"
+ },
+ "start": {
+  "pitch": -112,
+  "hipFlex": 0,
+  "knee": 105,
+  "ankle": 7,
+  "neck": 30,
+  "shoulderFlex": -22,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipAbd": 6
+ },
+ "end": {
+  "pitch": -97,
+  "hipFlex": 10,
+  "hipAbd": 6,
+  "knee": 25,
+  "ankle": 15,
+  "neck": 25,
+  "shoulderFlex": -7,
+  "shoulderAbd": 15,
+  "elbow": 5
+ }
+}

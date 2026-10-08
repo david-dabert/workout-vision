@@ -1,0 +1,30 @@
+{
+ "key": "banded_dead_bug",
+ "source": "convention: dead bug with a band anchored behind the head, held at straight arms above the chest; one leg straightens and lowers to just above the floor, then the other; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 90,
+  "knee": 90,
+  "ankle": 10,
+  "hipAbd": 6,
+  "shoulderFlex": 95,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": 15,
+  "knee": 5,
+  "ankle": 20,
+  "hipAbd": 6,
+  "shoulderFlex": 95,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "alternate": true
+}

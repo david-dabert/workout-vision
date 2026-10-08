@@ -1,0 +1,21 @@
+{
+ "key": "front_squat",
+ "source": "convention: barbell front squat, bar in the front rack with the elbows high, upright trunk, to below parallel; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "shoulderFlex": 95,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "end": {
+  "trunk": 18,
+  "hipFlex": 105,
+  "hipAbd": 14,
+  "knee": 135,
+  "ankle": -30,
+  "shoulderFlex": 110,
+  "shoulderAbd": 15,
+  "elbow": 150
+ }
+}

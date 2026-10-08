@@ -10,7 +10,7 @@
   "trunk": -10,
   "hipFlex": 90,
   "knee": 90,
-  "shoulderFlex": -10,
+  "shoulderFlex": -20,
   "shoulderAbd": 70,
   "elbow": 100
  },

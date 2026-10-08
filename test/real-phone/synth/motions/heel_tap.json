@@ -1,0 +1,40 @@
+{
+ "key": "heel_tap",
+ "source": "convention: lying on the back, knees bent, feet flat close to the hips, shoulders off the floor, arms long by the sides; the trunk bends side to side so each hand reaches its heel (lateral trunk bend not alternable: arms only); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "trunk": 25,
+  "neck": 5,
+  "hipFlex": 60,
+  "knee": 115,
+  "ankle": 35,
+  "hipAbd": 10,
+  "shoulderFlex": 25,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "trunk": 25,
+  "neck": 5,
+  "hipFlex": 60,
+  "knee": 115,
+  "ankle": 35,
+  "hipAbd": 10,
+  "elbow": 5,
+  "left": {
+   "shoulderFlex": 18,
+   "shoulderAbd": 28
+  },
+  "right": {
+   "shoulderFlex": 30,
+   "shoulderAbd": 2
+  }
+ },
+ "alternate": "mirror"
+}

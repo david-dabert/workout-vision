@@ -1,0 +1,27 @@
+{
+ "key": "plank_shoulder_tap",
+ "source": "convention: high plank, feet a little wide; one hand lifts to tap the opposite shoulder and returns, then the other, hips kept square; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "ankle": 30,
+  "hipAbd": 10
+ },
+ "end": {
+  "pitch": 68,
+  "shoulderFlex": 55,
+  "shoulderAbd": -15,
+  "elbow": 110,
+  "ankle": 30,
+  "hipAbd": 10,
+  "humRot": -80
+ },
+ "alternate": true
+}

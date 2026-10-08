@@ -1,0 +1,32 @@
+{
+ "key": "butterfly_stretch",
+ "source": "convention: seated on the floor, soles of the feet together close to the groin, knees out to the sides, hands holding the feet, the trunk leans forward and the knees sink, held; the engine has no hip rotation, so the thighs turned out are posed by hipAbd with hipFlex past 150, which lays the knee bend flat; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.12
+ },
+ "start": {
+  "trunk": 0,
+  "shoulderFlex": 20,
+  "shoulderAbd": 10,
+  "elbow": 40,
+  "hipFlex": 160,
+  "hipAbd": 60,
+  "knee": 150,
+  "ankle": 0
+ },
+ "end": {
+  "trunk": 25,
+  "neck": 10,
+  "shoulderFlex": 35,
+  "shoulderAbd": 10,
+  "elbow": 50,
+  "hipFlex": 165,
+  "hipAbd": 72,
+  "knee": 150,
+  "ankle": 0
+ },
+ "view": 0,
+ "noReps": true
+}

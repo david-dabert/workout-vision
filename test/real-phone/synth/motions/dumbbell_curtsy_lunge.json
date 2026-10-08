@@ -1,0 +1,29 @@
+{
+ "key": "dumbbell_curtsy_lunge",
+ "source": "convention: a dumbbell in each hand at the sides, one leg steps back and across behind the other, both knees bend until the back knee nears the floor, push back to standing; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 80,
+   "hipAbd": 5,
+   "knee": 95,
+   "ankle": -15
+  },
+  "right": {
+   "hipFlex": -15,
+   "hipAbd": -25,
+   "knee": 85,
+   "ankle": 40
+  }
+ },
+ "alternate": "mirror"
+}

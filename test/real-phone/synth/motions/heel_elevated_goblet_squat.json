@@ -1,0 +1,22 @@
+{
+ "key": "heel_elevated_goblet_squat",
+ "source": "convention: goblet squat with the heels on a small wedge, very upright trunk, knees travelling far forward, to a deep squat; the wedge is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 8,
+  "ankle": 15,
+  "shoulderFlex": 30,
+  "shoulderAbd": 5,
+  "elbow": 140
+ },
+ "end": {
+  "trunk": 12,
+  "hipFlex": 100,
+  "hipAbd": 12,
+  "knee": 145,
+  "ankle": -30,
+  "shoulderFlex": 30,
+  "shoulderAbd": 5,
+  "elbow": 140
+ }
+}

@@ -6,14 +6,16 @@
   "pitch": 22,
   "ankle": -22,
   "shoulderFlex": 105,
-  "shoulderAbd": 5,
+  "shoulderAbd": 18,
+  "humRot": -30,
   "elbow": 5
  },
  "end": {
-  "pitch": 30,
-  "ankle": -30,
-  "shoulderFlex": 30,
-  "shoulderAbd": 45,
+  "pitch": 32,
+  "ankle": -32,
+  "shoulderFlex": 85,
+  "shoulderAbd": 60,
+  "humRot": -30,
   "elbow": 100
  }
 }

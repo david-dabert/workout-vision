@@ -1,0 +1,29 @@
+{
+ "key": "step_down",
+ "source": "convention: standing on the left leg on a step, hands on the hips, the right leg hanging straight off the front edge, bend the left knee until the right heel touches the floor, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "right": {
+   "hipFlex": 15,
+   "knee": 5,
+   "ankle": -5
+  }
+ },
+ "end": {
+  "trunk": 20,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "left": {
+   "hipFlex": 45,
+   "knee": 70,
+   "ankle": -25
+  }
+ },
+ "side": "left"
+}

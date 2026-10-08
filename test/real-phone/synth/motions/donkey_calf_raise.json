@@ -1,0 +1,25 @@
+{
+ "key": "donkey_calf_raise",
+ "source": "convention: bent at the hips with the trunk about level, hands on a support, legs straight, heels dropped below the step then raised onto the balls of the feet; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 75,
+  "trunk": 10,
+  "hipFlex": 75,
+  "knee": 5,
+  "ankle": -15,
+  "shoulderFlex": 110,
+  "shoulderAbd": 10,
+  "elbow": 10
+ },
+ "end": {
+  "pitch": 75,
+  "trunk": 10,
+  "hipFlex": 75,
+  "knee": 5,
+  "ankle": 30,
+  "shoulderFlex": 110,
+  "shoulderAbd": 10,
+  "elbow": 10
+ }
+}

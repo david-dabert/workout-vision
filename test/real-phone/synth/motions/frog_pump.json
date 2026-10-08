@@ -1,0 +1,30 @@
+{
+ "key": "frog_pump",
+ "source": "convention: lying on the back, soles of the feet together close to the hips and knees falling out wide, thrust the hips up squeezing the glutes, lower to the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "feet"
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 60,
+  "hipAbd": 55,
+  "knee": 120,
+  "ankle": 30,
+  "neck": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -108,
+  "hipFlex": 0,
+  "hipAbd": 50,
+  "knee": 115,
+  "ankle": 30,
+  "neck": 30,
+  "shoulderFlex": -18,
+  "shoulderAbd": 15,
+  "elbow": 5
+ }
+}

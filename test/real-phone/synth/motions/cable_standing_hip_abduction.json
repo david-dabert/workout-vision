@@ -1,0 +1,31 @@
+{
+ "key": "cable_standing_hip_abduction",
+ "source": "convention: standing cable hip abduction, ankle strap on the left leg, right hand on the cable tower, the straight left leg lifted out to the side, trunk staying nearly upright; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "hipAbd": 2,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipAbd": 4,
+   "shoulderAbd": 35,
+   "elbow": 15
+  }
+ },
+ "end": {
+  "trunkSide": -5,
+  "left": {
+   "hipAbd": 42,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipAbd": 4,
+   "shoulderAbd": 35,
+   "elbow": 15
+  }
+ },
+ "side": "left"
+}

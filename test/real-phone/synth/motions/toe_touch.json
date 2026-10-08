@@ -1,0 +1,21 @@
+{
+ "key": "toe_touch",
+ "source": "convention: standing toe touch done as a repeated drill (stand tall, hinge and round down with straight knees until the fingers reach the toes, stand back up); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 75,
+  "hipFlex": 85,
+  "knee": 0,
+  "ankle": 10,
+  "trunk": 40,
+  "neck": 20,
+  "shoulderFlex": 105,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "view": 90
+}

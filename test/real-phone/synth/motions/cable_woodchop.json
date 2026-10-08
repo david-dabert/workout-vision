@@ -1,0 +1,41 @@
+{
+ "key": "cable_woodchop",
+ "source": "convention: high-to-low chop, standing side-on to a high pulley, feet wide, both hands on the handle above the near shoulder; arms stay long and pull down across the body to outside the far knee as the hips and shoulders turn and the knees bend (trunk rotation approximated by turning the whole body); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "yaw": 25,
+  "hipFlex": 8,
+  "knee": 12,
+  "ankle": -4,
+  "hipAbd": 12,
+  "left": {
+   "shoulderFlex": 120,
+   "shoulderAbd": -5,
+   "elbow": 30
+  },
+  "right": {
+   "shoulderFlex": 140,
+   "shoulderAbd": -30,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "yaw": -25,
+  "hipFlex": 30,
+  "knee": 38,
+  "ankle": -8,
+  "hipAbd": 12,
+  "trunk": 15,
+  "left": {
+   "shoulderFlex": 35,
+   "shoulderAbd": -25,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 30,
+   "shoulderAbd": -10,
+   "humRot": 20,
+   "elbow": 15
+  }
+ }
+}

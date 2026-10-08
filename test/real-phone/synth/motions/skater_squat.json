@@ -1,0 +1,35 @@
+{
+ "key": "skater_squat",
+ "source": "convention: standing on the left leg, the right knee bent with the foot behind, arms reaching forward as the hips sink and the trunk leans until the right knee taps the floor behind, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 20,
+  "shoulderAbd": 10,
+  "elbow": 10,
+  "left": {
+   "knee": 0
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 90,
+   "ankle": 20
+  }
+ },
+ "end": {
+  "pitch": 20,
+  "trunk": 25,
+  "shoulderFlex": 125,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 100,
+   "knee": 120,
+   "ankle": -40
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 85,
+   "ankle": 20
+  }
+ }
+}
