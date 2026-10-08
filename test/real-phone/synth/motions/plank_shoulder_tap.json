@@ -16,12 +16,12 @@
  },
  "end": {
   "pitch": 68,
-  "shoulderFlex": 55,
-  "shoulderAbd": -15,
-  "elbow": 110,
+  "shoulderFlex": 45,
+  "shoulderAbd": 5,
+  "elbow": 120,
   "ankle": 30,
   "hipAbd": 10,
-  "humRot": -80
+  "humRot": -70
  },
  "alternate": true
 }

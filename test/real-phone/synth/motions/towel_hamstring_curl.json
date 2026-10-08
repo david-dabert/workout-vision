@@ -3,7 +3,8 @@
  "source": "convention: lying on the back, heels on a towel on a slick floor, hips lifted in line with the straight legs, the heels slide in towards the hips as the hips rise, slide back out; angles UNSOURCED",
  "status": "experimental",
  "support": {
-  "anchor": "feet"
+  "anchor": "lowest",
+  "y": 0.1
  },
  "start": {
   "pitch": -92,

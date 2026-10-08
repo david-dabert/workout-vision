@@ -16,13 +16,13 @@
   "elbow": 100,
   "left": {
    "hipFlex": 80,
-   "hipAbd": 5,
+   "hipAbd": 8,
    "knee": 95,
    "ankle": -15
   },
   "right": {
    "hipFlex": -15,
-   "hipAbd": -25,
+   "hipAbd": -35,
    "knee": 85,
    "ankle": 40
   }
