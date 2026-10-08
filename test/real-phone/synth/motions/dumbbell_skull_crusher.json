@@ -1,0 +1,29 @@
+{
+ "key": "dumbbell_skull_crusher",
+ "source": "convention: lying on a flat bench, two dumbbells on straight arms over the chest, elbows bend until the dumbbells sit beside the head; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 92,
+  "shoulderAbd": 4,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 102,
+  "shoulderAbd": 6,
+  "elbow": 125
+ }
+}

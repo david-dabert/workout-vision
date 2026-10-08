@@ -1,0 +1,30 @@
+{
+ "key": "single_arm_dumbbell_tricep_extension",
+ "source": "convention: standing, one dumbbell held overhead on a straight arm (the set starts there), lowered behind the head with the elbow pointing up, then extended back; the other arm hangs; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "shoulderFlex": 172,
+   "shoulderAbd": 5,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 0,
+   "shoulderAbd": 12,
+   "elbow": 10
+  }
+ },
+ "end": {
+  "left": {
+   "shoulderFlex": 165,
+   "shoulderAbd": 8,
+   "elbow": 140
+  },
+  "right": {
+   "shoulderFlex": 0,
+   "shoulderAbd": 12,
+   "elbow": 10
+  }
+ },
+ "side": "left"
+}

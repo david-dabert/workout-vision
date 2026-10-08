@@ -1,0 +1,25 @@
+{
+ "key": "bench_dip",
+ "source": "convention: hands on a bench behind the hips (not rendered), legs straight with the heels on the floor, the hips lowered beside the bench until the upper arms are about level; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 0.45
+ },
+ "start": {
+  "shoulderFlex": -20,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 58,
+  "knee": 0,
+  "ankle": -10
+ },
+ "end": {
+  "shoulderFlex": -78,
+  "shoulderAbd": 15,
+  "elbow": 85,
+  "hipFlex": 72,
+  "knee": 0,
+  "ankle": -10
+ }
+}

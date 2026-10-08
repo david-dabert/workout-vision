@@ -1,0 +1,31 @@
+{
+ "key": "typewriter_push_up",
+ "source": "convention: wide hands, held low in a push-up, the body glides towards one hand (that elbow bends deep, the other straightens) and back to centre, sides alternating; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 80,
+  "shoulderFlex": 25,
+  "shoulderAbd": 65,
+  "elbow": 70,
+  "ankle": 38
+ },
+ "end": {
+  "pitch": 80,
+  "ankle": 38,
+  "left": {
+   "shoulderFlex": 15,
+   "shoulderAbd": 72,
+   "elbow": 112
+  },
+  "right": {
+   "shoulderFlex": 45,
+   "shoulderAbd": 58,
+   "elbow": 12
+  }
+ },
+ "alternate": "mirror"
+}

@@ -1,0 +1,15 @@
+{
+ "key": "ez_bar_curl",
+ "source": "convention: standing, EZ bar on straight arms in front of the thighs at a slightly narrow grip, curled to the shoulders with the elbows drifting a little forward; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 8,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 14,
+  "shoulderAbd": 8,
+  "elbow": 138
+ }
+}

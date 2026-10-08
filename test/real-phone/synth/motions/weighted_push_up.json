@@ -1,0 +1,23 @@
+{
+ "key": "weighted_push_up",
+ "source": "convention: push-up with a plate on the back (not rendered): straight-arm plank lowered until the chest nears the floor, elbows about 45 degrees out; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 81,
+  "shoulderFlex": 2,
+  "shoulderAbd": 48,
+  "elbow": 92,
+  "ankle": 38
+ }
+}

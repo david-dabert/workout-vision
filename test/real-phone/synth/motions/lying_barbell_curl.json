@@ -1,0 +1,23 @@
+{
+ "key": "lying_barbell_curl",
+ "source": "convention: lying face down on a high flat bench, arms hanging straight down, barbell curled towards the forehead; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 1
+ },
+ "start": {
+  "pitch": 90,
+  "ankle": 40,
+  "shoulderFlex": 90,
+  "shoulderAbd": 10,
+  "elbow": 8
+ },
+ "end": {
+  "pitch": 90,
+  "ankle": 40,
+  "shoulderFlex": 95,
+  "shoulderAbd": 10,
+  "elbow": 130
+ }
+}

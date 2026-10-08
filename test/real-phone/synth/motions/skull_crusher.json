@@ -1,0 +1,29 @@
+{
+ "key": "skull_crusher",
+ "source": "convention: lying on a flat bench, barbell held on straight arms over the chest, elbows bend with the upper arms tilted slightly towards the head until the bar nears the forehead; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 92,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 105,
+  "shoulderAbd": 8,
+  "elbow": 115
+ }
+}

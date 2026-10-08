@@ -1,0 +1,31 @@
+{
+ "key": "dumbbell_fly",
+ "source": "convention: lying on a flat bench, dumbbells over the chest with a slight elbow bend, arms opened out to the sides to about bench level and brought back (horizontal adduction); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "humRot": -90,
+  "elbow": 15
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 98,
+  "humRot": -90,
+  "elbow": 25
+ }
+}

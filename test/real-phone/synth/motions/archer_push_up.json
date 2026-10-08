@@ -1,0 +1,24 @@
+{
+ "key": "archer_push_up",
+ "source": "convention: hands very wide, the body lowered towards one hand whose elbow bends while the other arm stays straight out, sides alternating; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 72,
+  "shoulderFlex": 72,
+  "shoulderAbd": 50,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 82,
+  "shoulderFlex": 30,
+  "shoulderAbd": 68,
+  "elbow": 100,
+  "ankle": 35
+ },
+ "alternate": true
+}

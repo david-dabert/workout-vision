@@ -1,0 +1,25 @@
+{
+ "key": "wrist_extension",
+ "source": "convention: seated, forearms on the thighs palms down with the hands past the knees, the wrists raise and lower the dumbbells; the engine has no wrist, so both poses are the same still forearm; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "trunk": 35,
+  "hipFlex": 90,
+  "knee": 90,
+  "shoulderFlex": 45,
+  "shoulderAbd": 5,
+  "elbow": 80
+ },
+ "end": {
+  "trunk": 35,
+  "hipFlex": 90,
+  "knee": 90,
+  "shoulderFlex": 45,
+  "shoulderAbd": 5,
+  "elbow": 80
+ }
+}

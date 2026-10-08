@@ -1,0 +1,31 @@
+{
+ "key": "incline_cable_fly",
+ "source": "convention: on an incline bench between low pulleys, handles over the upper chest with a slight elbow bend, arms opened out to the sides and brought back together (horizontal adduction); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "pitch": -55,
+  "hipFlex": 30,
+  "knee": 85,
+  "ankle": 0,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "humRot": -90,
+  "elbow": 15
+ },
+ "end": {
+  "pitch": -55,
+  "hipFlex": 30,
+  "knee": 85,
+  "ankle": 0,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 95,
+  "humRot": -90,
+  "elbow": 25
+ }
+}

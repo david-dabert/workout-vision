@@ -1,0 +1,30 @@
+{
+ "key": "hindu_push_up",
+ "source": "convention: from downward dog (hips high, arms and back in line, heels down) the body swoops into upward dog (hips low, legs on the floor, chest up on straight arms, back arched) and back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.06
+ },
+ "start": {
+  "pitch": 135,
+  "neck": 10,
+  "shoulderFlex": 172,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 105,
+  "knee": 0,
+  "ankle": -30
+ },
+ "end": {
+  "pitch": 90,
+  "trunk": -50,
+  "neck": -25,
+  "shoulderFlex": 40,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 0,
+  "ankle": 60
+ }
+}

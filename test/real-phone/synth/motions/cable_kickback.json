@@ -1,0 +1,34 @@
+{
+ "key": "cable_kickback",
+ "source": "convention: glute kickback: ankle strap on one leg, leaning slightly forward with hands on the machine, the working leg driven back from under the hip to hip extension, knee nearly straight; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 25,
+  "hipFlex": 25,
+  "knee": 8,
+  "ankle": -8,
+  "shoulderFlex": 85,
+  "shoulderAbd": 10,
+  "elbow": 20,
+  "left": {
+   "hipFlex": 28,
+   "knee": 15,
+   "ankle": 0
+  }
+ },
+ "end": {
+  "pitch": 25,
+  "hipFlex": 25,
+  "knee": 8,
+  "ankle": -8,
+  "shoulderFlex": 85,
+  "shoulderAbd": 10,
+  "elbow": 20,
+  "left": {
+   "hipFlex": -20,
+   "knee": 10,
+   "ankle": 10
+  }
+ },
+ "side": "left"
+}

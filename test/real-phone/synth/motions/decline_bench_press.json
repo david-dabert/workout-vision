@@ -1,0 +1,29 @@
+{
+ "key": "decline_bench_press",
+ "source": "convention: on a bench declined about 20 degrees, knees hooked under the roller, barbell lowered from straight arms to the lower chest; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.65
+ },
+ "start": {
+  "pitch": -110,
+  "hipFlex": 30,
+  "knee": 95,
+  "ankle": 0,
+  "hipAbd": 10,
+  "shoulderFlex": 70,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -110,
+  "hipFlex": 30,
+  "knee": 95,
+  "ankle": 0,
+  "hipAbd": 10,
+  "shoulderFlex": -25,
+  "shoulderAbd": 68,
+  "elbow": 90
+ }
+}

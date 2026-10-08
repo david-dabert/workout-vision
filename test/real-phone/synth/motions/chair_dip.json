@@ -1,0 +1,25 @@
+{
+ "key": "chair_dip",
+ "source": "convention: hands on the edge of a chair behind the hips (not rendered), knees bent with the feet flat, the hips lowered in front of the chair until the upper arms are about level; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 0.45
+ },
+ "start": {
+  "shoulderFlex": -20,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 85,
+  "knee": 65,
+  "ankle": 20
+ },
+ "end": {
+  "shoulderFlex": -78,
+  "shoulderAbd": 15,
+  "elbow": 85,
+  "hipFlex": 110,
+  "knee": 83,
+  "ankle": 27
+ }
+}

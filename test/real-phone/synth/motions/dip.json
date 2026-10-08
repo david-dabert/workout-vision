@@ -1,0 +1,27 @@
+{
+ "key": "dip",
+ "source": "convention: on parallel bars, from straight arms the body lowers with a slight forward lean until the upper arms are about level, knees bent behind; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 1.25
+ },
+ "start": {
+  "pitch": 10,
+  "shoulderFlex": 10,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 80,
+  "ankle": 20
+ },
+ "end": {
+  "pitch": 22,
+  "shoulderFlex": -48,
+  "shoulderAbd": 18,
+  "elbow": 90,
+  "hipFlex": 15,
+  "knee": 85,
+  "ankle": 20
+ }
+}
