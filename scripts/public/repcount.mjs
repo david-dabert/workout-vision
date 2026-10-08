@@ -47,3 +47,32 @@ export function repCountManifest(rows, { videoDir }) {
   }
   return { sets, skipped };
 }
+
+/**
+ * RepCount-A as mirrored on Hugging Face in Lance format (https://huggingface.co/datasets/lmms-lab-eval/repcounta-lance,
+ * licence "other": the videos are YouTube's, the labels TransRAC's; used here as a research benchmark, only derived
+ * landmarks enter the repository, no video or frame). Its rows hold the same labels as the CSVs above:
+ * `count`, and `cycle_bounds_json`, the L1..Ln frame marks in pairs. The mirror spells some classes two ways
+ * (bench_pressing / benchpressing, squat / squant, ...): each is read as one class. Every class is kept, a lift the
+ * app has a counter for with its key, the others with lift null, so the benchmark measures a class-agnostic counter on
+ * them too. A row whose count disagrees with its marks is left out, and said so (CLAUDE.md R1).
+ */
+export const REPCOUNT_CLASSES = {
+  bench_pressing: 'bench_pressing', benchpressing: 'bench_pressing', front_raise: 'front_raise', frontraise: 'front_raise',
+  jump_jack: 'jump_jack', jumpjacks: 'jump_jack', pull_up: 'pull_up', pullups: 'pull_up', push_up: 'push_up', pushups: 'push_up',
+  squat: 'squat', squant: 'squat', situp: 'situp', pommelhorse: 'pommelhorse', battle_rope: 'battle_rope', others: 'others',
+};
+
+export function repCountLanceManifest(rows, { videoDir }) {
+  const sets = [], skipped = [];
+  for (const r of rows) {
+    const id = r.video_id, cls = REPCOUNT_CLASSES[r.action_type] ?? r.action_type;
+    const marks = JSON.parse(r.cycle_bounds_json || '[]').map(v => Math.round(Number(v)));
+    const reps = [];
+    for (let i = 0; i + 1 < marks.length; i += 2) reps.push([marks[i], marks[i + 1]]);
+    if (r.count === null || !Number.isInteger(r.count)) { skipped.push({ dataset: 'repcount', id, reason: 'no count' }); continue; }
+    if (r.count !== reps.length) { skipped.push({ dataset: 'repcount', id, reason: `count ${r.count} but ${reps.length} marked reps` }); continue; }
+    sets.push({ id, group: id, dataset: 'repcount', video: `${videoDir}/${r.source_name}`, lift: REPCOUNT_LIFTS[cls] ?? null, class: cls, source: r.split, count: r.count, repFrames: reps });
+  }
+  return { sets, skipped };
+}

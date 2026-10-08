@@ -169,6 +169,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // their count ("–", quick keys centred on the plan, none chosen). Status: convention, from R8.
   const liveDiffers = !result.refused && liveShown !== null && result.count > 0 && liveShown !== result.count;
   const low = !!result.refused || unsure || liveDiffers;
+  // A refused set may carry PSC's count (coreAnalysis.js, withProposal; 8 October 2026): the slot opens on it, labelled
+  // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
+  // never a silent count, no grade, no measure). Status: validated on the bench (TRIED.md, 8 October).
+  const proposal = result.refused && Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null;
   const c = RESULT[fr ? 'fr' : 'en'];
   const [step, setStep] = useState(low ? 'fix' : 'ask'); // ask | fix | saved
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
@@ -184,7 +188,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     target.focus({ preventScroll: true, focusVisible: false });
   }, [step]);
   // 0 stands for "no number chosen yet" on the low-confidence screen ("–"); otherwise the app's count to confirm.
-  const [trueN, setTrueN] = useState(low ? 0 : result.count);
+  const [trueN, setTrueN] = useState(low ? (proposal ?? 0) : result.count);
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
@@ -415,7 +419,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned }));
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned, proposal }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
@@ -505,7 +509,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const status = <div className="res-status" data-testid="res-status">
     <p className="res-status-state">{step === 'saved'
       ? <><i className={`res-mark is-sq${typedSaved ? '' : ' is-measured'}`} aria-hidden="true" />{c.saved}</>
-      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{low ? c.yourCount : c.toConfirm}</>}</p>
+      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{low && !(proposal && trueN === proposal) ? c.yourCount : c.toConfirm}</>}</p>
     <p className="res-status-where">{where}</p>
   </div>;
   const tierLine = tierOf(lift) ? <div className="res-tierline"><p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p></div> : null;
@@ -551,7 +555,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const quick = quickKeys(centre ?? previous);
   const centreLine = centre ? c.planSays(centre) : quick.length ? c.lastSet(previous) : '';
   const lowAsk = (manual, cause) => <div key="count" className="res-low" data-testid="fix-card">
-    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers ? c.notSure : c.noCount}</h2>
+    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers || proposal ? c.notSure : c.noCount}</h2>
     <div className="res-cause">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" /><path d="M10 5.5v5.5" /><circle className="dot" cx="10" cy="14.2" r=".6" /></svg>
       <div>{cause.map(l => <p key={l}>{l}</p>)}</div>
@@ -561,12 +565,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       ? <span key={trueN} className="res-typed" data-testid="res-typed" aria-hidden="true">{trueN}</span>
       : <span className="res-empty" data-testid="res-empty" aria-hidden="true"><i /></span>, true)}
     <p className="sr" aria-live="polite" aria-atomic="true">{trueN > 0 ? trueN : c.empty}</p>
-    {trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
+    {proposal && <p className="res-state is-proposal" data-testid="res-proposal">{c.proposal(proposal)}</p>}
+    {proposal && trueN === proposal ? <p className="res-hint" data-testid="res-proposal-note">{c.proposalNote}</p>
+      : trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
     {quick.length > 0 && <div className="res-quick" role="group" aria-labelledby="res-ask">{quick.map(k => <button key={k} type="button" className={`res-qk press${trueN === k ? ' is-on' : ''}`} aria-pressed={trueN === k} onClick={() => adjust(k)}>{k}</button>)}</div>}
     {centreLine && <p className="res-hint res-centre">{centreLine}</p>}
   </div>;
   const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{closing && unsaved ? closeCard : <div className="res-keys">
-    <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true, manual); }}>{trueN > 0 ? c.saveN(trueN) : c.save}</button>
+    <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, true, manual); }}>{trueN > 0 ? (proposal && trueN === proposal ? c.confirmN(trueN) : c.saveN(trueN)) : c.save}</button>
     <button type="button" className="res-key press" onClick={onRefilm}>{c.refilm}</button>
   </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
 
@@ -607,7 +613,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         {step !== 'saved' && lowDock(true)}
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
-            <p className="saved-msg">{fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
+            <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
             <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
             <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
             <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>

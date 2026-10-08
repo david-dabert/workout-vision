@@ -5,6 +5,8 @@
 // ("progress and improvement are the goalposts"): a change ships when, on the public halves and the synthetic sets,
 // exact counts do not fall, sets off by 3 or more do not rise, and the paired test does not favour the old run;
 // David's own sets keep CLAUDE.md R2 (no fewer exact, none newly off by 3). Prints a table and a verdict.
+// Since 8 October, when the runs hold them: David's real videos (video, R2 as his sets), the RepCount-A build half
+// (repcount) and the occlusion sets (occlusion), the last two under the net rule as the public halves.
 import { readFileSync } from 'node:fs';
 
 const [, , a, b, ...rest] = process.argv;
@@ -15,7 +17,7 @@ const before = JSON.parse(readFileSync(a, 'utf8')).sets, after = JSON.parse(read
 // is also counted by distinct clip, the video id before the first underscore (review of 3 October).
 const clip = n => n.split('/').pop().split('_')[0];
 const off = e => (e.count === 'refused' ? Infinity : Math.abs(e.count - e.label));
-const suites = ['david', 'publicA', 'publicB', 'synthetic'];
+const suites = ['david', 'video', 'publicA', 'publicB', 'synthetic', 'repcount', 'occlusion'].filter(s => Object.values(before).some(e => e.suite === s));
 const rows = {}, verdict = [];
 for (const s of suites) {
   const names = Object.keys(before).filter(n => before[n].suite === s && n in after && (!lift || before[n].lift === lift));
@@ -40,9 +42,11 @@ for (const s of suites) {
   const r = rows[s];
   if (r.clipsGained.size || r.clipsLost.size) console.log(`${s.padEnd(10)} distinct clips: ${r.clipsGained.size} gained, ${r.clipsLost.size} lost`);
 }
-const d = rows.david;
-if (d.exactA < d.exactB || d.newlyBad > 0) verdict.push("David's sets: fewer exact or a set newly off by 3 (R2)");
-for (const s of ['publicA', 'publicB', 'synthetic']) {
+for (const s of ['david', 'video'].filter(s => rows[s])) {
+  const d = rows[s];
+  if (d.exactA < d.exactB || d.newlyBad > 0) verdict.push(`${s === 'david' ? "David's sets" : "David's videos"}: fewer exact or a set newly off by 3 (R2)`);
+}
+for (const s of ['publicA', 'publicB', 'synthetic', 'repcount', 'occlusion'].filter(s => rows[s])) {
   const r = rows[s];
   if (r.exactA < r.exactB) verdict.push(`${s}: exact ${r.exactB} -> ${r.exactA}`);
   if (r.badA > r.badB) verdict.push(`${s}: off by 3 or more ${r.badB} -> ${r.badA}`);

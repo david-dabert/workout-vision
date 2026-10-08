@@ -124,13 +124,16 @@ async function worker() {
       // PLAN.md's rule for MM-Fit: both wrists and both ankles (15, 16, 27, 28) seen together.
       const seen = data.imageLandmarks.filter(lm => lm && [15, 16, 27, 28].every(i => visible(lm[i]))).length;
       const out = {
-        dataset: set.dataset, id: set.id, split, lift: set.lift, count: set.count,
+        dataset: set.dataset, id: set.id, split, lift: set.lift, ...(set.class ? { class: set.class, source: set.source } : {}), count: set.count,
         reps: set.repFrames.map(([a, b]) => [round((a - shift) / fps), round((b - shift) / fps)]),
         ...(set.window ? { window: set.window } : {}),
         fps, samples, visibleShare: samples ? round(seen / samples) : 0,
         admitted: admitted(set.dataset, samples ? seen / samples : 0),
         worldLandmarks: data.worldLandmarks.map(f => f && f.map(p => ({ x: round(p.x), y: round(p.y), z: round(p.z), visibility: round(p.visibility) }))),
         timestamps: data.timestamps.map(round),
+        // WV_PUBLIC_IMAGE=1: also the image landmarks, x and y to 0.001 of the frame, flat per sample (the 2D signals of
+        // the class-agnostic bench counter, test/real-phone/psc). The world landmarks above carry the visibility.
+        ...(process.env.WV_PUBLIC_IMAGE ? { imageXY: data.imageLandmarks.map(f => f && f.flatMap(p => [Math.round(p.x * 1e3) / 1e3, Math.round(p.y * 1e3) / 1e3])) } : {}),
       };
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, gzipSync(JSON.stringify(out)));
@@ -150,6 +153,7 @@ async function worker() {
 try { await Promise.all(Array.from({ length: WORKERS }, worker)); }
 finally { await browser.close(); server.kill(); }
 const failed = log.filter(l => l.error);
-writeFileSync(join(OUT, `run-${new Date().toISOString().replace(/[:.]/g, '-')}.json`), JSON.stringify({ manifest: args[0], sets: pending.length, failed: failed.length, log }, null, 2));
+// WV_PUBLIC_RUNLOG: the run's log goes to that folder instead (a batched run, fetch-repcount-lance.sh).
+writeFileSync(join(process.env.WV_PUBLIC_RUNLOG || OUT, `run-${new Date().toISOString().replace(/[:.]/g, '-')}.json`), JSON.stringify({ manifest: args[0], sets: pending.length, failed: failed.length, log }, null, 2));
 console.log(`${pending.length - failed.length} written, ${failed.length} failed.`);
 if (failed.length) process.exit(1);

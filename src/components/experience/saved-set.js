@@ -10,15 +10,19 @@ import { compactWave, waveAngles } from './wave';
 // alone: no count of the app, no rep details, no measure, no wave; the history, the report and the spreadsheet say
 // "saisi à la main". No arm: the app could not see one (the core's default side is no observation). afterRefusal tells
 // these from the sets ManualLog.jsx typed (25-26 September), which the app never tried to count.
+// proposal: PSC's count offered on the refused set's screen (Result.jsx, 8 October 2026), kept beside the person's
+// count as { reps, by: 'psc' } so the history can tell a confirmed proposal from a typed count; never a count of the
+// core (machineResult stays null).
 // planned: the coach's target when the set was filmed from a programme (programme.js, plannedOf); the programme's
 // screen reads it to show the set beside its target, and the report prints it ("Prévu : 3 × 10"). Absent otherwise.
-export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date(), planned = null }) {
+export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date(), planned = null, proposal = null }) {
   const withPlan = set => (planned ? { ...set, planned } : set);
   if (manual) {
     return withPlan({
       exercise: lift, reps: n, repDetails: [], arm: null, confidence: null, afterRefusal: true,
       date: now.toISOString(), source: 'manual', duration: result.metadata?.duration, corrected: true,
       sides: null, machineResult: null, correctedResult: { reps: n }, repDetailsVersion: 2, wave: null,
+      ...(proposal ? { proposal: { reps: proposal, by: 'psc' } } : {}),
     });
   }
   const count = result.count;

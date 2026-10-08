@@ -84,6 +84,31 @@ export function isExposed(exposed: Exposed, ds: string, id: string) {
   const e = exposed[ds];
   return !!e && (e.sets === 'all' || (Array.isArray(e.sets) && e.sets.includes(id)));
 }
+// RepCount-A (scripts/public/repcount.mjs, fetch-repcount-lance.sh): every class, the ones the catalogue has no counter
+// for with lift null. Its own section of the public scoreboard (repcount: per class); it moves no tally of the gate and
+// enters no baseline, so a class-agnostic counter can be measured on it without changing what the gate compares.
+export const BENCH_ONLY = ['repcount'];
+export type BenchSet = { name: string; dataset: string; id: string; cls: string; lift: string | null; label: number; wl: any[]; ts: number[]; image: (number[] | null)[] | null; reps: [number, number][]; visibleShare: number; source: string };
+/** The sets of a benchmark-only dataset (BENCH_ONLY), one half; with the record's failed and left-out sets. */
+export function benchSets(ds: string, split: 'build' | 'holdout' = 'build') {
+  if (split === 'holdout' && !process.env.HOLDOUT) throw new Error('The held-out half is read only by its own run (HOLDOUT=1).');
+  const sets: BenchSet[] = [], unreadable: string[] = [], missing: string[] = [], notScored: string[] = [];
+  let record: Record<string, { split?: string; status: string; reason?: string }> = {};
+  try { record = JSON.parse(readFileSync(resolve(PUBLIC, ds, 'sets.json'), 'utf8')); } catch { return { sets, unreadable, missing, notScored, record }; }
+  for (const [id, r] of Object.entries(record)) {
+    if (r.status !== 'written') { if (!r.split || r.split === split) notScored.push(`public/${ds}/${id}: ${r.status}: ${r.reason}`); continue; }
+    if (r.split !== split) continue;
+    const f = resolve(PUBLIC, ds, split, `${id}.json.gz`), name = `public/${ds}/${split}/${id}.json.gz`;
+    if (!existsSync(f)) { missing.push(name); continue; }
+    let d: any;
+    try { d = JSON.parse(gunzipSync(readFileSync(f)).toString()); } catch { unreadable.push(name); continue; }
+    if (!d.class || !Number.isInteger(d.count) || !Array.isArray(d.worldLandmarks) || d.split !== split) { unreadable.push(name); continue; }
+    sets.push({ name, dataset: ds, id, cls: d.class, lift: d.lift ?? null, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, image: d.imageXY ?? null, reps: d.reps, visibleShare: d.visibleShare, source: d.source });
+  }
+  sets.sort((a, b) => a.name.localeCompare(b.name));
+  return { sets, unreadable, missing, notScored, record };
+}
+
 export function publicSets(split: 'build' | 'holdout' = 'build') {
   if (split === 'holdout' && !process.env.HOLDOUT) throw new Error('The held-out half is read only by its own run (HOLDOUT=1).');
   const sets: PublicSet[] = [], unreadable: string[] = [], missing: string[] = [], notScored: string[] = [];
@@ -94,6 +119,8 @@ export function publicSets(split: 'build' | 'holdout' = 'build') {
   try { exposed = JSON.parse(readFileSync(resolve(PUBLIC, 'exposed.json'), 'utf8')); } catch { /* none recorded */ }
   const seen = (ds: string, id: string) => split === 'holdout' && isExposed(exposed, ds, id);
   for (const ds of datasets) {
+    // A benchmark-only dataset (BENCH_ONLY) has its own section and gates nothing: it is read by benchSets.
+    if (BENCH_ONLY.includes(ds)) continue;
     let record: Record<string, { split?: string; status: string; reason?: string }> = {};
     try { record = JSON.parse(readFileSync(resolve(PUBLIC, ds, 'sets.json'), 'utf8')); } catch { unreadable.push(`public/${ds}/sets.json`); }
     for (const [id, r] of Object.entries(record)) {

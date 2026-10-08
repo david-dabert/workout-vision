@@ -1,0 +1,591 @@
+{
+  "train3344": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "train151": {
+    "split": "build",
+    "status": "failed",
+    "reason": "not read whole: read 86 samples of the 150 the video holds"
+  },
+  "train1615": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_42": {
+    "split": "build",
+    "status": "written"
+  },
+  "train2737": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu2_39": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "val1244": {
+    "split": "build",
+    "status": "written"
+  },
+  "train143": {
+    "split": "build",
+    "status": "written"
+  },
+  "val1257": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu9_57": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu3_53": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_23": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "test135": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_5": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_17": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu7_4": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_27": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu1_27": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu7_45": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu10_25": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu9_52": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu10_24": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_64": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "train2508": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu10_48": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_69": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu10_36": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_63": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_31": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu6_15": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu5_47": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_48": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_5": {
+    "split": "holdout",
+    "status": "written"
+  },
+  "stu7_35": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_12": {
+    "split": "build",
+    "status": "written"
+  },
+  "test538": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_27": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_62": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_38": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_30": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_12": {
+    "split": "build",
+    "status": "written"
+  },
+  "train1665": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_58": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_6": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_17": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_63": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_71": {
+    "split": "build",
+    "status": "written"
+  },
+  "test2320": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_52": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_10": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_19": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_5": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_12": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_34": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_62": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_22": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_42": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_20": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_65": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_68": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_57": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_13": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_39": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_34": {
+    "split": "build",
+    "status": "written"
+  },
+  "test1454": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_65": {
+    "split": "build",
+    "status": "written"
+  },
+  "train3899": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_36": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_68": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_15": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_55": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_18": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_3": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_47": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu13_30": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu13_33": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu13_35": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu13_36": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu12_30": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu13_37": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu13_38": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu12_33": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_24": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_15": {
+    "split": "build",
+    "status": "written"
+  },
+  "train2720": {
+    "split": "build",
+    "status": "written"
+  },
+  "train3946": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_1": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_3": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_57": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_56": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_7": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_16": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_23": {
+    "split": "build",
+    "status": "written"
+  },
+  "train2542": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_17": {
+    "split": "build",
+    "status": "written"
+  },
+  "test159": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_57": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu1_38": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_21": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_0": {
+    "split": "build",
+    "status": "written"
+  },
+  "train2748": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_55": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_45": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_43": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_17": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_36": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_50": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_4": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_54": {
+    "split": "build",
+    "status": "failed",
+    "reason": "not read whole: read 330 samples of the 495 the video holds"
+  },
+  "stu3_66": {
+    "split": "build",
+    "status": "written"
+  },
+  "train3348": {
+    "split": "build",
+    "status": "written"
+  },
+  "test1595": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu2_0": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_67": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu7_65": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_59": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_34": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu1_57": {
+    "split": "build",
+    "status": "written"
+  },
+  "train3898": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_13": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_5": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_52": {
+    "split": "build",
+    "status": "written"
+  },
+  "test2349": {
+    "split": "build",
+    "status": "failed",
+    "reason": "not read whole: read 140 samples of the 150 the video holds"
+  },
+  "stu6_21": {
+    "split": "build",
+    "status": "written"
+  },
+  "train2711": {
+    "split": "build",
+    "status": "written"
+  },
+  "val1093": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_52": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_67": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_2": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu1_37": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu3_1": {
+    "split": "build",
+    "status": "written"
+  },
+  "train990": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_47": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_9": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu5_22": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_59": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu12_35": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu9_9": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu11_30": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu11_39": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu11_34": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu10_47": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu8_37": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu6_61": {
+    "split": "build",
+    "status": "failed",
+    "reason": "page.evaluate: Target page, context or browser has been closed"
+  },
+  "stu10_63": {
+    "split": "build",
+    "status": "written"
+  },
+  "stu4_70": {
+    "split": "build",
+    "status": "failed",
+    "reason": "page.evaluate: Target page, context or browser has been closed"
+  }
+}

@@ -8,7 +8,8 @@ import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets } from './sets';
+import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets } from './sets';
+import { liftDefinition } from '../../../src/lib/counting/core';
 
 const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
@@ -54,6 +55,36 @@ function honestLines(sets: { name: string; dataset: string; label: number }[], l
   return lines;
 }
 
+// RepCount-A (test/real-phone/public/repcount/, scripts/public/fetch-repcount-lance.sh), build half: every class, the live
+// core's count where the class maps to a catalogue key with a counter, "no counter" otherwise. A benchmark for a
+// class-agnostic counter (test/real-phone/psc/): printed only, decides nothing, enters no baseline.
+function repCountSection() {
+  const { sets, unreadable, missing, notScored, record } = benchSets('repcount', 'build');
+  if (!Object.keys(record).length) return ['RepCount-A: no set on disk.'];
+  const rows = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number; mapped: boolean; lift: string | null }>();
+  for (const s of sets) {
+    const mapped = !!s.lift && !!liftDefinition(s.lift);
+    const g = rows.get(s.cls) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0, mapped, lift: s.lift };
+    g.n++;
+    if (mapped) {
+      const r = summarizeCount(s.wl, s.ts, s.lift!);
+      const e = r.refused ? Infinity : Math.abs(r.count - s.label);
+      if (r.refused) g.refused++; else if (e === 0) g.exact++; else if (e === 1) g.one++;
+      if (e >= 3) g.bad++;
+    }
+    rows.set(s.cls, g);
+  }
+  const all = Object.values(record), held = all.filter(r => r.split === 'holdout' && r.status === 'written').length;
+  const counted = [...rows.values()].filter(g => g.mapped), n = counted.reduce((a, g) => a + g.n, 0), ex = counted.reduce((a, g) => a + g.exact, 0);
+  return [
+    `RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation splits; build half; benchmark only, decides nothing): ${sets.length} build sets of ${rows.size} classes; ${held} held out, unread; ${notScored.length} failed or left out. Core on the ${n} sets of classes with a counter: ${ex} exact (${n ? Math.round((100 * ex) / n) : 0}%). Off by 3+ counts refusals.`,
+    '| Class | Catalogue key | Sets | Exact | Off by 1 | Off by 3+ | Refused |', '|---|---|---:|---:|---:|---:|---:|',
+    ...[...rows].sort(([a], [b]) => a.localeCompare(b)).map(([c, g]) => g.mapped ? `| ${c} | ${g.lift} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |` : `| ${c} | no counter | ${g.n} | - | - | - | - |`),
+    ...missing.map(m => `MISSING ${m}`), ...unreadable.map(u => `UNREADABLE ${u}`),
+    ...(notScored.length ? [`Not scored (${notScored.length}):`, ...notScored] : []),
+  ];
+}
+
 test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   // In CI, the base branch's counts (PUBLIC_BASE): a change cannot lower the bar by editing them (audit of 3 October).
   const from = process.env.PUBLIC_BASE || BASELINE;
@@ -86,7 +117,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const n = sets.length, exact = [...groups.values()].reduce((a, g) => a + g.exact, 0);
   const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${kept} in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}. The ${n - added - kept} bench and overhead press sets are measured and decide nothing (PLAN.md).`;
   const text = [head, doubtLine(doubts), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
-    ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : [])].join('\n') + '\n';
+    ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : []), '', ...repCountSection()].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);
   expect(exactNow).toBeGreaterThanOrEqual(exactBefore);
