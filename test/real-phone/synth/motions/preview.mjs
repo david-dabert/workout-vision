@@ -2,8 +2,9 @@
 // SYNTH_MODEL=<glb> node test/real-phone/synth/motions/preview.mjs <out folder> [key or spec file ...]
 // The motion library's check (README.md): each spec (motions/<key>.json, all without keys; an argument ending in .json is
 // a spec file read from its path, keyed by its name) rendered at rest, halfway and at its working end, from its view and
-// from the other one (front 0, side 90), each still read by the app's pose model. An alternating spec (alternate true)
-// moves its left side only, as on its first rep. Writes <out>/<key>.jpg (a contact sheet, 2 views x 3 stills, with the
+// from the other one (front 0, side 90), each still read by the app's pose model. An alternating spec moves as on its
+// first rep (alternate true: its left side only; "mirror": unswapped); PREVIEW_SIDE=right shows its second rep instead
+// (the right side alone; the mirrored pose). Writes <out>/<key>.jpg (a contact sheet, 2 views x 3 stills, with the
 // catalogue joint's truth and measured angles) and <out>/checks.json (per view and still, also every joint's angle on
 // the skeleton and the trunk's to the vertical: fk-parity.mjs reads them); prints one line per exercise (the checks
 // below). An exercise the catalogue counts with no joint is checked for the pose only.
@@ -28,6 +29,7 @@ const angle = (w, [a, b, c]) => {
   const d = x[0] * y[0] + x[1] * y[1] + x[2] * y[2], n = Math.hypot(...x) * Math.hypot(...y);
   return (Math.acos(Math.max(-1, Math.min(1, d / n))) * 180) / Math.PI;
 };
+const BUSY = process.env.PREVIEW_SIDE === 'right' ? 'right' : 'left';
 const PORT = Number(process.env.SYNTH_PORT || 5192), URL = `http://localhost:${PORT}/workout-vision/test/real-phone/synth/synth.html`;
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: ROOT, stdio: 'ignore', detached: true });
 const glb = readFileSync(MODEL);
@@ -40,12 +42,12 @@ try {
     const fam = FAMILIES[key] || {}, joint = fam.joint || null;
     const own = spec.view ?? (fam.view === 'front' ? 0 : 90), views = [own, own === 0 ? 90 : 0];
     const sides = spec.side ? [spec.side] : ['left', 'right'];
-    const shots = [], res = { key, file, joint, rest: fam.rest ?? null, views: {} };
+    const shots = [], res = { key, file, joint, rest: fam.rest ?? null, busy: spec.alternate ? BUSY : null, views: {} };
     for (const view of views) {
       const page = await browser.newPage();
       page.on('pageerror', e => console.log('pageerror', key, e.message));
       await page.route('**/synth-model.glb', r => r.fulfill({ body: glb, contentType: 'model/gltf-binary' }));
-      await page.addInitScript(x => { window.SYNTH = x; }, { spec, view, preview: [0, 0.5, 1], reps: 1, seed: 1, previewBusy: spec.alternate === true ? 'left' : null });
+      await page.addInitScript(x => { window.SYNTH = x; }, { spec, view, preview: [0, 0.5, 1], reps: 1, seed: 1, previewBusy: spec.alternate ? BUSY : null });
       await page.goto(URL, { timeout: 300000 });
       await page.waitForFunction(() => window.PREVIEW, null, { timeout: 300000 });
       const stills = await page.evaluate(() => window.PREVIEW);

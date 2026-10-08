@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// node test/real-phone/synth/motions/library.mjs [--per N] [--shard k/n] [key ...] > matrix.json
+// node test/real-phone/synth/motions/library.mjs [--per N] [--shard k/n] [key or spec file ...] > matrix.json
 // The motion library's render matrix (README.md) for run.mjs: for every spec with reps (motions/<key>.json without
 // noReps), N sets (default 6) that vary as filmed sets do, each drawn from its own id, so a shard renders the same sets
 // on any machine. Per set: the body (michelle and soldier in turn; run.mjs SYNTH_MODELS), the reps (3 to 16: the count,
@@ -11,7 +11,7 @@
 // Every range is UNSOURCED (R9), chosen to span what David's real videos show; status experimental.
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '../../../..');
@@ -21,8 +21,9 @@ const PER = Number(opt('--per', 6)), [SK, SN] = opt('--shard', '0/1').split('/')
 const keys = argv.length ? argv : readdirSync(HERE).filter(f => f.endsWith('.json')).map(f => f.slice(0, -5)).sort();
 const hash = s => parseInt(createHash('sha256').update(s).digest('hex').slice(0, 8), 16);
 const sets = [];
-for (const key of keys) {
-  const spec = JSON.parse(readFileSync(resolve(HERE, `${key}.json`), 'utf8'));
+for (const arg of keys) {
+  // An argument ending in .json is a spec file read from its path, keyed by its name (a draft outside motions/).
+  const key = basename(arg, '.json'), spec = JSON.parse(readFileSync(arg.endsWith('.json') ? resolve(arg) : resolve(HERE, `${arg}.json`), 'utf8'));
   if (spec.noReps) continue;
   const own = spec.view ?? (FAMILIES[key]?.view === 'front' ? 0 : 90);
   for (let v = 0; v < PER; v++) {
