@@ -1344,8 +1344,7 @@
     "first": "concentric",
     "view": "side",
     "angle": "lift",
-    "eitherSide": true,
-    "why": "Lying face down, the arms overhead in a Y lift off the floor: the shoulder flexes past the line of the trunk. The three-point shoulder angle barely moves with the arms out in a Y and folds back at 180, so the shoulder is read as the arm's lift against gravity (core.ts, LiftDefinition.lift): 177 on the floor to 193 lifted, on the motion spec. Either shoulder can be the better seen. Status: experimental, measured on rendered sets only (8 October 2026)."
+    "why": "Lying face down, the arms overhead in a Y lift off the floor: the shoulder flexes past the line of the trunk. The three-point shoulder angle barely moves with the arms out in a Y (2.3 degrees over a rep on the motion spec) and folds back at 180, so the shoulder is read as the arm's lift against gravity (core.ts, LiftDefinition.lift): 177 on the floor to 193 lifted, on the motion spec. Counted on the better seen arm: the far arm's rest can pass this exercise's 10-degree floor, so the arm with more reps (eitherSide) can be the wrong one. Not offered yet (offer.js, NOT_YET_COUNTED). Status: experimental, measured on rendered sets only (8 October 2026)."
   },
   "prone_t_raise": {
     "joint": null,

@@ -12,10 +12,15 @@ import { cycles, gaussian, sample, seeded, timestamps } from './synthetic';
 const D = Math.PI / 180;
 const pt = (x: number, y: number, z: number) => ({ x, y, z, visibility: 0.9 });
 
-/** A body lying face down along +x (head towards +x, or -x when `towards` is -1), the arms at `lift` degrees above level, 45 degrees out. */
-function prone(lift: number, towards = 1): WorldLandmarkFrame {
+/**
+ * A body lying face down along +x (head towards +x, or -x when `towards` is -1), the left arm at `lift` degrees above
+ * level and the right at `right` (the same by default), 45 degrees out; the right arm seen at `rightVis`.
+ */
+function prone(left: number, towards = 1, right = left, rightVis = 0.9): WorldLandmarkFrame {
   const f = Array.from({ length: 33 }, () => pt(0, 0, 0));
   for (const [sh, el, wr, hip, side] of [[11, 13, 15, 23, 1], [12, 14, 16, 24, -1]] as const) {
+    const lift = side > 0 ? left : right, vis = side > 0 ? 0.9 : rightVis;
+    const pt = (x: number, y: number, z: number) => ({ x, y, z, visibility: vis });
     const s = pt(towards * 0.5, -0.05, side * 0.18);
     // The arm: overhead (along the body's axis), 45 degrees out, raised `lift` degrees above level.
     const dir = (len: number) => pt(s.x + towards * len * Math.cos(lift * D) * Math.cos(45 * D), s.y - len * Math.sin(lift * D), s.z + side * len * Math.cos(lift * D) * Math.sin(45 * D));
@@ -36,7 +41,8 @@ describe('the lift of a limb against gravity', () => {
 
   it('counts the prone Y raise on it, where the three-point shoulder angle barely moves', () => {
     const def = liftDefinition('prone_y_raise')!;
-    expect(def).toMatchObject({ joint: 'shoulder', rest: 'low', first: 'concentric', lift: true, eitherSide: true });
+    expect(def).toMatchObject({ joint: 'shoulder', rest: 'low', first: 'concentric', lift: true, minRangeDeg: 10 });
+    expect(def.eitherSide).toBeUndefined();
     const sps = 30;
     const lifts = sample(cycles({ rest: -3, work: 13, firstSec: 1.2, secondSec: 0.8 }), -3, sps);
     for (const towards of [1, -1]) {
@@ -52,10 +58,20 @@ describe('the lift of a limb against gravity', () => {
     expect(Math.abs(three[1] - three[0])).toBeLessThan(3);
   });
 
-  it('counts nothing on a body lying still, its wrists read with the noise of a still render', () => {
-    const rng = seeded(8), sps = 30, n = 20 * sps;
-    // 2 degrees of noise on each sample: a 10th-to-90th spread of about 5, as the still renders read (core.ts, DETECTION).
-    const frames = Array.from({ length: n }, () => prone(-3 + gaussian(rng, 2)));
+  it('counts a lift over the 10-degree floor and none under it', () => {
+    const sps = 30;
+    for (const [swing, reps] of [[14, 10], [8, 0]] as const) {
+      const lifts = sample(cycles({ rest: -3, work: -3 + swing, firstSec: 1.2, secondSec: 0.8 }), -3, sps);
+      const frames = lifts.map(l => prone(l));
+      expect(countReps(frames, timestamps(frames.length, sps), 'prone_y_raise').count, `${swing} degrees`).toBe(reps);
+    }
+  });
+
+  it('counts the better seen arm, so a far arm wobbling past the floor adds no rep (review of 8 October)', () => {
+    // The near arm still (2 degrees of noise); the far arm, seen less well, wobbling 6 degrees either way every 1.5 s.
+    // Counted on the arm with more reps (eitherSide, the first form) this read 7.
+    const rng = seeded(8), sps = 15, n = 20 * sps;
+    const frames = Array.from({ length: n }, (_, i) => prone(-3 + gaussian(rng, 2), 1, -3 + 6 * Math.sin((2 * Math.PI * i) / sps / 1.5), 0.7));
     expect(countReps(frames, timestamps(n, sps), 'prone_y_raise').count).toBe(0);
   });
 });

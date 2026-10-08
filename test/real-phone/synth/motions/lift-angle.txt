@@ -1,13 +1,19 @@
 The prone Y raise read as the arms' lift against gravity (core.ts, LiftDefinition.lift), on rendered sets (8 October 2026).
 Bench: test/real-phone/synth/motions/lift-angle.test.ts. Renders: library.mjs prone_y_raise, through run.mjs (the app's pose model);
-the landscape option is synth.js P.landscape. Bodies: Michelle (plain clothing) and Soldier (dark, patterned clothing).
-A rendered body is not a person; no person has been filmed doing this exercise for the app. Status: experimental.
+the landscape option is synth.js P.landscape (it keeps the 52-degree field of view on the short side, so the long side
+widens to 82 degrees: orientation and lens change together). Bodies: Michelle (plain clothing) and Soldier (dark,
+patterned clothing). A rendered body is not a person; no person has been filmed doing this exercise for the app.
+Counted on the better seen arm (the first form kept the arm with more reps, eitherSide, which a far arm's rest can
+fool: review of 8 October, src/lib/counting/__tests__/lift.test.ts). Not offered in the app (offer.js, NOT_YET_COUNTED).
+Status: experimental.
 
 Columns: per side, the range of each signal (10th to 90th percentile, degrees) and, in brackets, its correlation with the
-rendered progress through the reps; then the reps rendered and the app's result as a recorded set reads it (summarizeCount,
-withProposal, withBodyCheck; 'to confirm': the result screen asks for the count, R8).
+rendered progress through the reps; then the reps rendered and the app's result (summarizeCount, withProposal,
+withBodyCheck; 'to confirm': the result screen would ask for the count, R8). The renders keep no image landmarks, so
+the body check here reads world signals only; the app's adds image-plane ones. For this exercise its consensus is the
+arms' own wrist and elbow heights (spec-profiles.json), so it cannot see a misread arm: not a safeguard here.
 
-## 1. Upright phone, side view (the catalogue's default framing): the body is lost on 5 of 7
+## 1. Upright phone, side view (the catalogue's default framing): the body is found on 2 of 7
 prone_y_raise, shoulder read as the arm's lift: 7 rendered sets, 2 seen on over half their frames; exact 1, within 1 1, off by 3 or more or refused 6; shown as the app's count and off by 3 or more: 0.
 | Set | Body | View | Pose found | Range in degrees (10th-90th) and correlation with the rendered rep: signed from the trunk / lift to the elbow / lift to the wrist (the app, smoothed) / in space | Reps | App |
 |---|---|---:|---:|---|---:|---|
@@ -21,7 +27,8 @@ prone_y_raise, shoulder read as the arm's lift: 7 rendered sets, 2 seen on over 
 
 ## 2. First trials of the phone on its side (ls: side view; lf: from the head end) and upright from the head end (pf)
 Used, with section 1, to choose the reading (the wrist rather than the elbow) and the 10-degree floor (core.ts, DETECTION):
-the near side's range was 0 to 5.8 degrees while the body lay still, 13 to 20 while the arms lifted.
+in the rest windows (1 to 3 s before the first rep and after the last) the arm facing the camera spread 0 to 5.8
+degrees and the far arm up to 12.7; the plainly dressed body's lifting arm spread 13 to 20 (arms read poorly, 3 to 8).
 prone_y_raise, shoulder read as the arm's lift: 8 rendered sets, 6 seen on over half their frames; exact 2, within 1 2, off by 3 or more or refused 6; shown as the app's count and off by 3 or more: 0.
 | Set | Body | View | Pose found | Range in degrees (10th-90th) and correlation with the rendered rep: signed from the trunk / lift to the elbow / lift to the wrist (the app, smoothed) / in space | Reps | App |
 |---|---|---:|---:|---|---:|---|
@@ -34,7 +41,10 @@ prone_y_raise, shoulder read as the arm's lift: 8 rendered sets, 6 seen on over 
 | v2-prone_y_raise-v6-ls | michelle, landscape | 80 | 173/173 | L 11 (0.78) / 14 (0.93) / 16 (0.97) / 12 (-0.79), R NaN (NaN) / NaN (NaN) / 0 (NaN) / NaN (NaN) | 4 | 4 (body check 0.99) |
 | v2-prone_y_raise-v7-pf | soldier | 0 | 259/267 | L 100 (-0.43) / 25 (-0.44) / 20 (-0.09) / 39 (0.58), R 161 (-0.55) / 23 (-0.35) / 20 (-0.23) / 133 (0.19) | 5 | refused (PSC 5) |
 
-## 3. The phone on its side, side view, views 60 to 120 degrees: 14 sets rendered after the choices above, read once
+## 3. The phone on its side, side view, views 60 to 120 degrees: 14 sets rendered after the choices of section 2
+First read with eitherSide: 6 exact, 7 within 1; 25 for 15 (body check 0.29), 13 for 11 and 8 for 5 shown. Below, the
+better seen arm (chosen after that read, on the review's synthetic case): the same counts, the better seen arm being the
+one that over-counted on all three (the other arm read 17, 12 and 6). On the Soldier body the arm is misread, not missed.
 prone_y_raise, shoulder read as the arm's lift: 14 rendered sets, 11 seen on over half their frames; exact 6, within 1 7, off by 3 or more or refused 6; shown as the app's count and off by 3 or more: 1.
 | Set | Body | View | Pose found | Range in degrees (10th-90th) and correlation with the rendered rep: signed from the trunk / lift to the elbow / lift to the wrist (the app, smoothed) / in space | Reps | App |
 |---|---|---:|---:|---|---:|---|

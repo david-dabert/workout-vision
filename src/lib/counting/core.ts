@@ -150,19 +150,22 @@ export interface LiftDefinition {
    * angle of the limb from the joint to its end (LIFT_POINTS: the shoulder to the wrist) above the horizontal, the
    * world's y being down (liftAngleDeg).
    * For a body lying face down whose limb rises off the floor: on a prone Y raise the arms, overhead in a Y, lift; the
-   * three-point shoulder angle then barely moves (1.6 degrees over the rep on its motion spec, test/real-phone/synth/
+   * three-point shoulder angle then barely moves (2.3 degrees over a rep on its motion spec, test/real-phone/synth/
    * motions/prone_y_raise.json, the arms out in a Y) and, read in the image plane, folds back at 180 (one rep would read
    * as two). With the trunk level, 180 is the arm in line with it and the lift is the shoulder's flexion past that line
    * (177 to 193 on the spec). Neither the side the camera stands on nor a left-right swap changes it; a phone rolled
    * from upright tilts the horizontal it is read against. On rendered sets (8 October 2026, test/real-phone/synth/motions/
    * lift-angle.test.ts) it followed the rendered reps more closely than the shoulder's angle in the image plane taken
-   * from the trunk's line, the hips of a body lying being read loosely, and read to the wrist more closely than to the
-   * elbow (the longer lever). Source: UNSOURCED. Status: experimental.
+   * from the trunk's line (correlation with the rendered progress, plainly dressed body: median 0.80 against 0.26), the
+   * hips of a body lying being read loosely, and read to the wrist more closely than to the elbow (the longer lever).
+   * The replay still lights the joint's three points (JOINT_POINTS), not LIFT_POINTS: no exercise read this way is
+   * offered yet (offer.js, NOT_YET_COUNTED). Source: UNSOURCED. Status: experimental.
    */
   lift?: boolean;
   /**
    * The set's own range floor, in degrees: a set whose angle spans less (10th to 90th percentile) counts no rep;
-   * MIN_ROM_DEGREES when absent (DETECTION).
+   * MIN_ROM_DEGREES when absent (DETECTION). The collector's warning (batchCollect.js, MISMATCH_RANGE_DEG) keeps
+   * MIN_ROM_DEGREES: an exercise with a lower floor must not be offered to the collector before it reads its own.
    */
   minRangeDeg?: number;
 }
@@ -228,10 +231,12 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // synthetic sets hold no front raise and do not move. A short dropout of the raising arm no longer splits a rep
 // (front-raise-together.test.ts: 8 alternating raises with a 0.3 s dropout read 8, not the 16 of 30 September).
 // Source: UNSOURCED. Status: experimental, chosen on the public build half A (front_raise).
-// prone_y_raise (8 October 2026): read as the arm's lift (LiftDefinition.lift), whose range on rendered prone Y raises
-// was 13 to 20 degrees while the arms lifted and 0 to 5.8 while the body lay still, on the side facing the camera
-// (test/real-phone/synth/motions/lift-angle.test.ts, the renders of 8 October before the landscape batch): 10 degrees,
-// about twice the stillness, for the set and for each rep. Source: measured on rendered sets only, no person filmed.
+// prone_y_raise (8 October 2026): read as the arm's lift (LiftDefinition.lift). On the renders of 8 October before the
+// landscape batch (test/real-phone/synth/motions/lift-angle.test.ts), in the rest windows (1 to 3 s before the first rep
+// and after the last) the arm facing the camera spread 0 to 5.8 degrees and the far arm up to 12.7; the plainly dressed
+// body's lifting arm spread 13 to 20 (arms read poorly, 3 to 8). 10 degrees, about twice the near arm's rest, for the
+// set and for each rep; the far arm's rest can pass it, so the better seen arm is counted, never the one with more reps.
+// No set held still from start to end was rendered. Source: measured on rendered sets only, no person filmed.
 // Status: experimental.
 const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
