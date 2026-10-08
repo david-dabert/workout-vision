@@ -13,6 +13,7 @@
     { "name": "sissy_squat_7_5006", "original": "IMG_5006-petit.mp4", "lift": "sissy_squat", "label": 7, "view": "side", "what": "sissy squat with band, David, landscape" },
     { "name": "sissy_squat_9_5007", "original": "IMG_5007-petit.mp4", "lift": "sissy_squat", "label": 9, "view": "side", "what": "deep sissy squat, another lifter" },
     { "name": "sissy_squat_7_5008", "original": "IMG_5008-petit.mp4", "lift": "sissy_squat", "label": 7, "view": "side", "what": "sissy squat with band, David, landscape; the original has no frame from 20.0 to 33.6 s" },
-    { "name": "sissy_squat_5_5011", "original": "IMG_5011-petit.mp4", "lift": "sissy_squat", "label": 5, "view": "front", "what": "kneeling sissy squat with band, David" }
+    { "name": "sissy_squat_5_5011", "original": "IMG_5011-petit.mp4", "lift": "sissy_squat", "label": 5, "view": "front", "what": "kneeling sissy squat with band, David" },
+    { "name": "standing_barbell_curl_8", "original": "IMG_1194-petit.mp4", "lift": "barbell_curl", "label": 8, "labelSource": "David (R1), 8 October 2026, in the session: the app proposed 8 on the refused set, and \"it was indeed 8 reps\"", "view": "side", "what": "standing barbell curl, side view against bright windows (backlit), large plates hide the near elbow and wrist at the top of each rep, David (8 October)" }
   ]
 }

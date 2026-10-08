@@ -132,7 +132,7 @@ try {
     const first = gray[0];
     const original = resolve(process.env.SETS_ORIGINALS || videoDir, `${set.name}.mp4`);
     const out = {
-      lift: set.lift, count: set.label, labelSource: 'David (R1), labels.txt of 7 October 2026', view: set.view, what: set.what,
+      lift: set.lift, count: set.label, labelSource: set.labelSource ?? 'David (R1), labels.txt of 7 October 2026', view: set.view, what: set.what,
       original: set.original, videoSha256: createHash('sha256').update(readFileSync(original)).digest('hex'),
       // World landmarks as the app holds them (the counter reads these); image landmarks rounded to 1e-4 of the frame
       // (0.06 px at 640 px) to keep the folder small: they serve the pose boxes, whose region is computed before rounding.
