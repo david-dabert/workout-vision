@@ -1,0 +1,33 @@
+{
+ "key": "crunch",
+ "source": "convention: lying on the back, knees bent, feet flat, fingers at the temples; the shoulder blades curl off the floor and lower; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125,
+  "trunk": 35,
+  "neck": 10
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "key": "arm_circles",
+ "source": "convention: standing, straight arms out to the sides near shoulder height, each hand drawing a circle about 30 cm across; continuous and usually timed, one forward circle posed; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 75,
+  "elbow": 5
+ },
+ "end": {
+  "shoulderFlex": 360,
+  "shoulderAbd": 75,
+  "elbow": 5
+ },
+ "noReps": true,
+ "view": 0
+}

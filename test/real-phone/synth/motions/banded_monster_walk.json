@@ -1,0 +1,36 @@
+{
+ "key": "banded_monster_walk",
+ "source": "convention: a mini band around the knees, half squat with hands on the hips, diagonal steps forward and out, one leg ahead then the other; one step is one cycle; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 20,
+  "hipFlex": 30,
+  "knee": 35,
+  "ankle": -5,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "hipAbd": 12
+ },
+ "end": {
+  "trunk": 20,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "left": {
+   "hipFlex": 50,
+   "hipAbd": 18,
+   "knee": 45,
+   "ankle": 5
+  },
+  "right": {
+   "hipFlex": 12,
+   "hipAbd": 12,
+   "knee": 30,
+   "ankle": -18
+  }
+ },
+ "alternate": "mirror"
+}

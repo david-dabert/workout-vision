@@ -1,0 +1,44 @@
+{
+ "key": "bicycle_crunch",
+ "source": "convention: lying on the back, shoulders held off the floor, fingers at the temples; one knee drives to the chest as the other leg extends and the trunk turns on the pelvis to bring the opposite elbow towards that knee, then the other side (alternate mirror: the swapped rep turns to the right); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "trunk": 25,
+  "neck": 5,
+  "hipFlex": 65,
+  "knee": 75,
+  "ankle": 20,
+  "hipAbd": 6,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ },
+ "end": {
+  "pitch": -90,
+  "trunk": 35,
+  "trunkTwist": 30,
+  "neck": 5,
+  "ankle": 20,
+  "hipAbd": 6,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125,
+  "left": {
+   "hipFlex": 105,
+   "knee": 110
+  },
+  "right": {
+   "hipFlex": 25,
+   "knee": 10,
+   "shoulderFlex": 15
+  }
+ },
+ "alternate": "mirror"
+}

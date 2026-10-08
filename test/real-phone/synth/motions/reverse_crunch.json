@@ -1,0 +1,30 @@
+{
+ "key": "reverse_crunch",
+ "source": "convention: lying on the back, arms on the floor by the sides, hips and knees at 90 degrees; the pelvis curls the knees towards the chest, the hips lifting off the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 90,
+  "knee": 90,
+  "ankle": 20,
+  "hipAbd": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 20,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -125,
+  "trunk": 45,
+  "hipFlex": 95,
+  "knee": 95,
+  "ankle": 20,
+  "hipAbd": 5,
+  "shoulderFlex": -10,
+  "shoulderAbd": 20,
+  "elbow": 5
+ }
+}

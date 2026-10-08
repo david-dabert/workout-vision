@@ -1,0 +1,15 @@
+{
+ "key": "cable_curl",
+ "source": "convention: standing facing a low pulley, straight bar curled from straight arms to the shoulders, elbows at the sides; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 10,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 15,
+  "shoulderAbd": 10,
+  "elbow": 135
+ }
+}

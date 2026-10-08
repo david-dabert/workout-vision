@@ -1,0 +1,21 @@
+{
+ "key": "wall_push_up",
+ "source": "convention: standing leaned about 20 degrees towards a wall (not rendered), hands on it at shoulder height, the chest brought towards the wall with the elbows bending out; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 22,
+  "ankle": -22,
+  "shoulderFlex": 105,
+  "shoulderAbd": 18,
+  "humRot": -30,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 32,
+  "ankle": -32,
+  "shoulderFlex": 85,
+  "shoulderAbd": 60,
+  "humRot": -30,
+  "elbow": 100
+ }
+}

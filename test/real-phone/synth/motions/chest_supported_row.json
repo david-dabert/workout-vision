@@ -1,0 +1,23 @@
+{
+ "key": "chest_supported_row",
+ "source": "convention: chest-supported lever row, chest on a pad inclined about 45 degrees (not rendered), feet on the platform with knees soft, handles pulled from hanging arms to the sides of the chest; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "hipFlex": 50,
+  "knee": 10,
+  "ankle": -5,
+  "shoulderFlex": 45,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 45,
+  "hipFlex": 50,
+  "knee": 10,
+  "ankle": -5,
+  "shoulderFlex": -35,
+  "shoulderAbd": 25,
+  "elbow": 105
+ }
+}

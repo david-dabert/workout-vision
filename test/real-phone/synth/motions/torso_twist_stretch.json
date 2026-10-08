@@ -1,0 +1,22 @@
+{
+ "key": "torso_twist_stretch",
+ "source": "convention: standing, feet hip-width and planted, knees soft, arms out at shoulder height, the trunk turns on the pelvis to the right and to the left (about 45 degrees each way), one rep a full right-left cycle (the hips' own small turn is not posed); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "knee": 10,
+  "ankle": -5,
+  "shoulderAbd": 85,
+  "elbow": 15,
+  "trunkTwist": -45
+ },
+ "end": {
+  "hipAbd": 10,
+  "knee": 10,
+  "ankle": -5,
+  "shoulderAbd": 85,
+  "elbow": 15,
+  "trunkTwist": 45
+ },
+ "view": 0
+}

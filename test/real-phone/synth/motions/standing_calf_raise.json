@@ -1,0 +1,19 @@
+{
+ "key": "standing_calf_raise",
+ "source": "convention: standing machine calf raise, shoulders under the pads, knees straight, balls of the feet on the step, from the heels below the step to high on the toes; the machine and step are not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "ankle": -15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 40,
+  "humRot": 90,
+  "elbow": 110
+ },
+ "end": {
+  "ankle": 35,
+  "shoulderFlex": 0,
+  "shoulderAbd": 40,
+  "humRot": 90,
+  "elbow": 110
+ }
+}

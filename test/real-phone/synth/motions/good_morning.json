@@ -1,0 +1,24 @@
+{
+ "key": "good_morning",
+ "source": "convention: barbell good morning, bar on the upper back, knees soft, hips pushed back until the torso is about 70 degrees from vertical, then back to standing; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150,
+  "knee": 5,
+  "ankle": -5
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150,
+  "pitch": 55,
+  "trunk": 15,
+  "hipFlex": 70,
+  "knee": 15,
+  "ankle": 0
+ }
+}

@@ -1,0 +1,26 @@
+{
+ "key": "banded_lat_pulldown",
+ "source": "convention: band lat pulldown, tall kneeling under a band anchored overhead, hands wide, pulled from straight arms in a V to the upper chest with the elbows down and out; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "hipFlex": 0,
+  "knee": 90,
+  "ankle": 70,
+  "trunk": -5,
+  "shoulderAbd": 150,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 0,
+  "knee": 90,
+  "ankle": 70,
+  "trunk": -10,
+  "shoulderAbd": 45,
+  "humRot": 90,
+  "elbow": 110
+ }
+}

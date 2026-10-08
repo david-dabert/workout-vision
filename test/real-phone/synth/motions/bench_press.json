@@ -1,0 +1,29 @@
+{
+ "key": "bench_press",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": -10,
+  "shoulderAbd": 72,
+  "elbow": 90
+ }
+}

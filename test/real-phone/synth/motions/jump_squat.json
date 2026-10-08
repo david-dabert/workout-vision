@@ -1,0 +1,23 @@
+{
+ "key": "jump_squat",
+ "source": "convention: from a relaxed ready stance, dip to a quarter-to-half squat with the arms swung back, then jump; the flight is not posed (the body cannot leave the floor), the dip is; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipFlex": 5,
+  "knee": 5,
+  "ankle": 0,
+  "shoulderFlex": 20,
+  "shoulderAbd": 10,
+  "elbow": 30
+ },
+ "end": {
+  "trunk": 35,
+  "hipFlex": 75,
+  "hipAbd": 10,
+  "knee": 100,
+  "ankle": -25,
+  "shoulderFlex": -30,
+  "shoulderAbd": 10,
+  "elbow": 10
+ }
+}

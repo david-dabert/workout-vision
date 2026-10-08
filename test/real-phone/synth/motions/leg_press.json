@@ -1,0 +1,31 @@
+{
+ "key": "leg_press",
+ "source": "convention: 45-degree leg press, back on the reclined seat, hands on the side handles, from near lockout down until the knees come towards the chest; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -55,
+  "neck": 10,
+  "hipFlex": 80,
+  "hipAbd": 10,
+  "knee": 8,
+  "ankle": 0,
+  "shoulderFlex": 10,
+  "shoulderAbd": 25,
+  "elbow": 30
+ },
+ "end": {
+  "pitch": -55,
+  "neck": 10,
+  "hipFlex": 125,
+  "hipAbd": 14,
+  "knee": 95,
+  "ankle": -30,
+  "shoulderFlex": 10,
+  "shoulderAbd": 25,
+  "elbow": 30
+ }
+}

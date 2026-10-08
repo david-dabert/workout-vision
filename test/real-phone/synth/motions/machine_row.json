@@ -1,0 +1,27 @@
+{
+ "key": "machine_row",
+ "source": "convention: seated machine row, chest against the pad and feet flat, neutral handles pulled from straight arms past the sides of the chest; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": 5,
+  "hipFlex": 95,
+  "knee": 95,
+  "ankle": -5,
+  "shoulderFlex": 80,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 5,
+  "hipFlex": 95,
+  "knee": 95,
+  "ankle": -5,
+  "shoulderFlex": -40,
+  "shoulderAbd": 20,
+  "elbow": 120
+ }
+}

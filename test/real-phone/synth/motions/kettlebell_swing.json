@@ -1,0 +1,24 @@
+{
+ "key": "kettlebell_swing",
+ "source": "convention: two-hand Russian swing, from the top (hips and knees locked, straight arms, bell at chest height) to the backswing (hip hinge with a flat back, shins near vertical, bell high between the thighs); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": -3,
+  "hipAbd": 12,
+  "knee": 3,
+  "shoulderFlex": 90,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 50,
+  "hipFlex": 70,
+  "hipAbd": 12,
+  "knee": 25,
+  "ankle": -5,
+  "shoulderFlex": 25,
+  "shoulderAbd": -6,
+  "elbow": 5
+ },
+ "view": 90
+}

@@ -1,0 +1,17 @@
+{
+ "key": "sissy_squat",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "ankle": 25,
+  "shoulderFlex": 80,
+  "elbow": 20
+ },
+ "end": {
+  "pitch": -50,
+  "knee": 95,
+  "ankle": -5,
+  "shoulderFlex": 110,
+  "elbow": 20
+ }
+}

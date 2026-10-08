@@ -1,0 +1,25 @@
+{
+ "key": "rack_pull",
+ "source": "convention: rack pull from pins just below the knee, hips hinged with the torso about 55 degrees from vertical and knees bent, arms straight, driven to a standing lockout; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 50,
+  "trunk": 5,
+  "hipFlex": 70,
+  "knee": 30,
+  "ankle": -10,
+  "shoulderFlex": 55,
+  "shoulderAbd": 8,
+  "elbow": 3
+ },
+ "end": {
+  "pitch": 0,
+  "trunk": 0,
+  "hipFlex": 0,
+  "knee": 3,
+  "ankle": -3,
+  "shoulderFlex": 5,
+  "shoulderAbd": 8,
+  "elbow": 3
+ }
+}

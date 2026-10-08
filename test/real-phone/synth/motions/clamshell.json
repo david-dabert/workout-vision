@@ -1,0 +1,46 @@
+{
+ "key": "clamshell",
+ "source": "convention: lying on the right side, hips bent about 45 degrees and knees about 90, knees and feet stacked; the top (left) knee opens towards the ceiling while the feet stay together (the thigh turns out: hipAbd with hipRot, the leg turning about the hip-ankle line), and closes; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "roll": 90,
+  "hipFlex": 45,
+  "hipAbd": -5,
+  "knee": 90,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 160,
+   "elbow": 40
+  },
+  "left": {
+   "shoulderFlex": 70,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "end": {
+  "roll": 90,
+  "hipFlex": 45,
+  "hipAbd": -5,
+  "knee": 90,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 160,
+   "elbow": 40
+  },
+  "left": {
+   "hipFlex": 35,
+   "hipAbd": 25,
+   "hipRot": 35,
+   "shoulderFlex": 70,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "side": "left",
+ "view": 0
+}

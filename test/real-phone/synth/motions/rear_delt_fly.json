@@ -1,0 +1,25 @@
+{
+ "key": "rear_delt_fly",
+ "source": "convention: standing hip hinge, torso about 60 degrees forward, soft knees, dumbbells hanging then raised out to the sides to shoulder level with soft elbows; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 40,
+  "trunk": 20,
+  "hipFlex": 50,
+  "knee": 20,
+  "ankle": -10,
+  "shoulderFlex": 60,
+  "shoulderAbd": 8,
+  "elbow": 15
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 20,
+  "hipFlex": 50,
+  "knee": 20,
+  "ankle": -10,
+  "shoulderFlex": 60,
+  "shoulderAbd": 88,
+  "elbow": 20
+ }
+}

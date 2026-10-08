@@ -1,0 +1,38 @@
+{
+ "key": "side_plank_hip_dip",
+ "source": "convention: forearm side plank on the right forearm, legs stacked; the hips lower towards the floor and lift back to a straight line; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "roll": 75,
+  "trunkSide": 0,
+  "hipAbd": 0,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 75,
+   "elbow": 90
+  },
+  "left": {
+   "shoulderAbd": 0,
+   "elbow": 10
+  }
+ },
+ "end": {
+  "roll": 85,
+  "trunkSide": 28,
+  "hipAbd": 0,
+  "ankle": 0,
+  "right": {
+   "shoulderAbd": 57,
+   "elbow": 90
+  },
+  "left": {
+   "shoulderAbd": 0,
+   "elbow": 10
+  }
+ },
+ "view": 0
+}

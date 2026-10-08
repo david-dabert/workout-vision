@@ -1,0 +1,30 @@
+{
+ "key": "doorway_chest_stretch",
+ "source": "convention: standing in a doorway, forearms on the frame with the elbows at shoulder height and bent 90 degrees, one foot steps through and the chest leans forward until the arms sit behind the body, held; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": -90,
+  "shoulderAbd": 90,
+  "humRot": 180,
+  "elbow": 90
+ },
+ "end": {
+  "shoulderFlex": -90,
+  "shoulderAbd": 62,
+  "humRot": 180,
+  "elbow": 90,
+  "pitch": 12,
+  "left": {
+   "hipFlex": 37,
+   "knee": 25,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 2,
+   "knee": 5,
+   "ankle": -15
+  }
+ },
+ "view": 90,
+ "noReps": true
+}

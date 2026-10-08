@@ -1,0 +1,30 @@
+{
+ "key": "bear_plank",
+ "source": "convention: on hands and toes, hands under the shoulders, knees under the hips hovering just above the floor, back flat; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.06
+ },
+ "start": {
+  "pitch": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "hipFlex": 90,
+  "knee": 92,
+  "ankle": -25,
+  "hipAbd": 6
+ },
+ "end": {
+  "pitch": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "hipFlex": 90,
+  "knee": 92,
+  "ankle": -25,
+  "hipAbd": 6
+ },
+ "noReps": true
+}

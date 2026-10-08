@@ -1,0 +1,127 @@
+Learned phase counter (test/real-phone/learned-phase/), readout "density", against the core (summarizeCount) and PSC (psc.js), 2026-10-08. Build halves only.
+Model: 3135 training sets (cfrep, countix, library, mmfit, occlusion, repcount-train, synthetic), 65608 bytes of float16 weights, 7 dilated blocks of 32 channels.
+JS inference (model.js, this machine, Node): 34 ms per minute of recording (features + forward + readout).
+Cells: exact / within 1 / off by 3+ (a refusal or no count is off by 3+). Held out: cv suites by the fold model not trained on their fold; RepCount-A and David's sets by the model trained on all training sets.
+
+| Dataset | Sets | Learned | PSC | Core (mapped) | Learned on mapped | PSC on mapped | Selector core/PSC on mapped | Control: PSC where core refuses | Control: selector where both count | Mapped |
+|---|---:|---|---|---|---|---|---|---|---|---:|
+| repcount | 124 | 30 (24%) / 69 (56%) / 25 (20%) | 28 (23%) / 56 (45%) / 57 (46%) | 29 (37%) / 48 (61%) / 20 (25%) | 24 (30%) / 47 (59%) / 13 (16%) | 17 (22%) / 41 (52%) / 32 (41%) | 28 (35%) / 59 (75%) / 11 (14%) | 29 (37%) / 51 (65%) / 15 (19%) | 28 (35%) / 56 (71%) / 16 (20%) | 79 |
+| countix | 447 | 186 (42%) / 387 (87%) / 21 (5%) | 106 (24%) / 231 (52%) / 170 (38%) | 181 (40%) / 331 (74%) / 72 (16%) | 186 (42%) / 387 (87%) / 21 (5%) | 106 (24%) / 231 (52%) / 170 (38%) | 180 (40%) / 355 (79%) / 50 (11%) | 195 (44%) / 351 (79%) / 49 (11%) | 166 (37%) / 335 (75%) / 73 (16%) | 447 |
+| mmfit | 158 | 86 (54%) / 146 (92%) / 4 (3%) | 107 (68%) / 136 (86%) / 15 (9%) | 127 (80%) / 146 (92%) / 4 (3%) | 86 (54%) / 146 (92%) / 4 (3%) | 107 (68%) / 136 (86%) / 15 (9%) | 124 (78%) / 150 (95%) / 3 (2%) | 127 (80%) / 146 (92%) / 4 (3%) | 124 (78%) / 150 (95%) / 3 (2%) | 158 |
+| cfrep | 12 | 5 (42%) / 11 (92%) / 0 (0%) | 6 (50%) / 11 (92%) / 0 (0%) | 8 (67%) / 10 (83%) / 2 (17%) | 5 (42%) / 11 (92%) / 0 (0%) | 6 (50%) / 11 (92%) / 0 (0%) | 8 (67%) / 12 (100%) / 0 (0%) | 8 (67%) / 10 (83%) / 2 (17%) | 8 (67%) / 12 (100%) / 0 (0%) | 12 |
+| real video | 13 | 6 (46%) / 11 (85%) / 0 (0%) | 5 (38%) / 7 (54%) / 6 (46%) | 6 (46%) / 9 (69%) / 4 (31%) | 6 (46%) / 11 (85%) / 0 (0%) | 5 (38%) / 7 (54%) / 6 (46%) | 8 (62%) / 12 (92%) / 1 (8%) | 7 (54%) / 10 (77%) / 3 (23%) | 7 (54%) / 11 (85%) / 2 (15%) | 13 |
+| stored sets | 20 | 13 (65%) / 18 (90%) / 1 (5%) | 11 (55%) / 17 (85%) / 3 (15%) | 12 (60%) / 18 (90%) / 1 (5%) | 13 (65%) / 18 (90%) / 1 (5%) | 11 (55%) / 17 (85%) / 3 (15%) | 14 (70%) / 19 (95%) / 1 (5%) | 12 (60%) / 18 (90%) / 1 (5%) | 14 (70%) / 19 (95%) / 1 (5%) | 20 |
+| synthetic | 96 | 87 (91%) / 91 (95%) / 2 (2%) | 91 (95%) / 93 (97%) / 3 (3%) | 74 (77%) / 80 (83%) / 13 (14%) | 87 (91%) / 91 (95%) / 2 (2%) | 91 (95%) / 93 (97%) / 3 (3%) | 91 (95%) / 94 (98%) / 1 (1%) | 74 (77%) / 80 (83%) / 13 (14%) | 91 (95%) / 94 (98%) / 1 (1%) | 96 |
+| occlusion | 68 | 46 (68%) / 57 (84%) / 7 (10%) | 46 (68%) / 49 (72%) / 18 (26%) | 27 (40%) / 31 (46%) / 36 (53%) | 46 (68%) / 57 (84%) / 7 (10%) | 46 (68%) / 49 (72%) / 18 (26%) | 48 (71%) / 52 (76%) / 15 (22%) | 32 (47%) / 38 (56%) / 29 (43%) | 43 (63%) / 45 (66%) / 22 (32%) | 68 |
+
+Readouts (exact / within 1 / off by 3+): density = round(summed rate / 15); phase = reps whose middle is passed while inside a rep.
+| Dataset | density | phase | both agree: n, exact | disagree: n, density exact |
+|---|---|---|---|---|
+| repcount | 30 (24%) / 69 (56%) / 25 (20%) | 28 (23%) / 53 (43%) / 59 (48%) | 21, 11 | 103, 19 |
+| countix | 186 (42%) / 387 (87%) / 21 (5%) | 84 (19%) / 289 (65%) / 71 (16%) | 203, 67 | 244, 119 |
+| mmfit | 86 (54%) / 146 (92%) / 4 (3%) | 42 (27%) / 109 (69%) / 33 (21%) | 58, 32 | 100, 54 |
+| cfrep | 5 (42%) / 11 (92%) / 0 (0%) | 5 (42%) / 8 (67%) / 3 (25%) | 6, 4 | 6, 1 |
+| real video | 6 (46%) / 11 (85%) / 0 (0%) | 2 (15%) / 8 (62%) / 5 (38%) | 2, 0 | 11, 6 |
+| stored sets | 13 (65%) / 18 (90%) / 1 (5%) | 5 (25%) / 12 (60%) / 7 (35%) | 5, 4 | 15, 9 |
+| synthetic | 87 (91%) / 91 (95%) / 2 (2%) | 72 (75%) / 84 (88%) / 7 (7%) | 72, 72 | 24, 15 |
+| occlusion | 46 (68%) / 57 (84%) / 7 (10%) | 38 (56%) / 48 (71%) / 15 (22%) | 35, 35 | 33, 11 |
+
+Confidence: learned exact where the summed rate lies within 0.25 of a whole number and both readouts agree ("sure"), against the rest.
+| Dataset | sure: n, exact | rest: n, exact |
+|---|---|---|
+| repcount | 10, 4 (40%) | 114, 26 (23%) |
+| countix | 121, 46 (38%) | 326, 140 (43%) |
+| mmfit | 25, 16 (64%) | 133, 70 (53%) |
+| cfrep | 4, 3 (75%) | 8, 2 (25%) |
+| real video | 1, 0 (0%) | 12, 6 (50%) |
+| stored sets | 2, 2 (100%) | 18, 11 (61%) |
+| synthetic | 66, 66 (100%) | 30, 21 (70%) |
+| occlusion | 29, 29 (100%) | 39, 17 (44%) |
+
+Per class (exact / within 1 / off by 3+):
+| Dataset, class | Sets | Learned | PSC | Core |
+|---|---:|---|---|---|
+| repcount battle_rope | 3 | 0 (0%) / 0 (0%) / 3 (100%) | 0 (0%) / 0 (0%) / 2 (67%) | no counter |
+| repcount bench_pressing | 18 | 8 (44%) / 11 (61%) / 4 (22%) | 3 (17%) / 8 (44%) / 7 (39%) | 4 (22%) / 5 (28%) / 8 (44%) |
+| repcount front_raise | 14 | 4 (29%) / 9 (64%) / 1 (7%) | 6 (43%) / 12 (86%) / 1 (7%) | 6 (43%) / 11 (79%) / 1 (7%) |
+| repcount jump_jack | 14 | 1 (7%) / 8 (57%) / 1 (7%) | 5 (36%) / 8 (57%) / 4 (29%) | no counter |
+| repcount pommelhorse | 12 | 1 (8%) / 6 (50%) / 2 (17%) | 2 (17%) / 2 (17%) / 10 (83%) | no counter |
+| repcount pull_up | 14 | 3 (21%) / 8 (57%) / 3 (21%) | 1 (7%) / 3 (21%) / 11 (79%) | 4 (29%) / 9 (64%) / 4 (29%) |
+| repcount push_up | 15 | 2 (13%) / 7 (47%) / 4 (27%) | 2 (13%) / 8 (53%) / 6 (40%) | 5 (33%) / 9 (60%) / 4 (27%) |
+| repcount situp | 16 | 4 (25%) / 8 (50%) / 6 (38%) | 4 (25%) / 5 (31%) / 9 (56%) | no counter |
+| repcount squat | 18 | 7 (39%) / 12 (67%) / 1 (6%) | 5 (28%) / 10 (56%) / 7 (39%) | 10 (56%) / 14 (78%) / 3 (17%) |
+| countix bench_press | 38 | 18 (47%) / 32 (84%) / 3 (8%) | 11 (29%) / 18 (47%) / 16 (42%) | 12 (32%) / 18 (47%) / 16 (42%) |
+| countix front_raise | 75 | 34 (45%) / 68 (91%) / 1 (1%) | 27 (36%) / 41 (55%) / 29 (39%) | 36 (48%) / 66 (88%) / 6 (8%) |
+| countix lunge | 78 | 32 (41%) / 67 (86%) / 4 (5%) | 11 (14%) / 33 (42%) / 38 (49%) | 33 (42%) / 61 (78%) / 8 (10%) |
+| countix pull_up | 60 | 25 (42%) / 56 (93%) / 0 (0%) | 18 (30%) / 33 (55%) / 20 (33%) | 20 (33%) / 47 (78%) / 10 (17%) |
+| countix push_up | 77 | 34 (44%) / 60 (78%) / 6 (8%) | 13 (17%) / 36 (47%) / 33 (43%) | 35 (45%) / 50 (65%) / 14 (18%) |
+| countix squat | 46 | 26 (57%) / 43 (93%) / 3 (7%) | 11 (24%) / 20 (43%) / 20 (43%) | 21 (46%) / 32 (70%) / 10 (22%) |
+| countix triceps_pushdown | 73 | 17 (23%) / 61 (84%) / 4 (5%) | 15 (21%) / 50 (68%) / 14 (19%) | 24 (33%) / 57 (78%) / 8 (11%) |
+| mmfit bicep_curl_alternating | 31 | 8 (26%) / 30 (97%) / 0 (0%) | 17 (55%) / 20 (65%) / 9 (29%) | 24 (77%) / 30 (97%) / 0 (0%) |
+| mmfit dumbbell_row | 19 | 2 (11%) / 15 (79%) / 1 (5%) | 11 (58%) / 17 (89%) / 1 (5%) | 7 (37%) / 14 (74%) / 4 (21%) |
+| mmfit lateral_raise | 29 | 16 (55%) / 22 (76%) / 3 (10%) | 18 (62%) / 21 (72%) / 5 (17%) | 20 (69%) / 23 (79%) / 0 (0%) |
+| mmfit overhead_press | 39 | 28 (72%) / 39 (100%) / 0 (0%) | 29 (74%) / 38 (97%) / 0 (0%) | 36 (92%) / 39 (100%) / 0 (0%) |
+| mmfit squat | 40 | 32 (80%) / 40 (100%) / 0 (0%) | 32 (80%) / 40 (100%) / 0 (0%) | 40 (100%) / 40 (100%) / 0 (0%) |
+| cfrep deadlift | 6 | 0 (0%) / 5 (83%) / 0 (0%) | 1 (17%) / 6 (100%) / 0 (0%) | 3 (50%) / 5 (83%) / 1 (17%) |
+| cfrep squat | 6 | 5 (83%) / 6 (100%) / 0 (0%) | 5 (83%) / 5 (83%) / 0 (0%) | 5 (83%) / 5 (83%) / 1 (17%) |
+| synthetic bicep_curl | 24 | 19 (79%) / 21 (88%) / 1 (4%) | 23 (96%) / 23 (96%) / 1 (4%) | 20 (83%) / 22 (92%) / 2 (8%) |
+| synthetic lateral_raise | 24 | 21 (88%) / 22 (92%) / 1 (4%) | 24 (100%) / 24 (100%) / 0 (0%) | 22 (92%) / 24 (100%) / 0 (0%) |
+| synthetic overhead_press | 24 | 23 (96%) / 24 (100%) / 0 (0%) | 23 (96%) / 24 (100%) / 0 (0%) | 14 (58%) / 15 (63%) / 7 (29%) |
+| synthetic squat | 24 | 24 (100%) / 24 (100%) / 0 (0%) | 21 (88%) / 22 (92%) / 2 (8%) | 18 (75%) / 19 (79%) / 4 (17%) |
+| occlusion bicep_curl | 16 | 10 (63%) / 12 (75%) / 2 (13%) | 13 (81%) / 14 (88%) / 2 (13%) | 7 (44%) / 9 (56%) / 6 (38%) |
+| occlusion bicep_curl_alternating | 14 | 7 (50%) / 9 (64%) / 4 (29%) | 1 (7%) / 1 (7%) / 13 (93%) | 4 (29%) / 4 (29%) / 10 (71%) |
+| occlusion overhead_press | 18 | 15 (83%) / 17 (94%) / 1 (6%) | 16 (89%) / 17 (94%) / 1 (6%) | 10 (56%) / 11 (61%) / 7 (39%) |
+| occlusion squat | 20 | 14 (70%) / 19 (95%) / 0 (0%) | 16 (80%) / 17 (85%) / 2 (10%) | 6 (30%) / 7 (35%) / 13 (65%) |
+
+Selector where the core and PSC both count and disagree: picks the right one / the core right / PSC right / neither.
+| Dataset | Disagree | Selector exact | Core exact | PSC exact | Neither |
+|---|---:|---:|---:|---:|---:|
+| repcount | 51 | 15 | 16 | 7 | 28 |
+| countix | 161 | 55 | 70 | 24 | 67 |
+| mmfit | 44 | 24 | 27 | 7 | 10 |
+| cfrep | 5 | 3 | 3 | 1 | 1 |
+| real video | 8 | 5 | 4 | 2 | 2 |
+| stored sets | 9 | 6 | 4 | 3 | 2 |
+| synthetic | 23 | 18 | 1 | 18 | 4 |
+| occlusion | 24 | 19 | 3 | 17 | 4 |
+
+real video (exam), set by set: label | learned (density, phase, summed rate) | core | PSC | rhythm | selector core/PSC | selector core/PSC/rhythm
+- sets-07oct-video/barbell_squat_9_a.json.gz: 9 | 9 (9, 5, 8.93) | 9 | 9 | 9 | 9 | 9
+- sets-07oct-video/barbell_squat_9_b.json.gz: 9 | 9 (9, 6, 9.34) | 9 | 9 | 9 | 9 | 9
+- sets-07oct-video/behind_neck_chin_up_5.json.gz: 5 | 6 (6, 8, 6.24) | 6 | 1 | 5 | 6 | 6
+- sets-07oct-video/hanging_leg_raise_6.json.gz: 6 | 8 (8, 6, 7.57) | 6 | 3 | null | 6 | 6
+- sets-07oct-video/lying_biceps_curl_11.json.gz: 11 | 12 (12, 11, 12.29) | 11 | 0 | null | 11 | 11
+- sets-07oct-video/machine_chest_supported_row_6.json.gz: 6 | 6 (6, 7, 5.89) | 5 | 5 | 5 | 5 | 5
+- sets-07oct-video/machine_seated_back_extension_18.json.gz: 18 | 18 (18, 12, 18.31) | 17 | 14 | 16 | 17 | 17
+- sets-07oct-video/pendulum_squat_7.json.gz: 7 | 8 (8, 8, 7.84) | 14 | 7 | 7 | 7 | 7
+- sets-07oct-video/seated_dumbbell_curl_10.json.gz: 10 | 10 (10, 11, 10.37) | 10 | 5 | null | 10 | 10
+- sets-07oct-video/sissy_squat_5_5011.json.gz: 5 | 6 (6, 8, 6.50) | refused | 5 | 4 | 5 | 5
+- sets-07oct-video/sissy_squat_7_5006.json.gz: 7 | 7 (7, 8, 7.01) | 4 | 7 | 7 | 7 | 7
+- sets-07oct-video/sissy_squat_7_5008.json.gz: 7 | 5 (5, 8, 5.09) | refused | null | null | null | null
+- sets-07oct-video/sissy_squat_9_5007.json.gz: 9 | 8 (8, 8, 8.30) | 9 | 8 | 8 | 8 | 8
+  Totals: learned 6 (46%) / 11 (85%) / 0 (0%); core 6 (46%) / 9 (69%) / 4 (31%); PSC 5 (38%) / 7 (54%) / 6 (46%); rhythm 5 (38%) / 8 (62%) / 4 (31%); selector core/PSC 8 (62%) / 12 (92%) / 1 (8%); selector core/PSC/rhythm 8 (62%) / 12 (92%) / 1 (8%).
+  Oracle (one of core, PSC, rhythm exact): 10 of 13.
+
+stored sets (exam), set by set: label | learned (density, phase, summed rate) | core | PSC | selector core/PSC
+- sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz: 8 | 12 (12, 13, 11.51) | 8 | 7 | 8
+- sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz: 6 | 6 (6, 6, 5.98) | 6 | 6 | 6
+- sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz: 13 | 11 (11, 6, 10.75) | 12 | 13 | 12
+- sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz: 7 | 6 (6, 1, 6.22) | 6 | 6 | 6
+- sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz: 10 | 10 (10, 10, 9.54) | 9 | 6 | 9
+- sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz: 6 | 7 (7, 7, 6.58) | 6 | 6 | 6
+- sets-29sep/bench_press_7_side_24cc4f0b.json.gz: 7 | 7 (7, 3, 7.18) | 5 | 8 | 8
+- sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz: 5 | 5 (5, 4, 4.83) | 5 | 5 | 5
+- sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz: 6 | 7 (7, 6, 6.82) | 6 | 6 | 6
+- sets-29sep/lateral_raise_9_front_43e71b40.json.gz: 9 | 8 (8, 12, 8.20) | 8 | 8 | 8
+- sets-29sep/leg_press_13_side_1ee0ae47.json.gz: 13 | 13 (13, 10, 12.84) | 13 | 10 | 13
+- sets-29sep/overhead_press_4_front_cefdaa82.json.gz: 4 | 4 (4, 4, 4.25) | 5 | 4 | 4
+- sets-29sep/overhead_press_4_front_f75638cc.json.gz: 4 | 5 (5, 6, 4.57) | 4 | 4 | 4
+- sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz: 8 | 8 (8, 7, 7.77) | 8 | 7 | 8
+- sets-29sep/squat_7_side_21fd7ccf.json.gz: 7 | 7 (7, 8, 7.02) | 7 | 7 | 7
+- landmarks/bench_press_7_angle_mufhcy60.json.gz: 7 | 7 (7, 2, 6.62) | refused | null | null
+- landmarks/bicep_curl_7_side_mufhf3wy.json.gz: 7 | 7 (7, 6, 6.53) | 7 | 6 | 7
+- landmarks/lat_pulldown_10_front_mufhlh4o.json.gz: 10 | 10 (10, 10, 10.16) | 10 | 10 | 10
+- landmarks/lateral_raise_10_front_mufhhbun.json.gz: 10 | 10 (10, 11, 9.80) | 10 | 10 | 10
+- landmarks/overhead_press_10_front_mufhjkku.json.gz: 10 | 10 (10, 11, 9.55) | 9 | 10 | 10
+  Totals: learned 13 (65%) / 18 (90%) / 1 (5%); core 12 (60%) / 18 (90%) / 1 (5%); PSC 11 (55%) / 17 (85%) / 3 (15%); selector core/PSC 14 (70%) / 19 (95%) / 1 (5%).
+  Oracle (one of core, PSC exact): 15 of 20.

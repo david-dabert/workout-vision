@@ -1,0 +1,38 @@
+{
+ "key": "single_leg_box_squat",
+ "source": "convention: standing on the left leg in front of a box, the right leg held forward off the floor, arms forward, sit back until the hips touch the box at about knee height, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "knee": 0
+  },
+  "right": {
+   "hipFlex": 35,
+   "knee": 15,
+   "ankle": -5
+  }
+ },
+ "end": {
+  "trunk": 35,
+  "shoulderFlex": 120,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 95,
+   "knee": 100,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": 75,
+   "knee": 10,
+   "ankle": -5
+  }
+ },
+ "support": {
+  "pin": "feet",
+  "planted": "left"
+ }
+}

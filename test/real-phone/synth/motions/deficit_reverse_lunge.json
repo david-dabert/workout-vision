@@ -1,0 +1,27 @@
+{
+ "key": "deficit_reverse_lunge",
+ "source": "convention: reverse lunge from a low step, dumbbells hanging, stepping back down to the floor alternately, the front knee bending deeper than on the flat; the step and the backward step are not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 8,
+  "shoulderFlex": 8,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 95,
+   "knee": 112,
+   "ankle": -17
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 68,
+   "ankle": -18
+  }
+ },
+ "alternate": "mirror"
+}

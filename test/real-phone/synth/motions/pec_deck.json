@@ -1,0 +1,27 @@
+{
+ "key": "pec_deck",
+ "source": "convention: seated upright, upper arms level with the shoulders and forearms vertical on the pads, elbows brought together in front from out to the sides (horizontal adduction); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": -5,
+  "hipFlex": 90,
+  "knee": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 88,
+  "humRot": 0,
+  "elbow": 90
+ },
+ "end": {
+  "trunk": -5,
+  "hipFlex": 90,
+  "knee": 90,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "humRot": 0,
+  "elbow": 90
+ }
+}

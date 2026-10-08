@@ -1,0 +1,15 @@
+{
+ "key": "plate_front_raise",
+ "source": "convention: standing, plate held at its sides in front of the hips, straight arms raised to eye level; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 8,
+  "shoulderAbd": 5,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 100,
+  "shoulderAbd": 5,
+  "elbow": 10
+ }
+}

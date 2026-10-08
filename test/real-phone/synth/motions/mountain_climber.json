@@ -1,0 +1,28 @@
+{
+ "key": "mountain_climber",
+ "source": "convention: high plank, hands under the shoulders; one knee drives under the chest and back, then the other; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "ankle": 30,
+  "hipAbd": 4
+ },
+ "end": {
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "ankle": 30,
+  "hipAbd": 4,
+  "hipFlex": 100,
+  "knee": 120
+ },
+ "alternate": true
+}

@@ -1,0 +1,27 @@
+{
+ "key": "banded_kickback",
+ "source": "convention: standing with a mini band around the ankles, hands on the hips, slight forward lean, the straight left leg pushed back and up, returned beside the right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 15,
+  "hipFlex": 15,
+  "knee": 3,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100
+ },
+ "end": {
+  "pitch": 15,
+  "shoulderFlex": -15,
+  "shoulderAbd": 45,
+  "humRot": -80,
+  "elbow": 100,
+  "left": {
+   "hipFlex": -15,
+   "knee": 5,
+   "ankle": 10
+  }
+ },
+ "side": "left"
+}

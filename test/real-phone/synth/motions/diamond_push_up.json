@@ -1,0 +1,25 @@
+{
+ "key": "diamond_push_up",
+ "source": "convention: hands together under the chest, straight-arm plank lowered until the chest nears the hands, elbows bending deep along the body; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 68,
+  "shoulderFlex": 72,
+  "shoulderAbd": -8,
+  "humRot": -40,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 82,
+  "shoulderFlex": -2,
+  "shoulderAbd": 15,
+  "humRot": -40,
+  "elbow": 110,
+  "ankle": 40
+ }
+}

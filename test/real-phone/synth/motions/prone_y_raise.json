@@ -1,0 +1,23 @@
+{
+ "key": "prone_y_raise",
+ "source": "convention: lying face down, arms overhead in a Y at about 45 degrees out, lifted a few centimetres off the floor and lowered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 90,
+  "shoulderFlex": 172,
+  "shoulderAbd": 45,
+  "elbow": 5,
+  "ankle": 50
+ },
+ "end": {
+  "pitch": 90,
+  "shoulderFlex": 195,
+  "shoulderAbd": 45,
+  "elbow": 5,
+  "ankle": 50
+ }
+}

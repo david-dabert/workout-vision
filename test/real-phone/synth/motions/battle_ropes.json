@@ -1,0 +1,38 @@
+{
+ "key": "battle_ropes",
+ "source": "convention: alternating waves in a half-squat athletic stance, one cycle from the left hand up at chest height with the right down at the hip to the reverse (no ropes rendered); timed, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 20,
+  "hipFlex": 55,
+  "hipAbd": 12,
+  "knee": 55,
+  "ankle": -20,
+  "shoulderAbd": 15,
+  "left": {
+   "shoulderFlex": 100,
+   "elbow": 40
+  },
+  "right": {
+   "shoulderFlex": 45,
+   "elbow": 40
+  }
+ },
+ "end": {
+  "pitch": 20,
+  "hipFlex": 55,
+  "hipAbd": 12,
+  "knee": 55,
+  "ankle": -20,
+  "shoulderAbd": 15,
+  "left": {
+   "shoulderFlex": 45,
+   "elbow": 40
+  },
+  "right": {
+   "shoulderFlex": 100,
+   "elbow": 40
+  }
+ },
+ "noReps": true
+}

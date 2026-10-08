@@ -1,0 +1,29 @@
+{
+ "key": "jumping_jack",
+ "source": "convention: from feet together with the arms by the sides to feet apart a little wider than the shoulders with the arms overhead, on the balls of the feet, fast (tempo about 0.25-0.5 s each way); the jump itself is not posed; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 5,
+  "ankle": 10,
+  "shoulderAbd": 8,
+  "elbow": 8
+ },
+ "end": {
+  "hipAbd": 18,
+  "knee": 10,
+  "ankle": 10,
+  "shoulderAbd": 170,
+  "elbow": 10
+ },
+ "view": 0,
+ "tempo": {
+  "out": [
+   0.25,
+   0.5
+  ],
+  "back": [
+   0.25,
+   0.5
+  ]
+ }
+}

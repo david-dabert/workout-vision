@@ -1,0 +1,42 @@
+{
+ "key": "elliptical",
+ "source": "convention: elliptical trainer (no machine rendered), upright, one cycle from the left foot forward with the right handle pushed to the reverse; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 3,
+  "shoulderAbd": 15,
+  "left": {
+   "hipFlex": 30,
+   "knee": 30,
+   "ankle": 0,
+   "shoulderFlex": 0,
+   "elbow": 95
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 25,
+   "ankle": 20,
+   "shoulderFlex": 40,
+   "elbow": 45
+  }
+ },
+ "end": {
+  "pitch": 3,
+  "shoulderAbd": 15,
+  "left": {
+   "hipFlex": -10,
+   "knee": 25,
+   "ankle": 20,
+   "shoulderFlex": 40,
+   "elbow": 45
+  },
+  "right": {
+   "hipFlex": 30,
+   "knee": 30,
+   "ankle": 0,
+   "shoulderFlex": 0,
+   "elbow": 95
+  }
+ },
+ "noReps": true
+}

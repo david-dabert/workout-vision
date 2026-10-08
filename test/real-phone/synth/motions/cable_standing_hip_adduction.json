@@ -1,0 +1,32 @@
+{
+ "key": "cable_standing_hip_adduction",
+ "source": "convention: standing cable hip adduction, ankle strap on the left leg from a pulley on the left, right hand on a support, the straight left leg pulled in from wide to just across the front of the right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "hipAbd": 40,
+   "hipFlex": 0,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipAbd": 4,
+   "shoulderAbd": 35,
+   "elbow": 15
+  }
+ },
+ "end": {
+  "left": {
+   "hipAbd": -8,
+   "hipFlex": 8,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipAbd": 4,
+   "shoulderAbd": 35,
+   "elbow": 15
+  }
+ },
+ "side": "left"
+}

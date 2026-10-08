@@ -1,0 +1,26 @@
+{
+ "key": "plank",
+ "source": "convention: forearm plank, elbows under the shoulders, forearms on the floor, body straight from head to heels on the toes; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "pitch": 84,
+  "shoulderFlex": 84,
+  "shoulderAbd": 5,
+  "elbow": 90,
+  "hipAbd": 3,
+  "ankle": 0
+ },
+ "end": {
+  "pitch": 84,
+  "shoulderFlex": 84,
+  "shoulderAbd": 5,
+  "elbow": 90,
+  "hipAbd": 3,
+  "ankle": 0
+ },
+ "noReps": true
+}

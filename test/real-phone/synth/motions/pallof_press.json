@@ -1,0 +1,25 @@
+{
+ "key": "pallof_press",
+ "source": "convention: standing side-on to the cable, athletic stance, handle at the sternum; the arms press straight out in front and return, the trunk resisting rotation; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipFlex": 12,
+  "knee": 18,
+  "ankle": -6,
+  "hipAbd": 9,
+  "shoulderFlex": 25,
+  "shoulderAbd": 8,
+  "humRot": -25,
+  "elbow": 115
+ },
+ "end": {
+  "hipFlex": 12,
+  "knee": 18,
+  "ankle": -6,
+  "hipAbd": 9,
+  "shoulderFlex": 88,
+  "shoulderAbd": -7,
+  "humRot": 0,
+  "elbow": 5
+ }
+}

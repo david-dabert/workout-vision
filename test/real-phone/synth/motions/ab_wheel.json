@@ -1,0 +1,31 @@
+{
+ "key": "ab_wheel",
+ "source": "convention: kneeling rollout, hands on the wheel under the shoulders, hips hinged; the wheel rolls forward until the body is nearly straight from knees to shoulders, arms overhead, then pulls back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "pitch": 68,
+  "hipFlex": 68,
+  "knee": 90,
+  "ankle": 65,
+  "hipAbd": 6,
+  "shoulderFlex": 68,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "neck": 10
+ },
+ "end": {
+  "pitch": 76,
+  "hipFlex": 10,
+  "knee": 24,
+  "ankle": 65,
+  "hipAbd": 6,
+  "shoulderFlex": 141,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "neck": 10
+ }
+}

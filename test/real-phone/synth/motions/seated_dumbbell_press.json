@@ -1,0 +1,27 @@
+{
+ "key": "seated_dumbbell_press",
+ "source": "convention: seated upright on a bench, dumbbells pressed from shoulder height, elbows out and a little forward, to lockout over the shoulders; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 170,
+  "shoulderAbd": 25,
+  "humRot": 20,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 66,
+  "shoulderAbd": 60,
+  "humRot": 20,
+  "elbow": 95
+ }
+}

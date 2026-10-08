@@ -153,6 +153,7 @@
  "chair_dip": "elbow/high/eccentric",
  "doorway_row": "elbow/high/concentric",
  "towel_row": "elbow/high/concentric",
+ "prone_y_raise": "shoulder/low/concentric/lift",
  "commando_pull_up": "elbow/high/concentric/either",
  "l_sit_pull_up": "elbow/high/concentric/either",
  "towel_pull_up": "elbow/high/concentric/either",

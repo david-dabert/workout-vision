@@ -1,0 +1,183 @@
+name: Motion library
+
+# A data and bench job, not a gate (test/real-phone/synth/motions/README.md). Renders the motion library (every catalogue
+# exercise posed by hand; library.mjs's matrix, 6 sets per exercise) on 20 runners through the app's pose model; counts
+# it as the app does (library-core.test.ts); trains the learned phase counter without and with it, and with it and the
+# progress input (library-progress: each set's motion-spec progress, sgc.js specProgress, as two more input channels;
+# export with LPHASE_PROGRESS=1, train.py --progress), three seeds each, and
+# reads RepCount-A's held-out build half and David's real sets with every model (learned-phase.test.ts, compare-runs.py);
+# then commits only the reports and the weights to the branch that ran it. The rendered sets stay in the run's artifacts
+# for 7 days: too large for the repository, and rendered again from the specs at will. A run starts when a push changes
+# test/real-phone/synth/motions/RUN (one line: why this run), so the specs and this file are committed without starting one.
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main, counter-core]
+    paths: [test/real-phone/synth/motions/RUN]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: motion-library-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    name: Render share ${{ matrix.shard }} of 20
+    runs-on: ubuntu-latest
+    # 8 October: 1,620 sets in 3 renderers per runner did not finish in 180 minutes (the shares were cut and uploaded
+    # as they stood); GitHub's limit for a job is 360.
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/copy-models.js
+      # The two bodies of synth/README.md, from the three.js release the app depends on.
+      - name: Bodies
+        run: |
+          mkdir -p "$RUNNER_TEMP/glb"
+          for m in Michelle Soldier; do curl -sSfL -o "$RUNNER_TEMP/glb/$m.glb" "https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/models/gltf/$m.glb"; done
+      # Four renderers on one Vite server (the runner's four cores), a quarter of the share each.
+      - name: Render the share
+        run: |
+          node test/real-phone/synth/motions/library.mjs --shard ${{ matrix.shard }}/20 > "$RUNNER_TEMP/matrix.json"
+          node -e "const fs = require('fs'), m = JSON.parse(fs.readFileSync(process.argv[1])); for (let k = 0; k < 4; k++) fs.writeFileSync(process.argv[1] + '.' + k, JSON.stringify(m.filter((_, i) => i % 4 === k)))" "$RUNNER_TEMP/matrix.json"
+          npx vite --port 5191 --strictPort > "$RUNNER_TEMP/vite.log" 2>&1 &
+          npx --yes wait-on@8 http://localhost:5191/workout-vision/test/real-phone/synth/synth.html --timeout 120000
+          export PW_CHROMIUM="$(node -e "import('@playwright/test').then(m => console.log(m.chromium.executablePath()))")"
+          export SYNTH_SERVER=external SYNTH_PORT=5191 SYNTH_OUT="$RUNNER_TEMP/lib"
+          export SYNTH_MODELS="michelle=$RUNNER_TEMP/glb/Michelle.glb,soldier=$RUNNER_TEMP/glb/Soldier.glb"
+          for k in 0 1 2 3; do node test/real-phone/synth/run.mjs "$RUNNER_TEMP/matrix.json.$k" > "$RUNNER_TEMP/render-$k.log" 2>&1 & done
+          wait
+          cat "$RUNNER_TEMP"/render-*.log
+          ls "$RUNNER_TEMP/lib" | grep -c json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: motion-library-${{ matrix.shard }}
+          path: ${{ runner.temp }}/lib
+          retention-days: 7
+          if-no-files-found: warn
+
+  core:
+    name: The app's counting on the library
+    needs: render
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: motion-library-*
+          path: ${{ runner.temp }}/lib
+      - run: LIBRARY_DIR="$RUNNER_TEMP/lib" LIBRARY_TXT="$RUNNER_TEMP/library-core.txt" npx vitest run --no-cache test/real-phone/synth/motions/library-core.test.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: result-library-core
+          path: ${{ runner.temp }}/library-core.txt
+          retention-days: 7
+
+  train:
+    name: Learned counter, ${{ matrix.variant }}, seed ${{ matrix.seed }}
+    needs: render
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [base, library, library-progress]
+        seed: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: pip install numpy==2.4.6
+      - uses: actions/download-artifact@v4
+        if: matrix.variant != 'base'
+        with:
+          pattern: motion-library-*
+          path: ${{ runner.temp }}/lib
+      - name: Export
+        run: |
+          if [ "${{ matrix.variant }}" != base ]; then export LPHASE_LIBRARY="$RUNNER_TEMP/lib"; fi
+          if [ "${{ matrix.variant }}" = library-progress ]; then export LPHASE_PROGRESS=1; fi
+          LPHASE_EXPORT="$RUNNER_TEMP/exp" npx vitest run --no-cache test/real-phone/learned-phase/export.test.ts
+      # The three fold models at once, one thread each (two threads per model were three times faster than the default
+      # threading on four cores, 8 October).
+      - name: Train
+        run: |
+          mode=""
+          if [ "${{ matrix.variant }}" = library-progress ]; then mode="--progress"; fi
+          for f in 0 1 all; do
+            OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 -I test/real-phone/learned-phase/train.py "$RUNNER_TEMP/exp" "$RUNNER_TEMP/out-$f" --epochs 60 --seed ${{ matrix.seed }} --folds $f $mode > "$RUNNER_TEMP/train-$f.log" 2>&1 &
+          done
+          wait
+          tail -n 4 "$RUNNER_TEMP"/train-*.log
+          mkdir -p "$RUNNER_TEMP/res"
+          for f in 0 1 all; do cp "$RUNNER_TEMP/out-$f/model-$f.json" "$RUNNER_TEMP/res/"; done
+          cp "$RUNNER_TEMP/out-all/eval-all.json" "$RUNNER_TEMP/res/"
+      - name: Bench
+        run: LPHASE=1 LPHASE_MODELS="$RUNNER_TEMP/res" LPHASE_TXT="$RUNNER_TEMP/res/lphase.txt" npx vitest run --no-cache test/real-phone/learned-phase/learned-phase.test.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.variant }}-s${{ matrix.seed }}
+          path: |
+            ${{ runner.temp }}/res/model-all.json
+            ${{ runner.temp }}/res/eval-all.json
+            ${{ runner.temp }}/res/lphase.txt
+          retention-days: 7
+
+  gather:
+    name: Commit the reports
+    needs: [core, train]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: result-*
+          path: ${{ runner.temp }}/results
+      - name: Reports
+        run: |
+          dir="test/real-phone/learned-phase/runs/motion-library-${{ github.run_id }}"
+          mkdir -p "$dir"
+          for d in "$RUNNER_TEMP"/results/result-*-s*; do cp -r "$d" "$dir/$(basename "$d" | sed 's/^result-//')"; done
+          if [ -f "$RUNNER_TEMP/results/result-library-core/library-core.txt" ]; then cp "$RUNNER_TEMP/results/result-library-core/library-core.txt" test/real-phone/synth/motions/library-core.txt; fi
+          python3 -I test/real-phone/learned-phase/compare-runs.py "$dir" > "$dir/summary.md"
+          cat "$dir/summary.md"
+      - name: Commit to the branch that ran it
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test/real-phone/learned-phase/runs test/real-phone/synth/motions/library-core.txt
+          git diff --cached --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "Motion library run ${{ github.run_id }}: the app's counting on the library, the learned counter without and with it"
+          for i in 1 2 3 4; do git push origin "HEAD:${{ github.ref_name }}" && exit 0; git pull --rebase origin "${{ github.ref_name }}"; done
+          exit 1

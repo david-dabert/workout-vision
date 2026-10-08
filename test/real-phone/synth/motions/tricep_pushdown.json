@@ -1,0 +1,17 @@
+{
+ "key": "tricep_pushdown",
+ "source": "convention: standing at a high pulley with a slight forward lean, elbows pinned at the sides, bar pushed from chest height down to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 12,
+  "shoulderFlex": 8,
+  "shoulderAbd": 8,
+  "elbow": 105
+ },
+ "end": {
+  "trunk": 12,
+  "shoulderFlex": 2,
+  "shoulderAbd": 8,
+  "elbow": 5
+ }
+}

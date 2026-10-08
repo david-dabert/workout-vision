@@ -1,0 +1,30 @@
+{
+ "key": "dumbbell_glute_bridge",
+ "source": "convention: dumbbell glute bridge on the floor, one dumbbell held on the hips by both hands, knees bent and feet flat, hips raised until shoulders, hips and knees line up; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 56,
+  "hipAbd": 10,
+  "knee": 118,
+  "ankle": 28,
+  "shoulderFlex": 8,
+  "shoulderAbd": 0,
+  "elbow": 12
+ },
+ "end": {
+  "pitch": -116,
+  "neck": 26,
+  "hipFlex": 0,
+  "hipAbd": 10,
+  "knee": 103,
+  "ankle": 13,
+  "shoulderFlex": 8,
+  "shoulderAbd": 0,
+  "elbow": 12
+ }
+}

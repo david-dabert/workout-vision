@@ -1,0 +1,25 @@
+{
+ "key": "negative_pull_up",
+ "source": "convention: negative pull-up, starting at the top with the chin over the bar (reached by a jump or a step), lowered slowly to a straight-arm hang; overhand grip wider than the shoulders; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 55,
+  "humRot": 90,
+  "elbow": 125,
+  "hipFlex": 15,
+  "knee": 30
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 25
+ },
+ "view": 0
+}

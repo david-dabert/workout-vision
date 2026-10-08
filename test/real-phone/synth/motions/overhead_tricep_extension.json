@@ -1,0 +1,37 @@
+{
+ "key": "overhead_tricep_extension",
+ "source": "convention: staggered stance facing away from the pulley, torso leaning forward, upper arms beside the head, rope from behind the head extended forward-up to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 30,
+  "left": {
+   "hipFlex": 25,
+   "knee": 20,
+   "ankle": 5
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 5,
+   "ankle": 15
+  },
+  "shoulderFlex": 168,
+  "shoulderAbd": 10,
+  "elbow": 135
+ },
+ "end": {
+  "trunk": 30,
+  "left": {
+   "hipFlex": 25,
+   "knee": 20,
+   "ankle": 5
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 5,
+   "ankle": 15
+  },
+  "shoulderFlex": 168,
+  "shoulderAbd": 10,
+  "elbow": 10
+ }
+}

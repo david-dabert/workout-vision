@@ -1,0 +1,25 @@
+{
+ "key": "hack_squat",
+ "source": "convention: machine hack squat, back on the pad inclined about 35 degrees, feet forward on the platform, hands on the handles, down to thighs about parallel; the sled is not rendered (the body floats on it); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -35,
+  "hipFlex": 0,
+  "hipAbd": 8,
+  "knee": 5,
+  "ankle": 30,
+  "shoulderFlex": 10,
+  "shoulderAbd": 35,
+  "elbow": 105
+ },
+ "end": {
+  "pitch": -35,
+  "hipFlex": 60,
+  "hipAbd": 12,
+  "knee": 123,
+  "ankle": -28,
+  "shoulderFlex": 10,
+  "shoulderAbd": 35,
+  "elbow": 105
+ }
+}

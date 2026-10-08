@@ -1,0 +1,15 @@
+{
+ "key": "rope_hammer_curl",
+ "source": "convention: standing at a low pulley, rope in a neutral grip, elbows at the sides, curled to the shoulders; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 3,
+  "shoulderAbd": 6,
+  "elbow": 8
+ },
+ "end": {
+  "shoulderFlex": 12,
+  "shoulderAbd": 6,
+  "elbow": 130
+ }
+}

@@ -1,0 +1,29 @@
+{
+ "key": "hip_abduction_machine",
+ "source": "convention: seated hip abduction machine, back against the reclined pad, hands on the side handles, knees pushed apart against the pads from together to wide; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "trunk": -15,
+  "hipFlex": 85,
+  "knee": 85,
+  "ankle": -5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 25,
+  "hipAbd": 8
+ },
+ "end": {
+  "trunk": -15,
+  "hipFlex": 85,
+  "knee": 85,
+  "ankle": -5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 25,
+  "hipAbd": 42
+ }
+}

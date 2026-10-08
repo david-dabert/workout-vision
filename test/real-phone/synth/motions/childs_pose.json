@@ -1,0 +1,34 @@
+{
+ "key": "childs_pose",
+ "source": "convention: kneeling, sitting back on the heels, then the trunk folds forward over the thighs with the arms long on the floor and the forehead down, held; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "knee": 152,
+  "ankle": 62,
+  "hipAbd": 10,
+  "pitch": 0,
+  "hipFlex": 62,
+  "trunk": 0,
+  "shoulderFlex": 30,
+  "shoulderAbd": 10,
+  "elbow": 40
+ },
+ "end": {
+  "knee": 152,
+  "ankle": 62,
+  "hipAbd": 10,
+  "pitch": 60,
+  "hipFlex": 122,
+  "trunk": 40,
+  "neck": 20,
+  "shoulderFlex": 165,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "view": 90,
+ "noReps": true
+}

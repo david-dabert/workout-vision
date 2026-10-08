@@ -1,0 +1,25 @@
+{
+ "key": "scapular_pull_up",
+ "source": "convention: scapular pull-up, from a dead hang on straight arms (shoulders up by the ears: shrug 40) the shoulder blades are pulled down (shrug 0) so the body rises a few centimetres, elbows locked, the chest a little up; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shrug": 40,
+  "shoulderAbd": 172,
+  "elbow": 3,
+  "hipFlex": 5,
+  "knee": 10
+ },
+ "end": {
+  "shrug": 0,
+  "shoulderAbd": 166,
+  "elbow": 3,
+  "trunk": -5,
+  "hipFlex": 5,
+  "knee": 10
+ },
+ "view": 0
+}

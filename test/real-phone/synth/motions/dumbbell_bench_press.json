@@ -1,0 +1,29 @@
+{
+ "key": "dumbbell_bench_press",
+ "source": "convention: lying on a flat bench, dumbbells lowered from straight arms over the chest to the sides of the chest, elbows about 60 degrees out, deeper than a bar; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": -15,
+  "shoulderAbd": 65,
+  "elbow": 100
+ }
+}

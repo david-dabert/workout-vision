@@ -1,0 +1,36 @@
+# Espace pro in WebKit on Linux and on macOS (8 October 2026): e2e/pro.webkit.spec.js on a branch, before ci.yml's
+# e2e job runs it on main. Each test prints what it found ("[pro webkit]" lines), so the job's log is the diagnosis.
+name: WebKit probe
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - e2e/pro.webkit.spec.js
+      - .github/workflows/webkit-probe.yml
+      - src/components/experience/Pro.jsx
+      - src/components/experience/programme.js
+      - src/components/experience/programme-pdf.js
+
+jobs:
+  probe:
+    name: Espace pro (WebKit, ${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - if: runner.os == 'Linux'
+        run: npx playwright install --with-deps webkit
+      - if: runner.os == 'macOS'
+        run: npx playwright install webkit
+      - run: npm run build:e2e
+      - run: npx playwright test e2e/pro.webkit.spec.js --retries=0 --workers=1 --reporter=list

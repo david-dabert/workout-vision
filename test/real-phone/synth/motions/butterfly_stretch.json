@@ -1,0 +1,34 @@
+{
+ "key": "butterfly_stretch",
+ "source": "convention: seated on the floor, soles of the feet together with the heels about 20 cm in front of the groin, the thighs turned out (hipRot) and the knees out to the sides, hands holding the feet; the trunk leans forward and the knees sink towards the floor, held; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.12
+ },
+ "start": {
+  "trunk": 12,
+  "hipFlex": 120,
+  "hipAbd": 50,
+  "hipRot": 45,
+  "knee": 140,
+  "ankle": 0,
+  "shoulderFlex": 37,
+  "shoulderAbd": -11,
+  "elbow": 4
+ },
+ "end": {
+  "trunk": 35,
+  "neck": 10,
+  "hipFlex": 100,
+  "hipAbd": 60,
+  "hipRot": 65,
+  "knee": 145,
+  "ankle": 0,
+  "shoulderFlex": 30,
+  "shoulderAbd": -14,
+  "elbow": 38
+ },
+ "view": 0,
+ "noReps": true
+}

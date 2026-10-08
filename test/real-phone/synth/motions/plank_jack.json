@@ -1,0 +1,25 @@
+{
+ "key": "plank_jack",
+ "source": "convention: high plank; the feet jump out wide and back together, like a jumping jack; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "ankle": 30,
+  "hipAbd": 2
+ },
+ "end": {
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "ankle": 30,
+  "hipAbd": 22
+ }
+}

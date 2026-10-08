@@ -1,0 +1,29 @@
+{
+ "key": "smith_machine_bench_press",
+ "source": "convention: lying on a flat bench under the Smith bar, bar lowered on its fixed vertical path from straight arms to the mid chest; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 22,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": -8,
+  "shoulderAbd": 72,
+  "elbow": 88
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "key": "wide_grip_lat_pulldown",
+ "source": "convention: wide-grip lat pulldown, hands about 1.5 shoulder widths apart, seated under the thigh pad, bar pulled from straight arms to the upper chest with the elbows down and out; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "trunk": -10,
+  "shoulderAbd": 140,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "trunk": -20,
+  "shoulderAbd": 40,
+  "humRot": 90,
+  "elbow": 105
+ }
+}

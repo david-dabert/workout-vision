@@ -1,0 +1,25 @@
+{
+ "key": "sumo_deadlift",
+ "source": "convention: barbell sumo deadlift, wide stance (ankles about 0.75 m apart) with the toes turned out about 35 degrees and the feet planted, knees pushed out over the toes, shins near vertical, hands inside the knees on straight hanging arms, trunk about 45 degrees from vertical (more upright than the conventional pull), to lockout with the thighs still turned out; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 35,
+  "trunk": 10,
+  "hipFlex": 110,
+  "hipAbd": 35,
+  "hipRot": 0,
+  "knee": 80,
+  "ankle": -16,
+  "shoulderFlex": 45,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 20,
+  "hipRot": 35,
+  "knee": 2,
+  "shoulderFlex": 3,
+  "shoulderAbd": 0,
+  "elbow": 5
+ }
+}

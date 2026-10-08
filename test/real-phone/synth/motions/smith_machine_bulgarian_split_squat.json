@@ -1,0 +1,39 @@
+{
+ "key": "smith_machine_bulgarian_split_squat",
+ "source": "convention: Smith machine Bulgarian split squat, bar on the upper back, left foot forward, right instep on a bench behind, down until the rear knee nears the floor; the bench and machine are not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135,
+  "left": {
+   "hipFlex": 20,
+   "knee": 5,
+   "ankle": 15
+  },
+  "right": {
+   "hipFlex": -20,
+   "knee": 70,
+   "ankle": 70
+  }
+ },
+ "end": {
+  "trunk": 12,
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135,
+  "left": {
+   "hipFlex": 85,
+   "knee": 100,
+   "ankle": -15
+  },
+  "right": {
+   "hipFlex": -33,
+   "knee": 108,
+   "ankle": 19
+  }
+ }
+}

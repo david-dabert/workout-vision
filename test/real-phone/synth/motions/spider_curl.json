@@ -1,0 +1,23 @@
+{
+ "key": "spider_curl",
+ "source": "convention: chest down on a bench inclined about 45 degrees, feet on the floor, arms hanging straight down, dumbbells curled with the upper arms still; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "hipFlex": 45,
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 45,
+  "shoulderAbd": 8,
+  "elbow": 8
+ },
+ "end": {
+  "pitch": 45,
+  "hipFlex": 45,
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 50,
+  "shoulderAbd": 8,
+  "elbow": 135
+ }
+}

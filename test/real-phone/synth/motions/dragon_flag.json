@@ -1,0 +1,31 @@
+{
+ "key": "dragon_flag",
+ "source": "convention: lying on a bench (not rendered), hands gripping it behind the head; the body held straight from the shoulders lowers from near vertical to just above the bench and rises again; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.45
+ },
+ "start": {
+  "pitch": -160,
+  "neck": 65,
+  "shoulderFlex": 70,
+  "shoulderAbd": 25,
+  "elbow": 85,
+  "hipFlex": 0,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 2
+ },
+ "end": {
+  "pitch": -95,
+  "neck": 5,
+  "shoulderFlex": 135,
+  "shoulderAbd": 25,
+  "elbow": 85,
+  "hipFlex": 0,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 2
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "key": "seated_row",
+ "source": "convention: seated cable row with a V-handle, on the low bench with feet on the plate and knees slightly bent, torso leaning about 10 degrees forward at the stretch and slightly back at the end, handle pulled to the navel; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.45
+ },
+ "start": {
+  "pitch": 10,
+  "hipFlex": 90,
+  "knee": 25,
+  "ankle": 10,
+  "shoulderFlex": 80,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -5,
+  "hipFlex": 75,
+  "knee": 25,
+  "ankle": 10,
+  "shoulderFlex": -35,
+  "shoulderAbd": 12,
+  "elbow": 110
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "key": "hanging_leg_raise",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 5
+ },
+ "end": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 105,
+  "knee": 15
+ }
+}

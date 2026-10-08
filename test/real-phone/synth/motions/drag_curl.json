@@ -1,0 +1,15 @@
+{
+ "key": "drag_curl",
+ "source": "convention: standing, barbell dragged up along the torso to the lower chest, the elbows travelling back behind the body; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": -30,
+  "shoulderAbd": 18,
+  "elbow": 120
+ }
+}

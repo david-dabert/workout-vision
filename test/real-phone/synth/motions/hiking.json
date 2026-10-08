@@ -1,0 +1,44 @@
+{
+ "key": "hiking",
+ "source": "convention: uphill hiking stride (no slope rendered), slight forward lean, one cycle from the left foot stepping up with the right pushing off to the reverse; continuous, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 6,
+  "trunk": 4,
+  "shoulderAbd": 10,
+  "left": {
+   "hipFlex": 45,
+   "knee": 50,
+   "ankle": -20,
+   "shoulderFlex": -20,
+   "elbow": 25
+  },
+  "right": {
+   "hipFlex": -12,
+   "knee": 10,
+   "ankle": 20,
+   "shoulderFlex": 25,
+   "elbow": 30
+  }
+ },
+ "end": {
+  "pitch": 6,
+  "trunk": 4,
+  "shoulderAbd": 10,
+  "left": {
+   "hipFlex": -12,
+   "knee": 10,
+   "ankle": 20,
+   "shoulderFlex": 25,
+   "elbow": 30
+  },
+  "right": {
+   "hipFlex": 45,
+   "knee": 50,
+   "ankle": -20,
+   "shoulderFlex": -20,
+   "elbow": 25
+  }
+ },
+ "noReps": true
+}

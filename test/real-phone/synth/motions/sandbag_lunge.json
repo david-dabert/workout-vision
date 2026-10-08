@@ -1,0 +1,29 @@
+{
+ "key": "sandbag_lunge",
+ "source": "convention: walking lunge with a sandbag across the upper back held by both hands, legs alternating, rear knee just above the floor; posed in place (the forward step is not rendered); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ },
+ "end": {
+  "trunk": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150,
+  "left": {
+   "hipFlex": 85,
+   "knee": 95,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 78,
+   "ankle": -28
+  }
+ },
+ "alternate": "mirror"
+}

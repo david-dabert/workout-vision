@@ -1,0 +1,86 @@
+name: RepCount train landmarks
+
+# A data job, not a gate: the landmarks of RepCount-A's train split (749 videos, human-labelled counts) for the learned
+# phase counter (test/real-phone/learned-phase/), extracted on 20 runners at once, each a disjoint share of the videos
+# (WV_SHARD, repcount-lance.py), then merged and committed to the branch that ran it. A cloud session's container
+# restarts and takes its background jobs with it (8 October 2026: the extraction stopped at 160 of 749); a runner
+# finishes its share or fails visibly. Resumable: the videos the committed record (repcount-train/sets.json) already
+# holds are skipped, so a second run only fetches what is missing.
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main, counter-core]
+    paths: [.github/workflows/repcount-train.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repcount-train-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    name: Extract share ${{ matrix.shard }} of 20
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      # The versions the 160 first sets were extracted with (8 October 2026).
+      - run: pip install pylance==13.0.0 pyarrow==25.0.1 numpy==2.4.6 huggingface_hub==2.1.1 imageio-ffmpeg
+      - run: npx playwright install --with-deps chromium
+      # The pose model and MediaPipe's WASM, checked against src/lib/model-hash.json.
+      - run: node scripts/copy-models.js
+      - name: Extract the share
+        run: |
+          out="$RUNNER_TEMP/out"; mkdir -p "$out/repcount"
+          cp test/real-phone/learned-phase/repcount-train/sets.json "$out/repcount/sets.json"
+          export PW_CHROMIUM="$(node -e "import('@playwright/test').then(m => console.log(m.chromium.executablePath()))")"
+          export FFMPEG="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          WV_SHARD=${{ matrix.shard }}/20 bash scripts/public/fetch-repcount-train.sh "$(which python)" "$RUNNER_TEMP/tmp" "$out" 8
+          ls "$out/repcount/build" "$out/repcount/holdout" 2>/dev/null | grep -c json.gz || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: repcount-train-${{ matrix.shard }}
+          path: ${{ runner.temp }}/out/repcount
+          retention-days: 7
+          if-no-files-found: warn
+
+  gather:
+    name: Merge the shares and commit them
+    needs: extract
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: repcount-train-*
+          path: ${{ runner.temp }}/shares
+      - run: python3 -I scripts/public/merge-train-shards.py test/real-phone/learned-phase/repcount-train "$RUNNER_TEMP"/shares/repcount-train-*
+      - name: Commit to the branch that ran it
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test/real-phone/learned-phase/repcount-train
+          git diff --cached --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "RepCount train landmarks: shares merged by the repcount-train workflow (run ${{ github.run_id }})"
+          for i in 1 2 3 4; do git push origin "HEAD:${{ github.ref_name }}" && exit 0; git pull --rebase origin "${{ github.ref_name }}"; done
+          exit 1

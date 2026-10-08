@@ -1,0 +1,29 @@
+{
+ "key": "incline_bench_press",
+ "source": "convention: barbell pressed from the upper chest to straight arms over the shoulders on a bench inclined about 35 degrees, feet flat; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "pitch": -55,
+  "hipFlex": 30,
+  "knee": 85,
+  "ankle": 0,
+  "hipAbd": 15,
+  "shoulderFlex": 118,
+  "shoulderAbd": 20,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -55,
+  "hipFlex": 30,
+  "knee": 85,
+  "ankle": 0,
+  "hipAbd": 15,
+  "shoulderFlex": 15,
+  "shoulderAbd": 65,
+  "elbow": 95
+ }
+}

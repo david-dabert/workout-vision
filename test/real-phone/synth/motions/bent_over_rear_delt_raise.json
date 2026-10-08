@@ -1,0 +1,25 @@
+{
+ "key": "bent_over_rear_delt_raise",
+ "source": "convention: standing bent over with the torso near parallel to the floor, knees bent, dumbbells hanging then raised out to the sides to shoulder level with soft elbows; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 50,
+  "trunk": 25,
+  "hipFlex": 60,
+  "knee": 25,
+  "ankle": -15,
+  "shoulderFlex": 75,
+  "shoulderAbd": 8,
+  "elbow": 15
+ },
+ "end": {
+  "pitch": 50,
+  "trunk": 25,
+  "hipFlex": 60,
+  "knee": 25,
+  "ankle": -15,
+  "shoulderFlex": 75,
+  "shoulderAbd": 85,
+  "elbow": 20
+ }
+}

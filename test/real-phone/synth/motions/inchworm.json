@@ -1,0 +1,41 @@
+{
+ "key": "inchworm",
+ "source": "convention: from standing, fold forward with soft knees until the hands reach the floor in front of the feet (mid), walk the hands out to a high plank (hands under the shoulders, body straight) with the feet planted, then walk them back and roll up to standing; the hand steps are a slide; tempo UNSOURCED; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05,
+  "pin": "feet"
+ },
+ "start": {
+  "ankle": 0
+ },
+ "mid": {
+  "pitch": 90,
+  "trunk": 60,
+  "neck": 10,
+  "shoulderFlex": 155,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "hipFlex": 100,
+  "knee": 20,
+  "ankle": -10
+ },
+ "end": {
+  "pitch": 70,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ },
+ "tempo": {
+  "out": [
+   1.8,
+   3.5
+  ],
+  "back": [
+   1.8,
+   3.5
+  ]
+ }
+}

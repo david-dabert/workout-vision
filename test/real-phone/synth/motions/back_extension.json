@@ -1,0 +1,31 @@
+{
+ "key": "back_extension",
+ "source": "convention: 45-degree back extension, hips on the pad (not rendered) and heels locked, arms crossed on the chest, torso lowered to point at the floor then raised to a straight line with the legs; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.95
+ },
+ "start": {
+  "shoulderFlex": 35,
+  "shoulderAbd": 5,
+  "humRot": -40,
+  "elbow": 130,
+  "pitch": 120,
+  "hipFlex": 75,
+  "trunk": 20,
+  "neck": 10,
+  "ankle": 0
+ },
+ "end": {
+  "shoulderFlex": 35,
+  "shoulderAbd": 5,
+  "humRot": -40,
+  "elbow": 130,
+  "pitch": 45,
+  "hipFlex": 0,
+  "trunk": 0,
+  "neck": 0,
+  "ankle": 0
+ }
+}

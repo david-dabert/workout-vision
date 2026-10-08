@@ -1,0 +1,31 @@
+{
+ "key": "close_grip_bench_press",
+ "source": "convention: lying on a flat bench, shoulder-width grip, bar lowered to the lower chest with the elbows tucked close to the body; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 0,
+  "humRot": -20,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": -10,
+  "shoulderAbd": 25,
+  "humRot": -20,
+  "elbow": 105
+ }
+}

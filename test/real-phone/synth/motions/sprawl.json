@@ -1,0 +1,48 @@
+{
+ "key": "sprawl",
+ "source": "convention: from standing, the hands to the floor (mid) as the legs shoot back and apart and the hips drop low, chest up on straight arms with the back arched, then back up to standing, fast; the hips stay about a hand above the floor (one spine bend cannot arch further over straight arms), and the shoot back is a glide (the feet and the hands are pinned together); tempo UNSOURCED; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05,
+  "pin": [
+   "feet",
+   "hands"
+  ]
+ },
+ "start": {
+  "ankle": 0
+ },
+ "mid": {
+  "pitch": 80,
+  "trunk": 30,
+  "neck": -20,
+  "shoulderFlex": 100,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "hipFlex": 105,
+  "hipAbd": 8,
+  "knee": 115,
+  "ankle": -45
+ },
+ "end": {
+  "pitch": 82,
+  "trunk": -62,
+  "neck": -15,
+  "shoulderFlex": 28,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "hipAbd": 15,
+  "ankle": 20
+ },
+ "tempo": {
+  "out": [
+   0.4,
+   0.9
+  ],
+  "back": [
+   0.5,
+   1.1
+  ]
+ }
+}

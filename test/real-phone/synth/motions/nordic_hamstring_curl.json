@@ -1,0 +1,24 @@
+{
+ "key": "nordic_hamstring_curl",
+ "source": "convention: Nordic hamstring curl, kneeling upright with the ankles held, hips kept extended, the body lowered forward as one line towards the floor, hands ready to catch; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "knee": 90,
+  "ankle": 70,
+  "shoulderFlex": 30,
+  "shoulderAbd": 20,
+  "elbow": 100
+ },
+ "end": {
+  "pitch": 70,
+  "knee": 20,
+  "ankle": 70,
+  "shoulderFlex": 70,
+  "shoulderAbd": 20,
+  "elbow": 50
+ }
+}

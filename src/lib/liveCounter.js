@@ -2,7 +2,7 @@
 // provisional ones on screen and the final one, is summarizeCount (coreAnalysis.js) on the samples so far, the same
 // function and the same samples the recorded path counts. The core is built for 15 samples a second (TARGET_FPS);
 // the live capture samples the camera at that rate (liveEngine.js), so no assumption of the core changes.
-import { summarizeCount, repeatedSkeletons, FrozenSkeletonsError, withProposal } from './coreAnalysis';
+import { summarizeCount, repeatedSkeletons, FrozenSkeletonsError, withProposal, withBodyCheck } from './coreAnalysis';
 import { isFrozenRead } from './frozenRead';
 import { liftDefinition } from './counting/core';
 import { TARGET_FPS, MAX_LONG_SIDE } from './extractionConfig';
@@ -98,8 +98,9 @@ export function createLiveCounter(lift, { summarize = summarizeCount } = {}) {
       const [w, h] = size ?? [null, null];
       const duration = timestamps.length ? timestamps[timestamps.length - 1] - timestamps[0] + 1 / TARGET_FPS : 0;
       const metadata = { width: w, height: h, fps: TARGET_FPS, duration, frameCount: timestamps.length, method: 'live', live: true, maxLongSide: MAX_LONG_SIDE };
-      // A refused set carries PSC's proposal, as the recorded path's does (coreAnalysis.js, withProposal).
-      return withProposal({ ...summarize(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks: imageLandmarks.slice(), worldLandmarks: worldLandmarks.slice(), timestamps: timestamps.slice() }, lift);
+      // A refused set carries PSC's proposal and a counted one its body check, as the recorded path's do
+      // (coreAnalysis.js, withProposal, withBodyCheck).
+      return withBodyCheck(withProposal({ ...summarize(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks: imageLandmarks.slice(), worldLandmarks: worldLandmarks.slice(), timestamps: timestamps.slice() }, lift), lift);
     },
   };
 }

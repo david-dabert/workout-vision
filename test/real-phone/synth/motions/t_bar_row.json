@@ -1,0 +1,25 @@
+{
+ "key": "t_bar_row",
+ "source": "convention: T-bar (landmine) row, straddling the bar with the torso about 45 degrees from vertical and knees bent, close neutral grip on the handle, pulled from hanging arms to the chest with the elbows close; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 40,
+  "trunk": 5,
+  "hipFlex": 60,
+  "knee": 35,
+  "ankle": -15,
+  "shoulderFlex": 45,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 5,
+  "hipFlex": 60,
+  "knee": 35,
+  "ankle": -15,
+  "shoulderFlex": -35,
+  "shoulderAbd": 15,
+  "elbow": 110
+ }
+}

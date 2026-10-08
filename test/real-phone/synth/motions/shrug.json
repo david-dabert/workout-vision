@@ -1,0 +1,19 @@
+{
+ "key": "shrug",
+ "source": "convention: standing, barbell hanging at arm's length in front of the thighs, shoulders shrugged straight up (shrug 45: about 6 cm on the rendered bodies) and lowered, arms straight; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 12,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "knee": 5
+ },
+ "end": {
+  "shrug": 45,
+  "shoulderFlex": 12,
+  "shoulderAbd": 3,
+  "elbow": 5,
+  "knee": 5
+ },
+ "view": 0
+}

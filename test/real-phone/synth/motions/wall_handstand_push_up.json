@@ -1,0 +1,24 @@
+{
+ "key": "wall_handstand_push_up",
+ "source": "convention: handstand with the back to the wall and the heels on it, lowered until the head nears the floor a little behind the hands (tripod) and pressed back to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 186,
+  "shoulderFlex": 175,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 180,
+  "shoulderFlex": 85,
+  "shoulderAbd": 45,
+  "humRot": 0,
+  "elbow": 95,
+  "ankle": 30
+ }
+}

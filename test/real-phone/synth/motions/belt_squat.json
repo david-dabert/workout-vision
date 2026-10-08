@@ -1,0 +1,21 @@
+{
+ "key": "belt_squat",
+ "source": "convention: belt squat, load hanging from a hip belt, hands on the front handles, very upright trunk, to below parallel; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 12,
+  "shoulderFlex": 40,
+  "shoulderAbd": 15,
+  "elbow": 70
+ },
+ "end": {
+  "trunk": 10,
+  "hipFlex": 100,
+  "hipAbd": 16,
+  "knee": 125,
+  "ankle": -25,
+  "shoulderFlex": 40,
+  "shoulderAbd": 15,
+  "elbow": 70
+ }
+}

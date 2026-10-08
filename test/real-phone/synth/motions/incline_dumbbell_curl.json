@@ -1,0 +1,27 @@
+{
+ "key": "incline_dumbbell_curl",
+ "source": "convention: seated on a bench reclined about 35 degrees, arms hanging straight down behind the torso, dumbbells curled with the upper arms kept back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "pitch": -35,
+  "hipFlex": 55,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": -35,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -35,
+  "hipFlex": 55,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": -28,
+  "shoulderAbd": 10,
+  "elbow": 135
+ }
+}

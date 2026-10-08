@@ -1,0 +1,40 @@
+{
+ "key": "bear_crawl",
+ "source": "convention: crawling on hands and toes with the knees hovering just above the floor, back flat, one cycle from the left hand and right foot stepped forward to the right hand and left foot (the forward travel is not posed); locomotion by distance, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 85,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "knee": 90,
+  "ankle": 0,
+  "left": {
+   "shoulderFlex": 105,
+   "hipFlex": 70
+  },
+  "right": {
+   "shoulderFlex": 70,
+   "hipFlex": 100
+  }
+ },
+ "end": {
+  "pitch": 85,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "knee": 90,
+  "ankle": 0,
+  "left": {
+   "shoulderFlex": 70,
+   "hipFlex": 100
+  },
+  "right": {
+   "shoulderFlex": 105,
+   "hipFlex": 70
+  }
+ },
+ "noReps": true
+}

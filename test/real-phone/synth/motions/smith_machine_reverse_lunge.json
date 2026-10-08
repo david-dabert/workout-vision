@@ -1,0 +1,28 @@
+{
+ "key": "smith_machine_reverse_lunge",
+ "source": "convention: Smith machine reverse lunge, bar on the upper back, left foot planted, the right leg stepping back each rep until the rear knee nears the floor; the backward step itself is not rendered (no translation); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135
+ },
+ "end": {
+  "trunk": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 58,
+  "humRot": 90,
+  "elbow": 135,
+  "left": {
+   "hipFlex": 88,
+   "knee": 95,
+   "ankle": -7
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 78,
+   "ankle": -28
+  }
+ }
+}

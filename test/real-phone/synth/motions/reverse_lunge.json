@@ -1,0 +1,27 @@
+{
+ "key": "reverse_lunge",
+ "source": "convention: dumbbell reverse lunge, dumbbells hanging, stepping back alternately until the rear knee nears the floor; posed in place (the backward step is not rendered); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 10,
+  "shoulderFlex": 10,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 90,
+   "knee": 95,
+   "ankle": -5
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 78,
+   "ankle": -28
+  }
+ },
+ "alternate": "mirror"
+}

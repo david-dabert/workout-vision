@@ -1,0 +1,38 @@
+{
+ "key": "fast_feet",
+ "source": "convention: quick small steps in place in a half-crouched athletic stance on the balls of the feet, hands up in front, one cycle from the left foot lifted a few centimetres to the right; continuous, timed, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 20,
+  "shoulderFlex": 25,
+  "shoulderAbd": 15,
+  "elbow": 85,
+  "left": {
+   "hipFlex": 62,
+   "knee": 72,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 50,
+   "knee": 55,
+   "ankle": -10
+  }
+ },
+ "end": {
+  "pitch": 20,
+  "shoulderFlex": 25,
+  "shoulderAbd": 15,
+  "elbow": 85,
+  "left": {
+   "hipFlex": 50,
+   "knee": 55,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": 62,
+   "knee": 72,
+   "ankle": 0
+  }
+ },
+ "noReps": true
+}

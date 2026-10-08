@@ -1,0 +1,15 @@
+{
+ "key": "bicep_curl",
+ "source": "convention: standing, both dumbbells curled together from straight arms at the sides to the shoulders, upper arms still; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 3,
+  "shoulderAbd": 8,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 12,
+  "shoulderAbd": 8,
+  "elbow": 140
+ }
+}

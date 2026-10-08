@@ -1,0 +1,32 @@
+{
+ "key": "lateral_lunge",
+ "source": "convention: hands clasped at the chest, step wide to one side and sit the hips back over the bent leg, the other leg straight, push back to standing; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 6,
+  "shoulderFlex": 35,
+  "shoulderAbd": 20,
+  "humRot": -45,
+  "elbow": 125
+ },
+ "end": {
+  "trunk": 35,
+  "shoulderFlex": 60,
+  "shoulderAbd": 20,
+  "humRot": -45,
+  "elbow": 125,
+  "left": {
+   "hipFlex": 75,
+   "hipAbd": 30,
+   "knee": 95,
+   "ankle": -20
+  },
+  "right": {
+   "hipFlex": 5,
+   "hipAbd": 55,
+   "knee": 0,
+   "ankle": 0
+  }
+ },
+ "alternate": "mirror"
+}

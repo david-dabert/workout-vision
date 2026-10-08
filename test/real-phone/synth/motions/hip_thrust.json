@@ -1,0 +1,27 @@
+{
+ "key": "hip_thrust",
+ "source": "convention: barbell hip thrust, upper back on a bench, feet flat, bar over the hips held by both hands, chin tucked, from the hips near the floor to trunk and thighs level with the shins vertical; the bench and bar are not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -49,
+  "neck": 25,
+  "hipFlex": 78,
+  "hipAbd": 12,
+  "knee": 97,
+  "ankle": 30,
+  "shoulderFlex": 12,
+  "shoulderAbd": 25,
+  "elbow": 10
+ },
+ "end": {
+  "pitch": -90,
+  "neck": 25,
+  "hipFlex": 0,
+  "hipAbd": 12,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": 12,
+  "shoulderAbd": 25,
+  "elbow": 10
+ }
+}

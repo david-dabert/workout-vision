@@ -1,0 +1,19 @@
+{
+ "key": "towel_row",
+ "source": "convention: towel row, a towel looped around a sturdy post or closed door handle at waist height, both ends held, feet close to the anchor, body straight and leaning back about 35 degrees, pulled until the hands reach the ribs; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -35,
+  "ankle": 35,
+  "shoulderFlex": 60,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -20,
+  "ankle": 20,
+  "shoulderFlex": -15,
+  "shoulderAbd": 15,
+  "elbow": 115
+ }
+}

@@ -1,0 +1,19 @@
+{
+ "key": "doorway_row",
+ "source": "convention: doorway row, feet at the door frame, both hands on the frame at chest height, body straight and leaning back about 25 degrees on straight arms, pulled until the chest nears the frame; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -25,
+  "ankle": 25,
+  "shoulderFlex": 65,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -12,
+  "ankle": 12,
+  "shoulderFlex": -15,
+  "shoulderAbd": 20,
+  "elbow": 120
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "key": "one_arm_dumbbell_row",
+ "source": "convention: one-arm dumbbell row, right knee and right hand braced on a flat bench (not rendered), left foot on the floor, torso about 15 degrees above horizontal, the left arm rows the dumbbell from a straight hang to the hip; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 75,
+  "left": {
+   "hipFlex": 82,
+   "knee": 12,
+   "ankle": -5,
+   "shoulderFlex": 75,
+   "shoulderAbd": 8,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": 75,
+   "knee": 90,
+   "ankle": 40,
+   "shoulderFlex": 75,
+   "shoulderAbd": 5,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "pitch": 75,
+  "left": {
+   "hipFlex": 82,
+   "knee": 12,
+   "ankle": -5,
+   "shoulderFlex": -25,
+   "shoulderAbd": 10,
+   "elbow": 95
+  },
+  "right": {
+   "hipFlex": 75,
+   "knee": 90,
+   "ankle": 40,
+   "shoulderFlex": 75,
+   "shoulderAbd": 5,
+   "elbow": 5
+  }
+ },
+ "side": "left"
+}

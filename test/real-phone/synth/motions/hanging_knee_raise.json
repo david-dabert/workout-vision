@@ -1,0 +1,24 @@
+{
+ "key": "hanging_knee_raise",
+ "source": "convention: hanging from a bar at straight arms, legs hanging; the knees bend and rise above hip height towards the chest, then lower under control; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 5
+ },
+ "end": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 110,
+  "knee": 110,
+  "ankle": 10
+ }
+}

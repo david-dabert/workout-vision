@@ -8,6 +8,8 @@
 // own default for drawing, convention). Layout per frame: 13 x (x, y, z, seen 0/1); an unseen frame is all zero.
 
 import { createHash } from 'node:crypto';
+import { FS } from '../../../src/lib/counting/psc.js';
+import { specProgress } from '../template/sgc.js';
 
 export const HZ = 15;
 
@@ -80,8 +82,8 @@ function median(a) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-/** @returns {Float32Array} T x F */
-export function features(joints, T) {
+/** @returns {Float32Array} T x F, or T x (F + 2) with progress (the progress input mode, progressFeatures). */
+export function features(joints, T, progress = null) {
   const raw = new Float64Array(T * 48).fill(NaN);
   const torso = [];
   for (let k = 0; k < T; k++) {
@@ -134,5 +136,60 @@ export function features(joints, T) {
     for (let q = 0; q < NJ; q++) { const s = joints[(k * NJ + q) * 4 + 3]; out[k * F + 96 + q] = s; any += s; }
     out[k * F + 109] = any ? 0 : 1;
   }
+  if (!progress) return out;
+  const pf = progressFeatures(progress, T), wide = new Float32Array(T * (F + 2));
+  for (let k = 0; k < T; k++) {
+    wide.set(out.subarray(k * F, (k + 1) * F), k * (F + 2));
+    wide[k * (F + 2) + F] = pf[2 * k];
+    wide[k * (F + 2) + F + 1] = pf[2 * k + 1];
+  }
+  return wide;
+}
+
+// The progress input mode (optional; a model trained with train.py --progress, "input": "progress" in its JSON): two
+// more channels per frame from the progress p of the set's motion spec (sgc.js specProgress: the spec's rep signal in
+// physical units, a full rep of the spec moves it by about 1): p minus its median over the set's frames where it is
+// finite, clipped to [-2, 2] (UNSOURCED, experimental: two reps' worth either side), 0 where absent; and a mask, 1 where
+// p is finite. A set with no spec (or none of its signals seen) has the mask 0 throughout. Mirrored in train.py
+// progress_features().
+export const PROGRESS_CLIP = 2;
+/** @returns {Float32Array} T x 2 */
+export function progressFeatures(progress, T) {
+  const out = new Float32Array(T * 2), fin = [];
+  for (let k = 0; k < T; k++) if (Number.isFinite(progress[k])) fin.push(progress[k]);
+  const m = median(fin);
+  for (let k = 0; k < T; k++) {
+    if (!Number.isFinite(progress[k])) continue;
+    out[2 * k] = Math.max(-PROGRESS_CLIP, Math.min(PROGRESS_CLIP, progress[k] - m));
+    out[2 * k + 1] = 1;
+  }
   return out;
+}
+
+/**
+ * sgc.js specProgress's { t0, p } (PSC's grid: t0 + j / FS) on the resampleJoints grid (t0 + k / HZ, T frames): the
+ * value at the same time, linear between two finite neighbours when the grids are offset, NaN where absent. Both grids
+ * start at the set's first timestamp at 15 Hz, so this is a copy (of the first T values) unless that changes.
+ * @returns {Float32Array} T
+ */
+export function alignProgress(prog, t0, T) {
+  const out = new Float32Array(T).fill(NaN);
+  if (!prog) return out;
+  const { p } = prog;
+  // The offset between the grids first, then the step: t0 + k / HZ - prog.t0 loses the step's precision to a large t0
+  // (epoch seconds: a third of the frames read between two samples instead of on one).
+  const off = (t0 - prog.t0) * FS, step = FS / HZ;
+  for (let k = 0; k < T; k++) {
+    const u = off + k * step, i = Math.round(u);
+    if (Math.abs(u - i) < 1e-6) { if (i >= 0 && i < p.length) out[k] = p[i]; continue; }
+    const a = Math.floor(u);
+    if (a >= 0 && a + 1 < p.length && Number.isFinite(p[a]) && Number.isFinite(p[a + 1])) out[k] = p[a] + (u - a) * (p[a + 1] - p[a]);
+  }
+  return out;
+}
+
+/** The progress input of a set on its resampleJoints grid (t0, T): NaN throughout without a spec. One function for the
+ *  export (export.test.ts writes it for train.py) and inference (model.js learnedCount). */
+export function progressOnGrid({ wl, ts, image = null }, spec, t0, T) {
+  return alignProgress(spec ? specProgress({ wl, ts, image }, spec) : null, t0, T);
 }

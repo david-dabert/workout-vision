@@ -1,0 +1,36 @@
+{
+ "key": "arnold_press",
+ "source": "convention: seated, dumbbells at lockout overhead with the palms forward (the catalogue's rest); lowered as in a press with the elbows out to the sides and the forearms upright (mid), then the elbows sweep forward and in while the palms turn to face the body, to the dumbbells in front of the chin with the elbows forward; pressed back up the same way; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "humRot": 90,
+  "elbow": 5,
+  "pronation": 0
+ },
+ "mid": {
+  "shoulderFlex": 15,
+  "shoulderAbd": 80,
+  "humRot": 90,
+  "elbow": 90,
+  "pronation": 0
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 75,
+  "shoulderAbd": 12,
+  "humRot": 0,
+  "elbow": 135,
+  "pronation": -90
+ }
+}

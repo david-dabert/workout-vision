@@ -1,0 +1,68 @@
+{
+ "key": "worlds_greatest_stretch",
+ "source": "convention: deep lunge (front thigh near horizontal), left foot forward, back knee off the floor, both hands on the floor inside the front foot; the trunk turns open to the left on the pelvis (about 45 degrees) and lifts a little as the left arm sweeps out and reaches to the ceiling, the right hand staying planted, then returns (reps on one side; both arms written so the right one keeps its hand on the floor while the trunk turns); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 30,
+  "trunk": 50,
+  "neck": 15,
+  "left": {
+   "hipFlex": 115,
+   "knee": 115,
+   "ankle": -30,
+   "hipAbd": 6,
+   "shoulderFlex": 80,
+   "shoulderAbd": -15,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": -20,
+   "knee": 25,
+   "ankle": 25,
+   "hipAbd": 6,
+   "shoulderFlex": 80,
+   "shoulderAbd": 8,
+   "elbow": 5
+  }
+ },
+ "mid": {
+  "trunk": 42,
+  "trunkTwist": 22,
+  "neck": 0,
+  "left": {
+   "shoulderFlex": 85,
+   "shoulderAbd": 66,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 69,
+   "shoulderAbd": 31,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "pitch": 30,
+  "trunk": 34,
+  "trunkTwist": 45,
+  "neck": -15,
+  "left": {
+   "hipFlex": 115,
+   "knee": 115,
+   "ankle": -30,
+   "hipAbd": 6,
+   "shoulderFlex": 49,
+   "shoulderAbd": 136,
+   "elbow": 3
+  },
+  "right": {
+   "hipFlex": -20,
+   "knee": 25,
+   "ankle": 25,
+   "hipAbd": 6,
+   "shoulderFlex": 42,
+   "shoulderAbd": 53,
+   "elbow": 5
+  }
+ },
+ "view": 90
+}

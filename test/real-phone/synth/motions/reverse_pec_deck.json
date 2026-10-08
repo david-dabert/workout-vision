@@ -1,0 +1,25 @@
+{
+ "key": "reverse_pec_deck",
+ "source": "convention: seated facing the machine pad, arms straight forward at shoulder height, swept back out to the sides in the horizontal plane; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 12,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "elbow": 8
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 12,
+  "shoulderFlex": 90,
+  "shoulderAbd": 100,
+  "elbow": 8
+ }
+}

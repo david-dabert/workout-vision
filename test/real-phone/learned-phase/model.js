@@ -2,8 +2,10 @@
 // (model-<fold>.json: float16 weights in base64). No runtime dependency. Forward pass identical to train.py forward():
 // 1x1 input layer + ReLU, then residual blocks of a dilated 3-tap convolution (zero padding) + ReLU + 1x1, then a 1x1
 // head of 4 outputs per 15 Hz frame: rep-rate logit, sin, cos of the phase, inside-a-rep logit. Readouts as train.py
-// readouts(). Status: experimental (TRIED.md, 8 October).
-import { features, resampleJoints, HZ } from './data.js';
+// readouts(). Status: experimental (TRIED.md, 8 October). A model whose JSON says "input": "progress" (train.py
+// --progress) reads two more channels per frame, the progress of the set's motion spec (data.js progressOnGrid,
+// progressFeatures): learnedCount computes it from options.spec.
+import { features, progressOnGrid, resampleJoints, HZ } from './data.js';
 
 function f16(h) {
   const s = (h & 0x8000) ? -1 : 1, e = (h >> 10) & 0x1f, m = h & 0x3ff;
@@ -21,7 +23,7 @@ export function loadModel(json) {
     for (let i = 0; i < a.length; i++) a[i] = f16(b[2 * i] | (b[2 * i + 1] << 8));
     t[k] = { shape: v.shape, data: a };
   }
-  return { dil: json.dil, C: json.C, F: json.F, t, meta: json.meta, bytes: Object.values(t).reduce((s, x) => s + 2 * x.data.length, 0) };
+  return { dil: json.dil, C: json.C, F: json.F, input: json.input ?? 'pose', t, meta: json.meta, bytes: Object.values(t).reduce((s, x) => s + 2 * x.data.length, 0) };
 }
 
 // y (T x out) = x (T x inp) W (inp x out) + b
@@ -87,17 +89,30 @@ export function readouts(o, T) {
   return { density: Math.round(dens), densityRaw: dens, phase: Math.max(0, total), activeShare: active / Math.max(1, T), activeMargin: margin / Math.max(1, T) };
 }
 
-/** Count of one set (world landmarks, timestamps in seconds) with one model, or the mean outputs of several. */
-export function learnedCount(models, wl, ts) {
+/**
+ * Count of one set (world landmarks, timestamps in seconds) with one model, or the mean outputs of several.
+ * options (read only by a progress-input model): spec, the motion spec of the set's exercise (synth/motions/<key>.json,
+ * or its COUNT_AS parent's; null or absent: no progress, mask 0, as in training for a set without one); image, the
+ * set's flat image landmarks per frame, as sgc.js reads them; lift, the set's catalogue key (for the caller's record,
+ * not read here). progressSeen in the result: share of frames with a progress value (progress models only).
+ */
+export function learnedCount(models, wl, ts, options = {}) {
   const r = resampleJoints(wl, ts);
   if (r.T < 15) return null;
-  const X = features(r.joints, r.T);
   const ms = Array.isArray(models) ? models : [models];
+  let X = null, Xp = null, P = null;
   let o = null;
   for (const m of ms) {
-    const y = forward(m, X, r.T);
+    let x;
+    if (m.input === 'progress') {
+      if (!Xp) { P = progressOnGrid({ wl, ts, image: options.image ?? null }, options.spec ?? null, r.t0, r.T); Xp = features(r.joints, r.T, P); }
+      x = Xp;
+    } else if (m.input === 'pose') x = X ??= features(r.joints, r.T);
+    else throw new Error(`learned phase model: unknown input ${m.input}`);
+    if (m.F * r.T !== x.length) throw new Error(`learned phase model: ${m.F} inputs, features have ${x.length / r.T}`);
+    const y = forward(m, x, r.T);
     if (!o) o = y; else for (let i = 0; i < o.length; i++) o[i] += y[i];
   }
   if (ms.length > 1) for (let i = 0; i < o.length; i++) o[i] /= ms.length;
-  return { T: r.T, ...readouts(o, r.T) };
+  return { T: r.T, ...readouts(o, r.T), ...(P ? { progressSeen: P.filter(Number.isFinite).length / r.T } : {}) };
 }

@@ -1,0 +1,21 @@
+{
+ "key": "goblet_squat",
+ "source": "convention: goblet squat, one dumbbell held upright against the chest, elbows inside the knees, upright trunk, to below parallel; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "shoulderFlex": 30,
+  "shoulderAbd": 5,
+  "elbow": 140
+ },
+ "end": {
+  "trunk": 25,
+  "hipFlex": 100,
+  "hipAbd": 16,
+  "knee": 130,
+  "ankle": -30,
+  "shoulderFlex": 30,
+  "shoulderAbd": 5,
+  "elbow": 140
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "key": "weighted_chin_up",
+ "source": "convention: weighted chin-up with a dip belt, underhand shoulder-width grip, knees bent, from a straight-arm hang until the chin clears the bar; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 50
+ },
+ "end": {
+  "shoulderFlex": 20,
+  "shoulderAbd": 25,
+  "elbow": 130,
+  "hipFlex": 15,
+  "knee": 55
+ }
+}

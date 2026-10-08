@@ -1,0 +1,29 @@
+{
+ "key": "incline_dumbbell_press",
+ "source": "convention: dumbbells lowered from straight arms over the shoulders to the sides of the upper chest on a bench inclined about 35 degrees, elbows a little tucked, deeper than a bar; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "pitch": -55,
+  "hipFlex": 30,
+  "knee": 85,
+  "ankle": 0,
+  "hipAbd": 15,
+  "shoulderFlex": 118,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -55,
+  "hipFlex": 30,
+  "knee": 85,
+  "ankle": 0,
+  "hipAbd": 15,
+  "shoulderFlex": 5,
+  "shoulderAbd": 60,
+  "elbow": 105
+ }
+}

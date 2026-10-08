@@ -1,0 +1,22 @@
+{
+ "key": "dumbbell_romanian_deadlift",
+ "source": "convention: dumbbell Romanian deadlift, a dumbbell in each hand along the thighs, soft knees, hips pushed back to mid-shin; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 45,
+  "trunk": 30,
+  "hipFlex": 45,
+  "knee": 20,
+  "ankle": -20,
+  "shoulderFlex": 75,
+  "shoulderAbd": 10,
+  "elbow": 5
+ }
+}

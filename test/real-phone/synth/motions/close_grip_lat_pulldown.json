@@ -1,0 +1,25 @@
+{
+ "key": "close_grip_lat_pulldown",
+ "source": "convention: close-grip lat pulldown with a V-handle, seated under the thigh pad, slight lean back, handle pulled from straight arms overhead to the upper chest with the elbows travelling down in front; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "trunk": -10,
+  "shoulderFlex": 165,
+  "shoulderAbd": 12,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "trunk": -20,
+  "shoulderFlex": 15,
+  "shoulderAbd": 20,
+  "elbow": 130
+ }
+}

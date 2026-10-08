@@ -1,0 +1,27 @@
+{
+ "key": "weighted_dip",
+ "source": "convention: on parallel bars with a dip belt (load not rendered), nearly upright, from straight arms lowered until the upper arms are about level; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 1.25
+ },
+ "start": {
+  "pitch": 8,
+  "shoulderFlex": 8,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "hipFlex": 5,
+  "knee": 45,
+  "ankle": 20
+ },
+ "end": {
+  "pitch": 18,
+  "shoulderFlex": -52,
+  "shoulderAbd": 15,
+  "elbow": 88,
+  "hipFlex": 8,
+  "knee": 50,
+  "ankle": 20
+ }
+}

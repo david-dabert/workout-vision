@@ -1,0 +1,15 @@
+{
+ "key": "reverse_curl",
+ "source": "convention: standing, barbell in an overhand grip curled from the thighs to the shoulders, upper arms still; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 10,
+  "elbow": 130
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "key": "push_up_shoulder_tap",
+ "source": "convention: push-up with the feet a little apart, straight-arm plank lowered until the chest nears the floor (the shoulder tap at the top is not posed: two key poses only); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "hipAbd": 12
+ },
+ "end": {
+  "pitch": 81,
+  "shoulderFlex": 0,
+  "shoulderAbd": 48,
+  "elbow": 92,
+  "ankle": 38,
+  "hipAbd": 12
+ }
+}

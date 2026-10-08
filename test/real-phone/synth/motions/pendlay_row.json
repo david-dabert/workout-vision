@@ -1,0 +1,25 @@
+{
+ "key": "pendlay_row",
+ "source": "convention: Pendlay row, back about parallel to the floor with knees bent, the bar starting dead on the floor under the shoulders each rep and pulled explosively to the lower chest, elbows out; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 70,
+  "trunk": 15,
+  "hipFlex": 100,
+  "knee": 45,
+  "ankle": -15,
+  "shoulderFlex": 85,
+  "shoulderAbd": 15,
+  "elbow": 3
+ },
+ "end": {
+  "pitch": 70,
+  "trunk": 15,
+  "hipFlex": 100,
+  "knee": 45,
+  "ankle": -15,
+  "shoulderFlex": -20,
+  "shoulderAbd": 35,
+  "elbow": 105
+ }
+}

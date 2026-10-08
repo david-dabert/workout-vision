@@ -1,0 +1,27 @@
+{
+ "key": "assisted_dip",
+ "source": "convention: kneeling on the assistance pad, from straight arms on the handles the body lowers nearly upright until the upper arms are about level; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 1.25
+ },
+ "start": {
+  "pitch": 5,
+  "shoulderFlex": 5,
+  "shoulderAbd": 12,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 90,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 15,
+  "shoulderFlex": -55,
+  "shoulderAbd": 15,
+  "elbow": 90,
+  "hipFlex": 0,
+  "knee": 90,
+  "ankle": 30
+ }
+}

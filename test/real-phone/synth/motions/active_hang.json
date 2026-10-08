@@ -1,0 +1,27 @@
+{
+ "key": "active_hang",
+ "source": "convention: active hang, hanging from the bar on straight arms with the shoulder blades held down (shrug 0: the shoulders kept away from the ears, where a dead hang lets them rise to about shrug 40) and the chest slightly up; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shrug": 0,
+  "shoulderAbd": 165,
+  "elbow": 3,
+  "trunk": -5,
+  "hipFlex": 5,
+  "knee": 5
+ },
+ "end": {
+  "shrug": 0,
+  "shoulderAbd": 165,
+  "elbow": 3,
+  "trunk": -5,
+  "hipFlex": 5,
+  "knee": 5
+ },
+ "view": 0,
+ "noReps": true
+}

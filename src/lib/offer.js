@@ -36,6 +36,11 @@ export const WITHDRAWN = Object.freeze({
 // a landing guard and a labelled set first; the collectors list it so that set can be filmed (BACKLOG.md).
 export const NOT_YET_COUNTED = Object.freeze({
   barbell_jump_squat: 'Each landing absorbed past the working threshold reads as a rep when the lifter stands between jumps.',
+  // 8 October 2026 (core.ts, LiftDefinition.lift; test/real-phone/synth/motions/lift-angle.txt): measured on rendered
+  // bodies only. A wrong count can pass the body check, whose consensus for this exercise is the counted arm's own
+  // wrist and elbow; the one real video (David, 8 October, on a treatment table, filmed hand-held from the head end)
+  // is a setup the lift was not measured on. Offered once a real set, with David's count, reads right.
+  prone_y_raise: 'Measured on rendered bodies only; a wrong count can pass the body check, and the one real video is filmed in a setup the reading was not measured on.',
 });
 
 // The fitness tests (fitness-tests.js) are offered too, experimental like every exercise without evidence.

@@ -12,7 +12,7 @@ vi.hoisted(() => {
   globalThis.document ??= { createElement: () => any };
 });
 import {
-  LIMITS, MAX_PAYLOAD, MAX_JSON, encodeProgramme, decodeProgramme, programmeOf, fromCompact, compact, payloadOf,
+  LIMITS, MAX_PAYLOAD, MAX_JSON, encodeProgramme, plainPayload, decodeProgramme, programmeOf, fromCompact, compact, payloadOf,
   programmeLink, programmeId, plannedOf, progressOf, toBase64url, targetText, cleanText,
 } from '../programme';
 import { programmePdf, programmeSheet, programmeFileName } from '../programme-pdf';
@@ -60,6 +60,11 @@ describe('the programme link', () => {
     expect((await decodeProgramme(packed)).programme).toEqual(full);
     // A two-exercise programme makes a short link.
     expect((await encodeProgramme(sample)).length).toBeLessThan(260);
+  });
+
+  it('makes the plain payload at once, the same as the unpacked encoding (the link the share button has in hand)', async () => {
+    expect(plainPayload(sample)).toBe(await encodeProgramme(sample, { gzip: false }));
+    expect(await decodeProgramme(plainPayload(sample))).toEqual({ ok: true, programme: sample });
   });
 
   it('keeps accents and typographic marks whole', async () => {

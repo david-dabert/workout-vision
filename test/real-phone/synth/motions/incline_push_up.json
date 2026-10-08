@@ -1,0 +1,23 @@
+{
+ "key": "incline_push_up",
+ "source": "convention: hands on a bench (not rendered) and feet on the floor, body straight at about 40 degrees, lowered until the chest nears the bench; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 50,
+  "shoulderFlex": 52,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 25
+ },
+ "end": {
+  "pitch": 62,
+  "shoulderFlex": -5,
+  "shoulderAbd": 45,
+  "elbow": 92,
+  "ankle": 30
+ }
+}

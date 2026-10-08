@@ -1,0 +1,23 @@
+{
+ "key": "wide_push_up",
+ "source": "convention: hands well wider than the shoulders, straight-arm plank lowered with the elbows flared until the chest nears the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 28,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 82,
+  "shoulderFlex": 5,
+  "shoulderAbd": 72,
+  "elbow": 82,
+  "ankle": 40
+ }
+}

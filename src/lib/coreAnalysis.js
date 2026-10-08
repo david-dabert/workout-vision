@@ -4,7 +4,9 @@ import { readIsWhole } from './collector';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
 import { extractFramesStreaming } from './frameExtractor';
 import { isFrozenRead } from './frozenRead';
-import { pscProposal } from './counting/psc';
+import { pscProposal, signalBank } from './counting/psc';
+import { bodyCheck, flatImage, signalProfile } from './counting/bodyCheck';
+import { specGuidedCount } from './counting/sgc';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
@@ -87,6 +89,57 @@ export function withProposal(result, lift) {
   const t0 = performance.now();
   const p = pscProposal(result);
   return { ...result, proposal: p ? { ...p, ms: Math.round(performance.now() - t0) } : null };
+}
+
+/**
+ * The longest set the body check runs on: PSC's proposal's bound (PROPOSAL_MAX_SAMPLES, 3 minutes at 15 Hz), the same
+ * per-set budget: both run on the page after the count, and a longer set is left unchecked, as every set was before the
+ * check, rather than a frozen screen. The check and its second candidate cost less than the proposal at any length
+ * (Node on the bench machine, 8 October: at 3 minutes 0.28-0.35 s against PSC's 0.39-0.50 s; at 10 minutes 0.9-1.2 s
+ * against 2.1-2.4 s), so under this bound they stay within the cost the proposal was shipped with
+ * (test/real-phone/accuracy/body-check.txt). A recorded video has no length bound (MAX_FRAMES), a live set stops at 10
+ * minutes (liveCounter.js, LIVE_MAX_SEC); no set of the calibration is longer than a minute. Source: UNSOURCED.
+ * Status: convention (a time bound, not a measure of accuracy).
+ */
+export const BODY_CHECK_MAX_SAMPLES = PROPOSAL_MAX_SAMPLES;
+
+/**
+ * A counted set with its body check (counting/bodyCheck.js, 8 October 2026): `bodyCheck` is
+ * { agreement, flagged, signals, second, ms }, or null where the check cannot run (no motion spec for the exercise, an
+ * alternating lift, too little seen, or a failure). A refused set, a set counted none in (its screen asks for the
+ * count anyway, Result.jsx unsure), a fitness test and a set over BODY_CHECK_MAX_SAMPLES are returned as they came,
+ * with no `bodyCheck` field. When the counted joint's angle disagrees with the rest of the body (flagged), the result
+ * screen shows the count as one to confirm, with no grade (R8), and
+ * `second` holds the spec-guided count (counting/sgc.js, specGuidedCount: the motion spec's signals with the core's own
+ * rep logic) as { count, reps } when it finds a rep, offered beside the core's count when it differs. The count, the
+ * reps, a refusal and the PSC proposal are never changed: the check only adds this field. Status: experimental (the
+ * flag's threshold is the critic's, fixed before its run; calibrated on the official sets: body-check.txt).
+ */
+export function withBodyCheck(result, lift) {
+  if (!result || result.refused || !(result.count > 0) || isTest(lift) || !(result.timestamps?.length <= BODY_CHECK_MAX_SAMPLES)) return result;
+  const t0 = performance.now();
+  let check = null;
+  try {
+    const profile = signalProfile(lift);
+    if (profile) {
+      const image = flatImage(result);
+      const bank = signalBank(result.worldLandmarks, result.timestamps, image, { useImage: true });
+      check = bodyCheck(result, lift, bank);
+      if (check) {
+        let second = null;
+        if (check.flagged) {
+          const g = specGuidedCount({ wl: result.worldLandmarks, ts: result.timestamps, image }, profile, summarizeCount, bank);
+          if (g && g.count > 0) second = { count: g.count, reps: g.reps.map(r => ({ startTime: r.startTime, endTime: r.endTime })) };
+        }
+        check = { ...check, second };
+      }
+    }
+  } catch (e) {
+    // The check never stands between the person and their count: a failure leaves the result as it was, unchecked.
+    console.warn('[body-check] not run', e);
+    check = null;
+  }
+  return { ...result, bodyCheck: check ? { ...check, ms: Math.round(performance.now() - t0) } : null };
 }
 
 /**
@@ -248,7 +301,8 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // synthetic skeletons whose holds repeat exactly, as a filmed person never does.
     const still = repeatedSkeletons(worldLandmarks);
     if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, metadata?.method || '', metadata?.fallback ?? null);
-    const result = withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps }, lift);
+    // A refused set may carry PSC's proposal; a counted one carries its body check (neither changes the count).
+    const result = withBodyCheck(withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps }, lift), lift);
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;

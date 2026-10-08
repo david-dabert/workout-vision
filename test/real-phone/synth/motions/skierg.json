@@ -1,0 +1,23 @@
+{
+ "key": "skierg",
+ "source": "convention: ski ergometer double-pole pull (no machine rendered), from the arms high and the body tall to the finish (hips hinged, knees bent, hands driven down past the thighs); continuous, timed or by distance, no counted reps; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "ankle": 15,
+  "knee": 5,
+  "shoulderFlex": 155,
+  "shoulderAbd": 15,
+  "elbow": 20
+ },
+ "end": {
+  "pitch": 30,
+  "trunk": 20,
+  "hipFlex": 50,
+  "knee": 40,
+  "ankle": -20,
+  "shoulderFlex": 40,
+  "shoulderAbd": 15,
+  "elbow": 10
+ },
+ "noReps": true
+}

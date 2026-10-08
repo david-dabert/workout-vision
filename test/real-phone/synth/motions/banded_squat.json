@@ -1,0 +1,23 @@
+{
+ "key": "banded_squat",
+ "source": "convention: a mini band above the knees, hands clasped at the chest, squat to parallel pushing the knees out against the band, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "shoulderFlex": 35,
+  "shoulderAbd": 20,
+  "humRot": -45,
+  "elbow": 125
+ },
+ "end": {
+  "trunk": 35,
+  "hipFlex": 100,
+  "hipAbd": 20,
+  "knee": 130,
+  "ankle": -30,
+  "shoulderFlex": 35,
+  "shoulderAbd": 20,
+  "humRot": -45,
+  "elbow": 125
+ }
+}

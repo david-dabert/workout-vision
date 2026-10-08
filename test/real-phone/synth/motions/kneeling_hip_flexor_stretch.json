@@ -1,0 +1,45 @@
+{
+ "key": "kneeling_hip_flexor_stretch",
+ "source": "convention: half-kneeling, right knee on the floor and left foot forward, trunk tall and hands on the hips, the pelvis tucks and the hips shift forward until the front of the right hip stretches, held; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "shoulderFlex": -15,
+  "shoulderAbd": 40,
+  "elbow": 100,
+  "humRot": -60,
+  "left": {
+   "hipFlex": 90,
+   "knee": 90,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 90,
+   "ankle": 62
+  }
+ },
+ "end": {
+  "shoulderFlex": -15,
+  "shoulderAbd": 40,
+  "elbow": 100,
+  "humRot": -60,
+  "pitch": -8,
+  "trunk": 8,
+  "left": {
+   "hipFlex": 77,
+   "knee": 100,
+   "ankle": -15
+  },
+  "right": {
+   "hipFlex": -28,
+   "knee": 70,
+   "ankle": 62
+  }
+ },
+ "view": 90,
+ "noReps": true
+}

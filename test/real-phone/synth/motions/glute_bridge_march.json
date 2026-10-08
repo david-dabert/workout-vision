@@ -1,0 +1,32 @@
+{
+ "key": "glute_bridge_march",
+ "source": "convention: lying on the back, hips held up in a bridge, one knee lifted towards the chest at a time keeping the hips level, the foot set back down; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": -116,
+  "hipFlex": 0,
+  "knee": 114,
+  "ankle": 2,
+  "neck": 30,
+  "shoulderFlex": -26,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipAbd": 6
+ },
+ "end": {
+  "pitch": -116,
+  "hipFlex": 65,
+  "knee": 90,
+  "ankle": 0,
+  "neck": 30,
+  "shoulderFlex": -26,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipAbd": 6
+ },
+ "alternate": true
+}

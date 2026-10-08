@@ -1,0 +1,44 @@
+{
+ "key": "single_arm_cable_row",
+ "source": "convention: single-arm seated cable row, on the low bench with feet on the plate, the left arm pulls the handle from straight to the waist while the right hand rests on the thigh, torso from slightly forward to slightly back on a still pelvis (trunk 10 to -5: the legs stay on the plate, where a pelvis tilt lifted the right leg, which side left keeps at its start), the trunk turned towards the right at the reach (left shoulder forward) and back to square at the finish (trunkTwist -15 to 5: the resting arm turns with the trunk); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.45
+ },
+ "start": {
+  "trunk": 10,
+  "hipFlex": 80,
+  "knee": 25,
+  "ankle": 10,
+  "trunkTwist": -15,
+  "left": {
+   "shoulderFlex": 80,
+   "shoulderAbd": 5,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 30,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "end": {
+  "trunk": -5,
+  "hipFlex": 80,
+  "knee": 25,
+  "ankle": 10,
+  "trunkTwist": 5,
+  "left": {
+   "shoulderFlex": -35,
+   "shoulderAbd": 15,
+   "elbow": 110
+  },
+  "right": {
+   "shoulderFlex": 30,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "side": "left"
+}

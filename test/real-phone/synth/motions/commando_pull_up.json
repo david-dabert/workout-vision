@@ -1,0 +1,37 @@
+{
+ "key": "commando_pull_up",
+ "source": "convention: commando pull-up, standing side-on under the bar with the hands close together one in front of the other, from a straight-arm hang until the head passes beside the bar (the head's alternating side is not posed); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "left": {
+   "shoulderFlex": 165,
+   "shoulderAbd": 5,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 182,
+   "shoulderAbd": 5,
+   "elbow": 5
+  },
+  "hipFlex": 10,
+  "knee": 30
+ },
+ "end": {
+  "left": {
+   "shoulderFlex": 30,
+   "shoulderAbd": 25,
+   "elbow": 130
+  },
+  "right": {
+   "shoulderFlex": 20,
+   "shoulderAbd": 25,
+   "elbow": 135
+  },
+  "hipFlex": 15,
+  "knee": 35
+ }
+}

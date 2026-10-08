@@ -1,0 +1,23 @@
+{
+ "key": "cable_fly",
+ "source": "convention: standing between chest-high pulleys, leaning slightly forward, arms out to the sides with a slight elbow bend, hands brought together in front of the chest; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 15,
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 90,
+  "shoulderAbd": 88,
+  "humRot": -90,
+  "elbow": 20
+ },
+ "end": {
+  "trunk": 15,
+  "knee": 10,
+  "ankle": -10,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "humRot": -90,
+  "elbow": 20
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "key": "single_leg_glute_bridge",
+ "source": "convention: single-leg glute bridge on the floor, left foot planted, right leg held straight with the thighs parallel, arms on the floor, hips raised until shoulders, hips and left knee line up; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipAbd": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 20,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 56,
+   "knee": 118,
+   "ankle": 28
+  },
+  "right": {
+   "hipFlex": 56,
+   "knee": 0,
+   "ankle": 0
+  }
+ },
+ "end": {
+  "pitch": -116,
+  "neck": 26,
+  "hipAbd": 10,
+  "shoulderFlex": -26,
+  "shoulderAbd": 20,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 0,
+   "knee": 103,
+   "ankle": 13
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 0,
+   "ankle": 0
+  }
+ }
+}

@@ -1,0 +1,30 @@
+{
+ "key": "single_leg_calf_raise",
+ "source": "convention: standing on the left foot, the right knee bent with the foot behind, the right hand on a wall, rise onto the ball of the left foot and lower; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "ankle": 0,
+  "left": {
+   "shoulderFlex": 0,
+   "shoulderAbd": 10,
+   "elbow": 8
+  },
+  "right": {
+   "shoulderFlex": 20,
+   "shoulderAbd": 75,
+   "elbow": 25,
+   "hipFlex": 0,
+   "knee": 75,
+   "ankle": 20
+  }
+ },
+ "end": {
+  "left": {
+   "shoulderFlex": 0,
+   "shoulderAbd": 10,
+   "elbow": 8,
+   "ankle": 35
+  }
+ },
+ "side": "left"
+}

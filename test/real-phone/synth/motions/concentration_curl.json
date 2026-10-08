@@ -1,0 +1,42 @@
+{
+ "key": "concentration_curl",
+ "source": "convention: seated, legs apart, leaning forward, the working elbow braced on the inner thigh with the arm hanging, one dumbbell curled while the other hand rests on the other thigh; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "trunk": 40,
+  "hipFlex": 90,
+  "hipAbd": 35,
+  "knee": 90,
+  "left": {
+   "shoulderFlex": 40,
+   "shoulderAbd": 5,
+   "elbow": 10
+  },
+  "right": {
+   "shoulderFlex": 60,
+   "shoulderAbd": 15,
+   "elbow": 40
+  }
+ },
+ "end": {
+  "trunk": 40,
+  "hipFlex": 90,
+  "hipAbd": 35,
+  "knee": 90,
+  "left": {
+   "shoulderFlex": 45,
+   "shoulderAbd": 5,
+   "elbow": 135
+  },
+  "right": {
+   "shoulderFlex": 60,
+   "shoulderAbd": 15,
+   "elbow": 40
+  }
+ },
+ "side": "left"
+}

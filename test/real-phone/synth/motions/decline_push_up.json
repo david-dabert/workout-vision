@@ -1,0 +1,23 @@
+{
+ "key": "decline_push_up",
+ "source": "convention: feet on a bench (not rendered), hands on the floor, body slightly head-down, lowered from straight arms until the face nears the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "pitch": 88,
+  "shoulderFlex": 88,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 100,
+  "shoulderFlex": 8,
+  "shoulderAbd": 48,
+  "elbow": 95,
+  "ankle": 35
+ }
+}

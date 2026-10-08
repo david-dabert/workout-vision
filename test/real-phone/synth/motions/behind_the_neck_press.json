@@ -1,0 +1,27 @@
+{
+ "key": "behind_the_neck_press",
+ "source": "convention: seated upright, wide grip, barbell lowered behind the head to the base of the neck with the elbows under the bar, pressed to lockout; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "humRot": 90,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "shoulderFlex": -10,
+  "shoulderAbd": 82,
+  "humRot": 90,
+  "elbow": 95
+ }
+}

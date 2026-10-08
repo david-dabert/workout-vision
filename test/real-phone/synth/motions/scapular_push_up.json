@@ -1,0 +1,23 @@
+{
+ "key": "scapular_push_up",
+ "source": "convention: straight-arm plank, the chest sinks between the shoulders (scapular retraction) and pushes back up (protraction), elbows locked; the engine has no shoulder blade, so a small body drop stands for it; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 68,
+  "shoulderFlex": 71,
+  "shoulderAbd": 0,
+  "elbow": 3
+ },
+ "end": {
+  "pitch": 70.5,
+  "shoulderFlex": 71,
+  "shoulderAbd": 0,
+  "elbow": 3,
+  "ankle": 31
+ }
+}

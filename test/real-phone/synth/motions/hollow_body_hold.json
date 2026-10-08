@@ -1,0 +1,34 @@
+{
+ "key": "hollow_body_hold",
+ "source": "convention: lying on the back, lower back pressed to the floor, shoulders and straight legs held off the floor, arms overhead by the ears; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -95,
+  "trunk": 25,
+  "neck": 10,
+  "shoulderFlex": 170,
+  "shoulderAbd": 6,
+  "elbow": 5,
+  "hipFlex": 25,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 3
+ },
+ "end": {
+  "pitch": -95,
+  "trunk": 25,
+  "neck": 10,
+  "shoulderFlex": 170,
+  "shoulderAbd": 6,
+  "elbow": 5,
+  "hipFlex": 25,
+  "knee": 0,
+  "ankle": 30,
+  "hipAbd": 3
+ },
+ "noReps": true
+}

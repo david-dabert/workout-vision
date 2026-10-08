@@ -1,0 +1,49 @@
+{
+ "key": "high_knees",
+ "source": "convention: running in place on the balls of the feet, fast (tempo about 0.25-0.45 s each way), each rep one knee driven to hip height with the opposite arm forward, left then right; the hips stay over the standing foot (pin none: the lifted foot does not drag the body back); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "feet",
+  "pin": "feet",
+  "planted": "right"
+ },
+ "start": {
+  "pitch": 3,
+  "hipFlex": 5,
+  "knee": 10,
+  "ankle": 15,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 90
+ },
+ "end": {
+  "pitch": 3,
+  "shoulderAbd": 10,
+  "left": {
+   "hipFlex": 90,
+   "knee": 95,
+   "ankle": 20,
+   "shoulderFlex": -30,
+   "elbow": 90
+  },
+  "right": {
+   "hipFlex": 0,
+   "knee": 10,
+   "ankle": 25,
+   "shoulderFlex": 50,
+   "elbow": 90
+  }
+ },
+ "alternate": "mirror",
+ "view": 90,
+ "tempo": {
+  "out": [
+   0.25,
+   0.45
+  ],
+  "back": [
+   0.25,
+   0.45
+  ]
+ }
+}

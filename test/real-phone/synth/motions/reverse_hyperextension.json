@@ -1,0 +1,27 @@
+{
+ "key": "reverse_hyperextension",
+ "source": "convention: reverse hyperextension, torso face down on the high pad (not rendered) with the hips at its edge, hands on the handles, legs hanging straight down then swung back to level with the torso; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 1.0
+ },
+ "start": {
+  "pitch": 90,
+  "hipFlex": 90,
+  "knee": 10,
+  "ankle": 10,
+  "shoulderFlex": 130,
+  "shoulderAbd": 20,
+  "elbow": 20
+ },
+ "end": {
+  "pitch": 90,
+  "hipFlex": -5,
+  "knee": 5,
+  "ankle": 10,
+  "shoulderFlex": 130,
+  "shoulderAbd": 20,
+  "elbow": 20
+ }
+}

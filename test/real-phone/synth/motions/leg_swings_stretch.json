@@ -1,0 +1,37 @@
+{
+ "key": "leg_swings_stretch",
+ "source": "convention: standing on the right leg, right hand on a wall at shoulder height, the left leg swings front to back with a soft knee, one rep from the back of the swing to the front and back; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "shoulderAbd": 30,
+   "elbow": 20,
+   "hipFlex": -25,
+   "knee": 12,
+   "ankle": 10
+  },
+  "right": {
+   "shoulderAbd": 80,
+   "elbow": 15,
+   "knee": 5,
+   "ankle": 5
+  }
+ },
+ "end": {
+  "left": {
+   "shoulderAbd": 30,
+   "elbow": 20,
+   "hipFlex": 75,
+   "knee": 10,
+   "ankle": -5
+  },
+  "right": {
+   "shoulderAbd": 80,
+   "elbow": 15,
+   "knee": 5,
+   "ankle": 5
+  }
+ },
+ "side": "left",
+ "view": 90
+}

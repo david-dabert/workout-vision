@@ -1,0 +1,19 @@
+{
+ "key": "face_pull",
+ "source": "convention: standing, rope from a pulley at face height, arms straight forward, pulled to the face with the elbows high and out and the hands finishing beside the ears; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": -5,
+  "shoulderFlex": 95,
+  "shoulderAbd": 5,
+  "humRot": -90,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": -5,
+  "shoulderFlex": 90,
+  "shoulderAbd": 85,
+  "humRot": 0,
+  "elbow": 105
+ }
+}

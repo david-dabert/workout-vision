@@ -1,0 +1,29 @@
+{
+ "key": "hip_adduction_machine",
+ "source": "convention: seated hip adduction machine, back against the reclined pad, hands on the side handles, knees squeezed together from wide; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.55
+ },
+ "start": {
+  "trunk": -15,
+  "hipFlex": 85,
+  "knee": 85,
+  "ankle": -5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 25,
+  "hipAbd": 42
+ },
+ "end": {
+  "trunk": -15,
+  "hipFlex": 85,
+  "knee": 85,
+  "ankle": -5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 25,
+  "hipAbd": 8
+ }
+}

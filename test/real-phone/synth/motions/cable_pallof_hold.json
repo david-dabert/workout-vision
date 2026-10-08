@@ -1,0 +1,26 @@
+{
+ "key": "cable_pallof_hold",
+ "source": "convention: standing side-on to the cable, athletic stance, arms held straight out in front at chest height, the trunk resisting rotation; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipFlex": 12,
+  "knee": 18,
+  "ankle": -6,
+  "hipAbd": 9,
+  "shoulderFlex": 88,
+  "shoulderAbd": -7,
+  "humRot": 0,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 12,
+  "knee": 18,
+  "ankle": -6,
+  "hipAbd": 9,
+  "shoulderFlex": 88,
+  "shoulderAbd": -7,
+  "humRot": 0,
+  "elbow": 5
+ },
+ "noReps": true
+}

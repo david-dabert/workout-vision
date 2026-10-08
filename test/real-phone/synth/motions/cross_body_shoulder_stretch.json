@@ -1,0 +1,21 @@
+{
+ "key": "cross_body_shoulder_stretch",
+ "source": "convention: standing, the left arm straight across the chest at shoulder height, the right forearm hooks it above the elbow and presses it towards the chest, held; angles UNSOURCED",
+ "status": "experimental",
+ "start": {},
+ "end": {
+  "left": {
+   "shoulderFlex": 90,
+   "shoulderAbd": -45,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 50,
+   "shoulderAbd": 10,
+   "elbow": 120,
+   "humRot": -60
+  }
+ },
+ "view": 0,
+ "noReps": true
+}

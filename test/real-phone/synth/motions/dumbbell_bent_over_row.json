@@ -1,0 +1,25 @@
+{
+ "key": "dumbbell_bent_over_row",
+ "source": "convention: two-dumbbell bent-over row, torso about 60 degrees from vertical with soft knees, dumbbells hanging under the shoulders, rowed to the hips with the elbows close to the body; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 50,
+  "trunk": 10,
+  "hipFlex": 65,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": 60,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 50,
+  "trunk": 10,
+  "hipFlex": 65,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": -25,
+  "shoulderAbd": 12,
+  "elbow": 90
+ }
+}

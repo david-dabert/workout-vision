@@ -1,0 +1,25 @@
+{
+ "key": "machine_chest_press",
+ "source": "convention: seated upright against the back pad, handles beside the chest with elbows bent and out, pressed forward to straight arms at shoulder height; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": -10,
+  "hipFlex": 90,
+  "knee": 90,
+  "shoulderFlex": -20,
+  "shoulderAbd": 70,
+  "elbow": 100
+ },
+ "end": {
+  "trunk": -10,
+  "hipFlex": 90,
+  "knee": 90,
+  "shoulderFlex": 80,
+  "shoulderAbd": 10,
+  "elbow": 10
+ }
+}

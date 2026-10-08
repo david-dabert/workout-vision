@@ -1,0 +1,23 @@
+{
+ "key": "trap_bar_deadlift",
+ "source": "convention: trap bar deadlift, handles at the sides, hips lower and trunk more upright than the barbell pull, to lockout; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 30,
+  "trunk": 5,
+  "hipFlex": 95,
+  "hipAbd": 8,
+  "knee": 85,
+  "ankle": -20,
+  "shoulderFlex": 35,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 8,
+  "knee": 2,
+  "shoulderFlex": 0,
+  "shoulderAbd": 15,
+  "elbow": 5
+ }
+}

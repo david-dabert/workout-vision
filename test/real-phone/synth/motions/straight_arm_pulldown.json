@@ -1,0 +1,25 @@
+{
+ "key": "straight_arm_pulldown",
+ "source": "convention: straight-arm cable pulldown, standing with a slight hip hinge and soft knees, elbows fixed slightly bent, the bar swept from about eye level in front down to the thighs; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 20,
+  "trunk": 5,
+  "hipFlex": 30,
+  "knee": 15,
+  "ankle": -5,
+  "shoulderFlex": 145,
+  "shoulderAbd": 10,
+  "elbow": 15
+ },
+ "end": {
+  "pitch": 20,
+  "trunk": 5,
+  "hipFlex": 30,
+  "knee": 15,
+  "ankle": -5,
+  "shoulderFlex": 25,
+  "shoulderAbd": 10,
+  "elbow": 15
+ }
+}

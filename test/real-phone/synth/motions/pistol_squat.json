@@ -1,0 +1,38 @@
+{
+ "key": "pistol_squat",
+ "source": "convention: standing on the left leg, the right leg held straight in front, arms forward, sit all the way down on the left leg until the hamstring meets the calf, the right leg rising level, stand back up; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 80,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "knee": 0
+  },
+  "right": {
+   "hipFlex": 30,
+   "knee": 10,
+   "ankle": -10
+  }
+ },
+ "end": {
+  "trunk": 35,
+  "shoulderFlex": 115,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 115,
+   "knee": 145,
+   "ankle": -30
+  },
+  "right": {
+   "hipFlex": 95,
+   "knee": 5,
+   "ankle": -10
+  }
+ },
+ "support": {
+  "pin": "feet",
+  "planted": "left"
+ }
+}

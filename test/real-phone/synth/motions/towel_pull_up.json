@@ -1,0 +1,23 @@
+{
+ "key": "towel_pull_up",
+ "source": "convention: towel pull-up, two towels over the bar gripped with a neutral grip about shoulder width (hands below the bar), from a straight-arm hang until the hands reach the chin; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 1.95
+ },
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 30
+ },
+ "end": {
+  "shoulderFlex": 20,
+  "shoulderAbd": 20,
+  "elbow": 135,
+  "hipFlex": 15,
+  "knee": 35
+ }
+}

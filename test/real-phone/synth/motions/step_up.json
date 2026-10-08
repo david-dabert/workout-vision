@@ -1,0 +1,40 @@
+{
+ "key": "step_up",
+ "source": "convention: dumbbell step-up, left foot on a box about 30 cm high, dumbbells hanging, driving up until the left leg is straight with the right leg trailing; the box is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 15,
+  "shoulderFlex": 15,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 80,
+   "knee": 90,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -5,
+   "knee": 5,
+   "ankle": -10
+  }
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 0,
+   "knee": 0,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 5,
+   "knee": 20,
+   "ankle": 10
+  }
+ },
+ "support": {
+  "pin": "feet",
+  "planted": "left"
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "key": "v_up",
+ "source": "convention: lying flat, arms overhead, legs straight; the torso and straight legs rise together, hands reaching to the shins, balancing on the hips, then lower; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "shoulderFlex": 175,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 3,
+  "ankle": 30,
+  "hipAbd": 3
+ },
+ "end": {
+  "pitch": -50,
+  "trunk": 15,
+  "neck": 10,
+  "shoulderFlex": 85,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "hipFlex": 95,
+  "knee": 5,
+  "ankle": 30,
+  "hipAbd": 3
+ }
+}

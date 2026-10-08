@@ -1,0 +1,38 @@
+{
+ "key": "dead_bug",
+ "source": "convention: lying on the back, arms pointing at the ceiling, hips and knees at 90 degrees; one leg straightens and lowers to just above the floor while the opposite arm reaches overhead, then the other side; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 90,
+  "knee": 90,
+  "ankle": 10,
+  "hipAbd": 6,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "ankle": 10,
+  "hipAbd": 6,
+  "shoulderAbd": 5,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 15,
+   "knee": 5,
+   "ankle": 20,
+   "shoulderFlex": 90
+  },
+  "right": {
+   "hipFlex": 90,
+   "knee": 90,
+   "shoulderFlex": 170
+  }
+ },
+ "alternate": "mirror"
+}

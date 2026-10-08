@@ -1,0 +1,27 @@
+{
+ "key": "chest_dip",
+ "source": "convention: on parallel bars, torso leaned well forward with knees bent, from straight arms lowered with the elbows a little out until the upper arms pass level; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 1.25
+ },
+ "start": {
+  "pitch": 28,
+  "shoulderFlex": 28,
+  "shoulderAbd": 18,
+  "elbow": 5,
+  "hipFlex": 30,
+  "knee": 90,
+  "ankle": 20
+ },
+ "end": {
+  "pitch": 42,
+  "shoulderFlex": -28,
+  "shoulderAbd": 25,
+  "elbow": 95,
+  "hipFlex": 35,
+  "knee": 90,
+  "ankle": 20
+ }
+}

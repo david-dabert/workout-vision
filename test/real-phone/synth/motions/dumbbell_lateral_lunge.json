@@ -1,0 +1,30 @@
+{
+ "key": "dumbbell_lateral_lunge",
+ "source": "convention: a dumbbell in each hand hanging at the sides, step wide to one side and sit the hips back over the bent leg, the other leg straight, the dumbbells hanging either side of the front knee, push back to standing; left then right; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 6,
+  "shoulderFlex": 0,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 35,
+  "shoulderFlex": 35,
+  "shoulderAbd": 8,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 75,
+   "hipAbd": 30,
+   "knee": 95,
+   "ankle": -20
+  },
+  "right": {
+   "hipFlex": 5,
+   "hipAbd": 55,
+   "knee": 0,
+   "ankle": 0
+  }
+ },
+ "alternate": "mirror"
+}

@@ -1,0 +1,27 @@
+{
+ "key": "machine_seated_back_extension",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": 5,
+  "hipFlex": 90,
+  "knee": 85,
+  "shoulderFlex": 20,
+  "shoulderAbd": 30,
+  "elbow": 110,
+  "pitch": 0
+ },
+ "end": {
+  "trunk": -30,
+  "hipFlex": 70,
+  "knee": 85,
+  "shoulderFlex": 20,
+  "shoulderAbd": 30,
+  "elbow": 110,
+  "pitch": -20
+ }
+}

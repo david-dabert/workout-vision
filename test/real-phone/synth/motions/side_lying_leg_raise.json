@@ -1,0 +1,40 @@
+{
+ "key": "side_lying_leg_raise",
+ "source": "convention: lying on the right side, head on the bottom arm, bottom leg bent for balance, top hand on the hip, the straight top (left) leg raised to about 45 degrees and lowered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "roll": 90,
+  "hipAbd": 0,
+  "knee": 0,
+  "right": {
+   "shoulderAbd": 165,
+   "elbow": 30,
+   "hipFlex": 35,
+   "knee": 60
+  },
+  "left": {
+   "hipFlex": 0,
+   "shoulderFlex": -15,
+   "shoulderAbd": 45,
+   "humRot": -80,
+   "elbow": 100
+  }
+ },
+ "end": {
+  "roll": 90,
+  "left": {
+   "hipAbd": 45,
+   "hipFlex": 0,
+   "knee": 0,
+   "shoulderFlex": -15,
+   "shoulderAbd": 45,
+   "humRot": -80,
+   "elbow": 100
+  }
+ },
+ "side": "left"
+}

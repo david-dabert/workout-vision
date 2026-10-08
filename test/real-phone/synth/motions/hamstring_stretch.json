@@ -1,0 +1,35 @@
+{
+ "key": "hamstring_stretch",
+ "source": "convention: standing hamstring stretch: left heel forward on the floor with the toes up and the knee straight, right knee bent, then a hip hinge with a flat back, hands on the front thigh, held; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "hipFlex": 28,
+   "knee": 0,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 10,
+   "knee": 20,
+   "ankle": -10
+  }
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 5,
+  "shoulderFlex": 55,
+  "elbow": 10,
+  "left": {
+   "hipFlex": 70,
+   "knee": 0,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 55,
+   "knee": 30,
+   "ankle": -15
+  }
+ },
+ "view": 90,
+ "noReps": true
+}

@@ -1,0 +1,25 @@
+{
+ "key": "knee_push_up",
+ "source": "convention: kneeling with the shins on the floor and the body straight from knees to shoulders, lowered from straight arms until the chest nears the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 57,
+  "shoulderFlex": 57,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "knee": 40,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 72,
+  "shoulderFlex": 0,
+  "shoulderAbd": 45,
+  "elbow": 92,
+  "knee": 25,
+  "ankle": 30
+ }
+}

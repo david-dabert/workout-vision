@@ -1,0 +1,26 @@
+{
+ "key": "superman",
+ "source": "convention: superman, lying face down with the arms reaching overhead, arms, chest and legs lifted off the floor together then lowered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 90,
+  "shoulderFlex": 180,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "ankle": 40
+ },
+ "end": {
+  "pitch": 90,
+  "trunk": -20,
+  "neck": -10,
+  "shoulderFlex": 195,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": -15,
+  "ankle": 40
+ }
+}

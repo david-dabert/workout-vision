@@ -145,6 +145,14 @@
 .wv-experience .res-quick { display: flex; gap: 8px; margin-top: 22px; }
 .wv-experience .res-qk { flex: 1 1 0; min-width: 0; height: 58px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1.5px solid var(--c-edge); border-radius: 4px; background: transparent; color: var(--c-fg); font-family: var(--numeral-face); font-size: 22px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; cursor: pointer; }
 .wv-experience .res-qk.is-on { border-color: var(--c-fg); background: var(--c-fg); color: var(--c-surface); }
+/* A flagged set's two counts (body check): the quick keys' grammar, each with where its number comes from, and the
+   same weight for both, so the look prefers neither. */
+.wv-experience .res-cands { display: flex; gap: 8px; margin-top: 18px; }
+.wv-experience .res-cand { flex: 1 1 0; min-width: 0; min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 8px 6px; border: 1.5px solid var(--c-edge); border-radius: 4px; background: transparent; color: var(--c-fg); cursor: pointer; }
+.wv-experience .res-cand-n { font-family: var(--numeral-face); font-size: 24px; font-weight: 400; line-height: 1.1; font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .res-cand-from { font-size: 12px; line-height: 1.25; color: var(--bone-2); text-align: center; }
+.wv-experience .res-cand.is-on { border-color: var(--c-fg); background: var(--c-fg); color: var(--c-surface); }
+.wv-experience .res-cand.is-on .res-cand-from { color: var(--c-surface); }
 
 /* Saved. The keys keep the result's grammar: square, bone for the one next action, outlined for the others. */
 .wv-experience .saved { margin-top: var(--s-5); display: flex; flex-direction: column; gap: 10px; }

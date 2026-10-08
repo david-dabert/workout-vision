@@ -1,0 +1,36 @@
+{
+ "key": "front_foot_elevated_split_squat",
+ "source": "convention: split squat with the left foot on a low step, right heel up on the floor, dumbbells hanging, down past the step until the rear knee nears the floor; the step is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 35,
+   "knee": 30,
+   "ankle": 5
+  },
+  "right": {
+   "hipFlex": -32,
+   "knee": 0,
+   "ankle": -15
+  }
+ },
+ "end": {
+  "trunk": 8,
+  "shoulderFlex": 8,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 95,
+   "knee": 112,
+   "ankle": -17
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 68,
+   "ankle": -18
+  }
+ }
+}

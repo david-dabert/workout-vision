@@ -1,0 +1,27 @@
+{
+ "key": "lying_leg_curl",
+ "source": "convention: lying leg curl on an angled bench, face down with the hips on the raised bend, hands on the front handles, heels curled towards the glutes; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.7
+ },
+ "start": {
+  "pitch": 95,
+  "hipFlex": 30,
+  "knee": 5,
+  "ankle": -10,
+  "shoulderFlex": 120,
+  "shoulderAbd": 20,
+  "elbow": 60
+ },
+ "end": {
+  "pitch": 95,
+  "hipFlex": 30,
+  "knee": 125,
+  "ankle": -10,
+  "shoulderFlex": 120,
+  "shoulderAbd": 20,
+  "elbow": 60
+ }
+}

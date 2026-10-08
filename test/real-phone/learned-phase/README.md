@@ -23,6 +23,21 @@ reps are. The phase head is the class-agnostic version of PoseRAC's salient pose
 action and a transition count), without a pose class per exercise. A period/self-similarity head (RepNet) was not built:
 PSC already measures the period route on the same data (TRIED.md, 7 October).
 
+## Progress input (optional; off by default)
+
+The counter above never knows the exercise. The progress mode gives it one more signal per frame: the progress p(t) of
+the set's motion spec (`../template/sgc.js` `specProgress`: the signals the spec says move, signed and weighted, in
+physical units so a full rep of the spec moves p by about 1; one-limb specs the more periodic side, alternating specs
+the side-wise maximum). Two input channels: p minus its median over the set, clipped to [-2, 2], 0 where absent, and a
+mask (1 where p is finite); a set without a spec has the mask 0 throughout (`data.js` `progressFeatures`, mirrored in
+`train.py`). The spec of a set (`spec-of.ts`, the same in the export and the bench): its lift's motion spec or its
+COUNT_AS parent's; RepCount-A's class mapped to a catalogue key where one fits (squat, push_up, pull_up,
+bench_pressing to bench_press, front_raise, jump_jack to jumping_jack, situp to sit_up or else crunch); the synthetic
+and occlusion sets' `params.exercise`; the motion library's own `params.spec`. Export with `LPHASE_PROGRESS=1`
+(`progress.f32`), train with `--progress`; the model JSON says `"input": "progress"` and `model.js` `learnedCount`
+computes p from its `spec` option. Hypothesis under test: the counter learns exercise-aware counting from it. Status:
+experimental.
+
 ## Data and discipline
 
 `export.test.ts` writes the training data; it never reads David's sets, the real videos or any held-out half.
@@ -43,7 +58,9 @@ each end; rotation about the vertical axis within 90 degrees, mirror, time stret
 
 - `data.js`: resampling, features, folds. `model.js`: plain-JS inference (float16 weights, no dependency).
 - `train.py`: numpy only (no framework); gradient checked against finite differences.
-- `models/model-{0,1,all}.json`: the weights. `fixture.json` + `learned-phase-unit.test.ts`: JS = Python parity.
+- `models/model-{0,1,all}.json`: the weights. `fixture.json` + `learned-phase-unit.test.ts`: JS = Python parity;
+  `fixture-progress.json` the same for a progress-input model (the model is inside the fixture).
+- `spec-of.ts`: the motion spec of a set, for the progress input.
 - `learned-phase.test.ts` (`LPHASE=1`): the bench against core, PSC and the motion rhythm; writes `lphase.txt`.
 
 ## Reproduce
@@ -51,6 +68,8 @@ each end; rotation about the vertical axis within 90 degrees, mirror, time stret
     LPHASE_EXPORT=<dir> npx vitest run --no-cache test/real-phone/learned-phase/export.test.ts
     python3 -I test/real-phone/learned-phase/train.py <dir> <out> --epochs 60 --folds 0,1,all
     python3 -I test/real-phone/learned-phase/train.py --fixture <dir> <out>/model-all.json test/real-phone/learned-phase/fixture.json
+    # progress input: LPHASE_PROGRESS=1 on the export, --progress on train.py, and its parity fixture
+    python3 -I test/real-phone/learned-phase/train.py --fixture <dir> <out>/model-all.json test/real-phone/learned-phase/fixture-progress.json
     LPHASE=1 LPHASE_MODELS=<out> npx vitest run --no-cache test/real-phone/learned-phase/learned-phase.test.ts
 
 ## Results (8 October; `lphase.txt`, seed 2 in `lphase-seed2.txt`)

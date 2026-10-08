@@ -1,0 +1,43 @@
+{
+ "key": "weighted_russian_twist",
+ "source": "convention: seated, torso leaned back about 45 degrees, knees bent, feet off the floor, a dumbbell held at the chest; the trunk turns on the pelvis (about 45 degrees) and the bell is carried beside one hip, then the other (alternate mirror: the swapped rep turns to the right); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.12
+ },
+ "start": {
+  "pitch": -45,
+  "trunk": 0,
+  "hipFlex": 85,
+  "knee": 70,
+  "ankle": 20,
+  "hipAbd": 6,
+  "shoulderFlex": 15,
+  "shoulderAbd": 12,
+  "humRot": -25,
+  "elbow": 105
+ },
+ "end": {
+  "pitch": -45,
+  "trunk": 0,
+  "hipFlex": 85,
+  "knee": 70,
+  "ankle": 20,
+  "hipAbd": 6,
+  "trunkTwist": 45,
+  "left": {
+   "shoulderFlex": 1,
+   "shoulderAbd": -10,
+   "humRot": -19,
+   "elbow": 80
+  },
+  "right": {
+   "shoulderFlex": 0,
+   "shoulderAbd": -7,
+   "humRot": -21,
+   "elbow": 80
+  }
+ },
+ "alternate": "mirror"
+}

@@ -1,0 +1,25 @@
+{
+ "key": "reverse_snow_angel",
+ "source": "convention: reverse snow angel, lying face down with the chest slightly lifted, straight arms hovering off the floor swept from beside the hips to overhead and back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 90,
+  "trunk": -10,
+  "shoulderFlex": -15,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "ankle": 40
+ },
+ "end": {
+  "pitch": 90,
+  "trunk": -10,
+  "shoulderFlex": 15,
+  "shoulderAbd": 170,
+  "elbow": 5,
+  "ankle": 40
+ }
+}

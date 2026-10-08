@@ -1,0 +1,25 @@
+{
+ "key": "tricep_kickback",
+ "source": "convention: hinged forward about 45 degrees with soft knees, upper arms held level with the floor beside the torso, forearms hanging, then extended back to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 38,
+  "trunk": 7,
+  "hipFlex": 38,
+  "knee": 20,
+  "ankle": -20,
+  "shoulderFlex": -45,
+  "shoulderAbd": 5,
+  "elbow": 90
+ },
+ "end": {
+  "pitch": 38,
+  "trunk": 7,
+  "hipFlex": 38,
+  "knee": 20,
+  "ankle": -20,
+  "shoulderFlex": -50,
+  "shoulderAbd": 5,
+  "elbow": 5
+ }
+}

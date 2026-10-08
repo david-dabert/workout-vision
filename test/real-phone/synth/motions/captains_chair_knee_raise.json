@@ -1,0 +1,24 @@
+{
+ "key": "captains_chair_knee_raise",
+ "source": "convention: back against the pad, forearms on the arm pads, legs hanging; the knees bend and rise above hip height, then lower under control; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 1.35
+ },
+ "start": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 12,
+  "elbow": 90,
+  "hipFlex": 0,
+  "knee": 5
+ },
+ "end": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 12,
+  "elbow": 90,
+  "hipFlex": 105,
+  "knee": 105,
+  "ankle": 10
+ }
+}

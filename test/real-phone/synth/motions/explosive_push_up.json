@@ -1,0 +1,23 @@
+{
+ "key": "explosive_push_up",
+ "source": "convention: plyometric push-up: from a straight-arm plank lowered deep and pushed hard (the airborne phase is not expressible: the hands stay on the floor); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "ankle": 30,
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 83,
+  "shoulderFlex": -2,
+  "shoulderAbd": 50,
+  "elbow": 98,
+  "ankle": 40
+ }
+}

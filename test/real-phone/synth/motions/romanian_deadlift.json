@@ -1,0 +1,20 @@
+{
+ "key": "romanian_deadlift",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 10,
+  "shoulderFlex": 0,
+  "elbow": 5,
+  "ankle": -10
+ },
+ "end": {
+  "trunk": 30,
+  "pitch": 40,
+  "hipFlex": 40,
+  "knee": 20,
+  "ankle": -20,
+  "shoulderFlex": 70,
+  "elbow": 5
+ }
+}

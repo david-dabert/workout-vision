@@ -1,0 +1,27 @@
+{
+ "key": "seated_calf_raise",
+ "source": "convention: seated calf raise, knees bent at a right angle under the knee pad, hands on the pad, balls of the feet on the platform, from the heels low to high on the toes; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": 10,
+  "hipFlex": 90,
+  "knee": 90,
+  "ankle": -15,
+  "shoulderFlex": 45,
+  "shoulderAbd": 10,
+  "elbow": 45
+ },
+ "end": {
+  "trunk": 10,
+  "hipFlex": 90,
+  "knee": 90,
+  "ankle": 30,
+  "shoulderFlex": 45,
+  "shoulderAbd": 10,
+  "elbow": 45
+ }
+}

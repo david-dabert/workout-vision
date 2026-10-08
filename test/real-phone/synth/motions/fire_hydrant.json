@@ -1,0 +1,32 @@
+{
+ "key": "fire_hydrant",
+ "source": "convention: on hands and knees, back flat, the bent leg lifted out to the side until the thigh is nearly level, knee kept at a right angle, lowered back; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.07
+ },
+ "start": {
+  "pitch": 85,
+  "trunk": 0,
+  "hipFlex": 85,
+  "hipAbd": 6,
+  "knee": 90,
+  "ankle": 50,
+  "shoulderFlex": 85,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 85,
+  "trunk": 0,
+  "hipFlex": 85,
+  "hipAbd": 65,
+  "knee": 90,
+  "ankle": 50,
+  "shoulderFlex": 85,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "side": "left"
+}

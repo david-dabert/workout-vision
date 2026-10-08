@@ -1,0 +1,27 @@
+{
+ "key": "smith_machine_hip_thrust",
+ "source": "convention: Smith machine hip thrust, upper back on a bench, Smith bar over the hips held by both hands, feet flat, from the hips near the floor to trunk and thighs level with the shins vertical; the bench and machine are not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -49,
+  "neck": 25,
+  "hipFlex": 78,
+  "hipAbd": 12,
+  "knee": 97,
+  "ankle": 30,
+  "shoulderFlex": 12,
+  "shoulderAbd": 30,
+  "elbow": 10
+ },
+ "end": {
+  "pitch": -90,
+  "neck": 25,
+  "hipFlex": 0,
+  "hipAbd": 12,
+  "knee": 90,
+  "ankle": 0,
+  "shoulderFlex": 12,
+  "shoulderAbd": 30,
+  "elbow": 10
+ }
+}

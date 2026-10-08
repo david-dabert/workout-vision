@@ -1,0 +1,25 @@
+{
+ "key": "leg_curl",
+ "source": "convention: machine leg curl, lying face down on a flat bench, hands on the front handles, heels curled towards the glutes; the machine is not rendered; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.65
+ },
+ "start": {
+  "pitch": 90,
+  "knee": 5,
+  "ankle": -10,
+  "shoulderFlex": 130,
+  "shoulderAbd": 20,
+  "elbow": 40
+ },
+ "end": {
+  "pitch": 90,
+  "knee": 120,
+  "ankle": -10,
+  "shoulderFlex": 130,
+  "shoulderAbd": 20,
+  "elbow": 40
+ }
+}

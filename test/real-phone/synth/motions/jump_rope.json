@@ -1,0 +1,24 @@
+{
+ "key": "jump_rope",
+ "source": "convention: basic bounce, on the balls of the feet with the elbows by the sides and the hands out at hip height (no rope rendered), from the landing (knees softly bent) to the push-off (legs straight, toes pointed); the flight is not posed; continuous, usually timed; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 3,
+  "hipFlex": 15,
+  "knee": 25,
+  "ankle": 5,
+  "shoulderFlex": 10,
+  "shoulderAbd": 20,
+  "elbow": 50
+ },
+ "end": {
+  "pitch": 0,
+  "hipFlex": 0,
+  "knee": 3,
+  "ankle": 30,
+  "shoulderFlex": 10,
+  "shoulderAbd": 20,
+  "elbow": 50
+ },
+ "noReps": true
+}
