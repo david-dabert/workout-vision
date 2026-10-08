@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { LIMITS, MAX_PAYLOAD, encodeProgramme, programmeLink, programmeOf, fixItem } from './programme';
+import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem } from './programme';
 import { loadDrafts, saveDraft, removeDraft, newDraft, newItem } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
@@ -20,6 +20,13 @@ function warmProgrammePdf() {
   loading ||= import('./programme-pdf').then(m => (kit = m), e => { loading = null; throw e; });
   return loading;
 }
+
+// The link that carries a payload, or 'too-long' when a link cannot carry it.
+const linkOf = payload => (payload.length <= MAX_PAYLOAD ? programmeLink(location.href, payload) : 'too-long');
+
+// One share sheet per tap: a second tap within this time of the first is let go. A lock held until the share settles
+// left both share buttons dead for good when a share never settled. Status: convention, UNSOURCED.
+const SHARE_GAP_MS = 1000;
 
 const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>;
 const Arrow = () => <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>;
@@ -106,22 +113,31 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
   useCondensingTopbar(screenRef, [fr, draft.title.trim()]);
   const [note, setNote] = useState('');
   const [status, setStatus] = useState(kit ? 'ready' : 'preparing');
-  // The link of the programme as it stands: { of, link }, link '' until made, 'too-long' or 'error' when it cannot be.
-  const [made, setMade] = useState({ of: '', link: '' });
+  // The packed link of the programme as it stands, once made: { of, link }.
+  const [packed, setPacked] = useState({ of: '', link: '' });
   const [showLink, setShowLink] = useState(false);
   const [confirm, setConfirm] = useState(false);
-  const noteTimer = useRef(0), sharing = useRef(false);
+  const noteTimer = useRef(0), shareAt = useRef({ pdf: -Infinity, link: -Infinity });
   const programme = programmeOf(draft), shape = programme ? JSON.stringify(programme) : '';
-  const link = made.of === shape ? made.link : '';
-  // The link is made as the programme changes, so a tap shares it at once (Safari shares only from the tap itself).
+  // The link is the programme's as it stands, made in the render itself (the plain form), so the tap shares it at once
+  // (Safari shares only from the tap itself); the packed form, shorter, takes its place once made. 8 October 2026: on
+  // David's iPhone, a number typed, then "Share the link" said "The link could not be prepared": leaving the field
+  // changed the programme within the tap, and the link, made only by the packing, was not there yet.
+  const plain = useMemo(() => (shape ? linkOf(plainPayload(JSON.parse(shape))) : ''), [shape]);
+  const link = packed.of === shape ? packed.link : plain;
   useEffect(() => {
     if (!shape) return undefined;
     let live = true;
-    encodeProgramme(JSON.parse(shape)).then(
-      p => { if (live) setMade({ of: shape, link: p.length <= MAX_PAYLOAD ? programmeLink(location.href, p) : 'too-long' }); },
-      () => { if (live) setMade({ of: shape, link: 'error' }); });
+    encodeProgramme(JSON.parse(shape)).then(p => { if (live) setPacked({ of: shape, link: linkOf(p) }); }, () => {});
     return () => { live = false; };
   }, [shape]);
+  // Whether the same button's share began less than SHARE_GAP_MS ago; else the share about to begin is noted.
+  const tooSoon = what => {
+    const now = Date.now();
+    if (now - shareAt.current[what] < SHARE_GAP_MS) return true;
+    shareAt.current[what] = now;
+    return false;
+  };
   useEffect(() => {
     warmProgrammePdf().then(() => setStatus('ready'), () => setStatus('error'));
     return () => clearTimeout(noteTimer.current);
@@ -148,23 +164,23 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
   }
   // Built and shared inside the tap, as the report's PDF (Report.jsx).
   function sharePdf() {
-    if (!programme || sharing.current) return;
+    if (!programme) return;
     if (!kit) { setStatus('preparing'); warmProgrammePdf().then(() => setStatus('ready'), () => { setStatus('error'); say(c.pdfError); }); return; }
     let blob;
     const date = new Date();
+    if (tooSoon('pdf')) return;
     try { blob = kit.programmePdf(programme, { lang, date }); } catch (e) { console.error('[programme pdf]', e); say(c.pdfError); return; }
     const fileName = kit.programmeFileName(programme, { lang, date });
     const file = new File([blob], fileName, { type: 'application/pdf' });
     if (navigator.canShare?.({ files: [file] })) {
-      sharing.current = true;
+      // Refused for any reason but the coach's own cancel (a share still open counts), the file is downloaded instead.
       navigator.share({ files: [file], title: programme.title })
-        .catch(e => { if (e.name !== 'AbortError' && e.name !== 'InvalidStateError') download(blob, fileName); })
-        .finally(() => { sharing.current = false; });
+        .catch(e => { if (e.name !== 'AbortError') download(blob, fileName); });
       return;
     }
     download(blob, fileName);
   }
-  const linkReady = link && link !== 'error' && link !== 'too-long';
+  const linkReady = link && link !== 'too-long';
   function copy() {
     if (!linkReady) { say(link === 'too-long' ? c.tooLong : c.linkError); return; }
     const done = () => { setShowLink(false); say(c.copied); };
@@ -176,11 +192,10 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
   }
   function shareLink() {
     if (!linkReady) { say(link === 'too-long' ? c.tooLong : c.linkError); return; }
-    if (!navigator.share || sharing.current) { copy(); return; }
-    sharing.current = true;
+    if (!navigator.share) { copy(); return; }
+    if (tooSoon('link')) return;
     navigator.share({ title: programme.title, text: c.linkText(programme.title), url: link })
-      .catch(e => { if (e.name !== 'AbortError') copy(); })
-      .finally(() => { sharing.current = false; });
+      .catch(e => { if (e.name !== 'AbortError') copy(); });
   }
 
   return <div className="wv-experience">

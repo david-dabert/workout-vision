@@ -79,7 +79,19 @@ test.describe('Espace pro, WebKit, iPhone profile', () => {
     console.log('[pro webkit] link', shared.url.length, 'characters,', shared.url.split('#programme=')[1]?.[0] === 'z' ? 'packed' : 'plain');
     expect(shared.url).toMatch(/#programme=[zj][A-Za-z0-9_-]+$/);
 
+    // David's iPhone, 8 October: a number typed, then the link tapped at once. Leaving the field changes the programme
+    // within the tap; the link shared is the programme's as it now stands.
+    await page.evaluate(() => { window.__shared = null; });
+    await page.locator('#p0r').tap();
+    await page.locator('#p0r').fill('12');
+    await page.waitForTimeout(1100);
+    await page.getByTestId('pro-link').tap();
+    const after = await page.waitForFunction(() => window.__shared?.url, null, { timeout: 3000 }).then(h => h.jsonValue());
+    expect(after, 'the link of the programme with 12 reps').not.toBe(shared.url);
+    await expect(page.locator('.pro-status')).not.toHaveText(c.linkError);
+
     await expect(page.getByTestId('pro-pdf')).toContainText(c.sharePdf, { timeout: 15000 });
+    await page.waitForTimeout(1100);
     const [download] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), page.getByTestId('pro-pdf').click()]);
     console.log('[pro webkit] pdf download', download.suggestedFilename());
     expect(download.suggestedFilename()).toMatch(/^programme-.*\.pdf$/);

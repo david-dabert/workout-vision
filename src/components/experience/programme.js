@@ -141,17 +141,19 @@ async function gunzip(bytes, max) {
   return out;
 }
 
+/** The plain payload, "j" and the compact JSON in base64url: made at once, with no stream to wait for (Pro.jsx). */
+export const plainPayload = p => 'j' + toBase64url(new TextEncoder().encode(JSON.stringify(compact(p))));
+
 /**
  * The programme as the link's payload: "z" and the gzip of its compact JSON in base64url where the browser can pack
  * it (CompressionStream: Safari 16.4, Chrome 80), else, or when packing does not make it shorter, "j" and the JSON
  * itself in base64url. gzip: false forces the plain form.
  */
 export async function encodeProgramme(p, { gzip: pack = true } = {}) {
-  const bytes = new TextEncoder().encode(JSON.stringify(compact(p)));
-  const plain = 'j' + toBase64url(bytes);
+  const plain = plainPayload(p);
   if (!pack || !canGzip()) return plain;
   try {
-    const packed = 'z' + toBase64url(await gzip(bytes));
+    const packed = 'z' + toBase64url(await gzip(new TextEncoder().encode(JSON.stringify(compact(p)))));
     return packed.length < plain.length ? packed : plain;
   } catch { return plain; }
 }
