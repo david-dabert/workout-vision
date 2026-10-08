@@ -80,7 +80,9 @@ do: `"feet"` (ankles and balls of the feet), `"hands"` (wrists), `["feet", "hand
 push-up to a pike) or `"none"`. By default the feet anchor pins the feet (a squat's hips go back over the feet) and the
 hands anchor the hands (a pull-up hangs under the bar); lowest and hips pin nothing. A one-sided movement plants only the
 still side (`side`: the other side's foot or hand; `alternate` true: the side at rest on that rep), so a kickback's
-standing foot stays put. `"pin": "none"` keeps the hips fixed horizontally (the renderer before 8 October).
+standing foot stays put. `"planted": "left"` or `"right"` pins only that side's points, swapped on mirrored reps: a
+single-leg squat's stance foot, a lunge's front foot (holding the mean of both feet would slide the stance foot by
+0.1-0.5 m). `"pin": "none"` keeps the hips fixed horizontally (the renderer before 8 October).
 
 `side`: "left" or "right" moves only that side (one arm, one leg; the other keeps its start pose). `alternate`: true
 moves one side per rep, the left first, the other at its start pose (alternating curls); "mirror" moves both and swaps

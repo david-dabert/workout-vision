@@ -37,5 +37,9 @@
    "knee": 140,
    "ankle": 30
   }
+ },
+ "support": {
+  "pin": "feet",
+  "planted": "left"
  }
 }

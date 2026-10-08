@@ -4,7 +4,8 @@
  "status": "experimental",
  "support": {
   "anchor": "feet",
-  "pin": "none"
+  "pin": "feet",
+  "planted": "right"
  },
  "start": {
   "pitch": 3,

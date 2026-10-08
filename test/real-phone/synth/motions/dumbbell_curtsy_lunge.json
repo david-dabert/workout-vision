@@ -3,7 +3,8 @@
  "source": "convention: a dumbbell in each hand at the sides, one leg steps back and across behind the other, both knees bend until the back knee nears the floor, the pelvis turning a little towards the back leg and the chest kept square, push back to standing; left then right; the hips are held in place horizontally (pin none: with both legs moving on every rep a feet pin would slide the front foot by half the step), so the front foot slides forward under them; angles UNSOURCED",
  "status": "experimental",
  "support": {
-  "pin": "none"
+  "pin": "feet",
+  "planted": "left"
  },
  "start": {
   "shoulderFlex": 0,

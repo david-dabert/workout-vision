@@ -192,7 +192,11 @@ const pins = (() => {
   const s = P.spec.support ?? {}, a = s.anchor ?? 'feet', p = s.pin === undefined ? (a === 'feet' || a === 'hands' ? a : null) : s.pin;
   return [].concat(p ?? []).filter(x => { if (PIN[x]) return true; if (x && x !== 'none') console.warn(`support.pin: unknown "${x}"`); return false; });
 })();
-const pinSides = (uL, uR) => (P.spec.side ? [P.spec.side === 'left' ? 'right' : 'left']
+// support.planted ("left" or "right"): only that side's points are pinned (a single-leg squat's stance foot, a lunge's
+// front foot), swapped on the mirrored reps; holding the mean of both feet would slide the stance foot instead.
+const planted = P.spec?.support?.planted;
+const pinSides = (uL, uR) => (planted ? [specSwap ? (planted === 'left' ? 'right' : 'left') : planted]
+  : P.spec.side ? [P.spec.side === 'left' ? 'right' : 'left']
   : P.spec.alternate === true && (uL > 0) !== (uR > 0) ? [uL > 0 ? 'right' : 'left'] : ['left', 'right']);
 // The mean of each pinned group's points (over the planted sides), the groups weighing alike.
 const pinAt = sides => {

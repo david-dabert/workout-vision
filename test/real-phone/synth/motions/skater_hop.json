@@ -34,5 +34,9 @@
   }
  },
  "alternate": "mirror",
- "view": 0
+ "view": 0,
+ "support": {
+  "pin": "feet",
+  "planted": "left"
+ }
 }
