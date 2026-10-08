@@ -1,0 +1,194 @@
+Body check (src/lib/counting/bodyCheck.js, coreAnalysis.js withBodyCheck), 2026-10-08: the counted joint's angle against the body's consensus of the motion spec's other signals; flagged under 0.5 (the critic's threshold, fixed before its run and before this one). It changes no count: every result below kept its count, reps and refusal (asserted per set).
+Official sets of variant-eval.test.ts, each through the app's path (summarizeCount, then withBodyCheck with the landmarks the file stores, image ones included). Labels: David's (R1) and the public datasets' human labels; synthetic and occlusion: the rendered count.
+Columns: suite | sets | counted (not refused, count > 0) | checked (no profile: no motion spec or an alternating lift; too little seen) | flagged (share of checked) | core exact on flagged | core exact on unflagged | core off by 3+ on flagged | on unflagged | second candidate offered (differs) | second right where offered; core right there | right number among the candidates on flagged sets.
+
+david | 20 | 19 | 19 (0 no profile, 0 too little seen) | 2 (11 %) | 1/2 (50 %) | 11/17 (65 %) | 0/2 (0 %) | 0/17 (0 %) | 2 | 0/2 (0 %); core right on those 1 | 1/2 (50 %)
+video | 13 | 11 | 11 (0 no profile, 0 too little seen) | 5 (45 %) | 3/5 (60 %) | 3/6 (50 %) | 1/5 (20 %) | 1/6 (17 %) | 2 | 2/2 (100 %); core right on those 0 | 5/5 (100 %)
+publicA | 546 | 486 | 308 (153 no profile, 25 too little seen) | 63 (20 %) | 18/63 (29 %) | 165/245 (67 %) | 13/63 (21 %) | 2/245 (1 %) | 39 | 1/39 (3 %); core right on those 6 | 19/63 (30 %)
+publicB | 518 | 437 | 261 (165 no profile, 11 too little seen) | 37 (14 %) | 16/37 (43 %) | 129/224 (58 %) | 1/37 (3 %) | 10/224 (4 %) | 21 | 1/21 (5 %); core right on those 10 | 16/37 (43 %)
+repcount | 79 | 72 | 71 (0 no profile, 1 too little seen) | 20 (28 %) | 2/20 (10 %) | 26/51 (51 %) | 6/20 (30 %) | 7/51 (14 %) | 15 | 3/15 (20 %); core right on those 2 | 5/20 (25 %)
+synthetic | 96 | 90 | 89 (0 no profile, 1 too little seen) | 16 (18 %) | 5/16 (31 %) | 69/73 (95 %) | 5/16 (31 %) | 1/73 (1 %) | 12 | 4/12 (33 %); core right on those 3 | 9/16 (56 %)
+occlusion | 68 | 40 | 33 (7 no profile, 0 too little seen) | 3 (9 %) | 2/3 (67 %) | 21/30 (70 %) | 1/3 (33 %) | 4/30 (13 %) | 2 | 0/2 (0 %); core right on those 1 | 2/3 (67 %)
+real-world (david, video, publicA, publicB, repcount) | 1176 | 1025 | 670 (318 no profile, 37 too little seen) | 127 (19 %) | 40/127 (31 %) | 334/543 (62 %) | 21/127 (17 %) | 20/543 (4 %) | 79 | 7/79 (9 %); core right on those 19 | 46/127 (36 %)
+all | 1340 | 1155 | 792 (325 no profile, 38 too little seen) | 146 (18 %) | 47/146 (32 %) | 424/646 (66 %) | 27/146 (18 %) | 25/646 (4 %) | 93 | 11/93 (12 %); core right on those 23 | 57/146 (39 %)
+
+Cost in Node on this machine (shared, 4 cores, other jobs running; 792 checked sets, 197.5 minutes of recording): the check 69.8 ms per minute of recording in all (per set: median 53.5, 90th percentile 94.2); the second candidate on the same bank 37.3 ms per minute (median 25.5, 90th percentile 51.8), run by the app on flagged sets only. Longest set: public/repcount/build/stu1_37.json.gz, 60.0 s, check 143.1 ms, second 63.1 ms.
+- sets-07oct-video/pendulum_squat_7.json.gz repeated to the bound (2700 samples, 3.0 minutes, agreement 0.15): check 303.1 ms, second 156.2 ms; PSC's proposal on the same samples 711.3 ms
+- sets-07oct-video/seated_dumbbell_curl_10.json.gz repeated to the bound (2700 samples, 3.0 minutes, agreement 0.97): check 300.9 ms, second 105.9 ms; PSC's proposal on the same samples 516.6 ms
+Not measured: the cost on a phone (Safari on David's iPhone runs this after the count, once per set).
+
+David's sets (stored, then videos): label | core | agreement | flagged | second candidate (when offered).
+- sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz: 8 | 8 | -0.12 | FLAGGED | 5
+- sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz: 6 | 6 | 0.98 |  | 
+- sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz: 13 | 12 | 0.4 | FLAGGED | 6
+- sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz: 7 | 6 | 0.98 |  | 
+- sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz: 10 | 9 | 0.95 |  | 
+- sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz: 6 | 6 | 0.87 |  | 
+- sets-29sep/bench_press_7_side_24cc4f0b.json.gz: 7 | 5 | 0.71 |  | 
+- sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz: 5 | 5 | 0.96 |  | 
+- sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz: 6 | 6 | 0.95 |  | 
+- sets-29sep/lateral_raise_9_front_43e71b40.json.gz: 9 | 8 | 0.98 |  | 
+- sets-29sep/leg_press_13_side_1ee0ae47.json.gz: 13 | 13 | 0.98 |  | 
+- sets-29sep/overhead_press_4_front_cefdaa82.json.gz: 4 | 5 | 0.87 |  | 
+- sets-29sep/overhead_press_4_front_f75638cc.json.gz: 4 | 4 | 0.89 |  | 
+- sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz: 8 | 8 | 0.98 |  | 
+- sets-29sep/squat_7_side_21fd7ccf.json.gz: 7 | 7 | 0.91 |  | 
+- landmarks/bench_press_7_angle_mufhcy60.json.gz: 7 | refused | no profile |  | 
+- landmarks/bicep_curl_7_side_mufhf3wy.json.gz: 7 | 7 | 0.96 |  | 
+- landmarks/lat_pulldown_10_front_mufhlh4o.json.gz: 10 | 10 | 0.91 |  | 
+- landmarks/lateral_raise_10_front_mufhhbun.json.gz: 10 | 10 | 0.99 |  | 
+- landmarks/overhead_press_10_front_mufhjkku.json.gz: 10 | 9 | 0.76 |  | 
+- sets-07oct-video/barbell_squat_9_a.json.gz: 9 | 9 | 0.19 | FLAGGED | 
+- sets-07oct-video/barbell_squat_9_b.json.gz: 9 | 9 | 0.2 | FLAGGED | 
+- sets-07oct-video/behind_neck_chin_up_5.json.gz: 5 | 6 | 0.2 | FLAGGED | 5
+- sets-07oct-video/hanging_leg_raise_6.json.gz: 6 | 6 | -0.02 | FLAGGED | 
+- sets-07oct-video/lying_biceps_curl_11.json.gz: 11 | 11 | 0.55 |  | 
+- sets-07oct-video/machine_chest_supported_row_6.json.gz: 6 | 5 | 0.95 |  | 
+- sets-07oct-video/machine_seated_back_extension_18.json.gz: 18 | 17 | 0.82 |  | 
+- sets-07oct-video/pendulum_squat_7.json.gz: 7 | 14 | 0.08 | FLAGGED | 7
+- sets-07oct-video/seated_dumbbell_curl_10.json.gz: 10 | 10 | 0.96 |  | 
+- sets-07oct-video/sissy_squat_5_5011.json.gz: 5 | refused | no profile |  | 
+- sets-07oct-video/sissy_squat_7_5006.json.gz: 7 | 4 | 0.72 |  | 
+- sets-07oct-video/sissy_squat_7_5008.json.gz: 7 | refused | no profile |  | 
+- sets-07oct-video/sissy_squat_9_5007.json.gz: 9 | 9 | 0.84 |  | 
+
+Flagged sets elsewhere (suite, set, lift: label | core | agreement | second candidate when offered):
+- publicA public/countix/build/-FcDTJzptes_000000_5315.json.gz squat: 2 | 2 | -0.48 | 
+- publicB public/countix/build/3MbLV9MjhUk_000003_500.json.gz bench_press: 6 | 4 | 0.2 | 
+- publicB public/countix/build/3QnXCGe6xZA_000013_1083.json.gz push_up: 3 | 3 | 0.32 | 
+- publicB public/countix/build/59jzy3eVo30_000003_533.json.gz push_up: 6 | 5 | 0.47 | 
+- publicA public/countix/build/5ttD_SCeNB0_000027_0.json.gz push_up: 5 | 2 | 0.45 | 1
+- publicA public/countix/build/7QmGi3r4RPE_000004_33.json.gz pull_up: 3 | 5 | 0.29 | 2
+- publicB public/countix/build/9JSCtK83Lh0_000000_234.json.gz front_raise: 3 | 3 | 0.33 | 2
+- publicB public/countix/build/AFF5uioXScE_000003_1833.json.gz push_up: 2 | 1 | 0.39 | 
+- publicA public/countix/build/C29kvQkzadQ_000017_901.json.gz front_raise: 2 | 2 | 0.5 | 1
+- publicA public/countix/build/CQDBpBmzYaQ_000000_7007.json.gz front_raise: 3 | 2 | -0.41 | 
+- publicA public/countix/build/CeYfTmdqPqo_000046_0.json.gz push_up: 3 | 2 | -0.05 | 1
+- publicA public/countix/build/E9KZOVuBRfA_000035_0.json.gz bench_press: 11 | 5 | 0.41 | 6
+- publicB public/countix/build/ExiJ7qKakH4_000000_0.json.gz bench_press: 6 | 4 | -0.2 | 3
+- publicA public/countix/build/G1E_vGTK4PI_000011_733.json.gz push_up: 5 | 3 | -0.36 | 4
+- publicA public/countix/build/GcWgWifEdyg_000088_0.json.gz front_raise: 4 | 3 | -0.36 | 1
+- publicB public/countix/build/IGdmwxyeOkU_000021_634.json.gz front_raise: 4 | 5 | -0.32 | 3
+- publicA public/countix/build/J5UH-E8zclg_000000_0.json.gz push_up: 9 | 3 | 0.41 | 
+- publicB public/countix/build/LPQSm5megAo_000000_1201.json.gz pull_up: 3 | 3 | 0.41 | 2
+- publicB public/countix/build/LSZVUPkSswo_000008_0.json.gz bench_press: 3 | 2 | -0.61 | 1
+- publicA public/countix/build/M66IyaT16AM_000015_0.json.gz front_raise: 2 | 2 | -0.46 | 
+- publicA public/countix/build/NX5TcYEILhI_000000_0.json.gz bench_press: 9 | 4 | 0.3 | 6
+- publicA public/countix/build/NvqLMRadijE_000028_1640.json.gz pull_up: 3 | 2 | 0.2 | 
+- publicB public/countix/build/OJo44HSJ_DQ_000021_0.json.gz front_raise: 2 | 2 | 0.13 | 1
+- publicB public/countix/build/OhQcWwqQDR4_000042_100.json.gz pull_up: 3 | 2 | 0.36 | 1
+- publicA public/countix/build/Pc584-1gHSM_000025_270.json.gz bench_press: 4 | 2 | 0.18 | 1
+- publicA public/countix/build/Ss7rqrjXGJo_000011_0.json.gz bench_press: 10 | 2 | -0.45 | 4
+- publicA public/countix/build/U_BLNvSJM14_000038_467.json.gz bench_press: 3 | 5 | 0.43 | 2
+- publicA public/countix/build/WNW4qKlqL2g_000002_5700.json.gz squat: 3 | 3 | -0.27 | 
+- publicA public/countix/build/Wba1CfX_V-g_000005_0.json.gz push_up: 3 | 3 | 0.09 | 
+- publicA public/countix/build/Y4KxhBCgypY_000004_0.json.gz push_up: 3 | 3 | 0.07 | 
+- publicA public/countix/build/a2LBOKwdPcQ_000012_0.json.gz push_up: 3 | 3 | -0.47 | 
+- publicB public/countix/build/bpreIIDbeHA_000174_834.json.gz push_up: 2 | 2 | 0.46 | 1
+- publicB public/countix/build/dh7h-JxMpvE_000014_0.json.gz push_up: 3 | 3 | 0.48 | 
+- publicB public/countix/build/e-Hia1hhUaE_000033_367.json.gz push_up: 5 | 4 | -0.06 | 2
+- publicA public/countix/build/eADfklkBhuc_000170_0.json.gz push_up: 2 | 2 | 0.26 | 
+- publicA public/countix/build/hqMseeTi3Ys_000045_0.json.gz front_raise: 3 | 2 | -0.14 | 
+- publicA public/countix/build/i-HQaIjVsBs_000005_0.json.gz squat: 3 | 1 | 0.47 | 2
+- publicB public/countix/build/iD75JTBSsO4_000026_0.json.gz front_raise: 6 | 5 | -0.34 | 3
+- publicB public/countix/build/kGDIhlrBW0M_000000_0.json.gz pull_up: 2 | 3 | 0.23 | 
+- publicA public/countix/build/mESS6DKbbj8_000006_2840.json.gz squat: 3 | 2 | 0.38 | 
+- publicA public/countix/build/rlgoBYYovXo_000000_0.json.gz pull_up: 2 | 1 | 0.48 | 
+- publicA public/countix/build/tGBCoJtfRjc_000002_0.json.gz bench_press: 2 | 2 | 0.29 | 
+- publicB public/countix/build/u9XyJmAGV0c_000013_0.json.gz push_up: 6 | 6 | 0.36 | 1
+- publicA public/countix/build/y2OiEe3K-8c_000003_0.json.gz pull_up: 7 | 5 | 0.44 | 
+- publicB public/countix-whole/build/2BC4P5QWDSk_000008_200.json.gz pull_up: 4 | 3 | -0.08 | 
+- publicA public/countix-whole/build/2p19BDth7Zc_000003_5133.json.gz pull_up: 3 | 2 | 0.39 | 
+- publicB public/countix-whole/build/3MbLV9MjhUk_000003_500.json.gz bench_press: 6 | 6 | 0.18 | 3
+- publicA public/countix-whole/build/5ttD_SCeNB0_000027_0.json.gz push_up: 5 | 3 | 0.49 | 1
+- publicA public/countix-whole/build/7QmGi3r4RPE_000004_33.json.gz pull_up: 3 | 5 | -0.01 | 1
+- publicB public/countix-whole/build/9p2g3Cqo-8w_000134_0.json.gz push_up: 2 | 1 | 0.34 | 0
+- publicA public/countix-whole/build/CQDBpBmzYaQ_000000_7007.json.gz front_raise: 3 | 2 | -0.27 | 1
+- publicA public/countix-whole/build/CeYfTmdqPqo_000046_0.json.gz push_up: 3 | 2 | -0.05 | 1
+- publicA public/countix-whole/build/DdXdcUETX1w_000016_0.json.gz push_up: 2 | 3 | 0.08 | 
+- publicA public/countix-whole/build/E9KZOVuBRfA_000035_0.json.gz bench_press: 11 | 5 | 0.41 | 6
+- publicB public/countix-whole/build/ExiJ7qKakH4_000000_0.json.gz bench_press: 6 | 4 | -0.2 | 3
+- publicA public/countix-whole/build/G1E_vGTK4PI_000011_733.json.gz push_up: 5 | 2 | -0.55 | 2
+- publicA public/countix-whole/build/GDDNo4blYwg_000001_1605.json.gz push_up: 2 | 2 | -0.36 | 
+- publicA public/countix-whole/build/GcWgWifEdyg_000088_0.json.gz front_raise: 4 | 3 | -0.36 | 1
+- publicB public/countix-whole/build/IGdmwxyeOkU_000021_634.json.gz front_raise: 4 | 5 | -0.27 | 3
+- publicA public/countix-whole/build/Itbz9-ghSfc_000022_0.json.gz pull_up: 2 | 2 | 0.26 | 0
+- publicA public/countix-whole/build/J5UH-E8zclg_000000_0.json.gz push_up: 9 | 3 | 0.41 | 
+- publicB public/countix-whole/build/LSZVUPkSswo_000008_0.json.gz bench_press: 3 | 1 | -0.61 | 
+- publicA public/countix-whole/build/LxkdL0tGGxE_000000_0.json.gz pull_up: 3 | 3 | 0.4 | 2
+- publicA public/countix-whole/build/NX5TcYEILhI_000000_0.json.gz bench_press: 9 | 3 | 0.26 | 5
+- publicB public/countix-whole/build/OJo44HSJ_DQ_000021_0.json.gz front_raise: 2 | 2 | 0.13 | 1
+- publicB public/countix-whole/build/OhQcWwqQDR4_000042_100.json.gz pull_up: 3 | 3 | 0.37 | 
+- publicA public/countix-whole/build/Pc584-1gHSM_000025_270.json.gz bench_press: 4 | 3 | -0.26 | 1
+- publicA public/countix-whole/build/Py0A9wWkWao_000198_0.json.gz push_up: 5 | 2 | 0.12 | 1
+- publicA public/countix-whole/build/Ss7rqrjXGJo_000011_0.json.gz bench_press: 10 | 3 | -0.42 | 4
+- publicA public/countix-whole/build/Ss7rqrjXGJo_000011_8075.json.gz bench_press: 3 | 0 | -0.42 | 0
+- publicA public/countix-whole/build/U_BLNvSJM14_000038_467.json.gz bench_press: 3 | 5 | 0.46 | 2
+- publicB public/countix-whole/build/Uj7VQlHIltM_000101_0.json.gz pull_up: 5 | 4 | 0.05 | 
+- publicA public/countix-whole/build/Wyojc0Clzsk_000074_0.json.gz push_up: 7 | 3 | -0.25 | 1
+- publicA public/countix-whole/build/Y4KxhBCgypY_000004_0.json.gz push_up: 3 | 3 | 0.02 | 
+- publicA public/countix-whole/build/a2LBOKwdPcQ_000012_0.json.gz push_up: 3 | 3 | -0.16 | 
+- publicB public/countix-whole/build/bpreIIDbeHA_000174_834.json.gz push_up: 2 | 2 | 0.17 | 
+- publicB public/countix-whole/build/e-Hia1hhUaE_000033_367.json.gz push_up: 5 | 2 | 0.1 | 
+- publicA public/countix-whole/build/e6x3OqtXt90_000016_0.json.gz push_up: 5 | 4 | 0.3 | 
+- publicB public/countix-whole/build/eCJQXspc-wc_000007_0.json.gz push_up: 2 | 2 | -0.07 | 1
+- publicB public/countix-whole/build/ekhHO6lmWVM_000133_7700.json.gz push_up: 3 | 2 | 0.42 | 1
+- publicA public/countix-whole/build/i-HQaIjVsBs_000005_0.json.gz squat: 3 | 1 | 0.5 | 2
+- publicB public/countix-whole/build/iD75JTBSsO4_000026_0.json.gz front_raise: 6 | 5 | -0.34 | 3
+- publicB public/countix-whole/build/jNEaz0Y2kBU_000015_3873.json.gz front_raise: 3 | 2 | -0.11 | 
+- publicB public/countix-whole/build/jkNsir4WeqU_000021_0.json.gz push_up: 2 | 2 | -0.04 | 
+- publicB public/countix-whole/build/kGDIhlrBW0M_000000_0.json.gz pull_up: 2 | 4 | 0.38 | 
+- publicB public/countix-whole/build/m-yUzW994v0_000016_100.json.gz front_raise: 5 | 5 | -0.06 | 5
+- publicB public/countix-whole/build/n4M5qV8mJx8_000154_0.json.gz push_up: 2 | 2 | 0.42 | 
+- publicA public/countix-whole/build/opoIUl4eXTU_000000_4167.json.gz pull_up: 6 | 6 | 0.45 | 1
+- publicA public/countix-whole/build/pPYiKNX9ixE_000005_5500.json.gz pull_up: 2 | 1 | 0.42 | 1
+- publicA public/countix-whole/build/qEl3lhCLFwY_000006_6300.json.gz bench_press: 2 | 1 | 0.43 | 0
+- publicA public/countix-whole/build/rlgoBYYovXo_000000_0.json.gz pull_up: 2 | 1 | 0.34 | 
+- publicA public/countix-whole/build/sGSKsDVQnN0_000015_0.json.gz bench_press: 2 | 2 | 0.4 | 1
+- publicA public/countix-whole/build/sw7V8nTj3Ro_000020_272.json.gz squat: 3 | 3 | 0.38 | 
+- publicA public/countix-whole/build/tGBCoJtfRjc_000002_0.json.gz bench_press: 2 | 1 | -0.06 | 2
+- publicB public/countix-whole/build/u9XyJmAGV0c_000013_0.json.gz push_up: 6 | 6 | 0.36 | 1
+- publicA public/mmfit/build/w18-dumbbell_shoulder_press-26753-27263.json.gz overhead_press: 10 | 10 | 0.47 | 9
+- publicA public/mmfit/build/w18-dumbbell_shoulder_press-29212-29659.json.gz overhead_press: 10 | 9 | 0.32 | 8
+- publicA public/mmfit/build/w18-lateral_shoulder_raises-104611-105213.json.gz lateral_raise: 10 | 8 | 0.35 | 7
+- publicA public/mmfit/build/w18-lateral_shoulder_raises-111226-111843.json.gz lateral_raise: 10 | 8 | 0.46 | 7
+- publicA public/mmfit/build/w18-lateral_shoulder_raises-115230-115820.json.gz lateral_raise: 10 | 8 | 0.41 | 7
+- repcount public/repcount/build/stu10_6.json.gz bench_press: 4 | 4 | -0.15 | 7
+- repcount public/repcount/build/stu10_63.json.gz squat: 16 | 14 | 0.47 | 9
+- repcount public/repcount/build/stu2_23.json.gz front_raise: 6 | 7 | 0.37 | 6
+- repcount public/repcount/build/stu2_36.json.gz pull_up: 5 | 6 | 0.05 | 4
+- repcount public/repcount/build/stu2_5.json.gz bench_press: 3 | 1 | -0.03 | 
+- repcount public/repcount/build/stu3_15.json.gz front_raise: 4 | 5 | 0.05 | 4
+- repcount public/repcount/build/stu3_18.json.gz front_raise: 16 | 14 | -0.92 | 
+- repcount public/repcount/build/stu3_2.json.gz bench_press: 3 | 3 | -0.55 | 4
+- repcount public/repcount/build/stu4_68.json.gz squat: 5 | 6 | 0.48 | 7
+- repcount public/repcount/build/stu5_5.json.gz bench_press: 30 | 19 | 0.12 | 21
+- repcount public/repcount/build/stu6_3.json.gz bench_press: 13 | 14 | 0.32 | 
+- repcount public/repcount/build/stu7_1.json.gz bench_press: 10 | 3 | -0.22 | 6
+- repcount public/repcount/build/stu7_43.json.gz pull_up: 23 | 8 | 0.49 | 7
+- repcount public/repcount/build/stu8_37.json.gz pull_up: 10 | 17 | 0.21 | 13
+- repcount public/repcount/build/stu9_55.json.gz push_up: 14 | 11 | -0.15 | 12
+- repcount public/repcount/build/stu9_9.json.gz bench_press: 12 | 10 | -0.25 | 6
+- repcount public/repcount/build/test1595.json.gz push_up: 3 | 5 | -0.58 | 3
+- repcount public/repcount/build/train143.json.gz bench_press: 0 | 2 | 0.21 | 
+- repcount public/repcount/build/train2711.json.gz push_up: 5 | 6 | 0.27 | 1
+- repcount public/repcount/build/train2720.json.gz push_up: 10 | 6 | 0.44 | 
+- synthetic synth/michelle-squat-v30-a20.json.gz squat: 7 | 12 | 0.49 | 7
+- synthetic synth/michelle-squat-v90-a-10.json.gz squat: 6 | 8 | 0.23 | 5
+- synthetic synth/michelle-squat-v90-a0.json.gz squat: 7 | 11 | 0.21 | 4
+- synthetic synth/soldier-bicep_curl-v30-a-10.json.gz bicep_curl: 8 | 8 | 0.19 | 9
+- synthetic synth/soldier-bicep_curl-v30-a0.json.gz bicep_curl: 5 | 5 | 0.48 | 
+- synthetic synth/soldier-bicep_curl-v60-a-10.json.gz bicep_curl: 5 | 6 | -0.23 | 
+- synthetic synth/soldier-bicep_curl-v60-a0.json.gz bicep_curl: 6 | 6 | -0.12 | 
+- synthetic synth/soldier-bicep_curl-v60-a20.json.gz bicep_curl: 8 | 15 | 0.48 | 8
+- synthetic synth/soldier-lateral_raise-v60-a20.json.gz lateral_raise: 8 | 8 | 0.11 | 7
+- synthetic synth/soldier-lateral_raise-v90-a-10.json.gz lateral_raise: 6 | 7 | 0.49 | 10
+- synthetic synth/soldier-lateral_raise-v90-a0.json.gz lateral_raise: 7 | 7 | 0.4 | 11
+- synthetic synth/soldier-lateral_raise-v90-a20.json.gz lateral_raise: 5 | 4 | 0.43 | 7
+- synthetic synth/soldier-overhead_press-v30-a20.json.gz overhead_press: 7 | 9 | -0.12 | 4
+- synthetic synth/soldier-overhead_press-v60-a0.json.gz overhead_press: 6 | 9 | -0.43 | 
+- synthetic synth/soldier-overhead_press-v90-a-10.json.gz overhead_press: 6 | 7 | 0.29 | 6
+- synthetic synth/soldier-overhead_press-v90-a0.json.gz overhead_press: 7 | 12 | 0.4 | 7
+- occlusion occlusion/michelle-bicep_curl-v90-person.json.gz bicep_curl: 6 | 6 | -0.11 | 11
+- occlusion occlusion/michelle-squat-v90-clean.json.gz squat: 6 | 10 | 0.15 | 5
+- occlusion occlusion/soldier-overhead_press-v90-rack.json.gz overhead_press: 6 | 6 | 0.45 | 

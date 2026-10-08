@@ -53,6 +53,15 @@ export const RESULT = {
     proposalNote: 'L’appli propose ce nombre sans avoir bien vu le mouvement. Vérifiez-le avant d’enregistrer.',
     confirmN: n => `Confirmer ${n} ${reps(n, true)}`,
     savedConfirmed: n => `Merci. ${n} ${n > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}, ${n > 1 ? 'confirmées' : 'confirmée'} par vous.`,
+    // A counted set the body check flags (coreAnalysis.js withBodyCheck, 8 October 2026; R8: a count to confirm, no
+    // grade, no measure; test/real-phone/swarm/copy-bodycheck.md). Pending David's approval. jointOf: "du genou".
+    // "Sur cette série", not "vidéo": a set counted live is checked too (liveCounter.js) and has no video.
+    bodyCause: jointOf => `Sur cette série, l’angle ${jointOf} ne bouge pas comme le reste de votre corps. L’appli a pu mal le lire.`,
+    bodyCounted: n => `Compté par l’appli${NB}: ${n}`,
+    bodyNote: 'Vérifiez ce nombre avant d’enregistrer.',
+    bodyChoices: 'Deux comptes possibles',
+    byJoint: joint => `D’après ${{ elbow: 'le coude', shoulder: 'l’épaule', knee: 'le genou', hip: 'la hanche' }[joint] ?? 'l’articulation suivie'}`,
+    byBody: 'D’après tout le corps',
   },
   en: {
     toConfirm: 'To confirm',
@@ -90,5 +99,11 @@ export const RESULT = {
     proposalNote: 'The app suggests this number without having seen the movement clearly. Check it before saving.',
     confirmN: n => `Confirm ${n} ${reps(n, false)}`,
     savedConfirmed: n => `Thank you. ${n} ${n === 1 ? 'rep' : 'reps'} saved, confirmed by you.`,
+    bodyCause: joint => `In this set, the ${joint} angle does not move like the rest of your body. The app may have misread it.`,
+    bodyCounted: n => `Counted by the app: ${n}`,
+    bodyNote: 'Check this number before saving.',
+    bodyChoices: 'Two possible counts',
+    byJoint: joint => `From the ${{ elbow: 'elbow', shoulder: 'shoulder', knee: 'knee', hip: 'hip' }[joint] ?? 'tracked joint'}`,
+    byBody: 'From the whole body',
   },
 };
