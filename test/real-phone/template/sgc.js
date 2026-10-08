@@ -48,28 +48,54 @@ export function specProfile(spec, mode = 'both') {
   return out.sort((p, q) => q.strength - p.strength);
 }
 
-/** The rep's signal on the bank's grid from a profile: { s, members } or null. */
-function repSignal(sigs, profile) {
+/**
+ * The rep's signal on the bank's grid from a profile: { s, p, members } or null. s: the members' z-scores combined
+ * (PSC's scale). p: progress through the spec's rep, in physical units: each member's change in its own noise units
+ * (its robust scale on the set, given in scales), over the spec's expected change, so a full rep of the spec moves p
+ * by about 1 whatever the set's own amplitude (a set with no rep keeps p small).
+ * opts.anglesOnly: angle signals and the trunk only. opts.noImage: no image-plane twins.
+ */
+function repSignal(sigs, profile, scales, opts = {}) {
   const byName = new Map(sigs.map(x => [x.name, x]));
-  const top = profile.length ? profile[0].strength : 0;
+  const prof = opts.anglesOnly ? profile.filter(p => NOISE(p.name) === 4) : profile;
+  const top = prof.length ? prof[0].strength : 0;
   const members = [];
-  for (const p of profile) {
+  for (const p of prof) {
     if (p.strength < MIN_STRENGTH || p.strength < SHARE * top) continue;
     const w = byName.get(`w.${p.name}`);
     if (!w) continue;
     const weight = Math.min(p.strength, W_CAP), sign = Math.sign(p.delta);
-    members.push({ name: w.name, z: w.z, sign, weight });
+    members.push({ name: w.name, z: w.z, sign, weight, strength: p.strength, scale: scales.get(w.name), noise: NOISE(p.name) });
     const im = byName.get(`i.${p.name}`);
-    if (im && corrAt(w.z, im.z) * 1 >= IMAGE_AGREE) members.push({ name: im.name, z: im.z, sign, weight });
+    if (!opts.noImage && im && corrAt(w.z, im.z) >= IMAGE_AGREE) members.push({ name: im.name, z: im.z, sign, weight, strength: p.strength, scale: scales.get(im.name), noise: NOISE(p.name) });
   }
   if (!members.length) return null;
-  const G = members[0].z.length, s = new Float64Array(G).fill(NaN);
+  const G = members[0].z.length, s = new Float64Array(G).fill(NaN), pr = new Float64Array(G).fill(NaN);
+  const amp = members.reduce((x, m) => x + m.weight * m.strength, 0) / members.reduce((x, m) => x + m.weight, 0);
   for (let t = 0; t < G; t++) {
-    let acc = 0, wsum = 0;
-    for (const m of members) { const v = m.z[t]; if (v === v) { acc += m.sign * m.weight * v; wsum += m.weight; } }
+    let acc = 0, wsum = 0, accP = 0, wP = 0;
+    for (const m of members) {
+      const v = m.z[t];
+      if (v !== v) continue;
+      acc += m.sign * m.weight * v; wsum += m.weight;
+      if (m.scale > 0) { accP += m.sign * m.weight * (v * m.scale) / m.noise; wP += m.weight; }
+    }
     if (wsum > 0) s[t] = acc / wsum;
+    if (wP > 0) pr[t] = accP / wP / amp;
   }
-  return { s, members: members.map(m => `${m.sign > 0 ? '+' : '-'}${m.name}`) };
+  return { s, p: pr, members: members.map(m => `${m.sign > 0 ? '+' : '-'}${m.name}`) };
+}
+
+/** Robust scale (1.4826 x median absolute deviation) of every raw signal of the set, by bank name. */
+function signalScales(wl, image, useImage) {
+  const out = new Map();
+  for (const r of rawSignals(wl, image, { useImage })) {
+    const v = Array.from(r.values).filter(Number.isFinite);
+    if (v.length < 8) continue;
+    const m = quantile(v, 0.5);
+    out.set(r.name, 1.4826 * quantile(v.map(x => Math.abs(x - m)), 0.5));
+  }
+  return out;
 }
 
 const quantile = (xs, q) => { const a = Float64Array.from(xs).sort(); if (!a.length) return NaN; const i = (a.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return a[lo] + (a[hi] - a[lo]) * (i - lo); };
@@ -145,7 +171,7 @@ const CARRIER = { concentric: 'bicep_curl', eccentric: 'bench_press' };
 function carrierLandmarks(s, lo, hi) {
   return Array.from(s, x => {
     if (!Number.isFinite(x)) return null;
-    const v = Math.max(-0.1, Math.min(1.1, (x - lo) / (hi - lo || 1)));
+    const v = Math.max(-0.05, Math.min(1.4, (x - lo) / (hi - lo || 1)));
     const th = (170 - 120 * v) * Math.PI / 180;
     const P = new Array(33).fill(null).map(() => ({ x: 0, y: 0, z: 0, visibility: 1 }));
     for (const [sh, el, wr, hip, sg] of [[11, 13, 15, 23, 1], [12, 14, 16, 24, -1]]) {
@@ -157,10 +183,12 @@ function carrierLandmarks(s, lo, hi) {
     return P;
   });
 }
-export function coreOnSignal(s, grid, first, summarize) {
+export function coreOnSignal(s, grid, first, summarize, physical = false) {
   const fin = Array.from(s).filter(Number.isFinite).sort((a, b) => a - b);
   if (fin.length < 10) return { count: null, reason: 'too few samples' };
-  const lo = fin[Math.floor(0.05 * (fin.length - 1))], hi = fin[Math.floor(0.95 * (fin.length - 1))];
+  // physical: s is progress (a full rep of the spec moves it by 1), so 1 maps to 120 degrees from its 5th percentile;
+  // otherwise the set's own 5-95 % band maps to 120 degrees.
+  const lo = fin[Math.floor(0.05 * (fin.length - 1))], hi = physical ? lo + 1 : fin[Math.floor(0.95 * (fin.length - 1))];
   const r = summarize(carrierLandmarks(s, lo, hi), grid, CARRIER[first] ?? CARRIER.concentric);
   return { count: r.refused ? null : r.count, refused: !!r.refused, reason: r.refused ? 'core refused the signal' : undefined };
 }
@@ -176,15 +204,17 @@ export function sgcCount({ wl, ts, image = null }, spec, opts = {}) {
   if (!ts || ts.length < 10) return { count: null, members: [], reason: 'too short' };
   const { grid, sigs } = signalBank(wl, ts, image, { useImage: opts.useImage !== false });
   if (!sigs.length) return { count: null, members: [], reason: 'no signal seen' };
-  const G = grid.length;
-  // opts.summarize (coreAnalysis.js summarizeCount): the core's rep logic on the rep signal as well (coreCount).
-  const withCore = s => (opts.summarize ? (({ count, reason }) => ({ coreCount: count, coreReason: reason }))(coreOnSignal(s, grid, opts.first, opts.summarize)) : {});
+  const G = grid.length, scales = signalScales(wl, image, opts.useImage !== false);
+  // opts.summarize (coreAnalysis.js summarizeCount): the core's rep logic on the rep signal as well (coreCount), on
+  // the progress p (opts.physical) or on the z-combination s.
+  const withCore = r => (opts.summarize ? (({ count, reason }) => ({ coreCount: count, coreReason: reason }))(opts.physical ? coreOnSignal(r.p, grid, opts.first, opts.summarize, true) : coreOnSignal(r.s, grid, opts.first, opts.summarize)) : {});
+  const rs = pr => repSignal(sigs, pr, scales, opts);
   const oneSide = spec.side || spec.alternate === true;
   if (oneSide) {
     // Each side's own signals: the spec's moving side as written, and its mirror for the other side.
     const left = specProfile(spec, 'left').filter(p => !/R$/.test(p.name));
     const right = left.map(p => ({ ...p, name: swapName(p.name) }));
-    const res = [left, right].map(pr => { const r = repSignal(sigs, pr); return r ? { ...countSignal(r.s, G), ...withCore(r.s), members: r.members } : { count: null, coreCount: null, members: [] }; });
+    const res = [left, right].map(pr => { const r = rs(pr); return r ? { ...countSignal(r.s, G), ...withCore(r), members: r.members } : { count: null, coreCount: null, members: [] }; });
     if (spec.alternate === true) {
       const n = res.filter(r => r.count != null), m = res.filter(r => r.coreCount != null);
       return { count: n.length ? n.reduce((x, r) => x + r.count, 0) : null, coreCount: m.length ? m.reduce((x, r) => x + r.coreCount, 0) : null, members: res.flatMap(r => r.members), sides: res.map(r => r.count) };
@@ -193,7 +223,7 @@ export function sgcCount({ wl, ts, image = null }, spec, opts = {}) {
     const best = res.filter(r => r.count != null).sort((p, q) => (q.periodScore ?? -1) - (p.periodScore ?? -1))[0];
     return best ? { ...best, sides: res.map(r => r.count) } : { count: null, coreCount: null, members: [], reason: 'no period on either side' };
   }
-  const r = repSignal(sigs, specProfile(spec, spec.alternate === 'mirror' ? 'mirror' : 'both'));
+  const r = rs(specProfile(spec, spec.alternate === 'mirror' ? 'mirror' : 'both'));
   if (!r) return { count: null, coreCount: null, members: [], reason: 'none of the spec\'s signals seen' };
-  return { ...countSignal(r.s, G), ...withCore(r.s), members: r.members };
+  return { ...countSignal(r.s, G), ...withCore(r), members: r.members };
 }

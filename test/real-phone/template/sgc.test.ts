@@ -53,7 +53,7 @@ function load(want: Set<string> | null): Item[] {
 
 const err = (c: any, l: number) => (typeof c === 'number' ? Math.abs(c - l) : Infinity);
 const tally = (xs: { c: any; l: number }[]) => {
-  const n = xs.length, ex = xs.filter(x => err(x.c, x.l) === 0).length, w1 = xs.filter(x => err(x.c, x.l) <= 1).length, b3 = xs.filter(x => err(x.c, x.l) >= 3).length;
+  const ex = xs.filter(x => err(x.c, x.l) === 0).length, w1 = xs.filter(x => err(x.c, x.l) <= 1).length, b3 = xs.filter(x => err(x.c, x.l) >= 3).length;
   return `${ex} / ${w1} / ${b3}`;
 };
 
@@ -70,7 +70,8 @@ test.skipIf(!process.env.SGC)('spec-guided counting against core and PSC', () =>
     let psc: any = null;
     try { psc = pscCount({ wl: it.wl, ts: it.ts, image: it.image }).count; } catch { psc = null; }
     const first = (FAMILIES as any)[spec.key]?.first ?? 'concentric';
-    const g = sgcCount({ wl: it.wl, ts: it.ts, image: it.image }, spec, { summarize: summarizeCount, first });
+    const VARIANT = { physical: !!process.env.SGC_PHYSICAL, anglesOnly: !!process.env.SGC_ANGLES, noImage: !!process.env.SGC_NOIMAGE };
+    const g = sgcCount({ wl: it.wl, ts: it.ts, image: it.image }, spec, { summarize: summarizeCount, first, ...VARIANT });
     rows.push({ ...it, core, psc, sgc: g.count, sgcCore: g.coreCount, members: g.members, period: g.period, reason: g.reason, sides: g.sides });
   }
   const suites = [...new Set(rows.map(r => r.suite))];
@@ -100,5 +101,6 @@ test.skipIf(!process.env.SGC)('spec-guided counting against core and PSC', () =>
   for (const [k, rs] of [...byLift.entries()].sort()) lines.push(`- ${k}: ${rs.length} | ${tally(rs.map(r => ({ c: r.core, l: r.label })))} | ${tally(rs.map(r => ({ c: r.psc, l: r.label })))} | ${tally(rs.map(r => ({ c: r.sgc, l: r.label })))} | ${tally(rs.map(r => ({ c: r.sgcCore, l: r.label })))}`);
   const text = lines.join('\n') + '\n';
   writeFileSync(process.env.SGC_TXT ?? resolve(__dirname, 'sgc.txt'), text);
+  if (process.env.SGC_JSON) writeFileSync(process.env.SGC_JSON, JSON.stringify(rows.map(r => ({ suite: r.suite, name: r.name, lift: r.lift, label: r.label, core: r.core, psc: r.psc, sgc: r.sgc, sgcCore: r.sgcCore }))));
   process.stdout.write(text.split('\n').slice(0, 14).join('\n') + '\n');
 }, 3_600_000);
