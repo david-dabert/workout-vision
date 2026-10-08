@@ -8,9 +8,13 @@
 // synth.js imports specAt, specUses and MIRRORED from here, so both read a pose the same way; the rotations are written
 // twice (three.js there, plain matrices here) in the same order and with the same signs (fk-parity.mjs checks them).
 const D = Math.PI / 180;
-// clavicle: the shoulder girdle's lever, pivoting at shoulderHalf - clavicle from the midline (both rigs: about two
-// thirds of the half shoulder width). Hand: knuckles and thumb tip in the hand's frame (index on the thumb side).
-const LEN = { hipHalf: 0.09, torso: 0.5, shoulderHalf: 0.18, clavicle: 0.12, upperArm: 0.29, forearm: 0.26, thigh: 0.42, shank: 0.42, foot: 0.17, heel: 0.06, neck: 0.17, noseFwd: 0.09 };
+// pelvis: the trunk bends (trunk, trunkSide, trunkTwist) about a point this far above the mid-hip on the pelvis, as the
+// rendered rigs bend at their lowest spine bone (Michelle: 43 % of the hip-to-shoulder height above the hips, Soldier:
+// 31 %; 0.18 of 0.5 lies between); pivoting at the mid-hip put the trunk's angle 16 degrees past the rig's at 40 degrees
+// of flexion (fk-parity.mjs, 8 October). clavicle: the shoulder girdle's lever, pivoting at shoulderHalf - clavicle from
+// the midline (both rigs: about two thirds of the half shoulder width). Hand: knuckles and thumb tip in the hand's frame
+// (index on the thumb side).
+const LEN = { hipHalf: 0.09, torso: 0.5, pelvis: 0.18, shoulderHalf: 0.18, clavicle: 0.12, upperArm: 0.29, forearm: 0.26, thigh: 0.42, shank: 0.42, foot: 0.17, heel: 0.06, neck: 0.17, noseFwd: 0.09 };
 const HAND = { index: [0.025, -0.085, 0], pinky: [-0.025, -0.08, 0], thumb: [0.035, -0.045, 0.02] };
 export const NEUTRAL = { pitch: 0, roll: 0, yaw: 0, trunk: 0, trunkSide: 0, trunkTwist: 0, neck: 0, shrug: 0, shoulderFlex: 0, shoulderAbd: 8, humRot: 0, elbow: 8, pronation: 0, wrist: 0, hipFlex: 0, hipAbd: 4, hipRot: 0, knee: 0, ankle: 0 };
 /** Whole-body keys that change sign on the swapped reps of alternate "mirror" (the body's left-right mirror image). */
@@ -61,7 +65,7 @@ export function specLandmarks(spec, uL, uR = uL, swap = false) {
   const trunk = mul(root, rx(g('trunk')), rz(-g('trunkSide')), ry(g('trunkTwist')));
   const P = new Array(33).fill(null);
   const hipC = [0, 0, 0];
-  const shC = mv(trunk, [0, LEN.torso, 0]);
+  const shC = add(mv(root, [0, LEN.pelvis, 0]), mv(trunk, [0, LEN.torso - LEN.pelvis, 0]));
   const put = (i, p) => { P[i] = p; };
   for (const [side, sg] of [['left', 1], ['right', -1]]) {
     const u = side === 'left' ? uL : uR, from = swap ? (side === 'left' ? 'right' : 'left') : side, k = key => specAt(spec, key, from, u);
