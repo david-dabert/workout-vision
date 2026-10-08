@@ -1,0 +1,15 @@
+{
+ "key": "barbell_curl",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "elbow": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10
+ },
+ "end": {
+  "elbow": 140,
+  "shoulderFlex": 12,
+  "shoulderAbd": 10
+ }
+}

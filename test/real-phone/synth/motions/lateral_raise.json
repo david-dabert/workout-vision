@@ -1,0 +1,13 @@
+{
+ "key": "lateral_raise",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderAbd": 12,
+  "elbow": 15
+ },
+ "end": {
+  "shoulderAbd": 88,
+  "elbow": 15
+ }
+}

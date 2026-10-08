@@ -1,0 +1,26 @@
+{
+ "key": "leg_extension",
+ "source": "convention: the exercise's usual technique, posed by hand (8 October 2026); angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.6
+ },
+ "start": {
+  "trunk": -10,
+  "hipFlex": 95,
+  "knee": 90,
+  "shoulderFlex": -10,
+  "shoulderAbd": 25,
+  "elbow": 20
+ },
+ "end": {
+  "trunk": -10,
+  "hipFlex": 95,
+  "knee": 5,
+  "ankle": -10,
+  "shoulderFlex": -10,
+  "shoulderAbd": 25,
+  "elbow": 20
+ }
+}
