@@ -3,13 +3,13 @@
  "source": "convention: standing, plate held at its sides in front of the hips, straight arms raised to eye level; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "shoulderFlex": 12,
-  "shoulderAbd": 2,
-  "elbow": 12
+  "shoulderFlex": 8,
+  "shoulderAbd": 5,
+  "elbow": 10
  },
  "end": {
-  "shoulderFlex": 105,
-  "shoulderAbd": 2,
-  "elbow": 12
+  "shoulderFlex": 100,
+  "shoulderAbd": 5,
+  "elbow": 10
  }
 }

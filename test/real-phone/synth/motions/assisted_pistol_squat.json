@@ -3,9 +3,9 @@
  "source": "convention: standing on the left leg holding a post or strap at chest height, the right leg held in front, sit deep on the left leg letting the arms straighten, the right leg rising, stand back up pulling lightly; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "shoulderFlex": 70,
+  "shoulderFlex": 45,
   "shoulderAbd": 10,
-  "elbow": 70,
+  "elbow": 60,
   "left": {
    "knee": 0
   },
@@ -17,7 +17,7 @@
  },
  "end": {
   "trunk": 20,
-  "shoulderFlex": 100,
+  "shoulderFlex": 125,
   "shoulderAbd": 10,
   "elbow": 10,
   "left": {

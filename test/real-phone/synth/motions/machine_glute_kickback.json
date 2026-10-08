@@ -4,9 +4,9 @@
  "status": "experimental",
  "start": {
   "pitch": 30,
-  "shoulderFlex": 70,
+  "shoulderFlex": 35,
   "shoulderAbd": 15,
-  "elbow": 80,
+  "elbow": 90,
   "left": {
    "hipFlex": 55,
    "knee": 70,
@@ -20,9 +20,9 @@
  },
  "end": {
   "pitch": 30,
-  "shoulderFlex": 70,
+  "shoulderFlex": 35,
   "shoulderAbd": 15,
-  "elbow": 80,
+  "elbow": 90,
   "left": {
    "hipFlex": -20,
    "knee": 25,

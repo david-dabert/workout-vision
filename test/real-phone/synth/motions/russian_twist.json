@@ -14,8 +14,8 @@
   "ankle": 20,
   "hipAbd": 6,
   "shoulderFlex": 30,
-  "shoulderAbd": 10,
-  "humRot": -50,
+  "shoulderAbd": 12,
+  "humRot": -32,
   "elbow": 80
  },
  "end": {
@@ -38,6 +38,5 @@
    "elbow": 5
   }
  },
- "alternate": "mirror",
- "view": 0
+ "alternate": "mirror"
 }

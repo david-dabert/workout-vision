@@ -1,6 +1,6 @@
 {
  "key": "upright_row",
- "source": "convention: standing, barbell with a shoulder-width grip from the thighs to the chest, elbows leading up and out to shoulder height; angles UNSOURCED",
+ "source": "convention: standing, barbell with a grip about shoulder width, pulled from the thighs to the upper chest close to the body, elbows leading up and out to shoulder height; angles UNSOURCED",
  "status": "experimental",
  "start": {
   "shoulderFlex": 8,
@@ -11,7 +11,7 @@
  "end": {
   "shoulderFlex": 20,
   "shoulderAbd": 75,
-  "humRot": -60,
+  "humRot": -40,
   "elbow": 140
  }
 }

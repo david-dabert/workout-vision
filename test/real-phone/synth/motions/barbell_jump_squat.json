@@ -10,10 +10,10 @@
  },
  "end": {
   "trunk": 30,
-  "hipFlex": 75,
+  "hipFlex": 65,
   "hipAbd": 10,
-  "knee": 100,
-  "ankle": -25,
+  "knee": 85,
+  "ankle": -20,
   "shoulderFlex": 0,
   "shoulderAbd": 50,
   "humRot": 90,

@@ -5,18 +5,18 @@
  "start": {
   "knee": 10,
   "ankle": -10,
-  "shoulderFlex": 10,
-  "shoulderAbd": 0,
+  "shoulderFlex": 5,
+  "shoulderAbd": 5,
   "elbow": 5
  },
  "end": {
   "pitch": 40,
-  "trunk": 25,
+  "trunk": 30,
   "hipFlex": 40,
   "knee": 20,
   "ankle": -20,
-  "shoulderFlex": 70,
-  "shoulderAbd": 0,
+  "shoulderFlex": 75,
+  "shoulderAbd": 5,
   "elbow": 5
  }
 }

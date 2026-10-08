@@ -18,12 +18,12 @@
  },
  "end": {
   "pitch": -125,
-  "trunk": 35,
+  "trunk": 45,
   "hipFlex": 95,
   "knee": 95,
   "ankle": 20,
   "hipAbd": 5,
-  "shoulderFlex": 0,
+  "shoulderFlex": -10,
   "shoulderAbd": 20,
   "elbow": 5
  }

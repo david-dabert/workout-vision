@@ -12,9 +12,9 @@
   "hipAbd": 10,
   "knee": 118,
   "ankle": 28,
-  "shoulderFlex": 20,
+  "shoulderFlex": 12,
   "shoulderAbd": 25,
-  "elbow": 25
+  "elbow": 10
  },
  "end": {
   "pitch": -116,
@@ -23,8 +23,8 @@
   "hipAbd": 10,
   "knee": 103,
   "ankle": 13,
-  "shoulderFlex": 20,
+  "shoulderFlex": 12,
   "shoulderAbd": 25,
-  "elbow": 25
+  "elbow": 10
  }
 }

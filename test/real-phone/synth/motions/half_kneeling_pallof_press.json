@@ -8,8 +8,8 @@
  },
  "start": {
   "shoulderFlex": 25,
-  "shoulderAbd": 5,
-  "humRot": -45,
+  "shoulderAbd": 8,
+  "humRot": -25,
   "elbow": 115,
   "left": {
    "hipFlex": -5,
@@ -26,7 +26,7 @@
  },
  "end": {
   "shoulderFlex": 88,
-  "shoulderAbd": -15,
+  "shoulderAbd": -7,
   "humRot": 0,
   "elbow": 5,
   "left": {

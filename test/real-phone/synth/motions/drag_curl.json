@@ -4,12 +4,12 @@
  "status": "experimental",
  "start": {
   "shoulderFlex": 0,
-  "shoulderAbd": 12,
+  "shoulderAbd": 10,
   "elbow": 10
  },
  "end": {
-  "shoulderFlex": -40,
-  "shoulderAbd": 22,
-  "elbow": 115
+  "shoulderFlex": -30,
+  "shoulderAbd": 18,
+  "elbow": 120
  }
 }

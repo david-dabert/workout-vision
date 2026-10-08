@@ -11,9 +11,9 @@
   "hipFlex": 85,
   "knee": 85,
   "ankle": -5,
-  "shoulderFlex": 20,
-  "shoulderAbd": 20,
-  "elbow": 45,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 25,
   "hipAbd": 42
  },
  "end": {
@@ -21,9 +21,9 @@
   "hipFlex": 85,
   "knee": 85,
   "ankle": -5,
-  "shoulderFlex": 20,
-  "shoulderAbd": 20,
-  "elbow": 45,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 25,
   "hipAbd": 8
  }
 }

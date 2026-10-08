@@ -11,7 +11,7 @@
   "hipFlex": 90,
   "knee": 90,
   "hipAbd": 12,
-  "shoulderFlex": 45,
+  "shoulderFlex": 52,
   "shoulderAbd": 12,
   "elbow": 15
  },
@@ -20,7 +20,7 @@
   "hipFlex": 90,
   "knee": 90,
   "hipAbd": 12,
-  "shoulderFlex": 45,
+  "shoulderFlex": 52,
   "shoulderAbd": 12,
   "elbow": 125
  }

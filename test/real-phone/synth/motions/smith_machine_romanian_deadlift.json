@@ -6,7 +6,7 @@
   "knee": 10,
   "ankle": -10,
   "shoulderFlex": 0,
-  "shoulderAbd": 12,
+  "shoulderAbd": 10,
   "elbow": 5
  },
  "end": {
@@ -16,7 +16,7 @@
   "knee": 15,
   "ankle": -15,
   "shoulderFlex": 70,
-  "shoulderAbd": 12,
+  "shoulderAbd": 10,
   "elbow": 5
  }
 }

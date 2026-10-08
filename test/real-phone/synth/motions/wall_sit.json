@@ -1,22 +1,24 @@
 {
  "key": "wall_sit",
- "source": "convention: back flat on a wall, thighs level, knees at a right angle over the ankles, arms hanging, held still; angles UNSOURCED",
+ "source": "convention: back flat on a wall, thighs level, knees at a right angle over the ankles, arms crossed on the chest, held still; angles UNSOURCED",
  "status": "experimental",
  "start": {
   "hipFlex": 90,
   "knee": 90,
   "ankle": 0,
-  "shoulderFlex": 0,
+  "shoulderFlex": 40,
   "shoulderAbd": 10,
-  "elbow": 8
+  "humRot": -60,
+  "elbow": 135
  },
  "end": {
   "hipFlex": 90,
   "knee": 90,
   "ankle": 0,
-  "shoulderFlex": 0,
+  "shoulderFlex": 40,
   "shoulderAbd": 10,
-  "elbow": 8
+  "humRot": -60,
+  "elbow": 135
  },
  "noReps": true
 }

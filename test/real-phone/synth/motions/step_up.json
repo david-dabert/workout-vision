@@ -8,8 +8,8 @@
   "shoulderAbd": 10,
   "elbow": 5,
   "left": {
-   "hipFlex": 70,
-   "knee": 80,
+   "hipFlex": 80,
+   "knee": 90,
    "ankle": -10
   },
   "right": {
