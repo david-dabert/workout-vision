@@ -19,10 +19,10 @@
   "elbow": 125
  },
  "end": {
-  "pitch": -10,
+  "pitch": -20,
   "trunk": 20,
   "neck": 10,
-  "hipFlex": 120,
+  "hipFlex": 110,
   "knee": 110,
   "ankle": -10,
   "hipAbd": 6,

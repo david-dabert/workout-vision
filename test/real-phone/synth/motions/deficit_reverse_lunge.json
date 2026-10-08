@@ -14,13 +14,13 @@
   "elbow": 5,
   "left": {
    "hipFlex": 95,
-   "knee": 110,
-   "ankle": -15
+   "knee": 112,
+   "ankle": -17
   },
   "right": {
    "hipFlex": -15,
-   "knee": 85,
-   "ankle": -30
+   "knee": 75,
+   "ankle": -25
   }
  },
  "alternate": "mirror"

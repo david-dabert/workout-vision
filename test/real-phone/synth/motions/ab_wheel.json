@@ -7,23 +7,23 @@
   "y": 0.07
  },
  "start": {
-  "pitch": 60,
-  "hipFlex": 60,
+  "pitch": 68,
+  "hipFlex": 68,
   "knee": 90,
   "ankle": 65,
   "hipAbd": 6,
-  "shoulderFlex": 60,
+  "shoulderFlex": 68,
   "shoulderAbd": 5,
   "elbow": 5,
   "neck": 10
  },
  "end": {
-  "pitch": 70,
+  "pitch": 76,
   "hipFlex": 10,
-  "knee": 30,
+  "knee": 24,
   "ankle": 65,
   "hipAbd": 6,
-  "shoulderFlex": 135,
+  "shoulderFlex": 141,
   "shoulderAbd": 5,
   "elbow": 5,
   "neck": 10

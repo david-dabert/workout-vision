@@ -12,7 +12,7 @@
   "elbow": 0,
   "hipFlex": 90,
   "knee": 0,
-  "ankle": 30,
+  "ankle": 70,
   "hipAbd": 2
  },
  "end": {
@@ -21,7 +21,7 @@
   "elbow": 0,
   "hipFlex": 90,
   "knee": 0,
-  "ankle": 30,
+  "ankle": 70,
   "hipAbd": 2
  },
  "noReps": true

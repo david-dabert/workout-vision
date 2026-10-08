@@ -20,8 +20,8 @@
    "ankle": -10
   },
   "right": {
-   "hipFlex": -10,
-   "knee": 95,
+   "hipFlex": -15,
+   "knee": 85,
    "ankle": -35
   }
  },

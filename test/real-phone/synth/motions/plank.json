@@ -12,7 +12,7 @@
   "shoulderAbd": 5,
   "elbow": 90,
   "hipAbd": 3,
-  "ankle": 25
+  "ankle": 0
  },
  "end": {
   "pitch": 84,
@@ -20,7 +20,7 @@
   "shoulderAbd": 5,
   "elbow": 90,
   "hipAbd": 3,
-  "ankle": 25
+  "ankle": 0
  },
  "noReps": true
 }

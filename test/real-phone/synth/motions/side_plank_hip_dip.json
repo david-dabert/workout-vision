@@ -7,12 +7,12 @@
   "y": 0.07
  },
  "start": {
-  "roll": 78,
+  "roll": 75,
   "trunkSide": 0,
   "hipAbd": 0,
   "ankle": 0,
   "right": {
-   "shoulderAbd": 78,
+   "shoulderAbd": 75,
    "elbow": 90
   },
   "left": {
@@ -21,12 +21,12 @@
   }
  },
  "end": {
-  "roll": 92,
-  "trunkSide": 22,
+  "roll": 85,
+  "trunkSide": 28,
   "hipAbd": 0,
   "ankle": 0,
   "right": {
-   "shoulderAbd": 72,
+   "shoulderAbd": 57,
    "elbow": 90
   },
   "left": {

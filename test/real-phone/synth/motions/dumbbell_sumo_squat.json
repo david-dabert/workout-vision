@@ -3,7 +3,7 @@
  "source": "convention: dumbbell sumo squat, wide stance with the toes out, one dumbbell hanging between the legs at arm length, knees out over the toes, thighs to about parallel; angles UNSOURCED",
  "status": "experimental",
  "start": {
-  "hipAbd": 28,
+  "hipAbd": 22,
   "shoulderFlex": 5,
   "shoulderAbd": -4,
   "elbow": 5
@@ -11,7 +11,7 @@
  "end": {
   "trunk": 20,
   "hipFlex": 85,
-  "hipAbd": 35,
+  "hipAbd": 30,
   "knee": 100,
   "ankle": -15,
   "shoulderFlex": 20,

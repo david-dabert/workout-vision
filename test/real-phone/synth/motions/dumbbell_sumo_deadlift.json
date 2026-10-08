@@ -6,7 +6,7 @@
   "pitch": 25,
   "trunk": 10,
   "hipFlex": 90,
-  "hipAbd": 35,
+  "hipAbd": 30,
   "knee": 85,
   "ankle": -20,
   "shoulderFlex": 35,
@@ -14,7 +14,7 @@
   "elbow": 5
  },
  "end": {
-  "hipAbd": 25,
+  "hipAbd": 20,
   "knee": 2,
   "shoulderFlex": 0,
   "shoulderAbd": -3,

@@ -12,8 +12,8 @@
   "shoulderAbd": 3,
   "elbow": 5,
   "hipFlex": 90,
-  "knee": 100,
-  "ankle": 5,
+  "knee": 92,
+  "ankle": -25,
   "hipAbd": 6
  },
  "end": {
@@ -22,8 +22,8 @@
   "shoulderAbd": 3,
   "elbow": 5,
   "hipFlex": 90,
-  "knee": 100,
-  "ankle": 5,
+  "knee": 92,
+  "ankle": -25,
   "hipAbd": 6
  },
  "noReps": true
