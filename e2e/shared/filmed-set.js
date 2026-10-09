@@ -100,9 +100,12 @@ export async function chooseDrawnVideo(page, seconds = 12) {
 }
 
 // One set filmed, analysed and kept as counted; the saved card is returned once the question could have shown.
-export async function saveSet(page, base) {
+// blind: on a phone that asks the count before the app's (#collecte, blind.js), 'unsure' answers "Je ne sais pas" once the
+// question shows; the default asks nothing.
+export async function saveSet(page, base, { blind = null } = {}) {
   await openFilm(page, base);
   await chooseDrawnVideo(page);
+  if (blind === 'unsure') await page.getByTestId('blind-unsure').click({ timeout: 60000 });
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
   await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   const card = page.getByTestId('saved-card');

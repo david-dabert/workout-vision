@@ -76,6 +76,22 @@ describe('the file kept', () => {
     expect(collectedPayload({ result, lift: 'squat', kept: 7, view: 'side', sha256: 'x', hashOf: 'video', version: 'v' }).corrected).toBe(false);
   });
 
+  it('carries the blind count given before the app showed its own, and none when it was not asked', () => {
+    const p = collectedPayload({ result, lift: 'bicep_curl', kept: 8, view: 'side', sha256: 'x', hashOf: 'video', version: 'v', blind: { count: 8, p: 1 } });
+    // The count kept stays the file's count, marked after-app; the blind count stands beside it (sets.ts, blindSets).
+    expect(p).toMatchObject({ count: 8, labelKind: 'after-app', appCount: 7, blind: { count: 8, p: 1 } });
+    expect(collectedPayload({ result, lift: 'bicep_curl', kept: 8, view: 'side', sha256: 'x', hashOf: 'video', version: 'v', blind: { count: null, p: 1 } }).blind).toEqual({ count: null, p: 1 });
+    expect('blind' in collectedPayload({ result, lift: 'bicep_curl', kept: 8, view: 'side', sha256: 'x', hashOf: 'video', version: 'v' })).toBe(false);
+  });
+
+  it('marks a refused set as refused by the app, with the proposal it made', () => {
+    const refused = { ...result, count: 0, refused: true, proposal: { count: 6 } };
+    expect(collectedPayload({ result: refused, lift: 'squat', kept: 6, view: 'side', sha256: 'x', hashOf: 'video', version: 'v', blind: { count: 6, p: 1 } }))
+      .toMatchObject({ count: 6, appCount: 0, appRefused: true, proposal: 6, blind: { count: 6, p: 1 } });
+    expect(collectedPayload({ result: { ...refused, proposal: null }, lift: 'squat', kept: 6, view: 'side', sha256: 'x', hashOf: 'video', version: 'v' }).proposal).toBe(null);
+    expect('appRefused' in collectedPayload({ result, lift: 'squat', kept: 7, view: 'side', sha256: 'x', hashOf: 'video', version: 'v' })).toBe(false);
+  });
+
   it('is stored gzipped under the collector\'s name, readable as the scoreboard reads a set', async () => {
     mem.clear();
     const s = storage({ [COLLECT_KEY]: '1' });

@@ -11,11 +11,14 @@
 // of 9 October 2026 and withdrawn that evening on this very count: test/real-phone/sets-09oct-video-mode/). It is shown
 // against its own baseline (videoModeCounts) and decides nothing while the app reads in IMAGE mode.
 // In both, a refused set shows the proposal the app offers on it (coreAnalysis.js withProposal), which decides nothing.
+// A fourth, "David's blind counts", counts the sets he collected on his phone with the count he gave before the app
+// showed its own (blindSets, sets.ts; blind.js): shown, decides nothing until he says these counts are labels (R1).
+// A collected file counted after the app's (labelKind 'after-app') is never a label: it is named as held, and skipped.
 import { expect, test } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount, withProposal } from '../../../src/lib/coreAnalysis';
-import { decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets } from './sets';
+import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
 
@@ -63,9 +66,10 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // editing the baseline it is compared with (audit of 3 October).
   const base = JSON.parse(readFileSync(process.env.SCOREBOARD_BASE || BASELINE, 'utf8'));
   // The gate compares the sets both runs hold: a set added since cannot hide a regression (review, 30 September).
-  const { sets, unreadable } = labelledSets();
+  const { sets, unreadable, held } = labelledSets();
   const b = section(sets, base.counts, i => { const r = summarizeCount(sets[i].wl, sets[i].ts, sets[i].lift); return { now: r.refused ? 'refused' : r.count, doubt: r.doubt }; });
   for (const name of unreadable) b.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
+  for (const h of held) b.rows.push(`HELD ${h.name}  (labelKind ${h.labelKind}: counted after the app's count, no label, R1)`);
   const kept = b.n - b.added - b.press;
   const head = `Scoreboard ${new Date().toISOString().slice(0, 10)}: of the ${kept} sets in the baseline that decide, ${b.exactNow} exact now, ${b.exactBefore} before; ${b.catastrophic} newly catastrophic, ${b.known} known catastrophic (shown, gated on growth), ${b.becameRefused} newly refused${b.added ? `; ${b.added} set${b.added > 1 ? 's' : ''} new since` : ''}. The ${b.press} bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.`;
   // Real video, 7 October (test/real-phone/sets-07oct-video/, README.md there): David's 13 gym videos read whole by the
@@ -90,7 +94,20 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of vmode.unreadable) m.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
   const mkept = m.n - m.added - m.press;
   const mhead = `Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the ${mkept} sets in the baseline, ${m.exactNow} exact now, ${m.exactBefore} before; ${m.catastrophic} newly catastrophic, ${m.known} known catastrophic (shown, gated on growth), ${m.becameRefused} newly refused${m.added ? `; ${m.added} set${m.added > 1 ? 's' : ''} new since` : ''}; ${Object.values(m.live).filter(c => c === 'refused').length} refused of ${m.n}.`;
-  const text = [head, doubtLine(b.doubts), ...b.rows, '', vhead, ...v.rows, '', mhead, ...m.rows].join('\n') + '\n';
+  // David's blind counts (blindSets): the app's outcome now against the count he gave before seeing it; beside it, the
+  // count he kept after seeing the app's, and whether he changed his mind. Measured only.
+  const blind = blindSets();
+  const bnow = blind.sets.map(s => videoCount({ ...s, appRefused: false, motion: null }) as { now: number | string; note?: string });
+  const brows = blind.sets.map((s, i) => {
+    const o = bnow[i];
+    const changed = s.kept !== s.label ? `  kept ${s.kept} (changed after the app's count)` : `  kept ${s.kept}`;
+    return `   ${s.name}  blind ${s.label}  now ${o.now} (${verdict(o.now, s.label)})${o.note ? `  ${o.note}` : ''}${changed}${decides(s.lift) ? '' : `  ${PRESS_DECIDES_NOTHING}`}`;
+  });
+  for (const name of blind.unsure) brows.push(`   ${name}  answered "Je ne sais pas": no blind count`);
+  for (const name of blind.unreadable) brows.push(`UNREADABLE ${name}  (a blind count, but no lift, whole count or landmarks)`);
+  const bexact = blind.sets.filter((s, i) => decides(s.lift) && bnow[i].now === s.label).length, bdec = blind.sets.filter(s => decides(s.lift)).length;
+  const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that would decide; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
+  const text = [head, doubtLine(b.doubts), ...b.rows, '', vhead, ...v.rows, '', mhead, ...m.rows, '', bhead, ...brows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly

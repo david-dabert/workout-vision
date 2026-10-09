@@ -210,6 +210,11 @@ describe('planned against counted', () => {
     const result = { count: 10, reps: [], arm: 'right', confidence: 0.9, metadata: { duration: 30 }, timestamps: [] };
     expect(savedSet({ result, lift: 'squat', n: 10, corrected: false, planned }).planned).toEqual(planned);
     expect('planned' in savedSet({ result, lift: 'squat', n: 10, corrected: false })).toBe(false);
+    // The blind count (blind.js) is kept when the set was asked, "Je ne sais pas" as null; absent otherwise.
+    expect(savedSet({ result, lift: 'squat', n: 10, corrected: false, blind: { count: 9, p: 1 } }).blind).toEqual({ count: 9, p: 1 });
+    expect(savedSet({ result, lift: 'squat', n: 10, corrected: false, blind: { count: null, p: 1 } }).blind).toEqual({ count: null, p: 1 });
+    expect(savedSet({ result, lift: 'squat', n: 10, corrected: true, manual: true, blind: { count: 10, p: 1 } }).blind).toEqual({ count: 10, p: 1 });
+    expect('blind' in savedSet({ result, lift: 'squat', n: 10, corrected: false })).toBe(false);
     expect(savedSet({ result, lift: 'squat', n: 8, corrected: true, manual: true, planned }).planned).toEqual(planned);
     expect(targetText(planned)).toBe(`3${NBSP}×${NBSP}10`);
     const base = { lang: 'fr', date: new Date(2026, 9, 6), liftName: 'Squat', count: 10, counted: 10, arm: 'right' };
@@ -240,6 +245,15 @@ describe('planned against counted', () => {
     }
     for (const bad of [{ agreement: 'x', second: 9 }, { agreement: 0.4, second: 9.5 }, 3]) {
       expect('bodyCheck' in validateWorkout({ ...stored, bodyCheck: bad }).sanitized).toBe(false);
+    }
+  });
+  it('keeps a blind count through a read, and drops one that is not a count with its share', () => {
+    const result = { count: 7, reps: [], arm: 'left', confidence: 0.9, metadata: { duration: 20 } };
+    const stored = { id: 'w3', createdAt: 1, ...savedSet({ result, lift: 'squat', n: 8, corrected: true, blind: { count: 8, p: 1 } }) };
+    expect(validateWorkout(stored).sanitized.blind).toEqual({ count: 8, p: 1 });
+    expect(validateWorkout({ ...stored, blind: { count: null, p: 1 } }).sanitized.blind).toEqual({ count: null, p: 1 });
+    for (const bad of [{ count: 0, p: 1 }, { count: 100, p: 1 }, { count: 8.5, p: 1 }, { count: 8 }, { count: 8, p: 2 }, 8]) {
+      expect('blind' in validateWorkout({ ...stored, blind: bad }).sanitized).toBe(false);
     }
   });
 

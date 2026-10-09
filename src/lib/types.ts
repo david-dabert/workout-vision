@@ -297,6 +297,8 @@ export interface WorkoutRecord {
   proposal?: { reps: number; by: 'psc' } | null;
   /** A set the body check flagged: the agreement and the body's count offered beside the app's (saved-set.js). */
   bodyCheck?: { agreement: number | null; second: number | null } | null;
+  /** The count the person gave before the app showed its own (blind.js); null for "Je ne sais pas". */
+  blind?: { count: number | null; p: number } | null;
 }
 
 export interface RepCounterDiagnostics {

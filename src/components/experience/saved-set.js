@@ -22,8 +22,10 @@ import { compactWave, waveAngles } from './wave';
  */
 export const keepsMeasures = result => result?.bodyCheck?.flagged !== true;
 
-export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date(), planned = null, proposal = null }) {
-  const withPlan = set => (planned ? { ...set, planned } : set);
+// blind: the count the person gave before the app showed its own (blind.js), as { count, p }, count null for "Je ne sais
+// pas"; kept with the set when it was asked, so the history and the exports can tell a blind count from one given after.
+export function savedSet({ result, lift, n, corrected, sides = null, manual = false, now = new Date(), planned = null, proposal = null, blind = null }) {
+  const withPlan = set => ({ ...set, ...(planned ? { planned } : {}), ...(blind ? { blind: { count: blind.count ?? null, p: blind.p } } : {}) });
   if (manual) {
     return withPlan({
       exercise: lift, reps: n, repDetails: [], arm: null, confidence: null, afterRefusal: true,

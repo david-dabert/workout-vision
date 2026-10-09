@@ -9,6 +9,10 @@
 // The count in the file was given after the app showed its own: the file says so (labelKind 'after-app', as
 // contribute.js marks it, audit FINDING-008) and carries the app's count beside it. Whether such a set enters a
 // scoreboard is David's decision (R1, R13); a blind recount is kept for the sets the scoreboard publishes.
+// Since 9 October 2026 (blind.js) the file also carries the count David gave before the app showed its own, as
+// blind: { count, p } (count null for "Je ne sais pas"), and a refused set he counted blind is kept as well, marked
+// appRefused, with the app's proposal when it made one. The scoreboard reads blind.count as his blind label in a
+// section of its own, which decides nothing until he says so (test/real-phone/accuracy/sets.ts, blindSets).
 import localforage from 'localforage';
 import { setFileName, setPayload, hashVideoContent, gzipBlob } from './collector';
 
@@ -94,7 +98,7 @@ export async function landmarksSha256(worldLandmarks) {
  * landmarks' hash. view is the view the app asks this lift to be filmed from (exercise-info.js filmView), since the
  * result screen does not ask it; viewSource says so.
  */
-export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version }) {
+export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null }) {
   const m = result?.metadata || {};
   return {
     ...setPayload({
@@ -112,6 +116,8 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
     hashOf,
     viewSource: 'app-guide',
     source: 'result-screen',
+    ...(blind ? { blind: { count: Number.isInteger(blind.count) ? blind.count : null, p: blind.p ?? null } } : {}),
+    ...(result?.refused ? { appRefused: true, proposal: Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null } : {}),
   };
 }
 
@@ -120,13 +126,13 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
  * read, hashed or stored then). videoFile: the video the count was made from (its SHA-256 names the file, as the
  * collector names it); without it, or when it cannot be read, the landmarks' hash does.
  */
-export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, storage = globalThis.localStorage, put = (k, v) => store.setItem(k, v) }) {
+export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, storage = globalThis.localStorage, put = (k, v) => store.setItem(k, v) }) {
   if (!collectOn(storage)) return null;
   if (!result || !Array.isArray(result.worldLandmarks) || !result.worldLandmarks.length || !Number.isInteger(kept)) return null;
   let sha256 = null, hashOf = 'video';
   if (videoFile) { try { sha256 = await hashVideoContent(videoFile); } catch { sha256 = null; } }
   if (!sha256) { sha256 = await landmarksSha256(result.worldLandmarks); hashOf = 'landmarks'; }
-  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version });
+  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind });
   const blob = await gzipBlob(JSON.stringify(payload));
   const name = setFileName(lift, kept, view, sha256);
   await put(name, { name, blob, savedAt: new Date().toISOString() });

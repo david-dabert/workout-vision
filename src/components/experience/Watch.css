@@ -22,3 +22,15 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .watch-progress.is-loading::after { display: none; }
 }
+/* The blind question (BlindAsk.jsx): the person's count before the app's, under the progress. The body's space gives
+   up room for it; the number and the keys reuse the result screen's (Result.css), smaller. */
+.wv-experience .watch-screen.has-blind .watch-space { min-height: 48px; }
+.wv-experience .watch-screen.has-blind .pct { min-height: 0; font-size: 44px; }
+.wv-experience .blind-ask { width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-top: 6px; }
+.wv-experience .blind-ask .ask-q { font-size: 27px; }
+.wv-experience .blind-ask .res-hero { margin-top: 4px; }
+.wv-experience .blind-ask .res-typed { font-size: 72px; }
+.wv-experience .blind-ask .blind-after { margin: 0; text-align: center; }
+.wv-experience .blind-keys { display: flex; gap: 8px; margin-top: 4px; }
+.wv-experience .blind-keys .res-key { flex: 1; }
+.wv-experience .blind-ask .res-empty { height: 72px; }
