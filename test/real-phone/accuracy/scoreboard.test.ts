@@ -5,12 +5,16 @@
 // more, or if a set that gave a count becomes refused. Bench press and overhead press sets are measured, shown and
 // kept in the baseline, and decide nothing (PLAN.md; decides() in sets.ts). Build sets only (David's sets in every test/real-phone/sets-*/ folder and the five build clips): no exam set exists yet,
 // and nothing here may tune a parameter. Runs only when asked, so a plain npm test changes no file.
-// A second section, "Real video, 7 October", counts David's 13 whole gym videos as the built app read them
-// (test/real-phone/sets-07oct-video/), under the same rules and its own baseline (videoCounts).
+// A second section, "Real video, 7 October", counts David's 14 whole gym videos as the built app read them then, with
+// MediaPipe in IMAGE mode (test/real-phone/sets-07oct-video/), under the same rules and its own baseline (videoCounts).
+// A third, "Real video, VIDEO mode", counts the same videos read with MediaPipe in VIDEO mode (shipped on the morning
+// of 9 October 2026 and withdrawn that evening on this very count: test/real-phone/sets-09oct-video-mode/). It is shown
+// against its own baseline (videoModeCounts) and decides nothing while the app reads in IMAGE mode.
+// In both, a refused set shows the proposal the app offers on it (coreAnalysis.js withProposal), which decides nothing.
 import { expect, test } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { summarizeCount } from '../../../src/lib/coreAnalysis';
+import { summarizeCount, withProposal } from '../../../src/lib/coreAnalysis';
 import { decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
@@ -21,11 +25,12 @@ type Tally = { rows: string[]; live: Record<string, number | string>; doubts: { 
 
 // One section of the scoreboard: each set's live count against its label and against the baseline's count, with the
 // tallies of the R2 gate. `count` gives the app's outcome for a set (a number or 'refused').
-function section(sets: { name: string; lift: string; label: number }[], baseCounts: Record<string, number | string>, count: (i: number) => { now: number | string; doubt?: { flagged: boolean } | null }): Tally {
+function section(sets: { name: string; lift: string; label: number }[], baseCounts: Record<string, number | string>, count: (i: number) => { now: number | string; doubt?: { flagged: boolean } | null; note?: string }): Tally {
   const t: Tally = { rows: [], live: {}, doubts: [], exactNow: 0, exactBefore: 0, catastrophic: 0, known: 0, becameRefused: 0, n: 0, added: 0, press: 0, missing: [] };
   const { rows } = t;
   sets.forEach((s, i) => {
-    const { now, doubt } = count(i), before = baseCounts[s.name];
+    const { now, doubt, note } = count(i), before = baseCounts[s.name];
+    const tail = note ? `  ${note}` : '';
     t.live[s.name] = now; t.n++;
     if (doubt && now !== 'refused') t.doubts.push({ flagged: doubt.flagged, err: Math.abs((now as number) - s.label) });
     const v = verdict(now, s.label), vb = before === undefined ? 'new' : verdict(before, s.label);
@@ -45,7 +50,7 @@ function section(sets: { name: string; lift: string; label: number }[], baseCoun
     // A set that gave a count and is now refused fails like one off by 3 or more, as in the public gate and
     // scripts/compare-variants.mjs; a set already refused in the baseline does not (third audit, C31).
     if (v === 'refused' && before !== undefined && before !== 'refused') { t.becameRefused++; rows.push(`BECAME REFUSED  ${s.name}  label ${s.label}  before ${before}`); }
-    rows.push(`${now === before ? '  ' : '->'} ${s.name}  label ${s.label}  before ${before ?? '-'} (${vb})  now ${now} (${v})`);
+    rows.push(`${now === before ? '  ' : '->'} ${s.name}  label ${s.label}  before ${before ?? '-'} (${vb})  now ${now} (${v})${tail}`);
   });
   // A set of the baseline no longer on disk is named, and fails the gate: a set is never dropped quietly.
   t.missing = Object.keys(baseCounts).filter(name => !(name in t.live));
@@ -66,21 +71,30 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // Real video, 7 October (test/real-phone/sets-07oct-video/, README.md there): David's 13 gym videos read whole by the
   // built app (analyzeCoreVideo), his labels (R1). The same R2 rules, on their own baseline (videoCounts): no exact
   // count lost, none newly off by 3 or more, none newly refused. A read the app itself refused (partial) is refused here.
+  // The app's outcome on a whole video, and on a set it refuses, the proposal it offers (shown, decides nothing).
+  const videoCount = (s: ReturnType<typeof videoSets>['sets'][number]) => {
+    if (s.appRefused) return { now: 'refused' as const };
+    const r: any = summarizeCount(s.wl, s.ts, s.lift);
+    if (!r.refused) return { now: r.count, doubt: r.doubt };
+    const p: any = s.il ? withProposal({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: s.il }, s.lift) : null;
+    return { now: 'refused' as const, note: p?.proposal?.count ? `(proposal ${p.proposal.count})` : '(no proposal)' };
+  };
   const video = videoSets();
-  const v = section(video.sets, base.videoCounts ?? {}, i => {
-    const s = video.sets[i];
-    if (s.appRefused) return { now: 'refused' };
-    const r = summarizeCount(s.wl, s.ts, s.lift);
-    return { now: r.refused ? 'refused' : r.count, doubt: r.doubt };
-  });
+  const v = section(video.sets, base.videoCounts ?? {}, i => videoCount(video.sets[i]));
   for (const name of video.unreadable) v.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
   const vkept = v.n - v.added - v.press;
   const vhead = `Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the ${vkept} sets in the baseline, ${v.exactNow} exact now, ${v.exactBefore} before; ${v.catastrophic} newly catastrophic, ${v.known} known catastrophic (shown, gated on growth), ${v.becameRefused} newly refused${v.added ? `; ${v.added} set${v.added > 1 ? 's' : ''} new since` : ''}; ${Object.values(v.live).filter(c => c === 'refused').length} refused of ${v.n}.`;
-  const text = [head, doubtLine(b.doubts), ...b.rows, '', vhead, ...v.rows].join('\n') + '\n';
+  // The same videos read in VIDEO mode (README.md there): measured, decides nothing while the app reads in IMAGE mode.
+  const vmode = videoSets({ mode: 'video' });
+  const m = section(vmode.sets, base.videoModeCounts ?? {}, i => videoCount(vmode.sets[i]));
+  for (const name of vmode.unreadable) m.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
+  const mkept = m.n - m.added - m.press;
+  const mhead = `Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the ${mkept} sets in the baseline, ${m.exactNow} exact now, ${m.exactBefore} before; ${m.catastrophic} newly catastrophic, ${m.known} known catastrophic (shown, gated on growth), ${m.becameRefused} newly refused${m.added ? `; ${m.added} set${m.added > 1 ? 's' : ''} new since` : ''}; ${Object.values(m.live).filter(c => c === 'refused').length} refused of ${m.n}.`;
+  const text = [head, doubtLine(b.doubts), ...b.rows, '', vhead, ...v.rows, '', mhead, ...m.rows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
-  // refused counts as catastrophic (third audit, C31). Both sections.
+  // refused counts as catastrophic (third audit, C31). The two sections the app reads as; the VIDEO-mode one is shown.
   for (const t of [b, v]) {
     expect(t.exactNow).toBeGreaterThanOrEqual(t.exactBefore);
     expect(t.catastrophic).toBe(0);
@@ -89,6 +103,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   }
   expect(unreadable).toEqual([]);
   expect(video.unreadable).toEqual([]);
+  expect(vmode.unreadable).toEqual([]);
+  expect(m.missing).toEqual([]);
   // In CI the committed baseline must hold the live counts: a change that moves a count commits the
   // SCOREBOARD_UPDATE output, and a baseline edited by hand fails, so the next change is compared with the
   // counts the code really gives (third audit, C27). The note and its date are not compared.
@@ -96,7 +112,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     const committed = JSON.parse(readFileSync(BASELINE, 'utf8'));
     expect(committed.counts).toEqual(b.live);
     expect(committed.videoCounts ?? {}).toEqual(v.live);
+    expect(committed.videoModeCounts ?? {}).toEqual(m.live);
   }
   // Only a change that passes the gate is recorded as accepted (review, 30 September).
-  if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section (test/real-phone/sets-07oct-video/).`, counts: b.live, videoCounts: v.live }, null, 2) + '\n');
-});
+  if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section read in IMAGE mode (test/real-phone/sets-07oct-video/); videoModeCounts: the same videos read in VIDEO mode, measured only (test/real-phone/sets-09oct-video-mode/).`, counts: b.live, videoCounts: v.live, videoModeCounts: m.live }, null, 2) + '\n');
+}, 300_000); // the proposals (PSC) of the refused sets take a few seconds

@@ -18,8 +18,8 @@ self.onmessage = async ({ data }) => {
       return;
     }
     if (data.type === 'init') {
-      // videoMode: the app's video analysis (coreAnalysis.js, since 9 October); the collector and the live counter send
-      // no videoMode and keep IMAGE mode.
+      // videoMode: VIDEO mode, sent only by the check page's ?posemode=video, to measure (coreAnalysis.js: withdrawn
+      // from the app on 9 October 2026); the app, the collector and the live counter read in IMAGE mode.
       // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it (poseAnalysis.js
       // reads __WV_BENCH_POSE_MODEL__); the app never sends it.
       if (data.benchModel instanceof ArrayBuffer) globalThis.__WV_BENCH_POSE_MODEL__ = data.benchModel;

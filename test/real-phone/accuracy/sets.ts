@@ -18,8 +18,9 @@ export const decides = (lift: string) => lift !== 'bench_press' && lift !== 'ove
 
 export function labelledSets() {
   const sets: LabelledSet[] = [], unreadable: string[] = [];
-  // A sets-*-video folder holds whole real videos read through the built app (videoSets below): its own section.
-  const dirs = readdirSync(ROOT).filter(d => /^sets-/.test(d) && !/-video$/.test(d) && statSync(resolve(ROOT, d)).isDirectory()).sort();
+  // A sets-*-video folder (and a sets-*-video-mode one) holds whole real videos read through the built app (videoSets
+  // below): its own section.
+  const dirs = readdirSync(ROOT).filter(d => /^sets-/.test(d) && !/-video(-mode)?$/.test(d) && statSync(resolve(ROOT, d)).isDirectory()).sort();
   for (const dir of [...dirs, 'landmarks']) {
     for (const f of readdirSync(resolve(ROOT, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
       const name = `${dir}/${f}`;
@@ -40,10 +41,13 @@ export function labelledSets() {
 // David's real videos read whole through the built app (analyzeCoreVideo on check.html, test/real-phone/sets-*-video/,
 // capture.mjs there): the app's landmarks, timestamps and metadata, his label (R1), and the motion frames of the pose
 // region (24 x 24 gray, motionRhythm.js). `appRefused`: the app refused the read itself (a partial read): no count.
-export type VideoSet = LabelledSet & { appRefused: boolean; motion: { grid: number; frames: string[] } | null };
-export function videoSets() {
+export type VideoSet = LabelledSet & { appRefused: boolean; motion: { grid: number; frames: string[] } | null; il: any[] | null };
+// mode 'image': the reads of 7 October (sets-*-video/, MediaPipe in IMAGE mode, as the app reads); 'video': the same
+// videos read in VIDEO mode (sets-*-video-mode/; shipped on the morning of 9 October 2026, withdrawn that evening).
+export function videoSets({ mode = 'image' }: { mode?: 'image' | 'video' } = {}) {
   const sets: VideoSet[] = [], unreadable: string[] = [];
-  const dirs = readdirSync(ROOT).filter(d => /^sets-.*-video$/.test(d) && statSync(resolve(ROOT, d)).isDirectory()).sort();
+  const folder = mode === 'video' ? /^sets-.*-video-mode$/ : /^sets-.*-video$/;
+  const dirs = readdirSync(ROOT).filter(d => folder.test(d) && statSync(resolve(ROOT, d)).isDirectory()).sort();
   for (const dir of dirs) {
     for (const f of readdirSync(resolve(ROOT, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
       const name = `${dir}/${f}`;
@@ -51,7 +55,7 @@ export function videoSets() {
       try { d = JSON.parse(gunzipSync(readFileSync(resolve(ROOT, dir, f))).toString()); }
       catch { unreadable.push(name); continue; }
       if (!d.lift || !Number.isInteger(d.count) || !Array.isArray(d.worldLandmarks) || !Array.isArray(d.timestamps) || d.worldLandmarks.length !== d.timestamps.length) { unreadable.push(name); continue; }
-      sets.push({ name, lift: d.lift, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, appRefused: !!d.read?.partial, motion: d.motion ?? null });
+      sets.push({ name, lift: d.lift, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, appRefused: !!d.read?.partial, motion: d.motion ?? null, il: d.imageLandmarks ?? null });
     }
   }
   return { sets, unreadable };

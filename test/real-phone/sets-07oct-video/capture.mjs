@@ -19,7 +19,10 @@
 //
 // The folder holds <name>.mp4 for each set: David's original re-encoded to VP9 with its own frame timestamps
 // (ffmpeg -an -c:v libvpx-vp9 -crf 18 -b:v 0 -fps_mode passthrough -enc_time_base 1:600 -video_track_timescale 600),
-// since this Chromium has no H.264 decoder. SETS_OUT=<dir> writes elsewhere than this folder.
+// since this Chromium has no H.264 decoder. SETS_OUT=<dir> writes elsewhere than this folder. Unset, the page reads as
+// the app does (MediaPipe in IMAGE mode); SETS_POSEMODE=video reads in VIDEO mode (the check page's ?posemode=video;
+// shipped on the morning of 9 October 2026, withdrawn that evening). The mode is written into each file
+// (extraction.poseMode).
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -37,6 +40,7 @@ const manifest = JSON.parse(readFileSync(resolve(HERE, 'manifest.json'), 'utf8')
 const version = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).version;
 const PORT = Number(process.env.SETS_PORT || 4179), BASE = `http://localhost:${PORT}/workout-vision/`;
 const GRAY_SIDE = 128;
+const POSE_MODE = process.env.SETS_POSEMODE === 'video' ? 'video' : 'image';
 
 // The pose box of a sample in [0, 1] image coordinates (landmarks with visibility >= 0.5), as capture.mjs and synth.js.
 const box = lm => {
@@ -96,7 +100,7 @@ try {
       window.__wv = { gray, answers, result: null };
       window.addEventListener('wv:core-result', e => { window.__wv.result = e.detail; });
     }, GRAY_SIDE);
-    await page.goto(`${BASE}check.html`, { timeout: 120000 });
+    await page.goto(`${BASE}check.html${POSE_MODE === 'video' ? '?posemode=video' : ''}`, { timeout: 120000 });
     const t0 = Date.now();
     await page.locator('.clip input[type="file"]').first().setInputFiles(file);
     // Done: a result, or the row marked bad (an error the page shows).
@@ -138,7 +142,7 @@ try {
       // (0.06 px at 640 px) to keep the folder small: they serve the pose boxes, whose region is computed before rounding.
       read, worldLandmarks, imageLandmarks: imageLandmarks.map(lm => lm && lm.map(p => Object.fromEntries(Object.entries(p).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v * 1e4) / 1e4 : v])))), timestamps,
       frame: metadata ? { width: metadata.width, height: metadata.height } : null,
-      extraction: { fps: 15, maxLongSide: 640, path: 'analyzeCoreVideo, built app (check.html), Chromium, VP9 re-encode keeping the frame timestamps' },
+      extraction: { fps: 15, maxLongSide: 640, poseMode: POSE_MODE, path: 'analyzeCoreVideo, built app (check.html), Chromium, VP9 re-encode keeping the frame timestamps' },
       metadata, version, analysisSeconds: Math.round(seconds),
       motion: { grid: GRID, roi, boxes, gray: { w: first.w, h: first.h, from: 'the sample canvas the pose model reads, drawn to 128 px gray (77 R + 150 G + 29 B) >> 8' }, frames },
     };

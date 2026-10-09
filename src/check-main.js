@@ -37,9 +37,9 @@ const why = w => !fr ? w : w
   .replace('refused as a frozen read', 'refusée comme lecture figée');
 // The frozen-injection row: check.html?inject=frozen only. The app never reads this parameter.
 const INJECT = new URLSearchParams(location.search).get('inject') === 'frozen';
-// ?posemode=image: the rows read with MediaPipe in IMAGE mode, as the app did before 9 October (coreAnalysis.js), to
-// measure against the app's VIDEO mode.
-const POSE_MODE = new URLSearchParams(location.search).get('posemode') === 'image' ? 'image' : null;
+// ?posemode=video: the rows read with MediaPipe in VIDEO mode (coreAnalysis.js; shipped on the morning of 9 October
+// 2026, withdrawn that evening), to measure against the app's IMAGE mode. ?posemode=image reads as the app does.
+const POSE_MODE = new URLSearchParams(location.search).get('posemode') === 'video' ? 'video' : null;
 // ?posemodel=<file>: the rows read with the pose model at bench/<file> (served beside the page by a local build only,
 // never committed), to measure another model against the one the app ships.
 const POSE_MODEL = (new URLSearchParams(location.search).get('posemodel') || '').replace(/[^\w.-]/g, '') || null;
