@@ -337,8 +337,8 @@ export async function getImageLandmarker() {
  * (WebGL), with no fall back, to be measured on a phone (check.html?delegate=gpu; pillar 4, 9 October 2026). The app,
  * the collector and the live counter read on the CPU. GPU against CPU: UNSOURCED on any hardware GPU, not measured on
  * an iPhone. Measured 9 October 2026 on SwiftShader only (a software renderer, blocklisted in gpuBenchmark.js; this
- * machine has no GPU): each delegate repeated itself bitwise, and 0 of 78 co-detected frames matched across them
- * (TRIED.md). Status: experimental.
+ * machine has no GPU), in a scratch probe: each delegate repeated itself bitwise, and 0 of 78 co-detected frames
+ * matched across them (TRIED.md, "MediaPipe's GPU delegate on SwiftShader"). Status: experimental.
  */
 export async function getImageLandmarkerOn(delegate = 'CPU') {
   return delegate === 'GPU' ? getPoseLandmarker({ useImageMode: true, delegate: 'GPU' }) : getImageLandmarker();

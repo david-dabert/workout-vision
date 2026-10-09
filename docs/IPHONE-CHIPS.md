@@ -7,10 +7,10 @@ Every number below comes from this repository's machine, which has no GPU, and s
 ## 1. Why it matters
 
 The pose model runs on the CPU, one sample at a time, in IMAGE mode (`poseAnalysis.js`, `getImageLandmarker`).
-On this machine it costs 74 to 133 ms a sample (TRIED.md, 7 and 9 October).
+On this machine it costs about 84 ms a sample in IMAGE mode, and about 120 ms with decoding and the crop retry (TRIED.md, entries of 7 and 9 October on speed and VIDEO mode).
 David's iPhone took over a minute for 460 to 493 samples on 7 October, but that figure includes decoding and predates the pipelined read, so the iPhone's model time per sample is not known.
 Live counting needs at most 66.7 ms a sample (`liveEngine.js`, `SLOW_MS`).
-Above that, its 30-sample queue fills in 30 / (15 − 1000 / d) seconds for a cost of d ms a sample: about 2.4 s at 120 ms, 5.6 s at 80 ms.
+Above that, its 30-sample queue fills in 30 / (15 − 1000 / d) seconds for a cost of d ms a sample: about 4.5 s at 120 ms, 12 s at 80 ms (liveEngine.js: MAX_BACKLOG 30, a sample every 66.7 ms).
 
 ## 2. The browser's GPU: measurable on the iPhone from today
 
@@ -26,7 +26,7 @@ Its first line shows the browser's user agent (Safari's `Version/NN` gives the i
 
 The app itself stays on the CPU (`pose-model-path.test.js` pins it).
 
-Measured here, on SwiftShader (a software renderer, blocklisted in `gpuBenchmark.js`), 9 October 2026:
+Measured here in a scratch probe (scripts not in the repository; TRIED.md, "MediaPipe's GPU delegate on SwiftShader"), on SwiftShader (a software renderer, blocklisted in `gpuBenchmark.js`), 9 October 2026:
 - each delegate repeats itself bitwise from one read to the next;
 - 0 of 78 frames read by both delegates gave identical landmarks;
 - on three of David's videos the counted joint's angle differs by a median of 2.9° to 26.4° between them;
@@ -59,7 +59,7 @@ The stored real-phone sets were read on the CPU; the gate would need iPhone-GPU 
 MediaPipe 0.10.35 and 1.1.0 offer only 'CPU' and 'GPU' (WebGL); neither has a WebGPU pose path.
 WebGPU means another runtime (LiteRT.js or ONNX Runtime Web) and the same or another model, which is a new engine under the full R2 gate.
 Safari is reported to ship WebGPU on by default from iOS 26 (secondary sources only, not verified here).
-In BACKLOG.md, not built.
+In BACKLOG.md (9 October 2026), not built.
 
 ## 4. Native iOS: what a first step needs
 

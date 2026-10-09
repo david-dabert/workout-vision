@@ -330,3 +330,13 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   test of 9 October, `test/real-phone/accuracy/pose-pipeline-9oct.md`). No label of a partial exists yet: David's
   labels count full reps, and a last rep cut by the end of the video counts as full (his convention of 9 October).
 - Data it would need: sets with partials counted by David, blind (R1).
+
+## 9 October 2026: the phone's own chips beyond the browser's GPU (pillar 4, David)
+
+- WebGPU: MediaPipe offers no WebGPU pose path. The cheapest test would run the same model files on a WebGPU runtime
+  (LiteRT.js or ONNX Runtime Web, to verify), speed first, on the iPhone; it is a new engine under the full R2 gate.
+- Native iOS, PoseBench: a small Xcode app that reads David's 14 videos at 15 samples a second with Apple's body pose
+  (2D and 3D) and MediaPipe Tasks for iOS, times each and writes landmark files in the shape of sets-07oct-video
+  (docs/IPHONE-CHIPS.md, section 4). Needs David's Mac and iPhone.
+- Why not now: the browser's GPU is measurable on his iPhone from the check page first, at no cost.
+

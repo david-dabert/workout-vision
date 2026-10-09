@@ -819,7 +819,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
                   if (saving.current) return;
                   // The number saved is the screen's number from here on (the saved card, the day's table, the share).
                   navigator.vibrate?.(10); pickedAlt.current = true; setTrueN(n);
-                  doSave(n, true).then(ok => { if (!ok) { pickedAlt.current = false; setTrueN(count); } });
+                  doSave(n, true).then(ok => { if (!ok) { pickedAlt.current = false; setTrueN(t => (t === n ? count : t)); } });
                 }}>{n}</button>)}
             </div>}
             {replayKey}

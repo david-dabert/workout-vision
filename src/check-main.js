@@ -42,7 +42,7 @@ const INJECT = new URLSearchParams(location.search).get('inject') === 'frozen';
 const POSE_MODE = new URLSearchParams(location.search).get('posemode') === 'video' ? 'video' : null;
 // ?delegate=gpu: the rows read with MediaPipe's GPU delegate (pillar 4, 9 October 2026), to measure its speed and its
 // landmarks on this phone against the CPU's; every row prints the delegate, the time per sample and a fingerprint.
-const DELEGATE = delegateParam(location.search);
+const DELEGATE = POSE_MODE ? null : delegateParam(location.search); // VIDEO mode runs on the CPU only
 // ?posemodel=<file>: the rows read with the pose model at bench/<file> (served beside the page by a local build only,
 // never committed), to measure another model against the one the app ships.
 const POSE_MODEL = (new URLSearchParams(location.search).get('posemodel') || '').replace(/[^\w.-]/g, '') || null;
