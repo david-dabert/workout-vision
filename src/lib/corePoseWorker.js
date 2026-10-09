@@ -20,6 +20,9 @@ self.onmessage = async ({ data }) => {
     if (data.type === 'init') {
       // videoMode: the app's video analysis (coreAnalysis.js, since 9 October); the collector and the live counter send
       // no videoMode and keep IMAGE mode.
+      // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it (poseAnalysis.js
+      // reads __WV_BENCH_POSE_MODEL__); the app never sends it.
+      if (data.benchModel instanceof ArrayBuffer) globalThis.__WV_BENCH_POSE_MODEL__ = data.benchModel;
       model = data.videoMode ? await getVideoModeLandmarker() : await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');
       self.postMessage({ id: data.id });

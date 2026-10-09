@@ -175,7 +175,7 @@ const WORKER_CLOSE_MS = 1000;
 const IN_FLIGHT = 2;
 let previousWorkerGone = Promise.resolve();
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject, poseMode } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject, poseMode, benchModel } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   // Analyses queue one behind the other: each waits for the worker of the one started before it.
   const before = previousWorkerGone;
@@ -241,7 +241,8 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // the same landmarks on a second read; no skeleton repeated; the three CI journeys exact (TRIED.md, 9 October).
     // The crop retry and the backward pass are IMAGE mode only. poseMode 'image' (the check page's ?posemode=image)
     // reads as before, to measure. Status: validated on those reads; David's iPhone check pending (R3).
-    await send({ type: 'init', videoMode: poseMode !== 'image' });
+    // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it.
+    await send({ type: 'init', videoMode: poseMode !== 'image', ...(benchModel ? { benchModel } : {}) });
     onPhase('extracting');
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
     // The sample each worker timestamp was sent for, so the backward pass's results land on their own samples.

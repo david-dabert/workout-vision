@@ -14,6 +14,7 @@ vi.hoisted(() => {
 import {
   LIMITS, MAX_PAYLOAD, MAX_JSON, encodeProgramme, plainPayload, decodeProgramme, programmeOf, fromCompact, compact, payloadOf,
   programmeLink, programmeId, plannedOf, progressOf, toBase64url, targetText, cleanText,
+  resultsOf, encodeResults, decodeResults, plainResultsPayload, resultsLink, resultsPayloadOf, RESULT_LIMITS,
 } from '../programme';
 import { programmePdf, programmeSheet, programmeFileName, programmeQr, QR_MAX_VERSION } from '../programme-pdf';
 import { reportSheet } from '../report-sheet';
@@ -280,5 +281,48 @@ describe('the copy of the programmes', () => {
     const keys = o => Object.keys(o).sort();
     expect(keys(PRO.en)).toEqual(keys(PRO.fr));
     expect(keys(PRO.en.errors)).toEqual(keys(PRO.fr.errors));
+  });
+});
+
+describe('the results sent back to the coach', () => {
+  const now = new Date();
+  const saved = [
+    { exercise: 'squat', reps: 10, createdAt: now.getTime() - 240000, planned: { programme: 'p1', item: 0 } },
+    { exercise: 'squat', reps: 8, createdAt: now.getTime() - 120000, planned: { programme: 'p1', item: 0 } },
+  ];
+  const results = () => resultsOf(sample, progressOf(sample, 'p1', saved, now), new Date(2026, 9, 9));
+
+  it('carry the day, and per exercise the target and the reps of each set saved that day', () => {
+    expect(results()).toEqual({ title: 'Haut du corps, semaine 1', who: 'Camille', day: '2026-10-09', items: [
+      { key: 'squat', sets: 3, reps: 10, done: [10, 8] },
+      { key: 'push_up', sets: 4, reps: 12, done: [] },
+    ] });
+  });
+
+  it('come back whole from the plain and the packed link, and the address gives their payload', async () => {
+    const r = results();
+    for (const payload of [plainResultsPayload(r), await encodeResults(r)]) expect(await decodeResults(payload)).toEqual({ ok: true, results: r });
+    const link = resultsLink('https://example.test/workout-vision/#programme', plainResultsPayload(r));
+    expect(link.startsWith('https://example.test/workout-vision/#resultats=j')).toBe(true);
+    expect(resultsPayloadOf(new URL(link).hash)).toBe(plainResultsPayload(r));
+    expect(resultsPayloadOf('#programme=jabc')).toBeNull();
+  });
+
+  it('refuse a damaged or forged link without throwing', async () => {
+    const r = results();
+    const forged = async x => decodeResults(b64(JSON.stringify(x)).replace(/^/, 'j'));
+    const ok = { v: 1, t: 'Séance', d: '2026-10-09', x: [['squat', 3, 10, [10, 8]]] };
+    expect((await forged(ok)).ok).toBe(true);
+    expect(await decodeResults('')).toEqual({ ok: false, error: 'empty' });
+    expect(await decodeResults('j!!')).toEqual({ ok: false, error: 'malformed' });
+    expect(await forged({ ...ok, v: 2 })).toEqual({ ok: false, error: 'malformed' });
+    expect(await forged({ ...ok, d: '9 octobre' })).toEqual({ ok: false, error: 'malformed' });
+    expect(await forged({ ...ok, x: [['not_an_exercise', 3, 10, []]] })).toEqual({ ok: false, error: 'unknown-exercise' });
+    expect(await forged({ ...ok, x: [['squat', 3, 10, [10, 1000]]] })).toEqual({ ok: false, error: 'bad-value' });
+    expect(await forged({ ...ok, x: [['squat', 3, 10, [10, 8.5]]] })).toEqual({ ok: false, error: 'bad-value' });
+    expect(await forged({ ...ok, x: [['squat', 3, 10, Array(RESULT_LIMITS.done + 1).fill(10)]] })).toEqual({ ok: false, error: 'bad-value' });
+    expect(await forged({ ...ok, x: [['squat', 0, 10, []]] })).toEqual({ ok: false, error: 'bad-value' });
+    expect(await forged({ ...ok, t: 'x'.repeat(200) })).toEqual({ ok: false, error: 'bad-value' });
+    expect(r.items).toHaveLength(2);
   });
 });

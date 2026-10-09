@@ -144,26 +144,21 @@ async function gunzip(bytes, max) {
 /** The plain payload, "j" and the compact JSON in base64url: made at once, with no stream to wait for (Pro.jsx). */
 export const plainPayload = p => 'j' + toBase64url(new TextEncoder().encode(JSON.stringify(compact(p))));
 
-/**
- * The programme as the link's payload: "z" and the gzip of its compact JSON in base64url where the browser can pack
- * it (CompressionStream: Safari 16.4, Chrome 80), else, or when packing does not make it shorter, "j" and the JSON
- * itself in base64url. gzip: false forces the plain form.
- */
-export async function encodeProgramme(p, { gzip: pack = true } = {}) {
-  const plain = plainPayload(p);
-  if (!pack || !canGzip()) return plain;
+// A compact object as a link's payload: "z" and the gzip of its JSON in base64url where the browser can pack it and it
+// comes out shorter, else "j" and the JSON itself in base64url. The programme's link and the results' (below).
+async function pack(obj, gzipIt = true) {
+  const json = new TextEncoder().encode(JSON.stringify(obj));
+  const plain = 'j' + toBase64url(json);
+  if (!gzipIt || !canGzip()) return plain;
   try {
-    const packed = 'z' + toBase64url(await gzip(new TextEncoder().encode(JSON.stringify(compact(p)))));
+    const packed = 'z' + toBase64url(await gzip(json));
     return packed.length < plain.length ? packed : plain;
   } catch { return plain; }
 }
 
-/**
- * A payload read back, never trusted: { ok: true, programme } or { ok: false, error }, error among 'empty',
- * 'too-long', 'malformed', 'unsupported' (a packed link on a browser that cannot unpack it), 'unknown-exercise',
- * 'bad-value'. Never throws.
- */
-export async function decodeProgramme(payload) {
+// A payload back to its JSON, never trusted: { ok: true, raw } or { ok: false, error }, error among 'empty',
+// 'too-long', 'malformed', 'unsupported' (a packed link on a browser that cannot unpack it). Never throws.
+async function unpack(payload) {
   if (typeof payload !== 'string' || !payload) return { ok: false, error: 'empty' };
   if (payload.length > MAX_PAYLOAD) return { ok: false, error: 'too-long' };
   if (!/^[zj][A-Za-z0-9_-]+$/.test(payload)) return { ok: false, error: 'malformed' };
@@ -174,9 +169,27 @@ export async function decodeProgramme(payload) {
       bytes = await gunzip(bytes, MAX_JSON);
       if (!bytes) return { ok: false, error: 'too-long' };
     } else if (bytes.length > MAX_JSON) return { ok: false, error: 'too-long' };
-    const raw = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
-    return fromCompact(raw);
+    return { ok: true, raw: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) };
   } catch { return { ok: false, error: 'malformed' }; }
+}
+
+/**
+ * The programme as the link's payload: "z" and the gzip of its compact JSON in base64url where the browser can pack
+ * it (CompressionStream: Safari 16.4, Chrome 80), else, or when packing does not make it shorter, "j" and the JSON
+ * itself in base64url. gzip: false forces the plain form.
+ */
+export async function encodeProgramme(p, { gzip: gzipIt = true } = {}) {
+  return pack(compact(p), gzipIt);
+}
+
+/**
+ * A payload read back, never trusted: { ok: true, programme } or { ok: false, error }, error among 'empty',
+ * 'too-long', 'malformed', 'unsupported' (a packed link on a browser that cannot unpack it), 'unknown-exercise',
+ * 'bad-value'. Never throws.
+ */
+export async function decodeProgramme(payload) {
+  const r = await unpack(payload);
+  return r.ok ? fromCompact(r.raw) : r;
 }
 
 /** The payload of an address's hash, "#programme=…", or null when the hash holds no programme. */
@@ -226,3 +239,72 @@ export function progressOf(programme, id, sets, now = new Date()) {
   });
   return { items, complete: items.filter(i => i.complete).length, total: items.length };
 }
+
+// The client's results, sent back to the coach (9 October 2026): the link #resultats=<payload>, packed as the
+// programme's. Nothing is uploaded: the client chooses to send it, the coach's phone reads it from the address.
+export const RESULTS_KEY = 'resultats=';
+// A day's sets kept per exercise, at most, and the reps one set may hold: a day's work, not a log. UNSOURCED, convention.
+export const RESULT_LIMITS = Object.freeze({ done: 20, reps: [0, 999] });
+const dayOf = d => { const x = new Date(d), pad = n => String(n).padStart(2, '0'); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`; };
+
+/**
+ * What the client sends back for one day: the programme's title and for whom, the day (local date), and per exercise
+ * its target and the reps of each set saved for it that day (progressOf), as the client's programme shows them.
+ */
+export function resultsOf(programme, progress, date = new Date()) {
+  return {
+    title: programme.title, who: programme.who || '', day: dayOf(date),
+    items: programme.items.map((item, i) => ({ key: item.key, sets: item.sets, reps: item.reps, done: (progress.items[i]?.done || []).slice(0, RESULT_LIMITS.done).map(n => Math.round(n)) })),
+  };
+}
+
+// The compact form the results link carries: { v: 1, t, w?, d, x: [[key, sets, reps, [reps of each set]], ...] }.
+const compactResults = r => ({ v: 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, x: r.items.map(i => [i.key, i.sets, i.reps, i.done]) });
+
+/** The results' plain payload, "j" and the compact JSON in base64url: made at once, so a share stays within the tap. */
+export const plainResultsPayload = r => 'j' + toBase64url(new TextEncoder().encode(JSON.stringify(compactResults(r))));
+
+/** The results as the link's payload, packed as a programme is (encodeProgramme). */
+export async function encodeResults(r, { gzip: gzipIt = true } = {}) {
+  return pack(compactResults(r), gzipIt);
+}
+
+/**
+ * The results' compact form read back, every field checked as a programme's (fromCompact): { ok: true, results } or
+ * { ok: false, error }, error among 'malformed', 'unknown-exercise', 'bad-value'.
+ */
+export function fromCompactResults(raw) {
+  const bad = error => ({ ok: false, error });
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.v !== 1) return bad('malformed');
+  const str = (v, max) => (v === undefined ? '' : typeof v === 'string' && cleanText(v).length <= max ? cleanText(v) : null);
+  const title = str(raw.t, LIMITS.title), who = str(raw.w, LIMITS.who);
+  if (title === null || who === null) return bad('bad-value');
+  if (!title || typeof raw.d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.d)) return bad('malformed');
+  if (!Array.isArray(raw.x) || raw.x.length < 1 || raw.x.length > LIMITS.items) return bad('malformed');
+  const items = [];
+  for (const x of raw.x) {
+    if (!Array.isArray(x) || x.length !== 4 || typeof x[0] !== 'string' || !Array.isArray(x[3])) return bad('malformed');
+    const [key, sets, reps, done] = x;
+    if (!/^[a-z0-9_]{1,64}$/.test(key)) return bad('malformed');
+    if (!programmable(key)) return bad('unknown-exercise');
+    if (!intIn(sets, LIMITS.sets) || !intIn(reps, LIMITS.reps)) return bad('bad-value');
+    if (done.length > RESULT_LIMITS.done || !done.every(n => intIn(n, RESULT_LIMITS.reps))) return bad('bad-value');
+    items.push({ key, sets, reps, done });
+  }
+  return { ok: true, results: { title, who, day: raw.d, items } };
+}
+
+/** A results payload read back, never trusted (decodeProgramme's errors). Never throws. */
+export async function decodeResults(payload) {
+  const r = await unpack(payload);
+  return r.ok ? fromCompactResults(r.raw) : r;
+}
+
+/** The payload of an address's hash, "#resultats=…", or null. */
+export function resultsPayloadOf(hash) {
+  const h = String(hash || '').replace(/^#\/?/, '');
+  return h.startsWith(RESULTS_KEY) ? h.slice(RESULTS_KEY.length) : null;
+}
+
+/** The link that opens the results in the coach's app. */
+export const resultsLink = (base, payload) => `${String(base).split('#')[0]}#${RESULTS_KEY}${payload}`;
