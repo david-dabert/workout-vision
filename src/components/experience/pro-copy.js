@@ -85,7 +85,7 @@ export const PRO = {
     pdfCount: 'Exercices',
     pdfColumns: ['', 'Exercice', 'Séries × rép.', 'Récup.'],
     pdfNote: 'Note',
-    // The programme's QR code on its PDF (programme-pdf.js, 9 October; awaits David's approval, R10).
+    // The programme's QR code on its PDF (programme-pdf.js; French approved by David on 9 October, R10).
     pdfQrLabel: 'Ouvrir le programme',
     pdfFoot: 'Filmez chaque série avec votre téléphone : les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.',
     fileName: 'programme',
@@ -101,7 +101,7 @@ export const PRO = {
     tapHint: 'Touchez un exercice pour le filmer. Chaque série enregistrée s’affiche ici, comptée, à côté de l’objectif.',
     sendBack: 'Après une série, « Rapport de séance » prépare un PDF à envoyer à votre coach.',
     clientPrivacy: 'Le programme et vos séries restent sur ce téléphone.',
-    // Results sent back to the coach (Results.jsx, 9 October; awaits David's approval, R10).
+    // Results sent back to the coach (Results.jsx; French approved by David on 9 October, R10).
     sendResults: 'Envoyer mes résultats au coach',
     resultsPrivacy: 'Le lien ne contient que le programme et les répétitions comptées aujourd’hui, aucune image.',
     resultsText: title => `Mes séries du jour\u00A0: ${title}`,

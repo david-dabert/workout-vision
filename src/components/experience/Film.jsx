@@ -108,7 +108,7 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
         {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September), and two seconds
             past the end: a video that stops inside the last rep loses it (failure mode 4, anatomy-8oct.md; on 9 October
             a confirm prompt for it was measured and not shipped, cut-end.test.ts). Two seconds: convention, UNSOURCED.
-            French awaits David's approval (R10). */}
+            French approved by David on 9 October (R10). */}
         <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos, puis deux secondes de plus.' : 'The whole set, from rest back to rest, then two more seconds.'}</span></li>
       </ol>}
       {live ? <div className="actions" data-reveal style={{ '--i': 5 }}>
