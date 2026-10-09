@@ -67,6 +67,26 @@ Arm B goes on to an in-app build behind a flag, for David's iPhone only, if all 
 
 A failure of condition 1 on the two sissy squats alone, with condition 2 met, is reported to David as such: the gate is his to keep or change, not this run's.
 
-## Results
+## Results (9 October, 05:18; every set read by every arm; per-set table in `pose-pipeline-9oct.txt`)
 
-Not yet read.
+Exact / within 1 / off by 3+ / refused, the core:
+
+| Suite | A, MediaPipe (app) | B, RTMDet-nano + RTMPose-m | D, RTMO-s |
+|---|---|---|---|
+| David's 14 | 6 / 9 / 2 / 3 | 7 / 10 / 1 / 3 | 7 / 9 / 4 / 1 |
+| RepCount-A, 79 mapped | 29 / 48 / 14 / 6 | 23 / 44 / 16 / 12 | 27 / 48 / 17 / 7 |
+| RepCount-A, 45 unmapped (PSC exact) | 11 | 8 | 7 |
+
+Pass rule:
+1. David's 14, scoreboard rule: **fails.** B gains the chin-up, the back extension and the pendulum squat, loses the hanging leg raise and the lying curl, and sissy_squat_7_5006 goes from 4 to 1 (label 7, error 3 to 6).
+2. RepCount-A, 79 mapped: **fails.** Exact 23 against 29; off by 3 or more or refused 28 against 20 (16 + 12 against 14 + 6). B gains 4 sets and loses 10; 6 newly off by 3 or more, 4 grown, 8 newly refused.
+3. McNemar over 93 sets: exact under A only 12, under B only 7, p = 0.36. The difference leans to MediaPipe.
+4. Time: not measured again (141 against 88 ms on 9 October).
+
+Verdict: arm B does not go to the app. Arm D (reference) fails the same way: 27 against 29 on RepCount-A, 24 against 20 off by 3 or more or refused, and on David's videos three sets newly off by 3 or more.
+
+The 7 of 12 and 8 of 12 seen on David's videos since 8 October do not hold on public video: they came from a few sets of one gym, as the probe's critic warned. More of B's losses are refusals (12 against 6); one reading, not measured here, is that RTMPose's scores sit lower than MediaPipe's visibility under the same 0.5 gate (median 0.81 on the leg raise, pose probe of 8 October). Tuning that gate now would be choosing on this run's answer; it would need a new run with its own rule written first.
+
+Prone Y/T videos (coverage, both shoulders and both wrists at 0.5): petit MediaPipe 72 %, B 51 %, D 76 %; prone2 MediaPipe 11 %, B 7 %, D 42 %. B finds a body on 95 % of prone2's samples but not its arms; only D reads the arms better than MediaPipe.
+
+The in-app build of arm B (an 'rtm' engine behind `?pose=rtm`, onnxruntime-web 1.30.0) was written while the run went on, never committed, and deleted with this verdict (David's choice of 9 October).

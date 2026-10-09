@@ -1,0 +1,156 @@
+Pose pipeline test, 2026-10-09 (pose-pipeline-9oct.md). Cells exact/within 1/off by 3+/refused.
+A  David 6/9/2/3 (n=14); exact with the proposal on refusals 8; body check flagged 5 (wrong 2), unflagged wrong 3
+A  RepCount-A mapped 29/48/14/6 (n=79); exact with the proposal on refusals 29; body check flagged 20 (wrong 18), unflagged wrong 25
+A  RepCount-A unmapped, PSC exact 11 of 45, within 1 15
+B  David 7/10/1/3 (n=14); exact with the proposal on refusals 7; body check flagged 3 (wrong 1), unflagged wrong 3
+B  RepCount-A mapped 23/44/16/12 (n=79); exact with the proposal on refusals 24; body check flagged 7 (wrong 6), unflagged wrong 25
+B  RepCount-A unmapped, PSC exact 8 of 45, within 1 14
+D  David 7/9/4/1 (n=14); exact with the proposal on refusals 7; body check flagged 3 (wrong 2), unflagged wrong 2
+D  RepCount-A mapped 27/48/17/7 (n=79); exact with the proposal on refusals 27; body check flagged 14 (wrong 11), unflagged wrong 24
+D  RepCount-A unmapped, PSC exact 7 of 45, within 1 19
+B vs A, David (scoreboard rule): gained ["behind_neck_chin_up_5","machine_seated_back_extension_18","pendulum_squat_7"]; lost ["hanging_leg_raise_6","lying_biceps_curl_11"]; newly off by 3+ []; known off by 3+ grown ["sissy_squat_7_5006 (4 -> 1, label 7)"]; newly refused []
+B vs A, RepCount-A mapped: gained 4, lost 10, newly off by 3+ 6, grown 4, newly refused 8
+B McNemar over 93 sets: exact under A only 12, under B only 7, exact two-sided p 0.359
+D vs A, David (scoreboard rule): gained ["behind_neck_chin_up_5","pendulum_squat_7"]; lost ["lying_biceps_curl_11"]; newly off by 3+ ["machine_seated_back_extension_18 (17 -> 15, label 18)","sissy_squat_5_5011 (refused -> 0, label 5)","standing_barbell_curl_8 (refused -> 16, label 8)"]; known off by 3+ grown ["sissy_squat_7_5006 (4 -> 0, label 7)"]; newly refused []
+D vs A, RepCount-A mapped: gained 10, lost 12, newly off by 3+ 7, grown 6, newly refused 3
+D McNemar over 93 sets: exact under A only 13, under D only 12, exact two-sided p 1.000
+
+Per set: label | A | B | D (core; "r" refused, then the proposal in brackets; * body check flagged)
+D barbell_squat_9_a squat | 9 | 9* | 9 | 9 | seen 97/100/100%
+D barbell_squat_9_b squat | 9 | 9* | 9 | 9 | seen 96/100/100%
+D behind_neck_chin_up_5 chin_up | 5 | 6* | 5* | 5* | seen 87/100/100%
+D hanging_leg_raise_6 hanging_leg_raise | 6 | 6* | 5 | 6 | seen 72/100/100%
+D lying_biceps_curl_11 cable_curl | 11 | 11 | 10 | 10 | seen 97/100/100%
+D machine_chest_supported_row_6 chest_supported_row | 6 | 5 | 5 | 5 | seen 100/100/100%
+D machine_seated_back_extension_18 machine_seated_back_extension | 18 | 17 | 18* | 15* | seen 98/100/77%
+D pendulum_squat_7 hack_squat | 7 | 14* | 7 | 7 | seen 98/100/100%
+D seated_dumbbell_curl_10 incline_dumbbell_curl | 10 | 10 | 10 | 10 | seen 97/100/100%
+D sissy_squat_5_5011 sissy_squat | 5 | r[5] | r | 0 | seen 98/100/100%
+D sissy_squat_7_5006 sissy_squat | 7 | 4 | 1* | 0 | seen 100/100/100%
+D sissy_squat_7_5008 sissy_squat | 7 | r | r | r (read refusal; B would read 0, D 4) | seen 100/100/100%
+D sissy_squat_9_5007 sissy_squat | 9 | 9 | 9 | 9 | seen 100/100/100%
+D standing_barbell_curl_8 barbell_curl | 8 | r[8] | r[6] | 16* | seen 95/100/100%
+M stu10_24 front_raise | 14 | 8 | 6 | 0 | seen 98/100/95%
+M stu10_34 pull_up | 7 | 6 | 7 | 7 | seen 98/98/94%
+M stu10_36 pull_up | 29 | 26 | 28 | 29 | seen 100/100/100%
+M stu10_47 push_up | 21 | 21 | 20 | 20 | seen 100/100/100%
+M stu10_48 push_up | 5 | 6 | 5 | 5 | seen 100/100/90%
+U stu10_56 situp | 24 | r[psc 16] | r[psc 22] | r | seen 99/100/61%
+M stu10_6 bench_pressing | 4 | 4* | r | 3* | seen 91/100/87%
+M stu10_63 squat | 16 | 14* | 7 | 16 | seen 72/100/93%
+M stu10_67 squat | 6 | 6 | 6 | 5 | seen 100/100/100%
+U stu11_30 pommelhorse | 32 | r[psc 10] | r[psc 7] | r[psc 15] | seen 94/100/82%
+U stu11_34 pommelhorse | 35 | r[psc 35] | r[psc 25] | r[psc 22] | seen 91/100/74%
+U stu11_39 pommelhorse | 32 | r[psc 15] | r[psc 7] | r[psc 22] | seen 93/100/75%
+U stu12_30 pommelhorse | 25 | r[psc 25] | r[psc 5] | r[psc 6] | seen 95/100/75%
+U stu12_33 pommelhorse | 27 | r[psc 9] | r[psc 5] | r[psc 18] | seen 85/100/70%
+U stu12_35 pommelhorse | 14 | r[psc 1] | r | r[psc 3] | seen 86/100/82%
+U stu13_30 pommelhorse | 29 | r[psc 19] | r[psc 8] | r[psc 9] | seen 97/100/68%
+U stu13_33 pommelhorse | 33 | r[psc 9] | r[psc 12] | r[psc 0] | seen 94/100/94%
+U stu13_35 pommelhorse | 33 | r[psc 9] | r[psc 5] | r[psc 16] | seen 93/100/81%
+U stu13_36 pommelhorse | 31 | r[psc 7] | r[psc 9] | r | seen 80/100/62%
+U stu13_37 pommelhorse | 37 | r[psc 19] | r[psc 7] | r[psc 12] | seen 86/100/74%
+U stu13_38 pommelhorse | 34 | r[psc 22] | r[psc 12] | r[psc 33] | seen 99/100/96%
+M stu1_37 pull_up | 18 | 18 | 18 | 18 | seen 100/100/100%
+M stu1_38 pull_up | 19 | 19 | 19 | 19 | seen 68/98/70%
+U stu1_57 situp | 40 | r[psc 37] | r[psc 39] | r[psc 34] | seen 97/100/89%
+U stu2_0 battle_rope | 21 | r[psc 12] | r[psc 10] | r | seen 100/100/100%
+M stu2_15 front_raise | 8 | 9 | 9 | 9 | seen 97/97/97%
+M stu2_23 front_raise | 6 | 7* | 6 | 6 | seen 100/100/100%
+M stu2_34 pull_up | 17 | 18 | 18 | 18 | seen 95/100/100%
+M stu2_36 pull_up | 5 | 6* | 6* | 5* | seen 99/100/100%
+M stu2_5 bench_pressing | 3 | 1* | r | r[1] | seen 94/100/86%
+U stu2_57 situp | 3 | r[psc 4] | r[psc 4] | r[psc 4] | seen 100/100/100%
+U stu2_62 situp | 19 | r[psc 15] | r[psc 19] | r[psc 16] | seen 99/100/98%
+U stu2_65 situp | 8 | r[psc 8] | r[psc 8] | r[psc 8] | seen 91/100/90%
+U stu3_1 battle_rope | 13 | r | r | r[psc 7] | seen 100/100/83%
+M stu3_10 front_raise | 5 | 6 | 6 | 6 | seen 75/100/75%
+M stu3_15 front_raise | 4 | 5* | 6 | r | seen 93/100/87%
+M stu3_18 front_raise | 16 | 14* | 14* | 16* | seen 100/100/100%
+M stu3_2 bench_pressing | 3 | 3* | 3* | 4* | seen 100/100/100%
+U stu3_20 jump_jack | 17 | r[psc 19] | r[psc 19] | r[psc 19] | seen 97/100/97%
+M stu3_3 bench_pressing | 9 | r[10] | 11 | 6 | seen 81/100/64%
+M stu3_39 pull_up | 14 | 10 | 10 | 11 | seen 100/100/98%
+M stu3_50 push_up | 28 | 28 | 28 | 27 | seen 100/100/98%
+U stu3_52 situp | 26 | r[psc 5] | r | r | seen 88/100/63%
+U stu3_53 situp | 11 | r | r[psc 12] | r | seen 100/100/95%
+U stu3_55 situp | 6 | r[psc 2] | r[psc 15] | r[psc 6] | seen 100/100/100%
+U stu3_57 situp | 19 | r[psc 15] | r[psc 10] | r[psc 18] | seen 99/100/98%
+U stu3_58 situp | 42 | r[psc 42] | r[psc 34] | r[psc 42] | seen 100/100/100%
+M stu3_66 squat | 9 | 10 | 10 | 10 | seen 100/100/100%
+M stu4_12 front_raise | 4 | 4 | 4 | 4 | seen 100/100/100%
+U stu4_19 jump_jack | 32 | r[psc 32] | r[psc 32] | r[psc 31] | seen 100/100/100%
+U stu4_27 jump_jack | 56 | r[psc 70] | r[psc 70] | r[psc 70] | seen 100/100/100%
+M stu4_47 push_up | 37 | 28 | 25 | 36 | seen 98/100/96%
+M stu4_5 bench_pressing | 51 | r[1] | r | r | seen 49/86/86%
+U stu4_59 situp | 7 | r | r | r[psc 6] | seen 100/100/100%
+M stu4_63 squat | 14 | 14 | 8 | 0 | seen 99/100/100%
+M stu4_68 squat | 5 | 6* | 6 | 5 | seen 94/100/100%
+M stu5_12 front_raise | 5 | 5 | 6 | 6 | seen 100/100/98%
+M stu5_17 front_raise | 4 | 4 | 4 | 4 | seen 90/100/90%
+U stu5_21 jump_jack | 14 | r[psc 14] | r[psc 14] | r[psc 13] | seen 97/100/92%
+U stu5_22 jump_jack | 11 | r[psc 5] | r | r | seen 78/100/79%
+U stu5_24 jump_jack | 3 | r | r | r | seen 35/56/25%
+U stu5_27 jump_jack | 14 | r[psc 14] | r[psc 12] | r[psc 7] | seen 100/100/81%
+M stu5_36 pull_up | 6 | 7 | 7 | 7 | seen 100/100/95%
+M stu5_45 push_up | 7 | 7 | 7 | 10 | seen 99/100/100%
+M stu5_47 push_up | 30 | 22 | 14 | 14 | seen 97/100/76%
+M stu5_5 bench_pressing | 30 | 19* | 24 | 14 | seen 99/100/89%
+U stu5_59 situp | 36 | r[psc 7] | r | r[psc 35] | seen 99/100/95%
+M stu5_62 squat | 32 | 32 | 31 | 32 | seen 100/100/100%
+M stu5_68 squat | 20 | 10 | 10 | 10 | seen 100/100/100%
+M stu5_9 bench_pressing | 18 | 18 | 18 | 18 | seen 100/100/100%
+U stu6_0 battle_rope | 8 | r[psc 10] | r[psc 3] | r[psc 3] | seen 99/99/99%
+U stu6_17 jump_jack | 19 | r | r | r | seen 68/93/68%
+U stu6_21 jump_jack | 7 | r[psc 6] | r[psc 6] | r[psc 6] | seen 100/100/100%
+U stu6_22 jump_jack | 64 | r[psc 64] | r[psc 64] | r[psc 64] | seen 100/100/100%
+M stu6_3 bench_pressing | 13 | 14* | 12 | 8 | seen 91/100/63%
+M stu6_4 bench_pressing | 5 | 7 | 7 | 7 | seen 100/100/90%
+M stu6_42 push_up | 8 | 8 | r | 8 | seen 100/100/100%
+M stu6_47 push_up | 3 | 3 | 5* | 3* | seen 100/100/100%
+M stu6_57 squat | 15 | 15 | 15 | 16 | seen 100/100/100%
+M stu6_63 squat | 17 | 17 | 17 | 17 | seen 100/100/100%
+M stu6_65 squat | 19 | 20 | 20* | 20* | seen 100/100/100%
+M stu7_1 bench_pressing | 10 | 3* | r[9] | 6* | seen 93/100/100%
+M stu7_13 bench_pressing | 11 | r[12] | 4 | 2* | seen 61/100/97%
+M stu7_16 front_raise | 4 | 4 | 4 | 4 | seen 100/100/100%
+U stu7_30 jump_jack | 15 | r[psc 15] | r[psc 15] | r[psc 15] | seen 100/100/100%
+M stu7_35 pull_up | 22 | 20 | 12 | 22 | seen 99/100/100%
+M stu7_4 bench_pressing | 8 | r[6] | r | r | seen 61/100/37%
+M stu7_43 pull_up | 23 | 8* | r | 1 | seen 93/99/84%
+U stu7_52 situp | 10 | r[psc 10] | r[psc 10] | r[psc 10] | seen 100/100/99%
+M stu7_65 squat | 9 | 9 | 9 | 9 | seen 100/100/90%
+M stu8_12 bench_pressing | 3 | 6 | 6 | 11* | seen 100/100/87%
+M stu8_37 pull_up | 10 | 17* | 13* | 8* | seen 99/100/98%
+M stu8_38 pull_up | 16 | 16 | 16 | 16 | seen 100/100/100%
+M stu8_42 push_up | 6 | 7 | 7 | 7* | seen 100/100/100%
+U stu8_52 situp | 47 | r[psc 45] | r[psc 47] | r[psc 47] | seen 99/100/98%
+M stu8_7 bench_pressing | 5 | 7 | 6 | 6 | seen 99/100/100%
+M stu8_71 squat | 4 | 4 | 4 | 4 | seen 100/100/100%
+M stu9_13 front_raise | 2 | 2 | 2 | 2 | seen 100/100/100%
+M stu9_17 front_raise | 15 | 15 | r[15] | 12 | seen 99/100/96%
+U stu9_34 jump_jack | 8 | r[psc 9] | r[psc 6] | r[psc 9] | seen 100/100/100%
+M stu9_48 push_up | 27 | 29 | 29 | 29 | seen 100/100/97%
+M stu9_55 push_up | 14 | 11* | 9 | 6 | seen 83/100/73%
+M stu9_67 squat | 0 | 1 | 1 | 1 | seen 100/100/100%
+M stu9_9 bench_pressing | 12 | 10* | 13 | 10 | seen 91/100/85%
+M test135 bench_pressing | 4 | 4 | 4 | 4 | seen 100/100/63%
+M test1454 pull_up | 6 | 6 | 7* | 7 | seen 100/100/100%
+M test159 bench_pressing | 3 | 0 | 0 | 0 | seen 100/100/100%
+M test1595 push_up | 3 | 5* | 4 | 5* | seen 100/100/100%
+M test2320 squat | 4 | r[2] | r | r | seen 51/0/12%
+M test538 front_raise | 5 | 6 | 6 | 6 | seen 100/100/100%
+M train143 bench_pressing | 0 | 2* | 6 | 5* | seen 84/100/100%
+U train1615 jump_jack | 10 | r[psc 9] | r[psc 9] | r[psc 9] | seen 100/100/100%
+U train1665 jump_jack | 3 | r[psc 5] | r[psc 4] | r[psc 4] | seen 100/100/100%
+M train2542 pull_up | 1 | 2 | 1 | 1 | seen 100/100/100%
+M train2711 push_up | 5 | 6* | 2 | 3* | seen 99/100/99%
+M train2720 push_up | 10 | 6* | r | r | seen 99/100/23%
+M train2748 push_up | 5 | 6 | r | 4 | seen 99/100/76%
+U train3348 situp | 1 | r[psc 3] | r | r[psc 2] | seen 91/100/91%
+M train3898 squat | 2 | r[3] | r | r | seen 88/100/9%
+M train3899 squat | 2 | 2 | 2 | 2 | seen 99/100/100%
+M train3946 squat | 2 | 2 | 2 | 2 | seen 100/100/100%
+M train990 front_raise | 4 | 6 | 6 | 6 | seen 100/100/100%
+U val1093 situp | 5 | r[psc 5] | r[psc 3] | r[psc 2] | seen 100/100/100%
+M val1244 squat | 1 | 1 | 0 | 0 | seen 100/100/90%
