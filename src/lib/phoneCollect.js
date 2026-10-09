@@ -98,7 +98,7 @@ export async function landmarksSha256(worldLandmarks) {
  * landmarks' hash. view is the view the app asks this lift to be filmed from (exercise-info.js filmView), since the
  * result screen does not ask it; viewSource says so.
  */
-export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null }) {
+export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null, choice = null }) {
   const m = result?.metadata || {};
   return {
     ...setPayload({
@@ -117,6 +117,8 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
     viewSource: 'app-guide',
     source: 'result-screen',
     ...(blind ? { blind: { count: Number.isInteger(blind.count) ? blind.count : null, p: blind.p ?? null } } : {}),
+    // The list offered in one tap and how the count was given (result-choices.js, saved-set.js choice).
+    ...(choice ? { choice } : {}),
     ...(result?.refused ? { appRefused: true, proposal: Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null } : {}),
   };
 }
@@ -126,13 +128,13 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
  * read, hashed or stored then). videoFile: the video the count was made from (its SHA-256 names the file, as the
  * collector names it); without it, or when it cannot be read, the landmarks' hash does.
  */
-export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, storage = globalThis.localStorage, put = (k, v) => store.setItem(k, v) }) {
+export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, storage = globalThis.localStorage, put = (k, v) => store.setItem(k, v) }) {
   if (!collectOn(storage)) return null;
   if (!result || !Array.isArray(result.worldLandmarks) || !result.worldLandmarks.length || !Number.isInteger(kept)) return null;
   let sha256 = null, hashOf = 'video';
   if (videoFile) { try { sha256 = await hashVideoContent(videoFile); } catch { sha256 = null; } }
   if (!sha256) { sha256 = await landmarksSha256(result.worldLandmarks); hashOf = 'landmarks'; }
-  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind });
+  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind, choice });
   const blob = await gzipBlob(JSON.stringify(payload));
   const name = setFileName(lift, kept, view, sha256);
   await put(name, { name, blob, savedAt: new Date().toISOString() });

@@ -14,10 +14,15 @@
 // A fourth, "David's blind counts", counts the sets he collected on his phone with the count he gave before the app
 // showed its own (blindSets, sets.ts; blind.js): shown, decides nothing until he says these counts are labels (R1).
 // A collected file counted after the app's (labelKind 'after-app') is never a label: it is named as held, and skipped.
+// Under each section, one measured line (pillar 2, 9 October 2026): of the sets that would decide, how many show the
+// exact number, and how many have the label in the list the result screen can offer, [M, M + 1, M - 1]
+// (result-choices.js). It decides nothing; choices.test.ts measures the same on every real-world suite.
 import { expect, test } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { summarizeCount, withProposal } from '../../../src/lib/coreAnalysis';
+import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/coreAnalysis';
+import { countChoices, inList } from '../../../src/components/experience/result-choices';
+import { gunzipSync } from 'node:zlib';
 import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets } from './sets';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
@@ -59,6 +64,19 @@ function section(sets: { name: string; lift: string; label: number }[], baseCoun
   t.missing = Object.keys(baseCounts).filter(name => !(name in t.live));
   for (const name of t.missing) rows.push(`MISSING ${name}  (in the baseline, not on disk)`);
   return t;
+}
+
+// The app's whole path on a set (coreAnalysis.js: count, proposal on a refused set, body check), and the list line.
+const appPath = (lift: string, wl: any[], ts: number[], il: any[] | null, appRefused = false) => {
+  const c: any = summarizeCount(wl, ts, lift);
+  const r: any = withBodyCheck(withProposal({ ...c, refused: c.refused || appRefused, worldLandmarks: wl, timestamps: ts, imageLandmarks: il }, lift), lift);
+  return appRefused ? { ...r, notRead: { kind: 'partial' } } : r;
+};
+function listLine(sets: { lift: string; label: number; result: any }[]) {
+  const dec = sets.filter(s => decides(s.lift));
+  const ch = dec.map(s => countChoices(s.result));
+  const top1 = dec.filter((s, i) => ch[i].main === s.label).length, in3 = dec.filter((s, i) => inList(ch[i], s.label, 3)).length;
+  return `In the list (result-choices.js, measured, decides nothing): of the ${dec.length} sets that would decide, the number shown is exact on ${top1}, the label is in [M, M + 1, M - 1] on ${in3}.`;
 }
 
 test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
@@ -107,7 +125,11 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of blind.unreadable) brows.push(`UNREADABLE ${name}  (a blind count, but no lift, whole count or landmarks)`);
   const bexact = blind.sets.filter((s, i) => decides(s.lift) && bnow[i].now === s.label).length, bdec = blind.sets.filter(s => decides(s.lift)).length;
   const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that would decide; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
-  const text = [head, doubtLine(b.doubts), ...b.rows, '', vhead, ...v.rows, '', mhead, ...m.rows, '', bhead, ...brows].join('\n') + '\n';
+  const gzs = (name: string) => JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '..', name))).toString());
+  const bList = listLine(sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) })));
+  const vList = listLine(video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) })));
+  const blList = listLine(blind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) })));
+  const text = [head, doubtLine(b.doubts), bList, ...b.rows, '', vhead, vList, ...v.rows, '', mhead, ...m.rows, '', bhead, blList, ...brows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly

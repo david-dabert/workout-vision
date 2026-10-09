@@ -62,6 +62,9 @@ export const RESULT = {
     bodyChoices: 'Deux comptes possibles',
     byJoint: joint => `D’après ${{ elbow: 'le coude', shoulder: 'l’épaule', knee: 'le genou', hip: 'la hanche' }[joint] ?? 'l’articulation suivie'}`,
     byBody: 'D’après tout le corps',
+    // The two neighbours of the count, each saved in one tap (result-choices.js; pillar 2, 9 October 2026). Shown on the
+    // #collecte phone only. Status: written 9 October 2026, awaiting David's approval (R10; copy-choices.md).
+    or: `Ou${NB}:`,
   },
   en: {
     toConfirm: 'To confirm',
@@ -105,5 +108,6 @@ export const RESULT = {
     bodyChoices: 'Two possible counts',
     byJoint: joint => `From the ${{ elbow: 'elbow', shoulder: 'shoulder', knee: 'knee', hip: 'hip' }[joint] ?? 'tracked joint'}`,
     byBody: 'From the whole body',
+    or: 'Or:',
   },
 };

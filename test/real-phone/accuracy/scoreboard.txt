@@ -1,5 +1,6 @@
 Scoreboard 2026-10-09: of the 15 sets in the baseline that decide, 11 exact now, 11 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted sets, 1 flagged: 1 exact (100%), 0 off by 3+ (0%); 18 not flagged: 11 exact (61%), 0 off by 3+ (0%). Sets off by 3+ flagged: 0 of 0.
+In the list (result-choices.js, measured, decides nothing): of the 15 sets that would decide, the number shown is exact on 11, the label is in [M, M + 1, M - 1] on 15.
    sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  before 8 (exact)  now 8 (exact)
    sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  label 13  before 12 (off -1)  now 12 (off -1)
@@ -22,6 +23,7 @@ Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted set
    landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 9 (off -1)  (press: measured, decides nothing, PLAN.md)
 
 Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 14 sets in the baseline, 6 exact now, 6 before; 0 newly catastrophic, 2 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+In the list (result-choices.js, measured, decides nothing): of the 14 sets that would decide, the number shown is exact on 8, the label is in [M, M + 1, M - 1] on 11.
    sets-07oct-video/barbell_squat_9_a.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/barbell_squat_9_b.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/behind_neck_chin_up_5.json.gz  label 5  before 6 (off +1)  now 6 (off +1)
@@ -56,3 +58,4 @@ Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does n
    sets-09oct-video-mode/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 6)
 
 David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): 0 sets, 0 exact of the 0 that would decide; 0 kept at another count after seeing the app's; 0 answered "Je ne sais pas".
+In the list (result-choices.js, measured, decides nothing): of the 0 sets that would decide, the number shown is exact on 0, the label is in [M, M + 1, M - 1] on 0.

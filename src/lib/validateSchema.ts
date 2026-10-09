@@ -34,6 +34,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'proposal', 'bodyCheck',
   // The count the person gave before the app showed its own (blind.js, 9 October 2026), or null for "Je ne sais pas".
   'blind',
+  // The list offered in one tap on a counted set, and how the count was given (result-choices.js, 9 October 2026).
+  'choice',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
@@ -134,6 +136,10 @@ export function validateWorkout(record: unknown): ValidationResult {
   const bl = sanitized.blind as Record<string, unknown> | null | undefined;
   if (bl != null && !(typeof bl === 'object' && (bl.count === null || (Number.isInteger(bl.count) && (bl.count as number) >= 1 && (bl.count as number) <= 99))
     && num(bl.p) && (bl.p as number) >= 0 && (bl.p as number) <= 1)) delete sanitized.blind;
+  // A list that is not a rule's name, up to three whole counts and how the number was given is dropped: the set stays.
+  const ch = sanitized.choice as Record<string, unknown> | null | undefined;
+  if (ch != null && !(typeof ch === 'object' && typeof ch.rule === 'string' && ch.rule.length <= 32 && Array.isArray(ch.offered)
+    && ch.offered.length >= 1 && ch.offered.length <= 3 && ch.offered.every(whole) && ['main', 'alt', 'typed'].includes(ch.picked as string))) delete sanitized.choice;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;
   if (r.createdAt) sanitized.createdAt = r.createdAt as string;

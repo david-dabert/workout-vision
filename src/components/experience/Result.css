@@ -296,3 +296,8 @@
 .wv-experience .strip-key .sw-back { background: rgba(232, 189, 126, 0.42); margin-left: 10px; }
 /* On the low-confidence screen the tier line stands under the status line, flush left with the column. */
 .wv-experience .result-screen.is-low .res-status + .res-tierline { justify-content: flex-start; }
+/* The count's two neighbours, each saved in one tap (result-choices.js; pillar 2): under "Oui, N répétitions", in
+   numeric order, as quiet keys beside a "Ou :" label. */
+.wv-experience .res-alts { display: flex; align-items: center; gap: 8px; }
+.wv-experience .res-alts-or { flex: none; min-width: 32px; font-size: 15px; line-height: 1.4; color: var(--bone-2); }
+.wv-experience .res-alt { flex: 1 1 0; min-width: 0; font-family: var(--numeral-face); font-size: 22px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
