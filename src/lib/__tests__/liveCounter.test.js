@@ -146,3 +146,28 @@ describe('live counting', () => {
     expect(ms).toBeLessThan(1500);
   });
 });
+
+// The numbers the live screen displayed, for the result screen (nextShown, shownForResult; 9 October 2026).
+import { nextShown, shownForResult } from '../liveCounter';
+describe('the number the result compares with the final count', () => {
+  const run = counts => counts.reduce(nextShown, null);
+  it('keeps no 0 and no null: the screen never displayed them', () => {
+    // soldier-lateral_raise-v90-a20, replayed: 0, 2, 1, 0, 5, 4, 0, 4, 0, final 4 (as built, "affichait 0").
+    const rec = run([0, 2, 1, 0, 5, 4, 0, 4, 0]);
+    expect(rec).toEqual({ last: 4, max: 5 });
+    expect(run([0, null, 0])).toBe(null);
+    expect(shownForResult(run([0, null]), 3)).toBe(null);
+  });
+  it('names the last number shown when it is not the final', () => {
+    expect(shownForResult(run([1, 2, 3]), 4)).toBe(3);
+    expect(shownForResult(run([3, 0]), 3)).toBe(3);
+  });
+  it('names a higher number shown, when the last equals the final but more was announced', () => {
+    // The back extension of David's videos: 18 shown live, 17 final.
+    expect(shownForResult(run([16, 17, 18, 17]), 17)).toBe(18);
+    expect(shownForResult(run([0, 2, 1, 0, 5, 4, 0, 4, 0]), 4)).toBe(5);
+  });
+  it('equals the final when every number shown led up to it', () => {
+    expect(shownForResult(run([1, 2, 3, 3]), 3)).toBe(3);
+  });
+});

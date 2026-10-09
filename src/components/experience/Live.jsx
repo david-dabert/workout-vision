@@ -3,6 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { createLiveEngine, SLOW_MS } from '../../lib/liveEngine';
+import { nextShown, shownForResult } from '../../lib/liveCounter';
 import { openCamera, closeCamera, cameraProblem, canOpenCamera } from '../../lib/liveCamera';
 import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } from '../../lib/liveVoice';
 import { holdScreenAwake } from '../../lib/interruption';
@@ -106,7 +107,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       lift, video: videoRef.current,
       onPose: draw,
       onPreview: ({ body: b, ms }) => { setBody(b); previews.current += 1; if (previews.current >= SPEED_SAMPLES) setSlow(ms > SLOW_MS); },
-      onCount: c => { setLive(c); if (c.count !== null) shown.current = c.count; },
+      onCount: c => { setLive(c); shown.current = nextShown(shown.current, c.count); },
       onRep: n => {
         buzz();
         if (voiceRef.current) say(n, lang);
@@ -208,7 +209,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     hush();
     if (!result) { engine.current?.preview(); setState('ready'); return; }
     stopCamera();
-    doneRef.current(result, shown.current);
+    doneRef.current(result, shownForResult(shown.current, result.refused ? null : result.count));
   }
 
   function again() {
