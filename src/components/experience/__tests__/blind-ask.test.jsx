@@ -37,3 +37,11 @@ describe('the analysis screen', () => {
     expect(await render('fr', null)).not.toContain('blind-ask');
   });
 });
+
+// Review of 9 October 2026: deleting every digit leaves no number, so Valider cannot send the one before.
+describe('the field', () => {
+  it('reads the blind field with parseBlind: emptied is no number', async () => {
+    const { parseBlind } = await import('../../../lib/blind');
+    expect(parseBlind('') ?? 0).toBe(0);
+  });
+});

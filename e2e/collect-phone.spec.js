@@ -108,6 +108,11 @@ test('on the #collecte phone, the count is asked first and the app\'s count wait
   await page.waitForTimeout(1500);
   await expect(page.locator('.result-screen')).toHaveCount(0);
   for (const id of ['res-numeral', 'res-yes', 'res-typed', 'res-proposal']) await expect(page.getByTestId(id)).toHaveCount(0);
+  // Typed then deleted: no number, Valider waits (review of 9 October 2026).
+  await ask.getByTestId('blind-field').fill('7');
+  await ask.getByTestId('blind-field').fill('');
+  await expect(ask.getByTestId('blind-ok')).toBeDisabled();
+  await expect(ask.getByTestId('blind-empty')).toHaveCount(1);
   // 5, typed on the number pad, then Valider.
   await ask.getByTestId('blind-field').fill('5');
   await ask.getByTestId('blind-field').blur();
@@ -130,6 +135,8 @@ test('on the #collecte phone, the count is asked first and the app\'s count wait
     };
   }), name);
   expect(d).toMatchObject({ count: 5, labelKind: 'after-app', appCount: app, corrected: true, blind: { count: 5, p: 1 } });
+  // The screen opened on the person's number: no neighbour keys were offered, so none is recorded (review, 9 October).
+  expect(d.choice).toBeUndefined();
   expect(errors).toEqual([]);
 });
 
@@ -140,5 +147,35 @@ test('without the flag, nothing is asked before the result', async ({ page }) =>
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
   await expect(page.getByTestId('blind-ask')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+// The one-tap neighbours (result-choices.js; pillar 2) on the #collecte phone, after "Je ne sais pas": a tap saves the
+// neighbour, the saved card says the corrected number, and the file records what was offered and that a neighbour was
+// picked (review of 9 October 2026: the screen kept showing the app's count after the tap).
+test('on the #collecte phone, a neighbour of the count saves in one tap, and the screen says so', async ({ page }) => {
+  test.setTimeout(150000);
+  const errors = await start(page, { init: shareStub });
+  await page.goto(`${BASE}#collecte`);
+  await expect(page.getByTestId('collect-switched')).toBeVisible();
+  await openFilm(page, BASE);
+  await chooseDrawnVideo(page);
+  await page.getByTestId('blind-unsure').click({ timeout: 60000 });
+  await expect(page.getByTestId('res-alts')).toBeVisible({ timeout: 20000 });
+  const app = Number(await page.getByTestId('res-numeral').innerText());
+  await page.getByTestId('res-alt').last().click();
+  await expect(page.getByTestId('saved-card')).toBeVisible();
+  await expect(page.getByTestId('res-numeral')).toHaveText(String(app + 1));
+  await expect.poll(() => collected(page)).toHaveLength(1);
+  const [name] = await collected(page);
+  const d = await page.evaluate(n => new Promise((ok, ko) => {
+    const r = indexedDB.open('workoutVision');
+    r.onsuccess = () => {
+      const q = r.result.transaction('collected').objectStore('collected').get(n);
+      q.onsuccess = async () => { r.result.close(); ok(JSON.parse(await new Response(q.result.blob.stream().pipeThrough(new DecompressionStream('gzip'))).text())); };
+      q.onerror = () => ko(q.error);
+    };
+  }), name);
+  expect(d).toMatchObject({ count: app + 1, appCount: app, corrected: true, blind: { count: null, p: 1 }, choice: { rule: 'neighbours-v1', offered: [app, app + 1, app - 1], picked: 'alt' } });
   expect(errors).toEqual([]);
 });

@@ -214,7 +214,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // on the app's count, Result.jsx lowAsk). The saved set keeps what was offered and how the number was given.
   const choices = countChoices(result, { liveShown });
   const [offerAlts] = useState(() => choices.state === 'counted' && choices.alts.length > 0 && collectOn());
-  const pickedAlt = useRef(false);
+  const pickedAlt = useRef(false), altsShown = useRef(false);
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
   // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
   const cardRef = useRef(null), firstStep = useRef(true);
@@ -460,7 +460,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      const choice = offerAlts && !manual ? { rule: choices.rule, offered: [choices.main, ...choices.alts], picked: pickedAlt.current ? 'alt' : n === choices.main ? 'main' : 'typed' } : null;
+      // Recorded only when the keys were on the screen (review of 9 October 2026: a screen opened on the person's blind
+      // count, or saved by "Garder" before the keys showed, offered nothing).
+      const choice = offerAlts && altsShown.current && !manual ? { rule: choices.rule, offered: [choices.main, ...choices.alts], picked: pickedAlt.current ? 'alt' : n === choices.main ? 'main' : 'typed' } : null;
       savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned, proposal, blind, choice }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
@@ -810,10 +812,15 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           ? (asked && <div className="res-keys appear" data-testid="ask-card">
             <button type="button" className="res-key is-primary press" data-testid="res-yes" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>{c.yes(count)}</button>
             {/* One more or one fewer, in one tap, in numeric order: saved as the person's count (pillar 2). */}
-            {offerAlts && <div className="res-alts" role="group" aria-labelledby="res-alts-or" data-testid="res-alts">
+            {offerAlts && <div className="res-alts" role="group" aria-labelledby="res-alts-or" data-testid="res-alts" ref={el => { if (el) altsShown.current = true; }}>
               <span className="res-alts-or" id="res-alts-or">{c.or}</span>
               {[...choices.alts].sort((a, b) => a - b).map(n => <button key={n} type="button" className="res-key res-alt press" data-testid="res-alt" aria-label={c.saveN(n)}
-                onClick={() => { navigator.vibrate?.(10); pickedAlt.current = true; doSave(n, true).then(ok => { if (!ok) pickedAlt.current = false; }); }}>{n}</button>)}
+                onClick={() => {
+                  if (saving.current) return;
+                  // The number saved is the screen's number from here on (the saved card, the day's table, the share).
+                  navigator.vibrate?.(10); pickedAlt.current = true; setTrueN(n);
+                  doSave(n, true).then(ok => { if (!ok) { pickedAlt.current = false; setTrueN(count); } });
+                }}>{n}</button>)}
             </div>}
             {replayKey}
           </div>)

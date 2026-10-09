@@ -19,7 +19,8 @@ French typography as in the rest of the app: a no-break space (U+00A0) before "?
 | Aucun nombre choisi | No number chosen | Spoken while no number is chosen (the result screen's, reused) | approved 9 October 2026, reused |
 | Une de moins / Une de plus | One fewer / One more | Spoken names of − and + (the result screen's, reused) | approved 9 October 2026, reused |
 
-After the answer, the result screen uses only approved lines: equal to the app's count, "C'est bien {N} ?" and "Oui,
+After the answer, the result screen uses approved lines, plus, when the blind count equals the app's, the pending
+"Ou :" of the one-tap neighbours (copy-choices.md), shown on the same phone: equal to the app's count, "C'est bien {N} ?" and "Oui,
 {N} répétitions"; different, "Combien en avez-vous fait ?", the person's number with "Saisi par vous", "Compté par
 l'appli : {N}." and "Enregistrer {N} répétitions"; on a refused set, the person's number in the slot, the app's
 proposal still labelled "Proposition de l'appli : {N}".

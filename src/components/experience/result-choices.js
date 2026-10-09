@@ -3,11 +3,11 @@
 // honest confidence, and be measured on that list"). A screen rule: it reads the counter's result and changes no count.
 //
 // The list is the number the screen shows (M) and its two neighbours, [M, M + 1, M - 1], each above 0. Rule
-// 'neighbours-v1', chosen among five on 9 October 2026 (TRIED.md; test/real-phone/accuracy/choices.txt): putting the
-// app's independent counts (PSC, SGC, motion) in the list instead of a neighbour added nothing measurable, and the
-// direction of the error flips between datasets (public clips undercount, RepCount-A overcounts), so both neighbours
-// stay. Source: test/real-phone/accuracy/choices.test.ts. Status: experimental on the public and RepCount-A sets;
-// validated only in the sense of R9 on David's 20 stored sets and 14 videos (measured on our real clips).
+// 'neighbours-v1', compared with four others on 9 October 2026 in a scratch study (TRIED.md, "The short list on the
+// result screen"): the app's independent counts (PSC, SGC, motion) in place of a neighbour added nothing measurable,
+// and the direction of the error flips between datasets (public clips undercount, RepCount-A overcounts), so both
+// neighbours stay. The rule as shipped is measured by test/real-phone/accuracy/choices.test.ts (choices.txt). Status:
+// validated on David's 20 stored sets and 14 videos (our real clips, R9); experimental on the public and RepCount-A sets.
 //
 // The state is the screen's own, from signals the app already has, no new threshold (R8):
 //   'counted': a count shown as the app's, to confirm ("C'est bien N ?");

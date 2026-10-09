@@ -48,6 +48,13 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
   const live = useRef({});
   live.current = { lm: landmarks, fs: frameSize, progress, blind: !!blind };
   const topRef = useRef(null), bottomRef = useRef(null), pctRef = useRef(null), barRef = useRef(null);
+  // Answered while the video is still read: the question leaves the screen with the focus on its key, so the focus goes
+  // to the screen's heading, as on arriving here (ScreenFade.jsx), for VoiceOver and the keyboard (review, 9 October).
+  const headRef = useRef(null), hadBlind = useRef(!!blind);
+  useEffect(() => {
+    if (hadBlind.current && !blind) headRef.current?.focus({ preventScroll: true });
+    hadBlind.current = !!blind;
+  }, [blind]);
 
   useEffect(() => {
     setDust(1);
@@ -118,6 +125,8 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
       // With the blind question open, the body keeps to the space left above it, however short, and never runs under the
       // question's words (a 375 x 548 screen leaves it about 70 pt).
       const fits = area && area.bottom - area.top > (live.current.blind ? 24 : 120);
+      // No room left above the question: no body, rather than one drawn over the question and its keys.
+      if (live.current.blind && !fits) return;
       const top = fits ? area.top * DPR : H * 0.11;
       const hgt = fits ? (area.bottom - area.top) * DPR : H * 0.6;
       const rect = { x: W * 0.06, y: top, w: W * 0.88, h: hgt };
@@ -161,7 +170,7 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
     <section className={`screen is-active watch-screen${blind ? ' has-blind' : ''}`}>
       <div className="watch-top" ref={topRef}>
         {/* The screen's heading: the screen change gives it the focus (ScreenFade.jsx), not Cancel (audit of 6 October). */}
-        <h1 className="eyebrow">{title} · {loading ? (fr ? 'Chargement' : 'Loading') : (fr ? 'Analyse' : 'Analysis')}</h1>
+        <h1 className="eyebrow" ref={headRef} tabIndex={-1}>{title} · {loading ? (fr ? 'Chargement' : 'Loading') : (fr ? 'Analyse' : 'Analysis')}</h1>
       </div>
       <div className="watch-space" />
       <div className="watch-bottom" ref={bottomRef}>

@@ -5,7 +5,8 @@ import { BLIND_MAX, parseBlind } from '../../lib/blind';
 // The blind question on the analysis screen (blind.js): the person's count, asked while the video is read and before
 // the app shows its own. No number of the app's, no plan and no previous set is shown or used as a starting point, so
 // nothing leans the answer (R8; anchoring, blind.js). The number starts at "–"; − and + or the number pad set it, as on
-// the result screen's field (Result.jsx hero), whose styles it reuses. "Je ne sais pas" is always one tap away.
+// the result screen's field (Result.jsx hero), whose styles it reuses; every digit deleted is no number again (unlike the
+// result screen, where the app's count stands behind the field). "Je ne sais pas" is always one tap away.
 // onAnswer(n): the count given, or null for "Je ne sais pas".
 export default function BlindAsk({ fr, onAnswer }) {
   const c = BLIND[fr ? 'fr' : 'en'];
@@ -26,7 +27,7 @@ export default function BlindAsk({ fr, onAnswer }) {
           aria-label={c.field} value={typed ?? (n ? String(n) : '')} data-testid="blind-field"
           onFocus={() => setTyped('')}
           onBlur={() => setTyped(null)}
-          onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); if (d !== '') setN(parseBlind(d) ?? 0); }}
+          onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 2); setTyped(d); setN(parseBlind(d) ?? 0); }}
           onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
       </span>
       <button type="button" className="res-step press" disabled={n >= BLIND_MAX} onClick={() => set(n + 1)} aria-label={c.more}>{plus}</button>
