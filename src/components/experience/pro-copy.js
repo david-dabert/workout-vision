@@ -85,6 +85,8 @@ export const PRO = {
     pdfCount: 'Exercices',
     pdfColumns: ['', 'Exercice', 'Séries × rép.', 'Récup.'],
     pdfNote: 'Note',
+    // The programme's QR code on its PDF (programme-pdf.js, 9 October; awaits David's approval, R10).
+    pdfQrLabel: 'Ouvrir le programme',
     pdfFoot: 'Filmez chaque série avec votre téléphone : les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.',
     fileName: 'programme',
     // The client's programme (Programme.jsx).
@@ -178,6 +180,7 @@ export const PRO = {
     pdfCount: 'Exercises',
     pdfColumns: ['', 'Exercise', 'Sets × reps', 'Rest'],
     pdfNote: 'Note',
+    pdfQrLabel: 'Open the programme',
     pdfFoot: 'Film each set with your phone: the reps are counted, and the session report shows what was planned beside what was counted.',
     fileName: 'programme',
     clientEyebrow: 'Programme',

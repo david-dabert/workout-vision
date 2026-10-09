@@ -37,6 +37,9 @@ const why = w => !fr ? w : w
   .replace('refused as a frozen read', 'refusée comme lecture figée');
 // The frozen-injection row: check.html?inject=frozen only. The app never reads this parameter.
 const INJECT = new URLSearchParams(location.search).get('inject') === 'frozen';
+// ?posemode=image: the rows read with MediaPipe in IMAGE mode, as the app did before 9 October (coreAnalysis.js), to
+// measure against the app's VIDEO mode.
+const POSE_MODE = new URLSearchParams(location.search).get('posemode') === 'image' ? 'image' : null;
 const N = baseline.clips.length;
 if (fr) {
   document.documentElement.lang = 'fr';
@@ -140,7 +143,7 @@ for (const clip of baseline.clips) {
       let row, read;
       try {
         try {
-          const r = await analyzeCoreVideo(file, clip.lift, { signal, ...(forced ? { path: 'rvfc' } : {}), onProgress: progress(out) });
+          const r = await analyzeCoreVideo(file, clip.lift, { signal, ...(forced ? { path: 'rvfc' } : {}), ...(POSE_MODE ? { poseMode: POSE_MODE } : {}), onProgress: progress(out) });
           row = { count: r.count, refused: !!r.refused, read: r.timestamps.length, expected: Math.floor(r.metadata.duration * TARGET_FPS), duration: r.metadata.duration };
           read = { pictures: r.metadata.repeats, skeletons: repeatedSkeletons(r.worldLandmarks), decoder: r.metadata.method, fallback: r.metadata.fallback };
         } catch (e) {

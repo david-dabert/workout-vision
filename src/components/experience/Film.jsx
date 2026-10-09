@@ -105,8 +105,11 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
       </ol> : <ol className="steps" data-reveal style={{ '--i': 4 }}>
         <li><span className="n">1</span><span>{step1}</span></li>
         <li><span className="n">2</span><span>{wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'Au moins de la tête aux hanches dans le cadre, mains comprises.' : 'At least head to hips in the frame, hands included.')}</span></li>
-        {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September). */}
-        <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos.' : 'The whole set, from rest back to rest.'}</span></li>
+        {/* From rest to rest, so no rep is cut at either end of the video (accuracy work, 30 September), and two seconds
+            past the end: a video that stops inside the last rep loses it (failure mode 4, anatomy-8oct.md; on 9 October
+            a confirm prompt for it was measured and not shipped, cut-end.test.ts). Two seconds: convention, UNSOURCED.
+            French awaits David's approval (R10). */}
+        <li><span className="n">3</span><span>{fr ? 'Toute la série, du départ au retour au repos, puis deux secondes de plus.' : 'The whole set, from rest back to rest, then two more seconds.'}</span></li>
       </ol>}
       {live ? <div className="actions" data-reveal style={{ '--i': 5 }}>
         {/* Live: the camera opens on the next screen, inside the app; the count shows as the set goes (Live.jsx). */}

@@ -15,7 +15,7 @@ import {
   LIMITS, MAX_PAYLOAD, MAX_JSON, encodeProgramme, plainPayload, decodeProgramme, programmeOf, fromCompact, compact, payloadOf,
   programmeLink, programmeId, plannedOf, progressOf, toBase64url, targetText, cleanText,
 } from '../programme';
-import { programmePdf, programmeSheet, programmeFileName } from '../programme-pdf';
+import { programmePdf, programmeSheet, programmeFileName, programmeQr, QR_MAX_VERSION } from '../programme-pdf';
 import { reportSheet } from '../report-sheet';
 import { reportPdf } from '../report-pdf';
 import { savedSet } from '../saved-set';
@@ -230,6 +230,26 @@ describe('the programme’s PDF', () => {
     expect(pages).toBeGreaterThan(1);
     expect(text).toContain(`1 / ${pages}`);
     expect(text.replace(/\s/g, '')).toContain('SETS×REPS');
+  });
+
+  it('prints the link as a QR code with how to use it, and leaves it out without a link or for one too long to scan', async () => {
+    const link = `https://david-dabert.github.io/workout-vision/#programme=z${'A'.repeat(400)}`;
+    const qr = programmeQr(link);
+    expect(qr.version).toBeLessThanOrEqual(QR_MAX_VERSION);
+    expect(qr.size).toBe(17 + 4 * qr.version);
+    // The three finder patterns: the corners' 7 x 7 squares are dark on their edge.
+    for (const [r, c] of [[0, 0], [0, qr.size - 7], [qr.size - 7, 0]]) expect([0, 6].every(k => qr.dark(r + k, c) && qr.dark(r, c + k))).toBe(true);
+    expect(programmeQr(null)).toBeNull();
+    expect(programmeQr(`https://x/#programme=z${'A'.repeat(3000)}`)).toBeNull();
+    const withQr = await drawn(() => programmePdf(sample, { lang: 'fr', date, link }));
+    const flat = withQr.text.replace(/\s/g, '');
+    expect(flat).toContain('OUVRIRLEPROGRAMME');
+    expect(withQr.text).not.toMatch(/Workout ?Vision/i);
+    const without = await drawn(() => programmePdf(sample, { lang: 'fr', date }));
+    expect(without.text.replace(/\s/g, '')).not.toContain('OUVRIRLEPROGRAMME');
+    expect(withQr.blob.size).toBeGreaterThan(without.blob.size);
+    // A short programme keeps its one page with the code.
+    expect(withQr.pages).toBe(1);
   });
 
   it('reads its words from the copy, and names its file in ASCII', () => {
