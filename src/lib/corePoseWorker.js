@@ -1,5 +1,5 @@
 // Use the harness's exact CPU/IMAGE inference and image filtering in a worker.
-import { getImageLandmarker, detectPoseImage, resetKalmanFilters } from './poseAnalysis';
+import { getImageLandmarker, getVideoModeLandmarker, detectPoseImage, resetKalmanFilters } from './poseAnalysis';
 // TFLite emits this informational startup line on stderr. Keep it visible as info.
 const originalError = console.error.bind(console);
 console.error = (...args) => {
@@ -18,7 +18,8 @@ self.onmessage = async ({ data }) => {
       return;
     }
     if (data.type === 'init') {
-      model = await getImageLandmarker();
+      // videoMode: the check page's measurement of VIDEO mode only (coreAnalysis.js, poseMode); the app never sends it.
+      model = data.videoMode ? await getVideoModeLandmarker() : await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');
       self.postMessage({ id: data.id });
       return;

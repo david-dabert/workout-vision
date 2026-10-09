@@ -175,7 +175,7 @@ const WORKER_CLOSE_MS = 1000;
 const IN_FLIGHT = 2;
 let previousWorkerGone = Promise.resolve();
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject, poseMode } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   // Analyses queue one behind the other: each waits for the worker of the one started before it.
   const before = previousWorkerGone;
@@ -235,7 +235,8 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
   try {
     signal?.throwIfAborted();
     onPhase('model');
-    await send({ type: 'init' });
+    // poseMode 'video' comes from the check page only (?posemode=video), to measure MediaPipe's VIDEO mode.
+    await send({ type: 'init', ...(poseMode === 'video' ? { videoMode: true } : {}) });
     onPhase('extracting');
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
     // The sample each worker timestamp was sent for, so the backward pass's results land on their own samples.
