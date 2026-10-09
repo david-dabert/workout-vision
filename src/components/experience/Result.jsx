@@ -217,10 +217,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [shareNote, setShareNote] = useState('');
   const [sel, setSel] = useState(-1); // the rep whose details are shown, or none
   const saving = useRef(false);
-  // Leaving a counted set not yet saved asks first (WP1.4 of docs/SPEC-production.md): the close button and the
-  // browser's back (Safari's edge swipe) both lead here, so a set is never lost by a slip of the thumb.
+  // Leaving a set not yet saved asks first (WP1.4 of docs/SPEC-production.md): the close button and the
+  // browser's back (Safari's edge swipe) both lead here, so a set is never lost by a slip of the thumb. A refused set
+  // too, once a number stands in its slot (the app's proposal, or one typed): excellence hunt, 9 October 2026.
   const [closing, setClosing] = useState(false);
-  const unsaved = step !== 'saved' && !result.refused;
+  const unsaved = step !== 'saved';
   // A set the app counted none in, with no number typed yet, holds nothing to keep: closing it asks nothing.
   const empty = low && step === 'fix' && trueN === 0;
   const emptyRef = useRef(empty);
@@ -483,7 +484,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       return;
     }
     // A flagged set kept at one of the app's own numbers is a confirmed count, not a correction.
-    if (await doSave(step === 'fix' ? trueN : count, flagged ? trueN !== count : step === 'fix')) { setClosing(false); await released(); onClose(); }
+    // A refused set is kept as the person's own count, as its save key keeps it (WP1.6).
+    if (await doSave(step === 'fix' ? trueN : count, flagged ? trueN !== count : step === 'fix', !!result.refused)) { setClosing(false); await released(); onClose(); }
   }
   async function discardAndClose() {
     if (saving.current) return; // a save already under way finishes; the card stays until it does
@@ -631,7 +633,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     // the top bar, shows where the tracking lost the body; under it, this screen is out of reach.
     return <div className="wv-experience" ref={rootRef} inert={covered ? true : undefined}>
       <section className={`screen is-active result-screen is-low${step === 'saved' ? ' is-saved' : ''}`}><div className="wrap">
-        <Topbar fr={fr} onClose={onClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
+        <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
         {status}
         {tierLine}
         {step !== 'saved' && lowAsk(true, [text, fix])}

@@ -15,6 +15,7 @@ import {
   LIMITS, MAX_PAYLOAD, MAX_JSON, encodeProgramme, plainPayload, decodeProgramme, programmeOf, fromCompact, compact, payloadOf,
   programmeLink, programmeId, plannedOf, progressOf, toBase64url, targetText, cleanText,
   resultsOf, encodeResults, decodeResults, plainResultsPayload, resultsLink, resultsPayloadOf, RESULT_LIMITS,
+  keptLetter, lastDayOf, dayWords, timeWords, RESULTS_DAYS_BACK,
 } from '../programme';
 import { programmePdf, programmeSheet, programmeFileName, programmeQr, QR_MAX_VERSION } from '../programme-pdf';
 import { reportSheet } from '../report-sheet';
@@ -151,9 +152,45 @@ describe('planned against counted', () => {
   it('puts each set saved today beside its exercise’s target, oldest first', () => {
     const sets = [set(0, 9, at(17, 10)), set(0, 10, at(17, 5)), set(1, 12, at(17, 20)), set(0, 10, at(17, 15))];
     const p = progressOf(sample, id, sets, now);
-    expect(p.items[0]).toEqual({ index: 0, key: 'squat', target: { sets: 3, reps: 10 }, done: [10, 9, 10], complete: true });
-    expect(p.items[1]).toEqual({ index: 1, key: 'push_up', target: { sets: 4, reps: 12 }, done: [12], complete: false });
+    expect(p.items[0]).toEqual({ index: 0, key: 'squat', target: { sets: 3, reps: 10 }, done: [10, 9, 10], kinds: ['a', 'a', 'a'], complete: true });
+    expect(p.items[1]).toEqual({ index: 1, key: 'push_up', target: { sets: 4, reps: 12 }, done: [12], kinds: ['a'], complete: false });
     expect([p.complete, p.total]).toEqual([1, 2]);
+    expect(p.last).toBe(at(17, 20));
+    expect(progressOf(sample, id, [], now).last).toBe(null);
+  });
+
+  it('carries the exercise’s key in the target, so it never reaches another exercise’s set', () => {
+    expect(plannedOf(id, 1, sample.items[1])).toEqual({ programme: id, item: 1, key: 'push_up', sets: 4, reps: 12, rest: sample.items[1].rest });
+  });
+
+  it('says how each set was kept: the app’s count, corrected, typed after a refusal, or the app’s proposal confirmed', () => {
+    const result = { count: 10, reps: [], arm: 'right', confidence: 0.9, metadata: { duration: 20 } };
+    const kept = o => keptLetter(savedSet({ result, lift: 'squat', ...o }));
+    expect(kept({ n: 10, corrected: false })).toBe('a');
+    expect(kept({ n: 8, corrected: true })).toBe('c');
+    expect(kept({ n: 7, corrected: true, manual: true })).toBe('t');
+    expect(kept({ n: 6, corrected: true, manual: true, proposal: 6 })).toBe('p');
+    expect(kept({ n: 7, corrected: true, manual: true, proposal: 6 })).toBe('t');
+    const sets = [set(0, 10, at(17, 5), { source: 'counter-core', machineResult: { reps: 10 } }), set(0, 8, at(17, 10), { source: 'manual' })];
+    expect(progressOf(sample, id, sets, now).items[0].kinds).toEqual(['a', 't']);
+  });
+
+  it('finds the latest session of the week once its day is over, and none older or of another programme', () => {
+    const days = n => now.getTime() - n * 86400000;
+    expect(lastDayOf(sample, id, [set(0, 10, days(1)), set(1, 12, days(2))], now)).toEqual(new Date(days(1)));
+    expect(lastDayOf(sample, id, [set(0, 10, days(RESULTS_DAYS_BACK + 1))], now)).toBe(null);
+    expect(lastDayOf(sample, id, [{ ...set(0, 10, days(1)), planned: plannedOf('pother', 0, sample.items[0]) }], now)).toBe(null);
+    expect(lastDayOf(sample, id, [{ ...set(0, 10, days(1)), exercise: 'deadlift' }], now)).toBe(null);
+    expect(lastDayOf(sample, id, [], now)).toBe(null);
+  });
+
+  it('names a day and a time as a coach reads them', () => {
+    expect(dayWords(new Date(2026, 9, 1), 'fr')).toBe('1er octobre');
+    expect(dayWords(new Date(2026, 9, 8), 'fr')).toBe('8 octobre');
+    expect(dayWords(new Date(2026, 9, 9), 'fr', { year: true })).toBe('9 octobre 2026');
+    expect(dayWords(new Date(2026, 9, 1), 'en')).toBe('1 October');
+    expect(timeWords('08:05', 'fr')).toBe(`8${NBSP}h${NBSP}05`);
+    expect(timeWords('19:42', 'en')).toBe('19:42');
   });
 
   it('leaves out other days, other programmes and sets saved outside a programme', () => {
@@ -168,7 +205,7 @@ describe('planned against counted', () => {
 
   it('is kept with the set as saved, and printed on the report as "Prévu : 3 × 10"', () => {
     const planned = plannedOf(id, 0, sample.items[0]);
-    expect(planned).toEqual({ programme: id, item: 0, sets: 3, reps: 10, rest: 90 });
+    expect(planned).toEqual({ programme: id, item: 0, key: 'squat', sets: 3, reps: 10, rest: 90 });
     const result = { count: 10, reps: [], arm: 'right', confidence: 0.9, metadata: { duration: 30 }, timestamps: [] };
     expect(savedSet({ result, lift: 'squat', n: 10, corrected: false, planned }).planned).toEqual(planned);
     expect('planned' in savedSet({ result, lift: 'squat', n: 10, corrected: false })).toBe(false);
@@ -187,6 +224,21 @@ describe('planned against counted', () => {
     expect(validateWorkout(stored).sanitized.planned).toEqual(planned);
     for (const bad of [{ programme: 3 }, { ...planned, sets: 1.5 }, { ...planned, programme: 'x'.repeat(40) }, 'p1']) {
       expect('planned' in validateWorkout({ ...stored, planned: bad }).sanitized).toBe(false);
+    }
+  });
+
+  it('keeps a confirmed proposal and a body check through a read, so the history and the results can tell them apart', () => {
+    const result = { count: 0, reps: [], arm: null, confidence: null, metadata: { duration: 20 } };
+    const stored = { id: 'w2', createdAt: 1, ...savedSet({ result, lift: 'squat', n: 6, corrected: true, manual: true, proposal: 6 }) };
+    const read = validateWorkout(stored).sanitized;
+    expect(read.proposal).toEqual({ reps: 6, by: 'psc' });
+    expect(keptLetter(read)).toBe('p');
+    expect(validateWorkout({ ...stored, bodyCheck: { agreement: 0.4, second: 9 } }).sanitized.bodyCheck).toEqual({ agreement: 0.4, second: 9 });
+    for (const bad of [{ reps: 6 }, { reps: 6.5, by: 'psc' }, { reps: -1, by: 'psc' }, 'psc']) {
+      expect('proposal' in validateWorkout({ ...stored, proposal: bad }).sanitized).toBe(false);
+    }
+    for (const bad of [{ agreement: 'x', second: 9 }, { agreement: 0.4, second: 9.5 }, 3]) {
+      expect('bodyCheck' in validateWorkout({ ...stored, bodyCheck: bad }).sanitized).toBe(false);
     }
   });
 
@@ -285,18 +337,25 @@ describe('the copy of the programmes', () => {
 });
 
 describe('the results sent back to the coach', () => {
-  const now = new Date();
+  const now = new Date(2026, 9, 9, 18, 30);
   const saved = [
-    { exercise: 'squat', reps: 10, createdAt: now.getTime() - 240000, planned: { programme: 'p1', item: 0 } },
-    { exercise: 'squat', reps: 8, createdAt: now.getTime() - 120000, planned: { programme: 'p1', item: 0 } },
+    { exercise: 'squat', reps: 10, source: 'counter-core', machineResult: { reps: 10 }, createdAt: new Date(2026, 9, 9, 18, 26).getTime(), planned: { programme: 'p1', item: 0 } },
+    { exercise: 'squat', reps: 8, source: 'manual', afterRefusal: true, createdAt: new Date(2026, 9, 9, 18, 28).getTime(), planned: { programme: 'p1', item: 0 } },
   ];
-  const results = () => resultsOf(sample, progressOf(sample, 'p1', saved, now), new Date(2026, 9, 9));
+  const results = () => resultsOf(sample, progressOf(sample, 'p1', saved, now), now);
 
-  it('carry the day, and per exercise the target and the reps of each set saved that day', () => {
-    expect(results()).toEqual({ title: 'Haut du corps, semaine 1', who: 'Camille', day: '2026-10-09', items: [
-      { key: 'squat', sets: 3, reps: 10, done: [10, 8] },
-      { key: 'push_up', sets: 4, reps: 12, done: [] },
+  it('carry the day and the time of its latest set, and per exercise the target, the reps of each set saved that day and how each was kept', () => {
+    expect(results()).toEqual({ title: 'Haut du corps, semaine 1', who: 'Camille', day: '2026-10-09', time: '18:28', items: [
+      { key: 'squat', sets: 3, reps: 10, done: [10, 8], kinds: ['a', 't'] },
+      { key: 'push_up', sets: 4, reps: 12, done: [], kinds: [] },
     ] });
+  });
+
+  it('a link of the day before, with no time and no kinds, still opens: its sets read as before', async () => {
+    const old = { v: 1, t: 'Séance', d: '2026-10-09', x: [['squat', 3, 10, [10, 8]]] };
+    expect(await decodeResults('j' + b64(JSON.stringify(old)))).toEqual({ ok: true, results: {
+      title: 'Séance', who: '', day: '2026-10-09', time: '', items: [{ key: 'squat', sets: 3, reps: 10, done: [10, 8] }],
+    } });
   });
 
   it('come back whole from the plain and the packed link, and the address gives their payload', async () => {
@@ -323,6 +382,11 @@ describe('the results sent back to the coach', () => {
     expect(await forged({ ...ok, x: [['squat', 3, 10, Array(RESULT_LIMITS.done + 1).fill(10)]] })).toEqual({ ok: false, error: 'bad-value' });
     expect(await forged({ ...ok, x: [['squat', 0, 10, []]] })).toEqual({ ok: false, error: 'bad-value' });
     expect(await forged({ ...ok, t: 'x'.repeat(200) })).toEqual({ ok: false, error: 'bad-value' });
+    // The time and the kinds, when present, are checked as the rest: one letter per set, one string per exercise.
+    expect((await forged({ ...ok, h: '07:05', k: ['ap'] })).ok).toBe(true);
+    for (const bad of [{ h: '24:00' }, { h: '7:05' }, { h: 705 }, { k: ['a'] }, { k: ['ax'] }, { k: 'ap' }, { k: ['ap', ''] }, { k: [['a', 'p']] }]) {
+      expect(await forged({ ...ok, ...bad })).toEqual({ ok: false, error: 'malformed' });
+    }
     expect(r.items).toHaveLength(2);
   });
 });

@@ -32,6 +32,9 @@ export default function useHashRouter() {
   const known = useRef(page);
   // How many times the browser has moved the page itself (back, forward, a typed address).
   const moves = useRef(0);
+  // Every announced change renders the app again, even to the same page: a second results or programme link opened
+  // over the first changes only the address, which the screens read (excellence hunt, 9 October 2026).
+  const [, setChanges] = useState(0);
 
   // Sync hash -> state when the user presses back/forward. Safari animates
   // its own back swipe, so the app marks the change and skips its crossfade.
@@ -42,6 +45,7 @@ export default function useHashRouter() {
       if (next !== known.current) moves.current += 1;
       known.current = next;
       setPageState(next);
+      setChanges(n => n + 1);
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);

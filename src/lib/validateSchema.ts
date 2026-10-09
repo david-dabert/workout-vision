@@ -29,6 +29,9 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'doubt',
   // The coach's target, for a set filmed from a programme (Espace pro, 6 October; programme.js, plannedOf).
   'planned',
+  // The app's proposal on a refused set (saved-set.js), and a set the body check flagged: written since 8 October but
+  // dropped here on every read until 9 October, so no screen could tell a confirmed proposal from a typed count.
+  'proposal', 'bodyCheck',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
@@ -118,6 +121,13 @@ export function validateWorkout(record: unknown): ValidationResult {
   const whole = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 1000;
   if (p != null && !(typeof p === 'object' && typeof p.programme === 'string' && p.programme.length <= 32
     && whole(p.item) && whole(p.sets) && whole(p.reps) && whole(p.rest))) delete sanitized.planned;
+  // A proposal that is not a whole count of the app's proposer, and a body check that is not its two numbers, are
+  // dropped: the set stays, read as typed by hand or as counted.
+  const pr = sanitized.proposal as Record<string, unknown> | null | undefined;
+  if (pr != null && !(typeof pr === 'object' && whole(pr.reps) && pr.by === 'psc')) delete sanitized.proposal;
+  const bc = sanitized.bodyCheck as Record<string, unknown> | null | undefined;
+  if (bc != null && !(typeof bc === 'object' && (bc.agreement === null || num(bc.agreement))
+    && (bc.second === null || whole(bc.second)))) delete sanitized.bodyCheck;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;
   if (r.createdAt) sanitized.createdAt = r.createdAt as string;

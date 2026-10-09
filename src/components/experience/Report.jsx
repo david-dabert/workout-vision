@@ -24,7 +24,7 @@ export function warmReportPdf() {
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
-export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, leaving, onBack, reps, setId, sides = null, wave = null, planned = null }) {
+export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, leaving, onBack, reps, setId, sides = null, wave = null, planned = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach
@@ -61,7 +61,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, first, previousSet: previous ?? null, sides, lift, wave, planned });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, first, previousSet: previous ?? null, sides, lift, wave, planned });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 

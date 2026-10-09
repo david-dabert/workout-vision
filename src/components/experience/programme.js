@@ -3,6 +3,7 @@
 // link's hash (the part of an address a browser never sends), then on the client's phone. Pure: no DOM, no storage.
 import { isOffered } from '../../lib/offer';
 import { isTest } from '../../lib/fitness-tests';
+import { keptAs } from './result-plan';
 
 const NBSP = ' ';
 
@@ -212,8 +213,11 @@ export function programmeId(p) {
   return `p${h.toString(36)}`;
 }
 
-/** What a set filmed from a programme keeps (saved-set.js): the programme, the exercise's place in it, the target. */
-export const plannedOf = (id, index, item) => ({ programme: id, item: index, sets: item.sets, reps: item.reps, rest: item.rest });
+/**
+ * What a set filmed from a programme keeps (saved-set.js): the programme, the exercise's place in it and its key (so a
+ * target never reaches another exercise's set, App.jsx), the target.
+ */
+export const plannedOf = (id, index, item) => ({ programme: id, item: index, key: item.key, sets: item.sets, reps: item.reps, rest: item.rest });
 
 /** "3 × 10": the target as a coach writes it; null for a set saved outside a programme. */
 export function targetText(planned) {
@@ -225,19 +229,63 @@ const localDay = d => { const x = new Date(d); return `${x.getFullYear()}-${x.ge
 const setTimeOf = w => new Date(w.createdAt ?? w.date).getTime();
 
 /**
+ * How a set's reps were kept, one letter as the results link carries it: 'a' the app's count, 'c' corrected by the
+ * person, 't' typed by the person after the app refused the set, 'p' the app's proposal on a refused set, confirmed by
+ * the person (saved-set.js). Only 'a' is the app's own count (R8).
+ */
+export function keptLetter(w) {
+  if (w?.source === 'manual') return w.proposal?.reps === w.reps ? 'p' : 't';
+  return keptAs(w) === 'corrected' ? 'c' : 'a';
+}
+
+/**
  * Planned against counted, for one programme and one day (by default today): for each exercise, its target and the
  * sets saved for it that day, oldest first, each with the reps the person kept (the app's count, or theirs when they
- * corrected it). A programme followed again another day starts afresh; the sets of other days stay in Vos séries.
+ * corrected it) and how they were kept (kinds, keptLetter). last: the time of the day's latest set, or null.
+ * A programme followed again another day starts afresh; the sets of other days stay in Vos séries.
  */
 export function progressOf(programme, id, sets, now = new Date()) {
   const today = localDay(now);
   const mine = (sets || []).filter(w => w?.planned?.programme === id && Number.isFinite(w.reps) && localDay(setTimeOf(w)) === today)
     .sort((a, b) => setTimeOf(a) - setTimeOf(b));
   const items = programme.items.map((item, index) => {
-    const done = mine.filter(w => w.planned.item === index && w.exercise === item.key).map(w => w.reps);
-    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, complete: done.length >= item.sets };
+    const own = mine.filter(w => w.planned.item === index && w.exercise === item.key);
+    const done = own.map(w => w.reps), kinds = own.map(keptLetter);
+    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets };
   });
-  return { items, complete: items.filter(i => i.complete).length, total: items.length };
+  const last = items.some(i => i.done.length) ? setTimeOf(mine.filter(w => items[w.planned.item]?.key === w.exercise).at(-1)) : null;
+  return { items, complete: items.filter(i => i.complete).length, total: items.length, last };
+}
+
+// How far back a session may still be sent once its day is over: a week. UNSOURCED, convention.
+export const RESULTS_DAYS_BACK = 7;
+
+/**
+ * The day of the latest set filmed from this programme within the last RESULTS_DAYS_BACK days, as a Date (the set's
+ * time), or null: the session the client may still send once its day is over (Programme.jsx).
+ */
+export function lastDayOf(programme, id, sets, now = new Date()) {
+  const end = new Date(now).getTime(), start = end - RESULTS_DAYS_BACK * 86400000;
+  let best = null;
+  for (const w of sets || []) {
+    if (w?.planned?.programme !== id || !Number.isFinite(w.reps) || programme.items[w.planned.item]?.key !== w.exercise) continue;
+    const t = setTimeOf(w);
+    if (t >= start && t <= end && (best === null || t > best)) best = t;
+  }
+  return best === null ? null : new Date(best);
+}
+
+/** A day in words, "8 octobre" or "1er octobre" ("8 October"), with its year when asked. */
+export function dayWords(date, lang, { year = false } = {}) {
+  const d = new Date(date), fr = lang === 'fr';
+  const words = d.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', ...(year ? { year: 'numeric' } : {}) });
+  return fr && d.getDate() === 1 ? words.replace(/^1(?=\s)/, '1er') : words;
+}
+
+/** A time of day as the coach reads it, from "HH:MM": "19 h 42" in French, "19:42" in English. */
+export function timeWords(hhmm, lang) {
+  const [h, m] = String(hhmm).split(':');
+  return lang === 'fr' ? `${Number(h)}${NBSP}h${NBSP}${m}` : `${h}:${m}`;
 }
 
 // The client's results, sent back to the coach (9 October 2026): the link #resultats=<payload>, packed as the
@@ -247,19 +295,32 @@ export const RESULTS_KEY = 'resultats=';
 export const RESULT_LIMITS = Object.freeze({ done: 20, reps: [0, 999] });
 const dayOf = d => { const x = new Date(d), pad = n => String(n).padStart(2, '0'); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`; };
 
+const pad2 = n => String(n).padStart(2, '0');
+const hhmm = t => { const x = new Date(t); return `${pad2(x.getHours())}:${pad2(x.getMinutes())}`; };
+
 /**
- * What the client sends back for one day: the programme's title and for whom, the day (local date), and per exercise
- * its target and the reps of each set saved for it that day (progressOf), as the client's programme shows them.
+ * What the client sends back for one day: the programme's title and for whom, the day (local date) and the time of
+ * its latest set, and per exercise its target, the reps of each set saved for it that day (progressOf), as the
+ * client's programme shows them, and how each was kept (keptLetter).
  */
 export function resultsOf(programme, progress, date = new Date()) {
   return {
-    title: programme.title, who: programme.who || '', day: dayOf(date),
-    items: programme.items.map((item, i) => ({ key: item.key, sets: item.sets, reps: item.reps, done: (progress.items[i]?.done || []).slice(0, RESULT_LIMITS.done).map(n => Math.round(n)) })),
+    title: programme.title, who: programme.who || '', day: dayOf(date), time: progress.last == null ? '' : hhmm(progress.last),
+    items: programme.items.map((item, i) => {
+      const got = progress.items[i] || {}, done = (got.done || []).slice(0, RESULT_LIMITS.done);
+      return { key: item.key, sets: item.sets, reps: item.reps, done: done.map(n => Math.round(n)), kinds: (got.kinds || []).slice(0, done.length) };
+    }),
   };
 }
 
-// The compact form the results link carries: { v: 1, t, w?, d, x: [[key, sets, reps, [reps of each set]], ...] }.
-const compactResults = r => ({ v: 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, x: r.items.map(i => [i.key, i.sets, i.reps, i.done]) });
+// The compact form the results link carries: { v: 1, t, w?, d, h?, x: [[key, sets, reps, [reps of each set]], ...],
+// k? }. h, the time of the latest set ("HH:MM"), and k, one string per exercise with one letter per set (keptLetter),
+// came on 9 October 2026 as keys of their own: a coach's app of the day before reads the link, without them.
+const compactResults = r => ({
+  v: 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, ...(r.time ? { h: r.time } : {}),
+  x: r.items.map(i => [i.key, i.sets, i.reps, i.done]),
+  ...(r.items.every(i => Array.isArray(i.kinds) && i.kinds.length === i.done.length) ? { k: r.items.map(i => i.kinds.join('')) } : {}),
+});
 
 /** The results' plain payload, "j" and the compact JSON in base64url: made at once, so a share stays within the tap. */
 export const plainResultsPayload = r => 'j' + toBase64url(new TextEncoder().encode(JSON.stringify(compactResults(r))));
@@ -291,7 +352,17 @@ export function fromCompactResults(raw) {
     if (done.length > RESULT_LIMITS.done || !done.every(n => intIn(n, RESULT_LIMITS.reps))) return bad('bad-value');
     items.push({ key, sets, reps, done });
   }
-  return { ok: true, results: { title, who, day: raw.d, items } };
+  // The time of the latest set and how each set was kept: optional, checked when present.
+  if (raw.h !== undefined && (typeof raw.h !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(raw.h))) return bad('malformed');
+  if (raw.k !== undefined) {
+    if (!Array.isArray(raw.k) || raw.k.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const k = raw.k[i];
+      if (typeof k !== 'string' || k.length !== items[i].done.length || !/^[acpt]*$/.test(k)) return bad('malformed');
+      items[i].kinds = [...k];
+    }
+  }
+  return { ok: true, results: { title, who, day: raw.d, time: raw.h || '', items } };
 }
 
 /** A results payload read back, never trusted (decodeProgramme's errors). Never throws. */

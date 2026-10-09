@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -213,7 +213,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const more = summary.filter(line => !statLabels.some(l => line.startsWith(`${l}${colon}`)));
   // How the count was made, as labelled details under it, like the people above it: who counted, and the limb followed.
   const details = [];
-  if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’app n’a pas pu compter' : 'by hand, the app could not count']);
+  // The app's proposal on a refused set, confirmed as it stood (History.jsx; pending David's approval of the French, R10).
+  if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’app, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
+  else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’app n’a pas pu compter' : 'by hand, the app could not count']);
   else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’app' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
   if (arm === 'left' || arm === 'right') {
     const limb = joint === 'knee' ? (fr ? 'Jambe suivie' : 'Leg tracked') : joint === 'hip' ? (fr ? 'Côté suivi' : 'Side tracked') : (fr ? 'Bras suivi' : 'Arm tracked');
@@ -239,7 +241,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // The coach's target beside the count, for a set filmed from a programme (Espace pro, 6 October): "Prévu : 3 × 10".
     planned: plannedLine(planned, fr),
     // A set the app refused and the person typed (WP1.6): said so where a correction would be.
-    corrected: source === 'manual' && afterRefusal
+    corrected: source === 'manual' && afterRefusal && proposed
+      ? (fr ? 'Proposé par l’app, qui n’a pas bien vu le mouvement, puis confirmé à la main.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by hand.')
+      : source === 'manual' && afterRefusal
       ? (fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
       : counted != null && counted !== count
       ? (fr ? `Compté par l’app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)

@@ -3,7 +3,8 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { decodeProgramme, plainResultsPayload, plannedOf, progressOf, resultsLink, resultsOf } from './programme';
+import { dayWords, decodeProgramme, lastDayOf, plainResultsPayload, plannedOf, progressOf, resultsLink, resultsOf } from './programme';
+import SetCells from './SetCells';
 import { keepReceived, loadReceived, openReceived, removeReceived } from './programme-store';
 import { useSets } from './sets';
 import { useCondensingTopbar } from './topbar';
@@ -63,16 +64,21 @@ export default function Programme({ payload, onClose, onStart }) {
   }
 
   const { entry, others } = state, p = entry.programme;
-  const progress = progressOf(p, entry.id, Array.isArray(sets) ? sets : []);
+  const mine = Array.isArray(sets) ? sets : [], now = new Date();
+  const progress = progressOf(p, entry.id, mine, now);
   // The results link (programme.js, resultsOf): ready before the tap, as a share must be called within it (Safari).
-  // Offered once a set is saved today; the plain payload, made at once.
-  const resultsUrl = progress.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, progress))) : null;
+  // Offered once a set is saved today; with none today, the latest session of the week, which its own day did not
+  // send (excellence hunt, 9 October 2026). The plain payload, made at once.
+  const past = progress.items.some(i => i.done.length) ? null : lastDayOf(p, entry.id, mine, now);
+  const sent = past ? progressOf(p, entry.id, mine, past) : progress;
+  const resultsUrl = sent.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, sent, past || now))) : null;
+  const pastDay = past ? dayWords(past, lang) : '';
   function sendResults() {
     if (!resultsUrl) return;
     const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.resultsCopied), () => setNote(c.linkError));
     if (!navigator.share) { copy(); return; }
     // Refused for any reason but the client's own cancel, the link is copied instead.
-    navigator.share({ title: p.title, text: c.resultsText(p.title), url: resultsUrl }).then(() => setNote(''), e => { if (e.name !== 'AbortError') copy(); });
+    navigator.share({ title: p.title, text: past ? c.resultsTextOf(p.title, pastDay) : c.resultsText(p.title), url: resultsUrl }).then(() => setNote(''), e => { if (e.name !== 'AbortError') copy(); });
   }
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="programme-screen"><div className="wrap">
@@ -86,7 +92,6 @@ export default function Programme({ payload, onClose, onStart }) {
       {p.note && <p className="programme-note" data-reveal style={{ '--i': 1 }}>{p.note}</p>}
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{p.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key), got = progress.items[i];
-        const slots = Math.max(item.sets, got.done.length);
         return <li key={`${item.key}-${i}`} className={`programme-item${got.complete ? ' is-done' : ''}`} data-testid="programme-item">
           <button type="button" className="programme-btn press" onClick={() => onStart(item.key, plannedOf(entry.id, i, item))} aria-label={c.film(name)}>
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
@@ -99,23 +104,16 @@ export default function Programme({ payload, onClose, onStart }) {
               ? <svg className="programme-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
               : <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>}
           </button>
-          {/* Planned against counted: one cell per planned set, the reps counted in the ones done. */}
-          <ul className="programme-sets" aria-label={name} data-testid="programme-sets">{Array.from({ length: slots }, (_, k) => {
-            const n = got.done[k];
-            return <li key={k} className={n === undefined ? 'is-todo' : n >= item.reps ? 'is-met' : 'is-short'}
-              aria-label={n === undefined ? c.setTodo(k + 1) : c.setDone(k + 1, n, item.reps)}>
-              {n !== undefined && <span aria-hidden="true">{n}</span>}
-            </li>;
-          })}</ul>
+          <SetCells name={name} sets={item.sets} reps={item.reps} done={got.done} kinds={got.kinds} c={c} testId="programme-sets" />
         </li>;
       })}</ol>
       {resultsUrl && <div className="actions programme-send">
         <button type="button" className="btn-line press" onClick={sendResults} data-testid="programme-send">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /></svg>
-          <span>{c.sendResults}</span>
+          <span>{past ? c.sendResultsOf(pastDay) : c.sendResults}</span>
         </button>
         {note && <p className="pro-status" role="status" data-testid="programme-send-status">{note}</p>}
-        <p className="foot pro-foot">{c.resultsPrivacy}</p>
+        <p className="foot pro-foot">{past ? c.resultsPrivacyOf(pastDay) : c.resultsPrivacy}</p>
       </div>}
       <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>
       <p className="foot pro-foot">{c.clientPrivacy}</p>

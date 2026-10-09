@@ -27,6 +27,11 @@ describe('the day of a planned set', () => {
     expect(dayPlan({ planned: { ...plan, reps: 0 }, sets: [], lift: 'squat', now })).toBe(null);
     expect(dayPlan({ planned: plan, sets: null, lift: 'squat', now })).toBe(null);
   });
+  it('is null for another exercise’s target, and holds for a target kept before it named its exercise', () => {
+    expect(dayPlan({ planned: { ...plan, key: 'squat' }, sets: [], lift: 'lateral_raise', now })).toBe(null);
+    expect(dayPlan({ planned: { ...plan, key: 'squat' }, sets: [], lift: 'squat', now })).toEqual({ sets: 3, reps: 10, done: [], index: 1 });
+    expect(dayPlan({ planned: plan, sets: [], lift: 'lateral_raise', now })).toEqual({ sets: 3, reps: 10, done: [], index: 1 });
+  });
   it('reads a set the app counted none in, then corrected, as corrected', () => {
     expect(keptAs({ reps: 8, machineResult: { reps: 0 }, correctedResult: { reps: 8 } })).toBe('corrected');
     expect(keptAs({ reps: 8, machineResult: { reps: 8 }, corrected: true, correctedResult: null })).toBe('confirmed');
