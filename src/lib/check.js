@@ -57,7 +57,7 @@ const pct = (x, fr) => { const s = (Math.round(x * 1000) / 10).toString(); retur
 /**
  * The lines of a row that say how the video was read: the repeat share of the pictures (the extractor's) and of the
  * skeletons (analyzeCoreVideo's), the decoder's method and, when the playback path ran, why.
- * French copy pending David's approval (R10; test/real-phone/swarm/copy-check.md).
+ * French copy approved by David on 9 October 2026 (R10; test/real-phone/swarm/copy-check.md).
  * @param {{ pictures?: {samples:number, repeats:number} | null, skeletons?: {samples:number, repeats:number} | null, decoder?: string, fallback?: string | null }} read
  */
 export function readLines({ pictures = null, skeletons = null, decoder = '', fallback = null }, fr = false) {

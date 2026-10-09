@@ -45,7 +45,7 @@ export function setMeasures(all) {
  * What each measure means, in plain words, under the per-rep table on the result screen, the report and the PDF
  * (David's demo to a physiotherapist, 5 October: "it's physics for most people"). Each term is the table's own column
  * heading, so the eye goes from one to the other; the tempo is shown, four phases with their seconds, not described.
- * It describes, it never judges: every measure stays experimental (measures.js). Copy awaits David's approval (R10).
+ * It describes, it never judges: every measure stays experimental (measures.js). Copy approved by David on 9 October 2026 (R10).
  */
 export function measureGuide(fr) {
   return {
@@ -213,7 +213,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const more = summary.filter(line => !statLabels.some(l => line.startsWith(`${l}${colon}`)));
   // How the count was made, as labelled details under it, like the people above it: who counted, and the limb followed.
   const details = [];
-  // The app's proposal on a refused set, confirmed as it stood (History.jsx; pending David's approval of the French, R10).
+  // The app's proposal on a refused set, confirmed as it stood (History.jsx; French approved by David on 9 October 2026, R10).
   if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’app, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
   else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’app n’a pas pu compter' : 'by hand, the app could not count']);
   else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’app' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);

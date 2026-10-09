@@ -1,10 +1,10 @@
-# The app's proposal on a refused set: the words for David's approval (R10)
+# The app's proposal on a refused set: the words, approved by David on 9 October 2026 (R10)
 
 Written 8 October 2026. Where the core refuses a set, PSC's count (src/lib/counting/psc.js, coreAnalysis.js
 withProposal) opens the low-confidence screen (05b) as a number to confirm: never a silent count, never a grade, never
 a measure (R8, delegated decision of David, 8 October). Register "vous", glossary DIRECTIVES.md Part 7 (série,
 répétition); the app is "l'appli", as on the rest of the result screen (copy-result.md). The strings live in
-src/components/experience/result-copy.js. Status of every line: **pending David's approval (8 October 2026)**.
+src/components/experience/result-copy.js. Status of every line: **approved by David on 9 October 2026** (written 8 October).
 
 French typography as in the rest of the app: a no-break space (U+00A0) before ":".
 

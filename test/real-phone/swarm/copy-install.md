@@ -1,6 +1,6 @@
-# Installing the app on the home screen: the words for David's approval (R10)
+# Installing the app on the home screen: the words, approved by David on 9 October 2026 (R10)
 
-Written 7 October 2026, register "vous". Pending David's approval; nothing here is approved yet.
+Written 7 October 2026, register "vous". Approved by David on 9 October 2026.
 Built in src/components/experience/install-copy.js (Install.jsx, the choice's row, the sheet, the result's suggestion;
 KeepSets.jsx reads keep.why). The iOS labels in quotes are Safari's own French words; David checks them on his iPhone,
 and checks where "Partager" sits in Safari on iOS 26 (step 1's note is UNSOURCED, from the iOS 26 compact tab bar).

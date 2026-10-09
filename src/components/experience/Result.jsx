@@ -64,8 +64,8 @@ function Topbar({ fr, onClose, onReplay, replayRef, badge = true }) {
 //   (FrozenReadError, FrozenSkeletonsError: try the analysis again, screen on); any other failure of the read.
 // Every case offers the report, with the failure's name, message and decoder, so the cause reaches David.
 // Every failure screen offers to type the count by hand (onByHand): a set the app could not read is still the
-// person's to log, saved as theirs with no count of the app (WP1.6; excellence hunt, 9 October 2026, French pending
-// David's approval, R10). A reload drops the video, so the model's failure offers to try again first.
+// person's to log, saved as theirs with no count of the app (WP1.6; excellence hunt, 9 October 2026; French approved
+// by David the same day, R10). A reload drops the video, so the model's failure offers to try again first.
 function ByHand({ fr, onByHand }) {
   return onByHand ? <button className="btn-ghost press" onClick={onByHand} data-testid="by-hand">{fr ? 'Saisir mon nombre' : 'Type my count'}</button> : null;
 }

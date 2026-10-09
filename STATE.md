@@ -14,7 +14,7 @@ Preview: https://workout-vision-next.vercel.app, built by David's other session;
 Scoreboard (30 September 2026): of the 14 labelled build sets, 7 exact, 6 off by 1 or 2, 1 refused (landmarks/bench_press angle, where the core alone counts 3 for 7) (npm run scoreboard; test/real-phone/accuracy/scoreboard.txt). No exam set yet. The counting core is unchanged since e84ab32.
 Offered: 181 exercises (e2e/collect.spec.js). Tiers (src/lib/liftTiers.js): Beta: lateral raise, biceps curl, lat pulldown, squat. Experimental: bench press, hip thrust, Romanian deadlift, leg press, overhead press. None has passed an exam.
 Sub-agents: wv-reviewer, wv-verifier and wv-control (.claude/agents/), whose briefs change only by David's order.
-French register: the screens use "vous". Whether David has decided it: (unconfirmed).
+French register: the screens use "vous". On 9 October 2026 David approved every French line then pending (R10; "Everything French approved"): the copy tables in test/real-phone/swarm/copy-*.md and the strings marked in src, all in "vous".
 
 Open problems:
 - Diagnosis of 30 September (test/real-phone/accuracy/diagnosis.txt): the misses on David's sets are at the edges of the video, a set starting or ending inside a rep, and in the presses. Three edge rules were tried and withdrawn at review, each counting a movement before or after the set; edges.test.ts pins the current behaviour.

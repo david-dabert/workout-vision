@@ -1,4 +1,4 @@
-# Collecting David's sets from the result screen: the words for David's approval (R10)
+# Collecting David's sets from the result screen: the words, approved by David on 9 October 2026 (R10)
 
 Written 6 October 2026, register "vous". Shown on David's phone only, once the app was opened at #collecte
 (src/lib/phoneCollect.js). Built in src/components/experience/collect-copy.js (one place), shown by Choice.jsx

@@ -1,4 +1,4 @@
-# Export of the saved sets as spreadsheet files, the words for David's approval (R10)
+# Export of the saved sets as spreadsheet files, the words, approved by David on 9 October 2026 (R10)
 
 Written 30 September 2026, register "vous". Not released until David approves them.
 Built in src/components/experience/sets-csv.js (the files) and ExportSets.jsx (the action in the history).
@@ -64,7 +64,7 @@ as the gym says it. The separator and decimal mark follow the phone's locale, th
 |---|---|---|
 | Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers. | The share did not go through. Save the video, then share it from your files. | Replay, under "Enregistrer la vidéo", after a share the phone refused |
 
-## Added 3 October 2026 (third audit C12): pending David's approval (3 October)
+## Added 3 October 2026 (third audit C12): approved by David on 9 October 2026 (written 3 October)
 
 On a set whose saved count differs from the app's, the reps file's rows are the marks the app detected, not the
 reps the user saved. Their number is written as the report heads that column (report-sheet.js, "Repère" / "Mark").

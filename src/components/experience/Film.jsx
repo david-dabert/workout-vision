@@ -143,7 +143,7 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
         {/* Live: the camera's picture is the one thing this line speaks of, and it is never recorded nor sent. "Nothing is
             recorded or sent" was untrue: a set's joint positions are saved, shared or contributed by a tap, and the usage
             counts may be sent (src/lib/events.js). True whether or not the counts are on, so not conditional on them as
-            Watch.jsx is. Awaits David's approval (test/real-phone/swarm/copy-live.md). */}
+            Watch.jsx is. Approved by David on 9 October 2026 (test/real-phone/swarm/copy-live.md). */}
         <span>{live
           ? (fr ? 'L’image de la caméra reste sur votre téléphone\u00A0: elle n’est ni enregistrée ni envoyée.' : 'The camera’s picture stays on your phone: it is neither recorded nor sent.')
           : (fr ? 'La vidéo reste sur votre téléphone.' : 'The video stays on your phone.')}</span>

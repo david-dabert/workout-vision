@@ -167,7 +167,7 @@ export default function History({ onClose }) {
             // Typed by hand after a refusal (WP1.6): no count of the app to set beside it.
             const byHand = counted === null, fixed = !byHand && counted !== w.reps;
             // The app's proposal on a refused set, confirmed as it stood: the person typed nothing (saved-set.js;
-            // excellence hunt, 9 October 2026, pending David's approval of the French, R10).
+            // excellence hunt, 9 October 2026; French approved by David the same day, R10).
             const proposed = byHand && Number.isFinite(w.proposal?.reps) && w.proposal.reps === w.reps;
             const seconds = Math.round(w.duration || 0);
             return <li key={w.id} className="hist-item">

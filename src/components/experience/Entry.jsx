@@ -14,7 +14,7 @@ import './Entry.css';
 
 // The entry's words (C2 of the design review, 7 October 2026): what the app does first, then a way in, then the
 // example. "Votre corps est un temple." moved to the head of À propos (about-copy.js). Register vous (R10). All
-// pending David's approval: test/real-phone/swarm/copy-entry.md. U+202F is not needed (no ? ! ; or « »).
+// approved by David on 9 October 2026: test/real-phone/swarm/copy-entry.md. U+202F is not needed (no ? ! ; or « »).
 const COPY = {
   fr: {
     title: 'Filmez votre série.', line: 'L’appli compte vos répétitions, sur votre téléphone.',

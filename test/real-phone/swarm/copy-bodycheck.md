@@ -1,4 +1,4 @@
-# The body check on a counted set: the words for David's approval (R10)
+# The body check on a counted set: the words, approved by David on 9 October 2026 (R10)
 
 Written 8 October 2026. When the joint the app counts does not move like the rest of the body
 (src/lib/counting/bodyCheck.js, coreAnalysis.js withBodyCheck; agreement under 0.5), the result opens on the

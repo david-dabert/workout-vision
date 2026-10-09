@@ -1,7 +1,7 @@
 // The front-view left/right comparison in words (counting/symmetry.ts), for the result screen and the
 // report. It states both ranges, the gap between them (relative to their mean) and how far the app's gap
 // lay from the true one on synthetic sets; it draws no conclusion about the body (R8; EU MDR Rule 11: no reading meant to inform care).
-// Copy for David's approval (R10). Status: experimental.
+// Copy approved by David on 9 October 2026 (R10). Status: experimental.
 import { liftDefinition } from '../../lib/counting/core';
 import { jointName } from './lift-meta';
 import { GAP_ERROR_POINTS, GAP_SYNTH_SETS, REP_GAP_ERROR_POINTS, SIDES_LIFTS, SIDES_VERSION } from '../../lib/counting/symmetry';

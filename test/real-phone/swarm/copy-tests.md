@@ -1,4 +1,4 @@
-# Fitness tests: the words for David's approval (R10)
+# Fitness tests: the words, approved by David on 9 October 2026 (R10)
 
 Written 2 October 2026, register "vous". Under David's standing order of 2 October they ship with the change;
 David approves or corrects them. Built in src/lib/fitness-tests.js, Choice.jsx, Film.jsx and Result.jsx.

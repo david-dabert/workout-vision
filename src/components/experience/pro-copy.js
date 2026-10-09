@@ -1,5 +1,5 @@
 // The words of the coach's programmes (Espace pro, Pro.jsx; the client's programme, Programme.jsx; the programme's PDF,
-// programme-pdf.js; the report's target line), written 6 October 2026, register vous (R10), for David's approval
+// programme-pdf.js; the report's target line), written 6 October 2026, register vous (R10), approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-pro.md). Wellness words only: the builder serves coaches and physiotherapists, named as
 // users and nothing more; no word of care (programme.test.js checks every string). French typography as in the rest of
 // the app: typographic apostrophes, a no-break space before a colon and between a number and its unit.
@@ -75,7 +75,7 @@ export const PRO = {
     tooLong: 'Programme trop long pour un lien : retirez un exercice ou raccourcissez les notes.',
     linkText: title => `Votre programme : ${title}. Ouvrez ce lien sur votre téléphone, puis filmez chaque série.`,
     deleteDraft: 'Supprimer ce programme',
-    // Excellence hunt of 9 October 2026, pending David's approval (R10): a copy for another client, the drafts' cap,
+    // Excellence hunt of 9 October 2026, approved by David the same day (R10): a copy for another client, the drafts' cap,
     // a PDF that goes out without its QR code.
     duplicate: 'Dupliquer pour un autre client',
     draftsFull: max => `Ce téléphone garde ${max} programmes au plus. Supprimez-en d’anciens pour garder celui-ci.`,
@@ -114,7 +114,7 @@ export const PRO = {
     resultsEyebrow: 'Résultats',
     resultsDay: day => `Séance du ${day}`,
     resultsSource: 'Comptées par l’application sur le téléphone de la personne, ou corrigées à la main.',
-    // Excellence hunt of 9 October 2026, pending David's approval (R10): a session sent once its day is over, the time
+    // Excellence hunt of 9 October 2026, approved by David the same day (R10): a session sent once its day is over, the time
     // of its latest set, how each set was kept, the sets done in the header, and the coach's own words when a results
     // link does not open.
     sendResultsOf: day => `Envoyer les résultats du ${day}`,
@@ -129,7 +129,7 @@ export const PRO = {
     resultsOpening: 'Ouverture des résultats…',
     adjustProgramme: 'Ajuster le programme',
     // A coach's link pasted into the installed app or out of an app's own browser, and an edited programme received
-    // again (excellence hunt, 9 October 2026; pending David's approval, R10).
+    // again (excellence hunt, 9 October 2026; approved by David the same day, R10).
     noneSubPaste: 'Ouvrez le lien que votre coach vous a envoyé, ou collez-le ci-dessous.',
     pasteLabel: 'Lien du programme',
     pastePlaceholder: 'Collez ici le lien reçu',

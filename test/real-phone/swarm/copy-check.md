@@ -1,4 +1,4 @@
-# The check page (check.html), the French words for David's approval (R10)
+# The check page (check.html), the French words approved by David on 9 October 2026 (R10)
 
 Written 4 October 2026 (WP0.2 of docs/SPEC-production.md), register "vous" as the rest of the page. Internal page,
 not linked from the app; still not released as final copy until David approves it. Built in src/check-main.js and

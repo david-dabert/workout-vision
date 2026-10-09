@@ -1,4 +1,4 @@
-# Copy for David's approval: the reference band on the rep wave (6 October 2026)
+# Copy approved by David on 9 October 2026: the reference band on the rep wave (6 October 2026)
 
 Status: approved by David on 6 October 2026, register vous (R10). The band stays behind a flag that is off
 (`REFERENCE_BAND_SHOWN`, src/lib/reference-ranges.js): on the synthetic sets the app reads a rep's range 24 % low

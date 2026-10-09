@@ -1,6 +1,6 @@
 // The opener: one plain sentence at the top of the result and of the report that sums up the set.
 // It measures nothing new: the count, and what set-account.js already derives from the reps (the
-// short reps, the slowdown). Wording awaiting David's approval (test/real-phone/swarm/copy-C.md).
+// short reps, the slowdown). Wording approved by David on 9 October 2026 (test/real-phone/swarm/copy-C.md).
 import { shortReps, slowdown, speedChange } from './set-account';
 import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN } from './measures';
 

@@ -204,7 +204,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
 }
 
 // What the app sends about its use, where the build sends it (src/lib/events.js), and the way to stop it on this
-// phone. A browser that asks sites not to track sends nothing, and is not asked. Awaits David's approval
+// phone. A browser that asks sites not to track sends nothing, and is not asked. Approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-analytics.md).
 function UsageNote({ fr }) {
   const [off, setOff] = useState(countingOff);

@@ -11,8 +11,8 @@ import './About.css';
 import { DemoVideos } from './DemoVideos';
 
 // The entry's example (feature B): a drawn squat that the counting core counts as it plays. It is
-// labelled as an example throughout, so no one takes it for their own set. Words awaiting David's
-// approval: test/real-phone/swarm/copy-B.md.
+// labelled as an example throughout, so no one takes it for their own set. Words approved by David
+// on 9 October 2026: test/real-phone/swarm/copy-B.md.
 const COPY = {
   fr: {
     tag: 'Exemple', real: 'Des séries réelles, comptées par l’app', close: 'Fermer l’exemple', eyebrow: 'Squat dessiné',

@@ -1,5 +1,5 @@
-// The words of installing the app on the home screen (install.js, Install.jsx), register vous (R10). Pending David's
-// approval: test/real-phone/swarm/copy-install.md lists them. French typography as in the rest of the app: curly
+// The words of installing the app on the home screen (install.js, Install.jsx), register vous (R10). Approved by David on
+// 9 October 2026: test/real-phone/swarm/copy-install.md lists them. French typography as in the rest of the app: curly
 // apostrophes, U+202F before ; ? ! and inside « », U+00A0 before a colon.
 // The iOS labels are Safari's own French words ("Partager", "Sur l'écran d'accueil", "Ajouter"), as iOS shows them.
 // Status of the seven days: WebKit, "Full Third-Party Cookie Blocking and More", 24 March 2020 (literature), the

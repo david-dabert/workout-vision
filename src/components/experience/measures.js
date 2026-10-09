@@ -6,7 +6,7 @@
 // the analysis. Set to false to hide them all again. Status: none validated.
 export const MEASURES_SHOWN = true;
 
-/** The words that stand beside every measure while none is validated. Copy for David's approval (R10). */
+/** The words that stand beside every measure while none is validated. Copy approved by David on 9 October 2026 (R10). */
 export const experimentalLabel = fr => (fr
   ? 'Mesures expérimentales\u00A0: estimées par l’app, pas encore validées.'
   : 'Experimental measures: estimated by the app, not yet validated.');

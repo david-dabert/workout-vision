@@ -1,6 +1,6 @@
 # Copy for the entry screen, À propos and the drawn example (design review C2, 7 October 2026)
 
-For David's approval, French and English. Register: vous (R10). **Status: pending David.** Nothing here is "done"
+Approved by David on 9 October 2026, French and English. Register: vous (R10). **Status: approved (9 October 2026).** Nothing here is "done"
 until David has read it on his iPhone (R3).
 
 Decisions taken by David's delegate on 7 October 2026, applied in this change: the entry says what the app does
