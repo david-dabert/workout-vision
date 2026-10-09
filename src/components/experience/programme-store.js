@@ -57,22 +57,35 @@ export function draftFromResults(results, now = Date.now()) {
 }
 export function removeDraft(id) { return write(DRAFTS, read(DRAFTS).filter(d => d?.id !== id)); }
 
+// The earlier versions a programme remembers: their sets of the day count for it (programme.js, progressOf).
+const MAX_PREVIOUS = 10;
+
 /**
- * The programmes received, the latest opened first, each { id, programme, receivedAt, openedAt }; each one stored is
- * checked again as it is read, as a link is.
+ * The programmes received, the latest opened first, each { id, programme, receivedAt, openedAt, previous }; each one
+ * stored is checked again as it is read, as a link is. previous: the ids of the earlier versions it replaced.
  */
 export function loadReceived() {
   return read(RECEIVED).map(r => {
     const back = r && typeof r === 'object' ? fromCompact(r.data) : { ok: false };
-    return back.ok ? { id: programmeId(back.programme), programme: back.programme, receivedAt: r.receivedAt || 0, openedAt: r.openedAt || 0 } : null;
+    if (!back.ok) return null;
+    const previous = Array.isArray(r.previous) ? r.previous.filter(x => typeof x === 'string').slice(0, MAX_PREVIOUS) : [];
+    return { id: programmeId(back.programme), programme: back.programme, receivedAt: r.receivedAt || 0, openedAt: r.openedAt || 0, previous };
   }).filter(Boolean).sort((a, b) => b.openedAt - a.openedAt);
 }
-/** Keeps a programme received (opened from a link); the same programme twice is kept once. Returns its id. */
+
+/**
+ * Keeps a programme received (opened from a link); the same programme twice is kept once. One of the same title for
+ * the same person is an earlier version, which the coach changed and sent again (excellence hunt, 9 October 2026): it
+ * gives way, and its id is remembered, so the sets filmed from it that day still count. Returns the programme's id.
+ */
 export function keepReceived(programme, now = Date.now()) {
-  const id = programmeId(programme);
-  const list = read(RECEIVED).filter(r => r && r.id !== id);
-  const was = read(RECEIVED).find(r => r?.id === id);
-  list.unshift({ id, data: compact(programme), receivedAt: was?.receivedAt || now, openedAt: now });
+  const id = programmeId(programme), stored = read(RECEIVED).filter(r => r && typeof r === 'object');
+  const was = stored.find(r => r.id === id);
+  const older = stored.filter(r => r.id !== id && r.data?.t === programme.title && (r.data?.w || '') === (programme.who || ''));
+  const ids = [...(Array.isArray(was?.previous) ? was.previous : []), ...older.flatMap(r => [r.id, ...(Array.isArray(r.previous) ? r.previous : [])])];
+  const previous = [...new Set(ids.filter(x => typeof x === 'string' && x !== id))].slice(0, MAX_PREVIOUS);
+  const list = stored.filter(r => r.id !== id && !older.includes(r));
+  list.unshift({ id, data: compact(programme), receivedAt: was?.receivedAt || now, openedAt: now, ...(previous.length ? { previous } : {}) });
   write(RECEIVED, list.slice(0, MAX_RECEIVED));
   return id;
 }

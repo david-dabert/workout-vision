@@ -32,7 +32,8 @@ self.onmessage = async ({ data }) => {
     // Sample 0 starts a decoding pass. When a pass fails part-way and the fallback starts again,
     // the caller drops the earlier samples, so the image smoothing must forget them too: otherwise the
     // new pass's first skeletons (Watch, Replay, contributions) are pulled toward the abandoned pass's
-    // last pose. World landmarks, which the count reads, are not smoothed (third audit, C48).
+    // last pose. World landmarks, which the count reads, get no filter of the app's (third audit, C48); in VIDEO mode
+    // MediaPipe follows the body from the sample before (poseAnalysis.js).
     if (timestamp === 0) resetKalmanFilters();
     if (!canvas || canvas.width !== width || canvas.height !== height) canvas = new OffscreenCanvas(width, height);
     canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);

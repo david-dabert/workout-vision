@@ -239,21 +239,36 @@ export function keptLetter(w) {
 }
 
 /**
+ * The place in the programme of a set filmed from it, or -1. ids: the programme's id, then the ids of the earlier
+ * versions it replaced (programme-store.js, keepReceived). A set of the programme itself keeps its place when its
+ * exercise is still there; a set of an earlier version goes to its exercise wherever the new version puts it (an edit
+ * may insert or reorder exercises), the first of that exercise when it appears twice.
+ */
+function placeOf(programme, ids, w) {
+  const version = ids.indexOf(w?.planned?.programme);
+  if (version < 0 || !Number.isFinite(w.reps)) return -1;
+  if (programme.items[w.planned.item]?.key === w.exercise) return w.planned.item;
+  return version > 0 ? programme.items.findIndex(it => it.key === w.exercise) : -1;
+}
+
+/**
  * Planned against counted, for one programme and one day (by default today): for each exercise, its target and the
  * sets saved for it that day, oldest first, each with the reps the person kept (the app's count, or theirs when they
  * corrected it) and how they were kept (kinds, keptLetter). last: the time of the day's latest set, or null.
+ * id: the programme's id, or [id, ...the ids of the versions it replaced], whose sets of the day count too.
  * A programme followed again another day starts afresh; the sets of other days stay in Vos séries.
  */
 export function progressOf(programme, id, sets, now = new Date()) {
-  const today = localDay(now);
-  const mine = (sets || []).filter(w => w?.planned?.programme === id && Number.isFinite(w.reps) && localDay(setTimeOf(w)) === today)
-    .sort((a, b) => setTimeOf(a) - setTimeOf(b));
+  const ids = [].concat(id), today = localDay(now);
+  const mine = (sets || []).map(w => ({ w, at: placeOf(programme, ids, w) }))
+    .filter(m => m.at >= 0 && localDay(setTimeOf(m.w)) === today)
+    .sort((a, b) => setTimeOf(a.w) - setTimeOf(b.w));
   const items = programme.items.map((item, index) => {
-    const own = mine.filter(w => w.planned.item === index && w.exercise === item.key);
+    const own = mine.filter(m => m.at === index).map(m => m.w);
     const done = own.map(w => w.reps), kinds = own.map(keptLetter);
     return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets };
   });
-  const last = items.some(i => i.done.length) ? setTimeOf(mine.filter(w => items[w.planned.item]?.key === w.exercise).at(-1)) : null;
+  const last = mine.length ? setTimeOf(mine.at(-1).w) : null;
   return { items, complete: items.filter(i => i.complete).length, total: items.length, last };
 }
 
@@ -261,14 +276,15 @@ export function progressOf(programme, id, sets, now = new Date()) {
 export const RESULTS_DAYS_BACK = 7;
 
 /**
- * The day of the latest set filmed from this programme within the last RESULTS_DAYS_BACK days, as a Date (the set's
- * time), or null: the session the client may still send once its day is over (Programme.jsx).
+ * The day of the latest set filmed from this programme (id as progressOf takes it) within the last RESULTS_DAYS_BACK
+ * days, as a Date (the set's time), or null: the session the client may still send once its day is over
+ * (Programme.jsx).
  */
 export function lastDayOf(programme, id, sets, now = new Date()) {
-  const end = new Date(now).getTime(), start = end - RESULTS_DAYS_BACK * 86400000;
+  const ids = [].concat(id), end = new Date(now).getTime(), start = end - RESULTS_DAYS_BACK * 86400000;
   let best = null;
   for (const w of sets || []) {
-    if (w?.planned?.programme !== id || !Number.isFinite(w.reps) || programme.items[w.planned.item]?.key !== w.exercise) continue;
+    if (placeOf(programme, ids, w) < 0) continue;
     const t = setTimeOf(w);
     if (t >= start && t <= end && (best === null || t > best)) best = t;
   }

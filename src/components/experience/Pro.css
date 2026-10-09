@@ -86,3 +86,5 @@
 .wv-experience .programme-sets .is-hand span { text-decoration: underline dotted 2px; text-underline-offset: 3px; }
 .wv-experience .programme-item.is-done .programme-name { color: var(--bone-2); }
 .wv-experience .programme-send { margin-top: var(--s-5); display: grid; gap: var(--s-2); }
+.wv-experience .pro-paste { margin-top: var(--s-5); }
+.wv-experience .pro-paste .btn-line { margin-top: var(--s-2); }

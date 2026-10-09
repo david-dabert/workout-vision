@@ -349,3 +349,40 @@ test('a PDF that cannot carry its QR code says so', async ({ page }) => {
   await expect(page.locator('.pro-status')).toHaveText(`${c.pdfDownloaded} ${c.pdfNoQr}`);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// The app on the Home Screen receives no link, which opens in the browser (excellence hunt, 9 October 2026): the choice
+// offers to paste one, the programme screen reads the link out of the message pasted, and a programme the coach sent
+// again in a new version takes the old one's place, named with the day it came.
+test('a link pasted into the installed app opens the programme; a new version replaces the old', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  await page.addInitScript(() => Object.defineProperty(navigator, 'standalone', { value: true, configurable: true }));
+  const link = raw => `https://david-dabert.github.io/workout-vision/#programme=j${Buffer.from(JSON.stringify(raw)).toString('base64url')}`;
+  const v1 = { v: 1, t: 'Haut du corps', w: 'Camille', x: [['squat', 3, 10, 90], ['push_up', 3, 12, 60]] };
+  await page.goto('/workout-vision/');
+  const row = page.getByTestId('choice-programme-link');
+  await row.scrollIntoViewIfNeeded();
+  await expect(row).toContainText(c.linkRow);
+  await row.click();
+  await expect(page.getByTestId('programme-screen')).toContainText(c.noneSubPaste, { timeout: 20000 });
+  await page.locator('#pPaste').fill('pas un lien');
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.getByTestId('programme-paste-error')).toHaveText(c.pasteNone);
+  await page.locator('#pPaste').fill(`Voici ton programme : ${link(v1)} À demain !`);
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.locator('.programme-screen h1.title')).toHaveText('Haut du corps');
+  await expect(page.getByTestId('programme-item')).toHaveCount(2);
+  await noOverflow(page, '.programme-screen');
+
+  // The coach changed the reps and sent the programme again: one programme, the new version.
+  await page.locator('#pPaste').fill(link({ ...v1, x: [['squat', 3, 12, 90], ['push_up', 3, 12, 60]] }));
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.getByTestId('programme-item').first()).toContainText(c.target(3, 12, 90));
+  await expect(page.locator('.pro-draft')).toHaveCount(0);
+  // Another person's programme stays apart, under the one on show, with the day it came.
+  await page.locator('#pPaste').fill(link({ ...v1, w: 'Zine' }));
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.locator('.pro-draft')).toHaveCount(1);
+  await expect(page.locator('.pro-draft')).toContainText(/Reçu le \d{1,2}(er)? \S+/);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('wv_programmes')).length)).toBe(2);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

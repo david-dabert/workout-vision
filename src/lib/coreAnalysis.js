@@ -175,7 +175,7 @@ const WORKER_CLOSE_MS = 1000;
 const IN_FLIGHT = 2;
 let previousWorkerGone = Promise.resolve();
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path, inject, poseMode, benchModel } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, onDecoder, onSource, path, inject, poseMode, benchModel } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   // Analyses queue one behind the other: each waits for the worker of the one started before it.
   const before = previousWorkerGone;
@@ -290,7 +290,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       placed.catch(() => {});
       inFlight.push(placed);
       if (inFlight.length >= IN_FLIGHT) await inFlight.shift();
-    }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}), ...(inject ? { inject } : {}) });
+    }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}), ...(inject ? { inject } : {}),
+      // The decoder path and the source, as soon as known, for the crash log (CoreUpload.jsx): nothing read changes.
+      ...(onDecoder ? { onPath: onDecoder } : {}), ...(onSource ? { onSource } : {}) });
     await drain();
     signal?.throwIfAborted();
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.

@@ -128,6 +128,17 @@ export const PRO = {
     resultsLegend: 'Chiffre souligné : saisi ou corrigé par la personne, ou proposé par l’application et confirmé par elle.',
     resultsOpening: 'Ouverture des résultats…',
     adjustProgramme: 'Ajuster le programme',
+    // A coach's link pasted into the installed app or out of an app's own browser, and an edited programme received
+    // again (excellence hunt, 9 October 2026; pending David's approval, R10).
+    noneSubPaste: 'Ouvrez le lien que votre coach vous a envoyé, ou collez-le ci-dessous.',
+    pasteLabel: 'Lien du programme',
+    pastePlaceholder: 'Collez ici le lien reçu',
+    pasteOpen: 'Ouvrir le programme',
+    pasteNone: 'Ce texte ne contient pas de lien de programme.',
+    linkRow: 'J’ai un lien de mon coach',
+    linkRowSub: 'Collez-le pour ouvrir le programme',
+    inAppNote: 'Ce programme reste dans le navigateur de cette app. Pour le retrouver dans votre navigateur ou dans l’app installée, copiez le lien et collez-le là-bas.',
+    receivedOn: day => `Reçu le ${day}`,
     resultsErrors: {
       empty: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
       malformed: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
@@ -250,6 +261,15 @@ export const PRO = {
     resultsLegend: 'Underlined number: typed or corrected by the person, or proposed by the app and confirmed by them.',
     resultsOpening: 'Opening the results…',
     adjustProgramme: 'Adjust the programme',
+    noneSubPaste: 'Open the link your coach sent you, or paste it below.',
+    pasteLabel: 'Programme link',
+    pastePlaceholder: 'Paste the link you received',
+    pasteOpen: 'Open the programme',
+    pasteNone: 'This text holds no programme link.',
+    linkRow: 'I have a link from my coach',
+    linkRowSub: 'Paste it to open the programme',
+    inAppNote: 'This programme stays in this app’s own browser. To find it in your browser or in the installed app, copy the link and paste it there.',
+    receivedOn: day => `Received on ${day}`,
     resultsErrors: {
       empty: 'The link is incomplete or damaged. Ask the person to send it again.',
       malformed: 'The link is incomplete or damaged. Ask the person to send it again.',

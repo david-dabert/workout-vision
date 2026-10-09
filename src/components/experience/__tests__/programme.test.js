@@ -18,7 +18,7 @@ import {
   keptLetter, lastDayOf, dayWords, timeWords, RESULTS_DAYS_BACK,
 } from '../programme';
 import { programmePdf, programmeSheet, programmeFileName, programmeQr, packNow, QR_MAX_VERSION, QR_SIDE, QR_BLOCK_MAX, QR_MODULE_MIN } from '../programme-pdf';
-import { draftFromResults, isEmptyDraft, loadDrafts, saveDraft, newDraft, MAX_DRAFTS } from '../programme-store';
+import { draftFromResults, isEmptyDraft, loadDrafts, saveDraft, newDraft, MAX_DRAFTS, keepReceived, loadReceived } from '../programme-store';
 import { reportSheet } from '../report-sheet';
 import { reportPdf } from '../report-pdf';
 import { savedSet } from '../saved-set';
@@ -392,6 +392,46 @@ describe('the coach’s drafts', () => {
       expect(again.draft.id).toBe(made.draft.id);
       expect(again.draft.items[0]).toMatchObject({ rest: 120, note: 'Lent' });
       expect(draftFromResults({ ...results, who: 'Zine' }).draft.id).not.toBe(made.draft.id);
+    } finally { vi.unstubAllGlobals(); }
+  });
+});
+
+describe('a programme the coach changed and sent again', () => {
+  const memory = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
+  const v1 = { title: 'Haut du corps', who: 'Camille', note: '', items: [
+    { key: 'squat', sets: 3, reps: 10, rest: 90, note: '' }, { key: 'push_up', sets: 3, reps: 12, rest: 60, note: '' }] };
+  // The coach raised the squat's reps and put a curl first: every place moved.
+  const v2 = { ...v1, items: [{ key: 'bicep_curl', sets: 3, reps: 10, rest: 60, note: '' }, { ...v1.items[0], reps: 12 }, v1.items[1]] };
+
+  it('takes the place of the earlier version, which it remembers; another person’s programme stays', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      const id1 = keepReceived(v1, 1000), other = keepReceived({ ...v1, who: 'Zine' }, 1500), id2 = keepReceived(v2, 2000);
+      const list = loadReceived();
+      expect(list.map(r => r.id)).toEqual([id2, other]);
+      expect(list[0].previous).toEqual([id1]);
+      expect(list[0].receivedAt).toBe(2000);
+      // The same version opened again keeps what it remembers.
+      keepReceived(v2, 3000);
+      expect(loadReceived()[0].previous).toEqual([id1]);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it('counts the sets of the day filmed from the earlier version, each with its exercise', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      const id1 = keepReceived(v1), id2 = keepReceived(v2), now = new Date(2026, 9, 9, 18, 30);
+      const at = m => new Date(2026, 9, 9, 18, m).getTime();
+      const sets = [
+        { exercise: 'squat', reps: 10, createdAt: at(1), planned: plannedOf(id1, 0, v1.items[0]) },
+        { exercise: 'push_up', reps: 12, createdAt: at(5), planned: plannedOf(id1, 1, v1.items[1]) },
+        { exercise: 'bicep_curl', reps: 10, createdAt: at(9), planned: plannedOf(id2, 0, v2.items[0]) },
+      ];
+      const progress = progressOf(v2, [id2, ...loadReceived()[0].previous], sets, now);
+      expect(progress.items.map(i => i.done)).toEqual([[10], [10], [12]]);
+      // Without the earlier version, its sets are not this programme's.
+      expect(progressOf(v2, id2, sets, now).items.map(i => i.done)).toEqual([[10], [], []]);
+      expect(lastDayOf(v2, [id2, id1], sets.slice(0, 2), now)).toEqual(new Date(at(5)));
     } finally { vi.unstubAllGlobals(); }
   });
 });

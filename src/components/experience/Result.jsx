@@ -63,7 +63,13 @@ function Topbar({ fr, onClose, onReplay, replayRef, badge = true }) {
 //   the pose model did not start (reload); the phone read the video frozen, its pictures or skeletons repeating
 //   (FrozenReadError, FrozenSkeletonsError: try the analysis again, screen on); any other failure of the read.
 // Every case offers the report, with the failure's name, message and decoder, so the cause reaches David.
-export function AnalysisError({ lift, phase, failure = null, onClose, onRestart, onRefilm }) {
+// Every failure screen offers to type the count by hand (onByHand): a set the app could not read is still the
+// person's to log, saved as theirs with no count of the app (WP1.6; excellence hunt, 9 October 2026, French pending
+// David's approval, R10). A reload drops the video, so the model's failure offers to try again first.
+function ByHand({ fr, onByHand }) {
+  return onByHand ? <button className="btn-ghost press" onClick={onByHand} data-testid="by-hand">{fr ? 'Saisir mon nombre' : 'Type my count'}</button> : null;
+}
+export function AnalysisError({ lift, phase, failure = null, onClose, onRestart, onRefilm, onByHand }) {
   const { lang } = useT(), fr = lang === 'fr';
   const model = phase === 'model';
   const frozen = !model && /^Frozen/.test(failure?.name || '');
@@ -73,7 +79,7 @@ export function AnalysisError({ lift, phase, failure = null, onClose, onRestart,
       ? (fr ? 'Le téléphone a mal lu cette vidéo.' : 'The phone did not read this video properly.')
       : (fr ? 'Nous n’avons pas pu lire cette vidéo.' : 'We could not read this video.');
   const body = model
-    ? (fr ? 'Rechargez la page, puis réessayez.' : 'Reload the page, then try again.')
+    ? (fr ? 'Relancez l’analyse. Si elle ne démarre toujours pas, rechargez la page : il faudra alors choisir la vidéo à nouveau.' : 'Start the analysis again. If it still does not start, reload the page: you will then need to choose the video again.')
     : frozen
       ? (fr ? 'Les images sont restées figées pendant la lecture, donc aucun compte n’est affiché. Relancez l’analyse en gardant l’écran allumé.' : 'The pictures stayed frozen while the video was read, so no count is shown. Start the analysis again and keep the screen on.')
       : (fr ? 'Relancez l’analyse, ou filmez à nouveau avec l’appareil photo.' : 'Start the analysis again, or record again with the camera.');
@@ -88,12 +94,15 @@ export function AnalysisError({ lift, phase, failure = null, onClose, onRestart,
         {/* The model failed to start: the words ask for a reload, so the screen offers it (audit of 2 October). */}
         {model
           ? <>
-            <button className="btn-primary press" onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+            {onRestart && <button className="btn-primary press" onClick={onRestart} data-testid="error-restart">{fr ? 'Relancer l’analyse' : 'Start the analysis again'}</button>}
+            <button className={`${onRestart ? 'btn-ghost' : 'btn-primary'} press`} onClick={() => window.location.reload()}>{fr ? 'Recharger la page' : 'Reload the page'}</button>
+            <ByHand fr={fr} onByHand={onByHand} />
             <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
           </>
           : <>
             {onRestart && <button className="btn-primary press" onClick={onRestart} data-testid="error-restart">{fr ? 'Relancer l’analyse' : 'Start the analysis again'}</button>}
             <button className={`${onRestart ? 'btn-ghost' : 'btn-primary'} press`} onClick={onRefilm}>{fr ? 'Refilmer' : 'Record again'}</button>
+            <ByHand fr={fr} onByHand={onByHand} />
           </>}
       </div>
       {report && <ReportCount fr={fr} report={report} />}
@@ -113,7 +122,7 @@ function partialLine(read, expected, fr, disordered) {
 
 // Shown when the phone read only part of the video: no count, since it would be the count of part
 // of the set (29 September: 181 of 439 samples read, 2 of 10 reps counted).
-export function AnalysisIncomplete({ lift, read, expected, disordered = false, decoder, onClose, onRestart, onRefilm }) {
+export function AnalysisIncomplete({ lift, read, expected, disordered = false, decoder, onClose, onRestart, onRefilm, onByHand }) {
   const { lang } = useT(), fr = lang === 'fr';
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
@@ -124,6 +133,7 @@ export function AnalysisIncomplete({ lift, read, expected, disordered = false, d
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
+        <ByHand fr={fr} onByHand={onByHand} />
       </div>
       <ReportCount fr={fr} report={{ lift, liftName: exerciseName(lift, lang), counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder, read: { read, expected, disordered } }} />
     </div></section>
@@ -132,7 +142,7 @@ export function AnalysisIncomplete({ lift, read, expected, disordered = false, d
 
 // Shown when the page was hidden during the analysis (screen locked, app left).
 // The run was stopped and nothing it measured is shown.
-export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
+export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm, onByHand }) {
   const { lang } = useT(), fr = lang === 'fr';
   return <div className="wv-experience">
     <section className="screen is-active result-screen"><div className="wrap">
@@ -145,6 +155,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm }) {
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
         <button className="btn-ghost press" onClick={onRefilm}>{fr ? 'Choisir une autre vidéo' : 'Choose another video'}</button>
+        <ByHand fr={fr} onByHand={onByHand} />
       </div>
     </div></section>
   </div>;
@@ -604,7 +615,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
 
   if (result.refused) {
-    const text = why.cause === 'nobody'
+    // A set the app could not read at all (CoreUpload.jsx, notRead): no cause to name, no fix, the count typed by hand.
+    const text = result.notRead
+      ? (fr ? 'La vidéo n’a pas pu être lue, donc l’app ne propose aucun nombre.' : 'The video could not be read, so the app offers no number.')
+      : why.cause === 'nobody'
       ? (result.metadata?.live ? (fr ? 'Personne n’apparaît à l’image.' : 'We could not find you in the picture.') : (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.'))
       : why.cause === 'unclear'
         ? (many
@@ -621,7 +635,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             : (many
               ? (fr ? `Vos ${limb.noun} étaient caché${ee} pendant la plus grande partie de la série.` : `Your ${limb.noun} were hidden for most of the set.`)
               : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`)));
-    const fix = why.hips
+    const fix = result.notRead ? '' : why.hips
       ? (fr ? 'Reculez pour que vos hanches soient dans l’image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
         ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l’image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
@@ -636,7 +650,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
         {status}
         {tierLine}
-        {step !== 'saved' && lowAsk(true, [text, fix])}
+        {step !== 'saved' && lowAsk(true, [text, fix].filter(Boolean))}
         {step !== 'saved' && lowDock(true)}
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">

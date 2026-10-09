@@ -31,6 +31,15 @@ describe('detectIncident', () => {
 describe('a launch after a session that ended, cleanly or not', () => {
   let s;
   beforeEach(() => { s = store(); globalThis.localStorage = s; resetCrashLogForTests(); });
+  it('names the build, the phone and the read: version, iOS, Home Screen, decoder path and source', () => {
+    startCrashLog({ now: Date.now() });
+    markCrash({ decoder: 'webcodecs', source: { codec: 'hvc1.2.4.L123.B0', width: 1920, height: 1080, rotation: 90, duration: 31.2 } });
+    const log = JSON.parse(s.getItem('wv_crash_log'));
+    expect(typeof log.version).toBe('string');
+    expect(log).toHaveProperty('ios');
+    expect(log).toHaveProperty('standalone');
+    expect(log).toMatchObject({ decoder: 'webcodecs', source: { codec: 'hvc1.2.4.L123.B0', width: 1920, height: 1080, rotation: 90 } });
+  });
   it('a session killed during the reading of the video is kept as an incident until dismissed', () => {
     startCrashLog({ now: Date.now() });
     markCrash({ screen: 'analyze', lift: 'bicep_curl', phase: 'extracting', sample: 120, frame: [360, 640] });
