@@ -32,6 +32,16 @@ so the app refuses it: the scoreboard holds it as refused, the case a reading of
 Captured the same way (`capture.mjs`, the original re-encoded to VP9 with its frame times by PyAV, as this machine has
 no ffmpeg); `labelSource` in the manifest says where its label comes from. 14 files.
 
+Its label is a count given after the app's (David, 9 October: he did not count before the app asked whether it was 8;
+he then watched the video and counted 8). `TRIED.md` holds such counts as weaker truth than a blind count (audit
+FINDING-008). It stays in the exam by David's decision of 8 October; whether it should decide the gate or only be
+shown is his to settle. The label is unchanged (R1).
+
+Labelling convention (David, 9 October 2026): a last rep the video cuts before it is finished counts. It confirms his
+labels where the last return is not filmed: machine_chest_supported_row_6 here, and `sets-06oct/set02_hip_thrust_7` and a
+lateral raise 9 among the stored sets (`../accuracy/anatomy-8oct.md`, failure mode 4). The counter does not follow
+this convention yet; a rule for it goes through R2 like any counting change.
+
 ## How they were made (`capture.mjs`)
 
 1. Each original re-encoded to VP9 in MP4 with its own frame timestamps (this Chromium has no H.264 decoder):

@@ -319,3 +319,14 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   an estimate on a generic body, never shown as a measure (R8), and worth it only once the motion read from video is
   reliable; (2) its body's anatomical joint ranges, as a check that flags poses no body can take (the invented ankles
   of anatomy-8oct.md), without its learning machinery.
+
+## 9 October 2026: counting partial reps (David)
+
+- David: "it will be interesting and valuable to count partials too in the future."
+- What it would mean: beside the full reps, the reps that do not reach the set's working range (lengthened partials,
+  a last rep that fails half-way), shown as their own number, never added to the count.
+- Why not now: the core counts a rep only when it crosses both of the set's thresholds and spans the per-rep floor
+  (core.ts, detectReps, MIN_ROM_DEGREES): a partial is the rep it is built to drop. Telling a partial from a tracking wobble needs the landmarks to be trustworthy first (the pose pipeline
+  test of 9 October, `test/real-phone/accuracy/pose-pipeline-9oct.md`). No label of a partial exists yet: David's
+  labels count full reps, and a last rep cut by the end of the video counts as full (his convention of 9 October).
+- Data it would need: sets with partials counted by David, blind (R1).
