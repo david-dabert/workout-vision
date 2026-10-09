@@ -189,6 +189,26 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     await expect(cells.nth(1)).toHaveAttribute('aria-label', c.setDone(2, 8, 10));
     await expect(cells.nth(2)).toHaveAttribute('aria-label', c.setTodo(3));
     await noOverflow(phone, '.programme-screen');
+
+    // The client sends the day's results to the coach: the share sheet carries a link (#resultats=…), and the coach's
+    // phone opens it as the planned sets beside the counted ones, the same cells as the client's (Results.jsx).
+    await phone.getByTestId('programme-send').click();
+    await phone.waitForFunction(() => window.__shared?.url?.includes('#resultats='), null, { timeout: 3000 });
+    const sent = await phone.evaluate(() => window.__shared);
+    expect(sent.text).toBe(c.resultsText('Bas du corps, semaine 1'));
+    const coach = await page.context().newPage();
+    const coachErrors = await prepare(coach, viewport);
+    await coach.goto(sent.url);
+    const results = coach.getByTestId('results-screen');
+    await expect(results.locator('h1.title')).toHaveText('Bas du corps, semaine 1', { timeout: 20000 });
+    await expect(results).toContainText(c.whoLine('Camille'));
+    await expect(coach.getByTestId('results-done')).toHaveText(c.resultsDone(0, 2));
+    await expect(coach.getByTestId('results-item')).toHaveCount(2);
+    await expect(coach.getByTestId('results-sets').first().locator('li')).toHaveText(['10', '8', '']);
+    await expect(coach.getByTestId('results-sets').nth(1).locator('li')).toHaveText(['', '', '']);
+    await noOverflow(coach, '.programme-screen');
+    expect(coachErrors, coachErrors.join('\n')).toEqual([]);
+    await coach.close();
     if (shots) {
       await fullShot(phone, '.programme-screen', `${SHOTS}/client-programme-fr-390.png`);
       await phone.reload();

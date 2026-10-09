@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const VALID_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'coach', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
-  'film', 'prs', 'onboarding', 'live', 'about', 'pro', 'programme',
+  'film', 'prs', 'onboarding', 'live', 'about', 'pro', 'programme', 'resultats',
 ]);
 
 function readHash() {
   const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
   // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
   if (raw.startsWith('programme=')) return 'programme';
+  // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
+  if (raw.startsWith('resultats=')) return 'resultats';
   return VALID_PAGES.has(raw) ? raw : 'dashboard';
 }
 

@@ -24,7 +24,7 @@ import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
 import { track } from './lib/events';
 import { liveBuild } from './lib/buildFlags';
-import { payloadOf } from './components/experience/programme';
+import { payloadOf, resultsPayloadOf } from './components/experience/programme';
 import { markCrash } from './lib/crashLog';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
@@ -72,7 +72,9 @@ const LiveSession = lazyScreen(() => import('./components/LiveSession'));
 // programme, opened from the coach's link (#programme=…) or from the choice once kept on the phone.
 const Pro = lazyScreen(() => import('./components/experience/Pro'));
 const Programme = lazyScreen(() => import('./components/experience/Programme'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme };
+// A client's results, opened on the coach's phone from the link the client sent (#resultats=…, 9 October).
+const Results = lazyScreen(() => import('./components/experience/Results'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -219,6 +221,10 @@ function AppInner() {
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
     // cleared (Programme.jsx), or when the programme is opened from the choice.
     screen = <Programme payload={payloadOf(window.location.hash)} onClose={() => go('dashboard')} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
+  } else if (page === 'resultats') {
+    key = 'resultats';
+    // The link's payload as typed; a results screen with no payload says the link does not open.
+    screen = <Results payload={resultsPayloadOf(window.location.hash)} onClose={() => go('dashboard')} />;
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} />;

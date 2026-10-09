@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { decodeProgramme, plannedOf, progressOf } from './programme';
+import { decodeProgramme, plainResultsPayload, plannedOf, progressOf, resultsLink, resultsOf } from './programme';
 import { keepReceived, loadReceived, openReceived, removeReceived } from './programme-store';
 import { useSets } from './sets';
 import { useCondensingTopbar } from './topbar';
@@ -22,6 +22,7 @@ export default function Programme({ payload, onClose, onStart }) {
   // 'opening' while a link is read; then the programme kept, an error, or none.
   const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived())));
   const [confirm, setConfirm] = useState(false);
+  const [note, setNote] = useState('');
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang, state.kind, state.entry?.id]);
   const sets = useSets();
@@ -63,6 +64,16 @@ export default function Programme({ payload, onClose, onStart }) {
 
   const { entry, others } = state, p = entry.programme;
   const progress = progressOf(p, entry.id, Array.isArray(sets) ? sets : []);
+  // The results link (programme.js, resultsOf): ready before the tap, as a share must be called within it (Safari).
+  // Offered once a set is saved today; the plain payload, made at once.
+  const resultsUrl = progress.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, progress))) : null;
+  function sendResults() {
+    if (!resultsUrl) return;
+    const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.resultsCopied), () => setNote(c.linkError));
+    if (!navigator.share) { copy(); return; }
+    // Refused for any reason but the client's own cancel, the link is copied instead.
+    navigator.share({ title: p.title, text: c.resultsText(p.title), url: resultsUrl }).then(() => setNote(''), e => { if (e.name !== 'AbortError') copy(); });
+  }
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="programme-screen"><div className="wrap">
       {top}
@@ -98,6 +109,14 @@ export default function Programme({ payload, onClose, onStart }) {
           })}</ul>
         </li>;
       })}</ol>
+      {resultsUrl && <div className="actions programme-send">
+        <button type="button" className="btn-line press" onClick={sendResults} data-testid="programme-send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="M12 3v12" /><path d="M7 8l5-5 5 5" /></svg>
+          <span>{c.sendResults}</span>
+        </button>
+        {note && <p className="pro-status" role="status" data-testid="programme-send-status">{note}</p>}
+        <p className="foot pro-foot">{c.resultsPrivacy}</p>
+      </div>}
       <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>
       <p className="foot pro-foot">{c.clientPrivacy}</p>
       {others.length > 0 && <>
