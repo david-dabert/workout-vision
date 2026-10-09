@@ -42,8 +42,8 @@ export function labelledSets() {
 // capture.mjs there): the app's landmarks, timestamps and metadata, his label (R1), and the motion frames of the pose
 // region (24 x 24 gray, motionRhythm.js). `appRefused`: the app refused the read itself (a partial read): no count.
 export type VideoSet = LabelledSet & { appRefused: boolean; motion: { grid: number; frames: string[] } | null; il: any[] | null };
-// mode 'image': the reads of 7 October (sets-*-video/, MediaPipe in IMAGE mode, as the app read then); 'video': the same
-// videos read as the app reads them since 9 October 2026 (sets-*-video-mode/, MediaPipe in VIDEO mode).
+// mode 'image': the reads of 7 October (sets-*-video/, MediaPipe in IMAGE mode, as the app reads); 'video': the same
+// videos read in VIDEO mode (sets-*-video-mode/; shipped on the morning of 9 October 2026, withdrawn that evening).
 export function videoSets({ mode = 'image' }: { mode?: 'image' | 'video' } = {}) {
   const sets: VideoSet[] = [], unreadable: string[] = [];
   const folder = mode === 'video' ? /^sets-.*-video-mode$/ : /^sets-.*-video$/;

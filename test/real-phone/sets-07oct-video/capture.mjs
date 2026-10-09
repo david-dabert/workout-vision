@@ -19,9 +19,10 @@
 //
 // The folder holds <name>.mp4 for each set: David's original re-encoded to VP9 with its own frame timestamps
 // (ffmpeg -an -c:v libvpx-vp9 -crf 18 -b:v 0 -fps_mode passthrough -enc_time_base 1:600 -video_track_timescale 600),
-// since this Chromium has no H.264 decoder. SETS_OUT=<dir> writes elsewhere than this folder. SETS_POSEMODE=image reads
-// as the app did before 9 October 2026 (MediaPipe in IMAGE mode, the check page's ?posemode=image); unset, the page
-// reads as the app does (VIDEO mode since 9 October). The mode is written into each file (extraction.poseMode).
+// since this Chromium has no H.264 decoder. SETS_OUT=<dir> writes elsewhere than this folder. Unset, the page reads as
+// the app does (MediaPipe in IMAGE mode); SETS_POSEMODE=video reads in VIDEO mode (the check page's ?posemode=video;
+// shipped on the morning of 9 October 2026, withdrawn that evening). The mode is written into each file
+// (extraction.poseMode).
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -39,7 +40,7 @@ const manifest = JSON.parse(readFileSync(resolve(HERE, 'manifest.json'), 'utf8')
 const version = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).version;
 const PORT = Number(process.env.SETS_PORT || 4179), BASE = `http://localhost:${PORT}/workout-vision/`;
 const GRAY_SIDE = 128;
-const POSE_MODE = process.env.SETS_POSEMODE === 'image' ? 'image' : 'video';
+const POSE_MODE = process.env.SETS_POSEMODE === 'video' ? 'video' : 'image';
 
 // The pose box of a sample in [0, 1] image coordinates (landmarks with visibility >= 0.5), as capture.mjs and synth.js.
 const box = lm => {
@@ -99,7 +100,7 @@ try {
       window.__wv = { gray, answers, result: null };
       window.addEventListener('wv:core-result', e => { window.__wv.result = e.detail; });
     }, GRAY_SIDE);
-    await page.goto(`${BASE}check.html${POSE_MODE === 'image' ? '?posemode=image' : ''}`, { timeout: 120000 });
+    await page.goto(`${BASE}check.html${POSE_MODE === 'video' ? '?posemode=video' : ''}`, { timeout: 120000 });
     const t0 = Date.now();
     await page.locator('.clip input[type="file"]').first().setInputFiles(file);
     // Done: a result, or the row marked bad (an error the page shows).

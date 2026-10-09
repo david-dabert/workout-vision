@@ -226,8 +226,8 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
         numPoses: useImageMode && _lockOn() ? LIFTER_POSES : 1,
         // Detection 0.35 and presence 0.4: below MediaPipe's defaults of 0.5, UNSOURCED, experimental. Tracking 0.5:
         // MediaPipe's default, convention; it acts in VIDEO mode only (IMAGE mode runs the person detector on every
-        // image), so since VIDEO mode (9 October 2026) it decides whether a half-hidden body is followed or searched
-        // for again, and with it which samples count as seen. Not measured alone (TRIED.md, VIDEO mode).
+        // image), where it decides whether a half-hidden body is followed or searched for again. The app reads in
+        // IMAGE mode; VIDEO mode is measured only (coreAnalysis.js; TRIED.md, VIDEO mode). Not measured alone.
         minPoseDetectionConfidence: 0.35,
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
@@ -329,8 +329,9 @@ export async function getImageLandmarker() {
 /**
  * The same model on the CPU in VIDEO mode: MediaPipe tracks the body from the previous frame and runs its person
  * detector only when it loses it, where IMAGE mode runs the detector on every sample (the minute an analysis takes,
- * TRIED.md 7 October). The app's video analysis since 9 October (coreAnalysis.js, analyzeCoreVideo); the collector
- * and the live counter keep IMAGE mode. detectPoseImage reads VIDEO mode with the worker's deterministic timestamps
+ * TRIED.md 7 October). The app's video analysis on 9 October 2026 only, withdrawn that evening (coreAnalysis.js): the
+ * check page reads with it on request (?posemode=video), to measure; the app, the collector and the live counter read
+ * in IMAGE mode. detectPoseImage reads VIDEO mode with the worker's deterministic timestamps
  * (a new pass continues above the last one's, resetKalmanFilters); the crop retry is IMAGE mode only.
  */
 export async function getVideoModeLandmarker() {

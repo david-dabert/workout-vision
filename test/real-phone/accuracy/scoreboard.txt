@@ -39,4 +39,18 @@ KNOWN CATASTROPHIC  sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  now 4
    sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 8)
 
-Real video, VIDEO mode (the same videos, read as the app reads them since 9 October): of the 0 sets in the baseline, 0 exact now, 0 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 0 refused of 0.
+Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 0 sets in the baseline, 0 exact now, 0 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 14 sets new since; 3 refused of 14.
+-> sets-09oct-video-mode/barbell_squat_9_a.json.gz  label 9  before - (new)  now 7 (off -2)
+-> sets-09oct-video-mode/barbell_squat_9_b.json.gz  label 9  before - (new)  now 10 (off +1)
+-> sets-09oct-video-mode/behind_neck_chin_up_5.json.gz  label 5  before - (new)  now 4 (off -1)
+-> sets-09oct-video-mode/hanging_leg_raise_6.json.gz  label 6  before - (new)  now 4 (off -2)
+-> sets-09oct-video-mode/lying_biceps_curl_11.json.gz  label 11  before - (new)  now 10 (off -1)
+-> sets-09oct-video-mode/machine_chest_supported_row_6.json.gz  label 6  before - (new)  now 5 (off -1)
+-> sets-09oct-video-mode/machine_seated_back_extension_18.json.gz  label 18  before - (new)  now 17 (off -1)
+-> sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before - (new)  now 8 (off +1)
+-> sets-09oct-video-mode/seated_dumbbell_curl_10.json.gz  label 10  before - (new)  now 10 (exact)
+-> sets-09oct-video-mode/sissy_squat_5_5011.json.gz  label 5  before - (new)  now refused (refused)  (proposal 4)
+-> sets-09oct-video-mode/sissy_squat_7_5006.json.gz  label 7  before - (new)  now 6 (off -1)
+-> sets-09oct-video-mode/sissy_squat_7_5008.json.gz  label 7  before - (new)  now refused (refused)
+-> sets-09oct-video-mode/sissy_squat_9_5007.json.gz  label 9  before - (new)  now 9 (exact)
+-> sets-09oct-video-mode/standing_barbell_curl_8.json.gz  label 8  before - (new)  now refused (refused)  (proposal 6)
