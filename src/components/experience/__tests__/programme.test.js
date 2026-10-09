@@ -311,6 +311,13 @@ describe('the programme’s PDF', () => {
   it('draws a code past version 15 with the foot at the end of the sheet, its modules never under 0.4 mm', async () => {
     const top = programmeQr(`https://x/#programme=z${'a'.repeat(300)}`);
     expect([top.top, top.side]).toEqual([true, QR_SIDE]);
+    expect(top.side / (top.size + 8)).toBeGreaterThanOrEqual(QR_MODULE_MIN - 1e-9);
+    // Version 15 at 96 pt would set 0.398 mm modules: it goes to the end of the sheet.
+    const n15 = Array.from({ length: 200 }, (_, k) => 380 + k).find(n => programmeQr(`https://x/#programme=z${'a'.repeat(n)}`).version === 15);
+    expect(n15).toBeDefined();
+    const v15 = programmeQr(`https://x/#programme=z${'a'.repeat(n15)}`);
+    expect(v15.top).toBe(false);
+    expect(v15.side / (v15.size + 8)).toBeGreaterThanOrEqual(QR_MODULE_MIN - 1e-9);
     for (const n of [600, 900, 1400, 2400]) {
       const qr = programmeQr(`https://x/#programme=z${'a'.repeat(n)}`);
       expect(qr.version).toBeGreaterThan(QR_MAX_VERSION);
@@ -392,6 +399,10 @@ describe('the coach’s drafts', () => {
       expect(again.draft.id).toBe(made.draft.id);
       expect(again.draft.items[0]).toMatchObject({ rest: 120, note: 'Lent' });
       expect(draftFromResults({ ...results, who: 'Zine' }).draft.id).not.toBe(made.draft.id);
+      // A draft's title as typed, with a double space or a no-break space: its link, and its results, carry one space.
+      const typed = { ...newDraft(5), title: 'Semaine  2\u00A0: jambes', who: ' Lou ', items: [{ key: 'squat', sets: 3, reps: 10, rest: 120, note: 'Lent' }] };
+      saveDraft(typed);
+      expect(draftFromResults({ ...results, title: 'Semaine 2 : jambes', who: 'Lou' }).draft.id).toBe(typed.id);
     } finally { vi.unstubAllGlobals(); }
   });
 });
@@ -403,31 +414,49 @@ describe('a programme the coach changed and sent again', () => {
   // The coach raised the squat's reps and put a curl first: every place moved.
   const v2 = { ...v1, items: [{ key: 'bicep_curl', sets: 3, reps: 10, rest: 60, note: '' }, { ...v1.items[0], reps: 12 }, v1.items[1]] };
 
-  it('takes the place of the earlier version, which it remembers; another person’s programme stays', () => {
+  it('remembers the earlier version, which stays listed; another person’s programme is apart', () => {
     vi.stubGlobal('localStorage', memory());
     try {
       const id1 = keepReceived(v1, 1000), other = keepReceived({ ...v1, who: 'Zine' }, 1500), id2 = keepReceived(v2, 2000);
       const list = loadReceived();
-      expect(list.map(r => r.id)).toEqual([id2, other]);
+      expect(list.map(r => r.id)).toEqual([id2, other, id1]);
       expect(list[0].previous).toEqual([id1]);
       expect(list[0].receivedAt).toBe(2000);
+      expect(list[1].previous).toEqual([]);
       // The same version opened again keeps what it remembers.
       keepReceived(v2, 3000);
       expect(loadReceived()[0].previous).toEqual([id1]);
+      // The earlier version's link opened again: it comes first, the newer one stays, and it borrows none of its sets.
+      keepReceived(v1, 4000);
+      const again = loadReceived();
+      expect(again.map(r => r.id)).toEqual([id1, id2, other]);
+      expect(again[0].previous).toEqual([]);
+      expect(again[1].previous).toEqual([id1]);
     } finally { vi.unstubAllGlobals(); }
+  });
+
+  it('puts a set of the earlier version on the exercise with the target it was filmed for, when the exercise is there twice', () => {
+    const w1 = { ...v1, items: [{ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' }, { key: 'squat', sets: 2, reps: 20, rest: 60, note: '' }] };
+    const w2 = { ...w1, items: [{ key: 'bicep_curl', sets: 3, reps: 10, rest: 60, note: '' }, ...w1.items] };
+    const now = new Date(2026, 9, 9, 18, 30), at = m => new Date(2026, 9, 9, 18, m).getTime();
+    const sets = [
+      { exercise: 'squat', reps: 10, createdAt: at(1), planned: plannedOf('pw1', 0, w1.items[0]) },
+      { exercise: 'squat', reps: 20, createdAt: at(5), planned: plannedOf('pw1', 1, w1.items[1]) },
+    ];
+    expect(progressOf(w2, ['pw2', 'pw1'], sets, now).items.map(i => i.done)).toEqual([[], [10], [20]]);
   });
 
   it('counts the sets of the day filmed from the earlier version, each with its exercise', () => {
     vi.stubGlobal('localStorage', memory());
     try {
-      const id1 = keepReceived(v1), id2 = keepReceived(v2), now = new Date(2026, 9, 9, 18, 30);
+      const id1 = keepReceived(v1, 1000), id2 = keepReceived(v2, 2000), now = new Date(2026, 9, 9, 18, 30);
       const at = m => new Date(2026, 9, 9, 18, m).getTime();
       const sets = [
         { exercise: 'squat', reps: 10, createdAt: at(1), planned: plannedOf(id1, 0, v1.items[0]) },
         { exercise: 'push_up', reps: 12, createdAt: at(5), planned: plannedOf(id1, 1, v1.items[1]) },
         { exercise: 'bicep_curl', reps: 10, createdAt: at(9), planned: plannedOf(id2, 0, v2.items[0]) },
       ];
-      const progress = progressOf(v2, [id2, ...loadReceived()[0].previous], sets, now);
+      const progress = progressOf(v2, [id2, ...loadReceived().find(r => r.id === id2).previous], sets, now);
       expect(progress.items.map(i => i.done)).toEqual([[10], [10], [12]]);
       // Without the earlier version, its sets are not this programme's.
       expect(progressOf(v2, id2, sets, now).items.map(i => i.done)).toEqual([[10], [], []]);

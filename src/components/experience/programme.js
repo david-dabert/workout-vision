@@ -241,14 +241,16 @@ export function keptLetter(w) {
 /**
  * The place in the programme of a set filmed from it, or -1. ids: the programme's id, then the ids of the earlier
  * versions it replaced (programme-store.js, keepReceived). A set of the programme itself keeps its place when its
- * exercise is still there; a set of an earlier version goes to its exercise wherever the new version puts it (an edit
- * may insert or reorder exercises), the first of that exercise when it appears twice.
+ * exercise is still there. A set of an earlier version goes to its exercise wherever the new version puts it (an edit
+ * may insert or reorder exercises): to the one with the target it was filmed for, else the first of that exercise.
  */
 function placeOf(programme, ids, w) {
   const version = ids.indexOf(w?.planned?.programme);
   if (version < 0 || !Number.isFinite(w.reps)) return -1;
-  if (programme.items[w.planned.item]?.key === w.exercise) return w.planned.item;
-  return version > 0 ? programme.items.findIndex(it => it.key === w.exercise) : -1;
+  if (version === 0) return programme.items[w.planned.item]?.key === w.exercise ? w.planned.item : -1;
+  const p = w.planned, items = programme.items;
+  const same = items.findIndex(it => it.key === w.exercise && it.sets === p.sets && it.reps === p.reps && it.rest === p.rest);
+  return same >= 0 ? same : items.findIndex(it => it.key === w.exercise);
 }
 
 /**

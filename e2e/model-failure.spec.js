@@ -33,7 +33,9 @@ test('a set the app could not read can be typed by hand', async ({ page }) => {
   await expect(page.getByText('L’analyse n’a pas pu démarrer.', { exact: true })).toBeVisible({ timeout: 60000 });
   await expect(page.getByTestId('error-restart')).toHaveText('Relancer l’analyse');
   await page.getByTestId('by-hand').click();
-  await expect(page.getByTestId('fix-card')).toContainText('La vidéo n’a pas pu être lue, donc l’app ne propose aucun nombre.');
+  // The next screen says what stopped the analysis, as its failure screen did, and carries no report of a refusal.
+  await expect(page.getByTestId('fix-card')).toContainText('L’analyse n’a pas pu démarrer.');
+  await expect(page.getByTestId('report-count')).toHaveCount(0);
   await expect(page.locator('.rp-open')).toHaveCount(0);
   for (let k = 0; k < 8; k++) await page.getByRole('button', { name: 'Une de plus' }).click();
   await expect(page.getByTestId('res-typed')).toHaveText('8');

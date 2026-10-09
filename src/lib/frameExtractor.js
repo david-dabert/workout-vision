@@ -476,12 +476,13 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
     // Get decoder config from demuxer
     const decoderConfig = await demuxer.getDecoderConfig('video');
+    // The source as demuxed, for the crash log (options.onSource): which codec, picture size and rotation was read,
+    // before WebCodecs says whether it can decode it (a codec it refuses goes on to the playback path).
+    options.onSource?.({ codec: decoderConfig.codec || null, width: srcWidth, height: srcHeight, rotation, duration });
     const support = await VideoDecoder.isConfigSupported(decoderConfig);
     if (!support.supported) {
       throw new Error(`Codec not supported by WebCodecs: ${decoderConfig.codec}`);
     }
-    // The source as demuxed, for the crash log (options.onSource): which codec, picture size and rotation was read.
-    options.onSource?.({ codec: decoderConfig.codec || null, width: srcWidth, height: srcHeight, rotation, duration });
 
     const interval = 1 / targetFps;
     const totalPossibleFrames = Math.floor(duration * targetFps);

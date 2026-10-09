@@ -62,10 +62,21 @@ export default function Pro({ onClose, start = null }) {
     if (isEmptyDraft(next)) { removeDraft(next.id); setKept(true); return; }
     setKept(saveDraft(next));
   };
-  const show = id => { setFocusWho(false); setOpenId(id); };
-  const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); show(d.id); };
-  const remove = id => { removeDraft(id); setDrafts(list => list.filter(d => d.id !== id)); show(null); };
-  const back = () => (open && isEmptyDraft(open) ? remove(open.id) : show(null));
+  // A draft opened says whether it is kept (a copy refused as 'full' says so again); the list asks nothing.
+  const show = id => {
+    setFocusWho(false); setOpenId(id);
+    const d = drafts.find(x => x.id === id);
+    if (d && !isEmptyDraft(d)) setKept(saveDraft(d));
+  };
+  const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); setFocusWho(false); setOpenId(d.id); };
+  // A deletion makes room: a draft the phone refused for want of it ('full') is kept now, as the message promised.
+  const remove = id => {
+    removeDraft(id);
+    const stored = new Set(loadDrafts().map(d => d.id)), left = drafts.filter(d => d.id !== id);
+    for (const d of left) if (!stored.has(d.id) && !isEmptyDraft(d)) saveDraft(d);
+    setDrafts(left); setFocusWho(false); setOpenId(null); setKept(true);
+  };
+  const back = () => (open && isEmptyDraft(open) ? remove(open.id) : (setFocusWho(false), setOpenId(null)));
   // The same programme for another client: title, exercises, cues and note, "Pour" left empty.
   const duplicate = () => { const d = { ...open, id: newDraft().id, who: '' }; update(d); setOpenId(d.id); setFocusWho(true); };
 
@@ -73,7 +84,7 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
-  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} focusWho={focusWho} onChange={update} onPick={() => setPicking(true)} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
+  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
   return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onOpen={show} />;
 }
 
@@ -200,10 +211,13 @@ function Editor({ c, fr, lang, draft, kept, focusWho = false, onChange, onPick, 
     const fileName = kit.programmeFileName(programme, { lang, date });
     const file = new File([blob], fileName, { type: 'application/pdf' });
     if (navigator.canShare?.({ files: [file] })) {
-      if (warning) say(warning, 12000);
+      // Said as the sheet opens (a line left from an earlier share goes), and again once the coach is back from it:
+      // the share sheet covers the page for longer than the line lasts.
+      say(warning, 12000);
+      const tell = () => { if (warning) say(warning, 12000); };
       // Refused for any reason but the coach's own cancel (a share still open counts), the file is downloaded instead.
       navigator.share({ files: [file], title: programme.title })
-        .catch(e => { if (e.name !== 'AbortError') download(blob, fileName, warning); });
+        .then(tell, e => { if (e.name !== 'AbortError') download(blob, fileName, warning); else tell(); });
       return;
     }
     download(blob, fileName, warning);

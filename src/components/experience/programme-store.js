@@ -1,7 +1,7 @@
 // Where programmes are kept: on this phone only, in localStorage. The coach's drafts under wv_pro_drafts; the
 // programmes a client received under wv_programmes. Every read and write is guarded: a private window, a full or
 // refused storage leaves the screens working, with nothing kept (the screens say so where it matters).
-import { DEFAULT_ITEM, LIMITS, fromCompact, compact, programmeId } from './programme';
+import { DEFAULT_ITEM, LIMITS, cleanText, fromCompact, compact, programmeId } from './programme';
 
 const DRAFTS = 'wv_pro_drafts', RECEIVED = 'wv_programmes';
 // At most this many of each are kept. Received programmes: the oldest go first (a list on one phone, not an archive).
@@ -50,7 +50,10 @@ export function saveDraft(draft) {
  * at its default, no cue), kept at once. Returns { draft, kept }.
  */
 export function draftFromResults(results, now = Date.now()) {
-  const same = loadDrafts().find(d => d.title.trim() === results.title && d.who.trim() === (results.who || ''));
+  // The draft's words as its link carries them (cleanText): a double space or a no-break space typed in the draft
+  // is one space in the results.
+  const same = loadDrafts().find(d => cleanText(d.title).slice(0, LIMITS.title) === results.title
+    && cleanText(d.who).slice(0, LIMITS.who) === (results.who || ''));
   if (same) return { draft: same, kept: true };
   const draft = { ...newDraft(now), title: results.title, who: results.who || '', items: results.items.map(i => ({ ...newItem(i.key), sets: i.sets, reps: i.reps })) };
   return { draft, kept: saveDraft(draft) };
@@ -75,17 +78,20 @@ export function loadReceived() {
 
 /**
  * Keeps a programme received (opened from a link); the same programme twice is kept once. One of the same title for
- * the same person is an earlier version, which the coach changed and sent again (excellence hunt, 9 October 2026): it
- * gives way, and its id is remembered, so the sets filmed from it that day still count. Returns the programme's id.
+ * the same person received before it is an earlier version, which the coach changed and sent again (excellence hunt,
+ * 9 October 2026): its id is remembered, so the sets filmed from it that day still count for this one. The earlier
+ * version stays listed, with the day it came: opening its link again never takes the newer one away, and a set of an
+ * exercise the new version dropped can still be sent from it. Returns the programme's id.
  */
 export function keepReceived(programme, now = Date.now()) {
   const id = programmeId(programme), stored = read(RECEIVED).filter(r => r && typeof r === 'object');
-  const was = stored.find(r => r.id === id);
-  const older = stored.filter(r => r.id !== id && r.data?.t === programme.title && (r.data?.w || '') === (programme.who || ''));
-  const ids = [...(Array.isArray(was?.previous) ? was.previous : []), ...older.flatMap(r => [r.id, ...(Array.isArray(r.previous) ? r.previous : [])])];
+  const was = stored.find(r => r.id === id), receivedAt = was?.receivedAt || now;
+  const earlier = stored.filter(r => r.id !== id && (r.receivedAt || 0) < receivedAt
+    && r.data?.t === programme.title && (r.data?.w || '') === (programme.who || ''));
+  const ids = earlier.flatMap(r => [r.id, ...(Array.isArray(r.previous) ? r.previous : [])]);
   const previous = [...new Set(ids.filter(x => typeof x === 'string' && x !== id))].slice(0, MAX_PREVIOUS);
-  const list = stored.filter(r => r.id !== id && !older.includes(r));
-  list.unshift({ id, data: compact(programme), receivedAt: was?.receivedAt || now, openedAt: now, ...(previous.length ? { previous } : {}) });
+  const list = stored.filter(r => r.id !== id);
+  list.unshift({ id, data: compact(programme), receivedAt, openedAt: now, ...(previous.length ? { previous } : {}) });
   write(RECEIVED, list.slice(0, MAX_RECEIVED));
   return id;
 }

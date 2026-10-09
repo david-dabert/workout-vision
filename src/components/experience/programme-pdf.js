@@ -44,9 +44,10 @@ export function programmeQr(link) {
   try {
     const qr = QRCode.create(link, { errorCorrectionLevel: 'L' });
     const size = qr.modules.size, span = size + 8; // the code and its quiet zone of 4 modules each side
-    const top = qr.version <= QR_MAX_VERSION;
+    // At the top right only while 96 pt keeps the modules at 0.4 mm and up (version 14 at most: 0.418 mm; 15: 0.398).
+    const top = qr.version <= QR_MAX_VERSION && QR_SIDE / span >= QR_MODULE_MIN - 1e-9;
     const side = top ? QR_SIDE : Math.min(QR_BLOCK_MAX, Math.max(QR_SIDE, span * QR_BLOCK_MODULE));
-    if (!top && side / span < QR_MODULE_MIN - 1e-9) return null;
+    if (side / span < QR_MODULE_MIN - 1e-9) return null;
     return { size, version: qr.version, side, top, dark: (row, col) => !!qr.modules.get(row, col) };
   } catch {
     return null;

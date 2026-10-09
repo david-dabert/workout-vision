@@ -518,7 +518,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   }
   // What the phone read, for the report: the decoder and the samples read out of the video's.
   const read = { read: result.timestamps?.length ?? null, expected: Number.isFinite(result.metadata?.duration) ? Math.floor(result.metadata.duration * TARGET_FPS) : null };
-  const report = reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError, decoder: result.metadata?.method || '', read });
+  // A set the app could not read (CoreUpload.jsx, notRead: what stopped the analysis) is reported as its failure screen
+  // reported it, never as a refusal of 0 samples; an interruption or a model that did not start has no report, as there.
+  const notRead = result.notRead || null;
+  const report = notRead
+    ? (notRead.kind === 'error' ? { lift, liftName, counted: null, userCount: null, version: appVersion(), fr, decoder: notRead.decoder || '', failure: notRead.failure || '' }
+      : notRead.kind === 'partial' ? { lift, liftName, counted: null, userCount: null, partial: true, version: appVersion(), fr, decoder: notRead.decoder || '', read: notRead.read }
+      : null)
+    : reportFor({ lift, liftName, count, trueN, version: appVersion(), fr, refused: !!result.refused, step, saveError, decoder: result.metadata?.method || '', read });
 
   // The number the person gives: by − and +, a quick key, or typed on the number pad. On a counted set, a change makes
   // the count theirs (step fix); brought back to the app's number, it is the app's to confirm again (step ask).
@@ -615,9 +622,13 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
 
   if (result.refused) {
-    // A set the app could not read at all (CoreUpload.jsx, notRead): no cause to name, no fix, the count typed by hand.
-    const text = result.notRead
-      ? (fr ? 'La vidéo n’a pas pu être lue, donc l’app ne propose aucun nombre.' : 'The video could not be read, so the app offers no number.')
+    // A set the app could not read (CoreUpload.jsx, notRead): what stopped the analysis, in its failure screen's own
+    // words, no fix, the count typed by hand.
+    const text = notRead
+      ? (notRead.kind === 'interrupted' ? (fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.')
+        : notRead.kind === 'model' ? (fr ? 'L’analyse n’a pas pu démarrer.' : 'The analysis could not start.')
+        : notRead.kind === 'partial' ? (fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.')
+        : (fr ? 'La vidéo n’a pas pu être lue, donc l’app ne propose aucun nombre.' : 'The video could not be read, so the app offers no number.'))
       : why.cause === 'nobody'
       ? (result.metadata?.live ? (fr ? 'Personne n’apparaît à l’image.' : 'We could not find you in the picture.') : (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.'))
       : why.cause === 'unclear'
@@ -661,7 +672,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           </div>}
           {saveError && <p role="alert" className="save-error">{saveError}</p>}
         </div>
-        <ReportCount fr={fr} report={report} />
+        {report && <ReportCount fr={fr} report={report} />}
       </div></section>
     </div>;
   }

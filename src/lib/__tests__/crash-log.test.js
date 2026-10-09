@@ -1,6 +1,7 @@
 // The crash log kept on the phone (crashLog.js; crash at the demo of 7 October): a session that did not end cleanly
 // is found at the next launch, if its last breadcrumb is less than 30 minutes old.
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { appVersion } from '../reportLinks';
 import { detectIncident, INCIDENT_MAX_AGE_MS, startCrashLog, markCrash, noteError, pendingIncident, dismissIncident, resetCrashLogForTests } from '../crashLog';
 import { crashLine } from '../../components/experience/crash-copy';
 
@@ -32,13 +33,18 @@ describe('a launch after a session that ended, cleanly or not', () => {
   let s;
   beforeEach(() => { s = store(); globalThis.localStorage = s; resetCrashLogForTests(); });
   it('names the build, the phone and the read: version, iOS, Home Screen, decoder path and source', () => {
-    startCrashLog({ now: Date.now() });
-    markCrash({ decoder: 'webcodecs', source: { codec: 'hvc1.2.4.L123.B0', width: 1920, height: 1080, rotation: 90, duration: 31.2 } });
-    const log = JSON.parse(s.getItem('wv_crash_log'));
-    expect(typeof log.version).toBe('string');
-    expect(log).toHaveProperty('ios');
-    expect(log).toHaveProperty('standalone');
-    expect(log).toMatchObject({ decoder: 'webcodecs', source: { codec: 'hvc1.2.4.L123.B0', width: 1920, height: 1080, rotation: 90 } });
+    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1', standalone: true });
+    try {
+      startCrashLog({ now: Date.now() });
+      markCrash({ decoder: 'webcodecs', source: { codec: 'hvc1.2.4.L123.B0', width: 1920, height: 1080, rotation: 90, duration: 31.2 } });
+      const log = JSON.parse(s.getItem('wv_crash_log'));
+      expect(log.version).toBe(appVersion() || '0.0.0');
+      expect(log).toMatchObject({ ios: [17, 4], standalone: true });
+      expect(log).toMatchObject({ decoder: 'webcodecs', source: { codec: 'hvc1.2.4.L123.B0', width: 1920, height: 1080, rotation: 90 } });
+      // A new read starts with no source of the last one's (CoreUpload.jsx, the run's first breadcrumb).
+      markCrash({ phase: 'waiting', decoder: null, source: null });
+      expect(JSON.parse(s.getItem('wv_crash_log')).source).toBe(null);
+    } finally { vi.unstubAllGlobals(); }
   });
   it('a session killed during the reading of the video is kept as an incident until dismissed', () => {
     startCrashLog({ now: Date.now() });

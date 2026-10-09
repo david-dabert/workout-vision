@@ -28,6 +28,8 @@ export default function Programme({ payload, onClose, onStart }) {
   const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived())));
   const [confirm, setConfirm] = useState(false);
   const [note, setNote] = useState('');
+  // The in-app browser's copy of the programme's link: its own line, and the link to select when the copy is refused.
+  const [copyNote, setCopyNote] = useState(''), [copyShown, setCopyShown] = useState(false);
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang, state.kind, state.entry?.id]);
   const sets = useSets();
@@ -77,12 +79,16 @@ export default function Programme({ payload, onClose, onStart }) {
   const progress = progressOf(p, ids, mine, now);
   // The results link (programme.js, resultsOf): ready before the tap, as a share must be called within it (Safari).
   // Offered once a set is saved today; with none today, the latest session of the week, which its own day did not
-  // send (excellence hunt, 9 October 2026). The plain payload, made at once.
-  const past = progress.items.some(i => i.done.length) ? null : lastDayOf(p, ids, mine, now);
+  // send (excellence hunt, 9 October 2026), found from this version only: an earlier version's session was its own.
+  // The plain payload, made at once.
+  const past = progress.items.some(i => i.done.length) ? null : lastDayOf(p, entry.id, mine, now);
   const sent = past ? progressOf(p, ids, mine, past) : progress;
   const resultsUrl = sent.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, sent, past || now))) : null;
   const pastDay = past ? dayWords(past, lang) : '';
-  const copyLink = url => (navigator.clipboard?.writeText(url) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.copied), () => setNote(c.linkError));
+  // The programme's own link, for the in-app browser's copy.
+  const ownLink = programmeLink(location.href, plainPayload(p));
+  const copyLink = url => (navigator.clipboard?.writeText(url) ?? Promise.reject(new Error('no clipboard')))
+    .then(() => { setCopyShown(false); setCopyNote(c.copied); }, () => { setCopyShown(true); setCopyNote(c.copyFailed); });
   function sendResults() {
     if (!resultsUrl) return;
     const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.resultsCopied), () => setNote(c.linkError));
@@ -139,7 +145,12 @@ export default function Programme({ payload, onClose, onStart }) {
       {/* In an app's own browser the programme stays there: its link, to open it in the phone's browser or app. */}
       {inAppBrowser(navigator.userAgent) && <div className="actions programme-send" data-testid="programme-in-app">
         <p className="foot pro-foot">{c.inAppNote}</p>
-        <button type="button" className="btn-ghost press" onClick={() => copyLink(programmeLink(location.href, plainPayload(p)))}>{c.copyLink}</button>
+        <button type="button" className="btn-ghost press" onClick={() => copyLink(ownLink)}>{c.copyLink}</button>
+        {copyNote && <p className="pro-status" role="status" data-testid="programme-in-app-status">{copyNote}</p>}
+        {copyShown && <div className="field">
+          <label htmlFor="pOwnLink">{c.linkLabel}</label>
+          <input id="pOwnLink" type="text" readOnly value={ownLink} onFocus={e => e.currentTarget.select()} />
+        </div>}
       </div>}
       {/* The installed app receives no link: another programme comes in pasted. */}
       {onHomeScreen() && <PasteLink c={c} onOpen={keepPasted} />}
@@ -167,7 +178,8 @@ function PasteLink({ c, onOpen }) {
   const [text, setText] = useState(''), [error, setError] = useState('');
   const open = e => {
     e.preventDefault();
-    const found = /#programme=([A-Za-z0-9_-]+)/.exec(text);
+    // "#programme=" as typed, or percent-encoded inside another address (a mail service's link protection wraps it).
+    const found = /(?:#|%23)\/?programme(?:=|%3D)([A-Za-z0-9_-]+)/i.exec(text);
     if (!found) { setError(c.pasteNone); return; }
     decodeProgramme(found[1]).then(r => {
       if (!r.ok) { setError(c.errors[r.error] || c.errors.malformed); return; }

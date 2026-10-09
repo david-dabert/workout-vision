@@ -106,6 +106,8 @@ function AppInner() {
   const [planned, setPlanned] = useState(null);
   // The draft Espace pro opens at once, when a client's results lead to it (programme-store.js, draftFromResults).
   const [proStart, setProStart] = useState(null);
+  // For one visit: a browser back then forward to Espace pro opens its list, never a start draft since deleted.
+  useEffect(() => { if (page !== 'pro') setProStart(null); }, [page]);
   // Run storage schema migration on mount
   // The saved sets are read once the records are migrated, while the entry plays,
   // so the choice of lift never waits for them.
