@@ -8,9 +8,15 @@
 // Every storage access is guarded: a browser that refuses storage (private mode) keeps no log and shows nothing.
 // Limit: two tabs open at once share the log, and the second can take the first, still open, for an incident.
 
+import { appVersion } from './reportLinks';
+import { iosVersion } from './install';
+import { onHomeScreen } from './keep-sets';
+
 const LOG_KEY = 'wv_crash_log';
 const INCIDENT_KEY = 'wv_crash_incident';
-const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
+// The build, its version and git hash ("1.4.0 (abc1234)"), so an incident names the deploy it came from (excellence
+// hunt, 9 October 2026).
+const VERSION = appVersion() || '0.0.0';
 
 // An unclean log older than this is not reported: a page killed in the background long ago, or a phone switched off,
 // says nothing useful about the app. Source: the crash investigation's sketch (7 October). Status: convention, UNSOURCED.
@@ -62,8 +68,11 @@ export function startCrashLog({ now = Date.now() } = {}) {
   if (incident) write(INCIDENT_KEY, incident);
   current = {
     v: 1, version: VERSION, started: now, at: now, clean: hidden(),
-    screen: null, phase: null, lift: null, sample: null, frame: null, decoder: null, file: null, error: null,
+    screen: null, phase: null, lift: null, sample: null, frame: null, decoder: null, source: null, file: null, error: null,
     memory: typeof navigator !== 'undefined' && navigator.deviceMemory ? navigator.deviceMemory : null,
+    // The phone's iOS version as its browser states it, and whether the app runs from the Home Screen. Stays on the phone.
+    ios: typeof navigator !== 'undefined' ? iosVersion(navigator.userAgent || '') : null,
+    standalone: typeof navigator !== 'undefined' ? onHomeScreen() : null,
   };
   save();
   if (typeof window === 'undefined') return;

@@ -476,6 +476,9 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
     // Get decoder config from demuxer
     const decoderConfig = await demuxer.getDecoderConfig('video');
+    // The source as demuxed, for the crash log (options.onSource): which codec, picture size and rotation was read,
+    // before WebCodecs says whether it can decode it (a codec it refuses goes on to the playback path).
+    options.onSource?.({ codec: decoderConfig.codec || null, width: srcWidth, height: srcHeight, rotation, duration });
     const support = await VideoDecoder.isConfigSupported(decoderConfig);
     if (!support.supported) {
       throw new Error(`Codec not supported by WebCodecs: ${decoderConfig.codec}`);
@@ -807,6 +810,8 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   if (options.path === 'rvfc') {
     errors.push('WebCodecs: skipped, playback path forced');
   } else if (typeof VideoDecoder !== 'undefined') {
+    // The path about to read, for the crash log (options.onPath; the read itself is unchanged).
+    options.onPath?.('webcodecs');
     try {
       const { result, restarts } = await withRestarts(pass => extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, counted, onProgress, pass), options);
       frozenCheck('webcodecs');
@@ -825,6 +830,7 @@ export async function extractFramesStreaming(file, targetFps, maxFrames, maxWidt
   // Step 2: Try RVFC (playback-based, works on older browsers)
   if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
     repeats = repeatCounter();
+    options.onPath?.('rvfc');
     try {
       // The check page's test hook only (check.html?inject=frozen, WP0.2 of docs/SPEC-production.md): every sample
       // of the playback path after the first is handed on as the first, as a decoder stuck on one picture would, so

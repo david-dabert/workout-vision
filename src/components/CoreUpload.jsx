@@ -65,7 +65,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
     let release = () => {}, wake = async () => {};
     // Crash log (crashLog.js): the phase, then while the video is read, the sample reached and the frame size.
     let samples = 0, marked = 0;
-    markCrash({ phase: 'waiting', sample: null, frame: null, decoder: null, file: file ? { type: file.type || '', size: file.size ?? null } : null });
+    markCrash({ phase: 'waiting', sample: null, frame: null, decoder: null, source: null, file: file ? { type: file.type || '', size: file.size ?? null } : null });
     const onPhase = p => { markCrash({ phase: p, sample: samples }); if (mine()) setPhase(p); };
     const onLandmarks = (lm, w, h) => {
       samples++;
@@ -79,7 +79,8 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       release = watchInterruption(controller);
       if (mine()) track('analysis_start', { lift });
       wake = holdScreenAwake();
-      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks });
+      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks,
+        onDecoder: d => markCrash({ decoder: d }), onSource: source => markCrash({ source }) });
       markCrash({ phase: 'result', sample: output.timestamps?.length ?? samples, frame: output.metadata ? [output.metadata.width, output.metadata.height] : null, decoder: output.metadata?.method || null });
       // A beat at 100 %, then the result, as in the prototype; a run hidden meanwhile shows no count.
       setProgress(100);
@@ -103,6 +104,18 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   useEffect(() => { if (result) markCrash({ phase: overlay || 'result' }); }, [overlay, result]);
 
   const refilm = onRefilm || onClose;
+  // A set the app could not read, typed by hand on the refused set's screen: no count of the app, no replay, no measure
+  // (Result.jsx, notRead; excellence hunt, 9 October 2026). notRead keeps what stopped the analysis, for the screen's
+  // words and its report: the error (or the model that did not start), the part read, or the interruption.
+  const byHand = kind => () => {
+    abort.current?.abort();
+    const notRead = kind === 'partial'
+      ? { kind, decoder: incomplete?.decoder || '', read: { read: incomplete?.read, expected: incomplete?.expected, disordered: !!incomplete?.disordered } }
+      : kind === 'error'
+        ? { kind: phase === 'model' ? 'model' : 'error', decoder: error?.decoder || '', failure: error ? `${error.name}: ${error.message}` : '' }
+        : { kind };
+    setResult({ refused: true, notRead, count: 0, reps: [], arm: null, confidence: null, imageLandmarks: [], metadata: {} });
+  };
   function closeOverlay() {
     if (overlayLeaving) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setOverlay(null); return; }
@@ -126,10 +139,10 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   return <>
     <ScreenFade screenKey={view}>
       {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { if (abort.current) track('analysis_cancelled', { lift }); abort.current?.abort(); refilm(); }} />}
-      {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
-      {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
-      {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
-      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+      {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('error')} />}
+      {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('partial')} />}
+      {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('interrupted')} />}
+      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
     </ScreenFade>
     {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={keepsMeasures(result) ? result.reps : []} setId={savedIdRef.current} sides={savedSides} wave={keepsMeasures(result) ? compactWave(waveAngles(result), result.timestamps) : null} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}

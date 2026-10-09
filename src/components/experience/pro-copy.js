@@ -1,5 +1,5 @@
 // The words of the coach's programmes (Espace pro, Pro.jsx; the client's programme, Programme.jsx; the programme's PDF,
-// programme-pdf.js; the report's target line), written 6 October 2026, register vous (R10), for David's approval
+// programme-pdf.js; the report's target line), written 6 October 2026, register vous (R10), approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-pro.md). Wellness words only: the builder serves coaches and physiotherapists, named as
 // users and nothing more; no word of care (programme.test.js checks every string). French typography as in the rest of
 // the app: typographic apostrophes, a no-break space before a colon and between a number and its unit.
@@ -75,6 +75,11 @@ export const PRO = {
     tooLong: 'Programme trop long pour un lien : retirez un exercice ou raccourcissez les notes.',
     linkText: title => `Votre programme : ${title}. Ouvrez ce lien sur votre téléphone, puis filmez chaque série.`,
     deleteDraft: 'Supprimer ce programme',
+    // Excellence hunt of 9 October 2026, approved by David the same day (R10): a copy for another client, the drafts' cap,
+    // a PDF that goes out without its QR code.
+    duplicate: 'Dupliquer pour un autre client',
+    draftsFull: max => `Ce téléphone garde ${max} programmes au plus. Supprimez-en d’anciens pour garder celui-ci.`,
+    pdfNoQr: 'PDF sans QR code : le programme est trop long pour un code lisible sur papier. Envoyez aussi le lien.',
     confirmDelete: 'Supprimer ce programme de ce téléphone ?',
     confirmYes: 'Supprimer',
     cancel: 'Annuler',
@@ -109,7 +114,7 @@ export const PRO = {
     resultsEyebrow: 'Résultats',
     resultsDay: day => `Séance du ${day}`,
     resultsSource: 'Comptées par l’application sur le téléphone de la personne, ou corrigées à la main.',
-    // Excellence hunt of 9 October 2026, pending David's approval (R10): a session sent once its day is over, the time
+    // Excellence hunt of 9 October 2026, approved by David the same day (R10): a session sent once its day is over, the time
     // of its latest set, how each set was kept, the sets done in the header, and the coach's own words when a results
     // link does not open.
     sendResultsOf: day => `Envoyer les résultats du ${day}`,
@@ -122,6 +127,18 @@ export const PRO = {
     setProposed: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition proposée', 'répétitions proposées')} par l’application et ${plural(n, 'confirmée', 'confirmées')} sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
     resultsLegend: 'Chiffre souligné : saisi ou corrigé par la personne, ou proposé par l’application et confirmé par elle.',
     resultsOpening: 'Ouverture des résultats…',
+    adjustProgramme: 'Ajuster le programme',
+    // A coach's link pasted into the installed app or out of an app's own browser, and an edited programme received
+    // again (excellence hunt, 9 October 2026; approved by David the same day, R10).
+    noneSubPaste: 'Ouvrez le lien que votre coach vous a envoyé, ou collez-le ci-dessous.',
+    pasteLabel: 'Lien du programme',
+    pastePlaceholder: 'Collez ici le lien reçu',
+    pasteOpen: 'Ouvrir le programme',
+    pasteNone: 'Ce texte ne contient pas de lien de programme.',
+    linkRow: 'J’ai un lien de mon coach',
+    linkRowSub: 'Collez-le pour ouvrir le programme',
+    inAppNote: 'Ce programme reste dans le navigateur de cette app. Pour le retrouver dans votre navigateur ou dans l’app installée, copiez le lien et collez-le là-bas.',
+    receivedOn: day => `Reçu le ${day}`,
     resultsErrors: {
       empty: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
       malformed: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
@@ -200,6 +217,9 @@ export const PRO = {
     tooLong: 'Too long for a link: remove an exercise or shorten the notes.',
     linkText: title => `Your programme: ${title}. Open this link on your phone, then film each set.`,
     deleteDraft: 'Delete this programme',
+    duplicate: 'Duplicate for another client',
+    draftsFull: max => `This phone keeps ${max} programmes at most. Delete old ones to keep this one.`,
+    pdfNoQr: 'PDF without a QR code: the programme is too long for a code readable on paper. Send the link as well.',
     confirmDelete: 'Delete this programme from this phone?',
     confirmYes: 'Delete',
     cancel: 'Cancel',
@@ -240,6 +260,16 @@ export const PRO = {
     setProposed: (i, n, reps) => `Set ${i}: ${n} ${pluralEn(n, 'rep', 'reps')} proposed by the app and confirmed, of ${reps} planned`,
     resultsLegend: 'Underlined number: typed or corrected by the person, or proposed by the app and confirmed by them.',
     resultsOpening: 'Opening the results…',
+    adjustProgramme: 'Adjust the programme',
+    noneSubPaste: 'Open the link your coach sent you, or paste it below.',
+    pasteLabel: 'Programme link',
+    pastePlaceholder: 'Paste the link you received',
+    pasteOpen: 'Open the programme',
+    pasteNone: 'This text holds no programme link.',
+    linkRow: 'I have a link from my coach',
+    linkRowSub: 'Paste it to open the programme',
+    inAppNote: 'This programme stays in this app’s own browser. To find it in your browser or in the installed app, copy the link and paste it there.',
+    receivedOn: day => `Received on ${day}`,
     resultsErrors: {
       empty: 'The link is incomplete or damaged. Ask the person to send it again.',
       malformed: 'The link is incomplete or damaged. Ask the person to send it again.',

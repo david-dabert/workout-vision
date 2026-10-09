@@ -1,6 +1,6 @@
 // The history's progress per exercise: the reps of the last sets as bars and the personal
 // bests, from progress.js. Only stored numbers are shown (CLAUDE.md R8); the words are in
-// test/real-phone/swarm/copy-A.md, for David's approval (R10).
+// test/real-phone/swarm/copy-A.md, approved by David on 9 October 2026 (R10).
 import { bestLines } from './progress';
 
 const NB = ' ';

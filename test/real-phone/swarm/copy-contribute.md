@@ -1,4 +1,4 @@
-# Helping improve the count: the words for David's approval (R10)
+# Helping improve the count: the words, approved by David on 9 October 2026 (R10)
 
 Written 2 October 2026, register "vous". Under David's standing order of 2 October they ship with the change;
 David approves or corrects them. All are in src/components/experience/contribute-copy.js.
@@ -31,7 +31,7 @@ The file holds exactly what `what` lists (src/lib/contribute.js contribution() a
 | stopFailed | L’arrêt n’a pas pu être enregistré sur ce téléphone. Réessayez. | Stopping could not be saved on this phone. Try again. | History, after "Arrêter et effacer" when the phone refuses to save |
 | startFailed | Votre accord n’a pas pu être enregistré sur ce téléphone. Rien n’est gardé. | Your choice could not be saved on this phone. Nothing is kept. | Saved card or history, after a yes the phone refuses to save |
 
-## Changed 3 October 2026 (third audit C10, C18, C38): pending David's approval (3 October)
+## Changed 3 October 2026 (third audit C10, C18, C38): approved by David on 9 October 2026 (written 3 October)
 
 The consent text now names every field the shared file carries. The earlier text left out the processor cores, the memory, the screen and touch points, the image size, the decoder, the rotation, the analysis settings and the side tracked. A non-breaking space stands before each ":" and ";" in French.
 
@@ -41,7 +41,7 @@ The consent text now names every field the shared file carries. The earlier text
 
 Field by field (contribute.js), the words that name it: lift "l’exercice"; appCount "son comptage"; count "le vôtre"; labelKind "donné après avoir vu le sien"; corrected "si vous l’avez corrigé"; worldLandmarks, imageLandmarks "la position de vos articulations, dans l’espace et dans l’image, à chaque image analysée"; timestamps "son instant dans la vidéo"; arm "le côté suivi"; metadata.duration "la durée de la vidéo"; frame "la taille de son image"; metadata.rotationDecision "sa rotation"; metadata.extractionMethod "la façon dont elle a été lue"; metadata.sampleCount "le nombre d’images analysées"; extraction (fps, maxLongSide) "les réglages de l’analyse"; device.userAgent, device.platform "le modèle de téléphone et de navigateur tels qu’ils se déclarent"; device.cores "le nombre de cœurs du processeur"; device.memoryGb "la mémoire"; device.screen (width, height, pixelRatio) "l’écran (taille, densité de pixels)"; device.touchPoints "nombre de doigts reconnus"; version, kind, contributionVersion "la version de l’app et du fichier".
 
-## Added 3 October 2026 (build "contribute-ask"): pending David's approval (3 October)
+## Added 3 October 2026 (build "contribute-ask"): approved by David on 9 October 2026 (written 3 October)
 
 The question moves to the saved card of the first set, kept or corrected, and is asked once more at most, from the
 fifth saved set, when left unanswered (src/lib/contribute.js shouldAskContribute; status convention, UNSOURCED: the
@@ -61,7 +61,7 @@ For David: "téléphones … ce téléphone … du téléphone" repeats the word
 must still name the three kinds of data kept (counts, joint positions, the phone's model) and "jamais la vidéo", or the
 one sentence would understate what the yes allows; the full list stays one tap away.
 
-## Added 3 October 2026 (WP0.4, build flags): pending David's approval (3 October)
+## Added 3 October 2026 (WP0.4, build flags): approved by David on 9 October 2026 (written 3 October)
 
 A build made without `VITE_CONTRIBUTE=1` (production, until Phase 2) pauses contributions (src/lib/buildFlags.js): the
 saved card never asks, no new set is kept, and the history offers neither "Aider" nor "Envoyer". For a phone that said

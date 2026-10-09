@@ -1,6 +1,6 @@
 // Installing the app on the home screen (install.js): a quiet row at the foot of the choice, a one-time suggestion
 // on the saved card of the first set, and the sheet that shows how where the browser cannot install by itself.
-// Nothing shows once the app runs from the home screen. The words: install-copy.js (pending David's approval, R10).
+// Nothing shows once the app runs from the home screen. The words: install-copy.js (approved by David on 9 October 2026, R10).
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { installKind, onInstallChange, promptInstall, markInstall, shouldSuggestInstall } from '../../lib/install';

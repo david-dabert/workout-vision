@@ -158,6 +158,7 @@ function getLandmarkerOpts() {
   return {
     runningMode: _useImageMode ? 'IMAGE' : 'VIDEO',
     numPoses: 1,
+    // The landmarker's own thresholds, with their sources and status (poseAnalysis.js, getPoseLandmarker).
     minPoseDetectionConfidence: 0.35,
     minPosePresenceConfidence: 0.4,
     minTrackingConfidence: 0.5,

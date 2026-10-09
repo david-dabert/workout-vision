@@ -1,14 +1,14 @@
-# The note after the app restarted: the words for David's approval (R10)
+# The note after the app restarted: the words, approved by David on 9 October 2026 (R10)
 
 Written 7 October 2026, register "vous" (the note itself has no verb addressed to the person), glossary DIRECTIVES.md
-Part 7. Status of every line: pending David's approval (7 October). Source: src/components/experience/crash-copy.js.
+Part 7. Status of every line: approved by David on 9 October 2026 (written 7 October). Source: src/components/experience/crash-copy.js.
 Shown on the choice of lift only after a session that did not end cleanly (src/lib/crashLog.js): the page was on screen
 and never hidden nor left, and its last breadcrumb is less than 30 minutes old. Nothing is sent; the detail is copied
 only by the person's tap. With no incident the choice is as before.
 
 | FR | EN | Where | Status |
 |---|---|---|---|
-| L’appli a redémarré pendant ‹phase› (‹écran›). Le détail est gardé sur ce téléphone. | The app restarted during ‹phase› (‹screen›). The details are kept on this phone. | Choice of lift, under the top bar (Choice.jsx, CrashNote) | pending David's approval (7 October) |
+| L’appli a redémarré pendant ‹phase› (‹écran›). Le détail est gardé sur ce téléphone. | The app restarted during ‹phase› (‹screen›). The details are kept on this phone. | Choice of lift, under the top bar (Choice.jsx, CrashNote) | approved by David on 9 October 2026 (written 7 October) |
 | L’appli a redémarré (‹écran›). Le détail est gardé sur ce téléphone. | The app restarted (‹screen›). The details are kept on this phone. | Same line, when no analysis phase was under way | pending |
 | Copier le détail | Copy the details | Same line, text key: copies the log as JSON | pending |
 | Détail copié. | Details copied. | Appended to the line once copied | pending |

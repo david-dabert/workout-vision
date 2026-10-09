@@ -1,4 +1,4 @@
-# C: the opener and the rest clock, new copy for David's approval (CLAUDE.md R10)
+# C: the opener and the rest clock, new copy approved by David on 9 October 2026 (CLAUDE.md R10)
 
 Drafted 29 September 2026. Register: vous. Nothing here is released before David approves it.
 {n} is the count, {k} the number of reps marked ▾. The opener is built in src/components/experience/set-opener.js,

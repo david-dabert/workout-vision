@@ -1,9 +1,9 @@
-# Result screen in the final direction: the words for David's approval (R10)
+# Result screen in the final direction: the words, approved by David on 9 October 2026 (R10)
 
 Written 7 October 2026 (C4 of the design review, final direction "Le noir mesure, le papier se souvient", screens 05,
 05b and 05c), register "vous", glossary DIRECTIVES.md Part 7 (série, répétition). The app is called "l'appli", as the
 direction asks; the lines kept from before still say "l'app" (see the last table). Status of every new or changed line:
-**pending David's approval (7 October 2026)**. The strings live in src/components/experience/result-copy.js, apart
+**approved by David on 9 October 2026** (written 7 October). The strings live in src/components/experience/result-copy.js, apart
 from the refused screen's causes and fixes, which are unchanged in Result.jsx.
 
 French typography as in the rest of the app today: a no-break space (U+00A0) before "?" and ":" and between a number

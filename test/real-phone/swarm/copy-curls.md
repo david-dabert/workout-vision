@@ -1,6 +1,6 @@
 # Copy: the standing and lying barbell curls (2 October 2026)
 
-For David's approval before release (R10). Status: experimental, counted as the curl (elbow).
+Approved by David on 9 October 2026 (R10). Status: experimental, counted as the curl (elbow).
 
 | Key | French | English | Where |
 |---|---|---|---|

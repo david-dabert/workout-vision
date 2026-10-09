@@ -9,7 +9,7 @@ import { contribution } from '../../../lib/contribute';
 // R8 (CLAUDE.md), 3 October 2026: a set the counter did not refuse but found no rep in is not a measured 0.
 // The result screen asserts no number, no measure and no mark: it says the set could not be counted and asks
 // "How many did you do?". The set is saved as a correction: the app's 0 beside the person's count.
-// 7 October 2026 (C4, final direction, screen 05b): the words are the app's ("l'appli"), pending David's approval
+// 7 October 2026 (C4, final direction, screen 05b): the words are the app's ("l'appli"), approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-result.md), and the keys are the result's square keys (res-key).
 vi.mock('../lift-scenes', () => ({ hasFigure: () => false, liftView: () => null, topPose: () => null }));
 vi.mock('../entry-scene', () => ({ Body: class {}, mapPose: () => null, DPR: 1, LITE: false }));

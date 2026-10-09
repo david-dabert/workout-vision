@@ -1,8 +1,8 @@
 # Copy: exercise names brought to the glossary (3 October 2026)
 
-For David's approval before release (R10). Register "vous" elsewhere; a name has none.
+Approved by David on 9 October 2026 (R10). Register "vous" elsewhere; a name has none.
 
-## Changed 3 October 2026 (third audit C46): pending David's approval (3 October)
+## Changed 3 October 2026 (third audit C46): approved by David on 9 October 2026 (written 3 October)
 
 "Poussée triceps poulie" was a word-for-word calque of "triceps pushdown". DIRECTIVES.md Part 7 gives
 "Extension triceps a la poulie haute", which also matches the app's other triceps names ("Extension triceps à la

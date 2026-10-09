@@ -3,11 +3,15 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { dayWords, decodeProgramme, lastDayOf, plainResultsPayload, plannedOf, progressOf, resultsLink, resultsOf } from './programme';
+import { dayWords, decodeProgramme, lastDayOf, plainPayload, plainResultsPayload, plannedOf, programmeLink, progressOf, resultsLink, resultsOf } from './programme';
+import { onHomeScreen } from '../../lib/keep-sets';
+import { inAppBrowser } from '../../lib/install';
 import SetCells from './SetCells';
 import { keepReceived, loadReceived, openReceived, removeReceived } from './programme-store';
 import { useSets } from './sets';
 import { useCondensingTopbar } from './topbar';
+// The pasted link's field is the report's and the editor's (Report.css: .field).
+import './Report.css';
 import './Pro.css';
 
 const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>;
@@ -24,6 +28,8 @@ export default function Programme({ payload, onClose, onStart }) {
   const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived())));
   const [confirm, setConfirm] = useState(false);
   const [note, setNote] = useState('');
+  // The in-app browser's copy of the programme's link: its own line, and the link to select when the copy is refused.
+  const [copyNote, setCopyNote] = useState(''), [copyShown, setCopyShown] = useState(false);
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang, state.kind, state.entry?.id]);
   const sets = useSets();
@@ -43,6 +49,8 @@ export default function Programme({ payload, onClose, onStart }) {
   }, [payload]);
 
   const show = id => { openReceived(id); setConfirm(false); setState(current(loadReceived(), id)); screenRef.current?.scrollTo?.({ top: 0 }); };
+  // A programme from a link pasted in (PasteLink), kept as one opened from its link.
+  const keepPasted = programme => { const id = keepReceived(programme); setConfirm(false); setState(current(loadReceived(), id, programme)); screenRef.current?.scrollTo?.({ top: 0 }); };
   const remove = id => { removeReceived(id); setConfirm(false); setState(current(loadReceived())); };
 
   const top = <div className="topbar">
@@ -51,28 +59,36 @@ export default function Programme({ payload, onClose, onStart }) {
   </div>;
 
   if (state.kind !== 'programme') {
-    const words = state.kind === 'error' ? [c.errorTitle, c.errors[state.error] || c.errors.malformed] : state.kind === 'opening' ? [c.opening, ''] : [c.none, c.noneSub];
+    const words = state.kind === 'error' ? [c.errorTitle, c.errors[state.error] || c.errors.malformed] : state.kind === 'opening' ? [c.opening, ''] : [c.none, c.noneSubPaste];
     return <div className="wv-experience">
       <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="programme-screen" aria-busy={state.kind === 'opening' || undefined}><div className="wrap">
         {top}
         <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.clientEyebrow}</p>
         <h1 className="title" data-reveal style={{ '--i': 0 }} data-testid={state.kind === 'error' ? 'programme-error' : undefined}>{words[0]}</h1>
         {words[1] && <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{words[1]}</p>}
+        {state.kind !== 'opening' && <PasteLink c={c} onOpen={keepPasted} />}
         {state.kind !== 'opening' && <div className="actions" data-reveal style={{ '--i': 2 }}><button type="button" className="btn-ghost press" onClick={onClose}>{c.errorBack}</button></div>}
       </div></section>
     </div>;
   }
 
   const { entry, others } = state, p = entry.programme;
+  // The programme and the earlier versions it replaced (programme-store.js, keepReceived): their sets of the day count.
+  const ids = [entry.id, ...(entry.previous || [])];
   const mine = Array.isArray(sets) ? sets : [], now = new Date();
-  const progress = progressOf(p, entry.id, mine, now);
+  const progress = progressOf(p, ids, mine, now);
   // The results link (programme.js, resultsOf): ready before the tap, as a share must be called within it (Safari).
   // Offered once a set is saved today; with none today, the latest session of the week, which its own day did not
-  // send (excellence hunt, 9 October 2026). The plain payload, made at once.
+  // send (excellence hunt, 9 October 2026), found from this version only: an earlier version's session was its own.
+  // The plain payload, made at once.
   const past = progress.items.some(i => i.done.length) ? null : lastDayOf(p, entry.id, mine, now);
-  const sent = past ? progressOf(p, entry.id, mine, past) : progress;
+  const sent = past ? progressOf(p, ids, mine, past) : progress;
   const resultsUrl = sent.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, sent, past || now))) : null;
   const pastDay = past ? dayWords(past, lang) : '';
+  // The programme's own link, for the in-app browser's copy.
+  const ownLink = programmeLink(location.href, plainPayload(p));
+  const copyLink = url => (navigator.clipboard?.writeText(url) ?? Promise.reject(new Error('no clipboard')))
+    .then(() => { setCopyShown(false); setCopyNote(c.copied); }, () => { setCopyShown(true); setCopyNote(c.copyFailed); });
   function sendResults() {
     if (!resultsUrl) return;
     const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.resultsCopied), () => setNote(c.linkError));
@@ -121,11 +137,23 @@ export default function Programme({ payload, onClose, onStart }) {
         <h2 className="section-head">{c.othersHead}</h2>
         <ul className="pro-drafts">{others.map(o => <li key={o.id}>
           <button type="button" className="pro-draft press" onClick={() => show(o.id)}>
-            <span className="row-txt"><b>{o.programme.title}</b>{o.programme.who && <small>{c.whoLine(o.programme.who)}</small>}</span>
+            <span className="row-txt"><b>{o.programme.title}</b><small>{[o.programme.who && c.whoLine(o.programme.who), o.receivedAt && c.receivedOn(dayWords(o.receivedAt, lang))].filter(Boolean).join(' · ')}</small></span>
             <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
           </button>
         </li>)}</ul>
       </>}
+      {/* In an app's own browser the programme stays there: its link, to open it in the phone's browser or app. */}
+      {inAppBrowser(navigator.userAgent) && <div className="actions programme-send" data-testid="programme-in-app">
+        <p className="foot pro-foot">{c.inAppNote}</p>
+        <button type="button" className="btn-ghost press" onClick={() => copyLink(ownLink)}>{c.copyLink}</button>
+        {copyNote && <p className="pro-status" role="status" data-testid="programme-in-app-status">{copyNote}</p>}
+        {copyShown && <div className="field">
+          <label htmlFor="pOwnLink">{c.linkLabel}</label>
+          <input id="pOwnLink" type="text" readOnly value={ownLink} onFocus={e => e.currentTarget.select()} />
+        </div>}
+      </div>}
+      {/* The installed app receives no link: another programme comes in pasted. */}
+      {onHomeScreen() && <PasteLink c={c} onOpen={keepPasted} />}
       <div className="pro-delete">
         {confirm
           ? <div className="pro-confirm" role="group" aria-label={c.confirmRemove}>
@@ -139,6 +167,32 @@ export default function Programme({ payload, onClose, onStart }) {
       </div>
     </div></section>
   </div>;
+}
+
+/**
+ * A coach's link pasted in (excellence hunt, 9 October 2026): the app installed on the Home Screen never receives a
+ * link, which opens in the browser, and an app's own browser keeps a programme to itself. The link is found in the
+ * text as it comes, a message around it included, and read as a link is (decodeProgramme).
+ */
+function PasteLink({ c, onOpen }) {
+  const [text, setText] = useState(''), [error, setError] = useState('');
+  const open = e => {
+    e.preventDefault();
+    // "#programme=" as typed, or percent-encoded inside another address (a mail service's link protection wraps it).
+    const found = /(?:#|%23)\/?programme(?:=|%3D)([A-Za-z0-9_-]+)/i.exec(text);
+    if (!found) { setError(c.pasteNone); return; }
+    decodeProgramme(found[1]).then(r => {
+      if (!r.ok) { setError(c.errors[r.error] || c.errors.malformed); return; }
+      setText(''); setError(''); onOpen(r.programme);
+    });
+  };
+  return <form className="field pro-paste" onSubmit={open} data-testid="programme-paste">
+    <label htmlFor="pPaste">{c.pasteLabel}</label>
+    <input id="pPaste" type="text" inputMode="url" autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="go"
+      placeholder={c.pastePlaceholder} value={text} onChange={e => { setText(e.target.value); setError(''); }} />
+    {error && <p className="pro-status" role="alert" data-testid="programme-paste-error">{error}</p>}
+    <button type="submit" className="btn-line press" disabled={!text.trim()}>{c.pasteOpen}</button>
+  </form>;
 }
 
 // The programme to show: the one named, else the one opened last; the others listed under it.

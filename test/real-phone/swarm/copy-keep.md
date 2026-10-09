@@ -1,4 +1,4 @@
-# Keeping the sets: the words for David's approval (R10)
+# Keeping the sets: the words, approved by David on 9 October 2026 (R10)
 
 Written 2 October 2026, register "vous". Under David's standing order of 2 October they ship with the change;
 David approves or corrects them, and a correction holds from then on.
@@ -20,7 +20,7 @@ Built in src/components/experience/KeepSets.jsx and keep-sets-view.js (history) 
 | keep.newer | Cette sauvegarde vient d’une version plus récente de l’app. Mettez l’app à jour, puis réessayez. | This backup comes from a newer version of the app. Update the app, then try again. | When the backup comes from a later version |
 | keep.failed | La sauvegarde n’a pas pu être restaurée. Réessayez. | The backup could not be restored. Try again. | When the sets could not be written |
 
-## Added 2 October 2026 (audit of the live path), for David's approval (R10)
+## Added 2 October 2026 (audit of the live path), approved by David on 9 October 2026 (R10)
 
 | French | English | Where |
 |---|---|---|
@@ -31,7 +31,7 @@ Built in src/components/experience/KeepSets.jsx and keep-sets-view.js (history) 
 | Votre niveau n’a pas pu être enregistré sur ce téléphone. | Your level could not be saved on this phone. | Saved card, after a level the phone refuses to store |
 | Recharger la page | Reload the page | "L’analyse n’a pas pu démarrer.", in place of "Refilmer" |
 
-## Changed 3 October 2026 (second audit), for David's approval (R10)
+## Changed 3 October 2026 (second audit), approved by David on 9 October 2026 (R10)
 
 | French | English | Where | Why |
 |---|---|---|---|

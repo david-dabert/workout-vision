@@ -2,7 +2,7 @@
 // measured reps, while measures are shown, measures.js), handed to the
 // phone's share sheet where it takes files, else downloaded. Built and shared inside the tap, since
 // Safari opens the share sheet only from a gesture. Nothing is sent anywhere by the app itself.
-// The words are in test/real-phone/swarm/copy-export.md, for David's approval (CLAUDE.md R10).
+// The words are in test/real-phone/swarm/copy-export.md, approved by David on 9 October 2026 (CLAUDE.md R10).
 import { useRef, useState } from 'react';
 import { exportFiles } from './sets-csv';
 

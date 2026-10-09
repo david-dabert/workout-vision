@@ -224,6 +224,10 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
         // Lifter lock (lifterLock.js): two poses asked in IMAGE mode, so a bystander ranked first no longer hides
         // the lifter; detectPoseImage keeps one. Off unless LIFTER_LOCK or the bench hook (__WV_BENCH_LOCK__).
         numPoses: useImageMode && _lockOn() ? LIFTER_POSES : 1,
+        // Detection 0.35 and presence 0.4: below MediaPipe's defaults of 0.5, UNSOURCED, experimental. Tracking 0.5:
+        // MediaPipe's default, convention; it acts in VIDEO mode only (IMAGE mode runs the person detector on every
+        // image), so since VIDEO mode (9 October 2026) it decides whether a half-hidden body is followed or searched
+        // for again, and with it which samples count as seen. Not measured alone (TRIED.md, VIDEO mode).
         minPoseDetectionConfidence: 0.35,
         minPosePresenceConfidence: 0.4,
         minTrackingConfidence: 0.5,
@@ -582,8 +586,9 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
       }
     }
     // Preserve worldLandmarks (metric-scale, hip-origin, in meters) if present.
-    // These are passed through unfiltered; Kalman and plausibility checks
-    // apply only to normalized landmarks used for rendering.
+    // The app adds no filter to these; Kalman and plausibility checks apply only to normalized landmarks used for
+    // rendering. In VIDEO mode MediaPipe itself follows the body from the sample before (and its graph may smooth
+    // the landmarks across samples; not measured by us).
     // worldLandmarks are used downstream for accurate velocity/ROM calculations.
     // result.backfill: [{ timestamp, landmarks, worldLandmarks, source: 'back' }], earlier frames that were returned
     // without a pose and now have one; the caller puts them in place of those frames.

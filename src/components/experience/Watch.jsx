@@ -163,7 +163,7 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
         <p className="privacy">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
           {/* With anonymous usage counts on (src/lib/events.js), "nothing is sent" would be untrue: the line speaks of the
-              video. Awaits David's approval (test/real-phone/swarm/copy-analytics.md). */}
+              video. Approved by David on 9 October 2026 (test/real-phone/swarm/copy-analytics.md). */}
           <span>{eventsActive()
             ? (fr ? 'Analysé sur votre téléphone. La vidéo n’est envoyée nulle part.' : 'Analysed on your phone. The video is sent nowhere.')
             : (fr ? 'Analysé sur votre téléphone. Rien n’est envoyé.' : 'Analysed on your phone. Nothing is sent.')}</span>

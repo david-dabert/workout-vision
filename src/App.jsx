@@ -25,6 +25,7 @@ import { warmPoseFiles } from './lib/pose-files';
 import { track } from './lib/events';
 import { liveBuild } from './lib/buildFlags';
 import { payloadOf, resultsPayloadOf } from './components/experience/programme';
+import { draftFromResults } from './components/experience/programme-store';
 import { markCrash } from './lib/crashLog';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
@@ -103,6 +104,10 @@ function AppInner() {
   // The coach's target of the exercise being filmed, when it was started from a programme (programme.js, plannedOf):
   // the set is saved with it, and closing the filming or the result goes back to the programme.
   const [planned, setPlanned] = useState(null);
+  // The draft Espace pro opens at once, when a client's results lead to it (programme-store.js, draftFromResults).
+  const [proStart, setProStart] = useState(null);
+  // For one visit: a browser back then forward to Espace pro opens its list, never a start draft since deleted.
+  useEffect(() => { if (page !== 'pro') setProStart(null); }, [page]);
   // Run storage schema migration on mount
   // The saved sets are read once the records are migrated, while the entry plays,
   // so the choice of lift never waits for them.
@@ -217,8 +222,8 @@ function AppInner() {
     key = 'history';
     screen = <History onClose={() => go('dashboard')} />;
   } else if (page === 'pro') {
-    key = 'pro';
-    screen = <Pro onClose={() => go('dashboard')} />;
+    key = proStart ? `pro:${proStart.draft.id}` : 'pro';
+    screen = <Pro start={proStart} onClose={() => go('dashboard', () => setProStart(null))} />;
   } else if (page === 'programme') {
     key = 'programme';
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
@@ -229,7 +234,7 @@ function AppInner() {
     // another client's link opened over this one is read afresh.
     const results = resultsPayloadOf(window.location.hash);
     key = `resultats:${results ?? ''}`;
-    screen = <Results payload={results} onClose={() => go('dashboard')} />;
+    screen = <Results payload={results} onClose={() => go('dashboard')} onAdjust={r => { const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} />;
@@ -237,7 +242,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro')} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
+    screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

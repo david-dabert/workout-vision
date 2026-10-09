@@ -14,6 +14,7 @@ import { collectSwitchAtLoad, collectSwitchSeen, onCollectSwitch } from '../../l
 import { COLLECT } from './collect-copy';
 import { PRO } from './pro-copy';
 import { loadReceived } from './programme-store';
+import { onHomeScreen } from '../../lib/keep-sets';
 import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
@@ -149,6 +150,13 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{CARD_ORDER.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
       </div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>
+        {/* The app on the Home Screen never receives a coach's link, which opens in the browser: a way to paste one in
+            (Programme.jsx, PasteLink; excellence hunt, 9 October 2026). */}
+        {!received && onProgramme && onHomeScreen() && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme-link">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" /><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" /></svg></span>
+          <span className="row-txt"><b>{pro.linkRow}</b><small>{pro.linkRowSub}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         {received && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6h10M9 12h10M9 18h10" /><path d="M4.5 6l.01 0M4.5 12l.01 0M4.5 18l.01 0" strokeWidth="2.4" /></svg></span>
           <span className="row-txt"><b>{pro.programmeRow}</b><small>{received.programme.title}</small></span>
@@ -196,7 +204,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
 }
 
 // What the app sends about its use, where the build sends it (src/lib/events.js), and the way to stop it on this
-// phone. A browser that asks sites not to track sends nothing, and is not asked. Awaits David's approval
+// phone. A browser that asks sites not to track sends nothing, and is not asked. Approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-analytics.md).
 function UsageNote({ fr }) {
   const [off, setOff] = useState(countingOff);

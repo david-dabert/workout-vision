@@ -50,6 +50,7 @@
 .wv-experience .pro-share .field { margin-top: 0; }
 .wv-experience .pro-screen .field input[readonly] { padding: 0 14px; font-family: var(--mono); font-size: var(--fs-caption); color: var(--bone-2); }
 
+.wv-experience .pro-dup { margin-top: var(--s-5); }
 .wv-experience .pro-delete { display: flex; justify-content: center; margin-top: var(--s-5); }
 .wv-experience .pro-delete .text-btn { font-size: var(--fs-caption); }
 .wv-experience .pro-confirm { width: 100%; text-align: center; }
@@ -85,3 +86,5 @@
 .wv-experience .programme-sets .is-hand span { text-decoration: underline dotted 2px; text-underline-offset: 3px; }
 .wv-experience .programme-item.is-done .programme-name { color: var(--bone-2); }
 .wv-experience .programme-send { margin-top: var(--s-5); display: grid; gap: var(--s-2); }
+.wv-experience .pro-paste { margin-top: var(--s-5); }
+.wv-experience .pro-paste .btn-line { margin-top: var(--s-2); }

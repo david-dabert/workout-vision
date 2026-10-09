@@ -1,6 +1,6 @@
 # Copy for feature B: the example on the entry screen
 
-For David's approval, French and English. Register: vous. Nothing ships until approved.
+Approved by David on 9 October 2026, French and English. Register: vous.
 `N` is the count the counting core gives for the example set (5 today, see demo.test.js).
 
 | Key | FR | EN | Where |

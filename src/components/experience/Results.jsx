@@ -15,9 +15,9 @@ const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
  * 9 October 2026): the programme's exercises, each with its target and the reps of each set the client saved that day,
  * as the client's own programme screen shows them (Programme.jsx), each marked when the app did not count it on its own
  * (SetCells.jsx). Read only, kept nowhere: the link holds it all.
- * payload: the link's payload.
+ * payload: the link's payload. onAdjust(results): opens Espace pro on the programme to adjust (App.jsx).
  */
-export default function Results({ payload, onClose }) {
+export default function Results({ payload, onClose, onAdjust }) {
   const { lang } = useT(), fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
   const [state, setState] = useState({ kind: 'opening' });
   const screenRef = useRef(null);
@@ -81,6 +81,11 @@ export default function Results({ payload, onClose }) {
           <SetCells name={name} sets={item.sets} reps={item.reps} done={item.done} kinds={item.kinds} c={c} testId="results-sets" />
         </li>;
       })}</ol>
+      {/* From the results to the programme: the coach's own draft of it, or one made from the results (excellence hunt,
+          9 October 2026). */}
+      {onAdjust && <div className="actions programme-send">
+        <button type="button" className="btn-line press" onClick={() => onAdjust(r)} data-testid="results-adjust">{c.adjustProgramme}</button>
+      </div>}
       {byHand && <p className="foot pro-foot" data-testid="results-legend">{c.resultsLegend}</p>}
       <p className="foot pro-foot">{c.resultsSource}</p>
     </div></section>

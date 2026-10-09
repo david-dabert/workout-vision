@@ -95,7 +95,7 @@ export function recordsOf(progress) {
   return out;
 }
 
-// The words of the bests, in test/real-phone/swarm/copy-A.md for David's approval (R10).
+// The words of the bests, in test/real-phone/swarm/copy-A.md, approved by David on 9 October 2026 (R10).
 const NB = '\u00A0';
 const kg = (x, fr) => `${x.toLocaleString(fr ? 'fr-FR' : 'en-GB', { maximumFractionDigits: 2 })}${NB}kg`;
 const reps = (n, fr) => (fr ? `${n}${NB}répétition${n > 1 ? 's' : ''}` : `${n}${NB}rep${n === 1 ? '' : 's'}`);

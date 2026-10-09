@@ -1,5 +1,5 @@
 // The words of the note after the app restarted during a session (crashLog.js, Choice.jsx CrashNote), register vous
-// (R10). Pending David's approval: test/real-phone/swarm/copy-crash.md lists them. French typography as in the rest of
+// (R10). Approved by David on 9 October 2026: test/real-phone/swarm/copy-crash.md lists them. French typography as in the rest of
 // the app: curly apostrophes, U+00A0 before a colon.
 
 // Where the app was, by the screen's name in the log (App.jsx marks it).

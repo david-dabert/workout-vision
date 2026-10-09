@@ -281,3 +281,137 @@ test('a damaged link is refused, plainly', async ({ page }) => {
   expect(await page.evaluate(() => localStorage.getItem('wv_programmes'))).toBe(null);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// The coach's drafts (excellence hunt, 9 October 2026): "Nouveau programme" then Back keeps nothing; a programme copied
+// for another client keeps its exercises and cues, "Pour" empty and in focus; a client's results lead to the coach's
+// own draft of that programme, or to a new one made from them.
+test('an empty draft leaves nothing, a copy keeps the exercises, and results lead back to the programme', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  await page.goto('/workout-vision/#pro');
+  await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20000 });
+  await page.getByTestId('pro-new').click();
+  await expect(page.getByTestId('pro-editor')).toBeVisible();
+  await page.getByRole('button', { name: c.back }).click();
+  await expect(page.getByTestId('pro-screen')).toBeVisible();
+  await expect(page.locator('.pro-draft')).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('wv_pro_drafts') || '[]'))).toEqual([]);
+
+  await page.getByTestId('pro-new').click();
+  await page.locator('#pTitle').fill('Semaine 1');
+  await page.locator('#pWho').fill('Camille');
+  await pick(page, 'squat', 'squat');
+  await page.getByTestId('pro-item').first().locator('.pro-item-note').fill('Descendre lentement');
+  await page.getByTestId('pro-duplicate').click();
+  await expect(page.locator('#pWho')).toBeFocused();
+  await expect(page.locator('#pWho')).toHaveValue('');
+  await expect(page.locator('#pTitle')).toHaveValue('Semaine 1');
+  await expect(page.getByTestId('pro-item').first().locator('.pro-item-note')).toHaveValue('Descendre lentement');
+  await page.locator('#pWho').fill('Zine');
+  await page.getByRole('button', { name: c.back }).click();
+  await expect(page.locator('.pro-draft')).toHaveCount(2);
+  await noOverflow(page, '.pro-screen');
+
+  // Camille's results: "Ajuster le programme" opens Camille's draft, cue included.
+  const payloadOf = raw => 'j' + Buffer.from(JSON.stringify(raw)).toString('base64url');
+  await page.goto(`/workout-vision/#resultats=${payloadOf({ v: 1, t: 'Semaine 1', w: 'Camille', d: '2026-10-09', x: [['squat', 3, 10, [10, 8]]], k: ['aa'] })}`);
+  await page.getByTestId('results-adjust').click();
+  await expect(page.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#pWho')).toHaveValue('Camille');
+  await expect(page.getByTestId('pro-item').first().locator('.pro-item-note')).toHaveValue('Descendre lentement');
+  // Results of a programme this phone does not hold: a new draft, at the sets and reps sent.
+  await page.goto(`/workout-vision/#resultats=${payloadOf({ v: 1, t: 'Haut du corps', w: 'Lou', d: '2026-10-09', x: [['push_up', 4, 8, [8]]] })}`);
+  await page.getByTestId('results-adjust').click();
+  await expect(page.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#pTitle')).toHaveValue('Haut du corps');
+  await expect(page.locator('#pWho')).toHaveValue('Lou');
+  await expect(page.locator('#p0s')).toHaveValue('4');
+  await expect(page.locator('#p0r')).toHaveValue('8');
+  await page.getByRole('button', { name: c.back }).click();
+  await expect(page.locator('.pro-draft')).toHaveCount(3);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// A programme too long for a code readable on paper: the PDF still comes out, and the coach is told it has no code.
+test('a PDF that cannot carry its QR code says so', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  // 24 exercises, each with a long cue of its own: words that do not repeat, so packing cannot shorten them.
+  const word = i => ((i * 2654435761) >>> 0).toString(36);
+  const items = Array.from({ length: 24 }, (_, i) => ({ key: i % 2 ? 'squat' : 'push_up', sets: 3, reps: 10, rest: 90,
+    note: Array.from({ length: 20 }, (_, k) => word(i * 20 + k + 1)).join(' ').slice(0, 140) }));
+  await page.addInitScript(list => localStorage.setItem('wv_pro_drafts', JSON.stringify(list)),
+    [{ id: 'dlong', updatedAt: 1, title: 'Programme long', who: 'Camille', note: '', items }]);
+  await page.goto('/workout-vision/#pro');
+  await page.locator('.pro-draft').first().click();
+  await expect(page.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await expect(page.getByTestId('pro-pdf')).toContainText(c.sharePdf, { timeout: 20000 });
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('pro-pdf').click()]);
+  expect(download.suggestedFilename()).toMatch(/\.pdf$/);
+  await expect(page.locator('.pro-status')).toHaveText(`${c.pdfDownloaded} ${c.pdfNoQr}`);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// The app on the Home Screen receives no link, which opens in the browser (excellence hunt, 9 October 2026): the choice
+// offers to paste one, the programme screen reads the link out of the message pasted, and a programme the coach sent
+// again in a new version takes the old one's place, named with the day it came.
+test('a link pasted into the installed app opens the programme; a new version comes first, the old one stays listed', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  await page.addInitScript(() => Object.defineProperty(navigator, 'standalone', { value: true, configurable: true }));
+  const link = raw => `https://david-dabert.github.io/workout-vision/#programme=j${Buffer.from(JSON.stringify(raw)).toString('base64url')}`;
+  const v1 = { v: 1, t: 'Haut du corps', w: 'Camille', x: [['squat', 3, 10, 90], ['push_up', 3, 12, 60]] };
+  await page.goto('/workout-vision/');
+  const row = page.getByTestId('choice-programme-link');
+  await row.scrollIntoViewIfNeeded();
+  await expect(row).toContainText(c.linkRow);
+  await row.click();
+  await expect(page.getByTestId('programme-screen')).toContainText(c.noneSubPaste, { timeout: 20000 });
+  await page.locator('#pPaste').fill('pas un lien');
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.getByTestId('programme-paste-error')).toHaveText(c.pasteNone);
+  await page.locator('#pPaste').fill(`Voici ton programme : ${link(v1)} À demain !`);
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.locator('.programme-screen h1.title')).toHaveText('Haut du corps');
+  await expect(page.getByTestId('programme-item')).toHaveCount(2);
+  await noOverflow(page, '.programme-screen');
+
+  // The coach changed the reps and sent the programme again: the new version on show, the earlier one listed under
+  // it with the day it came; a mail service's wrapped link opens too.
+  const v2 = link({ ...v1, x: [['squat', 3, 12, 90], ['push_up', 3, 12, 60]] });
+  await page.locator('#pPaste').fill(`https://eur01.safelinks.protection.outlook.com/?url=${encodeURIComponent(v2)}&data=05`);
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.getByTestId('programme-item').first()).toContainText(c.target(3, 12, 90));
+  await expect(page.locator('.pro-draft')).toHaveCount(1);
+  await expect(page.locator('.pro-draft')).toContainText(/Reçu le \d{1,2}(er)? \S+/);
+  // Another person's programme is apart.
+  await page.locator('#pPaste').fill(link({ ...v1, w: 'Zine' }));
+  await page.getByRole('button', { name: c.pasteOpen }).click();
+  await expect(page.locator('.pro-draft')).toHaveCount(2);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('wv_programmes')).length)).toBe(3);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// The same programme shared from a phone's share sheet (excellence hunt review, 9 October 2026): the sheet covers the
+// page for longer than the warning lasts, so the warning is said again once the coach is back from it.
+test('the no-QR warning is said again after the share sheet closes', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  await page.clock.install();
+  await page.addInitScript(() => {
+    navigator.canShare = () => true;
+    navigator.share = () => new Promise(resolve => { window.__closeSheet = resolve; });
+  });
+  const word = i => ((i * 2654435761) >>> 0).toString(36);
+  const items = Array.from({ length: 24 }, (_, i) => ({ key: i % 2 ? 'squat' : 'push_up', sets: 3, reps: 10, rest: 90,
+    note: Array.from({ length: 20 }, (_, k) => word(i * 20 + k + 1)).join(' ').slice(0, 140) }));
+  await page.addInitScript(list => localStorage.setItem('wv_pro_drafts', JSON.stringify(list)),
+    [{ id: 'dlong', updatedAt: 1, title: 'Programme long', who: 'Camille', note: '', items }]);
+  await page.goto('/workout-vision/#pro');
+  await page.locator('.pro-draft').first().click();
+  await expect(page.getByTestId('pro-pdf')).toContainText(c.sharePdf, { timeout: 20000 });
+  await page.getByTestId('pro-pdf').click();
+  await expect(page.locator('.pro-status')).toHaveText(c.pdfNoQr);
+  // The coach picks a contact and sends: longer than the 12 s the line lasts.
+  await page.clock.runFor(15000);
+  await expect(page.locator('.pro-status')).toHaveText('');
+  await page.evaluate(() => window.__closeSheet());
+  await expect(page.locator('.pro-status')).toHaveText(c.pdfNoQr);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

@@ -3,7 +3,7 @@
 // confirmed): a record beaten, a record equalled, the first set of a lift; otherwise nothing, the saved card already thanks.
 // Never on a refused set, never on a count left unanswered. The app measures a count, not how well a set was done:
 // no line judges the execution ("Propre", "Bien tenu jusqu'au bout" did, and were removed after Astra's review of
-// 5 October, R8). Copy awaits David's approval (R10).
+// 5 October, R8). Copy approved by David on 9 October 2026 (R10).
 import { confirmed } from './progress';
 
 /**

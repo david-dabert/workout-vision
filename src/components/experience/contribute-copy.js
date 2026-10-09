@@ -1,4 +1,4 @@
-// The words of "Aider à améliorer le comptage" (contribute.js), in one place for David's approval (R10;
+// The words of "Aider à améliorer le comptage" (contribute.js), in one place, approved by David on 9 October 2026 (R10;
 // test/real-phone/swarm/copy-contribute.md lists them).
 import { REPORT_EMAIL } from '../../lib/reportLinks';
 
@@ -12,7 +12,7 @@ export const CONTRIBUTE = {
     what: 'À chaque série, l’app garde sur ce téléphone, pour que vous l’envoyiez\u00A0: l’exercice\u00A0; son comptage, le vôtre (donné après avoir vu le sien) et si vous l’avez corrigé\u00A0; la position de vos articulations, dans l’espace et dans l’image, à chaque image analysée, avec son instant dans la vidéo, et le côté suivi\u00A0; la durée de la vidéo, la taille de son image, sa rotation, la façon dont elle a été lue, le nombre d’images analysées et les réglages de l’analyse\u00A0; le modèle de téléphone et de navigateur tels qu’ils se déclarent, le nombre de cœurs du processeur, la mémoire, l’écran (taille, densité de pixels, nombre de doigts reconnus)\u00A0; la version de l’app et du fichier. La date de la série reste sur le téléphone. Jamais la vidéo, ni votre nom. Vous les envoyez quand vous voulez.',
     ask: 'Aider à améliorer le comptage\u00A0?',
     // The saved card's one sentence (ContributeAsk.jsx): what is kept, why, and that nothing leaves without the
-    // person. The full list is `what`, behind `more`. Pending David's approval (3 October).
+    // person. The full list is `what`, behind `more`. Written 3 October, approved by David on 9 October 2026.
     lead: 'Pour que l’app compte mieux sur tous les téléphones, elle garde sur ce téléphone vos comptages, la position de vos articulations et le modèle du téléphone, jamais la vidéo, et c’est vous qui les envoyez, quand vous voulez.',
     more: 'Quoi exactement\u00A0?',
     later: 'Pas maintenant',
@@ -35,7 +35,7 @@ export const CONTRIBUTE = {
     start: 'Aider',
     shareTitle: 'Séries pour améliorer le comptage',
     // A build without VITE_CONTRIBUTE (production until Phase 2, WP0.4): nothing is asked, kept or sent, and what
-    // waits can still be erased. Pending David's approval (3 October; copy-contribute.md).
+    // waits can still be erased. Written 3 October, approved by David on 9 October 2026 (copy-contribute.md).
     paused: 'Les envois sont en pause pour l’instant\u00A0: l’app ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer.',
   },
   en: {

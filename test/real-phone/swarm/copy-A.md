@@ -1,4 +1,4 @@
-# Feature A: progress per exercise and personal bests, the words for David's approval (R10)
+# Feature A: progress per exercise and personal bests, the words, approved by David on 9 October 2026 (R10)
 
 Written 29 September 2026, register "vous". Not released until David approves them.
 Built in src/components/experience/progress.js (the bests' words) and ExerciseProgress.jsx (the rest);

@@ -1,9 +1,9 @@
 // The words of the result screen rebuilt in the final direction (C4 of the design review, 7 October 2026: "Le noir
-// mesure, le papier se souvient", screens 05, 05b and 05c), register vous (R10), for David's approval
+// mesure, le papier se souvient", screens 05, 05b and 05c), register vous (R10), approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-result.md). The app is "l'appli"; a number that is not measured always carries a word
 // ("à confirmer", "saisi par vous", "prévu"). French typography as in the rest of the app: typographic apostrophes,
 // a no-break space before a question mark or a colon and between a number and its unit.
-// Status of every line: pending David's approval (7 October 2026).
+// Status of every line: written 7 October 2026, approved by David on 9 October 2026.
 const NB = '\u00A0';
 const reps = (n, fr) => (fr ? (n > 1 ? 'répétitions' : 'répétition') : (n === 1 ? 'rep' : 'reps'));
 
@@ -48,13 +48,13 @@ export const RESULT = {
     // The question once the number is the person's (the words of the former card, kept).
     howMany: `Combien en avez-vous fait${NB}?`,
     // A refused set with PSC's proposal (8 October 2026, R8: a number to confirm, never a silent count, no grade, no
-    // measure; test/real-phone/swarm/copy-proposal.md). Pending David's approval.
+    // measure; test/real-phone/swarm/copy-proposal.md). Approved by David on 9 October 2026.
     proposal: n => `Proposition de l’appli${NB}: ${n}`,
     proposalNote: 'L’appli propose ce nombre sans avoir bien vu le mouvement. Vérifiez-le avant d’enregistrer.',
     confirmN: n => `Confirmer ${n} ${reps(n, true)}`,
     savedConfirmed: n => `Merci. ${n} ${n > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}, ${n > 1 ? 'confirmées' : 'confirmée'} par vous.`,
     // A counted set the body check flags (coreAnalysis.js withBodyCheck, 8 October 2026; R8: a count to confirm, no
-    // grade, no measure; test/real-phone/swarm/copy-bodycheck.md). Pending David's approval. jointOf: "du genou".
+    // grade, no measure; test/real-phone/swarm/copy-bodycheck.md). Approved by David on 9 October 2026. jointOf: "du genou".
     // "Sur cette série", not "vidéo": a set counted live is checked too (liveCounter.js) and has no video.
     bodyCause: jointOf => `Sur cette série, l’angle ${jointOf} ne bouge pas comme le reste de votre corps. L’appli a pu mal le lire.`,
     bodyCounted: n => `Compté par l’appli${NB}: ${n}`,
