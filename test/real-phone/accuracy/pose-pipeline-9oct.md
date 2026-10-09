@@ -20,10 +20,11 @@ The critic was right under the repository's rule.
 This run uses the scoreboard's rule (below), not the weaker one written in `research-9oct.md`.
 
 Already known before this run, from the sweep's reading of 9 October (`research-oct8/sibx`, scratchpad, the same arm B settings):
-- on David's videos, arm B read sissy_squat_7_5006 as 1 (MediaPipe 4, label 7) and sissy_squat_7_5008 as 0 (MediaPipe 3, label 7);
-- both errors grow, so arm B is expected to fail condition 1 on David's videos;
-- every source read these two sets anywhere from 0 to 8 (pose probe critic: noise), but the gate is the gate.
+- on David's videos, arm B read sissy_squat_7_5006 as 1 (MediaPipe 4, label 7): the error grows from 3 to 6, so arm B is expected to fail condition 1 on David's videos;
+- it read sissy_squat_7_5008 as 0, but that set is refused for every arm (the app's read refusal, below), as the scoreboard refuses it today;
+- every source read 5006 anywhere from 1 to 8 (pose probe critic: noise), but the gate is the gate.
 The David part of this run is therefore not blind. The RepCount-A part is.
+(Corrected before any count of this run was read: the first version of this file, 8c58e60, also counted 5008 against arm B, overlooking the read refusal.)
 
 ## Arms
 
@@ -40,12 +41,14 @@ Before reading any RepCount-A count, arm B is re-run on one of David's videos an
 
 ## Settings, frozen
 
-- **Frames.** Each arm reads, for each of arm A's sample times, the decoded frame of the original video nearest that time (RepCount-A: sample times sit within 0.1 frame of a frame; David's videos: the probe's frame times per sample, as on 8 and 9 October).
+- **Frames.** Each arm reads, for each of arm A's sample times, the decoded frame of the original video nearest that time (RepCount-A: the stored sample times; David's videos: the probe's frame times per sample, as on 8 and 9 October, and for the standing barbell curl, which the probe never read, the stored sample times on the original file).
 - **Score to visibility.** A network's score is the landmark's visibility as is (no rescaling); the core's own 0.5 gate applies.
 - **17 to 33 points.** Each COCO point fills its MediaPipe slot (`pose-probe/eval/common.py`, COCO_FOR_MP); the 12 MediaPipe slots with no COCO point (hands, feet, mouth) take a neighbour's position with visibility 0.
 - **Angles.** Two-dimensional, in the image plane: x and y in units of the frame's height (x scaled to the frame's aspect), z = 0. Arm A keeps MediaPipe's world landmarks, as the app.
 - **Image landmarks** for PSC and the body check: the same points, x divided by the frame's width and y by its height, as the app stores them.
 - **No pose** on a sample: no landmarks (null), as the app stores a sample with no person.
+- **The app's read refusal** (a video the app's decoder read only in part, `read.partial`: sissy_squat_7_5008) is a refusal for every arm, as `npm run scoreboard` refuses it: a pose network changes what is seen in a frame, not which frames the decoder delivers. The arm's count on it is shown for information only.
+- **Frames, RepCount-A.** The stored sample times sit within a quarter of a frame of the nominal frame grid (0.235 at most over the 57,770 samples; checked after the first version of this file, which said 0.1 from four sets); each arm takes the nearest decoded frame, so the setting is unchanged.
 - **Counters,** all from the repository at the commit of this file: `summarizeCount` (the core), then `withProposal` (PSC on a refusal), then `withBodyCheck` (the flag and its second count), each on `{ ...summarizeCount(wl, ts, lift), worldLandmarks, timestamps, imageXY }`, as `body-check.test.ts`.
 
 ## Suites
