@@ -18,7 +18,8 @@ self.onmessage = async ({ data }) => {
       return;
     }
     if (data.type === 'init') {
-      // videoMode: the check page's measurement of VIDEO mode only (coreAnalysis.js, poseMode); the app never sends it.
+      // videoMode: the app's video analysis (coreAnalysis.js, since 9 October); the collector and the live counter send
+      // no videoMode and keep IMAGE mode.
       model = data.videoMode ? await getVideoModeLandmarker() : await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');
       self.postMessage({ id: data.id });

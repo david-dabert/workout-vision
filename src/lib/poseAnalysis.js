@@ -325,8 +325,9 @@ export async function getImageLandmarker() {
 /**
  * The same model on the CPU in VIDEO mode: MediaPipe tracks the body from the previous frame and runs its person
  * detector only when it loses it, where IMAGE mode runs the detector on every sample (the minute an analysis takes,
- * TRIED.md 7 October). Measured only, through the check page (?posemode=video); the app never asks for it.
- * detectPoseImage reads VIDEO mode with the worker's deterministic timestamps; the crop retry is IMAGE mode only.
+ * TRIED.md 7 October). The app's video analysis since 9 October (coreAnalysis.js, analyzeCoreVideo); the collector
+ * and the live counter keep IMAGE mode. detectPoseImage reads VIDEO mode with the worker's deterministic timestamps
+ * (a new pass continues above the last one's, resetKalmanFilters); the crop retry is IMAGE mode only.
  */
 export async function getVideoModeLandmarker() {
   return getPoseLandmarker({ forceCPU: true, useImageMode: false });
