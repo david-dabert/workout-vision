@@ -388,3 +388,30 @@ test('a link pasted into the installed app opens the programme; a new version co
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('wv_programmes')).length)).toBe(3);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// The same programme shared from a phone's share sheet (excellence hunt review, 9 October 2026): the sheet covers the
+// page for longer than the warning lasts, so the warning is said again once the coach is back from it.
+test('the no-QR warning is said again after the share sheet closes', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  await page.clock.install();
+  await page.addInitScript(() => {
+    navigator.canShare = () => true;
+    navigator.share = () => new Promise(resolve => { window.__closeSheet = resolve; });
+  });
+  const word = i => ((i * 2654435761) >>> 0).toString(36);
+  const items = Array.from({ length: 24 }, (_, i) => ({ key: i % 2 ? 'squat' : 'push_up', sets: 3, reps: 10, rest: 90,
+    note: Array.from({ length: 20 }, (_, k) => word(i * 20 + k + 1)).join(' ').slice(0, 140) }));
+  await page.addInitScript(list => localStorage.setItem('wv_pro_drafts', JSON.stringify(list)),
+    [{ id: 'dlong', updatedAt: 1, title: 'Programme long', who: 'Camille', note: '', items }]);
+  await page.goto('/workout-vision/#pro');
+  await page.locator('.pro-draft').first().click();
+  await expect(page.getByTestId('pro-pdf')).toContainText(c.sharePdf, { timeout: 20000 });
+  await page.getByTestId('pro-pdf').click();
+  await expect(page.locator('.pro-status')).toHaveText(c.pdfNoQr);
+  // The coach picks a contact and sends: longer than the 12 s the line lasts.
+  await page.clock.runFor(15000);
+  await expect(page.locator('.pro-status')).toHaveText('');
+  await page.evaluate(() => window.__closeSheet());
+  await expect(page.locator('.pro-status')).toHaveText(c.pdfNoQr);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
