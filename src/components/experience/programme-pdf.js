@@ -5,6 +5,29 @@ import { PAGE_H, COLUMN, MARGIN, GAP, COLOR, pdfDoc, wrapText } from './pdf-kit'
 import { exerciseName } from './exercise-info';
 import { PRO } from './pro-copy';
 import { fileSlug } from './report-sheet';
+import QRCode from 'qrcode';
+
+/**
+ * The QR code of the programme's link, for a client handed the PDF (printed, or on another screen) to open it in the
+ * app with the phone's camera (BACKLOG, 6 October: "a QR code on the PDF"). Error correction L, as the link carries
+ * no redundancy of its own to lose. Drawn QR_SIDE points wide (34 mm) at the top right, beside the title, so the sheet
+ * keeps its pages. Null without a link, or when the link needs more than QR_MAX_VERSION: past it the modules fall
+ * under 0.4 mm, which a phone's camera reads poorly on paper; its link still works. Measured 9 October: 1 to 16
+ * exercises, with or without the same short cue on each, give versions 9 to 13 (links of 208 to 402 characters);
+ * long, varied cues weigh more. Both UNSOURCED, convention (common print guidance puts a module at 0.4 mm and up).
+ */
+export const QR_MAX_VERSION = 15;
+export const QR_SIDE = 96;
+export function programmeQr(link) {
+  if (!link) return null;
+  try {
+    const qr = QRCode.create(link, { errorCorrectionLevel: 'L' });
+    if (qr.version > QR_MAX_VERSION) return null;
+    return { size: qr.modules.size, version: qr.version, dark: (row, col) => !!qr.modules.get(row, col) };
+  } catch {
+    return null;
+  }
+}
 
 const NBSP = ' ';
 
@@ -27,6 +50,7 @@ export function programmeSheet(programme, { lang, date }) {
     })),
     noteLabel: c.pdfNote,
     note: programme.note || '',
+    qrLabel: c.pdfQrLabel,
     foot: c.pdfFoot,
   };
 }
@@ -39,9 +63,13 @@ export function programmeFileName(programme, { lang, date }) {
   return [PRO[lang === 'fr' ? 'fr' : 'en'].fileName, slug, day].filter(Boolean).join('-') + '.pdf';
 }
 
-/** Builds the PDF of a programme. Synchronous, so the share stays within the tap. */
-export function programmePdf(programme, { lang, date = new Date() }) {
+/**
+ * Builds the PDF of a programme. Synchronous, so the share stays within the tap. `link`, the programme's link as the
+ * coach shares it (Pro.jsx), adds its QR code at the top right; without one the sheet is as before.
+ */
+export function programmePdf(programme, { lang, date = new Date(), link = null }) {
   const sheet = programmeSheet(programme, { lang, date });
+  const qr = programmeQr(link);
   const { doc, upper, width, write, lines, drawLine, paint } = pdfDoc({ title: sheet.title, fr: sheet.fr });
   paint();
   let y = MARGIN;
@@ -57,13 +85,34 @@ export function programmePdf(programme, { lang, date = new Date() }) {
   write(day, MARGIN + COLUMN - width(day, 'mono', 9.5, track), y, 'mono', 9.5, 1.5, COLOR.ash, track);
   y += 9.5 * 1.5 + GAP;
 
+  // The programme's QR code (programmeQr) at the top right, ink on the paper with a quiet zone of 4 modules, its label
+  // under it; the title and the labelled pairs take the column beside it.
+  const top = y, side = qr ? COLUMN - QR_SIDE - 14 : COLUMN;
+  if (qr) {
+    const unit = QR_SIDE / (qr.size + 8), left = MARGIN + COLUMN - QR_SIDE, x0 = left + 4 * unit, y0 = top + 4 * unit;
+    doc.setFillColor(COLOR.ink);
+    for (let r = 0; r < qr.size; r++) {
+      // One rectangle per run of dark modules in the row.
+      for (let c = 0; c < qr.size;) {
+        if (!qr.dark(r, c)) { c++; continue; }
+        let end = c;
+        while (end < qr.size && qr.dark(r, end)) end++;
+        doc.rect(x0 + c * unit, y0 + r * unit, (end - c) * unit, unit, 'F');
+        c = end;
+      }
+    }
+    const label = upper(sheet.qrLabel), track = 8.5 * 0.14;
+    // Set flush with the column's right edge, as the date above it: the label is wider than the code.
+    write(label, MARGIN + COLUMN - width(label, 'mono', 8.5, track), top + QR_SIDE + 4, 'mono', 8.5, 1.5, COLOR.ash, track);
+  }
+
   // The title: serif 30, set solid; a long title takes more lines at the same size.
-  const titleLines = wrapText(sheet.title, COLUMN, s => width(s, 'serif', 30));
+  const titleLines = wrapText(sheet.title, side, s => width(s, 'serif', 30));
   titleLines.forEach(line => { write(line, MARGIN, y, 'serif', 30, 1.05, COLOR.ink); y += 30 * 1.05; });
   y += GAP - 30 * 0.05;
 
   // For whom, and how many exercises: labelled pairs, two to a row, as the report's people.
-  const w2 = (COLUMN - 8) / 2;
+  const w2 = (side - 8) / 2;
   const row = sheet.people.map(([name, value]) => ({ name, block: lines(value, 12, w2) }));
   const pairH = 13.5 + 18 * Math.max(...row.map(r => r.block.lines.length));
   row.forEach(({ name, block }, i) => {
@@ -72,6 +121,7 @@ export function programmePdf(programme, { lang, date = new Date() }) {
     block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
   });
   y += pairH + GAP;
+  if (qr) y = Math.max(y, top + QR_SIDE + 4 + 8.5 * 1.5 + GAP);
 
   // The table: index (8%), exercise and cue (44%), sets × reps (30%), rest (18%). The heading as the report's table's,
   // each exercise's row as tall as its name and cue, a light rule under each; a row that does not fit opens a page,

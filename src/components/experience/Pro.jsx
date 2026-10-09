@@ -169,7 +169,8 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
     let blob;
     const date = new Date();
     if (tooSoon('pdf')) return;
-    try { blob = kit.programmePdf(programme, { lang, date }); } catch (e) { console.error('[programme pdf]', e); say(c.pdfError); return; }
+    // The link, when ready, goes on the PDF as a QR code (programme-pdf.js, programmeQr).
+    try { blob = kit.programmePdf(programme, { lang, date, link: linkReady ? link : null }); } catch (e) { console.error('[programme pdf]', e); say(c.pdfError); return; }
     const fileName = kit.programmeFileName(programme, { lang, date });
     const file = new File([blob], fileName, { type: 'application/pdf' });
     if (navigator.canShare?.({ files: [file] })) {
