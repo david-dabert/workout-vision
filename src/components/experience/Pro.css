@@ -79,6 +79,9 @@
   font-family: var(--mono); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
 .wv-experience .programme-sets .is-todo { border: 1px dashed var(--hair-2); }
 .wv-experience .programme-sets .is-met { border: 1px solid var(--lamp-line); background: rgba(232, 189, 126, 0.12); color: var(--lamp-hi); }
-.wv-experience .programme-sets .is-short { border: 1px solid var(--hair-2); background: rgba(239, 232, 220, 0.06); color: var(--c-fg); }
+/* A number the app did not count on its own (is-hand, SetCells.jsx): never gold, underlined as on the result screen
+   (Result.css). */
+.wv-experience .programme-sets :is(.is-short, .is-hand) { border: 1px solid var(--hair-2); background: rgba(239, 232, 220, 0.06); color: var(--c-fg); }
+.wv-experience .programme-sets .is-hand span { text-decoration: underline dotted 2px; text-underline-offset: 3px; }
 .wv-experience .programme-item.is-done .programme-name { color: var(--bone-2); }
 .wv-experience .programme-send { margin-top: var(--s-5); display: grid; gap: var(--s-2); }

@@ -85,3 +85,35 @@ test('a proposal changed with + is the person’s count', async ({ page }) => {
   expect(saved).toHaveLength(1);
   expect(saved[0]).toMatchObject({ reps: 7, source: 'manual', proposal: { reps: 6, by: 'psc' } });
 });
+
+// Closing a refused set with a number in its slot asks first, as a counted set does (WP1.4; excellence hunt,
+// 9 October 2026): "Garder" keeps the proposal as confirmed, and Vos séries names it so, not "Saisi à la main".
+test('closing a refused set asks before the proposal is lost, and keeps it as confirmed', async ({ page }) => {
+  test.setTimeout(150000);
+  const { errors } = await refusedWithProposal(page);
+  await page.locator('.result-screen .topbar .icon-btn').first().click();
+  await expect(page.getByTestId('close-card')).toContainText(/Garder ces 6 répétitions\s\?/);
+  expect(await savedSets(page)).toEqual([]);
+  await page.getByTestId('close-keep').click();
+  await expect(page.locator('.result-screen')).toHaveCount(0, { timeout: 20000 });
+  const saved = await savedSets(page);
+  expect(saved).toHaveLength(1);
+  expect(saved[0]).toMatchObject({ reps: 6, source: 'manual', afterRefusal: true, machineResult: null, proposal: { reps: 6, by: 'psc' } });
+  await page.getByRole('button', { name: /Vos séries/ }).click();
+  await expect(page.locator('.hist-tag', { hasText: 'Proposition confirmée' })).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('.hist-tag', { hasText: 'Saisi à la main' })).toHaveCount(0);
+  await page.locator('.hist-btn').first().click();
+  await expect(page.locator('.hist-detail .hist-corr')).toHaveText('Proposé par l’app, qui n’a pas bien vu le mouvement, puis confirmé par vous.');
+  expect(errors).toEqual([]);
+});
+
+test('a back swipe on a refused set asks too; "Ne pas garder" leaves nothing saved', async ({ page }) => {
+  test.setTimeout(150000);
+  await refusedWithProposal(page);
+  await page.goBack();
+  await expect(page.getByTestId('close-card')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('.result-screen')).toBeVisible();
+  await page.getByTestId('close-discard').click();
+  await expect(page.locator('.result-screen')).toHaveCount(0, { timeout: 20000 });
+  expect(await savedSets(page)).toEqual([]);
+});

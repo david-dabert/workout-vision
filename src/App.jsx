@@ -191,7 +191,10 @@ function AppInner() {
     }
     go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
   };
-  const backToChoice = () => (planned
+  // A target holds only for its own exercise: one left from an earlier tap never reaches another set (excellence hunt,
+  // 9 October 2026). A target kept before it carried its exercise (no key) stands as it did.
+  const target = planned && (planned.key === undefined || planned.key === selectedLift) ? planned : null;
+  const backToChoice = () => (target
     ? go('programme', () => { setSelectedLift(''); setVideoFile(null); setPlanned(null); })
     : go('dashboard', () => { setSelectedLift(''); setVideoFile(null); }));
   const backToFilm = () => go('film', () => setVideoFile(null));
@@ -203,10 +206,10 @@ function AppInner() {
       onLive={liveBuild() ? () => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; }); } : undefined} />;
   } else if (page === 'live' && selectedLift && liveBuild()) {
     key = `live:${fileSerial.current}`;
-    screen = <LiveSession lift={selectedLift} planned={planned} onClose={backToChoice} onRecord={backToFilm} />;
+    screen = <LiveSession lift={selectedLift} planned={target} onClose={backToChoice} onRecord={backToFilm} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
-    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} planned={planned} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
+    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} planned={target} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
   } else if (page === 'exercises') {
     key = guideLift ? `guide:${guideLift}` : 'guide';
     screen = <ExerciseGuide lift={guideLift} onClose={() => (planned && guideLift ? go('programme', () => { setGuideLift(''); setPlanned(null); }) : go('dashboard', () => setGuideLift('')))} onChoose={l => chooseLift(l, true)} />;
@@ -220,11 +223,13 @@ function AppInner() {
     key = 'programme';
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
     // cleared (Programme.jsx), or when the programme is opened from the choice.
-    screen = <Programme payload={payloadOf(window.location.hash)} onClose={() => go('dashboard')} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
+    screen = <Programme payload={payloadOf(window.location.hash)} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
   } else if (page === 'resultats') {
-    key = 'resultats';
-    // The link's payload as typed; a results screen with no payload says the link does not open.
-    screen = <Results payload={resultsPayloadOf(window.location.hash)} onClose={() => go('dashboard')} />;
+    // The link's payload as typed; a results screen with no payload says the link does not open. One screen per link:
+    // another client's link opened over this one is read afresh.
+    const results = resultsPayloadOf(window.location.hash);
+    key = `resultats:${results ?? ''}`;
+    screen = <Results payload={results} onClose={() => go('dashboard')} />;
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} />;
@@ -232,7 +237,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro')} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => setGuideLift('')); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
+    screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro')} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

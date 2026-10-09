@@ -23,6 +23,8 @@ export function keptAs(w) {
  */
 export function dayPlan({ planned, sets, lift, now = new Date() }) {
   if (!planned || !whole(planned.sets) || !whole(planned.reps) || !Array.isArray(sets)) return null;
+  // Another exercise's target (plannedOf keeps its key) is no plan for this set.
+  if (planned.key !== undefined && planned.key !== lift) return null;
   const today = localDay(now);
   const done = sets
     .filter(w => w?.planned?.programme === planned.programme && w.planned.item === planned.item

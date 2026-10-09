@@ -165,33 +165,49 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     expect(kept).toHaveLength(1);
     await noOverflow(phone, '.programme-screen');
 
-    // Two sets of the squat saved today from the programme, as the result screen saves them (saved-set.js): the
-    // programme shows them beside the target, and the report opened from Vos séries prints the target.
+    // Sets saved from the programme, as the result screen saves them (saved-set.js).
     const id = kept[0].id;
-    await phone.evaluate(pid => new Promise((resolve, reject) => {
+    const putSets = list => phone.evaluate(([pid, sets]) => new Promise((resolve, reject) => {
       const request = indexedDB.open('workoutVision');
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result, tx = db.transaction('workouts', 'readwrite'), store = tx.objectStore('workouts'), now = Date.now();
-        const planned = { programme: pid, item: 0, sets: 3, reps: 10, rest: 90 };
-        store.put({ id: 'p-1', exercise: 'squat', reps: 10, source: 'manual', createdAt: now - 4 * 60000, planned }, 'p-1');
-        store.put({ id: 'p-2', exercise: 'squat', reps: 8, source: 'manual', createdAt: now - 2 * 60000, planned }, 'p-2');
+        const planned = { programme: pid, item: 0, key: 'squat', sets: 3, reps: 10, rest: 90 };
+        for (const { ago, ...w } of sets) store.put({ ...w, exercise: 'squat', createdAt: now - ago, planned }, w.id);
         tx.oncomplete = () => { db.close(); resolve(); };
         tx.onerror = () => reject(tx.error);
       };
-    }), id);
+    }), [id, list]);
+
+    // A set of yesterday's session, never sent: today's cells stay empty, and the session can still be sent, named by
+    // its day (excellence hunt, 9 October 2026).
+    await putSets([{ id: 'p-0', reps: 9, source: 'counter-core', machineResult: { reps: 9 }, ago: 24 * 3600000 }]);
+    await phone.reload();
+    await expect(screen).toBeVisible({ timeout: 20000 });
+    await expect(phone.getByTestId('programme-sets').first().locator('li')).toHaveText(['', '', '']);
+    await expect(phone.getByTestId('programme-send')).toHaveText(/^Envoyer les résultats du \d{1,2}(er)?\u00A0?\s?\S+$/);
+
+    // Two sets of the squat saved today: one the app counted, one it refused and the client typed. The programme
+    // shows them beside the target, the typed one marked as such; yesterday's set is not today's.
+    await putSets([
+      { id: 'p-1', reps: 10, source: 'counter-core', machineResult: { reps: 10 }, ago: 4 * 60000 },
+      { id: 'p-2', reps: 8, source: 'manual', afterRefusal: true, machineResult: null, correctedResult: { reps: 8 }, ago: 2 * 60000 },
+    ]);
     await phone.reload();
     await expect(screen).toBeVisible({ timeout: 20000 });
     const cells = phone.getByTestId('programme-sets').first().locator('li');
     await expect(cells).toHaveCount(3);
     await expect(cells).toHaveText(['10', '8', '']);
     await expect(cells.nth(0)).toHaveAttribute('aria-label', c.setDone(1, 10, 10));
-    await expect(cells.nth(1)).toHaveAttribute('aria-label', c.setDone(2, 8, 10));
+    await expect(cells.nth(1)).toHaveAttribute('aria-label', c.setTyped(2, 8, 10));
+    await expect(cells.nth(1)).toHaveClass(/is-hand/);
     await expect(cells.nth(2)).toHaveAttribute('aria-label', c.setTodo(3));
+    await expect(phone.getByTestId('programme-send')).toHaveText(c.sendResults);
     await noOverflow(phone, '.programme-screen');
 
     // The client sends the day's results to the coach: the share sheet carries a link (#resultats=…), and the coach's
-    // phone opens it as the planned sets beside the counted ones, the same cells as the client's (Results.jsx).
+    // phone opens it as the planned sets beside the counted ones, the same cells as the client's (Results.jsx), the
+    // typed set marked, with the time of the latest set.
     await phone.getByTestId('programme-send').click();
     await phone.waitForFunction(() => window.__shared?.url?.includes('#resultats='), null, { timeout: 3000 });
     const sent = await phone.evaluate(() => window.__shared);
@@ -202,11 +218,27 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     const results = coach.getByTestId('results-screen');
     await expect(results.locator('h1.title')).toHaveText('Bas du corps, semaine 1', { timeout: 20000 });
     await expect(results).toContainText(c.whoLine('Camille'));
-    await expect(coach.getByTestId('results-done')).toHaveText(c.resultsDone(0, 2));
+    await expect(coach.getByTestId('results-done')).toHaveText(c.resultsSets(2, 6, 1));
+    await expect(coach.getByTestId('results-time')).toHaveText(/^Dernière série à \d{1,2}\u00A0h\u00A0\d{2}$/);
     await expect(coach.getByTestId('results-item')).toHaveCount(2);
-    await expect(coach.getByTestId('results-sets').first().locator('li')).toHaveText(['10', '8', '']);
+    const coachCells = coach.getByTestId('results-sets').first().locator('li');
+    await expect(coachCells).toHaveText(['10', '8', '']);
+    await expect(coachCells.nth(0)).toHaveAttribute('aria-label', c.setDone(1, 10, 10));
+    await expect(coachCells.nth(1)).toHaveAttribute('aria-label', c.setTyped(2, 8, 10));
+    await expect(coach.getByTestId('results-legend')).toHaveText(c.resultsLegend);
     await expect(coach.getByTestId('results-sets').nth(1).locator('li')).toHaveText(['', '', '']);
     await noOverflow(coach, '.programme-screen');
+
+    // Another client's link opened over this one replaces it at once (the router renders again on every change).
+    const other = await phone.evaluate(() => {
+      const raw = { v: 1, t: 'Haut du corps', d: '2026-10-08', x: [['push_up', 2, 12, [12]]], k: ['a'] };
+      const b = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(raw))));
+      return 'j' + b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    });
+    await coach.evaluate(payload => { location.hash = `resultats=${payload}`; }, other);
+    await expect(coach.locator('h1.title', { hasText: 'Haut du corps' })).toBeVisible({ timeout: 5000 });
+    await expect(results).toHaveCount(1, { timeout: 5000 });
+    await expect(coach.getByTestId('results-item')).toHaveCount(1);
     expect(coachErrors, coachErrors.join('\n')).toEqual([]);
     await coach.close();
     if (shots) {

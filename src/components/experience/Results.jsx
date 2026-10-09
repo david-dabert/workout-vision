@@ -3,7 +3,8 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { decodeResults, targetText } from './programme';
+import { dayWords, decodeResults, targetText, timeWords } from './programme';
+import SetCells from './SetCells';
 import { useCondensingTopbar } from './topbar';
 import './Pro.css';
 
@@ -12,7 +13,8 @@ const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 /**
  * A client's results, opened on the coach's phone from the link the client sent (#resultats=…, programme.js,
  * 9 October 2026): the programme's exercises, each with its target and the reps of each set the client saved that day,
- * as the client's own programme screen shows them (Programme.jsx). Read only, kept nowhere: the link holds it all.
+ * as the client's own programme screen shows them (Programme.jsx), each marked when the app did not count it on its own
+ * (SetCells.jsx). Read only, kept nowhere: the link holds it all.
  * payload: the link's payload.
  */
 export default function Results({ payload, onClose }) {
@@ -33,7 +35,8 @@ export default function Results({ payload, onClose }) {
   </div>;
 
   if (state.kind !== 'results') {
-    const words = state.kind === 'error' ? [c.errorTitle, c.errors[state.error] || c.errors.malformed] : [c.opening, ''];
+    // Words for the coach, who asks the person, not a coach, to send the link again (excellence hunt, 9 October 2026).
+    const words = state.kind === 'error' ? [c.errorTitle, c.resultsErrors[state.error] || c.resultsErrors.malformed] : [c.resultsOpening, ''];
     return <div className="wv-experience">
       <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="results-screen" aria-busy={state.kind === 'opening' || undefined}><div className="wrap">
         {top}
@@ -47,8 +50,13 @@ export default function Results({ payload, onClose }) {
 
   const r = state.results;
   const [y, m, d] = r.day.split('-').map(Number);
-  const day = new Date(y, m - 1, d).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const complete = r.items.filter(i => i.done.length >= i.sets).length;
+  const day = dayWords(new Date(y, m - 1, d), lang, { year: true });
+  // Sets, not exercises: "4 of 4 exercises done" would hide 3 sets of 4 on a target of 10. Each planned set counts
+  // once; a set beyond the plan shows in its cells, not here.
+  const planned = r.items.reduce((a, i) => a + i.sets, 0);
+  const done = r.items.reduce((a, i) => a + Math.min(i.done.length, i.sets), 0);
+  const met = r.items.reduce((a, i) => a + i.done.slice(0, i.sets).filter(n => n >= i.reps).length, 0);
+  const byHand = r.items.some(i => i.kinds?.some(k => k !== 'a'));
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="results-screen"><div className="wrap">
       {top}
@@ -57,11 +65,11 @@ export default function Results({ payload, onClose }) {
       <p className="programme-meta" data-reveal style={{ '--i': 1 }}>
         {r.who && <span>{c.whoLine(r.who)}</span>}
         <span data-testid="results-day">{c.resultsDay(day)}</span>
-        <span data-testid="results-done">{c.resultsDone(complete, r.items.length)}</span>
+        {r.time && <span data-testid="results-time">{c.resultsLast(timeWords(r.time, lang))}</span>}
+        <span data-testid="results-done">{c.resultsSets(done, planned, met)}</span>
       </p>
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{r.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key);
-        const slots = Math.max(item.sets, item.done.length);
         return <li key={`${item.key}-${i}`} className={`programme-item${item.done.length >= item.sets ? ' is-done' : ''}`} data-testid="results-item">
           <div className="programme-btn">
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
@@ -70,16 +78,10 @@ export default function Results({ payload, onClose }) {
               <span className="programme-target mono">{targetText(item)}</span>
             </span>
           </div>
-          {/* Planned against counted, as on the client's screen: one cell per planned set, the reps counted in the ones done. */}
-          <ul className="programme-sets" aria-label={name} data-testid="results-sets">{Array.from({ length: slots }, (_, k) => {
-            const n = item.done[k];
-            return <li key={k} className={n === undefined ? 'is-todo' : n >= item.reps ? 'is-met' : 'is-short'}
-              aria-label={n === undefined ? c.setTodo(k + 1) : c.setDone(k + 1, n, item.reps)}>
-              {n !== undefined && <span aria-hidden="true">{n}</span>}
-            </li>;
-          })}</ul>
+          <SetCells name={name} sets={item.sets} reps={item.reps} done={item.done} kinds={item.kinds} c={c} testId="results-sets" />
         </li>;
       })}</ol>
+      {byHand && <p className="foot pro-foot" data-testid="results-legend">{c.resultsLegend}</p>}
       <p className="foot pro-foot">{c.resultsSource}</p>
     </div></section>
   </div>;
