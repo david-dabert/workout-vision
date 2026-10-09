@@ -40,6 +40,10 @@ const INJECT = new URLSearchParams(location.search).get('inject') === 'frozen';
 // ?posemode=image: the rows read with MediaPipe in IMAGE mode, as the app did before 9 October (coreAnalysis.js), to
 // measure against the app's VIDEO mode.
 const POSE_MODE = new URLSearchParams(location.search).get('posemode') === 'image' ? 'image' : null;
+// ?posemodel=<file>: the rows read with the pose model at bench/<file> (served beside the page by a local build only,
+// never committed), to measure another model against the one the app ships.
+const POSE_MODEL = (new URLSearchParams(location.search).get('posemodel') || '').replace(/[^\w.-]/g, '') || null;
+const benchModel = () => (POSE_MODEL ? fetch(`bench/${POSE_MODEL}`).then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`bench model ${r.status}`)))) : Promise.resolve(null));
 const N = baseline.clips.length;
 if (fr) {
   document.documentElement.lang = 'fr';
@@ -143,7 +147,8 @@ for (const clip of baseline.clips) {
       let row, read;
       try {
         try {
-          const r = await analyzeCoreVideo(file, clip.lift, { signal, ...(forced ? { path: 'rvfc' } : {}), ...(POSE_MODE ? { poseMode: POSE_MODE } : {}), onProgress: progress(out) });
+          const model = await benchModel();
+          const r = await analyzeCoreVideo(file, clip.lift, { signal, ...(forced ? { path: 'rvfc' } : {}), ...(POSE_MODE ? { poseMode: POSE_MODE } : {}), ...(model ? { benchModel: model } : {}), onProgress: progress(out) });
           row = { count: r.count, refused: !!r.refused, read: r.timestamps.length, expected: Math.floor(r.metadata.duration * TARGET_FPS), duration: r.metadata.duration };
           read = { pictures: r.metadata.repeats, skeletons: repeatedSkeletons(r.worldLandmarks), decoder: r.metadata.method, fallback: r.metadata.fallback };
         } catch (e) {
