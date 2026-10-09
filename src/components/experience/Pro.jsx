@@ -4,7 +4,7 @@ import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
 import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem } from './programme';
-import { loadDrafts, saveDraft, removeDraft, newDraft, newItem } from './programme-store';
+import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
 import './Report.css';
@@ -36,29 +36,45 @@ const Arrow = () => <svg className="row-arrow" viewBox="0 0 24 24" fill="none" s
  * as a link that opens it in the client's app. Nothing leaves the phone but through the share sheet or the clipboard,
  * on the coach's tap; the drafts stay in this phone's storage (programme-store.js).
  */
-export default function Pro({ onClose }) {
+/**
+ * Espace pro: the coach's drafts, and the editor of one. start: { draft, kept }, a draft to open at once (the one a
+ * client's results lead to, programme-store.js, draftFromResults).
+ */
+export default function Pro({ onClose, start = null }) {
   const { lang } = useT(), fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
-  const [drafts, setDrafts] = useState(loadDrafts);
-  const [openId, setOpenId] = useState(null);
+  const [drafts, setDrafts] = useState(() => {
+    const list = loadDrafts();
+    return start && !list.some(d => d.id === start.draft.id) ? [start.draft, ...list] : list;
+  });
+  const [openId, setOpenId] = useState(start?.draft.id ?? null);
   const [picking, setPicking] = useState(false);
+  // The "Pour" field takes focus in a copy made for another client.
+  const [focusWho, setFocusWho] = useState(false);
   const open = drafts.find(d => d.id === openId) || null;
 
-  // A change is kept at once; a phone that refuses to keep it is told once, on the screen.
-  const [kept, setKept] = useState(true);
+  // A change is kept at once; a phone that refuses to keep it, or holds MAX_DRAFTS already, is told on the screen.
+  // A draft is kept only once it holds something: "Nouveau programme", then Back, leaves no empty row and takes no
+  // place (excellence hunt, 9 October 2026).
+  const [kept, setKept] = useState(start ? start.kept : true);
   const update = draft => {
     const next = { ...draft, updatedAt: Date.now() };
     setDrafts(list => [next, ...list.filter(d => d.id !== next.id)]);
+    if (isEmptyDraft(next)) { removeDraft(next.id); setKept(true); return; }
     setKept(saveDraft(next));
   };
-  const create = () => { const d = newDraft(); update(d); setOpenId(d.id); };
-  const remove = id => { removeDraft(id); setDrafts(list => list.filter(d => d.id !== id)); setOpenId(null); };
+  const show = id => { setFocusWho(false); setOpenId(id); };
+  const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); show(d.id); };
+  const remove = id => { removeDraft(id); setDrafts(list => list.filter(d => d.id !== id)); show(null); };
+  const back = () => (open && isEmptyDraft(open) ? remove(open.id) : show(null));
+  // The same programme for another client: title, exercises, cues and note, "Pour" left empty.
+  const duplicate = () => { const d = { ...open, id: newDraft().id, who: '' }; update(d); setOpenId(d.id); setFocusWho(true); };
 
   if (open && picking) return <Picker c={c} onBack={() => setPicking(false)} onChoose={key => {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
-  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} onChange={update} onPick={() => setPicking(true)} onBack={() => setOpenId(null)} onDelete={() => remove(open.id)} />;
-  return <List c={c} fr={fr} drafts={drafts} kept={kept} onClose={onClose} onCreate={create} onOpen={setOpenId} />;
+  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} focusWho={focusWho} onChange={update} onPick={() => setPicking(true)} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
+  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onOpen={show} />;
 }
 
 function List({ c, fr, drafts, onClose, onCreate, onOpen }) {
@@ -107,8 +123,9 @@ function NumField({ id, label, longLabel, value, onCommit }) {
   </div>;
 }
 
-function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }) {
-  const screenRef = useRef(null);
+function Editor({ c, fr, lang, draft, kept, focusWho = false, onChange, onPick, onBack, onDuplicate, onDelete }) {
+  const screenRef = useRef(null), whoRef = useRef(null);
+  useEffect(() => { if (focusWho) whoRef.current?.focus({ preventScroll: false }); }, [focusWho]);
   // The bar's small title follows the programme's title as it is typed.
   useCondensingTopbar(screenRef, [fr, draft.title.trim()]);
   const [note, setNote] = useState('');
@@ -143,7 +160,7 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
     return () => clearTimeout(noteTimer.current);
   }, []);
 
-  const say = text => { clearTimeout(noteTimer.current); setNote(text); noteTimer.current = setTimeout(() => setNote(''), 4000); };
+  const say = (text, ms = 4000) => { clearTimeout(noteTimer.current); setNote(text); noteTimer.current = setTimeout(() => setNote(''), ms); };
   const set = (field, value) => onChange({ ...draft, [field]: value });
   const setItem = (i, patch) => onChange({ ...draft, items: draft.items.map((it, k) => (k === i ? { ...it, ...patch } : it)) });
   const move = (i, d) => {
@@ -155,12 +172,13 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
   const drop = i => onChange({ ...draft, items: draft.items.filter((_, k) => k !== i) });
   const name = key => exerciseName(key, lang);
 
-  function download(blob, fileName) {
+  function download(blob, fileName, warning = '') {
     const url = URL.createObjectURL(blob);
     const a = Object.assign(document.createElement('a'), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    say(c.pdfDownloaded);
+    if (warning) say(`${c.pdfDownloaded} ${warning}`, 12000);
+    else say(c.pdfDownloaded);
   }
   // Built and shared inside the tap, as the report's PDF (Report.jsx).
   function sharePdf() {
@@ -169,17 +187,26 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
     let blob;
     const date = new Date();
     if (tooSoon('pdf')) return;
-    // The link, when ready, goes on the PDF as a QR code (programme-pdf.js, programmeQr).
-    try { blob = kit.programmePdf(programme, { lang, date, link: linkReady ? link : null }); } catch (e) { console.error('[programme pdf]', e); say(c.pdfError); return; }
+    // The link goes on the PDF as a QR code (programme-pdf.js, programmeQr), packed now, within the tap (packNow): the
+    // programme as it stands, a number just typed included, and never the longer plain link.
+    let qr = null;
+    try {
+      const pdfLink = linkOf(kit.packNow(programme));
+      qr = pdfLink === 'too-long' ? null : kit.programmeQr(pdfLink);
+      blob = kit.programmePdf(programme, { lang, date, qr });
+    } catch (e) { console.error('[programme pdf]', e); say(c.pdfError); return; }
+    // A sheet with no code says so: the client could not open the programme from the paper (excellence hunt, 9 October).
+    const warning = qr ? '' : c.pdfNoQr;
     const fileName = kit.programmeFileName(programme, { lang, date });
     const file = new File([blob], fileName, { type: 'application/pdf' });
     if (navigator.canShare?.({ files: [file] })) {
+      if (warning) say(warning, 12000);
       // Refused for any reason but the coach's own cancel (a share still open counts), the file is downloaded instead.
       navigator.share({ files: [file], title: programme.title })
-        .catch(e => { if (e.name !== 'AbortError') download(blob, fileName); });
+        .catch(e => { if (e.name !== 'AbortError') download(blob, fileName, warning); });
       return;
     }
-    download(blob, fileName);
+    download(blob, fileName, warning);
   }
   const linkReady = link && link !== 'too-long';
   function copy() {
@@ -206,7 +233,8 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
         <span className="pill">{c.eyebrow}</span>
       </div>
       <h1 className="title" data-reveal style={{ '--i': 0 }}>{draft.title.trim() || c.editTitle}</h1>
-      {!kept && <p className="pro-warn" role="alert">{c.storageOff}</p>}
+      {kept === false && <p className="pro-warn" role="alert">{c.storageOff}</p>}
+      {kept === 'full' && <p className="pro-warn" role="alert" data-testid="pro-full">{c.draftsFull(MAX_DRAFTS)}</p>}
       <div className="field pro-first">
         <label htmlFor="pTitle">{c.titleLabel}</label>
         <input id="pTitle" type="text" autoComplete="off" autoCapitalize="sentences" enterKeyHint="next" maxLength={LIMITS.title}
@@ -214,7 +242,7 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
       </div>
       <div className="field">
         <label htmlFor="pWho">{c.whoLabel}</label>
-        <input id="pWho" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={LIMITS.who}
+        <input ref={whoRef} id="pWho" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={LIMITS.who}
           placeholder={c.whoPlaceholder} value={draft.who} onChange={e => set('who', e.target.value)} />
       </div>
 
@@ -271,6 +299,10 @@ function Editor({ c, fr, lang, draft, kept, onChange, onPick, onBack, onDelete }
           <input id="pLink" type="text" readOnly value={link} onFocus={e => e.currentTarget.select()} />
         </div>}
       </div>
+
+      {draft.items.length > 0 && <div className="actions pro-dup">
+        <button type="button" className="btn-ghost press" onClick={onDuplicate} data-testid="pro-duplicate">{c.duplicate}</button>
+      </div>}
 
       <div className="pro-delete">
         {confirm

@@ -4,8 +4,11 @@
 import { DEFAULT_ITEM, LIMITS, fromCompact, compact, programmeId } from './programme';
 
 const DRAFTS = 'wv_pro_drafts', RECEIVED = 'wv_programmes';
-// At most this many of each are kept; the oldest go first (a list on one phone, not an archive).
-const MAX_DRAFTS = 50, MAX_RECEIVED = 20;
+// At most this many of each are kept. Received programmes: the oldest go first (a list on one phone, not an archive).
+// Drafts: a new one past the cap is refused, never a coach's programme dropped unseen (excellence hunt, 9 October
+// 2026; a draft is about 1 kB). Both UNSOURCED, convention.
+export const MAX_DRAFTS = 300;
+const MAX_RECEIVED = 20;
 
 function read(key) {
   try { const v = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
@@ -20,6 +23,8 @@ const newId = () => `d${Date.now().toString(36)}${Math.random().toString(36).sli
 export const newDraft = (now = Date.now()) => ({ id: newId(), updatedAt: now, title: '', who: '', note: '', items: [] });
 /** A new item of a draft, at the default target. */
 export const newItem = key => ({ key, ...DEFAULT_ITEM });
+/** A draft with nothing in it yet: not kept until something is (Pro.jsx). */
+export const isEmptyDraft = d => !String(d.title ?? '').trim() && !String(d.who ?? '').trim() && !String(d.note ?? '').trim() && !d.items?.length;
 
 /** The coach's drafts, the latest changed first; a stored entry that is not a draft is left out. */
 export function loadDrafts() {
@@ -27,11 +32,28 @@ export function loadDrafts() {
     .map(d => ({ ...d, title: String(d.title ?? '').slice(0, LIMITS.title), who: String(d.who ?? '').slice(0, LIMITS.who), note: String(d.note ?? '').slice(0, LIMITS.note) }))
     .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 }
-/** Keeps one draft (added or replaced); returns whether the phone kept it. */
+/**
+ * Keeps one draft (added or replaced): true once kept, false when the phone refuses, 'full' for a new draft past
+ * MAX_DRAFTS (nothing is dropped to make room).
+ */
 export function saveDraft(draft) {
-  const list = read(DRAFTS).filter(d => d?.id !== draft.id);
+  // An empty draft kept before 9 October 2026 takes no place: it goes at the next save.
+  const stored = read(DRAFTS).filter(d => d && !isEmptyDraft(d)), list = stored.filter(d => d.id !== draft.id);
+  if (list.length === stored.length && list.length >= MAX_DRAFTS) return 'full';
   list.unshift(draft);
-  return write(DRAFTS, list.slice(0, MAX_DRAFTS));
+  return write(DRAFTS, list);
+}
+
+/**
+ * The draft to adjust after a client's results (Results.jsx): the coach's own draft of that title and for that person
+ * when this phone holds one, else a new one made from the results (each exercise at the sets and reps sent, the rest
+ * at its default, no cue), kept at once. Returns { draft, kept }.
+ */
+export function draftFromResults(results, now = Date.now()) {
+  const same = loadDrafts().find(d => d.title.trim() === results.title && d.who.trim() === (results.who || ''));
+  if (same) return { draft: same, kept: true };
+  const draft = { ...newDraft(now), title: results.title, who: results.who || '', items: results.items.map(i => ({ ...newItem(i.key), sets: i.sets, reps: i.reps })) };
+  return { draft, kept: saveDraft(draft) };
 }
 export function removeDraft(id) { return write(DRAFTS, read(DRAFTS).filter(d => d?.id !== id)); }
 

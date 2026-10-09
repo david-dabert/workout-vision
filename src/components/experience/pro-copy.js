@@ -75,6 +75,11 @@ export const PRO = {
     tooLong: 'Programme trop long pour un lien : retirez un exercice ou raccourcissez les notes.',
     linkText: title => `Votre programme : ${title}. Ouvrez ce lien sur votre téléphone, puis filmez chaque série.`,
     deleteDraft: 'Supprimer ce programme',
+    // Excellence hunt of 9 October 2026, pending David's approval (R10): a copy for another client, the drafts' cap,
+    // a PDF that goes out without its QR code.
+    duplicate: 'Dupliquer pour un autre client',
+    draftsFull: max => `Ce téléphone garde ${max} programmes au plus. Supprimez-en d’anciens pour garder celui-ci.`,
+    pdfNoQr: 'PDF sans QR code : le programme est trop long pour un code lisible sur papier. Envoyez aussi le lien.',
     confirmDelete: 'Supprimer ce programme de ce téléphone ?',
     confirmYes: 'Supprimer',
     cancel: 'Annuler',
@@ -122,6 +127,7 @@ export const PRO = {
     setProposed: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition proposée', 'répétitions proposées')} par l’application et ${plural(n, 'confirmée', 'confirmées')} sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
     resultsLegend: 'Chiffre souligné : saisi ou corrigé par la personne, ou proposé par l’application et confirmé par elle.',
     resultsOpening: 'Ouverture des résultats…',
+    adjustProgramme: 'Ajuster le programme',
     resultsErrors: {
       empty: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
       malformed: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
@@ -200,6 +206,9 @@ export const PRO = {
     tooLong: 'Too long for a link: remove an exercise or shorten the notes.',
     linkText: title => `Your programme: ${title}. Open this link on your phone, then film each set.`,
     deleteDraft: 'Delete this programme',
+    duplicate: 'Duplicate for another client',
+    draftsFull: max => `This phone keeps ${max} programmes at most. Delete old ones to keep this one.`,
+    pdfNoQr: 'PDF without a QR code: the programme is too long for a code readable on paper. Send the link as well.',
     confirmDelete: 'Delete this programme from this phone?',
     confirmYes: 'Delete',
     cancel: 'Cancel',
@@ -240,6 +249,7 @@ export const PRO = {
     setProposed: (i, n, reps) => `Set ${i}: ${n} ${pluralEn(n, 'rep', 'reps')} proposed by the app and confirmed, of ${reps} planned`,
     resultsLegend: 'Underlined number: typed or corrected by the person, or proposed by the app and confirmed by them.',
     resultsOpening: 'Opening the results…',
+    adjustProgramme: 'Adjust the programme',
     resultsErrors: {
       empty: 'The link is incomplete or damaged. Ask the person to send it again.',
       malformed: 'The link is incomplete or damaged. Ask the person to send it again.',

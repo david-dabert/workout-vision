@@ -17,7 +17,8 @@ import {
   resultsOf, encodeResults, decodeResults, plainResultsPayload, resultsLink, resultsPayloadOf, RESULT_LIMITS,
   keptLetter, lastDayOf, dayWords, timeWords, RESULTS_DAYS_BACK,
 } from '../programme';
-import { programmePdf, programmeSheet, programmeFileName, programmeQr, QR_MAX_VERSION } from '../programme-pdf';
+import { programmePdf, programmeSheet, programmeFileName, programmeQr, packNow, QR_MAX_VERSION, QR_SIDE, QR_BLOCK_MAX, QR_MODULE_MIN } from '../programme-pdf';
+import { draftFromResults, isEmptyDraft, loadDrafts, saveDraft, newDraft, MAX_DRAFTS } from '../programme-store';
 import { reportSheet } from '../report-sheet';
 import { reportPdf } from '../report-pdf';
 import { savedSet } from '../saved-set';
@@ -293,7 +294,9 @@ describe('the programme’s PDF', () => {
     // The three finder patterns: the corners' 7 x 7 squares are dark on their edge.
     for (const [r, c] of [[0, 0], [0, qr.size - 7], [qr.size - 7, 0]]) expect([0, 6].every(k => qr.dark(r + k, c) && qr.dark(r, c + k))).toBe(true);
     expect(programmeQr(null)).toBeNull();
-    expect(programmeQr(`https://x/#programme=z${'A'.repeat(3000)}`)).toBeNull();
+    // Past version 37 even a block 200 points wide would set modules under 0.4 mm: no code (the coach is told, Pro.jsx).
+    expect(programmeQr(`https://x/#programme=z${'a'.repeat(2600)}`)).toBeNull();
+    expect(programmeQr(`https://x/#programme=z${'a'.repeat(9000)}`)).toBeNull();
     const withQr = await drawn(() => programmePdf(sample, { lang: 'fr', date, link }));
     const flat = withQr.text.replace(/\s/g, '');
     expect(flat).toContain('OUVRIRLEPROGRAMME');
@@ -305,12 +308,91 @@ describe('the programme’s PDF', () => {
     expect(withQr.pages).toBe(1);
   });
 
+  it('draws a code past version 15 with the foot at the end of the sheet, its modules never under 0.4 mm', async () => {
+    const top = programmeQr(`https://x/#programme=z${'a'.repeat(300)}`);
+    expect([top.top, top.side]).toEqual([true, QR_SIDE]);
+    for (const n of [600, 900, 1400, 2400]) {
+      const qr = programmeQr(`https://x/#programme=z${'a'.repeat(n)}`);
+      expect(qr.version).toBeGreaterThan(QR_MAX_VERSION);
+      expect(qr.top).toBe(false);
+      expect(qr.side).toBeGreaterThan(QR_SIDE);
+      expect(qr.side).toBeLessThanOrEqual(QR_BLOCK_MAX);
+      expect(qr.side / (qr.size + 8)).toBeGreaterThanOrEqual(QR_MODULE_MIN - 1e-9);
+    }
+    // A cued programme of 12 exercises: its packed link needs a block, which the sheet holds, with its label.
+    const cues = ['Pause 1 s en haut, menton rentré', 'Descendre lentement, trois secondes', 'Coudes serrés le long du corps',
+      'Omoplates basses, poitrine ouverte', 'Dos plat, hanches en arrière', 'Genoux dans l’axe des pieds', 'Monter jusqu’aux épaules, pas plus',
+      'Pieds ancrés, fesses sur le banc', 'Serrer les fessiers en haut', 'Gainage, ne pas cambrer', 'Grand pas, buste droit', 'Respirer, tenir la ligne'];
+    const items = cues.map((note, i) => ({ key: i % 2 ? 'squat' : 'push_up', sets: 3, reps: 10, rest: 90, note }));
+    const long = { ...sample, items };
+    const link = `https://david-dabert.github.io/workout-vision/#programme=${packNow(long)}`;
+    const qr = programmeQr(link);
+    expect(qr.top).toBe(false);
+    const sheet = await drawn(() => programmePdf(long, { lang: 'fr', date, qr }));
+    expect(sheet.text.replace(/\s/g, '')).toContain('OUVRIRLEPROGRAMME');
+    expect(sheet.pages).toBeLessThanOrEqual(3);
+  });
+
+  it('packs the link at once, which the client’s phone reads back as the programme', async () => {
+    const payload = packNow(sample);
+    expect(payload[0]).toBe('z');
+    expect(await decodeProgramme(payload)).toEqual({ ok: true, programme: sample });
+    const one = { title: 'A', who: '', note: '', items: [{ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' }] };
+    expect(await decodeProgramme(packNow(one))).toEqual({ ok: true, programme: one });
+  });
+
   it('reads its words from the copy, and names its file in ASCII', () => {
     const s = programmeSheet(sample, { lang: 'fr', date });
     expect(s.people).toEqual([['Pour', 'Camille'], ['Exercices', '2']]);
     expect(s.rows[0]).toEqual({ index: '01', name: 'Squat', note: 'Descendre lentement', target: `3${NBSP}×${NBSP}10`, rest: `1${NBSP}min${NBSP}30` });
     expect(programmeFileName(sample, { lang: 'fr', date })).toBe('programme-camille-2026-10-06.pdf');
     expect(programmeFileName({ ...sample, who: '' }, { lang: 'en', date })).toBe('programme-haut-du-corps-semaine-1-2026-10-06.pdf');
+  });
+});
+
+describe('the coach’s drafts', () => {
+  const memory = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
+  const draft = (title, who = '', at = 1) => ({ ...newDraft(at), title, who, items: [{ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' }] });
+
+  it('keeps nothing of an empty draft, and drops an old empty one at the next save', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      expect(isEmptyDraft(newDraft())).toBe(true);
+      expect(isEmptyDraft({ ...newDraft(), who: 'Camille' })).toBe(false);
+      localStorage.setItem('wv_pro_drafts', JSON.stringify([newDraft(1), { id: 'x' }]));
+      expect(saveDraft(draft('Semaine 1'))).toBe(true);
+      expect(loadDrafts().map(d => d.title)).toEqual(['Semaine 1']);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it('refuses a new draft past the cap, and never drops one the coach kept', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      localStorage.setItem('wv_pro_drafts', JSON.stringify(Array.from({ length: MAX_DRAFTS }, (_, i) => draft(`P${i}`, '', i))));
+      expect(saveDraft(draft('Une de plus'))).toBe('full');
+      expect(loadDrafts()).toHaveLength(MAX_DRAFTS);
+      // A draft already kept is still changed in place.
+      const first = loadDrafts()[0];
+      expect(saveDraft({ ...first, title: 'Renommé' })).toBe(true);
+      expect(loadDrafts().some(d => d.title === 'Renommé')).toBe(true);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it('opens the coach’s own draft from a client’s results, or makes one from them', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      const results = { title: 'Semaine 1', who: 'Camille', day: '2026-10-09', time: '', items: [{ key: 'squat', sets: 4, reps: 8, done: [8] }, { key: 'push_up', sets: 3, reps: 12, done: [] }] };
+      const made = draftFromResults(results);
+      expect(made.kept).toBe(true);
+      expect(made.draft).toMatchObject({ title: 'Semaine 1', who: 'Camille', note: '' });
+      expect(made.draft.items).toEqual([{ key: 'squat', sets: 4, reps: 8, rest: 90, note: '' }, { key: 'push_up', sets: 3, reps: 12, rest: 90, note: '' }]);
+      // Once on the phone, the same results lead to that draft, with whatever the coach changed in it since.
+      saveDraft({ ...made.draft, items: [{ ...made.draft.items[0], rest: 120, note: 'Lent' }] });
+      const again = draftFromResults(results);
+      expect(again.draft.id).toBe(made.draft.id);
+      expect(again.draft.items[0]).toMatchObject({ rest: 120, note: 'Lent' });
+      expect(draftFromResults({ ...results, who: 'Zine' }).draft.id).not.toBe(made.draft.id);
+    } finally { vi.unstubAllGlobals(); }
   });
 });
 

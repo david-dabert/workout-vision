@@ -6,24 +6,48 @@ import { exerciseName } from './exercise-info';
 import { PRO } from './pro-copy';
 import { fileSlug } from './report-sheet';
 import QRCode from 'qrcode';
+import { gzipSync } from 'fflate';
+import { compact, toBase64url } from './programme';
+
+/**
+ * The programme's link payload, packed at once: "z" and the gzip of its compact JSON in base64url, or "j" and the
+ * JSON itself when packing does not make it shorter, as encodeProgramme (programme.js) makes it over the browser's
+ * CompressionStream, which only answers after the tap. fflate is jsPDF's own: the PDF kit carries it already. The
+ * client's phone reads either gzip alike (DecompressionStream). Excellence hunt, 9 October 2026: a number typed, then
+ * "Partager le PDF" in the same tap, built the sheet from the plain link, and the QR code fell off a cued programme.
+ */
+export function packNow(programme) {
+  const json = new TextEncoder().encode(JSON.stringify(compact(programme)));
+  const plain = 'j' + toBase64url(json), packed = 'z' + toBase64url(gzipSync(json, { level: 9 }));
+  return packed.length < plain.length ? packed : plain;
+}
 
 /**
  * The QR code of the programme's link, for a client handed the PDF (printed, or on another screen) to open it in the
  * app with the phone's camera (BACKLOG, 6 October: "a QR code on the PDF"). Error correction L, as the link carries
- * no redundancy of its own to lose. Drawn QR_SIDE points wide (34 mm) at the top right, beside the title, so the sheet
- * keeps its pages. Null without a link, or when the link needs more than QR_MAX_VERSION: past it the modules fall
- * under 0.4 mm, which a phone's camera reads poorly on paper; its link still works. Measured 9 October: 1 to 16
- * exercises, with or without the same short cue on each, give versions 9 to 13 (links of 208 to 402 characters);
- * long, varied cues weigh more. Both UNSOURCED, convention (common print guidance puts a module at 0.4 mm and up).
+ * no redundancy of its own to lose. Its modules are never under QR_MODULE_MIN (0.4 mm), which a phone's camera reads
+ * poorly on paper. Up to QR_MAX_VERSION, drawn QR_SIDE points wide (34 mm) at the top right, beside the title, so a
+ * short sheet keeps its one page; past it, at the end of the sheet with the foot, as wide as its modules need, up to
+ * QR_BLOCK_MAX (71 mm). Null without a link, or for one too long for any code at that size (past version 37); its
+ * link still works, and the coach is told (Pro.jsx). Measured 9 October with packed links: up to 24 exercises without
+ * cues, versions 10 to 13; with a distinct short cue on each, 4 exercises give version 13, 7 give 16, 24 give 20.
+ * Both sizes UNSOURCED, convention (common print guidance puts a module at 0.4 mm and up).
  */
 export const QR_MAX_VERSION = 15;
 export const QR_SIDE = 96;
+const MM = 72 / 25.4;
+export const QR_MODULE_MIN = 0.4 * MM, QR_BLOCK_MAX = 200;
+// The block's modules, where its width allows: 0.45 mm, a margin over the floor. UNSOURCED, convention.
+const QR_BLOCK_MODULE = 0.45 * MM;
 export function programmeQr(link) {
   if (!link) return null;
   try {
     const qr = QRCode.create(link, { errorCorrectionLevel: 'L' });
-    if (qr.version > QR_MAX_VERSION) return null;
-    return { size: qr.modules.size, version: qr.version, dark: (row, col) => !!qr.modules.get(row, col) };
+    const size = qr.modules.size, span = size + 8; // the code and its quiet zone of 4 modules each side
+    const top = qr.version <= QR_MAX_VERSION;
+    const side = top ? QR_SIDE : Math.min(QR_BLOCK_MAX, Math.max(QR_SIDE, span * QR_BLOCK_MODULE));
+    if (!top && side / span < QR_MODULE_MIN - 1e-9) return null;
+    return { size, version: qr.version, side, top, dark: (row, col) => !!qr.modules.get(row, col) };
   } catch {
     return null;
   }
@@ -65,11 +89,11 @@ export function programmeFileName(programme, { lang, date }) {
 
 /**
  * Builds the PDF of a programme. Synchronous, so the share stays within the tap. `link`, the programme's link as the
- * coach shares it (Pro.jsx), adds its QR code at the top right; without one the sheet is as before.
+ * coach shares it (Pro.jsx), adds its QR code (programmeQr: at the top right, or with the foot at the end); `qr`,
+ * that code when the caller has made it already. Without either, the sheet is as before.
  */
-export function programmePdf(programme, { lang, date = new Date(), link = null }) {
+export function programmePdf(programme, { lang, date = new Date(), link = null, qr = programmeQr(link) }) {
   const sheet = programmeSheet(programme, { lang, date });
-  const qr = programmeQr(link);
   const { doc, upper, width, write, lines, drawLine, paint } = pdfDoc({ title: sheet.title, fr: sheet.fr });
   paint();
   let y = MARGIN;
@@ -85,11 +109,10 @@ export function programmePdf(programme, { lang, date = new Date(), link = null }
   write(day, MARGIN + COLUMN - width(day, 'mono', 9.5, track), y, 'mono', 9.5, 1.5, COLOR.ash, track);
   y += 9.5 * 1.5 + GAP;
 
-  // The programme's QR code (programmeQr) at the top right, ink on the paper with a quiet zone of 4 modules, its label
-  // under it; the title and the labelled pairs take the column beside it.
-  const top = y, side = qr ? COLUMN - QR_SIDE - 14 : COLUMN;
-  if (qr) {
-    const unit = QR_SIDE / (qr.size + 8), left = MARGIN + COLUMN - QR_SIDE, x0 = left + 4 * unit, y0 = top + 4 * unit;
+  // The programme's QR code (programmeQr), ink on the paper with a quiet zone of 4 modules: qr.side points wide, its
+  // top left corner at (left, top).
+  const drawQr = (left, top) => {
+    const unit = qr.side / (qr.size + 8), x0 = left + 4 * unit, y0 = top + 4 * unit;
     doc.setFillColor(COLOR.ink);
     for (let r = 0; r < qr.size; r++) {
       // One rectangle per run of dark modules in the row.
@@ -101,9 +124,14 @@ export function programmePdf(programme, { lang, date = new Date(), link = null }
         c = end;
       }
     }
-    const label = upper(sheet.qrLabel), track = 8.5 * 0.14;
+  };
+  const qrLabel = upper(sheet.qrLabel), qrTrack = 8.5 * 0.14;
+  // A small code at the top right, its label under it; the title and the labelled pairs take the column beside it.
+  const top = y, beside = !!qr?.top, side = beside ? COLUMN - QR_SIDE - 14 : COLUMN;
+  if (beside) {
+    drawQr(MARGIN + COLUMN - QR_SIDE, top);
     // Set flush with the column's right edge, as the date above it: the label is wider than the code.
-    write(label, MARGIN + COLUMN - width(label, 'mono', 8.5, track), top + QR_SIDE + 4, 'mono', 8.5, 1.5, COLOR.ash, track);
+    write(qrLabel, MARGIN + COLUMN - width(qrLabel, 'mono', 8.5, qrTrack), top + QR_SIDE + 4, 'mono', 8.5, 1.5, COLOR.ash, qrTrack);
   }
 
   // The title: serif 30, set solid; a long title takes more lines at the same size.
@@ -121,7 +149,7 @@ export function programmePdf(programme, { lang, date = new Date(), link = null }
     block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
   });
   y += pairH + GAP;
-  if (qr) y = Math.max(y, top + QR_SIDE + 4 + 8.5 * 1.5 + GAP);
+  if (beside) y = Math.max(y, top + QR_SIDE + 4 + 8.5 * 1.5 + GAP);
 
   // The table: index (8%), exercise and cue (44%), sets × reps (30%), rest (18%). The heading as the report's table's,
   // each exercise's row as tall as its name and cue, a light rule under each; a row that does not fit opens a page,
@@ -163,9 +191,17 @@ export function programmePdf(programme, { lang, date = new Date(), link = null }
   }
   y += GAP;
 
-  // The general note, labelled as the report's notes; then the foot, which never stands alone on a page.
-  const foot = wrapText(sheet.foot, COLUMN, s => width(s, 'sans', 10));
-  const footH = GAP + 1 + 10 + 15 * foot.length;
+  // The general note, labelled as the report's notes; then the foot, which never stands alone on a page. A larger code
+  // (past QR_MAX_VERSION) goes with the foot, at the left under its rule: its label and the foot's words beside it
+  // where the column leaves them room, else under it. The whole end keeps to one page.
+  const sansW = s => width(s, 'sans', 10);
+  const foot = wrapText(sheet.foot, COLUMN, sansW);
+  const quiet = qr ? 4 * (qr.side / (qr.size + 8)) : 0;
+  const textX = qr ? MARGIN + qr.side + 14 : MARGIN, textW = MARGIN + COLUMN - textX;
+  const end = !qr || beside ? { kind: 'plain', h: 15 * foot.length }
+    : textW >= 150 ? (() => { const words = wrapText(sheet.foot, textW, sansW); return { kind: 'beside', words, h: Math.max(qr.side, quiet + 8.5 * 1.5 + 6 + 15 * words.length) }; })()
+    : { kind: 'under', h: qr.side + 4 + 8.5 * 1.5 + GAP + 15 * foot.length };
+  const footH = GAP + 1 + 10 + end.h;
   if (sheet.note) {
     const block = lines(sheet.note, 12.5, COLUMN), NL = 12.5 * 1.5;
     const need = i => { const left = block.lines.length - i; return left <= 2 ? left * NL + footH : NL; };
@@ -181,7 +217,19 @@ export function programmePdf(programme, { lang, date = new Date(), link = null }
   y += GAP;
   rule();
   y += 1 + 10;
-  foot.forEach(line => { write(line, MARGIN, y, 'sans', 10, 1.5, COLOR.ash); y += 15; });
+  if (end.kind === 'beside') {
+    drawQr(MARGIN, y);
+    write(qrLabel, textX, y + quiet, 'mono', 8.5, 1.5, COLOR.ash, qrTrack);
+    end.words.forEach((line, k) => write(line, textX, y + quiet + 8.5 * 1.5 + 6 + 15 * k, 'sans', 10, 1.5, COLOR.ash));
+    y += end.h;
+  } else {
+    if (end.kind === 'under') {
+      drawQr(MARGIN, y);
+      write(qrLabel, MARGIN + quiet, y + qr.side + 4, 'mono', 8.5, 1.5, COLOR.ash, qrTrack);
+      y += qr.side + 4 + 8.5 * 1.5 + GAP;
+    }
+    foot.forEach(line => { write(line, MARGIN, y, 'sans', 10, 1.5, COLOR.ash); y += 15; });
+  }
 
   // Every page's number when there are several, where the report puts it.
   const pages = doc.getNumberOfPages();
