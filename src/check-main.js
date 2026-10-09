@@ -9,7 +9,7 @@
 import { analyzeCoreVideo, repeatedSkeletons } from './lib/coreAnalysis';
 import { TARGET_FPS } from './lib/extractionConfig';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
-import { clipId, injectVerdict, pathTally, readLines, rowVerdict } from './lib/check';
+import { clipId, delegateParam, injectVerdict, landmarksPrint, pathTally, poseLine, readLines, rowVerdict } from './lib/check';
 import baseline from './lib/check-baseline.json';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
@@ -40,11 +40,22 @@ const INJECT = new URLSearchParams(location.search).get('inject') === 'frozen';
 // ?posemode=video: the rows read with MediaPipe in VIDEO mode (coreAnalysis.js; shipped on the morning of 9 October
 // 2026, withdrawn that evening), to measure against the app's IMAGE mode. ?posemode=image reads as the app does.
 const POSE_MODE = new URLSearchParams(location.search).get('posemode') === 'video' ? 'video' : null;
+// ?delegate=gpu: the rows read with MediaPipe's GPU delegate (pillar 4, 9 October 2026), to measure its speed and its
+// landmarks on this phone against the CPU's; every row prints the delegate, the time per sample and a fingerprint.
+const DELEGATE = delegateParam(location.search);
 // ?posemodel=<file>: the rows read with the pose model at bench/<file> (served beside the page by a local build only,
 // never committed), to measure another model against the one the app ships.
 const POSE_MODEL = (new URLSearchParams(location.search).get('posemodel') || '').replace(/[^\w.-]/g, '') || null;
 const benchModel = () => (POSE_MODEL ? fetch(`bench/${POSE_MODEL}`).then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`bench model ${r.status}`)))) : Promise.resolve(null));
 const N = baseline.clips.length;
+// The browser and its version (Safari's Version/NN gives the iOS release), and the delegate asked, above the rows.
+{
+  const ua = document.createElement('p');
+  ua.className = 'note';
+  ua.dataset.testid = 'check-ua';
+  ua.textContent = `${DELEGATE ? (fr ? 'Délégué\u00a0: GPU (mesure). ' : 'Delegate: GPU (measurement). ') : ''}${navigator.userAgent}`;
+  document.querySelector('p.note')?.before(ua);
+}
 if (fr) {
   document.documentElement.lang = 'fr';
   document.title = 'Contrôle du comptage';
@@ -144,11 +155,12 @@ for (const clip of baseline.clips) {
       // A new run of this row forgets its last verdict on this path, so a failed rerun never leaves an old pass.
       const forced = $('force-rvfc').checked, mode = forced ? 'forced' : 'normal';
       done[mode].delete(id); summary();
-      let row, read;
+      let row, read, poseNote = null;
       try {
         try {
           const model = await benchModel();
-          const r = await analyzeCoreVideo(file, clip.lift, { signal, ...(forced ? { path: 'rvfc' } : {}), ...(POSE_MODE ? { poseMode: POSE_MODE } : {}), ...(model ? { benchModel: model } : {}), onProgress: progress(out) });
+          const r = await analyzeCoreVideo(file, clip.lift, { signal, ...(forced ? { path: 'rvfc' } : {}), ...(POSE_MODE ? { poseMode: POSE_MODE } : {}), ...(model ? { benchModel: model } : {}), ...(DELEGATE ? { delegate: DELEGATE } : {}), onProgress: progress(out) });
+          poseNote = poseLine(r.metadata?.pose, await landmarksPrint(r.worldLandmarks), fr);
           row = { count: r.count, refused: !!r.refused, read: r.timestamps.length, expected: Math.floor(r.metadata.duration * TARGET_FPS), duration: r.metadata.duration };
           read = { pictures: r.metadata.repeats, skeletons: repeatedSkeletons(r.worldLandmarks), decoder: r.metadata.method, fallback: r.metadata.fallback };
         } catch (e) {
@@ -175,6 +187,7 @@ for (const clip of baseline.clips) {
         `${row.refused ? (fr ? 'Refusée (l’app n’affiche aucun nombre)' : 'Refused (the app shows no number)') : `${fr ? 'Compté' : 'Counted'} ${row.count ?? (fr ? 'rien' : 'nothing')}`} · ${fr ? 'avant' : 'before'} ${clip.refused ? (fr ? 'refusée' : 'refused') : clip.before} · ${fr ? 'votre compte' : 'your count'} ${clip.label}`,
         fr ? `${row.read} échantillons lus sur ${row.expected ?? '?'}` : `Read ${row.read} of ${row.expected ?? '?'} samples`,
         ...readLines(read, fr),
+        ...(poseNote ? [poseNote] : []),
       ].join('\n');
       return v.ok;
     },

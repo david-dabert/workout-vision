@@ -1,5 +1,15 @@
 // Use the harness's exact CPU/IMAGE inference and image filtering in a worker.
-import { getImageLandmarker, getVideoModeLandmarker, detectPoseImage, resetKalmanFilters } from './poseAnalysis';
+import { getImageLandmarker, getImageLandmarkerOn, getVideoModeLandmarker, detectPoseImage, resetKalmanFilters, landmarkerDelegate } from './poseAnalysis';
+
+// The GPU this worker would draw with, as WebGL names it (WEBGL_debug_renderer_info), or null: printed by the check page
+// beside a measurement, so a software renderer is never read as a phone's GPU (pillar 4, 9 October 2026).
+function rendererName() {
+  try {
+    const gl = new OffscreenCanvas(1, 1).getContext('webgl2');
+    const ext = gl?.getExtension('WEBGL_debug_renderer_info');
+    return gl ? String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER)) : null;
+  } catch { return null; }
+}
 // TFLite emits this informational startup line on stderr. Keep it visible as info.
 const originalError = console.error.bind(console);
 console.error = (...args) => {
@@ -23,9 +33,11 @@ self.onmessage = async ({ data }) => {
       // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it (poseAnalysis.js
       // reads __WV_BENCH_POSE_MODEL__); the app never sends it.
       if (data.benchModel instanceof ArrayBuffer) globalThis.__WV_BENCH_POSE_MODEL__ = data.benchModel;
-      model = data.videoMode ? await getVideoModeLandmarker() : await getImageLandmarker();
+      // delegate: 'GPU' from the check page only (?delegate=gpu, pillar 4: measured, never the app's); IMAGE mode.
+      model = data.videoMode ? await getVideoModeLandmarker() : data.delegate === 'GPU' ? await getImageLandmarkerOn('GPU') : await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');
-      self.postMessage({ id: data.id });
+      const delegate = landmarkerDelegate?.() ?? null, renderer = data.delegate === 'GPU' ? rendererName() : null;
+      self.postMessage({ id: data.id, ...(delegate ? { delegate } : {}), ...(renderer ? { renderer } : {}) });
       return;
     }
     const { width, height, pixels, timestamp } = data;
@@ -38,12 +50,16 @@ self.onmessage = async ({ data }) => {
     if (!canvas || canvas.width !== width || canvas.height !== height) canvas = new OffscreenCanvas(width, height);
     canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
     // A detection error is posted as an error, not as an empty frame (third audit, C07).
+    // ms: the model's time on this sample, crop retry included (the check page's speed line; pillar 4). Not read by
+    // any count.
+    const began = performance.now();
     const result = detectPoseImage(model, canvas, timestamp, { rethrow: true, backfill: true });
+    const ms = performance.now() - began;
     // source 'crop': the pose was found on the second look around the last pose (poseCrop.js), not on the whole frame.
     // back: earlier samples (by the timestamp they were sent with) that had no pose and now have one, read on a crop
     // around this pose (the backward pass, poseCrop.js BACK_PASS); the caller puts them in place.
     const back = (result?.backfill || []).map(b => ({ timestamp: b.timestamp, image: b.landmarks[0] || null, world: b.worldLandmarks[0] || null, source: 'back' }));
-    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null, back });
+    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null, back, ms });
   } catch (error) {
     self.postMessage({ id: data.id, error: error.message });
   }

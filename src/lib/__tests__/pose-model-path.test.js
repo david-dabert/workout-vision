@@ -100,6 +100,9 @@ describe('the app pose worker (C48)', () => {
     const reset = vi.fn();
     vi.doMock('../poseAnalysis', () => ({
       getImageLandmarker: async () => ({}),
+      getImageLandmarkerOn: async () => ({}),
+      getVideoModeLandmarker: async () => ({}),
+      landmarkerDelegate: () => 'CPU',
       detectPoseImage: () => ({ landmarks: [[]], worldLandmarks: [[]] }),
       resetKalmanFilters: reset,
     }));
@@ -114,6 +117,59 @@ describe('the app pose worker (C48)', () => {
     await frame(4, 0); await frame(5, 1000 / 15);
     expect(reset).toHaveBeenCalledTimes(2);
     expect(posted.filter(m => m.error)).toEqual([]);
+    vi.doUnmock('../poseAnalysis');
+  });
+});
+
+// Pillar 4 (9 October 2026): the GPU delegate is measured on the check page only; the app stays on the CPU.
+describe('the GPU delegate, for measurement only', () => {
+  it('the app\'s landmarker stays on the CPU, with no device probe', async () => {
+    stubCaches(true);
+    const { getImageLandmarkerOn, landmarkerDelegate } = await import('../poseAnalysis');
+    await getImageLandmarkerOn();
+    expect(h.createFromOptions.mock.calls.at(-1)[1].baseOptions.delegate).toBe('CPU');
+    expect(h.detectCapabilities).not.toHaveBeenCalled();
+    expect(landmarkerDelegate()).toBe('CPU');
+  });
+  it('asked for the GPU, loads the GPU alone: no fall back to the CPU, no device probe', async () => {
+    stubCaches(true);
+    h.createFromOptions.mockClear();
+    const { getImageLandmarkerOn, landmarkerDelegate } = await import('../poseAnalysis');
+    await getImageLandmarkerOn('GPU');
+    expect(h.createFromOptions.mock.calls.map(c => c[1].baseOptions.delegate)).toEqual(['GPU']);
+    expect(h.createFromOptions.mock.calls[0][1].runningMode).toBe('IMAGE');
+    expect(h.detectCapabilities).not.toHaveBeenCalled();
+    expect(landmarkerDelegate()).toBe('GPU');
+  });
+  it('a GPU that fails is an error, never a silent CPU read', async () => {
+    stubCaches(true);
+    h.createFromOptions.mockClear();
+    h.createFromOptions.mockImplementationOnce(async () => { throw new Error('no WebGL'); });
+    const { getImageLandmarkerOn } = await import('../poseAnalysis');
+    await expect(getImageLandmarkerOn('GPU')).rejects.toThrow('no WebGL');
+    expect(h.createFromOptions).toHaveBeenCalledTimes(1);
+  });
+  it('the worker loads the CPU unless the init asks for the GPU, and times each sample', async () => {
+    const got = [];
+    vi.doMock('../poseAnalysis', () => ({
+      getImageLandmarker: async () => { got.push('CPU'); return {}; },
+      getImageLandmarkerOn: async d => { got.push(d); return {}; },
+      getVideoModeLandmarker: async () => ({}),
+      landmarkerDelegate: () => got.at(-1),
+      detectPoseImage: () => ({ landmarks: [[]], worldLandmarks: [[]] }),
+      resetKalmanFilters: () => {},
+    }));
+    const posted = [];
+    vi.stubGlobal('self', { postMessage: m => posted.push(m) });
+    vi.stubGlobal('OffscreenCanvas', class { constructor(w, hh) { this.width = w; this.height = hh; } getContext() { return { putImageData() {} }; } });
+    vi.stubGlobal('ImageData', class { constructor(d, w, hh) { Object.assign(this, { d, w, hh }); } });
+    await import('../corePoseWorker');
+    await self.onmessage({ data: { type: 'init', id: 0 } });
+    await self.onmessage({ data: { type: 'init', id: 1, delegate: 'GPU' } });
+    expect(got).toEqual(['CPU', 'GPU']);
+    expect(posted.slice(0, 2).map(m => m.delegate)).toEqual(['CPU', 'GPU']);
+    await self.onmessage({ data: { id: 2, width: 2, height: 2, pixels: new Uint8ClampedArray(16).buffer, timestamp: 0 } });
+    expect(Number.isFinite(posted.at(-1).ms)).toBe(true);
     vi.doUnmock('../poseAnalysis');
   });
 });

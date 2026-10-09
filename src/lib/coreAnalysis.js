@@ -175,7 +175,7 @@ const WORKER_CLOSE_MS = 1000;
 const IN_FLIGHT = 2;
 let previousWorkerGone = Promise.resolve();
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, onDecoder, onSource, path, inject, poseMode, benchModel } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, onDecoder, onSource, path, inject, poseMode, benchModel, delegate } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   // Analyses queue one behind the other: each waits for the worker of the one started before it.
   const before = previousWorkerGone;
@@ -242,7 +242,11 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // that have one move off the label (8 -> 6, 5 -> 4). Its reads stay measured (sets-09oct-video-mode/, TRIED.md).
     // poseMode 'video' (the check page's ?posemode=video) reads in VIDEO mode, to measure.
     // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it.
-    await send({ type: 'init', videoMode: poseMode === 'video', ...(benchModel ? { benchModel } : {}) });
+    // delegate 'GPU' (the check page's ?delegate=gpu; pillar 4, 9 October 2026): MediaPipe's GPU delegate, to measure
+    // its speed and landmarks on a phone; the app reads on the CPU.
+    const init = await send({ type: 'init', videoMode: poseMode === 'video', ...(benchModel ? { benchModel } : {}), ...(delegate === 'GPU' ? { delegate: 'GPU' } : {}) });
+    // The model's time per sample, as the worker measured it: kept in metadata.pose for the check page, read by no count.
+    const poseMs = [];
     onPhase('extracting');
     const imageLandmarks = [], worldLandmarks = [], timestamps = [];
     // The sample each worker timestamp was sent for, so the backward pass's results land on their own samples.
@@ -257,6 +261,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
         if (i != null && !worldLandmarks[i] && !imageLandmarks[i]) { imageLandmarks[i] = b.image; worldLandmarks[i] = b.world; }
       }
       sampleAt.set(sent, timestamps.length);
+      if (Number.isFinite(result.ms)) poseMs.push(result.ms);
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
@@ -311,7 +316,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const still = repeatedSkeletons(worldLandmarks);
     if (isFrozenRead(still)) throw new FrozenSkeletonsError(still, metadata?.method || '', metadata?.fallback ?? null);
     // A refused set may carry PSC's proposal; a counted one carries its body check (neither changes the count).
-    const result = withBodyCheck(withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps }, lift), lift);
+    const sorted = [...poseMs].sort((a, b) => a - b), at = q => (sorted.length ? Math.round(sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] * 10) / 10 : null);
+    const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
+    const result = withBodyCheck(withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata: { ...metadata, pose }, imageLandmarks, worldLandmarks, timestamps }, lift), lift);
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;
