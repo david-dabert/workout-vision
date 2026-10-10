@@ -301,6 +301,8 @@ export interface WorkoutRecord {
   blind?: { count: number | null; p: number } | null;
   /** The list offered in one tap on a counted set, and how the count was given (result-choices.js). */
   choice?: { rule: string; offered: number[]; picked: 'main' | 'alt' | 'typed' } | null;
+  /** The sensitivity check's recounts of a counted set (coreAnalysis.js withSensitivity). */
+  sensitivity?: { moved: boolean; counts: (number | null)[] } | null;
 }
 
 export interface RepCounterDiagnostics {

@@ -12,7 +12,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
-import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/coreAnalysis';
+import { summarizeCount, withProposal, withBodyCheck, withSensitivity } from '../../../src/lib/coreAnalysis';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { countChoices, inList } from '../../../src/components/experience/result-choices';
 import { ROOT, benchSets, countInWindow, labelledSets, publicSets, videoSets } from './sets';
@@ -23,7 +23,7 @@ type Row = { suite: string; name: string; dataset: string; id: string; label: nu
 // The app's result on a set, with the counts read inside the labelled window when the clip has one.
 function appResult(lift: string, d: any, appRefused = false, window?: [number, number]) {
   const c: any = summarizeCount(d.worldLandmarks, d.timestamps, lift);
-  const r: any = withBodyCheck(withProposal({ ...c, refused: c.refused || appRefused, worldLandmarks: d.worldLandmarks, timestamps: d.timestamps, imageLandmarks: d.imageLandmarks ?? null, imageXY: d.imageXY ?? null }, lift), lift);
+  const r: any = withSensitivity(withBodyCheck(withProposal({ ...c, refused: c.refused || appRefused, worldLandmarks: d.worldLandmarks, timestamps: d.timestamps, imageLandmarks: d.imageLandmarks ?? null, imageXY: d.imageXY ?? null }, lift), lift), lift);
   // A read the app refused itself (partial) shows its failure screen: no number, as countChoices reads notRead.
   if (appRefused) return { ...r, notRead: { kind: 'partial' } };
   if (!window) return r;
@@ -74,7 +74,7 @@ test.skipIf(!process.env.CHOICES)('the label in the list the result screen can o
   const once = real.filter(r => r.dataset !== 'countix-whole');
   L.push(line('real-world, each Countix clip once (countix-whole left out)', once));
   L.push('');
-  L.push('By screen state (counted: the app\'s count to confirm; check: a proposal or a flagged count to verify; ask: nothing shown).');
+  L.push('By screen state (counted: the app\'s count to confirm; check: a proposal, a count the body check flagged or the sensitivity check moved; ask: nothing shown).');
   L.push('group | state | sets | exact top-1 | label in [M, M + 1] | label in [M, M + 1, M - 1]');
   for (const [g, rs] of [['real-world all', real], ['real-world, Countix once', once]] as const) {
     for (const st of ['counted', 'check', 'ask']) L.push(line(`${g} | ${st}`, rs.filter(r => r.state === st)));

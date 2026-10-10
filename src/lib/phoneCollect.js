@@ -119,6 +119,8 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
     ...(blind ? { blind: { count: Number.isInteger(blind.count) ? blind.count : null, p: blind.p ?? null } } : {}),
     // The list offered in one tap and how the count was given (result-choices.js, saved-set.js choice).
     ...(choice ? { choice } : {}),
+    // The sensitivity check's recounts (coreAnalysis.js withSensitivity), so a blind count can say whether it was right.
+    ...(result?.sensitivity ? { sensitivity: { moved: !!result.sensitivity.moved, counts: result.sensitivity.counts } } : {}),
     ...(result?.refused ? { appRefused: true, proposal: Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null } : {}),
   };
 }

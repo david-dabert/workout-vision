@@ -1,0 +1,68 @@
+Stability 2026-10-10: the noise proxy (noise.mjs, intensity 0.5, seeds 1-5); measured, decides nothing.
+David's stored sets: 15 sets that decide; exact on the clean read 11; per seed 10, 10, 10, 10, 10 (mean 10.0); exact on the clean read and every seed 9; count moves on some seed 3 (20.0 %).
+  sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  clean 8  seeds 9 7 8 11 6
+  sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  label 13  clean 12  seeds 8 9 12 12 11
+  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  label 5  clean 5  seeds 5 5 4 5 5
+
+Public build sets: 949 sets that decide; exact on the clean read 431; per seed 429, 425, 436, 428, 425 (mean 428.6); exact on the clean read and every seed 356; count moves on some seed 269 (28.3 %).
+  public/cfrep/build/deadlift_diag_w1_9_3.json.gz  label 12  clean 12  seeds 12 12 11 12 11
+  public/cfrep/build/deadlift_front_w1_6_6.json.gz  label 12  clean 12  seeds 12 13 12 12 13
+  public/cfrep/build/deadlift_side_m3_9_3.json.gz  label 12  clean 9  seeds 10 9 10 8 9
+  public/cfrep/build/squat_diag_m3_12_0.json.gz  label 12  clean 9  seeds 10 9 10 10 10
+  public/countix/build/-FcDTJzptes_000000_5315.json.gz  label 2  clean 2  seeds 1 2 2 2 2
+  public/countix/build/04s5S8V2Rx0_000004_0.json.gz  label 5  clean 3  seeds 3 2 2 3 3
+  public/countix/build/0Mfq1D151S0_000018_4805.json.gz  label 3  clean 4  seeds 4 4 4 4 3
+  public/countix/build/0OpUaIKCDmc_000007_0.json.gz  label 5  clean 4  seeds 5 4 4 4 4
+  public/countix/build/0_VBxJ4eNlg_000002_0.json.gz  label 2  clean 3  seeds 3 3 2 3 3
+  public/countix/build/0cie4Dag5NM_000005_0.json.gz  label 5  clean 3  seeds 3 4 3 3 3
+  public/countix/build/0gjo_vXl-KQ_000029_0.json.gz  label 2  clean 2  seeds 2 2 1 2 2
+  public/countix/build/0zJGjSfj7e8_000028_0.json.gz  label 4  clean 3  seeds 3 3 4 3 3
+  public/countix/build/1vnGNr5Xy2g_000005_0.json.gz  label 2  clean 2  seeds 2 2 2 4 2
+  public/countix/build/2BC4P5QWDSk_000008_200.json.gz  label 4  clean R  seeds R 2 R R R
+  public/countix/build/2RLoQCFdz4Y_000016_0.json.gz  label 4  clean 4  seeds 5 5 4 5 5
+  public/countix/build/2h2EMB7Q4KQ_000000_0.json.gz  label 7  clean 7  seeds 7 7 7 6 7
+  public/countix/build/2o-XwlT0Nvs_000065_625.json.gz  label 4  clean R  seeds R R 3 R R
+  public/countix/build/2wMk-qSPpLk_000149_2720.json.gz  label 3  clean R  seeds R R R 3 R
+  public/countix/build/3QnXCGe6xZA_000013_1083.json.gz  label 3  clean 3  seeds 3 3 2 2 2
+  public/countix/build/5ttD_SCeNB0_000027_0.json.gz  label 5  clean 2  seeds 3 3 2 3 3
+  public/countix/build/6gdNjUNfctI_000026_0.json.gz  label 6  clean 6  seeds 6 5 5 6 6
+  public/countix/build/6m1Z53EHR3A_000007_0.json.gz  label 7  clean R  seeds 4 R R R R
+  public/countix/build/7QmGi3r4RPE_000004_33.json.gz  label 3  clean 5  seeds 3 4 5 5 5
+  public/countix/build/7zAlYPCPLPo_000016_0.json.gz  label 3  clean 3  seeds 3 3 3 4 4
+  public/countix/build/8o0iRYpHDJw_000000_0.json.gz  label 2  clean 2  seeds 3 2 2 2 2
+  public/countix/build/9JSCtK83Lh0_000000_234.json.gz  label 3  clean 3  seeds 4 3 4 5 5
+  public/countix/build/9p2g3Cqo-8w_000134_0.json.gz  label 2  clean 1  seeds 0 1 1 1 1
+  public/countix/build/9tiGuIXhkrw_000015_0.json.gz  label 11  clean R  seeds 3 4 3 4 R
+  public/countix/build/A1A40a9ADKE_000000_0.json.gz  label 6  clean 4  seeds 4 4 4 5 4
+  public/countix/build/AFMmqsjcfis_000041_0.json.gz  label 5  clean 6  seeds 5 5 3 5 6
+  public/countix/build/B77Yjkw_vyo_000030_0.json.gz  label 7  clean 4  seeds 3 3 4 3 4
+  public/countix/build/BYHQ4KptOM4_000015_0.json.gz  label 2  clean 1  seeds 1 1 2 1 1
+  public/countix/build/Bg2uQMSKXew_000019_0.json.gz  label 2  clean 1  seeds 3 2 3 3 1
+  public/countix/build/CElE2vVloh0_000003_0.json.gz  label 6  clean 4  seeds 4 4 2 4 3
+  public/countix/build/CeYfTmdqPqo_000046_0.json.gz  label 3  clean 2  seeds 2 2 2 2 3
+  public/countix/build/DA6N2ebQ8WA_000013_0.json.gz  label 2  clean R  seeds 3 3 R 1 2
+  public/countix/build/DSdox52D3XY_000004_2970.json.gz  label 3  clean 2  seeds 2 2 2 3 3
+  public/countix/build/DdXdcUETX1w_000016_0.json.gz  label 2  clean 2  seeds 1 2 1 2 2
+  public/countix/build/E0p8QDRa0Fg_000063_0.json.gz  label 8  clean 6  seeds 6 7 8 7 6
+  public/countix/build/E41Mk8G1Xfk_000026_0.json.gz  label 2  clean 2  seeds 2 3 3 2 3
+  ... and 229 more
+
+Sensitivity check on the public counted sets that decide: marks 107 of 833 (73 wrong, 34 exact); catches 18 of the 29 counts off by 3 or more.
+
+Real re-encodings (/tmp/claude-0/-home-user-workout-vision/a8df0d7c-b49e-5648-b670-199f28c23c83/scratchpad/stab/reads): committed, crf30, gen2, pyav, s90, vp8.
+  barbell_squat_9_a  label 9  9 | 6 | 6 | 7 | 10 | 7
+  barbell_squat_9_b  label 9  9 | 12 | 8 | 9 | 10 | 9
+  behind_neck_chin_up_5  label 5  6 | 6 | 6 | 5 | 7 | 6
+  hanging_leg_raise_6  label 6  6 | 5 | R(p5) | 6 | 6 | 5
+  lying_biceps_curl_11  label 11  11 | 10 | 10 | 8 | 10 | 10
+  machine_chest_supported_row_6  label 6  5 | 5 | 5 | 5 | 5 | 5
+  machine_seated_back_extension_18  label 18  17 | 16 | 17 | 16 | 16 | 17
+  pendulum_squat_7  label 7  14 | 14 | 14 | 14 | 14 | 14
+  seated_dumbbell_curl_10  label 10  10 | 10 | 10 | 10 | 10 | 10
+  sissy_squat_5_5011  label 5  R(p5) | R(p4) | R(p5) | R(p5) | R(p5) | R(p5)
+  sissy_squat_7_5006  label 7  4 | 3 | 5 | 4 | 3 | 5
+  sissy_squat_7_5008  label 7  partial | partial | partial | - | partial | -
+  sissy_squat_9_5007  label 9  9 | 9 | 10 | 9 | 9 | 9
+  standing_barbell_curl_8  label 8  R(p8) | R(p8) | R(p8) | R(p8) | R(p8) | R(p8)
+  exact per encoding: committed 6, crf30 2, gen2 1, pyav 5, s90 3, vp8 3; exact on every encoding 1 of 14; the same outcome on every encoding 5 of 14.
+  counted reads shown as sure (body check aside): wrong 45, right 20; with the sensitivity check: wrong 14, right 12.

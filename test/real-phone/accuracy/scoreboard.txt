@@ -1,4 +1,4 @@
-Scoreboard 2026-10-09: of the 15 sets in the baseline that decide, 11 exact now, 11 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
+Scoreboard 2026-10-10: of the 15 sets in the baseline that decide, 11 exact now, 11 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted sets, 1 flagged: 1 exact (100%), 0 off by 3+ (0%); 18 not flagged: 11 exact (61%), 0 off by 3+ (0%). Sets off by 3+ flagged: 0 of 0.
 In the list (result-choices.js, measured, decides nothing): of the 15 sets that would decide, the number shown is exact on 11, the label is in [M, M + 1, M - 1] on 15.
    sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  before 8 (exact)  now 8 (exact)

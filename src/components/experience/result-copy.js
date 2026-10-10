@@ -65,6 +65,9 @@ export const RESULT = {
     // The two neighbours of the count, each saved in one tap (result-choices.js; pillar 2, 9 October 2026). Shown on the
     // #collecte phone only. Status: written 9 October 2026, awaiting David's approval (R10; copy-choices.md).
     or: `Ou${NB}:`,
+    // A count the sensitivity check moved (coreAnalysis.js withSensitivity, 10 October 2026), shown on the #collecte phone
+    // only. Status: written 10 October 2026, awaiting David's approval (R10; copy-sensitivity.md).
+    sensitiveCause: 'Sur cette série, le compte de l’appli est fragile : relu avec des réglages voisins, il change.',
   },
   en: {
     toConfirm: 'To confirm',
@@ -109,5 +112,6 @@ export const RESULT = {
     byJoint: joint => `From the ${{ elbow: 'elbow', shoulder: 'shoulder', knee: 'knee', hip: 'hip' }[joint] ?? 'tracked joint'}`,
     byBody: 'From the whole body',
     or: 'Or:',
+    sensitiveCause: 'In this set, the app’s count is fragile: read with nearby settings, it changes.',
   },
 };
