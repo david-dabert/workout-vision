@@ -488,11 +488,13 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     const totalPossibleFrames = Math.floor(duration * targetFps);
     const frameCount = Math.min(totalPossibleFrames, maxFrames);
     let extractedCount = startFrame;
-    let nextCaptureTime = startFrame * interval;
     // The grid starts at the video's first frame, not at 0 s: a trimmed or edited file whose first frame comes later
     // otherwise gave every frame until the grid caught up, and the samples ran out before the video's end
     // (second audit, 3 October). Set at the first frame sampled when sampling starts at the beginning.
     let origin = startFrame === 0 ? null : (options.origin ?? 0);
+    // A restart (withRestarts) goes on from the grid's origin plus the samples already read: from startFrame / 15 s it
+    // went back in time on a video whose first frame is not at 0 s (review of 10 October 2026).
+    let nextCaptureTime = (origin ?? 0) + startFrame * interval;
 
     // Frame queue: decoder output pushes, main loop pulls.
     // Every decoded VideoFrame is a full-size picture held by the decoder's pool (a 4K HDR 10-bit frame is about
@@ -543,7 +545,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
     // Feed encoded chunks from demuxer stream (runs concurrently)
     const feedPromise = (async () => {
-      const stream = demuxer.read('video', startFrame * interval);
+      const stream = demuxer.read('video', (origin ?? 0) + startFrame * interval);
       const reader = stream.getReader();
       // Back-pressure: feeding pauses while more than one frame waits or the decoder holds more than two chunks.
       // A decoder that reorders frames (HEVC with B-frames) may need more chunks before it gives the frame the main

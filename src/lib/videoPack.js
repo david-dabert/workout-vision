@@ -6,13 +6,19 @@
  * the picture's own time, so the packed video holds what the phone's count reads, on its own clock. No sound.
  */
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
-import { extractFramesWebCodecs } from './frameExtractor';
+import { extractFramesWebCodecs, withRestarts } from './frameExtractor';
 import { MAX_LONG_SIDE, TARGET_FPS } from './extractionConfig';
 import { KEY_EVERY_SEC, crc32, pickEncoder } from './pack';
 
 // Pictures the encoder may hold before the reader waits: keeps memory flat on a long video. Source: convention
 // (the frame reader's own back-pressure holds 1 to 2 decoded frames, frameExtractor.js). Status: convention.
 const MAX_ENCODE_QUEUE = 2;
+// Each picture's duration: 1/15 s and 1 ms more. mp4-muxer takes every duration but the last from the gaps between
+// pictures, so only the last picture is longer, and the file ends just after N/15 s: a reader taking
+// floor(duration x 15) samples (frameExtractor.js) then reads all N. At exactly 1/15 s the stored length, rounded to
+// the millisecond, fell under N/15 s for one count in three and the last picture was lost (review of 10 October 2026,
+// reproduced with 155 pictures read as 154). Source: that reproduction. Status: validated (Chromium).
+const FRAME_US = Math.round(1e6 / TARGET_FPS) + 1000;
 
 /**
  * Resolves { blob, size, crc, source, packed } for the file, or rejects (AbortError on a cancel; an Error saying why
@@ -28,7 +34,13 @@ export async function packVideo(file, { signal, onProgress, bpp, deps = {} } = {
   const keyEvery = Math.max(1, Math.round(KEY_EVERY_SEC * TARGET_FPS));
   const t0 = performance.now();
   try {
-    const read = await extract(file, TARGET_FPS, Infinity, MAX_LONG_SIDE, async (canvas, index, timestamp) => {
+    // A decoder that fails part-way (Safari's "Decoder failure", David's iPhone, 4 October) is replaced and goes on from
+    // the sample where it stopped, as the app's own read does (frameExtractor.js, withRestarts); the encoder and the file
+    // go on across the restart. An error of the packing itself (onFrame) is not retried.
+    const onFrame = async (canvas, index, timestamp) => {
+      try { await encodeOne(canvas, index, timestamp); } catch (e) { if (e && typeof e === 'object') e.fromOnFrame = true; throw e; }
+    };
+    const encodeOne = async (canvas, index, timestamp) => {
       if (!encoder) {
         picked = await pickEncoder(canvas.width, canvas.height, c => Encoder.isConfigSupported(c), bpp);
         if (!picked) throw new Error('this browser encodes neither H.264 nor VP9');
@@ -41,14 +53,15 @@ export async function packVideo(file, { signal, onProgress, bpp, deps = {} } = {
       if (encodeError) throw encodeError;
       const us = Math.round((timestamp - first) * 1e6);
       last = us;
-      const frame = new Frame(canvas, { timestamp: us, duration: Math.round(1e6 / TARGET_FPS) });
+      const frame = new Frame(canvas, { timestamp: us, duration: FRAME_US });
       try { encoder.encode(frame, { keyFrame: index % keyEvery === 0 }); } finally { frame.close(); }
       frames++;
       while (encoder.encodeQueueSize > MAX_ENCODE_QUEUE && !encodeError) {
         if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
         await new Promise(r => setTimeout(r, 0));
       }
-    }, onProgress, { signal, onSource: s => { source = s; } });
+    };
+    const { result: read, restarts } = await (deps.withRestarts ?? withRestarts)(pass => extract(file, TARGET_FPS, Infinity, MAX_LONG_SIDE, onFrame, onProgress, pass), { signal, onSource: s => { source = s; } });
     if (!encoder || frames === 0) throw new Error('no picture could be read from this video');
     await encoder.flush();
     if (encodeError) throw encodeError;
@@ -58,8 +71,8 @@ export async function packVideo(file, { signal, onProgress, bpp, deps = {} } = {
       blob: new Blob([bytes], { type: 'video/mp4' }), size: bytes.length, crc: crc32(bytes), source,
       packed: {
         codec: picked.config.codec, width: picked.config.width, height: picked.config.height, fps: TARGET_FPS, frames,
-        seconds: Math.round(last / 1e3) / 1e3, bitrate: picked.config.bitrate, sourceDuration: read?.duration ?? null,
-        rotation: read?.rotationDecision || null, packSeconds: Math.round((performance.now() - t0) / 100) / 10,
+        seconds: Math.round((last + FRAME_US) / 1e3) / 1e3, bitrate: picked.config.bitrate, sourceDuration: read?.duration ?? null,
+        rotation: read?.rotationDecision || null, restarts, packSeconds: Math.round((performance.now() - t0) / 100) / 10,
       },
     };
   } finally {

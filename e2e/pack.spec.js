@@ -91,3 +91,91 @@ test('after a reload the packed videos and their labels are still there, ready f
   await page.click('#clear');
   await expect(page.locator('.set')).toHaveCount(0);
 });
+
+// Review of 10 October 2026: the defects its verifiers reproduced, each pinned here.
+const pick = (page, ...names) => Promise.all(names.map(async n => ({ name: n, mimeType: 'video/webm', buffer: Buffer.from(await drawnWebm(page, 1500), 'base64') })))
+  .then(files => page.locator('#videos').setInputFiles(files));
+// The MP4's length as its movie header says (mvhd), in seconds: a reader takes floor(length x 15) samples.
+function mp4Seconds(bytes) {
+  const s = Buffer.from(bytes), at = s.indexOf('mvhd');
+  const v = s[at + 4], t = v === 1 ? s.readUInt32BE(at + 24) : s.readUInt32BE(at + 16), d = v === 1 ? Number(s.readBigUInt64BE(at + 28)) : s.readUInt32BE(at + 20);
+  return d / t;
+}
+
+test('the screen lock is asked for again when the page comes back, and packing goes on', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => {
+    window.__locks = 0;
+    Object.defineProperty(navigator, 'wakeLock', { value: { request: async () => { window.__locks++; return { released: false, async release() { this.released = true; } }; } } });
+  });
+  await page.goto(PAGE);
+  await pick(page, 'a.webm', 'b.webm');
+  await expect.poll(() => page.evaluate(() => window.__locks)).toBe(1);
+  const flip = state => page.evaluate(s => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => s }); document.dispatchEvent(new Event('visibilitychange')); }, state);
+  await flip('hidden');
+  await flip('visible');
+  await expect(page.locator('.set.done')).toHaveCount(2, { timeout: 90000 });
+  expect(await page.evaluate(() => window.__locks)).toBeGreaterThanOrEqual(2);
+});
+
+test('an exercise chosen after the videos are packed still carries to the packed videos below', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.goto(PAGE);
+  await pick(page, 'a.webm', 'b.webm');
+  await expect(page.locator('.set.done')).toHaveCount(2, { timeout: 90000 });
+  await page.locator('#lift0').selectOption('squat');
+  await expect(page.locator('#lift1')).toHaveValue('squat');
+});
+
+test('a file made before a label changed is taken away, and the file made again holds the change', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.goto(PAGE);
+  await pick(page, 'a.webm');
+  await page.locator('#lift0').selectOption('squat');
+  await page.locator('#count0').fill('8');
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 90000 });
+  await page.click('#make');
+  await expect(page.locator('#files button', { hasText: 'Download' })).toHaveCount(1);
+  await page.locator('#count0').fill('9');
+  await expect(page.locator('#files button')).toHaveCount(0);
+  await expect(page.locator('#stale')).toBeVisible();
+  await page.click('#make');
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#files button', { hasText: 'Download' }).click()]);
+  const zip = unzipSync(new Uint8Array(readFileSync(await dl.path())));
+  expect(JSON.parse(new TextDecoder().decode(zip['labels.json'])).sets[0].count).toBe(9);
+});
+
+test('a video that failed is packed when picked again, without a reload', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => {
+    const configure = VideoEncoder.prototype.configure;
+    let once = true;
+    VideoEncoder.prototype.configure = function (c) { if (once) { once = false; throw new Error('injected one-off failure'); } return configure.call(this, c); };
+  });
+  await page.goto(PAGE);
+  const a = Buffer.from(await drawnWebm(page, 1500), 'base64');
+  await page.locator('#videos').setInputFiles([{ name: 'a.webm', mimeType: 'video/webm', buffer: a }]);
+  await expect(page.locator('.set.failed')).toHaveCount(1, { timeout: 60000 });
+  await expect(page.locator('.set .state')).toContainText('Pick it again');
+  await page.locator('#videos').setInputFiles([{ name: 'a.webm', mimeType: 'video/webm', buffer: a }]);
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+});
+
+test('each packed video ends after its last picture, and is named by its number on the page', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.goto(PAGE);
+  await pick(page, 'a.webm', 'b.webm', 'c.webm');
+  await expect(page.locator('.set.done')).toHaveCount(3, { timeout: 90000 });
+  for (const i of [0, 1, 2]) { await page.locator(`#lift${i}`).selectOption('squat'); await page.locator(`#count${i}`).fill(String(5 + i)); }
+  await page.click('#make');
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#files button', { hasText: 'Download' }).click()]);
+  const zip = unzipSync(new Uint8Array(readFileSync(await dl.path())));
+  const labels = JSON.parse(new TextDecoder().decode(zip['labels.json']));
+  const names = await page.locator('.set-head span').allTextContents();
+  for (const s of labels.sets) {
+    const n = names.indexOf(s.original.name) + 1;
+    expect(s.video).toBe(`videos/${String(n).padStart(3, '0')}-squat.mp4`);
+    expect(s.count).toBe(4 + n);
+    expect(Math.floor(mp4Seconds(zip[s.video]) * 15 + 1e-9)).toBeGreaterThanOrEqual(s.packed.frames);
+  }
+});

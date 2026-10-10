@@ -88,19 +88,44 @@ export function packFileName(date, part = 1, parts = 1) {
   return `workoutvision-pack-${d}${parts > 1 ? `-part${part}of${parts}` : ''}.zip`;
 }
 
+// What a video adds to a file beyond its own bytes: its two ZIP headers (30 + 46 bytes and its name twice) and its
+// entry in the labels file. Source: the ZIP format (APPNOTE 4.3.7, 4.3.12) and labels.json as written here (about
+// 1.2 kB a set, measured 10 October 2026; 2 kB kept as a margin). Status: convention.
+export const ENTRY_BYTES = 76, LABEL_BYTES = 2000, FILE_BYTES = 22 + 1000;
+export const entryCost = it => it.size + ENTRY_BYTES + 2 * new TextEncoder().encode(it.name ?? '').length + LABEL_BYTES;
+
 /**
- * The videos split into files of at most `cap` bytes each (Infinity: one file), in order; a video larger than the cap
- * goes alone. Each item needs `size`.
+ * The videos split into files of at most `cap` bytes each (Infinity: one file), in order, the headers and labels
+ * counted; a video too large for the cap on its own goes alone. Each item needs `size` and `name`.
  */
 export function planParts(items, cap = Infinity) {
   const parts = [];
-  let cur = [], used = 0;
+  let cur = [], used = FILE_BYTES;
   for (const it of items) {
-    if (cur.length && used + it.size > cap) { parts.push(cur); cur = []; used = 0; }
-    cur.push(it); used += it.size;
+    const cost = entryCost(it);
+    if (cur.length && used + cost > cap) { parts.push(cur); cur = []; used = FILE_BYTES; }
+    cur.push(it); used += cost;
   }
   if (cur.length) parts.push(cur);
   return parts;
+}
+
+/** The labels file of a part: labels.json alone, labels-part2of3.json in a split, so parts unzipped together keep all. */
+export const labelsName = (part = 1, parts = 1) => (parts > 1 ? `labels-part${part}of${parts}.json` : 'labels.json');
+
+/**
+ * A choice made on one row carries to the rows below, packed or not (the label is read when the file is made), up to
+ * the first row David worked on himself: a field chosen by hand or reps typed. Returns the rows changed.
+ */
+export function carryDown(rows, from, key, value) {
+  const changed = [];
+  for (let j = from + 1; j < rows.length; j++) {
+    const r = rows[j];
+    if (Object.keys(r.touched || {}).length || String(r.countText ?? '').trim() !== '') break;
+    if (r.state === 'twin') continue;
+    if (r[key] !== value) { r[key] = value; changed.push(r); }
+  }
+  return changed;
 }
 
 /**

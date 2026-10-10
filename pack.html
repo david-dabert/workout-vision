@@ -60,11 +60,13 @@
     <label for="cap">Size of each file</label>
     <select id="cap">
       <option value="0">One file</option>
-      <option value="25">Files of at most 25 MB</option>
-      <option value="100">Files of at most 100 MB</option>
+      <option value="25">Files of at most 25 MB each</option>
+      <option value="100">Files of at most 100 MB each</option>
     </select>
+    <p class="note">A video larger than the size chosen goes in a file of its own.</p>
     <button class="btn go" id="make">Make the file</button>
   </div>
+  <p class="note" id="stale" hidden>Something changed since the file was made: make it again before sending it.</p>
   <div id="files"></div>
   <button class="btn quiet" id="clear" hidden>Clear the packed videos from this phone</button>
 

@@ -3,7 +3,7 @@ import { crc32 as zlibCrc32 } from 'node:zlib';
 import { unzipSync } from 'fflate';
 import {
   packedSize, bitrateFor, pickEncoder, fileKey, parseCount, packedName, packFileName, planParts, labelsFor,
-  crc32, zipStored, textEntry, sizeText, ENCODER_CODECS,
+  crc32, zipStored, textEntry, sizeText, ENCODER_CODECS, entryCost, labelsName, carryDown, bppFrom, BITS_PER_PIXEL,
 } from '../pack';
 
 const bytesOf = async blob => new Uint8Array(await blob.arrayBuffer());
@@ -55,12 +55,45 @@ describe('the video packer', () => {
     expect(fileKey({ name: 'IMG_1.MOV', size: 10, lastModified: 9 })).toBe(fileKey({ name: 'IMG_1.MOV', size: 10, lastModified: 5 }));
   });
 
-  it('splits into files under the cap, in order, a video larger than the cap alone', () => {
-    const s = n => ({ size: n });
+  it('splits into files under the cap, headers and labels counted, in order, a video larger than the cap alone', () => {
+    const MB = 1e6, s = (n, i = 0) => ({ size: n * MB, name: packedName(i, 'squat') });
     expect(planParts([s(10), s(10), s(10)]).length).toBe(1);
-    expect(planParts([s(10), s(10), s(10)], 25).map(p => p.length)).toEqual([2, 1]);
-    expect(planParts([s(30), s(5), s(5)], 25).map(p => p.map(x => x.size))).toEqual([[30], [5, 5]]);
-    expect(planParts([], 25)).toEqual([]);
+    expect(planParts([s(10, 0), s(10, 1), s(10, 2)], 25 * MB).map(p => p.length)).toEqual([2, 1]);
+    expect(planParts([s(30), s(5), s(5)], 25 * MB).map(p => p.map(x => x.size / MB))).toEqual([[30], [5, 5]]);
+    expect(planParts([], 25 * MB)).toEqual([]);
+    // Two videos that fill the cap by their bytes alone do not fit together once their headers and labels count.
+    const exact = [{ size: 12.5 * MB, name: 'videos/001-a.mp4' }, { size: 12.5 * MB, name: 'videos/002-a.mp4' }];
+    expect(planParts(exact, 25 * MB).length).toBe(2);
+    expect(entryCost({ size: 100, name: 'ab' })).toBe(100 + 76 + 4 + 2000);
+    // Every file of a split stays under the cap, as written (zipStored), labels included.
+    const many = Array.from({ length: 40 }, (_, i) => s(1.9, i));
+    for (const part of planParts(many, 25 * MB)) {
+      const labels = JSON.stringify(labelsFor(part.map(it => ({ name: it.name, file: { name: 'IMG_0001.MOV', size: 123456789, lastModified: 0 }, sha256: 'f'.repeat(64), lift: 'squat', count: 12, view: 'side', source: { codec: 'hvc1.1.6.L120.B0', width: 1920, height: 1080, rotation: 90, duration: 34.5 }, packed: { codec: 'avc1.640028', width: 360, height: 640, fps: 15, frames: 517, seconds: 34.47, bitrate: 518400, sourceDuration: 34.5, rotation: 'manual', restarts: 0, packSeconds: 6.1 } })), { version: '1.4.0', packedAt: '2026-10-10T11:05:00.000Z', part: 1, parts: 9 }), null, 1);
+      const bytes = 22 + labels.length + 30 + 46 + 2 * 'labels-part1of9.json'.length + part.reduce((t, it) => t + it.size + 76 + 2 * it.name.length, 0);
+      expect(bytes).toBeLessThanOrEqual(25 * MB);
+    }
+  });
+
+  it('names each part\'s labels file apart, so parts unzipped together keep every label', () => {
+    expect(labelsName()).toBe('labels.json');
+    expect(labelsName(2, 3)).toBe('labels-part2of3.json');
+  });
+
+  it('carries a choice to the videos below, packed or not, up to the first one worked on by hand', () => {
+    const rows = [{ lift: 'squat' }, { lift: 'squat', state: 'done' }, { lift: '', state: 'waiting' }, { lift: 'squat', state: 'twin' }, { lift: 'squat', touched: { view: true } }, { lift: 'squat' }];
+    const changed = carryDown(rows, 0, 'lift', 'deadlift');
+    expect(rows.map(r => r.lift)).toEqual(['squat', 'deadlift', 'deadlift', 'squat', 'squat', 'squat']);
+    expect(changed).toEqual([rows[1], rows[2]]);
+    const typed = [{ lift: '' }, { lift: '', countText: '8' }, { lift: '' }];
+    carryDown(typed, 0, 'lift', 'squat');
+    expect(typed.map(r => r.lift)).toEqual(['', '', '']);
+  });
+
+  it('takes another quality from the address only within its range', () => {
+    expect(bppFrom('?bpp=0.3')).toBe(0.3);
+    expect(bppFrom('?bpp=5')).toBe(BITS_PER_PIXEL);
+    expect(bppFrom('?bpp=abc')).toBe(BITS_PER_PIXEL);
+    expect(bppFrom('')).toBe(BITS_PER_PIXEL);
   });
 
   it('writes each set with its blind count, null when not counted', () => {

@@ -1,21 +1,22 @@
 /**
  * Video packer page script (pack.html; rules in lib/pack.js, one video in lib/videoPack.js). David picks the videos of
  * his sets, the page makes each small on the phone, one at a time, and he types the exercise and the reps he counted
- * beside each; then one file (or a few, under a size he chooses) holds the packed videos and labels.json. The page
- * shows no count of the app's, so his counts are blind (R1). Each packed video is kept on the phone (IndexedDB) as soon
- * as it is made, with its label, so a reload or an evicted tab loses no work already done; nothing leaves the phone
- * until he shares or downloads the file.
+ * beside each; then one file (or a few, under a size he chooses) holds the packed videos and their labels. The page
+ * shows no count of the app's, so his counts are blind (R1). Each label is kept on the phone (IndexedDB) as he types
+ * it, and each packed video once, as soon as it is made, in records of their own (a label typed never rewrites a
+ * video), so a reload or an evicted tab loses no work already done; nothing leaves the phone until he shares or
+ * downloads the file.
  */
 import localforage from 'localforage';
 import { packVideo } from './lib/videoPack';
 import { hashVideoContent } from './lib/collector';
-import { filmingOrder, carryChoice, oneAtATime } from './lib/batchCollect';
+import { filmingOrder, oneAtATime } from './lib/batchCollect';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
 import { COLLECTOR_LIFTS } from './lib/collectorLifts';
-import { bppFrom, fileKey, parseCount, packedName, packFileName, planParts, labelsFor, zipStored, textEntry, sizeText } from './lib/pack';
+import { bppFrom, carryDown, fileKey, labelsFor, labelsName, packedName, packFileName, parseCount, planParts, sizeText, textEntry, zipStored } from './lib/pack';
 
 const LIFTS = COLLECTOR_LIFTS;
-const VIEWS = [['', '—'], ['side', 'Side'], ['front', 'Front'], ['angle', 'Angle']];
+const VIEWS = [['', 'Not said'], ['side', 'Side'], ['front', 'Front'], ['angle', 'Angle']];
 // The original is hashed (its SHA-256, as the committed sets record videoSha256) only up to this size: hashing reads
 // the whole file into memory at once. Source: convention (a 4K minute is about 400 MB). Status: convention.
 const HASH_MAX_BYTES = 300e6;
@@ -25,12 +26,25 @@ const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : null;
 const store = localforage.createInstance({ name: 'workoutVision', storeName: 'packed' });
 const $ = id => document.getElementById(id);
 const setsEl = $('sets'), summaryEl = $('summary');
+// state: 'waiting' (to pack), 'packing', 'done' (packed), 'failed' (pick it again), 'missing' (kept from before a
+// reload, never packed: pick it again), 'twin' (the same video as another row: not packed twice).
 let rows = [], running = false, made = [];
 
 const option = (value, text) => Object.assign(document.createElement('option'), { value, textContent: text });
-// What is kept of a row: its label and, once packed, its video; never the original file.
-const saved = r => ({ key: r.key, order: r.order, name: r.name, size: r.size, lastModified: r.lastModified, lift: r.lift, count: r.count, view: r.view, touched: r.touched || null, sha256: r.sha256 ?? null, packed: r.packed ?? null, video: r.video ?? null });
-async function keep(r) { try { await store.setItem(r.key, saved(r)); } catch (e) { r.note = `Not kept on this phone: ${e.message}`; paint(r); } }
+const LABEL = k => `label:${k}`, VIDEO = k => `video:${k}`;
+const labelOf = r => ({ key: r.key, order: r.order, name: r.name, size: r.size, lastModified: r.lastModified, lift: r.lift, view: r.view, count: r.count, countText: r.countText ?? null, touched: r.touched || null, twinOf: r.twinOf ?? null });
+async function keepLabel(r) { try { await store.setItem(LABEL(r.key), labelOf(r)); } catch (e) { r.note = `Not kept on this phone: ${e.message}`; paint(r); } }
+const typedBad = r => parseCount(r.countText ?? r.count ?? '') === undefined;
+const number = r => rows.indexOf(r) + 1;
+
+// A file made before a label changed, or before more videos were packed, no longer says what the page says: it goes,
+// and the page asks for a new one.
+function stale() {
+  if (!made.length) return;
+  made = [];
+  $('files').replaceChildren();
+  $('stale').hidden = false;
+}
 
 function render() {
   for (const old of setsEl.querySelectorAll('video')) { old.removeAttribute('src'); old.load(); }
@@ -39,7 +53,7 @@ function render() {
     box.innerHTML = `<div class="set-head"><b>Video ${i + 1}</b><span></span></div>
       <div class="thumb"><video muted playsinline preload="metadata"></video><em></em><button type="button" class="close-video">Close the video</button></div>
       <label for="lift${i}">Exercise</label><select id="lift${i}"></select>
-      <div class="row"><div><label for="count${i}">Reps you counted</label><input type="text" id="count${i}" inputmode="numeric" autocomplete="off" placeholder="—"></div>
+      <div class="row"><div><label for="count${i}">Reps you counted</label><input type="text" id="count${i}" inputmode="numeric" autocomplete="off"></div>
       <div><label for="view${i}">Camera view</label><select id="view${i}"></select></div></div>
       <div class="state"></div><div class="bar-wrap"><div class="bar-fill"></div></div>`;
     box.querySelector('.set-head span').textContent = row.name;
@@ -55,21 +69,22 @@ function render() {
     const lift = box.querySelector('select[id^=lift]'), view = box.querySelector('select[id^=view]'), count = box.querySelector('input');
     lift.append(option('', 'Choose…'), ...LIFTS.map(l => option(l.key, l.label)));
     view.append(...VIEWS.map(([v, t]) => option(v, t)));
-    lift.value = row.lift; view.value = row.view; count.value = row.count ?? '';
+    lift.value = row.lift || ''; view.value = row.view || ''; count.value = row.countText ?? (row.count ?? '');
+    // A choice carries to the videos below, packed or not, up to the first one worked on by hand (lib/pack.js).
     const choose = (key, value) => {
       row[key] = value; row.touched = { ...row.touched, [key]: true };
-      carryChoice(rows, i, key, value);
-      rows.forEach((r, j) => { const el = r.el?.querySelector(`#${key}${j}`); if (el) el.value = r[key]; });
-      rows.slice(i).forEach(r => keep(r));
-      summarize();
+      const changed = carryDown(rows, i, key, value);
+      for (const r of [row, ...changed]) { const el = r.el?.querySelector(`#${key}${number(r) - 1}`); if (el) el.value = r[key] || ''; keepLabel(r); }
+      stale(); summarize();
     };
     lift.addEventListener('change', () => choose('lift', lift.value));
     view.addEventListener('change', () => choose('view', view.value));
     count.addEventListener('input', () => {
-      const n = parseCount(count.value);
       row.countText = count.value;
-      if (n !== undefined) { row.count = n; row.touched = { ...row.touched, count: true }; keep(row); }
-      paint(row); summarize();
+      const n = parseCount(count.value);
+      if (n !== undefined) row.count = n;
+      row.touched = { ...row.touched, count: true };
+      keepLabel(row); stale(); paint(row); summarize();
     });
     row.el = box;
     paint(row);
@@ -110,51 +125,53 @@ function closeRow(row) {
 
 function paint(row, pct) {
   if (!row.el) return;
-  const bad = row.state === 'failed' || parseCount(row.countText ?? row.count ?? '') === undefined;
+  const bad = row.state === 'failed' || row.state === 'missing' || typedBad(row);
   row.el.className = `set ${row.state === 'done' && !bad ? 'done' : bad ? 'failed' : ''}${row.open ? ' open' : ''}`;
-  const countNote = parseCount(row.countText ?? row.count ?? '') === undefined ? ' The reps must be a whole number from 0 to 99.' : '';
-  row.el.querySelector('.state').textContent = `${row.note || ''}${countNote}`;
+  row.el.querySelector('.state').textContent = `${row.note || ''}${typedBad(row) ? ' The reps must be a whole number from 0 to 99, or empty.' : ''}`;
   const fill = row.el.querySelector('.bar-fill');
   if (pct !== undefined) fill.style.width = `${Math.round(pct)}%`;
   else fill.style.width = row.state === 'done' ? '100%' : '0%';
 }
 
 function summarize() {
-  const done = rows.filter(r => r.state === 'done'), failed = rows.filter(r => r.state === 'failed');
+  const done = rows.filter(r => r.state === 'done'), failed = rows.filter(r => r.state === 'failed' || r.state === 'missing');
   const labelled = done.filter(r => r.lift && Number.isInteger(r.count)).length;
   const bytes = done.reduce((s, r) => s + (r.video?.size ?? 0), 0);
+  const counted = rows.filter(r => r.state !== 'twin').length;
   summaryEl.textContent = rows.length
-    ? `${done.length} of ${rows.length} packed (${sizeText(bytes)})${failed.length ? `, ${failed.length} failed` : ''}; ${labelled} with exercise and reps.${running ? ' Packing: keep the screen on.' : ''}`
+    ? `${done.length} of ${counted} packed (${sizeText(bytes)})${failed.length ? `, ${failed.length} to pick again` : ''}; ${labelled} with exercise and reps.${running ? ' Packing: keep the screen on.' : ''}`
     : '';
   $('make-box').hidden = !done.length;
-  $('clear').hidden = running || !rows.some(r => r.video);
-  $('pick').disabled = false;
+  $('clear').hidden = running || !rows.length;
 }
 
-// Rows for newly picked files, in filming order, after those already there; a file already on the page is not added
-// twice (its name, size and date: lib/pack.js fileKey).
+// Rows for newly picked files, in filming order, after those already there. A file already on the page (its name and
+// size: lib/pack.js fileKey) is not added twice; one that failed, or was kept from before a reload without being
+// packed, takes the file back, with its label, and is packed now.
 function addFiles(files) {
-  const have = new Set(rows.map(r => r.key));
   const prev = rows[rows.length - 1] || { lift: '', view: '' };
   let order = rows.reduce((m, r) => Math.max(m, r.order), 0);
   for (const file of filmingOrder(files)) {
-    const key = fileKey(file);
-    // A row kept from before a reload but never packed takes its file back and is packed now.
-    const back = rows.find(r => r.key === key && !r.video && !r.file);
-    if (back) { back.file = file; back.state = 'waiting'; back.note = 'Waiting to be packed.'; continue; }
-    if (have.has(key)) continue;
-    have.add(key);
-    rows.push({ key, order: ++order, file, name: file.name, size: file.size, lastModified: file.lastModified, lift: prev.lift, view: prev.view, count: null, state: 'waiting', note: 'Waiting to be packed.' });
+    const key = fileKey(file), have = rows.find(r => r.key === key);
+    if (have) {
+      if ((have.state === 'failed' || have.state === 'missing') && !have.video) { have.file = file; have.state = 'waiting'; have.note = 'Waiting to be packed.'; if (have.url) { URL.revokeObjectURL(have.url); have.url = null; } }
+      continue;
+    }
+    const row = { key, order: ++order, file, name: file.name, size: file.size, lastModified: file.lastModified, lift: prev.lift, view: prev.view, count: null, countText: '', state: 'waiting', note: 'Waiting to be packed.' };
+    rows.push(row);
+    keepLabel(row);
   }
-  rows.forEach(r => { if (!r.video) keep(r); });
 }
 
-// One video at a time, while the page is visible; a video whose packing the page's hiding stopped waits for the page
-// to come back and starts again.
+// One video at a time, while the page is visible. A video whose packing the page's hiding stopped waits for the page
+// to come back and starts again. The screen lock is asked for again each time the page comes back: the browser lets it
+// go while the page is hidden (Screen Wake Lock; rest-clock.js does the same).
 async function packAll() {
   if (running) return;
   running = true; summarize();
-  const release = holdScreenAwake();
+  let release = holdScreenAwake();
+  const again = () => { if (document.visibilityState === 'visible') { const old = release; release = holdScreenAwake(); old(); } };
+  document.addEventListener('visibilitychange', again);
   try {
     for (;;) {
       const row = rows.find(r => r.state === 'waiting' && r.file);
@@ -168,20 +185,22 @@ async function packAll() {
         row.note = 'Packing…'; paint(row, 0);
         const out = await packVideo(row.file, { signal: controller.signal, bpp: BPP, onProgress: p => { row.note = `Packing… ${p}%`; paint(row, p); } });
         row.note = 'Packed; fingerprinting the original…'; paint(row, 100);
-        row.sha256 = row.file.size <= HASH_MAX_BYTES ? await hashVideoContent(row.file) : null;
+        // A fingerprint that cannot be read leaves the packed video as it is, with no fingerprint.
+        try { row.sha256 = row.file.size <= HASH_MAX_BYTES ? await hashVideoContent(row.file) : null; } catch { row.sha256 = null; }
         const twin = row.sha256 && rows.find(r => r !== row && r.sha256 === row.sha256 && r.state === 'done');
-        if (twin) { row.state = 'failed'; row.note = `The same video as video ${rows.indexOf(twin) + 1}: not packed twice.`; continue; }
-        row.video = { blob: out.blob, size: out.size, crc: out.crc };
+        if (twin) { markTwin(row, twin); continue; }
+        await store.setItem(VIDEO(row.key), { blob: out.blob, size: out.size, crc: out.crc, sha256: row.sha256, packed: { ...out.packed, source: out.source } });
+        // The video as IndexedDB holds it from now on: on an iPhone a Blob read back from it lives on disk, so a pick
+        // of 100 does not keep 100 packed videos in memory. The record is never written again.
+        const back = await store.getItem(VIDEO(row.key)).catch(() => null);
+        row.video = { blob: back?.blob ?? out.blob, size: out.size, crc: out.crc };
         row.packed = { ...out.packed, source: out.source };
         row.state = 'done';
         row.note = `Packed: ${sizeText(out.size)}, ${out.packed.frames} pictures, ${out.packed.packSeconds} s.`;
-        await keep(row);
-        // The video as IndexedDB holds it from now on: on an iPhone a Blob read back from it lives on disk, so a pick
-        // of 100 does not keep 100 packed videos in memory.
-        try { const back = await store.getItem(row.key); if (back?.video?.blob) row.video.blob = back.video.blob; } catch { /* kept in memory */ }
+        stale();
       } catch (err) {
         if (isInterruption(controller.signal.reason)) { row.state = 'waiting'; row.note = 'Stopped while the page was hidden: it starts again when the page is back.'; }
-        else { row.state = 'failed'; row.note = `Not packed: ${err.message}`; console.error(err); }
+        else { row.state = 'failed'; row.note = `Not packed: ${err.message}. Pick it again to try once more.`; console.error(err); }
       } finally {
         unwatch();
         paint(row);
@@ -190,11 +209,25 @@ async function packAll() {
       if (row.state === 'waiting') await whenVisible();
     }
   } finally {
+    document.removeEventListener('visibilitychange', again);
     await release();
     running = false;
     summarize();
   }
 }
+
+// The same video as another row (its fingerprint): not packed twice. A label typed on the copy and not on the first
+// goes to the first, so nothing David typed is lost; the copy says where its label went.
+function markTwin(row, twin) {
+  row.state = 'twin'; row.twinOf = twin.key;
+  const moved = [];
+  for (const k of ['lift', 'view']) if (row.touched?.[k] && !twin.touched?.[k]) { twin[k] = row[k]; twin.touched = { ...twin.touched, [k]: true }; moved.push(k === 'lift' ? 'exercise' : 'view'); }
+  if (String(row.countText ?? '').trim() !== '' && String(twin.countText ?? '').trim() === '') { twin.countText = row.countText; twin.count = row.count; twin.touched = { ...twin.touched, count: true }; moved.push('reps'); }
+  row.note = twinNote(row);
+  if (moved.length) { keepLabel(twin); render(); }
+  keepLabel(row);
+}
+const twinNote = row => { const t = rows.find(r => r.key === row.twinOf); return `The same video as ${t ? `video ${number(t)}` : 'one already packed'}: not packed twice. Label that one.`; };
 
 $('pick').addEventListener('click', () => $('videos').click());
 $('videos').addEventListener('change', () => {
@@ -202,38 +235,38 @@ $('videos').addEventListener('change', () => {
   $('videos').value = '';
   if (!files.length) return;
   addFiles(files);
-  made = []; $('files').replaceChildren();
+  stale();
   render();
   packAll();
 });
 
-// The file, made on a tap, then handed over by Share (one sheet at a time) or Download, each on its own tap: the
-// share sheet opens only from a tap, and the videos come back from IndexedDB first.
-$('make').addEventListener('click', async () => {
+// The file, made on a tap, then handed over by Share (one sheet at a time) or Download, each on its own tap: the share
+// sheet opens only from a tap, so the file is whole before it opens.
+$('make').addEventListener('click', () => {
   const done = rows.filter(r => r.state === 'done' && r.video);
   if (!done.length) return;
-  const typo = rows.findIndex(r => parseCount(r.countText ?? r.count ?? '') === undefined);
-  if (typo >= 0) { summaryEl.textContent = `Video ${typo + 1}: the reps must be a whole number from 0 to 99, or empty.`; return; }
+  const typo = rows.find(r => r.state !== 'twin' && typedBad(r));
+  if (typo) { summaryEl.textContent = `Video ${number(typo)}: the reps must be a whole number from 0 to 99, or empty.`; return; }
   const missing = done.filter(r => !r.lift || !Number.isInteger(r.count)).length;
   if (missing && !confirm(`${missing} packed video${missing > 1 ? 's have' : ' has'} no exercise or no reps: ${missing > 1 ? 'they go' : 'it goes'} in the file unlabelled. Make the file anyway?`)) return;
   if (running && !confirm('Some videos are still packing: the file will hold only those already packed. Make it now?')) return;
-  $('make').disabled = true; summaryEl.textContent = 'Making the file…';
   try {
     const now = new Date();
-    const items = done.map((r, i) => ({ row: r, name: packedName(i, r.lift), size: r.video.size }));
+    // Each video is named by its number on this page, so "Video 12" here is videos/012-… in the file.
+    const items = done.map(r => ({ row: r, name: packedName(number(r) - 1, r.lift), size: r.video.size }));
     const cap = Number($('cap').value) * 1e6 || Infinity;
     const parts = planParts(items, cap);
     made = parts.map((part, k) => {
-      const labels = labelsFor(part.map(it => ({ name: it.name, file: { name: it.row.name, size: it.row.size, lastModified: it.row.lastModified }, sha256: it.row.sha256, lift: it.row.lift, count: it.row.count, view: it.row.view, source: it.row.packed?.source ?? null, packed: it.row.packed })), { version: VERSION, packedAt: now.toISOString(), part: k + 1, parts: parts.length });
-      const entries = [textEntry('labels.json', JSON.stringify(labels, null, 1), now), ...part.map(it => ({ name: it.name, data: it.row.video.blob, size: it.row.video.size, crc: it.row.video.crc, date: new Date(it.row.lastModified) }))];
+      const labels = labelsFor(part.map(it => ({ name: it.name, file: { name: it.row.name, size: it.row.size, lastModified: it.row.lastModified }, sha256: it.row.sha256, lift: it.row.lift, count: Number.isInteger(it.row.count) && String(it.row.countText ?? it.row.count).trim() !== '' ? it.row.count : null, view: it.row.view, source: it.row.packed?.source ?? null, packed: it.row.packed })), { version: VERSION, packedAt: now.toISOString(), part: k + 1, parts: parts.length });
+      const entries = [textEntry(labelsName(k + 1, parts.length), JSON.stringify(labels, null, 1), now), ...part.map(it => ({ name: it.name, data: it.row.video.blob, size: it.row.video.size, crc: it.row.video.crc, date: new Date(it.row.lastModified) }))];
       return new File([zipStored(entries)], packFileName(now, k + 1, parts.length), { type: 'application/zip' });
     });
+    $('stale').hidden = true;
     showFiles();
     summaryEl.textContent = `${made.length > 1 ? `${made.length} files` : 'The file'} ready: ${done.length} video${done.length > 1 ? 's' : ''}, ${sizeText(made.reduce((s, f) => s + f.size, 0))}. Share or download ${made.length > 1 ? 'each' : 'it'}, then send ${made.length > 1 ? 'them' : 'it'} to Claude.`;
   } catch (e) {
+    made = [];
     summaryEl.textContent = `The file could not be made: ${e.message}`;
-  } finally {
-    $('make').disabled = false;
   }
 });
 
@@ -248,7 +281,7 @@ function showFiles() {
       if (!navigator.canShare?.({ files: [file] })) { summaryEl.textContent = 'This browser cannot share this file: use Download.'; return; }
       if (!share.start(performance.now())) return;
       try { await navigator.share({ files: [file], title: 'Workout Vision videos' }); }
-      catch (e) { if (e.name !== 'AbortError') summaryEl.textContent = `Sharing did not go through (${e.message}): use Download.`; }
+      catch (e) { if (e.name !== 'AbortError' && e.name !== 'InvalidStateError') summaryEl.textContent = `Sharing did not go through (${e.message}): use Download.`; }
       finally { share.end(); }
     });
     d.addEventListener('click', () => {
@@ -265,17 +298,23 @@ $('clear').addEventListener('click', async () => {
   if (running || !confirm('Delete every packed video and label from this phone? Make and send the file first.')) return;
   await store.clear();
   for (const r of rows) if (r.url) URL.revokeObjectURL(r.url);
-  rows = []; made = []; $('files').replaceChildren(); render();
+  rows = []; made = []; $('files').replaceChildren(); $('stale').hidden = true; render();
   summaryEl.textContent = 'Cleared.';
 });
 
 // Back from a reload: the rows kept on this phone, packed ones with their video, the others to pick again.
 (async () => {
   try {
-    const kept = [];
-    await store.iterate(v => { kept.push(v); });
-    kept.sort((a, b) => a.order - b.order);
-    rows = kept.map(k => ({ ...k, file: null, state: k.video ? 'done' : 'failed', note: k.video ? `Packed: ${sizeText(k.video.size)}.` : 'Not packed before the page closed: pick it again.' }));
+    const labels = new Map(), videos = new Map();
+    await store.iterate((v, k) => { if (k.startsWith('label:')) labels.set(v.key, v); else if (k.startsWith('video:')) videos.set(k.slice(6), v); });
+    rows = [...labels.values()].sort((a, b) => a.order - b.order).map(l => {
+      const v = videos.get(l.key);
+      const row = { ...l, file: null, sha256: v?.sha256 ?? null, packed: v?.packed ?? null, video: v ? { blob: v.blob, size: v.size, crc: v.crc } : null };
+      row.state = v ? 'done' : l.twinOf ? 'twin' : 'missing';
+      row.note = v ? `Packed: ${sizeText(v.size)}.` : l.twinOf ? '' : 'Not packed before the page closed: pick it again.';
+      return row;
+    });
+    for (const r of rows) if (r.state === 'twin') r.note = twinNote(r);
     if (rows.length) render();
   } catch { /* nothing kept, or storage refused: the page works for this visit */ }
 })();
