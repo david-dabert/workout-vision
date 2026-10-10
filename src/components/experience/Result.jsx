@@ -194,13 +194,21 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // RepCount-A, David's sets) it was right 7 times in 79 where offered, the app's own count 19 times on the same sets
   // (test/real-phone/accuracy/body-check.txt). It stays in result.bodyCheck.second and the saved set, to be measured.
   const second = OFFER_BODY_SECOND && flagged && Number.isInteger(result.bodyCheck.second?.count) && result.bodyCheck.second.count > 0 && result.bodyCheck.second.count !== result.count ? result.bodyCheck.second.count : null;
-  const low = !!result.refused || unsure || liveDiffers || flagged;
+  // A counted set whose count the sensitivity check moved (coreAnalysis.js withSensitivity, stability study of 10 October
+  // 2026): recounted with nearby settings, it gives another number, so the app cannot stand behind it (R8). Shown as the
+  // body check's count to confirm, with its own cause line. On David's phone only (#collecte) until he approves the line
+  // and the more frequent asking (R10, R8): on the public counted sets it asks on 103 of 853 more. Status: experimental.
+  const [sensitivityShown] = useState(() => collectOn());
+  const sensitive = sensitivityShown && !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true;
+  // The app's count, standing as one to confirm: a flagged set's or a moved one's.
+  const toCheck = flagged || sensitive;
+  const low = !!result.refused || unsure || liveDiffers || toCheck;
   // A refused set may carry PSC's count (coreAnalysis.js, withProposal; 8 October 2026): the slot opens on it, labelled
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
   // never a silent count, no grade, no measure). Status: validated on the bench (TRIED.md, 8 October).
   const proposal = result.refused && Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null;
   // The numbers of the app the person may confirm as they stand: the proposal, or a flagged set's two counts.
-  const offeredBy = n => n > 0 && (n === proposal || (flagged && (n === result.count || n === second)));
+  const offeredBy = n => n > 0 && (n === proposal || (toCheck && n === result.count) || (flagged && n === second));
   const c = RESULT[fr ? 'fr' : 'en'];
   // A blind count opens the screen on the person's own number (blind.js): on a counted set that differs, as a count they
   // changed, with the app's beside it ("Compté par l'appli : N."), so it is saved in one tap; equal, the app's count to
@@ -228,7 +236,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     target.focus({ preventScroll: true, focusVisible: false });
   }, [step]);
   // 0 stands for "no number chosen yet" on the low-confidence screen ("–"); otherwise the app's count to confirm.
-  const [trueN, setTrueN] = useState(blindN ?? (low ? (proposal ?? (flagged ? result.count : 0)) : result.count));
+  const [trueN, setTrueN] = useState(blindN ?? (low ? (proposal ?? (toCheck ? result.count : 0)) : result.count));
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
@@ -518,7 +526,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     }
     // A flagged set kept at one of the app's own numbers is a confirmed count, not a correction.
     // A refused set is kept as the person's own count, as its save key keeps it (WP1.6).
-    if (await doSave(step === 'fix' ? trueN : count, flagged ? trueN !== count : step === 'fix', !!result.refused)) { setClosing(false); await released(); onClose(); }
+    if (await doSave(step === 'fix' ? trueN : count, toCheck ? trueN !== count : step === 'fix', !!result.refused)) { setClosing(false); await released(); onClose(); }
   }
   async function discardAndClose() {
     if (saving.current) return; // a save already under way finishes; the card stays until it does
@@ -613,7 +621,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const quick = quickKeys(centre ?? previous);
   const centreLine = centre ? c.planSays(centre) : quick.length ? c.lastSet(previous) : '';
   const lowAsk = (manual, cause) => <div key="count" className="res-low" data-testid="fix-card">
-    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers || proposal || flagged ? c.notSure : c.noCount}</h2>
+    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers || proposal || toCheck ? c.notSure : c.noCount}</h2>
     <div className="res-cause">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" /><path d="M10 5.5v5.5" /><circle className="dot" cx="10" cy="14.2" r=".6" /></svg>
       <div>{cause.map(l => <p key={l}>{l}</p>)}</div>
@@ -626,20 +634,20 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     {proposal && <p className="res-state is-proposal" data-testid="res-proposal">{c.proposal(proposal)}</p>}
     {/* A flagged set: the app's count, labelled; with the spec-guided count, the two as keys, each with where it
         comes from (the counted joint, the whole body), neither chosen over the other by its look. */}
-    {flagged && !second && <p className="res-state is-proposal" data-testid="res-bodycount">{c.bodyCounted(count)}</p>}
+    {toCheck && !second && <p className="res-state is-proposal" data-testid="res-bodycount">{c.bodyCounted(count)}</p>}
     {flagged && second && <div className="res-cands" role="group" aria-label={c.bodyChoices} data-testid="res-candidates">
       {[[count, c.byJoint(liftDefinition(lift)?.joint)], [second, c.byBody]].map(([n, from], i) => <button key={i} type="button" className={`res-cand press${trueN === n ? ' is-on' : ''}`} aria-pressed={trueN === n} onClick={() => adjust(n)} data-testid={i ? 'res-cand-body' : 'res-cand-joint'}>
         <span className="res-cand-n">{n}</span><span className="res-cand-from">{from}</span>
       </button>)}
     </div>}
     {proposal && trueN === proposal ? <p className="res-hint" data-testid="res-proposal-note">{c.proposalNote}</p>
-      : flagged && offeredBy(trueN) ? <p className="res-hint" data-testid="res-body-note">{c.bodyNote}</p>
+      : toCheck && offeredBy(trueN) ? <p className="res-hint" data-testid="res-body-note">{c.bodyNote}</p>
       : trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
     {quick.length > 0 && <div className="res-quick" role="group" aria-labelledby="res-ask">{quick.map(k => <button key={k} type="button" className={`res-qk press${trueN === k ? ' is-on' : ''}`} aria-pressed={trueN === k} onClick={() => adjust(k)}>{k}</button>)}</div>}
     {centreLine && <p className="res-hint res-centre">{centreLine}</p>}
   </div>;
   const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{closing && unsaved ? closeCard : <div className="res-keys">
-    <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, flagged ? trueN !== count : true, manual); }}>{trueN > 0 ? (offeredBy(trueN) ? c.confirmN(trueN) : c.saveN(trueN)) : c.save}</button>
+    <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, toCheck ? trueN !== count : true, manual); }}>{trueN > 0 ? (offeredBy(trueN) ? c.confirmN(trueN) : c.saveN(trueN)) : c.save}</button>
     <button type="button" className="res-key press" onClick={onRefilm}>{c.refilm}</button>
   </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
 
@@ -740,7 +748,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const blocks = {
     // Low confidence: the cause and the question, no number (05b). Otherwise the question, the count between − and +,
     // its state in a mark and a word, and where it comes from (05).
-    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : [])]) : <div key="count" className="res-count">
+    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : [])]) : <div key="count" className="res-count">
       {step !== 'saved' && <p className={`res-q${asked ? '' : ' is-waiting'}${step === 'fix' ? ' is-fix' : ''}`} aria-hidden={asked ? undefined : true}>{step === 'fix' ? c.howMany : c.question(count)}</p>}
       {hero(<span key={big} className={`numeral tick${typedView ? ' is-typed' : ''}${String(big).length > 2 ? ' is-long' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>, asked, step !== 'saved')}
       {step === 'fix' && <p className="sr" aria-live="polite" aria-atomic="true">{trueN}</p>}

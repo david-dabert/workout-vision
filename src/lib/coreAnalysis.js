@@ -37,8 +37,9 @@ export class FrozenSkeletonsError extends Error {
   constructor({ samples, repeats }, decoder = '', fallback = null) { super(`${repeats} of ${samples} skeletons repeat the one before: the video was read frozen`); this.name = 'FrozenSkeletonsError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder; this.fallback = fallback; }
 }
 
-export function summarizeCount(worldLandmarks, timestamps, lift) {
-  const core = countReps(worldLandmarks, timestamps, lift);
+// tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
+export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined) {
+  const core = countReps(worldLandmarks, timestamps, lift, tuning);
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).
   // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
@@ -140,6 +141,42 @@ export function withBodyCheck(result, lift) {
     check = null;
   }
   return { ...result, bodyCheck: check ? { ...check, ms: Math.round(performance.now() - t0) } : null };
+}
+
+/**
+ * The settings of the sensitivity check's recounts: the threshold margin x0.9, x1 and x1.1, each with the outlier filter
+ * over 7 and over 9 samples (the two windows the app's own 0.5 s gives at 15 Hz, depending on how the sample rate rounds;
+ * core.ts OUTLIER_WINDOW_SEC). Source: the stability study of 10 October 2026 (TRIED.md, "Counts that swing under
+ * re-encoding"): the grid was fixed before the public run, after screening on David's 14 videos. Status: experimental.
+ */
+export const SENSITIVITY_GRID = Object.freeze([0.9, 1, 1.1].flatMap(marginScale => [7, 9].map(outlierWindow => Object.freeze({ marginScale, outlierWindow }))));
+
+/**
+ * A counted set with its sensitivity check (stability study, 10 October 2026): the set is recounted with each setting of
+ * SENSITIVITY_GRID; `sensitivity` is { moved, counts, ms }, `moved` true when any recount differs from the count (another
+ * number, or a refusal). Such a count sits on a knife edge of the counter's own settings: on David's 14 videos read from
+ * six encodings, the counts the check marks are the ones that swing between encodings, and on the 853 public counted
+ * sets that decide it marks 103 (72 wrong, 31 exact), 19 of the 39 off by 3 or more (body check alone: 7). The result
+ * screen may then show the count as one to confirm, with no grade (R8). The count, the reps, a refusal, the proposal and
+ * the body check are never changed: the check only adds this field. A refused set, a set counted none in, a fitness test
+ * and a set over BODY_CHECK_MAX_SAMPLES are returned as they came. Status: experimental.
+ */
+export function withSensitivity(result, lift) {
+  if (!result || result.refused || !(result.count > 0) || isTest(lift) || !(result.timestamps?.length <= BODY_CHECK_MAX_SAMPLES)) return result;
+  const t0 = performance.now();
+  let sensitivity = null;
+  try {
+    const counts = SENSITIVITY_GRID.map(tuning => {
+      const r = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning);
+      return r.refused ? null : r.count;
+    });
+    sensitivity = { moved: counts.some(c => c !== result.count), counts };
+  } catch (e) {
+    // As the body check: a failure leaves the result as it was, unchecked.
+    console.warn('[sensitivity] not run', e);
+    sensitivity = null;
+  }
+  return { ...result, sensitivity: sensitivity ? { ...sensitivity, ms: Math.round(performance.now() - t0) } : null };
 }
 
 /**
@@ -318,7 +355,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // A refused set may carry PSC's proposal; a counted one carries its body check (neither changes the count).
     const sorted = [...poseMs].sort((a, b) => a - b), at = q => (sorted.length ? Math.round(sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] * 10) / 10 : null);
     const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
-    const result = withBodyCheck(withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata: { ...metadata, pose }, imageLandmarks, worldLandmarks, timestamps }, lift), lift);
+    const result = withSensitivity(withBodyCheck(withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata: { ...metadata, pose }, imageLandmarks, worldLandmarks, timestamps }, lift), lift), lift);
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;

@@ -54,6 +54,9 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     // on the low-confidence screen: the agreement and the spec-guided count offered beside the app's (null when none),
     // so the history can tell these sets apart. Absent on a set the check did not flag.
     ...(flagged ? { bodyCheck: { agreement: result.bodyCheck.agreement, second: result.bodyCheck.second?.count ?? null } } : {}),
+    // The sensitivity check's recounts (coreAnalysis.js withSensitivity, 10 October 2026), kept on every counted set it
+    // ran on, shown or not, so blind counts can later say whether a moved count is more often wrong (R8).
+    ...(result.sensitivity ? { sensitivity: { moved: !!result.sensitivity.moved, counts: result.sensitivity.counts } } : {}),
     // Rep details measured with step 3c's boundaries; older sets' details are not shown.
     repDetailsVersion: 2,
     // The measured angle over the set, compact, for the report's wave (wave.js).

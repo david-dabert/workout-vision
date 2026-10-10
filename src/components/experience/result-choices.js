@@ -11,7 +11,8 @@
 //
 // The state is the screen's own, from signals the app already has, no new threshold (R8):
 //   'counted': a count shown as the app's, to confirm ("C'est bien N ?");
-//   'check':   a number shown as one to verify: a refused set's proposal (psc.js), a count the body check flagged;
+//   'check':   a number shown as one to verify: a refused set's proposal (psc.js), a count the body check flagged, a
+//              count the sensitivity check moved (coreAnalysis.js withSensitivity);
 //   'ask':     no number shown: refused with no proposal, counted none, a set the app could not read, or a live count
 //              the final reading did not find (the screen opens on "–", Result.jsx liveDiffers).
 export const CHOICE_RULE = 'neighbours-v1';
@@ -31,7 +32,7 @@ export function countChoices(result, { liveShown = null } = {}) {
     else if (refused && pos(result?.proposal?.count)) main = result.proposal.count;
   }
   if (main === null) return { main: null, alts: [], state: 'ask', rule: CHOICE_RULE };
-  const flagged = !refused && result?.bodyCheck?.flagged === true;
+  const flagged = !refused && (result?.bodyCheck?.flagged === true || result?.sensitivity?.moved === true);
   return { main, alts: [main + 1, main - 1].filter(pos), state: refused || flagged ? 'check' : 'counted', rule: CHOICE_RULE };
 }
 

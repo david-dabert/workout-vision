@@ -55,4 +55,4 @@ test('the backward pass on far-camera synthetic sets', () => {
   expect(totals.b.exact).toBeGreaterThanOrEqual(totals.a.exact);
   for (const s of sets) if (errs[s].a < 3) expect(errs[s].b, s).toBeLessThan(3);
   expect(totals.b.seen).toBeGreaterThan(totals.a.seen);
-});
+}, 120_000); // 112 reads counted: past vitest's 5 s default when the whole suite runs at once (10 October 2026)

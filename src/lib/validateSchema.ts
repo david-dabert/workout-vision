@@ -36,6 +36,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'blind',
   // The list offered in one tap on a counted set, and how the count was given (result-choices.js, 9 October 2026).
   'choice',
+  // The sensitivity check's recounts of a counted set (coreAnalysis.js withSensitivity, 10 October 2026).
+  'sensitivity',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
@@ -140,6 +142,10 @@ export function validateWorkout(record: unknown): ValidationResult {
   const ch = sanitized.choice as Record<string, unknown> | null | undefined;
   if (ch != null && !(typeof ch === 'object' && typeof ch.rule === 'string' && ch.rule.length <= 32 && Array.isArray(ch.offered)
     && ch.offered.length >= 1 && ch.offered.length <= 3 && ch.offered.every(whole) && ['main', 'alt', 'typed'].includes(ch.picked as string))) delete sanitized.choice;
+  // Recounts that are not a flag and up to six whole counts (null for a refusal) are dropped: the set stays.
+  const se = sanitized.sensitivity as Record<string, unknown> | null | undefined;
+  if (se != null && !(typeof se === 'object' && typeof se.moved === 'boolean' && Array.isArray(se.counts) && se.counts.length <= 6
+    && se.counts.every(c => c === null || whole(c)))) delete sanitized.sensitivity;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;
   if (r.createdAt) sanitized.createdAt = r.createdAt as string;

@@ -413,19 +413,28 @@ const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the 
 
 // ─── Public API ───
 
+/**
+ * A recount with nearby settings, for the sensitivity check (coreAnalysis.js withSensitivity; stability study of
+ * 10 October 2026): marginScale multiplies the threshold margin (step 6), outlierWindow replaces the outlier filter's
+ * window in samples (step 3). Absent, the count is the app's own. Never used to change the count shown: a recount that
+ * differs only marks the count as one the app cannot measure reliably (R8).
+ */
+export type CountTuning = { marginScale?: number; outlierWindow?: number };
+
 export function countReps(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
   lift: Lift | string,
+  tuning: CountTuning = {},
 ): CountResult {
   // An exercise with no definition (no joint in the guide, or a key the core does not know) gets no
   // count: never another lift's (review of 29 September 2026).
   const def = liftDefinition(lift);
   if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
-  if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def);
+  if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def, tuning);
   const seen = selectSide(worldLandmarks, def.joint);
   if (def.together) {
-    const joined = countBothSides(worldLandmarks, timestamps, def);
+    const joined = countBothSides(worldLandmarks, timestamps, def, tuning);
     const { left, right } = joined.sides!;
     if (correlation(left.smoothedAngles, right.smoothedAngles) > (def.togetherMinCorrelation ?? TOGETHER_MIN_CORRELATION)) {
       // Either knee in sight sees the rep: the share of samples where one of them is.
@@ -434,7 +443,7 @@ export function countReps(
     }
     // The knees do not move together: counted as eitherSide, below.
   }
-  const mine = countSide(worldLandmarks, timestamps, def, seen);
+  const mine = countSide(worldLandmarks, timestamps, def, seen, tuning);
   if (!def.eitherSide && !def.together) return mine;
   // The side with more reps; on a tie, the better seen. A side seen in fewer than half the samples, which the count
   // refuses (summarizeCount), is never kept over one seen in more: its extra reps would turn a set the better side
@@ -445,7 +454,7 @@ export function countReps(
   // compared first, then reps (third audit, C01, 3 October: a push-up whose picked wrist hovered at 0.45 was
   // refused although the other elbow, seen on every sample, counted the same 6). Measured on 3 October with
   // variant-eval: no count moved on David's sets, either public half or the synthetic sets.
-  const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left');
+  const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
   const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
   const mineSeen = countable(mine), otherSeen = countable(other);
   if (mineSeen !== otherSeen) return otherSeen ? other : mine;
@@ -457,6 +466,7 @@ function countSide(
   timestamps: number[],
   def: LiftDefinition,
   arm: 'left' | 'right',
+  tuning: CountTuning = {},
 ): CountResult {
   // 1. Extract raw angle per sample
   const zw = setZWeight(worldLandmarks);
@@ -472,7 +482,7 @@ function countSide(
   const sampleRate = estimateSampleRate(timestamps);
 
   // 3. Remove outliers (before bridging, so spikes don't propagate)
-  const outlierSize = secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
+  const outlierSize = tuning.outlierWindow ?? secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
   const cleaned = removeOutliers(filledAngles, outlierSize, OUTLIER_DEVIATION_DEG);
 
   // 4. Bridge short dropouts
@@ -497,9 +507,10 @@ function countSide(
     return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: pLow, highThreshold: pHigh };
   }
 
-  const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
+  const scale = tuning.marginScale ?? 1;
+  const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN) * scale;
   // The working end may sit further in (LiftDefinition.workMargin, squat); the rest end keeps the margin.
-  const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN);
+  const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN) * scale;
   const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
@@ -571,9 +582,9 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
  * second's lag counted 12 for 6). Status: experimental, UNSOURCED.
  * The count needs both arms in view, so the confidence is the lower of the two.
  */
-function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition): CountResult {
-  const left = countSide(worldLandmarks, timestamps, def, 'left');
-  const right = countSide(worldLandmarks, timestamps, def, 'right');
+function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, tuning: CountTuning = {}): CountResult {
+  const left = countSide(worldLandmarks, timestamps, def, 'left', tuning);
+  const right = countSide(worldLandmarks, timestamps, def, 'right', tuning);
   // T5 (survey.ts, ALT_DIFF, off): the two sides move in turn, so the reps are read on their difference.
   if (def.bothSides && !def.together && altDiffOn() && correlation(left.smoothedAngles, right.smoothedAngles) < altMaxR()) {
     const alt = countAlternating(left, right, timestamps, def);
