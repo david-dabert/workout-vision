@@ -9,6 +9,7 @@ import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
 import { extractFramesWebCodecs, withRestarts } from './frameExtractor';
 import { MAX_LONG_SIDE, TARGET_FPS } from './extractionConfig';
 import { KEY_EVERY_SEC, crc32, pickEncoder } from './pack';
+import { readIsWhole } from './collector';
 
 // Pictures the encoder may hold before the reader waits: keeps memory flat on a long video. Source: convention
 // (the frame reader's own back-pressure holds 1 to 2 decoded frames, frameExtractor.js). Status: convention.
@@ -67,12 +68,16 @@ export async function packVideo(file, { signal, onProgress, bpp, deps = {} } = {
     if (encodeError) throw encodeError;
     muxer.finalize();
     const bytes = new Uint8Array(target.buffer);
+    // Whether every sample the app would take was read, by the app's own rule (collector.js readIsWhole: a shortfall of
+    // 2 samples or 1 % is whole). A video under 15 pictures a second gives fewer: the app refuses such a read too.
+    const expected = Number.isFinite(read?.duration) ? Math.floor(read.duration * TARGET_FPS) : null;
     return {
       blob: new Blob([bytes], { type: 'video/mp4' }), size: bytes.length, crc: crc32(bytes), source,
       packed: {
         codec: picked.config.codec, width: picked.config.width, height: picked.config.height, fps: TARGET_FPS, frames,
         seconds: Math.round((last + FRAME_US) / 1e3) / 1e3, bitrate: picked.config.bitrate, sourceDuration: read?.duration ?? null,
-        rotation: read?.rotationDecision || null, restarts, packSeconds: Math.round((performance.now() - t0) / 100) / 10,
+        rotation: read?.rotationDecision || null, restarts, expected, whole: expected !== null && readIsWhole(frames, expected),
+        packSeconds: Math.round((performance.now() - t0) / 100) / 10,
       },
     };
   } finally {

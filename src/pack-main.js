@@ -28,7 +28,7 @@ const $ = id => document.getElementById(id);
 const setsEl = $('sets'), summaryEl = $('summary');
 // state: 'waiting' (to pack), 'packing', 'done' (packed), 'failed' (pick it again), 'missing' (kept from before a
 // reload, never packed: pick it again), 'twin' (the same video as another row: not packed twice).
-let rows = [], running = false, made = [];
+let rows = [], running = false, made = [], madeKeys = new Set();
 
 const option = (value, text) => Object.assign(document.createElement('option'), { value, textContent: text });
 const LABEL = k => `label:${k}`, VIDEO = k => `video:${k}`;
@@ -37,13 +37,30 @@ async function keepLabel(r) { try { await store.setItem(LABEL(r.key), labelOf(r)
 const typedBad = r => parseCount(r.countText ?? r.count ?? '') === undefined;
 const number = r => rows.indexOf(r) + 1;
 
-// A file made before a label changed, or before more videos were packed, no longer says what the page says: it goes,
-// and the page asks for a new one.
-function stale() {
-  if (!made.length) return;
-  made = [];
+// A file made before the label of one of its videos changed no longer says what the page says: it goes, and the page
+// asks for a new one. A video packed after the file was made changes nothing in it: the file stays, and the page says
+// it can be made again to hold the new ones.
+function stale(row = null) {
+  if (!made.length || (row && !madeKeys.has(row.key))) return;
+  made = []; madeKeys = new Set();
   $('files').replaceChildren();
+  $('stale').textContent = 'A label in the file changed since it was made: make it again before sending it.';
   $('stale').hidden = false;
+}
+function packedSinceFile() {
+  if (!made.length) return;
+  $('stale').textContent = 'More videos were packed since the file was made: make it again to hold them too, or send it as it is.';
+  $('stale').hidden = false;
+}
+// A row's fields as its label now says, without rebuilding the page (a rebuild would close the keyboard of a field
+// being typed in); a field being typed in is left as it is.
+function syncFields(r) {
+  const i = rows.indexOf(r);
+  for (const [id, v] of [[`lift${i}`, r.lift || ''], [`view${i}`, r.view || ''], [`count${i}`, r.countText ?? (r.count ?? '')]]) {
+    const el = r.el?.querySelector(`#${id}`);
+    if (el && el !== document.activeElement) el.value = String(v);
+  }
+  paint(r);
 }
 
 function render() {
@@ -74,8 +91,8 @@ function render() {
     const choose = (key, value) => {
       row[key] = value; row.touched = { ...row.touched, [key]: true };
       const changed = carryDown(rows, i, key, value);
-      for (const r of [row, ...changed]) { const el = r.el?.querySelector(`#${key}${number(r) - 1}`); if (el) el.value = r[key] || ''; keepLabel(r); }
-      stale(); summarize();
+      for (const r of [row, ...changed]) { const el = r.el?.querySelector(`#${key}${number(r) - 1}`); if (el) el.value = r[key] || ''; keepLabel(r); stale(r); }
+      summarize();
     };
     lift.addEventListener('change', () => choose('lift', lift.value));
     view.addEventListener('change', () => choose('view', view.value));
@@ -84,7 +101,7 @@ function render() {
       const n = parseCount(count.value);
       if (n !== undefined) row.count = n;
       row.touched = { ...row.touched, count: true };
-      keepLabel(row); stale(); paint(row); summarize();
+      keepLabel(row); stale(row); paint(row); summarize();
     });
     row.el = box;
     paint(row);
@@ -189,15 +206,22 @@ async function packAll() {
         try { row.sha256 = row.file.size <= HASH_MAX_BYTES ? await hashVideoContent(row.file) : null; } catch { row.sha256 = null; }
         const twin = row.sha256 && rows.find(r => r !== row && r.sha256 === row.sha256 && r.state === 'done');
         if (twin) { markTwin(row, twin); continue; }
-        await store.setItem(VIDEO(row.key), { blob: out.blob, size: out.size, crc: out.crc, sha256: row.sha256, packed: { ...out.packed, source: out.source } });
-        // The video as IndexedDB holds it from now on: on an iPhone a Blob read back from it lives on disk, so a pick
-        // of 100 does not keep 100 packed videos in memory. The record is never written again.
-        const back = await store.getItem(VIDEO(row.key)).catch(() => null);
-        row.video = { blob: back?.blob ?? out.blob, size: out.size, crc: out.crc };
+        row.video = { blob: out.blob, size: out.size, crc: out.crc };
         row.packed = { ...out.packed, source: out.source };
         row.state = 'done';
-        row.note = `Packed: ${sizeText(out.size)}, ${out.packed.frames} pictures, ${out.packed.packSeconds} s.`;
-        stale();
+        const short = out.packed.whole === false ? ` Only ${out.packed.frames} of the ${out.packed.expected} pictures the app reads: it would refuse this video too.` : '';
+        row.note = `Packed: ${sizeText(out.size)}, ${out.packed.frames} pictures, ${out.packed.packSeconds} s.${short}`;
+        // Kept on the phone once; the video as IndexedDB holds it from then on: on an iPhone a Blob read back from it
+        // lives on disk, so a pick of 100 does not keep 100 packed videos in memory. A phone whose storage is full keeps
+        // the video for this visit only: it is packed all the same, and the file can still be made before leaving.
+        try {
+          await store.setItem(VIDEO(row.key), { blob: out.blob, size: out.size, crc: out.crc, sha256: row.sha256, packed: row.packed });
+          const back = await store.getItem(VIDEO(row.key)).catch(() => null);
+          if (back?.blob) row.video.blob = back.blob;
+        } catch (e) {
+          row.note = `${row.note} Not kept on this phone (${e.message}): make the file before leaving this page.`;
+        }
+        packedSinceFile();
       } catch (err) {
         if (isInterruption(controller.signal.reason)) { row.state = 'waiting'; row.note = 'Stopped while the page was hidden: it starts again when the page is back.'; }
         else { row.state = 'failed'; row.note = `Not packed: ${err.message}. Pick it again to try once more.`; console.error(err); }
@@ -224,7 +248,7 @@ function markTwin(row, twin) {
   for (const k of ['lift', 'view']) if (row.touched?.[k] && !twin.touched?.[k]) { twin[k] = row[k]; twin.touched = { ...twin.touched, [k]: true }; moved.push(k === 'lift' ? 'exercise' : 'view'); }
   if (String(row.countText ?? '').trim() !== '' && String(twin.countText ?? '').trim() === '') { twin.countText = row.countText; twin.count = row.count; twin.touched = { ...twin.touched, count: true }; moved.push('reps'); }
   row.note = twinNote(row);
-  if (moved.length) { keepLabel(twin); render(); }
+  if (moved.length) { keepLabel(twin); syncFields(twin); stale(twin); }
   keepLabel(row);
 }
 const twinNote = row => { const t = rows.find(r => r.key === row.twinOf); return `The same video as ${t ? `video ${number(t)}` : 'one already packed'}: not packed twice. Label that one.`; };
@@ -235,7 +259,6 @@ $('videos').addEventListener('change', () => {
   $('videos').value = '';
   if (!files.length) return;
   addFiles(files);
-  stale();
   render();
   packAll();
 });
@@ -261,11 +284,12 @@ $('make').addEventListener('click', () => {
       const entries = [textEntry(labelsName(k + 1, parts.length), JSON.stringify(labels, null, 1), now), ...part.map(it => ({ name: it.name, data: it.row.video.blob, size: it.row.video.size, crc: it.row.video.crc, date: new Date(it.row.lastModified) }))];
       return new File([zipStored(entries)], packFileName(now, k + 1, parts.length), { type: 'application/zip' });
     });
+    madeKeys = new Set(done.map(r => r.key));
     $('stale').hidden = true;
     showFiles();
     summaryEl.textContent = `${made.length > 1 ? `${made.length} files` : 'The file'} ready: ${done.length} video${done.length > 1 ? 's' : ''}, ${sizeText(made.reduce((s, f) => s + f.size, 0))}. Share or download ${made.length > 1 ? 'each' : 'it'}, then send ${made.length > 1 ? 'them' : 'it'} to Claude.`;
   } catch (e) {
-    made = [];
+    made = []; madeKeys = new Set();
     summaryEl.textContent = `The file could not be made: ${e.message}`;
   }
 });
@@ -298,7 +322,7 @@ $('clear').addEventListener('click', async () => {
   if (running || !confirm('Delete every packed video and label from this phone? Make and send the file first.')) return;
   await store.clear();
   for (const r of rows) if (r.url) URL.revokeObjectURL(r.url);
-  rows = []; made = []; $('files').replaceChildren(); $('stale').hidden = true; render();
+  rows = []; made = []; madeKeys = new Set(); $('files').replaceChildren(); $('stale').hidden = true; render();
   summaryEl.textContent = 'Cleared.';
 });
 

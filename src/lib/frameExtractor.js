@@ -495,6 +495,13 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     // A restart (withRestarts) goes on from the grid's origin plus the samples already read: from startFrame / 15 s it
     // went back in time on a video whose first frame is not at 0 s (review of 10 October 2026).
     let nextCaptureTime = (origin ?? 0) + startFrame * interval;
+    // The time of the last sample handed on before a restart (the error's `resume.after`): a frame at or before it is
+    // never handed on again. On a video under 15 pictures a second, or with a hole, the samples run ahead of the grid,
+    // so origin + startFrame / 15 s can lie before the last sample, and the restart went back in time (re-review of
+    // 10 October 2026: 10 a second, samples ..., 1.8, 1.9, 1.4, 1.5).
+    const after = startFrame === 0 ? null : (options.after ?? null);
+    let lastHanded = after;
+    const handedAlready = t => after !== null && t <= after + 1e-6;
 
     // Frame queue: decoder output pushes, main loop pulls.
     // Every decoded VideoFrame is a full-size picture held by the decoder's pool (a 4K HDR 10-bit frame is about
@@ -520,7 +527,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
         const timestamp = frame.timestamp / 1_000_000;
         // Once the sampling grid has started, a frame before the next capture time is never sampled: closed at once.
         // Before the grid starts (origin null), the first frame sets it and is kept.
-        if (origin !== null && timestamp < nextCaptureTime - 0.001) {
+        if ((origin !== null && timestamp < nextCaptureTime - 0.001) || handedAlready(timestamp)) {
           frame.close();
           return;
         }
@@ -631,18 +638,22 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
     while (extractedCount < frameCount) {
       if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-      if (decodeError) {
+      const failed = () => {
         const e = new Error(`Video decode failed: ${decodeError.message}`);
-        e.resume = { startFrame: extractedCount, origin };
-        throw e;
-      }
+        e.resume = { startFrame: extractedCount, origin, after: lastHanded };
+        return e;
+      };
+      if (decodeError) throw failed();
 
       // Wait for frames if queue is empty
       while (frameQueue.length === 0 && !decodeComplete && !decodeError && !signal?.aborted) {
         await waitForFrame();
       }
       if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-      if (frameQueue.length === 0) break;
+      // A decoder that failed while this loop waited ends the pass as a failure to restart from here, never as a read
+      // that simply stopped early (re-review of 10 October 2026: Safari reports the failure through the error callback
+      // after decode() returns, so the wait ended with nothing queued and the read resolved with 10 of 45 samples).
+      if (frameQueue.length === 0) { if (decodeError) throw failed(); break; }
 
       // Drain queued frames
       while (frameQueue.length > 0 && extractedCount < frameCount) {
@@ -650,8 +661,9 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
         const timestamp = frame.timestamp / 1_000_000; // microseconds → seconds
 
         if (origin === null) { origin = timestamp; nextCaptureTime = origin; }
-        if (timestamp >= nextCaptureTime - 0.001) {
+        if (timestamp >= nextCaptureTime - 0.001 && !handedAlready(timestamp)) {
           try { drawFrame(frame); } finally { frame.close(); }
+          lastHanded = timestamp;
           // The next sample time is set before the pose model runs, so the frames decoded meanwhile that will
           // never be sampled are closed as they arrive rather than queued.
           nextCaptureTime = origin + (extractedCount + 1) * interval;
@@ -744,7 +756,7 @@ export async function withRestarts(run, options = {}, max = 3) {
       if (!at || err.name === 'AbortError' || err.fromOnFrame || restarts >= max || stuck) throw err;
       restarts++;
       console.warn(`[frameExtractor] WebCodecs failed at sample ${at.startFrame} (${err.message}); restart ${restarts}`);
-      pass = { ...options, startFrame: at.startFrame, origin: at.origin };
+      pass = { ...options, startFrame: at.startFrame, origin: at.origin, after: at.after ?? null };
     }
   }
 }

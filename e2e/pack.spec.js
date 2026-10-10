@@ -179,3 +179,135 @@ test('each packed video ends after its last picture, and is named by its number 
     expect(Math.floor(mp4Seconds(zip[s.video]) * 15 + 1e-9)).toBeGreaterThanOrEqual(s.packed.frames);
   }
 });
+
+// Re-review of 10 October 2026: what its verifier reproduced after the first round of fixes.
+const slowDigest = () => {
+  const digest = crypto.subtle.digest.bind(crypto.subtle);
+  crypto.subtle.digest = async (alg, data) => { if (window.__slow && data.byteLength > 10000) await new Promise(r => setTimeout(r, 3000)); return digest(alg, data); };
+};
+
+test('a phone whose storage is full still packs the video, and the file can be made', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => {
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (value, key) {
+      const hasBlob = v => v && typeof v === 'object' && (v instanceof Blob || Object.values(v).some(x => x instanceof Blob));
+      if (hasBlob(value)) throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+      return put.call(this, value, key);
+    };
+  });
+  await page.goto(PAGE);
+  await pick(page, 'a.webm');
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+  await expect(page.locator('.set .state')).toContainText('Not kept on this phone');
+  await expect(page.locator('#make-box')).toBeVisible();
+});
+
+test('a label moved from a copy to the first video takes away a file already made', async ({ page }) => {
+  test.setTimeout(180000);
+  await page.addInitScript(slowDigest);
+  await page.goto(PAGE);
+  const a = Buffer.from(await drawnWebm(page, 1500), 'base64');
+  await page.locator('#videos').setInputFiles([{ name: 'a.webm', mimeType: 'video/webm', buffer: a }]);
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+  await page.locator('#lift0').selectOption('squat');
+  await page.evaluate(() => { window.__slow = true; });
+  await page.locator('#videos').setInputFiles([{ name: 'a-copy.webm', mimeType: 'video/webm', buffer: a }]);
+  await expect(page.locator('.set')).toHaveCount(2);
+  await page.locator('#count1').fill('7');
+  page.on('dialog', d => d.accept());
+  await page.click('#make');
+  await expect(page.locator('#files button', { hasText: 'Download' })).toHaveCount(1);
+  await expect(page.locator('.set').nth(1).locator('.state')).toContainText('The same video as video 1', { timeout: 60000 });
+  await expect(page.locator('#count0')).toHaveValue('7');
+  await expect(page.locator('#files button')).toHaveCount(0);
+  await expect(page.locator('#stale')).toBeVisible();
+});
+
+test('typing reps on one video is not cut off when a copy below is found to be the same video', async ({ page }) => {
+  test.setTimeout(180000);
+  await page.addInitScript(slowDigest);
+  await page.goto(PAGE);
+  const a = Buffer.from(await drawnWebm(page, 1500), 'base64'), b = Buffer.from(await drawnWebm(page, 1500), 'base64');
+  await page.locator('#videos').setInputFiles([{ name: 'a.webm', mimeType: 'video/webm', buffer: a }]);
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+  await page.evaluate(() => { window.__slow = true; });
+  await page.locator('#videos').setInputFiles([{ name: 'z-copy.webm', mimeType: 'video/webm', buffer: a, lastModified: Date.now() + 1e6 }, { name: 'b.webm', mimeType: 'video/webm', buffer: b, lastModified: Date.now() + 2e6 }]);
+  await expect(page.locator('.set')).toHaveCount(3);
+  const names = await page.locator('.set-head span').allTextContents();
+  const copy = names.indexOf('z-copy.webm'), other = names.indexOf('b.webm');
+  await page.locator(`#count${copy}`).fill('5');
+  await page.locator(`#count${other}`).click();
+  await page.keyboard.type('1');
+  await expect(page.locator('.set').nth(copy).locator('.state')).toContainText('The same video as video 1', { timeout: 60000 });
+  await page.keyboard.type('2');
+  await expect(page.locator(`#count${other}`)).toHaveValue('12');
+  await expect(page.locator('#count0')).toHaveValue('5');
+});
+
+test('a video that could not be packed keeps its number, and the next one is named by its own', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.goto(PAGE);
+  const a = Buffer.from(await drawnWebm(page, 1500), 'base64');
+  await page.locator('#videos').setInputFiles([
+    { name: 'broken.webm', mimeType: 'video/webm', buffer: Buffer.from('not a video'), lastModified: 1000 },
+    { name: 'a.webm', mimeType: 'video/webm', buffer: a, lastModified: 2000 },
+  ]);
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+  await expect(page.locator('.set.failed')).toHaveCount(1);
+  await page.locator('#lift1').selectOption('squat');
+  await page.locator('#count1').fill('6');
+  await page.click('#make');
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#files button', { hasText: 'Download' }).click()]);
+  const zip = unzipSync(new Uint8Array(readFileSync(await dl.path())));
+  expect(Object.keys(zip)).toContain('videos/002-squat.mp4');
+});
+
+test('a fingerprint that cannot be read leaves the packed video, with no fingerprint', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => { crypto.subtle.digest = async () => { throw new Error('no digest'); }; });
+  await page.goto(PAGE);
+  await pick(page, 'a.webm');
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+  await page.locator('#lift0').selectOption('squat');
+  await page.locator('#count0').fill('4');
+  await page.click('#make');
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#files button', { hasText: 'Download' }).click()]);
+  const labels = JSON.parse(new TextDecoder().decode(unzipSync(new Uint8Array(readFileSync(await dl.path())))['labels.json']));
+  expect(labels.sets[0].original.sha256).toBeNull();
+});
+
+test('a label typed after packing never writes the packed video again', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.addInitScript(() => {
+    window.__blobPuts = 0;
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (value, key) {
+      if (value && typeof value === 'object' && (value instanceof Blob || Object.values(value).some(x => x instanceof Blob))) window.__blobPuts++;
+      return put.call(this, value, key);
+    };
+  });
+  await page.goto(PAGE);
+  await pick(page, 'a.webm');
+  await expect(page.locator('.set.done')).toHaveCount(1, { timeout: 60000 });
+  const after = await page.evaluate(() => window.__blobPuts);
+  await page.locator('#lift0').selectOption('squat');
+  await page.locator('#count0').fill('11');
+  await page.locator('#lift0').selectOption('overhead_press');
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.__blobPuts)).toBe(after);
+});
+
+test('a count the page refused is still refused after a reload, never kept as a label', async ({ page }) => {
+  test.setTimeout(120000);
+  await page.goto(PAGE);
+  await pick(page, 'a.webm');
+  await page.locator('#lift0').selectOption('squat');
+  await page.locator('#count0').fill('7.5');
+  await expect(page.locator('#summary')).toContainText('1 of 1 packed', { timeout: 60000 });
+  await page.reload();
+  await expect(page.locator('#count0')).toHaveValue('7.5');
+  await page.click('#make');
+  await expect(page.locator('#summary')).toHaveText('Video 1: the reps must be a whole number from 0 to 99, or empty.');
+  await expect(page.locator('#files button')).toHaveCount(0);
+});
