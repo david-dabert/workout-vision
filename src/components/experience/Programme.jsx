@@ -30,6 +30,9 @@ export default function Programme({ payload, onClose, onStart }) {
   const [note, setNote] = useState('');
   // The in-app browser's copy of the programme's link: its own line, and the link to select when the copy is refused.
   const [copyNote, setCopyNote] = useState(''), [copyShown, setCopyShown] = useState(false);
+  // The results link to select when neither the share sheet nor the copy is allowed (an app's own browser): the sets
+  // filmed there live only there, so the link must reach the coach (live-app audit, 10 October 2026).
+  const [resultsShown, setResultsShown] = useState(false);
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang, state.kind, state.entry?.id]);
   const sets = useSets();
@@ -91,7 +94,8 @@ export default function Programme({ payload, onClose, onStart }) {
     .then(() => { setCopyShown(false); setCopyNote(c.copied); }, () => { setCopyShown(true); setCopyNote(c.copyFailed); });
   function sendResults() {
     if (!resultsUrl) return;
-    const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.resultsCopied), () => setNote(c.linkError));
+    const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard')))
+      .then(() => { setResultsShown(false); setNote(c.resultsCopied); }, () => { setResultsShown(true); setNote(c.copyFailed); });
     if (!navigator.share) { copy(); return; }
     // Refused for any reason but the client's own cancel, the link is copied instead.
     navigator.share({ title: p.title, text: past ? c.resultsTextOf(p.title, pastDay) : c.resultsText(p.title), url: resultsUrl }).then(() => setNote(''), e => { if (e.name !== 'AbortError') copy(); });
@@ -141,6 +145,10 @@ export default function Programme({ payload, onClose, onStart }) {
           <span>{past ? c.sendResultsOf(pastDay) : c.sendResults}</span>
         </button>
         {note && <p className="pro-status" role="status" data-testid="programme-send-status">{note}</p>}
+        {resultsShown && <div className="field">
+          <label htmlFor="pResultsLink">{c.resultsLinkLabel}</label>
+          <input id="pResultsLink" type="text" readOnly value={resultsUrl} onFocus={e => e.currentTarget.select()} data-testid="programme-results-link" />
+        </div>}
         <p className="foot pro-foot">{past ? c.resultsPrivacyOf(pastDay) : c.resultsPrivacy}</p>
       </div>}
       <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>
