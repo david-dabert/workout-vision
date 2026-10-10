@@ -131,6 +131,8 @@ describe('reportFor', () => {
   const base = { lift: 'squat', liftName: 'Squat', count: 8, trueN: 10, version: 'v', fr: false };
   it('offers the refused set\'s report on a refused result', () => {
     expect(reportFor({ ...base, refused: true })).toEqual({ lift: 'squat', liftName: 'Squat', counted: null, userCount: null, version: 'v', fr: false });
+    // A refused set whose count the person typed and saved: the report carries that count (live-app audit, 10 October).
+    expect(reportFor({ ...base, refused: true, step: 'saved' })).toMatchObject({ counted: null, userCount: 10 });
   });
   it('offers the count\'s report once the set is saved, or when its save failed, and not before', () => {
     expect(reportFor({ ...base, step: 'saved' })).toMatchObject({ counted: 8, userCount: 10 });
