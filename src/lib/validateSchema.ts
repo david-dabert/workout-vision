@@ -32,6 +32,10 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   // The app's proposal on a refused set (saved-set.js), and a set the body check flagged: written since 8 October but
   // dropped here on every read until 9 October, so no screen could tell a confirmed proposal from a typed count.
   'proposal', 'bodyCheck',
+  // The count the person gave before the app showed its own (blind.js, 9 October 2026), or null for "Je ne sais pas".
+  'blind',
+  // The list offered in one tap on a counted set, and how the count was given (result-choices.js, 9 October 2026).
+  'choice',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
@@ -128,6 +132,14 @@ export function validateWorkout(record: unknown): ValidationResult {
   const bc = sanitized.bodyCheck as Record<string, unknown> | null | undefined;
   if (bc != null && !(typeof bc === 'object' && (bc.agreement === null || num(bc.agreement))
     && (bc.second === null || whole(bc.second)))) delete sanitized.bodyCheck;
+  // A blind answer that is not a count from 1 to 99 (or null) with the share of sets asked is dropped: the set stays.
+  const bl = sanitized.blind as Record<string, unknown> | null | undefined;
+  if (bl != null && !(typeof bl === 'object' && (bl.count === null || (Number.isInteger(bl.count) && (bl.count as number) >= 1 && (bl.count as number) <= 99))
+    && num(bl.p) && (bl.p as number) >= 0 && (bl.p as number) <= 1)) delete sanitized.blind;
+  // A list that is not a rule's name, up to three whole counts and how the number was given is dropped: the set stays.
+  const ch = sanitized.choice as Record<string, unknown> | null | undefined;
+  if (ch != null && !(typeof ch === 'object' && typeof ch.rule === 'string' && ch.rule.length <= 32 && Array.isArray(ch.offered)
+    && ch.offered.length >= 1 && ch.offered.length <= 3 && ch.offered.every(whole) && ['main', 'alt', 'typed'].includes(ch.picked as string))) delete sanitized.choice;
   // Preserve id and date even if validation fails
   if (r.id) sanitized.id = r.id as string;
   if (r.createdAt) sanitized.createdAt = r.createdAt as string;

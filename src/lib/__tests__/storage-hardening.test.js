@@ -85,6 +85,8 @@ describe('the fields the result screen saves', () => {
       ...Object.keys(savedSet({ result, lift: 'squat', n: 5, manual: true })),
       // a set filmed from a coach's programme (programme.js)
       ...Object.keys(savedSet({ result, lift: 'squat', n: 6, corrected: false, planned: { programme: 'p1', item: 0, sets: 3, reps: 10, rest: 90 } })),
+      // a set whose count was asked before the app's (blind.js)
+      ...Object.keys(savedSet({ result, lift: 'squat', n: 6, corrected: false, blind: { count: 6, p: 1 } })),
       // added by saveWorkout
       'id', 'createdAt', 'schemaVersion',
     ]);

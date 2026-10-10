@@ -6,6 +6,7 @@ import { Body, mapPose, SPR, DPR, LITE } from './entry-scene';
 import { addLayer, setDust, stageReduced, presence } from './stage-loop';
 import './Watch.css';
 import { eventsActive } from '../../lib/events';
+import BlindAsk from './BlindAsk';
 
 const SEEN = 0.5;      // a joint counts for the body box when the model sees it at least this well
 const DRAWN = 0.3;     // below this a joint is not drawn at all
@@ -36,7 +37,8 @@ function drawTrail(ctx, tr, alpha) {
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 }
 
-export default function Watch({ lift, progress, phase, landmarks, frameSize, onSkip }) {
+// blind: while the person's count is asked before the app's (blind.js, CoreUpload.jsx), { onAnswer }; else null.
+export default function Watch({ lift, progress, phase, landmarks, frameSize, onSkip, blind = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const title = exerciseName(lift, lang);
   // Loading until the first body arrives; a later frame without a person does not count as loading.
@@ -44,8 +46,15 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
   if (landmarks) seenBody.current = true;
   const loading = phase !== 'extracting' || !seenBody.current;
   const live = useRef({});
-  live.current = { lm: landmarks, fs: frameSize, progress };
+  live.current = { lm: landmarks, fs: frameSize, progress, blind: !!blind };
   const topRef = useRef(null), bottomRef = useRef(null), pctRef = useRef(null), barRef = useRef(null);
+  // Answered while the video is still read: the question leaves the screen with the focus on its key, so the focus goes
+  // to the screen's heading, as on arriving here (ScreenFade.jsx), for VoiceOver and the keyboard (review, 9 October).
+  const headRef = useRef(null), hadBlind = useRef(!!blind);
+  useEffect(() => {
+    if (hadBlind.current && !blind) headRef.current?.focus({ preventScroll: true });
+    hadBlind.current = !!blind;
+  }, [blind]);
 
   useEffect(() => {
     setDust(1);
@@ -67,6 +76,8 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
     measure();
     const ro = new ResizeObserver(measure);
     if (topRef.current) ro.observe(topRef.current.closest('.watch-screen'));
+    // The blind question opens and closes under the progress: the body's space follows it.
+    if (bottomRef.current) ro.observe(bottomRef.current);
 
     // Only a digit that changed is marked new, so it alone rolls in (design/SYSTEM.md, section 3, change 4).
     let lastDigits = '';
@@ -111,8 +122,13 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
 
       const here = presence(topRef.current, now, memo);
       if (here <= 0) return;
-      const top = area && area.bottom - area.top > 120 ? area.top * DPR : H * 0.11;
-      const hgt = area && area.bottom - area.top > 120 ? (area.bottom - area.top) * DPR : H * 0.6;
+      // With the blind question open, the body keeps to the space left above it, however short, and never runs under the
+      // question's words (a 375 x 548 screen leaves it about 70 pt).
+      const fits = area && area.bottom - area.top > (live.current.blind ? 24 : 120);
+      // No room left above the question: no body, rather than one drawn over the question and its keys.
+      if (live.current.blind && !fits) return;
+      const top = fits ? area.top * DPR : H * 0.11;
+      const hgt = fits ? (area.bottom - area.top) * DPR : H * 0.6;
       const rect = { x: W * 0.06, y: top, w: W * 0.88, h: hgt };
 
       // Before the first sample: the reference pose, faint and breathing, so the screen is never still.
@@ -151,15 +167,16 @@ export default function Watch({ lift, progress, phase, landmarks, frameSize, onS
 
   const pct = Math.round(progress);
   return <div className="wv-experience">
-    <section className="screen is-active watch-screen">
+    <section className={`screen is-active watch-screen${blind ? ' has-blind' : ''}`}>
       <div className="watch-top" ref={topRef}>
         {/* The screen's heading: the screen change gives it the focus (ScreenFade.jsx), not Cancel (audit of 6 October). */}
-        <h1 className="eyebrow">{title} · {loading ? (fr ? 'Chargement' : 'Loading') : (fr ? 'Analyse' : 'Analysis')}</h1>
+        <h1 className="eyebrow" ref={headRef} tabIndex={-1}>{title} · {loading ? (fr ? 'Chargement' : 'Loading') : (fr ? 'Analyse' : 'Analysis')}</h1>
       </div>
       <div className="watch-space" />
       <div className="watch-bottom" ref={bottomRef}>
         <p className={`pct${loading ? ' is-loading' : ''}`} ref={pctRef} aria-hidden="true" />
         <div className={`watch-progress${loading ? ' is-loading' : ''}`} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label={fr ? 'Analyse' : 'Analysis'}><i ref={barRef} /></div>
+        {blind && <BlindAsk fr={fr} onAnswer={blind.onAnswer} />}
         <p className="privacy">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
           {/* With anonymous usage counts on (src/lib/events.js), "nothing is sent" would be untrue: the line speaks of the

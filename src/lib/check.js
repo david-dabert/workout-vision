@@ -87,3 +87,27 @@ export function injectVerdict(outcome) {
     : outcome?.count === 'refused' ? 'refused, but not as frozen' : `counted ${outcome?.count ?? 'nothing'}, not refused`;
   return { ok: false, why: [why], read: null, by: null };
 }
+
+/** ?delegate=gpu: the rows read with MediaPipe's GPU delegate (pillar 4, 9 October 2026), else null (the CPU, as the app). */
+export const delegateParam = (search = '') => (new URLSearchParams(search).get('delegate') || '').toLowerCase() === 'gpu' ? 'GPU' : null;
+
+/**
+ * The line of a row that says how the pose model ran on this phone (coreAnalysis.js, metadata.pose): the delegate and,
+ * on the GPU, the renderer WebGL names; the model's median and 90th-percentile time per sample; the first 12 hex of the
+ * SHA-256 of the world landmarks, so a row read twice shows whether the model repeats itself. The live counter needs
+ * at most 66.7 ms a sample (liveEngine.js SLOW_MS). French copy written 9 October 2026, awaiting David's approval (R10).
+ */
+export function poseLine(pose, hash, fr = false) {
+  const ms = v => (Number.isFinite(v) ? (fr ? String(v).replace('.', ',') : String(v)) : '?');
+  const who = `${pose?.delegate || (fr ? 'inconnu' : 'unknown')}${pose?.renderer ? ` (${pose.renderer})` : ''}`;
+  return fr
+    ? `Modèle : ${who} · ${ms(pose?.msMedian)} ms par échantillon (p90 ${ms(pose?.msP90)}) · empreinte ${hash || '?'}`
+    : `Model: ${who} · ${ms(pose?.msMedian)} ms a sample (p90 ${ms(pose?.msP90)}) · fingerprint ${hash || '?'}`;
+}
+
+/** The first 12 hex of the SHA-256 of the world landmarks as JSON: the same read gives the same fingerprint. */
+export async function landmarksPrint(worldLandmarks, subtle = globalThis.crypto?.subtle) {
+  if (!subtle) return null;
+  const d = await subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(worldLandmarks ?? [])));
+  return Array.from(new Uint8Array(d)).slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('');
+}

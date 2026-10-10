@@ -16,6 +16,12 @@ Offered: 181 exercises (e2e/collect.spec.js). Tiers (src/lib/liftTiers.js): Beta
 Sub-agents: wv-reviewer, wv-verifier and wv-control (.claude/agents/), whose briefs change only by David's order.
 French register: the screens use "vous". On 9 October 2026 David approved every French line then pending (R10; "Everything French approved"): the copy tables in test/real-phone/swarm/copy-*.md and the strings marked in src, all in "vous".
 
+David's order of 9 October 2026 (four pillars), state at the end of that day:
+- Blind counts: asked before the app's count on the #collecte phone only (blind.js); David's blind sets get a scoreboard section that decides nothing until he amends R1. Contributions stay paused; no upload sink exists (his accounts, a PLAN.md amendment, the legal items).
+- One tap: result-choices.js; choices.txt measures the list; the neighbour keys show on the #collecte phone only. Copy pending (copy-blind.md, copy-choices.md).
+- Live: replay.txt (final = batch count everywhere); live stays off in production; the frame-choice proxy failed on compression noise (TRIED.md).
+- GPU: check.html prints time per sample and a fingerprint, ?delegate=gpu reads on the GPU; the iPhone measurement is David's (docs/IPHONE-CHIPS.md).
+
 Open problems:
 - Diagnosis of 30 September (test/real-phone/accuracy/diagnosis.txt): the misses on David's sets are at the edges of the video, a set starting or ending inside a rep, and in the presses. Three edge rules were tried and withdrawn at review, each counting a movement before or after the set; edges.test.ts pins the current behaviour.
 - The batch collector remembers only the next set number across a reload; a video collected twice across a reload is not caught on the page.

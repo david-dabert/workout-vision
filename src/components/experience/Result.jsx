@@ -38,6 +38,7 @@ import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
 import { track } from '../../lib/events';
 import { collectOn, collectThisSet } from '../../lib/phoneCollect';
+import { countChoices } from './result-choices';
 import { RESULT } from './result-copy';
 import { dayPlan, planRows, quickKeys } from './result-plan';
 
@@ -169,7 +170,9 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm, onByHa
 // Whether a flagged set offers the spec-guided count beside the app's (see `second` below). Status: off, measured.
 const OFFER_BODY_SECOND = false;
 
-export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null }) {
+// blind: the count the person gave before the app showed its own (blind.js, CoreUpload.jsx), as { count, p }; count null
+// for "Je ne sais pas". Absent when the set was not asked.
+export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null, blind = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
   // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
@@ -199,7 +202,19 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // The numbers of the app the person may confirm as they stand: the proposal, or a flagged set's two counts.
   const offeredBy = n => n > 0 && (n === proposal || (flagged && (n === result.count || n === second)));
   const c = RESULT[fr ? 'fr' : 'en'];
-  const [step, setStep] = useState(low ? 'fix' : 'ask'); // ask | fix | saved
+  // A blind count opens the screen on the person's own number (blind.js): on a counted set that differs, as a count they
+  // changed, with the app's beside it ("Compté par l'appli : N."), so it is saved in one tap; equal, the app's count to
+  // confirm as usual; on a low-confidence set, in the slot. Nothing else changes: the app's count, its proposal and its
+  // cause are shown as they would be. Status: convention (David's order of 9 October 2026, pillar 1).
+  const blindN = Number.isInteger(blind?.count) && blind.count > 0 ? blind.count : null;
+  const [step, setStep] = useState(low ? 'fix' : blindN !== null && blindN !== result.count ? 'fix' : 'ask'); // ask | fix | saved
+  // The list the screen can offer (result-choices.js; pillar 2, 9 October 2026): on a counted set, the two neighbours of
+  // the count under "Oui, N répétitions", each saved in one tap. On David's phone only (#collecte) until he approves the
+  // words and checks it on his iPhone (R10, R3); low-confidence screens are unchanged (R8: their keys are never centred
+  // on the app's count, Result.jsx lowAsk). The saved set keeps what was offered and how the number was given.
+  const choices = countChoices(result, { liveShown });
+  const [offerAlts] = useState(() => choices.state === 'counted' && choices.alts.length > 0 && collectOn());
+  const pickedAlt = useRef(false), altsShown = useRef(false);
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
   // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
   const cardRef = useRef(null), firstStep = useRef(true);
@@ -213,7 +228,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     target.focus({ preventScroll: true, focusVisible: false });
   }, [step]);
   // 0 stands for "no number chosen yet" on the low-confidence screen ("–"); otherwise the app's count to confirm.
-  const [trueN, setTrueN] = useState(low ? (proposal ?? (flagged ? result.count : 0)) : result.count);
+  const [trueN, setTrueN] = useState(blindN ?? (low ? (proposal ?? (flagged ? result.count : 0)) : result.count));
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
@@ -445,7 +460,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
     try {
-      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned, proposal }));
+      // Recorded only when the keys were on the screen (review of 9 October 2026: a screen opened on the person's blind
+      // count, or saved by "Garder" before the keys showed, offered nothing).
+      const choice = offerAlts && altsShown.current && !manual ? { rule: choices.rule, offered: [choices.main, ...choices.alts], picked: pickedAlt.current ? 'alt' : n === choices.main ? 'main' : 'typed' } : null;
+      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned, proposal, blind, choice }));
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
@@ -453,10 +471,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       // A build without VITE_CONTRIBUTE keeps none and never asks: contributions are paused (buildFlags.js, WP0.4).
       if (!manual && corrected !== null && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed or unanswered count is no label of the app's read
       // On David's phone only (the flag set at #collecte, phoneCollect.js): the set's landmark file in the collector's
-      // format, with the count kept here, marked after-app. Video sets only: a live set has no video and is not read
-      // at the collector's settings. Never sent from here; never awaited, so a failure does not touch the save.
-      if (!manual && corrected !== null && videoFile && collectOn()) {
-        collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion() })
+      // format, with the count kept here, marked after-app, and his blind count when he gave one. Video sets only: a
+      // live set has no video and is not read at the collector's settings. A refused set is kept too when he gave his
+      // count blind and the app read a body (pillar 1: the failures belong in the measure as much as the successes);
+      // a set the app could not read (notRead) has no landmarks. Never sent from here; never awaited, so a failure
+      // does not touch the save.
+      const blindKept = blindN !== null && !result.notRead;
+      if ((!manual || blindKept) && corrected !== null && videoFile && collectOn()) {
+        collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice })
           .catch(e => console.warn('[collecte] this set could not be kept', e));
       }
       // The sets were never read: read them now, the one just saved first, and count the others.
@@ -789,6 +811,17 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         : step === 'ask'
           ? (asked && <div className="res-keys appear" data-testid="ask-card">
             <button type="button" className="res-key is-primary press" data-testid="res-yes" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>{c.yes(count)}</button>
+            {/* One more or one fewer, in one tap, in numeric order: saved as the person's count (pillar 2). */}
+            {offerAlts && <div className="res-alts" role="group" aria-labelledby="res-alts-or" data-testid="res-alts" ref={el => { if (el) altsShown.current = true; }}>
+              <span className="res-alts-or" id="res-alts-or">{c.or}</span>
+              {[...choices.alts].sort((a, b) => a - b).map(n => <button key={n} type="button" className="res-key res-alt press" data-testid="res-alt" aria-label={c.saveN(n)}
+                onClick={() => {
+                  if (saving.current) return;
+                  // The number saved is the screen's number from here on (the saved card, the day's table, the share).
+                  navigator.vibrate?.(10); pickedAlt.current = true; setTrueN(n);
+                  doSave(n, true).then(ok => { if (!ok) { pickedAlt.current = false; setTrueN(t => (t === n ? count : t)); } });
+                }}>{n}</button>)}
+            </div>}
             {replayKey}
           </div>)
           : <div className="res-keys" data-testid="fix-card">

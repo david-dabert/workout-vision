@@ -66,6 +66,7 @@ let _ghostFrameCount = 0;
 let _totalGhostFrames = 0;
 // Tracks whether the current landmarker was created in IMAGE mode
 let _landmarkerIsImageMode = false;
+let _landmarkerDelegate = null;
 
 // Re-export from shared geometry module so existing imports keep working
 export const LANDMARKS = _LANDMARKS;
@@ -178,7 +179,9 @@ async function getDeviceCapabilities() {
   return _deviceCaps;
 }
 
-async function createLandmarker({ forceCPU = false, useImageMode = false } = {}) {
+// delegate: 'GPU' asks for MediaPipe's GPU delegate alone, with no fall back to the CPU, so a measurement knows which
+// delegate ran (pillar 4, 9 October 2026; check.html?delegate=gpu only). The app never sends it.
+async function createLandmarker({ forceCPU = false, useImageMode = false, delegate: only = null } = {}) {
   const mp = getMediaPipeVision();
 
   const vision = await mp.FilesetResolver.forVisionTasks(VISION_WASM_LOCAL);
@@ -191,7 +194,7 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
   // Detect device capabilities to select optimal delegate order. A CPU-only landmarker (the app's
   // pose worker, the harness, synth) never reads the answer, so it skips the WebGPU/WebNN probe that
   // would otherwise delay every analysis before the model loads (third audit, C48).
-  const caps = forceCPU ? null : await getDeviceCapabilities();
+  const caps = forceCPU || only ? null : await getDeviceCapabilities();
   const simd = isSimdSupported();
 
   if (caps) {
@@ -210,7 +213,9 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
   // produces different landmark coordinates on different runs.
   const runningMode = useImageMode ? 'IMAGE' : 'VIDEO';
   _landmarkerIsImageMode = useImageMode;
-  const delegates = forceCPU
+  const delegates = only
+    ? [only]
+    : forceCPU
     ? ['CPU']
     : caps.recommendedDelegate === 'CPU'
       ? ['CPU']
@@ -233,6 +238,7 @@ async function createLandmarker({ forceCPU = false, useImageMode = false } = {})
         minTrackingConfidence: 0.5,
       });
       console.info(`[PoseAnalysis] Landmarker created with ${delegate} delegate (SIMD=${simd}, runningMode=${runningMode}${forceCPU ? ', deterministic mode' : ''})`);
+      _landmarkerDelegate = delegate;
       return landmarker;
     } catch (e) {
       console.warn(`[PoseAnalysis] ${delegate} delegate failed:`, e.message);
@@ -325,6 +331,20 @@ async function getVideoLandmarker() {
 export async function getImageLandmarker() {
   return getPoseLandmarker({ forceCPU: true, useImageMode: true });
 }
+
+/**
+ * The same model in IMAGE mode on the delegate asked: 'CPU' is getImageLandmarker; 'GPU' is MediaPipe's GPU delegate
+ * (WebGL), with no fall back, to be measured on a phone (check.html?delegate=gpu; pillar 4, 9 October 2026). The app,
+ * the collector and the live counter read on the CPU. GPU against CPU: UNSOURCED on any hardware GPU, not measured on
+ * an iPhone. Measured 9 October 2026 on SwiftShader only (a software renderer, blocklisted in gpuBenchmark.js; this
+ * machine has no GPU), in a scratch probe: each delegate repeated itself bitwise, and 0 of 78 co-detected frames
+ * matched across them (TRIED.md, "MediaPipe's GPU delegate on SwiftShader"). Status: experimental.
+ */
+export async function getImageLandmarkerOn(delegate = 'CPU') {
+  return delegate === 'GPU' ? getPoseLandmarker({ useImageMode: true, delegate: 'GPU' }) : getImageLandmarker();
+}
+/** The delegate the loaded landmarker runs on ('CPU' or 'GPU'), or null before it loads. */
+export const landmarkerDelegate = () => _landmarkerDelegate;
 
 /**
  * The same model on the CPU in VIDEO mode: MediaPipe tracks the body from the previous frame and runs its person

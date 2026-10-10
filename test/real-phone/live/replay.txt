@@ -1,0 +1,137 @@
+Live replay (L0), 2026-10-09: liveCounter.js on the stored samples, provisional count every 500 ms of set time.
+
+David's real videos (sets-07oct-video): 14 sets; final = batch count on 14; exact 6; the result asks (a number shown live is not the final) on 3; a number above the final announced on 4; a shown number went down on 7.
+  sets-07oct-video/barbell_squat_9_a.json.gz  label 9  final 9  last shown for the result 10  ASKS  above the final announced  shown number went down 4x  first number 3.0 s
+  sets-07oct-video/barbell_squat_9_b.json.gz  label 9  final 9  last shown for the result 9  shown number went down 2x  first number 7.5 s
+  sets-07oct-video/behind_neck_chin_up_5.json.gz  label 5  final 6  last shown for the result 6  first number 1.5 s
+  sets-07oct-video/hanging_leg_raise_6.json.gz  label 6  final 6  last shown for the result 7  ASKS  above the final announced  shown number went down 3x  first number 2.5 s
+  sets-07oct-video/lying_biceps_curl_11.json.gz  label 11  final 11  last shown for the result 11  shown number went down 2x  first number 2.5 s
+  sets-07oct-video/machine_chest_supported_row_6.json.gz  label 6  final 5  last shown for the result 5  first number 4.5 s
+  sets-07oct-video/machine_seated_back_extension_18.json.gz  label 18  final 17  last shown for the result 18  ASKS  above the final announced  shown number went down 2x  first number 2.0 s
+  sets-07oct-video/pendulum_squat_7.json.gz  label 7  final 14  last shown for the result 14  shown number went down 2x  first number 1.5 s
+  sets-07oct-video/seated_dumbbell_curl_10.json.gz  label 10  final 10  last shown for the result 10  first number 6.5 s
+  sets-07oct-video/sissy_squat_5_5011.json.gz  label 5  final refused  last shown for the result -  first number - s
+  sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  final 4  last shown for the result 4  first number 19.0 s
+  sets-07oct-video/sissy_squat_7_5008.json.gz  label 7  final refused (partial read)  last shown for the result 3  shown number went down 3x  first number 6.5 s
+  sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  final 9  last shown for the result 9  first number 1.5 s
+  sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  final refused  last shown for the result 1  above the final announced  first number 4.5 s
+
+David's stored sets: 20 sets; final = batch count on 20; exact 12; the result asks (a number shown live is not the final) on 4; a number above the final announced on 4; a shown number went down on 5.
+  sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  final 8  last shown for the result 8  shown number went down 3x  first number 4.0 s
+  sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz  label 6  final 6  last shown for the result 6  first number 1.0 s
+  sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  label 13  final 12  last shown for the result 14  ASKS  above the final announced  shown number went down 5x  first number 1.5 s
+  sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz  label 7  final 6  last shown for the result 6  first number 1.0 s
+  sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz  label 10  final 9  last shown for the result 9  first number 6.5 s
+  sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz  label 6  final 6  last shown for the result 6  shown number went down 2x  first number 1.5 s
+  sets-29sep/bench_press_7_side_24cc4f0b.json.gz  label 7  final 5  last shown for the result 6  ASKS  above the final announced  shown number went down 3x  first number 2.0 s
+  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  label 5  final 5  last shown for the result 4  ASKS  first number 1.5 s
+  sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  label 6  final 6  last shown for the result 7  ASKS  above the final announced  first number 1.0 s
+  sets-29sep/lateral_raise_9_front_43e71b40.json.gz  label 9  final 8  last shown for the result 8  first number 4.5 s
+  sets-29sep/leg_press_13_side_1ee0ae47.json.gz  label 13  final 13  last shown for the result 13  first number 1.0 s
+  sets-29sep/overhead_press_4_front_cefdaa82.json.gz  label 4  final 5  last shown for the result 5  first number 3.0 s
+  sets-29sep/overhead_press_4_front_f75638cc.json.gz  label 4  final 4  last shown for the result 4  first number 1.0 s
+  sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  label 8  final 8  last shown for the result 8  first number 2.0 s
+  sets-29sep/squat_7_side_21fd7ccf.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  landmarks/bench_press_7_angle_mufhcy60.json.gz  label 7  final refused  last shown for the result 1  above the final announced  first number 2.0 s
+  landmarks/bicep_curl_7_side_mufhf3wy.json.gz  label 7  final 7  last shown for the result 7  first number 1.0 s
+  landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  label 10  final 10  last shown for the result 10  first number 4.0 s
+  landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  final 10  last shown for the result 10  first number 3.5 s
+  landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  final 9  last shown for the result 9  shown number went down 2x  first number 1.5 s
+
+Synthetic sets (truth: the generator's reps): 96 sets; final = batch count on 96; exact 74; the result asks (a number shown live is not the final) on 6; a number above the final announced on 7; a shown number went down on 15.
+  synth/michelle-bicep_curl-v0-a-10.json.gz  label 7  final 7  last shown for the result 7  first number 3.0 s
+  synth/michelle-bicep_curl-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-bicep_curl-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-bicep_curl-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-bicep_curl-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/michelle-bicep_curl-v30-a20.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/michelle-bicep_curl-v60-a-10.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/michelle-bicep_curl-v60-a0.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/michelle-bicep_curl-v60-a20.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/michelle-bicep_curl-v90-a-10.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-bicep_curl-v90-a0.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/michelle-bicep_curl-v90-a20.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/michelle-lateral_raise-v0-a-10.json.gz  label 7  final 7  last shown for the result 7  first number 3.0 s
+  synth/michelle-lateral_raise-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-lateral_raise-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-lateral_raise-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/michelle-lateral_raise-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/michelle-lateral_raise-v30-a20.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/michelle-lateral_raise-v60-a-10.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/michelle-lateral_raise-v60-a0.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-lateral_raise-v60-a20.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/michelle-lateral_raise-v90-a-10.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-lateral_raise-v90-a0.json.gz  label 7  final 7  last shown for the result 7  first number 3.0 s
+  synth/michelle-lateral_raise-v90-a20.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/michelle-overhead_press-v0-a-10.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/michelle-overhead_press-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/michelle-overhead_press-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-overhead_press-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-overhead_press-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/michelle-overhead_press-v30-a20.json.gz  label 7  final 7  last shown for the result 7  first number 3.0 s
+  synth/michelle-overhead_press-v60-a-10.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/michelle-overhead_press-v60-a0.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-overhead_press-v60-a20.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-overhead_press-v90-a-10.json.gz  label 6  final 0  last shown for the result -  first number - s
+  synth/michelle-overhead_press-v90-a0.json.gz  label 7  final 0  last shown for the result 2  above the final announced  first number 8.5 s
+  synth/michelle-overhead_press-v90-a20.json.gz  label 5  final 0  last shown for the result -  first number - s
+  synth/michelle-squat-v0-a-10.json.gz  label 7  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-squat-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-squat-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/michelle-squat-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/michelle-squat-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/michelle-squat-v30-a20.json.gz  label 7  final 12  last shown for the result 12  first number 3.5 s
+  synth/michelle-squat-v60-a-10.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/michelle-squat-v60-a0.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/michelle-squat-v60-a20.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/michelle-squat-v90-a-10.json.gz  label 6  final 8  last shown for the result 8  shown number went down 1x  first number 2.5 s
+  synth/michelle-squat-v90-a0.json.gz  label 7  final 11  last shown for the result 12  ASKS  above the final announced  shown number went down 5x  first number 3.0 s
+  synth/michelle-squat-v90-a20.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/soldier-bicep_curl-v0-a-10.json.gz  label 7  final 7  last shown for the result 7  first number 3.0 s
+  synth/soldier-bicep_curl-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/soldier-bicep_curl-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/soldier-bicep_curl-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/soldier-bicep_curl-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/soldier-bicep_curl-v30-a20.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/soldier-bicep_curl-v60-a-10.json.gz  label 5  final 6  last shown for the result 6  first number 6.0 s
+  synth/soldier-bicep_curl-v60-a0.json.gz  label 6  final 6  last shown for the result 7  ASKS  above the final announced  shown number went down 5x  first number 2.5 s
+  synth/soldier-bicep_curl-v60-a20.json.gz  label 8  final 15  last shown for the result 15  shown number went down 2x  first number 3.5 s
+  synth/soldier-bicep_curl-v90-a-10.json.gz  label 6  final 2  last shown for the result 7  ASKS  above the final announced  shown number went down 1x  first number 1.5 s
+  synth/soldier-bicep_curl-v90-a0.json.gz  label 7  final 6  last shown for the result 6  first number 1.5 s
+  synth/soldier-bicep_curl-v90-a20.json.gz  label 5  final 5  last shown for the result 5  shown number went down 1x  first number 1.5 s
+  synth/soldier-lateral_raise-v0-a-10.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/soldier-lateral_raise-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/soldier-lateral_raise-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/soldier-lateral_raise-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/soldier-lateral_raise-v30-a0.json.gz  label 5  final 5  last shown for the result 5  shown number went down 1x  first number 3.0 s
+  synth/soldier-lateral_raise-v30-a20.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/soldier-lateral_raise-v60-a-10.json.gz  label 5  final 5  last shown for the result 5  first number 1.5 s
+  synth/soldier-lateral_raise-v60-a0.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/soldier-lateral_raise-v60-a20.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/soldier-lateral_raise-v90-a-10.json.gz  label 6  final 7  last shown for the result 7  shown number went down 3x  first number 7.0 s
+  synth/soldier-lateral_raise-v90-a0.json.gz  label 7  final 7  last shown for the result 7  first number 5.0 s
+  synth/soldier-lateral_raise-v90-a20.json.gz  label 5  final 4  last shown for the result 5  ASKS  above the final announced  shown number went down 2x  first number 4.5 s
+  synth/soldier-overhead_press-v0-a-10.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/soldier-overhead_press-v0-a0.json.gz  label 8  final 8  last shown for the result 8  first number 3.5 s
+  synth/soldier-overhead_press-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/soldier-overhead_press-v30-a-10.json.gz  label 8  final 10  last shown for the result 10  shown number went down 3x  first number 2.0 s
+  synth/soldier-overhead_press-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/soldier-overhead_press-v30-a20.json.gz  label 7  final 9  last shown for the result 10  ASKS  above the final announced  shown number went down 1x  first number 5.0 s
+  synth/soldier-overhead_press-v60-a-10.json.gz  label 5  final 0  last shown for the result -  first number - s
+  synth/soldier-overhead_press-v60-a0.json.gz  label 6  final 9  last shown for the result 9  first number 2.5 s
+  synth/soldier-overhead_press-v60-a20.json.gz  label 8  final 13  last shown for the result 13  shown number went down 5x  first number 3.5 s
+  synth/soldier-overhead_press-v90-a-10.json.gz  label 6  final 7  last shown for the result 7  shown number went down 3x  first number 3.5 s
+  synth/soldier-overhead_press-v90-a0.json.gz  label 7  final 12  last shown for the result 12  shown number went down 4x  first number 3.5 s
+  synth/soldier-overhead_press-v90-a20.json.gz  label 5  final 5  last shown for the result 6  ASKS  above the final announced  shown number went down 3x  first number 2.0 s
+  synth/soldier-squat-v0-a-10.json.gz  label 7  final 0  last shown for the result -  first number - s
+  synth/soldier-squat-v0-a0.json.gz  label 8  final 0  last shown for the result -  first number - s
+  synth/soldier-squat-v0-a20.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/soldier-squat-v30-a-10.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/soldier-squat-v30-a0.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s
+  synth/soldier-squat-v30-a20.json.gz  label 7  final 7  last shown for the result 7  first number 3.0 s
+  synth/soldier-squat-v60-a-10.json.gz  label 5  final 5  last shown for the result 5  first number 3.0 s
+  synth/soldier-squat-v60-a0.json.gz  label 6  final 6  last shown for the result 6  first number 3.0 s
+  synth/soldier-squat-v60-a20.json.gz  label 8  final 8  last shown for the result 8  first number 3.0 s
+  synth/soldier-squat-v90-a-10.json.gz  label 6  final 6  last shown for the result 6  first number 3.5 s
+  synth/soldier-squat-v90-a0.json.gz  label 7  final 7  last shown for the result 7  first number 3.5 s
+  synth/soldier-squat-v90-a20.json.gz  label 5  final 5  last shown for the result 5  first number 3.5 s

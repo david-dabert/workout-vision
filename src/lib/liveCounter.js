@@ -46,6 +46,30 @@ function recentSeen(core, lift, n) {
  * finish() gives the result in the recorded path's shape (coreAnalysis.js, analyzeCoreVideo).
  * `summarize` is summarizeCount; a test may pass another.
  */
+/**
+ * The numbers the live screen displayed, kept for the result screen (Live.jsx onCount, Result.jsx liveDiffers). The
+ * screen displays a count only when it is above 0 (Live.jsx showNumber); a 0 or a null from evaluate() was never on the
+ * screen, so it is not kept (9 October 2026: the result could say "En direct, l'appli affichait 0", a number never
+ * shown; replayed on the synthetic set soldier-lateral_raise-v90-a20). prev: the record so far, or null; count: what
+ * evaluate() returned. Returns { last, max }: the last number displayed and the highest, or null before any.
+ */
+export function nextShown(prev, count) {
+  if (!Number.isInteger(count) || count <= 0) return prev;
+  return { last: count, max: Math.max(prev?.max ?? 0, count) };
+}
+/**
+ * The number the result screen compares with the final count: the last number displayed when it differs from the final,
+ * else the highest one displayed when it went above the final (a rep announced, by voice too, that the final reading
+ * does not find: on David's videos the back extension showed 18 and its final count is 17), else the last. So the
+ * result asks whenever a number on the live screen is not the final one, and names a number that was really shown.
+ * null when no number was displayed. Status: convention, from R8 (no new threshold).
+ */
+export function shownForResult(rec, final) {
+  if (!rec) return null;
+  if (rec.last !== final) return rec.last;
+  return rec.max > final ? rec.max : rec.last;
+}
+
 export function createLiveCounter(lift, { summarize = summarizeCount } = {}) {
   const imageLandmarks = [], worldLandmarks = [], timestamps = [];
   let announced = 0, size = null;

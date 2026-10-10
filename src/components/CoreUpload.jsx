@@ -10,6 +10,8 @@ import { compactWave, waveAngles } from './experience/wave';
 import { keepsMeasures } from './experience/saved-set';
 import { track } from '../lib/events';
 import { markCrash, noteError } from '../lib/crashLog';
+import { collectOn } from '../lib/phoneCollect';
+import { blindPlan, blindAnswer } from '../lib/blind';
 
 // The crash log's breadcrumbs during the reading of the video (crashLog.js): every 2 s at most, so the log is written
 // about as often as a phone's screen would notice. Convention, UNSOURCED.
@@ -42,6 +44,10 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   const savedIdRef = useRef(null);
   const abort = useRef(null);
   const closeTimer = useRef(null);
+  // The blind question (blind.js): on David's phone (#collecte), the person's count is asked while the video is read,
+  // and the app's count waits for the answer. Decided once per set: a restarted analysis keeps the answer given.
+  const [plan] = useState(() => blindPlan({ collect: collectOn(), video: !!file }));
+  const [blind, setBlind] = useState(null); // { count, p } once answered
   useEffect(() => () => { abort.current?.abort(); clearTimeout(closeTimer.current); markCrash({ phase: null }); }, []);
 
   // Arriving from the Film screen with a file, the analysis starts at once. Start and
@@ -134,15 +140,19 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
     openOverlay('report');
   }
 
-  // The analysis, then the result (or what went wrong), crossfaded.
-  const view = result ? 'result' : interrupted ? 'interrupted' : incomplete ? 'incomplete' : error ? 'error' : 'watch';
+  // The analysis, then the result (or what went wrong), crossfaded. A result waits on the analysis screen while the blind
+  // question is open; a set the app could not read (notRead) has no count to hold back, and the failure screens show at
+  // once, so a failed read never hides behind the question.
+  const holding = plan.ask && !blind;
+  const view = result && !(holding && !result.notRead) ? 'result' : interrupted ? 'interrupted' : incomplete ? 'incomplete' : error ? 'error' : 'watch';
   return <>
     <ScreenFade screenKey={view}>
-      {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { if (abort.current) track('analysis_cancelled', { lift }); abort.current?.abort(); refilm(); }} />}
+      {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { if (abort.current) track('analysis_cancelled', { lift }); abort.current?.abort(); refilm(); }}
+        blind={holding ? { onAnswer: n => setBlind(blindAnswer(n, plan.p)) } : null} />}
       {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('error')} />}
       {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('partial')} />}
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('interrupted')} />}
-      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} blind={blind} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
     </ScreenFade>
     {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={keepsMeasures(result) ? result.reps : []} setId={savedIdRef.current} sides={savedSides} wave={keepsMeasures(result) ? compactWave(waveAngles(result), result.timestamps) : null} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}

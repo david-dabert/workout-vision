@@ -16,17 +16,29 @@ export type LabelledSet = { name: string; lift: string; label: number; wl: any[]
 export const PRESS_DECIDES_NOTHING = '(press: measured, decides nothing, PLAN.md)';
 export const decides = (lift: string) => lift !== 'bench_press' && lift !== 'overhead_press';
 
-export function labelledSets() {
-  const sets: LabelledSet[] = [], unreadable: string[] = [];
+// R1 (9 October 2026, pillar 1): a file whose count was given after the app showed its own (labelKind 'after-app': the
+// result screen's collection, phoneCollect.js, and the contributions, contribute.js) holds no label. Such a file in a
+// sets-* folder is held out of the sets that decide, by name and kind (`held`), never counted; a file of David's phone
+// that also carries his blind count (blind.count, blind.js) is read by blindSets below, in a section of its own. Files
+// with no labelKind are the collector's and the build clips, labelled by David from the video (R1).
+export type HeldSet = { name: string; labelKind: string };
+// The folders of David's collected sets: sets-* without the whole-video reads (-video, -video-mode; videoSets below).
+const setDirs = (root: string) => readdirSync(root).filter(d => /^sets-/.test(d) && !/-video(-mode)?$/.test(d) && statSync(resolve(root, d)).isDirectory()).sort();
+const readSet = (root: string, dir: string, f: string) => JSON.parse(gunzipSync(readFileSync(resolve(root, dir, f))).toString());
+
+export function labelledSets(root = ROOT) {
+  const sets: LabelledSet[] = [], unreadable: string[] = [], held: HeldSet[] = [];
   // A sets-*-video folder (and a sets-*-video-mode one) holds whole real videos read through the built app (videoSets
   // below): its own section.
-  const dirs = readdirSync(ROOT).filter(d => /^sets-/.test(d) && !/-video(-mode)?$/.test(d) && statSync(resolve(ROOT, d)).isDirectory()).sort();
+  const dirs = setDirs(root);
   for (const dir of [...dirs, 'landmarks']) {
-    for (const f of readdirSync(resolve(ROOT, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
+    if (!existsSync(resolve(root, dir))) continue;
+    for (const f of readdirSync(resolve(root, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
       const name = `${dir}/${f}`;
       let d: any;
-      try { d = JSON.parse(gunzipSync(readFileSync(resolve(ROOT, dir, f))).toString()); }
+      try { d = readSet(root, dir, f); }
       catch { unreadable.push(name); continue; }
+      if (d.labelKind !== undefined) { held.push({ name, labelKind: String(d.labelKind) }); continue; }
       // A collector's file carries its lift and count; the oldest build clips carry them in their name only
       // (a batch file's name is led by its set number: set07_squat_8_side_…).
       const m = f.match(/^(?:set\d+_)?(.+?)_(\d+)_/);
@@ -35,7 +47,31 @@ export function labelledSets() {
       sets.push({ name, lift, label, wl: d.worldLandmarks, ts: d.timestamps });
     }
   }
-  return { sets, unreadable };
+  return { sets, unreadable, held };
+}
+
+// David's blind counts (blind.js, phoneCollect.js; 9 October 2026): his collected files whose count he gave in the app
+// before it showed its own. The label is blind.count; `kept` is the count he saved after seeing the app's, `appCount`
+// the app's own, `appRefused` a set the app refused (with its proposal). A file answered "Je ne sais pas" (blind.count
+// null) has no label and is listed in `unsure`. Shown in their own scoreboard section, which decides nothing until David
+// says his in-app blind counts are labels (R1: they are his, but their agreement with his half-speed video counts is
+// not measured).
+export type BlindSet = LabelledSet & { kept: number; appCount: number | null; appRefused: boolean; proposal: number | null; il: any[] | null };
+export function blindSets(root = ROOT) {
+  const sets: BlindSet[] = [], unreadable: string[] = [], unsure: string[] = [];
+  for (const dir of setDirs(root)) {
+    for (const f of readdirSync(resolve(root, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
+      const name = `${dir}/${f}`;
+      let d: any;
+      try { d = readSet(root, dir, f); }
+      catch { continue; } // labelledSets names it
+      if (!d.blind || typeof d.blind !== 'object') continue;
+      if (d.blind.count === null) { unsure.push(name); continue; }
+      if (!d.lift || !Number.isInteger(d.blind.count) || d.blind.count < 1 || !Array.isArray(d.worldLandmarks) || !Array.isArray(d.timestamps) || d.worldLandmarks.length !== d.timestamps.length) { unreadable.push(name); continue; }
+      sets.push({ name, lift: d.lift, label: d.blind.count, wl: d.worldLandmarks, ts: d.timestamps, kept: d.count, appCount: d.appCount ?? null, appRefused: d.appRefused === true, proposal: Number.isInteger(d.proposal) ? d.proposal : null, il: d.imageLandmarks ?? null });
+    }
+  }
+  return { sets, unreadable, unsure };
 }
 
 // David's real videos read whole through the built app (analyzeCoreVideo on check.html, test/real-phone/sets-*-video/,
