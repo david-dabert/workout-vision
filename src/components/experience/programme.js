@@ -1,7 +1,7 @@
 // The coach's programme (Espace pro, 6 October 2026): what it holds, how it travels in a link, and how the sets the
 // client films are read against it. No server, no account: the programme lives on the coach's phone, then in the
 // link's hash (the part of an address a browser never sends), then on the client's phone. Pure: no DOM, no storage.
-import { isOffered } from '../../lib/offer';
+import { isOffered, isKnownExercise } from '../../lib/offer';
 import { isTest } from '../../lib/fitness-tests';
 import { keptAs } from './result-plan';
 
@@ -36,6 +36,12 @@ export function cleanText(s, { lines = false } = {}) {
 
 /** Whether the builder offers this exercise: every exercise the app counts, but the two fitness tests (a protocol of their own). */
 export const programmable = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$/.test(key) && isOffered(key) && !isTest(key);
+/**
+ * Whether a programme, a link or the results may name this exercise: one the builder offers, or one the app no longer
+ * counts (withdrawn after the programme was sent). Such an exercise is shown, not filmed, and leaves the day's count
+ * (progressOf); without this, a withdrawal made every programme naming it vanish (live-app audit, 10 October 2026).
+ */
+export const knownExercise = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$/.test(key) && isKnownExercise(key) && !isTest(key);
 
 const intIn = (v, [lo, hi]) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampInt = (v, [lo, hi], fallback) => {
@@ -57,7 +63,7 @@ export function fixItem(item) {
 /** A draft as the outputs take it: { title, who, note, items }, or null while it has no title or no exercise. */
 export function programmeOf(draft) {
   const title = cleanText(draft?.title).slice(0, LIMITS.title);
-  const items = (draft?.items || []).filter(i => programmable(i.key)).slice(0, LIMITS.items).map(fixItem);
+  const items = (draft?.items || []).filter(i => knownExercise(i.key)).slice(0, LIMITS.items).map(fixItem);
   if (!title || !items.length) return null;
   return { title, who: cleanText(draft.who).slice(0, LIMITS.who), note: cleanText(draft.note, { lines: true }).slice(0, LIMITS.note), items };
 }
@@ -73,7 +79,7 @@ export function compact(p) {
 
 /**
  * The compact form read back, every field checked: { ok: true, programme } or { ok: false, error }, error among
- * 'malformed' (not a programme of this app), 'unknown-exercise' (an exercise this version does not count),
+ * 'malformed' (not a programme of this app), 'unknown-exercise' (an exercise this version does not know),
  * 'bad-value' (a number or a text out of bounds).
  */
 export function fromCompact(raw) {
@@ -94,7 +100,7 @@ export function fromCompact(raw) {
     if (!Array.isArray(x) || x.length < 4 || x.length > 5 || typeof x[0] !== 'string') return bad('malformed');
     const [key, sets, reps, rest, n] = x;
     if (!/^[a-z0-9_]{1,64}$/.test(key)) return bad('malformed');
-    if (!programmable(key)) return bad('unknown-exercise');
+    if (!knownExercise(key)) return bad('unknown-exercise');
     if (!intIn(sets, LIMITS.sets) || !intIn(reps, LIMITS.reps) || !intIn(rest, LIMITS.rest)) return bad('bad-value');
     const itemNote = str(n, LIMITS.itemNote);
     if (itemNote === null) return bad('bad-value');
@@ -268,10 +274,12 @@ export function progressOf(programme, id, sets, now = new Date()) {
   const items = programme.items.map((item, index) => {
     const own = mine.filter(m => m.at === index).map(m => m.w);
     const done = own.map(w => w.reps), kinds = own.map(keptLetter);
-    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets };
+    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets, counted: programmable(item.key) };
   });
   const last = mine.length ? setTimeOf(mine.at(-1).w) : null;
-  return { items, complete: items.filter(i => i.complete).length, total: items.length, last };
+  // An exercise the app no longer counts cannot be filmed: the day is complete once the others are.
+  const counted = items.filter(i => i.counted);
+  return { items, complete: counted.filter(i => i.complete).length, total: counted.length, last };
 }
 
 // How far back a session may still be sent once its day is over: a week. UNSOURCED, convention.
@@ -365,7 +373,7 @@ export function fromCompactResults(raw) {
     if (!Array.isArray(x) || x.length !== 4 || typeof x[0] !== 'string' || !Array.isArray(x[3])) return bad('malformed');
     const [key, sets, reps, done] = x;
     if (!/^[a-z0-9_]{1,64}$/.test(key)) return bad('malformed');
-    if (!programmable(key)) return bad('unknown-exercise');
+    if (!knownExercise(key)) return bad('unknown-exercise');
     if (!intIn(sets, LIMITS.sets) || !intIn(reps, LIMITS.reps)) return bad('bad-value');
     if (done.length > RESULT_LIMITS.done || !done.every(n => intIn(n, RESULT_LIMITS.reps))) return bad('bad-value');
     items.push({ key, sets, reps, done });

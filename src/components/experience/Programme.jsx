@@ -103,11 +103,23 @@ export default function Programme({ payload, onClose, onStart }) {
       <h1 className="title" data-reveal style={{ '--i': 0 }}>{p.title}</h1>
       <p className="programme-meta" data-reveal style={{ '--i': 1 }}>
         {p.who && <span>{c.whoLine(p.who)}</span>}
-        <span data-testid="programme-today">{c.today(progress.complete, progress.total)}</span>
+        {progress.total > 0 && <span data-testid="programme-today">{c.today(progress.complete, progress.total)}</span>}
       </p>
       {p.note && <p className="programme-note" data-reveal style={{ '--i': 1 }}>{p.note}</p>}
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{p.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key), got = progress.items[i];
+        // An exercise the app no longer counts (withdrawn after the coach sent the programme): shown, not filmed.
+        if (!got.counted) return <li key={`${item.key}-${i}`} className="programme-item" data-testid="programme-item">
+          <div className="programme-btn">
+            {e ? <Thumb exercise={e} /> : <span className="thumb" />}
+            <span className="programme-body">
+              <span className="programme-name">{name}</span>
+              <span className="programme-target mono">{c.target(item.sets, item.reps, item.rest)}</span>
+              {item.note && <span className="programme-cue">{item.note}</span>}
+              <span className="programme-cue" data-testid="programme-not-counted">{c.notCounted}</span>
+            </span>
+          </div>
+        </li>;
         return <li key={`${item.key}-${i}`} className={`programme-item${got.complete ? ' is-done' : ''}`} data-testid="programme-item">
           <button type="button" className="programme-btn press" onClick={() => onStart(item.key, plannedOf(entry.id, i, item))} aria-label={c.film(name)}>
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}

@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem } from './programme';
+import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, programmable } from './programme';
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
@@ -270,6 +270,7 @@ function Editor({ c, fr, lang, draft, kept, focusWho = false, onChange, onPick, 
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="pro-item-name"><span className="pro-index mono">{String(i + 1).padStart(2, '0')}</span>{n}</span>
           </div>
+          {!programmable(item.key) && <p className="programme-cue" data-testid="pro-not-counted">{c.notCountedPro}</p>}
           <div className="pro-nums">
             <NumField id={`p${i}s`} label={c.sets} longLabel={c.setsLong} value={item.sets} onCommit={commit('sets')} />
             <NumField id={`p${i}r`} label={c.reps} longLabel={c.repsLong} value={item.reps} onCommit={commit('reps')} />
