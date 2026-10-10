@@ -94,6 +94,7 @@ export default defineConfig({
         collect: resolve(__dirname, 'collect.html'),
         collectBatch: resolve(__dirname, 'collect-batch.html'),
         check: resolve(__dirname, 'check.html'),
+        pack: resolve(__dirname, 'pack.html'),
       },
       output: {
         manualChunks(id) {

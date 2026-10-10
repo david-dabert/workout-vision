@@ -32,11 +32,11 @@ Routing is a URL hash (`src/lib/useHashRouter.js`).
 Choosing an exercise warms the pose model and WASM files into the service worker's caches (`src/lib/pose-files.js`).
 A person whose level is beginner (`level.js`, `wv_level`) is shown the exercise's guide page before Film until `GUIDED_SETS` (3) sets are saved; a fitness test goes straight to Film.
 
-The same build also serves three tool pages that are not linked from the app: `collect.html` and `collect-batch.html` (the set collectors: landmarks and the person's count, shared as a file) and `check.html` (David's six labelled clips counted by `analyzeCoreVideo` and compared with `src/lib/check-baseline.json`, one row per clip id with the repeat share, the decoder and its fallback; `check.html?inject=frozen` adds a row that feeds a frozen stream on the playback path and must be refused).
+The same build also serves four tool pages that are not linked from the app: `collect.html` and `collect-batch.html` (the set collectors: landmarks and the person's count, shared as a file), `pack.html` (the video packer, 10 October 2026: many videos made small on the phone with the app's own frame reader, 15 pictures a second at 640 px, and the person's blind counts, in one stored ZIP with `labels.json`; `src/pack-main.js`, `src/lib/pack.js`, `src/lib/videoPack.js`; its chunks are left out of the service worker's precache) and `check.html` (David's six labelled clips counted by `analyzeCoreVideo` and compared with `src/lib/check-baseline.json`, one row per clip id with the repeat share, the decoder and its fallback; `check.html?inject=frozen` adds a row that feeds a frozen stream on the playback path and must be refused).
 
 ## 2. Live module graph
 
-Measured with `node scripts/unreachable.mjs` on 3 October 2026, which follows static and dynamic imports from the four HTML pages: 98 source files under `src/` are reachable and 93 are not (section 5; test files excluded).
+Measured with `node scripts/unreachable.mjs` on 3 October 2026, which follows static and dynamic imports from the HTML pages (four then; `pack.html` was added on 10 October 2026): 98 source files under `src/` are reachable and 93 are not (section 5; test files excluded).
 `index.html` alone reaches 91 of the 98; the other 7 belong to the tool pages (`collect-main.js`, `collect-batch-main.js`, `check-main.js`, `lib/collector.js`, `lib/collectSet.js`, `lib/batchCollect.js`, `lib/check.js`).
 
 ### 2.1 Shell
@@ -127,7 +127,7 @@ The live path uses only `getImageLandmarker` and `detectPoseImage`; it also pull
 |---|---|
 | `prebuild`: `scripts/copy-models.js` | Copies MediaPipe WASM from `node_modules` into `public/mediapipe/` and downloads `pose_landmarker_full.task` there, checked against `src/lib/model-hash.json`, so nothing is fetched from a CDN at runtime. Also run by a Vite plugin at build start. |
 | `prebuild`: `scripts/copy-guide.js` | Copies and resizes guide artwork (CC BY-SA 4.0) from `@bryllim/workout-guide` into `public/guide/`. |
-| `vite build` | Four pages (`index`, `collect`, `collect-batch`, `check`); target ES2022 and Safari 16; chunks `react-vendor`, `localforage`, `exercises`, `i18n`; injects `__APP_VERSION__`, `__GIT_HASH__`, `__BUILD_TIME__`, `__FEEDBACK_URL__` (empty: the deploy does not pass it; nothing reads it since the feedback panel's sender was made inert, WP0.4). Base path from `VITE_BASE`. |
+| `vite build` | Five pages (`index`, `collect`, `collect-batch`, `check`, `pack`); target ES2022 and Safari 16; chunks `react-vendor`, `localforage`, `exercises`, `i18n`; injects `__APP_VERSION__`, `__GIT_HASH__`, `__BUILD_TIME__`, `__FEEDBACK_URL__` (empty: the deploy does not pass it; nothing reads it since the feedback panel's sender was made inert, WP0.4). Base path from `VITE_BASE`. |
 | `scripts/inject-sw-precache.js` | Writes the hashed asset list and the model and WASM fingerprints into `dist/sw.js`, so the app works offline after the first visit. |
 
 `public/sw.js`: app shell precache, network-first for navigation, cache-first for hashed assets; the model and the WASM files (MediaPipe's and the decoder's `web-demuxer.wasm`) each in a cache named after their fingerprint; the previous version's files kept one deploy longer.
@@ -154,7 +154,7 @@ No network call leaves the device during use, apart from loading the app itself 
 
 ## 5. Dormant code
 
-Present in `src/`, unreachable from any of the four HTML pages (`node scripts/unreachable.mjs` lists them).
+Present in `src/`, unreachable from any of the five HTML pages (`node scripts/unreachable.mjs` lists them).
 App.jsx describes these as "hidden, not deleted".
 Most are still type-checked and many are still unit-tested, so CI exercises code that users never run.
 

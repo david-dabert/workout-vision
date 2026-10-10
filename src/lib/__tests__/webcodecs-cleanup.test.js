@@ -9,7 +9,7 @@ vi.mock('web-demuxer', () => ({
     async load() {}
     async getMediaInfo() { return { duration: 2, streams: [{ codec_type_string: 'video', width: 640, height: 480, rotation: 0 }] }; }
     async getDecoderConfig() { return { codec: 'avc1' }; }
-    read() { return globalThis.__stream(); }
+    read(_type, at) { globalThis.__readAt = at; return globalThis.__stream(at); }
     destroy() { globalThis.__destroyed = true; }
   },
 }));
@@ -68,6 +68,24 @@ describe('a video whose first frame is not at 0 s', () => {
     await extractFramesWebCodecs(new Blob(['x']), 15, Infinity, 640, async (_c, _i, t) => { at.push(t); }, null, {});
     expect(at[0]).toBeCloseTo(0.5, 3);
     for (let i = 1; i < at.length; i++) expect(at[i] - at[i - 1], `sample ${i}`).toBeCloseTo(1 / 15, 2);
+  });
+});
+
+// Review of 10 October 2026 (the video packer's survey): a restart after a decoder failure (withRestarts) read from
+// startFrame / 15 s and sampled from there, ignoring the grid's origin, so on a video whose first frame is not at 0 s
+// the restarted samples went back in time (sample 10 at 1.1 s after sample 9 at 1.1 s, where 1.167 s was due).
+describe('a restart on a video whose first frame is not at 0 s', () => {
+  it('goes on from the origin plus the samples already read, never back in time', async () => {
+    const { extractFramesWebCodecs } = await import('../frameExtractor');
+    globalThis.__emit = true;
+    // The demuxer starts at the key frame before the time asked: here the frames from 1.1 s, 30 a second.
+    globalThis.__stream = () => new ReadableStream({ start(c) { for (let i = 18; i < 60; i++) c.enqueue({ t: 0.5 + i / 30 }); c.close(); } });
+    const at = [], idx = [];
+    await extractFramesWebCodecs(new Blob(['x']), 15, Infinity, 640, async (_c, i, t) => { idx.push(i); at.push(t); }, null, { startFrame: 10, origin: 0.5 });
+    expect(globalThis.__readAt).toBeCloseTo(0.5 + 10 / 15, 3);
+    expect(idx[0]).toBe(10);
+    expect(at[0]).toBeCloseTo(0.5 + 10 / 15, 3);
+    for (let i = 1; i < at.length; i++) expect(at[i] - at[i - 1], `sample ${idx[i]}`).toBeCloseTo(1 / 15, 2);
   });
 });
 
