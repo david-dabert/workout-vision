@@ -3,15 +3,21 @@
 // How stable the counter is under re-encoding (stability study of 10 October 2026: David's 14 videos read by the app
 // from six encodings of the same originals were exact on 6, 5, 3, 1, 2 and 3; exact on all six: 1 of 14). A count
 // that moves when an invisible re-encoding moves the landmarks is a count the app cannot measure reliably (R8).
-// Two measures, reported beside R2 (npm run scoreboard), deciding nothing:
+// Four measures, reported beside R2 (npm run scoreboard), deciding nothing:
 //  1. The noise proxy (noise.mjs, fitted on the 14 videos; intensity 0.5 reproduces the spread of counts between real
 //     reads) on David's stored sets and the public build sets, seeds 1..K: the exact count that decides on the clean
 //     read and on each seed, the sets whose count moves on any seed, and how many sets are exact on every seed.
+//  2. With STABILITY_READS: the real re-encodings, one subfolder per encoding (the committed reads in
+//     test/real-phone/sets-07oct-video/ are always the first column): each video's outcome per encoding.
 //  3. The sensitivity check (coreAnalysis.js withSensitivity): on the public counted sets that decide, how many it marks,
 //     how many of those are wrong and exact, and how many of the counts off by 3 or more it catches; on the real
 //     re-encodings, how many reads show a wrong count as sure with it and without it.
-//  2. With STABILITY_READS: the real re-encodings, one subfolder per encoding (the committed reads in
-//     test/real-phone/sets-07oct-video/ are always the first column): each video's outcome per encoding.
+//  4. With STABILITY_READS, the gate read as a measuring instrument (research of 10 October 2026, after Hopkins 2000,
+//     "Measures of reliability in sports medicine and science", Sports Med 30:1-15; status: literature): the encodings
+//     are repeated trials of the same sets. Typical error = the within-video standard deviation of the counts, pooled
+//     over the videos counted on every encoding; MDC95 = 1.96 x sqrt(2) x typical error, the smallest change of one
+//     set's count the gate can tell from encoding noise; pairwise agreement = the share of pairs of encodings giving a
+//     video the same outcome (two identical wrist counters on one wrist agreed on 59.6 % of sets: core.ac.uk 66904384).
 // Writes stability.txt. Research tool: it changes nothing and gates nothing.
 import { test } from 'vitest';
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
@@ -73,6 +79,7 @@ function realReads(dir: string) {
   const lines = [`Real re-encodings (${dir}): ${cols.join(', ')}.`];
   const exact: Record<string, number> = {};
   let allExact = 0, same = 0, wrongSure = 0, wrongSureChecked = 0, rightSure = 0, rightSureChecked = 0;
+  let pairs = 0, agree = 0, ssWithin = 0, dfWithin = 0;
   for (const f of names) {
     const c = gz(resolve(committed, f));
     const outs = cols.map(col => {
@@ -95,12 +102,20 @@ function realReads(dir: string) {
       return pr.proposal ? `R(p${pr.proposal.count})` : 'R';
     });
     cols.forEach((col, i) => { if (outs[i] === c.count) exact[col] = (exact[col] || 0) + 1; });
+    const read = outs.filter(o => o !== '-');
+    for (let i = 0; i < read.length; i++) for (let j = i + 1; j < read.length; j++) { pairs++; if (read[i] === read[j]) agree++; }
+    if (read.length > 1 && read.every(o => typeof o === 'number')) {
+      const xs = read as number[], m = xs.reduce((a, b) => a + b, 0) / xs.length;
+      ssWithin += xs.reduce((a, x) => a + (x - m) ** 2, 0); dfWithin += xs.length - 1;
+    }
     const present = outs.filter(o => o !== '-');
     if (present.every(o => o === c.count)) allExact++;
     if (new Set(present.map(String)).size === 1) same++;
     lines.push(`  ${f.replace('.json.gz', '')}  label ${c.count}  ${outs.join(' | ')}`);
   }
   lines.push(`  exact per encoding: ${cols.map(c => `${c} ${exact[c] || 0}`).join(', ')}; exact on every encoding ${allExact} of ${names.length}; the same outcome on every encoding ${same} of ${names.length}.`);
+  const te = dfWithin ? Math.sqrt(ssWithin / dfWithin) : NaN;
+  lines.push(`  the gate as an instrument: pairs of encodings giving a video the same outcome ${agree} of ${pairs} (${(100 * agree / Math.max(1, pairs)).toFixed(1)} %); typical error ${te.toFixed(2)} reps (videos counted on every encoding); MDC95 ${(1.96 * Math.SQRT2 * te).toFixed(1)} reps.`);
   lines.push(`  counted reads shown as sure (body check aside): wrong ${wrongSure}, right ${rightSure}; with the sensitivity check: wrong ${wrongSureChecked}, right ${rightSureChecked}.`);
   return lines;
 }
@@ -113,5 +128,5 @@ test.skipIf(!process.env.STABILITY)('the counter under re-encoding noise', () =>
   if (process.env.STABILITY_READS) L.push('', ...realReads(process.env.STABILITY_READS));
   const text = L.join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'stability.txt'), text);
-  process.stdout.write(text.split('\n').filter(l => !l.startsWith('  ') || l.includes('exact per encoding') || l.includes('shown as sure')).join('\n') + '\n');
+  process.stdout.write(text.split('\n').filter(l => !l.startsWith('  ') || l.includes('exact per encoding') || l.includes('shown as sure') || l.includes('as an instrument')).join('\n') + '\n');
 }, 3_600_000);
