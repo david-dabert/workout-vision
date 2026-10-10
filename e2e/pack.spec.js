@@ -283,7 +283,9 @@ test('a label typed after packing never writes the packed video again', async ({
     window.__blobPuts = 0;
     const put = IDBObjectStore.prototype.put;
     IDBObjectStore.prototype.put = function (value, key) {
-      if (value && typeof value === 'object' && (value instanceof Blob || Object.values(value).some(x => x instanceof Blob))) window.__blobPuts++;
+      // A Blob anywhere in the record, nested too (the first version kept { video: { blob } } in the label's record).
+      const hasBlob = (v, depth = 0) => v instanceof Blob || (depth < 3 && v && typeof v === 'object' && Object.values(v).some(x => hasBlob(x, depth + 1)));
+      if (hasBlob(value)) window.__blobPuts++;
       return put.call(this, value, key);
     };
   });
