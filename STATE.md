@@ -46,3 +46,24 @@ Parked, by David's decision of 28 September 2026: "a rep's range is measured fro
   Also open on that branch: no MM-Fit table measures its core, and the committed test/real-phone/mmfit-context/ predates the corrected script.
 - Condition for its return: real sets show reps of 20 to 30° that bf50199 misses, from MM-Fit on David's Mac, David's own clips or the exam.
 Next step: the exam sets from David (PLAN.md, third message of 30 September); until then, work that needs neither his iPhone nor his approval.
+
+## Live-app audit of 10 October 2026 (app used by about 100 people)
+
+Four read-only reviews, one agent each, of the live path: video analysis (no defect), updates and storage, coach links and navigation, result, report and sharing. PR #152 holds the fixes, each with a test that fails without it:
+- a failed screen download is retried on an explicit attempt and "Réessayer" works (src/lib/lazyScreen.jsx);
+- a withdrawn exercise no longer erases programmes (offer.js isKnownExercise, programme.js knownExercise);
+- the 24 MB of pose files download on the way to filming only;
+- the results link is shown to select when share and copy are refused;
+- a draft rebuilt from results says so;
+- the update reload waits for a collected set being written (src/lib/pendingWrites.js);
+- Report and Replay share buttons survive a sheet never answered (src/lib/shareSheet.js);
+- preparing the video is not stopped by its own pause, and the replay line is inert meanwhile;
+- a refused set's typed count is in the problem report.
+French copy of PR #152 approved by David on 10 October.
+
+Not fixed, open:
+- a phone that refuses all storage loses a received programme after each set (App.jsx sets #programme on return from filming);
+- the installed app has no field to paste a results link, and results links do not carry rests (coach adjusts a rebuilt draft);
+- CollectHistory.jsx and ContributeHistory.jsx still excuse InvalidStateError on share, the pattern fixed in Report and Replay (David's pages only);
+- unverified, not acted on: the screen wake lock reportedly does not hold in Home Screen apps before iOS 18.4; no watchdog if WebCodecs goes silent without an error.
+Not yet audited: the on-screen wording (French and English, plurals, units, accessibility).
