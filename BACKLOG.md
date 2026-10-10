@@ -340,3 +340,12 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   (docs/IPHONE-CHIPS.md, section 4). Needs David's Mac and iPhone.
 - Why not now: the browser's GPU is measurable on his iPhone from the check page first, at no cost.
 
+## 10 October 2026: re-read the public sets with today's pose path (stability study)
+
+- The stored Countix build reads date from 30 September. Read again today, 37 of 438 counts differ (exact 177 -> 179, off
+  by 3 or more 71 -> 59), and 9 stored sets fail the whole-read rule of 2 October (TRIED.md, Data, 10 October).
+- The step: re-read every public build set (Countix, Countix whole, MM-Fit) with `run-public.mjs`, keep the image
+  landmarks, record the nine as failed with their reason, and make the new reads the public baseline in one commit, with
+  the scoreboard's before and after (R2) and every public number re-cited from it (R13).
+- Why not now: it moves the baseline every public claim cites; David decides when.
+
