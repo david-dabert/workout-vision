@@ -101,7 +101,8 @@ export function challengeShare({ liftName, count, counted = count, fr, url }) {
  */
 export function reportFor({ lift, liftName, count, trueN, version, fr, refused = false, step, saveError = '', decoder = '', read = null }) {
   const how = { ...(decoder ? { decoder } : {}), ...(read ? { read } : {}) };
-  if (refused) return { lift, liftName, counted: null, userCount: null, version, fr, ...how };
+  // A refused set whose count the person typed and saved carries that count (live-app audit, 10 October 2026).
+  if (refused) return { lift, liftName, counted: null, userCount: step === 'saved' ? trueN : null, version, fr, ...how };
   if (step !== 'saved' && !saveError) return null;
   return { lift, liftName, counted: count, userCount: trueN, version, fr, ...how };
 }

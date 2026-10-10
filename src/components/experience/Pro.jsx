@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem } from './programme';
+import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, programmable } from './programme';
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
@@ -47,6 +47,9 @@ export default function Pro({ onClose, start = null }) {
     return start && !list.some(d => d.id === start.draft.id) ? [start.draft, ...list] : list;
   });
   const [openId, setOpenId] = useState(start?.draft.id ?? null);
+  // A draft made from a client's results has no cue and default rests: its editor opens saying so (live-app audit,
+  // 10 October 2026).
+  const rebuiltId = start?.rebuilt ? start.draft.id : null;
   const [picking, setPicking] = useState(false);
   // The "Pour" field takes focus in a copy made for another client.
   const [focusWho, setFocusWho] = useState(false);
@@ -84,7 +87,7 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
-  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
+  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
   return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onOpen={show} />;
 }
 
@@ -134,12 +137,12 @@ function NumField({ id, label, longLabel, value, onCommit }) {
   </div>;
 }
 
-function Editor({ c, fr, lang, draft, kept, focusWho = false, onChange, onPick, onBack, onDuplicate, onDelete }) {
+function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, onChange, onPick, onBack, onDuplicate, onDelete }) {
   const screenRef = useRef(null), whoRef = useRef(null);
   useEffect(() => { if (focusWho) whoRef.current?.focus({ preventScroll: false }); }, [focusWho]);
   // The bar's small title follows the programme's title as it is typed.
   useCondensingTopbar(screenRef, [fr, draft.title.trim()]);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(rebuilt ? c.rebuiltNote : '');
   const [status, setStatus] = useState(kit ? 'ready' : 'preparing');
   // The packed link of the programme as it stands, once made: { of, link }.
   const [packed, setPacked] = useState({ of: '', link: '' });
@@ -270,6 +273,7 @@ function Editor({ c, fr, lang, draft, kept, focusWho = false, onChange, onPick, 
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="pro-item-name"><span className="pro-index mono">{String(i + 1).padStart(2, '0')}</span>{n}</span>
           </div>
+          {!programmable(item.key) && <p className="programme-cue" data-testid="pro-not-counted">{c.notCountedPro}</p>}
           <div className="pro-nums">
             <NumField id={`p${i}s`} label={c.sets} longLabel={c.setsLong} value={item.sets} onCommit={commit('sets')} />
             <NumField id={`p${i}r`} label={c.reps} longLabel={c.repsLong} value={item.reps} onCommit={commit('reps')} />

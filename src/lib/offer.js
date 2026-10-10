@@ -49,5 +49,9 @@ export const OFFERED = [...new Set([...Object.keys(TIERS), ...Object.keys(patter
 const offered = new Set(OFFERED);
 
 export const isOffered = key => offered.has(key);
+// Every exercise the app knows, offered or not: a programme kept on a client's phone, or a coach's link sent before an
+// exercise was withdrawn, still names it (programme.js, knownExercise). So a key once offered stays in WITHDRAWN,
+// NOT_YET_COUNTED or NOT_FILMABLE when it leaves the offer, never deleted (live-app audit, 10 October 2026).
+export const isKnownExercise = key => offered.has(key) || Object.hasOwn(WITHDRAWN, key) || Object.hasOwn(NOT_YET_COUNTED, key) || NOT_FILMABLE.has(key);
 /** 'beta', 'experimental', or null for an exercise the app does not count. */
 export const tierOf = key => TIERS[key] || (offered.has(key) ? GUIDE_TIERS[key] || 'experimental' : null);

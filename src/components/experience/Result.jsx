@@ -38,6 +38,7 @@ import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
 import { track } from '../../lib/events';
 import { collectOn, collectThisSet } from '../../lib/phoneCollect';
+import { holdWhile } from '../../lib/pendingWrites';
 import { countChoices } from './result-choices';
 import { RESULT } from './result-copy';
 import { dayPlan, planRows, quickKeys } from './result-plan';
@@ -486,7 +487,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       // does not touch the save.
       const blindKept = blindN !== null && !result.notRead;
       if ((!manual || blindKept) && corrected !== null && videoFile && collectOn()) {
-        collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice })
+        holdWhile(collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice }))
           .catch(e => console.warn('[collecte] this set could not be kept', e));
       }
       // The sets were never read: read them now, the one just saved first, and count the others.

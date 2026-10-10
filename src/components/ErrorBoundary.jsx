@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { tModule } from '../lib/LanguageContext';
 import { noteError } from '../lib/crashLog';
+import { retryFailedScreens } from '../lib/lazyScreen';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -21,6 +22,8 @@ class ErrorBoundary extends Component {
   }
 
   handleTryAgain = () => {
+    // A screen whose code failed to download is downloaded again (lazyScreen.jsx).
+    retryFailedScreens();
     this.setState({ hasError: false, error: null });
   };
 

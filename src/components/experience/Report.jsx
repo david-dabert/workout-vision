@@ -9,6 +9,7 @@ import { useCondensingTopbar } from './topbar';
 import './Report.css';
 import RepWave from './RepWave';
 import { MeasureGuide } from './measure-guide';
+import { shareSheet } from '../../lib/shareSheet';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
 // and is warmed as soon as a report is likely, so the share happens within the tap.
@@ -38,7 +39,8 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
   const [note, setNote] = useState('');
   const failures = useRef(0);
   const noteTimer = useRef(0);
-  const sharing = useRef(false);
+  const shares = useRef(null);
+  shares.current ??= shareSheet();
   // The title condenses into the topbar as the form scrolls under it (section 3, change 1).
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
@@ -100,12 +102,12 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    say(fr ? 'PDF téléchargé.' : 'PDF downloaded.');
+    say(fr ? 'Téléchargement du PDF lancé.' : 'PDF download started.');
   }
 
   // Built and shared inside the tap: Safari opens the share sheet only from a gesture.
   function share() {
-    if (status === 'preparing' || sharing.current) return; // one share sheet at a time
+    if (status === 'preparing' || !shares.current.begin()) return; // one tap at a time
     if (status === 'error' || !kit) { prepare(); return; }
     let blob;
     try { blob = kit.reportPdf(sheet); } catch (e) {
@@ -116,11 +118,11 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     const fileName = reportFileName({ lang, date: when, name });
     const file = new File([blob], fileName, { type: 'application/pdf' });
     track('share', { lift });
-    if (navigator.canShare?.({ files: [file] })) {
-      sharing.current = true;
-      navigator.share({ files: [file], title: sheet.title })
-        .catch(e => { if (e.name !== 'AbortError' && e.name !== 'InvalidStateError') download(blob, fileName); })
-        .finally(() => { sharing.current = false; });
+    if (shares.current.shares(!!navigator.canShare?.({ files: [file] }))) {
+      // Nothing waits on the sheet (shareSheet.js): a refusal says so, and the next tap downloads.
+      navigator.share({ files: [file], title: sheet.title }).catch(e => {
+        if (shares.current.failed(e)) setNote(fr ? 'Le partage n’a pas abouti. Touchez à nouveau pour télécharger.' : 'Sharing did not go through. Tap again to download.');
+      });
       return;
     }
     download(blob, fileName);

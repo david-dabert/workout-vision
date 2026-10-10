@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
 import { flushSync } from 'react-dom';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider } from './lib/LanguageContext';
@@ -27,6 +27,7 @@ import { liveBuild } from './lib/buildFlags';
 import { payloadOf, resultsPayloadOf } from './components/experience/programme';
 import { draftFromResults } from './components/experience/programme-store';
 import { markCrash } from './lib/crashLog';
+import { lazyScreen } from './lib/lazyScreen';
 
 // Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
 // screen under 812 points). No WebGL context is made to decide it: making one held up the first
@@ -37,28 +38,6 @@ import { markCrash } from './lib/crashLog';
     if (isOldiOS) document.documentElement.classList.add('no-glass');
   } catch { /* silent fallback: keep glass */ }
 })();
-
-// Wrap lazy imports so chunk-load failures surface a readable error
-// instead of an uncatchable rejected promise.
-const safeLazy = (loader) => lazy(() =>
-  loader().catch(err => {
-    console.error('[Lazy load failed]', err);
-    return { default: () => { throw err; } };
-  })
-);
-
-// A lazily loaded screen that can be warmed in advance. Once its code is
-// loaded it renders directly: React.lazy would otherwise suspend on first
-// render and hold the screen back behind a blank fallback.
-function lazyScreen(load) {
-  let Mod = null, pending = null;
-  const warm = () => (pending ||= load().then(m => { Mod = m.default; return m; }));
-  const Lazy = safeLazy(warm);
-  function Screen(props) { const C = useRef(Mod || Lazy).current; return <C {...props} />; }
-  Screen.warm = () => warm().catch(() => {});
-  Screen.loaded = () => Mod !== null;
-  return Screen;
-}
 
 // Core path
 const Analyze = lazyScreen(() => import('./components/CoreUpload'));
@@ -186,14 +165,15 @@ function AppInner() {
   const chooseLift = (lift, guided = false) => {
     // A beginner's lift goes through its guide page first: its "Filmer cet exercice" is the same choice, counted once.
     if (!(guided && guideLift === lift)) track('choose_lift', { lift });
-    // The model and the pose library's WASM enter the service worker's caches now, so a first analysis made offline
-    // can start (pose-files.js); inference stays in the existing worker.
-    warmPoseFiles(import.meta.env.BASE_URL);
     // A fitness test has no guide page of its own: its protocol is on the filming screen (fitness-tests.js).
     if (!guided && !isTest(lift) && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
       go('exercises', () => setGuideLift(lift));
       return;
     }
+    // The model and the pose library's WASM (about 24 MB) enter the service worker's caches now, on the way to filming,
+    // so a first analysis made offline can start (pose-files.js); inference stays in the existing worker. Not before the
+    // guide page: a beginner who only reads it spends no mobile data on them (live-app audit, 10 October 2026).
+    warmPoseFiles(import.meta.env.BASE_URL);
     go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
   };
   // A target holds only for its own exercise: one left from an earlier tap never reaches another set (excellence hunt,

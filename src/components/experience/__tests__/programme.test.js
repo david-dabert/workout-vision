@@ -153,8 +153,8 @@ describe('planned against counted', () => {
   it('puts each set saved today beside its exercise’s target, oldest first', () => {
     const sets = [set(0, 9, at(17, 10)), set(0, 10, at(17, 5)), set(1, 12, at(17, 20)), set(0, 10, at(17, 15))];
     const p = progressOf(sample, id, sets, now);
-    expect(p.items[0]).toEqual({ index: 0, key: 'squat', target: { sets: 3, reps: 10 }, done: [10, 9, 10], kinds: ['a', 'a', 'a'], complete: true });
-    expect(p.items[1]).toEqual({ index: 1, key: 'push_up', target: { sets: 4, reps: 12 }, done: [12], kinds: ['a'], complete: false });
+    expect(p.items[0]).toEqual({ index: 0, key: 'squat', target: { sets: 3, reps: 10 }, done: [10, 9, 10], kinds: ['a', 'a', 'a'], complete: true, counted: true });
+    expect(p.items[1]).toEqual({ index: 1, key: 'push_up', target: { sets: 4, reps: 12 }, done: [12], kinds: ['a'], complete: false, counted: true });
     expect([p.complete, p.total]).toEqual([1, 2]);
     expect(p.last).toBe(at(17, 20));
     expect(progressOf(sample, id, [], now).last).toBe(null);
@@ -405,12 +405,15 @@ describe('the coach’s drafts', () => {
       const results = { title: 'Semaine 1', who: 'Camille', day: '2026-10-09', time: '', items: [{ key: 'squat', sets: 4, reps: 8, done: [8] }, { key: 'push_up', sets: 3, reps: 12, done: [] }] };
       const made = draftFromResults(results);
       expect(made.kept).toBe(true);
+      // Made from the results, it carries no cue and default rests: the editor says so (rebuilt).
+      expect(made.rebuilt).toBe(true);
       expect(made.draft).toMatchObject({ title: 'Semaine 1', who: 'Camille', note: '' });
       expect(made.draft.items).toEqual([{ key: 'squat', sets: 4, reps: 8, rest: 90, note: '' }, { key: 'push_up', sets: 3, reps: 12, rest: 90, note: '' }]);
       // Once on the phone, the same results lead to that draft, with whatever the coach changed in it since.
       saveDraft({ ...made.draft, items: [{ ...made.draft.items[0], rest: 120, note: 'Lent' }] });
       const again = draftFromResults(results);
       expect(again.draft.id).toBe(made.draft.id);
+      expect(again.rebuilt).toBe(false);
       expect(again.draft.items[0]).toMatchObject({ rest: 120, note: 'Lent' });
       expect(draftFromResults({ ...results, who: 'Zine' }).draft.id).not.toBe(made.draft.id);
       // A draft's title as typed, with a double space or a no-break space: its link, and its results, carry one space.
@@ -553,5 +556,36 @@ describe('the results sent back to the coach', () => {
       expect(await forged({ ...ok, ...bad })).toEqual({ ok: false, error: 'malformed' });
     }
     expect(r.items).toHaveLength(2);
+  });
+});
+
+// An exercise withdrawn from the offer (offer.js, WITHDRAWN) after the coach sent the programme stays known: the client
+// keeps the programme, the coach's link and the results still open, and the day is complete once the exercises the app
+// counts are (live-app audit, 10 October 2026: a withdrawal made every programme naming the exercise vanish).
+describe('an exercise withdrawn after the programme was sent', () => {
+  const memory = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
+  const withdrawn = { ...sample, items: [sample.items[0], { key: 'dead_bug', sets: 3, reps: 10, rest: 60, note: '' }] };
+  const now = new Date(2026, 9, 9, 18, 30);
+
+  it('is still read from the link, packed or plain, and from the results', async () => {
+    for (const gzip of [true, false]) expect(await decodeProgramme(await encodeProgramme(withdrawn, { gzip }))).toEqual({ ok: true, programme: withdrawn });
+    const r = resultsOf(withdrawn, progressOf(withdrawn, 'p1', [], now), now);
+    expect(await decodeResults(await encodeResults(r))).toEqual({ ok: true, results: r });
+  });
+
+  it('stays among the programmes kept on the phone, and in the link the coach sends', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      keepReceived(withdrawn, 1000);
+      expect(loadReceived().map(r => r.programme)).toEqual([withdrawn]);
+    } finally { vi.unstubAllGlobals(); }
+    expect(programmeOf(withdrawn).items.map(i => i.key)).toEqual(['squat', 'dead_bug']);
+  });
+
+  it('does not count toward the day', () => {
+    const sets = [18, 20, 22].map(m => ({ exercise: 'squat', reps: 10, source: 'counter-core', machineResult: { reps: 10 }, createdAt: new Date(2026, 9, 9, 18, m).getTime(), planned: { programme: 'p1', item: 0 } }));
+    const p = progressOf(withdrawn, 'p1', sets, now);
+    expect([p.complete, p.total]).toEqual([1, 1]);
+    expect(p.items.map(i => i.counted)).toEqual([true, false]);
   });
 });

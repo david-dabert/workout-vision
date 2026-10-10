@@ -7,7 +7,8 @@ import { partialIn } from './tempo';
 import { poseAt, repAt, phaseAt, into, keyedTime } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
-import { canExport, exportSetVideo, shareFailed } from './video-export';
+import { canExport, exportSetVideo } from './video-export';
+import { shareSheet } from '../../lib/shareSheet';
 import './Replay.css';
 import { track } from '../../lib/events';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
@@ -65,15 +66,15 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   }
   // A share that fails offers the video to save instead, and says so; one sheet at a time.
   const [shareBroke, setShareBroke] = useState(false);
-  const sharing = useRef(false);
+  const shares = useRef(null);
+  shares.current ??= shareSheet();
   const sharable = !shareBroke && made.file && typeof navigator.canShare === 'function' && navigator.canShare({ files: [made.file] });
+  // Nothing waits on the sheet (shareSheet.js): a sheet never answered, or any refusal but a cancel, offers the video to
+  // save instead.
   function share() {
-    if (sharing.current) return;
-    sharing.current = true;
+    if (!shares.current.begin()) return;
     track('share', { lift });
-    navigator.share({ files: [made.file] })
-      .catch(e => { if (shareFailed(e)) setShareBroke(true); })
-      .finally(() => { sharing.current = false; });
+    navigator.share({ files: [made.file] }).catch(e => { if (shares.current.failed(e)) setShareBroke(true); });
   }
 
   // The file is read where it lies on the phone; its address lives as long as the screen. Leaving, the video is
@@ -195,8 +196,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   // The line: a touch goes to the rep under the finger (or to that moment, between reps);
   // a drag moves through the video.
   const timeAt = x => { const r = lineRef.current.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * length; };
+  // While the video is being prepared it plays for the recording: a seek would hand over a cut file, a drag would stop it
+  // (live-app audit, 10 October 2026).
   function down(e) {
-    if (broken) return;
+    if (broken || made.state === 'making') return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
     drag.current = { x: e.clientX, moved: false, wasPlaying: !videoRef.current.paused };
   }
@@ -222,6 +225,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   }
   // The line's keys: a rep at a time, either arrow pair or Page Up / Down; Home and End (replay-track.js, keyedTime).
   function keys(e) {
+    if (made.state === 'making') return;
     const t = keyedTime(e.key, reps, now, length);
     if (t === null) return;
     e.preventDefault();

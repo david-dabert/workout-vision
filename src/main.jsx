@@ -8,6 +8,7 @@ import { startEvents } from './lib/events'
 import { collectSwitchAtLoad } from './lib/phoneCollect'
 import { holdInstallPrompt } from './lib/install'
 import { startCrashLog } from './lib/crashLog'
+import { whenWritesDone } from './lib/pendingWrites'
 
 // The crash log kept on the phone (crashLog.js): a previous session that did not end cleanly is found here, before the
 // app renders, and the choice of lift says so. A reload by the service worker below is a clean navigation (pagehide).
@@ -28,8 +29,10 @@ if ('serviceWorker' in navigator) {
   // sight or back on the choice of lift, never during an analysis or a report.
   let refreshing = false;
   const wasControlled = !!navigator.serviceWorker.controller;
-  const reloadNow = () => { if (!refreshing) { refreshing = true; window.location.reload(); } };
   const onChoice = () => location.hash === '' || location.hash === '#';
+  // A write still under way (a collected set) finishes first; the page may have left the choice meanwhile, and then
+  // the next return to it reloads (pendingWrites.js).
+  const reloadNow = () => whenWritesDone().then(() => { if (!refreshing && onChoice()) { refreshing = true; window.location.reload(); } });
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!wasControlled || refreshing) return;
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && onChoice()) reloadNow(); });

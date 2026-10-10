@@ -30,6 +30,9 @@ export default function Programme({ payload, onClose, onStart }) {
   const [note, setNote] = useState('');
   // The in-app browser's copy of the programme's link: its own line, and the link to select when the copy is refused.
   const [copyNote, setCopyNote] = useState(''), [copyShown, setCopyShown] = useState(false);
+  // The results link to select when neither the share sheet nor the copy is allowed (an app's own browser): the sets
+  // filmed there live only there, so the link must reach the coach (live-app audit, 10 October 2026).
+  const [resultsShown, setResultsShown] = useState(false);
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang, state.kind, state.entry?.id]);
   const sets = useSets();
@@ -91,7 +94,8 @@ export default function Programme({ payload, onClose, onStart }) {
     .then(() => { setCopyShown(false); setCopyNote(c.copied); }, () => { setCopyShown(true); setCopyNote(c.copyFailed); });
   function sendResults() {
     if (!resultsUrl) return;
-    const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard'))).then(() => setNote(c.resultsCopied), () => setNote(c.linkError));
+    const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard')))
+      .then(() => { setResultsShown(false); setNote(c.resultsCopied); }, () => { setResultsShown(true); setNote(c.copyFailed); });
     if (!navigator.share) { copy(); return; }
     // Refused for any reason but the client's own cancel, the link is copied instead.
     navigator.share({ title: p.title, text: past ? c.resultsTextOf(p.title, pastDay) : c.resultsText(p.title), url: resultsUrl }).then(() => setNote(''), e => { if (e.name !== 'AbortError') copy(); });
@@ -103,11 +107,23 @@ export default function Programme({ payload, onClose, onStart }) {
       <h1 className="title" data-reveal style={{ '--i': 0 }}>{p.title}</h1>
       <p className="programme-meta" data-reveal style={{ '--i': 1 }}>
         {p.who && <span>{c.whoLine(p.who)}</span>}
-        <span data-testid="programme-today">{c.today(progress.complete, progress.total)}</span>
+        {progress.total > 0 && <span data-testid="programme-today">{c.today(progress.complete, progress.total)}</span>}
       </p>
       {p.note && <p className="programme-note" data-reveal style={{ '--i': 1 }}>{p.note}</p>}
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{p.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key), got = progress.items[i];
+        // An exercise the app no longer counts (withdrawn after the coach sent the programme): shown, not filmed.
+        if (!got.counted) return <li key={`${item.key}-${i}`} className="programme-item" data-testid="programme-item">
+          <div className="programme-btn">
+            {e ? <Thumb exercise={e} /> : <span className="thumb" />}
+            <span className="programme-body">
+              <span className="programme-name">{name}</span>
+              <span className="programme-target mono">{c.target(item.sets, item.reps, item.rest)}</span>
+              {item.note && <span className="programme-cue">{item.note}</span>}
+              <span className="programme-cue" data-testid="programme-not-counted">{c.notCounted}</span>
+            </span>
+          </div>
+        </li>;
         return <li key={`${item.key}-${i}`} className={`programme-item${got.complete ? ' is-done' : ''}`} data-testid="programme-item">
           <button type="button" className="programme-btn press" onClick={() => onStart(item.key, plannedOf(entry.id, i, item))} aria-label={c.film(name)}>
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
@@ -129,6 +145,10 @@ export default function Programme({ payload, onClose, onStart }) {
           <span>{past ? c.sendResultsOf(pastDay) : c.sendResults}</span>
         </button>
         {note && <p className="pro-status" role="status" data-testid="programme-send-status">{note}</p>}
+        {resultsShown && <div className="field">
+          <label htmlFor="pResultsLink">{c.resultsLinkLabel}</label>
+          <input id="pResultsLink" type="text" readOnly value={resultsUrl} onFocus={e => e.currentTarget.select()} data-testid="programme-results-link" />
+        </div>}
         <p className="foot pro-foot">{past ? c.resultsPrivacyOf(pastDay) : c.resultsPrivacy}</p>
       </div>}
       <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>

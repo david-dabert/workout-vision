@@ -212,6 +212,15 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     await phone.waitForFunction(() => window.__shared?.url?.includes('#resultats='), null, { timeout: 3000 });
     const sent = await phone.evaluate(() => window.__shared);
     expect(sent.text).toBe(c.resultsText('Bas du corps, semaine 1'));
+    // In an app's own browser the share sheet and the copy can both be refused: the results link is shown to select,
+    // never a dead end (live-app audit, 10 October 2026).
+    await phone.evaluate(() => {
+      navigator.share = () => Promise.reject(new DOMException('refused', 'NotAllowedError'));
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new DOMException('refused', 'NotAllowedError')) } });
+    });
+    await phone.getByTestId('programme-send').click();
+    await expect(phone.getByTestId('programme-send-status')).toHaveText(c.copyFailed);
+    await expect(phone.getByTestId('programme-results-link')).toHaveValue(sent.url);
     const coach = await page.context().newPage();
     const coachErrors = await prepare(coach, viewport);
     await coach.goto(sent.url);
