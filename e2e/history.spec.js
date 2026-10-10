@@ -207,5 +207,11 @@ test.describe('the next screen failing to load', () => {
     await page.reload();
     await page.getByRole('button', { name: /Vos séries/ }).click();
     await expect(page.getByRole('button', { name: 'Recharger' })).toBeVisible({ timeout: 10000 });
+    // The network back, "Réessayer" downloads the screen again and opens it, without a reload (live-app audit,
+    // 10 October 2026: the failure was kept for the whole visit).
+    await page.unroute(/\/assets\/History-[^/]+\.js$/);
+    await page.getByRole('button', { name: 'Réessayer' }).click();
+    await expect(page.getByRole('button', { name: 'Recharger' })).toHaveCount(0, { timeout: 10000 });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 });

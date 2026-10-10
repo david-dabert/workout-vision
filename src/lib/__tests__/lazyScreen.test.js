@@ -7,7 +7,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createElement, Suspense } from 'react';
 import { prerender } from 'react-dom/static';
-import { lazyScreen } from '../lazyScreen';
+import { lazyScreen, retryFailedScreens } from '../lazyScreen';
 
 async function render(Screen) {
   const errors = [];
@@ -36,12 +36,17 @@ describe('a screen whose download failed once', () => {
     expect((await render(Screen)).html).toContain('analysis');
   });
 
-  it('shows the error once, then renders on the next try', async () => {
+  it('shows the error, never downloads again from a render, and renders after "Réessayer"', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
       const f = flaky(), Screen = lazyScreen(f.load);
       const first = await render(Screen);
       expect(first.errors.some(e => /Load failed/.test(e.message))).toBe(true);
+      // React renders again after an error: that render keeps the failure (no loop), and downloads nothing.
+      const again = await render(Screen);
+      expect(again.errors.some(e => /Load failed/.test(e.message))).toBe(true);
+      expect(f.calls()).toBe(1);
+      retryFailedScreens();
       const retry = await render(Screen);
       expect(retry.errors).toEqual([]);
       expect(retry.html).toContain('analysis');
