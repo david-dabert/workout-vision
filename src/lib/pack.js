@@ -10,9 +10,12 @@
 import { TARGET_FPS, MAX_LONG_SIDE } from './extractionConfig';
 
 // Bits per pixel of each picture for the encoder's target bitrate: about 520 kbit/s at 640 x 360 and 15 pictures a
-// second, about 1.9 MB for a 30-second set. Source: UNSOURCED (a common rule of thumb for H.264 at small sizes puts
-// good quality between 0.1 and 0.2 bits per pixel). Status: convention; the pose read on packed videos against the
-// originals is measured when the first pack arrives (test/real-phone/pack/README.md).
+// second, about 1.9 MB for a 30-second set. Measured 10 October 2026 on David's three videos of that day, packed in
+// Chromium (VP9) at 0.15, 0.3 and 0.6 and read back by the app: the median shift of the limb landmarks against the
+// read of the unpacked video went 2.8 -> 2.2 -> 2.0 cm, 6.2 -> 5.2 -> 5.0 cm and 2.8 -> 2.5 -> 2.3 cm for twice and
+// 3.3 times the size, and the counts moved at every level (any re-encode moves the pose read: TRIED.md, "Counts that
+// swing under re-encoding"). So the smallest is kept. Source: that measurement. Status: validated on 3 videos
+// (Chromium VP9; the iPhone's H.264 not measured).
 export const BITS_PER_PIXEL = 0.15;
 // A key picture every 2 s, so a player or a reader can seek. Source: convention. Status: convention.
 export const KEY_EVERY_SEC = 2;
