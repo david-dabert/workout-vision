@@ -165,14 +165,15 @@ function AppInner() {
   const chooseLift = (lift, guided = false) => {
     // A beginner's lift goes through its guide page first: its "Filmer cet exercice" is the same choice, counted once.
     if (!(guided && guideLift === lift)) track('choose_lift', { lift });
-    // The model and the pose library's WASM enter the service worker's caches now, so a first analysis made offline
-    // can start (pose-files.js); inference stays in the existing worker.
-    warmPoseFiles(import.meta.env.BASE_URL);
     // A fitness test has no guide page of its own: its protocol is on the filming screen (fitness-tests.js).
     if (!guided && !isTest(lift) && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
       go('exercises', () => setGuideLift(lift));
       return;
     }
+    // The model and the pose library's WASM (about 24 MB) enter the service worker's caches now, on the way to filming,
+    // so a first analysis made offline can start (pose-files.js); inference stays in the existing worker. Not before the
+    // guide page: a beginner who only reads it spends no mobile data on them (live-app audit, 10 October 2026).
+    warmPoseFiles(import.meta.env.BASE_URL);
     go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
   };
   // A target holds only for its own exercise: one left from an earlier tap never reaches another set (excellence hunt,
