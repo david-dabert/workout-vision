@@ -47,16 +47,17 @@ export function saveDraft(draft) {
 /**
  * The draft to adjust after a client's results (Results.jsx): the coach's own draft of that title and for that person
  * when this phone holds one, else a new one made from the results (each exercise at the sets and reps sent, the rest
- * at its default, no cue), kept at once. Returns { draft, kept }.
+ * at its default, no cue), kept at once. Returns { draft, kept, rebuilt }: rebuilt when made from the results, which
+ * the editor says (on an iPhone the installed app and Safari keep separate drafts, and a results link opens in Safari).
  */
 export function draftFromResults(results, now = Date.now()) {
   // The draft's words as its link carries them (cleanText): a double space or a no-break space typed in the draft
   // is one space in the results.
   const same = loadDrafts().find(d => cleanText(d.title).slice(0, LIMITS.title) === results.title
     && cleanText(d.who).slice(0, LIMITS.who) === (results.who || ''));
-  if (same) return { draft: same, kept: true };
+  if (same) return { draft: same, kept: true, rebuilt: false };
   const draft = { ...newDraft(now), title: results.title, who: results.who || '', items: results.items.map(i => ({ ...newItem(i.key), sets: i.sets, reps: i.reps })) };
-  return { draft, kept: saveDraft(draft) };
+  return { draft, kept: saveDraft(draft), rebuilt: true };
 }
 export function removeDraft(id) { return write(DRAFTS, read(DRAFTS).filter(d => d?.id !== id)); }
 

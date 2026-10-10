@@ -47,6 +47,9 @@ export default function Pro({ onClose, start = null }) {
     return start && !list.some(d => d.id === start.draft.id) ? [start.draft, ...list] : list;
   });
   const [openId, setOpenId] = useState(start?.draft.id ?? null);
+  // A draft made from a client's results has no cue and default rests: its editor opens saying so (live-app audit,
+  // 10 October 2026).
+  const rebuiltId = start?.rebuilt ? start.draft.id : null;
   const [picking, setPicking] = useState(false);
   // The "Pour" field takes focus in a copy made for another client.
   const [focusWho, setFocusWho] = useState(false);
@@ -84,7 +87,7 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
-  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
+  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
   return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onOpen={show} />;
 }
 
@@ -134,12 +137,12 @@ function NumField({ id, label, longLabel, value, onCommit }) {
   </div>;
 }
 
-function Editor({ c, fr, lang, draft, kept, focusWho = false, onChange, onPick, onBack, onDuplicate, onDelete }) {
+function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, onChange, onPick, onBack, onDuplicate, onDelete }) {
   const screenRef = useRef(null), whoRef = useRef(null);
   useEffect(() => { if (focusWho) whoRef.current?.focus({ preventScroll: false }); }, [focusWho]);
   // The bar's small title follows the programme's title as it is typed.
   useCondensingTopbar(screenRef, [fr, draft.title.trim()]);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(rebuilt ? c.rebuiltNote : '');
   const [status, setStatus] = useState(kit ? 'ready' : 'preparing');
   // The packed link of the programme as it stands, once made: { of, link }.
   const [packed, setPacked] = useState({ of: '', link: '' });

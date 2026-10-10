@@ -405,12 +405,15 @@ describe('the coach’s drafts', () => {
       const results = { title: 'Semaine 1', who: 'Camille', day: '2026-10-09', time: '', items: [{ key: 'squat', sets: 4, reps: 8, done: [8] }, { key: 'push_up', sets: 3, reps: 12, done: [] }] };
       const made = draftFromResults(results);
       expect(made.kept).toBe(true);
+      // Made from the results, it carries no cue and default rests: the editor says so (rebuilt).
+      expect(made.rebuilt).toBe(true);
       expect(made.draft).toMatchObject({ title: 'Semaine 1', who: 'Camille', note: '' });
       expect(made.draft.items).toEqual([{ key: 'squat', sets: 4, reps: 8, rest: 90, note: '' }, { key: 'push_up', sets: 3, reps: 12, rest: 90, note: '' }]);
       // Once on the phone, the same results lead to that draft, with whatever the coach changed in it since.
       saveDraft({ ...made.draft, items: [{ ...made.draft.items[0], rest: 120, note: 'Lent' }] });
       const again = draftFromResults(results);
       expect(again.draft.id).toBe(made.draft.id);
+      expect(again.rebuilt).toBe(false);
       expect(again.draft.items[0]).toMatchObject({ rest: 120, note: 'Lent' });
       expect(draftFromResults({ ...results, who: 'Zine' }).draft.id).not.toBe(made.draft.id);
       // A draft's title as typed, with a double space or a no-break space: its link, and its results, carry one space.
