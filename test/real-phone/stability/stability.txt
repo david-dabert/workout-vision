@@ -65,4 +65,5 @@ Real re-encodings (/tmp/claude-0/-home-user-workout-vision/a8df0d7c-b49e-5648-b6
   sissy_squat_9_5007  label 9  9 | 9 | 10 | 9 | 9 | 9
   standing_barbell_curl_8  label 8  R(p8) | R(p8) | R(p8) | R(p8) | R(p8) | R(p8)
   exact per encoding: committed 6, crf30 2, gen2 1, pyav 5, s90 3, vp8 3; exact on every encoding 1 of 14; the same outcome on every encoding 5 of 14.
+  the gate as an instrument: pairs of encodings giving a video the same outcome 116 of 201 (57.7 %); typical error 0.85 reps (videos counted on every encoding); MDC95 2.4 reps.
   counted reads shown as sure (body check aside): wrong 45, right 20; with the sensitivity check: wrong 14, right 12.
