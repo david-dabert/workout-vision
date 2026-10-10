@@ -17,12 +17,6 @@ export function pickMime(supported) {
   return MIMES.find(m => { try { return supported(m); } catch { return false; } }) || '';
 }
 
-/**
- * Whether a share that did not end well failed: a cancel (AbortError) or a second sheet asked while one is open
- * (InvalidStateError) did not; anything else did, and the video is then offered to save (Astra's audit: a failed
- * share said nothing).
- */
-export const shareFailed = e => e?.name !== 'AbortError' && e?.name !== 'InvalidStateError';
 
 // The count kept for the set, when known, ends the name (David, 6 October: the files he shares carry their count).
 export const exportFileName = (lift, mime, count) => `workoutvision-${String(lift).replace(/_/g, '-')}${Number.isInteger(count) ? `-${count}` : ''}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
@@ -129,7 +123,9 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
 
     video.addEventListener('error', () => finish(new Error('unreadable')), { once: true, ...on });
     // At the end the browser pauses, then ends: a pause before the end is an interruption.
-    video.addEventListener('pause', () => { if (!video.ended) finish(new Error('interrupted')); }, on);
+    // Only a pause that holds: the event of the pause Replay made just before the export played the video arrives
+    // after play() and is not one (live-app audit, 10 October 2026).
+    video.addEventListener('pause', () => { if (video.paused && !video.ended) finish(new Error('interrupted')); }, on);
     video.addEventListener('ended', () => {
       const end = video.duration || video.currentTime;
       // Frames for the whole set, or none: drawn up to its last second, and at least five a second on average.

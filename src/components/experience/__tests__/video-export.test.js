@@ -28,8 +28,11 @@ import { exportSetVideo } from '../video-export';
 import { afterEach, beforeEach, vi } from 'vitest';
 
 class FakeVideo extends EventTarget {
-  constructor() { super(); this.style = {}; this.currentTime = 0; this.duration = 10; this.videoWidth = 720; this.videoHeight = 1280; }
-  setAttribute() {} remove() {} pause() {} play() { return refusePlay ? Promise.reject(new DOMException('', 'NotAllowedError')) : Promise.resolve(); }
+  constructor() { super(); this.style = {}; this.paused = true; this.currentTime = 0; this.duration = 10; this.videoWidth = 720; this.videoHeight = 1280; }
+  setAttribute() {} remove() {}
+  // As a browser does: pause() and play() change paused at once; their events come later (here, dispatched by the test).
+  pause() { this.paused = true; }
+  play() { if (refusePlay) return Promise.reject(new DOMException('', 'NotAllowedError')); this.paused = false; return Promise.resolve(); }
 }
 let video, recorders, throwOnRecorder, refusePlay;
 class FakeRecorder {
@@ -63,10 +66,24 @@ describe('the export settles and cleans up (review 01 of step 4)', () => {
   it('fails, and stops the recorder, when the video pauses before its end (screen locked, app left)', async () => {
     const out = start();
     video.dispatchEvent(new Event('playing'));
+    video.pause();
     video.dispatchEvent(new Event('pause'));
     await expect(out).rejects.toThrow('interrupted');
     expect(recorders[0].stop).toHaveBeenCalled();
     expect(track.stop).toHaveBeenCalled();
+  });
+  // Live-app audit, 10 October 2026: "Préparer la vidéo à partager" tapped while the replay played. Replay pauses it,
+  // the browser queues that pause event, the export plays it: the old event arrived after and stopped the export with
+  // "Gardez l'écran allumé", which was not the cause.
+  it('ignores the pause event left over from pausing the replay just before', async () => {
+    const screen = new FakeVideo();
+    screen.paused = false;
+    screen.pause();
+    let outcome = 'recording';
+    exportSetVideo({ file: null, result: { arm: 'left', reps: [] }, lift: 'bicep_curl', screen }).then(() => { outcome = 'done'; }, e => { outcome = e.message; });
+    screen.dispatchEvent(new Event('pause'));
+    await Promise.resolve(); await Promise.resolve();
+    expect(outcome).toBe('recording');
   });
   it('fails when the video stops advancing for five seconds', async () => {
     const out = start();
@@ -93,6 +110,7 @@ describe('the export settles and cleans up (review 01 of step 4)', () => {
     expect(screen.currentTime).toBe(0);
     expect(screen.muted).toBe(true);
     screen.dispatchEvent(new Event('playing'));
+    screen.pause();
     screen.dispatchEvent(new Event('pause'));
     await expect(out).rejects.toThrow('interrupted');
     expect(screen.remove).not.toHaveBeenCalled();
@@ -133,13 +151,3 @@ describe('the exported overlay after a correction', () => {
   });
 });
 
-import { shareFailed } from '../video-export';
-describe('a share that did not end well', () => {
-  it('failed unless it was cancelled or a sheet was already open', () => {
-    expect(shareFailed(Object.assign(new Error('x'), { name: 'AbortError' }))).toBe(false);
-    expect(shareFailed(Object.assign(new Error('x'), { name: 'InvalidStateError' }))).toBe(false);
-    expect(shareFailed(Object.assign(new Error('x'), { name: 'NotAllowedError' }))).toBe(true);
-    expect(shareFailed(new TypeError('x'))).toBe(true);
-    expect(shareFailed(undefined)).toBe(true);
-  });
-});
