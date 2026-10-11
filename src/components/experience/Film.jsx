@@ -6,18 +6,12 @@ import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
 import { exerciseName, filmView, guideExercise } from './exercise-info';
 import { GuideFrames } from './Guide';
-import { holdScreenAwake } from '../../lib/interruption';
 import './Film.css';
 
 export default function Film({ lift, onBack, onFile, hero: arrivedByTransition = false }) {
   const { lang } = useT(), fr = lang === 'fr';
   const canvas = useRef(null);
   const fileRef = useRef(null);
-
-  useEffect(() => {
-    const release = holdScreenAwake();
-    return () => { release().catch(() => {}); };
-  }, []);
   // The frame takes the chosen card's name only for the View Transition that brings it in, then drops it,
   // so a Film screen still fading out never shares the name with the next one.
   const [hero, setHero] = useState(arrivedByTransition);
