@@ -1,11 +1,13 @@
 // In the history: the contributions waiting on this phone (contribute.js), sent through the share sheet or
 // downloaded, and the choice to start or to stop, which erases them. The file is prepared as soon as the sets
 // waiting are known, so a tap on Send opens the share sheet inside the tap, as Safari requires (review of
-// 2 October); a tap while a sheet is open does nothing; stopping drops a prepared file before it can be sent.
+// 2 October); nothing waits on the sheet, a second tap within a second is the same tap and a refused share makes
+// the next tap download (shareSheet.js); stopping drops a prepared file before it can be sent.
 import { useEffect, useRef, useState } from 'react';
 import { contributions, contributionsFile, eraseContributions, forgetContributions, readChoice, persistChoice } from '../../lib/contribute';
 import { CONTRIBUTE } from './contribute-copy';
 import { contributeBuild } from '../../lib/buildFlags';
+import { shareSheet } from '../../lib/shareSheet';
 
 export default function ContributeHistory({ fr, style, sets = null }) {
   const t = CONTRIBUTE[fr ? 'fr' : 'en'];
@@ -16,7 +18,8 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   const [waiting, setWaiting] = useState(null);
   const [prepared, setPrepared] = useState(null); // { list, file }: the file prepared for that list
   const [note, setNote] = useState('');
-  const downloadNext = useRef(false), sharing = useRef(false), generation = useRef(0);
+  const shares = useRef(null), generation = useRef(0);
+  shares.current ??= shareSheet();
   // Sets left on the phone after a stop whose erase failed: the stop and erase stays offered until they are gone,
   // so the promise that stopping erases them holds (third audit C17, 3 October).
   const [leftover, setLeftover] = useState(false);
@@ -48,26 +51,19 @@ export default function ContributeHistory({ fr, style, sets = null }) {
   const file = prepared && prepared.list === waiting ? prepared.file : null;
 
   function send() {
-    if (!on || !file || sharing.current || readChoice() !== 'yes') return;
+    if (!on || !file || readChoice() !== 'yes' || !shares.current.begin()) return; // one tap at a time
     setNote('');
     const list = waiting, f = file, g = generation.current;
-    if (!downloadNext.current && typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] })) {
-      sharing.current = true;
+    if (shares.current.shares(typeof navigator.canShare === 'function' && navigator.canShare({ files: [f] }))) {
+      // Nothing waits on the sheet (shareSheet.js): a refusal says so, and the next tap downloads.
       navigator.share({ files: [f], title: t.shareTitle }).then(async () => {
-        sharing.current = false;
         if (g !== generation.current) return; // stopped meanwhile: nothing more is said or kept
         await forgetContributions(list.map(c => c.setId)).catch(() => {});
         setWaiting(w => (w || []).filter(c => !list.includes(c)));
         setNote(t.sent(list.length));
-      }, e => {
-        sharing.current = false;
-        if (e.name === 'AbortError') return;
-        downloadNext.current = true;
-        setNote(t.shareFailed);
-      });
+      }, e => { if (shares.current.failed(e)) setNote(t.shareFailed); });
       return;
     }
-    downloadNext.current = false;
     const url = URL.createObjectURL(f), a = Object.assign(document.createElement('a'), { href: url, download: f.name });
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
