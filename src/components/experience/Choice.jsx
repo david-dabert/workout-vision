@@ -90,7 +90,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -99,7 +99,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   useEffect(() => { import('./exercise-info').then(m => setNameOf(() => m.exerciseName), () => {}); }, []);
   useRail(railRef, dotsRef);
   // The programme a coach sent, once opened from its link (Programme.jsx): one row, first under the cards.
-  const [received] = useState(() => (onProgramme ? loadReceived()[0] ?? null : null));
+  // held: a programme opened in this visit that the phone could not keep (App.jsx), the one opened last.
+  const [received] = useState(() => (onProgramme ? (held ? { programme: held } : loadReceived()[0] ?? null) : null));
   const pro = PRO[fr ? 'fr' : 'en'];
   // The chosen card carries the name the filming screen's frame takes, so it grows into it (View Transitions).
   const choose = (lift, i) => { cards.current.forEach((c, j) => { if (c) c.style.viewTransitionName = j === i ? 'lift-hero' : ''; }); onChoose(lift); };

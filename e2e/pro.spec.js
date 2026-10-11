@@ -291,6 +291,40 @@ test('a damaged link is refused, plainly', async ({ page }) => {
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+// Safari with every cookie blocked (11 October 2026): the phone refuses to keep the programme. It stays for the visit:
+// the address keeps the link, the screen says it is not kept, and the return from filming, and the choice, find it.
+test('a programme the phone cannot keep stays for the visit', async ({ page }) => {
+  const errors = await prepare(page, { width: 390, height: 664 });
+  await page.addInitScript(() => {
+    const set = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (k, v) {
+      if (k === 'wv_programmes') throw new DOMException('The operation is insecure.', 'SecurityError');
+      return set.call(this, k, v);
+    };
+  });
+  const raw = { v: 1, t: 'Haut du corps', w: 'Camille', x: [['squat', 3, 10, 90], ['push_up', 3, 12, 60]] };
+  await page.goto(`/workout-vision/#programme=j${Buffer.from(JSON.stringify(raw)).toString('base64url')}`);
+  const screen = page.getByTestId('programme-screen');
+  await expect(page.getByTestId('programme-item')).toHaveCount(2, { timeout: 20000 });
+  await expect(page.getByTestId('programme-not-kept')).toHaveText(c.notKept);
+  await expect(page).toHaveURL(/#programme=j/);
+  // A tap films the exercise; Back returns to the same programme, never "Aucun programme".
+  await page.getByRole('button', { name: c.film('Pompe') }).click();
+  await expect(page.locator('.film-screen')).toBeVisible({ timeout: 20000 });
+  await page.locator('.film-screen .icon-btn').first().click();
+  await expect(page.getByTestId('programme-item')).toHaveCount(2, { timeout: 20000 });
+  await expect(screen).toContainText('Haut du corps');
+  await expect(screen).not.toContainText(c.none);
+  // From the choice, the programme is one row away for the rest of the visit.
+  await page.getByRole('button', { name: c.back }).click();
+  const row = page.getByTestId('choice-programme');
+  await expect(row).toContainText('Haut du corps', { timeout: 20000 });
+  await row.click();
+  await expect(page.getByTestId('programme-item')).toHaveCount(2, { timeout: 20000 });
+  expect(await page.evaluate(() => localStorage.getItem('wv_programmes'))).toBe(null);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 // The coach's drafts (excellence hunt, 9 October 2026): "Nouveau programme" then Back keeps nothing; a programme copied
 // for another client keeps its exercises and cues, "Pour" empty and in focus; a client's results lead to the coach's
 // own draft of that programme, or to a new one made from them.

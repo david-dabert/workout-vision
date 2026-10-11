@@ -82,7 +82,9 @@ export function loadReceived() {
  * the same person received before it is an earlier version, which the coach changed and sent again (excellence hunt,
  * 9 October 2026): its id is remembered, so the sets filmed from it that day still count for this one. The earlier
  * version stays listed, with the day it came: opening its link again never takes the newer one away, and a set of an
- * exercise the new version dropped can still be sent from it. Returns the programme's id.
+ * exercise the new version dropped can still be sent from it. Returns { id, kept }: the programme's id, and whether
+ * the phone kept it (false when it refuses storage, as Safari does with every cookie blocked: Programme.jsx then leaves
+ * the link in the address, and the app holds the programme for the visit, App.jsx).
  */
 export function keepReceived(programme, now = Date.now()) {
   const id = programmeId(programme), stored = read(RECEIVED).filter(r => r && typeof r === 'object');
@@ -93,8 +95,7 @@ export function keepReceived(programme, now = Date.now()) {
   const previous = [...new Set(ids.filter(x => typeof x === 'string' && x !== id))].slice(0, MAX_PREVIOUS);
   const list = stored.filter(r => r.id !== id);
   list.unshift({ id, data: compact(programme), receivedAt, openedAt: now, ...(previous.length ? { previous } : {}) });
-  write(RECEIVED, list.slice(0, MAX_RECEIVED));
-  return id;
+  return { id, kept: write(RECEIVED, list.slice(0, MAX_RECEIVED)) };
 }
 /** Marks a received programme as the one opened last. */
 export function openReceived(id, now = Date.now()) {

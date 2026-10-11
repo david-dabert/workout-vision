@@ -85,6 +85,9 @@ function AppInner() {
   const [planned, setPlanned] = useState(null);
   // The draft Espace pro opens at once, when a client's results lead to it (programme-store.js, draftFromResults).
   const [proStart, setProStart] = useState(null);
+  // A programme opened in this visit that the phone could not keep (storage refused: Safari with every cookie blocked):
+  // held here for the visit, so the return from filming, or the choice, finds it (Programme.jsx, onHold).
+  const [heldProgramme, setHeldProgramme] = useState(null);
   // For one visit: a browser back then forward to Espace pro opens its list, never a start draft since deleted.
   useEffect(() => { if (page !== 'pro') setProStart(null); }, [page]);
   // Run storage schema migration on mount
@@ -208,7 +211,7 @@ function AppInner() {
     key = 'programme';
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
     // cleared (Programme.jsx), or when the programme is opened from the choice.
-    screen = <Programme payload={payloadOf(window.location.hash)} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
+    screen = <Programme payload={payloadOf(window.location.hash)} held={heldProgramme} onHold={setHeldProgramme} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
   } else if (page === 'resultats') {
     // The link's payload as typed; a results screen with no payload says the link does not open. One screen per link:
     // another client's link opened over this one is read afresh.
@@ -222,7 +225,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

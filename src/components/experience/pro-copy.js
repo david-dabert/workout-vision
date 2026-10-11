@@ -110,6 +110,9 @@ export const PRO = {
     tapHint: 'Touchez un exercice pour le filmer. Chaque série enregistrée s’affiche ici, comptée, à côté de l’objectif.',
     sendBack: 'Après une série, « Rapport de séance » prépare un PDF à envoyer à votre coach.',
     clientPrivacy: 'Le programme et vos séries restent sur ce téléphone.',
+    // In place of clientPrivacy when the phone refuses storage (Safari with every cookie blocked): the programme stays
+    // open for the visit only (Programme.jsx, App.jsx).
+    notKept: 'Ce téléphone ne garde pas le programme (navigation privée ?) : à votre prochaine séance, rouvrez le lien de votre coach.',
     // Results sent back to the coach (Results.jsx; French approved by David on 9 October, R10).
     sendResults: 'Envoyer mes résultats au coach',
     resultsPrivacy: 'Le lien ne contient que le programme et les répétitions comptées aujourd’hui, aucune image.',
@@ -251,6 +254,7 @@ export const PRO = {
     tapHint: 'Tap an exercise to film it. Each set you save shows here, counted, beside the target.',
     sendBack: 'After a set, “Session report” prepares a PDF to send to your coach.',
     clientPrivacy: 'The programme and your sets stay on this phone.',
+    notKept: 'This phone does not keep the programme (private browsing?): next session, open your coach’s link again.',
     sendResults: 'Send my results to my coach',
     resultsPrivacy: 'The link holds only the programme and the reps counted today, no picture.',
     resultsText: title => `My sets today: ${title}`,
