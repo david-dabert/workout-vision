@@ -349,3 +349,19 @@ Live counting (Film screen, "En direct"; src/components/experience/Live.jsx) was
   the scoreboard's before and after (R2) and every public number re-cited from it (R13).
 - Why not now: it moves the baseline every public claim cites; David decides when.
 
+
+## 11 October 2026: design ideation for an iconic product (David, relayed from two AI texts), ideas, not decisions
+
+For Wednesday 14 October. Themes:
+- remove until only the count and the next step remain (Dieter Rams);
+- the result screen as the one surface that matters: one number at monumental scale, no decoration before the person confirms or corrects, low confidence withholds the number and asks;
+- a mechanical, tactile feel (a watch bezel, a Leica shutter), with short decisive transitions;
+- typography as architecture (Geist, one display face, one text face, French and English equally native);
+- near-monochrome colour, with one accent shown only when the system is certain;
+- design in the gym (one hand, sweat, bright light, a 1 to 2 s glance);
+- ship small weekly changes, and remove what does not raise the confirmation rate.
+
+Notes for the discussion:
+- Much already exists: the sleeping stage without particles (design pass), the Geist numeral (C1), no number at low confidence (R8, C4), the correction treated as the count.
+- Haptics through navigator.vibrate: as far as known, Safari on iPhone ignores the Vibration API; to verify before anything is designed on it.
+- The confirmation rate is measurable: the usage counts record sets kept and corrected (feedback-worker/usage-schema.js).
