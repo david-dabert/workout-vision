@@ -6,7 +6,7 @@
   "count": 10,
   "refused": false,
   "samples": 439,
-  "elapsed": 17.498,
+  "elapsed": 17.45,
   "decoder": "webcodecs",
   "comparisons": {
     "timestamps": true,

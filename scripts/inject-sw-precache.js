@@ -24,7 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, '..', 'dist');
 const SW_PATH = join(DIST, 'sw.js');
 const ASSETS_DIR = join(DIST, 'assets');
-const BASE = process.env.VITE_BASE || '/workout-vision/';
+const BASE = process.env.VERCEL ? '/' : (process.env.VITE_BASE || '/workout-vision/');
 
 // Read all built assets
 const assetFiles = readdirSync(ASSETS_DIR)

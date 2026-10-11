@@ -25,7 +25,7 @@ function copyModelsPlugin() {
 
 export default defineConfig({
   plugins: [react(), copyModelsPlugin()],
-  base: process.env.VITE_BASE || '/workout-vision/',
+  base: process.env.VERCEL ? '/' : (process.env.VITE_BASE || '/workout-vision/'),
   server: {
     host: true,
     https: httpsConfig,

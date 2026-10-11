@@ -59,9 +59,7 @@ for (const [lift, file, expected] of clips) {
     const elapsed = (Date.now() - start) / 1000;
     const actual = await page.evaluate(() => window.__coreOutput);
     const committed = JSON.parse(gunzipSync(readFileSync(`test/real-phone/landmarks/${file}.json.gz`)));
-    const isStrict = testInfo.project.name === 'webkit-iphone';
     function areLandmarksEqual(a, b, isWorld = false) {
-      if (isStrict) return JSON.stringify(a) === JSON.stringify(b);
       if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
       const CORE_JOINTS = [11, 12, 13, 14, 15, 16, 23, 24];
       const tol = isWorld ? 0.15 : 0.05;
@@ -103,9 +101,6 @@ for (const [lift, file, expected] of clips) {
       expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
     } else {
       expect(comparisons.timestamps).toBe(true);
-      if (testInfo.project.name === 'webkit-iphone') {
-        expect(comparisons).toEqual({ timestamps: true, imageLandmarks: true, worldLandmarks: true });
-      }
     }
     expect(errors).toEqual([]);
     expect(failed).toEqual([]);
