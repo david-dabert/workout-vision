@@ -327,6 +327,29 @@ describe('rep details', () => {
     expect(sEn.summary.join('\n')).toContain('Very smooth');
   });
 
+  it('formats biomechanical form checks (squat depth, knee valgus, lockout) in summary', () => {
+    const formChecks = {
+      squatDepth: { allParallel: true, parallelRate: 1.0, count: 5, total: 5 },
+      kneeValgus: { detected: false, valgusRate: 0, count: 0, total: 5 },
+      lockout: { fullLockout: true, lockoutRate: 1.0, count: 5, total: 5 },
+    };
+    const sFr = reportSheet({ ...base, reps, first: 'concentric', formChecks });
+    expect(sFr.summary.join('\n')).toContain('Profondeur (squat)');
+    expect(sFr.summary.join('\n')).toContain('100 % à la parallèle');
+    expect(sFr.summary.join('\n')).toContain('Alignement des genoux');
+    expect(sFr.summary.join('\n')).toContain('Parfait (aucun valgus)');
+    expect(sFr.summary.join('\n')).toContain('Verrouillage articulaire');
+    expect(sFr.summary.join('\n')).toContain('Complet (100 %)');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', formChecks });
+    expect(sEn.summary.join('\n')).toContain('Squat depth');
+    expect(sEn.summary.join('\n')).toContain('100% parallel depth');
+    expect(sEn.summary.join('\n')).toContain('Knee tracking');
+    expect(sEn.summary.join('\n')).toContain('Clean (no valgus collapse)');
+    expect(sEn.summary.join('\n')).toContain('Joint lockout');
+    expect(sEn.summary.join('\n')).toContain('Complete lockout (100%)');
+  });
+
   it('runs a long table onto the next page', async () => {
     const pdfText = async blob => Buffer.from(await blob.arrayBuffer()).toString('latin1');
     const many = Array.from({ length: 16 }, (_, i) => rep(i * 3, 1.9, 90, 0.8, 1.0));

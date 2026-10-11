@@ -94,7 +94,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, symmetry, smoothness, consistency }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, symmetry, smoothness, consistency, formChecks }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -159,6 +159,31 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         ? (fr ? 'Modérée' : 'Moderate')
         : (fr ? 'Saccadée' : 'Jerky');
       summary.push((fr ? 'Fluidité' : 'Smoothness') + colon + `${smoothness.avgSparc} SPARC (${smoothnessLabel})`);
+    }
+
+    // Biomechanical form checks (depth, knee valgus, lockout)
+    if (formChecks) {
+      if (formChecks.squatDepth) {
+        const d = formChecks.squatDepth;
+        const depthText = d.allParallel
+          ? (fr ? '100 % à la parallèle' : '100% parallel depth')
+          : (fr ? `${d.count}/${d.total} à la parallèle (${Math.round(d.parallelRate * 100)} %)` : `${d.count}/${d.total} parallel (${Math.round(d.parallelRate * 100)}%)`);
+        summary.push((fr ? 'Profondeur (squat)' : 'Squat depth') + colon + depthText);
+      }
+      if (formChecks.kneeValgus) {
+        const v = formChecks.kneeValgus;
+        const valgusText = !v.detected
+          ? (fr ? 'Parfait (aucun valgus)' : 'Clean (no valgus collapse)')
+          : (fr ? `Valgus détecté (${v.count}/${v.total} rép.)` : `Valgus collapse detected (${v.count}/${v.total} reps)`);
+        summary.push((fr ? 'Alignement des genoux' : 'Knee tracking') + colon + valgusText);
+      }
+      if (formChecks.lockout) {
+        const l = formChecks.lockout;
+        const lockoutText = l.fullLockout
+          ? (fr ? 'Complet (100 %)' : 'Complete lockout (100%)')
+          : (fr ? `${l.count}/${l.total} avec extension complète (${Math.round(l.lockoutRate * 100)} %)` : `${l.count}/${l.total} full lockout (${Math.round(l.lockoutRate * 100)}%)`);
+        summary.push((fr ? 'Verrouillage articulaire' : 'Joint lockout') + colon + lockoutText);
+      }
     }
 
     // Previous set comparison.

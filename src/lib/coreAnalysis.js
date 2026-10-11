@@ -87,6 +87,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       symmetry,
       smoothness: quality?.smoothness ?? null,
       consistency: quality?.consistency ?? null,
+      formChecks: quality?.formChecks ?? null,
       exercise: lift,
       metadata,
       imageLandmarks,

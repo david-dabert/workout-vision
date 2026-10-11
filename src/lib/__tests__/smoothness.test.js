@@ -139,3 +139,41 @@ describe('analyzeMovementQuality', () => {
     expect(result).toBe(null);
   });
 });
+
+describe('biomechanical form checks', () => {
+  it('detects squat parallel depth accurately', () => {
+    const timestamps = [0, 0.5, 1.0, 1.5, 2.0];
+    const worldLandmarks = [];
+    for (let i = 0; i < 5; i++) {
+      const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0.9 }));
+      // At bottom (index 2): hip is below knee (hip Y = 0.55 > knee Y = 0.5)
+      const hipY = i === 2 ? 0.55 : 0.2;
+      frame[23] = { x: -0.1, y: hipY, z: 0, visibility: 0.9 };
+      frame[24] = { x: 0.1, y: hipY, z: 0, visibility: 0.9 };
+      frame[25] = { x: -0.1, y: 0.5, z: 0, visibility: 0.9 };
+      frame[26] = { x: 0.1, y: 0.5, z: 0, visibility: 0.9 };
+      worldLandmarks.push(frame);
+    }
+    const reps = [{ index: 1, startTime: 0, endTime: 2.0 }];
+    const res = analyzeMovementQuality(worldLandmarks, timestamps, 'squat', [reps[0], { ...reps[0], index: 2 }]);
+    expect(res.formChecks?.squatDepth).not.toBeNull();
+    expect(res.formChecks?.squatDepth.allParallel).toBe(true);
+  });
+
+  it('detects knee valgus when knee distance collapses relative to ankles', () => {
+    const timestamps = [0, 0.5, 1.0];
+    const worldLandmarks = [];
+    for (let i = 0; i < 3; i++) {
+      const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0.9 }));
+      // Knee distance narrow (0.1) relative to ankle distance (0.2) -> ratio 0.5 < 0.8
+      frame[25] = { x: -0.05, y: 0.5, z: 0, visibility: 0.9 };
+      frame[26] = { x: 0.05, y: 0.5, z: 0, visibility: 0.9 };
+      frame[27] = { x: -0.1, y: 0.9, z: 0, visibility: 0.9 };
+      frame[28] = { x: 0.1, y: 0.9, z: 0, visibility: 0.9 };
+      worldLandmarks.push(frame);
+    }
+    const reps = [{ index: 1, startTime: 0, endTime: 1.0 }];
+    const res = analyzeMovementQuality(worldLandmarks, timestamps, 'squat', [reps[0], { ...reps[0], index: 2 }]);
+    expect(res.formChecks?.kneeValgus?.detected).toBe(true);
+  });
+});

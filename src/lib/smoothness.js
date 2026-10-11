@@ -271,5 +271,143 @@ export function analyzeMovementQuality(worldLandmarks, timestamps, lift, reps, a
     };
   }
 
-  return { smoothness, consistency };
+  // Biomechanical form checks
+  const lKey = String(lift || '').toLowerCase();
+  const isSquat = lKey.includes('squat');
+  const isLower = isSquat || lKey.includes('press') || lKey.includes('thrust') || lKey.includes('lunge');
+  const formChecks = {};
+
+  if (isSquat) {
+    formChecks.squatDepth = detectSquatDepth(worldLandmarks, timestamps, reps);
+    formChecks.kneeValgus = detectKneeValgus(worldLandmarks, timestamps, reps);
+  }
+  formChecks.lockout = detectLockout(worldLandmarks, timestamps, reps, lift);
+
+  return { smoothness, consistency, formChecks };
 }
+
+/**
+ * Detects whether squat reps reach or break parallel depth.
+ * Schoenfeld 2010, Escamilla 2001.
+ */
+export function detectSquatDepth(worldLandmarks, timestamps, reps) {
+  if (!worldLandmarks?.length || !reps?.length) return null;
+  const results = [];
+  for (const r of reps) {
+    if (r.clipped) continue;
+    let maxHipY = -Infinity;
+    let bottomIdx = -1;
+    for (let i = 0; i < timestamps.length; i++) {
+      const t = timestamps[i];
+      if (t >= r.startTime && t <= r.endTime) {
+        const lm = worldLandmarks[i];
+        if (!lm || !lm[23] || !lm[24]) continue;
+        const hipY = (lm[23].y + lm[24].y) / 2;
+        if (hipY > maxHipY) {
+          maxHipY = hipY;
+          bottomIdx = i;
+        }
+      }
+    }
+    if (bottomIdx >= 0) {
+      const lm = worldLandmarks[bottomIdx];
+      const hipY = (lm[23].y + lm[24].y) / 2;
+      const kneeY = (lm[25].y + lm[26].y) / 2;
+      // In MediaPipe, positive Y points downwards. Parallel depth occurs when hip drops level with or below knee.
+      const parallelOrBelow = hipY >= kneeY - 0.02;
+      results.push({ repIndex: r.index, parallelOrBelow });
+    }
+  }
+  if (!results.length) return null;
+  const parallelCount = results.filter(r => r.parallelOrBelow).length;
+  return {
+    parallelRate: round(parallelCount / results.length, 2),
+    allParallel: parallelCount === results.length,
+    count: parallelCount,
+    total: results.length,
+  };
+}
+
+/**
+ * Detects knee valgus (inward knee collapse) during squat / leg exercises.
+ * Kiesel et al. 2007, Hewett et al. 2005.
+ */
+export function detectKneeValgus(worldLandmarks, timestamps, reps) {
+  if (!worldLandmarks?.length || !reps?.length) return null;
+  const valgusDetected = [];
+  for (const r of reps) {
+    if (r.clipped) continue;
+    let minKneeToAnkleRatio = Infinity;
+    for (let i = 0; i < timestamps.length; i++) {
+      const t = timestamps[i];
+      if (t >= r.startTime && t <= r.endTime) {
+        const lm = worldLandmarks[i];
+        if (!lm || !lm[25] || !lm[26] || !lm[27] || !lm[28]) continue;
+        if ((lm[25].visibility ?? 0) < 0.45 || (lm[26].visibility ?? 0) < 0.45) continue;
+        const kneeDist = Math.abs(lm[25].x - lm[26].x);
+        const ankleDist = Math.abs(lm[27].x - lm[28].x);
+        if (ankleDist > 0.08) {
+          const ratio = kneeDist / ankleDist;
+          if (ratio < minKneeToAnkleRatio) minKneeToAnkleRatio = ratio;
+        }
+      }
+    }
+    if (Number.isFinite(minKneeToAnkleRatio)) {
+      valgusDetected.push({ repIndex: r.index, valgus: minKneeToAnkleRatio < 0.8 });
+    }
+  }
+  if (!valgusDetected.length) return null;
+  const valgusCount = valgusDetected.filter(v => v.valgus).length;
+  return {
+    valgusRate: round(valgusCount / valgusDetected.length, 2),
+    detected: valgusCount > 0,
+    count: valgusCount,
+    total: valgusDetected.length,
+  };
+}
+
+/**
+ * Detects terminal joint lockout consistency at rep completion.
+ * Neumann 2017.
+ */
+export function detectLockout(worldLandmarks, timestamps, reps, lift) {
+  if (!worldLandmarks?.length || !reps?.length) return null;
+  const def = liftDefinition(lift);
+  const isLower = def?.joint === 'knee' || def?.joint === 'hip';
+  const jointPtsL = isLower ? JOINT_POINTS.knee.left : JOINT_POINTS.elbow.left;
+  const jointPtsR = isLower ? JOINT_POINTS.knee.right : JOINT_POINTS.elbow.right;
+
+  const lockoutReps = [];
+  for (const r of reps) {
+    if (r.clipped) continue;
+    let endIdx = -1;
+    let minDiff = Infinity;
+    for (let i = 0; i < timestamps.length; i++) {
+      const diff = Math.abs(timestamps[i] - r.endTime);
+      if (diff < minDiff) {
+        minDiff = diff;
+        endIdx = i;
+      }
+    }
+    if (endIdx >= 0 && minDiff < 0.25) {
+      const lm = worldLandmarks[endIdx];
+      if (lm) {
+        const angL = compute3DAngle(lm[jointPtsL[0]], lm[jointPtsL[1]], lm[jointPtsL[2]]);
+        const angR = compute3DAngle(lm[jointPtsR[0]], lm[jointPtsR[1]], lm[jointPtsR[2]]);
+        const maxAng = Math.max(angL || 0, angR || 0);
+        if (maxAng > 0) {
+          lockoutReps.push({ repIndex: r.index, lockout: maxAng >= 165, angle: Math.round(maxAng) });
+        }
+      }
+    }
+  }
+  if (!lockoutReps.length) return null;
+  const lockoutCount = lockoutReps.filter(l => l.lockout).length;
+  return {
+    lockoutRate: round(lockoutCount / lockoutReps.length, 2),
+    fullLockout: lockoutCount === lockoutReps.length,
+    count: lockoutCount,
+    total: lockoutReps.length,
+  };
+}
+

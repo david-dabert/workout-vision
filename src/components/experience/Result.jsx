@@ -275,6 +275,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         symmetry: result.symmetry ?? null,
         smoothness: result.smoothness ?? null,
         consistency: result.consistency ?? null,
+        formChecks: result.formChecks ?? null,
       });
       refreshSets();
       // The sets were never read: read them now, the one just saved first, and count the others.
@@ -392,6 +393,43 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             : (fr ? 'saccadée' : 'jerky')
         }).
       </p>
+    )}
+    {result.formChecks && (
+      <>
+        {result.formChecks.squatDepth && (
+          <p className="acc-line acc-squat-depth" data-testid="acc-squat-depth">
+            <b>{fr ? 'Profondeur (squat)' : 'Squat depth'} :</b> {
+              result.formChecks.squatDepth.allParallel
+                ? (fr ? '100 % à la parallèle' : '100% parallel depth')
+                : (fr
+                    ? `${result.formChecks.squatDepth.count}/${result.formChecks.squatDepth.total} à la parallèle (${Math.round(result.formChecks.squatDepth.parallelRate * 100)} %)`
+                    : `${result.formChecks.squatDepth.count}/${result.formChecks.squatDepth.total} reps reached parallel (${Math.round(result.formChecks.squatDepth.parallelRate * 100)}%)`)
+            }
+          </p>
+        )}
+        {result.formChecks.kneeValgus && (
+          <p className="acc-line acc-knee-valgus" data-testid="acc-knee-valgus">
+            <b>{fr ? 'Alignement des genoux' : 'Knee tracking'} :</b> {
+              !result.formChecks.kneeValgus.detected
+                ? (fr ? 'Parfait (aucun valgus détecté)' : 'Clean (no valgus collapse detected)')
+                : (fr
+                    ? `Valgus détecté sur ${result.formChecks.kneeValgus.count}/${result.formChecks.kneeValgus.total} répétition(s)`
+                    : `Valgus collapse detected on ${result.formChecks.kneeValgus.count}/${result.formChecks.kneeValgus.total} rep(s)`)
+            }
+          </p>
+        )}
+        {result.formChecks.lockout && (
+          <p className="acc-line acc-lockout" data-testid="acc-lockout">
+            <b>{fr ? 'Verrouillage articulaire' : 'Lockout consistency'} :</b> {
+              result.formChecks.lockout.fullLockout
+                ? (fr ? 'Complet sur chaque répétition (100 %)' : 'Complete on all reps (100%)')
+                : (fr
+                    ? `${result.formChecks.lockout.count}/${result.formChecks.lockout.total} avec extension complète (${Math.round(result.formChecks.lockout.lockoutRate * 100)} %)`
+                    : `${result.formChecks.lockout.count}/${result.formChecks.lockout.total} reps with full extension (${Math.round(result.formChecks.lockout.lockoutRate * 100)}%)`)
+            }
+          </p>
+        )}
+      </>
     )}
     <p className="acc-tip">{account.tip}</p>
   </>;

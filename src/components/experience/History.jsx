@@ -153,6 +153,6 @@ export default function History({ onClose }) {
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
-      setId={report.id} symmetry={report.symmetry} smoothness={report.smoothness} consistency={report.consistency} leaving={leaving} onBack={closeReport} />}
+      setId={report.id} symmetry={report.symmetry} smoothness={report.smoothness} consistency={report.consistency} formChecks={report.formChecks} leaving={leaving} onBack={closeReport} />}
   </>;
 }
