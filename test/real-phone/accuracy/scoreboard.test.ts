@@ -17,6 +17,8 @@
 // Under each section, one measured line (pillar 2, 9 October 2026): of the sets that would decide, how many show the
 // exact number, and how many have the label in the list the result screen can offer, [M, M + 1, M - 1]
 // (result-choices.js). It decides nothing; choices.test.ts measures the same on every real-world suite.
+// Under each head that compares now with before, one paired line (paired.ts): the sets gained and lost, McNemar's exact
+// p, and a seeded paired bootstrap interval for the change in exact rate. Printed only, decides nothing.
 import { expect, test } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -24,17 +26,18 @@ import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/co
 import { countChoices, inList } from '../../../src/components/experience/result-choices';
 import { gunzipSync } from 'node:zlib';
 import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets } from './sets';
+import { pairedLine, type Pair } from './paired';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
 
 const verdict = (count: number | string, label: number) => (count === 'refused' ? 'refused' : count === label ? 'exact' : Math.abs((count as number) - label) >= 3 ? 'catastrophic' : `off ${(count as number) > label ? '+' : ''}${(count as number) - label}`);
 
-type Tally = { rows: string[]; live: Record<string, number | string>; doubts: { flagged: boolean; err: number }[]; exactNow: number; exactBefore: number; catastrophic: number; known: number; becameRefused: number; n: number; added: number; press: number; missing: string[] };
+type Tally = { rows: string[]; live: Record<string, number | string>; doubts: { flagged: boolean; err: number }[]; exactNow: number; exactBefore: number; catastrophic: number; known: number; becameRefused: number; n: number; added: number; press: number; missing: string[]; pairs: Pair[] };
 
 // One section of the scoreboard: each set's live count against its label and against the baseline's count, with the
 // tallies of the R2 gate. `count` gives the app's outcome for a set (a number or 'refused').
 function section(sets: { name: string; lift: string; label: number }[], baseCounts: Record<string, number | string>, count: (i: number) => { now: number | string; doubt?: { flagged: boolean } | null; note?: string }): Tally {
-  const t: Tally = { rows: [], live: {}, doubts: [], exactNow: 0, exactBefore: 0, catastrophic: 0, known: 0, becameRefused: 0, n: 0, added: 0, press: 0, missing: [] };
+  const t: Tally = { rows: [], live: {}, doubts: [], exactNow: 0, exactBefore: 0, catastrophic: 0, known: 0, becameRefused: 0, n: 0, added: 0, press: 0, missing: [], pairs: [] };
   const { rows } = t;
   sets.forEach((s, i) => {
     const { now, doubt, note } = count(i), before = baseCounts[s.name];
@@ -46,7 +49,7 @@ function section(sets: { name: string; lift: string; label: number }[], baseCoun
     const mark = decides(s.lift) ? '' : `  ${PRESS_DECIDES_NOTHING}`;
     if (mark) { t.press++; rows.push(`${now === before ? '  ' : '->'} ${s.name}  label ${s.label}  before ${before ?? '-'} (${vb})  now ${now} (${v})${mark}`); return; }
     if (before === undefined) t.added++;
-    else { if (v === 'exact') t.exactNow++; if (vb === 'exact') t.exactBefore++; }
+    else { if (v === 'exact') t.exactNow++; if (vb === 'exact') t.exactBefore++; t.pairs.push({ before: vb === 'exact', now: v === 'exact' }); }
     // R2 reads "no clip becomes a catastrophic error". A set already off by 3 or more (in the baseline, or added
     // with that error) is shown and kept, and fails only if its error grows: a set is never left out of the gate
     // because it fails (review of 6 October: the held 13-rep set was a gate escape).
@@ -129,7 +132,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   const bList = listLine(sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) })));
   const vList = listLine(video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) })));
   const blList = listLine(blind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) })));
-  const text = [head, doubtLine(b.doubts), bList, ...b.rows, '', vhead, vList, ...v.rows, '', mhead, ...m.rows, '', bhead, blList, ...brows].join('\n') + '\n';
+  // The paired line (paired.ts) on the same sets as "exact now, before": printed only, the gate below is unchanged.
+  const text = [head, pairedLine(b.pairs), doubtLine(b.doubts), bList, ...b.rows, '', vhead, pairedLine(v.pairs), vList, ...v.rows, '', mhead, pairedLine(m.pairs), ...m.rows, '', bhead, blList, ...brows].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
