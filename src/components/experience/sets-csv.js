@@ -70,7 +70,7 @@ const exp = (h, fr) => `${h} (${fr ? 'mesure expérimentale' : 'experimental mea
 export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } = {}) {
   const f = format(lang, locale), fr = lang === 'fr', label = nameOf(lang, name);
   const header = fr
-    ? ['Date', 'Exercice', 'Répétitions', 'Comptées par l’app', 'Corrigée', 'Confirmée', 'Charge (kg)', 'Durée (s)', 'Tempo moyen', 'Variation de vitesse concentrique (%)']
+    ? ['Date', 'Exercice', 'Répétitions', 'Comptées par l’appli', 'Corrigée', 'Confirmée', 'Charge (kg)', 'Durée (s)', 'Tempo moyen', 'Variation de vitesse concentrique (%)']
     : ['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo', 'Concentric speed change (%)'];
   // Without validated measures (measures.js), the tempo and speed columns are left out; with them, each
   // is marked experimental in its heading, since none is validated yet.

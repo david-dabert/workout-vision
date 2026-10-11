@@ -272,12 +272,12 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       <div className="rp-stage" data-reveal style={{ '--i': 0 }}>
         <div className="rp-frame" style={{ '--ar': fw / fh }}>
           {file ? <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
-            aria-label={fr ? 'Votre série, avec le squelette suivi par l’app' : 'Your set, with the skeleton the app tracked'}
+            aria-label={fr ? 'Votre série, avec le squelette suivi par l’appli' : 'Your set, with the skeleton the app tracked'}
             onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setBroken(true)}
             onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); seekTo(reps[0] ? into(reps[0]) : 0); }}
             onClick={toggle} />
             : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
-              aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’app' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
+              aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’appli' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
           <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
           {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
@@ -317,7 +317,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? 'Enregistrer la vidéo' : 'Save the video'}</a>)}
         {made.state === 'ready' && shareBroke && <p className="rp-export-note" role="status">{fr ? 'Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers.' : 'The share did not go through. Save the video, then share it from your files.'}</p>}
         {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled' || made.why === 'incomplete'
-          ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’app ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
+          ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’appli ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
       </div>}
       <p className="rp-note" data-reveal style={{ '--i': 3 }}>{file

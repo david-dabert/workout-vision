@@ -11,10 +11,10 @@ const NOTES_ALL = {
       'Ralentir la phase excentrique n’a pas montré plus de gain musculaire. Les études restent peu nombreuses.', // source 3, literature: g = 0.05, 90 % CI -0.22 to 0.33, very low to low certainty (GRADE); worded as not shown, not as no effect (Astra's audit, 2 October)
       'L’essentiel : garder le contrôle de la charge, sans la laisser tomber.', // convention
       'Quand votre vitesse baisse nettement au fil de la série, vous approchez de votre limite.', // source 5, literature
-      'L’app analyse 15 images par seconde : elle ne mesure rien plus finement qu’un quinzième de seconde.', // app measure
+      'L’appli analyse 15 images par seconde : elle ne mesure rien plus finement qu’un quinzième de seconde.', // app measure
     ] },
     { title: 'L’amplitude', lines: [
-      MEASURES_SHOWN ? 'L’amplitude est l’angle que parcourt votre articulation à chaque répétition ; l’app la mesure en degrés.' : 'L’amplitude est l’angle que parcourt votre articulation à chaque répétition.', // app measure; without validated measures, the definition alone (measures.js)
+      MEASURES_SHOWN ? 'L’amplitude est l’angle que parcourt votre articulation à chaque répétition ; l’appli la mesure en degrés.' : 'L’amplitude est l’angle que parcourt votre articulation à chaque répétition.', // app measure; without validated measures, the definition alone (measures.js)
       'Aller au bout du mouvement fait gagner plus de force, et plus de muscle aux jambes.', // source 6, literature
       'Des répétitions partielles restent utiles, surtout quand le muscle est étiré.', // source 7, literature
       MEASURES_SHOWN && 'Une répétition marquée ▾ fait moins de 85 % de l’amplitude habituelle de votre série.', // app measure; 85 % threshold, experimental; no ▾ is drawn without validated measures
@@ -24,7 +24,7 @@ const NOTES_ALL = {
       'Les charges lourdes font gagner plus de force.', // source 8, literature
       'Au-delà d’une douzaine de répétitions, il devient plus difficile de sentir combien il vous en reste.', // source 9, literature
     ] },
-    { title: 'Conseils généraux', lead: 'L’app ne mesure pas ce qui suit.', lines: [
+    { title: 'Conseils généraux', lead: 'L’appli ne mesure pas ce qui suit.', lines: [
       'Reposez-vous plus d’une minute entre deux séries, c’est un peu mieux pour le muscle ; au-delà d’une minute et demie, l’écart ne se voit plus.', // source 10, literature
       'Reposez-vous davantage si la série suivante doit rester de qualité.', // convention
       'Il n’y a pas un seul bon chemin : lent ou rapide, lourd ou léger, plusieurs méthodes font progresser.', // sources 1, 8, literature

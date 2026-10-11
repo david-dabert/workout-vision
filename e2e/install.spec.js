@@ -36,7 +36,7 @@ test.describe('Chromium', () => {
     await expect(row).toHaveCount(0);
     await handPrompt(page);
     await expect(row).toBeVisible();
-    await expect(row).toContainText('Installer l’app');
+    await expect(row).toContainText('Installer l’appli');
     await row.click();
     await expect.poll(() => page.evaluate(() => window.__prompted)).toBe(1);
     // The prompt is used once: no sheet opens in its place.
@@ -57,7 +57,7 @@ test.describe('iPhone Safari', () => {
     // A 44 pt target at least.
     expect((await row.boundingBox()).height).toBeGreaterThanOrEqual(44);
     await row.click();
-    const sheet = page.getByRole('dialog', { name: 'Installer l’app' });
+    const sheet = page.getByRole('dialog', { name: 'Installer l’appli' });
     await expect(sheet).toBeVisible();
     await expect(sheet).toHaveAttribute('data-kind', 'ios');
     await expect(sheet.getByTestId('share-glyph')).toBeVisible();

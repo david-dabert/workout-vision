@@ -111,7 +111,7 @@ describe('the words', () => {
     expect(all).not.toMatch(/ [;:?!]/);
     expect(all).not.toMatch(/'/);
     // The history says the same as the sheet (KeepSets.jsx reads keepWhy).
-    expect(INSTALL.fr.keepWhy).toContain('sept jours d’utilisation sans ouvrir l’app');
-    expect(INSTALL.fr.why).toContain('sept jours d’utilisation sans ouvrir l’app');
+    expect(INSTALL.fr.keepWhy).toContain('sept jours d’utilisation sans ouvrir l’appli');
+    expect(INSTALL.fr.why).toContain('sept jours d’utilisation sans ouvrir l’appli');
   });
 });

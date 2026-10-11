@@ -152,7 +152,7 @@ export function AnalysisInterrupted({ lift, onClose, onRestart, onRefilm, onByHa
       <p className="eyebrow refused-eyebrow" data-reveal style={{ '--i': 0 }}>{exerciseName(lift, lang)}</p>
       <h2 className="title refused-title" data-reveal style={{ '--i': 1 }}>{fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.'}</h2>
       <p className="body-text" data-reveal style={{ '--i': 2 }}>{fr
-        ? 'L’écran s’est éteint ou vous avez quitté l’app. Gardez l’écran allumé pendant l’analyse, puis recommencez.'
+        ? 'L’écran s’est éteint ou vous avez quitté l’appli. Gardez l’écran allumé pendant l’analyse, puis recommencez.'
         : 'The screen turned off or you left the app. Keep the screen on during the analysis, then start again.'}</p>
       <div className="actions result-actions" data-reveal style={{ '--i': 4 }}>
         <button className="btn-primary press" onClick={onRestart}>{fr ? 'Recommencer l’analyse' : 'Start the analysis again'}</button>
@@ -659,7 +659,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       ? (notRead.kind === 'interrupted' ? (fr ? 'L’analyse a été interrompue.' : 'The analysis was interrupted.')
         : notRead.kind === 'model' ? (fr ? 'L’analyse n’a pas pu démarrer.' : 'The analysis could not start.')
         : notRead.kind === 'partial' ? (fr ? 'La vidéo n’a pas été lue en entier.' : 'The video was not read in full.')
-        : (fr ? 'La vidéo n’a pas pu être lue, donc l’app ne propose aucun nombre.' : 'The video could not be read, so the app offers no number.'))
+        : (fr ? 'La vidéo n’a pas pu être lue, donc l’appli ne propose aucun nombre.' : 'The video could not be read, so the app offers no number.'))
       : why.cause === 'nobody'
       ? (result.metadata?.live ? (fr ? 'Personne n’apparaît à l’image.' : 'We could not find you in the picture.') : (fr ? 'Personne n’apparaît dans la vidéo.' : 'We could not find you in the video.'))
       : why.cause === 'unclear'
@@ -842,7 +842,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     card: <div key="card" ref={cardRef}>
       {step === 'saved' && (
         <div className="saved appear" data-testid="saved-card">
-          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’app : ${count}. Corrigé : ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
+          {trueN !== count && <p className="res-meta saved-corr">{fr ? `Compté par l’appli : ${count}. Corrigé : ${trueN}.` : `Counted by the app: ${count}. Corrected: ${trueN}.`}</p>}
           {moment && <p className={`moment is-${moment.kind}`} data-testid="moment" role="status">{moment.text}</p>}
           <p className="saved-msg">{trueN !== count
             ? (fr ? 'Merci. Votre correction est notée sur votre téléphone.' : 'Thank you. Your correction is noted on your phone.')

@@ -29,7 +29,7 @@ describe('measures shown under a label, or hidden when switched off', () => {
       expect(s.rows.length).toBe(6);
       expect(s.experimental).toBe(experimentalLabel(lang === 'fr'));
     }
-    expect(experimentalLabel(true)).toBe('Mesures expérimentales\u00A0: estimées par l’app, pas encore validées.');
+    expect(experimentalLabel(true)).toBe('Mesures expérimentales\u00A0: estimées par l’appli, pas encore validées.');
   });
 
   it('the account keeps the count comparison and the tip, and says no measure', () => {

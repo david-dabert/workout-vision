@@ -31,7 +31,7 @@ export const PRO = {
     // The builder (Pro.jsx).
     eyebrow: 'Espace pro',
     title: 'Programmes',
-    sub: 'Composez une séance pour un client, puis envoyez-la en PDF ou en lien. Il l’ouvre dans l’app et filme chaque série : ses répétitions sont comptées sur son téléphone.',
+    sub: 'Composez une séance pour un client, puis envoyez-la en PDF ou en lien. Il l’ouvre dans l’appli et filme chaque série : ses répétitions sont comptées sur son téléphone.',
     users: 'Pour les coachs et les kinésithérapeutes.',
     privacy: 'Rien n’est envoyé : vos programmes restent sur ce téléphone jusqu’à ce que vous les partagiez.',
     storageOff: 'Ce téléphone ne garde pas les brouillons (navigation privée ?) : partagez le programme avant de quitter.',
@@ -105,8 +105,8 @@ export const PRO = {
     setDone: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition comptée', 'répétitions comptées')} sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
     setTodo: i => `Série ${i} : à faire`,
     film: name => `Filmer ${name}`,
-    notCounted: `L’app ne compte plus cet exercice${NB}: faites-le sans le filmer.`,
-    notCountedPro: `L’app ne compte plus cet exercice${NB}: votre client le fera sans le filmer.`,
+    notCounted: `L’appli ne compte plus cet exercice${NB}: faites-le sans le filmer.`,
+    notCountedPro: `L’appli ne compte plus cet exercice${NB}: votre client le fera sans le filmer.`,
     tapHint: 'Touchez un exercice pour le filmer. Chaque série enregistrée s’affiche ici, comptée, à côté de l’objectif.',
     sendBack: 'Après une série, « Rapport de séance » prépare un PDF à envoyer à votre coach.',
     clientPrivacy: 'Le programme et vos séries restent sur ce téléphone.',
@@ -120,7 +120,7 @@ export const PRO = {
     resultsCopied: 'Lien copié\u00A0: collez-le dans un message à votre coach.',
     resultsEyebrow: 'Résultats',
     resultsDay: day => `Séance du ${day}`,
-    resultsSource: 'Comptées par l’application sur le téléphone de la personne, ou corrigées à la main.',
+    resultsSource: 'Comptées par l’appli sur le téléphone de la personne, ou corrigées à la main.',
     // Excellence hunt of 9 October 2026, approved by David the same day (R10): a session sent once its day is over, the time
     // of its latest set, how each set was kept, the sets done in the header, and the coach's own words when a results
     // link does not open.
@@ -131,8 +131,8 @@ export const PRO = {
     resultsSets: (done, total, met) => `${done}${NB}sur${NB}${total} ${plural(total, 'série faite', 'séries faites')}, ${met} à l’objectif`,
     setTyped: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition saisie', 'répétitions saisies')} à la main sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
     setCorrected: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition corrigée', 'répétitions corrigées')} à la main sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
-    setProposed: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition proposée', 'répétitions proposées')} par l’application et ${plural(n, 'confirmée', 'confirmées')} sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
-    resultsLegend: 'Chiffre souligné : saisi ou corrigé par la personne, ou proposé par l’application et confirmé par elle.',
+    setProposed: (i, n, reps) => `Série ${i} : ${n} ${plural(n, 'répétition proposée', 'répétitions proposées')} par l’appli et ${plural(n, 'confirmée', 'confirmées')} sur ${reps} ${plural(reps, 'prévue', 'prévues')}`,
+    resultsLegend: 'Chiffre souligné : saisi ou corrigé par la personne, ou proposé par l’appli et confirmé par elle.',
     resultsOpening: 'Ouverture des résultats…',
     adjustProgramme: 'Ajuster le programme',
     // A coach's link pasted into the installed app or out of an app's own browser, and an edited programme received
@@ -144,15 +144,15 @@ export const PRO = {
     pasteNone: 'Ce texte ne contient pas de lien de programme.',
     linkRow: 'J’ai un lien de mon coach',
     linkRowSub: 'Collez-le pour ouvrir le programme',
-    inAppNote: 'Ce programme reste dans le navigateur de cette app. Pour le retrouver dans votre navigateur ou dans l’app installée, copiez le lien et collez-le là-bas.',
+    inAppNote: 'Ce programme reste dans le navigateur de cette app. Pour le retrouver dans votre navigateur ou dans l’appli installée, copiez le lien et collez-le là-bas.',
     receivedOn: day => `Reçu le ${day}`,
     resultsErrors: {
       empty: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
       malformed: 'Le lien est incomplet ou abîmé. Demandez à la personne de vous le renvoyer.',
-      'too-long': 'Le lien est trop long pour contenir des résultats de l’app.',
+      'too-long': 'Le lien est trop long pour contenir des résultats de l’appli.',
       unsupported: 'Ce navigateur ne sait pas lire ce lien. Mettez à jour votre téléphone ou votre navigateur, puis rouvrez-le.',
-      'unknown-exercise': 'Ces résultats contiennent un exercice que cette version de l’app ne connaît pas. Rechargez l’app, puis rouvrez le lien.',
-      'bad-value': 'Une valeur des résultats sort des limites de l’app. Demandez à la personne de vous les renvoyer.',
+      'unknown-exercise': 'Ces résultats contiennent un exercice que cette version de l’appli ne connaît pas. Rechargez l’appli, puis rouvrez le lien.',
+      'bad-value': 'Une valeur des résultats sort des limites de l’appli. Demandez à la personne de vous les renvoyer.',
     },
     othersHead: 'Autres programmes reçus',
     removeProgramme: 'Retirer ce programme',
@@ -165,10 +165,10 @@ export const PRO = {
     errors: {
       empty: 'Le lien est incomplet ou abîmé. Demandez à votre coach de vous le renvoyer.',
       malformed: 'Le lien est incomplet ou abîmé. Demandez à votre coach de vous le renvoyer.',
-      'too-long': 'Le lien est trop long pour être un programme de l’app.',
+      'too-long': 'Le lien est trop long pour être un programme de l’appli.',
       unsupported: 'Ce navigateur ne sait pas lire ce lien. Mettez à jour votre téléphone ou votre navigateur, puis rouvrez-le.',
-      'unknown-exercise': 'Ce programme contient un exercice que cette version de l’app ne connaît pas. Rechargez l’app, puis rouvrez le lien.',
-      'bad-value': 'Une valeur du programme sort des limites de l’app. Demandez à votre coach de vous le renvoyer.',
+      'unknown-exercise': 'Ce programme contient un exercice que cette version de l’appli ne connaît pas. Rechargez l’appli, puis rouvrez le lien.',
+      'bad-value': 'Une valeur du programme sort des limites de l’appli. Demandez à votre coach de vous le renvoyer.',
     },
     errorBack: 'Retour aux exercices',
     // The session report (report-sheet.js): the target beside the count.

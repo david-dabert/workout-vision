@@ -73,7 +73,7 @@ test('a flagged set shows its count to confirm, no grade, saved only once confir
   await page.waitForTimeout(500);
   expect(await savedSets(page)).toEqual([]);
   await page.getByTestId('res-save').click();
-  await expect(page.getByTestId('saved-card')).toContainText('Compté par l’app : 15. Corrigé : 14.'); // the counted set's saved card, as it stands (it says "l’app")
+  await expect(page.getByTestId('saved-card')).toContainText('Compté par l’appli : 15. Corrigé : 14.'); // the counted set's saved card, as it stands (it says "l’appli")
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
   expect(saved[0]).toMatchObject({ reps: 14, source: 'counter-core', corrected: true, machineResult: { reps: 15 }, correctedResult: { reps: 14 }, bodyCheck: { second: 8 }, repDetails: [], sides: null, wave: null });

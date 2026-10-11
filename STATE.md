@@ -67,3 +67,5 @@ Not fixed, open:
 - CollectHistory.jsx and ContributeHistory.jsx still excuse InvalidStateError on share, the pattern fixed in Report and Replay (David's pages only);
 - unverified, not acted on: the screen wake lock reportedly does not hold in Home Screen apps before iOS 18.4; no watchdog if WebCodecs goes silent without an error.
 Not yet audited: the on-screen wording (French and English, plurals, units, accessibility).
+
+Approvals of 11 October 2026: David approved the French lines of PR #152 and #153 (notCounted, notCountedPro, resultsLinkLabel, rebuiltNote, "Téléchargement du PDF lancé.", notKept, and "Vos séries" in the contribute thanks line), and decided the two names: the brand is written "WorkoutVision" in every string users see (title, og tags, Choice topbar, share and report texts, coach PDF), and in French the app is "l’appli" (was "l’app" or "l’application" when naming this app).

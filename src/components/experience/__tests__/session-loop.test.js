@@ -18,7 +18,7 @@ describe('a refused set typed by hand (WP1.6)', () => {
   });
   it('the report says it was typed after a refusal; a set ManualLog typed is not said to be refused', () => {
     const base = { lang: 'fr', date: new Date('2026-10-04T10:00:00Z'), liftName: 'Curl biceps', count: 8, counted: null, reps: [], measures: false };
-    expect(reportSheet({ ...base, source: 'manual', afterRefusal: true }).corrected).toBe('Saisi à la main : l’app n’a pas pu compter cette série.');
+    expect(reportSheet({ ...base, source: 'manual', afterRefusal: true }).corrected).toBe('Saisi à la main : l’appli n’a pas pu compter cette série.');
     expect(reportSheet({ ...base, source: 'manual' }).corrected || '').not.toContain('pas pu compter');
   });
 });

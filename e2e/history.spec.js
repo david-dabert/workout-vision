@@ -58,7 +58,7 @@ for (const lang of ['fr', 'en']) {
     await page.locator('.hist-detail .btn-line').click();
     // The report names no app (David, 29 September).
     await expect(page.locator('.sheet')).toBeVisible();
-    await expect(page.locator('.sheet')).not.toContainText('Workout Vision');
+    await expect(page.locator('.sheet')).not.toContainText('WorkoutVision');
     // The opener under the title sums up the set; a set entered by hand has only its count (set-opener.js).
     await expect(page.locator('.sh-opener')).toHaveText(lang === 'fr' ? 'Série de 7 répétitions.' : 'A set of 7 reps.');
     // The date stays on the right, as on the PDF (review of the one-line report).

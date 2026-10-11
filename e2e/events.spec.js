@@ -33,7 +33,7 @@ test('a visit sends the expected events, with only their fields, and nothing els
   expect(csp).toContain("connect-src 'self' blob: https://events.invalid;");
   expect(response.ok()).toBe(true);
   // The choice says what is counted, and offers to stop it.
-  await expect(page.getByTestId('usage-note')).toContainText('Pour s’améliorer, l’app compte de façon anonyme l’usage de ses écrans et de ses analyses : ni identité, ni vidéo, ni mouvement.');
+  await expect(page.getByTestId('usage-note')).toContainText('Pour s’améliorer, l’appli compte de façon anonyme l’usage de ses écrans et de ses analyses : ni identité, ni vidéo, ni mouvement.');
   await expect(page.getByRole('button', { name: 'Désactiver le comptage anonyme' })).toBeVisible();
 
   await page.getByRole('button', { name: /Vos séries/ }).click();

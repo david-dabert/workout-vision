@@ -73,7 +73,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
       failures.current += 1;
       setStatus('error');
       setNote(failures.current > 1
-        ? (fr ? 'Le PDF n’a pas pu être préparé. Rechargez l’app, puis rouvrez la série dans Vos séries.' : 'The PDF could not be prepared. Reload the app, then open the set again in Your sets.')
+        ? (fr ? 'Le PDF n’a pas pu être préparé. Rechargez l’appli, puis rouvrez la série dans Vos séries.' : 'The PDF could not be prepared. Reload the app, then open the set again in Your sets.')
         : (fr ? 'Le PDF n’a pas pu être préparé. Réessayez.' : 'The PDF could not be prepared. Try again.'));
     });
   }

@@ -8,7 +8,7 @@ export const MEASURES_SHOWN = true;
 
 /** The words that stand beside every measure while none is validated. Copy approved by David on 9 October 2026 (R10). */
 export const experimentalLabel = fr => (fr
-  ? 'Mesures expérimentales\u00A0: estimées par l’app, pas encore validées.'
+  ? 'Mesures expérimentales\u00A0: estimées par l’appli, pas encore validées.'
   : 'Experimental measures: estimated by the app, not yet validated.');
 
 // Whether the speed change between the first and last reps is stated (account, opener, expert line, report).

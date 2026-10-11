@@ -106,7 +106,7 @@ test.describe('the production build (port 4176: VITE_LIVE, VITE_CONTRIBUTE and V
     await page.locator('.result-screen .icon-btn').first().click();
     await openHistory(page);
     const box = page.getByTestId('contribute-history');
-    await expect(box.getByTestId('contribute-paused')).toHaveText('Les envois sont en pause pour l’instant : l’app ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer.');
+    await expect(box.getByTestId('contribute-paused')).toHaveText('Les envois sont en pause pour l’instant : l’appli ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer.');
     await expect(box.getByRole('button')).toHaveText(['Arrêter et effacer']);
     await expect(box).not.toContainText('prête à envoyer');
     await box.getByRole('button', { name: 'Arrêter et effacer' }).click();

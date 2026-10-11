@@ -59,7 +59,7 @@ test('without a share sheet for files, the export downloads the sets and the rep
   // UTF-8 with its byte order mark.
   expect([...sets.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
   const setRows = sets.toString('utf8').slice(1).split('\r\n').filter(Boolean);
-  expect(setRows[0]).toBe('Date;Exercice;Répétitions;Comptées par l’app;Corrigée;Confirmée;Charge (kg);Durée (s);Tempo moyen (mesure expérimentale)');
+  expect(setRows[0]).toBe('Date;Exercice;Répétitions;Comptées par l’appli;Corrigée;Confirmée;Charge (kg);Durée (s);Tempo moyen (mesure expérimentale)');
   // Oldest first: the squat entered by hand, then the corrected curl.
   expect(setRows[1].split(';').slice(1, 8)).toEqual(['Squat', '8', '', '', 'oui', '62,5', '']);
   expect(setRows[2].split(';').slice(1, 8)).toEqual(['Curl biceps', '5', '4', 'oui', 'oui', '', '18,4']);

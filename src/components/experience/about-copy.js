@@ -34,12 +34,12 @@ export const ABOUT = {
       [
         'WorkoutVision est ce que j’aurais voulu avoir.',
         'Vous filmez votre série avec votre téléphone.',
-        'L’application compte vos répétitions et vous montre comment vous les avez faites.',
+        'L’appli compte vos répétitions et vous montre comment vous les avez faites.',
         'Vos vidéos ne quittent jamais votre téléphone.',
         'Elle sert le débutant, le pratiquant confirmé, le coach et le kinésithérapeute.',
       ],
       [
-        'L’application est gratuite et son code est public.',
+        'L’appli est gratuite et son code est public.',
         'Elle n’est pas née d’un plan d’affaires, mais d’une promesse faite à mes filles.',
         'J’entends les voir vieillir.',
         'Si cet outil aide d’autres personnes à voir vieillir les leurs, il aura rempli sa mission.',
@@ -114,13 +114,13 @@ export const PHOTOS = {
 // reverse curl (app 9, label 10) and the chest-supported row (app 5, label 6, David, 7 October) are held.
 export const DEMOS = [
   { file: 'dip-13', width: 404, height: 720, app: 13, kept: 13,
-    fr: `Dips · 13${NB}répétitions comptées par l’app, 13 par moi · filmé chez Basic-Fit`, en: `Dips · 13${NB}reps counted by the app, 13 by me · filmed at Basic-Fit` },
+    fr: `Dips · 13${NB}répétitions comptées par l’appli, 13 par moi · filmé chez Basic-Fit`, en: `Dips · 13${NB}reps counted by the app, 13 by me · filmed at Basic-Fit` },
   { file: 'ez-curl-10', width: 404, height: 720, app: 10, kept: 10,
-    fr: `Curl à la barre EZ · 10${NB}répétitions comptées par l’app, 10 par moi · filmé chez Basic-Fit`, en: `EZ-bar curl · 10${NB}reps counted by the app, 10 by me · filmed at Basic-Fit` },
+    fr: `Curl à la barre EZ · 10${NB}répétitions comptées par l’appli, 10 par moi · filmé chez Basic-Fit`, en: `EZ-bar curl · 10${NB}reps counted by the app, 10 by me · filmed at Basic-Fit` },
   { file: 'bodyweight-squat-9', width: 404, height: 720, app: 9, kept: 9,
-    fr: `Squat au poids du corps · 9${NB}répétitions comptées par l’app, 9 par moi · filmé chez Basic-Fit`, en: `Bodyweight squat · 9${NB}reps counted by the app, 9 by me · filmed at Basic-Fit` },
+    fr: `Squat au poids du corps · 9${NB}répétitions comptées par l’appli, 9 par moi · filmé chez Basic-Fit`, en: `Bodyweight squat · 9${NB}reps counted by the app, 9 by me · filmed at Basic-Fit` },
   { file: 'lat-pulldown-6', width: 404, height: 720, app: 6, kept: 6,
-    fr: `Tirage vertical · 6${NB}répétitions comptées par l’app, 6 par moi · filmé chez On Air`, en: `Lat pulldown · 6${NB}reps counted by the app, 6 by me · filmed at On Air` },
+    fr: `Tirage vertical · 6${NB}répétitions comptées par l’appli, 6 par moi · filmé chez On Air`, en: `Lat pulldown · 6${NB}reps counted by the app, 6 by me · filmed at On Air` },
   { file: 'bicep-curl-5', width: 540, height: 960, app: 5, kept: 5,
-    fr: `Curl biceps · 5${NB}répétitions comptées par l’app, 5 par moi · filmé chez Basic-Fit`, en: `Biceps curl · 5${NB}reps counted by the app, 5 by me · filmed at Basic-Fit` },
+    fr: `Curl biceps · 5${NB}répétitions comptées par l’appli, 5 par moi · filmé chez Basic-Fit`, en: `Biceps curl · 5${NB}reps counted by the app, 5 by me · filmed at Basic-Fit` },
 ];
