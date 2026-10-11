@@ -94,7 +94,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, symmetry }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, symmetry, smoothness, consistency }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -137,6 +137,28 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         ? (fr ? `Gauche dominante (+${symmetry.romDiffDeg}°)` : `Left dominant (+${symmetry.romDiffDeg}°)`)
         : (fr ? `Droite dominante (+${symmetry.romDiffDeg}°)` : `Right dominant (+${symmetry.romDiffDeg}°)`);
       summary.push((fr ? 'Symétrie bilatérale' : 'Bilateral symmetry') + colon + `${symmetry.symmetryScore}${NBSP}% (${statusLabel})`);
+    }
+
+    // Form consistency (DTW)
+    if (consistency && consistency.score != null) {
+      const consistencyLabel = consistency.rating === 'high'
+        ? (fr ? 'Très régulier' : 'High consistency')
+        : consistency.rating === 'moderate'
+        ? (fr ? 'Régulier' : 'Moderate consistency')
+        : (fr ? 'Irrégulier' : 'Inconsistent');
+      summary.push((fr ? 'Régularité de forme' : 'Form consistency') + colon + `${consistency.score}${NBSP}% (${consistencyLabel})`);
+    }
+
+    // Movement smoothness (SPARC)
+    if (smoothness && smoothness.avgSparc != null) {
+      const smoothnessLabel = smoothness.quality === 'very_smooth'
+        ? (fr ? 'Très fluide' : 'Very smooth')
+        : smoothness.quality === 'smooth'
+        ? (fr ? 'Fluide' : 'Smooth')
+        : smoothness.quality === 'moderate'
+        ? (fr ? 'Modérée' : 'Moderate')
+        : (fr ? 'Saccadée' : 'Jerky');
+      summary.push((fr ? 'Fluidité' : 'Smoothness') + colon + `${smoothness.avgSparc} SPARC (${smoothnessLabel})`);
     }
 
     // Previous set comparison.

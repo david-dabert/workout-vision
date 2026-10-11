@@ -273,6 +273,8 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         // Rep details measured with step 3c's boundaries; older sets' details are not shown.
         repDetailsVersion: 2,
         symmetry: result.symmetry ?? null,
+        smoothness: result.smoothness ?? null,
+        consistency: result.consistency ?? null,
       });
       refreshSets();
       // The sets were never read: read them now, the one just saved first, and count the others.
@@ -364,6 +366,30 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
             ? (fr ? 'Équilibrée' : 'Balanced')
             : (fr ? `${result.symmetry.dominantSide === 'left' ? 'Gauche dominante' : 'Droite dominante'} (+${result.symmetry.romDiffDeg}°)`
                   : `${result.symmetry.dominantSide === 'left' ? 'Left dominant' : 'Right dominant'} (+${result.symmetry.romDiffDeg}°)`)
+        }).
+      </p>
+    )}
+    {result.consistency && (
+      <p className="acc-line acc-consistency" data-testid="acc-consistency">
+        <b>{fr ? 'Régularité' : 'Form consistency'} :</b> {result.consistency.score} % ({
+          result.consistency.rating === 'high'
+            ? (fr ? 'très régulier' : 'high consistency')
+            : result.consistency.rating === 'moderate'
+            ? (fr ? 'régulier' : 'moderate consistency')
+            : (fr ? 'irrégulier' : 'inconsistent')
+        }).
+      </p>
+    )}
+    {result.smoothness && (
+      <p className="acc-line acc-smoothness" data-testid="acc-smoothness">
+        <b>{fr ? 'Fluidité (SPARC)' : 'Smoothness (SPARC)'} :</b> {result.smoothness.avgSparc} ({
+          result.smoothness.quality === 'very_smooth'
+            ? (fr ? 'très fluide' : 'very smooth')
+            : result.smoothness.quality === 'smooth'
+            ? (fr ? 'fluide' : 'smooth')
+            : result.smoothness.quality === 'moderate'
+            ? (fr ? 'modérée' : 'moderate')
+            : (fr ? 'saccadée' : 'jerky')
         }).
       </p>
     )}

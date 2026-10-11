@@ -53,3 +53,72 @@ export function phaseAt(r, t, first) {
   if (t >= r.endTime - len[second]) return second;
   return null;
 }
+
+/** The tracked 3D joint angle at time t, or null if unmeasured / dropout. */
+export function angleAt(angles, times, t) {
+  if (!angles?.length || !times?.length) return null;
+  const i = nearest(times, t);
+  const a = angles[i];
+  return (a !== null && a !== undefined && Number.isFinite(a)) ? a : null;
+}
+
+/** The landmark index or pair of indices representing the load / bar path for a lift. */
+export function barLandmarks(lift, def) {
+  const l = String(lift || '').toLowerCase();
+  if (l.includes('squat')) return [11, 12]; // barbell across shoulders
+  if (l.includes('thrust')) return [23, 24]; // barbell across hips
+  if (def?.joint === 'knee') return [27, 28]; // ankles/feet for leg extensions/curls
+  return [15, 16]; // wrists/hands for presses, curls, pulls, deadlifts
+}
+
+/** The load coordinate in image space at time t, or null if unseen. */
+export function loadPointAt(lm, lift, def, arm) {
+  if (!lm) return null;
+  const indices = barLandmarks(lift, def);
+  const seen = k => lm[k] && lm[k].visibility >= SEEN;
+  if (indices.length === 2) {
+    const [l, r] = indices;
+    if (arm === 'left') return seen(l) ? { x: lm[l].x, y: lm[l].y } : null;
+    if (arm === 'right') return seen(r) ? { x: lm[r].x, y: lm[r].y } : null;
+    if (seen(l) && seen(r)) return { x: (lm[l].x + lm[r].x) / 2, y: (lm[l].y + lm[r].y) / 2 };
+    if (seen(l)) return { x: lm[l].x, y: lm[l].y };
+    if (seen(r)) return { x: lm[r].x, y: lm[r].y };
+    return null;
+  }
+  const idx = indices[0];
+  return seen(idx) ? { x: lm[idx].x, y: lm[idx].y } : null;
+}
+
+/**
+ * Returns the trajectory points to draw for the active rep or recent trail.
+ * Returns array of { x, y, alpha, t } in 0..1 normalized image coordinates.
+ */
+export function trajectoryAt(frames, times, t, rep, lift, def, arm) {
+  if (!frames?.length || !times?.length) return [];
+  const points = [];
+  if (rep && !rep.clipped) {
+    const startIdx = Math.max(0, before(times, rep.startTime));
+    const endIdx = Math.min(frames.length - 1, before(times, rep.endTime) + 1);
+    for (let i = startIdx; i <= endIdx; i++) {
+      const pt = loadPointAt(frames[i], lift, def, arm);
+      if (pt) {
+        const isPast = times[i] <= t;
+        points.push({ x: pt.x, y: pt.y, alpha: isPast ? 0.9 : 0.3, t: times[i] });
+      }
+    }
+  } else {
+    const windowStart = Math.max(0, t - 1.2);
+    const startIdx = Math.max(0, before(times, windowStart));
+    const endIdx = Math.min(frames.length - 1, before(times, t));
+    for (let i = startIdx; i <= endIdx; i++) {
+      const pt = loadPointAt(frames[i], lift, def, arm);
+      if (pt) {
+        const age = t - times[i];
+        const alpha = Math.max(0.1, 1 - age / 1.2) * 0.75;
+        points.push({ x: pt.x, y: pt.y, alpha, t: times[i] });
+      }
+    }
+  }
+  return points;
+}
+

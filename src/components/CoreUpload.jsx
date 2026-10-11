@@ -108,7 +108,7 @@ export default function CoreUpload({ onClose, onRefilm, initialLift = '', initia
         {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} />}
         {view === 'result' && <Result result={result} lift={lift} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={() => openOverlay('replay')} onNewSet={onClose} onRefilm={refilm} />}
       </ScreenFade>
-      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} symmetry={result.symmetry} leaving={overlayLeaving} onBack={closeOverlay} />}
+      {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={result.reps} setId={savedIdRef.current} symmetry={result.symmetry} smoothness={result.smoothness} consistency={result.consistency} leaving={overlayLeaving} onBack={closeOverlay} />}
       {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} leaving={overlayLeaving} onBack={closeOverlay} />}
     </>;
   }

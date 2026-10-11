@@ -284,6 +284,8 @@ export interface WorkoutRecord {
   repDetailsVersion?: number;
   corrected?: boolean;
   symmetry?: unknown;
+  smoothness?: unknown;
+  consistency?: unknown;
 }
 
 export interface RepCounterDiagnostics {

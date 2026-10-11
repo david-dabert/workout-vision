@@ -12,7 +12,7 @@ export const LAMP = '#F7DCAE';
  * lm: one frame's image landmarks (x, y in 0..1 of the picture); box: where the picture lies,
  * { ox, oy, w, h } in the context's units; u: the width of a line of 1 at the screen's scale.
  */
-export function drawSkeleton(ctx, lm, box, sides, def, u = 1) {
+export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trajectory = null) {
   const at = k => [box.ox + lm[k].x * box.w, box.oy + lm[k].y * box.h];
   const seen = k => lm[k] && lm[k].visibility >= SEEN;
   const line = (pts, width, colour) => {
@@ -20,6 +20,32 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1) {
     ctx.beginPath(); pts.forEach(([x, y], j) => (j ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke();
   };
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  // Draw bar path trajectory trail if provided
+  if (trajectory && trajectory.length > 1) {
+    ctx.save();
+    for (let i = 1; i < trajectory.length; i++) {
+      const p0 = trajectory[i - 1], p1 = trajectory[i];
+      const x0 = box.ox + p0.x * box.w, y0 = box.oy + p0.y * box.h;
+      const x1 = box.ox + p1.x * box.w, y1 = box.oy + p1.y * box.h;
+      ctx.lineWidth = 2 * u;
+      ctx.strokeStyle = `rgba(247, 220, 174, ${p1.alpha ?? 0.6})`;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
+    const last = trajectory[trajectory.length - 1];
+    const lx = box.ox + last.x * box.w, ly = box.oy + last.y * box.h;
+    ctx.fillStyle = LAMP;
+    ctx.shadowColor = 'rgba(247, 220, 174, 0.8)';
+    ctx.shadowBlur = 6 * u;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 3 * u, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   const bones = BONES.filter(([a, b]) => seen(a) && seen(b)).map(([a, b]) => [at(a), at(b)]);
   for (const b of bones) line(b, 4, SHADE);
   for (const b of bones) line(b, 2, BONE);
@@ -38,6 +64,21 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = LAMP;
     ctx.beginPath(); ctx.arc(pts[1][0], pts[1][1], 4.5 * u, 0, Math.PI * 2); ctx.fill();
+
+    // Subtle biomechanical angle arc at the active joint
+    const dxA = pts[0][0] - pts[1][0], dyA = pts[0][1] - pts[1][1];
+    const dxB = pts[2][0] - pts[1][0], dyB = pts[2][1] - pts[1][1];
+    const thA = Math.atan2(dyA, dxA);
+    const thB = Math.atan2(dyB, dxB);
+    let diff = thB - thA;
+    while (diff < -Math.PI) diff += 2 * Math.PI;
+    while (diff > Math.PI) diff -= 2 * Math.PI;
+    const anticlockwise = diff < 0;
+    ctx.strokeStyle = 'rgba(247, 220, 174, 0.6)';
+    ctx.lineWidth = 1.4 * u;
+    ctx.beginPath();
+    ctx.arc(pts[1][0], pts[1][1], 14 * u, thA, thB, anticlockwise);
+    ctx.stroke();
   }
 }
 

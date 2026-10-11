@@ -4,6 +4,7 @@ import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
 import { analyzeBilateralSymmetry } from './symmetry';
+import { analyzeMovementQuality } from './smoothness';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
 export const APPROVED_LIFTS = OFFERED;
@@ -80,7 +81,18 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
     const countSummary = summarizeCount(worldLandmarks, timestamps, lift);
     const symmetry = analyzeBilateralSymmetry(worldLandmarks, timestamps, lift, countSummary.reps);
-    const result = { ...countSummary, symmetry, exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
+    const quality = analyzeMovementQuality(worldLandmarks, timestamps, lift, countSummary.reps, countSummary.arm);
+    const result = {
+      ...countSummary,
+      symmetry,
+      smoothness: quality?.smoothness ?? null,
+      consistency: quality?.consistency ?? null,
+      exercise: lift,
+      metadata,
+      imageLandmarks,
+      worldLandmarks,
+      timestamps,
+    };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;

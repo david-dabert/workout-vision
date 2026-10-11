@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
-import { poseAt, repAt, phaseAt } from './replay-track';
+import { poseAt, repAt, phaseAt, angleAt, trajectoryAt } from './replay-track';
 import { drawSkeleton, litSides } from './replay-draw';
 import { canExport, exportSetVideo } from './video-export';
 import './Replay.css';
@@ -24,6 +24,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
 
   // A refused set shows no reps here either: the result said it could not count them.
   const frames = result.imageLandmarks || [], times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
+  const smoothedAngles = result.smoothedAngles || [];
   const def = liftDefinition(lift);
   const sides = litSides(def, result.arm);
   const meta = result.metadata || {};
@@ -83,7 +84,9 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
       // The picture sits in its box as object-fit: contain places it.
       const vw = video.videoWidth || fw, vh = video.videoHeight || fh;
       const s = Math.min(cw / vw, ch / vh);
-      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def);
+      const curRep = repAt(reps, t);
+      const traj = trajectoryAt(frames, times, t, curRep >= 0 ? reps[curRep] : null, lift, def, result.arm);
+      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, traj);
     };
     // The screen's words follow the video about ten times a second, and at once when it stops.
     const tell = (t, force) => {
@@ -182,6 +185,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
   const phase = current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
+  const curAngle = angleAt(smoothedAngles, times, now);
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -217,6 +221,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
           {reps.length > 0 && <div className="rp-chip" aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
             <span className="rp-phase">{phaseWord}</span>
+            {curAngle !== null && <span className="rp-angle">{Math.round(curAngle)}°</span>}
           </div>}
           {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
         </div>

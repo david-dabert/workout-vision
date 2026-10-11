@@ -309,6 +309,24 @@ describe('rep details', () => {
     expect(sEn.summary.join('\n')).toContain('Left dominant (+14°)');
   });
 
+  it('formats form consistency and movement smoothness in summary', () => {
+    const consistency = { score: 88, rating: 'high', avgDeviationDeg: 6.2, mostInconsistentRep: 4 };
+    const smoothness = { avgSparc: -1.75, quality: 'very_smooth' };
+    const s = reportSheet({ ...base, reps, first: 'concentric', consistency, smoothness });
+    expect(s.summary.join('\n')).toContain('Régularité de forme');
+    expect(s.summary.join('\n')).toContain('88');
+    expect(s.summary.join('\n')).toContain('Très régulier');
+    expect(s.summary.join('\n')).toContain('Fluidité');
+    expect(s.summary.join('\n')).toContain('-1.75 SPARC');
+    expect(s.summary.join('\n')).toContain('Très fluide');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', consistency, smoothness });
+    expect(sEn.summary.join('\n')).toContain('Form consistency');
+    expect(sEn.summary.join('\n')).toContain('High consistency');
+    expect(sEn.summary.join('\n')).toContain('Smoothness');
+    expect(sEn.summary.join('\n')).toContain('Very smooth');
+  });
+
   it('runs a long table onto the next page', async () => {
     const pdfText = async blob => Buffer.from(await blob.arrayBuffer()).toString('latin1');
     const many = Array.from({ length: 16 }, (_, i) => rep(i * 3, 1.9, 90, 0.8, 1.0));
