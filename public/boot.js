@@ -12,8 +12,8 @@ function wvBootScreen(kind) {
   // The page declares the language of the words it shows, so VoiceOver reads them in the right voice (audit of 3 October).
   try { document.documentElement.lang = fr ? 'fr' : 'en'; } catch (e) { /* no document */ }
   var t = kind === 'crash'
-    ? (fr ? ['Un problème est survenu.', 'Rechargez l’application pour réessayer.', 'Recharger'] : ['Something went wrong.', 'Reload the app to try again.', 'Reload'])
-    : (fr ? ['L’application ne s’est pas chargée.', 'Vérifiez votre connexion, puis rechargez.', 'Recharger'] : ['The app did not load.', 'Check your connection, then reload.', 'Reload']);
+    ? (fr ? ['Un problème est survenu.', 'Rechargez l’appli pour réessayer.', 'Recharger'] : ['Something went wrong.', 'Reload the app to try again.', 'Reload'])
+    : (fr ? ['L’appli ne s’est pas chargée.', 'Vérifiez votre connexion, puis rechargez.', 'Recharger'] : ['The app did not load.', 'Check your connection, then reload.', 'Reload']);
   root.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px 24px;text-align:center;background:#080706;color:#EFE8DC">'
     + '<h2 style="margin:0;font:400 32px/1.1 \'Instrument Serif\',\'Iowan Old Style\',Georgia,serif;color:#EFE8DC">' + t[0] + '</h2>'
     + '<p style="margin:0;max-width:30ch;font:400 15px/1.5 system-ui,-apple-system,sans-serif;color:#A49B8D">' + t[1] + '</p>'

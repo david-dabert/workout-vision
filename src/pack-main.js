@@ -304,7 +304,7 @@ function showFiles() {
     s.addEventListener('click', async () => {
       if (!navigator.canShare?.({ files: [file] })) { summaryEl.textContent = 'This browser cannot share this file: use Download.'; return; }
       if (!share.start(performance.now())) return;
-      try { await navigator.share({ files: [file], title: 'Workout Vision videos' }); }
+      try { await navigator.share({ files: [file], title: 'WorkoutVision videos' }); }
       catch (e) { if (e.name !== 'AbortError' && e.name !== 'InvalidStateError') summaryEl.textContent = `Sharing did not go through (${e.message}): use Download.`; }
       finally { share.end(); }
     });
