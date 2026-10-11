@@ -1,4 +1,5 @@
-Scoreboard 2026-10-10: of the 15 sets in the baseline that decide, 11 exact now, 11 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
+Scoreboard 2026-10-11: of the 15 sets in the baseline that decide, 11 exact now, 11 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 15 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted sets, 1 flagged: 1 exact (100%), 0 off by 3+ (0%); 18 not flagged: 11 exact (61%), 0 off by 3+ (0%). Sets off by 3+ flagged: 0 of 0.
 In the list (result-choices.js, measured, decides nothing): of the 15 sets that would decide, the number shown is exact on 11, the label is in [M, M + 1, M - 1] on 15.
    sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  before 8 (exact)  now 8 (exact)
@@ -23,6 +24,7 @@ In the list (result-choices.js, measured, decides nothing): of the 15 sets that 
    landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 9 (off -1)  (press: measured, decides nothing, PLAN.md)
 
 Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 14 sets in the baseline, 6 exact now, 6 before; 0 newly catastrophic, 2 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 In the list (result-choices.js, measured, decides nothing): of the 14 sets that would decide, the number shown is exact on 8, the label is in [M, M + 1, M - 1] on 11.
    sets-07oct-video/barbell_squat_9_a.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/barbell_squat_9_b.json.gz  label 9  before 9 (exact)  now 9 (exact)
@@ -42,6 +44,7 @@ KNOWN CATASTROPHIC  sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  now 4
    sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 8)
 
 Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 2 exact now, 2 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
    sets-09oct-video-mode/barbell_squat_9_a.json.gz  label 9  before 7 (off -2)  now 7 (off -2)
    sets-09oct-video-mode/barbell_squat_9_b.json.gz  label 9  before 10 (off +1)  now 10 (off +1)
    sets-09oct-video-mode/behind_neck_chin_up_5.json.gz  label 5  before 4 (off -1)  now 4 (off -1)

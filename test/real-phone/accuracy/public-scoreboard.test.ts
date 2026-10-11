@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets } from './sets';
 import { liftDefinition } from '../../../src/lib/counting/core';
+import { pairedLine, type Pair } from './paired';
 
 const BASELINE = resolve(__dirname, 'public-baseline.json');
 const off = (c: number | string, label: number) => (c === 'refused' ? Infinity : Math.abs((c as number) - label));
@@ -91,7 +92,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const base = existsSync(from) ? JSON.parse(readFileSync(from, 'utf8')).counts : {};
   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
-  const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [];
+  const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [], pairs: Pair[] = [];
   let exactNow = 0, exactBefore = 0, became = 0, added = 0, kept = 0;
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
@@ -107,6 +108,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     kept++;
     if (off(now, s.label) === 0) exactNow++;
     if (off(before, s.label) === 0) exactBefore++;
+    pairs.push({ before: off(before, s.label) === 0, now: off(now, s.label) === 0 });
     // A set that becomes off by 3 or more, or refused, where it was not before.
     if (off(now, s.label) >= 3 && off(before, s.label) < 3) { became++; rows.push(`BECAME OFF BY 3+  ${s.name}  label ${s.label}  before ${before}  now ${now}`); }
     else if (now !== before) rows.push(`-> ${s.name}  label ${s.label}  before ${before}  now ${now}`);
@@ -116,7 +118,11 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     ...[...groups].sort().map(([k, g]) => `| ${k}${decides(k.split(' ')[1]) ? '' : ` ${PRESS_DECIDES_NOTHING}`} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`)];
   const n = sets.length, exact = [...groups.values()].reduce((a, g) => a + g.exact, 0);
   const head = `Public scoreboard ${new Date().toISOString().slice(0, 10)}: ${n} build sets, ${exact} exact (${n ? Math.round((100 * exact) / n) : 0}%). Of the ${kept} in the baseline that decide, ${exactNow} exact now, ${exactBefore} before; ${became} became off by 3 or more${added ? `; ${added} new since` : ''}. The ${n - added - kept} bench and overhead press sets are measured and decide nothing (PLAN.md).`;
-  const text = [head, doubtLine(doubts), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
+  // The paired line (paired.ts) on the same sets as "exact now, before": McNemar's exact test and a seeded paired
+  // bootstrap interval. Countix's two readings of a clip (cut and whole) are two sets here, as in the headline; being
+  // correlated, they likely make the interval narrower than one reading per clip would. Printed only, decides nothing.
+  const paired = pairedLine(pairs, "Countix's two readings of a clip counted as two sets, as in the headline");
+  const text = [head, paired, doubtLine(doubts), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : []), '', ...repCountSection()].join('\n') + '\n';
   writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);

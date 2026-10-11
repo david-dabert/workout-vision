@@ -27,6 +27,13 @@ export function manualRotationNeeded(containerRotation, frameRotation) {
 /** How long the feeding waits, with the main loop waiting too and nothing decoded, before it feeds on (see below). */
 const FEED_STALL_MS = 2000;
 
+/**
+ * How long a read may go without a frame before it ends, on both paths: the playback path's watchdog (since the last
+ * frame callback) and the WebCodecs path's (since the decoder's last frame, see extractFramesWebCodecs). Neither counts
+ * the time a sample spends in the analysis. Source: convention, UNSOURCED (the playback path's value since it began).
+ */
+const STALL_MS = 20000;
+
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 // Route the demuxer's FFmpeg log lines to console.info so they don't
@@ -221,7 +228,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
               reject(new Error('Video playback stalled — no frames received'));
             }
           }
-        }, 20000);
+        }, STALL_MS);
       };
 
       const onAbort = () => {
@@ -520,10 +527,32 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     // input before it gives a frame (an HEVC stream that reorders its frames), see the feeding below.
     let progress = 0;
     let feedStalls = 0;
+    // Stall watchdog, as on the playback path (11 October 2026): a decoder that takes chunks and then gives neither a
+    // frame nor an error left the main loop waiting for a frame until the user cancelled. While the main loop waits
+    // for a frame that is still owed, STALL_MS with no decoded frame ends the pass as a decoder failure ends it (the
+    // error with `resume`, which withRestarts restarts and after which the playback path takes over; release() frees
+    // the frames and the decoder). Counted from the latest of: the decoder's last frame, the last chunk fed while the
+    // decoder's queue was empty, the start of the main loop's wait; never from the start of the read, and never
+    // during a sample's analysis (onFrame), so a slow phone is not a stalled decoder.
+    // Budget and rule: convention, mirrors the playback watchdog (STALL_MS). Safari's VideoDecoder going silent without
+    // calling its error callback: UNSOURCED (never seen on our clips; the WebCodecs spec sets no timeout on a decoder
+    // that stops giving output; a research note relayed on 11 October 2026 cites w3c/webcodecs discussion #680 and
+    // issue #698, not checked by us).
+    let stallTimer = null;
+    const watchStall = () => {
+      clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        stallTimer = null;
+        if (!wakeMain || decodeError || decodeComplete) return;
+        decodeError = new Error(`decoder stalled, no frame for ${STALL_MS / 1000} s`);
+        wakeMain(); wakeMain = null;
+      }, STALL_MS);
+    };
 
     const decoder = new VideoDecoder({
       output: (frame) => {
         progress++;
+        watchStall();
         const timestamp = frame.timestamp / 1_000_000;
         // Once the sampling grid has started, a frame before the next capture time is never sampled: closed at once.
         // Before the grid starts (origin null), the first frame sets it and is kept.
@@ -546,6 +575,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     signal?.addEventListener('abort', onAbort, { once: true });
     release = () => {
       signal?.removeEventListener('abort', onAbort);
+      clearTimeout(stallTimer);
       while (frameQueue.length > 0) frameQueue.shift().close();
       try { decoder.close(); } catch {}
     };
@@ -566,7 +596,9 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
           if (signal?.aborted || extractedCount >= frameCount) break;
           const { done, value } = await reader.read();
           if (done) break;
+          const idle = decoder.decodeQueueSize === 0;
           decoder.decode(value);
+          if (idle) watchStall();
           let seen = progress, since = performance.now();
           while ((frameQueue.length > maxQueued || decoder.decodeQueueSize > maxDecoding) && !signal?.aborted) {
             if (progress !== seen) { seen = progress; since = performance.now(); }
@@ -585,7 +617,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     })();
 
     // Process decoded frames in main loop
-    const waitForFrame = () => new Promise(r => { wakeMain = r; });
+    const waitForFrame = () => new Promise(r => { wakeMain = r; watchStall(); });
 
     // Drawing helper with runtime rotation detection.
     // Chromium's drawImage auto-applies VideoFrame rotation; WebKit does not.
