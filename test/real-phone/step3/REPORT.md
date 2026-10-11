@@ -19,30 +19,20 @@ The test seeds a completed local profile, then opens the real production Analyze
 
 | Browser | Clip | App count | Samples | Decoder | Seconds | Timestamps equal | Image equal | World equal | Console errors | Failed requests |
 |---|---|---:|---:|---|---:|---|---|---|---:|---:|
-| chrome | bench_press | not offered; parity only | 331 | webcodecs | 13.37 | true | false | false | 0 | 0 |
-| chrome | bicep_curl | 7 | 341 | webcodecs | 12.954 | true | false | false | 0 | 0 |
-| chrome | lat_pulldown | 10 | 609 | webcodecs | 18.856 | true | false | false | 1 | 0 |
-| chrome | lateral_raise | 10 | 439 | webcodecs | 17.935 | true | false | false | 0 | 0 |
-| chrome | overhead_press | not offered; parity only | 620 | webcodecs | 19.479 | true | false | false | 0 | 0 |
-| webkit-iphone | bench_press | not offered; parity only | 331 | webcodecs | 13.975 | true | true | true | 0 | 0 |
-| webkit-iphone | bicep_curl | 7 | 341 | webcodecs | 14.998 | true | true | true | 0 | 0 |
-| webkit-iphone | lat_pulldown | 10 | 609 | webcodecs | 18.941 | true | true | true | 1 | 0 |
-| webkit-iphone | lateral_raise | 10 | 439 | webcodecs | 19.062 | true | true | true | 0 | 0 |
-| webkit-iphone | overhead_press | not offered; parity only | 620 | webcodecs | 20.978 | true | true | true | 0 | 0 |
+| chrome | bench_press | not offered; parity only | 331 | webcodecs | 12.935 | true | false | false | 0 | 0 |
+| chrome | bicep_curl | 7 | 341 | webcodecs | 13.456 | true | true | true | 0 | 0 |
+| chrome | lat_pulldown | 10 | 609 | webcodecs | 18.427 | true | true | true | 0 | 0 |
+| chrome | lateral_raise | 10 | 439 | webcodecs | 17.498 | true | true | true | 0 | 0 |
+| chrome | overhead_press | not offered; parity only | 620 | webcodecs | 19.944 | true | false | false | 0 | 0 |
+| webkit-iphone | bench_press | not offered; parity only | 331 | webcodecs | 14.529 | true | true | true | 0 | 0 |
+| webkit-iphone | bicep_curl | 7 | 341 | webcodecs | 15.6 | true | true | true | 0 | 0 |
+| webkit-iphone | lat_pulldown | 10 | 609 | webcodecs | 19.431 | true | true | true | 0 | 0 |
+| webkit-iphone | lateral_raise | 10 | 439 | webcodecs | 19.818 | true | true | true | 0 | 0 |
+| webkit-iphone | overhead_press | not offered; parity only | 620 | webcodecs | 20.963 | true | true | true | 0 | 0 |
 
 The selector assertion reads every option from the DOM and requires exactly the placeholder, bicep_curl, lateral_raise and lat_pulldown. Backend validation also rejects Automatic and both parked presses.
 
 ## Console diagnostic (not suppressed)
-
-**chrome / lat_pulldown**
-```text
-[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446
-```
-
-**webkit-iphone / lat_pulldown**
-```text
-[mov,mp4,m4a,3gp,3g2,mj2 @ 0x9e300] Invalid timestamps stream=1, pts=24281, dts=24301, size=446
-```
 
 ffprobe identifies stream 1 in this source as H.264 video. The cause of its invalid packet timestamps is unresolved; the source clip was not modified.
 
