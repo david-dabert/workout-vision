@@ -2,7 +2,10 @@ import { countReps } from './counting/core';
 import { extractFramesStreaming } from './frameExtractor';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
-export const APPROVED_LIFTS = ['bicep_curl', 'lateral_raise', 'lat_pulldown'];
+import { OFFERED, isOffered } from './offer';
+
+// Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
+export const APPROVED_LIFTS = OFFERED;
 
 export function summarizeCount(worldLandmarks, timestamps, lift) {
   const core = countReps(worldLandmarks, timestamps, lift);
@@ -12,8 +15,26 @@ export function summarizeCount(worldLandmarks, timestamps, lift) {
   return { ...core, refused: visible < worldLandmarks.length / 2 || worldLandmarks.length === 0 };
 }
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {} } = {}) {
-  if (!APPROVED_LIFTS.includes(lift)) throw new Error('Choose an approved lift');
+/**
+ * A read that is not whole: { read, expected } unless exactly floor(duration x fps) samples came
+ * back, else null. On 29 September David's iPhone read 181 of the 439 samples of his lateral raise
+ * clip and the app counted 2 of 10. The collector's rule (collector.js, setIsWhole) holds for the app:
+ * fewer samples, more samples (a failed first decoding pass leaves its samples behind), a length the
+ * video does not report, or more samples than the cap, and no count is shown (R8; review 01).
+ * Status: convention, from the extractor's own sampling rule.
+ */
+export function unreadSamples({ samples, duration, fps, maxFrames }) {
+  const expected = Math.floor(duration * fps);
+  const whole = Number.isFinite(expected) && expected > 0 && expected <= maxFrames && samples === expected;
+  return whole ? null : { read: samples, expected: Number.isFinite(expected) && expected > 0 ? expected : null };
+}
+
+export class PartialReadError extends Error {
+  constructor({ read, expected, decoder = '' }) { super(`${read} samples read where the video holds ${expected ?? 'an unknown number'}`); this.name = 'PartialReadError'; this.read = read; this.expected = expected; this.decoder = decoder; }
+}
+
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, path } = {}) {
+  if (!isOffered(lift)) throw new Error('Choose an approved lift');
   const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
   let id = 0;
   const pending = new Map();
@@ -51,8 +72,11 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
-    }, onProgress, { deterministic: true, signal });
+      onLandmarks(result.image, canvas.width, canvas.height);
+    }, onProgress, { deterministic: true, signal, ...(path ? { path } : {}) });
     signal?.throwIfAborted();
+    const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
+    if (missed) throw new PartialReadError({ ...missed, decoder: metadata?.method || '' });
     const result = { ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks, worldLandmarks, timestamps };
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));

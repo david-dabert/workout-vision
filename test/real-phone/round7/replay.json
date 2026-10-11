@@ -1,0 +1,287 @@
+{
+  "clips": [
+    {
+      "lift": "bicep_curl",
+      "count": 7,
+      "step3": 7,
+      "shape": {
+        "w": 2160,
+        "h": 3840
+      },
+      "frames": "360×640",
+      "reps": [
+        {
+          "rep": 1,
+          "time": 0.033,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2386,
+          "counter": 1,
+          "expectedCounter": 1
+        },
+        {
+          "rep": 2,
+          "time": 3.7,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2648,
+          "counter": 2,
+          "expectedCounter": 2
+        },
+        {
+          "rep": 3,
+          "time": 7.067,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2642,
+          "counter": 3,
+          "expectedCounter": 3
+        },
+        {
+          "rep": 4,
+          "time": 10.233,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2631,
+          "counter": 4,
+          "expectedCounter": 4
+        },
+        {
+          "rep": 5,
+          "time": 13.5,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2405,
+          "counter": 5,
+          "expectedCounter": 5
+        },
+        {
+          "rep": 6,
+          "time": 16.433,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2531,
+          "counter": 6,
+          "expectedCounter": 6
+        },
+        {
+          "rep": 7,
+          "time": 19.6,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2189,
+          "counter": 7,
+          "expectedCounter": 7
+        }
+      ],
+      "failures": []
+    },
+    {
+      "lift": "lateral_raise",
+      "count": 10,
+      "step3": 10,
+      "shape": {
+        "w": 2160,
+        "h": 3840
+      },
+      "frames": "360×640",
+      "reps": [
+        {
+          "rep": 1,
+          "time": 1.367,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3664,
+          "counter": 1,
+          "expectedCounter": 1
+        },
+        {
+          "rep": 2,
+          "time": 4.933,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3618,
+          "counter": 2,
+          "expectedCounter": 2
+        },
+        {
+          "rep": 3,
+          "time": 7.532,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3589,
+          "counter": 3,
+          "expectedCounter": 3
+        },
+        {
+          "rep": 4,
+          "time": 10.398,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3620,
+          "counter": 4,
+          "expectedCounter": 4
+        },
+        {
+          "rep": 5,
+          "time": 13.032,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3648,
+          "counter": 5,
+          "expectedCounter": 5
+        },
+        {
+          "rep": 6,
+          "time": 15.698,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3700,
+          "counter": 6,
+          "expectedCounter": 6
+        },
+        {
+          "rep": 7,
+          "time": 18.164,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3746,
+          "counter": 7,
+          "expectedCounter": 7
+        },
+        {
+          "rep": 8,
+          "time": 20.797,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3671,
+          "counter": 8,
+          "expectedCounter": 8
+        },
+        {
+          "rep": 9,
+          "time": 23.497,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3715,
+          "counter": 9,
+          "expectedCounter": 9
+        },
+        {
+          "rep": 10,
+          "time": 25.997,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 3707,
+          "counter": 10,
+          "expectedCounter": 10
+        }
+      ],
+      "failures": []
+    },
+    {
+      "lift": "lat_pulldown",
+      "count": 10,
+      "step3": 10,
+      "shape": {
+        "w": 748,
+        "h": 808
+      },
+      "frames": "592×640",
+      "reps": [
+        {
+          "rep": 1,
+          "time": 2.167,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2757,
+          "counter": 1,
+          "expectedCounter": 1
+        },
+        {
+          "rep": 2,
+          "time": 5.633,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2755,
+          "counter": 2,
+          "expectedCounter": 2
+        },
+        {
+          "rep": 3,
+          "time": 8.767,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2746,
+          "counter": 3,
+          "expectedCounter": 3
+        },
+        {
+          "rep": 4,
+          "time": 12.1,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2767,
+          "counter": 4,
+          "expectedCounter": 4
+        },
+        {
+          "rep": 5,
+          "time": 15.635,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2776,
+          "counter": 5,
+          "expectedCounter": 5
+        },
+        {
+          "rep": 6,
+          "time": 19.135,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2766,
+          "counter": 6,
+          "expectedCounter": 6
+        },
+        {
+          "rep": 7,
+          "time": 22.735,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2693,
+          "counter": 7,
+          "expectedCounter": 7
+        },
+        {
+          "rep": 8,
+          "time": 26.368,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2765,
+          "counter": 8,
+          "expectedCounter": 8
+        },
+        {
+          "rep": 9,
+          "time": 30.235,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2726,
+          "counter": 9,
+          "expectedCounter": 9
+        },
+        {
+          "rep": 10,
+          "time": 35.302,
+          "jointSeen": true,
+          "edge": false,
+          "litPixels": 2705,
+          "counter": 10,
+          "expectedCounter": 10
+        }
+      ],
+      "failures": []
+    }
+  ],
+  "result": "PASS"
+}

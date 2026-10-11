@@ -1,0 +1,52 @@
+I found three defects and two gaps in the tests. The two unit tests pass (`npx vitest run test/real-phone/accuracy/count-in-window.test.ts scripts/__tests__/public.test.js`: 2 files, 12 tests passed), but neither covers any of the defects below. Following your instruction, I only listed test/real-phone/public/ and did not read ~/wv-datasets. Only a `countix` folder exists there so far, with no `countix-whole`.
+
+**D1. The diagnostic ignores the labelled window, the very change it ships with.**
+File: /home/user/workout-vision/test/real-phone/accuracy/public-signal.test.ts, lines 38-45.
+- The core count is `countReps(...).count` on the whole signal, not `countInWindow(r.reps, s.window)`.
+- `turningPoints` also counts the whole signal. It returns only a number, so it cannot be limited to the window at all.
+- Both counts are compared with `s.label`, which counts only the reps inside the window.
+- Scenario: a `countix-whole` clip of 10 s with 3 reps before the window and 4 inside it, label 4. The scoreboard scores the core at 4 (exact). The diagnostic scores the core at 7 (over) and turning points at about 7 (not exact). "Core under" and "Of those, turning points exact" are then wrong for every whole clip.
+- Rows are also grouped by lift only (line 41), not by dataset. Once `countix-whole` is extracted, each video appears twice in the same row: once as `countix` (trimmed) and once as `countix-whole`. So the "Sets" column counts the same clip twice.
+- Smallest test that fails today: make `turningPoints` return times, window them, and assert on a synthetic sine angle. 9 cycles over 0-15 s with `window [5, 10]` must give 3. Today it can only give 9.
+
+**D2. The diagnostic's core count is not the one the scoreboard scores.**
+File: public-signal.test.ts, line 40.
+- It calls `countReps`, but the scoreboard calls `summarizeCount` and treats refused sets as not exact.
+- Proof from the files in the working tree:
+  - public-scoreboard.txt says 137 exact. public-signal.txt says "Core exact" 139.
+  - bench_press: 12 vs 13. pull_up: 16 vs 17.
+  - A refused set whose count happens to equal the label is called exact by the diagnostic.
+  - The 51 refused sets are counted as "Core under" (count < label) and fed to the turning-point rule on a signal that is mostly null. That inflates 296 and 61/37.
+- The file's header claim, "the core's count against a count read from the same smoothed joint angle", is therefore not the count the scoreboard uses.
+- Smallest failing test: assert that the diagnostic's "Core exact" total equals the scoreboard's exact total on the same sets. Today it gets 139, not 137.
+
+**D3. The window is passed through untested, and a loss would be silent.**
+Files:
+- /home/user/workout-vision/test/real-phone/accuracy/sets.ts, line 75 (`...(d.window ? { window: d.window } : {})`)
+- /home/user/workout-vision/scripts/public/run-public.mjs, line 122
+
+Scenario:
+- If either spread is dropped, or a file is written before this change, `countix-whole` sets are scored on the whole clip.
+- `countInWindow(reps, undefined)` returns `reps.length`, so there is no error. Every set is new against the baseline (added++), so the gate does not fire either.
+- `publicSets` does not reject a `countix-whole` file that has no `window`.
+
+Smallest failing test: have `publicSets` treat `dataset === 'countix-whole' && !Array.isArray(d.window)` as unreadable, and test it with a fixture file. Today such a file is accepted.
+
+**Minor points, not defects in counting:**
+- `run-public.mjs`, line 78: `--split` given with no value, or a misspelt one such as `--split Build`, leaves `pending` empty. The run then prints "0 written, 0 failed." and exits 0.
+- Stale comments in the code (none of this is shown in the app):
+  - countix.mjs header, line 7: "Each clip is trimmed to its labelled repetitions", no longer true for `countix-whole`.
+  - manifest.mjs usage line 19 does not list `countix-whole`.
+  - The run-public.mjs header does not mention `--split` or `window`.
+
+**Tests that would not fail if the change were reverted:**
+- No test runs the `countInWindow` line in public-scoreboard.test.ts. If it were reverted to `r.count`, nothing would fail.
+- public-signal.test.ts is skipped without `ACCURACY` and asserts nothing.
+- The existing tests do catch a revert of `countInWindow` itself and of the `whole` option in countix.mjs.
+
+**Checked and found correct:**
+- The window is measured from `kinetics_start`, in seconds, and the harness timestamps are in seconds (frameExtractor.js, line 568). The midpoint and inclusive bounds work.
+- `count === reps.length` in every `countReps` return path, so trimmed sets score as before.
+- None of the public lifts count both sides, so `smoothedAngles` is the counted side.
+- The frame-count check for the window end works, and a whole-clip transcode checks all frames.
+- No new host, no video or frame added, no string shown in the app, no counting parameter changed.

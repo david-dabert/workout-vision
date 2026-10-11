@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "screenHeight": 1443.34375,
+  "sheetNumeralFontSize": 58,
+  "inputHeight": 50,
+  "paperBackground": "rgb(251, 247, 239)",
+  "tableRows": 8,
+  "states": [
+    "filled",
+    "corrected"
+  ],
+  "errors": [],
+  "failed": []
+}

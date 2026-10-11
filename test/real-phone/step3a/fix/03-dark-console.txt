@@ -1,0 +1,13 @@
+[info] Successfully preconnected to https://fonts.googleapis.com/
+[info] Successfully preconnected to https://cdn.jsdelivr.net/
+[info] Successfully preconnected to https://fonts.gstatic.com/
+[log] [Storage] Schema migrated to version 1
+[log] [Storage] Schema migrated to version 1
+[info] [PoseAnalysis] Device: SIMD=true, WebGL2=true, GPU=Apple GPU, recommendedDelegate=GPU
+[error] wasm streaming compile failed: TypeError: Unexpected response MIME type. Expected 'application/wasm'
+[error] falling back to ArrayBuffer instantiation
+[warning] WebGL: non-portable extension enabled: WEBGL_polygon_mode
+[log] I0925 19:52:42.432000 2136208 gl_context.cc:407] GL version: 3.0 (OpenGL ES 3.0 (WebGL 2.0)), renderer: WebKit WebGL
+[warning] W0925 19:52:42.432000 2136208 gl_context.cc:1118] OpenGL error checking is disabled
+[log] Graph successfully started running.
+[info] [PoseAnalysis] Landmarker created with GPU delegate (SIMD=true, runningMode=VIDEO)

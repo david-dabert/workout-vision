@@ -1,0 +1,1 @@
+Goal: CI runs a tour of every screen reachable without a video in WebKit with the iPhone profile at the three sizes, with Reduce Motion and the light appearance, failing on its own checks and keeping its shots, and the filming screen keeps "Filmer ma série" in view at 390×664 and 390×745 for every one of the 181 offered exercises.

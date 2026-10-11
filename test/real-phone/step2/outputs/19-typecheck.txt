@@ -1,0 +1,5 @@
+
+> workout-vision@1.4.0 typecheck
+> tsc --noEmit
+
+typecheck exit 0

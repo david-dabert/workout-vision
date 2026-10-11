@@ -1,0 +1,57 @@
+wv-control check of the draft to David (branch claude/generate-architecture-md-inw479 at f4febb4). Verdict: DO NOT SEND. I found 5 defects and 1 risk. Nothing was edited, staged, pushed or changed on GitHub.
+
+DEFECTS
+
+1. The message should not be sent at all.
+- Claim: line 5 says "Nothing to check on your iPhone", and no line asks David to decide anything.
+- What the source shows: PLAN.md at f4febb4, David's third message of 30 September, says: "Until then, write to me only when my iPhone or my approval is needed." The five-line order also requires "what only I can decide", and this draft has no such line. It needs neither his iPhone nor his approval, so under his order it must not go out.
+- Shown by: `git show f4febb4:PLAN.md | sed -n 296,302p`
+
+2. "it drops one" (line 3) is not supported.
+- Claim: the counter drops one rep.
+- What the source shows: test/real-phone/accuracy/public-scoreboard.txt at 348e449 has Off by 1 = 6+25+28+26+20+12+37 = 154 and Off by 3+ = 6+7+7+3+11+2+2 = 38, out of 392 counted and 137 exact. That leaves 392 − 137 − 154 = 101 sets off by 2 or more, and at least 90 of those are under the label (at most 11 are over). The means in public-direction-30sep.txt run from −0.88 to −1.30. Those averages do not show a single dropped rep.
+- Shown by: `git show 348e449:test/real-phone/accuracy/public-scoreboard.txt | head -12` and `git show 348e449:test/real-phone/accuracy/public-direction-30sep.txt`
+
+3. The "edge problem … now on hundreds of sets" diagnosis (line 3) is not in the record.
+- Claim: the Countix under-count is the same edge problem seen on David's sets, now on hundreds of sets.
+- What the source shows: no committed file diagnoses the Countix sets. The only diagnosis and edge traces (test/real-phone/accuracy/diagnosis.txt, edges.txt) cover David's 14 sets. public-direction-30sep.txt holds only under/over counts per lift. Also, every Countix set is trimmed to its labelled repetition window (fdfdfce, scripts/public/cut.mjs; run-public trimSeconds), so an edge cause is less likely there, not proven.
+- Shown by: `git grep -n -i "edge" f4febb4 -- test/real-phone/accuracy/` (matches only in diagnosis.txt and label-watch.txt, both about David's sets) and `git show fdfdfce --format=%B -s`
+
+4. The rule relied on in line 4 is in no PLAN.md or CLAUDE.md line.
+- Claim: the fix will be "gated on this build half, then the held-out half once".
+- What the source shows: PLAN.md at f4febb4 never names Countix. It admits public sets only as build data for measuring: line 304 names "RepCount-A and MM-Fit as build data … to measure the counter". No line makes a public build half or held-out half a gate for a counting change. RULES say "Tune nothing to any clip" and "Do not use the YouTube benchmark for any decision", and the Countix clips are Kinetics/YouTube videos. CLAUDE.md R1 names Countix only as a source of labels.
+- Shown by: `git show f4febb4:PLAN.md | grep -n -i "countix\|held-out\|holdout"` (only line 304, which names RepCount-A and MM-Fit) and `git show f4febb4:CLAUDE.md | grep -n -i countix` (line 8, R1 only)
+
+5. The reviewer report path is missing.
+- Claim: none; the message gives no path for the reviewer's report.
+- What the source shows: David's order in PLAN.md says every reviewer report is saved and "your message gives their paths". The Countix pipeline's report is test/real-phone/public-pipeline/review-2-countix.txt (commit 2dc664a). The message names only the scoreboard files. Its findings 1 to 3 do look fixed in fdfdfce: the 17 benchmark ids are all in build in sets.json, and public.test.js has the seen and cutOf tests.
+- Shown by: `git show 2dc664a --name-only --format=`
+
+RISK (not proven a breach)
+- Line 4 plans counting work gated on sets that include Countix bench_press (38 sets). David's order says "no counting work on either [bench press, overhead press] until I film new press sets". A core change measured on bench_press sets may conflict with that. Also, under PLAN.md (METHOD, two gates; David's 30 September order), a counting change needs the full method with the verifier and up to three reviewer passes, and line 4 mentions neither.
+
+CHECKS MADE, WITH RESULTS
+- Commits: 348e449 and 84e020a are both commits on origin (`git cat-file -t`). 348e449 is on origin/claude/generate-architecture-md-inw479 (`git branch -r --contains`), whose head is f4febb4.
+- Refs (`git ls-remote origin`): main 84e020a000e7, counter-core c044f6feb9ae, branch f4febb46f441.
+- Moves: main at 84e020a matches PLAN.md's record of David's approval. counter-core at c044f6f matches the line recorded at cbb2827. No move since that record, so no unauthorized move. "main stays at 84e020a" is true.
+- CI: the message makes no CI claim. The latest runs on the branch go up to 24f89fa (run 36699281497, success). I saw no run for 348e449 or f4febb4 in that list.
+- Numbers, all confirmed against 348e449 (public-scoreboard.txt, public-direction-30sep.txt, test/real-phone/public/countix/sets.json):
+  - 447 build sets: table sum.
+  - 137 exact and 31%: table sum and header.
+  - 392 counted, 244 under, 11 over: direction file "all" line.
+  - 55 refused: Refused column sum, which equals 447 − 392.
+  - 890: sets.json status "written" = 447 build + 443 holdout.
+  - 119 failed: 55 build + 64 holdout, each with a "the video holds N frames; its label ends at frame M" reason. The run log in f4febb4 also has "failed": 119.
+- Evidence paths: test/real-phone/accuracy/public-scoreboard.txt and public-direction-30sep.txt exist in 348e449 and hold what line 2 says.
+- "Countix, the dataset R1 names": true (CLAUDE.md line 8).
+- "Labels and Kinetics clips both from S3": supported by the fdfdfce commit message and by review-2-countix.txt (s3.amazonaws.com).
+- "with the app's own pipeline": this is the 348e449 commit message's own wording. I did not check it separately.
+- Format: 5 lines, and the commit is named. It fails the "what only David can decide" requirement and the "write only when needed" order (defect 1). No unsupported "fixed", "passing", "working" or "deployed".
+
+Relevant files:
+- /home/user/workout-vision/PLAN.md (as at f4febb4)
+- /home/user/workout-vision/test/real-phone/accuracy/public-scoreboard.txt
+- /home/user/workout-vision/test/real-phone/accuracy/public-direction-30sep.txt
+- /home/user/workout-vision/test/real-phone/public/countix/sets.json
+- /home/user/workout-vision/test/real-phone/public-pipeline/review-2-countix.txt
+- /home/user/workout-vision/test/real-phone/accuracy/diagnosis.txt

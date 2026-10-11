@@ -1,0 +1,22 @@
+{
+  "record": "https://zenodo.org/records/7672767",
+  "title": "MM-Fit Dataset - physical exercise workout sessions (video)",
+  "creators": [
+    {
+      "name": "David Strömbäck",
+      "affiliation": "University of Edinburgh"
+    },
+    {
+      "name": "Sangxia Huang",
+      "affiliation": "Sony"
+    },
+    {
+      "name": "Valentin Radu",
+      "affiliation": "University of Sheffield"
+    }
+  ],
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "doi": "10.5281/zenodo.7672767"
+}

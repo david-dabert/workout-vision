@@ -11,3 +11,9 @@
 @import './styles/_animations.css';
 @import './styles/_landing.css';
 @import './styles/_dashboard.css';
+
+/* The chosen lift card grows into the filming screen's frame (App.jsx, View Transitions). */
+::view-transition-group(lift-hero) { animation-duration: 0.42s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+::view-transition-old(lift-hero), ::view-transition-new(lift-hero) { height: 100%; object-fit: cover; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.3s; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }

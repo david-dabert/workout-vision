@@ -61,7 +61,7 @@ export default function Dashboard({ profile, modelStatus, onRetryModel, onNaviga
 
   const statusDot = modelStatus === 'ready' ? 'ready'
     : modelStatus === 'error' ? 'err' : 'pulse';
-  const statusText = modelStatus === 'ready' ? t('ai_engine_ready')
+  const statusText = modelStatus === 'idle' ? (lang === 'fr' ? 'Version de test' : 'Test version') : modelStatus === 'ready' ? t('ai_engine_ready')
     : modelStatus === 'error' ? t('engine_failed') : t('loading_ai');
 
   useEffect(() => {

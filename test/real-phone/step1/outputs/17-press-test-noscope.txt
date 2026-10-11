@@ -1,0 +1,42 @@
+== noscope, Chromium with iPhone touch settings, main.jsx changed for this run only:
+diff --git a/src/main.jsx b/src/main.jsx
+index 2357512..d1631ca 100644
+--- a/src/main.jsx
++++ b/src/main.jsx
+@@ -85,8 +85,8 @@ document.addEventListener('scroll', (e) => {
+   if (!pendingPress && !pressed.size) return;
+   const scroller = e.target === document ? document.documentElement : e.target;
+   if (!scroller?.contains) return;
+-  if (pendingPress && scroller.contains(pendingPress.el)) { clearTimeout(pendingPress.timer); pendingPress = null; }
+-  pressed.forEach(el => { if (scroller.contains(el)) unlight(el); });
++  if (pendingPress) { clearTimeout(pendingPress.timer); pendingPress = null; }
++  pressed.forEach(unlight);
+ }, { passive: true, capture: true });
+ 
+ createRoot(document.getElementById('root')).render(
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.3s)
+
+
+  1) e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      290 |       });
+      291 |       const elsewhere = await press(10, '#other-scroller');
+    > 292 |       expect(elsewhere.at150).toBe(1); // only a scroll that holds the card cancels its press
+          |                               ^
+      293 |       await card.dispatchEvent('pointercancel', finger);
+      294 |       await page.evaluate(() => document.getElementById('other-scroller').remove());
+      295 |     });
+        at /home/user/workout-vision/e2e/shared/tactility.tests.js:292:31
+
+    Error Context: test-results/zz-portable-check-portable-726b3-a-scroll-elsewhere-does-not/error-context.md
+
+  1 failed
+    e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer and scroll events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not 

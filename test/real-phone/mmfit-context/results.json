@@ -1,0 +1,5472 @@
+{
+ "cores": [
+  {
+   "path": "cores/c3681b8.ts",
+   "sha256": "e47923978ebc230657bfcdccb052f93481d08872cff0d4fab3e57ce7457159e6"
+  },
+  {
+   "path": "cores/this-step.ts",
+   "sha256": "5514f77b2b570a824e01d22425a29008d34ce8f2a36b5b3174394743f9f5d5d3"
+  }
+ ],
+ "columns": [
+  "mediapipe_cut",
+  "own_cut",
+  "own_3s",
+  "own_6s"
+ ],
+ "admittedFrom": "test/real-phone/mmfit/results.json",
+ "rows": [
+  {
+   "id": "w00-squats-4040-4500",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-squats-5435-5928",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-squats-7200-7685",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-dumbbell_shoulder_press-15034-15545",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-dumbbell_shoulder_press-17570-18127",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-dumbbell_shoulder_press-20482-20908",
+   "lift": "overhead_press",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-dumbbell_rows-31680-32205",
+   "lift": "dumbbell_row",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 8,
+     "own_3s": 8,
+     "own_6s": 7
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 8,
+     "own_3s": 8,
+     "own_6s": 8
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-dumbbell_rows-34605-35060",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 8,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 8,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-dumbbell_rows-38000-38500",
+   "lift": "dumbbell_row",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-bicep_curls-50955-51469",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 12
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 12
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-bicep_curls-52054-52528",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-bicep_curls-52966-53405",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-lateral_shoulder_raises-54880-55303",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-lateral_shoulder_raises-57634-58061",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w00-lateral_shoulder_raises-59858-60277",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-squats-2113-2598",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-squats-3210-3737",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-squats-5086-5615",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-dumbbell_shoulder_press-20509-21307",
+   "lift": "overhead_press",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 6,
+     "own_6s": 4
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 6,
+     "own_6s": 5
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-dumbbell_shoulder_press-21864-22424",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 8,
+     "own_6s": 3
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 8,
+     "own_6s": 3
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-dumbbell_shoulder_press-22819-23491",
+   "lift": "overhead_press",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 12,
+     "own_6s": 7
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 12,
+     "own_6s": 7
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-bicep_curls-54733-55237",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-bicep_curls-63019-63514",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-bicep_curls-64099-64584",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-lateral_shoulder_raises-65618-66249",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-lateral_shoulder_raises-68735-69542",
+   "lift": "lateral_raise",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w01-lateral_shoulder_raises-71282-71944",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w02-squats-2495-3144",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w02-squats-3520-4182",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w02-squats-5109-5770",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w02-dumbbell_shoulder_press-16302-17074",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w02-dumbbell_shoulder_press-19903-20615",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w02-dumbbell_shoulder_press-22550-23283",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-squats-3803-4301",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-squats-4708-5200",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-squats-5575-6053",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-dumbbell_shoulder_press-18054-18612",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-dumbbell_shoulder_press-20140-20723",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-dumbbell_shoulder_press-21843-22408",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-bicep_curls-47813-48362",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-bicep_curls-49509-50065",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-bicep_curls-51635-52176",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-lateral_shoulder_raises-53666-54343",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-lateral_shoulder_raises-55078-55688",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w03-lateral_shoulder_raises-56260-56867",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w04-squats-2899-3614",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w04-squats-4070-4858",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w04-squats-6042-6774",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w04-dumbbell_shoulder_press-13350-14225",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w04-dumbbell_shoulder_press-18970-19857",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w04-dumbbell_shoulder_press-20887-21722",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 12
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 12
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-squats-2830-3355",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-squats-3635-4153",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-squats-5112-5711",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-dumbbell_shoulder_press-10827-11280",
+   "lift": "overhead_press",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 1,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 1,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-dumbbell_shoulder_press-12724-13163",
+   "lift": "overhead_press",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 7,
+     "own_6s": 7
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 7,
+     "own_6s": 7
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-dumbbell_shoulder_press-15003-15433",
+   "lift": "overhead_press",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 1,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 1,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-dumbbell_rows-25085-25574",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-dumbbell_rows-28325-28786",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-dumbbell_rows-32611-33005",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 2
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 2
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-bicep_curls-46262-46756",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-bicep_curls-47380-47858",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 6
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 6
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-bicep_curls-48482-49003",
+   "lift": "bicep_curl_alternating",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-lateral_shoulder_raises-50035-50450",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-lateral_shoulder_raises-52965-53402",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w05-lateral_shoulder_raises-55565-55988",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-squats-1874-2426",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-squats-3079-3651",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-squats-4289-4880",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-dumbbell_shoulder_press-9076-9770",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-dumbbell_shoulder_press-10778-11517",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-dumbbell_shoulder_press-12113-12899",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-dumbbell_rows-27937-28465",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-bicep_curls-43486-44091",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-bicep_curls-44671-45245",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-lateral_shoulder_raises-47870-48539",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-lateral_shoulder_raises-48995-49563",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w06-lateral_shoulder_raises-52800-53296",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-squats-2750-3533",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-squats-4482-5169",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-squats-5659-6345",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-dumbbell_shoulder_press-12975-13685",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-dumbbell_shoulder_press-15036-15931",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-dumbbell_shoulder_press-22796-23569",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-bicep_curls-61004-61564",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-lateral_shoulder_raises-65466-66354",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w07-lateral_shoulder_raises-68129-68948",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-squats-1978-2495",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-squats-3006-3531",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-squats-4239-4752",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-dumbbell_shoulder_press-18542-19196",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 4,
+     "own_6s": 5
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 4,
+     "own_6s": 5
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-dumbbell_shoulder_press-19674-20367",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-dumbbell_shoulder_press-20860-21544",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-bicep_curls-36541-37140",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-lateral_shoulder_raises-46882-47570",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-lateral_shoulder_raises-49854-50597",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-lateral_shoulder_raises-52518-53248",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w08-lateral_shoulder_raises-53789-54465",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-squats-3755-4513",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-squats-7836-8475",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-squats-11469-12187",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-dumbbell_shoulder_press-17462-18247",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-dumbbell_shoulder_press-19300-20126",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-dumbbell_shoulder_press-27827-28506",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 9,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 9,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-bicep_curls-82836-83672",
+   "lift": "bicep_curl_alternating",
+   "expected": 14,
+   "counts": [
+    {
+     "mediapipe_cut": 14,
+     "own_cut": 14,
+     "own_3s": 14,
+     "own_6s": 14
+    },
+    {
+     "mediapipe_cut": 14,
+     "own_cut": 14,
+     "own_3s": 14,
+     "own_6s": 14
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-bicep_curls-85581-86111",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-bicep_curls-91110-91593",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-lateral_shoulder_raises-100926-101495",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-lateral_shoulder_raises-102180-102750",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w09-lateral_shoulder_raises-103239-103774",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-squats-2704-3283",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-squats-3761-4310",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-squats-4850-5469",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-dumbbell_shoulder_press-17935-18644",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-dumbbell_shoulder_press-22543-23277",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 4,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 4,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-dumbbell_shoulder_press-24121-24874",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 6,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 6,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-bicep_curls-63823-64492",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-bicep_curls-69635-70281",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-bicep_curls-70875-71564",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-lateral_shoulder_raises-73428-74144",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-lateral_shoulder_raises-74898-75577",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w10-lateral_shoulder_raises-76110-76785",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-squats-3062-3826",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-squats-5889-6636",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-squats-8727-9426",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-dumbbell_shoulder_press-16770-17542",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-dumbbell_shoulder_press-20375-21113",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-dumbbell_shoulder_press-22987-23731",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-bicep_curls-50125-50760",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-bicep_curls-51945-52561",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-bicep_curls-53350-53939",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-lateral_shoulder_raises-54579-55525",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-lateral_shoulder_raises-57191-57988",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w11-lateral_shoulder_raises-59340-60155",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-squats-5812-6360",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-squats-7213-7735",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-squats-8965-9505",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-dumbbell_shoulder_press-14934-15569",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-dumbbell_shoulder_press-17592-18134",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-dumbbell_shoulder_press-20678-21165",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 9,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 9,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-dumbbell_rows-34870-35305",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-dumbbell_rows-38503-38855",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-dumbbell_rows-42945-43304",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 6,
+     "own_cut": 9,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 6,
+     "own_cut": 9,
+     "own_3s": 10,
+     "own_6s": 9
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w12-bicep_curls-70103-70467",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-squats-5487-6034",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-squats-6920-7475",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-squats-9238-9743",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-dumbbell_shoulder_press-17529-18063",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-dumbbell_shoulder_press-19536-20047",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 2
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 2
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-dumbbell_shoulder_press-22298-22773",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-dumbbell_rows-31581-31942",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 9,
+     "own_3s": 8,
+     "own_6s": 6
+    },
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 9,
+     "own_3s": 8,
+     "own_6s": 7
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-dumbbell_rows-34932-35258",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 10,
+     "own_6s": 9
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-dumbbell_rows-36980-37351",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 10,
+     "own_3s": 6,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 10,
+     "own_3s": 6,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-bicep_curls-55781-56199",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-bicep_curls-57079-57460",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-bicep_curls-58786-59379",
+   "lift": "bicep_curl_alternating",
+   "expected": 12,
+   "counts": [
+    {
+     "mediapipe_cut": 12,
+     "own_cut": 12,
+     "own_3s": 12,
+     "own_6s": 12
+    },
+    {
+     "mediapipe_cut": 12,
+     "own_cut": 12,
+     "own_3s": 12,
+     "own_6s": 13
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-lateral_shoulder_raises-63821-64308",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w13-lateral_shoulder_raises-66921-67441",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-squats-1626-2136",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-squats-2938-3451",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-squats-4660-5167",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-dumbbell_shoulder_press-9071-9724",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-dumbbell_shoulder_press-10602-11277",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-dumbbell_shoulder_press-13788-14465",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-dumbbell_rows-19343-19900",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-bicep_curls-33305-33882",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-bicep_curls-34493-35080",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-bicep_curls-35770-36356",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-lateral_shoulder_raises-37448-38096",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-lateral_shoulder_raises-38609-39300",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w14-lateral_shoulder_raises-39785-40425",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-squats-4078-4789",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-squats-7004-7737",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-squats-9295-9938",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-dumbbell_shoulder_press-14562-15347",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 12
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 12
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-dumbbell_shoulder_press-16179-16962",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-dumbbell_shoulder_press-17945-18759",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 6
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 6
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-bicep_curls-44319-44870",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-bicep_curls-45345-45901",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-bicep_curls-46597-47145",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-lateral_shoulder_raises-50788-51590",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w15-lateral_shoulder_raises-52328-53058",
+   "lift": "lateral_raise",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 9,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 9,
+     "own_6s": 9
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-squats-3772-4438",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-squats-5819-6385",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-squats-7413-7950",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-dumbbell_shoulder_press-17903-18709",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 9
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-dumbbell_shoulder_press-19977-20722",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 7
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 7
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-dumbbell_shoulder_press-22128-22869",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 0
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-dumbbell_rows-34400-35003",
+   "lift": "dumbbell_row",
+   "expected": 12,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 12,
+     "own_3s": 12,
+     "own_6s": 12
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 12,
+     "own_3s": 12,
+     "own_6s": 12
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-dumbbell_rows-36338-36920",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-dumbbell_rows-38449-38977",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-bicep_curls-60804-61420",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-bicep_curls-63421-64136",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-bicep_curls-66033-66793",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-lateral_shoulder_raises-67542-68645",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-lateral_shoulder_raises-70267-71193",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w16-lateral_shoulder_raises-73521-74600",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-squats-2295-3003",
+   "lift": "squat",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-squats-4028-4439",
+   "lift": "squat",
+   "expected": 7,
+   "counts": [
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 7,
+     "own_3s": 8,
+     "own_6s": 8
+    },
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 7,
+     "own_3s": 8,
+     "own_6s": 8
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-squats-5285-5934",
+   "lift": "squat",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 11,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-squats-6606-7205",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-dumbbell_shoulder_press-15687-16209",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 11,
+     "own_6s": 9
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-dumbbell_shoulder_press-17120-17602",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 2,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 2,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-dumbbell_shoulder_press-18757-19295",
+   "lift": "overhead_press",
+   "expected": 11,
+   "counts": [
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    },
+    {
+     "mediapipe_cut": 11,
+     "own_cut": 10,
+     "own_3s": 0,
+     "own_6s": 1
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-dumbbell_rows-26802-27222",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w17-dumbbell_rows-29634-29989",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 7,
+     "own_6s": 4
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 7,
+     "own_6s": 4
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-squats-1785-2500",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-squats-3566-4325",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-squats-7663-8406",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-dumbbell_shoulder_press-22387-22825",
+   "lift": "overhead_press",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 10,
+     "own_6s": 3
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 8,
+     "own_3s": 10,
+     "own_6s": 3
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-dumbbell_shoulder_press-26753-27263",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 8,
+     "own_6s": 8
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 8,
+     "own_6s": 8
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-dumbbell_shoulder_press-29212-29659",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 7,
+     "own_6s": 7
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 9,
+     "own_3s": 7,
+     "own_6s": 7
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-bicep_curls-96987-97563",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 9
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-lateral_shoulder_raises-104611-105213",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 12
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 12
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-lateral_shoulder_raises-111226-111843",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w18-lateral_shoulder_raises-115230-115820",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-squats-1014-1510",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-dumbbell_shoulder_press-14571-15366",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 9,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 9,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-dumbbell_shoulder_press-16246-16988",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 11,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 11,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-dumbbell_shoulder_press-17778-18635",
+   "lift": "overhead_press",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 11,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 9,
+     "own_3s": 11,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-bicep_curls-43830-44509",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-bicep_curls-45120-45761",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 7,
+     "own_6s": 11
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 11
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-bicep_curls-48102-48685",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 8,
+     "own_6s": 5
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-bicep_curls-49214-49838",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 5,
+     "own_6s": 5
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w19-lateral_shoulder_raises-52134-52560",
+   "lift": "lateral_raise",
+   "expected": 9,
+   "counts": [
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 5,
+     "own_3s": 5,
+     "own_6s": 5
+    },
+    {
+     "mediapipe_cut": 7,
+     "own_cut": 5,
+     "own_3s": 5,
+     "own_6s": 5
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-squats-2178-2976",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-squats-4027-4819",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-squats-6599-7448",
+   "lift": "squat",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 10,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-dumbbell_rows-31643-32235",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 8
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 8
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-dumbbell_rows-33867-34568",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-dumbbell_rows-36462-37081",
+   "lift": "dumbbell_row",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-bicep_curls-67093-67873",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-bicep_curls-69715-70503",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-bicep_curls-72723-73508",
+   "lift": "bicep_curl_alternating",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-lateral_shoulder_raises-77008-77909",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 9,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-lateral_shoulder_raises-80244-81138",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  },
+  {
+   "id": "w20-lateral_shoulder_raises-84763-85691",
+   "lift": "lateral_raise",
+   "expected": 10,
+   "counts": [
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    },
+    {
+     "mediapipe_cut": 8,
+     "own_cut": 10,
+     "own_3s": 10,
+     "own_6s": 10
+    }
+   ],
+   "margins6": [
+    6,
+    6
+   ]
+  }
+ ]
+}

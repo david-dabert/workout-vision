@@ -1,0 +1,1 @@
+Goal: the result screen of a counted set shows, always and without repeating a value it already shows, the account of the set, one tip and the encouragement, with the notes opening on a tap, in the exact French and English of test/real-phone/growth-step3/texts.md, which David approved on 29 September.

@@ -1,0 +1,5 @@
+Public rep boundaries 2026-09-30: build half only.
+
+| Dataset, lift | Sets | Marked reps | Found | First rep missed | Last rep missed | Middle reps missed | Extra reps |
+|---|---:|---:|---:|---:|---:|---:|---:|
+

@@ -1,0 +1,40 @@
+== main.jsx changed for this run only: the light lasts 20 ms
+diff --git a/src/main.jsx b/src/main.jsx
+index 2357512..0ae80ed 100644
+--- a/src/main.jsx
++++ b/src/main.jsx
+@@ -73,7 +73,7 @@ document.addEventListener('pointermove', (e) => {
+ document.addEventListener('pointerup', () => {
+   const tap = pendingPress;
+   clearPress();
+-  if (tap) { light(tap.el, tap.x, tap.y); setTimeout(() => unlight(tap.el), 140); }
++  if (tap) { light(tap.el, tap.x, tap.y); setTimeout(() => unlight(tap.el), 20); }
+ }, { passive: true });
+ document.addEventListener('pointercancel', clearPress, { passive: true });
+ // After a touch the browser also sends pointerleave to every ancestor, the document included:
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts (1.8s)
+
+
+  1) e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      81 |   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      82 |   // After a touch the browser sends pointerleave to the document; the light must outlive it.
+    > 83 |   expect(await page.evaluate(() => window.__litAfterUp)).toBe(1);
+         |                                                          ^
+      84 |   await page.waitForTimeout(400);
+      85 |   expect(await page.locator('.chip.is-pressed').count()).toBe(0);
+      86 |   await context.close();
+        at /home/user/workout-vision/e2e/smoothness.spec.js:83:58
+
+    Error Context: test-results/smoothness-a-quick-tap-lig-2d7d2-ment-after-the-finger-lifts/error-context.md
+
+  1 failed
+    e2e/smoothness.spec.js:63:1 › a quick tap lights the control for a moment after the finger lifts 

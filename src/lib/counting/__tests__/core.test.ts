@@ -12,6 +12,7 @@ import { countReps, type WorldLandmark, type WorldLandmarkFrame, type Lift } fro
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { gunzipSync } from 'zlib';
+import { pressFrame } from './synthetic';
 
 // ─── Synthetic landmark generator ───
 
@@ -252,7 +253,7 @@ describe('Counting core — synthetic', () => {
 
     // 3s setup hold at ~155°
     for (let i = 0; i < 3 * sps; i++) {
-      worldLandmarks.push(makeFrame(155 + (Math.sin(i * 0.5) * 3)));
+      worldLandmarks.push(pressFrame(155 + (Math.sin(i * 0.5) * 3)));
       timestamps.push(t);
       t += dt;
     }
@@ -260,8 +261,8 @@ describe('Counting core — synthetic', () => {
     // null-null-spike-spike-null-null
     worldLandmarks.push(null); timestamps.push(t); t += dt;
     worldLandmarks.push(null); timestamps.push(t); t += dt;
-    worldLandmarks.push(makeFrame(165)); timestamps.push(t); t += dt;
-    worldLandmarks.push(makeFrame(140)); timestamps.push(t); t += dt;
+    worldLandmarks.push(pressFrame(165)); timestamps.push(t); t += dt;
+    worldLandmarks.push(pressFrame(140)); timestamps.push(t); t += dt;
     worldLandmarks.push(null); timestamps.push(t); t += dt;
     worldLandmarks.push(null); timestamps.push(t); t += dt;
 
@@ -270,12 +271,12 @@ describe('Counting core — synthetic', () => {
       const samplesPerHalf = Math.ceil(1.0 * sps);
       for (let i = 0; i < samplesPerHalf; i++) {
         const frac = i / samplesPerHalf;
-        worldLandmarks.push(makeFrame(155 - 65 * frac));
+        worldLandmarks.push(pressFrame(155 - 65 * frac));
         timestamps.push(t); t += dt;
       }
       for (let i = 0; i < samplesPerHalf; i++) {
         const frac = i / samplesPerHalf;
-        worldLandmarks.push(makeFrame(90 + 65 * frac));
+        worldLandmarks.push(pressFrame(90 + 65 * frac));
         timestamps.push(t); t += dt;
       }
     }
@@ -295,7 +296,7 @@ describe('Counting core — synthetic', () => {
 
     // 0.5s hold at 155°
     for (let i = 0; i < Math.ceil(0.5 * sps); i++) {
-      worldLandmarks.push(makeFrame(155));
+      worldLandmarks.push(pressFrame(155));
       timestamps.push(t); t += dt;
     }
 
@@ -304,19 +305,19 @@ describe('Counting core — synthetic', () => {
       const samplesPerHalf = Math.ceil(1.0 * sps);
       for (let i = 0; i < samplesPerHalf; i++) {
         const frac = i / samplesPerHalf;
-        worldLandmarks.push(makeFrame(155 - (155 - flexed) * frac));
+        worldLandmarks.push(pressFrame(155 - (155 - flexed) * frac));
         timestamps.push(t); t += dt;
       }
       for (let i = 0; i < samplesPerHalf; i++) {
         const frac = i / samplesPerHalf;
-        worldLandmarks.push(makeFrame(flexed + (155 - flexed) * frac));
+        worldLandmarks.push(pressFrame(flexed + (155 - flexed) * frac));
         timestamps.push(t); t += dt;
       }
     }
 
     // 0.5s hold at 155°
     for (let i = 0; i < Math.ceil(0.5 * sps); i++) {
-      worldLandmarks.push(makeFrame(155));
+      worldLandmarks.push(pressFrame(155));
       timestamps.push(t); t += dt;
     }
 
@@ -340,7 +341,7 @@ describe('Counting core — synthetic', () => {
         worldLandmarks.push(null);
       } else {
         const angle = 110 + 20 * Math.sin(i * 0.3) + 7 * Math.sin(i * 1.7);
-        worldLandmarks.push(makeFrame(angle));
+        worldLandmarks.push(pressFrame(angle));
       }
       timestamps.push(t); t += dt;
     }
@@ -348,7 +349,7 @@ describe('Counting core — synthetic', () => {
     // 1s transition to rest position at 155°
     for (let i = 0; i < sps; i++) {
       const frac = i / sps;
-      worldLandmarks.push(makeFrame(110 + 45 * frac));
+      worldLandmarks.push(pressFrame(110 + 45 * frac));
       timestamps.push(t); t += dt;
     }
 
@@ -357,12 +358,12 @@ describe('Counting core — synthetic', () => {
       const samplesPerHalf = Math.ceil(1.0 * sps);
       for (let i = 0; i < samplesPerHalf; i++) {
         const frac = i / samplesPerHalf;
-        worldLandmarks.push(makeFrame(155 - 65 * frac));
+        worldLandmarks.push(pressFrame(155 - 65 * frac));
         timestamps.push(t); t += dt;
       }
       for (let i = 0; i < samplesPerHalf; i++) {
         const frac = i / samplesPerHalf;
-        worldLandmarks.push(makeFrame(90 + 65 * frac));
+        worldLandmarks.push(pressFrame(90 + 65 * frac));
         timestamps.push(t); t += dt;
       }
     }

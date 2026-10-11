@@ -1,0 +1,63 @@
+I found four defects in this change, plus leftover files that must not be committed. The first two mean the change should not ship as it stands.
+
+Checks I ran:
+- `vitest run src/lib/counting`: 74 files, 3729 tests passed.
+- A scratch probe bundled with esbuild in the scratchpad ran the real `countReps` and `isOffered`.
+
+**1. The lunge half of the change never reaches a user** (`src/lib/counting/core.ts:122`, `src/lib/offer.js:12`)
+- `eitherSide` is set only on the `LIFTS.lunge` key. `OFFERED` is `TIERS` keys plus `guide-patterns.json` keys, and `lunge` is in neither. The probe prints `offered lunge false forward_lunge true front_raise true`.
+- `analyzeCoreVideo` throws "Choose an approved lift" for `lunge`. So the 44 to 58 exact gain exists only in the scoreboard, which maps Countix "lunge" to that key.
+- What a user actually picks is `forward_lunge`, `reverse_lunge`, `curtsy_lunge`, `deficit_reverse_lunge` and similar. These keep `knee/high/eccentric` read on one side. `cable_front_raise` and `plate_front_raise` also stay single-side, although their family entry and `why` text are identical to `front_raise`.
+- Failing scenario: a user picks "forward lunge" and films 10 alternating lunges on an iPhone. The count still reads on one knee, which is the half count that `lunge.test.ts` describes.
+- Smallest failing test: in `lunge.test.ts`, run the existing `lunges(10, 1.6)` through `countReps(f, ts, 'forward_lunge')` and expect 10. It fails today. Or assert `isOffered('lunge') || liftDefinition('forward_lunge')?.eitherSide`.
+
+**2. The fallback to the other side turns a short dropout into an extra rep** (`src/lib/counting/core.ts:224`)
+- The line is `if (l === null || r === null) return l ?? r;`.
+- When the working limb drops below 0.5 visibility, the angle does not go null (which `bridgeDropouts` would bridge for up to 0.5 s). It jumps to the resting limb's angle.
+- Once the gap is 0.3 s or longer at 30 samples per second, `removeOutliers` (7-sample window) no longer removes it. The rep then splits in two.
+- Scenario: front raise filmed side-on, arms alternating. The raised far arm is hidden behind the head or the near arm for about 0.3 s at the top of each raise.
+- Probe results (`front_raise`, 8 alternating raises, working arm hidden around the top, other arm still visible at 15 degrees):
+
+| Gap | Count |
+|---|---|
+| 0 s | 8 |
+| 0.1 s | 8 |
+| 0.2 s | 8 |
+| 0.3 s | 16 |
+| 0.4 s | 16 |
+
+- With the same gaps but both arms hidden, it counts 8 every time. So the defect is the mixing of sides, not the dropout itself.
+- Smallest failing test: copy the existing "front raises done arm by arm" test in `lunge.test.ts`. For the 9 samples around `i = per/2`, push `jointFrame('shoulder', { [other]: 15 })`, so only the working arm is dropped. Expect 8; today it gives 16.
+- A lunge with a back knee held near straight (curtsy or reverse lunge, back knee above the high threshold) splits the same way.
+
+**3. The evidence claim in the code comment does not match the committed scoreboard** (`src/lib/counting/core.ts:99-100`)
+- The comment says "front raise 49 to 63 of 150".
+- `test/real-phone/accuracy/public-scoreboard.txt` gives countix `front_raise` 25 to 33 and countix-whole 23 to 29, which is 48 to 62.
+- The lunge figure (44 to 58) matches. The line "squat, push-up and pushdown lost 2 to 3 exact" comes only from untracked experiment files, so nothing committed backs it. It is marked "Status: validated", which falls under R9 and R13.
+- Test that fails today: parse the scoreboard and assert the sums quoted in the comment.
+
+**4. The header of the new test file describes an approach that was not built** (`src/lib/counting/__tests__/lunge.test.ts:1-7`)
+- It says "Each knee is counted on its own and the two are joined, as for the alternating curl: bends of both knees that overlap are one lunge."
+- That is `countBothSides`. The code takes the minimum of the two knee angles at each sample.
+- It is also marked "Status: measured", yet the file holds only synthetic sets.
+
+**Scoreboard and gate**
+- The header says "2 became off by 3 or more". It is one video (`nqJ3mAhfj_M_000026_0`) counted in both datasets, label 6, 5 before and 3 now. That matches your "one set", but R2 as written does not allow it to ship; PLAN.md decides.
+- Other sets that were exact and are now wrong:
+  - `1r-kCQoi50A` (2 to 1, both datasets)
+  - `LJTRp6rkjX8` (3 to 5, both)
+  - `IDkiffbx_YU` in countix-whole (4 to 3)
+  - `ICCuDALI15w` (label 3) went from 1 to 4, still off by 1.
+
+**Files that must not be committed**
+- `src/lib/counting/core-exp.ts` is a copy of the core with mutable constants and `EXTREME`/`BOTH_ALL` switches.
+- `src/lib/__tests__/zz-tmp-ext.test.ts`, `zz-tmp-grid.test.ts` and `zz-tmp-grid2.test.ts` each allow up to 30 minutes and write to a `/tmp/claude-0/...` path. They are inside vitest's include path, so a full `vitest run` in this tree picks them up.
+
+**Checked with nothing found**
+- `limbLabel` "both legs"/"both arms" wording (French and English already exist) and `refusal.js` with `arm 'both'`: both sides are over half lost whenever the set is refused, so the sentence holds.
+- `litSides` in Replay and video export; History; saved `arm`.
+- The `liftDefinition` parsing and the `make-guide-patterns` script agree with the patterns test.
+- The `guide-families` test rejects `eitherSide` combined with `bothSides`.
+- The three tests in `lunge.test.ts` would fail if the change were reverted (the core would read the left side only).
+- No new host, no new UI string, no video added.
+- Not applicable here: iPhone share and download, lazy chunks, backgrounding, text input and async timing. The change is a pure function plus JSON.

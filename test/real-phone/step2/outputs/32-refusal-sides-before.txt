@@ -1,0 +1,56 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+8:46:58 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+8:46:58 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/components/experience/__tests__/refusal.test.js (5 tests | 2 failed) 15ms
+     × names only the left leg when the left leg alone was hidden in a both-sides set 8ms
+     × names only the right leg when the right leg alone was hidden 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/experience/__tests__/refusal.test.js > refusal > names only the left leg when the left leg alone was hidden in a both-sides set
+AssertionError: expected 'both' to be 'left' // Object.is equality
+
+Expected: "left"
+Received: "both"
+
+ ❯ src/components/experience/__tests__/refusal.test.js:21:22
+     19|     const why = refusal({ arm: 'both', imageLandmarks: frames(30, { le…
+     20|     expect(why.cause).toBe('hidden');
+     21|     expect(why.side).toBe('left');
+       |                      ^
+     22|   });
+     23|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/experience/__tests__/refusal.test.js > refusal > names only the right leg when the right leg alone was hidden
+AssertionError: expected 'both' to be 'right' // Object.is equality
+
+Expected: "right"
+Received: "both"
+
+ ❯ src/components/experience/__tests__/refusal.test.js:25:106
+     23|
+     24|   it('names only the right leg when the right leg alone was hidden', (…
+     25|     expect(refusal({ arm: 'both', imageLandmarks: frames(30, { right: …
+       |                                                                                                          ^
+     26|   });
+     27|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  08:46:58
+   Duration  381ms (transform 195ms, setup 0ms, import 214ms, tests 15ms, environment 0ms)
+

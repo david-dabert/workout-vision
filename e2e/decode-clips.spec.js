@@ -46,6 +46,8 @@ test.describe('Step 1: Decode clips', () => {
 
   for (const clip of CLIPS) {
     test(`extract ${clip.exercise}`, async ({ page, browserName }) => {
+      // David's clips are git-ignored: where they are absent (a fresh checkout, CI) the test skips.
+      test.skip(!existsSync(resolve(__dirname, '../test/real-phone/clips', clip.file)), `David's clip ${clip.file} is not in this checkout (test/real-phone/clips/ is git-ignored)`);
       // Capture browser console for debugging
       page.on('console', msg => console.log(`[${browserName} ${msg.type()}] ${msg.text()}`));
 

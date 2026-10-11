@@ -1,0 +1,1 @@
+Goal: on the playback decoding path the app reads every sample of the video however slow the phone's analysis, a video read by WebCodecs is decoded exactly as before, and the report e-mail states the decoder used and the share of the video read, including from the screen shown when the video was read in part.

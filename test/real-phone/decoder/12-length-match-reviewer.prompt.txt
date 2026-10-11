@@ -1,0 +1,1 @@
+Goal: the check page recognises each of David's five sets by the number of samples its video holds, since Photos hands the page a re-encoded file whose fingerprint differs, and a row reads "as before" only for the same set, read in full, counted and refused as its committed landmarks give.

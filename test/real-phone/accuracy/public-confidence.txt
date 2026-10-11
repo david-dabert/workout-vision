@@ -1,0 +1,14 @@
+Does the core know when it is wrong, 2026-09-30: public build half, by the core's confidence (the share of samples with a pose).
+
+| Dataset | Confidence | Sets | Exact | Within one |
+|---|---|---:|---:|---:|
+| countix | refused | 55 | | |
+| countix | 0 (angle moved too little to count) | 10 | 0 | 0 |
+| countix | 0.5 to 0.9 | 107 | 31 | 71 |
+| countix | 0.9 to 0.99 | 86 | 27 | 62 |
+| countix | 1 (pose on every sample) | 189 | 79 | 158 |
+| countix-whole | refused | 69 | | |
+| countix-whole | 0 (angle moved too little to count) | 10 | 0 | 0 |
+| countix-whole | 0.5 to 0.9 | 137 | 41 | 99 |
+| countix-whole | 0.9 to 0.99 | 93 | 37 | 70 |
+| countix-whole | 1 (pose on every sample) | 138 | 56 | 110 |

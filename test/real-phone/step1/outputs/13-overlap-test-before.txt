@@ -1,0 +1,33 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px (1.8s)
+
+
+  1) e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px 
+
+    Error: at 20 ms
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "text overlaps a control: \"Niveau\" and \"\"",
+    + ]
+
+      79 |         return out;
+      80 |       }, [layoutFaults.toString(), t]);
+    > 81 |       expect(faults, `at ${t} ms`).toEqual([]);
+         |                                    ^
+      82 |     }
+      83 |     await page.fill('#fPartner', 'Sam');
+      84 |     await page.getByRole('group', { name: 'Niveau' }).getByRole('button', { name: 'Confirmé' }).click();
+        at /home/user/workout-vision/e2e/shared/report.tests.js:81:36
+
+    Error Context: test-results/report-Chromium-in-French--f684c-en-holds-together-at-375-px/error-context.md
+
+  1 failed
+    e2e/shared/report.tests.js:64:3 › Chromium › in French, the form and the sheet say the same, and the screen holds together at 375 px 

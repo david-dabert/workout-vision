@@ -1,0 +1,19 @@
+Reviewer, decoder fix and report lines, 29 September. Five defects; nothing edited.
+1. Each sample pauses then plays; a pause() landing while a play() is pending rejects it with AbortError, which
+   rejected the whole extraction; CoreUpload drops AbortError, so the screen stayed on the analysis for good.
+2. When WebCodecs fails part-way, the playback path restarts into the same arrays: the e-mail said "Décodeur : rvfc"
+   and "481 échantillons sur 439 (110 %)", hiding the WebCodecs failure; 110 % is not a share read.
+3. reportIssueUrl titled every counted == null report "set refused", a partial read included.
+4. The 20 s stall watchdog ran during the analysis: one 21 s inference ended the read early.
+5. The comment cited "64 of 90 at 3x with the wait" with no file recording it (R3); the harness runs desktop
+   Chromium, not a phone; nothing ties David's 181 of 439 to the playback path; several changes have no test that
+   fails on revert (the decoder pause and 1x, PartialReadError.decoder, the report link on the partial screen,
+   read and decoder through reportFor).
+No defect: the WebCodecs path untouched; abort and stall guarded; backgrounding still wins; strings in both
+languages, no em dash, vous; no new host, no video or frame; expected samples as unreadSamples.
+Fixes: 1. an AbortError from our own pause is ignored, a cancel still comes through the signal; 2. the method names
+both paths ("webcodecs failed after N samples (...), then rvfc"); 3. the title says "video not read in full"
+(test failed first); 4. the watchdog is cleared during the analysis and set again after it; 5. comments now cite
+01-before.txt and 02-after.txt and say "desktop Chromium only"; the 3x figure is removed; the share is given only
+when read <= expected (test failed first). Harness after the fixes: 04-after-review01.txt, every sample read at
+0, 150 and 400 ms. Open: 1, 2 and 4 have no automated test; proof on an iPhone comes from the check page.

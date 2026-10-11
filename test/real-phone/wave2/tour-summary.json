@@ -1,0 +1,34 @@
+[
+  {
+    "run": "tour-default",
+    "result": "PASS",
+    "srcHash": "ac5878093ca08f50dabd083a185f98b5f507634e96e3b512ea4b6844253dfa81",
+    "screenshots": 32,
+    "errors": [],
+    "failed": []
+  },
+  {
+    "run": "tour-745",
+    "result": "PASS",
+    "srcHash": "ac5878093ca08f50dabd083a185f98b5f507634e96e3b512ea4b6844253dfa81",
+    "screenshots": 32,
+    "errors": [],
+    "failed": []
+  },
+  {
+    "run": "tour-548",
+    "result": "PASS",
+    "srcHash": "ac5878093ca08f50dabd083a185f98b5f507634e96e3b512ea4b6844253dfa81",
+    "screenshots": 32,
+    "errors": [],
+    "failed": []
+  },
+  {
+    "run": "tour-reduced",
+    "result": "PASS",
+    "srcHash": "ac5878093ca08f50dabd083a185f98b5f507634e96e3b512ea4b6844253dfa81",
+    "screenshots": 32,
+    "errors": [],
+    "failed": []
+  }
+]

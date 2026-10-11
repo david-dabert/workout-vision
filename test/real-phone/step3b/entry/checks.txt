@@ -1,0 +1,219 @@
+
+> workout-vision@1.4.0 lint
+> oxlint
+
+src/lib/calibration.js:149:10: warning eslint(no-unused-vars): Function 'checkCalibrationStability' is declared but never used. help: Consider removing this declaration.
+src/lib/prSystem.js:30:16: warning eslint(no-unused-vars): Function 'getPRsForExercise' is declared but never used. help: Consider removing this declaration.
+src/lib/__tests__/defense.test.js:32:10: warning eslint(no-unused-vars): Function 'makeFeatures' is declared but never used. help: Consider removing this declaration.
+src/lib/__tests__/defense.test.js:182:11: warning eslint(no-unused-vars): Variable 'result' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/__tests__/defense.test.js:195:13: warning eslint(no-unused-vars): Variable 'AUTOLOCK_BLOCKED_CLASSES' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/__tests__/defense.test.js:252:11: warning eslint(no-unused-vars): Variable 'wrongVersion' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/__tests__/exerciseDetector.test.js:120:9: warning eslint(no-unused-vars): Variable 'detected' is assigned a value but never used. Unused variables should start with a '_'. help: Did you mean to use this variable?
+src/lib/exercises.js:519:7: warning eslint(no-unused-vars): Variable 'REP_TIMING' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/shareCard.js:26:7: warning eslint(no-unused-vars): Variable 'ACCENT2' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/shareCard.js:121:14: warning eslint(no-unused-vars): Catch parameter 'e' is caught but never used. help: Consider handling this error.
+src/lib/shareCard.js:295:11: warning eslint(no-unused-vars): Variable 'badgePad' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/analysisDiagnostics.js:14:3: warning eslint(no-unused-vars): Identifier 'REP_CONFIDENCE_HIGH' is imported but never used. help: Consider removing this import.
+src/lib/analysisDiagnostics.js:276:48: warning eslint(no-unused-vars): Parameter 'fps' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/haptics.ts:12:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/__tests__/hierarchicalDetector.test.js:21:25: warning eslint(no-unused-vars): Identifier 'fakeSquatFrame' is imported but never used. help: Consider removing this import.
+src/lib/repCounter/index.ts:52:7: warning eslint(no-unused-vars): Variable 'REP_COUNTER_BUILD' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/repCounter/index.ts:635:14: warning eslint(no-unused-vars): Catch parameter 'e' is caught but never used. help: Consider handling this error.
+public/boot.js:8:27: warning eslint(no-unused-vars): Parameter 'msg' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+public/boot.js:8:32: warning eslint(no-unused-vars): Parameter 'src' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+public/boot.js:8:37: warning eslint(no-unused-vars): Parameter 'line' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+public/boot.js:8:43: warning eslint(no-unused-vars): Parameter 'col' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+public/boot.js:8:48: warning eslint(no-unused-vars): Parameter 'err' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+benchmark/replay-full-pipeline.mjs:419:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/recalibrate.js:269:41: warning eslint(no-unused-vars): Parameter 'i' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/VelocityEngine.js:211:40: warning eslint(no-unused-vars): Parameter 'weightKg' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/VelocityEngine.js:288:42: warning eslint(no-unused-vars): Parameter 'signal' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/repCounter/types.ts:6:15: warning eslint(no-unused-vars): Type 'LandmarkArray' is imported but never used. help: Consider removing this import.
+src/lib/repCounter/types.ts:6:30: warning eslint(no-unused-vars): Type 'JointAngles' is imported but never used. help: Consider removing this import.
+src/lib/repCounter/types.ts:6:43: warning eslint(no-unused-vars): Type 'RepHistoryEntry' is imported but never used. help: Consider removing this import.
+src/lib/repCounter/types.ts:6:60: warning eslint(no-unused-vars): Type 'FormResultEntry' is imported but never used. help: Consider removing this import.
+src/lib/exerciseDefinitions.js:11:75: warning eslint(no-unused-vars): Identifier 'qualitySymmetry' is imported but never used. help: Consider removing this import.
+src/lib/repCounter/valley.ts:80:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/__tests__/coach.test.js:12:32: warning eslint(no-unused-vars): Identifier 'vi' is imported but never used. help: Consider removing this import.
+src/lib/repCounter/periodCounter.ts:99:3: warning eslint(no-unused-vars): Parameter 'minLag' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+benchmark/determinism-test.mjs:70:5: warning eslint(no-unused-vars): Variable 'fileA' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+benchmark/determinism-test.mjs:71:5: warning eslint(no-unused-vars): Variable 'fileB' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+benchmark/determinism-test.mjs:113:10: warning eslint(no-unused-vars): Function 'hashValue' is declared but never used. help: Consider removing this declaration.
+benchmark/determinism-test.mjs:524:36: warning eslint(no-unused-vars): Variable 'expected' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/dataPortability.js:102:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/dataPortability.js:111:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/dataPortability.js:150:19: warning eslint(no-unused-vars): Parameter 'step' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/frameExtractor.js:559:16: warning eslint(no-unused-vars): Function 'inspectVideo' is declared but never used. help: Consider removing this declaration.
+src/lib/frameExtractor.js:589:10: warning eslint(no-unused-vars): Function 'isHEVC' is declared but never used. help: Consider removing this declaration.
+test/real-phone/step3a/fix2/evidence-3a-fix2.mjs:93:13: warning eslint(no-unused-vars): Variable 'text' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+benchmark/extract-landmarks.mjs:17:62: warning eslint(no-unused-vars): Identifier 'readdirSync' is imported but never used. help: Consider removing this import.
+benchmark/extract-landmarks.mjs:23:7: warning eslint(no-unused-vars): Variable 'CACHE_DIR' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/__tests__/helpers.js:88:46: warning eslint(no-unused-vars): Parameter 'timestamp' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/__tests__/pipeline.test.js:112:11: warning eslint(no-unused-vars): Variable 'landmarks' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/icons.jsx:86:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/icons.jsx:106:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/icons.jsx:119:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/icons.jsx:131:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/icons.jsx:144:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/icons.jsx:154:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/icons.jsx:164:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/__tests__/repCounter.test.js:14:36: warning eslint(no-unused-vars): Identifier 'beforeEach' is imported but never used. help: Consider removing this import.
+src/lib/__tests__/repCounter.test.js:27:26: warning eslint(no-unused-vars): Identifier 'fakeLandmarks' is imported but never used. help: Consider removing this import.
+src/lib/__tests__/repCounter.test.js:76:13: warning eslint(no-unused-vars): Variable 't' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/gpuBenchmark.js:29:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/gpuBenchmark.js:87:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/gpuBenchmark.js:97:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/gpuBenchmark.js:118:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+test/real-phone/harness.js:57:7: warning eslint(no-unused-vars): Variable 'sampleCount' is assigned a value but never used. Unused variables should start with a '_'. help: Did you mean to use this variable?
+test/real-phone/harness.js:110:9: warning eslint(no-unused-vars): Variable 'midTimestamp' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/AudioFeedback.js:61:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/AudioFeedback.js:76:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/AudioFeedback.js:93:16: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/AudioFeedback.js:117:42: warning eslint(no-unused-vars): Parameter 'phase' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/AudioFeedback.js:273:16: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/AudioFeedback.js:282:16: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+benchmark/run-benchmark.mjs:298:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/ProfileContext.jsx:56:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/storage.js:15:7: warning eslint(no-unused-vars): Variable 'prStore' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/storage.js:416:51: warning eslint(no-unused-vars): Parameter 'ethnicity' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/poseAnalysis.js:73:7: warning eslint(no-unused-vars): Variable 'VIS' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/poseAnalysis.js:95:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/poseAnalysis.js:238:16: warning eslint(no-unused-vars): Function 'loadModelWithRetry' is declared but never used. help: Consider removing this declaration.
+src/lib/poseAnalysis.js:273:16: warning eslint(no-unused-vars): Function 'getVideoLandmarker' is declared but never used. help: Consider removing this declaration.
+src/lib/poseAnalysis.js:291:44: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/poseAnalysis.js:397:73: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/poseAnalysis.js:503:10: warning eslint(no-unused-vars): Function 'detectMirror' is declared but never used. help: Consider removing this declaration.
+src/lib/poseAnalysis.js:904:10: warning eslint(no-unused-vars): Function 'drawOverlayMessage' is declared but never used. help: Consider removing this declaration.
+src/lib/injuries.js:88:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/injuries.js:99:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/coach.js:244:15: warning eslint(no-unused-vars): Parameter '_' is declared but never used. help: Consider removing this parameter.
+src/lib/coach.js:566:71: warning eslint(no-unused-vars): Parameter 'history' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/coach.js:572:15: warning eslint(no-unused-vars): Parameter 'key' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/components/ScoreRing.jsx:40:9: warning eslint(no-unused-vars): Variable 'totalAngleRad' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/ScoreRing.jsx:42:9: warning eslint(no-unused-vars): Variable 'startAngleRad' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/CameraPrivacyModal.jsx:6:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/exerciseDetector.js:200:11: warning eslint(no-unused-vars): Variable 'kneeAvg' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/exerciseDetector.js:201:11: warning eslint(no-unused-vars): Variable 'hipAvg' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/exerciseDetector.js:202:11: warning eslint(no-unused-vars): Variable 'elbowAvg' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/exerciseDetector.js:204:11: warning eslint(no-unused-vars): Variable 'trunk' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/exerciseDetector.js:222:11: warning eslint(no-unused-vars): Variable 'hipMin' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/usePoseWorker.js:53:7: warning react-hooks(exhaustive-deps): The ref's value `.current` is accessed directly in the effect cleanup function. help: The ref value will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by react, copy it to a variable inside the effect and use that variable in the cleanup function.
+src/lib/usePoseWorker.js:55:24: warning react-hooks(exhaustive-deps): The ref's value `.current` is accessed directly in the effect cleanup function. help: The ref value will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by react, copy it to a variable inside the effect and use that variable in the cleanup function.
+src/lib/usePoseWorker.js:56:7: warning react-hooks(exhaustive-deps): The ref's value `.current` is accessed directly in the effect cleanup function. help: The ref value will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by react, copy it to a variable inside the effect and use that variable in the cleanup function.
+src/lib/useCountUp.js:32:7: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/lib/videoSuitability.js:13:10: warning eslint(no-unused-vars): Identifier 'VISIBILITY_THRESHOLD' is imported but never used. help: Consider removing this import.
+src/lib/coachPDF.js:9:10: warning eslint(no-unused-vars): Identifier 'EXERCISES' is imported but never used. help: Consider removing this import.
+src/lib/sampleCapture.js:44:15: warning eslint(no-unused-vars): Variable 'values' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/hierarchicalDetector.js:22:10: warning eslint(no-unused-vars): Identifier 'bestSide' is imported but never used. help: Consider removing this import.
+src/lib/hierarchicalDetector.js:402:38: warning eslint(no-unused-vars): Variable 'shoulder' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/hierarchicalDetector.js:694:11: warning eslint(no-unused-vars): Variable 'corrES' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/hierarchicalDetector.js:695:11: warning eslint(no-unused-vars): Variable 'corrEK' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/hierarchicalDetector.js:909:25: warning eslint(no-unused-vars): Variable 'knee' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/hierarchicalDetector.js:932:35: warning eslint(no-unused-vars): Variable 'knee' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/cameraViewpoint.js:64:9: warning eslint(no-unused-vars): Variable 'hipWidth' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/SignalExtractor3D.js:42:10: warning eslint(no-unused-vars): Function 'computeDepthDominance' is declared but never used. help: Consider removing this declaration.
+src/components/ExercisePicker.jsx:53:35: warning eslint(no-unused-vars): Variable 'exercise' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/ExercisePicker.jsx:29:33: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/App.jsx:94:15: warning react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+src/App.jsx:88:19: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/main.jsx:32:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/components/ExerciseHistory.jsx:64:5: warning react(immutability): Cannot access variable while it is being initialized help: `loadData` is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization
+src/lib/LanguageContext.jsx:12:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/LanguageContext.jsx:63:62: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/LanguageContext.jsx:64:61: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/LanguageContext.jsx:110:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/LanguageContext.jsx:97:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/lib/LanguageContext.jsx:105:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/components/DataPortability.jsx:12:14: warning eslint(no-unused-vars): Variable 'lang' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/lib/analyzeVideo.js:129:55: warning eslint(no-unused-vars): Parameter 'reject' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/lib/analyzeVideo.js:771:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/analyzeVideo.js:801:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/analyzeVideo.js:808:12: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/lib/analyzeVideo.js:845:3: warning eslint(no-unused-vars): Parameter 'aborted' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+e2e/offline.spec.js:68:11: warning eslint(no-unused-vars): Variable 'reg' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/FeedbackPanel.jsx:119:27: warning react-hooks(exhaustive-deps): React Hook useCallback has missing dependencies: 'result.qualityGateReasons', 'result.insufficientFootage', and 'result.detectionConfidence' help: Either include it or remove the dependency array.
+src/components/VisionScoreHero.jsx:11:27: warning react(purity): Cannot call impure function during render help: `Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component re-renders
+src/components/experience/Entry.jsx:17:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+src/components/ExerciseGuide.jsx:1:39: warning eslint(no-unused-vars): Identifier 'useCallback' is imported but never used. help: Consider removing this import.
+src/components/ExerciseGuide.jsx:3:29: warning eslint(no-unused-vars): Identifier 'hasExerciseGuide' is imported but never used. help: Consider removing this import.
+src/components/ExerciseGuide.jsx:3:69: warning eslint(no-unused-vars): Identifier 'getGuideExercise' is imported but never used. help: Consider removing this import.
+src/components/RestTimer.jsx:33:12: warning eslint(no-unused-vars): Catch parameter 'e' is caught but never used. help: Consider handling this error.
+src/components/RestTimer.jsx:41:12: warning eslint(no-unused-vars): Catch parameter 'e' is caught but never used. help: Consider handling this error.
+src/components/RestTimer.jsx:62:14: warning eslint(no-unused-vars): Catch parameter 'e' is caught but never used. help: Consider handling this error.
+src/components/ManualLog.jsx:13:14: warning eslint(no-unused-vars): Variable 'tExercise' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoReplay.jsx:490:14: warning eslint(no-unused-vars): Catch parameter 'e' is caught but never used. help: Consider handling this error.
+src/components/VideoReplay.jsx:327:46: warning react(immutability): Cannot access variable while it is being initialized help: `drawFrame` is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization
+src/components/VideoReplay.jsx:326:37: warning react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'DRAW_INTERVAL' help: Either include it or remove the dependency array.
+src/components/VideoReplay.jsx:380:26: warning react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'IS_IOS' help: Either include it or remove the dependency array.
+src/components/VideoReplay.jsx:468:28: warning react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'IS_IOS' help: Either include it or remove the dependency array.
+src/components/Validate.jsx:316:18: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/components/Validate.jsx:342:14: warning eslint(no-unused-vars): Catch parameter '_' is caught but never used. help: Consider handling this error.
+src/components/Validate.jsx:560:25: warning eslint(no-unused-vars): Parameter 'i' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/components/LiveCapture.jsx:140:5: warning react(immutability): Cannot access variable while it is being initialized help: `processFrame` is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization
+src/components/LiveCapture.jsx:260:7: warning react(immutability): Cannot access variable while it is being initialized help: `drawSkeleton` is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization
+src/components/LiveCapture.jsx:140:5: warning react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'processFrame' help: Either include it or remove the dependency array.
+src/components/LiveCapture.jsx:141:6: warning react-hooks(exhaustive-deps): React Hook useCallback has unnecessary dependency: profile help: Either include it or remove the dependency array.
+src/components/LiveCapture.jsx:260:7: warning react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'drawSkeleton' help: Either include it or remove the dependency array.
+src/components/LiveCapture.jsx:264:6: warning react-hooks(exhaustive-deps): React Hook useCallback has unnecessary dependency: profile help: Either include it or remove the dependency array.
+src/components/Profile.jsx:5:3: warning eslint(no-unused-vars): Identifier 'getAllWorkouts' is imported but never used. help: Consider removing this import.
+src/components/Profile.jsx:5:19: warning eslint(no-unused-vars): Identifier 'getProfile' is imported but never used. help: Consider removing this import.
+src/components/Profile.jsx:5:31: warning eslint(no-unused-vars): Identifier 'saveWorkout' is imported but never used. help: Consider removing this import.
+src/components/Profile.jsx:31:7: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/components/WeeklyReport.jsx:7:40: warning eslint(no-unused-vars): Identifier 'useRef' is imported but never used. help: Consider removing this import.
+src/components/WeeklyReport.jsx:183:11: warning eslint(no-unused-vars): Variable 'rr' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/CoachReport.jsx:7:10: warning eslint(no-unused-vars): Identifier 'EXERCISES' is imported but never used. help: Consider removing this import.
+src/components/CoachReport.jsx:96:9: warning react(immutability): This value cannot be modified help: Modifying a value returned from 'useState()', which should not be modified directly. Use the setter function to update instead
+src/components/CoachReport.jsx:61:7: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/components/WorkoutHistory.jsx:6:16: warning eslint(no-unused-vars): Identifier 'MILESTONE_ICON_KEY' is imported but never used. help: Consider removing this import.
+src/components/WorkoutHistory.jsx:50:5: warning react(immutability): Cannot access variable while it is being initialized help: `loadWorkouts` is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization
+src/components/VideoUpload.jsx:3:10: warning eslint(no-unused-vars): Identifier 'EXERCISES' is imported but never used. help: Consider removing this import.
+src/components/VideoUpload.jsx:3:21: warning eslint(no-unused-vars): Identifier 'EXERCISE_GROUPS' is imported but never used. help: Consider removing this import.
+src/components/VideoUpload.jsx:3:63: warning eslint(no-unused-vars): Identifier 'getExerciseTier' is imported but never used. help: Consider removing this import.
+src/components/VideoUpload.jsx:7:10: warning eslint(no-unused-vars): Identifier 'VideoSuitabilityDetector' is imported but never used. help: Consider removing this import.
+src/components/VideoUpload.jsx:8:10: warning eslint(no-unused-vars): Identifier 'AnalysisDiagnostics' is imported but never used. help: Consider removing this import.
+src/components/VideoUpload.jsx:9:10: warning eslint(no-unused-vars): Identifier 'detectViewpointFromFrames' is imported but never used. help: Consider removing this import.
+src/components/VideoUpload.jsx:35:7: warning eslint(no-unused-vars): Variable 'yieldToMain' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:43:7: warning eslint(no-unused-vars): Variable 'MAX_FRAMES' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:47:14: warning eslint(no-unused-vars): Variable 'tExercise' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:47:25: warning eslint(no-unused-vars): Variable 'tFormCheck' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:49:21: warning eslint(no-unused-vars): Variable 'privacyAccepted' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:59:10: warning eslint(no-unused-vars): Variable 'phaseLabel' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:59:22: warning eslint(no-unused-vars): Variable 'setPhaseLabel' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:72:10: warning eslint(no-unused-vars): Variable 'debugInfo' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/components/VideoUpload.jsx:120:11: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/components/VideoUpload.jsx:98:11: warning react-hooks(exhaustive-deps): The ref's value `.current` is accessed directly in the effect cleanup function. help: The ref value will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by react, copy it to a variable inside the effect and use that variable in the cleanup function.
+src/components/VideoUpload.jsx:99:9: warning react-hooks(exhaustive-deps): The ref's value `.current` is accessed directly in the effect cleanup function. help: The ref value will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by react, copy it to a variable inside the effect and use that variable in the cleanup function.
+src/components/VideoUpload.jsx:100:9: warning react-hooks(exhaustive-deps): The ref's value `.current` is accessed directly in the effect cleanup function. help: The ref value will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by react, copy it to a variable inside the effect and use that variable in the cleanup function.
+src/components/VideoUpload.jsx:89:9: warning react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'workerSupported', 'disposeWorker', and 'initWorker' help: Either include it or remove the dependency array.
+src/components/VideoUpload.jsx:120:31: warning react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 't' help: Either include it or remove the dependency array.
+src/components/VideoUpload.jsx:192:39: warning react-hooks(exhaustive-deps): React Hook useCallback has missing dependencies: 't', 'disposeWorker', and 'reinitWorker' help: Either include it or remove the dependency array.
+src/components/ResultCard.jsx:232:17: warning react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'result.duration', 'result.exerciseName', 'result.reps', 'reps', 'formScore', 'exerciseName', 'result.weight', 'result.exercise', 'duration', 'result', 'result.date', and 'result.formScore' help: Either include it or remove the dependency array.
+src/components/ResultCard.jsx:306:9: warning react-hooks(exhaustive-deps): React Hook useCallback has missing dependencies: 'formScore', 'result.detectionConfidence', 'result.qualityGateReasons', and 'result.insufficientFootage' help: Either include it or remove the dependency array.
+src/components/Dashboard.jsx:77:24: warning react(purity): Cannot call impure function during render help: `Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component re-renders
+src/components/Dashboard.jsx:447:17: warning react(purity): Cannot call impure function during render help: `Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component re-renders
+
+> workout-vision@1.4.0 typecheck
+> tsc --noEmit
+
+
+> workout-vision@1.4.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:7:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+11:41:15 PM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+11:41:15 PM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /Users/azeliebernard/Developer/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /Users/azeliebernard/Developer/workout-vision
+
+
+ Test Files  14 passed (14)
+      Tests  247 passed | 1 expected fail (248)
+   Start at  23:41:15
+   Duration  456ms (transform 1.66s, setup 0ms, import 2.53s, tests 351ms, environment 1ms)
+

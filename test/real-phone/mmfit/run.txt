@@ -1,0 +1,1264 @@
+START w00-squats-4040-4500
+START w00-squats-5435-5928
+START w00-squats-7200-7685
+START w00-pushups-8770-9197
+{"completed":1,"total":616,"id":"w00-pushups-8770-9197","count":8,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w00-pushups-11160-11586
+{"completed":2,"total":616,"id":"w00-squats-4040-4500","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w00-pushups-13620-14000
+{"completed":3,"total":616,"id":"w00-squats-5435-5928","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w00-dumbbell_shoulder_press-15034-15545
+{"completed":4,"total":616,"id":"w00-squats-7200-7685","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w00-dumbbell_shoulder_press-17570-18127
+{"completed":5,"total":616,"id":"w00-pushups-11160-11586","count":3,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w00-dumbbell_shoulder_press-20482-20908
+{"completed":6,"total":616,"id":"w00-pushups-13620-14000","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w00-lunges-22147-22990
+{"completed":7,"total":616,"id":"w00-dumbbell_shoulder_press-15034-15545","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w00-lunges-25391-26226
+{"completed":8,"total":616,"id":"w00-dumbbell_shoulder_press-17570-18127","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w00-lunges-29277-30156
+{"completed":9,"total":616,"id":"w00-dumbbell_shoulder_press-20482-20908","count":8,"expected":9,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w00-dumbbell_rows-31680-32205
+{"completed":10,"total":616,"id":"w00-lunges-22147-22990","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w00-dumbbell_rows-34605-35060
+{"completed":11,"total":616,"id":"w00-dumbbell_rows-31680-32205","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w00-dumbbell_rows-38000-38500
+{"completed":12,"total":616,"id":"w00-lunges-25391-26226","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w00-situps-39430-39994
+{"completed":13,"total":616,"id":"w00-lunges-29277-30156","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w00-situps-42068-42630
+{"completed":14,"total":616,"id":"w00-dumbbell_rows-34605-35060","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w00-situps-44223-44850
+{"completed":15,"total":616,"id":"w00-dumbbell_rows-38000-38500","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w00-tricep_extensions-46229-46625
+{"completed":16,"total":616,"id":"w00-situps-39430-39994","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w00-tricep_extensions-47389-47712
+{"completed":17,"total":616,"id":"w00-situps-42068-42630","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w00-tricep_extensions-49341-49663
+{"completed":18,"total":616,"id":"w00-tricep_extensions-46229-46625","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w00-bicep_curls-50955-51469
+{"completed":19,"total":616,"id":"w00-situps-44223-44850","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w00-bicep_curls-52054-52528
+{"completed":20,"total":616,"id":"w00-tricep_extensions-47389-47712","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w00-bicep_curls-52966-53405
+{"completed":21,"total":616,"id":"w00-tricep_extensions-49341-49663","count":2,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w00-lateral_shoulder_raises-54880-55303
+{"completed":22,"total":616,"id":"w00-bicep_curls-52966-53405","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w00-lateral_shoulder_raises-57634-58061
+{"completed":23,"total":616,"id":"w00-bicep_curls-50955-51469","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w00-lateral_shoulder_raises-59858-60277
+{"completed":24,"total":616,"id":"w00-bicep_curls-52054-52528","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w00-jumping_jacks-61147-61432
+{"completed":25,"total":616,"id":"w00-lateral_shoulder_raises-54880-55303","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w00-jumping_jacks-64859-65148
+{"completed":26,"total":616,"id":"w00-jumping_jacks-61147-61432","count":null,"expected":11,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w00-jumping_jacks-67393-67650
+{"completed":27,"total":616,"id":"w00-jumping_jacks-64859-65148","count":null,"expected":11,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w01-squats-2113-2598
+{"completed":28,"total":616,"id":"w00-lateral_shoulder_raises-57634-58061","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-squats-3210-3737
+{"completed":29,"total":616,"id":"w00-lateral_shoulder_raises-59858-60277","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-squats-5086-5615
+{"completed":30,"total":616,"id":"w00-jumping_jacks-67393-67650","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w01-pushups-11960-12316
+{"completed":31,"total":616,"id":"w01-squats-2113-2598","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-pushups-15150-15604
+{"completed":32,"total":616,"id":"w01-squats-3210-3737","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-pushups-18065-18545
+{"completed":33,"total":616,"id":"w01-pushups-11960-12316","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-dumbbell_shoulder_press-20509-21307
+{"completed":34,"total":616,"id":"w01-squats-5086-5615","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-dumbbell_shoulder_press-21864-22424
+{"completed":35,"total":616,"id":"w01-pushups-15150-15604","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-dumbbell_shoulder_press-22819-23491
+{"completed":36,"total":616,"id":"w01-pushups-18065-18545","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-lunges-24360-25215
+{"completed":37,"total":616,"id":"w01-dumbbell_shoulder_press-21864-22424","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-lunges-29060-29765
+{"completed":38,"total":616,"id":"w01-dumbbell_shoulder_press-20509-21307","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w01-lunges-33364-34129
+{"completed":39,"total":616,"id":"w01-dumbbell_shoulder_press-22819-23491","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w01-situps-34650-35244
+{"completed":40,"total":616,"id":"w01-lunges-29060-29765","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-situps-35503-36070
+{"completed":41,"total":616,"id":"w01-lunges-24360-25215","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-situps-36684-37260
+{"completed":42,"total":616,"id":"w01-lunges-33364-34129","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-dumbbell_rows-37940-38553
+{"completed":43,"total":616,"id":"w01-situps-34650-35244","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w01-dumbbell_rows-39171-39797
+{"completed":44,"total":616,"id":"w01-situps-35503-36070","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w01-dumbbell_rows-40294-40914
+{"completed":45,"total":616,"id":"w01-situps-36684-37260","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w01-dumbbell_rows-46449-46981
+{"completed":46,"total":616,"id":"w01-dumbbell_rows-37940-38553","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-tricep_extensions-47520-48160
+{"completed":47,"total":616,"id":"w01-dumbbell_rows-39171-39797","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-tricep_extensions-49681-50310
+{"completed":48,"total":616,"id":"w01-dumbbell_rows-46449-46981","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-tricep_extensions-52658-53302
+{"completed":49,"total":616,"id":"w01-dumbbell_rows-40294-40914","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w01-tricep_extensions-53815-54368
+{"completed":50,"total":616,"id":"w01-tricep_extensions-47520-48160","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-bicep_curls-54733-55237
+{"completed":51,"total":616,"id":"w01-tricep_extensions-49681-50310","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-bicep_curls-63019-63514
+{"completed":52,"total":616,"id":"w01-tricep_extensions-53815-54368","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-bicep_curls-64099-64584
+{"completed":53,"total":616,"id":"w01-tricep_extensions-52658-53302","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w01-lateral_shoulder_raises-65618-66249
+{"completed":54,"total":616,"id":"w01-bicep_curls-54733-55237","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-lateral_shoulder_raises-68735-69542
+{"completed":55,"total":616,"id":"w01-bicep_curls-63019-63514","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-lateral_shoulder_raises-71282-71944
+{"completed":56,"total":616,"id":"w01-bicep_curls-64099-64584","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-jumping_jacks-72751-73157
+{"completed":57,"total":616,"id":"w01-lateral_shoulder_raises-65618-66249","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w01-jumping_jacks-73498-73925
+{"completed":58,"total":616,"id":"w01-jumping_jacks-72751-73157","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w01-jumping_jacks-74188-74529
+{"completed":59,"total":616,"id":"w01-lateral_shoulder_raises-71282-71944","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-squats-2495-3144
+{"completed":60,"total":616,"id":"w01-lateral_shoulder_raises-68735-69542","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w02-squats-3520-4182
+{"completed":61,"total":616,"id":"w01-jumping_jacks-73498-73925","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w02-squats-5109-5770
+{"completed":62,"total":616,"id":"w01-jumping_jacks-74188-74529","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w02-pushups-6238-6705
+RESUME 62 completed rows
+START w02-squats-2495-3144
+START w02-squats-3520-4182
+START w02-squats-5109-5770
+START w02-pushups-6238-6705
+{"completed":63,"total":616,"id":"w02-pushups-6238-6705","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-pushups-7984-8433
+{"completed":64,"total":616,"id":"w02-squats-2495-3144","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-pushups-10958-11370
+{"completed":65,"total":616,"id":"w02-squats-5109-5770","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-dumbbell_shoulder_press-16302-17074
+{"completed":66,"total":616,"id":"w02-squats-3520-4182","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-dumbbell_shoulder_press-19903-20615
+{"completed":67,"total":616,"id":"w02-pushups-7984-8433","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-dumbbell_shoulder_press-22550-23283
+{"completed":68,"total":616,"id":"w02-pushups-10958-11370","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-lunges-24072-24865
+{"completed":69,"total":616,"id":"w02-dumbbell_shoulder_press-19903-20615","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-lunges-27535-28379
+{"completed":70,"total":616,"id":"w02-dumbbell_shoulder_press-16302-17074","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-lunges-29067-29919
+{"completed":71,"total":616,"id":"w02-dumbbell_shoulder_press-22550-23283","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w02-dumbbell_rows-30615-31184
+{"completed":72,"total":616,"id":"w02-lunges-24072-24865","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-dumbbell_rows-34467-34984
+{"completed":73,"total":616,"id":"w02-lunges-27535-28379","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-dumbbell_rows-37062-37542
+{"completed":74,"total":616,"id":"w02-lunges-29067-29919","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-situps-39873-40690
+{"completed":75,"total":616,"id":"w02-dumbbell_rows-30615-31184","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-situps-41223-42110
+{"completed":76,"total":616,"id":"w02-dumbbell_rows-34467-34984","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-situps-47206-48112
+{"completed":77,"total":616,"id":"w02-dumbbell_rows-37062-37542","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-tricep_extensions-51038-51697
+{"completed":78,"total":616,"id":"w02-situps-39873-40690","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w02-tricep_extensions-56994-57576
+{"completed":79,"total":616,"id":"w02-situps-41223-42110","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w02-tricep_extensions-58730-59292
+{"completed":80,"total":616,"id":"w02-situps-47206-48112","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w02-bicep_curls-59663-60253
+{"completed":81,"total":616,"id":"w02-tricep_extensions-51038-51697","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-bicep_curls-60918-61508
+{"completed":82,"total":616,"id":"w02-tricep_extensions-56994-57576","count":9,"expected":9,"score":"PASS","admitted":false,"reason":null}
+START w02-bicep_curls-62391-62975
+{"completed":83,"total":616,"id":"w02-tricep_extensions-58730-59292","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w02-lateral_shoulder_raises-64065-65049
+{"completed":84,"total":616,"id":"w02-bicep_curls-59663-60253","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-lateral_shoulder_raises-67901-68815
+{"completed":85,"total":616,"id":"w02-bicep_curls-60918-61508","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-lateral_shoulder_raises-70289-71241
+{"completed":86,"total":616,"id":"w02-bicep_curls-62391-62975","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-jumping_jacks-71833-72150
+{"completed":87,"total":616,"id":"w02-jumping_jacks-71833-72150","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w02-jumping_jacks-73784-74103
+{"completed":88,"total":616,"id":"w02-lateral_shoulder_raises-64065-65049","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w02-jumping_jacks-75495-75804
+{"completed":89,"total":616,"id":"w02-lateral_shoulder_raises-67901-68815","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-squats-3803-4301
+{"completed":90,"total":616,"id":"w02-lateral_shoulder_raises-70289-71241","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-squats-4708-5200
+{"completed":91,"total":616,"id":"w02-jumping_jacks-73784-74103","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w03-squats-5575-6053
+{"completed":92,"total":616,"id":"w02-jumping_jacks-75495-75804","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w03-pushups-6384-6852
+{"completed":93,"total":616,"id":"w03-squats-3803-4301","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-pushups-13510-14006
+{"completed":94,"total":616,"id":"w03-squats-4708-5200","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-pushups-15224-15674
+{"completed":95,"total":616,"id":"w03-squats-5575-6053","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-dumbbell_shoulder_press-18054-18612
+{"completed":96,"total":616,"id":"w03-pushups-6384-6852","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-dumbbell_shoulder_press-20140-20723
+{"completed":97,"total":616,"id":"w03-pushups-13510-14006","count":11,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w03-dumbbell_shoulder_press-21843-22408
+{"completed":98,"total":616,"id":"w03-pushups-15224-15674","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-lunges-24345-25130
+{"completed":99,"total":616,"id":"w03-dumbbell_shoulder_press-18054-18612","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-lunges-26046-26831
+{"completed":100,"total":616,"id":"w03-dumbbell_shoulder_press-20140-20723","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-lunges-27337-28126
+{"completed":101,"total":616,"id":"w03-dumbbell_shoulder_press-21843-22408","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-dumbbell_rows-28813-29356
+{"completed":102,"total":616,"id":"w03-lunges-24345-25130","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w03-dumbbell_rows-29953-30487
+{"completed":103,"total":616,"id":"w03-lunges-26046-26831","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w03-dumbbell_rows-31515-32065
+{"completed":104,"total":616,"id":"w03-dumbbell_rows-28813-29356","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-situps-36095-36778
+{"completed":105,"total":616,"id":"w03-lunges-27337-28126","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w03-situps-37997-38551
+{"completed":106,"total":616,"id":"w03-dumbbell_rows-29953-30487","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-situps-39403-39966
+{"completed":107,"total":616,"id":"w03-dumbbell_rows-31515-32065","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w03-tricep_extensions-40800-41430
+{"completed":108,"total":616,"id":"w03-situps-37997-38551","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w03-tricep_extensions-41911-42561
+{"completed":109,"total":616,"id":"w03-situps-36095-36778","count":null,"expected":12,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w03-tricep_extensions-45505-46167
+{"completed":110,"total":616,"id":"w03-situps-39403-39966","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w03-bicep_curls-47813-48362
+{"completed":111,"total":616,"id":"w03-tricep_extensions-40800-41430","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-bicep_curls-49509-50065
+{"completed":112,"total":616,"id":"w03-tricep_extensions-41911-42561","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-bicep_curls-51635-52176
+{"completed":113,"total":616,"id":"w03-tricep_extensions-45505-46167","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w03-lateral_shoulder_raises-53666-54343
+{"completed":114,"total":616,"id":"w03-bicep_curls-47813-48362","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-lateral_shoulder_raises-55078-55688
+{"completed":115,"total":616,"id":"w03-bicep_curls-49509-50065","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-lateral_shoulder_raises-56260-56867
+{"completed":116,"total":616,"id":"w03-bicep_curls-51635-52176","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-jumping_jacks-61950-62270
+{"completed":117,"total":616,"id":"w03-lateral_shoulder_raises-55078-55688","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-jumping_jacks-62649-62962
+{"completed":118,"total":616,"id":"w03-lateral_shoulder_raises-53666-54343","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w03-jumping_jacks-64752-65060
+{"completed":119,"total":616,"id":"w03-jumping_jacks-61950-62270","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w04-squats-2899-3614
+{"completed":120,"total":616,"id":"w03-lateral_shoulder_raises-56260-56867","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-squats-4070-4858
+{"completed":121,"total":616,"id":"w03-jumping_jacks-62649-62962","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w04-squats-6042-6774
+{"completed":122,"total":616,"id":"w03-jumping_jacks-64752-65060","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w04-pushups-7791-8247
+{"completed":123,"total":616,"id":"w04-pushups-7791-8247","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w04-pushups-10471-10918
+{"completed":124,"total":616,"id":"w04-squats-2899-3614","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-pushups-12032-12506
+{"completed":125,"total":616,"id":"w04-squats-4070-4858","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-dumbbell_shoulder_press-13350-14225
+{"completed":126,"total":616,"id":"w04-squats-6042-6774","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-dumbbell_shoulder_press-18970-19857
+{"completed":127,"total":616,"id":"w04-pushups-10471-10918","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w04-dumbbell_shoulder_press-20887-21722
+{"completed":128,"total":616,"id":"w04-pushups-12032-12506","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w04-lunges-22307-23211
+{"completed":129,"total":616,"id":"w04-dumbbell_shoulder_press-13350-14225","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-lunges-27679-28572
+{"completed":130,"total":616,"id":"w04-dumbbell_shoulder_press-18970-19857","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-dumbbell_rows-29449-30012
+{"completed":131,"total":616,"id":"w04-dumbbell_shoulder_press-20887-21722","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w04-dumbbell_rows-34017-34540
+{"completed":132,"total":616,"id":"w04-lunges-22307-23211","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w04-dumbbell_rows-35788-36304
+{"completed":133,"total":616,"id":"w04-dumbbell_rows-29449-30012","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w04-situps-37206-38093
+{"completed":134,"total":616,"id":"w04-dumbbell_rows-34017-34540","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w04-situps-42416-43341
+{"completed":135,"total":616,"id":"w04-dumbbell_rows-35788-36304","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w04-situps-45722-46672
+{"completed":136,"total":616,"id":"w04-lunges-27679-28572","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w04-tricep_extensions-47474-48150
+{"completed":137,"total":616,"id":"w04-situps-37206-38093","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w04-tricep_extensions-49368-50126
+{"completed":138,"total":616,"id":"w04-tricep_extensions-47474-48150","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w04-tricep_extensions-50851-51545
+{"completed":139,"total":616,"id":"w04-situps-42416-43341","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w04-bicep_curls-52140-52814
+{"completed":140,"total":616,"id":"w04-situps-45722-46672","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w05-squats-2830-3355
+{"completed":141,"total":616,"id":"w04-tricep_extensions-50851-51545","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-squats-3635-4153
+{"completed":142,"total":616,"id":"w04-tricep_extensions-49368-50126","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-squats-5112-5711
+{"completed":143,"total":616,"id":"w05-squats-2830-3355","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-pushups-6353-6780
+{"completed":144,"total":616,"id":"w04-bicep_curls-52140-52814","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-pushups-7897-8360
+{"completed":145,"total":616,"id":"w05-pushups-6353-6780","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w05-pushups-9365-9761
+{"completed":146,"total":616,"id":"w05-pushups-7897-8360","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w05-dumbbell_shoulder_press-10827-11280
+{"completed":147,"total":616,"id":"w05-squats-3635-4153","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-dumbbell_shoulder_press-12724-13163
+{"completed":148,"total":616,"id":"w05-squats-5112-5711","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-dumbbell_shoulder_press-15003-15433
+{"completed":149,"total":616,"id":"w05-pushups-9365-9761","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w05-lunges-16821-17640
+{"completed":150,"total":616,"id":"w05-dumbbell_shoulder_press-10827-11280","count":9,"expected":9,"score":"PASS","admitted":true,"reason":null}
+START w05-lunges-19636-20483
+{"completed":151,"total":616,"id":"w05-dumbbell_shoulder_press-12724-13163","count":8,"expected":9,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w05-lunges-22735-23606
+{"completed":152,"total":616,"id":"w05-dumbbell_shoulder_press-15003-15433","count":9,"expected":9,"score":"PASS","admitted":true,"reason":null}
+START w05-dumbbell_rows-25085-25574
+{"completed":153,"total":616,"id":"w05-dumbbell_rows-25085-25574","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-dumbbell_rows-28325-28786
+{"completed":154,"total":616,"id":"w05-lunges-16821-17640","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-dumbbell_rows-32611-33005
+{"completed":155,"total":616,"id":"w05-lunges-19636-20483","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w05-situps-33685-34307
+{"completed":156,"total":616,"id":"w05-lunges-22735-23606","count":11,"expected":11,"score":"PASS","admitted":false,"reason":null}
+START w05-situps-36225-36709
+{"completed":157,"total":616,"id":"w05-dumbbell_rows-28325-28786","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-situps-39240-39650
+{"completed":158,"total":616,"id":"w05-dumbbell_rows-32611-33005","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w05-tricep_extensions-40292-40711
+{"completed":159,"total":616,"id":"w05-situps-36225-36709","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w05-tricep_extensions-42667-43095
+{"completed":160,"total":616,"id":"w05-situps-33685-34307","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w05-tricep_extensions-44208-44595
+{"completed":161,"total":616,"id":"w05-situps-39240-39650","count":null,"expected":9,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w05-bicep_curls-46262-46756
+{"completed":162,"total":616,"id":"w05-tricep_extensions-40292-40711","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-bicep_curls-47380-47858
+{"completed":163,"total":616,"id":"w05-tricep_extensions-42667-43095","count":9,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-bicep_curls-48482-49003
+{"completed":164,"total":616,"id":"w05-tricep_extensions-44208-44595","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w05-lateral_shoulder_raises-50035-50450
+{"completed":165,"total":616,"id":"w05-bicep_curls-46262-46756","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-lateral_shoulder_raises-52965-53402
+{"completed":166,"total":616,"id":"w05-bicep_curls-47380-47858","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-lateral_shoulder_raises-55565-55988
+{"completed":167,"total":616,"id":"w05-lateral_shoulder_raises-50035-50450","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-jumping_jacks-56616-56910
+{"completed":168,"total":616,"id":"w05-bicep_curls-48482-49003","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w05-jumping_jacks-57768-57981
+{"completed":169,"total":616,"id":"w05-lateral_shoulder_raises-52965-53402","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w05-jumping_jacks-58928-59156
+{"completed":170,"total":616,"id":"w05-lateral_shoulder_raises-55565-55988","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-squats-1874-2426
+{"completed":171,"total":616,"id":"w05-jumping_jacks-57768-57981","count":null,"expected":11,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w06-squats-3079-3651
+{"completed":172,"total":616,"id":"w05-jumping_jacks-56616-56910","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w06-squats-4289-4880
+{"completed":173,"total":616,"id":"w05-jumping_jacks-58928-59156","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w06-pushups-5324-5777
+{"completed":174,"total":616,"id":"w06-squats-1874-2426","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-pushups-6367-6911
+{"completed":175,"total":616,"id":"w06-squats-3079-3651","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-pushups-7753-8270
+{"completed":176,"total":616,"id":"w06-pushups-5324-5777","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-dumbbell_shoulder_press-9076-9770
+{"completed":177,"total":616,"id":"w06-squats-4289-4880","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-dumbbell_shoulder_press-10778-11517
+{"completed":178,"total":616,"id":"w06-pushups-6367-6911","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-dumbbell_shoulder_press-12113-12899
+{"completed":179,"total":616,"id":"w06-pushups-7753-8270","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-lunges-13448-14331
+{"completed":180,"total":616,"id":"w06-dumbbell_shoulder_press-9076-9770","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w06-lunges-19541-20324
+{"completed":181,"total":616,"id":"w06-dumbbell_shoulder_press-10778-11517","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-lunges-21002-21833
+{"completed":182,"total":616,"id":"w06-dumbbell_shoulder_press-12113-12899","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-dumbbell_rows-22904-23486
+{"completed":183,"total":616,"id":"w06-lunges-13448-14331","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w06-dumbbell_rows-26761-27283
+{"completed":184,"total":616,"id":"w06-lunges-19541-20324","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w06-dumbbell_rows-27937-28465
+{"completed":185,"total":616,"id":"w06-lunges-21002-21833","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w06-situps-29057-29617
+{"completed":186,"total":616,"id":"w06-dumbbell_rows-22904-23486","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-situps-30238-30849
+{"completed":187,"total":616,"id":"w06-dumbbell_rows-26761-27283","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-situps-31584-32190
+{"completed":188,"total":616,"id":"w06-dumbbell_rows-27937-28465","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-tricep_extensions-39685-40259
+{"completed":189,"total":616,"id":"w06-situps-29057-29617","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w06-tricep_extensions-41103-41734
+{"completed":190,"total":616,"id":"w06-situps-30238-30849","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w06-tricep_extensions-42346-42940
+{"completed":191,"total":616,"id":"w06-situps-31584-32190","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w06-bicep_curls-43486-44091
+{"completed":192,"total":616,"id":"w06-tricep_extensions-39685-40259","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-bicep_curls-44671-45245
+{"completed":193,"total":616,"id":"w06-tricep_extensions-41103-41734","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w06-bicep_curls-45820-46415
+{"completed":194,"total":616,"id":"w06-tricep_extensions-42346-42940","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-lateral_shoulder_raises-47870-48539
+{"completed":195,"total":616,"id":"w06-bicep_curls-43486-44091","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-lateral_shoulder_raises-48995-49563
+{"completed":196,"total":616,"id":"w06-bicep_curls-44671-45245","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-lateral_shoulder_raises-52800-53296
+{"completed":197,"total":616,"id":"w06-bicep_curls-45820-46415","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w06-jumping_jacks-53738-54001
+{"completed":198,"total":616,"id":"w06-jumping_jacks-53738-54001","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w06-jumping_jacks-54371-54663
+{"completed":199,"total":616,"id":"w06-lateral_shoulder_raises-52800-53296","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w06-jumping_jacks-55069-55382
+{"completed":200,"total":616,"id":"w06-lateral_shoulder_raises-48995-49563","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-squats-2750-3533
+{"completed":201,"total":616,"id":"w06-lateral_shoulder_raises-47870-48539","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-squats-4482-5169
+{"completed":202,"total":616,"id":"w06-jumping_jacks-54371-54663","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w07-squats-5659-6345
+{"completed":203,"total":616,"id":"w06-jumping_jacks-55069-55382","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w07-pushups-6835-7348
+{"completed":204,"total":616,"id":"w07-squats-4482-5169","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-pushups-8298-8847
+{"completed":205,"total":616,"id":"w07-squats-2750-3533","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-pushups-11432-11940
+{"completed":206,"total":616,"id":"w07-pushups-6835-7348","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-dumbbell_shoulder_press-12975-13685
+{"completed":207,"total":616,"id":"w07-squats-5659-6345","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-dumbbell_shoulder_press-15036-15931
+{"completed":208,"total":616,"id":"w07-pushups-8298-8847","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-dumbbell_shoulder_press-22796-23569
+{"completed":209,"total":616,"id":"w07-pushups-11432-11940","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-lunges-24457-25354
+{"completed":210,"total":616,"id":"w07-dumbbell_shoulder_press-12975-13685","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-lunges-26510-27355
+{"completed":211,"total":616,"id":"w07-dumbbell_shoulder_press-15036-15931","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-lunges-31538-32383
+{"completed":212,"total":616,"id":"w07-dumbbell_shoulder_press-22796-23569","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-situps-33040-34021
+{"completed":213,"total":616,"id":"w07-lunges-24457-25354","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-situps-37870-38800
+{"completed":214,"total":616,"id":"w07-lunges-26510-27355","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-situps-41972-42969
+{"completed":215,"total":616,"id":"w07-lunges-31538-32383","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-dumbbell_rows-44075-44591
+{"completed":216,"total":616,"id":"w07-situps-33040-34021","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w07-dumbbell_rows-45834-46318
+{"completed":217,"total":616,"id":"w07-situps-37870-38800","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w07-dumbbell_rows-47330-47827
+{"completed":218,"total":616,"id":"w07-dumbbell_rows-44075-44591","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-tricep_extensions-48702-49365
+{"completed":219,"total":616,"id":"w07-situps-41972-42969","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w07-tricep_extensions-54034-54626
+{"completed":220,"total":616,"id":"w07-dumbbell_rows-45834-46318","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w07-tricep_extensions-56087-56631
+{"completed":221,"total":616,"id":"w07-dumbbell_rows-47330-47827","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w07-bicep_curls-57291-57869
+{"completed":222,"total":616,"id":"w07-tricep_extensions-48702-49365","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-bicep_curls-61004-61564
+{"completed":223,"total":616,"id":"w07-tricep_extensions-54034-54626","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w07-lateral_shoulder_raises-63113-64045
+{"completed":224,"total":616,"id":"w07-tricep_extensions-56087-56631","count":7,"expected":9,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w07-lateral_shoulder_raises-65466-66354
+{"completed":225,"total":616,"id":"w07-bicep_curls-57291-57869","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-lateral_shoulder_raises-68129-68948
+{"completed":226,"total":616,"id":"w07-bicep_curls-61004-61564","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w07-jumping_jacks-70291-70609
+{"completed":227,"total":616,"id":"w07-jumping_jacks-70291-70609","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w07-jumping_jacks-71240-71558
+{"completed":228,"total":616,"id":"w07-lateral_shoulder_raises-63113-64045","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w07-jumping_jacks-72166-72493
+{"completed":229,"total":616,"id":"w07-lateral_shoulder_raises-65466-66354","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-squats-1978-2495
+{"completed":230,"total":616,"id":"w07-lateral_shoulder_raises-68129-68948","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-squats-3006-3531
+{"completed":231,"total":616,"id":"w07-jumping_jacks-71240-71558","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w08-squats-4239-4752
+{"completed":232,"total":616,"id":"w07-jumping_jacks-72166-72493","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w08-pushups-5133-5539
+{"completed":233,"total":616,"id":"w08-squats-1978-2495","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-pushups-6166-6648
+{"completed":234,"total":616,"id":"w08-squats-3006-3531","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-pushups-16727-17169
+{"completed":235,"total":616,"id":"w08-pushups-5133-5539","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w08-dumbbell_shoulder_press-18542-19196
+{"completed":236,"total":616,"id":"w08-squats-4239-4752","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-dumbbell_shoulder_press-19674-20367
+{"completed":237,"total":616,"id":"w08-pushups-6166-6648","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-dumbbell_shoulder_press-20860-21544
+{"completed":238,"total":616,"id":"w08-pushups-16727-17169","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-dumbbell_rows-22849-23477
+{"completed":239,"total":616,"id":"w08-dumbbell_shoulder_press-18542-19196","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-dumbbell_rows-24040-24644
+{"completed":240,"total":616,"id":"w08-dumbbell_shoulder_press-19674-20367","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w08-dumbbell_rows-26116-26767
+{"completed":241,"total":616,"id":"w08-dumbbell_shoulder_press-20860-21544","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-situps-27625-28182
+{"completed":242,"total":616,"id":"w08-dumbbell_rows-22849-23477","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-situps-29516-30086
+{"completed":243,"total":616,"id":"w08-dumbbell_rows-24040-24644","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-situps-31153-31768
+{"completed":244,"total":616,"id":"w08-dumbbell_rows-26116-26767","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-tricep_extensions-32514-33146
+{"completed":245,"total":616,"id":"w08-situps-27625-28182","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w08-tricep_extensions-34046-34694
+{"completed":246,"total":616,"id":"w08-situps-29516-30086","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w08-tricep_extensions-35261-35862
+{"completed":247,"total":616,"id":"w08-situps-31153-31768","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w08-bicep_curls-36541-37140
+{"completed":248,"total":616,"id":"w08-tricep_extensions-32514-33146","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-bicep_curls-37732-38333
+RESUME 248 completed rows
+START w08-tricep_extensions-34046-34694
+START w08-tricep_extensions-35261-35862
+START w08-bicep_curls-36541-37140
+START w08-bicep_curls-37732-38333
+START w08-bicep_curls-40065-40771
+START w08-lunges-41398-42333
+START w08-lunges-43294-44166
+START w08-lunges-44711-45527
+{"completed":249,"total":616,"id":"w08-tricep_extensions-35261-35862","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-lateral_shoulder_raises-46882-47570
+{"completed":250,"total":616,"id":"w08-tricep_extensions-34046-34694","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-lateral_shoulder_raises-49854-50597
+{"completed":251,"total":616,"id":"w08-bicep_curls-36541-37140","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w08-lateral_shoulder_raises-52518-53248
+{"completed":252,"total":616,"id":"w08-bicep_curls-37732-38333","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w08-lateral_shoulder_raises-53789-54465
+{"completed":253,"total":616,"id":"w08-bicep_curls-40065-40771","count":11,"expected":11,"score":"PASS","admitted":false,"reason":null}
+START w08-jumping_jacks-55048-55350
+{"completed":254,"total":616,"id":"w08-lunges-44711-45527","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-jumping_jacks-56345-56650
+{"completed":255,"total":616,"id":"w08-lunges-43294-44166","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w08-jumping_jacks-57799-58094
+{"completed":256,"total":616,"id":"w08-lunges-41398-42333","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w08-jumping_jacks-58478-58771
+{"completed":257,"total":616,"id":"w08-lateral_shoulder_raises-46882-47570","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-squats-3755-4513
+{"completed":258,"total":616,"id":"w08-lateral_shoulder_raises-49854-50597","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-squats-7836-8475
+{"completed":259,"total":616,"id":"w08-jumping_jacks-55048-55350","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w09-squats-11469-12187
+{"completed":260,"total":616,"id":"w08-jumping_jacks-56345-56650","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w09-pushups-12843-13340
+{"completed":261,"total":616,"id":"w08-jumping_jacks-57799-58094","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w09-pushups-14161-14729
+{"completed":262,"total":616,"id":"w08-lateral_shoulder_raises-53789-54465","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-pushups-15442-16036
+{"completed":263,"total":616,"id":"w08-jumping_jacks-58478-58771","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w09-dumbbell_shoulder_press-17462-18247
+{"completed":264,"total":616,"id":"w08-lateral_shoulder_raises-52518-53248","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-dumbbell_shoulder_press-19300-20126
+{"completed":265,"total":616,"id":"w09-squats-11469-12187","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Harness timeout"}
+START w09-dumbbell_shoulder_press-27827-28506
+{"completed":266,"total":616,"id":"w09-squats-3755-4513","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Harness timeout"}
+START w09-lunges-29726-30615
+{"completed":267,"total":616,"id":"w09-pushups-14161-14729","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Harness timeout"}
+START w09-lunges-32564-33430
+{"completed":268,"total":616,"id":"w09-squats-7836-8475","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Harness timeout"}
+START w09-lunges-38005-38842
+{"completed":269,"total":616,"id":"w09-pushups-12843-13340","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Harness timeout"}
+START w09-dumbbell_rows-41220-41705
+{"completed":270,"total":616,"id":"w09-dumbbell_shoulder_press-17462-18247","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Command failed: ffmpeg -v error -nostdin -n -noautorotate -ss 582.0666666666667 -i /Users/azeliebernard/Datasets/MM-Fit/w09_rgb.mp4 -map 0:v:0 -frames:v 785 -c:v libx264 -threads 2 -preset fast -crf 18 -pix_fmt yuv420p -fps_mode passthrough -map_metadata 0 -movflags +faststart /Users/azeliebernard/Datasets/MM-Fit/all-sets-final/clips/w09-dumbbell_shoulder_press-17462-18247.mp4\n"}
+START w09-dumbbell_rows-43877-44384
+{"completed":271,"total":616,"id":"w09-pushups-15442-16036","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Command failed: ffmpeg -v error -nostdin -n -noautorotate -ss 514.7333333333333 -i /Users/azeliebernard/Datasets/MM-Fit/w09_rgb.mp4 -map 0:v:0 -frames:v 594 -c:v libx264 -threads 2 -preset fast -crf 18 -pix_fmt yuv420p -fps_mode passthrough -map_metadata 0 -movflags +faststart /Users/azeliebernard/Datasets/MM-Fit/all-sets-final/clips/w09-pushups-15442-16036.mp4\n"}
+START w09-dumbbell_rows-45146-45695
+{"completed":272,"total":616,"id":"w09-dumbbell_shoulder_press-19300-20126","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Command failed: ffmpeg -v error -nostdin -n -noautorotate -ss 643.3333333333334 -i /Users/azeliebernard/Datasets/MM-Fit/w09_rgb.mp4 -map 0:v:0 -frames:v 826 -c:v libx264 -threads 2 -preset fast -crf 18 -pix_fmt yuv420p -fps_mode passthrough -map_metadata 0 -movflags +faststart /Users/azeliebernard/Datasets/MM-Fit/all-sets-final/clips/w09-dumbbell_shoulder_press-19300-20126.mp4\n"}
+START w09-situps-58175-59045
+{"completed":273,"total":616,"id":"w09-dumbbell_rows-41220-41705","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w09-situps-66830-67716
+{"completed":274,"total":616,"id":"w09-dumbbell_shoulder_press-27827-28506","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-situps-68290-69239
+{"completed":275,"total":616,"id":"w09-dumbbell_rows-45146-45695","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w09-tricep_extensions-70034-70747
+{"completed":276,"total":616,"id":"w09-dumbbell_rows-43877-44384","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w09-tricep_extensions-72890-73577
+{"completed":277,"total":616,"id":"w09-lunges-29726-30615","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w09-tricep_extensions-74310-75003
+{"completed":278,"total":616,"id":"w09-lunges-38005-38842","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w09-bicep_curls-82836-83672
+{"completed":279,"total":616,"id":"w09-situps-58175-59045","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w09-bicep_curls-85581-86111
+{"completed":280,"total":616,"id":"w09-lunges-32564-33430","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w09-bicep_curls-91110-91593
+RESUME 280 completed rows
+START w09-squats-3755-4513
+START w09-squats-11469-12187
+START w09-pushups-14161-14729
+START w09-pushups-15442-16036
+{"completed":280,"total":616,"id":"w09-pushups-14161-14729","count":10,"expected":10,"score":"FAIL","admitted":false,"reason":"Execution recovered; initial failed attempt retained as FAIL"}
+START w09-dumbbell_shoulder_press-17462-18247
+{"completed":280,"total":616,"id":"w09-pushups-15442-16036","count":10,"expected":10,"score":"FAIL","admitted":false,"reason":"Execution recovered; initial failed attempt retained as FAIL"}
+START w09-dumbbell_shoulder_press-19300-20126
+{"completed":280,"total":616,"id":"w09-squats-11469-12187","count":10,"expected":10,"score":"FAIL","admitted":true,"reason":"Execution recovered; initial failed attempt retained as FAIL"}
+START w09-situps-66830-67716
+{"completed":280,"total":616,"id":"w09-squats-3755-4513","count":10,"expected":10,"score":"FAIL","admitted":true,"reason":"Execution recovered; initial failed attempt retained as FAIL"}
+START w09-situps-68290-69239
+{"completed":281,"total":616,"id":"w09-situps-66830-67716","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w09-tricep_extensions-70034-70747
+{"completed":282,"total":616,"id":"w09-situps-68290-69239","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w09-tricep_extensions-72890-73577
+{"completed":282,"total":616,"id":"w09-dumbbell_shoulder_press-17462-18247","count":10,"expected":10,"score":"FAIL","admitted":true,"reason":"Execution recovered; initial failed attempt retained as FAIL"}
+START w09-tricep_extensions-74310-75003
+{"completed":282,"total":616,"id":"w09-dumbbell_shoulder_press-19300-20126","count":10,"expected":10,"score":"FAIL","admitted":true,"reason":"Execution recovered; initial failed attempt retained as FAIL"}
+START w09-bicep_curls-82836-83672
+{"completed":283,"total":616,"id":"w09-tricep_extensions-70034-70747","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w09-bicep_curls-85581-86111
+{"completed":284,"total":616,"id":"w09-tricep_extensions-72890-73577","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w09-bicep_curls-91110-91593
+{"completed":285,"total":616,"id":"w09-bicep_curls-91110-91593","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-lateral_shoulder_raises-100926-101495
+{"completed":286,"total":616,"id":"w09-bicep_curls-85581-86111","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-lateral_shoulder_raises-102180-102750
+{"completed":287,"total":616,"id":"w09-tricep_extensions-74310-75003","count":4,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w09-lateral_shoulder_raises-103239-103774
+{"completed":288,"total":616,"id":"w09-bicep_curls-82836-83672","count":14,"expected":14,"score":"PASS","admitted":true,"reason":null}
+START w09-jumping_jacks-104660-104970
+{"completed":289,"total":616,"id":"w09-lateral_shoulder_raises-100926-101495","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-jumping_jacks-105823-106142
+{"completed":290,"total":616,"id":"w09-lateral_shoulder_raises-102180-102750","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w09-jumping_jacks-107065-107382
+{"completed":291,"total":616,"id":"w09-jumping_jacks-104660-104970","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w10-squats-2704-3283
+{"completed":292,"total":616,"id":"w09-lateral_shoulder_raises-103239-103774","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-squats-3761-4310
+{"completed":293,"total":616,"id":"w09-jumping_jacks-105823-106142","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w10-squats-4850-5469
+{"completed":294,"total":616,"id":"w09-jumping_jacks-107065-107382","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w10-pushups-6285-6795
+{"completed":295,"total":616,"id":"w10-squats-3761-4310","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-pushups-11703-12204
+{"completed":296,"total":616,"id":"w10-squats-2704-3283","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-pushups-13002-13525
+{"completed":297,"total":616,"id":"w10-pushups-6285-6795","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-dumbbell_shoulder_press-17935-18644
+{"completed":298,"total":616,"id":"w10-squats-4850-5469","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-dumbbell_shoulder_press-22543-23277
+{"completed":299,"total":616,"id":"w10-pushups-11703-12204","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-dumbbell_shoulder_press-24121-24874
+{"completed":300,"total":616,"id":"w10-pushups-13002-13525","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-lunges-26349-27300
+{"completed":301,"total":616,"id":"w10-dumbbell_shoulder_press-17935-18644","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-lunges-28172-29112
+{"completed":302,"total":616,"id":"w10-dumbbell_shoulder_press-22543-23277","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w10-lunges-29816-30717
+{"completed":303,"total":616,"id":"w10-dumbbell_shoulder_press-24121-24874","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-dumbbell_rows-31726-32368
+{"completed":304,"total":616,"id":"w10-lunges-26349-27300","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w10-dumbbell_rows-33087-33735
+{"completed":305,"total":616,"id":"w10-dumbbell_rows-31726-32368","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-dumbbell_rows-48584-49192
+{"completed":306,"total":616,"id":"w10-lunges-28172-29112","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w10-situps-52587-53205
+{"completed":307,"total":616,"id":"w10-lunges-29816-30717","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w10-situps-53923-54558
+{"completed":308,"total":616,"id":"w10-dumbbell_rows-33087-33735","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-situps-54995-55641
+{"completed":309,"total":616,"id":"w10-situps-52587-53205","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w10-tricep_extensions-56985-57626
+{"completed":310,"total":616,"id":"w10-dumbbell_rows-48584-49192","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-tricep_extensions-58606-59251
+{"completed":311,"total":616,"id":"w10-situps-53923-54558","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w10-tricep_extensions-62534-63175
+{"completed":312,"total":616,"id":"w10-situps-54995-55641","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w10-bicep_curls-63823-64492
+{"completed":313,"total":616,"id":"w10-tricep_extensions-56985-57626","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-bicep_curls-69635-70281
+{"completed":314,"total":616,"id":"w10-tricep_extensions-58606-59251","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-bicep_curls-70875-71564
+{"completed":315,"total":616,"id":"w10-tricep_extensions-62534-63175","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w10-lateral_shoulder_raises-73428-74144
+{"completed":316,"total":616,"id":"w10-bicep_curls-63823-64492","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-lateral_shoulder_raises-74898-75577
+{"completed":317,"total":616,"id":"w10-bicep_curls-69635-70281","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-lateral_shoulder_raises-76110-76785
+{"completed":318,"total":616,"id":"w10-bicep_curls-70875-71564","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-jumping_jacks-77255-77569
+{"completed":319,"total":616,"id":"w10-lateral_shoulder_raises-73428-74144","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-jumping_jacks-77984-78280
+{"completed":320,"total":616,"id":"w10-lateral_shoulder_raises-74898-75577","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w10-jumping_jacks-78709-79016
+{"completed":321,"total":616,"id":"w10-jumping_jacks-77255-77569","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w11-squats-3062-3826
+{"completed":322,"total":616,"id":"w10-jumping_jacks-77984-78280","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w11-squats-5889-6636
+{"completed":323,"total":616,"id":"w10-jumping_jacks-78709-79016","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w11-squats-8727-9426
+{"completed":324,"total":616,"id":"w10-lateral_shoulder_raises-76110-76785","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-pushups-9936-10490
+{"completed":325,"total":616,"id":"w11-squats-3062-3826","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-pushups-11552-12129
+{"completed":326,"total":616,"id":"w11-squats-5889-6636","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-pushups-14616-15121
+{"completed":327,"total":616,"id":"w11-pushups-9936-10490","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-dumbbell_shoulder_press-16770-17542
+{"completed":328,"total":616,"id":"w11-squats-8727-9426","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-dumbbell_shoulder_press-20375-21113
+{"completed":329,"total":616,"id":"w11-pushups-14616-15121","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-dumbbell_shoulder_press-22987-23731
+{"completed":330,"total":616,"id":"w11-pushups-11552-12129","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-lunges-24818-25759
+{"completed":331,"total":616,"id":"w11-dumbbell_shoulder_press-16770-17542","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-lunges-26730-27623
+{"completed":332,"total":616,"id":"w11-dumbbell_shoulder_press-20375-21113","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-lunges-29686-30532
+{"completed":333,"total":616,"id":"w11-dumbbell_shoulder_press-22987-23731","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-dumbbell_rows-31556-32148
+{"completed":334,"total":616,"id":"w11-lunges-24818-25759","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-dumbbell_rows-34003-34554
+{"completed":335,"total":616,"id":"w11-lunges-26730-27623","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-dumbbell_rows-36035-36582
+{"completed":336,"total":616,"id":"w11-lunges-29686-30532","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-situps-37498-38405
+{"completed":337,"total":616,"id":"w11-dumbbell_rows-31556-32148","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-situps-39015-39986
+{"completed":338,"total":616,"id":"w11-dumbbell_rows-34003-34554","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-situps-40758-41804
+{"completed":339,"total":616,"id":"w11-dumbbell_rows-36035-36582","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-tricep_extensions-43195-43921
+{"completed":340,"total":616,"id":"w11-situps-37498-38405","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w11-tricep_extensions-45997-46721
+{"completed":341,"total":616,"id":"w11-situps-39015-39986","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w11-tricep_extensions-48316-49022
+{"completed":342,"total":616,"id":"w11-tricep_extensions-43195-43921","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w11-bicep_curls-50125-50760
+{"completed":343,"total":616,"id":"w11-situps-40758-41804","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w11-bicep_curls-51945-52561
+{"completed":344,"total":616,"id":"w11-tricep_extensions-45997-46721","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w11-bicep_curls-53350-53939
+{"completed":345,"total":616,"id":"w11-tricep_extensions-48316-49022","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w11-lateral_shoulder_raises-54579-55525
+{"completed":346,"total":616,"id":"w11-bicep_curls-50125-50760","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-lateral_shoulder_raises-57191-57988
+{"completed":347,"total":616,"id":"w11-bicep_curls-51945-52561","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-lateral_shoulder_raises-59340-60155
+{"completed":348,"total":616,"id":"w11-bicep_curls-53350-53939","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-jumping_jacks-61469-61780
+{"completed":349,"total":616,"id":"w11-jumping_jacks-61469-61780","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w11-jumping_jacks-62345-62656
+{"completed":350,"total":616,"id":"w11-lateral_shoulder_raises-54579-55525","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w11-jumping_jacks-64079-64390
+{"completed":351,"total":616,"id":"w11-lateral_shoulder_raises-57191-57988","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-squats-5812-6360
+{"completed":352,"total":616,"id":"w11-lateral_shoulder_raises-59340-60155","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-squats-7213-7735
+{"completed":353,"total":616,"id":"w11-jumping_jacks-62345-62656","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w12-squats-8965-9505
+{"completed":354,"total":616,"id":"w11-jumping_jacks-64079-64390","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w12-pushups-10994-11331
+{"completed":355,"total":616,"id":"w12-squats-5812-6360","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-pushups-12370-12740
+{"completed":356,"total":616,"id":"w12-squats-7213-7735","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-pushups-13776-14190
+{"completed":357,"total":616,"id":"w12-pushups-10994-11331","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w12-dumbbell_shoulder_press-14934-15569
+{"completed":358,"total":616,"id":"w12-squats-8965-9505","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-dumbbell_shoulder_press-17592-18134
+{"completed":359,"total":616,"id":"w12-pushups-12370-12740","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w12-dumbbell_shoulder_press-20678-21165
+{"completed":360,"total":616,"id":"w12-pushups-13776-14190","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w12-lunges-22081-22765
+{"completed":361,"total":616,"id":"w12-dumbbell_shoulder_press-14934-15569","count":11,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w12-lunges-24908-25535
+{"completed":362,"total":616,"id":"w12-dumbbell_shoulder_press-17592-18134","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-lunges-28118-28750
+{"completed":363,"total":616,"id":"w12-dumbbell_shoulder_press-20678-21165","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w12-dumbbell_rows-34870-35305
+{"completed":364,"total":616,"id":"w12-lunges-22081-22765","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w12-dumbbell_rows-38503-38855
+{"completed":365,"total":616,"id":"w12-dumbbell_rows-34870-35305","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w12-dumbbell_rows-42945-43304
+{"completed":366,"total":616,"id":"w12-lunges-24908-25535","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w12-situps-46755-47442
+{"completed":367,"total":616,"id":"w12-lunges-28118-28750","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w12-situps-51991-52604
+{"completed":368,"total":616,"id":"w12-dumbbell_rows-38503-38855","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w12-situps-55231-55840
+{"completed":369,"total":616,"id":"w12-dumbbell_rows-42945-43304","count":6,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w12-tricep_extensions-57410-57780
+{"completed":370,"total":616,"id":"w12-situps-51991-52604","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w12-tricep_extensions-61322-61691
+{"completed":371,"total":616,"id":"w12-situps-46755-47442","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w12-tricep_extensions-65990-66360
+{"completed":372,"total":616,"id":"w12-situps-55231-55840","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w12-bicep_curls-70103-70467
+{"completed":373,"total":616,"id":"w12-tricep_extensions-57410-57780","count":4,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-squats-5487-6034
+{"completed":374,"total":616,"id":"w12-tricep_extensions-61322-61691","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-squats-6920-7475
+{"completed":375,"total":616,"id":"w12-tricep_extensions-65990-66360","count":10,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-squats-9238-9743
+{"completed":376,"total":616,"id":"w12-bicep_curls-70103-70467","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-pushups-10513-10902
+{"completed":377,"total":616,"id":"w13-squats-5487-6034","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-pushups-12415-12790
+{"completed":378,"total":616,"id":"w13-pushups-10513-10902","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-pushups-15326-15677
+{"completed":379,"total":616,"id":"w13-squats-9238-9743","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-dumbbell_shoulder_press-17529-18063
+{"completed":380,"total":616,"id":"w13-squats-6920-7475","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-dumbbell_shoulder_press-19536-20047
+{"completed":381,"total":616,"id":"w13-pushups-12415-12790","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-dumbbell_shoulder_press-22298-22773
+{"completed":382,"total":616,"id":"w13-pushups-15326-15677","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-lunges-23865-24648
+{"completed":383,"total":616,"id":"w13-dumbbell_shoulder_press-19536-20047","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-lunges-26003-26838
+{"completed":384,"total":616,"id":"w13-dumbbell_shoulder_press-17529-18063","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-lunges-29792-30485
+{"completed":385,"total":616,"id":"w13-dumbbell_shoulder_press-22298-22773","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w13-dumbbell_rows-31581-31942
+{"completed":386,"total":616,"id":"w13-dumbbell_rows-31581-31942","count":7,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w13-dumbbell_rows-34932-35258
+{"completed":387,"total":616,"id":"w13-lunges-23865-24648","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-dumbbell_rows-36980-37351
+{"completed":388,"total":616,"id":"w13-lunges-29792-30485","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-situps-38549-39310
+{"completed":389,"total":616,"id":"w13-dumbbell_rows-34932-35258","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w13-situps-41935-42622
+{"completed":390,"total":616,"id":"w13-lunges-26003-26838","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w13-situps-47110-47860
+{"completed":391,"total":616,"id":"w13-dumbbell_rows-36980-37351","count":7,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w13-tricep_extensions-48994-49470
+{"completed":392,"total":616,"id":"w13-tricep_extensions-48994-49470","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-tricep_extensions-50492-50993
+{"completed":393,"total":616,"id":"w13-situps-38549-39310","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w13-tricep_extensions-54070-54523
+{"completed":394,"total":616,"id":"w13-situps-41935-42622","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w13-bicep_curls-55781-56199
+{"completed":395,"total":616,"id":"w13-situps-47110-47860","count":null,"expected":11,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w13-bicep_curls-57079-57460
+{"completed":396,"total":616,"id":"w13-bicep_curls-55781-56199","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-bicep_curls-58786-59379
+{"completed":397,"total":616,"id":"w13-tricep_extensions-50492-50993","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-lateral_shoulder_raises-61430-61903
+{"completed":398,"total":616,"id":"w13-tricep_extensions-54070-54523","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w13-lateral_shoulder_raises-63821-64308
+{"completed":399,"total":616,"id":"w13-bicep_curls-57079-57460","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-lateral_shoulder_raises-66921-67441
+{"completed":400,"total":616,"id":"w13-lateral_shoulder_raises-61430-61903","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w13-jumping_jacks-69316-69665
+{"completed":401,"total":616,"id":"w13-lateral_shoulder_raises-63821-64308","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-jumping_jacks-71250-71560
+{"completed":402,"total":616,"id":"w13-lateral_shoulder_raises-66921-67441","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w13-jumping_jacks-72690-73024
+{"completed":403,"total":616,"id":"w13-bicep_curls-58786-59379","count":12,"expected":12,"score":"PASS","admitted":true,"reason":null}
+START w14-squats-1626-2136
+{"completed":404,"total":616,"id":"w13-jumping_jacks-71250-71560","count":null,"expected":11,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w14-squats-2938-3451
+{"completed":405,"total":616,"id":"w13-jumping_jacks-69316-69665","count":null,"expected":11,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w14-squats-4660-5167
+{"completed":406,"total":616,"id":"w13-jumping_jacks-72690-73024","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w14-pushups-5592-6084
+{"completed":407,"total":616,"id":"w14-squats-1626-2136","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-pushups-6584-7009
+{"completed":408,"total":616,"id":"w14-squats-4660-5167","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-pushups-7960-8409
+{"completed":409,"total":616,"id":"w14-squats-2938-3451","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-dumbbell_shoulder_press-9071-9724
+{"completed":410,"total":616,"id":"w14-pushups-5592-6084","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-dumbbell_shoulder_press-10602-11277
+{"completed":411,"total":616,"id":"w14-pushups-6584-7009","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-dumbbell_shoulder_press-13788-14465
+{"completed":412,"total":616,"id":"w14-pushups-7960-8409","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-dumbbell_rows-16689-17252
+{"completed":413,"total":616,"id":"w14-dumbbell_shoulder_press-9071-9724","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-dumbbell_rows-17820-18365
+{"completed":414,"total":616,"id":"w14-dumbbell_shoulder_press-10602-11277","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-dumbbell_rows-19343-19900
+{"completed":415,"total":616,"id":"w14-dumbbell_shoulder_press-13788-14465","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-situps-20806-21376
+{"completed":416,"total":616,"id":"w14-dumbbell_rows-16689-17252","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-situps-22398-22992
+{"completed":417,"total":616,"id":"w14-dumbbell_rows-17820-18365","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-situps-24044-24610
+{"completed":418,"total":616,"id":"w14-dumbbell_rows-19343-19900","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-tricep_extensions-25213-25854
+{"completed":419,"total":616,"id":"w14-situps-20806-21376","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w14-tricep_extensions-27678-28276
+{"completed":420,"total":616,"id":"w14-situps-22398-22992","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w14-tricep_extensions-32136-32771
+{"completed":421,"total":616,"id":"w14-situps-24044-24610","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w14-bicep_curls-33305-33882
+{"completed":422,"total":616,"id":"w14-tricep_extensions-25213-25854","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w14-bicep_curls-34493-35080
+{"completed":423,"total":616,"id":"w14-tricep_extensions-27678-28276","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-bicep_curls-35770-36356
+{"completed":424,"total":616,"id":"w14-tricep_extensions-32136-32771","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-lateral_shoulder_raises-37448-38096
+{"completed":425,"total":616,"id":"w14-bicep_curls-33305-33882","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-lateral_shoulder_raises-38609-39300
+{"completed":426,"total":616,"id":"w14-bicep_curls-34493-35080","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-lateral_shoulder_raises-39785-40425
+{"completed":427,"total":616,"id":"w14-bicep_curls-35770-36356","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-lunges-40789-41622
+{"completed":428,"total":616,"id":"w14-lateral_shoulder_raises-37448-38096","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-lunges-44003-44813
+{"completed":429,"total":616,"id":"w14-lateral_shoulder_raises-38609-39300","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-lunges-45380-46161
+{"completed":430,"total":616,"id":"w14-lateral_shoulder_raises-39785-40425","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w14-jumping_jacks-46917-47205
+{"completed":431,"total":616,"id":"w14-jumping_jacks-46917-47205","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w14-jumping_jacks-47813-48131
+{"completed":432,"total":616,"id":"w14-lunges-40789-41622","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w14-jumping_jacks-48921-49214
+{"completed":433,"total":616,"id":"w14-lunges-44003-44813","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-squats-4078-4789
+{"completed":434,"total":616,"id":"w14-jumping_jacks-48921-49214","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w15-squats-7004-7737
+{"completed":435,"total":616,"id":"w14-lunges-45380-46161","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w15-squats-9295-9938
+{"completed":436,"total":616,"id":"w14-jumping_jacks-47813-48131","count":null,"expected":11,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w15-pushups-10564-11010
+{"completed":437,"total":616,"id":"w15-pushups-10564-11010","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-pushups-11887-12344
+{"completed":438,"total":616,"id":"w15-squats-4078-4789","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-pushups-13469-13917
+{"completed":439,"total":616,"id":"w15-squats-9295-9938","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-dumbbell_shoulder_press-14562-15347
+{"completed":440,"total":616,"id":"w15-squats-7004-7737","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-dumbbell_shoulder_press-16179-16962
+{"completed":441,"total":616,"id":"w15-pushups-11887-12344","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-dumbbell_shoulder_press-17945-18759
+{"completed":442,"total":616,"id":"w15-pushups-13469-13917","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-lunges-19631-20434
+{"completed":443,"total":616,"id":"w15-dumbbell_shoulder_press-14562-15347","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-lunges-21915-22731
+{"completed":444,"total":616,"id":"w15-dumbbell_shoulder_press-16179-16962","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-lunges-25332-26138
+{"completed":445,"total":616,"id":"w15-dumbbell_shoulder_press-17945-18759","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-dumbbell_rows-28202-28703
+{"completed":446,"total":616,"id":"w15-lunges-19631-20434","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-dumbbell_rows-29663-30192
+{"completed":447,"total":616,"id":"w15-dumbbell_rows-28202-28703","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-dumbbell_rows-31062-31572
+{"completed":448,"total":616,"id":"w15-lunges-21915-22731","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-situps-32862-33788
+{"completed":449,"total":616,"id":"w15-lunges-25332-26138","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-situps-34720-35712
+{"completed":450,"total":616,"id":"w15-dumbbell_rows-29663-30192","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-situps-36637-37612
+{"completed":451,"total":616,"id":"w15-dumbbell_rows-31062-31572","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-tricep_extensions-38369-38973
+{"completed":452,"total":616,"id":"w15-situps-32862-33788","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w15-tricep_extensions-41492-42086
+{"completed":453,"total":616,"id":"w15-situps-34720-35712","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w15-tricep_extensions-42805-43378
+{"completed":454,"total":616,"id":"w15-situps-36637-37612","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w15-bicep_curls-44319-44870
+{"completed":455,"total":616,"id":"w15-tricep_extensions-38369-38973","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w15-bicep_curls-45345-45901
+{"completed":456,"total":616,"id":"w15-tricep_extensions-41492-42086","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-bicep_curls-46597-47145
+{"completed":457,"total":616,"id":"w15-tricep_extensions-42805-43378","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w15-lateral_shoulder_raises-47829-48704
+{"completed":458,"total":616,"id":"w15-bicep_curls-44319-44870","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-lateral_shoulder_raises-50788-51590
+{"completed":459,"total":616,"id":"w15-bicep_curls-45345-45901","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-lateral_shoulder_raises-52328-53058
+{"completed":460,"total":616,"id":"w15-bicep_curls-46597-47145","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w15-jumping_jacks-56403-56720
+{"completed":461,"total":616,"id":"w15-jumping_jacks-56403-56720","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w15-jumping_jacks-58526-58834
+{"completed":462,"total":616,"id":"w15-lateral_shoulder_raises-52328-53058","count":9,"expected":9,"score":"PASS","admitted":true,"reason":null}
+START w15-jumping_jacks-59330-59640
+{"completed":463,"total":616,"id":"w15-lateral_shoulder_raises-50788-51590","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w16-squats-3772-4438
+{"completed":464,"total":616,"id":"w15-lateral_shoulder_raises-47829-48704","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w16-squats-5819-6385
+{"completed":465,"total":616,"id":"w15-jumping_jacks-58526-58834","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w16-squats-7413-7950
+{"completed":466,"total":616,"id":"w15-jumping_jacks-59330-59640","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w16-pushups-9557-9951
+{"completed":467,"total":616,"id":"w16-squats-5819-6385","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w16-pushups-11735-12465
+{"completed":468,"total":616,"id":"w16-squats-3772-4438","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w16-pushups-13696-14306
+{"completed":469,"total":616,"id":"w16-pushups-9557-9951","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w16-pushups-15543-16189
+{"completed":470,"total":616,"id":"w16-squats-7413-7950","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w16-dumbbell_shoulder_press-17903-18709
+{"completed":471,"total":616,"id":"w16-pushups-13696-14306","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w16-dumbbell_shoulder_press-19977-20722
+{"completed":472,"total":616,"id":"w16-pushups-11735-12465","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w16-dumbbell_shoulder_press-22128-22869
+{"completed":473,"total":616,"id":"w16-pushups-15543-16189","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w16-lunges-26293-27211
+{"completed":474,"total":616,"id":"w16-dumbbell_shoulder_press-17903-18709","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-lunges-28479-29321
+{"completed":475,"total":616,"id":"w16-dumbbell_shoulder_press-19977-20722","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w16-lunges-31545-32488
+{"completed":476,"total":616,"id":"w16-dumbbell_shoulder_press-22128-22869","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w16-dumbbell_rows-34400-35003
+{"completed":477,"total":616,"id":"w16-lunges-26293-27211","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w16-dumbbell_rows-36338-36920
+{"completed":478,"total":616,"id":"w16-lunges-28479-29321","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w16-dumbbell_rows-38449-38977
+{"completed":479,"total":616,"id":"w16-dumbbell_rows-34400-35003","count":11,"expected":12,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-situps-45035-45777
+{"completed":480,"total":616,"id":"w16-dumbbell_rows-36338-36920","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-situps-46903-47600
+{"completed":481,"total":616,"id":"w16-lunges-31545-32488","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w16-situps-49726-50157
+{"completed":482,"total":616,"id":"w16-dumbbell_rows-38449-38977","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-situps-51339-52029
+{"completed":483,"total":616,"id":"w16-situps-45035-45777","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w16-tricep_extensions-54362-55185
+{"completed":484,"total":616,"id":"w16-situps-49726-50157","count":null,"expected":6,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w16-tricep_extensions-56206-56978
+{"completed":485,"total":616,"id":"w16-situps-46903-47600","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w16-tricep_extensions-58296-59000
+{"completed":486,"total":616,"id":"w16-situps-51339-52029","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w16-bicep_curls-60804-61420
+{"completed":487,"total":616,"id":"w16-tricep_extensions-56206-56978","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w16-bicep_curls-63421-64136
+{"completed":488,"total":616,"id":"w16-tricep_extensions-54362-55185","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w16-bicep_curls-66033-66793
+{"completed":489,"total":616,"id":"w16-tricep_extensions-58296-59000","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w16-lateral_shoulder_raises-67542-68645
+{"completed":490,"total":616,"id":"w16-bicep_curls-60804-61420","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-lateral_shoulder_raises-70267-71193
+{"completed":491,"total":616,"id":"w16-bicep_curls-63421-64136","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-lateral_shoulder_raises-73521-74600
+{"completed":492,"total":616,"id":"w16-bicep_curls-66033-66793","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-jumping_jacks-76070-76109
+{"completed":493,"total":616,"id":"w16-jumping_jacks-76070-76109","count":null,"expected":1,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w16-jumping_jacks-76490-76838
+{"completed":494,"total":616,"id":"w16-lateral_shoulder_raises-70267-71193","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-jumping_jacks-78177-78527
+{"completed":495,"total":616,"id":"w16-lateral_shoulder_raises-67542-68645","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w16-jumping_jacks-80046-80400
+{"completed":496,"total":616,"id":"w16-jumping_jacks-76490-76838","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-squats-2295-3003
+{"completed":497,"total":616,"id":"w16-jumping_jacks-78177-78527","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-squats-4028-4439
+{"completed":498,"total":616,"id":"w16-jumping_jacks-80046-80400","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-squats-5285-5934
+{"completed":499,"total":616,"id":"w16-lateral_shoulder_raises-73521-74600","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w17-squats-6606-7205
+{"completed":500,"total":616,"id":"w17-squats-4028-4439","count":7,"expected":7,"score":"PASS","admitted":true,"reason":null}
+START w17-pushups-8684-9105
+{"completed":501,"total":616,"id":"w17-squats-2295-3003","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w17-pushups-10018-10454
+{"completed":502,"total":616,"id":"w17-squats-5285-5934","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w17-pushups-11633-11986
+{"completed":503,"total":616,"id":"w17-pushups-8684-9105","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-pushups-12902-13345
+{"completed":504,"total":616,"id":"w17-pushups-10018-10454","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-dumbbell_shoulder_press-15687-16209
+{"completed":505,"total":616,"id":"w17-squats-6606-7205","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w17-dumbbell_shoulder_press-17120-17602
+{"completed":506,"total":616,"id":"w17-pushups-11633-11986","count":3,"expected":9,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-dumbbell_shoulder_press-18757-19295
+{"completed":507,"total":616,"id":"w17-pushups-12902-13345","count":7,"expected":12,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-lunges-20035-20803
+{"completed":508,"total":616,"id":"w17-dumbbell_shoulder_press-17120-17602","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w17-lunges-21841-22563
+{"completed":509,"total":616,"id":"w17-dumbbell_shoulder_press-15687-16209","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w17-lunges-24253-25302
+{"completed":510,"total":616,"id":"w17-dumbbell_shoulder_press-18757-19295","count":11,"expected":11,"score":"PASS","admitted":true,"reason":null}
+START w17-dumbbell_rows-26802-27222
+{"completed":511,"total":616,"id":"w17-lunges-20035-20803","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w17-dumbbell_rows-27935-28287
+{"completed":512,"total":616,"id":"w17-dumbbell_rows-26802-27222","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w17-dumbbell_rows-29634-29989
+{"completed":513,"total":616,"id":"w17-lunges-21841-22563","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w17-situps-31828-31970
+{"completed":514,"total":616,"id":"w17-situps-31828-31970","count":null,"expected":2,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-situps-32480-33383
+{"completed":515,"total":616,"id":"w17-dumbbell_rows-27935-28287","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-situps-35225-36120
+{"completed":516,"total":616,"id":"w17-lunges-24253-25302","count":13,"expected":14,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-situps-38653-39528
+{"completed":517,"total":616,"id":"w17-dumbbell_rows-29634-29989","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w17-tricep_extensions-40609-41070
+{"completed":518,"total":616,"id":"w17-tricep_extensions-40609-41070","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-tricep_extensions-41760-42300
+{"completed":519,"total":616,"id":"w17-situps-32480-33383","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-tricep_extensions-43590-43972
+{"completed":520,"total":616,"id":"w17-situps-38653-39528","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-bicep_curls-45270-45866
+{"completed":521,"total":616,"id":"w17-situps-35225-36120","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w17-bicep_curls-47995-48584
+{"completed":522,"total":616,"id":"w17-tricep_extensions-41760-42300","count":10,"expected":12,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-bicep_curls-49339-49893
+{"completed":523,"total":616,"id":"w17-tricep_extensions-43590-43972","count":4,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-lateral_shoulder_raises-51395-52104
+{"completed":524,"total":616,"id":"w17-bicep_curls-45270-45866","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-lateral_shoulder_raises-53577-54234
+{"completed":525,"total":616,"id":"w17-bicep_curls-47995-48584","count":10,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-lateral_shoulder_raises-56524-57161
+{"completed":526,"total":616,"id":"w17-bicep_curls-49339-49893","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-jumping_jacks-61209-61409
+{"completed":527,"total":616,"id":"w17-lateral_shoulder_raises-51395-52104","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-jumping_jacks-61486-61790
+{"completed":528,"total":616,"id":"w17-jumping_jacks-61209-61409","count":null,"expected":6,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w17-jumping_jacks-65275-65602
+{"completed":529,"total":616,"id":"w17-lateral_shoulder_raises-53577-54234","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w17-jumping_jacks-66308-66620
+{"completed":530,"total":616,"id":"w17-lateral_shoulder_raises-56524-57161","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-squats-1785-2500
+{"completed":531,"total":616,"id":"w17-jumping_jacks-61486-61790","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w18-squats-3566-4325
+{"completed":532,"total":616,"id":"w17-jumping_jacks-65275-65602","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w18-squats-7663-8406
+{"completed":533,"total":616,"id":"w17-jumping_jacks-66308-66620","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w18-pushups-9629-10111
+{"completed":534,"total":616,"id":"w18-squats-1785-2500","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w18-pushups-13444-13974
+{"completed":535,"total":616,"id":"w18-squats-7663-8406","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w18-pushups-17455-18010
+{"completed":536,"total":616,"id":"w18-squats-3566-4325","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w18-dumbbell_shoulder_press-22387-22825
+{"completed":537,"total":616,"id":"w18-pushups-9629-10111","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w18-dumbbell_shoulder_press-26753-27263
+{"completed":538,"total":616,"id":"w18-dumbbell_shoulder_press-22387-22825","count":8,"expected":9,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w18-dumbbell_shoulder_press-29212-29659
+{"completed":539,"total":616,"id":"w18-pushups-13444-13974","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w18-lunges-30819-31743
+{"completed":540,"total":616,"id":"w18-dumbbell_shoulder_press-26753-27263","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w18-lunges-38546-39400
+{"completed":541,"total":616,"id":"w18-pushups-17455-18010","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-lunges-45218-46080
+{"completed":542,"total":616,"id":"w18-dumbbell_shoulder_press-29212-29659","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w18-dumbbell_rows-48910-49477
+{"completed":543,"total":616,"id":"w18-lunges-30819-31743","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-dumbbell_rows-56150-56746
+{"completed":544,"total":616,"id":"w18-lunges-38546-39400","count":5,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-dumbbell_rows-61484-62071
+{"completed":545,"total":616,"id":"w18-lunges-45218-46080","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-situps-63671-64648
+{"completed":546,"total":616,"id":"w18-dumbbell_rows-48910-49477","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-situps-68617-69604
+{"completed":547,"total":616,"id":"w18-dumbbell_rows-56150-56746","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-situps-74858-75834
+{"completed":548,"total":616,"id":"w18-dumbbell_rows-61484-62071","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-tricep_extensions-77321-77903
+{"completed":549,"total":616,"id":"w18-situps-63671-64648","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w18-tricep_extensions-81625-82191
+{"completed":550,"total":616,"id":"w18-situps-68617-69604","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w18-tricep_extensions-86883-87503
+{"completed":551,"total":616,"id":"w18-tricep_extensions-77321-77903","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-bicep_curls-88761-89273
+{"completed":552,"total":616,"id":"w18-situps-74858-75834","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w18-bicep_curls-96987-97563
+{"completed":553,"total":616,"id":"w18-tricep_extensions-81625-82191","count":6,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-bicep_curls-102140-102705
+{"completed":554,"total":616,"id":"w18-tricep_extensions-86883-87503","count":8,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-lateral_shoulder_raises-104611-105213
+{"completed":555,"total":616,"id":"w18-bicep_curls-88761-89273","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-lateral_shoulder_raises-111226-111843
+{"completed":556,"total":616,"id":"w18-bicep_curls-96987-97563","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w18-lateral_shoulder_raises-115230-115820
+{"completed":557,"total":616,"id":"w18-bicep_curls-102140-102705","count":7,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w18-jumping_jacks-117011-117334
+{"completed":558,"total":616,"id":"w18-lateral_shoulder_raises-104611-105213","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w18-jumping_jacks-118625-118948
+{"completed":559,"total":616,"id":"w18-lateral_shoulder_raises-111226-111843","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w18-jumping_jacks-121292-121612
+{"completed":560,"total":616,"id":"w18-jumping_jacks-117011-117334","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w19-squats-1014-1510
+{"completed":561,"total":616,"id":"w18-jumping_jacks-118625-118948","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w19-squats-2469-2955
+{"completed":562,"total":616,"id":"w18-jumping_jacks-121292-121612","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w19-squats-3869-4343
+{"completed":563,"total":616,"id":"w18-lateral_shoulder_raises-115230-115820","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w19-pushups-5420-6088
+{"completed":564,"total":616,"id":"w19-squats-1014-1510","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w19-pushups-7845-8730
+{"completed":565,"total":616,"id":"w19-squats-2469-2955","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w19-pushups-11910-12654
+{"completed":566,"total":616,"id":"w19-squats-3869-4343","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-dumbbell_shoulder_press-14571-15366
+{"completed":567,"total":616,"id":"w19-pushups-5420-6088","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-dumbbell_shoulder_press-16246-16988
+{"completed":568,"total":616,"id":"w19-pushups-11910-12654","count":7,"expected":7,"score":"PASS","admitted":false,"reason":null}
+START w19-dumbbell_shoulder_press-17778-18635
+{"completed":569,"total":616,"id":"w19-pushups-7845-8730","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-lunges-19930-20954
+{"completed":570,"total":616,"id":"w19-dumbbell_shoulder_press-14571-15366","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w19-lunges-21726-22551
+{"completed":571,"total":616,"id":"w19-dumbbell_shoulder_press-16246-16988","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w19-lunges-23396-24170
+{"completed":572,"total":616,"id":"w19-dumbbell_shoulder_press-17778-18635","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w19-dumbbell_rows-25843-26283
+{"completed":573,"total":616,"id":"w19-lunges-21726-22551","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-dumbbell_rows-26980-27460
+{"completed":574,"total":616,"id":"w19-lunges-23396-24170","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w19-dumbbell_rows-29220-29671
+{"completed":575,"total":616,"id":"w19-lunges-19930-20954","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w19-situps-31640-32443
+{"completed":576,"total":616,"id":"w19-dumbbell_rows-25843-26283","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-situps-33443-34240
+{"completed":577,"total":616,"id":"w19-dumbbell_rows-26980-27460","count":9,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-situps-34859-35658
+{"completed":578,"total":616,"id":"w19-dumbbell_rows-29220-29671","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w19-tricep_extensions-37836-38433
+{"completed":579,"total":616,"id":"w19-situps-31640-32443","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w19-tricep_extensions-40513-41132
+{"completed":580,"total":616,"id":"w19-situps-33443-34240","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w19-tricep_extensions-42365-42950
+{"completed":581,"total":616,"id":"w19-tricep_extensions-37836-38433","count":8,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-bicep_curls-43830-44509
+{"completed":582,"total":616,"id":"w19-situps-34859-35658","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w19-bicep_curls-45120-45761
+{"completed":583,"total":616,"id":"w19-tricep_extensions-40513-41132","count":0,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-bicep_curls-48102-48685
+{"completed":584,"total":616,"id":"w19-tricep_extensions-42365-42950","count":0,"expected":11,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w19-bicep_curls-49214-49838
+{"completed":585,"total":616,"id":"w19-bicep_curls-43830-44509","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w19-lateral_shoulder_raises-52134-52560
+{"completed":586,"total":616,"id":"w19-bicep_curls-45120-45761","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w20-squats-2178-2976
+{"completed":587,"total":616,"id":"w19-bicep_curls-48102-48685","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w20-squats-4027-4819
+{"completed":588,"total":616,"id":"w19-lateral_shoulder_raises-52134-52560","count":7,"expected":9,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-squats-6599-7448
+{"completed":589,"total":616,"id":"w19-bicep_curls-49214-49838","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w20-pushups-10093-10621
+{"completed":590,"total":616,"id":"w20-squats-2178-2976","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w20-pushups-12592-13225
+{"completed":591,"total":616,"id":"w20-squats-4027-4819","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w20-pushups-15603-16331
+{"completed":592,"total":616,"id":"w20-pushups-10093-10621","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w20-lunges-20425-21429
+{"completed":593,"total":616,"id":"w20-squats-6599-7448","count":10,"expected":10,"score":"PASS","admitted":true,"reason":null}
+START w20-lunges-22940-23846
+{"completed":594,"total":616,"id":"w20-pushups-12592-13225","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w20-lunges-26392-27375
+{"completed":595,"total":616,"id":"w20-pushups-15603-16331","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w20-dumbbell_rows-31643-32235
+{"completed":596,"total":616,"id":"w20-lunges-20425-21429","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w20-dumbbell_rows-33867-34568
+{"completed":597,"total":616,"id":"w20-lunges-22940-23846","count":9,"expected":9,"score":"PASS","admitted":false,"reason":null}
+START w20-dumbbell_rows-36462-37081
+{"completed":598,"total":616,"id":"w20-dumbbell_rows-31643-32235","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-situps-45744-46577
+{"completed":599,"total":616,"id":"w20-lunges-26392-27375","count":10,"expected":10,"score":"PASS","admitted":false,"reason":null}
+START w20-situps-49814-50592
+{"completed":600,"total":616,"id":"w20-dumbbell_rows-33867-34568","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-situps-53021-53785
+{"completed":601,"total":616,"id":"w20-dumbbell_rows-36462-37081","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-tricep_extensions-56904-57640
+{"completed":602,"total":616,"id":"w20-situps-45744-46577","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w20-tricep_extensions-60225-60934
+{"completed":603,"total":616,"id":"w20-situps-49814-50592","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w20-tricep_extensions-62285-62960
+{"completed":604,"total":616,"id":"w20-situps-53021-53785","count":null,"expected":10,"score":"FAIL","admitted":false,"reason":"Unsupported lift; no fallback counter"}
+START w20-bicep_curls-67093-67873
+{"completed":605,"total":616,"id":"w20-tricep_extensions-56904-57640","count":0,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w20-bicep_curls-69715-70503
+{"completed":606,"total":616,"id":"w20-tricep_extensions-62285-62960","count":4,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w20-bicep_curls-72723-73508
+{"completed":607,"total":616,"id":"w20-tricep_extensions-60225-60934","count":1,"expected":10,"score":"FAIL","admitted":false,"reason":"Count differs from unchanged dataset label"}
+START w20-lateral_shoulder_raises-77008-77909
+{"completed":608,"total":616,"id":"w20-bicep_curls-67093-67873","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-lateral_shoulder_raises-80244-81138
+{"completed":609,"total":616,"id":"w20-bicep_curls-69715-70503","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-lateral_shoulder_raises-84763-85691
+{"completed":610,"total":616,"id":"w20-bicep_curls-72723-73508","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-jumping_jacks-89297-89630
+{"completed":611,"total":616,"id":"w20-lateral_shoulder_raises-77008-77909","count":9,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+START w20-jumping_jacks-91978-92341
+{"completed":612,"total":616,"id":"w20-jumping_jacks-89297-89630","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+START w20-jumping_jacks-94498-94869
+{"completed":613,"total":616,"id":"w20-jumping_jacks-91978-92341","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+{"completed":614,"total":616,"id":"w20-lateral_shoulder_raises-80244-81138","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+{"completed":615,"total":616,"id":"w20-lateral_shoulder_raises-84763-85691","count":8,"expected":10,"score":"FAIL","admitted":true,"reason":"Count differs from unchanged dataset label"}
+{"completed":616,"total":616,"id":"w20-jumping_jacks-94498-94869","count":null,"expected":10,"score":"FAIL","admitted":true,"reason":"Unsupported lift; no fallback counter"}
+{"sets":616,"pass":332,"fail":284,"admitted":287,"excluded":329}

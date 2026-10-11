@@ -1,0 +1,25 @@
+Reviewer, step 3, 29 September. Three defects.
+
+1. The exercise name in the encouragement, both languages, for card lifts (set-account.js inSentence, de).
+   French elided before any h: "2e série d’hip thrust", "d’hack squat". English lowercased the first letter only:
+   "Your 2nd set of romanian deadlift", "arnold Press", "bulgarian Split Squat".
+   Failing test: cheer for 'Hip thrust' in French must read "2e série de hip thrust …"; 'Romanian deadlift' in English keeps its capital.
+2. Not always shown (Result.jsx: count > 0 && asked && whole.length > 0). A set whose only rep the recording cut
+   (every rep clipped, core.ts line 656) showed no tip, no encouragement and no "En savoir plus".
+3. A failed read of the saved sets left `before` at [] for good: after saving a 10th set the screen could read
+   "1re série …" and drop the comparison (R8).
+
+Tests: set-account.test.js covered the pure functions only; the wiring in Result.jsx had no test; no real
+catalogue name with an h or a proper adjective; the harness shot one lift with empty storage.
+
+No defect found: every string in both languages, no em dash, NBSP before ":" and "%"; the notes match texts.md D
+line for line; rep numbers are 1-based; newest set first; the save cannot slip the new set into `before`; pause
+placement follows each lift's first phase; no value repeated; reduced motion; no share path touched; no new host;
+synthetic screens only; sources unchanged apart from 4 (retired), 14 and 15.
+Residual note: at 15 frames per second, one frame in a 0.5 s concentric phase reads as 13 % slower; the approved copy
+states the measured value.
+
+Fixes (this session): 1 by tests that failed first (set-account.test.js, "real names in the encouragement", 3 failed
+then 19 passed); 2 shown in the harness case ?clipped (shots/output.txt, fr-clipped: tip and encouragement shown),
+no failing run recorded before the fix; 3 fixed by reading the sets again after the save and showing no rank while
+the history is unread (the pure part tested: nth null gives no encouragement); the retry in Result.jsx has no test.

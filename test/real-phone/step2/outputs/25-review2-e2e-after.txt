@@ -1,0 +1,14 @@
+
+Running 9 tests using 1 worker
+
+  ✓  1 e2e/shared/exercises.tests.js:15:3 › Chromium › the 182 counted exercises are listed under the nine cards, the four with evidence in Beta (549ms)
+  ✓  2 e2e/shared/exercises.tests.js:27:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches (455ms)
+  ✓  3 e2e/shared/exercises.tests.js:38:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide (650ms)
+  ✓  4 e2e/shared/exercises.tests.js:52:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label (634ms)
+  ✓  5 e2e/shared/exercises.tests.js:62:3 › Chromium › the choice screen with its list holds together at 375 px, in French (1.4s)
+  ✓  6 e2e/shared/exercises.tests.js:72:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included (2.2s)
+  ✓  7 e2e/shared/exercises.tests.js:82:3 › Chromium › the French search finds exercises by their muscles in French (693ms)
+  ✓  8 e2e/shared/exercises.tests.js:90:3 › Chromium › if the list cannot load, the nine cards still show (1.7s)
+  ✓  9 e2e/shared/exercises.tests.js:100:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key (508ms)
+
+  9 passed (10.3s)

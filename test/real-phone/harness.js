@@ -15,6 +15,13 @@ import { extractFramesStreaming } from '../../src/lib/frameExtractor.js';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from '../../src/lib/extractionConfig.js';
 import { getImageLandmarker, detectPoseImage, disposeAllLandmarkers, selectSubjectPose } from '../../src/lib/poseAnalysis.js';
 
+// Match the app worker: TFLite sends this informational startup line to stderr.
+const originalError = console.error.bind(console);
+console.error = (...args) => {
+  if (args.length === 1 && args[0] === 'INFO: Created TensorFlow Lite XNNPACK delegate for CPU.') console.info(...args);
+  else originalError(...args);
+};
+
 const log = document.getElementById('log');
 function appendLog(msg) {
   log.textContent += '\n' + msg;
@@ -53,6 +60,7 @@ async function processFile(file) {
   const imageLandmarks = [];   // per-sample: array of 33 landmarks (normalised) or null
   const worldLandmarksArr = []; // per-sample: array of 33 world landmarks (metres) or null
   const timestamps = [];
+  const pixelHashes = [];      // per-sample SHA-256 hex of the pixel buffer handed to the landmarker
   let lockedSubjectIdx = null;
   let sampleCount = 0;
   let midFrameDataURL = null;
@@ -68,9 +76,20 @@ async function processFile(file) {
     MAX_FRAMES,
     MAX_LONG_SIDE,
     async (canvas, frameIndex, timestamp) => {
-      // Run MediaPipe detection
+      // Match the app's worker path: read pixels from the extraction canvas
+      // and write them onto an OffscreenCanvas before inference. The roundtrip
+      // is lossless, but using the same path as the worker ensures the harness
+      // and the app hand identical pixel data to the landmarker.
+      const pxData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      const inferCanvas = new OffscreenCanvas(canvas.width, canvas.height);
+      inferCanvas.getContext('2d').putImageData(pxData, 0, 0);
+
+      // Hash the pixel buffer handed to the landmarker (for parity checks).
+      const hashBuf = await crypto.subtle.digest('SHA-256', pxData.data.buffer);
+      pixelHashes.push(Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join(''));
+
       const deterministicTs = frameIndex * (1000 / TARGET_FPS);
-      const result = detectPoseImage(landmarker, canvas, deterministicTs);
+      const result = detectPoseImage(landmarker, inferCanvas, deterministicTs);
 
       let lm = null;
       let wlm = null;
@@ -191,7 +210,7 @@ async function processFile(file) {
 
   disposeAllLandmarkers();
 
-  return { metadata, imageLandmarks, worldLandmarks: worldLandmarksArr, timestamps, midFrameDataURL };
+  return { metadata, imageLandmarks, worldLandmarks: worldLandmarksArr, timestamps, pixelHashes, midFrameDataURL };
 }
 
 // Expose to Playwright

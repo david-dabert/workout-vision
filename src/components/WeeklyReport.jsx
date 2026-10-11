@@ -1,5 +1,5 @@
 /**
- * WeeklyReport — weekly fitness summary with share card.
+ * WeeklyReport - weekly fitness summary with share card.
  * Shows volume, reps, sets, exercises, form trend, muscle heatmap,
  * streak, a standout callout, and a Canvas-based share button.
  */
@@ -96,7 +96,7 @@ function calcStreak(workouts) {
 
 function FormTrend({ thisWeek, lastWeek }) {
   const { t } = useT();
-  if (thisWeek === null) return <span style={{ color: 'var(--muted)' }}>—</span>;
+  if (thisWeek === null) return <span style={{ color: 'var(--muted)' }}> -</span>;
   if (lastWeek === null) return <span style={{ color: 'var(--accent)' }}>{thisWeek}</span>;
 
   const diff = thisWeek - lastWeek;
@@ -141,7 +141,7 @@ function buildShareCard(stats, streakCount, lang, t) {
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Header — app name
+  // Header - app name
   ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.textAlign = 'left';
@@ -163,7 +163,7 @@ function buildShareCard(stats, streakCount, lang, t) {
 
   // Big stat grid (2 × 2)
   const statItems = [
-    { label: t('wr_volume'), value: stats.totalVolume > 0 ? `${Math.round(stats.totalVolume).toLocaleString()}kg` : '—' },
+    { label: t('wr_volume'), value: stats.totalVolume > 0 ? `${Math.round(stats.totalVolume).toLocaleString()}kg` : ' -' },
     { label: 'REPS', value: stats.totalReps.toLocaleString() },
     { label: t('wr_sets'), value: stats.totalSets },
     { label: t('wr_exercises'), value: stats.totalExercises },
@@ -221,7 +221,7 @@ function buildShareCard(stats, streakCount, lang, t) {
   } else {
     ctx.font = 'bold 80px system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.fillText('—', 80, formY + 90);
+    ctx.fillText(' -', 80, formY + 90);
   }
 
   // Streak
@@ -381,7 +381,7 @@ export default function WeeklyReport({ onClose }) {
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12,
           }}>
-            <StatCard label={t('wr_volume')} value={thisStats.totalVolume > 0 ? `${Math.round(thisStats.totalVolume).toLocaleString()}` : '—'} unit={thisStats.totalVolume > 0 ? 'kg' : ''} accent />
+            <StatCard label={t('wr_volume')} value={thisStats.totalVolume > 0 ? `${Math.round(thisStats.totalVolume).toLocaleString()}` : ' -'} unit={thisStats.totalVolume > 0 ? 'kg' : ''} accent />
             <StatCard label="REPS" value={thisStats.totalReps.toLocaleString()} />
             <StatCard label={t('wr_exercises')} value={thisStats.totalExercises} />
             <StatCard label={t('wr_sets')} value={thisStats.totalSets} />

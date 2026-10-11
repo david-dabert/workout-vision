@@ -7,6 +7,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173',
     serviceWorkers: 'allow',
+    // Where Playwright's own Chromium is absent, PW_CHROMIUM names a Chromium binary to use.
+    ...(process.env.PW_CHROMIUM ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } } : {}),
   },
   webServer: {
     command: 'test -d dist && npm run preview || (npm run build && npm run preview)',

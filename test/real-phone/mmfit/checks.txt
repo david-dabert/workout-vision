@@ -1,0 +1,1 @@
+PASS: only the exact single-argument XNNPACK startup line becomes info; other errors remain errors.

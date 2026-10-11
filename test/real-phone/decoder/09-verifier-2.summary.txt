@@ -1,0 +1,20 @@
+Verifier, second run, GROWTH step 5 "Count on the iPhone", range eca34b7..0886cf2, 29 September 2026.
+Commands: lint 0 errors; typecheck exit 0; npm test "Test Files 39 passed (39) / Tests 874 passed | 4 expected fail (878)";
+build "✓ built in 6.69s ... all assertions passed"; git status --porcelain empty. src-hash 265ecf6e...a649; no results.json in the evidence.
+The full table (56 rows) is quoted unchanged in the STOP report of this session; its UNMET rows:
+1 step 4 (81a04cc) is on main at eca34b7 although the step says step 4 waits; no iPhone count shown.
+3 "every sample however slow the phone" shown only on a synthetic 6 s video in desktop Chromium.
+7 the check page never run in the evidence; check-page.png shows no count, share or decoder.
+9 the approved incomplete-read screen changed (a report row added), no approval recorded.
+14 the decoder pause, the 1x rate and reviewer 05 findings 1, 2, 4 have no test in the suite.
+15 0886cf2 has no saved review.
+17 the CI tour was in progress.
+19, 26, 28, 29 no screenshots, WebKit iPhone run or tour shots of the new or changed screens.
+22 reviewer reports carry the builder's "Fixes:" sections; 03-e2e.txt edited by hand.
+23, 39, 41 process rules with no STOP report to attest them; the local branch is not counter-core.
+37, 43, 52 00-source.txt numbers typed from uncommitted screenshots.
+40 the playback rate changed without an isolating failing-first synthetic test.
+46 work continued past the Step 1 conflict before it was reported.
+56 no results.json whose srcHash matches.
+VERDICT: FAIL (UNMET rows: 1, 3, 7, 9, 14, 15, 17, 19, 22, 23, 26, 28, 29, 37, 39, 40, 41, 43, 46, 52, 56)
+First run (range eca34b7..d246700): FAIL on rows 3, 5, 6, 9, 10, 11, 14, 15, 16, 17, 23, 25, 27, 29, 33, 34, 39, 40.

@@ -1,0 +1,1 @@
+Goal: the session report, on screen and in the PDF, gives one item per line so a client who is not a coach can read it, names the app only in one discreet foot line "Analysé avec Workout Vision", keeps its table headings apart, and a screen change no longer dips to a nearly blank stage 150 ms after the tap.

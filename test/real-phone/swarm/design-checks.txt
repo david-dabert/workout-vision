@@ -1,0 +1,12 @@
+Before the fixes (merge of the design pass, 30 September): D1 aria-atomic=null; D2 FAIL at 390x664 and 375x548 in FR and EN (label out of its box, EN on the dashed edge); D3 guide: title under an uncondensed bar from scroll 12; D4 history: focused row top 45 under bar bottom 54.
+After:
+PASS D1 stepper live region aria-atomic=true
+PASS D2 refused fr 390x664: "Hors cadre" in its box=true, off the edge=true, faults=none
+PASS D2 refused fr 375x548: "Hors cadre" in its box=true, off the edge=true, faults=none
+PASS D2 refused fr 390x745: "Hors cadre" in its box=true, off the edge=true, faults=none
+PASS D2 refused en 390x664: "Out of frame" in its box=true, off the edge=true, faults=none
+PASS D2 refused en 375x548: "Out of frame" in its box=true, off the edge=true, faults=none
+PASS D2 refused en 390x745: "Out of frame" in its box=true, off the edge=true, faults=none
+PASS D3 guide: title under an uncondensed bar at scroll never
+PASS D3 history: title under an uncondensed bar at scroll never
+PASS D4 history: a focused row under the sticky bar never

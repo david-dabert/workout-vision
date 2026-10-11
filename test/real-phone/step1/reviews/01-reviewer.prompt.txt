@@ -1,0 +1,1 @@
+Every saved result offers a report of its count by email to pr.dabertdavid@gmail.com or as a GitHub issue and a challenge through the share sheet, and the session report assumes no coach and shows only what the user filled in.

@@ -28,7 +28,7 @@ const BASE = process.env.VERCEL ? '/' : (process.env.VITE_BASE || '/workout-visi
 
 // Read all built assets
 const assetFiles = readdirSync(ASSETS_DIR)
-  .filter(f => /\.(js|css)$/.test(f))
+  .filter(f => /\.(js|css)$/.test(f) && !/^collect/i.test(f)) // every collector chunk: collect-, collectBatch-, collectSet- (review, 30 September)
   .map(f => `${BASE}assets/${f}`);
 
 // Also include boot.js and cache-bust.js if present
@@ -56,6 +56,8 @@ const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──
 
 // Replace the base path placeholder with the actual deployment base
 sw = sw.replaceAll('__SW_BASE__', BASE);
+const modelHash = createHash('sha256').update(readFileSync(join(DIST, 'mediapipe/pose_landmarker_full.task'))).digest('hex');
+sw = sw.replaceAll('__MODEL_SHA256__', modelHash);
 
 // Replace the static CACHE_NAME with the hashed version
 sw = sw.replace(/const CACHE_NAME = '[^']+';/, `const CACHE_NAME = '${cacheName}';`);
@@ -68,8 +70,8 @@ sw = sw.replace(
 
 // Modify the install handler to precache both APP_SHELL and PRECACHE_ASSETS
 sw = sw.replace(
-  /cache\.addAll\(APP_SHELL\)/,
-  'cache.addAll([...APP_SHELL, ...PRECACHE_ASSETS])'
+  /cache\.addAll\(fresh\(APP_SHELL\)\)/,
+  'cache.addAll(fresh([...APP_SHELL, ...PRECACHE_ASSETS]))'
 );
 
 writeFileSync(SW_PATH, sw);
@@ -91,7 +93,7 @@ if (!written.includes('PRECACHE_ASSETS')) {
   console.error('[inject-sw-precache] FATAL: PRECACHE_ASSETS block not found in output SW');
   process.exit(1);
 }
-if (!written.includes('...APP_SHELL, ...PRECACHE_ASSETS')) {
+if (!written.includes('fresh([...APP_SHELL, ...PRECACHE_ASSETS])')) {
   console.error('[inject-sw-precache] FATAL: cache.addAll() was not patched to include PRECACHE_ASSETS');
   process.exit(1);
 }

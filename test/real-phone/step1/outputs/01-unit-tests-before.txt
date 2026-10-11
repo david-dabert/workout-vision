@@ -1,0 +1,236 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+3:45:42 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+3:45:42 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/__tests__/reportLinks.test.js (0 test)
+ ❯ src/components/experience/__tests__/report.test.js (31 tests | 8 failed) 167ms
+     × writes the prototype’s words, with a long date, and nothing where nothing was filled in 21ms
+     × assumes no coach: it names only the people and the level the user gave 2ms
+     × gives the level in the user's words, and leaves it out when none was chosen 1ms
+     × keeps no partner's name for a set trained alone or with no answer 1ms
+     × orders everything filled in: name, training, partner, level 1ms
+     × tidies the names and keeps the lines of the notes 1ms
+     × names the file in ASCII after the user and the day 2ms
+     × shortens a long name at a word, never in the middle of one 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js [ src/lib/__tests__/reportLinks.test.js ]
+Error: Cannot find module '../reportLinks' imported from /home/user/workout-vision/src/lib/__tests__/reportLinks.test.js
+ ❯ src/lib/__tests__/reportLinks.test.js:2:1
+      1| import { describe, it, expect } from 'vitest';
+      2| import { REPORT_EMAIL, reportEmailUrl, reportIssueUrl, challengeShare …
+       | ^
+      3|
+      4| // Step 1 (PLAN.md, GROWTH): every result offers a report by email to …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportSheet > writes the prototype’s words, with a long date, and nothing where nothing was filled in
+AssertionError: expected undefined to deeply equal []
+
+- Expected:
+[]
+
++ Received:
+undefined
+
+ ❯ src/components/experience/__tests__/report.test.js:17:22
+     15|     const s = reportSheet(base);
+     16|     expect(s.date).toBe('26 septembre 2026');
+     17|     expect(s.people).toEqual([]);
+       |                      ^
+     18|     expect(s.notes).toBe('');
+     19|     expect(s.title).toBe('Rapport de séance');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportSheet > assumes no coach: it names only the people and the level the user gave
+AssertionError: expected undefined to deeply equal [ [ 'Nom', 'Anaïs Lefèvre' ] ]
+
+- Expected:
+[
+  [
+    "Nom",
+    "Anaïs Lefèvre",
+  ],
+]
+
++ Received:
+undefined
+
+ ❯ src/components/experience/__tests__/report.test.js:30:68
+     28|   // the sheet shows only what was filled in.
+     29|   it('assumes no coach: it names only the people and the level the use…
+     30|     expect(reportSheet({ ...base, name: 'Anaïs Lefèvre' }).people).toE…
+       |                                                                    ^
+     31|     expect(reportSheet({ ...base, context: 'alone' }).people).toEqual(…
+     32|     expect(reportSheet({ ...base, lang: 'en', context: 'alone' }).peop…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportSheet > gives the level in the user's words, and leaves it out when none was chosen
+AssertionError: expected undefined to deeply equal [ [ 'Niveau', 'Débutant' ] ]
+
+- Expected:
+[
+  [
+    "Niveau",
+    "Débutant",
+  ],
+]
+
++ Received:
+undefined
+
+ ❯ src/components/experience/__tests__/report.test.js:40:64
+     38|
+     39|   it('gives the level in the user\'s words, and leaves it out when non…
+     40|     expect(reportSheet({ ...base, level: 'beginner' }).people).toEqual…
+       |                                                                ^
+     41|     expect(reportSheet({ ...base, level: 'intermediate' }).people).toE…
+     42|     expect(reportSheet({ ...base, level: 'expert' }).people).toEqual([…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportSheet > keeps no partner's name for a set trained alone or with no answer
+AssertionError: expected undefined to deeply equal [ [ 'Entraînement', 'En solo' ] ]
+
+- Expected:
+[
+  [
+    "Entraînement",
+    "En solo",
+  ],
+]
+
++ Received:
+undefined
+
+ ❯ src/components/experience/__tests__/report.test.js:48:79
+     46|
+     47|   it('keeps no partner\'s name for a set trained alone or with no answ…
+     48|     expect(reportSheet({ ...base, context: 'alone', partner: 'Luc' }).…
+       |                                                                               ^
+     49|     expect(reportSheet({ ...base, partner: 'Luc' }).people).toEqual([]…
+     50|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportSheet > orders everything filled in: name, training, partner, level
+AssertionError: expected undefined to deeply equal [ [ 'Name', 'Ana' ], …(3) ]
+
+- Expected:
+[
+  [
+    "Name",
+    "Ana",
+  ],
+  [
+    "Training",
+    "With a coach",
+  ],
+  [
+    "Coach",
+    "Luc",
+  ],
+  [
+    "Level",
+    "Beginner",
+  ],
+]
+
++ Received:
+undefined
+
+ ❯ src/components/experience/__tests__/report.test.js:54:8
+     52|   it('orders everything filled in: name, training, partner, level', ()…
+     53|     expect(reportSheet({ ...base, lang: 'en', name: 'Ana', context: 'c…
+     54|       .toEqual([['Name', 'Ana'], ['Training', 'With a coach'], ['Coach…
+       |        ^
+     55|   });
+     56|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportSheet > tidies the names and keeps the lines of the notes
+AssertionError: expected undefined to deeply equal [ [ 'Nom', 'Anaïs Lefèvre' ], …(2) ]
+
+- Expected:
+[
+  [
+    "Nom",
+    "Anaïs Lefèvre",
+  ],
+  [
+    "Entraînement",
+    "Avec un coach",
+  ],
+  [
+    "Coach",
+    "Luc",
+  ],
+]
+
++ Received:
+undefined
+
+ ❯ src/components/experience/__tests__/report.test.js:72:22
+     70|   it('tidies the names and keeps the lines of the notes', () => {
+     71|     const s = reportSheet({ ...base, name: '  Anaïs   Lefèvre ', conte…
+     72|     expect(s.people).toEqual([['Nom', 'Anaïs Lefèvre'], ['Entraînement…
+       |                      ^
+     73|     expect(s.notes).toBe('Tempo lent.\nCoudes fléchis.');
+     74|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportFileName > names the file in ASCII after the user and the day
+AssertionError: expected 'rapport-seance-2026-09-26.pdf' to be 'rapport-seance-camille-martin-2026-09…' // Object.is equality
+
+Expected: "rapport-seance-camille-martin-2026-09-26.pdf"
+Received: "rapport-seance-2026-09-26.pdf"
+
+ ❯ src/components/experience/__tests__/report.test.js:84:79
+     82| describe('reportFileName', () => {
+     83|   it('names the file in ASCII after the user and the day', () => {
+     84|     expect(reportFileName({ lang: 'fr', date: day, name: 'Camille Mart…
+       |                                                                               ^
+     85|     expect(reportFileName({ lang: 'fr', date: day, name: 'Anaïs Lefèvr…
+     86|     expect(reportFileName({ lang: 'en', date: day, name: '' })).toBe('…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  src/components/experience/__tests__/report.test.js > reportFileName > shortens a long name at a word, never in the middle of one
+AssertionError: expected 'rapport-seance-2026-09-26.pdf' to be 'rapport-seance-marie-christine-de-la-…' // Object.is equality
+
+Expected: "rapport-seance-marie-christine-de-la-rochefoucauld-2026-09-26.pdf"
+Received: "rapport-seance-2026-09-26.pdf"
+
+ ❯ src/components/experience/__tests__/report.test.js:92:8
+     90|   it('shortens a long name at a word, never in the middle of one', () …
+     91|     expect(reportFileName({ lang: 'fr', date: day, name: 'Marie-Christ…
+     92|       .toBe('rapport-seance-marie-christine-de-la-rochefoucauld-2026-0…
+       |        ^
+     93|   });
+     94| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  8 failed | 23 passed (31)
+   Start at  03:45:43
+   Duration  678ms (transform 327ms, setup 0ms, import 365ms, tests 167ms, environment 0ms)
+

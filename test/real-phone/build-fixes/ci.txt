@@ -1,0 +1,47 @@
+
+✓ counter-core CI · 36192386647
+Triggered via push less than a minute ago
+
+JOBS
+✓ Lint, typecheck, tests and production build in 29s (ID 108260306501)
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Lint, typecheck, tests and production build: .github#2
+
+! src/lib/SignalExtractor3D.js:42:10: Function 'computeDepthDominance' is declared but never used.
+Lint, typecheck, tests and production build: src/lib/SignalExtractor3D.js#42
+
+! public/boot.js:8:48: Parameter 'err' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: public/boot.js#8
+
+! public/boot.js:8:43: Parameter 'col' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: public/boot.js#8
+
+! public/boot.js:8:37: Parameter 'line' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: public/boot.js#8
+
+! public/boot.js:8:32: Parameter 'src' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: public/boot.js#8
+
+! public/boot.js:8:27: Parameter 'msg' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: public/boot.js#8
+
+! src/lib/VelocityEngine.js:288:42: Parameter 'signal' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: src/lib/VelocityEngine.js#288
+
+! src/lib/VelocityEngine.js:211:40: Parameter 'weightKg' is declared but never used. Unused parameters should start with a '_'.
+Lint, typecheck, tests and production build: src/lib/VelocityEngine.js#211
+
+! e2e/offline.spec.js:68:11: Variable 'reg' is declared but never used. Unused variables should start with a '_'.
+Lint, typecheck, tests and production build: e2e/offline.spec.js#68
+
+! src/lib/sampleCapture.js:44:15: Variable 'values' is declared but never used. Unused variables should start with a '_'.
+Lint, typecheck, tests and production build: src/lib/sampleCapture.js#44
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+Lint, typecheck, tests and production build: .github#1
+
+
+For more information about the job, try: gh run view --job=108260306501
+View this run on GitHub: https://github.com/david-dabert/workout-vision/actions/runs/36192386647

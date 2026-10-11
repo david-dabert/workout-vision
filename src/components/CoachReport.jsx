@@ -226,7 +226,7 @@ export default function CoachReport({ onClose }) {
             <div>
               <label className={css.label}>{t('sex') || 'Sex'}</label>
               <select className={css.select} value={client.sex} onChange={e => updateClient('sex', e.target.value)}>
-                <option value="">—</option>
+                <option value=""> -</option>
                 <option value="male">{t('male') || 'Male'}</option>
                 <option value="female">{t('female') || 'Female'}</option>
               </select>
@@ -240,7 +240,7 @@ export default function CoachReport({ onClose }) {
             <div>
               <label className={css.label}>{t('experience') || 'Level'}</label>
               <select className={css.select} value={client.level} onChange={e => updateClient('level', e.target.value)}>
-                <option value="">—</option>
+                <option value=""> -</option>
                 <option value="beginner">{t('beginner') || 'Beginner'}</option>
                 <option value="intermediate">{t('intermediate') || 'Intermediate'}</option>
                 <option value="advanced">{t('advanced') || 'Advanced'}</option>

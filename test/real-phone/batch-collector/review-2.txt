@@ -1,0 +1,52 @@
+Re-review of the updated uncommitted change on claude/generate-architecture-md-inw479 (same goal). Read-only this time; I did not run the scoreboard. `npx vitest run src/lib/__tests__/batchCollect.test.js src/lib/counting/__tests__/edges.test.ts`: 67 passed. I did not run the new Playwright spec.
+
+WHAT THE UPDATE FIXED
+- Duplicate pick: `sameFile` now compares name and size only, and a SHA-256 check (`duplicateOf`) runs after each set is collected. This covers defect 1 from my first report.
+- Double tap on Share: a `sharing` guard now ignores the second tap.
+- Stale error note: `recheck()` clears a row's note once its exercise and count are given.
+- .gitignore now also ignores `test/real-phone/exam/**/*.json.gz`, so an exam file at the top of exam/ is covered.
+- The exam script now fails if a lift fails, or if a set file lies outside a `<lift>/` folder.
+- The scoreboard, diagnose and edges scripts now read every `sets-*` folder through the new `test/real-phone/accuracy/sets.ts`.
+
+DEFECTS STILL OPEN OR NEW
+
+1. After a reload, set numbering starts again at 1, and earlier sets are no longer recognised as duplicates.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:22 (`rows` lives only in page memory) and /home/user/workout-vision/src/lib/batchCollect.js:65 (`appendRows` numbers from `rows.length + 1`).
+- Scenario: David collects and shares sets 1 to 12. He then switches to Photos to check a count. iOS evicts the Safari tab after this memory-heavy run, and the page reloads. He picks the last 8 videos: they become set01 to set08 again. He now holds two `set01_…json.gz` files, and the "numbered as filmed" order is broken.
+- Any of the first 12 videos picked again after the reload is collected a second time, because `duplicateOf` only sees rows collected in this page load. Yet the page still says "a video picked twice is kept once" (line 102).
+- The comment at batchCollect.js:57-59 promises that a file already collected or shared never changes name. In this case a new file takes a number an earlier file already has.
+- Smallest failing test: a Playwright test on collect-batch.html: pick `a.mov`, `page.reload()`, pick `b.mov`, expect `.set-head` to read "Set 2". Today it reads "Set 1". Keeping a next-number counter and the collected SHA-256s in localStorage would fix both.
+
+2. A twin with a different count is dropped without saying so.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:131-132.
+- Scenario: set 5 and set 12 are the same video, with counts 8 and 10 typed. Set 12 is marked "Same video as set 5: not kept." The two counts disagree, which means one of David's labels is wrong. The page does not say so and keeps set 5's count by default. R1 says a label that looks wrong is reported to David, not settled by the tool.
+- Smallest failing test: a unit test that `duplicateOf` (or a companion helper) reports the conflict when the rows' `count` or `lift` differ. Today it returns only the twin.
+
+3. The Share guard can leave the button dead with no message.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:160-168.
+- If `navigator.share` never settles, `sharing` stays true, and every later tap returns silently. Some iOS versions have been reported to leave the promise pending after certain share targets; I have not confirmed this on current iOS. Before the guard, the user at least saw "use Download".
+- No test covers this path.
+
+4. Two fixes have no test that fails on revert.
+- Removing the `if (sharing) return;` guard fails no test.
+- Removing the duplicate branch at collect-batch-main.js:131-132 fails no test. Only the pure `duplicateOf` is unit-tested; e2e/collect-batch.spec.js has no case for a SHA-256 twin, because its fake videos never collect.
+- The two new e2e tests would fail on revert:
+  - the stale-note test;
+  - the picked-again test (Playwright gives each buffer upload a fresh lastModified, so the old rule would add the file twice).
+
+5. The Film step 3 change is still outside the stated goal.
+- Where: /home/user/workout-vision/src/components/experience/Film.jsx:88-89 and design/experience-prototype.html.
+- It changes step 3 of the app's filming screen. It is new French copy for David to approve (R10), and a change users will see, which he must confirm on his iPhone (R3). No test covers it.
+
+RISK, UNCHANGED
+- /home/user/workout-vision/src/collect-batch-main.js:41-44 still builds a `<video>` per row on every `render()`, never clears the old elements' `src` and never revokes the object URLs. That is about 60 video elements over a 20-video run on an iPhone, alongside the extraction and the whole-file hashing in collectSet.
+
+CHECKED AND FOUND SOUND
+- In the collect loop: the `continue` inside `try` still runs `finally`, and the "done of kept" summary arithmetic is right.
+- `open()` excludes duplicate rows from the to-do list and locks their fields.
+- `recheck()` touches only rows marked `invalid`, and fields are locked while a run is busy.
+- A pick during a run is refused, and the Collect guard against double taps is synchronous.
+- sets.ts sends unparseable or unlabelled files to `unreadable`, and the scoreboard fails on them. It reads only `.json.gz` files in `sets-*` and `landmarks`, never exam/.
+- The exam script's check for files outside a lift folder, and its final `failed` assertion, work as their comments say.
+- No new host, no video file and no counting change: src/lib/counting/core is untouched.
+- New strings are English only, on a page for David, with no em dash.

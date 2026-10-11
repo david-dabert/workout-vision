@@ -1,0 +1,37 @@
+wv-control verdict on the draft message to David: ONE DEFECT, plus three notes.
+
+DEFECT
+Line 5 claim: "On your iPhone: the 84e020a preview (filming step 3, one batch shared with Share); then only you decide main's move to 84e020a."
+The line says main's move is the only thing David decides. The record shows a second one. In 84e020a, step 3 of the filming screen is new French copy: "Toute la série, du départ au retour au repos." (English: "The whole set, from rest back to rest.").
+- R10 says David approves French copy before release.
+- PLAN.md line 43 says a step stops for French copy. David's second message (PLAN.md line 276) says: "Stop only for my iPhone check of a preview, French copy, …".
+- Reviewers flagged it twice: review-1.txt lines 42-43 and review-2.txt line 39 ("new French copy for David to approve (R10)").
+- Nothing in PLAN.md at 2007ebb records his approval of this line.
+Shown by: `git show 84e020a -- src/components/experience/Film.jsx design/experience-prototype.html`, and `git grep "Toute la série" 2007ebb`, which finds it only in review-1.txt.
+Fix: line 5 should quote the new French line and ask David to approve it, as well as the main move.
+
+CHECKS MADE, ALL SUPPORTED
+- Refs on origin (git ls-remote after git fetch): claude/generate-architecture-md-inw479 = 2007ebbce6b8, counter-core = 24f89fab79cf, main = e84ab3261aab.
+- All five named commits exist (git cat-file). All are on the named branch. 24f89fa, de48371, 84e020a and e84ab32 are also on counter-core, and e84ab32 is also on main.
+- The counter-core move was a fast-forward from e84ab32 to 24f89fa: reflog `origin/counter-core@{1}` = e84ab32, and e84ab32 is an ancestor. The move is allowed by David's line "Move counter-core to the head of this branch now" and by the recorded choice to move it once the record and its reviewer report are pushed (24f89fa). 2007ebb records it with ls-remote. main did not move, as PLAN.md line 286 requires.
+- label-watch.txt is identical at 24f89fa and 2007ebb and was added in de48371.
+  - It has 14 set lines: 2 say "no edge away from rest", so 12 have an edge. These equal the 14 `.json.gz` files under sets-29sep/ and landmarks/ at 2007ebb.
+  - No line carries a count or a label, and the names are blinded.
+  - Its edges match the "VIDEO STARTS/ENDS AWAY FROM REST" lines in diagnosis.txt.
+  - 14 and 12 come from counting lines in the file; the file does not state either number.
+- wv-control.md was committed in de48371 and is unchanged since (diff against 2007ebb is empty).
+- PLAN.md at de48371 records the second message and keeps the five replaced lines of the first message in a "Replaced by…" line. Whether it is his message word for word cannot be checked from the repository.
+- All seven evidence paths in line 4 exist at 2007ebb.
+- The message is five lines. It uses none of the words fixed, passing, working or deployed, and makes no CI claim.
+
+NOTES (not defects in the draft)
+1. CI on 84e020a: run 36695675673 (run 193, pull request), success, head_sha 84e020a, finished 09:33:12Z (11:33 Paris). This supports David's line in PLAN.md.
+   CI on the new heads is not complete:
+   - Push run 36699279730 on counter-core at 24f89fa: cancelled.
+   - Pull-request run 36699281497 at 24f89fa: in progress.
+   - No run seen on 2007ebb.
+   The draft is safe only as long as it makes no CI claim.
+2. The list is blind, but the same folder holds diagnosis.txt and edges.txt, and both show each set's label and count. The set file names also carry the counts. David should read only label-watch.txt.
+3. The batch-collector step had five reviewer passes (review-1 to review-5). The lean rule (PLAN.md) and David's order of 30 September allow one pass for a change that is not a counting change. Review-1's finding 7 (Film step 3 outside the step's goal) is not shown as open anywhere.
+
+Relevant files: /home/user/workout-vision/PLAN.md (at 2007ebb), /home/user/workout-vision/test/real-phone/accuracy/label-watch.txt, /home/user/workout-vision/test/real-phone/batch-collector/review-1.txt, /home/user/workout-vision/src/components/experience/Film.jsx (at 84e020a).

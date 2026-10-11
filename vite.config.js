@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
+import { resolve } from 'path'
 
 const certDir = path.resolve(__dirname, '.certs')
 const httpsConfig = fs.existsSync(path.join(certDir, 'key.pem'))
@@ -14,11 +15,7 @@ function copyModelsPlugin() {
   return {
     name: 'copy-models',
     buildStart() {
-      try {
-        execSync('node scripts/copy-models.js', { stdio: 'inherit', cwd: __dirname })
-      } catch (e) {
-        console.warn('[copy-models plugin] Warning:', e.message)
-      }
+      execSync('node scripts/copy-models.js', { stdio: 'inherit', cwd: __dirname })
     },
   }
 }
@@ -40,10 +37,17 @@ export default defineConfig({
     exclude: ['e2e/**', 'node_modules/**'],
   },
   build: {
+    assetsInlineLimit: 0, // Fonts remain same-origin files under font-src 'self'.
     target: ['es2022', 'safari16'],
     modulePreload: false,
     minify: 'esbuild',
     rollupOptions: {
+      input: {
+        index: resolve(__dirname, 'index.html'),
+        collect: resolve(__dirname, 'collect.html'),
+        collectBatch: resolve(__dirname, 'collect-batch.html'),
+        check: resolve(__dirname, 'check.html'),
+      },
       output: {
         manualChunks(id) {
           // Only split modules that have NO circular cross-references.

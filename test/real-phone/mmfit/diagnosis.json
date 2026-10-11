@@ -1,0 +1,288 @@
+[
+  {
+    "id": "w00-squats-4040-4500",
+    "lift": "squat",
+    "count": 9,
+    "side": "right",
+    "low": 88.68089026056725,
+    "high": 142.89882412913386,
+    "first": {
+      "time": 0,
+      "angle": 129.1404357606858
+    },
+    "last": {
+      "time": 15.2,
+      "angle": 130.20911958379097
+    },
+    "completedThresholdCycles": [
+      {
+        "start": 0,
+        "workReached": true,
+        "min": 77.59899352717973,
+        "max": 151.35790005552803,
+        "end": 1.066666
+      },
+      {
+        "start": 1.466666,
+        "workReached": true,
+        "min": 70.15938868876846,
+        "max": 150.73664235396984,
+        "end": 2.666666
+      },
+      {
+        "start": 3,
+        "workReached": true,
+        "min": 71.80473139911359,
+        "max": 149.08849726161006,
+        "end": 4.2
+      },
+      {
+        "start": 4.666666,
+        "workReached": true,
+        "min": 66.01492715668591,
+        "max": 145.9413198222682,
+        "end": 5.8
+      },
+      {
+        "start": 6,
+        "workReached": true,
+        "min": 62.21792340775285,
+        "max": 145.03010033978606,
+        "end": 7.2
+      },
+      {
+        "start": 7.666666,
+        "workReached": true,
+        "min": 63.19833812501177,
+        "max": 152.02992848774056,
+        "end": 8.866666
+      },
+      {
+        "start": 9.266666,
+        "workReached": true,
+        "min": 66.00845808196075,
+        "max": 148.18305137332578,
+        "end": 10.4
+      },
+      {
+        "start": 10.866666,
+        "workReached": true,
+        "min": 66.8015593841023,
+        "max": 154.33085511680804,
+        "end": 12
+      },
+      {
+        "start": 12.466666,
+        "workReached": true,
+        "min": 64.93969919160308,
+        "max": 147.15332295250295,
+        "end": 13.6
+      }
+    ],
+    "unfinished": {
+      "start": 14.133333,
+      "workReached": true,
+      "min": 61.96951219350896,
+      "max": 132.17163966139688
+    },
+    "rawMissing": 0,
+    "samples": 229,
+    "savedLandmarksSHA256": "b73e5ac8a39a84460bd5cd861bdf93c271f0caacbb66d4210d70daf6d0907d01"
+  },
+  {
+    "id": "w01-dumbbell_rows-37940-38553",
+    "lift": "dumbbell_row",
+    "count": 9,
+    "side": "right",
+    "low": 91.16089675714801,
+    "high": 137.62979384879853,
+    "first": {
+      "time": 0,
+      "angle": 158.5406297748724
+    },
+    "last": {
+      "time": 20.333333,
+      "angle": 123.31130814338154
+    },
+    "completedThresholdCycles": [
+      {
+        "start": 0.266666,
+        "workReached": true,
+        "min": 82.57335173169515,
+        "max": 142.3593067832543,
+        "end": 1.8
+      },
+      {
+        "start": 2.4,
+        "workReached": true,
+        "min": 80.89936588009994,
+        "max": 140.645479474752,
+        "end": 3.866666
+      },
+      {
+        "start": 4.533333,
+        "workReached": true,
+        "min": 77.14415045197855,
+        "max": 140.9035056084985,
+        "end": 6.133333
+      },
+      {
+        "start": 6.733333,
+        "workReached": true,
+        "min": 73.9875014499762,
+        "max": 141.02787475907334,
+        "end": 8.199999
+      },
+      {
+        "start": 8.8,
+        "workReached": true,
+        "min": 72.35410898407058,
+        "max": 140.09871681802287,
+        "end": 10.266666
+      },
+      {
+        "start": 10.866666,
+        "workReached": true,
+        "min": 69.9777720106049,
+        "max": 140.57386169837162,
+        "end": 12.333333
+      },
+      {
+        "start": 12.866666,
+        "workReached": true,
+        "min": 68.42762779807781,
+        "max": 143.7580556165177,
+        "end": 14.4
+      },
+      {
+        "start": 15,
+        "workReached": true,
+        "min": 71.81745522819125,
+        "max": 141.89928971154515,
+        "end": 16.399999
+      },
+      {
+        "start": 16.933333,
+        "workReached": true,
+        "min": 77.46790537241758,
+        "max": 140.1733525815436,
+        "end": 18.533333
+      }
+    ],
+    "unfinished": {
+      "start": 19.133333,
+      "workReached": true,
+      "min": 70.90538023407217,
+      "max": 123.31130814338154
+    },
+    "rawMissing": 0,
+    "samples": 306,
+    "savedLandmarksSHA256": "deb9621d74088f854fec2dec52f534791d66fc8a076e73511bee877d7fe91911"
+  },
+  {
+    "id": "w00-tricep_extensions-46229-46625",
+    "lift": "triceps_pushdown",
+    "count": 7,
+    "side": "right",
+    "low": 126.857007784366,
+    "high": 146.87413789568424,
+    "first": {
+      "time": 0.266666,
+      "angle": 123.25339928439723
+    },
+    "last": {
+      "time": 13.133333,
+      "angle": 118.0394383942535
+    },
+    "completedThresholdCycles": [
+      {
+        "start": 0.333333,
+        "workReached": true,
+        "min": 120.15662800261288,
+        "max": 154.62629858930308,
+        "end": 1.6
+      },
+      {
+        "start": 1.666666,
+        "workReached": true,
+        "min": 124.63466228354699,
+        "max": 152.35587525517425,
+        "end": 2.333333
+      },
+      {
+        "start": 3,
+        "workReached": true,
+        "min": 123.23398662799711,
+        "max": 156.92659180526044,
+        "end": 6.8
+      },
+      {
+        "start": 7.399999,
+        "workReached": true,
+        "min": 125.80011073502321,
+        "max": 158.64954441704293,
+        "end": 8.133333
+      },
+      {
+        "start": 8.733333,
+        "workReached": true,
+        "min": 120.928304591396,
+        "max": 157.44419782092493,
+        "end": 10.533333
+      },
+      {
+        "start": 11.133333,
+        "workReached": true,
+        "min": 122.8374349864437,
+        "max": 156.8769017674849,
+        "end": 11.666666
+      },
+      {
+        "start": 12.333333,
+        "workReached": true,
+        "min": 125.13526378880793,
+        "max": 153.51127570246663,
+        "end": 13
+      }
+    ],
+    "unfinished": null,
+    "rawMissing": 83,
+    "samples": 198,
+    "savedLandmarksSHA256": "1821550709d6e278b675b761f345183d9051095d6392b29f3078817e1c686b30",
+    "missedExcursions": [
+      {
+        "window": [
+          2.8,
+          4.4
+        ],
+        "mode": "max",
+        "extreme": {
+          "time": 3.866666,
+          "angle": 146.32185864560927
+        }
+      },
+      {
+        "window": [
+          5.4,
+          6
+        ],
+        "mode": "min",
+        "extreme": {
+          "time": 5.666666,
+          "angle": 127.95237615777872
+        }
+      },
+      {
+        "window": [
+          9.1,
+          9.7
+        ],
+        "mode": "min",
+        "extreme": {
+          "time": 9.333333,
+          "angle": 128.5764395024269
+        }
+      }
+    ]
+  }
+]

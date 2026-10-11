@@ -1,0 +1,36 @@
+I found 3 defects and 1 minor gap. None of the new tests catch the first three.
+
+**Defect 1. After "Fill the counts", an exercise change no longer carries to the sets below, so the new page text is false and can leave wrong exercise labels.**
+- Where: `/home/user/workout-vision/src/collect-batch-main.js` lines 124-131 (the fill handler), together with `/home/user/workout-vision/src/lib/batchCollect.js` line 39. `carryChoice` stops at the first row whose count is not empty, and the fill handler puts a count on every open row.
+- The claim it breaks: the new note in `/home/user/workout-vision/collect-batch.html` line 42 says "Choose the exercise once (it carries to the sets below until you change one), type all the reps on one line". After a fill, a choice on set 1 carries to no set, whether or not any set was changed by hand.
+- Scenario A, a wrong label: David picks 3 videos. They inherit squat from an earlier pick, since `appendRows` carries the last row's lift. He types "8 10 7" into the one-line box, which sits above the sets, and taps Fill. He sees the lift is wrong and sets set 1 to bench. Sets 2 and 3 stay squat and are collected as squat. I reproduced this in node with `rowsFor` + `countsFromLine` + `carryChoice`; the lifts come out `[ 'bench', 'squat', 'squat' ]`.
+- Scenario B, a blocked batch: on a first pick the lift is empty. He fills first, then picks the exercise on set 1. Sets 2 and 3 stay at "Choose…" and Collect reports "2 sets need attention", which contradicts "choose the exercise once".
+- Smallest failing test: in `e2e/collect-batch.spec.js`, pick a.mov, b.mov and c.mov; fill `#all-counts` with "8 10 7"; click `#fill`; `selectOption('#lift0', { index: 1 })`; expect `#lift1` and `#lift2` to have the same value as `#lift0`. This fails today.
+- Unit version: `rowsFor` on 3 files with `{lift:'squat', view:'side'}`, apply the counts from `countsFromLine(rows, '8 10 7')`, then `carryChoice(rows, 0, 'lift', 'bench')`; expect `rows[1].lift` to be 'bench'. It fails, because the value is 'squat'.
+
+**Defect 2. On iPhone, the one-line box probably cannot take a separator.**
+- Where: `/home/user/workout-vision/collect-batch.html` line 49, `<input id="all-counts" inputmode="numeric" ...>`.
+- Scenario: from memory, and not checked on a phone, iPhone Safari shows a digits-only keypad (0-9, no space, no comma) for `inputmode="numeric"`. If so, David can only type "8107", which gives "Nothing filled: 8107 is not a whole number from 0 to 99." The feature would then be unusable on the device it is for, while the label and placeholder show "8 10 7".
+- The e2e test cannot see this: `page.fill` sets the whole string in one event, and Chromium on desktop has no on-screen keyboard.
+- Smallest failing test: a DOM assertion that `#all-counts` does not have `inputmode="numeric"` (for example, expect it to be absent or "text"). This fails today. Please also have David check on his iPhone that he can type "8 10 7" there.
+
+**Defect 3. A French decimal comma is read as two counts, which breaks "fill nothing unless there is exactly one whole count per set".**
+- Where: `/home/user/workout-vision/src/lib/batchCollect.js` line 122, which splits on `/[\s,;]+/`.
+- Scenario: with 2 open sets, "9,5" (nine and a half in French) passes as `{ counts: ['9','5'], error: null }`; I reproduced this in node. With 3 open sets, "8 9,5" fills 8, 9 and 5 instead of refusing a non-whole value.
+- Smallest failing test: `countsFromLine(rowsFor([f('a',1), f('b',2)]), '9,5').error` should not be null. Today it is null.
+- Possible fix: accept a comma only when followed by a space, or only spaces as separators.
+
+**Minor gap: language.**
+- The new strings are English only: the label, the placeholder, "Fill the counts", "Nothing filled: …", "… sets to count, … counts typed", "… is not a whole number from 0 to 99" and "Counts filled. Check each set against its picture, then collect."
+- The existing page is English only too, but by the review checklist none of these exists in French. There is no em dash.
+
+**What I checked and found clean:**
+- Busy guard: the box is hidden while busy and the handler also returns early.
+- Done and duplicate rows keep their own counts.
+- Failed rows stay open, and an "invalid" mark clears through `recheck`.
+- Tokens are checked before the count is compared, so a bad token cannot slip through.
+- Rejected input: "-3", "9.5", "100", full-width digits (`\d` is ASCII only without the u flag), and a paste with a no-break space.
+- The count is never guessed: nothing is written when there is an error.
+- No new host and no upload. The page shows no count.
+- No async path: the fill is synchronous, so it has no race and nothing to clean up.
+- Tests: the unit tests fail if the change is reverted (the import is missing), and the e2e test fails too (no `#all` or `#fill`).

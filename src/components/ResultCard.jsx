@@ -84,7 +84,7 @@ function reportToGitHub(result) {
     .map(c => `  - ${c.name}: ${c.reps} reps, score=${c.score?.toFixed(2)}, consistency=${c.consistency?.toFixed(2)}`)
     .join('\n');
 
-  const title = `Debug: ${exercise} — ${reps} reps (expected: ?)`;
+  const title = `Debug: ${exercise} - ${reps} reps (expected: ?)`;
   const body = [
     '## Debug Report',
     '',
@@ -376,7 +376,7 @@ function ResultCard({ result, onReplay }) {
 
   // Insufficient footage: two tiers
   // Hard refuse: person not visible or no movement at all
-  // Soft warning: count suspect but usable — show count with confirm buttons
+  // Soft warning: count suspect but usable - show count with confirm buttons
   if (result.insufficientFootage && result.hardRefuse) {
     const reasonKeys = result.qualityGateReasons || [];
     return (
@@ -448,9 +448,9 @@ function ResultCard({ result, onReplay }) {
     <div className={`card result-card ${s.resultCard}`}>
       <Confetti active={showConfetti} />
 
-      {/* ═══ HERO ZONE — above the fold, the "Instagram moment" ═══ */}
+      {/* ═══ HERO ZONE - above the fold, the "Instagram moment" ═══ */}
 
-      {/* Centered grade badge — the first thing you see */}
+      {/* Centered grade badge - the first thing you see */}
       <div className={s.heroGrade}>
         {formScoreValidated && (
           <span
@@ -535,7 +535,7 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Personal Best / PR banners — these are celebration moments, keep above fold */}
+      {/* Personal Best / PR banners - these are celebration moments, keep above fold */}
       {baselineComparison?.overallForm?.isPersonalBest && (
         <div className={s.personalBestBanner}>
           <span className={s.personalBestIcon}><Icon name="star" size={16} /></span>
@@ -570,7 +570,7 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* Session Badges — the shareable achievements */}
+      {/* Session Badges - the shareable achievements */}
       {earnedBadges.length > 0 && (
         <div className={s.badgeSection}>
           <div className={s.badgeGrid}>
@@ -583,7 +583,7 @@ function ResultCard({ result, onReplay }) {
         </div>
       )}
 
-      {/* ═══ TOP FORM CUES — surfaced from deep data ═══ */}
+      {/* ═══ TOP FORM CUES - surfaced from deep data ═══ */}
       {(() => {
         const topIssues = [];
         if (repHistory && repHistory.length > 0) {
@@ -622,7 +622,7 @@ function ResultCard({ result, onReplay }) {
         );
       })()}
 
-      {/* ═══ SHARE BUTTONS — immediately visible, the call to action ═══ */}
+      {/* ═══ SHARE BUTTONS - immediately visible, the call to action ═══ */}
       <div className={s.heroActions}>
         <button
           className={`btn btn-ghost ${s.shareButton}`}
@@ -645,7 +645,7 @@ function ResultCard({ result, onReplay }) {
         </button>
       </div>
 
-      {/* ═══ DETAILS ZONE — everything below the fold ═══ */}
+      {/* ═══ DETAILS ZONE - everything below the fold ═══ */}
       <button
         className={`btn btn-ghost btn-sm ${s.detailsToggle}`}
         onClick={() => setShowDetails(d => !d)}
@@ -702,7 +702,7 @@ function ResultCard({ result, onReplay }) {
         <div className={s.coachingPanel}>
           <h4 className={s.coachingPanelTitle}>{t('coaching_analysis')}</h4>
 
-          {/* Top coaching correction — single sentence, expandable */}
+          {/* Top coaching correction - single sentence, expandable */}
           {(() => {
             const allFb = coaching.feedback;
             const topFb = allFb[0];
@@ -1234,7 +1234,7 @@ function ResultCard({ result, onReplay }) {
       )}
       </div>)}
 
-      {/* Weekly reminder prompt — shown once, after first successful analysis */}
+      {/* Weekly reminder prompt - shown once, after first successful analysis */}
       {showNotifPrompt && !notifGranted && (
         <div className={s.notificationPrompt}>
           <div className={s.notificationPromptContent}>

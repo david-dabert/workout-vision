@@ -1,0 +1,65 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+4:59:23 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+4:59:23 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/__tests__/reportLinks.test.js (18 tests | 3 failed) 21ms
+     × says the app counted the reps only when the user kept the app's count 10ms
+     × offers the refused set's report on a refused result 1ms
+     × offers the count's report once the set is saved, or when its save failed, and not before 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > challengeShare > says the app counted the reps only when the user kept the app's count
+AssertionError: expected 'Squat: 10 reps, analysed by Workout V…' to be 'Squat: 10 reps (Workout Vision counte…' // Object.is equality
+
+Expected: "Squat: 10 reps (Workout Vision counted 8 on my phone). Can you beat it?"
+Received: "Squat: 10 reps, analysed by Workout Vision on my phone. Can you beat it?"
+
+ ❯ src/lib/__tests__/reportLinks.test.js:117:19
+    115|     // The app neither filmed (the video may come from the library) no…
+    116|     // corrected 10: the message gives both numbers (reviews of 29 Sep…
+    117|     expect(fixed).toBe('Squat: 10 reps (Workout Vision counted 8 on my…
+       |                   ^
+    118|     const fr = challengeShare({ liftName: 'Squat', count: 10, counted:…
+    119|     expect(fr).toBe('Squat\u00A0: 10 répétitions (Workout Vision en a …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportFor > offers the refused set's report on a refused result
+TypeError: reportFor is not a function
+ ❯ src/lib/__tests__/reportLinks.test.js:129:12
+    127|   const base = { lift: 'squat', liftName: 'Squat', count: 8, trueN: 10…
+    128|   it('offers the refused set\'s report on a refused result', () => {
+    129|     expect(reportFor({ ...base, refused: true })).toEqual({ lift: 'squ…
+       |            ^
+    130|   });
+    131|   it('offers the count\'s report once the set is saved, or when its sa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > reportFor > offers the count's report once the set is saved, or when its save failed, and not before
+TypeError: reportFor is not a function
+ ❯ src/lib/__tests__/reportLinks.test.js:132:12
+    130|   });
+    131|   it('offers the count\'s report once the set is saved, or when its sa…
+    132|     expect(reportFor({ ...base, step: 'saved' })).toMatchObject({ coun…
+       |            ^
+    133|     expect(reportFor({ ...base, step: 'ask', saveError: 'x' })).toMatc…
+    134|     expect(reportFor({ ...base, step: 'fix', saveError: 'x' })).toMatc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 15 passed (18)
+   Start at  04:59:23
+   Duration  355ms (transform 125ms, setup 0ms, import 144ms, tests 21ms, environment 0ms)
+

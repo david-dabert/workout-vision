@@ -1,0 +1,20 @@
+[
+  {
+    "name": "first visit, skip, Enter, preserved link, return and replay",
+    "result": "PASS",
+    "errors": [],
+    "failed": [],
+    "consoleLines": [
+      "[log] [Storage] Schema migrated to version 1"
+    ]
+  },
+  {
+    "name": "reduced motion stays still; English Enter works",
+    "result": "PASS",
+    "errors": [],
+    "failed": [],
+    "consoleLines": [
+      "[log] [Storage] Schema migrated to version 1"
+    ]
+  }
+]

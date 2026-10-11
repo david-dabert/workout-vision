@@ -277,6 +277,12 @@ export interface WorkoutRecord {
   autoDetected?: boolean;
   detectionFailed?: boolean;
   workoutId?: string;
+  // Written by the counting core's result screen.
+  source?: string;
+  arm?: 'left' | 'right';
+  repDetails?: unknown[];
+  repDetailsVersion?: number;
+  corrected?: boolean;
 }
 
 export interface RepCounterDiagnostics {

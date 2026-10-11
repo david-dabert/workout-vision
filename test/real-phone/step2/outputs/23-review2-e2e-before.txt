@@ -1,0 +1,121 @@
+
+Running 9 tests using 1 worker
+
+  ✓  1 e2e/shared/exercises.tests.js:15:3 › Chromium › the 182 counted exercises are listed under the nine cards, the four with evidence in Beta (629ms)
+  ✓  2 e2e/shared/exercises.tests.js:27:3 › Chromium › the search finds an exercise by its French or English name, and says when none matches (708ms)
+  ✓  3 e2e/shared/exercises.tests.js:38:3 › Chromium › a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide (2.3s)
+  ✓  4 e2e/shared/exercises.tests.js:52:3 › Chromium › a card lift reached from the list keeps its figure and its Beta label (2.2s)
+  ✓  5 e2e/shared/exercises.tests.js:62:3 › Chromium › the choice screen with its list holds together at 375 px, in French (2.9s)
+  ✘  6 e2e/shared/exercises.tests.js:72:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included (7.1s)
+  ✘  7 e2e/shared/exercises.tests.js:82:3 › Chromium › the French search finds exercises by their muscles in French (587ms)
+  ✘  8 e2e/shared/exercises.tests.js:90:3 › Chromium › if the list cannot load, the nine cards still show (6.8s)
+  ✘  9 e2e/shared/exercises.tests.js:100:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key (10.4s)
+
+
+  1) e2e/shared/exercises.tests.js:72:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included 
+
+    Error: expect(locator).not.toContainText(expected) failed
+
+    Locator: locator('.film-screen .steps')
+    Expected substring: not "profile"
+    Received string: "1Stand the phone upright at your side, so it sees you in profile.2Your whole body in the frame, feet included.3One set, then stop recording."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "not toContainText" locator('.film-screen .steps') with timeout 5000ms
+      - waiting for locator('.film-screen .steps')
+        14 × locator resolved to <ol class="steps" data-reveal="true">…</ol>
+           - unexpected value "1Stand the phone upright at your side, so it sees you in profile.2Your whole body in the frame, feet included.3One set, then stop recording."
+
+
+      75 |     await page.locator('.all-exercises [data-exercise="lateral_lunge"] .item-btn').click();
+      76 |     await expect(page.locator('.film-screen .eyebrow')).toHaveText('Filmed from the front', { timeout: 10000 });
+    > 77 |     await expect(page.locator('.film-screen .steps')).not.toContainText('profile');
+         |                                                           ^
+      78 |     await expect(page.locator('.film-screen .steps')).toContainText('facing you');
+      79 |     await expect(page.locator('.film-screen .steps')).toContainText('whole body');
+      80 |   });
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:77:59
+
+    Error Context: test-results/exercises-Chromium-an-exer-5e6cd-e-front-whole-body-included/error-context.md
+
+  2) e2e/shared/exercises.tests.js:82:3 › Chromium › the French search finds exercises by their muscles in French 
+
+    Error: mollets
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      84 |     for (const word of ['mollets', 'quadriceps', 'abdos', 'pectoraux', 'ischios', 'fessiers']) {
+      85 |       await page.fill('#all-search', word);
+    > 86 |       expect(await page.locator('.all-exercises .item').count(), word).toBeGreaterThan(0);
+         |                                                                        ^
+      87 |     }
+      88 |   });
+      89 |
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:86:72
+
+    Error Context: test-results/exercises-Chromium-the-Fre-54f2d--by-their-muscles-in-French/error-context.md
+
+  3) e2e/shared/exercises.tests.js:90:3 › Chromium › if the list cannot load, the nine cards still show 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.altar')
+    Expected: 9
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('.altar') with timeout 5000ms
+      - waiting for locator('.altar')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      94 |     await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
+      95 |     await page.waitForTimeout(1500);
+    > 96 |     await expect(page.locator('.altar')).toHaveCount(9);
+         |                                          ^
+      97 |     await expect(page.locator('.all-exercises')).toHaveCount(0);
+      98 |   });
+      99 |
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:96:42
+
+    Error Context: test-results/exercises-Chromium-if-the--7ae9a-d-the-nine-cards-still-show/error-context.md
+
+  4) e2e/shared/exercises.tests.js:100:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.welcome-l2')
+    Expected substring: "développé incliné"
+    Received string:    "Dernière série : incline_dumbbell_press, 10 répétitions."
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" locator('.welcome-l2') with timeout 10000ms
+      - waiting for locator('.welcome-l2')
+        24 × locator resolved to <p class="welcome-l2">Dernière série : incline_dumbbell_press, 10 répét…</p>
+           - unexpected value "Dernière série : incline_dumbbell_press, 10 répétitions."
+
+
+      108 |     }));
+      109 |     await page.reload();
+    > 110 |     await expect(page.locator('.welcome-l2')).toContainText('développé incliné', { timeout: 10000 });
+          |                                               ^
+      111 |     await expect(page.locator('.welcome-l2')).not.toContainText('incline_dumbbell_press');
+      112 |   });
+      113 | }
+        at /home/user/workout-vision/e2e/shared/exercises.tests.js:110:47
+
+    Error Context: test-results/exercises-Chromium-the-wel-3be96-d-by-its-name-never-its-key/error-context.md
+
+  4 failed
+    e2e/shared/exercises.tests.js:72:3 › Chromium › an exercise filmed from the front is filmed from the front, whole body included 
+    e2e/shared/exercises.tests.js:82:3 › Chromium › the French search finds exercises by their muscles in French 
+    e2e/shared/exercises.tests.js:90:3 › Chromium › if the list cannot load, the nine cards still show 
+    e2e/shared/exercises.tests.js:100:3 › Chromium › the welcome back names a set of an exercise without a card by its name, never its key 
+  5 passed (38.7s)

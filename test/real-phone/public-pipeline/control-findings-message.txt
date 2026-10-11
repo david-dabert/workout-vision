@@ -1,0 +1,69 @@
+I found five defects in the draft, two of them serious. I changed nothing in the repository or on GitHub.
+
+**Defects**
+
+D1. Line 4, the quartile figures ("exact 22, 40, 33, 39 across its four quartiles … a measure run outside the repository"), and the conclusion drawn from them ("the core's confidence barely separates right counts from wrong ones … so R8 fails where it counts").
+- Source: no committed file or saved output holds these figures. The draft itself says they are not in the repository.
+- The four figures add up to 134, which matches the whole-clip exact count, but nothing on record shows how they were split by confidence.
+- The line's main finding, and the proposed fix that follows from it, rest on a number found only in the message.
+- Command: `git grep -n -I -E "quartile" origin/claude/generate-architecture-md-inw479 -- ':!*.gz'` finds nothing relevant. The files in test/real-phone/accuracy/ (public-signal.txt, public-scoreboard.txt, public-boundaries.txt, diagnosis.txt and the others) have no confidence breakdown.
+
+D2. Line 3, "RepNet (CVPR 2020) is off by more than one on 30% of Countix test clips".
+- Source: no committed file states RepNet's error rate on Countix.
+- The repository names the paper only (scripts/public/countix.mjs line 2, DIRECTIVES.md line 134, benchmark/manifest.json line 3). The 30% figure is not there.
+- The only "30%" in the evidence is unrelated: the scoreboard's own "894 build sets, 271 exact (30%)" (public-scoreboard.txt line 1).
+- Command: `git grep -n -I -E "RepNet|off by more than one|OBO" origin/claude/generate-architecture-md-inw479 -- ':!*.gz'`
+
+D3. Line 3, "within one on 291 of 447 trimmed build sets".
+- Source: no file states 291.
+- It can be worked out: in test/real-phone/accuracy/public-scoreboard.txt the countix rows give 137 exact, and their "Off by 1" column adds up to 6+25+28+26+20+12+37 = 154, so 137 + 154 = 291.
+- Either cite that sum explicitly or save the output that prints it. As written, the figure appears nowhere on record.
+- Command: `sed -n 1,20p test/real-phone/accuracy/public-scoreboard.txt`
+
+D4. Line 4, "built on the 894 build sets".
+- Source: the 894 are the same 447 Countix clips counted twice, once trimmed and once whole. There are 447 files each in test/real-phone/public/countix/build and test/real-phone/public/countix-whole/build.
+- review-3-whole-signal.txt D1 says so directly: "each video appears twice … So the 'Sets' column counts the same clip twice."
+- Presenting 894 as independent build sets overstates the build data by a factor of two.
+- Command: `git ls-tree -r --name-only HEAD test/real-phone/public | sed 's#/[^/]*$##' | sort | uniq -c`
+
+D5. The message format.
+- The draft has no line saying what only David can decide. Line 4 says "The permanent fix I propose" but asks for no decision or approval.
+- Line 5 says only "Nothing to check on your iPhone".
+- The sending rule the draft relies on ("this answers his question, so it is sent") is not in PLAN.md. The recorded order is PLAN.md line 302: "Until then, write to me only when my iPhone or my approval is needed."
+- If the message goes out, it should end by asking David to approve (or refuse) building the measured confidence. Without that, no recorded rule allows sending it.
+
+**Checks that passed**
+
+- **Commits:**
+  - 0c7663d, e6172fd and 84e020a all exist (`git cat-file -t` gives commit).
+  - 0c7663d and e6172fd are on origin/claude/generate-architecture-md-inw479, whose head is e6172fda8fbc (`git ls-remote`).
+  - 84e020a is on origin/main, origin/counter-core and the branch.
+- **Branch positions** (`git ls-remote`): main is 84e020a000e7 and counter-core is c044f6feb9ae.
+- **Main's move** e84ab32 to 84e020a:
+  - It is a fast-forward.
+  - It matches PLAN.md line 297 ("Approved on 30 September on the preview built from 84e020a … main fast-forwarded from e84ab32 to 84e020a") and David's order at line 300 ("Move main to 84e020a").
+  - "main stays at 84e020a" is correct.
+- **counter-core's moves:**
+  - 24f89fa to 75669b5 is recorded at line 303.
+  - 75669b5 to c044f6f is a fast-forward (`git merge-base --is-ancestor 75669b5 c044f6f`) and is recorded at line 304. That line exists only on the branch's PLAN.md; it is one of 2 lines not yet on counter-core.
+  - No move was made that no line allows.
+- **CI:** the draft makes no CI claim. For reference, the latest runs are run 36704626426 on c044f6f (success) and run 36701361249 on 84e020a (success). I found no run on 0c7663d or e6172fd.
+- **Numbers that match** test/real-phone/accuracy/public-signal.txt at e6172fd:
+  - 447 sets per dataset.
+  - Core exact: 137 trimmed and 134 whole.
+  - Turning points (30%): 137 and 147.
+  - Whole-body signal: 127 and 124.
+  - The commit message of 4ed70d2 gives the same figures.
+- **Whole-body signal figures:** review-4-pca.txt found a sign error in the whole-body signal (244, 251 once corrected). The committed pca-signal.ts (lines 29-33) now centres both series, and 127 + 124 = 251, which matches the corrected total. So the cited figures are the corrected ones.
+- **Evidence paths:** test/real-phone/public-pipeline/review-3-whole-signal.txt and review-4-pca.txt exist at e6172fd and are reviewer reports. review-4-pca.txt is the one e6172fd adds.
+- **Rules relied on:**
+  - R8 (ask the user to confirm when confidence is low) is in CLAUDE.md.
+  - "Build half, held-out half read once" is in PLAN.md line 305. That line is only on the pushed branch, not yet on counter-core.
+- **Wording:** the draft is five lines and uses none of the words fixed, passing, working or deployed.
+
+Relevant files:
+- /home/user/workout-vision/test/real-phone/accuracy/public-signal.txt
+- /home/user/workout-vision/test/real-phone/accuracy/public-scoreboard.txt
+- /home/user/workout-vision/test/real-phone/public-pipeline/review-3-whole-signal.txt
+- /home/user/workout-vision/test/real-phone/public-pipeline/review-4-pca.txt
+- /home/user/workout-vision/PLAN.md

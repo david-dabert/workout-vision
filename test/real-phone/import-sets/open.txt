@@ -1,0 +1,2 @@
+Open, 30 September 2026 (a finding that cannot put a wrong count or a wrong label into a file):
+- The five build clips of 25 September in test/real-phone/landmarks/ carry no fingerprint in their names or their files, so scripts/import-sets.mjs cannot catch one of those videos handed over as an exam set. test/real-phone/exam/README.md tells David never to use those videos for the exam.

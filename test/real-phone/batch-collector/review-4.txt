@@ -1,0 +1,43 @@
+Fourth review of the uncommitted change on claude/generate-architecture-md-inw479 (same goal). Read-only; I did not run the scoreboard, and Film step 3 is out of scope. `npx vitest run src/lib/__tests__/batchCollect.test.js src/lib/counting/__tests__/edges.test.ts`: 72 passed. I did not run the Playwright spec.
+
+WHAT THIS ROUND CHANGED
+- The page now remembers a set only once its file is handed over, through Share or Download (`handedOver`). This fixes defect 1 of my third report for Share.
+- Two tabs' memories are now joined on each read and write (`mergeMemory`).
+- A second Share tap is refused while a share is running, and a stuck share is released after 10 s (`oneAtATime(10_000)`).
+
+DEFECTS
+
+1. Download remembers every set as handed over, but on an iPhone only one file may actually be saved.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:200-209. `remember(handedOver(recall(), rows))` runs right after the `a.click()` loop.
+- The page's own text two lines lower says several downloads from one tap are not certain on iPhone Safari. iOS Safari also shows a "Download?" prompt for each file, and David can decline it.
+- Scenario: David collects 20 sets and taps Download instead of Share. Safari saves set01, or nothing if he declines the prompt. The page still records all 20 fingerprints in localStorage. The tab is then evicted, or he reloads to try Share. He picks the 20 videos again, and 19 or 20 of them end as "Same video as set N: not kept." The files he never received can now only be made after "Start again from set 1", which renumbers everything.
+- This is defect 1 of the third report again, now through Download.
+- Smallest failing test, either of two:
+  - A unit test on a rule that decides what is remembered after a handover. Download on a touch or iOS user agent with more than one file should remember nothing. Today the page calls `handedOver` with every done row.
+  - A WebKit Playwright test: seed one done row through a test hook, since fake videos never reach 'done'. Tap #download, then expect `JSON.parse(localStorage['wv-batch-collector']).kept` to be empty. Today it holds the set.
+- Smallest fix: remember nothing on Download (numbering alone could still advance), or remember only after the user confirms the files are saved.
+
+2. "Start again from set 1" is undone by a second open tab.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:30-40 and 192-197.
+- Restart writes `{next:1, kept:[]}`. Another open tab still holds next=13 and all the fingerprints in its in-memory `memory`. Its next `recall()` or `remember()` merges those back in, taking the maximum, and writes them to storage.
+- Scenario: after the restart, the fresh session's first pick numbers from 13, and old fingerprints refuse re-collected videos.
+- Smallest failing test: two pages in one context. Seed next=13 and open both pages. Restart in page A. Pick a file in page B, then pick in A. Expect "Set 1" in A. Today it shows "Set 13".
+- Fix direction: a restart generation counter stored with the memory, which merges respect.
+
+LOW
+- Where: /home/user/workout-vision/src/collect-batch-main.js:186. The share is recorded only after `navigator.share` resolves.
+- If the chosen target moves Safari to the background and iOS evicts the tab before the promise settles, the files were shared but never remembered. After the reload, numbering starts again from the old next number, and new files take numbers already shared. This depends on the share target, and I have not confirmed it on a device.
+
+TESTS THAT DO NOT FAIL ON REVERT
+- No test ever reaches a collected ('done') row on the page, because the e2e videos are fake and never collect. As a result, removing the page's calls to `handedOver`/`remember` after Share (line 186) or after Download (line 208), `twinOf` with `recall().kept` (line 153), or the unsaved-files warning in Restart's confirm (line 193-194) would fail no test.
+- The pure functions `handedOver`, `mergeMemory`, `oneAtATime`, `twinOf` and `twinNote` are unit-tested, and those tests would fail on revert.
+- The e2e reload test seeds `kept: []` directly, so it tests the numbering only.
+
+CHECKED AND FOUND SOUND
+- `recall()` validates what it reads and keeps the maximum next number, so the counter never goes backwards except on Restart. `remember()` joins before writing.
+- `appendRows` still never renumbers a row, and `oneAtATime.end()` in `finally` frees the Share button after a cancel.
+- The Restart confirm warns about collected sets that are not shared yet.
+- The storage key `wv-batch-collector` clashes with no other key in src.
+- The stored data is fingerprints, set numbers, lifts and counts, and stays on the phone. No new host, and no video in the change.
+- The new strings are English only, on a page for David, with no em dash.
+- Unchanged and still sound: collectSet, collect-main, the precache filter, sets.ts, scoreboard, diagnose, edges, the exam script and .gitignore.

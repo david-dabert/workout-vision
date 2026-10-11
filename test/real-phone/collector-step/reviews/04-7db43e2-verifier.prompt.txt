@@ -1,0 +1,1 @@
+Step: the set collector's findings that could let a saved file carry a count its landmarks do not support (PLAN.md, GROWTH, step 1 and its collector decisions). Commit range: c4ba790..7db43e2 on counter-core. Evidence folders: none.

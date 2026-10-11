@@ -1,0 +1,37 @@
+I found 3 defects the tests do not catch, plus 1 lower-priority one. I read the whole change: the modified `/home/user/workout-vision/test/real-phone/exam/README.md` and the three untracked files `/home/user/workout-vision/scripts/import-plan.mjs`, `/home/user/workout-vision/scripts/import-sets.mjs` and `/home/user/workout-vision/scripts/__tests__/import-sets.test.js`. I also read `src/lib/collector.js`, `src/lib/batchCollect.js`, `src/collect-batch-main.js` and `test/real-phone/exam/exam.test.ts` to see what they rely on. The unit tests pass (6 of 6). I edited nothing in the repository and did my trial runs in the scratchpad.
+
+**1. The script crashes when the repository path contains a space or other non-ASCII character** (`/home/user/workout-vision/scripts/import-sets.mjs:11`)
+```js
+const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..', 'test', 'real-phone');
+```
+`URL.pathname` keeps percent-encoding, so a space arrives as `%20` (an accented letter is encoded the same way). A clone under a folder like "My Projects", or under iCloud Drive ("Mobile Documents/..."), gives a ROOT that does not exist. `readdirSync(ROOT)` then throws ENOENT and the import cannot run. I reproduced it with a copy of the scripts under a folder named "my repo":
+```
+Error: ENOENT: no such file or directory, scandir '.../scratchpad/my%20repo/test/real-phone'
+```
+The fix is `fileURLToPath(import.meta.url)`.
+- Smallest failing test: copy `scripts/import-*.mjs` into a temporary "a b/scripts/" folder next to "a b/test/real-phone/exam/", run it on a folder holding one valid name with `--exam`, and expect exit code 0.
+
+**2. "Already in the repository" does not cover `test/real-phone/landmarks/`** (`import-sets.mjs:21-25`, README lines 24-25)
+- The duplicate scan reads only `sets-*` and `exam/*`.
+- `test/real-phone/landmarks/` holds 5 build clips whose names end in ids like `mufhcy60`. These are not SHA-256 prefixes, and the scoreboard reads these clips (`accuracy/sets.ts`, `label-watch.test.ts`).
+- Scenario: the bench press video already in `landmarks/bench_press_7_angle_mufhcy60.json.gz` comes back through the batch collector as `set03_bench_press_7_angle_<sha8>.json.gz`. The import accepts it as an exam set, so an exam set would be one the counter has already been built on.
+- The README sentence "the import stops if ... one video comes twice, here or already in the repository" is therefore not true of the code. Either the claim names only the sets folders and the exam, or the check has to cover `landmarks/` by some other key.
+- Smallest failing test: `planImport(['set01_bench_press_7_angle_aaaaaaaa.json.gz'], { mode: 'exam', existing: <the script's own scan> })` for a video that exists in `landmarks/` returns no problems. As written, it cannot be caught from names at all.
+
+**3. No test covers `import-sets.mjs`**
+- The unit tests cover only the pure `planImport`. Nothing tests the ROOT path, the scan of existing files, `--write`, `COPYFILE_EXCL` or the exit codes.
+- Reverting the whole of `import-sets.mjs` fails no test, and defect 1 went through for that reason.
+- Smallest test: run the script as a child process against an `EXAM_DIR`-style temporary tree and check that a second run over the same folder ends with "Nothing imported" and exit code 1.
+
+**4. (Lower priority) A failed copy leaves a partial import, and conflicting flags are accepted silently** (`import-sets.mjs:13, 34-39`)
+- The files are copied one by one with no rollback. If a copy throws halfway (a full disk, a permission error, a source entry that is a directory), the files already copied stay in `exam/<lift>/`. That contradicts "imports nothing".
+- `--exam --build sets-01oct` quietly runs as exam. It should be refused.
+- Test: a source folder whose second entry is an unreadable set file, run with `--write`; expect no file under the destination.
+
+What I checked and found fine:
+- **Name parsing:** the batch prefix `setNN_`, lift ids with underscores, the three views side, front and angle (these match `collect-batch-main.js`), and file names that cannot be read (all of them stop the import).
+- **Duplicates:** the same video in the batch and single-collector formats, and duplicates against `sets-*` and `exam/<lift>`.
+- **Build folder name:** the check on it, including `--build --write` (the script says `--write` is not a sets folder and imports nothing).
+- **No overwrite:** a destination that already exists always has the same hash, so the plan stops it before `COPYFILE_EXCL` would.
+- **Exam privacy:** the plan never parses an exam file.
+- **README:** no em dash. The iPhone Safari, French and English, and new-host checks do not apply to a Node script.

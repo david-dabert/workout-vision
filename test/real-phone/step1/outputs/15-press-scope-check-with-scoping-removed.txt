@@ -1,0 +1,26 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not (2.2s)
+
+
+  1) e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      280 |       const elsewhere = await press(10, '#other-scroller');
+      281 |       expect(elsewhere.scrolledAt).toBeLessThan(80);
+    > 282 |       expect(elsewhere.at150).toBe(1); // only a scroll that holds the card cancels its press
+          |                               ^
+      283 |       await card.dispatchEvent('pointercancel', finger);
+      284 |       await page.evaluate(() => document.getElementById('other-scroller').remove());
+      285 |     });
+        at /home/user/workout-vision/e2e/shared/tactility.tests.js:282:31
+
+    Error Context: test-results/zz-portable-check-portable-49ca1-a-scroll-elsewhere-does-not/error-context.md
+
+  1 failed
+    e2e/shared/tactility.tests.js:238:5 › portable check › the press logic, fed synthetic pointer events: 80 ms wait, a rail scroll cancels, a scroll elsewhere does not 

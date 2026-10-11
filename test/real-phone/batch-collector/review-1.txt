@@ -1,0 +1,66 @@
+Review of the uncommitted change on claude/generate-architecture-md-inw479: the batch collector, collectSet, the accuracy and exam scripts, and the Film step 3 copy.
+
+One thing I changed by accident: to check the gate I ran `SCOREBOARD=1 npx vitest run test/real-phone/accuracy/scoreboard.test.ts`, and that run rewrites /home/user/workout-vision/test/real-phone/accuracy/scoreboard.txt. It passed, the file is untracked, and the rewrite carries today's date and the same counts. Nothing else was touched.
+
+DEFECTS
+
+1. A video picked twice on an iPhone is kept twice, but the page says it is kept once.
+- Where: /home/user/workout-vision/src/lib/batchCollect.js:47 (`sameFile` compares name, size and lastModified) and the claim at /home/user/workout-vision/src/collect-batch-main.js:90 ("a video picked twice is kept once").
+- Scenario: iPhone Safari gives a file picked from Photos a lastModified equal to the moment it was handed over, not the filming date. David picks 12 videos, collects, then picks again with IMG_0412 selected a second time. The second copy gets a new lastModified, so it passes `sameFile` and becomes a new set. Both files carry the same SHA-256 and count, under two set numbers. If both go into the build sets, the scoreboard counts that clip twice.
+- The same fact makes the rule "numbered by the files' dates" follow the order of the hand-over on the phone, not the filming order. Only the thumbnails protect against that.
+- Smallest failing test (confirmed with node, it returns 2):
+  `const a={name:'IMG_0412.MOV',size:10,lastModified:1000}; expect(appendRows(rowsFor([a]),[{...a,lastModified:2000}]).length).toBe(1)`
+- Fix direction: drop a duplicate by its sha256 after hashing, or at least do not match on lastModified.
+
+2. A double tap on Share shows a false failure message.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:143-148.
+- Scenario: the button stays enabled while the sheet is opening. A second tap calls `navigator.share` again. Safari rejects that call with InvalidStateError, which is not an AbortError, so the page writes "Sharing did not go through: use Download." while the first sheet is open and may still succeed.
+- Smallest failing test: a Playwright test on collect-batch.html with `navigator.canShare = () => true` and a stubbed `navigator.share` that returns a pending promise on the first call and rejects `new DOMException('x','InvalidStateError')` on the second. Double-click #share, then expect #summary not to contain "did not go through".
+
+3. A row's red error note stays after the user fixes it.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:99-100, and :50 (the `choose` and count `input` handlers).
+- Scenario: the user taps Collect with set 3 missing its exercise. Row 3 turns red with "Set 3: choose the exercise." The user then chooses the exercise. `choose` updates `row.lift` but neither clears `row.state`/`row.note` nor calls `paint`. The row keeps saying the exercise is missing until the next Collect.
+- Smallest failing test: a Playwright test that picks one file, taps Collect, then selects `#lift0`, and expects the row's `.state` not to contain "choose the exercise".
+
+4. The .gitignore change stops ignoring exam files placed at the top of exam/.
+- Where: /home/user/workout-vision/.gitignore:69, `test/real-phone/exam/*/` in place of `test/real-phone/exam/`.
+- Scenario: batch files (set07_squat_8_side_….json.gz) dropped straight into test/real-phone/exam/ instead of a `<lift>/` folder are now visible to git, and `git add -A` commits exam sets. PLAN.md says exam sets are opened only by the exam script. exam.test.ts also ignores top-level files silently.
+- Proof: `git check-ignore test/real-phone/exam/x.json.gz` returns nothing (only `exam/squat/a.json.gz` is ignored).
+- Fix direction: ignore `test/real-phone/exam/**/*.json.gz` as well.
+
+5. The exam script passes even when a lift fails.
+- Where: /home/user/workout-vision/test/real-phone/exam/exam.test.ts:30-35.
+- Scenario: `failed` is filled but never asserted, so `EXAM=1 npx vitest run …` is green with "FAIL squat: 3/4" in its output. Under R3, a green run can be quoted as "passing".
+- Smallest failing test: put one mislabelled set in exam/squat/, run with EXAM=1, and expect a non-zero exit. Today it exits 0.
+
+6. The scoreboard ignores any new set folder.
+- Where: /home/user/workout-vision/test/real-phone/accuracy/scoreboard.test.ts:19 (same in diagnose.test.ts:18 and edges.test.ts:17), which read only `sets-29sep` and `landmarks`.
+- Scenario: the batch collector's roughly 20 files placed in a new folder such as `sets-01oct/` are never measured and never listed as "new". This contradicts the file's own rule that "a set is never dropped quietly".
+
+7. The Film step 3 change is outside the stated goal.
+- Where: /home/user/workout-vision/src/components/experience/Film.jsx:88-89, and design/experience-prototype.html.
+- Step 3 of the app's filming screen is replaced ("Toute la série, du départ au retour au repos." / "The whole set, from rest back to rest."). This is outside "batch collector plus measuring tools".
+- It is new French copy that R10 requires David to approve, and a user-visible change that R3 requires him to confirm on his iPhone.
+- No test covers either string.
+- The French register is consistent and there is no em dash.
+
+RISK, NOT PROVEN
+
+Memory on the batch page:
+- /home/user/workout-vision/src/collect-batch-main.js:32-42 builds a `<video>` (`preload="metadata"`, `#t=0.5`) for every row on each `render()`. render() runs on every pick, at Collect and after the run, so a 20-video batch creates about 60 video elements over a run.
+- Replaced elements keep their `src`, and no object URL is ever revoked.
+- On an iPhone with 20 HEVC videos, all of this lives alongside the decode and `file.arrayBuffer()` hashing of long videos in collectSet. Nothing tests the batch page under this load.
+- There is no e2e test at all for collect-batch.html; e2e/collect.spec.js covers only collect.html.
+
+CHECKED AND FOUND SOUND
+- collectSet.js is the old collect-main pipeline moved over: same settings, worker, abort checks and refusal, plus one extra abort check after gzip.
+- collect-main.js still shows the statuses its e2e tests wait for ("Loading pose model", "interrupted").
+- In the batch loop, a new AbortController is made per set and the watcher is attached after whenVisible. There is no gap between sets where a hide could be missed, since the between-set steps are synchronous.
+- A hide stops the batch; the Collect guard against double taps is synchronous; fields are locked while busy and on collected rows.
+- The share call is made directly inside the tap and `canShare` is checked. A cancelled sheet (AbortError) shows nothing. Share is hidden where canShare is missing. The limit of Download on iPhone is stated on the page.
+- The precache filter leaves no app chunk out: the built dist has the collect, collectBatch and collectSet chunks outside the precache list, and no app chunk imports collectSet.
+- No new host and no video file in the change; the committed txt and json files hold only numbers derived from landmarks. All new strings are in English on a page for David only, with no em dash.
+- Counting code (src/lib/counting/core) is unchanged. `npx vitest run` on batchCollect.test.js and counting/__tests__/edges.test.ts: 65 passed.
+- The scoreboard passes against its baseline (7 exact of 14, 0 catastrophic).
+- edges.test.ts only fixes the current core behaviour in place, so it would not fail if the change were reverted. That is expected, since the goal allows no counting change.
+- The batchCollect tests exercise the carry and append rules directly, but none of them covers the iPhone lastModified case (defect 1).

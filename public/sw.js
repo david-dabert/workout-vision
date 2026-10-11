@@ -3,19 +3,22 @@
 // cache-first for static assets and MediaPipe WASM files.
 
 const CACHE_NAME = 'wv-v1';
+const MODEL_CACHE = 'wv-model-__MODEL_SHA256__';
 const APP_SHELL = [
   '__SW_BASE__',
   '__SW_BASE__manifest.json',
   '__SW_BASE__favicon.svg',
   '__SW_BASE__icon-192.png',
   '__SW_BASE__icon-512.png',
-  '__SW_BASE__mediapipe/pose_landmarker_full.task',
-  '__SW_BASE__mediapipe/manifest.json',
 ];
+
+// Files are fetched past the browser's own cache, which may still hold the last
+// version's page for ten minutes: a new version must never store the old one.
+const fresh = (urls) => urls.map((url) => new Request(url, { cache: 'reload' }));
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(fresh(APP_SHELL)))
   );
   self.skipWaiting();
 });
@@ -23,7 +26,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => (k.startsWith('wv-v') && k !== CACHE_NAME) || (k.startsWith('wv-model-') && k !== MODEL_CACHE)).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -37,7 +40,23 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.origin !== self.location.origin) return;
 
-  // MediaPipe WASM/model files: cache-first (large, immutable)
+  if (url.pathname.endsWith('/mediapipe/pose_landmarker_full.task')) {
+    event.respondWith(caches.open(MODEL_CACHE).then(async (cache) => {
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      const response = await fetch(request);
+      if (response.ok) {
+        const bytes = await response.clone().arrayBuffer();
+        const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
+        if (MODEL_CACHE !== `wv-model-${hash}`) throw new Error('Pose model integrity mismatch');
+        await cache.put(request, response.clone());
+      }
+      return response;
+    }));
+    return;
+  }
+
+  // MediaPipe WASM files: cache-first
   if (url.pathname.includes('/mediapipe/')) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -54,11 +73,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // JS/CSS assets with hashed filenames: cache-first
+  // JS/CSS assets with hashed filenames (Vite names them name-XXXXXXXX.js): cache-first
   // Vite adds crossorigin to <script type="module"> and <link rel="stylesheet">,
   // causing cors-mode requests. cache.addAll() stores with no-cors mode.
   // Try both the original request and a mode-agnostic URL match.
-  if (/\.[a-f0-9]{8}\.(js|css)$/.test(url.pathname)) {
+  if (/-[A-Za-z0-9_-]{8}\.(js|css)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
@@ -78,10 +97,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation and app shell: network-first with cache fallback
+  // Navigation and app shell: network-first with cache fallback. The page is checked
+  // with the server each time, so it never outlives the files it names.
   if (request.mode === 'navigate' || APP_SHELL.includes(url.pathname)) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-cache' })
         .then((response) => {
           if (response.ok) {
             const clone = response.clone();

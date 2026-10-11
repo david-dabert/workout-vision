@@ -153,6 +153,7 @@ export default function ExerciseGuideLibrary({ onClose }) {
         </p>
       )}
 
+      <p style={{ padding: 20 }}>Illustrations: Everkinetic, via <a href="https://github.com/bryllim/workout-guide">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. WebP · 320 × 320.</p>
       {detail && (
         <ExerciseDetail
           exercise={detail}
@@ -191,17 +192,7 @@ function ExerciseDetail({ exercise, onClose, t, tExercise }) {
           {CATEGORY_LABELS[exercise.category] || ex?.category || ''}
         </span>
 
-        {ex?.scienceNotes && (
-          <p style={{ fontSize: '0.75rem', color: 'rgba(232,230,225,0.5)', lineHeight: 1.4, marginBottom: 16 }}>
-            {ex.scienceNotes}
-          </p>
-        )}
-
-        {!exercise.hasFullData && (
-          <p style={{ fontSize: '0.7rem', color: 'rgba(232,230,225,0.3)', fontStyle: 'italic', marginBottom: 12 }}>
-            {t('guide_only') || 'Visual guide only — full form analysis not yet available for this exercise.'}
-          </p>
-        )}
+        <p className={css.detailSecondary}>{['bicep_curl', 'lateral_raise', 'lat_pulldown'].includes(exercise.key) ? 'Compté / Counted' : 'Guide uniquement / Guide only'}</p>
 
         <button className={css.detailClose} onClick={onClose}>
           {t('close') || 'Close'}

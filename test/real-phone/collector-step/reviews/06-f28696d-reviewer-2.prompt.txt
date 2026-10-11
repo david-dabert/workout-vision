@@ -1,0 +1,1 @@
+A navigation by the browser always wins over a screen change the app still has waiting.

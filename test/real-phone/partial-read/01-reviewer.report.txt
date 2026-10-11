@@ -1,0 +1,15 @@
+Reviewer, partial-read guard, 29 September. Three defects. The five committed landmark files are unaffected
+(331, 341, 609, 439, 620 samples, each floor(duration x 15)).
+1. Only "fewer samples" was refused; the collector's rule (setIsWhole) is exact. extractFramesStreaming falls back
+   from WebCodecs to playback and restarts at index 0 into the same arrays: 300 + 181 = 481 samples, timestamps
+   going back, counted with no warning; 258 + 181 = 439 passes too. An unknown duration (NaN, Infinity) was counted.
+2. The screen blamed the screen ("Gardez l'écran allumé"): a hidden page already shows AnalysisInterrupted; this
+   screen is reached with the screen on. The likely cause is on the playback path: captures fall behind playback at
+   1.5x (181 samples over 19.5 s is about 108 ms per inference), so a restart may read about 181 again. "images"
+   is the wrong unit: 439 is the number of 15-per-second samples, the 30 fps video holds about 880 frames.
+3. No test would fail if the throw, the PartialReadError branch or the 'incomplete' view were removed.
+No defect: double tap (inert leaving layer), cleanup and aborts, interruption and AbortError take precedence,
+reduced motion, no em dash, vous register, no new host, full reads unchanged.
+Fixes: the exact rule (481 refused, unknown length refused, tests); the screen states what was read, as a share of
+the video, and names no cause (French for David's approval); analyzeCoreVideo tested with a mocked extractor and
+worker, rejecting with PartialReadError 181 of 439. Open: the cause on the playback path (the decoder).

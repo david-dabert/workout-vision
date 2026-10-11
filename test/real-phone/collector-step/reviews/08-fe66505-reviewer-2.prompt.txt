@@ -1,0 +1,1 @@
+Goal: e2e/navigation-race.spec.js and e2e/tactility.spec.js also run in WebKit with the iPhone profile, as e2e/history.spec.js does; a test that cannot run there is listed as open.

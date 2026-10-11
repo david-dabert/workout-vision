@@ -1,0 +1,1 @@
+Goal: the check page compares David's five sets of 29 September, recognised by their video fingerprint, with what their committed landmarks give, and a switch forces the playback decoding path so the decoder fix can be tested on a phone where WebCodecs works, while the app itself still tries WebCodecs first.

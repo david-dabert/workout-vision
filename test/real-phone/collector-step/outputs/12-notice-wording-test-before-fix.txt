@@ -1,0 +1,5 @@
+  ✘  1 e2e/collect.spec.js:73:1 › the page says it is for David's own sets, and where a set of anyone else goes (5.3s)
+    Error: expect(locator).toContainText(expected) failed
+    Expected substring: "A set of anyone else, whoever films it,"
+    Received string:    "For David's own sets only. A set filmed by anyone else goes through scripts/collect-clips.mjs on David's Mac, with their agreement recorded."
+  1 failed

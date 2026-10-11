@@ -1,0 +1,3 @@
+analysis 0 ms a frame: {"expected":89,"read":59,"duration":5.991867} NOT WHOLE
+analysis 150 ms a frame: {"expected":90,"read":11,"duration":6.006667} NOT WHOLE
+analysis 400 ms a frame: {"expected":90,"read":5,"duration":6.005333} NOT WHOLE

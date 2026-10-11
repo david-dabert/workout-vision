@@ -1,0 +1,39 @@
+I found two defects in the watch list and two in the PLAN.md record. The first one alone means the list is not blind.
+
+**Defect 1 (main one): the watch list shows every set's label, so David does not count blind.**
+- Where: /home/user/workout-vision/test/real-phone/accuracy/diagnose.test.ts line 55, which writes /home/user/workout-vision/test/real-phone/accuracy/label-watch.txt.
+- Each line starts with `s.name`, the file name. The label is part of that name: `bench_press_7_side_24cc4f0b`, `leg_press_13_side_1ee0ae47`, `overhead_press_4_front_f75638cc`, and so on. /home/user/workout-vision/test/real-phone/accuracy/sets.ts line 23 reads the label from the name with `/^(?:set\d+_)?(.+?)_(\d+)_/` for the build clips.
+- The comment on line 54 says "Neither the label nor the app's count is shown: David counts blind". That is false for all 14 lines.
+- Failing scenario: David opens the list to check `leg_press_13...` at "start 0.0-0.4 s, end 29.1-29.6 s", already knowing the label is 13. His count is anchored to the label, which is the pull toward a given number that his order and R1 are meant to prevent.
+- The same folder also holds diagnosis.txt, which prints the label and the count for each set, but that file is not meant to go to him.
+- Smallest failing test: read label-watch.txt, and for each set line assert that the first field does not match `/_(\d+)_/`. All 14 lines fail today.
+- Fix direction: list each set under a neutral ID (a hash or a sequence number), with the name mapping kept out of what David receives.
+
+**Defect 2: the list says "every labelled set" but leaves out unreadable files.**
+- Where: diagnose.test.ts lines 21-23 and 65.
+- Unreadable files go to diagnosis.txt as `UNREADABLE name` but never into `watch`. The header on line 65 still says "every labelled set".
+- Failing scenario: a sets-*/ file whose gzip is truncated, or whose lift or count cannot be read, is on disk and labelled. It appears in diagnosis.txt and is silently missing from David's list, so its label is never checked.
+- Smallest failing test: put a corrupt `x_3_side_aaaa.json.gz` in a temporary sets-test/ folder, run with ACCURACY=1, and assert label-watch.txt names it. It is absent today.
+- Nothing asserts on the list at all. The test only writes files, so reverting the change fails no test.
+
+**Defect 3: PLAN.md puts second-message orders under the first message's heading.**
+- Where: /home/user/workout-vision/PLAN.md lines 258-274 against line 276.
+- Lines 260-265 and 269-270 are new in this change ("The label rule applies to every labelled set…", "Move counter-core to the head of this branch now…", "Bench press and overhead press stay offered as Experimental…", and others). They sit under "David's orders of 30 September, in his words", which is the first message's heading.
+- Line 276 says those lines "are replaced by his", meaning the second message. But the second-message list (277-287) does not contain them.
+- Failing scenario: when two lines conflict, line 282 makes "my latest order prevail". Someone checking the plan (wv-control, the verifier) cannot tell from the file which of lines 259-274 came from which message, so the priority rule cannot be applied.
+- The first message's original lines (the four cut sets, "parked until I film", "counter-core and main move to 84e020a together") are deleted with no trace. The record no longer shows what David said first.
+- Check to run: `git show HEAD:PLAN.md | sed -n 258,272p` compared with the new block shows first-message lines rewritten in place under the same "in his words" heading.
+
+**Defect 4: the counter-core target in PLAN.md names no commit.**
+- Where: PLAN.md line 292 (and 264): "counter-core moves to the head of this branch now". It gives no hash and no branch name.
+- The wv-control brief (/home/user/workout-vision/.claude/agents/wv-control.md) tells it to accept a counter-core move that "match[es] a line of PLAN.md".
+- Failing scenario: after later commits on claude/generate-architecture-md-inw479, a counter-core push to any later head still matches "the head of this branch". "Now" has no anchor in the file, so wv-control cannot find a move that no line allows.
+- Check: nothing in PLAN.md fixes the hash this line authorises. `grep -n "head of this branch" PLAN.md` returns lines 264 and 292 with no commit.
+
+What I checked and found clean:
+- **Counting:** diagnose.test.ts changes no counting code or parameter.
+- **Unchanged diagnosis lines:** the old lines of diagnosis.txt are unchanged. The new VIDEO STARTS/ENDS lines agree with the traces in edges.txt I compared (overhead_press cefdaa82, hip_thrust, lateral_raise_9, squat with a missing first sample).
+- **Wording:** no em dash in the diff, the new brief or the new list. The change adds no user-facing app string, so French and English do not apply.
+- **Privacy:** no new host. No video or frame added; only text files.
+- **wv-control brief:** it names the right repository (origin is david-dabert/workout-vision) and is read-only apart from `git fetch`.
+- **PLAN.md cross-references:** line 4 and METHOD (lines 34-35) do say two sub-agents, and lines 44 and 250 say what line 286 cites.

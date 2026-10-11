@@ -1,0 +1,8 @@
+Frame check over the 304 exercises the guide now shows (14 hidden slugs filtered out).
+Run: 25 September 2026, HEAD fetch against cdn.jsdelivr.net.
+
+Total visible exercises: 304
+Frames OK: 912
+Frames FAIL: 0
+
+All 912 frames (3 per exercise × 304 exercises) return HTTP 200.

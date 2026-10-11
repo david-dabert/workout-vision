@@ -1,0 +1,7 @@
+Source of "181 of 439" (29 September 2026): David's screenshots, sent in the session.
+14:39, the app's report sheet: "10 répétitions · Élévations latérales · Compté par l'app : 2. Corrigé : 10. · Bras suivi : droit",
+  two reps, amplitudes 78° and 73°.
+14:44, the set collector (collect.html) on the same iPhone, Lateral Raise, 10, Front:
+  "Error: only 181 of the 439 samples of the video were read. No file is offered. Pick the video again."
+439 equals the sample count of the committed clip test/real-phone/landmarks/lateral_raise_10_front_mufhhbun.json.gz
+(439 timestamps; fileSize 93100828).

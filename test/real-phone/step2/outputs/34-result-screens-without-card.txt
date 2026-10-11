@@ -1,0 +1,36 @@
+fr ?lift=hammer_curl&arm=left
+  eyebrow: Curl marteau
+  tier: Expérimental : nous apprenons encore cet exercice
+  meta: 26 s · bras gauche
+  body: 
+  page errors: none
+en ?lift=forward_lunge&arm=right
+  eyebrow: Forward Lunge
+  tier: Experimental: we are still learning this exercise
+  meta: 26 s · right leg
+  body: 
+  page errors: none
+fr ?lift=dead_bug&arm=both
+  eyebrow: Dead bug - bras et jambe opposés
+  tier: Expérimental : nous apprenons encore cet exercice
+  meta: 26 s · les deux côtés
+  body: 
+  page errors: none
+fr ?lift=bird_dog&arm=both&refused&hide=left
+  eyebrow: Bird dog - bras et jambe opposés à quatre pattes | La correction
+  tier: 
+  meta: 
+  body: Votre côté gauche était caché pendant la plus grande partie de la série.
+  page errors: none
+en ?lift=walking_lunge&arm=both&refused&hide=right
+  eyebrow: Walking Lunge | The fix
+  tier: 
+  meta: 
+  body: Your right leg was hidden for most of the set.
+  page errors: none
+fr ?lift=forward_lunge&arm=left&refused&hide=left
+  eyebrow: Fente avant | La correction
+  tier: 
+  meta: 
+  body: Votre jambe gauche était cachée pendant la plus grande partie de la série.
+  page errors: none

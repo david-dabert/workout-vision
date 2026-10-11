@@ -1,0 +1,5 @@
+MM-Fit Dataset. David Strömbäck, Sangxia Huang and Valentin Radu.
+Source: https://zenodo.org/records/7672767
+Licence: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Modifications: extracted labelled [start,end) frame intervals, reset the segment timeline, and converted MPEG-4 Part 2 to H.264 with libx264 CRF 18 (lossy). Dimensions, frame rate, pixel format and aspect ratio preserved. Derived MediaPipe image/world landmarks and counter outputs are included; no video frames are retained in the evidence repository. Source originals and labels are unchanged.
+Role: supplementary build data only, never exam data. Admission requires both wrists and both ankles visible together in at least 90% of all samples. See the complete results table for admission decisions.

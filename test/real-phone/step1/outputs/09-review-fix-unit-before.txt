@@ -1,0 +1,91 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+3:57:22 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+3:57:22 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ❯ src/lib/__tests__/reportLinks.test.js (14 tests | 5 failed) 20ms
+     × says the app counted the reps only when the user kept the app's count 8ms
+     × opens the share sheet when there is one 2ms
+     × does nothing more when the user cancels the share sheet 0ms
+     × copies the message when the share sheet refuses it 0ms
+     × copies the message when there is no share sheet, and says so when it cannot 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > challengeShare > says the app counted the reps only when the user kept the app's count
+AssertionError: expected 'Squat: 10 reps, counted by Workout Vi…' not to contain 'counted by'
+
+Expected: "counted by"
+Received: "Squat: 10 reps, counted by Workout Vision on my phone. Can you beat it?"
+
+ ❯ src/lib/__tests__/reportLinks.test.js:95:23
+     93|     const fixed = challengeShare({ liftName: 'Squat', count: 10, count…
+     94|     expect(fixed).toContain('Squat: 10 reps');
+     95|     expect(fixed).not.toContain('counted by');
+       |                       ^
+     96|     expect(fixed).toContain('filmed with Workout Vision');
+     97|     const fr = challengeShare({ liftName: 'Squat', count: 10, counted:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > shareChallenge > opens the share sheet when there is one
+TypeError: shareChallenge is not a function
+ ❯ src/lib/__tests__/reportLinks.test.js:109:23
+    107|   it('opens the share sheet when there is one', async () => {
+    108|     let shared = null;
+    109|     const out = await shareChallenge(data, { share: async d => { share…
+       |                       ^
+    110|     expect(out).toBe('shared');
+    111|     expect(shared).toBe(data);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > shareChallenge > does nothing more when the user cancels the share sheet
+TypeError: shareChallenge is not a function
+ ❯ src/lib/__tests__/reportLinks.test.js:116:23
+    114|   it('does nothing more when the user cancels the share sheet', async …
+    115|     const c = clipboard();
+    116|     const out = await shareChallenge(data, { share: async () => { thro…
+       |                       ^
+    117|     expect(out).toBe('cancelled');
+    118|     expect(c.text).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > shareChallenge > copies the message when the share sheet refuses it
+TypeError: shareChallenge is not a function
+ ❯ src/lib/__tests__/reportLinks.test.js:124:25
+    122|     for (const name of ['NotAllowedError', 'TypeError', 'DataError']) {
+    123|       const c = clipboard();
+    124|       const out = await shareChallenge(data, { share: async () => { th…
+       |                         ^
+    125|       expect(out).toBe('copied');
+    126|       expect(c.text).toBe('hello https://x/');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/lib/__tests__/reportLinks.test.js > shareChallenge > copies the message when there is no share sheet, and says so when it cannot
+TypeError: shareChallenge is not a function
+ ❯ src/lib/__tests__/reportLinks.test.js:132:18
+    130|   it('copies the message when there is no share sheet, and says so whe…
+    131|     const c = clipboard();
+    132|     expect(await shareChallenge(data, { clipboard: c })).toBe('copied'…
+       |                  ^
+    133|     expect(c.text).toBe('hello https://x/');
+    134|     expect(await shareChallenge(data, {})).toBe('unavailable');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 9 passed (14)
+   Start at  03:57:23
+   Duration  241ms (transform 42ms, setup 0ms, import 57ms, tests 20ms, environment 0ms)
+

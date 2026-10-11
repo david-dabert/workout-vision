@@ -1,0 +1,630 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.js:8:30). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+7:36:29 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+7:36:29 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+[copy-models] OK: MediaPipe tasks-vision WASM -> /home/user/workout-vision/public/mediapipe (7 files)
+[copy-models] Model SHA-256 verified: 5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1
+[copy-models] OK: pose_landmarker_full.task already present
+
+ RUN  v4.1.11 /home/user/workout-vision
+
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: 10 cycles at 15 sps with 10% wobble 18ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: 10 cycles at 30 sps with 10% wobble 18ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: 10 cycles at 60 sps with 10% wobble 77ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 elbow reps at 15 sps with 10% wobble 10ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 lateral raise reps at 15 sps with 10% wobble 6ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 elbow reps at 30 sps with 10% wobble 10ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 lateral raise reps at 30 sps with 10% wobble 6ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 elbow reps at 60 sps with 10% wobble 28ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 lateral raise reps at 60 sps with 10% wobble 30ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 elbow reps at 120 sps with 10% wobble 61ms
+   → liftDefinition is not a function
+   → expected 0.6000000000000001 to be greater than 0.8999999999999999
+   → expected 0.5 to be greater than 0.6666666666666667
+   → expected +0 to be 10 // Object.is equality
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: 10 cycles at 120 sps with 10% wobble 82ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: bridges half a second with the joint hidden 7ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: the eccentric phase comes first 13ms
+stdout | src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > bench_press: expected 7
+bench_press | expected=7 | hotfix=5 | new=3 | arm=right | confidence=39.0% | low=97.7° | high=140.8°
+  rep 1: 2.60s–8.93s, ROM=82.6°, conc=1.13s, ecc=4.47s
+  rep 2: 16.13s–18.07s, ROM=64.9°, conc=1.00s, ecc=0.47s
+  rep 3: 18.40s–20.20s, ROM=55.3°, conc=0.40s, ecc=0.47s
+
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > 10 lateral raise reps at 120 sps with 10% wobble 56ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > bridges a 0.5s dropout mid-set (elbow) 3ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > bridges a 0.5s dropout mid-set (lateral raise) 1ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > right arm selection when left arm has low visibility 1ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > ignores a spike surrounded by null frames (models OHP 5.88s fault) 7ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > counts a rep that is 25% shallower than the others 3ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > does not count a noisy setup phase as a rep 15ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — synthetic > returns 0 reps for flat signal 0ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > bench_press: expected 7 22ms
+stdout | src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > bicep_curl: expected 7
+bicep_curl | expected=7 | hotfix=11 | new=7 | arm=left | confidence=95.9% | low=96.2° | high=153.7°
+  rep 1: 0.00s–1.13s, ROM=86.5°, conc=0.07s, ecc=0.47s
+  rep 2: 3.53s–5.00s, ROM=88.4°, conc=0.33s, ecc=0.67s
+  rep 3: 6.93s–8.40s, ROM=102.9°, conc=0.27s, ecc=0.67s
+  rep 4: 10.07s–11.47s, ROM=100.8°, conc=0.33s, ecc=0.60s
+  rep 5: 13.33s–14.93s, ROM=117.3°, conc=0.33s, ecc=0.73s
+  rep 6: 16.20s–17.87s, ROM=104.1°, conc=0.47s, ecc=0.60s
+  rep 7: 19.40s–21.07s, ROM=108.4°, conc=0.40s, ecc=0.53s
+
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+   → expected 5 to be 10 // Object.is equality
+   → expected +0 to be 10 // Object.is equality
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_press: 10 cycles at 15 sps with 10% wobble 6ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_press: 10 cycles at 30 sps with 10% wobble 14ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_press: 10 cycles at 60 sps with 10% wobble 25ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_press: 10 cycles at 120 sps with 10% wobble 74ms
+stdout | src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > lat_pulldown: expected 10
+lat_pulldown | expected=10 | hotfix=11 | new=10 | arm=right | confidence=97.5% | low=112.3° | high=141.6°
+  rep 1: 1.93s–4.33s, ROM=52.7°, conc=0.47s, ecc=1.27s
+  rep 2: 5.47s–7.60s, ROM=48.9°, conc=0.33s, ecc=1.00s
+  rep 3: 8.60s–10.87s, ROM=54.1°, conc=0.33s, ecc=1.13s
+  rep 4: 11.93s–14.40s, ROM=52.6°, conc=0.33s, ecc=1.27s
+  rep 5: 15.47s–17.67s, ROM=52.7°, conc=0.33s, ecc=1.13s
+  rep 6: 18.93s–21.20s, ROM=52.4°, conc=0.40s, ecc=0.87s
+  rep 7: 22.54s–24.80s, ROM=52.8°, conc=0.40s, ecc=1.07s
+  rep 8: 26.14s–28.34s, ROM=53.6°, conc=0.47s, ecc=0.93s
+  rep 9: 30.00s–32.60s, ROM=51.5°, conc=0.47s, ecc=1.40s
+  rep 10: 34.87s–37.53s, ROM=49.6°, conc=0.87s, ecc=0.87s
+
+stdout | src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > lateral_raise: expected 10
+lateral_raise | expected=10 | hotfix=11 | new=10 | arm=right | confidence=100.0% | low=34.0° | high=82.6°
+  rep 1: 1.07s–3.47s, ROM=77.5°, conc=0.60s, ecc=1.33s
+  rep 2: 4.67s–6.37s, ROM=82.0°, conc=0.53s, ecc=0.77s
+  rep 3: 7.23s–9.10s, ROM=83.6°, conc=0.60s, ecc=0.87s
+  rep 4: 10.16s–11.77s, ROM=83.2°, conc=0.47s, ecc=0.73s
+  rep 5: 12.77s–14.43s, ROM=86.1°, conc=0.53s, ecc=0.67s
+  rep 6: 15.43s–16.90s, ROM=85.0°, conc=0.53s, ecc=0.67s
+  rep 7: 17.90s–19.43s, ROM=86.7°, conc=0.53s, ecc=0.67s
+  rep 8: 20.50s–22.23s, ROM=85.0°, conc=0.60s, ecc=0.80s
+  rep 9: 23.23s–24.63s, ROM=91.2°, conc=0.53s, ecc=0.47s
+  rep 10: 25.70s–27.43s, ROM=85.5°, conc=0.60s, ecc=0.73s
+
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > bicep_curl: expected 7 30ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > lat_pulldown: expected 10 56ms
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > lateral_raise: expected 10 53ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_press: bridges half a second with the joint hidden 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_press: the eccentric phase comes first 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_extension: 10 cycles at 15 sps with 10% wobble 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_extension: 10 cycles at 30 sps with 10% wobble 9ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_extension: 10 cycles at 60 sps with 10% wobble 26ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_extension: 10 cycles at 120 sps with 10% wobble 56ms
+stdout | src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > overhead_press: expected 10
+overhead_press | expected=10 | hotfix=22 | new=9 | arm=left | confidence=88.5% | low=109.9° | high=142.4°
+  rep 1: 0.09s–5.94s, ROM=84.6°, conc=3.87s, ecc=0.45s
+  rep 2: 8.28s–11.21s, ROM=68.9°, conc=1.33s, ecc=1.13s
+  rep 3: 12.22s–14.69s, ROM=58.5°, conc=0.40s, ecc=0.47s
+  rep 4: 15.89s–18.69s, ROM=59.6°, conc=0.40s, ecc=0.47s
+  rep 5: 19.69s–22.29s, ROM=59.8°, conc=1.40s, ecc=0.47s
+  rep 6: 23.16s–25.30s, ROM=57.5°, conc=0.67s, ecc=0.67s
+  rep 7: 26.23s–28.47s, ROM=52.4°, conc=1.30s, ecc=0.47s
+  rep 8: 29.40s–31.54s, ROM=61.3°, conc=0.80s, ecc=1.14s
+  rep 9: 36.27s–38.28s, ROM=50.7°, conc=1.20s, ecc=0.67s
+
+ ✓ src/lib/counting/__tests__/core.test.ts > Counting core — David's clips > overhead_press: expected 10 73ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_extension: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_extension: the concentric phase comes first 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_curl: 10 cycles at 15 sps with 10% wobble 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_curl: 10 cycles at 30 sps with 10% wobble 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_curl: 10 cycles at 60 sps with 10% wobble 13ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_curl: 10 cycles at 120 sps with 10% wobble 54ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_curl: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > leg_curl: the concentric phase comes first 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lunge: 10 cycles at 15 sps with 10% wobble 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lunge: 10 cycles at 30 sps with 10% wobble 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lunge: 10 cycles at 60 sps with 10% wobble 16ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lunge: 10 cycles at 120 sps with 10% wobble 63ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lunge: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lunge: the eccentric phase comes first 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > seated_row: 10 cycles at 15 sps with 10% wobble 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > seated_row: 10 cycles at 30 sps with 10% wobble 7ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > seated_row: 10 cycles at 60 sps with 10% wobble 18ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > seated_row: 10 cycles at 120 sps with 10% wobble 98ms
+ ✓ src/lib/counting/__tests__/stability.test.ts > Counting core — step 3c, rep details > bicep_curl: rests within 2° of the high threshold, ten noise seeds, starts within 0.2 s and ranges within 5° 117ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > seated_row: bridges half a second with the joint hidden 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > seated_row: the concentric phase comes first 9ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > dumbbell_row: 10 cycles at 15 sps with 10% wobble 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > dumbbell_row: 10 cycles at 30 sps with 10% wobble 13ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > dumbbell_row: 10 cycles at 60 sps with 10% wobble 24ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > dumbbell_row: 10 cycles at 120 sps with 10% wobble 90ms
+ ✓ src/lib/counting/__tests__/stability.test.ts > Counting core — step 3c, rep details > lateral_raise: rests within 2° of the low threshold, ten noise seeds, starts within 0.2 s and ranges within 5° 90ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > dumbbell_row: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > dumbbell_row: the concentric phase comes first 6ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > triceps_pushdown: 10 cycles at 15 sps with 10% wobble 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > triceps_pushdown: 10 cycles at 30 sps with 10% wobble 7ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > triceps_pushdown: 10 cycles at 60 sps with 10% wobble 18ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > triceps_pushdown: 10 cycles at 120 sps with 10% wobble 62ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > triceps_pushdown: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > triceps_pushdown: the concentric phase comes first 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > romanian_deadlift: 10 cycles at 15 sps with 10% wobble 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > romanian_deadlift: 10 cycles at 30 sps with 10% wobble 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > romanian_deadlift: 10 cycles at 60 sps with 10% wobble 19ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > romanian_deadlift: 10 cycles at 120 sps with 10% wobble 60ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > romanian_deadlift: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > romanian_deadlift: the eccentric phase comes first 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > hip_thrust: 10 cycles at 15 sps with 10% wobble 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > hip_thrust: 10 cycles at 30 sps with 10% wobble 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > hip_thrust: 10 cycles at 60 sps with 10% wobble 16ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > hip_thrust: 10 cycles at 120 sps with 10% wobble 60ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > hip_thrust: bridges half a second with the joint hidden 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > hip_thrust: the concentric phase comes first 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bench_press: 10 cycles at 15 sps with 10% wobble 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bench_press: 10 cycles at 30 sps with 10% wobble 6ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bench_press: 10 cycles at 60 sps with 10% wobble 22ms
+ ✓ src/lib/counting/__tests__/range.test.ts > Counting core — a rep's range, measured twice > bicep_curl: two measurements with 2° of noise agree on every rep's range within 5° 128ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bench_press: 10 cycles at 120 sps with 10% wobble 82ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bench_press: bridges half a second with the joint hidden 3ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bench_press: the eccentric phase comes first 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bicep_curl: 10 cycles at 15 sps with 10% wobble 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bicep_curl: 10 cycles at 30 sps with 10% wobble 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bicep_curl: 10 cycles at 60 sps with 10% wobble 19ms
+ ✓ src/lib/counting/__tests__/range.test.ts > Counting core — a rep's range, measured twice > lat_pulldown: two measurements with 2° of noise agree on every rep's range within 5° 53ms
+stdout | src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > bench_press: hotfix-ios count
+hotfix-ios | bench_press | expected=7 | counted=5
+
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bicep_curl: 10 cycles at 120 sps with 10% wobble 70ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bicep_curl: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > bicep_curl: the concentric phase comes first 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lateral_raise: 10 cycles at 15 sps with 10% wobble 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lateral_raise: 10 cycles at 30 sps with 10% wobble 6ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lateral_raise: 10 cycles at 60 sps with 10% wobble 22ms
+stdout | src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > bicep_curl: hotfix-ios count
+hotfix-ios | bicep_curl | expected=7 | counted=11
+
+ ✓ src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > bench_press: hotfix-ios count 74ms
+ ✓ src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > bicep_curl: hotfix-ios count 110ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lateral_raise: 10 cycles at 120 sps with 10% wobble 79ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lateral_raise: bridges half a second with the joint hidden 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > lateral_raise: the concentric phase comes first 7ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > a recording that starts inside a rep counts it and marks it as cut; a rep completed at the last frame is whole 6ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — lifts by joint > squat: tracks the side whose hip, knee and ankle are visible 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > strict alternation, 5 reps per arm, counts 10 at 15 sps 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > strict alternation, 5 reps per arm, counts 10 at 30 sps 17ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > strict alternation, 5 reps per arm, counts 10 at 60 sps 19ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > strict alternation, 5 reps per arm, counts 10 at 120 sps 72ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > alternation where each arm starts halfway through the other arm's rep counts 10 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > both arms together, the right a tenth of a second behind, counts one rep per lift: 10 4ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > five reps with the left arm, then five with the right, counts 10 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > one arm working while the other rests in view counts that arm: 7 2ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > bridges half a second with one arm hidden mid-set 5ms
+ ✓ src/lib/counting/__tests__/lifts.test.ts > Counting core — alternating curl > an arm hidden for the whole set leaves the count unsure: confidence under one half 2ms
+stdout | src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > lat_pulldown: hotfix-ios count
+hotfix-ios | lat_pulldown | expected=10 | counted=11
+
+ ✓ src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > lat_pulldown: hotfix-ios count 205ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > a small move long before the first rep does not cost the first rep 23ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > arms hanging before and after an overhead press do not move its thresholds 26ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > lowering the weights to the sides after an overhead press is not a rep 12ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > arms hanging after an overhead press, then another move before the clip ends, do not move its thresholds 15ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > a press whose wrist sits level with the shoulder at the bottom counts every rep 5ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > one glitched wrist sample, anywhere around a lockout, does not drop the press 54ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > holding the weight with the elbow bent between sets does not move a curl’s thresholds 9ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > a 30° wobble at the bottom of each press is not a second rep 5ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > reps that grow shallower at the end of a set still count 5ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > a press whose wrist is at the shoulder at the bottom keeps softer last lockouts 2ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > a one-frame wrist glitch at rep 5’s return does not drop the press 2ms
+ ✓ src/lib/counting/__tests__/context.test.ts > A phone clip holds more than the set > a raise that stops short of the top long before the set does not cost the first raise 6ms
+stdout | src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > lateral_raise: hotfix-ios count
+hotfix-ios | lateral_raise | expected=10 | counted=11
+
+stdout | src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > overhead_press: hotfix-ios count
+hotfix-ios | overhead_press | expected=10 | counted=22
+
+ ✓ src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > lateral_raise: hotfix-ios count 76ms
+ ✓ src/lib/counting/__tests__/hotfix_baseline.test.ts > Hotfix-ios RepCounter baseline on committed files > overhead_press: hotfix-ios count 109ms
+ ✓ src/lib/counting/__tests__/measures.test.ts > Angular speed on RepDetail > counts 5 reps 2ms
+ ✓ src/lib/counting/__tests__/measures.test.ts > Angular speed on RepDetail > each rep carries peakSpeed in degrees per second 1ms
+ ✓ src/lib/counting/__tests__/measures.test.ts > Angular speed on RepDetail > each rep carries meanSpeed in degrees per second 2ms
+ ✓ src/lib/counting/__tests__/measures.test.ts > Angular speed on RepDetail > peak speed is at least as high as mean speed 0ms
+ ✓ src/lib/counting/__tests__/measures.test.ts > Angular speed on RepDetail > a clipped rep still carries speed (from whatever samples it has) 13ms
+ ✓ src/lib/counting/__tests__/measures.test.ts > Angular speed varies with tempo > a slow set has lower peak speed than a fast set 33ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > contains exactly one entry per catalogue key and no additional keys 5ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bench_press has only allowed fields and values 1ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > incline_bench_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > incline_dumbbell_press has only allowed fields and values 3ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_bench_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > decline_bench_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > machine_chest_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > pec_deck has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_fly has only allowed fields and values 1ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > weighted_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > overhead_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seated_dumbbell_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > arnold_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lateral_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_lateral_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > front_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > rear_delt_fly has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > reverse_pec_deck has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > face_pull has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > upright_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > romanian_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > barbell_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > t_bar_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_bent_over_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > one_arm_dumbbell_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > chest_supported_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seated_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > machine_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lat_pulldown has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > close_grip_lat_pulldown has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > straight_arm_pulldown has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > assisted_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > weighted_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > chin_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > shrug has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > front_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hack_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > leg_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bulgarian_split_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > walking_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > step_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > leg_extension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > leg_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seated_leg_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hip_thrust has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > glute_bridge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > good_morning has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > standing_calf_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seated_calf_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bicep_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hammer_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > preacher_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > reverse_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wrist_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > tricep_pushdown has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > overhead_tricep_extension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > skull_crusher has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > close_grip_bench_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > assisted_dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > plank has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > side_plank has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hanging_leg_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_crunch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > ab_wheel has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > running has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > walking has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cycling has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > rowing has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > stair_climber has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_fly has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > incline_cable_fly has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > decline_dumbbell_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_bench_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > landmine_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > chest_dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > weighted_dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > machine_shoulder_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > standing_dumbbell_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > push_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > machine_lateral_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_front_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > plate_front_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bent_over_rear_delt_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_rear_delt_fly has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > pendlay_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > inverted_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > meadows_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_arm_cable_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wide_grip_lat_pulldown has only allowed fields and values 1ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > neutral_grip_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > assisted_chin_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > weighted_chin_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > rack_pull has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > back_extension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_shrug has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > goblet_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_squat has only allowed fields and values 12ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > belt_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > sumo_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > trap_bar_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lying_leg_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > nordic_hamstring_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_leg_romanian_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > reverse_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > split_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_kickback has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hip_abduction_machine has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_leg_glute_bridge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > barbell_glute_bridge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_glute_bridge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_hip_thrust has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_hip_thrust has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_romanian_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_romanian_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > kettlebell_romanian_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_pull_through has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > machine_glute_kickback has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_standing_hip_abduction has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_standing_hip_adduction has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hip_adduction_machine has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_bulgarian_split_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_reverse_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > smith_machine_split_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > heel_elevated_goblet_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_sumo_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_sumo_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > front_foot_elevated_split_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > deficit_reverse_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_lateral_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_curtsy_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > landmine_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > landmine_romanian_deadlift has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > kettlebell_swing has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > glute_focused_back_extension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > reverse_hyperextension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > donkey_calf_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > leg_press_calf_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wall_sit has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > jump_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > incline_dumbbell_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > concentration_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > ez_bar_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > spider_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > rope_hammer_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > drag_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > rope_tricep_pushdown has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_skull_crusher has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_dumbbell_skullcrusher has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_overhead_tricep_extension has only allowed fields and values 1ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_arm_dumbbell_tricep_extension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bench_dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > tricep_kickback has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wrist_extension has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > farmer_carry has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > crunch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > reverse_crunch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > russian_twist has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bicycle_crunch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > mountain_climber has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dead_bug has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bird_dog has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > pallof_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_woodchop has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > half_kneeling_pallof_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cable_pallof_hold has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hanging_knee_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > captains_chair_knee_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > decline_sit_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > weighted_crunch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > weighted_russian_twist has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dumbbell_side_bend has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > elliptical has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > swimming has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > jump_rope has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > assault_bike has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > skierg has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hiking has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > treadmill_incline_walk has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > battle_ropes has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > incline_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > knee_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wide_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > diamond_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > decline_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > pike_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > feet_elevated_pike_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > archer_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > typewriter_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > explosive_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hindu_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > scapular_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > push_up_shoulder_tap has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wall_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wall_walk has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wall_handstand_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > handstand_push_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > chair_dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > doorway_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > towel_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > prone_y_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > prone_t_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > superman has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > superman_hold has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > reverse_snow_angel has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dead_hang has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > active_hang has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > scapular_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > negative_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > commando_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > l_sit_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > towel_pull_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bodyweight_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > pistol_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > assisted_pistol_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > shrimp_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cossack_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > sissy_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > forward_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lateral_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > curtsy_lunge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > skater_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_leg_box_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > step_down has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > calf_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > single_leg_calf_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > glute_bridge_march has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > frog_pump has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > donkey_kick has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > fire_hydrant has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > clamshell has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hip_airplane has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > side_lying_hip_abduction has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > side_lying_leg_raise has only allowed fields and values 1ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lying_hamstring_walkout has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > towel_hamstring_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > stability_ball_hamstring_curl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_glute_bridge has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_hip_thrust has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_frog_pump has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_clamshell has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_lateral_walk has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_monster_walk has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_squat has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_donkey_kick has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_fire_hydrant has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_kickback has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_standing_hip_abduction has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_seated_hip_abduction has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > band_pull_apart has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_face_pull has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_row has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_lat_pulldown has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_pallof_press has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_woodchop has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > banded_dead_bug has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hollow_body_hold has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hollow_rock has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > v_up has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > flutter_kick has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lying_leg_raise has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > toe_touch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > heel_tap has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > plank_shoulder_tap has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > plank_jack has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bear_plank has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > bear_crawl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > crab_walk has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > inchworm has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > l_sit_hold has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seated_knee_tuck has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > side_plank_hip_dip has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > copenhagen_plank has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > dragon_flag has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > burpee has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > half_burpee has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > squat_thrust has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > high_knees has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > jumping_jack has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > skater_hop has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > lateral_shuffle has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > fast_feet has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > sprawl has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seal_jack has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cat_cow_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > arm_circles has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > worlds_greatest_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > leg_swings_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > torso_twist_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > doorway_chest_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > childs_pose has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > kneeling_hip_flexor_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > hamstring_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > standing_quad_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > seated_forward_fold_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > cross_body_shoulder_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > wall_calf_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > butterfly_stretch has only allowed fields and values 0ms
+ ✓ src/lib/counting/__tests__/guide-families.test.ts > guide counting families > matches the core LIFTS joint, rest and first for every shared key 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+TypeError: liftDefinition is not a function
+     36|
+     37|   it('defines each exercise from LIFTS when it is there, from its fami…
+     38|     expect(liftDefinition('bicep_curl')).toEqual(LIFTS.bicep_curl);
+       |            ^
+     39|     expect(liftDefinition('walking_lunge')).toEqual({ joint: 'knee', r…
+     40|     expect(liftDefinition('nordic_hamstring_curl')).toEqual({ joint: '…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+AssertionError: expected 0.6000000000000001 to be greater than 0.8999999999999999
+     54|         const firstPhase = median(result.reps.map(r => (f.first === 'c…
+     55|         const secondPhase = median(result.reps.map(r => (f.first === '…
+     56|         expect(firstPhase).toBeGreaterThan(secondPhase);
+       |                            ^
+     57|       });
+     58|     } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+AssertionError: expected 0.5 to be greater than 0.6666666666666667
+     54|         const firstPhase = median(result.reps.map(r => (f.first === 'c…
+     55|         const secondPhase = median(result.reps.map(r => (f.first === '…
+     56|         expect(firstPhase).toBeGreaterThan(secondPhase);
+       |                            ^
+     57|       });
+     58|     } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+AssertionError: expected +0 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 0
+
+     51|         const a = sample(cycles({ rest, work, firstSec: 1.2, secondSec…
+     52|         const result = countReps(a.map(x => jointFrame(f.joint!, { lef…
+     53|         expect(result.count).toBe(10);
+       |                              ^
+     54|         const firstPhase = median(result.reps.map(r => (f.first === 'c…
+     55|         const secondPhase = median(result.reps.map(r => (f.first === '…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+AssertionError: expected +0 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 0
+
+     69|         const frames = side.left.map((l, i) => jointFrame(f.joint!, { …
+     70|         const result = countReps(frames, timestamps(n, sps), key);
+     71|         expect(result.count).toBe(10);
+       |                              ^
+     72|         expect(result.arm).toBe('both');
+     73|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+AssertionError: expected 5 to be 10 // Object.is equality
+
+- Expected
++ Received
+
+- 10
++ 5
+
+     69|         const frames = side.left.map((l, i) => jointFrame(f.joint!, { …
+     70|         const result = countReps(frames, timestamps(n, sps), key);
+     71|         expect(result.count).toBe(10);
+       |                              ^
+     72|         expect(result.arm).toBe('both');
+     73|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  18 failed | 439 passed | 4 expected fail (461)
+   Start at  07:36:29
+   Duration  2.44s (transform 1.39s, setup 0ms, import 1.81s, tests 3.63s, environment 1ms)
+

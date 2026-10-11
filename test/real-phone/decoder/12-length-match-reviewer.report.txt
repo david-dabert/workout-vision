@@ -1,0 +1,12 @@
+Reviewer, length-based matching, 29 September. Two defects; nothing changed by the reviewer.
+1. The page matched floor(reported duration x 15) with the collected sample count: three sets sit within a few
+   milliseconds of a sample boundary (Romanian deadlift 1.67 ms, bench press 5 ms, biceps curl 6.7 ms), so the same
+   video with a slightly different reported duration would read "another video" and the gate could never pass. The
+   premise "its length is the same" had no evidence in the repository.
+2. The tests never exercised the value the page compares; the new duration field was used by no code or test.
+No defect: revert fails the tests; unknown duration still fails through "read N of an unknown number"; partial reads
+show both reasons; removing the hash leaves no abort gap and no whole-file read; interruption, busy guard and cleanup
+unchanged; French present with no em dash; no new host.
+Fixes: the set is matched on its reported length within 0.1 s (convention); a boundary test (Romanian deadlift +2 ms,
+380 samples) passes as the same set; the baseline's duration is tied to the committed metadata and to its sample
+count by the test; David's pasted run is saved as 11-david-check-normal.txt (every count and sample count equal).

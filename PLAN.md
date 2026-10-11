@@ -1,21 +1,57 @@
 Fresh start. This message is PLAN.md. It overrides every earlier plan, the council document, your memory notes and any plan pasted from another model. Reread PLAN.md at the start of every session and after every compaction. If a later message conflicts with it, ask David whether to amend PLAN.md before acting.
 
 RULES
-- One branch, counter-core. Nothing merges to main. Work yourself, one step at a time; no background agents.
-- No work outside these steps: no design, translation, coach or PDF changes until David says the exam has passed.
+- One branch, counter-core. Nothing merges to main before Step 5, except the approved exceptions. After Step 5, main moves only by fast-forward to a counter-core commit whose preview David has approved on his phone. Work yourself, one step at a time. No background agents; the two sub-agents under METHOD are the only exception.
+- On the Mac, the repository lives at ~/Developer/workout-vision, outside iCloud. The cloud session works in its own checkout and is the only writer to counter-core.
+- Experience is part of the product, as accuracy is. The first visit, the choice of exercise, the guide, the result screen and the coach report are built in Step 3b and judged by David on his phone. Experience work changes nothing in src/lib/counting, the decoding path or any counting parameter.
+- A screen is finished only when it has been opened in the production build in the WebKit iPhone profile, every button on it has been tapped and has led where it says, and the run shows no console error and no failed request. Paste the screenshots.
+- The approved prototype, design/experience-prototype.html, is the standard for every experience screen. A difference in layout, type, spacing, colour, motion or wording is a defect, unless David approved it or a rule forbids what the prototype shows.
+- An experience screen is finished only when the tour has also shot it at 390×664, 390×745 and 375×548, and at 390×664 with Reduce Motion and the light system appearance, under which the app keeps its own dark appearance. In none of these shots does text overlap other text or a control, or run out of its box, and no title or button leaves a single word on its own line. At 390×664 and 390×745 the main action of the screen is visible without scrolling.
+- The tour shoots each change of screen 150 ms after the tap that causes it. That shot shows the old screen, the new one or both on the dark stage, never a blank, white or unstyled page.
+- The app states nothing it does not do. No text promises form scores, form analysis, injury prediction or precision until the exam supports it.
+- Nothing about the user leaves the phone. Guide images are served by the app itself, not by a third party, and the guide shows the credit its licence requires.
 - Leave the old counter's code unchanged. Do not use the YouTube benchmark for any decision.
-- David's five labelled clips are the only accuracy measure. Tune nothing to them; an unseen exam set decides.
+- A lift is offered only once it counts right on sets it has never seen. Each lift takes four sets to build with and four exam sets, filmed as the app shows for it and labelled with the count a coach would give; the lifts on offer take four exam sets each. A lift passes only if every exam set is counted exactly. After a miss it stays hidden, the fix goes through a synthetic test that fails first, the seen exam sets become build sets, and a new exam is filmed. Exam sets are run once, by the exam script; nothing else opens them. A family of lifts may be examined together, its exam spread over its variants. David's five clips are build sets. Tune nothing to any clip.
 - Every clip stays in every table. A clip that produces no count is scored as a failure; no metric excludes it.
 - A fixed parameter may come from published training or biomechanics literature, cited in the code, never from the clips. Any other parameter is recorded as an unvalidated starting value.
 - Sampling stays at 15 per second unless a clip shows a rep that 15 cannot resolve.
 - Paste evidence for every claim; mark anything unchecked as unverified.
 - At each STOP, confirm no video file is tracked, push counter-core to GitHub, and wait for David's reply.
-- If git reports a lock or a damaged index, stop and tell David. Never run read-tree, checkout-index, reset --hard or any command that overwrites working files.
+- If git reports a lock or a damaged index, stop and tell David. Never run read-tree, checkout-index, reset --hard or any command that overwrites working files, with one exception (David's order, 29 September): in its own checkout, the cloud session may restore a file from its committed version to undo its own mistake, and it never overwrites work it did not write.
 - From now on a parameter changes only through a synthetic test that fails first. Never try parameter settings against David's clips.
 - Stage files by path. Never run git add -A or git add .
 - Never run npm run deploy or push to gh-pages.
 - Never type a measured number by hand; every number in a report comes from a run whose output is pasted.
-- Exception approved by David on 25 September: main carries a test notice, a filming tip and report-form changes; nothing else changes on main.
+- Exceptions approved by David for main: the test notice, filming tip and report-form changes (25 September), and Step 3a. Nothing else changes on main before Step 5.
+- A check or a test is never loosened to pass. A fault it finds is fixed, or listed as open in the STOP report.
+- An instruction that cannot be followed stops the work. Report it; never work around it.
+
+MM-FIT SUPPLEMENTARY BUILD DATA (27 September)
+- MM-Fit is admitted only as supplementary build data, never exam data. A set is admitted only when both wrists and both ankles are visible together in at least 90% of all samples; the rest are excluded from build use but remain in every results table. Visibility uses the existing harness convention: each of landmarks 15, 16, 27 and 28 has visibility >= 0.5 and image x,y within [0,1]. Missing poses remain in the denominator.
+- Credit: David Strömbäck, Sangxia Huang and Valentin Radu, MM-Fit Dataset, [Zenodo record](https://zenodo.org/records/7672767), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Paper: MM-Fit: Multimodal Deep Learning for Automatic Exercise Logging Across Sensing Devices, IMWUT (2020).
+- Modification: labelled frame intervals are extracted, their timelines reset, and the source MPEG-4 Part 2 video is converted to H.264 with libx264 CRF 18 (lossy). Original files and labels are preserved. Dimensions, frame rate, pixel format and aspect ratio are preserved; no crop, rotation or overlay is added. Conversion commands and source/output metadata accompany the run.
+
+METHOD
+- Two sub-agents are part of every step. Their briefs are .claude/agents/wv-reviewer.md and .claude/agents/wv-verifier.md. Only David changes them.
+- wv-reviewer reads each change before it is committed. Give it only the goal of the change, in one sentence.
+- wv-verifier checks a step after its push and before its STOP. Give it only the step name, the commit range and the evidence folders.
+- Add no assessment of your own to either. Neither edits, creates or deletes a file, stages, commits or pushes.
+- Start each with the Agent tool under its name. If the name is not offered, start a general-purpose agent whose prompt is the brief's text after the front matter, unchanged, followed by the goal or the step. However the tool schedules them, the session waits for each report before acting, and touches neither the working tree nor port 4173 while either runs (David's order, 29 September).
+- Each reviewer finding is fixed with a test that fails first, or listed as open in the STOP report. None is dropped.
+- Two gates, by David's decision of 29 September. A change to counting or decoding keeps the full method and the verifier on every line under RULES, except that a rule leaving nothing in the repository to check is marked ATTESTED when the STOP report attests that it was kept (an attested breach is UNMET), and the rule on ~/Developer/workout-vision applies to the Mac only. Every other change ships after the reviewer, green CI with WebKit and David's approval of the preview on his iPhone; for such a change, the verifier checks only the step's own requirements and point 7 of its brief.
+- If David approves the preview built from fe66505 after running his five sets through it, main fast-forwards to fe66505, not to a later commit (29 September).
+- A whole step runs without stopping. It stops only for a product choice, French copy or David's approval of the preview. When a step is ready, David receives the commit and what to check on his iPhone, in five lines at most.
+- A STOP report carries the verifier's table and verdict unchanged. On FAIL, fix, push and run it again. After a second FAIL, stop and report the unmet rows.
+- A row that can only be met by breaking another rule is not fixed. Report it to David as a conflict.
+- The tour writes the output of node scripts/src-hash.mjs into its results.json as srcHash, so the verifier can tell whether the evidence comes from the code under review.
+- Lean steps and the order of the remaining budget (David's order, 29 September, after CI run 157). It prevails over the lines above where they differ.
+  The app is for coaches and for everyone who trains, alone, with a friend or with a coach; there is no choice to make between them, and the business model waits for the investment stage.
+  The experimental exercises stay offered and labelled, since every use of them can come back to us through the report button.
+  From now on, every step runs lean: one reviewer pass, CI, and David's check on the iPhone; the verifier runs only on a change to counting.
+  1. Step 1 ships as soon as David approves a239503 on his iPhone; step 2 then goes to counter-core, and he checks it on the preview.
+  2. Step 3, the longer analysis, is built from the texts David approves, since it answers the feedback his users gave most often.
+  3. The scoreboard and the exam harness wait until David has filmed the exam sets, so that they are built against real sets.
+  Usage measurement, the single list, the synthetic video and the load per set wait.
 
 0. FREEZE. Stop every background agent. Commit all uncommitted work, on whatever branch it sits, to a branch named park-<date>; delete nothing. Then create counter-core from hotfix-ios and commit this message to it as PLAN.md at the repository root. List every branch with its last commit and one line on what it holds, including where the five-layer rebuild lives, and say which commit the live site serves. Confirm no video file appears anywhere in the repository's history; if one does, tell David and rewrite nothing. STOP.
 
@@ -26,9 +62,244 @@ Pass mark on the Mac, in Playwright WebKit where it can decode the file, otherwi
 - One joint angle per lift, from world landmarks: elbow for curl, bench press, shoulder press and lat pulldown; shoulder abduction for lateral raise.
 - Track the arm whose shoulder, elbow and wrist are most visible across the set. Bridge short dropouts; never alternate arms frame by frame.
 - A rep is the smoothed angle crossing a low and a high threshold in turn and returning, within a minimum duration. Thresholds come from the set's own range. Every parameter is in seconds or degrees, never frames.
-- If a curl set may alternate arms, ask David how he counts it; do not guess.
+- Alternating curls: David counts them as a coach does, one rep per arm; a set that alternates counts the total of both arms, not per side (27 September). From the side the far arm is hidden, so the alternating curl is a lift of its own, filmed from the front with both arms in view.
 Synthetic tests first: ten cycles must count 10 at 15, 30, 60 and 120 samples per second, with wobble of 10% of the range added, and with the tracked arm hidden for half a second mid-set. Then a per-clip table: expected, hotfix-ios count, new core count. STOP.
 
-3. APP. Only curl, lateral raise and lat pulldown are approved. The lift selector offers those three only; all other lifts and Automatic are hidden. Bench press and overhead press are parked until they pass on additional footage; no more press changes now. Wire the core into the app behind the required lift selection. Low confidence shows "We counted N. Is that right?". Refuse only when the lift's joints are hidden for most of the set, and say why. The form score stays hidden. The app runs pose detection in its worker, the harness on the main thread; the app's own landmarks for the five clips must equal the committed files. Run the three approved clips through the production build (vite build, then vite preview), in WebKit with the iPhone profile and in Chrome. The old code loaded MediaPipe from a CDN because bundling it reportedly broke it on iOS Safari, and the dev server does not minify. Run the three approved clips through the app and paste what the result screen shows for each. Show that bench and overhead press are not offered. STOP.
+3. APP. Only curl, lateral raise and lat pulldown are approved. The lift selector offers those three only; all other lifts and Automatic are hidden. Bench press and overhead press are parked until they pass on additional footage; no more press changes now. Wire the core into the app behind the required lift selection. Low confidence shows "We counted N. Is that right?". Refuse only when the lift's joints are hidden for most of the set, and say why. The form score stays hidden. The app runs pose detection in its worker, the harness on the main thread; the app's own landmarks for the five clips must equal the committed files. Run the three approved clips through the production build (vite build, then vite preview), in WebKit with the iPhone profile and in Chrome. The old code loaded MediaPipe from a CDN because bundling it reportedly broke it on iOS Safari, and the dev server does not minify. Run the three approved clips through the app and paste what the result screen shows for each. Show that bench and overhead press are not offered. STOP. Passed in WebKit on 25 September; Chrome carried into Step 3c.
 
-4. PREVIEW. On Vercel, production deploys only from a release branch and every other branch gets its own preview link. Make the Vite base path work on both Vercel and GitHub Pages. Give David the counter-core preview link and confirm it opens on a phone. If Vercel access fails, tell David the exact steps; install no certificate on his phone. STOP.
+3a. LIVE GUIDE, on main. Work in a separate worktree (git worktree add ../workout-vision-main main). Never switch branches in the counter-core folder.
+- src/lib/useHashRouter.js: add "exercises" to VALID_PAGES. The router sends every page missing from that list to the dashboard, which is why the guide and the coach report have never opened on the live site.
+- src/lib/exerciseGuide.js: getFrameUrl asks for frame-N.svg, but @bryllim/workout-guide 1.0.0 ships frame-N.png, and the SVG addresses return 404. Change the extension, then check every frame address the guide can request with a script, and paste the count of 200 and non-200 responses.
+- index.html: the security policy accepts images only from the app itself (img-src 'self' blob: data:), so the frames would still be blocked. Add https://cdn.jsdelivr.net to img-src and change nothing else in the policy.
+- Hide the Coach Report buttons on the dashboard, the Live tab and the "Live Camera Mode" button. All of them lead back to the dashboard. They return in Step 3b once they work.
+- Add to the guide, in French and English: "Illustrations: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0", linked to the source and to the licence.
+Production build in the WebKit iPhone profile: open the dashboard, tap Exercise Guide, open three exercises, and paste the screenshots and the console output. Stage by path, commit, push main, wait for the Pages deploy, then open the live guide in the iPhone profile and paste a screenshot showing frames. STOP.
+
+BUILD FIXES, on counter-core.
+- npm ci fails with "Missing: esbuild@0.28.2 from lock file". Bring package-lock.json in line with package.json, add include=dev to the repository's .npmrc, and make the workflows on counter-core use npm ci.
+- Delete .github/workflows/pr-preview.yml; it publishes to gh-pages, which the rules forbid.
+- Remove the deploy script from package.json.
+- Run lint, typecheck, tests and the build on every push to counter-core.
+- Point scripts/copy-models.js at float16/1 instead of float16/latest, and fail the build when the file's SHA-256 differs from a value recorded in the script.
+- Paste the first passing CI run on counter-core, then begin 3b without waiting.
+
+3b. EXPERIENCE. Starts only when David has approved the prototype and it sits in the repository as design/experience-prototype.html. Build the app to match it, screen by screen. Build the entry screen first; push it to counter-core and tell David, so he can open it on his phone before the other screens exist. Push again after each finished screen. Until 3c passes, the result screen and the coach report show no per-rep durations or ranges: the bars become one equal mark per counted rep.
+- The link. A first-time visitor sees the entry once, then the screen the link names. No questions before the first analysis: name, level, age, sex, weight, height and goal move to Profile and are asked only when a feature needs them.
+- Entry. As in the prototype, with the words David approves. It can be skipped, never plays twice, and stays still under prefers-reduced-motion.
+- Choice. The counted lifts, shown as moving figures, with French and English names and the names people use for them. Nothing else is offered for analysis. "Another exercise" opens the guide.
+- Guide. All 302 exercises, each with its three frames served by the app, loaded lazily, not precached. French and English names for all 302, plus common aliases. Search matches names, aliases, body areas and equipment. A body map filters by area. Each exercise says whether the app can count it. The credit stays.
+- Filming. One drawn instruction per lift, showing the camera position of the clip that passed for that lift.
+- Analysis. While the video is analysed, the landmarks already computed are drawn as a moving figure. Progress follows video time. The screen says "Analysed on your phone. Nothing is sent." / "Analysé sur votre téléphone. Rien n'est envoyé."
+- Result. The count revealed rep by rep. "We counted N. Is that right?" with Yes, No and a way to enter the true number. A refusal gives one reason and one fix, drawn, not a list of tips.
+- Coach report. Opens from the result. It contains the lift, the date, the client's name, the coach's name, the count and the coach's notes, plus per-rep details once 3c passes. No form score, no estimated maximum, no training load. On iPhone Safari the PDF opens the share sheet. Attach a PDF generated from one of the three approved clips to the STOP report.
+- Touch. Every tap shows a pressed state within 100 ms. Targets are at least 44 points. A haptic tick on Enter, on choosing a lift and on confirming the count: navigator.vibrate where it exists; on iPhone, the switch-input method (Safari 17.4 and later, one tick per real tap only).
+- Everything outside this path is hidden, not deleted: for example challenges, badges, confetti, injury risk, weekly report, rest timer, manual log, live camera, validate. List what you hid.
+- Tour test. One Playwright test on the production build in the WebKit iPhone profile: first visit through the link, entry, choice, filming with one of the three approved clips, analysis, result, confirmation, coach PDF, then ten random guide exercises. It fails on any console error, failed request, missing image or wrong destination. Paste every screenshot.
+- Fonts are served by the app, not by Google.
+- Guide frames are served by the app as WebP at the size shown, loaded lazily, not precached; remove https://cdn.jsdelivr.net from img-src once they are.
+- The 14 exercises hidden in dd19de2 are mapped to a frame set or removed from the list.
+- The pose model downloads when the visitor chooses a lift, not on arrival, and is kept in its own cache named after its SHA-256; only superseded caches are deleted.
+STOP.
+
+3c. STABILITY, on counter-core.
+- Rep details. The core starts a rep where the smoothed angle crosses a threshold, so a rest that hovers near the threshold makes the start unstable; that is why Chrome moves curl reps 3 and 4. Write a synthetic test first: ten reps separated by 2 s rests during which the angle sits within 2° of the low threshold with 1° of random noise. Across ten noise seeds, each rep's start may move by at most 0.2 s and its range by at most 5°. Show that it fails on the current core; if it passes, stop and report. Then change how core.ts places rep boundaries until it passes, with every other test green. Nothing is tried against the clips.
+- Then run the three approved clips in WebKit and Chrome. Counts must not change, and for every rep, start, end and range must agree between the two browsers within 0.2 s and 5°. Paste the table.
+- 27 September, first run of the clips: every count, start and end agreed within the limits, and one curl rep's range differed by 5.6° between WebKit and Chrome. Each end of a rep's range is now the mean of its most extreme third of a second, not a single sample; on a clean curve a range reads 1° to 2° lower than before. src/lib/counting/__tests__/range.test.ts measures the same set twice with 2° of noise and requires every range to agree within 5°: the pulldown case failed on the old core (5.8°) and passes (3.8°). The clips are then run again.
+- These two are 3c. When both pass, PLAN.md records it on the line below, and per-rep details may appear in the app and in the PDF.
+- 3c passed on 27 September: the synthetic tests (src/lib/counting/__tests__/stability.test.ts and range.test.ts), and the three approved clips in WebKit and in Google Chrome (test/real-phone/round5/parity.json).
+
+3d. CHROME AND CLEANUP, on counter-core, split from 3c on 27 September.
+- In Chrome the worker and the main-thread harness disagree. Hash the pixels handed to the landmarker at every sample in both paths, report the first sample that differs and why, and make the app and the harness share one inference path.
+- Route the demuxer's FFmpeg log lines to console.info with a [demuxer] prefix, as you did for XNNPACK. Console errors remain a failure.
+- index.html now allows unsafe-eval. Offset it: remove https://cdn.jsdelivr.net, https://unpkg.com and https://storage.googleapis.com from script-src and connect-src if a search proves nothing loads from them. Paste the search.
+STOP.
+- 3d approved on 28 September on the preview built from b2e5e0e: on David's iPhone the lateral raise and the curl counted correctly (lat pulldown not retested). The earlier count of 4 for a lateral raise of 10 on the 3d preview remains unexplained and stays open. main fast-forwarded to b2e5e0e and pushed (git ls-remote: refs/heads/main b2e5e0ed3349).
+
+4. PREVIEW. Done outside the repository on 25 September. The counter-core preview is https://workout-vision-next.vercel.app, built from GitHub on Azélie's Vercel account under the same /workout-vision/ path as the live site, so the base path needs no change. It does not rebuild on push; after each push to counter-core, David has it rebuilt. Step 5 still requires David's approval of the preview on his phone.
+
+5. SWITCH. Only after David approves the preview on his phone. main takes counter-core's app through a merge, never a force push; the test notice stays. Returning users keep their history. On the live site, open the link as a first-time visitor and as a returning one, and paste both. STOP.
+David approved the preview on his phone on 26 September and ordered the switch before 3c, which follows on counter-core. The test notice is the "Version de test" mark of the approved prototype.
+Rounds 6 and 7 approved on 27 September on the preview built from 083ac2d. main fast-forwarded to 083ac2d and pushed.
+
+Second round of craft, on counter-core, after David's question of 26 September about the functions the new app left out. The coach report keeps its share button in reach at every height, and its PDF is the sheet on screen: A5, set in the app's own embedded type, built at the tap, with the same words. The saved sets come back as a history screen, reached from the choice of lift, which greets a return as the prototype does; each set opens its report and can be deleted with two taps. The Film screen fits a 548 px Safari screen. After an update the service worker stores the new version's files, never the browser's cached copy of the old ones (test/real-phone/wave2/sw-update). The history screen, its row on the choice, the report's share bar and the tighter Film screen on short phones are not in the prototype: main takes them only once David has approved them on his phone. The tour now also opens the history, the set's report, the app again as a return, and deletes the set.
+
+Frame and layout checks, on counter-core, after the verification of the second round on 26 September. The verifier passed that round's four tours, yet one shot was blank: with Reduce Motion, the history opened on a return before its code had loaded showed the bare stage. A tap now changes the screen only once the next screen's code is in; e2e/history.spec.js holds the history's code back 1.5 s and counts the frames that show the loading placeholder, with and without Reduce Motion. The tour now checks every shot itself (test/real-phone/checks.mjs): no blank or white frame and, on a settled screen, no title or button leaving a single word on its last line, no text over other text or a control, no text out of its box, no screen scrolling sideways. A fault fails the run. The check found one more: at 375 px, a corrected set's line of time, length and arm left its last word alone; the line now breaks only between its parts, and at 390 px it is set as before. The prototype's two three-word titles, on the choice and the guide, cannot meet that rule on two lines; the tour lists them apart for David and does not fail on them.
+
+Three corrections to the frame and layout checks, on counter-core, after the third round's verification. A screen whose code failed to load had come to leave the tap doing nothing; it leads again to the error screen and its Reload (e2e/history.spec.js aborts the history's code). The guide's exercise names had been exempted from the one-word rule; the exemption is removed, and each name is balanced over its lines, which leaves no word alone at 390 px and two three-word names at 375 px. Three words on two lines always leave one alone, whatever the break: the check lists such cases apart for David instead of failing, and this replaces the tour's list of the prototype's two titles.
+
+Lifts for the public, from 27 September. Every exercise in the guide is offered, not a handful. The guide's 302 exercises fall into 182 countable entries grouped by 20 patterns of joint, rest, first and view (guide-families.json), plus 120 entries with no joint. Each pattern takes four build sets and four exam sets, spread over its most different variants; a variant is offered once its pattern's exam passes. A pattern holding a bothSides entry takes at least one exam set of it, since both sides are counted differently. The core defines each lift by its joint, the end it rests at and the phase that comes first (LIFTS in src/lib/counting/core.ts), with synthetic tests (src/lib/counting/__tests__/lifts.test.ts and guide-families.test.ts). Curl, lateral raise and lat pulldown stay on offer while their patterns' exams are filmed.
+
+The 20 countable patterns, in the order the public trains, with exercise count, exam variants that must be covered, and bothSides entries:
+
+Chest and pressing (45 exercises, 3 patterns):
+  1. elbow/high/eccentric/side (30): bench press, push-ups, dips, skull crushers. Exam covers: bench_press, push_up, dip, skull_crusher. One build clip on disk (bench_press_7_angle); three more build sets still to film to choose the position. 3 build + 4 exam = 7 sets.
+  2. elbow/low/concentric/side (8): machine chest press, tricep pushdown, overhead extension, kickback. Exam covers: machine_chest_press, tricep_pushdown, overhead_tricep_extension, tricep_kickback. 4 build + 4 exam = 8 sets.
+  3. elbow/high/eccentric/front (7): overhead press, shoulder press variants, archer push-up. Exam covers: overhead_press, push_press, machine_shoulder_press, archer_push_up (bothSides; at least one exam set). One build clip on disk (overhead_press_10_front) that settled the rest position; three more build sets still to film. push_press and machine_shoulder_press flagged as likeliest to differ from overhead_press. 3 build + 4 exam = 7 sets.
+
+Shoulders (7 exercises, 2 patterns):
+  4. shoulder/low/concentric/front (4): lateral raise, cable lateral raise, upright row, machine lateral raise. Exam covers all four. One build clip on disk (lateral_raise_10_front). 3 build + 4 exam = 7 sets.
+  5. shoulder/low/concentric/side (3): front raise, cable front raise, plate front raise. Exam covers: front_raise, cable_front_raise, plate_front_raise, plus one repeat. 4 build + 4 exam = 8 sets.
+
+Legs — quadriceps dominant (36 exercises, 3 patterns):
+  6. knee/high/eccentric/side (29): squat, leg press, lunges, split squats. Exam covers: squat, bulgarian_split_squat, forward_lunge, walking_lunge (bothSides; at least one exam set). 4 build + 4 exam = 8 sets. Since 29 September the walking lunge is not offered, by David's decision (the lifter walks out of a fixed frame); its exam set waits on David.
+  7. knee/high/eccentric/front (5): lateral lunge, curtsy lunge, cossack squat. Exam covers: dumbbell_lateral_lunge, cossack_squat, curtsy_lunge, lateral_lunge. 4 build + 4 exam = 8 sets.
+  8. knee/low/concentric/side (2): leg extension, step-up. Exam covers both, two sets each. 4 build + 4 exam = 8 sets.
+
+Legs — hamstring dominant (6 exercises, 2 patterns):
+  9. knee/high/concentric/side (5): leg curl, seated leg curl, lying leg curl, towel and stability-ball curl. Exam covers: leg_curl, seated_leg_curl, lying_leg_curl, towel_hamstring_curl. 4 build + 4 exam = 8 sets.
+  10. knee/low/eccentric/side (1): nordic hamstring curl. Exam covers nordic_hamstring_curl, four sets. 4 build + 4 exam = 8 sets.
+
+Back and rows (43 exercises, 3 patterns):
+  11. elbow/high/concentric/side (25): rows and curls. Exam covers: bicep_curl, barbell_row, preacher_curl, one_arm_dumbbell_row. One build clip on disk (bicep_curl_7_side). 3 build + 4 exam = 7 sets.
+  12. elbow/high/concentric/front (16): lat pulldown, pull-ups, face pulls. Exam covers: lat_pulldown, pull_up, chin_up, face_pull. One build clip on disk (lat_pulldown_10_front). 3 build + 4 exam = 7 sets.
+  13. shoulder/high/concentric/side (1): straight-arm pulldown. Exam covers straight_arm_pulldown, four sets. 4 build + 4 exam = 8 sets.
+
+Posterior chain (30 exercises, 2 patterns):
+  14. hip/low/concentric/side (22): deadlift, hip thrust, glute bridge, back extension, donkey kick. Exam covers: deadlift, hip_thrust, glute_bridge, bird_dog (bothSides; at least one exam set). 4 build + 4 exam = 8 sets.
+  15. hip/high/eccentric/side (8): Romanian deadlift, good morning, cable pull-through. Exam covers: romanian_deadlift, good_morning, single_leg_romanian_deadlift, cable_pull_through. 4 build + 4 exam = 8 sets.
+
+Core (11 exercises, 3 patterns):
+  16. hip/high/concentric/side (8): hanging leg raise, knee raise, v-up, decline sit-up, lying leg raise. Exam covers: hanging_leg_raise, v_up, decline_sit_up, glute_bridge_march (bothSides; at least one exam set). 4 build + 4 exam = 8 sets.
+  17. hip/low/eccentric/side (2): dead bug, banded dead bug. Both are bothSides; every exam set tests it. Exam covers: dead_bug, banded_dead_bug, two sets each. 4 build + 4 exam = 8 sets.
+  18. shoulder/low/eccentric/side (1): ab wheel. Exam covers ab_wheel, four sets. 4 build + 4 exam = 8 sets.
+
+Hip isolation (5 exercises, 2 patterns):
+  19. hip/high/concentric/front (4): standing hip abduction, side-lying leg raise. Exam covers: cable_standing_hip_abduction, side_lying_hip_abduction, side_lying_leg_raise, banded_standing_hip_abduction. 4 build + 4 exam = 8 sets.
+  20. hip/low/concentric/front (1): cable standing hip adduction. Exam covers cable_standing_hip_adduction, four sets. 4 build + 4 exam = 8 sets.
+
+Total: 20 patterns, 182 exercises, 155 sets to film (5 patterns have one clip on disk, saving one build set each; 15 patterns need the full 8).
+
+The 120 null-joint entries, in four groups that sum to 120 with no entry in more than one:
+
+A. Isometric holds to be timed (12): plank, side_plank, wall_sit, farmer_carry, cable_pallof_hold, superman_hold, dead_hang, active_hang, hollow_body_hold, bear_plank, l_sit_hold, copenhagen_plank. These need a timer, not a rep counter. They stay in the guide and gain a timer once it is built.
+
+B. Movements needing a new tracked joint or angle not among the four (22): horizontal shoulder plane (pec_deck, cable_fly, rear_delt_fly, reverse_pec_deck, dumbbell_fly, incline_cable_fly, bent_over_rear_delt_raise, cable_rear_delt_fly, prone_t_raise, band_pull_apart — 10); ankle (standing_calf_raise, seated_calf_raise, donkey_calf_raise, leg_press_calf_raise, calf_raise, single_leg_calf_raise — 6); scapula (shrug, dumbbell_shrug, scapular_push_up, scapular_pull_up — 4); wrist (wrist_curl, wrist_extension — 2). These stay in the guide without a count until their tracked joint is added.
+
+C. Movements on a tracked joint that need a different counting rule (45): seated transverse hip (hip_abduction_machine, hip_adduction_machine, banded_seated_hip_abduction — 3); trunk rotation (russian_twist, cable_woodchop, weighted_russian_twist, clamshell, hip_airplane, banded_clamshell, banded_woodchop — 7); abdominal spinal flexion (cable_crunch, crunch, reverse_crunch, weighted_crunch, heel_tap — 5); multi-step per rep (wall_walk, lying_hamstring_walkout, banded_lateral_walk, banded_monster_walk, crab_walk, inchworm — 6); glute kickback across 180° (cable_kickback, machine_glute_kickback, banded_kickback — 3); flexed-hip abduction (fire_hydrant, banded_fire_hydrant — 2); trunk lateral flexion (dumbbell_side_bend, side_plank_hip_dip — 2); anti-rotation (pallof_press, half_kneeling_pallof_press, banded_pallof_press — 3); airborne (jump_squat, explosive_push_up — 2); eccentric-only (negative_pull_up — 1); ballistic (kettlebell_swing — 1); and ten single-reason entries (bicycle_crunch, typewriter_push_up, hindu_push_up, prone_y_raise, superman, reverse_snow_angel, hollow_rock, flutter_kick, plank_shoulder_tap, dragon_flag). These stay in the guide without a count until their counting rule is built.
+
+D. No rep to count (41): stretches and mobility drills (toe_touch, cat_cow_stretch, worlds_greatest_stretch, leg_swings_stretch, torso_twist_stretch, doorway_chest_stretch, childs_pose, kneeling_hip_flexor_stretch, hamstring_stretch, standing_quad_stretch, seated_forward_fold_stretch, cross_body_shoulder_stretch, wall_calf_stretch, butterfly_stretch — 14); cardio and locomotion (running, walking, cycling, rowing, stair_climber, mountain_climber, elliptical, swimming, jump_rope, assault_bike, skierg, hiking, treadmill_incline_walk, battle_ropes, plank_jack, bear_crawl, burpee, half_burpee, squat_thrust, high_knees, jumping_jack, skater_hop, lateral_shuffle, fast_feet, sprawl, seal_jack — 26); arm_circles (1). These stay in the guide permanently without a count.
+
+Filming order by body region, 155 sets across six sessions:
+
+Session 1 — chest and shoulders (22 sets):
+  Pattern 1 elbow/high/eccentric/side: 3 build + 4 exam = 7.
+  Pattern 2 elbow/low/concentric/side: 4 build + 4 exam = 8.
+  Pattern 3 elbow/high/eccentric/front: 3 build + 4 exam = 7.
+
+Session 2 — shoulders and front raises (15 sets):
+  Pattern 4 shoulder/low/concentric/front: 3 build + 4 exam = 7.
+  Pattern 5 shoulder/low/concentric/side: 4 build + 4 exam = 8.
+
+Session 3 — back (22 sets):
+  Pattern 11 elbow/high/concentric/side: 3 build + 4 exam = 7.
+  Pattern 12 elbow/high/concentric/front: 3 build + 4 exam = 7.
+  Pattern 13 shoulder/high/concentric/side: 4 build + 4 exam = 8.
+
+Session 4 — legs (32 sets):
+  Pattern 6 knee/high/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 7 knee/high/eccentric/front: 4 build + 4 exam = 8.
+  Pattern 8 knee/low/concentric/side: 4 build + 4 exam = 8.
+  Pattern 9 knee/high/concentric/side: 4 build + 4 exam = 8.
+
+Session 5 — posterior chain and hamstring (24 sets):
+  Pattern 10 knee/low/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 14 hip/low/concentric/side: 4 build + 4 exam = 8.
+  Pattern 15 hip/high/eccentric/side: 4 build + 4 exam = 8.
+
+Session 6 — core and hip isolation (40 sets):
+  Pattern 16 hip/high/concentric/side: 4 build + 4 exam = 8.
+  Pattern 17 hip/low/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 18 shoulder/low/eccentric/side: 4 build + 4 exam = 8.
+  Pattern 19 hip/high/concentric/front: 4 build + 4 exam = 8.
+  Pattern 20 hip/low/concentric/front: 4 build + 4 exam = 8.
+
+Grand total: 22 + 15 + 22 + 32 + 24 + 40 = 155 sets.
+
+- Every set: phone upright and still, whole body in frame, sent through the clip collector (scripts/collect-clips.mjs) with the lift, the count a coach would give, the view and who was filmed. The collector fixes each set's role on arrival and keeps exam sets in test/real-phone/exam/.
+- An exam for the public needs other people: other bodies, levels, gyms and camera placements. Their sets join every exam as they come, Luc and his clients first. A set of someone else is used only with their agreement, recorded by the collector; it stays on David's Mac.
+- The alternating curl (bicep_curl_alternating) joins when its sets pass; it is a bothSides elbow lift filmed from the front with both arms in view, as decided on 27 September, and is not part of a pattern.
+
+Rep details on the result and in the report, on counter-core, once 3c passed. The result's marks stand as tall as each rep's range, as in the prototype; under them a line gives the set's average range and duration, or, for the mark touched, that rep's time, range, lifting time and lowering time. The whole row of marks is one target, so no target is under 44 points. The coach's report and its PDF add the prototype's table of reps, then two measures that are not in the prototype: the time under tension, and how the lifting speed changed from the first two reps to the last two (velocity loss within a set: Sánchez-Medina and González-Badillo, Med Sci Sports Exerc 2011). The core marks a rep that the recording started or stopped inside, without changing any count (lifts.test.ts); such a rep keeps its number and range, and its times read "…". Sets saved before this round show no rep details. The table, the measures and the line under the marks are for David to approve on his phone.
+Extended coach report approved on 27 September on the preview built from c927383. The table gains two columns: per-rep tempo in coach notation (lowering-bottom-lifting-top) and peak and mean angular speed in °/s. Short reps (range under 85% of the set's median) are marked ▾. The summary adds the set's average tempo, how the rep duration changed from the first two to the last two, and a comparison with the previous saved set of the same lift. The result screen's detail line stays as approved in round 6. The first phase comes from LIFTS in core.ts, not from guide-families.json.
+Tempo fix approved on 27 September on the preview built from 91aa10a. Moving phases (lowering, lifting) to one decimal so they never read 0; pauses (bottom, top) in whole seconds.
+
+The replay, on counter-core, after David's request of 27 September for the overlay video the first app showed. The result's top bar gains Revoir: the set plays again with the skeleton the pose model tracked on it, drawn from the landmarks the count used, and the joint whose angle counts the reps lit in the lamp's colour. A counter in the corner gives the rep on screen and its phase, concentric or eccentric; a line under the video marks the reps, and a touch goes to one; the video plays at full or half speed. Between two samples, a fifteenth of a second apart, each point moves in a straight line; no line is drawn across a gap in the samples, nor a point that either sample missed (src/components/experience/__tests__/replay.test.js). The angle's value is not written on the picture: the core measures it in 3D, and at the top of a curl filmed from the side the 3D angle and the angle seen on the picture differ by tens of degrees; which of the two the app shows is settled with the accuracy work. A refused set replays with no reps, so the skeleton shows where the tracking lost the body. The video is read on the phone, as for the count; the app neither keeps nor sends it, so a saved set has no replay. The result, the report and its PDF now name the phases concentric and eccentric instead of up and down, since a pulldown's concentric phase brings the bar down. test/real-phone/replay-check.mjs opens the replay of the three approved clips in WebKit and checks that the video has the shape of the frames counted, that the joint is lit in each rep exactly where the tracking saw it, and that the counter follows the reps; its frames stay on the Mac (test/real-phone/round7/frames/, ignored by git). The replay is not in the prototype: main takes it only once David has approved it on his phone.
+
+LIFT TIERS, from 28 September, by David's decision. Beta and Experimental are exceptions to rule 14 and to "MM-Fit as build data only": a lift may be offered before its exam, labelled, and every count is for the user to confirm or correct. Each result offers "Report a wrong count", which opens a new GitHub issue prefilled with the lift, the app's count and the user's count, and nothing else. No counting parameter changes with a tier.
+- Beta (label "Beta" / « Bêta »):
+  - squat: MM-Fit, all 64 sets through the counter at dfe4d43, 60 counted exactly and 63 within one (test/real-phone/mmfit/results.json). No clip of David's.
+  - biceps curl, lateral raise, lat pulldown: the three lifts already offered; each keeps its place and shows Beta until its exam passes. Their build clips count 7, 10 and 10 (test/real-phone/step3d/build-compare.json).
+- Experimental (label "Experimental: we are still learning this exercise" / « Expérimental : nous apprenons encore cet exercice »), offered from their existing LIFTS entries in core.ts; each is listed with the evidence it has:
+  - bench press: David's build clip bench_press_7_angle counts 2 for 7 on the current core (run on 28 September).
+  - hip thrust, Romanian deadlift, leg press: no clip, no dataset.
+  - dumbbell row and lunge stay Experimental (David's decision, 29 September): in test/real-phone/mmfit/results.json the dumbbell row counts 38 of 64 sets exactly and 55 within one, the lunge 38 of 62 and 47 within one, far below the squat's 60 of 63 (printed by the command in test/real-phone/step2/outputs/37-mmfit-row-lunge-squat.txt).
+  - overhead press (added 28 September, by David's decision): David's build clip overhead_press_10_front counts 9 for 10 on the current core, which fails the Beta condition that no build clip of the lift fails; MM-Fit 49 of 60 sets exact, 60 of 60 within one (test/real-phone/mmfit/results.json). Filmed from the front; its figure comes from that clip (scripts/make-clip-pose.mjs).
+- The figures of the five new lifts on the choice card and the filming screen are drawings (scripts/make-lift-poses.mjs), not recorded poses; nothing is measured from them.
+
+Approved on 28 September on the preview built from 51024ef: on David's iPhone, the swipe of the lift cards and one analysis. main fast-forwarded to 51024ef and pushed (git ls-remote: refs/heads/main 51024ef2b119). main thereby takes the commits from 9b9ddd0 to 51024ef: the interruption guard, the lift tiers, the tactility pass, the removal of every switch with the ?perf=1 instrument, overhead press as Experimental, and the smoothness pass.
+
+Approved on 28 September on the preview built from b4c28b9, on David's iPhone. main fast-forwarded to b4c28b9 and pushed (git ls-remote: refs/heads/main b4c28b95a4f9). main thereby takes 6489d8a, the record above, and b4c28b9: small screens, the app icon, the install details and the startup screens.
+
+GROWTH, from 28 September, by David's decision. People are using the app; users and feedback are grown while that interest lasts. The four steps below are exceptions to the scope freeze (CLAUDE.md R7). Each runs on counter-core, one at a time, with tests that fail first, the reviewer, the verifier and green CI, and main fast-forwards to it only after David approves its preview on his iPhone, as RULES require: the preview is built from counter-core (step 4), so a step on another branch could not be approved there (David's correction, 28 September). Every step keeps the design, the visual balance and the coherence of the current screens. STOP after each step. Every other rule stands, in particular: nothing leaves the phone except what the user sends by a tap; no video and no landmark is ever attached to a report; every count stays for the user to confirm or correct.
+1. Feedback and sharing, after the collector correction (c4ba790) and after every open collector finding that can let a saved file carry a count its landmarks do not support is fixed, beginning with the interrupted set. The report address stays pr.dabertdavid@gmail.com: it has been public since fd8b04e placed it in this file.
+- Every result offers a report button that writes to pr.dabertdavid@gmail.com by email, prefilled with the lift, the app's count, the user's count, the app version and room for the user's own words. The same report can open a GitHub issue for users who have an account. No video and no landmark is ever attached.
+- The report sheet no longer assumes a coach: the user says whether they trained alone, with a friend or with a coach, and at which level, beginner, intermediate or expert. Every name is optional, and the PDF shows only what was filled in.
+- A button to challenge a friend opens the phone's share sheet with the result and a link to the app, without any server.
+- The set collector (collect.html), by David's decisions of 28 September. It is for David's own sets. A set of anyone else goes through scripts/collect-clips.mjs on David's Mac, with their agreement recorded, and stays there; the page says so. The page refuses a set with no pose at all and sets no other threshold on samples without a pose: it records what the model saw. Each file holds the image and the world landmarks of every sample, as the committed clips do. A set from the page arrives only from an issue opened by David's account, and only if its own file holds exactly floor(duration x 15) samples, at least one with a pose. Whether a set joins the clips is decided on its arrival, against the conditions this plan sets for every set, the whole body in frame among them. The page's third review covers only the changes since its second; a further way for the page to offer a file whose count its landmarks do not support is fixed with a test that fails first, committed and listed in the STOP report, without a fourth review, and every other finding joins the open list.
+- By David's decision of 29 September, for the collector step (cb6b8f6 to its STOP): David's iPhone check of the navigation fix stands in for the tour, because the range changes no screen's appearance and the navigation tests run in WebKit in CI. After step 1, the tour moves into CI (David's decision of 29 September, which replaces "step 1 then starts with the tour in CI"), so that every later screen is checked at its three sizes without the Mac: WebKit, iPhone profile, production build, its own checks failing the job, the screenshots kept a few days as the run's artifacts, and any part that needs David's clips left to the Mac.
+- By David's decision of 29 September: every reviewer report and every command output quoted in a STOP report is saved, as the tool wrote it, in the step's evidence folder under test/real-phone/, committed with the step and given to the verifier. A number that can no longer be pasted is run again, or struck from the report.
+2. Every countable exercise of the guide, 182 in all, in a searchable list below the nine current cards (181 offered since 29 September: the walking lunge is not, by David's decision, since the lifter walks out of a fixed frame), each counted by its pattern in guide-families.json. Beta marks the exercises with evidence and Experimental all the others, so that the label stays true. The set collector (collect.html) offers the same exercises as the app, so that a set of any of them can be collected.
+3. A longer analysis of each set, from what the app measures, rep by rep, to tips for the next session, encouragement, and advice on regularity, sleep and food. Its texts are drafted first, in French and in English, each statement with its source and status as CLAUDE.md R9 requires, and sent to David for approval before any code.
+4. The video of the set with the overlay drawn on it, encoded on the phone and saved to it.
+5. Count on the iPhone (David's order, 29 September, after his iPhone read 181 of the 439 samples of his lateral raise clip and the app showed 2 reps of 10; test/real-phone/partial-read/00-source.txt). Nothing else ships, and step 4 waits, until the count is right on an iPhone. (a) A video read in part shows no count (eca34b7): David passed it on his iPhone, approved its four French lines and ordered it shipped; main moved to eca34b7 on 29 September. (b) The playback path reads every sample however slow the phone, measured on David's iPhone before it ships; a change to decoding, so the full gate. (c) The report e-mail states the decoder used and the share of the video read. (d) The check page (check.html): David's five labelled videos, picked from his iPhone's library, counted by the live code and compared with the count and refusal their committed landmarks give, with the share read and the decoder shown; no release that touches analysis goes out unless that page shows every row as before. The incomplete-read screen and the check page are not in the prototype: the first is approved as above, the second is an internal page. (b) passed on David's iPhone on 29 September with the check page (79bfa55): normal path 5 of 5 as before; playback path forced, Low Power Mode on, 5 of 5 as before; David approved the decoder fix over the verifier's second failure and ordered it shipped on green CI. Step 1's time rule and the playback path, David's decision of 29 September: "A correct count comes before a fast one: on the playback path, the analysis may take longer than the clip, and the screen shows its progress; the time rule of Step 1 holds for WebCodecs."
+
+Approved by David on 30 September: main moved to e84ab32 on his order ("Push it and make it live", then "Push"), and pushed (git ls-remote: refs/heads/main e84ab3261aab). main thereby takes the commits from daf191a to e84ab32: progress per exercise and personal bests, the one-sentence opener and the rest clock, the example set on the entry, the export of the saved sets as two spreadsheet files, the levels, one set tempo for the app, and every screen on one design system (design/SYSTEM.md).
+
+David's orders of 30 September, in his words.
+- "A label counts the reps the video shows whole, from rest back to rest."
+- "Every step gets one reviewer pass, as I ordered on 29 September, except a counting change, which gets three at most."
+- "If the third pass still finds a miscount, the change is withdrawn."
+- "A finding that cannot put a wrong count or a wrong label into a file is listed as open, not fixed."
+- "Your reports keep to five lines: the commit, what to check on my iPhone, and what only I can decide."
+- "CI on 84e020a finished green at 11:33, the WebKit tour included, and that result stays on the commit."
+- "The preview is built from 84e020a and does not rebuild on a push."
+- "An order that is not in PLAN.md does not survive the session."
+Replaced by David's second message below: "I will watch the four cut sets myself and send their counts."; "Counter-core and main move to 84e020a once I approve that preview."; "Bench press and overhead press stay parked until I film new press sets."; "Nothing new starts before my check and the exam sets."; "Once I approve the preview, counter-core and main move to 84e020a exactly, and counter-core then takes the two PLAN.md commits."
+
+David's orders of 30 September, second message, in his words. They prevail over the first message where they differ.
+- "You now run the work without waiting on my other session."
+- "Build the agents you need for review and control, beside the reviewer and the verifier, and keep rolling."
+- "This replaces my order that nothing new starts before my check and the exam sets."
+- "The control agent checks every claim against GitHub and CI before it reaches me, and checks that counter-core and main move only as PLAN.md says."
+- "Once committed, the new briefs change only by my order, like the other two."
+- "When two lines of PLAN.md conflict, my latest order prevails; record the choice in PLAN.md and continue."
+- "Stop only for my iPhone check of a preview, French copy, a label, a gate that fails twice, or anything that cannot be undone."
+- "You cannot build the preview, so when counter-core holds a step for my iPhone, your five lines give the commit and my other session builds it."
+- "The five lines are your message to me, not the evidence."
+- "The STOP report keeps the verifier's table, every reviewer report is saved in the evidence folder as lines 44 and 250 say, and your message gives their paths."
+- "Save this pass's report that way, in its own commit."
+- "The label rule applies to every labelled set whose video starts or ends inside a rep, not to four of them."
+- "Checking only the sets the app gets wrong would move the labels toward its count, which R1 forbids."
+- "Send me that list from the diagnosis, each set with the seconds to watch at its edges, those the app counts right included."
+- "I will watch them and send every count."
+- "Move counter-core to the head of this branch now, since steps land on counter-core, as I corrected on 28 September."
+- "Main moves to 84e020a exactly once I approve the preview."
+- "Bench press and overhead press stay offered as Experimental, as PLAN.md says."
+- "By "parked" I meant no counting work on either until I film new press sets."
+- "Record these lines in PLAN.md in my words, in place of those they replace on the presses, the cut sets and the move of counter-core."
+
+Choices recorded under the order that David's latest order prevails (30 September):
+- Line 4 and METHOD allow two sub-agents only. A third is added by his order: wv-control, whose brief is .claude/agents/wv-control.md. It reads each message to David before it is sent and checks its claims against git, GitHub and CI, and the moves of counter-core and main against this plan. Its brief, like the other two, changes only by David's order.
+- Line 44 and the five-line order: the five lines are the message to David; the STOP report with the verifier's table, and every reviewer report, are saved under test/real-phone/ and the message gives their paths.
+- The earlier order that counter-core and main move to 84e020a together: counter-core moves now, by fast-forward, to the head of claude/generate-architecture-md-inw479 once this record and its reviewer report are pushed; the commit it reaches is recorded here with git ls-remote in the next PLAN.md commit. main alone moves to 84e020a exactly, on David's approval of its preview.
+- counter-core moved on 30 September, by fast-forward from e84ab32, to 24f89fa, the head of claude/generate-architecture-md-inw479 (git ls-remote: refs/heads/counter-core 24f89fab79cf). main stays at e84ab32.
+
+Approved on 30 September on the preview built from 84e020a, on David's iPhone, with filming step 3 as written ("Toute la série, du départ au retour au repos."). main fast-forwarded from e84ab32 to 84e020a and pushed (git ls-remote: refs/heads/main 84e020a000e7). main thereby takes 84e020a: the batch collector, the scoreboard, the diagnosis and the exam script, and the new filming step 3.
+David's orders of 30 September, third message, in his words.
+- "Approved: the preview at 84e020a, with filming step 3 as written."
+- "Move main to 84e020a."
+- "The fourteen counts and the batch collector test come with the exam sets; nothing waits on them."
+- "Until then, write to me only when my iPhone or my approval is needed."
+- counter-core moved on 30 September, by fast-forward from 24f89fa, to 75669b5, the head of claude/generate-architecture-md-inw479, since steps land on counter-core (git ls-remote: refs/heads/counter-core 75669b5c1d31). It takes README.md and STATE.md brought up to date, and the import of set files (scripts/import-sets.mjs). main stays at 84e020a.
+- counter-core moved on 30 September, by fast-forward from 75669b5, to c044f6f (git ls-remote: refs/heads/counter-core c044f6feb9ae). It takes the public dataset pipeline (scripts/public/, npm run scoreboard:public): RepCount-A and MM-Fit as build data, split by video into a build half and a held-out half, by David's order of 30 September to measure the counter on public labelled sets. main stays at 84e020a.
+- The rules "Do not use the YouTube benchmark for any decision" and "Tune nothing to any clip", and David's order of 30 September to download public labelled datasets and do the testing himself ("you can download and do the testing yourself and automate a process"; "you find a way around it and to the benchmark"): his latest order prevails. Countix, whose clips come from YouTube through Kinetics, and the other public datasets serve as measurement for counting changes: a change is measured on their build half and never tuned to a clip, and their held-out half is read once, after the change passes every gate. Bench press and overhead press sets are measured but decide nothing, since no counting work is done on either until David films new press sets. The full method of a counting change is unchanged: a synthetic test that fails first, three reviewer passes at most, the verifier, and David's iPhone before main.

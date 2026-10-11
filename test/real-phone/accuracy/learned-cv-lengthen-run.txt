@@ -1,0 +1,36 @@
+  step 0 loss 7.625
+  step 500 loss 0.383
+  step 1000 loss 0.267
+  step 1500 loss 0.243
+  step 2000 loss 0.142
+  step 2500 loss 0.169
+fold 0: learned exact 41/87 within one 77; core exact 33 within one 56
+  step 0 loss 7.512
+  step 500 loss 0.298
+  step 1000 loss 0.317
+  step 1500 loss 0.266
+  step 2000 loss 0.252
+  step 2500 loss 0.181
+fold 1: learned exact 43/91 within one 82; core exact 30 within one 60
+  step 0 loss 7.811
+  step 500 loss 0.344
+  step 1000 loss 0.323
+  step 1500 loss 0.225
+  step 2000 loss 0.203
+  step 2500 loss 0.181
+fold 2: learned exact 43/90 within one 80; core exact 23 within one 57
+  step 0 loss 8.163
+  step 500 loss 0.331
+  step 1000 loss 0.372
+  step 1500 loss 0.298
+  step 2000 loss 0.198
+  step 2500 loss 0.147
+fold 3: learned exact 50/89 within one 81; core exact 24 within one 51
+  step 0 loss 7.012
+  step 500 loss 0.272
+  step 1000 loss 0.414
+  step 1500 loss 0.201
+  step 2000 loss 0.242
+  step 2500 loss 0.218
+fold 4: learned exact 40/90 within one 78; core exact 24 within one 55
+all: learned exact 217/447 within one 398; core exact 134 within one 279

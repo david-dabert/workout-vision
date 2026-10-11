@@ -1,0 +1,21 @@
+{
+  "result": "PASS",
+  "srcHash": "73e7e88cf4ed2d30b893f98582cbcc2e862d7e23c1d2c7944891a51d510f0ecc",
+  "newAppTitle": "Workout Vision",
+  "liftsOffered": 3,
+  "stillStored": true,
+  "workoutsAfterSeed": 1,
+  "workoutsNow": 1,
+  "loads": 2,
+  "errorsByLoad": [
+    [
+      "Refused to load https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap because it does not appear in the style-src directive of the Content Security Policy."
+    ],
+    []
+  ],
+  "errors": [],
+  "screenshots": [
+    "01-returning-open",
+    "02-returning-choice"
+  ]
+}

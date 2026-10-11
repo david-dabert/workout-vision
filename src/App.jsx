@@ -1,32 +1,33 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react';
+import { flushSync } from 'react-dom';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
-import { LanguageProvider, useT } from './lib/LanguageContext';
+import { LanguageProvider } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
-import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
+// Hidden: challenges are not part of core path
+// import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
 import { checkAndMigrateSchema } from './lib/storage';
-import Dashboard from './components/Dashboard';
-import TabBar from './components/TabBar';
+// Hidden, not deleted: Dashboard and TabBar are not rendered during 3b
+// import Dashboard from './components/Dashboard';
+// import TabBar from './components/TabBar';
 
 import ErrorBoundary from './components/ErrorBoundary';
+import PerfOverlay from './components/PerfOverlay';
+import { perfRequested } from './lib/perfFlag';
+import Choice from './components/experience/Choice';
+import Entry, { shouldShowEntry } from './components/experience/Entry';
+import Stage from './components/experience/Stage';
+import ScreenFade from './components/experience/ScreenFade';
+import { loadSets, knownSets } from './components/experience/sets';
+import { levelView, readLevel } from './components/experience/level';
+import { whenQuiet } from './lib/whenQuiet';
 
-// Dynamic GPU capability detection: disable backdrop-filter on weak devices
+// Frosted glass (backdrop-filter) is left off on the older, smaller iPhones (pixel ratio 2 and a
+// screen under 812 points). No WebGL context is made to decide it: making one held up the first
+// frame of every visit, and on an iPhone the renderer it reports is only "Apple GPU".
 (() => {
   try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) { document.documentElement.classList.add('no-glass'); return; }
-    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
-    const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : '';
-    // Detect low-end mobile GPUs that choke on backdrop-filter compositing
-    const isLowEnd = /SwiftShader|llvmpipe|Software|Mali-4|Adreno\s[23]\d{2}/i.test(renderer);
-    // Also detect iOS devices with < 4GB RAM (approximation via device pixel ratio + screen)
     const isOldiOS = /iPad|iPhone/.test(navigator.userAgent) && window.devicePixelRatio <= 2 && screen.height < 812;
-    if (isLowEnd || isOldiOS) {
-      document.documentElement.classList.add('no-glass');
-    }
-    // Clean up GL context
-    const ext = gl.getExtension('WEBGL_lose_context');
-    if (ext) ext.loseContext();
+    if (isOldiOS) document.documentElement.classList.add('no-glass');
   } catch { /* silent fallback: keep glass */ }
 })();
 
@@ -39,71 +40,61 @@ const safeLazy = (loader) => lazy(() =>
   })
 );
 
-const Analyze = safeLazy(() => import('./components/CoreUpload'));
-const ManualLog = safeLazy(() => import('./components/ManualLog'));
-const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
-const RestTimer = safeLazy(() => import('./components/RestTimer'));
-const ProfilePage = safeLazy(() => import('./components/Profile'));
-const Validate = safeLazy(() => import('./components/Validate'));
-const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
-const Onboarding = safeLazy(() => import('./components/Onboarding'));
-const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
-const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
-const ExerciseGuide = safeLazy(() => import('./components/ExerciseGuide'));
-const CoachReport = safeLazy(() => import('./components/CoachReport'));
-const Landing = safeLazy(() => import('./components/Landing'));
+// A lazily loaded screen that can be warmed in advance. Once its code is
+// loaded it renders directly: React.lazy would otherwise suspend on first
+// render and hold the screen back behind a blank fallback.
+function lazyScreen(load) {
+  let Mod = null, pending = null;
+  const warm = () => (pending ||= load().then(m => { Mod = m.default; return m; }));
+  const Lazy = safeLazy(warm);
+  function Screen(props) { const C = useRef(Mod || Lazy).current; return <C {...props} />; }
+  Screen.warm = () => warm().catch(() => {});
+  Screen.loaded = () => Mod !== null;
+  return Screen;
+}
 
-const LazyFallback = (
-  <div className="page" style={{ padding: '1rem', maxWidth: 480, margin: '0 auto' }}>
-    <div className="skeleton" style={{ width: '60%', height: 24, borderRadius: 8, marginBottom: 16 }} />
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-      <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-    </div>
-    <div className="skeleton" style={{ height: 120, borderRadius: 14, marginBottom: 12 }} />
-    <div className="skeleton" style={{ height: 80, borderRadius: 14 }} />
-  </div>
-);
+// Core path
+const Analyze = lazyScreen(() => import('./components/CoreUpload'));
+const ExerciseGuide = lazyScreen(() => import('./components/experience/Guide'));
+const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
+const History = lazyScreen(() => import('./components/experience/History'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History };
+
+// Hidden, not deleted: lazy imports for features outside the core path
+// const ManualLog = safeLazy(() => import('./components/ManualLog'));
+// const WorkoutHistory = safeLazy(() => import('./components/WorkoutHistory'));
+// const RestTimer = safeLazy(() => import('./components/RestTimer'));
+// const ProfilePage = safeLazy(() => import('./components/Profile'));
+// const Validate = safeLazy(() => import('./components/Validate'));
+// const WeeklyReport = safeLazy(() => import('./components/WeeklyReport'));
+// const Onboarding = safeLazy(() => import('./components/Onboarding'));
+// const PersonalRecords = safeLazy(() => import('./components/PersonalRecords'));
+// const LiveCapture = safeLazy(() => import('./components/LiveCapture'));
+// const CoachReport = safeLazy(() => import('./components/CoachReport'));
+
+
+// While a screen's code loads, show the void itself, never a placeholder of another app.
+const LazyFallback = <div className="wv-experience" aria-busy="true" />;
 
 function AppInner() {
   const { profile, saveProfile, profileLoading } = useProfile();
-  const { t } = useT();
-  const [page, setPage] = useHashRouter();
-  const [modelStatus, setModelStatus] = useState('loading');
-  const [challenge, setChallenge] = useState(null);
-  const [challengeResponse, setChallengeResponse] = useState(null);
-  const [showLanding, setShowLanding] = useState(() => !localStorage.getItem('wv_seen_landing'));
-
+  const [page, setPage, browserMoves, browserPending] = useHashRouter();
+  const [selectedLift, setSelectedLift] = useState('');
+  const [videoFile, setVideoFile] = useState(null);
+  // The page a View Transition brought in; its screen change needs no fade of its own.
+  const [transitionPage, setTransitionPage] = useState(null);
+  const fileSerial = useRef(0);
   // Run storage schema migration on mount
+  // The saved sets are read once the records are migrated, while the entry plays,
+  // so the choice of lift never waits for them.
   useEffect(() => {
-    checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err));
+    checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err)).then(() => loadSets()).catch(() => {});
   }, []);
 
-  // Check for challenge or response URL on mount
-  useEffect(() => {
-    const parsed = parseChallengeFromURL();
-    if (parsed) { setChallenge(parsed); return; }
-    const resp = parseResponseFromURL();
-    if (resp) setChallengeResponse(resp);
-  }, []);
-
-  const loadModelRef = useRef(null);
-  loadModelRef.current = () => {
-    setModelStatus('loading');
-    const timeout = setTimeout(() => setModelStatus('error'), 45000);
-    import('./lib/poseAnalysis')
-      .then((mod) => mod.preloadModel())
-      .then((ok) => { clearTimeout(timeout); setModelStatus(ok ? 'ready' : 'error'); })
-      .catch(() => { clearTimeout(timeout); setModelStatus('error'); });
-  };
-
-  useEffect(() => { if (page !== 'analyze') loadModelRef.current(); }, []);
-
-  const retryModel = () => loadModelRef.current();
-
-  const onNavigate = (p) => setPage(p);
+  // Warm the next screens while the visitor reads, so none waits on a download: one at a time,
+  // and only in a pause of 700 ms without a touch or a scroll, never in the middle of a swipe.
+  // Filming first, then the analysis, the guide and the saved sets.
+  useEffect(() => whenQuiet([ExperienceFilm.warm, Analyze.warm, ExerciseGuide.warm, History.warm]), []);
 
   // Auto-create default profile for first-time users and skip straight to dashboard
   const autoCreatedRef = useRef(false);
@@ -122,203 +113,120 @@ function AppInner() {
         injuries: [],
         profileComplete: false,
       };
-      saveProfile(defaultProfile).then(() => setPage('onboarding'));
+      saveProfile(defaultProfile);
     }
   }, [profileLoading, profile, saveProfile, setPage]);
 
-  // Wait for profile check (and potential auto-create) before rendering
-  if (profileLoading || !profile) return LazyFallback;
+  // A tap changes the screen only once the next screen's code is in; until then
+  // the current screen stays. A screen still loading shows only LazyFallback,
+  // and Reduce Motion removes the leaving screen at once: the stage would be empty.
+  // A later tap, or a change of page by the browser, cancels a change still waiting.
+  const pageRef = useRef(page);
+  useLayoutEffect(() => { pageRef.current = page; }, [page]);
+  const waiting = useRef(0);
+  const go = (next, apply) => {
+    // A navigation by the browser changes the address at once and is rendered later. Any such move
+    // after the tap, announced or not, even back to the same page, cancels the change still waiting.
+    const ticket = ++waiting.current, from = pageRef.current, moves = browserMoves();
+    // A tap made while the browser's own move is not yet rendered gives way to that move.
+    if (browserPending()) return;
+    const stale = () => ticket !== waiting.current || pageRef.current !== from || browserMoves() !== moves;
+    const show = () => {
+      if (stale()) return;
+      // Into the filming screen, the chosen card grows into its frame where the browser has
+      // View Transitions (Safari 18, Chrome 111); elsewhere, and under Reduce Motion, the fade.
+      if (next === 'film' && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // The update runs a frame later: if a tap or the browser moved the page meanwhile, it changes nothing.
+        document.startViewTransition(() => {
+          if (stale()) return;
+          flushSync(() => { apply?.(); setTransitionPage(next); setPage(next); });
+        });
+        return;
+      }
+      apply?.();
+      setTransitionPage(null);
+      setPage(next);
+    };
+    const target = LAZY[next];
+    // A screen whose code failed to load is shown all the same: its error screen
+    // offers Reload, where staying put would leave a tap that does nothing.
+    if (!target || target.loaded()) show(); else target.warm().then(show);
+  };
 
-  // Landing page for first-time visitors (before onboarding)
-  if (showLanding) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <Landing onStart={() => setShowLanding(false)} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
+  // The profile is created in the background; no screen waits for it.
+  // A beginner sees the guide's page of the exercise before filming, until three sets are saved (level.js);
+  // from that page, "Filmer cet exercice" goes on to the filming screen.
+  const [guideLift, setGuideLift] = useState('');
+  const chooseLift = (lift, guided = false) => {
+    // On-demand fetch enters the service worker's model cache; inference stays in the existing worker.
+    fetch(`${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`).catch(() => {});
+    if (!guided && levelView(readLevel(), { saved: knownSets()?.length ?? null }).guideFirst) {
+      go('exercises', () => setGuideLift(lift));
+      return;
+    }
+    go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
+  };
+  const backToChoice = () => go('dashboard', () => { setSelectedLift(''); setVideoFile(null); });
+  const backToFilm = () => go('film', () => setVideoFile(null));
 
-  // Onboarding for first-time users
-  if (page === 'onboarding' || (profile && !profile.profileComplete && page === 'dashboard')) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <Onboarding
-            profile={profile}
-            onComplete={async (updates, navigateTo) => {
-              await saveProfile({ ...profile, ...updates });
-              setPage(navigateTo || 'dashboard');
-            }}
-          />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
-  // Full-screen pages (no tab bar)
-  const fullScreenPages = ['analyze', 'live', 'log'];
-  const showTabBar = !fullScreenPages.includes(page);
-
-  if (page === 'analyze') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="analyze" className="page-transition-enter">
-          <Analyze onClose={() => setPage('dashboard')} onLiveMode={() => setPage('live')} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'live') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="live" className="page-transition-enter">
-          <LiveCapture onClose={() => setPage('dashboard')} profile={profile} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
-  if (page === 'log') return (
-    <ErrorBoundary>
-      <Suspense fallback={LazyFallback}>
-        <div key="log" className="page-transition-enter">
-          <ManualLog onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    </ErrorBoundary>
-  );
-
-  // Pages with tab bar visible
-  let pageContent = null;
-
-  if (page === 'history') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="history" className="page-transition-enter">
-          <WorkoutHistory onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'rest') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="rest" className="page-transition-enter">
-          <RestTimer onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'profile') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="profile" className="page-transition-enter">
-          <ProfilePage onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'validate') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="validate" className="page-transition-enter">
-          <Validate onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'weekly') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="weekly" className="page-transition-enter">
-          <WeeklyReport onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'prs') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="prs" className="page-transition-enter">
-          <PersonalRecords onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
+  let key, screen;
+  if (page === 'film' && selectedLift) {
+    key = `film:${selectedLift}`;
+    screen = <ExperienceFilm lift={selectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => go('analyze', () => { fileSerial.current += 1; setVideoFile(f); })} />;
+  } else if (page === 'analyze' && selectedLift && videoFile) {
+    key = `analyze:${fileSerial.current}`;
+    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} onClose={backToChoice} onRefilm={backToFilm} />;
   } else if (page === 'exercises') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="exercises" className="page-transition-enter">
-          <ExerciseGuide onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
-  } else if (page === 'coach') {
-    pageContent = (
-      <Suspense fallback={LazyFallback}>
-        <div key="coach" className="page-transition-enter">
-          <CoachReport onClose={() => setPage('dashboard')} />
-        </div>
-      </Suspense>
-    );
+    key = guideLift ? `guide:${guideLift}` : 'guide';
+    screen = <ExerciseGuide lift={guideLift} onClose={() => go('dashboard', () => setGuideLift(''))} onChoose={l => chooseLift(l, true)} />;
+  } else if (page === 'history') {
+    key = 'history';
+    screen = <History onClose={() => go('dashboard')} />;
+  } else {
+    // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
+    // live and the dashboard. Every other page falls through to the choice of lift.
+    key = 'choice';
+    screen = <Choice onChoose={l => chooseLift(l)} onGuide={() => go('exercises', () => setGuideLift(''))} onHistory={() => go('history')} />;
   }
 
-  // Dashboard (default)
-  if (!pageContent) {
-    pageContent = (
-      <>
-        <Dashboard
-          profile={profile}
-          modelStatus={modelStatus}
-          onRetryModel={retryModel}
-          onNavigate={onNavigate}
-          challenge={challenge}
-          challengeResponse={challengeResponse}
-          onDismissResponse={() => setChallengeResponse(null)}
-        />
-        <footer style={{
-          textAlign: 'center', padding: '8px 0 4px', fontSize: '0.6rem',
-          color: 'rgba(255,255,255,0.25)', letterSpacing: '0.02em',
-        }}>
-          Workout Vision v{__APP_VERSION__} &bull; {new Date(__BUILD_TIME__).toLocaleDateString()}
-        </footer>
-      </>
-    );
-  }
-
-  return (
-    <div className="app">
-      <a href="#main-content" className="skip-link">{t('skip_to_content') || 'Skip to content'}</a>
-      <main id="main-content">
-        <ErrorBoundary>
-          {pageContent}
-        </ErrorBoundary>
-      </main>
-      {showTabBar && <TabBar page={page} onNavigate={onNavigate} />}
-    </div>
-  );
+  return <>
+    <Stage />
+    <ScreenFade screenKey={key} viaTransition={transitionPage === page}>
+      <ErrorBoundary>
+        <Suspense fallback={LazyFallback}>{screen}</Suspense>
+      </ErrorBoundary>
+    </ScreenFade>
+  </>;
 }
 
+function EntryGate({ children }) {
+  const [showEntry, setShowEntry] = useState(shouldShowEntry);
+  return <ScreenFade screenKey={showEntry ? 'entry' : 'app'}>
+    {showEntry ? <Entry onEnter={() => setShowEntry(false)} /> : children}
+  </ScreenFade>;
+}
+
+// The on-device instrument, only with ?perf=1 (read once at start; nothing is sent).
+const SHOW_PERF = perfRequested();
+
 function App() {
-  const params = new URLSearchParams(window.location.search);
-
-
-  // Validate mode: render directly, skip all providers
-  if (params.has('validate')) {
-    return (
-      <ErrorBoundary>
-        <Suspense fallback={LazyFallback}>
-          <Validate onClose={() => { window.location.search = ''; }} />
-        </Suspense>
-      </ErrorBoundary>
-    );
-  }
-
+  // Hidden: ?validate URL param entry point
   return (
-    <ErrorBoundary>
-      <LanguageProvider>
-        <ProfileProvider>
-          <ErrorBoundary>
-            <AppInner />
-          </ErrorBoundary>
-        </ProfileProvider>
-      </LanguageProvider>
-    </ErrorBoundary>
+    <>
+      {SHOW_PERF && <PerfOverlay />}
+      <ErrorBoundary>
+        <LanguageProvider>
+          {/* The profile loads during the entry, so nothing waits for it after. */}
+          <ProfileProvider>
+            <EntryGate>
+              <ErrorBoundary>
+                <AppInner />
+              </ErrorBoundary>
+            </EntryGate>
+          </ProfileProvider>
+        </LanguageProvider>
+      </ErrorBoundary>
+    </>
   );
 }
 

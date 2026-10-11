@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/collect.spec.js:86:1 › the collector offers the 182 exercises the app counts, by their names in both languages (5.3s)
+
+
+  1) e2e/collect.spec.js:86:1 › the collector offers the 182 exercises the app counts, by their names in both languages 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#lift option')
+    Expected: 182
+    Received: 9
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#lift option') with timeout 5000ms
+      - waiting for locator('#lift option')
+        14 × locator resolved to 9 elements
+           - unexpected value "9"
+
+
+      86 | test('the collector offers the 182 exercises the app counts, by their names in both languages', async ({ page }) => {
+      87 |   await open(page);
+    > 88 |   await expect(page.locator('#lift option')).toHaveCount(182);
+         |                                              ^
+      89 |   await expect(page.locator('#lift option[value="walking_lunge"]')).toHaveText('Walking Lunge / Fente marchée');
+      90 |   await expect(page.locator('#lift option[value="lateral_raise"]')).toHaveCount(1);
+      91 |   await expect(page.locator('#lift option[value="pec_deck"]')).toHaveCount(0);
+        at /home/user/workout-vision/e2e/collect.spec.js:88:46
+
+    Error Context: test-results/collect-the-collector-offe-623be-eir-names-in-both-languages/error-context.md
+
+  1 failed
+    e2e/collect.spec.js:86:1 › the collector offers the 182 exercises the app counts, by their names in both languages 

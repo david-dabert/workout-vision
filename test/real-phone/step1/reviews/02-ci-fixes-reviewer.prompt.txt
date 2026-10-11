@@ -1,0 +1,1 @@
+The report's partner field never passes over the level below it as it appears, and the WebKit press test measures its 80 ms from the pointerdown itself, so CI runs 148 and 149 do not fail again for these reasons.

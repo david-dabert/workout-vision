@@ -1,0 +1,36 @@
+Fifth review of the uncommitted change on claude/generate-architecture-md-inw479 (same goal). Read-only; I did not run the scoreboard, and Film step 3 is out of scope. `npx vitest run src/lib/__tests__/batchCollect.test.js src/lib/counting/__tests__/edges.test.ts`: 72 passed. I did not run the Playwright spec.
+
+DEFECTS: NONE that stop the commit. Two low items follow.
+
+LOW
+
+1. After 7 days without a visit, the page silently starts again from set 1.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:27-40.
+- iOS Safari deletes a website's localStorage after 7 days without the user interacting with it (WebKit's tracking prevention). This does not apply to a page added to the home screen.
+- Scenario: David collects a session, shares sets 1 to 20, and comes back 8 days later. The saved `{gen, next}` is gone, so the new session starts at Set 1 without the Restart confirm. Its files take numbers already shared.
+- The page says each pick is numbered "after … the files already shared or downloaded, even before a reload" (line 123), which is then no longer true.
+- The outcome is the same as a confirmed restart; only the warning is missing.
+- Fix: say it on the page, for example "numbering is remembered for about a week in Safari", or show the remembered next number so David can see a reset.
+- Test: unit-level only. Load with empty storage while `rows` is empty and expect a visible note about where numbering starts. There is no such note today.
+
+2. The code that marks numbers as used when Share or Download is tapped has no test that fails on revert.
+- Where: /home/user/workout-vision/src/collect-batch-main.js:186 and :208. The e2e videos are fake and never reach 'done', so no page-level test reaches the calls to `remember(numbersUsed(…))`.
+- The restart-by-another-tab e2e test does call the Download handler. But it has no collected rows, so it checks only the `gen` merge.
+- The pure `numbersUsed` and `mergeMemory` are unit-tested, and those tests would fail on revert.
+
+CHECKED AGAINST THE NEW DESIGN
+- Share stays inside the tap. The files list, `canShare`, the one-at-a-time guard and the `remember` write are all synchronous before `navigator.share`.
+  - The numbers are marked used before the sheet opens, so an eviction while it is open cannot lead to a number used twice.
+  - `share.end()` and `render()` run in `finally`.
+- Download marks the numbers used even when Safari saves only one file. That now only leaves unused numbers, and no video is refused any more.
+- Restart increments `gen`, and `mergeMemory` lets the newer generation win.
+  - The e2e test for two tabs would fail on revert: without `gen`, tab B's write would bring back next 13.
+  - A tab still holding collected rows from before the restart pushes the new generation's next number past them when it hands over. That leaves a gap, never a collision.
+- `recall()` reads storage afresh and ignores malformed data, and `remember()` joins with what is stored before writing.
+- Blocked storage falls back to this load only.
+- Duplicate detection is now limited to this page's collected rows (`twinOf`), and the summary says exactly that ("a video collected twice on this page is kept once").
+- A duplicate row or an uncollected row never raises the next number. A gap is the only effect.
+- `appendRows` never renumbers a row, and numbers from the remembered next or from the last row plus 1, whichever is higher.
+- The stored data is two integers (`gen` and `next`), on the phone only. No new host and no video in the change.
+- The new strings are English only, on a page for David, with no em dash.
+- Unchanged since earlier rounds and still sound: collectSet, collect-main, the precache filter, the stale-note clearing, sets.ts, scoreboard, diagnose, edges, the exam script and .gitignore.
