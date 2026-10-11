@@ -16,6 +16,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   const { lang } = useT(), fr = lang === 'fr';
   const videoRef = useRef(null), canvasRef = useRef(null), backRef = useRef(null), lineRef = useRef(null);
   const drag = useRef(null);
+  const lastVibrateRep = useRef(-1);
   const [url, setUrl] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [slow, setSlow] = useState(false);
@@ -156,7 +157,13 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
     const d = drag.current;
     if (!d || (!d.moved && Math.abs(e.clientX - d.x) < 6)) return;
     if (!d.moved) { d.moved = true; videoRef.current.pause(); }
-    seekTo(timeAt(e.clientX));
+    const t = timeAt(e.clientX);
+    seekTo(t);
+    const hit = repAt(reps, t);
+    if (hit !== lastVibrateRep.current) {
+      lastVibrateRep.current = hit;
+      if (hit >= 0) navigator.vibrate?.(5);
+    }
   }
   function up(e) {
     const d = drag.current;
@@ -177,6 +184,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
     if (step) {
       e.preventDefault();
       const next = step > 0 ? reps.findIndex(r => r.startTime > now + 0.05) : reps.map(r => r.startTime < now - 0.05).lastIndexOf(true);
+      navigator.vibrate?.(5);
       seekTo(next >= 0 ? reps[next].startTime : step > 0 ? length : 0);
     } else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); seekTo(e.key === 'Home' ? 0 : length); }
   }
@@ -185,6 +193,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
   const phase = current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
+  const isTransition = current >= 0 && !phase && !reps[current]?.clipped;
   const curAngle = angleAt(smoothedAngles, times, now);
   let head = '', detail;
   if (current >= 0) {
@@ -200,7 +209,7 @@ export default function Replay({ file, result, lift, leaving, onBack }) {
         ? (fr ? 'Cette série n’a pas pu être comptée.' : 'This set could not be counted.')
         : (fr ? 'Aucune répétition comptée dans cette vidéo.' : 'No rep counted in this video.');
   }
-  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || NB;
+  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? (fr ? 'Inflexion' : 'Turn') : NB);
 
   return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
     <section className="screen is-active replay-screen" aria-label={`${fr ? 'Revoir la série' : 'Replay of the set'} · ${liftName}`}><div className="wrap">
