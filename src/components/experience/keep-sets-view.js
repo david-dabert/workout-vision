@@ -28,7 +28,7 @@ export async function restoreFlow(text, fr, { restore = restoreBackup, list, siz
   catch { return { note: fr ? 'Ce fichier n’a pas pu être lu. S’il est dans iCloud, téléchargez-le, puis réessayez.' : 'This file could not be read. If it is in iCloud, download it, then try again.' }; }
   const r = readBackup(read);
   if (r.error) return { note: r.error === 'newer-version'
-    ? (fr ? 'Cette sauvegarde vient d’une version plus récente de l’app. Mettez l’app à jour, puis réessayez.' : 'This backup comes from a newer version of the app. Update the app, then try again.')
+    ? (fr ? 'Cette sauvegarde vient d’une version plus récente de l’appli. Mettez l’appli à jour, puis réessayez.' : 'This backup comes from a newer version of the app. Update the app, then try again.')
     : notBackup };
   let done;
   try { done = await restore(r.sets); }

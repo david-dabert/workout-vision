@@ -122,7 +122,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
       <div className="choose-hero">
       <div className="wrap">
-        <div className="topbar"><span className="brand-sm">Workout Vision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
+        <div className="topbar"><span className="brand-sm">WorkoutVision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
         <CrashNote fr={fr} />
         {last && <div className="welcome">
           <p className="welcome-l1">{fr ? 'Bon retour.' : 'Welcome back.'}</p>
@@ -214,7 +214,7 @@ function UsageNote({ fr }) {
   return <div className="foot usage-note" data-testid="usage-note">
     <p role="status">{off
       ? (fr ? 'Comptage anonyme désactivé sur ce téléphone.' : 'Anonymous counting is off on this phone.')
-      : (fr ? 'Pour s’améliorer, l’app compte de façon anonyme l’usage de ses écrans et de ses analyses\u00A0: ni identité, ni vidéo, ni mouvement.' : 'To improve, the app counts anonymously how often its screens and analyses are used: no identity, no video, no movement data.')}</p>
+      : (fr ? 'Pour s’améliorer, l’appli compte de façon anonyme l’usage de ses écrans et de ses analyses\u00A0: ni identité, ni vidéo, ni mouvement.' : 'To improve, the app counts anonymously how often its screens and analyses are used: no identity, no video, no movement data.')}</p>
     <button type="button" className="text-btn press" onClick={toggle}
       aria-label={off ? (fr ? 'Réactiver le comptage anonyme' : 'Turn anonymous counting back on') : (fr ? 'Désactiver le comptage anonyme' : 'Turn off anonymous counting')}>
       {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}

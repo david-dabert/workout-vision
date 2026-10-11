@@ -16,7 +16,7 @@ describe('reportEmailUrl', () => {
     const { subject, body, keys } = mail(reportEmailUrl({ ...set, fr: false }));
     expect(REPORT_EMAIL).toBe('pr.dabertdavid@gmail.com');
     expect(keys).toEqual(['body', 'subject']);
-    expect(subject).toBe('Workout Vision: Lateral raise, the app 8, me 10');
+    expect(subject).toBe('WorkoutVision: Lateral raise, the app 8, me 10');
     expect(body).toContain('Lift: Lateral raise (lateral_raise)');
     expect(body).toContain('Counted by the app: 8');
     expect(body).toContain('Counted by me: 10');
@@ -33,9 +33,9 @@ describe('reportEmailUrl', () => {
   it('speaks French on a French phone, in the user\'s own voice', () => {
     const { subject, body } = mail(reportEmailUrl({ ...set, liftName: 'Élévations latérales', fr: true }));
     expect(body).toContain('Exercice : Élévations latérales (lateral_raise)');
-    expect(body).toContain('Compté par l’app : 8');
+    expect(body).toContain('Compté par l’appli : 8');
     expect(body).toContain('Compté par moi : 10');
-    expect(subject).toBe('Workout Vision : Élévations latérales, l’app 8, moi 10');
+    expect(subject).toBe('WorkoutVision : Élévations latérales, l’appli 8, moi 10');
     expect(body).toContain('Ce message ne contient ni vidéo ni image.');
     expect(body).not.toMatch(/Votre|vous/);
     expect(body.trimEnd().endsWith('Mon message :')).toBe(true);
@@ -59,7 +59,7 @@ describe('reportEmailUrl', () => {
 describe('the report of a refused set', () => {
   it('says the app counted nothing and leaves the user\'s count for them to write', () => {
     const { subject, body } = mail(reportEmailUrl({ ...set, counted: null, userCount: null, fr: false }));
-    expect(subject).toBe('Workout Vision: Lateral raise, the app none, me?');
+    expect(subject).toBe('WorkoutVision: Lateral raise, the app none, me?');
     expect(body).toContain('Counted by the app: none, the set was refused');
     expect(body).toMatch(/Counted by me: \r\n/);
     expect(body).not.toContain('null');
@@ -67,8 +67,8 @@ describe('the report of a refused set', () => {
 
   it('does so in French, and on GitHub', () => {
     const { subject, body } = mail(reportEmailUrl({ ...set, liftName: 'Squat', counted: null, userCount: null, fr: true }));
-    expect(subject).toBe('Workout Vision : Squat, l’app rien, moi ?');
-    expect(body).toContain('Compté par l’app\u00A0: rien, la série a été refusée');
+    expect(subject).toBe('WorkoutVision : Squat, l’appli rien, moi ?');
+    expect(body).toContain('Compté par l’appli\u00A0: rien, la série a été refusée');
     const issue = new URL(reportIssueUrl({ ...set, counted: null, userCount: null }));
     expect(issue.searchParams.get('title')).toBe('Count report: lateral_raise, set refused');
     expect(issue.searchParams.get('body')).toContain('Counted by the app: none, the set was refused');
@@ -114,13 +114,13 @@ describe('challengeShare', () => {
   // must not say it was.
   it('says the app counted the reps only when the user kept the app\'s count', () => {
     const kept = challengeShare({ liftName: 'Squat', count: 8, counted: 8, fr: false, url: 'x' }).text;
-    expect(kept).toContain('counted by Workout Vision');
+    expect(kept).toContain('counted by WorkoutVision');
     const fixed = challengeShare({ liftName: 'Squat', count: 10, counted: 8, fr: false, url: 'x' }).text;
     // The app neither filmed (the video may come from the library) nor counted nor analysed the
     // corrected 10: the message gives both numbers (reviews of 29 September).
-    expect(fixed).toBe('Squat: 10 reps (Workout Vision counted 8 on my phone). Can you beat it?');
+    expect(fixed).toBe('Squat: 10 reps (WorkoutVision counted 8 on my phone). Can you beat it?');
     const fr = challengeShare({ liftName: 'Squat', count: 10, counted: 8, fr: true, url: 'x' }).text;
-    expect(fr).toBe('Squat\u00A0: 10 répétitions (Workout Vision en a compté 8 sur mon téléphone). Vous relevez le défi\u00A0?');
+    expect(fr).toBe('Squat\u00A0: 10 répétitions (WorkoutVision en a compté 8 sur mon téléphone). Vous relevez le défi\u00A0?');
     for (const t of [fixed, fr]) expect(t).not.toMatch(/filmed|filmées|analysed|analysées/);
   });
 });
@@ -184,7 +184,7 @@ describe('the report names the decoder and what was read', () => {
   const body = url => decodeURIComponent(url.split('&body=')[1]);
   it('French, a partial read: no count, the decoder and 181 of 439', () => {
     const b = body(reportEmailUrl({ lift: 'lateral_raise', liftName: 'Élévations latérales', counted: null, partial: true, userCount: null, fr: true, decoder: 'rvfc', read: { read: 181, expected: 439 } }));
-    expect(b).toContain('Compté par l’app : rien, la vidéo n’a pas été lue en entier');
+    expect(b).toContain('Compté par l’appli : rien, la vidéo n’a pas été lue en entier');
     expect(b).toContain('Décodeur : rvfc');
     expect(b).toContain('Vidéo lue : 181 échantillons sur 439 (41 %)');
   });

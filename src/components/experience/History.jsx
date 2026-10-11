@@ -186,9 +186,9 @@ export default function History({ onClose }) {
               </button>
               {shown && <div className="hist-detail appear">
                 {byHand && w.afterRefusal && <p className="hist-corr">{proposed
-                  ? (fr ? 'Proposé par l’app, qui n’a pas bien vu le mouvement, puis confirmé par vous.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by you.')
-                  : fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
-                {fixed && <p className="hist-corr">{fr ? `Compté par l’app : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
+                  ? (fr ? 'Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé par vous.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by you.')
+                  : fr ? 'Saisi à la main : l’appli n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
+                {fixed && <p className="hist-corr">{fr ? `Compté par l’appli : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
                 <button className="btn-line press" onClick={() => { setLeaving(false); setReport(w); track('report_open', { lift: w.exercise || w.exerciseKey }); }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
                   <span>{fr ? 'Rapport de séance' : 'Session report'}</span>

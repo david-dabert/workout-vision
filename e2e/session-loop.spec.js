@@ -143,7 +143,7 @@ test('WP1.6: a refused set is logged by hand, from 0, and the history says it wa
   await openHistory(page);
   await expect(page.locator('.hist-btn').first()).toContainText('Saisi à la main');
   await page.locator('.hist-btn').first().click();
-  await expect(page.locator('.hist-corr')).toHaveText('Saisi à la main : l’app n’a pas pu compter cette série.');
+  await expect(page.locator('.hist-corr')).toHaveText('Saisi à la main : l’appli n’a pas pu compter cette série.');
   expect(errors).toEqual([]);
 });
 

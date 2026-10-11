@@ -214,9 +214,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   // How the count was made, as labelled details under it, like the people above it: who counted, and the limb followed.
   const details = [];
   // The app's proposal on a refused set, confirmed as it stood (History.jsx; French approved by David on 9 October 2026, R10).
-  if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’app, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
-  else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’app n’a pas pu compter' : 'by hand, the app could not count']);
-  else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’app' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
+  if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
+  else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’appli n’a pas pu compter' : 'by hand, the app could not count']);
+  else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’appli' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
   if (arm === 'left' || arm === 'right') {
     const limb = joint === 'knee' ? (fr ? 'Jambe suivie' : 'Leg tracked') : joint === 'hip' ? (fr ? 'Côté suivi' : 'Side tracked') : (fr ? 'Bras suivi' : 'Arm tracked');
     details.push([limb, arm === 'left' ? (fr ? 'gauche' : 'left') : fr ? (joint === 'knee' ? 'droite' : 'droit') : 'right']);
@@ -242,11 +242,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     planned: plannedLine(planned, fr),
     // A set the app refused and the person typed (WP1.6): said so where a correction would be.
     corrected: source === 'manual' && afterRefusal && proposed
-      ? (fr ? 'Proposé par l’app, qui n’a pas bien vu le mouvement, puis confirmé à la main.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by hand.')
+      ? (fr ? 'Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé à la main.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by hand.')
       : source === 'manual' && afterRefusal
-      ? (fr ? 'Saisi à la main : l’app n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
+      ? (fr ? 'Saisi à la main : l’appli n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
       : counted != null && counted !== count
-      ? (fr ? `Compté par l’app${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
+      ? (fr ? `Compté par l’appli${colon}${counted}. Corrigé${colon}${count}.` : `Counted by the app${colon}${counted}. Corrected${colon}${count}.`)
       : '',
     arm: arm === 'left' || arm === 'right'
       // The tracked limb follows the joint that counts the lift: arm, leg (knee) or side (hip).

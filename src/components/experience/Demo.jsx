@@ -15,8 +15,8 @@ import { DemoVideos } from './DemoVideos';
 // on 9 October 2026: test/real-phone/swarm/copy-B.md.
 const COPY = {
   fr: {
-    tag: 'Exemple', real: 'Des séries réelles, comptées par l’app', close: 'Fermer l’exemple', eyebrow: 'Squat dessiné',
-    sub: 'Un squat dessiné pour l’exemple, compté par l’app comme votre série le sera.',
+    tag: 'Exemple', real: 'Des séries réelles, comptées par l’appli', close: 'Fermer l’exemple', eyebrow: 'Squat dessiné',
+    sub: 'Un squat dessiné pour l’exemple, compté par l’appli comme votre série le sera.',
     word: n => (n > 1 ? 'Répétitions' : 'Répétition'),
     done: n => `Fin de série : ${n} ${n > 1 ? 'répétitions comptées' : 'répétition comptée'}.`,
     go: 'À vous', again: 'Revoir l’exemple',

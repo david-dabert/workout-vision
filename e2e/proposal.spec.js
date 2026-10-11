@@ -103,7 +103,7 @@ test('closing a refused set asks before the proposal is lost, and keeps it as co
   await expect(page.locator('.hist-tag', { hasText: 'Proposition confirmée' })).toBeVisible({ timeout: 20000 });
   await expect(page.locator('.hist-tag', { hasText: 'Saisi à la main' })).toHaveCount(0);
   await page.locator('.hist-btn').first().click();
-  await expect(page.locator('.hist-detail .hist-corr')).toHaveText('Proposé par l’app, qui n’a pas bien vu le mouvement, puis confirmé par vous.');
+  await expect(page.locator('.hist-detail .hist-corr')).toHaveText('Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé par vous.');
   expect(errors).toEqual([]);
 });
 

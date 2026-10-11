@@ -14,7 +14,7 @@ export function markLabel({ index, total, fr, corrected }) {
 
 /** The marks as a group: "Répétitions, une par marque", or after a correction "Repères détectés par l'app". */
 export function marksLabel({ fr, corrected }) {
-  if (corrected) return fr ? 'Repères détectés par l’app' : 'Marks the app detected';
+  if (corrected) return fr ? 'Repères détectés par l’appli' : 'Marks the app detected';
   return fr ? 'Répétitions, une par marque' : 'Reps, one per mark';
 }
 
@@ -22,7 +22,7 @@ export function marksLabel({ fr, corrected }) {
 export function provenance({ detected, saved, fr }) {
   if (!isCorrected(saved, detected)) return '';
   const reps = n => (fr ? `${n} répétition${n > 1 ? 's' : ''}` : `${n} rep${n === 1 ? '' : 's'}`);
-  return fr ? `L’app a détecté ${reps(detected)}. Vous avez enregistré ${saved}.` : `The app detected ${reps(detected)}. You saved ${saved}.`;
+  return fr ? `L’appli a détecté ${reps(detected)}. Vous avez enregistré ${saved}.` : `The app detected ${reps(detected)}. You saved ${saved}.`;
 }
 
 /**

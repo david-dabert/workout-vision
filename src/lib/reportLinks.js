@@ -40,9 +40,9 @@ function reportLines({ lift, liftName, counted, userCount, version, fr, partial 
   const c = fr ? `${NBSP}: ` : ': ';
   return [
     `${fr ? 'Exercice' : 'Lift'}${c}${liftName} (${lift})`,
-    `${fr ? 'Compté par l’app' : 'Counted by the app'}${c}${counted == null ? (failure ? (fr ? 'rien, la vidéo n’a pas pu être lue' : 'none, the video could not be read') : partial ? partialLine(fr) : refusedLine(fr)) : counted}`,
+    `${fr ? 'Compté par l’appli' : 'Counted by the app'}${c}${counted == null ? (failure ? (fr ? 'rien, la vidéo n’a pas pu être lue' : 'none, the video could not be read') : partial ? partialLine(fr) : refusedLine(fr)) : counted}`,
     `${fr ? 'Compté par moi' : 'Counted by me'}${c}${userCount ?? ''}`,
-    ...(version ? [`${fr ? 'Version de l’app' : 'App version'}${c}${version}`] : []),
+    ...(version ? [`${fr ? 'Version de l’appli' : 'App version'}${c}${version}`] : []),
     ...readLines({ decoder, read, fr, c }),
     ...(failure ? [`${fr ? 'Erreur' : 'Error'}${c}${failure}`] : []),
     '',
@@ -62,8 +62,8 @@ export function reportEmailUrl({ lift, liftName = lift, counted, userCount, vers
   // set has no count of the app's, and the user's is theirs to write.
   const app = counted == null ? (fr ? 'rien' : 'none') : counted, me = userCount ?? (fr ? `${NBSP}?` : '?');
   const subject = fr
-    ? `Workout Vision${NBSP}: ${liftName}, l’app ${app}, moi${userCount == null ? me : ` ${me}`}`
-    : `Workout Vision: ${liftName}, the app ${app}, me${userCount == null ? me : ` ${me}`}`;
+    ? `WorkoutVision${NBSP}: ${liftName}, l’appli ${app}, moi${userCount == null ? me : ` ${me}`}`
+    : `WorkoutVision: ${liftName}, the app ${app}, me${userCount == null ? me : ` ${me}`}`;
   const body = reportLines({ lift, liftName, counted, userCount, version, fr, partial, decoder, read, failure }).join('\r\n');
   return `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
@@ -86,12 +86,12 @@ export function challengeShare({ liftName, count, counted = count, fr, url }) {
   const reps = fr ? (count <= 1 ? 'répétition' : 'répétitions') : (count === 1 ? 'rep' : 'reps');
   const e = count <= 1 ? 'e' : 'es';
   const what = counted === count
-    ? (fr ? `${count} ${reps}, compté${e} par Workout Vision sur mon téléphone` : `${count} ${reps}, counted by Workout Vision on my phone`)
-    : (fr ? `${count} ${reps} (Workout Vision en a compté ${counted} sur mon téléphone)` : `${count} ${reps} (Workout Vision counted ${counted} on my phone)`);
+    ? (fr ? `${count} ${reps}, compté${e} par WorkoutVision sur mon téléphone` : `${count} ${reps}, counted by WorkoutVision on my phone`)
+    : (fr ? `${count} ${reps} (WorkoutVision en a compté ${counted} sur mon téléphone)` : `${count} ${reps} (WorkoutVision counted ${counted} on my phone)`);
   const text = fr
     ? `${liftName}${NBSP}: ${what}. Vous relevez le défi${NBSP}?`
     : `${liftName}: ${what}. Can you beat it?`;
-  return { title: 'Workout Vision', text, url };
+  return { title: 'WorkoutVision', text, url };
 }
 
 /**
