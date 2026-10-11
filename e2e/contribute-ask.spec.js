@@ -123,7 +123,7 @@ test('after the first set kept: one sentence, the full list on a tap, and a yes 
   await expect(ask.getByRole('button')).toHaveText(['Quoi exactement ?', 'Oui, aider', 'Pas maintenant']);
   expect(await stored(page, 'wv_contribute')).toBe(null);
   await ask.getByRole('button', { name: 'Oui, aider' }).click();
-  await expect(ask.locator('[role="status"]')).toHaveText('Merci. Vous pourrez arrêter à tout moment dans vos séries.');
+  await expect(ask.locator('[role="status"]')).toHaveText('Merci. Vous pourrez arrêter à tout moment dans Vos séries.');
   // The choice stored as the history's start stores it, and the set just saved kept as a contribution.
   expect(await stored(page, 'wv_contribute')).toBe('yes');
   const [saved] = await workouts(page);

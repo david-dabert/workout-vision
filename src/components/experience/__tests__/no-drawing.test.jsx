@@ -7,6 +7,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 vi.mock('../lift-scenes', () => ({ hasFigure: () => false, liftView: () => null, topPose: () => null, META: {}, createLiftScene: () => null }));
 vi.mock('../entry-scene', () => ({ Body: class {}, mapPose: () => null, DPR: 1, LITE: false }));
 vi.mock('../stage-loop', () => ({ addLayer: () => () => {}, presence: () => 0 }));
+// The guide reads the language from the app; here it is French.
+vi.mock('../../../lib/LanguageContext', async (importOriginal) => ({ ...(await importOriginal()), useT: () => ({ lang: 'fr', setLang: () => {} }) }));
 
 describe('an exercise with no fitting drawing', async () => {
   const { getGuideExercise } = await import('../../../lib/exerciseGuide');
@@ -18,6 +20,16 @@ describe('an exercise with no fitting drawing', async () => {
     expect(fr).toContain('Assis face à l’avant');
     expect(en).toContain('Seated, facing forward');
     expect(fr + en).not.toContain('<img');
+  });
+
+  // Audit of the live screens, 11 October: the guide a beginner sees before filming (App.jsx guideFirst) gave the words
+  // no language, so a French beginner read them in English.
+  it('shows them in French on the guide a beginner sees before filming', async () => {
+    const { default: Guide } = await import('../Guide');
+    const html = renderToStaticMarkup(<Guide lift="machine_seated_back_extension" onClose={() => {}} onChoose={() => {}} />);
+    expect(html).toContain('data-testid="guide-focus"');
+    expect(html).toContain('Assis face à l’avant');
+    expect(html).not.toContain('Seated, facing forward');
   });
 
   it('has an empty arch beside its name', () => {
