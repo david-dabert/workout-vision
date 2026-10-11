@@ -94,7 +94,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Date} [o.previousSet.date]
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, reps, first, previousSet, symmetry }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -127,6 +127,16 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       summary.push(fr
         ? `Durée${colon}${sign}${decimal(Math.abs(diff), fr)}${NBSP}s du début à la fin`
         : `Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`);
+    }
+
+    // Bilateral symmetry (when both limbs were visible and measured)
+    if (symmetry && symmetry.symmetryScore != null) {
+      const statusLabel = symmetry.status === 'balanced'
+        ? (fr ? 'Équilibrée' : 'Balanced')
+        : symmetry.dominantSide === 'left'
+        ? (fr ? `Gauche dominante (+${symmetry.romDiffDeg}°)` : `Left dominant (+${symmetry.romDiffDeg}°)`)
+        : (fr ? `Droite dominante (+${symmetry.romDiffDeg}°)` : `Right dominant (+${symmetry.romDiffDeg}°)`);
+      summary.push((fr ? 'Symétrie bilatérale' : 'Bilateral symmetry') + colon + `${symmetry.symmetryScore}${NBSP}% (${statusLabel})`);
     }
 
     // Previous set comparison.
@@ -169,6 +179,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     columns,
     rows,
     summary,
+    symmetry: symmetry ?? null,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim(),

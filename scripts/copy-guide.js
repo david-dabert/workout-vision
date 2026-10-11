@@ -1,9 +1,24 @@
 // Package artwork is CC BY-SA 4.0. Preserve source metadata and licence alongside resized WebP adaptations.
-import { readFile, mkdir, writeFile, copyFile } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, copyFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
-import sharp from 'sharp';
+
 const source = 'node_modules/@bryllim/workout-guide';
 const destination = 'public/guide';
+
+const sourceExists = await access(source).then(() => true, () => false);
+if (!sourceExists) {
+  console.log('[copy-guide] Workout guide source not present in node_modules, skipping');
+  process.exit(0);
+}
+
+let sharp;
+try {
+  sharp = (await import('sharp')).default;
+} catch {
+  console.log('[copy-guide] sharp module not installed, skipping artwork conversion');
+  process.exit(0);
+}
+
 const manifest = JSON.parse(await readFile(join(source, 'manifest.json'), 'utf8'));
 await mkdir(destination, { recursive: true });
 let frames = 0;

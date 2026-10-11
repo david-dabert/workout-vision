@@ -297,6 +297,18 @@ describe('rep details', () => {
     expect(s.summary).toEqual([]);
   });
 
+  it('formats bilateral symmetry in summary when symmetry data is provided', () => {
+    const sym = { symmetryScore: 92, asymmetryPct: 8, dominantSide: 'right', romDiffDeg: 6, status: 'balanced' };
+    const s = reportSheet({ ...base, reps, first: 'concentric', symmetry: sym });
+    expect(s.summary.join('\n')).toContain('Symétrie bilatérale');
+    expect(s.summary.join('\n')).toContain('92');
+    expect(s.summary.join('\n')).toContain('Équilibrée');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', symmetry: { ...sym, status: 'mild_asymmetry', dominantSide: 'left', romDiffDeg: 14 } });
+    expect(sEn.summary.join('\n')).toContain('Bilateral symmetry');
+    expect(sEn.summary.join('\n')).toContain('Left dominant (+14°)');
+  });
+
   it('runs a long table onto the next page', async () => {
     const pdfText = async blob => Buffer.from(await blob.arrayBuffer()).toString('latin1');
     const many = Array.from({ length: 16 }, (_, i) => rep(i * 3, 1.9, 90, 0.8, 1.0));

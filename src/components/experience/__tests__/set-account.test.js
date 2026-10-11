@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { shortReps, slowdown, setAccount, ordinal } from '../set-account';
+import { shortReps, slowdown, setAccount, ordinal, estimateRir } from '../set-account';
 import { setTempo } from '../tempo';
 
 // A rep: start, duration, range, concentric and eccentric seconds.
@@ -137,5 +137,47 @@ describe('the tempo on the result screen, as the report writes it', () => {
       const tempo = sheet.summary.find(l => l.startsWith('Tempo')).replace(/^Tempo ?: /, '');
       expect(a.lines[0]).toBe(fr ? `Tempo moyen : ${tempo}.` : `Average tempo: ${tempo}.`);
     }
+  });
+});
+
+describe('Velocity-Based Training (VBT) RIR Estimation (Sánchez-Medina & González-Badillo 2011)', () => {
+  it('returns null when slowdown is null or undefined', () => {
+    expect(estimateRir(null)).toBeNull();
+    expect(estimateRir(undefined)).toBeNull();
+  });
+
+  it('classifies failure/near-failure tier (>=35% slowdown)', () => {
+    const res = estimateRir(38, true);
+    expect(res?.rir).toBe('0–1');
+    expect(res?.tier).toBe('failure');
+    expect(res?.label).toContain('0–1 rép. en réserve');
+  });
+
+  it('classifies optimal hypertrophy tier (20% <= slowdown < 35%)', () => {
+    const res = estimateRir(25, false);
+    expect(res?.rir).toBe('1–2');
+    expect(res?.tier).toBe('optimal');
+    expect(res?.label).toContain('1–2 reps in reserve');
+  });
+
+  it('classifies moderate intensity tier (10% <= slowdown < 20%)', () => {
+    const res = estimateRir(15, true);
+    expect(res?.rir).toBe('3–4');
+    expect(res?.tier).toBe('moderate');
+    expect(res?.label).toContain('3–4 rép. en réserve');
+  });
+
+  it('classifies warm-up / high reserve tier (<10% slowdown)', () => {
+    const res = estimateRir(5, false);
+    expect(res?.rir).toBe('5+');
+    expect(res?.tier).toBe('light');
+    expect(res?.label).toContain('5+ reps in reserve');
+  });
+
+  it('attaches rir property to setAccount without breaking lines', () => {
+    const reps = even(6); reps[4].concentricSec = 1.25; reps[5].concentricSec = 1.25;
+    const a = setAccount({ reps, first: 'concentric', fr: true, name: 'Curl', count: 6, previous: null, nth: null });
+    expect(a.rir).toBeDefined();
+    expect(a.rir?.rir).toBe('1–2');
   });
 });

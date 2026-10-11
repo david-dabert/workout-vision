@@ -129,8 +129,9 @@ export default function History({ onClose }) {
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds} s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
-                {(counted !== w.reps || repsBest.has(w.id)) && <span className="hist-tags">
+                {(counted !== w.reps || repsBest.has(w.id) || w.symmetry?.symmetryScore != null) && <span className="hist-tags">
                   {repsBest.has(w.id) && <span className="hist-tag is-best">{fr ? 'Record' : 'Best'}</span>}
+                  {w.symmetry?.symmetryScore != null && <span className="hist-tag">{w.symmetry.symmetryScore}% {fr ? 'sym.' : 'sym.'}</span>}
                   {counted !== w.reps && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
                 </span>}
               </button>
@@ -151,6 +152,6 @@ export default function History({ onClose }) {
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
-      setId={report.id} leaving={leaving} onBack={closeReport} />}
+      setId={report.id} symmetry={report.symmetry} leaving={leaving} onBack={closeReport} />}
   </>;
 }

@@ -283,6 +283,7 @@ export interface WorkoutRecord {
   repDetails?: unknown[];
   repDetailsVersion?: number;
   corrected?: boolean;
+  symmetry?: unknown;
 }
 
 export interface RepCounterDiagnostics {

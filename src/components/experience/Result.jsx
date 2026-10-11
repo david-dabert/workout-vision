@@ -272,6 +272,7 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
         correctedResult: n !== count ? { reps: n } : null,
         // Rep details measured with step 3c's boundaries; older sets' details are not shown.
         repDetailsVersion: 2,
+        symmetry: result.symmetry ?? null,
       });
       refreshSets();
       // The sets were never read: read them now, the one just saved first, and count the others.
@@ -353,6 +354,19 @@ export default function Result({ result, lift, covered, onClose, onReport, onRep
   // The account (A) and the tip (B); the cheer (C) and the notes, which a beginner finds open.
   const plain = <>
     {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
+    {account.rir && <p className="acc-line acc-rir" data-testid="acc-rir">
+      <b>{fr ? 'Effort estimé (RIR)' : 'Estimated effort (RIR)'} :</b> {account.rir.label}.
+    </p>}
+    {result.symmetry && (
+      <p className="acc-line acc-symmetry" data-testid="acc-symmetry">
+        <b>{fr ? 'Symétrie bilatérale' : 'Bilateral symmetry'} :</b> {result.symmetry.symmetryScore} % ({
+          result.symmetry.status === 'balanced'
+            ? (fr ? 'Équilibrée' : 'Balanced')
+            : (fr ? `${result.symmetry.dominantSide === 'left' ? 'Gauche dominante' : 'Droite dominante'} (+${result.symmetry.romDiffDeg}°)`
+                  : `${result.symmetry.dominantSide === 'left' ? 'Left dominant' : 'Right dominant'} (+${result.symmetry.romDiffDeg}°)`)
+        }).
+      </p>
+    )}
     <p className="acc-tip">{account.tip}</p>
   </>;
   const more = <>
