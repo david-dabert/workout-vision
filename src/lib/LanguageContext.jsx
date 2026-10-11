@@ -111,14 +111,10 @@ export function useT() {
   return ctx;
 }
 
-// Module-level t() for non-React code (canvas overlays, utilities).
-// Reads directly from localStorage so it stays in sync.
+// Module-level t() for non-React code (canvas overlays, utilities, the crash screen).
+// The app's language, read again on each call: the one chosen in the app, else the phone's (detectLang).
 export function tModule(key, params) {
-  let lang = 'en';
-  try {
-    const saved = localStorage.getItem('wv_lang');
-    if (saved === 'en' || saved === 'fr') lang = saved;
-  } catch (_) {}
+  const lang = detectLang();
   const data = locales[lang] || enData;
   let str = data[key] || enData[key] || key;
   if (params) {

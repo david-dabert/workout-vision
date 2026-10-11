@@ -434,7 +434,7 @@ describe('a programme the coach changed and sent again', () => {
   it('remembers the earlier version, which stays listed; another person’s programme is apart', () => {
     vi.stubGlobal('localStorage', memory());
     try {
-      const id1 = keepReceived(v1, 1000), other = keepReceived({ ...v1, who: 'Zine' }, 1500), id2 = keepReceived(v2, 2000);
+      const id1 = keepReceived(v1, 1000).id, other = keepReceived({ ...v1, who: 'Zine' }, 1500).id, id2 = keepReceived(v2, 2000).id;
       const list = loadReceived();
       expect(list.map(r => r.id)).toEqual([id2, other, id1]);
       expect(list[0].previous).toEqual([id1]);
@@ -452,6 +452,19 @@ describe('a programme the coach changed and sent again', () => {
     } finally { vi.unstubAllGlobals(); }
   });
 
+  // Safari with every cookie blocked throws on localStorage (11 October 2026): the programme is not kept, and says so,
+  // so the screen leaves the link in the address and the app holds it for the visit (Programme.jsx, App.jsx).
+  it('says whether the phone kept the programme', () => {
+    vi.stubGlobal('localStorage', memory());
+    try { expect(keepReceived(v1, 1000)).toEqual({ id: programmeId(v1), kept: true }); } finally { vi.unstubAllGlobals(); }
+    const refused = () => { throw new DOMException('The operation is insecure.', 'SecurityError'); };
+    vi.stubGlobal('localStorage', { getItem: refused, setItem: refused, removeItem: refused });
+    try {
+      expect(keepReceived(v1, 1000)).toEqual({ id: programmeId(v1), kept: false });
+      expect(loadReceived()).toEqual([]);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
   it('puts a set of the earlier version on the exercise with the target it was filmed for, when the exercise is there twice', () => {
     const w1 = { ...v1, items: [{ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' }, { key: 'squat', sets: 2, reps: 20, rest: 60, note: '' }] };
     const w2 = { ...w1, items: [{ key: 'bicep_curl', sets: 3, reps: 10, rest: 60, note: '' }, ...w1.items] };
@@ -466,7 +479,7 @@ describe('a programme the coach changed and sent again', () => {
   it('counts the sets of the day filmed from the earlier version, each with its exercise', () => {
     vi.stubGlobal('localStorage', memory());
     try {
-      const id1 = keepReceived(v1, 1000), id2 = keepReceived(v2, 2000), now = new Date(2026, 9, 9, 18, 30);
+      const id1 = keepReceived(v1, 1000).id, id2 = keepReceived(v2, 2000).id, now = new Date(2026, 9, 9, 18, 30);
       const at = m => new Date(2026, 9, 9, 18, m).getTime();
       const sets = [
         { exercise: 'squat', reps: 10, createdAt: at(1), planned: plannedOf(id1, 0, v1.items[0]) },

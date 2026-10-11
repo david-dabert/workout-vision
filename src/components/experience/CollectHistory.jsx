@@ -5,17 +5,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { collectOn, collectedFiles, forgetCollected } from '../../lib/phoneCollect';
 import { COLLECT } from './collect-copy';
-
-// A cancel, or a second sheet asked while one is open, is no failure (as video-export.js shareFailed, kept here so
-// the history does not load the replay's code).
-const shareFailed = e => e?.name !== 'AbortError' && e?.name !== 'InvalidStateError';
+import { shareSheet } from '../../lib/shareSheet';
 
 export default function CollectHistory({ fr, style, sets = null }) {
   const t = COLLECT[fr ? 'fr' : 'en'];
   const [files, setFiles] = useState(null);
   const [note, setNote] = useState('');
   const [offered, setOffered] = useState(null); // names shared or downloaded, offered for clearing
-  const sharing = useRef(false), downloadNext = useRef(false);
+  const shares = useRef(null);
+  shares.current ??= shareSheet();
   const on = collectOn();
 
   useEffect(() => {
@@ -35,24 +33,17 @@ export default function CollectHistory({ fr, style, sets = null }) {
   }
 
   function send() {
-    if (!files?.length || sharing.current) return;
+    if (!files?.length || !shares.current.begin()) return; // one tap at a time
     const list = files;
     setNote(''); setOffered(null);
-    if (!downloadNext.current && typeof navigator.share === 'function' && (typeof navigator.canShare !== 'function' || navigator.canShare({ files: list }))) {
-      sharing.current = true;
+    if (shares.current.shares(typeof navigator.share === 'function' && (typeof navigator.canShare !== 'function' || navigator.canShare({ files: list })))) {
+      // Nothing waits on the sheet (shareSheet.js): a refusal says so, and the next tap downloads.
       navigator.share({ files: list, title: t.shareTitle }).then(() => {
-        sharing.current = false;
         setOffered(list.map(f => f.name));
         setNote(t.shared(list.length));
-      }, e => {
-        sharing.current = false;
-        if (!shareFailed(e)) return;
-        downloadNext.current = true;
-        setNote(t.shareFailed);
-      });
+      }, e => { if (shares.current.failed(e)) setNote(t.shareFailed); });
       return;
     }
-    downloadNext.current = false;
     download(list);
     setOffered(list.map(f => f.name));
     setNote(t.downloaded(list.length));

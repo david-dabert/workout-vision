@@ -88,7 +88,7 @@ export default function Guide({ onClose, onChoose, lift }) {
       <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Regardez le mouvement, puis filmez votre série. Ce guide s’affiche avant vos trois premières séries.' : 'Watch the movement, then film your set. This guide shows before your first three sets.'}</p>
       <div className="guide-focus" data-testid="guide-focus" data-reveal style={{ '--i': 2 }}>
         <p className="item-name">{fr ? focus.fr : focus.name}</p>
-        <GuideFrames exercise={focus} />
+        <GuideFrames exercise={focus} fr={fr} />
         <button className="btn-primary press" onClick={() => onChoose(focus.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
         <button className="btn-ghost is-s press" onClick={() => setFocus(null)}>{fr ? 'Tous les exercices' : 'All exercises'}</button>
       </div>

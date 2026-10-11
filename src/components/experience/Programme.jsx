@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { dayWords, decodeProgramme, lastDayOf, plainPayload, plainResultsPayload, plannedOf, programmeLink, progressOf, resultsLink, resultsOf } from './programme';
+import { dayWords, decodeProgramme, lastDayOf, plainPayload, plainResultsPayload, plannedOf, programmeId, programmeLink, progressOf, resultsLink, resultsOf } from './programme';
 import { onHomeScreen } from '../../lib/keep-sets';
 import { inAppBrowser } from '../../lib/install';
 import SetCells from './SetCells';
@@ -20,12 +20,14 @@ const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
  * The client's programme (6 October 2026): opened from the coach's link (#programme=…, programme.js), or from the
  * choice once kept. Each exercise with its target; a tap films it (onStart, the usual filming screen). The sets saved
  * from it today show beside the target: planned against counted (progressOf). Kept on this phone only.
- * payload: the link's payload when the app was opened from it, else null.
+ * payload: the link's payload when the app was opened from it, else null. held: a programme opened in this visit that
+ * the phone could not keep (storage refused), which the app holds for the visit (App.jsx) and gets back through onHold:
+ * the return from filming, or from the choice, finds it.
  */
-export default function Programme({ payload, onClose, onStart }) {
+export default function Programme({ payload, held = null, onHold, onClose, onStart }) {
   const { lang } = useT(), fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
   // 'opening' while a link is read; then the programme kept, an error, or none.
-  const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived())));
+  const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived(), held && programmeId(held), held)));
   const [confirm, setConfirm] = useState(false);
   const [note, setNote] = useState('');
   // The in-app browser's copy of the programme's link: its own line, and the link to select when the copy is refused.
@@ -43,9 +45,10 @@ export default function Programme({ payload, onClose, onStart }) {
     decodeProgramme(payload).then(r => {
       if (!live) return;
       if (!r.ok) { setState({ kind: 'error', error: r.error }); return; }
-      const id = keepReceived(r.programme);
-      // The address keeps no programme once it is on the phone: a reload, or Back, finds it kept.
-      try { history.replaceState(history.state, '', '#programme'); } catch { /* the address keeps it; nothing breaks */ }
+      const { id, kept } = keepReceived(r.programme);
+      // The address keeps no programme once it is on the phone: a reload, or Back, finds it kept. Not kept (storage
+      // refused), the address keeps the link, so a reload still opens it.
+      if (kept) try { history.replaceState(history.state, '', '#programme'); } catch { /* the address keeps it; nothing breaks */ }
       setState(current(loadReceived(), id, r.programme));
     });
     return () => { live = false; };
@@ -53,8 +56,11 @@ export default function Programme({ payload, onClose, onStart }) {
 
   const show = id => { openReceived(id); setConfirm(false); setState(current(loadReceived(), id)); screenRef.current?.scrollTo?.({ top: 0 }); };
   // A programme from a link pasted in (PasteLink), kept as one opened from its link.
-  const keepPasted = programme => { const id = keepReceived(programme); setConfirm(false); setState(current(loadReceived(), id, programme)); screenRef.current?.scrollTo?.({ top: 0 }); };
+  const keepPasted = programme => { const { id } = keepReceived(programme); setConfirm(false); setState(current(loadReceived(), id, programme)); screenRef.current?.scrollTo?.({ top: 0 }); };
   const remove = id => { removeReceived(id); setConfirm(false); setState(current(loadReceived())); };
+  // The programme shown that the phone could not keep goes to the app for the visit; one kept, or none, ends it.
+  const unkept = state.kind === 'programme' && state.entry.unkept ? state.entry.programme : null;
+  useEffect(() => { if (state.kind === 'programme' || state.kind === 'none') onHold?.(unkept); }, [state.kind, unkept, onHold]);
 
   const top = <div className="topbar">
     <button className="icon-btn press" onClick={onClose} aria-label={c.back}><BackIcon /></button>
@@ -152,7 +158,7 @@ export default function Programme({ payload, onClose, onStart }) {
         <p className="foot pro-foot">{past ? c.resultsPrivacyOf(pastDay) : c.resultsPrivacy}</p>
       </div>}
       <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>
-      <p className="foot pro-foot">{c.clientPrivacy}</p>
+      <p className="foot pro-foot" data-testid={entry.unkept ? 'programme-not-kept' : undefined}>{entry.unkept ? c.notKept : c.clientPrivacy}</p>
       {others.length > 0 && <>
         <h2 className="section-head">{c.othersHead}</h2>
         <ul className="pro-drafts">{others.map(o => <li key={o.id}>
@@ -215,9 +221,10 @@ function PasteLink({ c, onOpen }) {
   </form>;
 }
 
-// The programme to show: the one named, else the one opened last; the others listed under it.
+// The programme to show: the one named, else the one opened last; the others listed under it. The one named but not
+// on the phone (fallback: storage refused) is shown as unkept.
 function current(list, id = null, fallback = null) {
-  const entry = list.find(r => r.id === id) || (fallback && id ? { id, programme: fallback } : null) || list[0];
+  const entry = list.find(r => r.id === id) || (fallback && id ? { id, programme: fallback, unkept: true } : null) || list[0];
   if (!entry) return { kind: 'none' };
   return { kind: 'programme', entry, others: list.filter(r => r.id !== entry.id) };
 }
