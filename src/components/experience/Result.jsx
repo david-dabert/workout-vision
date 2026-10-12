@@ -714,6 +714,13 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     {account.rir && <p className="acc-line acc-rir" data-testid="acc-rir">
       <b>{fr ? 'Effort estimé (RIR)' : 'Estimated effort (RIR)'} :</b> {account.rir.label}.
     </p>}
+    {result.isometric?.isHold && (
+      <p className="acc-line acc-isometric" data-testid="acc-isometric">
+        <b>{fr ? 'Maintien isométrique (TUT)' : 'Isometric hold (TUT)'} :</b> {result.isometric.tutSeconds} s ({
+          fr ? `stabilité ±${result.isometric.stabilityDeg}°` : `stability ±${result.isometric.stabilityDeg}°`
+        }{result.isometric.breakdownTime ? (fr ? `, rupture à ${result.isometric.breakdownTime} s` : `, breakdown at ${result.isometric.breakdownTime} s`) : ''}).
+      </p>
+    )}
     {result.symmetry && (
       <p className="acc-line acc-symmetry" data-testid="acc-symmetry">
         <b>{fr ? 'Symétrie bilatérale' : 'Bilateral symmetry'} :</b> {result.symmetry.symmetryScore} % ({

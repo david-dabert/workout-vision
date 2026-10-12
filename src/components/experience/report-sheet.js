@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -254,6 +254,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     }
     if (rpe != null && Number.isFinite(rpe)) {
       summary.push((fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)') + colon + `${rpe}/10`);
+    }
+    if (isometric && isometric.isHold) {
+      const tut = sec(isometric.tutSeconds);
+      const stab = decimal(isometric.stabilityDeg, fr);
+      const breakText = isometric.breakdownTime != null ? (fr ? `, rupture à ${sec(isometric.breakdownTime)}` : `, breakdown at ${sec(isometric.breakdownTime)}`) : '';
+      const isoText = `${tut} (${fr ? 'stabilité' : 'stability'} ±${stab}°${breakText})`;
+      summary.push((fr ? 'Maintien isométrique (TUT)' : 'Isometric hold (TUT)') + colon + isoText);
     }
 
     // Previous set comparison.

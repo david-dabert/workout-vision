@@ -53,6 +53,16 @@ describe('reportSheet', () => {
     expect(enSheet.summary.some(line => line.includes('Perceived exertion (RPE)') && line.includes('9/10'))).toBe(true);
   });
 
+  it('formats isometric hold metrics (TUT, stability, breakdown) in summary', () => {
+    const reps = [{ startTime: 0, endTime: 30, romDegrees: 15, concentricSec: 15, eccentricSec: 15 }];
+    const iso = { isHold: true, tutSeconds: 42.5, stabilityDeg: 2.1, breakdownTime: 38.0 };
+    const frSheet = reportSheet({ ...base, isometric: iso, reps });
+    expect(frSheet.summary.some(line => line.includes('Maintien isométrique (TUT)') && line.includes('42,5') && line.includes('stabilité ±2,1°') && line.includes('rupture à 38,0'))).toBe(true);
+
+    const enSheet = reportSheet({ ...base, lang: 'en', isometric: iso, reps });
+    expect(enSheet.summary.some(line => line.includes('Isometric hold (TUT)') && line.includes('42.5') && line.includes('stability ±2.1°') && line.includes('breakdown at 38.0'))).toBe(true);
+  });
+
   it('gives the level in the user\'s words, and leaves it out when none was chosen', () => {
     expect(reportSheet({ ...base, level: 'beginner' }).people).toEqual([['Niveau', 'Débutant']]);
     expect(reportSheet({ ...base, level: 'intermediate' }).people).toEqual([['Niveau', 'Intermédiaire']]);

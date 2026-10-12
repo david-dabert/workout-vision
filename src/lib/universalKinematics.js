@@ -149,7 +149,7 @@ export function extractFrameKinematics(wl) {
 export function smoothSeries(values, windowSize = 7) {
   const n = values.length;
   if (n === 0) return [];
-  const valid = values.map((v, i) => (v != null && Number.isFinite(v) ? v : null));
+  const valid = values.map(v => (v != null && Number.isFinite(v) ? v : null));
 
   // Linear interpolation for missing gaps up to 5 samples
   const filled = [...valid];
@@ -459,12 +459,7 @@ export function analyzeUniversalLandmarks(worldLandmarks, timestamps, lift) {
  * Streaming video analysis for any catalog movement
  */
 export async function analyzeUniversalVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {} } = {}) {
-  let worker;
-  try {
-    worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
-  } catch (err) {
-    throw err;
-  }
+  const worker = new Worker(new URL('./corePoseWorker.js', import.meta.url));
 
   let ended = false;
   const endWorker = () => {
