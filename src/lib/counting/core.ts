@@ -526,7 +526,7 @@ function countSide(
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, !!def.lift);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow');
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
