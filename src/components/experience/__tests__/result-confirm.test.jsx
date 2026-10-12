@@ -150,3 +150,46 @@ describe('the keys’ outlines', () => {
     expect(css).toMatch(/\.res-step \{[^}]*width: 64px; height: 64px/);
   });
 });
+
+describe('biomechanical symmetry and trunk stability in result', () => {
+  it('renders symmetry line, trunk shift, and actionable coaching advice', async () => {
+    const symResult = {
+      ...nine,
+      symmetry: {
+        symmetryScore: 78,
+        status: 'notable_asymmetry',
+        dominantSide: 'left',
+        romDiffDeg: 24,
+        trunkShift: {
+          significantShift: true,
+          maxLateralTiltDeg: 6.8,
+          direction: 'left',
+        },
+        coaching: {
+          hasNotableAsymmetry: true,
+          adviceFr: 'Asymétrie notable (+24° côté gauche). Intégrez du travail unilatéral avec haltères.',
+          adviceEn: 'Notable asymmetry detected (+24° on left side). Introduce unilateral dumbbell exercises.',
+        },
+      },
+    };
+    const fr = await render('fr', symResult);
+    expect(fr).toContain('data-testid="acc-symmetry"');
+    expect(fr).toContain('78 %');
+    expect(fr).toContain('Gauche dominante (+24°)');
+    expect(fr).toContain('data-testid="acc-trunk-shift"');
+    expect(fr).toContain('6.8° vers la gauche');
+    expect(fr).toContain('data-testid="acc-asymmetry-advice"');
+    expect(fr).toContain('Conseil biomécanique');
+    expect(fr).toContain('haltères');
+
+    const en = await render('en', symResult);
+    expect(en).toContain('data-testid="acc-symmetry"');
+    expect(en).toContain('Left dominant (+24°)');
+    expect(en).toContain('data-testid="acc-trunk-shift"');
+    expect(en).toContain('6.8° towards the left');
+    expect(en).toContain('data-testid="acc-asymmetry-advice"');
+    expect(en).toContain('Biomechanical cue');
+    expect(en).toContain('dumbbell');
+  });
+});
+

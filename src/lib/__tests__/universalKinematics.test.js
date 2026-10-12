@@ -74,6 +74,21 @@ describe('Universal Kinematic Engine', () => {
     expect(smoothed[4]).toBeLessThan(115);
   });
 
+  it('bridges extended 8-10 sample dropouts caused by camera motion or dim lighting', () => {
+    // 25 samples with an 8-sample consecutive dropout (e.g. fast pan or lighting flare)
+    const series = [150, 148, 146, 144, 142, null, null, null, null, null, null, null, null, 126, 124, 122, 120, 118, 116, 114, 112, 110, 108, 106, 104];
+    const smoothed = smoothSeries(series, 7);
+    expect(smoothed.length).toBe(series.length);
+    // None of the internal dropout samples should remain null
+    for (let i = 0; i < series.length; i++) {
+      expect(smoothed[i]).not.toBeNull();
+      expect(Number.isFinite(smoothed[i])).toBe(true);
+    }
+    // Monotonic descent preserved across the bridged dropout
+    expect(smoothed[5]).toBeLessThan(smoothed[4]);
+    expect(smoothed[12]).toBeGreaterThan(smoothed[13]);
+  });
+
   it('calculates SPARC motor smoothness', () => {
     const smoothSpeeds = Array.from({ length: 30 }, (_, i) => 20 * Math.sin((i / 30) * Math.PI));
     const score = calculateSPARC(smoothSpeeds);

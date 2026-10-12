@@ -336,6 +336,33 @@ describe('rep details', () => {
     expect(sEn.summary.join('\n')).toContain('Left dominant (+14°)');
   });
 
+  it('formats trunk shift and balance coaching cues in summary when detected', () => {
+    const sym = {
+      symmetryScore: 82,
+      asymmetryPct: 18,
+      dominantSide: 'left',
+      romDiffDeg: 22,
+      status: 'notable_asymmetry',
+      trunkShift: { hasShift: true, maxTrunkTiltDeg: 7.5, direction: 'left' },
+      coaching: {
+        hasNotableAsymmetry: true,
+        adviceFr: 'Asymétrie notable (+22° côté gauche). Travail unilatéral avec haltères conseillé.',
+        adviceEn: 'Notable asymmetry detected (+22° on left side). Introduce unilateral dumbbell exercises.',
+      },
+    };
+    const sFr = reportSheet({ ...base, reps, first: 'concentric', symmetry: sym });
+    expect(sFr.summary.join('\n')).toContain('Décalage latéral du tronc');
+    expect(sFr.summary.join('\n')).toContain('7.5° (vers la gauche)');
+    expect(sFr.summary.join('\n')).toContain('Conseil d’équilibrage');
+    expect(sFr.summary.join('\n')).toContain('haltères');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', symmetry: sym });
+    expect(sEn.summary.join('\n')).toContain('Lateral trunk shift');
+    expect(sEn.summary.join('\n')).toContain('7.5° (towards left)');
+    expect(sEn.summary.join('\n')).toContain('Balance coaching cue');
+    expect(sEn.summary.join('\n')).toContain('dumbbell');
+  });
+
   it('formats form consistency and movement smoothness in summary', () => {
     const consistency = { score: 88, rating: 'high', avgDeviationDeg: 6.2, mostInconsistentRep: 4 };
     const smoothness = { avgSparc: -1.75, quality: 'very_smooth' };

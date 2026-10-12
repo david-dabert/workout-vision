@@ -192,6 +192,17 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         ? (fr ? `Gauche dominante (+${symmetry.romDiffDeg}°)` : `Left dominant (+${symmetry.romDiffDeg}°)`)
         : (fr ? `Droite dominante (+${symmetry.romDiffDeg}°)` : `Right dominant (+${symmetry.romDiffDeg}°)`);
       summary.push((fr ? 'Symétrie bilatérale' : 'Bilateral symmetry') + colon + `${symmetry.symmetryScore}${NBSP}% (${statusLabel})`);
+
+      if (symmetry.trunkShift?.hasShift || symmetry.trunkShift?.significantShift) {
+        const tilt = symmetry.trunkShift.maxTrunkTiltDeg ?? symmetry.trunkShift.maxLateralTiltDeg;
+        const dirText = symmetry.trunkShift.direction === 'left'
+          ? (fr ? 'vers la gauche' : 'towards left')
+          : (fr ? 'vers la droite' : 'towards right');
+        summary.push((fr ? 'Décalage latéral du tronc' : 'Lateral trunk shift') + colon + `${tilt}° (${dirText})`);
+      }
+      if (symmetry.coaching?.hasNotableAsymmetry) {
+        summary.push((fr ? 'Conseil d’équilibrage' : 'Balance coaching cue') + colon + (fr ? symmetry.coaching.adviceFr : symmetry.coaching.adviceEn));
+      }
     }
 
     // Form consistency (DTW)

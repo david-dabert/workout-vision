@@ -722,14 +722,31 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       </p>
     )}
     {result.symmetry && (
-      <p className="acc-line acc-symmetry" data-testid="acc-symmetry">
-        <b>{fr ? 'Symétrie bilatérale' : 'Bilateral symmetry'} :</b> {result.symmetry.symmetryScore} % ({
-          result.symmetry.status === 'balanced'
-            ? (fr ? 'Équilibrée' : 'Balanced')
-            : (fr ? `${result.symmetry.dominantSide === 'left' ? 'Gauche dominante' : 'Droite dominante'} (+${result.symmetry.romDiffDeg}°)`
-                  : `${result.symmetry.dominantSide === 'left' ? 'Left dominant' : 'Right dominant'} (+${result.symmetry.romDiffDeg}°)`)
-        }).
-      </p>
+      <>
+        <p className="acc-line acc-symmetry" data-testid="acc-symmetry">
+          <b>{fr ? 'Symétrie bilatérale' : 'Bilateral symmetry'} :</b> {result.symmetry.symmetryScore} % ({
+            result.symmetry.status === 'balanced'
+              ? (fr ? 'Équilibrée' : 'Balanced')
+              : (fr ? `${result.symmetry.dominantSide === 'left' ? 'Gauche dominante' : 'Droite dominante'} (+${result.symmetry.romDiffDeg}°)`
+                    : `${result.symmetry.dominantSide === 'left' ? 'Left dominant' : 'Right dominant'} (+${result.symmetry.romDiffDeg}°)`)
+          }).
+        </p>
+        {result.symmetry.trunkShift?.significantShift && (
+          <p className="acc-line acc-trunk-shift" data-testid="acc-trunk-shift">
+            <b>{fr ? 'Stabilité du tronc (shift)' : 'Trunk stability (shift)'} :</b> {
+              fr
+                ? `Décalage latéral de ${result.symmetry.trunkShift.maxLateralTiltDeg}° vers la ${result.symmetry.trunkShift.direction === 'left' ? 'gauche' : 'droite'}.`
+                : `Lateral tilt of ${result.symmetry.trunkShift.maxLateralTiltDeg}° towards the ${result.symmetry.trunkShift.direction}.`
+            }
+          </p>
+        )}
+        {result.symmetry.coaching?.hasNotableAsymmetry && (
+          <div className="acc-advice-card" data-testid="acc-asymmetry-advice">
+            <span className="acc-advice-badge">{fr ? 'Conseil biomécanique' : 'Biomechanical cue'}</span>
+            <p className="acc-advice-text">{fr ? result.symmetry.coaching.adviceFr : result.symmetry.coaching.adviceEn}</p>
+          </div>
+        )}
+      </>
     )}
     {result.consistency && (
       <p className="acc-line acc-consistency" data-testid="acc-consistency">

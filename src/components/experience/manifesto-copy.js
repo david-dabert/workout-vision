@@ -143,6 +143,12 @@ export const MANIFESTO = {
           desc: 'Anatomy dictates mechanics. A "one-size-fits-all" squat stance or bench press path ignores profound human skeletal variation: acetabular depth, femoral neck angle, clavicle-to-torso width, and limb-to-torso ratios. Science teaches us to match exercise execution to individual bone geometry and internal moment arms.',
           highlight: 'If an exercise causes articular pain rather than target muscle burn, the line of pull disagrees with your anatomy.',
         },
+        {
+          title: '4. Bilateral Symmetry & Musculoskeletal Equilibrium',
+          desc: 'Human movement rarely operates in perfect geometric parity. Subtle deficits in unilateral joint range of motion (ROM) or compensatory lateral trunk shifts create asymmetric torque distributions on spinal discs and cartilage. Quantifying bilateral divergence prevents chronic tendinopathy and maximizes force output.',
+          formula: '\\text{Asymmetry Index (AI)} = \\frac{|\\text{ROM}_{\\text{left}} - \\text{ROM}_{\\text{right}}|}{\\max(\\text{ROM}_{\\text{left}}, \\text{ROM}_{\\text{right}})} \\times 100\\%',
+          highlight: 'An asymmetry below 10% is physiological; exceeding 15% requires unilateral isolation and postural stabilization.',
+        },
       ],
     },
 
@@ -329,6 +335,12 @@ export const MANIFESTO = {
           title: '3. La Biomécanique Individualisée contre les Recettes Uniques',
           desc: 'L’anatomie dicte la mécanique. Un écartement de pieds imposé au squat ou une prise fixe au développé couché ignorent les variations squelettiques majeures\u00A0: profondeur du cotyle, angle du col fémoral, largeur claviculaire. La science enseigne d’adapter l’exercice à la structure osseuse et aux bras de levier de chaque individu.',
           highlight: 'Si un mouvement génère une douleur articulaire au lieu d’une tension musculaire, la trajectoire est en conflit avec votre squelette.',
+        },
+        {
+          title: '4. La Symétrie Bilatérale et l’Équilibre Musculosquelettique',
+          desc: 'Le corps humain fonctionne rarement dans une parité géométrique parfaite. Des déficits subtils d’amplitude unilatérale (ROM) ou des décalages latéraux du tronc créent des couples asymétriques sur les disques vertébraux et le cartilage. Quantifier ces divergences protège les articulations et optimise la production de force.',
+          formula: '\\text{Indice d’Asymétrie (AI)} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{\\max(\\text{ROM}_{\\text{gauche}}, \\text{ROM}_{\\text{droite}})} \\times 100\\%',
+          highlight: 'Une asymétrie inférieure à 10\u00A0% est physiologique\u00A0; au-delà de 15\u00A0%, un travail unilatéral compensatoire s’impose.',
         },
       ],
     },

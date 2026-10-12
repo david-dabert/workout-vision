@@ -10,7 +10,7 @@ import { specGuidedCount } from './counting/sgc';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
-import { analyzeBilateralSymmetry } from './symmetry';
+import { analyzeAsymmetryAndTrunk } from './asymmetryCoaching';
 import { analyzeMovementQuality } from './smoothness';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
@@ -359,7 +359,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
 
     const countSummary = summarizeCount(worldLandmarks, timestamps, lift);
-    const symmetry = analyzeBilateralSymmetry(worldLandmarks, timestamps, lift, countSummary.reps);
+    const symmetry = analyzeAsymmetryAndTrunk(worldLandmarks, timestamps, lift, countSummary.reps);
     const quality = analyzeMovementQuality(worldLandmarks, timestamps, lift, countSummary.reps, countSummary.arm);
 
     const mergedSummary = {

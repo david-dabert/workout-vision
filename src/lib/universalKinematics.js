@@ -151,12 +151,12 @@ export function smoothSeries(values, windowSize = 7) {
   if (n === 0) return [];
   const valid = values.map(v => (v != null && Number.isFinite(v) ? v : null));
 
-  // Linear interpolation for missing gaps up to 5 samples
+  // Linear interpolation for missing gaps up to 10 samples (bridges camera shake & low-light drops)
   const filled = [...valid];
   for (let i = 0; i < n; i++) {
     if (filled[i] === null) {
       let nextIdx = -1;
-      for (let j = i + 1; j < Math.min(n, i + 6); j++) {
+      for (let j = i + 1; j < Math.min(n, i + 11); j++) {
         if (filled[j] !== null) { nextIdx = j; break; }
       }
       if (nextIdx !== -1 && i > 0 && filled[i - 1] !== null) {
@@ -166,6 +166,24 @@ export function smoothSeries(values, windowSize = 7) {
         for (let k = i; k < nextIdx; k++) filled[k] = startVal + step * (k - i + 1);
       }
     }
+  }
+
+  // Anchor boundary gaps at edges if short dropouts occur at start or end
+  let firstValid = -1;
+  for (let i = 0; i < n; i++) {
+    if (filled[i] !== null) { firstValid = i; break; }
+  }
+  if (firstValid > 0 && firstValid <= 10) {
+    const val = filled[firstValid];
+    for (let k = 0; k < firstValid; k++) filled[k] = val;
+  }
+  let lastValid = -1;
+  for (let i = n - 1; i >= 0; i--) {
+    if (filled[i] !== null) { lastValid = i; break; }
+  }
+  if (lastValid !== -1 && lastValid < n - 1 && (n - 1 - lastValid) <= 10) {
+    const val = filled[lastValid];
+    for (let k = lastValid + 1; k < n; k++) filled[k] = val;
   }
 
   const kernel = sgKernel(windowSize);
